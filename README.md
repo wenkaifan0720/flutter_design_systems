@@ -1,0 +1,55 @@
+# flutter_design_systems
+
+Design systems for Flutter, one package per look, all built on one shared foundation, `ui_core`. Every look
+works under a `MaterialApp`, a `CupertinoApp` or a `WidgetsApp`, at phone and desktop sizes, by day and by night.
+
+| Package | What it is |
+| --- | --- |
+| [`ui_core`](packages/ui_core) | Headless behaviours for Flutter design systems: the state, keyboard, focus and semantics of 24 controls, with every pixel left to the design system. |
+
+Eight looks built on `ui_core` follow over the coming days, each with a live gallery you can try in your browser:
+Neumorphism, Retro Desktop, Comic, Frosted, Ledger, Minimal, Material Expressive and Fluent 2.
+
+Material Expressive and Fluent 2 are independent Flutter implementations, not affiliated with or endorsed by Google or
+Microsoft.
+
+## Install
+
+Most apps add a look, which brings `ui_core` with it. To build a look of your own on the foundation:
+
+```yaml
+dependencies:
+  ui_core: ^0.1.0
+```
+
+`ui_core`'s README shows a button of your own, the behaviours, and who disposes what.
+
+## Feedback
+
+These are first releases, and feedback shapes the next ones: a component that's missing, a name that reads wrong, or a
+control that looks off at some size. Open an issue and say which package, which component, and the screen size.
+
+## How the packages are made
+
+The packages are generated, not edited by hand. Each look is written once in a private design-system catalog, which
+also builds the apps that use it, and is exported here with its tests and example gallery. A fix that arrives as a pull
+request is carried back into the catalog and exported again, with credit kept in the commit.
+
+## Working here
+
+The repository is one pub workspace: `flutter pub get` at the root resolves every package and example. It needs
+Flutter 3.47.0 or later.
+
+```sh
+flutter pub get
+dart analyze --fatal-infos
+cd packages/ui_core && flutter test --exclude-tags goldens
+```
+
+The pixel goldens were recorded on macOS. Run them there with `flutter test --tags goldens`. CI runs them on macOS
+only when started by hand.
+
+## License
+
+BSD-3-Clause; see [LICENSE](LICENSE). The fonts and icons a package bundles keep their own licences, which are listed
+in that package's THIRD_PARTY_NOTICES.

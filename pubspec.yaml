@@ -1,0 +1,15 @@
+name: flutter_design_systems
+description: The workspace of the design system packages. It is not published; its members are.
+publish_to: none
+repository: https://github.com/wenkaifan0720/flutter_design_systems
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+
+# Every package, and every package's example app.
+workspace:
+  - packages/*
+  - packages/*/example
+
+dev_dependencies:
+  flutter_lints: ^6.0.0

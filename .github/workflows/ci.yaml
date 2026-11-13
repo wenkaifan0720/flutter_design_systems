@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Analyze, test and dry-run publish (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.0
+          channel: stable
+          cache: true
+      - name: Resolve the workspace
+        run: flutter pub get
+      - name: Analyze
+        run: dart analyze --fatal-infos
+      - name: Test, without the goldens
+        run: |
+          for p in packages/*/; do
+            if [ -d "$p/test" ]; then
+              (cd "$p" && flutter test --exclude-tags goldens) || exit 1
+            fi
+          done
+      - name: Dry-run publish each package
+        run: |
+          for p in packages/*/; do
+            dart pub publish --dry-run --directory "$p" || exit 1
+          done
+
+  goldens:
+    # The pixel goldens were recorded on macOS, so they run there, and only by hand.
+    name: Goldens (macOS, by hand)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.0
+          channel: stable
+          cache: true
+      - name: Resolve the workspace
+        run: flutter pub get
+      - name: Goldens
+        run: |
+          for p in packages/*/; do
+            if [ -f "$p/dart_test.yaml" ] && grep -q goldens "$p/dart_test.yaml"; then
+              (cd "$p" && flutter test --tags goldens) || exit 1
+            fi
+          done

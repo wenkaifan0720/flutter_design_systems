@@ -1,0 +1,18 @@
+name: ui_core_example
+description: Four of ui_core's behaviours, painted plainly.
+publish_to: none
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
