@@ -1,0 +1,61 @@
+name: fluent2_ui
+description: >-
+  Unofficial Fluent 2 widgets for Flutter: Fluent's tokens, type ramp and components, seven brand presets in light and dark, accessible controls.
+version: 0.1.0
+homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/fluent2_ui
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/fluent2_ui
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+screenshots:
+  - description: "A sample app's overview on a 1440 desktop, light, under Fluent's navigation pane."
+    path: screenshots/overview_desktop_light.png
+  - description: "A file list and its toolbar on a 1440 desktop, dark."
+    path: screenshots/files_desktop_dark.png
+  - description: "A request form of fields, selects and a date picker on a 1440 desktop, light."
+    path: screenshots/request_desktop_light.png
+  - description: "The sample app's overview on a 390 phone, dark, over its tab bar."
+    path: screenshots/overview_phone_dark.png
+  - description: "Settings on a 390 phone, light, with switches, selects and grouped lists."
+    path: screenshots/settings_phone_light.png
+  - description: "Fluent's button appearances and sizes, split and toggle buttons, on a phone, dark."
+    path: screenshots/buttons_phone_dark.png
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.1.0
+  material_ui: ^1.9.0
+  lucide_icons_flutter: ">=3.1.25 <5.0.0"
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  fonts:
+    - family: Selawik
+      fonts:
+        - asset: assets/fonts/Selawik-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Selawik-Semibold.ttf
+          weight: 600
+        - asset: assets/fonts/Selawik-Bold.ttf
+          weight: 700
+    - family: Fluent2Icons
+      fonts:
+        - asset: assets/fonts/Fluent2Icons-Regular.ttf
+          weight: 400
+    - family: Fluent2IconsFilled
+      fonts:
+        - asset: assets/fonts/Fluent2Icons-Filled.ttf
+          weight: 400
