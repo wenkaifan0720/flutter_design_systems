@@ -13,10 +13,11 @@ works under a `MaterialApp`, a `CupertinoApp` or a `WidgetsApp`, at phone and de
 | [`material_expressive_ui`](packages/material_expressive_ui) | Unofficial Material 3 Expressive widgets for Flutter: morphing shapes, springs, dynamic colour, accessible controls and five light and dark presets. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/material_expressive/) |
 | [`minimal_ui`](packages/minimal_ui) | A precise, quiet design system for Flutter: hairlines, dense rows, mono tabular figures and one primary colour, in three presets by day and by night. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/minimal/) |
 | [`neumorphism_ui`](packages/neumorphism_ui) | Neumorphism for Flutter: soft raised surfaces, inset controls, five light and dark palettes, accessible interactions, role-based shapes and state-resolved styling. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/neumorphism/) |
+| [`retro_desktop_ui`](packages/retro_desktop_ui) | Retro Desktop components for Flutter: pixel bevels, five light and dark presets, accessible controls, overlays, charts and customizable themes. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/retro_desktop/) |
 
 Eight looks are built on `ui_core`, each with a live gallery you can try in your browser: Neumorphism, Retro Desktop,
-Comic, Frosted, Ledger, Minimal, Material Expressive and Fluent 2. Those not in the table yet follow over the coming
-days.
+Comic, Frosted, Ledger, Minimal, Material Expressive and Fluent 2. The
+[gallery index](https://wenkaifan0720.github.io/flutter_design_systems/) shows them side by side.
 
 Material Expressive and Fluent 2 are independent Flutter implementations, not affiliated with or endorsed by Google or
 Microsoft.

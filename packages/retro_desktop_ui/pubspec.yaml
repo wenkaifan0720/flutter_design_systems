@@ -1,0 +1,70 @@
+name: retro_desktop_ui
+description: >-
+  Retro Desktop components for Flutter: pixel bevels, five light and dark presets, accessible controls, overlays, charts and customizable themes.
+version: 0.1.0
+homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/retro_desktop_ui
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/retro_desktop_ui
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+screenshots:
+  - description: "Papers by day at 1440 wide, a document list and an open note in windows on the desktop, under the menu bar."
+    path: screenshots/desktop_day.png
+  - description: "A workspace window by night at 1440 wide, its tabs over a list of recent documents."
+    path: screenshots/workspace_night.png
+  - description: "Buttons by day at 1440 wide, the default button, plain and icon buttons, a text action, a destructive one and a popup."
+    path: screenshots/buttons_day.png
+  - description: "Windows by night at 1440 wide, the active one's striped title bar, quieter inactive ones and a folded window."
+    path: screenshots/windows_night.png
+  - description: "An order form on a 390-wide phone by day, with a table, a select, a field, radio buttons and the default button."
+    path: screenshots/checkout_phone_day.png
+  - description: "Settings on a 390-wide phone by night, checkboxes in labelled groups and a disclosure."
+    path: screenshots/settings_phone_night.png
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.1.0
+  material_ui: ^1.9.0
+  intl: ^0.20.3
+  lucide_icons_flutter: ">=3.1.25 <5.0.0"
+
+dev_dependencies:
+  cupertino_ui: ^1.0.0
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  fonts:
+    - family: Jersey15
+      fonts:
+        - asset: assets/fonts/Jersey15-OneFace.ttf
+          weight: 400
+    - family: AtkinsonNext
+      fonts:
+        - asset: assets/fonts/AtkinsonNext-400.ttf
+          weight: 400
+        - asset: assets/fonts/AtkinsonNext-400Italic.ttf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/AtkinsonNext-600.ttf
+          weight: 600
+        - asset: assets/fonts/AtkinsonNext-700.ttf
+          weight: 700
+    - family: AtkinsonMono
+      fonts:
+        - asset: assets/fonts/AtkinsonMono-400.ttf
+          weight: 400
+        - asset: assets/fonts/AtkinsonMono-600.ttf
+          weight: 600
+        - asset: assets/fonts/AtkinsonMono-700.ttf
+          weight: 700
