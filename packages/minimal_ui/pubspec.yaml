@@ -1,0 +1,64 @@
+name: minimal_ui
+description: >-
+  A precise, quiet design system for Flutter: hairlines, dense rows, mono tabular figures and one primary colour, in three presets by day and by night.
+version: 0.1.0
+homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/minimal_ui
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/minimal_ui
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+screenshots:
+  - description: "A habit tracker on Minimal at 1440 px by day, the list beside a habit's record."
+    path: screenshots/ritual_1440_light.png
+  - description: "The same habit tracker on a 390 px phone by night, with its tab bar."
+    path: screenshots/ritual_390_dark.png
+  - description: "An issue tracker at 1440 px by night, issues by status beside the open one."
+    path: screenshots/tracker_1440_dark.png
+  - description: "The issue tracker on a 390 px phone by day."
+    path: screenshots/tracker_390_light.png
+  - description: "A bakery's back office at 1440 px by day, the morning's figures over a sortable orders table."
+    path: screenshots/bakery_1440_light.png
+  - description: "The bakery's orders on a 390 px phone by night."
+    path: screenshots/bakery_390_dark.png
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.1.0
+  material_ui: ^1.9.0
+  lucide_icons_flutter: ">=3.1.25 <5.0.0"
+
+dev_dependencies:
+  cupertino_ui: ^1.0.0
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  assets:
+    - assets/logos/
+  fonts:
+    - family: Geist
+      fonts:
+        - asset: assets/fonts/Geist-400.ttf
+          weight: 400
+        - asset: assets/fonts/Geist-500.ttf
+          weight: 500
+        - asset: assets/fonts/Geist-600.ttf
+          weight: 600
+    - family: GeistMono
+      fonts:
+        - asset: assets/fonts/GeistMono-400.ttf
+          weight: 400
+        - asset: assets/fonts/GeistMono-500.ttf
+          weight: 500
+        - asset: assets/fonts/GeistMono-600.ttf
+          weight: 600

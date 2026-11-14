@@ -1,0 +1,16 @@
+Geist and Geist Mono
+
+Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font.git)
+
+Licensed under the SIL Open Font License, Version 1.1. The full licence text
+for each family ships beside the faces:
+
+  assets/fonts/LICENSES/Geist-OFL.txt
+  assets/fonts/LICENSES/GeistMono-OFL.txt
+
+The bundled files (assets/fonts/Geist-400/500/600.ttf and
+assets/fonts/GeistMono-400/500/600.ttf) are static instances cut with
+fontTools.varLib.instancer from the variable fonts published at
+github.com/google/fonts (ofl/geist/Geist[wght].ttf and
+ofl/geistmono/GeistMono[wght].ttf), pinned at the named weight. The family
+declares no Reserved Font Name, so the instances keep the family names.

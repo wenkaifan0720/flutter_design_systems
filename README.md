@@ -9,6 +9,7 @@ works under a `MaterialApp`, a `CupertinoApp` or a `WidgetsApp`, at phone and de
 | [`comic_ui`](packages/comic_ui) | A Flutter design system drawn as a printed comic: inked panels, speech balloons and everyday controls, five editions by day and night, with state motion. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/comic/) |
 | [`frosted_ui`](packages/frosted_ui) | Frosted glass widgets for Flutter: frosted panes on a canvas lit by soft washes of colour, seven light and dark palettes, accessible controls and a complete theme. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/frosted/) |
 | [`ledger_ui`](packages/ledger_ui) | A Flutter design system kept in ink: warm paper, ink rules where other looks draw boxes, dot leaders, engraved figures and mono amounts, by day and by lamplight. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/ledger/) |
+| [`minimal_ui`](packages/minimal_ui) | A precise, quiet design system for Flutter: hairlines, dense rows, mono tabular figures and one primary colour, in three presets by day and by night. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/minimal/) |
 
 Eight looks are built on `ui_core`, each with a live gallery you can try in your browser: Neumorphism, Retro Desktop,
 Comic, Frosted, Ledger, Minimal, Material Expressive and Fluent 2. Those not in the table yet follow over the coming
