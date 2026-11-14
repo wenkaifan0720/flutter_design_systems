@@ -1,3 +1,15 @@
+## 0.1.1
+
+- Filter chips (`FrostedFilterChipGroup`) no longer slide a chosen plate across the gaps between them: each chip
+  carries its own chosen glass, which fades in where the chip stands while the chip left fades back. The segmented
+  control, whose segments share one capsule, still slides.
+- `FrostedSlider` shows the click cursor under a mouse, over its whole track and its thumb; while it is off, the
+  cursor of what is under it.
+- More parts show their cursor under a mouse: the click cursor on `FrostedNavigationBar`'s tabs, `FrostedNavAction`,
+  `FrostedRangeSlider`'s track and `FrostedColorPicker`'s hue and opacity tracks (their thumbs keep the resize
+  cursor); the open hand on `FrostedReorderableListView`'s grip, a `FrostedSwipeActions` row and a phone sheet's
+  grabber.
+
 ## 0.1.0
 
 - First release of Frosted as a package: light through frosted glass, by the names Material gives its components

@@ -383,19 +383,24 @@ class _Tab extends StatelessWidget {
             LogicalKeyboardKey.space: tap,
           },
         },
-        child: GestureDetector(
-          key: item.key,
-          behavior: HitTestBehavior.opaque,
-          onTap: tap,
-          child: FrostedEase<(Color, TextStyle)>(
-            value: (
-              ink,
-              selected
-                  ? t.textTheme.tab.semibold.c(ink)
-                  : t.textTheme.tab.c(ink),
+        // The pointer's click cursor over the whole cell while it goes
+        // somewhere.
+        child: MouseRegion(
+          cursor: tap != null ? SystemMouseCursors.click : MouseCursor.defer,
+          child: GestureDetector(
+            key: item.key,
+            behavior: HitTestBehavior.opaque,
+            onTap: tap,
+            child: FrostedEase<(Color, TextStyle)>(
+              value: (
+                ink,
+                selected
+                    ? t.textTheme.tab.semibold.c(ink)
+                    : t.textTheme.tab.c(ink),
+              ),
+              lerp: FrostedEase.inkAndWords,
+              builder: (context, shown) => _tabFace(t, shown.$1, shown.$2),
             ),
-            lerp: FrostedEase.inkAndWords,
-            builder: (context, shown) => _tabFace(t, shown.$1, shown.$2),
           ),
         ),
       ),
@@ -522,10 +527,13 @@ class FrostedNavAction extends StatelessWidget {
             LogicalKeyboardKey.space: press,
           },
         },
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: press,
-          child: _pill(t, h, rings, padding, words),
+        child: MouseRegion(
+          cursor: press != null ? SystemMouseCursors.click : MouseCursor.defer,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: press,
+            child: _pill(t, h, rings, padding, words),
+          ),
         ),
       ),
     );

@@ -1,7 +1,7 @@
 name: frosted_ui
 description: >-
   Frosted glass widgets for Flutter: frosted panes on a canvas lit by soft washes of colour, seven light and dark palettes, accessible controls and a complete theme.
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/frosted_ui
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/frosted_ui
 topics:

@@ -7,8 +7,9 @@ import '../theme.dart';
 /// handed, and stands [pill] under the [selected] one, inset by [inset]:
 /// when the choice changes the pill slides to it (at once under Reduce
 /// Motion). Null [selected] stands no pill. The selection of the navigation
-/// bar, the segmented control and the filter chips. Plumbing of the
-/// components.
+/// bar and the segmented control, whose choices share one capsule; separate
+/// things (filter chips) each carry their own chosen face instead. Plumbing
+/// of the components.
 class FrostedSlidingPill extends StatefulWidget {
   /// Creates a [FrostedSlidingPill].
   const FrostedSlidingPill({

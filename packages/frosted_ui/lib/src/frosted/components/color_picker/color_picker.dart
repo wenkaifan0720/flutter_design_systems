@@ -154,25 +154,31 @@ class _FrostedColorPickerState extends State<FrostedColorPicker> {
             ],
           ),
         };
-        return Center(
-          child: SizedBox(
-            height: 12,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (channel == DesignColorChannel.alpha)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: const CustomPaint(painter: _Checker()),
+        // The click cursor over the row the slider takes a press on, its
+        // whole height between the thumbs' ends; the thumbs keep ui_core's
+        // resize cursor, the field its precise one.
+        return MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: Center(
+            child: SizedBox(
+              height: 12,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (channel == DesignColorChannel.alpha)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: const CustomPaint(painter: _Checker()),
+                    ),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: gradient,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: t.glass.edge),
+                    ),
                   ),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: gradient,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: t.glass.edge),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );

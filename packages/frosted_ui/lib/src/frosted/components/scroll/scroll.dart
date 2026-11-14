@@ -543,15 +543,19 @@ class FrostedReorderableListView<T extends Object> extends StatelessWidget {
                   ),
                 ),
                 reorder.handle(
-                  Semantics(
-                    label: words.reorder,
-                    child: SizedBox(
-                      width: 44,
-                      height: 44,
-                      child: Icon(
-                        FrostedGlyphs.grip,
-                        size: 18,
-                        color: t.colorScheme.textTertiary,
+                  // The open hand under a pointer: the grip drags its row.
+                  MouseRegion(
+                    cursor: SystemMouseCursors.grab,
+                    child: Semantics(
+                      label: words.reorder,
+                      child: SizedBox(
+                        width: 44,
+                        height: 44,
+                        child: Icon(
+                          FrostedGlyphs.grip,
+                          size: 18,
+                          color: t.colorScheme.textTertiary,
+                        ),
                       ),
                     ),
                   ),

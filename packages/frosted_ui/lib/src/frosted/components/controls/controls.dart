@@ -126,8 +126,9 @@ class FrostedFilterOption<T> {
 
 /// One choice among a row of pill chips that scopes the list under it
 /// (All, Unread, Starred, Archived): each 32
-/// tall on the faint glass with its hairline ring, the chosen one on the
-/// ink act in white; 4 apart. On a phone the row runs on under the page's
+/// tall on the faint glass with its hairline ring, 4 apart; the chosen one
+/// on thicker, brighter glass of its own, which fades in where the chip
+/// stands (nothing slides between the chips). On a phone the row runs on under the page's
 /// gutters and scrolls, as the source's `.filters` does; on the desktop it
 /// takes its own width. The page owns [value]; a null [onChanged] leaves the
 /// row inert. A screen reader hears a group named [label] of buttons, the
@@ -173,35 +174,63 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
       //   box-shadow: var(--ink-lift); font-weight: 600 }
       //   (--ink-lift: inset 0 1px 0 rgba(255,255,255,.14), the act's sheen,
       //   over 0 8px 18px -12px rgba(21,21,29,.7))
-      // A capsule of glass; the chosen one's face is the bright pill that
-      // slides under it.
+      // Each chip is a capsule of glass of its own and carries its own
+      // chosen face: the chips are separate things, so nothing travels
+      // between them. Choosing one fades its chosen glass in where it
+      // stands (the thicker, brighter glass, raised off the row: no
+      // outline) while the chip left fades back to its faint glass.
+      final round = BorderRadius.circular(height / 2);
       final face = SizedBox(
         height: height,
-        child: FrostedFace(
-          material: on ? FrostedMaterial.paint : FrostedMaterial.pane,
-          radius: BorderRadius.circular(height / 2),
-          ring: on ? null : frostedLitEdge(t, t.colorScheme.border),
-          padding: const EdgeInsets.symmetric(
-            horizontal: FrostedChromeMetrics.filterChipInset,
-          ),
-          child: Center(
-            widthFactor: 1,
-            child: FrostedEase<TextStyle>(
-              value: on
-                  ? t.textTheme.labelSmall.semibold.c(t.colorScheme.textPrimary)
-                  : t.textTheme.labelSmall.c(t.colorScheme.textSecondary),
-              lerp: FrostedEase.words,
-              builder: (context, words) => frostedCapCentredSnapped(
-                Text(
-                  item.label,
-                  maxLines: 1,
-                  softWrap: false,
-                  textScaler: TextScaler.noScaling,
-                  style: words,
+        child: Stack(
+          fit: StackFit.passthrough,
+          children: [
+            Positioned.fill(
+              child: FrostedFade(
+                opacity: on ? 0 : 1,
+                child: FrostedFace(
+                  material: FrostedMaterial.pane,
+                  radius: round,
+                  ring: frostedLitEdge(t, t.colorScheme.border),
                 ),
               ),
             ),
-          ),
+            Positioned.fill(
+              child: FrostedFade(
+                opacity: on ? 1 : 0,
+                child: FrostedChosenPlate(radius: round),
+              ),
+            ),
+            // The chip's box, as the alignment checks read it: the words
+            // on its middle.
+            FrostedFace(
+              material: FrostedMaterial.paint,
+              radius: round,
+              padding: const EdgeInsets.symmetric(
+                horizontal: FrostedChromeMetrics.filterChipInset,
+              ),
+              child: Center(
+                widthFactor: 1,
+                child: FrostedEase<TextStyle>(
+                  value: on
+                      ? t.textTheme.labelSmall.semibold.c(
+                          t.colorScheme.textPrimary,
+                        )
+                      : t.textTheme.labelSmall.c(t.colorScheme.textSecondary),
+                  lerp: FrostedEase.words,
+                  builder: (context, words) => frostedCapCentredSnapped(
+                    Text(
+                      item.label,
+                      maxLines: 1,
+                      softWrap: false,
+                      textScaler: TextScaler.noScaling,
+                      style: words,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       );
       return FrostedPressable(
@@ -214,21 +243,10 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
       );
     }
 
-    final chosen = options.indexWhere((item) => item.value == value);
-    final chips = FrostedSlidingPill(
-      count: options.length,
-      selected: chosen < 0 ? null : chosen,
-      // The chosen chip stands on thicker, brighter glass, raised off the
-      // row: no outline.
-      pill: FrostedChosenPlate(radius: BorderRadius.circular(height / 2)),
-      builder: (context, keys) => Row(
-        mainAxisSize: MainAxisSize.min,
-        spacing: FrostedChromeMetrics.filterChipGap,
-        children: [
-          for (final (i, item) in options.indexed)
-            KeyedSubtree(key: keys[i], child: chip(item)),
-        ],
-      ),
+    final chips = Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: FrostedChromeMetrics.filterChipGap,
+      children: [for (final item in options) chip(item)],
     );
     final Widget row;
     if (FrostedBreakpoints.isWide(context)) {

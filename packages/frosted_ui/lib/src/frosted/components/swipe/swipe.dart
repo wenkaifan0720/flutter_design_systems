@@ -108,25 +108,33 @@ class FrostedSwipeActions extends StatelessWidget {
     clipper: const _Lane(
       FrostedChromeMetrics.focusRingGap + FrostedChromeMetrics.focusRingWidth,
     ),
-    child: DesignSwipeActions(
-      startActions: [for (final a in leading) _behind(a)],
-      endActions: [for (final a in trailing) _behind(a)],
-      actionExtent: FrostedChromeMetrics.swipeBlock,
-      fullSwipe: fullSwipe,
-      fullSwipeFraction: FrostedChromeMetrics.swipeFull,
-      initiallyOpen: initiallyOpen,
-      actionBuilder: (tileContext, action, state) => _Tile(
-        action.data! as FrostedSwipeAction,
-        state.states,
-        Directionality.of(context),
-      ),
-      // The tiles stand as tall as the row, so the row is at least a
-      // target tall: 48 under a finger, 44 under a pointer.
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minHeight: FrostedBreakpoints.hitTargetOf(context),
+    // A pointer drags the row too: the open hand over it while it has acts
+    // to show, open or shut (a part in the row that takes a press, and the
+    // acts once shown, keep their own cursor).
+    child: MouseRegion(
+      cursor: leading.isEmpty && trailing.isEmpty
+          ? MouseCursor.defer
+          : SystemMouseCursors.grab,
+      child: DesignSwipeActions(
+        startActions: [for (final a in leading) _behind(a)],
+        endActions: [for (final a in trailing) _behind(a)],
+        actionExtent: FrostedChromeMetrics.swipeBlock,
+        fullSwipe: fullSwipe,
+        fullSwipeFraction: FrostedChromeMetrics.swipeFull,
+        initiallyOpen: initiallyOpen,
+        actionBuilder: (tileContext, action, state) => _Tile(
+          action.data! as FrostedSwipeAction,
+          state.states,
+          Directionality.of(context),
         ),
-        child: child,
+        // The tiles stand as tall as the row, so the row is at least a
+        // target tall: 48 under a finger, 44 under a pointer.
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: FrostedBreakpoints.hitTargetOf(context),
+          ),
+          child: child,
+        ),
       ),
     ),
   );

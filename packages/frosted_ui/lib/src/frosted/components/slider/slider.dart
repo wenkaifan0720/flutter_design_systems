@@ -269,6 +269,13 @@ class FrostedSlider extends StatelessWidget {
         },
       ),
     );
+    // The pointer's click cursor over the whole slider, track and knob, as
+    // a press anywhere on it moves the value; inert, the cursor of what is
+    // under it.
+    slider = MouseRegion(
+      cursor: live ? SystemMouseCursors.click : MouseCursor.defer,
+      child: slider,
+    );
     slider = FrostedKeyFocus(
       focusNode: focusNode,
       autofocus: autofocus,

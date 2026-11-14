@@ -81,76 +81,85 @@ class FrostedRangeSlider extends StatelessWidget {
     const end = Radius.circular(track / 2);
     return SizedBox(
       height: FrostedChromeMetrics.sliderHeight,
-      child: DesignRangeSlider(
-        values: values,
-        onChanged: onChanged,
-        min: min,
-        max: max,
-        divisions: divisions,
-        minGap: minGap,
-        semanticFormatterCallback: semanticFormatterCallback,
-        onChangeStart: onChangeStart,
-        onChangeEnd: onChangeEnd,
-        startLabel: startLabel,
-        endLabel: endLabel,
-        thumbSize: const Size.square(FrostedChromeMetrics.sliderHeight),
-        trackBuilder: (context, range) {
-          final rtl = Directionality.of(context) == TextDirection.rtl;
-          final bar = Center(
-            child: SizedBox(
-              height: track,
-              child: LayoutBuilder(
-                builder: (context, box) {
-                  final w = box.maxWidth;
-                  final from = (rtl ? 1 - range.end : range.start) * w;
-                  final to = (rtl ? 1 - range.start : range.end) * w;
-                  return Stack(
-                    children: [
-                      Positioned.fill(
-                        child: FrostedFace(
-                          material: FrostedMaterial.paint,
-                          radius: const BorderRadius.all(end),
-                          color: t.glass.track,
-                          ring: t.glass.trackEdge,
+      // The click cursor over the track, as a press there moves the nearer
+      // thumb (FrostedSlider's); the thumbs keep ui_core's resize cursor.
+      child: MouseRegion(
+        cursor: onChanged != null
+            ? SystemMouseCursors.click
+            : MouseCursor.defer,
+        child: DesignRangeSlider(
+          values: values,
+          onChanged: onChanged,
+          min: min,
+          max: max,
+          divisions: divisions,
+          minGap: minGap,
+          semanticFormatterCallback: semanticFormatterCallback,
+          onChangeStart: onChangeStart,
+          onChangeEnd: onChangeEnd,
+          startLabel: startLabel,
+          endLabel: endLabel,
+          thumbSize: const Size.square(FrostedChromeMetrics.sliderHeight),
+          trackBuilder: (context, range) {
+            final rtl = Directionality.of(context) == TextDirection.rtl;
+            final bar = Center(
+              child: SizedBox(
+                height: track,
+                child: LayoutBuilder(
+                  builder: (context, box) {
+                    final w = box.maxWidth;
+                    final from = (rtl ? 1 - range.end : range.start) * w;
+                    final to = (rtl ? 1 - range.start : range.end) * w;
+                    return Stack(
+                      children: [
+                        Positioned.fill(
+                          child: FrostedFace(
+                            material: FrostedMaterial.paint,
+                            radius: const BorderRadius.all(end),
+                            color: t.glass.track,
+                            ring: t.glass.trackEdge,
+                          ),
                         ),
-                      ),
-                      Positioned(
-                        left: from,
-                        width: (to - from).clamp(0, w),
-                        top: 0,
-                        bottom: 0,
-                        child: FrostedFace(
-                          material: FrostedMaterial.paint,
-                          radius: const BorderRadius.all(end),
-                          gradients: [t.hues.iris.band],
+                        Positioned(
+                          left: from,
+                          width: (to - from).clamp(0, w),
+                          top: 0,
+                          bottom: 0,
+                          child: FrostedFace(
+                            material: FrostedMaterial.paint,
+                            radius: const BorderRadius.all(end),
+                            gradients: [t.hues.iris.band],
+                          ),
                         ),
-                      ),
-                    ],
-                  );
-                },
+                      ],
+                    );
+                  },
+                ),
               ),
-            ),
-          );
-          return FrostedDim(off: !range.enabled, child: bar);
-        },
-        thumbBuilder: (context, index, states) {
-          final face = SizedBox.square(
-            dimension: knob,
-            child: FrostedFace(
-              material: FrostedMaterial.paint,
-              radius: BorderRadius.circular(knob / 2),
-              // A token theme's dark knob by night (made for a switch's
-              // light ink) takes the ink on the track.
-              color: t.colorScheme.toggleKnob.computeLuminance() > .5
-                  ? t.colorScheme.toggleKnob
-                  : t.colorScheme.textPrimary,
-              edge: t.glass.edge,
-              edges: EdgeInsets.all(FrostedStrokes.regular),
-              shadows: t.shadows.toggleKnob,
-            ),
-          );
-          return Center(child: frostedRingFor(states, face, radius: knob / 2));
-        },
+            );
+            return FrostedDim(off: !range.enabled, child: bar);
+          },
+          thumbBuilder: (context, index, states) {
+            final face = SizedBox.square(
+              dimension: knob,
+              child: FrostedFace(
+                material: FrostedMaterial.paint,
+                radius: BorderRadius.circular(knob / 2),
+                // A token theme's dark knob by night (made for a switch's
+                // light ink) takes the ink on the track.
+                color: t.colorScheme.toggleKnob.computeLuminance() > .5
+                    ? t.colorScheme.toggleKnob
+                    : t.colorScheme.textPrimary,
+                edge: t.glass.edge,
+                edges: EdgeInsets.all(FrostedStrokes.regular),
+                shadows: t.shadows.toggleKnob,
+              ),
+            );
+            return Center(
+              child: frostedRingFor(states, face, radius: knob / 2),
+            );
+          },
+        ),
       ),
     );
   }
