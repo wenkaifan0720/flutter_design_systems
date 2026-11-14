@@ -3,7 +3,7 @@
 Headless behaviours for Flutter design systems. Each one keeps the state, the keyboard, focus and what a screen reader
 hears; it hands a builder what to draw, and the design system draws every pixel. No Material, no Cupertino.
 
-The look packages built on it (`comic_ui`, `fluent2_ui`, `frosted_ui`, `neumorphism_ui` and the rest) re-export
+The look packages built on it (`comic_ui`, `fluent2_design_ui`, `frosted_ui`, `neumorphism_ui` and the rest) re-export
 it, so an app that uses a look rarely imports it directly. Import it to build a look of your own:
 
 ```dart
