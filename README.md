@@ -6,9 +6,11 @@ works under a `MaterialApp`, a `CupertinoApp` or a `WidgetsApp`, at phone and de
 | Package | What it is |
 | --- | --- |
 | [`ui_core`](packages/ui_core) | Headless behaviours for Flutter design systems: the state, keyboard, focus and semantics of 24 controls, with every pixel left to the design system. |
+| [`ledger_ui`](packages/ledger_ui) | A Flutter design system kept in ink: warm paper, ink rules where other looks draw boxes, dot leaders, engraved figures and mono amounts, by day and by lamplight. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/ledger/) |
 
-Eight looks built on `ui_core` follow over the coming days, each with a live gallery you can try in your browser:
-Neumorphism, Retro Desktop, Comic, Frosted, Ledger, Minimal, Material Expressive and Fluent 2.
+Eight looks are built on `ui_core`, each with a live gallery you can try in your browser: Neumorphism, Retro Desktop,
+Comic, Frosted, Ledger, Minimal, Material Expressive and Fluent 2. Those not in the table yet follow over the coming
+days.
 
 Material Expressive and Fluent 2 are independent Flutter implementations, not affiliated with or endorsed by Google or
 Microsoft.

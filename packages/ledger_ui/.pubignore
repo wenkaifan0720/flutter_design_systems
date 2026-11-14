@@ -1,0 +1,4 @@
+test/goldens/
+example/build/
+build/
+coverage/

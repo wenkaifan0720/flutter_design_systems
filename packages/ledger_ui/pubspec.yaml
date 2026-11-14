@@ -1,0 +1,67 @@
+name: ledger_ui
+description: >-
+  A Flutter design system kept in ink: warm paper, ink rules where other looks draw boxes, dot leaders, engraved figures and mono amounts, by day and by lamplight.
+version: 0.1.0
+homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/ledger_ui
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/ledger_ui
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+screenshots:
+  - description: "Home at 1440, by day: the last of the register ruled by day, beside the engraved net worth and the accounts on dot leaders."
+    path: screenshots/home-1440-day.png
+  - description: "The register at 1440, by night: a month of transactions ruled by day, each amount on its decimal point."
+    path: screenshots/register-1440-night.png
+  - description: "The Ledger page at 1440, by day: what the package holds, a receipt slip with its seal, and how to add it."
+    path: screenshots/parts-1440-day.png
+  - description: "Home on a phone, by night: the engraved net worth, the accounts on dot leaders and the tab bar's New entry disc."
+    path: screenshots/home-390-night.png
+  - description: "A transaction on a phone, by day: its receipt with the engraved figure, the seal and the details."
+    path: screenshots/transaction-390-day.png
+  - description: "Settings on a phone, by night: an ordinary settings form in ruled rows, dot leaders and switches."
+    path: screenshots/settings-390-night.png
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.1.0
+  material_ui: ^1.9.0
+  lucide_icons_flutter: ">=3.1.25 <5.0.0"
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  assets:
+    - assets/logos/
+  fonts:
+
+
+    - family: InterTight
+      fonts:
+        - asset: assets/fonts/InterTight-Variable.ttf
+          weight: 400
+
+    - family: InstrumentSerif
+      fonts:
+        - asset: assets/fonts/InstrumentSerif-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/InstrumentSerif-Italic.ttf
+          weight: 400
+          style: italic
+    - family: PlexMono
+      fonts:
+        - asset: assets/fonts/PlexMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/PlexMono-Medium.ttf
+          weight: 500

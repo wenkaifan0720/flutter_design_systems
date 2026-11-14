@@ -1,0 +1,35 @@
+Instrument Serif, Inter Tight and IBM Plex Mono
+
+Instrument Serif: Copyright 2022 The Instrument Serif Project Authors
+(https://github.com/Instrument/instrument-serif)
+Inter Tight: Copyright 2022 The Inter Project Authors
+(https://github.com/rsms/inter-tight)
+IBM Plex Mono: Copyright (c) 2017 IBM Corp. with Reserved Font Name "Plex"
+
+Each is licensed under the SIL Open Font License, Version 1.1. The full
+licence text for each family ships beside the faces:
+
+  assets/fonts/LICENSES/InstrumentSerif-OFL.txt
+  assets/fonts/LICENSES/InterTight-OFL.txt
+  assets/fonts/LICENSES/PlexMono-OFL.txt
+
+The bundled files are the fonts published at github.com/google/fonts, copied
+byte for byte on 2026-10-28 and unmodified (the Inter Tight and Plex Mono
+files are renamed on disk only):
+
+  assets/fonts/InstrumentSerif-Regular.ttf  ofl/instrumentserif/InstrumentSerif-Regular.ttf
+  assets/fonts/InstrumentSerif-Italic.ttf   ofl/instrumentserif/InstrumentSerif-Italic.ttf
+                                            (version 1.000, last changed in
+                                            commit 5e0122a40050)
+  assets/fonts/InterTight-Variable.ttf      ofl/intertight/InterTight[wght].ttf
+                                            (version 3.004, last changed in
+                                            commit fac60545cc0d)
+  assets/fonts/PlexMono-Regular.ttf         ofl/ibmplexmono/IBMPlexMono-Regular.ttf
+  assets/fonts/PlexMono-Medium.ttf          ofl/ibmplexmono/IBMPlexMono-Medium.ttf
+                                            (version 2.3, last changed in
+                                            commit 633f3200539c)
+
+They are the faces the Keel / Ledger pilot's pages load from Google Fonts
+(Instrument Serif regular and italic, Inter Tight 400-600, IBM Plex Mono
+400-500), whole rather than subset. The licence texts are the families'
+OFL.txt from the same directories.
