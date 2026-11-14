@@ -296,6 +296,7 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
       builder: (context, parts) => LedgerFieldFrame(
         parts: parts,
         focusNode: _focus,
+        labelCursor: SystemMouseCursors.text,
         line: parts.control,
       ),
       child: line,

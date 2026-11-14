@@ -70,8 +70,11 @@ class _LiveState extends State<_Live> {
               behavior: HitTestBehavior.opaque,
               excludeFromSemantics: true,
               onTap: () => setState(() => _done = !_done),
-              child: ExcludeSemantics(
-                child: _Words('Order the cotton paper', struck: _done),
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: ExcludeSemantics(
+                  child: _Words('Order the cotton paper', struck: _done),
+                ),
               ),
             ),
           ),

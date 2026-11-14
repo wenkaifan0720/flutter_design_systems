@@ -187,37 +187,42 @@ class _LedgerSliderState extends State<LedgerSlider> {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final value = _value;
     final fraction = (value - widget.min) / _range;
+    // A pointer over the track or the knob shows the click cursor while the
+    // slider is live; an off one defers to what it stands on.
     final strip = LayoutBuilder(
-      builder: (context, box) => GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapDown: _live
-            ? (d) {
-                _focus.requestFocus();
-                _move(_valueAt(d.localPosition.dx, box.maxWidth, rtl));
-              }
-            : null,
-        onTapUp: _live ? (_) => _settle() : null,
-        onTapCancel: _live ? _settle : null,
-        onHorizontalDragStart: _live
-            ? (d) => _move(_valueAt(d.localPosition.dx, box.maxWidth, rtl))
-            : null,
-        onHorizontalDragUpdate: _live
-            ? (d) => _move(_valueAt(d.localPosition.dx, box.maxWidth, rtl))
-            : null,
-        onHorizontalDragEnd: _live ? (_) => _settle() : null,
-        child: SizedBox(
-          height: _Track.strip,
-          width: double.infinity,
-          child: CustomPaint(
-            painter: _Track(
-              fraction: fraction,
-              rtl: rtl,
-              divisions: widget.divisions,
-              rule: t.textPrimary,
-              dots: t.textTertiary,
-              tick: t.borderStrong,
-              paper: t.surface,
-              focus: _keyboard ? t.textPrimary : null,
+      builder: (context, box) => MouseRegion(
+        cursor: _live ? SystemMouseCursors.click : MouseCursor.defer,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: _live
+              ? (d) {
+                  _focus.requestFocus();
+                  _move(_valueAt(d.localPosition.dx, box.maxWidth, rtl));
+                }
+              : null,
+          onTapUp: _live ? (_) => _settle() : null,
+          onTapCancel: _live ? _settle : null,
+          onHorizontalDragStart: _live
+              ? (d) => _move(_valueAt(d.localPosition.dx, box.maxWidth, rtl))
+              : null,
+          onHorizontalDragUpdate: _live
+              ? (d) => _move(_valueAt(d.localPosition.dx, box.maxWidth, rtl))
+              : null,
+          onHorizontalDragEnd: _live ? (_) => _settle() : null,
+          child: SizedBox(
+            height: _Track.strip,
+            width: double.infinity,
+            child: CustomPaint(
+              painter: _Track(
+                fraction: fraction,
+                rtl: rtl,
+                divisions: widget.divisions,
+                rule: t.textPrimary,
+                dots: t.textTertiary,
+                tick: t.borderStrong,
+                paper: t.surface,
+                focus: _keyboard ? t.textPrimary : null,
+              ),
             ),
           ),
         ),

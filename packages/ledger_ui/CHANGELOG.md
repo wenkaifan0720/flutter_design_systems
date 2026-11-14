@@ -1,3 +1,10 @@
+## 0.1.1
+
+- A mouse over the slider now shows the pointing hand, on its track and on its knob, as it does over every other
+  control; a slider that is off keeps the cursor of what it stands on.
+- The tabs of the phone's tab bar, and its raised action, show the pointing hand too, and so does a select's label;
+  a text field's label shows the text cursor, since a click on it puts the caret in the field.
+
 ## 0.1.0
 
 - First release.

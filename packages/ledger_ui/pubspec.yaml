@@ -1,7 +1,7 @@
 name: ledger_ui
 description: >-
   A Flutter design system kept in ink: warm paper, ink rules where other looks draw boxes, dot leaders, engraved figures and mono amounts, by day and by lamplight.
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/ledger_ui
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/ledger_ui
 topics:

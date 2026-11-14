@@ -315,62 +315,65 @@ class _Tab extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        // The chosen tab's ink and its green tick come and go in Ledger's
-        // one motion.
-        child: LedgerFace(
-          style: LedgerFaceStyle(
-            ink: ink,
-            ground: BoxDecoration(
-              shape: BoxShape.circle,
-              color: selected ? t.accent : null,
+        // A pointer over a tab shows the click cursor. The chosen tab's ink
+        // and its green tick come and go in Ledger's one motion.
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: LedgerFace(
+            style: LedgerFaceStyle(
+              ink: ink,
+              ground: BoxDecoration(
+                shape: BoxShape.circle,
+                color: selected ? t.accent : null,
+              ),
             ),
-          ),
-          builder: (context, s, _) => Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              mark ??
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: LedgerChromeMetrics.tabGap,
+            builder: (context, s, _) => Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                mark ??
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: LedgerChromeMetrics.tabGap,
+                      ),
+                      child: Icon(
+                        icon,
+                        size: LedgerChromeMetrics.tabGlyph,
+                        color: s.ink,
+                      ),
                     ),
-                    child: Icon(
-                      icon,
-                      size: LedgerChromeMetrics.tabGlyph,
-                      color: s.ink,
+                // A name wider than its column at a large text size sets
+                // smaller on its one line rather than lose its end, never
+                // closer than [_nameGap] to its neighbour's (a gap that grows
+                // with the words, as a word space does).
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal:
+                        MediaQuery.textScalerOf(context).scale(_nameGap) / 2,
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      softWrap: false,
+                      textAlign: TextAlign.center,
+                      style: t.tab.colored(s.ink),
                     ),
                   ),
-              // A name wider than its column at a large text size sets
-              // smaller on its one line rather than lose its end, never
-              // closer than [_nameGap] to its neighbour's (a gap that grows
-              // with the words, as a word space does).
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal:
-                      MediaQuery.textScalerOf(context).scale(_nameGap) / 2,
                 ),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    softWrap: false,
-                    textAlign: TextAlign.center,
-                    style: t.tab.colored(s.ink),
-                  ),
+                // The tick stands 2 up into the 6 under the name.
+                const SizedBox(
+                  height:
+                      LedgerChromeMetrics.tabGap - LedgerChromeMetrics.tickLift,
                 ),
-              ),
-              // The tick stands 2 up into the 6 under the name.
-              const SizedBox(
-                height:
-                    LedgerChromeMetrics.tabGap - LedgerChromeMetrics.tickLift,
-              ),
-              Container(
-                width: LedgerChromeMetrics.tick,
-                height: LedgerChromeMetrics.tick,
-                decoration: s.ground,
-              ),
-            ],
+                Container(
+                  width: LedgerChromeMetrics.tick,
+                  height: LedgerChromeMetrics.tick,
+                  decoration: s.ground,
+                ),
+              ],
+            ),
           ),
         ),
       ),

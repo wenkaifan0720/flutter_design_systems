@@ -19,6 +19,7 @@ class LedgerFieldFrame extends StatelessWidget {
     required this.parts,
     required this.line,
     this.focusNode,
+    this.labelCursor = SystemMouseCursors.click,
     super.key,
   });
 
@@ -30,6 +31,10 @@ class LedgerFieldFrame extends StatelessWidget {
 
   /// Focused by a tap on the label.
   final FocusNode? focusNode;
+
+  /// The cursor over the label while a tap on it focuses the field: a text
+  /// field's caret cursor, a select's click.
+  final MouseCursor labelCursor;
 
   @override
   Widget build(BuildContext context) {
@@ -52,21 +57,28 @@ class LedgerFieldFrame extends StatelessWidget {
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: parts.enabled ? focusNode?.requestFocus : null,
-                child: Text.rich(
-                  TextSpan(
-                    text: label.toUpperCase(),
-                    children: [
-                      if (parts.required)
-                        TextSpan(
-                          text: ' *',
-                          style: TextStyle(color: wrong ? t.danger : t.accent),
-                        ),
-                    ],
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: t.label.colored(
-                    parts.enabled ? t.textSecondary : t.textTertiary,
+                child: MouseRegion(
+                  cursor: parts.enabled && focusNode != null
+                      ? labelCursor
+                      : MouseCursor.defer,
+                  child: Text.rich(
+                    TextSpan(
+                      text: label.toUpperCase(),
+                      children: [
+                        if (parts.required)
+                          TextSpan(
+                            text: ' *',
+                            style: TextStyle(
+                              color: wrong ? t.danger : t.accent,
+                            ),
+                          ),
+                      ],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: t.label.colored(
+                      parts.enabled ? t.textSecondary : t.textTertiary,
+                    ),
                   ),
                 ),
               ),
