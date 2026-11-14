@@ -1,0 +1,36 @@
+## 0.1.0
+
+- First release of the Neumorphism design system.
+- Five presets in light and dark: porcelain, pompeii, verona, siena and tyrian.
+- Theme value APIs, animated inherited themes, custom palettes, component themes and state-resolved styles.
+- Paired shadows on one surface colour and no printed line; high contrast, the device's unless the app sets it, prints a fine outline.
+- Rounded, stadium and circle shapes assigned by role, with content-safe insets and rounded fallbacks for wrapped labels. Density follows the platform unless set (compact with a pointer, standard on touch).
+- Buttons, fields, selection controls, navigation, cards, charts, status displays, date and time pickers, dialogs, sheets, menus, tooltips and snack bars.
+- Keyboard activation, focus in the relief, native editing gestures, an own selection menu and reduced motion. The built-in words are ui_core's `DesignLocalizations` (English until an app registers a `DefaultDesignLocalizations` subclass of its own).
+- Bundled Manrope fonts and a font loader; public drawing parts for copying a component into an app.
+- Out of use is said in the material, not a fade: a part out of use lies flat, flush with the ground, its words in the quiet ink (`NeumorphicFlatScope(flat:)`).
+- Progress fills its groove with the pigment and the spinner turns a pigment arc; rating stars stand raised in the pigment or press in; a badge is a raised bead with its figure in the ink, warmed by the pigment when its count goes up; a skeleton is pressed wells that breathe.
+- A notice's tone is in the material as well as its glyph and words: information and success are carved in its floor, a warning's mark stands on a raised bead, and an error's bead is warmed by the pigment.
+- Hover changes nothing: the pointer's cursor says what a part does (click, text, grab), and `WidgetState.hovered` stays available to app styles.
+- A press sinks the part in its own outline. Focus draws no line: a focused field's well deepens, and any other part, on keyboard focus only, lifts off the wall with its lit side warmed by the pigment and a near shade under its foot.
+- Segmented controls, latches and tab bars are banks of equal cells, the chosen cell pressed in edge to edge, with labels that never move.
+- The phone's tab bar carries a screen's own foot over its tabs in the same slab (`NeumorphicNavigationBar.header`: a cart's total and its act), so two bars at the foot are one piece.
+- A grouped list's row is a band of its card out to the card's rim: its focus lift and its press go round the whole row, in the card's corners where it meets them (`NeumorphicTap.faceOutset`).
+- A bare text link presses by darkening its underline and lies flat when disabled; a badge overlaps its child's corner by a fixed amount and leaves the child on its own line; the month keeps its grid on a 390 phone; a narrow table keeps each name and value on one line.
+- A chart's gridlines stand on round steps, each labelled in a gutter beside the plot.
+- A live example of 24 pages behind the look's own navigation (a rail on wide screens, a drawer on phones), every exported widget live on some page, plus customization of presets, colours, density, relief and contrast.
+- The whole shared inventory, answered: `neumorphicInventory` gives each of its 89 rows a live `Neumorphic<Stem>` specimen, and `NeumorphicInventoryGallery` lists them.
+- One API across looks: fourteen parts take the shared names (`NeumorphicLink`, `NeumorphicNumberField`, `NeumorphicFileUpload`, `NeumorphicBreadcrumb`, `NeumorphicListSection`, `NeumorphicSectionHeader`, `NeumorphicAvatarGroup`, `NeumorphicMedia`, `NeumorphicEmptyState`, `NeumorphicBanner`, `NeumorphicPieChart`, `NeumorphicCarouselView`, `NeumorphicInputOtp`, `NeumorphicScaffold`).
+- Actions: `NeumorphicButtonGroup`, `NeumorphicToggleGroup`, `NeumorphicSplitButton` and `NeumorphicKbd`.
+- Inputs: `NeumorphicPasswordField`, `NeumorphicInputGroup`, `NeumorphicCombobox`, `NeumorphicMultiSelect`, `NeumorphicFormField`, `NeumorphicRangeSlider`, `NeumorphicColorPicker`, `NeumorphicWheelPicker`, `NeumorphicCalendar` and `NeumorphicDateRangePicker` (and `showNeumorphicDateRangePicker`).
+- Navigation and overlays: `NeumorphicNavigationRail`, `NeumorphicMenuBar`, `NeumorphicCommand` (and `showNeumorphicCommand`), `NeumorphicPopover`, `NeumorphicHoverCard`, `NeumorphicSheet` (and `showNeumorphicSheet`), `NeumorphicActionSheet` (and `showNeumorphicActionSheet`) and `NeumorphicToaster` (and `showNeumorphicToast`).
+- Collections: `NeumorphicDataTable`, `NeumorphicScrollArea`, `NeumorphicResizable`, `NeumorphicReorderableListView`, `NeumorphicSwipeActions`, `NeumorphicTreeView`, `NeumorphicTimeline` and `NeumorphicDescriptionList`.
+- Feedback and charts: `NeumorphicStatusView`, `NeumorphicMeter`, `NeumorphicLineChart`, `NeumorphicBarChart` and `NeumorphicAreaChart`.
+- These take ui_core's values (`DesignMenuEntry`, `DesignCommand`, `DesignSwipeAction`, `DesignCalendarController`, `DesignTableController`, and so on), which the barrel exports, so an app needs one import.
+- `NeumorphicHost` mounts a `NeumorphicToaster`, and `showNeumorphicSnackBar` queues there when the call sets no placement or style of its own: snack bars stack and wait their turn instead of replacing each other.
+- `NeumorphicInputOtp` runs on ui_core's code field: one slot a character, Paste offered, `onCompleted` once per completion, and a form's submit, formatters and autofill passed through.
+- `NeumorphicCombobox` says when no option fits the words, in its own list, instead of closing.
+- `NeumorphicRating(enabled: false)` lays a rating flat and keeps its targets' size; null `onChanged` still shows a score only.
+- `NeumorphicCarouselView` turns by its buttons, dots and arrow keys on ui_core's carousel, opens on `initialPage`, and stands 28 px taller so its clip never cuts a slide's relief.
+- Large text: a button's padding and its glyph grow with its words (the glyph up to half again), a field's groove grows to its line, and instrument faces and tab words grow only so far (1.3) so they keep their room.
+- Disabled reads at a glance: a round key, an icon button, latches, a choice box, a number field and a text field lie flat as one part, at any corner family.

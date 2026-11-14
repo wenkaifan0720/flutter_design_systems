@@ -1,0 +1,63 @@
+name: neumorphism_ui
+description: >-
+  Neumorphism for Flutter: soft raised surfaces, inset controls, five light and dark palettes, accessible interactions, role-based shapes and state-resolved styling.
+version: 0.1.0
+homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/neumorphism_ui
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/neumorphism_ui
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+screenshots:
+  - description: "A living room by day at 1440 wide, with a thermostat dial, lights on switches and a slider, and the room's figures."
+    path: screenshots/hearth-home-1440-day.png
+  - description: "The same room at night on a phone, 390 wide, with the tab bar at the foot."
+    path: screenshots/hearth-home-390-night.png
+  - description: "A checkout at night with address fields, a delivery choice, a quantity stepper and the pigment's one act, Pay."
+    path: screenshots/hearth-checkout-1440-night.png
+  - description: "An account on a phone by day, with a portrait card of the home's details above the form's text fields."
+    path: screenshots/hearth-form-390-day.png
+  - description: "Settings by day, with rows of switches beside a volume dial."
+    path: screenshots/hearth-settings-1440-day.png
+  - description: "A list of devices at night on a phone, with a search field and each device's state."
+    path: screenshots/hearth-list-390-night.png
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.1.0
+  material_ui: ^1.9.0
+  lucide_icons_flutter: ">=3.1.25 <5.0.0"
+  intl: ^0.20.3
+
+dev_dependencies:
+  cupertino_ui: ^1.0.0
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  fonts:
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope-250.ttf
+          weight: 200
+        - asset: assets/fonts/Manrope-300.ttf
+          weight: 300
+        - asset: assets/fonts/Manrope-400.ttf
+          weight: 400
+        - asset: assets/fonts/Manrope-500.ttf
+          weight: 500
+        - asset: assets/fonts/Manrope-600.ttf
+          weight: 600
+        - asset: assets/fonts/Manrope-700.ttf
+          weight: 700
+        - asset: assets/fonts/Manrope-800.ttf
+          weight: 800
