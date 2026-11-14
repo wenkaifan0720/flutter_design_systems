@@ -1,7 +1,7 @@
 name: material_expressive_ui
 description: >-
   Unofficial Material 3 Expressive widgets for Flutter: morphing shapes, springs, dynamic colour, accessible controls and five light and dark presets.
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/material_expressive_ui
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/material_expressive_ui
 topics:

@@ -1297,6 +1297,15 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
         widget.readOnly && widget._singleLine && !widget.obscureText;
     final shown = ellipsizes && !_focusNode.hasFocus && text.isNotEmpty;
     final textColour = resolve(colors.text);
+    // The pointer's cursor over the whole field, its container and label
+    // too, as Material's TextField shows it: the text cursor where it takes
+    // typing, the click cursor over a read-only field that opens something
+    // (a select's, a date's); a disabled field defers to what it stands on.
+    final MouseCursor cursor = !enabled
+        ? MouseCursor.defer
+        : widget.readOnly && widget.onTap != null
+        ? SystemMouseCursors.click
+        : SystemMouseCursors.text;
     Widget entry = Material(
       type: MaterialType.transparency,
       child: TextField(
@@ -1321,6 +1330,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
         inputFormatters: widget.inputFormatters,
         enabled: enabled,
         readOnly: widget.readOnly,
+        mouseCursor: enabled ? cursor : null,
         autofocus: widget.autofocus,
         autofillHints: widget.autofillHints,
         onChanged: widget.onChanged,
@@ -1566,6 +1576,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
       );
     }
     return MouseRegion(
+      cursor: cursor,
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: field,

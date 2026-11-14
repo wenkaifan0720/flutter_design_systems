@@ -1,3 +1,16 @@
+## 0.1.1
+
+- A mouse over a slider (`ExpressiveSlider`, `ExpressiveRangeSlider`, `ExpressiveVerticalSlider`) now shows the
+  click cursor over the whole slider, its track as well as its handle, as Material's slider does. A disabled slider
+  keeps the cursor of what it sits on.
+- A text field shows the text cursor over the whole field, its container and label as well as the line you type in.
+  A read-only field that opens something when clicked (a select, a date field) shows the click cursor.
+- The time picker's dial and its scrolling hour and minute fields show the click cursor, as a slider does.
+- A carousel's page dots and a select's suggestions arrow show the click cursor on the web, as the package's buttons
+  do. In a desktop app they show the platform's arrow, as Flutter's own buttons do.
+- The chips in a multi-select show the field's text cursor, since a click there goes to the field; their remove glyph
+  keeps the click cursor.
+
 ## 0.1.0
 
 First release: an independent Flutter implementation of Material 3 Expressive, ported from Jetpack Compose

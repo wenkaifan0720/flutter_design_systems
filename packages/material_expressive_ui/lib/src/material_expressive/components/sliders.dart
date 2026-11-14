@@ -1917,6 +1917,12 @@ class _SliderFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     final minimum = style.minimumSize?.resolve(states) ?? Size.zero;
     return MouseRegion(
+      // The click cursor over the whole slider, track and handles, as
+      // Material's Slider shows it; a disabled slider defers to what is
+      // around it.
+      cursor: states.contains(WidgetState.disabled)
+          ? MouseCursor.defer
+          : SystemMouseCursors.click,
       onEnter: (_) => onHoverChanged(true),
       onExit: (_) => onHoverChanged(false),
       child: ConstrainedBox(

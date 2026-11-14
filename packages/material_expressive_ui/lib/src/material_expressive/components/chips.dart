@@ -399,6 +399,13 @@ class ExpressiveChip extends StatelessWidget {
           : ExpressivePressRole.button,
       selected: _selectable && selected,
       onPressed: _action,
+      // A live input chip with nothing of its own to do (a multi-select's
+      // chip: only its remove glyph acts) shows the cursor of what it sits
+      // in, the field's text cursor there, not the arrow over a body a
+      // click goes through.
+      mouseCursor: _action == null && onDeleted != null && enabled
+          ? MouseCursor.defer
+          : null,
       child: content,
     );
     if (_kind != _ChipKind.input || onDeleted == null) return chip;

@@ -3732,87 +3732,97 @@ class _ClockFaceState extends State<_ClockFace> with TickerProviderStateMixin {
         visual.side?.resolve(states) ??
         BorderSide.none.copyWith(color: visual.outline?.resolve(states));
     // Each number is its own button to assistive technology: the dial's
-    // tap and drag are not actions of their own.
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      excludeFromSemantics: true,
-      onTapUp: (d) => _onTap(d.localPosition),
-      onPanStart: (d) {
-        setState(() => _dragging = true);
-        _drag = d.localPosition;
-        _angle.stop();
-      },
-      onPanUpdate: (d) {
-        _drag += d.delta;
-        _setAt(_drag, tap: false);
-      },
-      onPanEnd: (_) {
-        setState(() => _dragging = false);
-        final wasHour = _c.selection == ExpressiveTimeSelection.hour;
-        _springAngle();
-        if (wasHour && widget.autoSwitchToMinute) {
-          _c.selection = ExpressiveTimeSelection.minute;
-        }
-      },
-      child: SizedBox.square(
-        dimension: TimePickerTokens.clockDialContainerSize,
-        child: AnimatedBuilder(
-          animation: Listenable.merge(<Listenable>[_angle, _fade]),
-          builder: (context, _) {
-            final handle = _handle();
-            final fade = _fade.value.clamp(0.0, 1.0);
-            final previous = _previousFace;
-            Widget layer(Color color, {required bool semantics}) => Stack(
-              children: <Widget>[
-                if (previous != null && fade < 1)
-                  Positioned.fill(
-                    child: Opacity(
-                      opacity: 1 - fade,
-                      child: ExcludeSemantics(
-                        child: _numbers(
-                          previous,
-                          style,
-                          color,
-                          semantics: false,
+    // tap and drag are not actions of their own. The pointer shows the click
+    // cursor over the whole dial, as over a slider: it is a value set by a
+    // tap or a drag.
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        excludeFromSemantics: true,
+        onTapUp: (d) => _onTap(d.localPosition),
+        onPanStart: (d) {
+          setState(() => _dragging = true);
+          _drag = d.localPosition;
+          _angle.stop();
+        },
+        onPanUpdate: (d) {
+          _drag += d.delta;
+          _setAt(_drag, tap: false);
+        },
+        onPanEnd: (_) {
+          setState(() => _dragging = false);
+          final wasHour = _c.selection == ExpressiveTimeSelection.hour;
+          _springAngle();
+          if (wasHour && widget.autoSwitchToMinute) {
+            _c.selection = ExpressiveTimeSelection.minute;
+          }
+        },
+        child: SizedBox.square(
+          dimension: TimePickerTokens.clockDialContainerSize,
+          child: AnimatedBuilder(
+            animation: Listenable.merge(<Listenable>[_angle, _fade]),
+            builder: (context, _) {
+              final handle = _handle();
+              final fade = _fade.value.clamp(0.0, 1.0);
+              final previous = _previousFace;
+              Widget layer(Color color, {required bool semantics}) => Stack(
+                children: <Widget>[
+                  if (previous != null && fade < 1)
+                    Positioned.fill(
+                      child: Opacity(
+                        opacity: 1 - fade,
+                        child: ExcludeSemantics(
+                          child: _numbers(
+                            previous,
+                            style,
+                            color,
+                            semantics: false,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                Positioned.fill(
-                  child: Opacity(
-                    opacity: fade,
-                    child: _numbers(_face, style, color, semantics: semantics),
-                  ),
-                ),
-              ],
-            );
-            return Stack(
-              children: <Widget>[
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _DialPainter(
-                      dial: fill,
-                      side: side,
-                      trackWidth:
-                          TimePickerTokens.clockDialSelectorTrackContainerWidth,
-                      selector: colors.selector,
-                      handle: handle,
-                      angle: _angle.value,
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: fade,
+                      child: _numbers(
+                        _face,
+                        style,
+                        color,
+                        semantics: semantics,
+                      ),
                     ),
                   ),
-                ),
-                Positioned.fill(child: layer(content, semantics: true)),
-                Positioned.fill(
-                  child: ExcludeSemantics(
-                    child: ClipPath(
-                      clipper: _HandleClip(handle),
-                      child: layer(selectedContent, semantics: false),
+                ],
+              );
+              return Stack(
+                children: <Widget>[
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _DialPainter(
+                        dial: fill,
+                        side: side,
+                        trackWidth: TimePickerTokens
+                            .clockDialSelectorTrackContainerWidth,
+                        selector: colors.selector,
+                        handle: handle,
+                        angle: _angle.value,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
-          },
+                  Positioned.fill(child: layer(content, semantics: true)),
+                  Positioned.fill(
+                    child: ExcludeSemantics(
+                      child: ClipPath(
+                        clipper: _HandleClip(handle),
+                        child: layer(selectedContent, semantics: false),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -4604,6 +4614,11 @@ class _ExpressiveScrollFieldState extends State<ExpressiveScrollField> {
                     horizontal: ExpressiveSpacing.s16,
                   ),
                   child: MouseRegion(
+                    // A value set by a drag or a tap on a number: the click
+                    // cursor over the whole field, as over a slider.
+                    cursor: enabled
+                        ? SystemMouseCursors.click
+                        : MouseCursor.defer,
                     onEnter: (_) => setState(() => _hovered = true),
                     onExit: (_) => setState(() => _hovered = false),
                     child: NotificationListener<ScrollNotification>(

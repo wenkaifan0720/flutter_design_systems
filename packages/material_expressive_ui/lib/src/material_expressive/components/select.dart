@@ -727,20 +727,28 @@ class _ComboboxToggle extends StatelessWidget {
         ? ExpressiveLocalizations.of(context).hideSuggestions
         : ExpressiveLocalizations.of(context).showSuggestions,
     onTap: enabled ? onToggle : null,
-    child: GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      excludeFromSemantics: true,
-      onTap: enabled ? onToggle : null,
-      // The whole of the field's 48dp icon slot is the toggle's, so its
-      // node is the touch target's size, not the glyph's.
-      child: ExpressiveMinimumInteractiveSize.enforcedAt(context)
-          ? SizedBox.square(
-              dimension: HostBehavior.minimumInteractiveComponentSize,
-              child: Center(
-                child: ExpressiveSelectTrailingIcon(expanded: expanded),
-              ),
-            )
-          : ExpressiveSelectTrailingIcon(expanded: expanded),
+    // The pointer says it presses, as a button's does: the adaptive
+    // clickable cursor (the hand on the web, the platform's arrow in a
+    // desktop app), over the text cursor of the field it sits in.
+    child: MouseRegion(
+      cursor: enabled
+          ? WidgetStateMouseCursor.adaptiveClickable
+          : MouseCursor.defer,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        excludeFromSemantics: true,
+        onTap: enabled ? onToggle : null,
+        // The whole of the field's 48dp icon slot is the toggle's, so its
+        // node is the touch target's size, not the glyph's.
+        child: ExpressiveMinimumInteractiveSize.enforcedAt(context)
+            ? SizedBox.square(
+                dimension: HostBehavior.minimumInteractiveComponentSize,
+                child: Center(
+                  child: ExpressiveSelectTrailingIcon(expanded: expanded),
+                ),
+              )
+            : ExpressiveSelectTrailingIcon(expanded: expanded),
+      ),
     ),
   );
 }

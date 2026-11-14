@@ -2633,23 +2633,29 @@ class ExpressivePageDots extends StatelessWidget {
         ),
       ),
     );
+    // A dot takes a tap: the pointer says so, as a button's does (the
+    // adaptive clickable cursor: the hand on the web, the platform's arrow
+    // in a desktop app).
     final Widget indicator = select == null
         ? scrolling
-        : GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTapUp: (details) {
-              final box = rowContext.findRenderObject()! as RenderBox;
-              select(
-                _pageAt(
-                  rowContext,
-                  box.globalToLocal(details.globalPosition),
-                  dot,
-                  pill,
-                  spacing,
-                ),
-              );
-            },
-            child: scrolling,
+        : MouseRegion(
+            cursor: WidgetStateMouseCursor.adaptiveClickable,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTapUp: (details) {
+                final box = rowContext.findRenderObject()! as RenderBox;
+                select(
+                  _pageAt(
+                    rowContext,
+                    box.globalToLocal(details.globalPosition),
+                    dot,
+                    pill,
+                    spacing,
+                  ),
+                );
+              },
+              child: scrolling,
+            ),
           );
     final label = semanticLabel;
     final value = ExpressiveLocalizations.of(context)

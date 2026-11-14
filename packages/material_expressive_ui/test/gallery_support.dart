@@ -56,8 +56,8 @@ Future<void> loadBundledFonts() async {
 /// The gallery's phone width.
 const galleryWidth = 390.0;
 
-/// Pumps [page] in [preset] and [brightness] at [galleryWidth], then grows the view to the page's whole height; in
-/// [direction] when given (the page's previews and overlays read it).
+/// Pumps [page] in [preset] and [brightness] at [width] ([galleryWidth] unless given), then grows the view to the
+/// page's whole height; in [direction] when given (the page's previews and overlays read it).
 Future<void> pumpGalleryPage(
   WidgetTester tester,
   GalleryPage page,
@@ -65,11 +65,12 @@ Future<void> pumpGalleryPage(
   Brightness brightness, {
   double devicePixelRatio = 1,
   TextDirection? direction,
+  double width = galleryWidth,
 }) async {
   kitShownPreset = preset;
   addTearDown(() => kitShownPreset = kitPreset);
   tester.view.devicePixelRatio = devicePixelRatio;
-  tester.view.physicalSize = const Size(galleryWidth, 844) * devicePixelRatio;
+  tester.view.physicalSize = Size(width, 844) * devicePixelRatio;
   addTearDown(tester.view.reset);
   final built = page.build(brightness);
   await tester.pumpWidget(
@@ -93,8 +94,7 @@ Future<void> pumpGalleryPage(
       ? 0.0
       : scrollables.first.position.maxScrollExtent;
   if (extent > 0) {
-    tester.view.physicalSize =
-        Size(galleryWidth, 844 + extent) * devicePixelRatio;
+    tester.view.physicalSize = Size(width, 844 + extent) * devicePixelRatio;
     await settle(tester);
   }
 }
