@@ -1,0 +1,61 @@
+name: comic_ui
+description: >-
+  A Flutter design system drawn as a printed comic: inked panels, speech balloons and everyday controls, five editions by day and night, with state motion.
+version: 0.1.0
+homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/comic_ui
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/comic_ui
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+screenshots:
+  - description: "Buttons at desktop width, by day."
+    path: screenshots/buttons_1440_day.png
+  - description: "Ticks, switches, chips and sliders at desktop width, at night."
+    path: screenshots/selection_1440_night.png
+  - description: "Comic's own panels, captions and balloons on a phone, by day."
+    path: screenshots/panels_390_day.png
+  - description: "A settings page on a phone, at night."
+    path: screenshots/settings_390_night.png
+  - description: "Charts at desktop width, by day."
+    path: screenshots/charts_1440_day.png
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.1.0
+  material_ui: ^1.9.0
+  lucide_icons_flutter: ">=3.1.25 <5.0.0"
+  intl: ^0.20.3
+
+dev_dependencies:
+  cupertino_ui: ^1.0.0
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  fonts:
+    - family: Bangers
+      fonts:
+        - asset: assets/fonts/Bangers-Regular.ttf
+          weight: 400
+    - family: ShantellSans
+      fonts:
+        - asset: assets/fonts/ShantellSans-400.ttf
+          weight: 400
+        - asset: assets/fonts/ShantellSans-500.ttf
+          weight: 500
+        - asset: assets/fonts/ShantellSans-600.ttf
+          weight: 600
+        - asset: assets/fonts/ShantellSans-700.ttf
+          weight: 700
+        - asset: assets/fonts/ShantellSans-800.ttf
+          weight: 800
