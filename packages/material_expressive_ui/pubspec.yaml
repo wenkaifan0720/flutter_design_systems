@@ -1,0 +1,64 @@
+name: material_expressive_ui
+description: >-
+  Unofficial Material 3 Expressive widgets for Flutter: morphing shapes, springs, dynamic colour, accessible controls and five light and dark presets.
+version: 0.1.0
+homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/material_expressive_ui
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/material_expressive_ui
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+screenshots:
+  - description: "The example's overview at 1440 px by day: a mark of three library shapes, the parts Flutter's Material lacks, and the trip planner."
+    path: screenshots/overview_1440_light.png
+  - description: "The trip planner on a 390 px phone by night: the next trip on a tonal card, wavy progress, list rows and the navigation bar."
+    path: screenshots/trip_390_dark.png
+  - description: "A paired line chart by day: round-capped 4 dp lines, shape points and a target band on the extra-large corner."
+    path: screenshots/chart_1440_light.png
+  - description: "Cards on a phone by night, their unloaded pictures drawn from the look's library shapes."
+    path: screenshots/cards_390_dark.png
+  - description: "Buttons by night: five styles, five sizes, round and square, disabled and in the error colour."
+    path: screenshots/buttons_1440_dark.png
+  - description: "A packing checkout on a phone by day: quantity steppers, a delivery choice, a payment row and the total."
+    path: screenshots/checkout_390_light.png
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.1.0
+  material_ui: ^1.9.0
+  cupertino_ui: ^1.0.0
+
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  fonts:
+
+    - family: RobotoFlex
+      fonts:
+        - asset: assets/fonts/RobotoFlex.ttf
+
+    - family: Jost
+      fonts:
+        - asset: assets/fonts/Jost-400.ttf
+          weight: 400
+        - asset: assets/fonts/Jost-500.ttf
+          weight: 500
+        - asset: assets/fonts/Jost-600.ttf
+          weight: 600
+
+
+    - family: MaterialSymbolsRounded
+      fonts:
+        - asset: assets/fonts/MaterialSymbolsRounded.ttf
