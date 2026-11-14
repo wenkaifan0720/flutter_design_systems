@@ -1,0 +1,29 @@
+Bricolage Grotesque and DM Sans
+
+Bricolage Grotesque: Copyright 2022 The Bricolage Grotesque Project Authors
+(https://github.com/ateliertriay/bricolage).
+DM Sans: Copyright 2014 The DM Sans Project Authors
+(https://github.com/googlefonts/dm-fonts).
+
+Licensed under the SIL Open Font License, Version 1.1. The full licence text
+for each family ships beside the faces:
+
+  assets/fonts/LICENSES/BricolageGrotesque-OFL.txt
+  assets/fonts/LICENSES/DMSans-OFL.txt
+
+The bundled files are the variable fonts published at github.com/google/fonts,
+copied byte for byte on 2026-10-31:
+
+  assets/fonts/BricolageGrotesque-Variable.ttf
+      ofl/bricolagegrotesque/BricolageGrotesque[opsz,wdth,wght].ttf
+      (version 1.001; axes opsz 12-96, wdth 75-100, wght 200-800; the
+      file's default instance is 96pt ExtraBold, so every FrostedThemeData style
+      names its wght and opsz)
+  assets/fonts/DMSans-Variable.ttf
+      ofl/dmsans/DMSans[opsz,wght].ttf (version 4.004; axes opsz 9-40,
+      wght 100-1000; default instance 9pt Regular)
+
+They are the faces the look's source pages load from Google Fonts
+(Bricolage Grotesque 400-800 at optical sizes 12-96, DM Sans 400-700 at
+9-40), whole rather than subset. The licence texts are the families' OFL.txt
+from the same directories. Neither family declares a Reserved Font Name.

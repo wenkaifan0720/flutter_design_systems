@@ -6,6 +6,7 @@ works under a `MaterialApp`, a `CupertinoApp` or a `WidgetsApp`, at phone and de
 | Package | What it is |
 | --- | --- |
 | [`ui_core`](packages/ui_core) | Headless behaviours for Flutter design systems: the state, keyboard, focus and semantics of 24 controls, with every pixel left to the design system. |
+| [`frosted_ui`](packages/frosted_ui) | Frosted glass widgets for Flutter: frosted panes on a canvas lit by soft washes of colour, seven light and dark palettes, accessible controls and a complete theme. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/frosted/) |
 | [`ledger_ui`](packages/ledger_ui) | A Flutter design system kept in ink: warm paper, ink rules where other looks draw boxes, dot leaders, engraved figures and mono amounts, by day and by lamplight. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/ledger/) |
 
 Eight looks are built on `ui_core`, each with a live gallery you can try in your browser: Neumorphism, Retro Desktop,
@@ -48,8 +49,9 @@ dart analyze --fatal-infos
 cd packages/ui_core && flutter test --exclude-tags goldens
 ```
 
-The pixel goldens were recorded on macOS. Run them there with `flutter test --tags goldens`. CI runs them on macOS
-only when started by hand.
+Tests tagged `goldens` read rendered pixels, which differ between platforms, so they run on macOS:
+`flutter test --tags goldens`. CI runs them there only when started by hand. A look's golden images stay in the catalog
+it is generated from, so here its golden comparisons skip themselves and its other pixel checks run.
 
 ## License
 

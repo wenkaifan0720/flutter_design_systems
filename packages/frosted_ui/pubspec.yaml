@@ -1,0 +1,54 @@
+name: frosted_ui
+description: >-
+  Frosted glass widgets for Flutter: frosted panes on a canvas lit by soft washes of colour, seven light and dark palettes, accessible controls and a complete theme.
+version: 0.1.0
+homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/frosted_ui
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/frosted_ui
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+screenshots:
+  - description: "Harbor, the gallery's sample app, on its Activity page at 1440 wide by day."
+    path: screenshots/harbor-activity-desktop-day.png
+  - description: "Harbor's Activity page on a 390 wide phone by night."
+    path: screenshots/harbor-activity-phone-night.png
+  - description: "Harbor's Settings page at 1440 wide by night."
+    path: screenshots/harbor-settings-desktop-night.png
+  - description: "Harbor's Settings page on a 390 wide phone by day."
+    path: screenshots/harbor-settings-phone-day.png
+  - description: "The pearl credit card, live and frozen, at 1440 wide by day."
+    path: screenshots/gallery-cards-desktop-day.png
+  - description: "Segmented buttons, chips and switches on a 390 wide phone by night."
+    path: screenshots/gallery-selection-phone-night.png
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.1.0
+  material_ui: ^1.9.0
+  lucide_icons_flutter: ">=3.1.25 <5.0.0"
+
+dev_dependencies:
+  cupertino_ui: ^1.0.0
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  fonts:
+    - family: BricolageGrotesque
+      fonts:
+        - asset: assets/fonts/BricolageGrotesque-Variable.ttf
+          weight: 400
+    - family: DMSans
+      fonts:
+        - asset: assets/fonts/DMSans-Variable.ttf
+          weight: 400
