@@ -1,18 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import '../chrome_metrics.dart';
 import '../theme.dart';
-import 'routes.dart';
 import 'toast.dart';
 
 /// The one mount of Minimal in a host app. Picks the theme for the
 /// brightness in force, installs it with a [MinimalTheme] (the dark theme
-/// riding along for media grounds), adds the page transition every
-/// platform uses, paints the ground, hosts the toasts ([MinimalToaster]),
+/// riding along for media grounds, its page transitions on every
+/// platform), paints the ground, hosts the toasts ([MinimalToaster]),
 /// carries status-bar polarity, and clamps text scaling at
-/// [MinimalChromeMetrics.maxTextScale] — the largest
-/// size a 44 px row was drawn to hold. Every render host mounts it once
+/// [MinimalChromeMetrics.maxTextScale] (200%), the largest size its parts
+/// are laid out for. Every render host mounts it once
 /// above its Navigator: the app in its router builder, a page preview in
 /// its own.
 ///
@@ -54,58 +54,34 @@ class MinimalHost extends StatelessWidget {
       darkData: dark,
       curve: MinimalMotion.out,
       duration: context.minimalStill ? Duration.zero : MinimalMotion.slow,
-      child: _Transitions(
-        // Status-bar discipline rides the host (it spans the full screen, so
-        // the annotated region always covers the bar).
-        child: AnnotatedRegion<SystemUiOverlayStyle>(
-          value: brightness == Brightness.dark
-              ? SystemUiOverlayStyle.light
-              : SystemUiOverlayStyle.dark,
-          child: MediaQuery.withClampedTextScaling(
-            maxScaleFactor: MinimalChromeMetrics.maxTextScale,
-            // The ground reads the blending theme, so it fades with it.
-            child: Builder(
-              builder: (context) => ColoredBox(
-                color: context.minimalTheme.background,
-                child: MinimalToaster(child: child),
-              ),
+      // Status-bar discipline rides the host (it spans the full screen, so
+      // the annotated region always covers the bar).
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: brightness == Brightness.dark
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark,
+        child: MediaQuery.withClampedTextScaling(
+          maxScaleFactor: MinimalChromeMetrics.maxTextScale,
+          // The ground reads the blending theme, so it fades with it.
+          child: Builder(
+            builder: (context) => ColoredBox(
+              color: context.minimalTheme.background,
+              child: MinimalToaster(child: child),
             ),
           ),
         ),
       ),
     );
   }
-}
-
-/// [MinimalPageTransitions] on every platform, over the Material theme
-/// [MinimalTheme] installs; the platform itself stays the ambient one, so
-/// scroll physics and text editing are the device's own.
-class _Transitions extends StatelessWidget {
-  const _Transitions({required this.child});
-
-  final Widget child;
-
-  static const PageTransitionsTheme _theme = PageTransitionsTheme(
-    builders: <TargetPlatform, PageTransitionsBuilder>{
-      TargetPlatform.android: MinimalPageTransitions(),
-      TargetPlatform.fuchsia: MinimalPageTransitions(),
-      TargetPlatform.iOS: MinimalPageTransitions(),
-      TargetPlatform.linux: MinimalPageTransitions(),
-      TargetPlatform.macOS: MinimalPageTransitions(),
-      TargetPlatform.windows: MinimalPageTransitions(),
-    },
-  );
-
-  static final Expando<ThemeData> _withTransitions = Expando<ThemeData>();
 
   @override
-  Widget build(BuildContext context) {
-    final under = Theme.of(context);
-    return Theme(
-      data: _withTransitions[under] ??= under.copyWith(
-        pageTransitionsTheme: _theme,
-      ),
-      child: child,
-    );
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<MinimalThemeData>('light', light))
+      ..add(DiagnosticsProperty<MinimalThemeData>('dark', dark))
+      ..add(
+        EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
+      );
   }
 }

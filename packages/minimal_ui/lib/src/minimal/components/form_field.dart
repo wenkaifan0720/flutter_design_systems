@@ -2,6 +2,7 @@
 /// its fields, painted on ui_core's field and form.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -124,6 +125,25 @@ class MinimalFormField extends StatelessWidget {
     );
     return enabled ? field : Opacity(opacity: 0.45, child: field);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('help', help, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(FlagProperty('required', value: required, ifTrue: 'required'))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('group', value: group, ifTrue: 'group'));
+  }
 }
 
 /// The fields of a form, validated together: a submit that finds a wrong
@@ -163,5 +183,11 @@ class MinimalForm extends StatelessWidget {
       problemsMessage: words.fieldsNeedAttention,
       child: child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ObjectFlagProperty<VoidCallback>.has('onSubmit', onSubmit));
   }
 }

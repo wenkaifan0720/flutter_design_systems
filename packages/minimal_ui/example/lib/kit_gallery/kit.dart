@@ -12,6 +12,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
 
@@ -60,14 +61,16 @@ Widget kitScreen({
       footer: bottom,
       body:
           body ??
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final (i, section) in sections.indexed) ...[
-                if (i > 0) const MinimalGap(MinimalSpacing.s32),
-                section,
+          _KitReach(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final (i, section) in sections.indexed) ...[
+                  if (i > 0) const MinimalGap(MinimalSpacing.s32),
+                  section,
+                ],
               ],
-            ],
+            ),
           ),
     ),
   );
@@ -299,12 +302,18 @@ class KitRouteFrame extends StatelessWidget {
           context: context,
           removeTop: true,
           removeBottom: true,
-          child: Navigator(
-            pages: [
-              if (pushed) const MaterialPage<void>(child: SizedBox.expand()),
-              MaterialPage<void>(child: page),
-            ],
-            onDidRemovePage: (_) {},
+          // A route's modal barrier blocks the semantics of whatever painted
+          // before it in its semantics container: its own container keeps
+          // that to the frame, and the page around it stays readable.
+          child: Semantics(
+            container: true,
+            child: Navigator(
+              pages: [
+                if (pushed) const MaterialPage<void>(child: SizedBox.expand()),
+                MaterialPage<void>(child: page),
+              ],
+              onDidRemovePage: (_) {},
+            ),
           ),
         ),
       ),
@@ -343,6 +352,18 @@ MinimalThemeData kitTheme(Brightness brightness) =>
     kitShownTheme?.call(brightness) ??
     MinimalThemeData.preset(kitPreset, brightness);
 
+/// The theme of the gallery's own apps, as an app on Flutter's Material
+/// gives it: Minimal's page motion on every platform. [MinimalTheme] puts it
+/// on the Material Minimal is built on; a page route from Flutter's own
+/// Material reads the app's theme, so the app names [minimalPageTransitions]
+/// there (the README's setup). Without it a pushed page takes the platform's
+/// slide or zoom.
+final ThemeData kitAppTheme = ThemeData(
+  pageTransitionsTheme: const PageTransitionsTheme(
+    builders: minimalPageTransitions,
+  ),
+);
+
 /// A demo's own app. Its locale would set the direction again under it
 /// (English reads left to right), so it reads the way the page around it
 /// does: right to left when the example is turned that way.
@@ -352,6 +373,7 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
         final direction = Directionality.maybeOf(page);
         return MaterialApp(
           debugShowCheckedModeBanner: false,
+          theme: kitAppTheme,
           builder: (context, child) {
             final host = MinimalHost(
               light: kitTheme(Brightness.light),
@@ -431,12 +453,67 @@ class KitBleed extends StatelessWidget {
         // the column's edges, while its own box keeps the column's width.
         return FractionallySizedBox(
           widthFactor: wide / column.maxWidth,
-          child: _KitBleedScope(inset: MinimalInsets.gutter, child: child),
+          child: _KitBleedMark(
+            child: _KitBleedScope(inset: MinimalInsets.gutter, child: child),
+          ),
         );
       },
     );
   }
 }
+
+/// A demo page's column, whose [KitBleed] lists reach their taps into the
+/// gutters they paint over: the page pads the column, so a tap in a gutter
+/// would stop at the column's edge, short of the row it lands on. A tap in
+/// a gutter goes on, at the column's edge, only where a bleeding list
+/// stands there; beside anything else the gutter stays empty.
+class _KitReach extends SingleChildRenderObjectWidget {
+  const _KitReach({required Widget super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderKitReach();
+}
+
+class _RenderKitReach extends RenderProxyBox {
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (size.contains(position)) {
+      return super.hitTest(result, position: position);
+    }
+    const gutter = MinimalChromeMetrics.gutter;
+    if (position.dy < 0 ||
+        position.dy >= size.height ||
+        position.dx < -gutter ||
+        position.dx >= size.width + gutter) {
+      return false;
+    }
+    final inside = Offset(
+      position.dx.clamp(0.5, size.width - 0.5),
+      position.dy,
+    );
+    final probe = BoxHitTestResult();
+    if (!super.hitTest(probe, position: inside) ||
+        !probe.path.any((entry) => entry.target is _RenderKitBleedMark)) {
+      return false;
+    }
+    return result.addWithRawTransform(
+      transform: MatrixUtils.forceToPoint(inside),
+      position: inside,
+      hitTest: (result, _) => super.hitTest(result, position: inside),
+    );
+  }
+}
+
+/// Marks a [KitBleed]'s list for [_KitReach].
+class _KitBleedMark extends SingleChildRenderObjectWidget {
+  const _KitBleedMark({required Widget super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderKitBleedMark();
+}
+
+class _RenderKitBleedMark extends RenderProxyBox {}
 
 /// The side padding a [KitBleed] hands its rows.
 class _KitBleedScope extends InheritedWidget {
@@ -502,6 +579,7 @@ Widget kitSpecimenStage({
   required Widget child,
 }) => MaterialApp(
   debugShowCheckedModeBanner: false,
+  theme: kitAppTheme,
   builder: (context, home) => MinimalHost(
     light: MinimalThemeData.preset(style, Brightness.light),
     dark: MinimalThemeData.preset(style, Brightness.dark),

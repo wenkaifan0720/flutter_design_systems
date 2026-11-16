@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
@@ -90,11 +91,10 @@ class MinimalIconButton extends StatelessWidget {
   /// This control's style, over `components.iconButton`.
   final MinimalStyle? style;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -181,5 +181,40 @@ class MinimalIconButton extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IconDataProperty('icon', icon))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        EnumProperty<MinimalIconButtonVariant>(
+          'variant',
+          variant,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<MinimalButtonSize>(
+          'size',
+          size,
+          defaultValue: MinimalButtonSize.medium,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }

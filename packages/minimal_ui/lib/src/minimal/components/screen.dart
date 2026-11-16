@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -285,6 +286,21 @@ class MinimalScaffold extends StatelessWidget {
     MinimalChromeMetrics.sheetPad,
     MinimalChromeMetrics.sheetPad,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('scroll', value: scroll, ifFalse: 'scroll: false'))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('fullBleed', value: fullBleed, ifTrue: 'fullBleed'));
+  }
 }
 
 /// A screen standing in a sheet card: the header, the body and the footer

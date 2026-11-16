@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
 
+import 'faces.dart';
+
 final MinimalThemeData _light = MinimalThemeData.preset(
   'standard',
   Brightness.light,
@@ -95,7 +97,7 @@ void main() {
       await tester.tap(find.text('5/7'));
       expect(taps, 1);
       final node = tester.getSemantics(find.bySemanticsLabel(RegExp('KEPT')));
-      expect(node.flagsCollection.isButton, isTrue);
+      expect(node.getSemanticsData().flagsCollection.isButton, isTrue);
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
       await tester.pump();
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
@@ -172,6 +174,7 @@ void main() {
       bool selected(String label) =>
           tester
               .getSemantics(find.bySemanticsLabel(label))
+              .getSemanticsData()
               .flagsCollection
               .isSelected ==
           Tristate.isTrue;
@@ -200,7 +203,7 @@ void main() {
       );
       expect(tester.takeException(), isNull);
       final node = tester.getSemantics(find.bySemanticsLabel('M: 0'));
-      expect(node.flagsCollection.isButton, isFalse);
+      expect(node.getSemanticsData().flagsCollection.isButton, isFalse);
       handle.dispose();
     });
 
@@ -346,14 +349,18 @@ void main() {
         ),
       );
       final button = tester.getSemantics(find.bySemanticsLabel('Todo'));
-      expect(button.flagsCollection.isButton, isTrue);
-      expect(button.flagsCollection.isChecked, CheckedState.isFalse);
+      expect(button.getSemanticsData().flagsCollection.isButton, isTrue);
+      expect(
+        button.getSemanticsData().flagsCollection.isChecked,
+        CheckedState.isFalse,
+      );
       await tester.tap(find.byType(MinimalStatusIcon).first);
       expect(taps, 1);
-      // 18 px paints, 44 px lands.
-      final box = tester.getRect(find.byType(MinimalStatusIcon).first);
+      // 18 px paints, 44 px lands: the glyph on its start keyline, its
+      // target reaching on past it.
+      final box = faceOf(tester, find.byType(MinimalStatusIcon).first);
       expect(box.width, MinimalIconSize.i18);
-      await tester.tapAt(box.centerLeft - const Offset(10, 0));
+      await tester.tapAt(box.centerRight + const Offset(10, 0));
       expect(taps, 2);
       expect(find.bySemanticsLabel('Meditate, done'), findsOneWidget);
       handle.dispose();
@@ -382,10 +389,16 @@ void main() {
         ),
       );
       final done = tester.getSemantics(find.bySemanticsLabel('Meditate'));
-      expect(done.flagsCollection.isButton, isTrue);
-      expect(done.flagsCollection.isChecked, CheckedState.isTrue);
+      expect(done.getSemanticsData().flagsCollection.isButton, isTrue);
+      expect(
+        done.getSemanticsData().flagsCollection.isChecked,
+        CheckedState.isTrue,
+      );
       final journal = tester.getSemantics(find.bySemanticsLabel('Journal'));
-      expect(journal.flagsCollection.isChecked, CheckedState.isTrue);
+      expect(
+        journal.getSemanticsData().flagsCollection.isChecked,
+        CheckedState.isTrue,
+      );
       handle.dispose();
     });
 
@@ -500,8 +513,8 @@ void main() {
       final node = tester.getSemantics(
         find.bySemanticsLabel(RegExp('MORNING')),
       );
-      expect(node.flagsCollection.isHeader, isTrue);
-      expect(node.flagsCollection.isButton, isFalse);
+      expect(node.getSemanticsData().flagsCollection.isHeader, isTrue);
+      expect(node.getSemanticsData().flagsCollection.isButton, isFalse);
       handle.dispose();
     });
 
@@ -524,13 +537,19 @@ void main() {
       );
       SemanticsNode node() =>
           tester.getSemantics(find.bySemanticsLabel(RegExp('EVENING')));
-      expect(node().flagsCollection.isButton, isTrue);
-      expect(node().flagsCollection.isHeader, isTrue);
-      expect(node().flagsCollection.isExpanded, Tristate.isTrue);
+      expect(node().getSemanticsData().flagsCollection.isButton, isTrue);
+      expect(node().getSemanticsData().flagsCollection.isHeader, isTrue);
+      expect(
+        node().getSemanticsData().flagsCollection.isExpanded,
+        Tristate.isTrue,
+      );
       await tester.tap(find.text('EVENING'));
       await tester.pumpAndSettle();
       expect(open, isFalse);
-      expect(node().flagsCollection.isExpanded, Tristate.isFalse);
+      expect(
+        node().getSemanticsData().flagsCollection.isExpanded,
+        Tristate.isFalse,
+      );
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
       await tester.pump();
       await tester.sendKeyEvent(LogicalKeyboardKey.space);
@@ -562,9 +581,9 @@ void main() {
         find.bySemanticsLabel(RegExp('EVENING')),
       );
       final add = tester.getSemantics(find.bySemanticsLabel('Add habit'));
-      expect(toggle.flagsCollection.isButton, isTrue);
-      expect(add.flagsCollection.isButton, isTrue);
-      expect(toggle.label, isNot(contains('Add habit')));
+      expect(toggle.getSemanticsData().flagsCollection.isButton, isTrue);
+      expect(add.getSemanticsData().flagsCollection.isButton, isTrue);
+      expect(toggle.getSemanticsData().label, isNot(contains('Add habit')));
       await tester.tap(find.bySemanticsLabel('Add habit'));
       expect(adds, 1);
       expect(toggles, 0);
@@ -688,7 +707,7 @@ void main() {
     testWidgets('a row too narrow for its figures stacks them, never '
         'shrinking one', (tester) async {
       // The strip's three cells cannot share 200 px: one under another.
-      await tester.pumpWidget(_host(SizedBox(width: 200, child: orders)));
+      await tester.pumpWidget(_host(const SizedBox(width: 200, child: orders)));
       final cells = find.byType(MinimalStat);
       final first = tester.getRect(cells.at(0));
       final second = tester.getRect(cells.at(1));
@@ -731,7 +750,7 @@ void main() {
               light: _light,
               dark: MinimalThemeData.preset('standard', Brightness.dark),
               brightness: brightness,
-              child: MinimalStatRow.joined(
+              child: const MinimalStatRow.joined(
                 children: [
                   MinimalStat(label: 'Open', value: '6', selected: true),
                   MinimalStat(label: 'Late', value: '4'),
@@ -812,6 +831,7 @@ void main() {
       bool selected(String label) =>
           tester
               .getSemantics(find.bySemanticsLabel(RegExp(label)))
+              .getSemanticsData()
               .flagsCollection
               .isSelected ==
           Tristate.isTrue;

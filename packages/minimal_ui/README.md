@@ -18,7 +18,7 @@ The parts carry the names Material gives them (`MinimalButton`, `MinimalTextFiel
 
 ```yaml
 dependencies:
-  minimal_ui: ^0.1.0
+  minimal_ui: ^0.2.0
 ```
 
 ## Set up
@@ -41,6 +41,8 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
+    // Minimal's push and pop for the app's own page routes (Page motion, below).
+    theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders: minimalPageTransitions)),
     builder: (context, child) => MinimalTheme(
       data: MinimalThemeData.preset('standard', MediaQuery.platformBrightnessOf(context)),
       child: MinimalToaster(child: child!),
@@ -57,6 +59,15 @@ A `CupertinoApp` or a `WidgetsApp` takes the same `builder:`; nothing in the pac
 `context.minimalTheme` (or `MinimalTheme.of(context)`) reads the theme, a nested `MinimalTheme` restyles a subtree,
 and `AnimatedMinimalTheme` eases between two. The package takes no router: its pages are plain widgets for any
 navigator.
+
+**Page motion.** A page pushed in Minimal fades in over 8 px, and a pop reverses it; a tab, rail or side-bar switch
+changes in place, and `MinimalFadeRoute` replaces a page with no travel. `minimalPageTransitions` maps that push to
+every platform. `MinimalTheme` sets it on the Material the package is built on (`material_ui`); a `MaterialPageRoute`
+from Flutter's own `package:flutter/material.dart` reads your app's `ThemeData` instead, so name the map there, as the
+setup above does, or the platform's slide or zoom flies the page in. The map's iOS entry wraps the push in ui_core's
+`DesignSwipeBackPageTransitionsBuilder`, so a swipe from a page's leading edge still takes it back, the page following
+the finger as on every iOS screen (for a map you build yourself, `designSwipeBack(map)` does the same). Android's back
+closes what is open over the page (a menu, a combobox's list, a popover, a sheet, a dialog) before it pops the page.
 
 ## Everyday parts
 
@@ -124,8 +135,10 @@ another system, and a part you add should follow them too.
   to the full ink (the words at medium weight, or a hairline turning to ink); the rest stay muted. No tinted pill,
   no glow.
 - **Colour.** The accent goes on the act to take and on a control's own value (a checked box, a switch that is on,
-  a picked day). The status tones go on what has that status. The one wash is the selection's, behind the row the
-  keyboard is on or the rows picked in a table. Nothing else is coloured.
+  a picked day). The status tones go on what has that status. The one wash is the selection's, behind the rows
+  picked in a table or a list and the command palette's row the keyboard is on. In an open list, the row under the
+  pointer or the keyboard takes the neutral muted fill, so a place never reads as a choice. Nothing else is
+  coloured.
 - **Depth.** Two layers: the page, and what floats over it while it is needed (a menu, a dialog, a sheet, a toast,
   a row held in a drag). Only a floating thing has a shadow, one soft one; nothing on the page casts any.
 - **Light.** None falls on it: no gradient, bevel, inner shadow or glow. A key cap is flat; a colour picker's
@@ -141,8 +154,8 @@ row; the current step of a run is an ink rim, not the accent.
 
 ## Make it yours
 
-`MinimalThemeData` is shaped like Material's `ThemeData`: `copyWith`, `lerp`, value equality. Start from a preset
-(`MinimalThemeData.standard()`, `.graphite()`, `.ember()`) or from your own colours, then turn the knobs:
+`MinimalThemeData` is shaped like Material's `ThemeData`: `copyWith`, `lerp` (`a.lerp(b, t)`), value equality. Start
+from a preset (`MinimalThemeData.standard()`, `.graphite()`, `.ember()`) or from your own colours, then turn the knobs:
 
 ```dart
 final theme = MinimalThemeData.from(
@@ -161,9 +174,17 @@ final theme = MinimalThemeData.from(
   role (chips, a switch's track, progress and slider tracks, count badges, page dots) take `shapes.pill`, so they
   square up at `MinimalShapes(radius: 0)`. A part inside another is its frame's outline moved in
   (`MinimalShapes.inset`). What is round by meaning stays round: a radio, a slider's thumb, an avatar, a step's marker.
-- `components` holds a style per part (`MinimalStyle`, with `ButtonStyle`'s slots as `WidgetStateProperty`s); the same
-  style also goes on one widget through its `style:` (a text field's box through `fieldStyle:`). A widget's style
-  beats its component theme, which beats the knobs, which beat the look; each part's doc lists the slots it reads.
+- `typeface` sets the sans and mono faces (`MinimalTypeface.app(sans:, mono:)` for your own), `shadowSm`, `shadowMd`
+  and `shadowLg` the three shadows of what floats, and `iconStroke` the icons' stroke, between 1.5 and 2 (a debug build
+  asserts it: past 2 the icons stop reading thin).
+- `components` holds a style for 23 kinds of part (`MinimalStyle`, with `ButtonStyle`'s slots as
+  `WidgetStateProperty`s): the four button variants, the icon button, the text field, the chip, the checks, the
+  slider, the segmented button, cards, list sections, dialogs, sheets, menus, toasts, the command palette, avatars,
+  badges, tooltips and banners. The same style also goes on one widget through its `style:` (a text field's box
+  through `fieldStyle:`). A widget's style beats its component theme, which beats the knobs, which beat the look; each
+  part's doc lists the slots it reads. The app bar, tabs, navigation, list rows and select take no style yet.
+- Two settings can draw what Minimal never does, so they are yours to keep in its terms: a `fill` for a selected chip
+  or segment is the tinted pill (Minimal says a choice in ink and weight), and a coloured or spread shadow is a glow.
 - A hovering pointer changes nothing by default. An app that wants a hover wash sets `overlay` for
   `WidgetState.hovered`.
 
@@ -192,30 +213,52 @@ ordinary app does not need it.
   chevrons and arrows flip, sliders and progress fill from the start side, tabs, carousels and swipe-to-dismiss follow
   the reading direction. Code stays left to right. Public parameters take `EdgeInsetsGeometry` and say start and end,
   never left and right. The example gallery's Customize panel has a Direction control (`?dir=rtl` in its address).
-- **Large text.** Parts follow the platform's text scale up to 130%: `MinimalHost` clamps larger settings at
-  `MinimalChromeMetrics.maxTextScale` (1.3), the largest a 44 px row was drawn to hold. This is the main known limit:
-  a person who sets 200% sees 130%. Up to the clamp, controls grow taller rather than cut words, and long labels wrap
-  or end in an ellipsis. The gallery's Customize panel shows every page at 115% and 130% (`?text=1.3`).
+- **Large text.** Parts follow the platform's text scale up to 200%: `MinimalHost` clamps larger settings at
+  `MinimalChromeMetrics.maxTextScale` (2.0). Up to it, rows and controls grow taller rather than cut words, and long
+  labels wrap or end in an ellipsis. The gallery's Customize panel shows every page at 130%, 160% and 200%
+  (`?text=2`).
 - **Other scripts.** Geist covers Latin. Arabic, Hebrew, Chinese, Japanese, Hindi, Thai and the rest are
   drawn by the platform's fallback fonts (on the web, Flutter fetches Noto). Line heights are set for Latin; tall
   scripts are not yet checked in every part.
-- **Built-in words.** The words a part says on its own that every look shares (Back, Close, Cancel, OK, Search,
-  Clear, Today, Next month, Loading, "Slide 2 of 5", a screen reader's names for a carousel, a menu bar or a split
-  view's handle) come from `DesignLocalizations`, exported with the package. English ships. For another language,
-  extend `DefaultDesignLocalizations`, override the words you translate, and add a
-  `LocalizationsDelegate<DesignLocalizations>` that loads it to your app's `localizationsDelegates`. Words only Minimal
-  says (Try again, Copy, "Step 2 of 4", the composer's buttons, short month names) stay English in 0.1.0.
+- **Built-in words.** English is the default, with nothing to set up. The words a part says on its own that every
+  look shares (Back, Close, Cancel, OK, Search, Clear, Today, Next month, Loading, "Slide 2 of 5", a screen reader's
+  names for a carousel, a menu bar or a split view's handle) come from `DesignLocalizations`, exported with the
+  package, in 30 languages (`DesignLocalizations.supportedLocales`). Opt in with its delegate beside Flutter's, from
+  `flutter_localizations` (add `flutter_localizations: sdk: flutter` to your pubspec):
+
+  ```dart
+  import 'package:flutter_localizations/flutter_localizations.dart';
+
+  MaterialApp(
+    localizationsDelegates: const [
+      DesignLocalizations.delegate,
+      ...GlobalMaterialLocalizations.delegates,
+    ],
+    supportedLocales: DesignLocalizations.supportedLocales,
+    // ...
+  )
+  ```
+
+  A text field's menu (Copy, Paste) speaks Material's and Cupertino's own translations, which Minimal loads itself; a
+  language they don't speak gets English. Words only Minimal says (the composer's buttons, "Step 2 of 4", task
+  statuses and priorities) are English until you give your own: extend `MinimalLocalizationsEn`, override the words
+  you translate, and add `MinimalLocalizations.delegateOf(yourWords)` to `localizationsDelegates`. For a language of
+  your own for the shared words, extend `DefaultDesignLocalizations` the same way.
 - **Dates and numbers.** The month and year over a calendar, a day's full name and the first day of the week come
   from `DesignLocalizations`, and the time pickers take `use24HourFormat`. Numbers and money print as you pass them;
   the parts do no locale formatting of their own.
 - **Screen readers and keyboard.** Every control announces its role, label, value and state (checked, selected,
-  expanded, disabled); decorative paint is excluded. Everything works by keyboard, with a visible ring, and focus
-  follows reading order in both directions. Interactive parts take an optional `focusNode` and `autofocus`. Touch
-  targets are at least 44 px, text meets 4.5:1 contrast, and with reduced motion
+  expanded, disabled); decorative paint is excluded. Everything works by keyboard, with a visible ring (in an open
+  list, the muted fill on the row the keyboard is on), and focus follows reading order in both directions. A menu
+  takes a menu button's keys: Enter, Space or Down opens it on the chosen item, the arrows, Home, End and a letter
+  move through it, and Enter or Escape hands the keys back to the control. Interactive parts take an optional `focusNode` and `autofocus`. Every
+  control's tap target is at least 44 × 44 under a finger and 24 × 24 under a pointer (ui_core's `DesignTapTarget`;
+  `MinimalTheme` declares the floors with `DesignTapTargetScope`): the compact faces keep their size and the target
+  grows round them, whatever the density. Text meets 4.5:1 contrast, and with reduced motion
   (`MediaQuery.disableAnimations`) every change switches at once.
 - **Labels as strings.** Some parts take a `String` label or an `IconData` where Flutter would take a widget
-  (`MinimalButton`'s label, `MinimalListTile`'s title, `MinimalChip`'s label). They stay in 0.1.0; 0.2.0 adds an
-  optional widget slot beside each, so nothing that compiles today breaks.
+  (`MinimalButton`'s label, `MinimalListTile`'s title, `MinimalChip`'s label). A widget slot beside each, when one
+  comes, will be optional, so nothing that compiles today breaks.
 
 ## Fonts and icons
 

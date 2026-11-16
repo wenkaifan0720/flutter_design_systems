@@ -10,6 +10,8 @@
 // - in the state matrix every pressed, disabled and error cell differs from idle pixel for pixel at idle's size (an
 //   error may add its message below), a part with a chosen face pressed on its chosen item as well as off;
 // - labels in a row of controls share one centre line.
+import 'dart:async';
+
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -253,8 +255,8 @@ final Map<String, _Framed> _framed = {
     highlight: true,
   ),
   'MinimalButtonGroup': _f(
-    () => MinimalButtonGroup(
-      items: const [
+    () => const MinimalButtonGroup(
+      items: [
         MinimalButtonGroupItem(label: 'Day', onPressed: _tap),
         MinimalButtonGroupItem(label: 'Week', onPressed: _tap),
       ],
@@ -868,18 +870,22 @@ void main() {
       await check('tooltip');
       showMinimalSnackBar(at, 'Saved');
       await check('toast');
-      showMinimalBottomSheet<void>(
-        at,
-        title: 'Sheet',
-        builder: (_) => const Text('Body'),
+      unawaited(
+        showMinimalBottomSheet<void>(
+          at,
+          title: 'Sheet',
+          builder: (_) => const Text('Body'),
+        ),
       );
       await check('sheet');
       Navigator.of(at).pop();
       await tester.pumpAndSettle();
-      showMinimalActionSheet(
-        at,
-        title: 'Photo',
-        actions: [MinimalActionSheetAction('Share', onPressed: () {})],
+      unawaited(
+        showMinimalActionSheet(
+          at,
+          title: 'Photo',
+          actions: [MinimalActionSheetAction('Share', onPressed: () {})],
+        ),
       );
       await check('action sheet');
       // The toast and the tooltip time out.

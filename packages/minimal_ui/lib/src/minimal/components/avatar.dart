@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
@@ -182,6 +183,25 @@ class MinimalAvatar extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(DoubleProperty('size', size, defaultValue: 28))
+      ..add(
+        DiagnosticsProperty<MinimalPlaceholderImage>(
+          'image',
+          image,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('media', media, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// An overlapping row of avatars with a `+N` overflow disc — the members of
@@ -309,4 +329,13 @@ class MinimalAvatarGroup extends StatelessWidget {
     decoration: BoxDecoration(color: ground, shape: BoxShape.circle),
     child: child,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('names', names))
+      ..add(DoubleProperty('size', size, defaultValue: 24))
+      ..add(IntProperty('max', max, defaultValue: 4));
+  }
 }

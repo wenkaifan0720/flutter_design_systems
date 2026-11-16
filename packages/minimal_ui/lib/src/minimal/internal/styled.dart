@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../shapes.dart';
@@ -21,53 +22,19 @@ Set<WidgetState> minimalStates({
 };
 
 /// One part's style layers (its own `style:` first, then its component
-/// theme) read for one set of states. Every getter is null where no layer
-/// says, and the part goes on to the knob and its own default.
-@immutable
-class MinimalStyleOf {
-  /// The value of each property across [layers] in [states].
-  const MinimalStyleOf(this.layers, this.states);
+/// theme) read for one set of states: ui_core's [DesignStyleOf]. Every
+/// getter is null where no layer says, and the part goes on to the knob and
+/// its own default.
+typedef MinimalStyleOf = DesignStyleOf;
 
-  /// The layers, the strongest first.
-  final List<MinimalStyle?> layers;
+/// What Minimal's parts read from their layers beyond ui_core's getters.
+extension MinimalStyleReading on DesignStyleOf {
+  /// The first layer's state wash in these states.
+  Color? get wash => DesignStyle.first(layers, (s) => s.overlay, states);
 
-  /// The part's states.
-  final Set<WidgetState> states;
-
-  /// The first layer's fill in these states.
-  Color? get fill => MinimalStyle.first(layers, (s) => s.fill, states);
-
-  /// The first layer's ink.
-  Color? get foreground =>
-      MinimalStyle.first(layers, (s) => s.foreground, states);
-
-  /// The first layer's edge colour.
-  Color? get edge => MinimalStyle.first(layers, (s) => s.edge, states);
-
-  /// The first layer's state wash.
-  Color? get overlay => MinimalStyle.first(layers, (s) => s.overlay, states);
-
-  /// The first layer's whole border side.
-  BorderSide? get side => MinimalStyle.first(layers, (s) => s.side, states);
-
-  /// The first layer's outline.
-  OutlinedBorder? get shape =>
-      MinimalStyle.first(layers, (s) => s.shape, states);
-
-  /// The first layer's padding.
-  EdgeInsetsGeometry? get padding =>
-      MinimalStyle.first(layers, (s) => s.padding, states);
-
-  /// The first layer's least size.
-  Size? get minimumSize =>
-      MinimalStyle.first(layers, (s) => s.minimumSize, states);
-
-  /// The first layer's text style.
-  TextStyle? get textStyle =>
-      MinimalStyle.first(layers, (s) => s.textStyle, states);
-
-  /// The first layer's glyph size.
-  double? get iconSize => MinimalStyle.first(layers, (s) => s.iconSize, states);
+  /// The first layer's padding, for [context]'s direction.
+  EdgeInsets? paddingIn(BuildContext context) =>
+      padding(Directionality.of(context));
 
   /// The rim: a [side] wins; else an [edge] (or the part's [own] colour) at
   /// [width]; none when neither says a colour.
@@ -90,14 +57,14 @@ class MinimalStyleOf {
   /// The wash and the outline of every layer as one style, each state
   /// falling through the layers as the part's own slots do: what its
   /// `MinimalPressable` reads. Null when no layer is set.
-  MinimalStyle? get press {
+  DesignStyle? get press {
     if (layers.every((l) => l == null)) return null;
-    return MinimalStyle(
+    return DesignStyle(
       overlay: WidgetStateProperty.resolveWith(
-        (s) => MinimalStyle.first(layers, (l) => l.overlay, s),
+        (s) => DesignStyle.first(layers, (l) => l.overlay, s),
       ),
       shape: WidgetStateProperty.resolveWith(
-        (s) => MinimalStyle.first(layers, (l) => l.shape, s),
+        (s) => DesignStyle.first(layers, (l) => l.shape, s),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
@@ -84,7 +85,9 @@ class MinimalDialog extends StatelessWidget {
   /// This card's style, over `components.dialog`.
   final MinimalStyle? style;
 
-  /// The card's widest measure; narrower screens keep a gutter each side.
+  /// The card's widest measure from [MinimalLayout.compact] up; on a phone
+  /// it runs from the page's gutter to the gutter, as a floating surface
+  /// starts on the page's margin.
   static const double maxWidth = 340;
 
   @override
@@ -104,10 +107,10 @@ class MinimalDialog extends StatelessWidget {
         : callback;
     final confirm = answer(onConfirm, true);
     final cancel = answer(onCancel, false);
-    final width = math.min(
-      maxWidth,
-      MediaQuery.sizeOf(context).width - 2 * MinimalChromeMetrics.gutter,
-    );
+    final screen = MediaQuery.sizeOf(context).width;
+    final width = screen < MinimalLayout.compact
+        ? screen - 2 * MinimalChromeMetrics.gutter
+        : math.min(maxWidth, screen - 2 * MinimalChromeMetrics.gutter);
 
     // The dialog floats over the scrim like a sheet card, so it takes the
     // theme's sheet corner.
@@ -117,7 +120,7 @@ class MinimalDialog extends StatelessWidget {
     // What stands inside the rim: the shape drawn the rim's width in.
     final within = MinimalShapes.inset(shape, rim.width);
     final rounded = within is RoundedRectangleBorder;
-    final pad = (so.padding ?? MinimalInsets.all16).resolve(
+    final pad = (so.paddingIn(context) ?? MinimalInsets.all16).resolve(
       Directionality.of(context),
     );
     final Widget body = Column(
@@ -209,6 +212,9 @@ class MinimalDialog extends StatelessWidget {
       label: raised ? title : null,
       child: Focus(
         autofocus: autofocus,
+        // Focus rests on the card for Enter's sake, but Tab passes it: a
+        // stop there would show nothing.
+        skipTraversal: true,
         onKeyEvent: (node, event) {
           final enter =
               event.logicalKey == LogicalKeyboardKey.enter ||
@@ -222,6 +228,28 @@ class MinimalDialog extends StatelessWidget {
         child: card,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(StringProperty('confirmLabel', confirmLabel, defaultValue: null))
+      ..add(StringProperty('cancelLabel', cancelLabel, defaultValue: null))
+      ..add(
+        FlagProperty('destructive', value: destructive, ifTrue: 'destructive'),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onConfirm', onConfirm))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onCancel', onCancel))
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<bool>('elevated', elevated, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
   }
 }
 

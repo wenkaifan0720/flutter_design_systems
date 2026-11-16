@@ -14,6 +14,7 @@ import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../kit.dart';
+import '../kit_words.dart';
 
 Widget kitScreenIssuesDemo(Brightness brightness) => kitSurface(
   brightness: brightness,
@@ -27,24 +28,28 @@ Widget kitScreenIssuesDemo(Brightness brightness) => kitSurface(
   ),
 );
 
-const List<MinimalNavItem> _tabs = [
-  MinimalNavItem(LucideIcons.inbox, 'Inbox'),
-  MinimalNavItem(LucideIcons.circleUser, 'My issues'),
-  MinimalNavItem(LucideIcons.folderKanban, 'Projects'),
-  MinimalNavItem(LucideIcons.layers, 'Views'),
+List<MinimalNavItem> get _tabs => [
+  MinimalNavItem(LucideIcons.inbox, ar('Inbox', 'الوارد')),
+  MinimalNavItem(LucideIcons.circleUser, ar('My issues', 'مهامي')),
+  MinimalNavItem(LucideIcons.folderKanban, ar('Projects', 'المشاريع')),
+  MinimalNavItem(LucideIcons.layers, ar('Views', 'العروض')),
 ];
 
 /// What kind of work an issue is; null prints no tag.
 enum _Label {
-  bug('Bug', MinimalTone.destructive),
-  feature('Feature', MinimalTone.primary),
-  design('Design', MinimalTone.neutral),
-  chore('Chore', MinimalTone.neutral);
+  bug('Bug', 'خلل', MinimalTone.destructive),
+  feature('Feature', 'ميزة', MinimalTone.primary),
+  design('Design', 'تصميم', MinimalTone.neutral),
+  chore('Chore', 'صيانة', MinimalTone.neutral);
 
-  const _Label(this.text, this.tone);
+  const _Label(this.english, this.arabic, this.tone);
 
-  final String text;
+  final String english;
+  final String arabic;
   final MinimalTone tone;
+
+  /// The kind's name in the gallery's language.
+  String get text => ar(english, arabic);
 }
 
 typedef _Issue = ({
@@ -73,7 +78,7 @@ _Issue _issue(
 );
 
 /// The one looking at the list.
-const String _me = 'Mira Holt';
+String get _me => ar('Mira Holt', 'ليلى حداد');
 
 /// The statuses a list groups by, in the order it shows them.
 const List<MinimalTaskStatus> _groups = [
@@ -83,11 +88,11 @@ const List<MinimalTaskStatus> _groups = [
 ];
 
 /// The issues of each view: assigned to me, created by me, subscribed to.
-final List<List<_Issue>> _views = [
+List<List<_Issue>> get _views => [
   [
     _issue(
       'ENG-142',
-      'Promo codes ignored',
+      ar('Promo codes ignored', 'رموز الخصم مُتجاهَلة'),
       MinimalTaskStatus.active,
       MinimalPriority.urgent,
       _me,
@@ -95,7 +100,7 @@ final List<List<_Issue>> _views = [
     ),
     _issue(
       'ENG-138',
-      'Offline order queue',
+      ar('Offline order queue', 'طابور الطلبات دون اتصال'),
       MinimalTaskStatus.active,
       MinimalPriority.high,
       _me,
@@ -103,14 +108,14 @@ final List<List<_Issue>> _views = [
     ),
     _issue(
       'ENG-151',
-      'Receipts cut off long lines',
+      ar('Receipts cut off long lines', 'الإيصالات تقطع الأسطر الطويلة'),
       MinimalTaskStatus.active,
       MinimalPriority.medium,
       _me,
     ),
     _issue(
       'ENG-157',
-      'Split bills by card',
+      ar('Split bills by card', 'تقسيم الفاتورة على البطاقات'),
       MinimalTaskStatus.todo,
       MinimalPriority.high,
       _me,
@@ -118,7 +123,7 @@ final List<List<_Issue>> _views = [
     ),
     _issue(
       'ENG-149',
-      'Tax rounding off',
+      ar('Tax rounding off', 'تقريب الضريبة خاطئ'),
       MinimalTaskStatus.todo,
       MinimalPriority.medium,
       _me,
@@ -126,7 +131,7 @@ final List<List<_Issue>> _views = [
     ),
     _issue(
       'ENG-133',
-      'Migrate settings',
+      ar('Migrate settings', 'نقل الإعدادات'),
       MinimalTaskStatus.todo,
       MinimalPriority.medium,
       _me,
@@ -134,14 +139,14 @@ final List<List<_Issue>> _views = [
     ),
     _issue(
       'ENG-160',
-      'Double tap bumps a ticket',
+      ar('Double tap bumps a ticket', 'النقر المزدوج يرفع التذكرة'),
       MinimalTaskStatus.todo,
       MinimalPriority.low,
       _me,
     ),
     _issue(
       'ENG-162',
-      'Empty reports state',
+      ar('Empty reports state', 'حالة التقارير الفارغة'),
       MinimalTaskStatus.todo,
       MinimalPriority.low,
       _me,
@@ -149,7 +154,7 @@ final List<List<_Issue>> _views = [
     ),
     _issue(
       'ENG-121',
-      'Dark order ticket',
+      ar('Dark order ticket', 'تذكرة الطلب الداكنة'),
       MinimalTaskStatus.backlog,
       MinimalPriority.low,
       _me,
@@ -157,7 +162,7 @@ final List<List<_Issue>> _views = [
     ),
     _issue(
       'ENG-117',
-      'CSV customer export',
+      ar('CSV customer export', 'تصدير العملاء بصيغة CSV'),
       MinimalTaskStatus.backlog,
       MinimalPriority.none,
       _me,
@@ -165,14 +170,14 @@ final List<List<_Issue>> _views = [
     ),
     _issue(
       'ENG-109',
-      'Loyalty stamps on receipts',
+      ar('Loyalty stamps on receipts', 'أختام الولاء على الإيصالات'),
       MinimalTaskStatus.backlog,
       MinimalPriority.none,
       _me,
     ),
     _issue(
       'ENG-104',
-      'Faster order search',
+      ar('Faster order search', 'بحث أسرع في الطلبات'),
       MinimalTaskStatus.backlog,
       MinimalPriority.low,
       _me,
@@ -182,75 +187,75 @@ final List<List<_Issue>> _views = [
   [
     _issue(
       'ENG-155',
-      'Refunds lose the tip line',
+      ar('Refunds lose the tip line', 'المبالغ المستردة تُسقط سطر البقشيش'),
       MinimalTaskStatus.active,
       MinimalPriority.high,
-      'Oskar Lind',
+      ar('Oskar Lind', 'عمر الخطيب'),
       _Label.bug,
     ),
     _issue(
       'ENG-158',
-      'Reader pairing fails',
+      ar('Reader pairing fails', 'إقران قارئ البطاقات يفشل'),
       MinimalTaskStatus.todo,
       MinimalPriority.urgent,
-      'Ines Duarte',
+      ar('Ines Duarte', 'هالة منصور'),
       _Label.bug,
     ),
     _issue(
       'ENG-161',
-      'Weekend pre-orders',
+      ar('Weekend pre-orders', 'طلبات مسبقة لعطلة الأسبوع'),
       MinimalTaskStatus.todo,
       MinimalPriority.medium,
-      'Tom Alves',
+      ar('Tom Alves', 'طارق عيسى'),
       _Label.feature,
     ),
     _issue(
       'ENG-127',
-      'Staff roles and PINs',
+      ar('Staff roles and PINs', 'أدوار الموظفين ورموزهم'),
       MinimalTaskStatus.backlog,
       MinimalPriority.low,
-      'Hanna Berg',
+      ar('Hanna Berg', 'هند البرغوثي'),
       _Label.feature,
     ),
     _issue(
       'ENG-119',
-      'Print labels for trays',
+      ar('Print labels for trays', 'طباعة ملصقات للصواني'),
       MinimalTaskStatus.backlog,
       MinimalPriority.none,
-      'Liv Sande',
+      ar('Liv Sande', 'لينا سعادة'),
     ),
   ],
   [
     _issue(
       'ENG-144',
-      'Sync stalls on wifi',
+      ar('Sync stalls on wifi', 'المزامنة تتعطل على الواي فاي'),
       MinimalTaskStatus.active,
       MinimalPriority.urgent,
-      'Tom Alves',
+      ar('Tom Alves', 'طارق عيسى'),
       _Label.bug,
     ),
     _issue(
       'ENG-146',
-      'New receipt layout',
+      ar('New receipt layout', 'تخطيط جديد للإيصال'),
       MinimalTaskStatus.active,
       MinimalPriority.medium,
-      'Liv Sande',
+      ar('Liv Sande', 'لينا سعادة'),
       _Label.design,
     ),
     _issue(
       'ENG-153',
-      'Hourly sales chart',
+      ar('Hourly sales chart', 'مخطط المبيعات بالساعة'),
       MinimalTaskStatus.todo,
       MinimalPriority.medium,
-      'Oskar Lind',
+      ar('Oskar Lind', 'عمر الخطيب'),
       _Label.feature,
     ),
     _issue(
       'ENG-112',
-      'Retire old price list',
+      ar('Retire old price list', 'إلغاء قائمة الأسعار القديمة'),
       MinimalTaskStatus.backlog,
       MinimalPriority.low,
-      'Hanna Berg',
+      ar('Hanna Berg', 'هند البرغوثي'),
       _Label.chore,
     ),
   ],
@@ -271,68 +276,92 @@ String kitIssueTitle(String id) => _byId(id)?.title ?? id;
 
 /// What an issue says, past its title: the ones the Tracker opens on and
 /// its Inbox points at.
-const Map<String, String> _descriptions = {
-  'ENG-142':
-      'A promo code typed at the till is accepted, then the total ignores '
-      'it. Seen on the Lund till twice this week; the receipt prints the '
-      'full price.',
-  'ENG-157':
-      'Let a table pay in parts: pick the items each card pays for, or '
-      'split the total evenly. The reader takes one card at a time.',
-  'ENG-138':
-      'When the wifi drops, orders wait in a queue on the till and go out '
-      'in order once it is back, with a count on the status bar.',
-  'ENG-149':
-      'Line totals round before tax, the order total after: a basket of '
-      'nine buns comes out a cent off.',
-  'ENG-121':
-      'The order ticket in the dark appearance: the stage colours read too '
-      'loud on the black.',
-  'ENG-151':
-      'A long product name runs off the receipt\'s right edge instead of '
-      'wrapping.',
+Map<String, String> get _descriptions => {
+  'ENG-142': ar(
+    'A promo code typed at the till is accepted, then the total ignores '
+        'it. Seen on the Lund till twice this week; the receipt prints the '
+        'full price.',
+    'يُقبل رمز الخصم المكتوب عند الصندوق، ثم يتجاهله المجموع. رأيناه في '
+        'صندوق لوند مرتين هذا الأسبوع؛ والإيصال يطبع السعر كاملًا.',
+  ),
+  'ENG-157': ar(
+    'Let a table pay in parts: pick the items each card pays for, or '
+        'split the total evenly. The reader takes one card at a time.',
+    'دع الطاولة تدفع على أجزاء: اختر ما تدفعه كل بطاقة، أو قسّم المجموع '
+        'بالتساوي. يقرأ الجهاز بطاقة واحدة في كل مرة.',
+  ),
+  'ENG-138': ar(
+    'When the wifi drops, orders wait in a queue on the till and go out '
+        'in order once it is back, with a count on the status bar.',
+    'حين ينقطع الواي فاي تنتظر الطلبات في طابور على الصندوق، وتُرسل '
+        'بالترتيب حين يعود، مع عدّاد في شريط الحالة.',
+  ),
+  'ENG-149': ar(
+    'Line totals round before tax, the order total after: a basket of '
+        'nine buns comes out a cent off.',
+    'تُقرَّب مجاميع البنود قبل الضريبة ومجموع الطلب بعدها: فتخرج سلة من '
+        'تسع كعكات بفارق سنت.',
+  ),
+  'ENG-121': ar(
+    'The order ticket in the dark appearance: the stage colours read too '
+        'loud on the black.',
+    'تذكرة الطلب في المظهر الداكن: ألوان المراحل صارخة أكثر من اللازم '
+        'على الأسود.',
+  ),
+  'ENG-151': ar(
+    'A long product name runs off the receipt\'s right edge instead of '
+        'wrapping.',
+    'اسم المنتج الطويل يتجاوز حافة الإيصال بدل أن يلتف إلى سطر جديد.',
+  ),
 };
 
 /// What happened to an issue, newest first: when, who, what.
 typedef _Event = ({DateTime at, String who, String what});
 
 /// The issues' trails past their creation: what the Tracker's Inbox lists.
-final Map<String, List<_Event>> _events = {
+Map<String, List<_Event>> get _events => {
   'ENG-157': [
     (
       at: DateTime(2026, 8, 28, 9, 39),
-      who: 'Oskar Lind',
-      what: 'assigned it to you',
+      who: ar('Oskar Lind', 'عمر الخطيب'),
+      what: ar('assigned it to you', 'أسندها إليك'),
     ),
   ],
   'ENG-142': [
     (
       at: DateTime(2026, 8, 28, 9, 6),
-      who: 'Ines Duarte',
-      what: 'commented: "Seen it twice on the Lund till"',
+      who: ar('Ines Duarte', 'هالة منصور'),
+      what: ar(
+        'commented: “Seen it twice on the Lund till”',
+        'علّقت: «رأيتها مرتين على صندوق لوند»',
+      ),
     ),
     (
       at: DateTime(2026, 8, 27, 16, 20),
-      who: 'Mira Holt',
-      what: 'moved it to In progress',
+      who: ar('Mira Holt', 'ليلى حداد'),
+      what: ar('moved it to In progress', 'نقلها إلى «قيد التنفيذ»'),
     ),
   ],
   'ENG-138': [
     (
       at: DateTime(2026, 8, 28, 7, 48),
-      who: 'Tom Alves',
-      what: 'moved it to In progress',
+      who: ar('Tom Alves', 'طارق عيسى'),
+      what: ar('moved it to In progress', 'نقلها إلى «قيد التنفيذ»'),
     ),
   ],
   'ENG-149': [
     (
       at: DateTime(2026, 8, 28, 6, 48),
-      who: 'Hanna Berg',
-      what: 'raised the priority to Medium',
+      who: ar('Hanna Berg', 'هند البرغوثي'),
+      what: ar('raised the priority to Medium', 'رفعت الأولوية إلى «متوسطة»'),
     ),
   ],
   'ENG-121': [
-    (at: DateTime(2026, 8, 27, 15, 2), who: 'Liv Sande', what: 'mentioned you'),
+    (
+      at: DateTime(2026, 8, 27, 15, 2),
+      who: ar('Liv Sande', 'لينا سعادة'),
+      what: ar('mentioned you', 'أشارت إليك'),
+    ),
   ],
 };
 
@@ -363,30 +392,32 @@ class KitIssuePage extends StatelessWidget {
             properties: [
               MinimalProperty(
                 icon: LucideIcons.circleDot,
-                label: 'Status',
-                value: issue.status.label,
+                label: ar('Status', 'الحالة'),
+                value: issue.status.labelIn(context),
               ),
               MinimalProperty(
                 icon: LucideIcons.signal,
-                label: 'Priority',
-                value: issue.priority.label,
+                label: ar('Priority', 'الأولوية'),
+                value: issue.priority.labelIn(context),
               ),
               MinimalProperty(
                 icon: LucideIcons.circleUser,
-                label: 'Assignee',
-                value: issue.assignee == _me ? 'You' : issue.assignee,
+                label: ar('Assignee', 'المسؤول'),
+                value: issue.assignee == _me
+                    ? ar('You', 'أنت')
+                    : issue.assignee,
               ),
               MinimalProperty(
                 icon: LucideIcons.tag,
-                label: 'Label',
+                label: ar('Label', 'التصنيف'),
                 value: label?.text,
                 tone: label?.tone,
-                placeholder: 'None',
+                placeholder: ar('None', 'لا شيء'),
               ),
             ],
           ),
-          const MinimalSectionHeader(
-            'Description',
+          MinimalSectionHeader(
+            ar('Description', 'الوصف'),
             padding: EdgeInsets.fromLTRB(
               0,
               MinimalSpacing.s24,
@@ -395,11 +426,11 @@ class KitIssuePage extends StatelessWidget {
             ),
           ),
           Text(
-            description ?? 'No description yet.',
+            description ?? ar('No description yet.', 'لا وصف بعد.'),
             style: description == null ? t.body.c(t.mutedForeground) : t.body,
           ),
-          const MinimalSectionHeader(
-            'Activity',
+          MinimalSectionHeader(
+            ar('Activity', 'النشاط'),
             padding: EdgeInsets.fromLTRB(
               0,
               MinimalSpacing.s24,
@@ -418,7 +449,7 @@ class KitIssuePage extends StatelessWidget {
               MinimalActivity(
                 at: DateTime(2026, 8, 20, 11, 15),
                 actor: issue.assignee,
-                text: 'created the issue',
+                text: ar('created the issue', 'أنشأت المهمة'),
               ),
             ],
           ),
@@ -467,22 +498,22 @@ class _KitIssuesPageState extends State<KitIssuesPage> {
     return MinimalScaffold(
       topBar: MinimalAppBar(
         leading: widget.leading,
-        title: 'My issues',
+        title: ar('My issues', 'مهامي'),
         actions: [
           MinimalMenu.button(
             LucideIcons.listFilter,
             // A filter in force shows in the bar: the pill names it.
-            text: priority?.label,
-            label: 'Filter by priority',
+            text: priority?.labelIn(context),
+            label: ar('Filter by priority', 'التصفية حسب الأولوية'),
             items: [
               MinimalMenuItem(
-                'Any priority',
+                ar('Any priority', 'أي أولوية'),
                 selected: priority == null,
                 onPressed: () => setState(() => _priority = null),
               ),
               for (final (i, p) in MinimalPriority.values.indexed)
                 MinimalMenuItem(
-                  p.label,
+                  p.labelIn(context),
                   selected: p == priority,
                   startsGroup: i == 0,
                   onPressed: () => setState(() => _priority = p),
@@ -502,25 +533,37 @@ class _KitIssuesPageState extends State<KitIssuesPage> {
               vertical: MinimalSpacing.s12,
             ),
             // A phone's switch spans the width; a wider list's keeps to its
-            // words at the start.
+            // words at the start. From 160% text it keeps its words whole
+            // and scrolls sideways when they outrun the width.
             child: LayoutBuilder(
-              builder: (context, box) => Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: MinimalSegmentedButton(
-                  expand: box.maxWidth < _naturalFrom,
-                  segments: const [
-                    MinimalButtonSegment(0, 'Assigned'),
-                    MinimalButtonSegment(1, 'Created'),
-                    MinimalButtonSegment(2, 'Subscribed'),
+              builder: (context, box) {
+                final big =
+                    MediaQuery.textScalerOf(context).scale(10) / 10 >=
+                    MinimalChromeMetrics.rowStackScale;
+                final views = MinimalSegmentedButton(
+                  expand: !big && box.maxWidth < _naturalFrom,
+                  segments: [
+                    MinimalButtonSegment(0, ar('Assigned', 'المسندة')),
+                    MinimalButtonSegment(1, ar('Created', 'المنشأة')),
+                    MinimalButtonSegment(2, ar('Subscribed', 'المتابَعة')),
                   ],
                   value: _view,
-                  label: 'Issues',
+                  label: ar('Issues', 'المهام'),
                   onChanged: (i) => setState(() {
                     _view = i;
                     _selected = null;
                   }),
-                ),
-              ),
+                );
+                return Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: big
+                      ? SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: views,
+                        )
+                      : views,
+                );
+              },
             ),
           ),
           if (issues.isEmpty)
@@ -529,10 +572,17 @@ class _KitIssuesPageState extends State<KitIssuesPage> {
               child: MinimalEmptyState(
                 icon: LucideIcons.listFilter,
                 title: priority == MinimalPriority.none
-                    ? 'Every issue has a priority'
-                    : 'No ${priority?.label.toLowerCase()}-priority issues',
-                body: 'Nothing in this view matches the filter.',
-                actionLabel: 'Clear filter',
+                    ? ar('Every issue has a priority', 'لكل مهمة أولوية')
+                    : ar(
+                        'No ${priority?.label.toLowerCase()}-priority issues',
+                        'لا مهام بأولوية '
+                            '${priority?.labelIn(context) ?? ''}',
+                      ),
+                body: ar(
+                  'Nothing in this view matches the filter.',
+                  'لا شيء في هذا العرض يطابق التصفية.',
+                ),
+                actionLabel: ar('Clear filter', 'مسح التصفية'),
                 onAction: () => setState(() => _priority = null),
               ),
             ),
@@ -540,7 +590,7 @@ class _KitIssuesPageState extends State<KitIssuesPage> {
             if (issues.where((i) => i.status == status).toList()
                 case final group when group.isNotEmpty) ...[
               MinimalSectionHeader(
-                status.label,
+                status.labelIn(context),
                 leading: MinimalStatusIcon(status, size: MinimalIconSize.i14),
                 count: '${group.length}',
                 expanded: !_folded.contains(status),
@@ -598,10 +648,18 @@ class _IssueRow extends StatelessWidget {
     final t = context.minimalTheme;
     final label = issue.label;
     final face = issue.assignee != _me;
-    final stacked =
-        MediaQuery.textScalerOf(context).scale(10) / 10 > _stackAbove ||
-        (face && width < _oneTrailingUnder);
+    final scale = MediaQuery.textScalerOf(context).scale(10) / 10;
+    final stacked = scale > _stackAbove || (face && width < _oneTrailingUnder);
+    // From 160% text the id leaves the lead for the line under the title,
+    // which keeps the title's words rather than a wide mono column.
+    final idUnder = scale >= MinimalChromeMetrics.rowStackScale;
+    final id = Text(
+      issue.id,
+      style: t.mono.c(t.mutedForeground),
+      textDirection: TextDirection.ltr,
+    );
     final tag = label == null ? null : MinimalTag(label.text, dot: label.tone);
+    final under = [if (idUnder) id, if (stacked && tag != null) tag];
     final trailing = <Widget>[
       if (tag != null && !stacked) tag,
       // A face says whose issue it is: on my own there is nothing to say.
@@ -614,16 +672,23 @@ class _IssueRow extends StatelessWidget {
       title: issue.title,
       selected: selected ? true : null,
       onTap: onTap,
-      below: stacked && tag != null
-          ? Align(alignment: AlignmentDirectional.centerStart, child: tag)
-          : null,
+      below: under.isEmpty
+          ? null
+          : Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Wrap(
+                spacing: MinimalSpacing.s8,
+                runSpacing: MinimalSpacing.s4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: under,
+              ),
+            ),
       leading: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           MinimalPriorityIcon(issue.priority),
           const MinimalGap(MinimalSpacing.s8),
-          Text(issue.id, style: t.mono.c(t.mutedForeground)),
-          const MinimalGap(MinimalSpacing.s8),
+          if (!idUnder) ...[id, const MinimalGap(MinimalSpacing.s8)],
           MinimalStatusIcon(issue.status),
         ],
       ),

@@ -1,6 +1,7 @@
 /// A short list of things to do with one object, raised from the bottom.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show showModalBottomSheet;
 import 'package:flutter/widgets.dart';
 
@@ -151,6 +152,16 @@ class MinimalActionSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalActionSheetAction>('actions', actions))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onCancel', onCancel));
   }
 }
 

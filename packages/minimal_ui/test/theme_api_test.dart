@@ -143,6 +143,8 @@ void main() {
 
   group('MinimalShapes', () {
     test("a radius of 8 is the look's own scale", () {
+      // The constructor's defaults are the look's shapes.
+      // ignore: use_named_constants
       expect(const MinimalShapes(), MinimalShapes.look);
       expect(light.shapes, MinimalShapes.look);
       expect(light.cardRadius, 10);
@@ -199,7 +201,7 @@ void main() {
     });
 
     test('lerp eases radii at 0, .5 and 1', () {
-      const a = MinimalShapes(radius: 0), b = MinimalShapes();
+      const a = MinimalShapes(radius: 0), b = MinimalShapes.look;
       expect(MinimalShapes.lerp(a, b, 0), a);
       expect(MinimalShapes.lerp(a, b, 1), b);
       expect(MinimalShapes.radiusOf(MinimalShapes.lerp(a, b, .5).small), 4);
@@ -407,9 +409,8 @@ void main() {
       expect(direction, TextDirection.rtl);
     });
 
-    testWidgets('of throws, and maybeOf answers null, without one', (
-      tester,
-    ) async {
+    testWidgets('of gives the standard theme, and maybeOf answers null, '
+        'without one', (tester) async {
       late BuildContext context;
       await tester.pumpWidget(
         Builder(
@@ -420,7 +421,8 @@ void main() {
         ),
       );
       expect(MinimalTheme.maybeOf(context), isNull);
-      expect(() => MinimalTheme.of(context), throwsFlutterError);
+      expect(MinimalTheme.of(context).id, 'standard');
+      expect(MinimalTheme.of(context).brightness, Brightness.light);
     });
 
     testWidgets(

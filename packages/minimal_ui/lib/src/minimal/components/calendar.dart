@@ -2,6 +2,7 @@
 /// days, painted on ui_core's calendar.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -12,6 +13,7 @@ import '../internal/controls.dart';
 import '../internal/field.dart';
 import '../internal/kit_paint.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../internal/today_mark.dart';
 import '../localizations.dart';
 import '../shapes.dart';
@@ -222,24 +224,34 @@ class _Grid extends StatelessWidget {
                 // The grid hands the month before to the first header and
                 // the month after to the last; the header that carries both
                 // turns the other way itself.
-                MinimalIconButton(
-                  LucideIcons.chevronLeftDir,
-                  label: words.previousMonth,
-                  size: MinimalButtonSize.small,
-                  onPressed:
-                      h.previous ??
-                      (controller.canGoBack ? () => controller.turn(-1) : null),
+                MinimalTapAlignment(
+                  // On the end keyline: the target grows toward the start.
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: MinimalIconButton(
+                    LucideIcons.chevronLeftDir,
+                    label: words.previousMonth,
+                    size: MinimalButtonSize.small,
+                    onPressed:
+                        h.previous ??
+                        (controller.canGoBack
+                            ? () => controller.turn(-1)
+                            : null),
+                  ),
                 ),
-                const MinimalGap(MinimalSpacing.s8),
-                MinimalIconButton(
-                  LucideIcons.chevronRightDir,
-                  label: words.nextMonth,
-                  size: MinimalButtonSize.small,
-                  onPressed:
-                      h.next ??
-                      (controller.canGoForward(months)
-                          ? () => controller.turn(1)
-                          : null),
+                MinimalGap(minimalArrowGap(context)),
+                MinimalTapAlignment(
+                  // On the end keyline: the target grows toward the start.
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: MinimalIconButton(
+                    LucideIcons.chevronRightDir,
+                    label: words.nextMonth,
+                    size: MinimalButtonSize.small,
+                    onPressed:
+                        h.next ??
+                        (controller.canGoForward(months)
+                            ? () => controller.turn(1)
+                            : null),
+                  ),
                 ),
               ],
             ],
@@ -320,6 +332,27 @@ class MinimalCalendar extends StatefulWidget {
 
   @override
   State<MinimalCalendar> createState() => _MinimalCalendarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
+      ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
+      ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
+      ..add(IntProperty('months', months, defaultValue: 1))
+      ..add(IntProperty('firstWeekday', firstWeekday, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<bool Function(DateTime day)>.has(
+          'selectable',
+          selectable,
+        ),
+      );
+  }
 }
 
 class _MinimalCalendarState extends State<MinimalCalendar> {
@@ -432,6 +465,37 @@ class MinimalDateRangePicker extends StatefulWidget {
 
   @override
   State<MinimalDateRangePicker> createState() => _MinimalDateRangePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
+      ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
+      ..add(
+        DiagnosticsProperty<DesignDateRange>(
+          'value',
+          value,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignDateRange>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
+      ..add(IntProperty('firstWeekday', firstWeekday, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<bool Function(DateTime day)>.has(
+          'selectable',
+          selectable,
+        ),
+      );
+  }
 }
 
 class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
@@ -584,7 +648,8 @@ class _MinimalDateRangePickerState extends State<MinimalDateRangePicker> {
           ),
           const MinimalGap(MinimalChromeMetrics.iconGap),
         ],
-        MinimalHitTarget(child: overlay),
+        // At a finger the field stands in a band as tall as the floor.
+        MinimalTapBand(child: overlay),
       ],
     );
   }

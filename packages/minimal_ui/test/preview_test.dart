@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
@@ -87,10 +89,12 @@ void main() {
   testWidgets('a root keeps its register under a raised sheet', (tester) async {
     await tester.pumpWidget(_preview(MinimalPresentation.root));
     await tester.pumpAndSettle();
-    showMinimalBottomSheet<void>(
-      tester.element(find.text('Detail body')),
-      title: 'New habit',
-      builder: (_) => const Text('Sheet body'),
+    unawaited(
+      showMinimalBottomSheet<void>(
+        tester.element(find.text('Detail body')),
+        title: 'New habit',
+        builder: (_) => const Text('Sheet body'),
+      ),
     );
     await tester.pumpAndSettle();
     expect(find.text('Sheet body'), findsOneWidget);

@@ -3,6 +3,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -12,8 +13,9 @@ import '../internal/cap_label.dart';
 import '../internal/controls.dart';
 import '../internal/face.dart';
 import '../internal/field.dart';
-import '../internal/text_entry.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
+import '../internal/text_entry.dart';
 import '../localizations.dart';
 import '../theme.dart';
 import 'button.dart';
@@ -56,6 +58,7 @@ class MinimalSearchField extends StatefulWidget {
     this.controller,
     this.onChanged,
     this.onSubmitted,
+    this.onEditingComplete,
     this.autofocus = false,
     this.focusNode,
     this.enabled = true,
@@ -81,8 +84,17 @@ class MinimalSearchField extends StatefulWidget {
   /// Reports each edit of the query.
   final ValueChanged<String>? onChanged;
 
-  /// Reports the query when the keyboard's action is pressed.
+  /// Reports the query when the keyboard's action is pressed; the field
+  /// then gives up the focus.
   final ValueChanged<String>? onSubmitted;
+
+  /// Runs when the keyboard's action finishes editing, in place of the
+  /// field's default, which gives up the focus. A search that stays
+  /// focused after Enter (a palette's, one that adds another) takes Enter
+  /// here and leaves [onSubmitted] unset: Flutter restarts the text input
+  /// of a field told of a submit that still holds the focus, and in a
+  /// browser it then takes no typing.
+  final VoidCallback? onEditingComplete;
 
   /// Whether it takes focus when it first shows.
   final bool autofocus;
@@ -124,6 +136,69 @@ class MinimalSearchField extends StatefulWidget {
 
   @override
   State<MinimalSearchField> createState() => _MinimalSearchFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(
+        EnumProperty<MinimalSearchPresentation>(
+          'presentation',
+          presentation,
+          defaultValue: MinimalSearchPresentation.inline,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('showCancel', value: showCancel, ifTrue: 'showCancel'))
+      ..add(FlagProperty('clearable', value: clearable, ifTrue: 'clearable'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onCancel', onCancel))
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onFocusChanged',
+          onFocusChanged,
+        ),
+      )
+      ..add(IterableProperty<String>('scopes', scopes))
+      ..add(IntProperty('scopeIndex', scopeIndex, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onScopeChanged',
+          onScopeChanged,
+        ),
+      )
+      ..add(StringProperty('shortcut', shortcut, defaultValue: null));
+  }
 }
 
 class _MinimalSearchFieldState extends State<MinimalSearchField>
@@ -183,10 +258,12 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
 
     Widget input = TextField(
       controller: controller,
+      selectionControls: minimalSelectionControls(context),
       focusNode: focusNode,
       enabled: widget.enabled,
       onChanged: widget.onChanged,
       onSubmitted: widget.onSubmitted,
+      onEditingComplete: widget.onEditingComplete,
       autofocus: widget.autofocus,
       textInputAction: TextInputAction.search,
       style: t.body,
@@ -227,34 +304,45 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
             color: focused ? t.mutedForeground : t.textTertiary,
           ),
           const MinimalGap(MinimalSpacing.s8),
+          // The input's node reaches its outline: outermost in the slot,
+          // so no box round the line stops a tap past it.
           Expanded(
-            child: CallbackShortcuts(
-              bindings: <ShortcutActivator, VoidCallback>{
-                const SingleActivator(LogicalKeyboardKey.escape): _escape,
-              },
-              child: input,
+            child: MinimalFieldTarget(
+              child: CallbackShortcuts(
+                bindings: <ShortcutActivator, VoidCallback>{
+                  const SingleActivator(LogicalKeyboardKey.escape): _escape,
+                },
+                child: input,
+              ),
             ),
           ),
           if (showClear) ...[
             const MinimalGap(MinimalSpacing.s4),
-            MinimalPressable(
-              onPressed: () {
-                _clear();
-                focusNode.requestFocus();
-              },
-              semanticLabel: MinimalLocalizations.of(context).clearSearch,
-              shape: t.shapes.mark,
-              // As tall as the box inside its rim at most: a compact
-              // field (28) keeps its height with the glyph in it.
-              child: SizedBox.square(
-                dimension: math.min(
-                  MinimalChromeMetrics.controlSm,
-                  height - 2 * t.hairline,
-                ),
-                child: MinimalIcon(
-                  LucideIcons.circleX,
-                  size: MinimalIconSize.i16,
-                  color: t.textTertiary,
+            // Its target spans the box inside the rim: in the taller
+            // toolbar box a tap above or below the glyph clears too.
+            minimalInlineTargets(
+              context,
+              height: height - 2 * t.hairline,
+              MinimalPressable(
+                onPressed: () {
+                  _clear();
+                  focusNode.requestFocus();
+                },
+                tapAlignment: AlignmentDirectional.centerEnd,
+                semanticLabel: MinimalLocalizations.of(context).clearSearch,
+                shape: t.shapes.mark,
+                // As tall as the box inside its rim at most: a compact
+                // field (28) keeps its height with the glyph in it.
+                child: SizedBox.square(
+                  dimension: math.min(
+                    MinimalChromeMetrics.controlSm,
+                    height - 2 * t.hairline,
+                  ),
+                  child: MinimalIcon(
+                    LucideIcons.circleX,
+                    size: MinimalIconSize.i16,
+                    color: t.textTertiary,
+                  ),
                 ),
               ),
             ),
@@ -270,15 +358,18 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _Band(
-          child: Opacity(
-            opacity: widget.enabled ? 1 : 0.45,
-            child: Row(
-              children: [
-                // A tap anywhere on the box focuses the field, its glyph and
-                // its padding too (the field's own tap, placing the caret,
-                // and the clear glyph's win the arena where they land).
-                Expanded(
+        Opacity(
+          opacity: widget.enabled ? 1 : 0.45,
+          child: Row(
+            children: [
+              // A tap anywhere on the box or the band round it focuses the
+              // field, its glyph and its padding too (the field's own tap,
+              // placing the caret, and the clear glyph's win the arena where
+              // they land).
+              Expanded(
+                // At a finger the box stands in a band as tall as the floor,
+                // laid out: a tap in it lands on the box's nearest edge.
+                child: MinimalTapBand(
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     // A pointer's convenience: the field's own node is the
@@ -288,41 +379,38 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
                     child: field,
                   ),
                 ),
-                if (widget.showCancel && focused) ...[
-                  const MinimalGap(MinimalSpacing.s4),
-                  MinimalButton(
-                    MinimalLocalizations.of(context).cancel,
-                    variant: MinimalButtonVariant.ghost,
-                    size: toolbar
-                        ? MinimalButtonSize.large
-                        : MinimalButtonSize.medium,
-                    onPressed: _cancel,
-                  ),
-                ],
+              ),
+              if (widget.showCancel && focused) ...[
+                const MinimalGap(MinimalSpacing.s4),
+                MinimalButton(
+                  MinimalLocalizations.of(context).cancel,
+                  variant: MinimalButtonVariant.ghost,
+                  size: toolbar
+                      ? MinimalButtonSize.large
+                      : MinimalButtonSize.medium,
+                  onPressed: _cancel,
+                ),
               ],
-            ),
+            ],
           ),
         ),
         if (widget.scopes.length >= 2)
-          _Band(
-            line: MinimalFilter.height,
-            child: Semantics(
-              label: MinimalLocalizations.of(context).searchScope,
-              container: true,
-              child: MinimalFilterBar(
-                divider: false,
-                padding: EdgeInsetsDirectional.zero,
-                children: [
-                  for (final (i, label) in widget.scopes.indexed)
-                    MinimalFilter(
-                      label,
-                      selected: i == widget.scopeIndex,
-                      onPressed: widget.enabled && widget.onScopeChanged != null
-                          ? () => widget.onScopeChanged!(i)
-                          : null,
-                    ),
-                ],
-              ),
+          Semantics(
+            label: MinimalLocalizations.of(context).searchScope,
+            container: true,
+            child: MinimalFilterBar(
+              divider: false,
+              padding: EdgeInsetsDirectional.zero,
+              children: [
+                for (final (i, label) in widget.scopes.indexed)
+                  MinimalFilter(
+                    label,
+                    selected: i == widget.scopeIndex,
+                    onPressed: widget.enabled && widget.onScopeChanged != null
+                        ? () => widget.onScopeChanged!(i)
+                        : null,
+                  ),
+              ],
             ),
           ),
       ],
@@ -330,26 +418,10 @@ class _MinimalSearchFieldState extends State<MinimalSearchField>
   }
 }
 
-/// A 44 px band (the row's height) with [child] centred in it, its hit
-/// test padded out to the band, so a control shorter than the band keeps
-/// the whole 44 px target: a box only hit-tests the points inside its own
-/// size, and the band is what gives the padding room. [line] is the height
-/// of one line of controls when the child can wrap; null takes the
-/// child's own.
-class _Band extends StatelessWidget {
-  const _Band({required this.child, this.line});
-
-  final Widget child;
-  final double? line;
-
-  @override
-  Widget build(BuildContext context) => ConstrainedBox(
-    constraints: const BoxConstraints(minHeight: MinimalLayout.minHitTarget),
-    child: Center(
-      child: MinimalHitTarget(line: line, child: child),
-    ),
-  );
-}
+/// The air above and below a [face] tall face that brings it up to the tap
+/// floor; none at a pointer, or for a face already as tall.
+double _airRound(BuildContext context, double face) =>
+    math.max(0, (minimalTapFloor(context) - face) / 2);
 
 /// The filter square's active mark: a small ink dot in its corner.
 abstract final class _SearchMetrics {
@@ -405,11 +477,10 @@ class MinimalSearchEntry extends StatelessWidget {
   /// leave it null on a phone, where there are no keys to press.
   final String? shortcut;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -418,49 +489,67 @@ class MinimalSearchEntry extends StatelessWidget {
     final detail = this.detail;
     final shortcut = this.shortcut;
     final onFilter = this.onFilter;
+    // At a finger the entry and its square are laid out at the tap floor:
+    // their compact faces keep their size, with the air round them taking
+    // the tap. A two-line entry keeps a one-line entry's air.
+    final air = _airRound(
+      context,
+      minimalGrownHeight(context, MinimalChromeMetrics.control),
+    );
+    final side = _airRound(context, MinimalChromeMetrics.control);
     final filter =
         filterAction ??
         (onFilter == null
             ? null
             : MinimalPressable(
+                tapTarget: false,
+                outset: EdgeInsets.symmetric(vertical: -air, horizontal: -side),
                 onPressed: onFilter,
                 semanticLabel: MinimalLocalizations.of(context)
                     .filters(active: filtersActive),
-                child: Container(
-                  width: MinimalChromeMetrics.control,
-                  constraints: const BoxConstraints(
-                    minHeight: MinimalChromeMetrics.control,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: air,
+                    horizontal: side,
                   ),
-                  decoration: minimalFrame(
-                    t.shapes.small,
-                    fill: t.card,
-                    side: BorderSide(
-                      color: filtersActive ? t.foreground : t.border,
-                      width: t.hairline,
+                  child: Container(
+                    width: MinimalChromeMetrics.control,
+                    constraints: const BoxConstraints(
+                      minHeight: MinimalChromeMetrics.control,
                     ),
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      MinimalIcon(
-                        LucideIcons.slidersHorizontal,
-                        size: MinimalIconSize.i16,
-                        color: filtersActive ? t.foreground : t.mutedForeground,
+                    decoration: minimalFrame(
+                      t.shapes.small,
+                      fill: t.card,
+                      side: BorderSide(
+                        color: filtersActive ? t.foreground : t.border,
+                        width: t.hairline,
                       ),
-                      if (filtersActive)
-                        PositionedDirectional(
-                          top: _SearchMetrics.filterDotInset,
-                          end: _SearchMetrics.filterDotInset,
-                          child: Container(
-                            width: _SearchMetrics.filterDot,
-                            height: _SearchMetrics.filterDot,
-                            decoration: BoxDecoration(
-                              color: t.foreground,
-                              shape: BoxShape.circle,
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        MinimalIcon(
+                          LucideIcons.slidersHorizontal,
+                          size: MinimalIconSize.i16,
+                          color: filtersActive
+                              ? t.foreground
+                              : t.mutedForeground,
+                        ),
+                        if (filtersActive)
+                          PositionedDirectional(
+                            top: _SearchMetrics.filterDotInset,
+                            end: _SearchMetrics.filterDotInset,
+                            child: Container(
+                              width: _SearchMetrics.filterDot,
+                              height: _SearchMetrics.filterDot,
+                              decoration: BoxDecoration(
+                                color: t.foreground,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ));
@@ -469,77 +558,112 @@ class MinimalSearchEntry extends StatelessWidget {
       autofocus: autofocus,
       onPressed: onPressed,
       enabled: onPressed != null,
-      child: Container(
-        // Grown with larger text, as the field it opens is.
-        constraints: BoxConstraints(
-          minHeight: minimalGrownHeight(context, MinimalChromeMetrics.control),
-        ),
-        padding: const EdgeInsetsDirectional.fromSTEB(
-          MinimalFieldMetrics.inset,
-          MinimalSpacing.s4,
-          MinimalSpacing.s8,
-          MinimalSpacing.s4,
-        ),
-        // Disabled (nothing to open), it sinks onto the quiet fill, as a
-        // disabled field does.
-        decoration: minimalFrame(
-          t.shapes.small,
-          fill: onPressed != null ? t.card : t.sunken,
-          side: BorderSide(color: t.border, width: t.hairline),
-        ),
-        child: Row(
-          children: [
-            MinimalIcon(
-              LucideIcons.search,
-              size: MinimalIconSize.i16,
-              color: t.textTertiary,
+      tapTarget: false,
+      outset: EdgeInsets.symmetric(vertical: -air),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: air),
+        child: Container(
+          // Grown with larger text, as the field it opens is.
+          constraints: BoxConstraints(
+            minHeight: minimalGrownHeight(
+              context,
+              MinimalChromeMetrics.control,
             ),
-            const MinimalGap(MinimalSpacing.s8),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: t.body.c(t.textTertiary),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (detail != null)
+          ),
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            MinimalFieldMetrics.inset,
+            MinimalSpacing.s4,
+            MinimalSpacing.s8,
+            MinimalSpacing.s4,
+          ),
+          // Disabled (nothing to open), it sinks onto the quiet fill, as a
+          // disabled field does.
+          decoration: minimalFrame(
+            t.shapes.small,
+            fill: onPressed != null ? t.card : t.sunken,
+            side: BorderSide(color: t.border, width: t.hairline),
+          ),
+          child: Row(
+            children: [
+              MinimalIcon(
+                LucideIcons.search,
+                size: MinimalIconSize.i16,
+                color: t.textTertiary,
+              ),
+              const MinimalGap(MinimalSpacing.s8),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      detail,
-                      style: t.caption,
+                      label,
+                      style: t.body.c(t.textTertiary),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                ],
+                    if (detail != null)
+                      Text(
+                        detail,
+                        style: t.caption,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
+                ),
               ),
-            ),
-            if (shortcut != null) ...[
-              const MinimalGap(MinimalSpacing.s8),
-              MinimalKbd.chord(shortcut),
+              if (shortcut != null) ...[
+                const MinimalGap(MinimalSpacing.s8),
+                MinimalKbd.chord(shortcut),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
-    return _Band(
-      child: filter == null
-          ? entry
-          // The square stands as tall as the entry beside it (two lines
-          // with a detail), so the pair reads as one unit; a caller's own
-          // control keeps its size, centred.
-          : IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(child: entry),
-                  const MinimalGap(MinimalChromeMetrics.barActionGap),
-                  if (filterAction == null) filter else Center(child: filter),
-                ],
-              ),
-            ),
+    if (filter == null) return entry;
+    // The square stands as tall as the entry beside it (two lines with a
+    // detail), so the pair reads as one unit; a caller's own control keeps
+    // its size, centred. The square's own air stands in the gap.
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: entry),
+          MinimalGap(
+            filterAction == null
+                ? math.max(0, MinimalChromeMetrics.barActionGap - side)
+                : MinimalChromeMetrics.barActionGap,
+          ),
+          if (filterAction == null) filter else Center(child: filter),
+        ],
+      ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('detail', detail, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onFilter', onFilter))
+      ..add(
+        FlagProperty(
+          'filtersActive',
+          value: filtersActive,
+          ifTrue: 'filtersActive',
+        ),
+      )
+      ..add(StringProperty('shortcut', shortcut, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }

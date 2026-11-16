@@ -255,8 +255,19 @@ void main() {
           await tester.pump(const Duration(milliseconds: 200));
           final shot = await _Shot.take(tester);
           final fill = shot.at(Offset(mark.left - 2, mark.center.dy));
-          final left = (marks[0].right + mark.left) / 2;
-          final right = (mark.right + marks[2].left) / 2;
+          // Its cell runs half way to its neighbours' reach: the box a tap
+          // lands in round each mark (its tap target), else the mark.
+          final targets = find
+              .descendant(of: control, matching: find.byType(DesignTapTarget))
+              .evaluate()
+              .map((e) => e.renderObject! as RenderBox)
+              .map((b) => b.localToGlobal(Offset.zero) & b.size)
+              .toList();
+          Rect reach(Rect m) => targets
+              .where((r) => r.contains(m.center) && r.width < face.width / 2)
+              .fold(m, (a, r) => a.expandToInclude(r));
+          final left = (reach(marks[0]).right + reach(mark).left) / 2;
+          final right = (reach(mark).right + reach(marks[2]).left) / 2;
           for (final p in [
             Offset(left + 4, mark.center.dy),
             Offset(right - 4, mark.center.dy),

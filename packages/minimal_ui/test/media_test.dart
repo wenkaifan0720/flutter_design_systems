@@ -270,6 +270,8 @@ void main() {
     final before = tester.widget<CustomPaint>(_sheen).painter as dynamic;
     await tester.pump(const Duration(milliseconds: 400));
     final after = tester.widget<CustomPaint>(_sheen).painter as dynamic;
+    // The sheen's painter is private: its progress is read by name.
+    // ignore: avoid_dynamic_calls
     expect(after.progress, isNot(before.progress));
     // Asked again after 2 s, and again: the third answer is the photo.
     await tester.pump(const Duration(milliseconds: 1600));
@@ -370,6 +372,7 @@ void main() {
     final before = tester.widget<CustomPaint>(_sheen).painter as dynamic;
     await tester.pump(const Duration(milliseconds: 400));
     final after = tester.widget<CustomPaint>(_sheen).painter as dynamic;
+    // ignore: avoid_dynamic_calls
     expect(after.progress, before.progress);
     expect(tester.binding.hasScheduledFrame, isFalse);
     await tester.pumpWidget(_host(_Bundle(), const SizedBox()));

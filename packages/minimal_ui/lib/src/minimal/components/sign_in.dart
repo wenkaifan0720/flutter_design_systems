@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -114,11 +115,10 @@ class MinimalSignInButton extends StatelessWidget {
   /// The mark's height inside the button.
   static const double markSize = 16;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -143,6 +143,25 @@ class MinimalSignInButton extends StatelessWidget {
         color: emphasis ? t.primaryForeground : t.foreground,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('provider', provider))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('emphasis', value: emphasis, ifTrue: 'emphasis'))
+      ..add(FlagProperty('expand', value: expand, ifFalse: 'expand: false'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -188,6 +207,23 @@ class MinimalSignInStack extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('providers', providers))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onPressed', onPressed),
+      )
+      ..add(
+        FlagProperty(
+          'leadWithFirst',
+          value: leadWithFirst,
+          ifTrue: 'leadWithFirst',
+        ),
+      );
   }
 }
 

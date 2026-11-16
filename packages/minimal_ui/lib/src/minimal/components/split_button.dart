@@ -2,6 +2,9 @@
 /// split button.
 library;
 
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -9,14 +12,15 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
+import '../internal/controls.dart';
 import '../internal/kit_paint.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../localizations.dart';
 import '../theme.dart';
 import 'button.dart';
 import 'code.dart';
 import 'menu.dart';
-import 'pressable.dart';
 
 /// A button whose action has close relatives: Save, and beside it a
 /// chevron that opens Save as, Save a copy. The two halves are one
@@ -136,9 +140,12 @@ class MinimalSplitButton extends StatelessWidget {
       final glyph = icon;
       return Container(
         height: so.minimumSize?.height ?? h,
-        width: main ? null : (so.minimumSize?.height ?? h),
+        // The menu half is square, and a finger wide at a finger.
+        width: main
+            ? null
+            : math.max(so.minimumSize?.height ?? h, minimalTapFloor(context)),
         padding: main
-            ? (so.padding ?? EdgeInsets.symmetric(horizontal: pad))
+            ? (so.paddingIn(context) ?? EdgeInsets.symmetric(horizontal: pad))
             : null,
         alignment: Alignment.center,
         decoration: minimalFrame(cell, fill: so.fill ?? bg),
@@ -265,7 +272,37 @@ class MinimalSplitButton extends StatelessWidget {
         ),
       ),
     );
-    return MinimalHitTarget(child: split);
+    // At a finger the pair stands in a band as tall as the floor, each half
+    // a finger wide.
+    return minimalTapStrip(context, split);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(IterableProperty<MinimalMenuItem>('actions', actions))
+      ..add(
+        EnumProperty<MinimalButtonVariant>(
+          'variant',
+          variant,
+          defaultValue: MinimalButtonVariant.primary,
+        ),
+      )
+      ..add(
+        EnumProperty<MinimalButtonSize>(
+          'size',
+          size,
+          defaultValue: MinimalButtonSize.medium,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('menuLabel', menuLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
   }
 }
 

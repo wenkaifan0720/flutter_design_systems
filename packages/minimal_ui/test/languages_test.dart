@@ -98,6 +98,13 @@ const Set<String> _everyday = {
 };
 
 void main() {
+  // Decoded marks and pictures stay in the image cache past their test:
+  // cleared, so leak tracking sees them disposed.
+  tearDown(
+    () => imageCache
+      ..clear()
+      ..clearLiveImages(),
+  );
   testWidgets('a link with dir=rtl reads the whole gallery right to left', (
     tester,
   ) async {

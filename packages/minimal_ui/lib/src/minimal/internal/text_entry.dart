@@ -1,3 +1,7 @@
+import 'package:cupertino_ui/cupertino_ui.dart'
+    show
+        cupertinoDesktopTextSelectionHandleControls,
+        cupertinoTextSelectionHandleControls;
 import 'package:material_ui/material_ui.dart';
 
 /// The one way Minimal uses Flutter's `TextField`: the look draws the box
@@ -58,4 +62,78 @@ double minimalLineAir({
 }) {
   final air = (height - line) / 2 - rim;
   return air < least ? least : air;
+}
+
+/// The platform's selection handles, as `TextField` picks them for
+/// `selectionControls: null` (Material's on Android, Cupertino's on iOS, the
+/// desktops' own, which draw none), with one change: a handle the field
+/// hides takes no tap. Flutter keeps a focused field's handles in the
+/// overlay while hidden, faded to nothing, and the drop under its caret
+/// still took a tap, so a tap on the top of the field below a focused one
+/// (a form's next line) went to a handle no one could see.
+TextSelectionControls minimalSelectionControls(BuildContext context) =>
+    switch (Theme.of(context).platform) {
+      TargetPlatform.iOS => _iosHandles,
+      TargetPlatform.macOS => _macHandles,
+      TargetPlatform.android || TargetPlatform.fuchsia => _materialHandles,
+      TargetPlatform.linux || TargetPlatform.windows => _desktopHandles,
+    };
+
+final TextSelectionControls _iosHandles = _ShownHandles(
+  cupertinoTextSelectionHandleControls,
+);
+final TextSelectionControls _macHandles = _ShownHandles(
+  cupertinoDesktopTextSelectionHandleControls,
+);
+final TextSelectionControls _materialHandles = _ShownHandles(
+  materialTextSelectionHandleControls,
+);
+final TextSelectionControls _desktopHandles = _ShownHandles(
+  desktopTextSelectionHandleControls,
+);
+
+/// [platform]'s handles, each taking taps only while it shows.
+class _ShownHandles extends TextSelectionControls
+    with TextSelectionHandleControls {
+  _ShownHandles(this.platform);
+
+  final TextSelectionControls platform;
+
+  @override
+  Widget buildHandle(
+    BuildContext context,
+    TextSelectionHandleType type,
+    double textLineHeight, [
+    VoidCallback? onTap,
+  ]) => _WhileShown(
+    child: platform.buildHandle(context, type, textLineHeight, onTap),
+  );
+
+  @override
+  Offset getHandleAnchor(TextSelectionHandleType type, double textLineHeight) =>
+      platform.getHandleAnchor(type, textLineHeight);
+
+  @override
+  Size getHandleSize(double textLineHeight) =>
+      platform.getHandleSize(textLineHeight);
+}
+
+/// [child], ignoring the pointer while the fade Flutter shows and hides a
+/// handle with stands at nothing.
+class _WhileShown extends StatelessWidget {
+  const _WhileShown({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final fade = context.findAncestorWidgetOfExactType<FadeTransition>();
+    if (fade == null) return child;
+    return ValueListenableBuilder<double>(
+      valueListenable: fade.opacity,
+      builder: (context, opacity, child) =>
+          IgnorePointer(ignoring: opacity == 0, child: child),
+      child: child,
+    );
+  }
 }

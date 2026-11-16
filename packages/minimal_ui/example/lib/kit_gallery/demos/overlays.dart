@@ -289,7 +289,15 @@ class _PanelOverPage extends StatelessWidget {
                                     ),
                                   ),
                                   const MinimalGap(MinimalSpacing.s8),
-                                  Text(id, style: t.mono.c(t.mutedForeground)),
+                                  // At large text the id gives way too.
+                                  Flexible(
+                                    child: Text(
+                                      id,
+                                      style: t.mono.c(t.mutedForeground),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),

@@ -9,6 +9,7 @@ import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'habits.dart';
+import 'kit_words.dart';
 
 /// Which rows the count filters keep.
 enum _View { all, open, done, paused }
@@ -93,13 +94,14 @@ class _KitTodayPageState extends State<KitTodayPage> {
     return MinimalScaffold(
       topBar: MinimalAppBar(
         leading: widget.leading,
-        title: 'Today',
+        title: ar('Today', 'اليوم'),
         subtitle:
-            '${MinimalFormat.weekday(today)} ${MinimalFormat.dayMonth(today)}',
+            '${MinimalFormat.weekday(today, words: MinimalLocalizations.of(context))} '
+            '${MinimalFormat.dayMonth(today, words: MinimalLocalizations.of(context))}',
         actions: [
           MinimalIconButton(
             LucideIcons.plus,
-            label: 'New habit',
+            label: ar('New habit', 'عادة جديدة'),
             variant: MinimalIconButtonVariant.primary,
             onPressed: widget.onNew ?? () {},
           ),
@@ -118,7 +120,7 @@ class _KitTodayPageState extends State<KitTodayPage> {
             child: MinimalSegmentBar(
               value: kept,
               total: active.length,
-              label: 'kept',
+              label: ar('kept', 'منجزة'),
               showPercent: true,
             ),
           ),
@@ -127,10 +129,10 @@ class _KitTodayPageState extends State<KitTodayPage> {
               for (final view in _View.values)
                 MinimalFilter(
                   switch (view) {
-                    _View.all => 'All',
-                    _View.open => 'Open',
-                    _View.done => 'Done',
-                    _View.paused => 'Paused',
+                    _View.all => ar('All', 'الكل'),
+                    _View.open => ar('Open', 'مفتوحة'),
+                    _View.done => ar('Done', 'منجزة'),
+                    _View.paused => ar('Paused', 'متوقفة'),
                   },
                   count: _count(view),
                   selected: view == _view,
@@ -143,9 +145,12 @@ class _KitTodayPageState extends State<KitTodayPage> {
               padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s48),
               child: MinimalEmptyState(
                 icon: LucideIcons.circleCheck,
-                title: 'Nothing open',
-                body: 'Every habit on today\'s list is kept.',
-                actionLabel: 'Show all',
+                title: ar('Nothing open', 'لا شيء مفتوح'),
+                body: ar(
+                  'Every habit on today\'s list is kept.',
+                  'كل عادات قائمة اليوم منجزة.',
+                ),
+                actionLabel: ar('Show all', 'عرض الكل'),
                 onAction: () => setState(() => _view = _View.all),
               ),
             ),
@@ -159,7 +164,11 @@ class _KitTodayPageState extends State<KitTodayPage> {
                     status: _statusOf(habit),
                     streak: _habits.streak(habit),
                     selected: habit.id == widget.selected,
-                    onToggle: habit.paused ? null : () => _habits.toggle(habit),
+                    // A paused habit's mark resumes it: every mark on the
+                    // day presses, so every title keeps one keyline.
+                    onToggle: habit.paused
+                        ? () => _resume(habit)
+                        : () => _habits.toggle(habit),
                     onOpen: widget.onOpen == null
                         ? null
                         : () => widget.onOpen!(habit),
@@ -169,6 +178,17 @@ class _KitTodayPageState extends State<KitTodayPage> {
           ],
         ],
       ),
+    );
+  }
+
+  void _resume(KitHabit habit) {
+    final undo = _habits.setPaused(habit, false);
+    showMinimalSnackBar(
+      context,
+      ar('${habit.name} resumed', 'استُؤنفت «${habit.name}»'),
+      icon: LucideIcons.play,
+      actionLabel: ar('Undo', 'تراجع'),
+      onAction: undo,
     );
   }
 
@@ -212,10 +232,10 @@ class _HabitRow extends StatelessWidget {
     return MinimalListTile(
       title: habit.name,
       subtitle: habit.paused
-          ? 'Paused'
+          ? ar('Paused', 'متوقفة')
           : streak == 0
-          ? 'Starts today'
-          : '$streak-day streak',
+          ? ar('Starts today', 'تبدأ اليوم')
+          : ar('$streak-day streak', 'سلسلة ${kitDays(streak)}'),
       muted: status != MinimalTaskStatus.todo,
       selected: selected,
       onTap: onOpen,

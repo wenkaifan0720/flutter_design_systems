@@ -4,6 +4,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -119,7 +120,12 @@ class MinimalStat extends StatelessWidget {
   static String magnitude(String delta) =>
       delta.replaceFirst(RegExp(r'^[+\-−±]\s*'), '');
 
+  /// A tile's air: 2 less at the head, where the label's line carries air
+  /// over its capitals, so the words stand an even 14 from the rim by eye.
   static const EdgeInsets _tilePadding = EdgeInsets.fromLTRB(14, 12, 14, 14);
+
+  /// A joined strip's cell: the tile's air a step tighter (12), the head 2
+  /// less for the same reason.
   static const EdgeInsets _cellPadding = EdgeInsets.fromLTRB(12, 10, 12, 12);
 
   /// The width this figure needs to print its value whole on one line: the
@@ -146,11 +152,10 @@ class MinimalStat extends StatelessWidget {
             : _tilePadding.horizontal + 2 * t.hairline);
   }
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -367,6 +372,35 @@ class MinimalStat extends StatelessWidget {
     MinimalTone.neutral => style.c(t.foreground),
     final named => style.c(t.tone(named).foreground),
   };
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('delta', delta, defaultValue: null))
+      ..add(FlagProperty('deltaUp', value: deltaUp, ifFalse: 'deltaUp: false'))
+      ..add(
+        DiagnosticsProperty<bool>('deltaGood', deltaGood, defaultValue: null),
+      )
+      ..add(StringProperty('detail', detail, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(EnumProperty<MinimalTone>('tone', tone, defaultValue: null))
+      ..add(IterableProperty<double>('spark', spark, defaultValue: null))
+      ..add(FlagProperty('large', value: large, ifTrue: 'large'))
+      ..add(DoubleProperty('weight', weight, defaultValue: 1))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// Figures side by side, matched in height even when their contents differ
@@ -538,6 +572,12 @@ class MinimalStatRow extends StatelessWidget {
               ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<bool>('joined', joined));
   }
 }
 

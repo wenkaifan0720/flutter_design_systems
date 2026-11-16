@@ -1,13 +1,16 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
+import '../internal/controls.dart';
 import '../internal/field.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../internal/text_entry.dart';
 import '../localizations.dart';
 import '../shapes.dart';
@@ -123,12 +126,59 @@ class MinimalComposer extends StatefulWidget {
   /// [MinimalComposerAction]); it owns its own enabled state.
   final Widget? action;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
   @override
   State<MinimalComposer> createState() => _MinimalComposerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('attachment', attachment, defaultValue: null))
+      ..add(StringProperty('model', model, defaultValue: 'Everyday'))
+      ..add(ObjectFlagProperty<ValueChanged<String>>.has('onSend', onSend))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAttach', onAttach))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onVoice', onVoice))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDictate', onDictate))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onStop', onStop))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onModel', onModel))
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onRemoveAttachment',
+          onRemoveAttachment,
+        ),
+      )
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        EnumProperty<MinimalComposerStyle>(
+          'style',
+          style,
+          defaultValue: MinimalComposerStyle.messages,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _MinimalComposerState extends State<MinimalComposer> {
@@ -214,36 +264,41 @@ class _MinimalComposerState extends State<MinimalComposer> {
     final assistant = widget.style == MinimalComposerStyle.assistant;
     final enabled = widget.enabled;
 
-    final field = CallbackShortcuts(
-      bindings: <ShortcutActivator, VoidCallback>{
-        const SingleActivator(LogicalKeyboardKey.enter, meta: true): _send,
-        const SingleActivator(LogicalKeyboardKey.enter, control: true): _send,
-      },
-      child: TextField(
-        controller: _controller,
-        focusNode: _draft,
-        onChanged: widget.onChanged,
-        enabled: enabled,
-        autofocus: widget.autofocus,
-        minLines: assistant ? 3 : 1,
-        maxLines: assistant ? 10 : 6,
-        style: t.body.c(t.foreground),
-        cursorColor: t.primary,
-        cursorWidth: MinimalFieldMetrics.cursor,
-        textCapitalization: TextCapitalization.sentences,
-        keyboardType: TextInputType.multiline,
-        textInputAction: TextInputAction.newline,
-        // Bare: the box below draws everything, so neither the platform's
-        // density nor an app's InputDecorationTheme moves the line.
-        decoration: minimalBareDecoration(
-          hint:
-              widget.hint ??
-              MinimalLocalizations.of(context)
-                  .composerHint(assistant: assistant),
-          hintStyle: t.body.c(t.textTertiary),
-          // A chat's box starts one line tall, so its hint is one line, cut
-          // with an ellipsis: a wrapped hint would hold the box at two.
-          hintMaxLines: assistant ? null : 1,
+    // One node whose reach is its outline, outermost: a tap past the line
+    // lands on the line.
+    final field = MinimalFieldTarget(
+      child: CallbackShortcuts(
+        bindings: <ShortcutActivator, VoidCallback>{
+          const SingleActivator(LogicalKeyboardKey.enter, meta: true): _send,
+          const SingleActivator(LogicalKeyboardKey.enter, control: true): _send,
+        },
+        child: TextField(
+          controller: _controller,
+          selectionControls: minimalSelectionControls(context),
+          focusNode: _draft,
+          onChanged: widget.onChanged,
+          enabled: enabled,
+          autofocus: widget.autofocus,
+          minLines: assistant ? 3 : 1,
+          maxLines: assistant ? 10 : 6,
+          style: t.body.c(t.foreground),
+          cursorColor: t.primary,
+          cursorWidth: MinimalFieldMetrics.cursor,
+          textCapitalization: TextCapitalization.sentences,
+          keyboardType: TextInputType.multiline,
+          textInputAction: TextInputAction.newline,
+          // Bare: the box below draws everything, so neither the platform's
+          // density nor an app's InputDecorationTheme moves the line.
+          decoration: minimalBareDecoration(
+            hint:
+                widget.hint ??
+                MinimalLocalizations.of(context)
+                    .composerHint(assistant: assistant),
+            hintStyle: t.body.c(t.textTertiary),
+            // A chat's box starts one line tall, so its hint is one line, cut
+            // with an ellipsis: a wrapped hint would hold the box at two.
+            hintMaxLines: assistant ? null : 1,
+          ),
         ),
       ),
     );
@@ -340,31 +395,44 @@ class _MinimalComposerState extends State<MinimalComposer> {
               ?chip,
               // Bottom-aligned so the seats stay by the last line as the
               // draft grows; at one line every child is the band's height,
-              // so bottom and centre are one place.
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (attach != null) seat(attach),
-                  Expanded(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minHeight: band),
-                      child: Align(
-                        alignment: AlignmentDirectional.centerStart,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: MinimalSpacing.s8,
-                            vertical: air,
+              // so bottom and centre are one place. The row's air over a
+              // seat (beside a grown draft's first lines) is the nearest
+              // part's; under a chip the row stands at least the tap floor,
+              // so the seats and the draft reach a finger's height without
+              // running into the chip's own key.
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: chip == null
+                      ? 0
+                      : math.max(band, minimalTapFloor(context)),
+                ),
+                child: MinimalTapReach(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (attach != null) seat(attach),
+                      Expanded(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: band),
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: MinimalSpacing.s8,
+                                vertical: air,
+                              ),
+                              // By its line (ui_core keeps an entry that may
+                              // wrap where it is laid out: it moves as lines
+                              // come and go), on the seats' middle.
+                              child: field,
+                            ),
                           ),
-                          // By its line (ui_core keeps an entry that may
-                          // wrap where it is laid out: it moves as lines
-                          // come and go), on the seats' middle.
-                          child: field,
                         ),
                       ),
-                    ),
+                      seat(send),
+                    ],
                   ),
-                  seat(send),
-                ],
+                ),
               ),
             ],
           );
@@ -445,27 +513,39 @@ class _MinimalComposerState extends State<MinimalComposer> {
             ignoring: !enabled,
             child: ExcludeFocus(
               excluding: !enabled,
-              child: AnimatedContainer(
-                duration: MinimalMotion.fast,
-                constraints: BoxConstraints(minHeight: band + 2 * rim),
-                decoration: minimalFrame(
-                  assistant ? t.shapes.medium : t.shapes.small,
-                  fill: t.card,
-                  side: BorderSide(
-                    color: _focused && enabled ? t.ring : t.border,
-                    width: t.hairline,
+              // At a finger the box stands in a band as tall as the floor:
+              // a tap in it, or on the box's rim, lands just inside, where
+              // a seat or the draft takes it.
+              child: MinimalTapBand(
+                // The messages box's room is reckoned from its last line, so
+                // a grown box keeps it too: a seat's and the draft's targets
+                // reach as far under the last line as at one line.
+                face: assistant ? null : band + 2 * rim,
+                // Past the rim and the toolbar's foot, onto a seat or the
+                // draft.
+                inset: MinimalSpacing.s8,
+                child: AnimatedContainer(
+                  duration: MinimalMotion.fast,
+                  constraints: BoxConstraints(minHeight: band + 2 * rim),
+                  decoration: minimalFrame(
+                    assistant ? t.shapes.medium : t.shapes.small,
+                    fill: t.card,
+                    side: BorderSide(
+                      color: _focused && enabled ? t.ring : t.border,
+                      width: t.hairline,
+                    ),
                   ),
+                  foregroundDecoration: minimalFieldRing(
+                    t,
+                    shown:
+                        enabled &&
+                        _draft.hasFocus &&
+                        FocusManager.instance.highlightMode ==
+                            FocusHighlightMode.traditional,
+                    shape: assistant ? t.shapes.medium : t.shapes.small,
+                  ),
+                  child: box,
                 ),
-                foregroundDecoration: minimalFieldRing(
-                  t,
-                  shown:
-                      enabled &&
-                      _draft.hasFocus &&
-                      FocusManager.instance.highlightMode ==
-                          FocusHighlightMode.traditional,
-                  shape: assistant ? t.shapes.medium : t.shapes.small,
-                ),
-                child: box,
               ),
             ),
           ),
@@ -513,11 +593,10 @@ class MinimalComposerAction extends StatelessWidget {
   /// checkbox, not a stop.
   static const IconData stop = LucideIcons.square;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -535,6 +614,36 @@ class MinimalComposerAction extends StatelessWidget {
       glyph: t.primaryForeground,
       small: style == MinimalComposerStyle.assistant,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'icon',
+          icon,
+          defaultValue: LucideIcons.arrowUp,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        EnumProperty<MinimalComposerStyle>(
+          'style',
+          style,
+          defaultValue: MinimalComposerStyle.messages,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -757,4 +866,16 @@ class MinimalComposerLayout extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, double bottomInset)
+        >.has('bodyBuilder', bodyBuilder),
+      )
+      ..add(FlagProperty('fullBleed', value: fullBleed, ifTrue: 'fullBleed'));
+  }
 }

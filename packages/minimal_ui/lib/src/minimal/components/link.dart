@@ -1,7 +1,9 @@
 /// An inline action set as words: a link.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../theme.dart';
@@ -48,11 +50,10 @@ class MinimalLink extends StatelessWidget {
   /// the theme's body.
   final TextStyle? style;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -83,8 +84,9 @@ class MinimalLink extends StatelessWidget {
       ],
     );
     // The link role rides the pressable's own node, the one that holds the
-    // words, so a screen reader says "Terms, link".
-    return MinimalPressable(
+    // words, so a screen reader says "Terms, link". With no action the words
+    // keep the room the target took, so switching it off moves nothing.
+    final link = MinimalPressable(
       focusNode: focusNode,
       autofocus: autofocus,
       // No action: plain words, not a dimmed control.
@@ -97,5 +99,24 @@ class MinimalLink extends StatelessWidget {
       outset: const EdgeInsets.symmetric(horizontal: MinimalSpacing.s2),
       child: words,
     );
+    return live ? link : DesignTapTarget(child: link);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(FlagProperty('external', value: external, ifTrue: 'external'))
+      ..add(DiagnosticsProperty<TextStyle>('style', style, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }

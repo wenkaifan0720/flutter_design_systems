@@ -3,6 +3,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../internal/styled.dart';
@@ -30,7 +31,8 @@ class MinimalCircularProgressIndicator extends StatefulWidget {
     this.size = 16,
     this.strokeWidth = 2,
     this.tone = MinimalTone.primary,
-  });
+  }) : assert(size > 0, 'a ring has a size'),
+       assert(strokeWidth > 0, 'a ring has a stroke');
 
   /// The fraction done, 0..1; null while the total is unknown.
   final double? value;
@@ -51,6 +53,23 @@ class MinimalCircularProgressIndicator extends StatefulWidget {
   @override
   State<MinimalCircularProgressIndicator> createState() =>
       _MinimalCircularProgressIndicatorState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('size', size, defaultValue: 16))
+      ..add(DoubleProperty('strokeWidth', strokeWidth, defaultValue: 2))
+      ..add(
+        EnumProperty<MinimalTone>(
+          'tone',
+          tone,
+          defaultValue: MinimalTone.primary,
+        ),
+      );
+  }
 }
 
 class _MinimalCircularProgressIndicatorState
@@ -217,6 +236,19 @@ class MinimalSkeleton extends StatefulWidget {
 
   @override
   State<MinimalSkeleton> createState() => _MinimalSkeletonState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 12))
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(IntProperty('lines', lines))
+      ..add(DiagnosticsProperty<bool>('circle', circle));
+  }
 }
 
 class _MinimalSkeletonState extends State<MinimalSkeleton>
@@ -225,6 +257,16 @@ class _MinimalSkeletonState extends State<MinimalSkeleton>
     vsync: this,
     duration: const Duration(milliseconds: 1400),
   );
+
+  late final CurvedAnimation _eased = CurvedAnimation(
+    parent: _pulse,
+    curve: Curves.easeInOut,
+  );
+
+  late final Animation<double> _opacity = Tween<double>(
+    begin: 1,
+    end: 0.5,
+  ).animate(_eased);
 
   @override
   void didChangeDependencies() {
@@ -240,6 +282,7 @@ class _MinimalSkeletonState extends State<MinimalSkeleton>
 
   @override
   void dispose() {
+    _eased.dispose();
     _pulse.dispose();
     super.dispose();
   }
@@ -281,13 +324,7 @@ class _MinimalSkeletonState extends State<MinimalSkeleton>
       body = block(widget.width);
     }
     return ExcludeSemantics(
-      child: FadeTransition(
-        opacity: Tween<double>(
-          begin: 1,
-          end: 0.5,
-        ).animate(CurvedAnimation(parent: _pulse, curve: Curves.easeInOut)),
-        child: body,
-      ),
+      child: FadeTransition(opacity: _opacity, child: body),
     );
   }
 }
@@ -312,7 +349,15 @@ class MinimalMeter extends StatelessWidget {
     this.valueLabel,
     this.warningAt,
     this.destructiveAt,
-  }) : assert(max > 0);
+  }) : assert(max > 0, 'a meter holds something'),
+       assert(
+         warningAt == null || (warningAt >= 0 && warningAt <= 1),
+         'warningAt is a fraction, 0..1',
+       ),
+       assert(
+         destructiveAt == null || (destructiveAt >= 0 && destructiveAt <= 1),
+         'destructiveAt is a fraction, 0..1',
+       );
 
   /// What it measures.
   final String label;
@@ -392,5 +437,17 @@ class MinimalMeter extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('value', value))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(StringProperty('valueLabel', valueLabel, defaultValue: null))
+      ..add(DoubleProperty('warningAt', warningAt, defaultValue: null))
+      ..add(DoubleProperty('destructiveAt', destructiveAt, defaultValue: null));
   }
 }

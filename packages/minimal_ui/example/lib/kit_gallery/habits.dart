@@ -6,6 +6,8 @@ library;
 
 import 'package:flutter/foundation.dart';
 
+import 'kit_words.dart';
+
 /// Friday 28 August 2026, the day the tracker shows.
 final DateTime kitHabitsToday = DateTime(2026, 8, 28);
 
@@ -13,16 +15,20 @@ final DateTime kitHabitsToday = DateTime(2026, 8, 28);
 const int kitTodayIndex = 4;
 
 /// The times of day a habit belongs to, in the list's order.
-const List<String> kitHabitGroups = ['Morning', 'Evening', 'Weekends'];
+List<String> get kitHabitGroups => [
+  ar('Morning', 'الصباح'),
+  ar('Evening', 'المساء'),
+  ar('Weekends', 'نهاية الأسبوع'),
+];
 
 /// How often a habit repeats, as the New habit form and the habit page
 /// offer it.
-const List<String> kitHabitRepeats = [
-  'Every day',
-  'Weekdays',
-  'Weekends',
-  'Every morning',
-  'Every evening',
+List<String> get kitHabitRepeats => [
+  ar('Every day', 'كل يوم'),
+  ar('Weekdays', 'أيام العمل'),
+  ar('Weekends', 'نهاية الأسبوع'),
+  ar('Every morning', 'كل صباح'),
+  ar('Every evening', 'كل مساء'),
 ];
 
 /// One habit.
@@ -34,13 +40,14 @@ class KitHabit {
     required this.week,
     required this.carried,
     this.note = '',
-    this.repeat = 'Every day',
+    String? repeat,
     this.reminder,
     this.best = 0,
     DateTime? started,
     this.record = const [],
     this.paused = false,
-  }) : started = started ?? kitHabitsToday;
+  }) : started = started ?? kitHabitsToday,
+       repeat = repeat ?? ar('Every day', 'كل يوم');
 
   /// `HAB-4`.
   final String id;
@@ -102,9 +109,9 @@ List<int> _record(int seed, int rate) => [
 List<KitHabit> kitSeedHabits() => [
   KitHabit(
     id: 'HAB-2',
-    name: 'Meditate',
-    group: 'Morning',
-    note: 'Ten minutes, before the phone.',
+    name: ar('Meditate', 'التأمل'),
+    group: ar('Morning', 'الصباح'),
+    note: ar('Ten minutes, before the phone.', 'عشر دقائق، قبل الهاتف.'),
     reminder: '06:45',
     week: [false, true, true, true, true, false, false],
     carried: 3,
@@ -114,9 +121,12 @@ List<KitHabit> kitSeedHabits() => [
   ),
   KitHabit(
     id: 'HAB-4',
-    name: 'Morning run',
-    group: 'Morning',
-    note: 'Out the door before 8. Any distance counts.',
+    name: ar('Morning run', 'جري الصباح'),
+    group: ar('Morning', 'الصباح'),
+    note: ar(
+      'Out the door before 8. Any distance counts.',
+      'الخروج قبل الثامنة. أي مسافة تُحسب.',
+    ),
     reminder: '07:00',
     week: [true, true, true, true, true, false, false],
     carried: 11,
@@ -126,9 +136,9 @@ List<KitHabit> kitSeedHabits() => [
   ),
   KitHabit(
     id: 'HAB-5',
-    name: 'Drink water',
-    group: 'Morning',
-    note: 'A glass before coffee.',
+    name: ar('Drink water', 'شرب الماء'),
+    group: ar('Morning', 'الصباح'),
+    note: ar('A glass before coffee.', 'كوب قبل القهوة.'),
     week: [true, true, true, true, false, false, false],
     carried: 10,
     best: 32,
@@ -137,10 +147,10 @@ List<KitHabit> kitSeedHabits() => [
   ),
   KitHabit(
     id: 'HAB-7',
-    name: 'Journal',
-    group: 'Evening',
-    note: 'Three lines about the day.',
-    repeat: 'Every evening',
+    name: ar('Journal', 'اليوميات'),
+    group: ar('Evening', 'المساء'),
+    note: ar('Three lines about the day.', 'ثلاثة أسطر عن اليوم.'),
+    repeat: ar('Every evening', 'كل مساء'),
     reminder: '21:30',
     week: [false, true, true, true, false, false, false],
     carried: 3,
@@ -150,10 +160,10 @@ List<KitHabit> kitSeedHabits() => [
   ),
   KitHabit(
     id: 'HAB-8',
-    name: 'Read 20 pages',
-    group: 'Evening',
-    note: 'Paper, not a screen.',
-    repeat: 'Every evening',
+    name: ar('Read 20 pages', 'قراءة 20 صفحة'),
+    group: ar('Evening', 'المساء'),
+    note: ar('Paper, not a screen.', 'ورق، لا شاشة.'),
+    repeat: ar('Every evening', 'كل مساء'),
     reminder: '22:00',
     week: [true, true, true, true, true, false, false],
     carried: 5,
@@ -163,9 +173,9 @@ List<KitHabit> kitSeedHabits() => [
   ),
   KitHabit(
     id: 'HAB-9',
-    name: 'Water the plants',
-    group: 'Weekends',
-    repeat: 'Weekends',
+    name: ar('Water the plants', 'سقي النباتات'),
+    group: ar('Weekends', 'نهاية الأسبوع'),
+    repeat: ar('Weekends', 'نهاية الأسبوع'),
     week: [false, false, false, false, false, false, false],
     carried: 2,
     best: 6,
@@ -207,7 +217,7 @@ class KitHabits extends ChangeNotifier {
     required String name,
     required String group,
     String note = '',
-    String repeat = 'Every day',
+    String? repeat,
     String? reminder,
   }) {
     final habit = KitHabit(

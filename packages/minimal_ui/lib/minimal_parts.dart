@@ -1,5 +1,5 @@
 /// Everything `minimal_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (internal/bar_actions.dart, internal/cap_label.dart, internal/centred_sheet_route.dart, internal/column_plan.dart, internal/controls.dart, internal/edge_fade.dart, internal/face.dart, internal/field.dart, internal/give_way_row.dart, internal/kit_paint.dart, internal/lucide_cut.g.dart, internal/page_foot.dart, internal/rail_action.dart, internal/sheet_header.dart, internal/styled.dart, internal/text_entry.dart, internal/today_mark.dart, internal/trailing_glyph.dart).
+/// keeps back (internal/bar_actions.dart, internal/cap_label.dart, internal/centred_sheet_route.dart, internal/column_plan.dart, internal/controls.dart, internal/edge_fade.dart, internal/face.dart, internal/field.dart, internal/give_way_row.dart, internal/kit_paint.dart, internal/lucide_cut.g.dart, internal/menu_keys.dart, internal/page_foot.dart, internal/platform_words.dart, internal/rail_action.dart, internal/sheet_header.dart, internal/styled.dart, internal/tap_band.dart, internal/text_entry.dart, internal/today_mark.dart, internal/trailing_glyph.dart).
 ///
 /// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
 /// rest of your app stays on the package:
@@ -9,6 +9,8 @@
 /// import 'package:flutter/widgets.dart';
 /// import 'package:minimal_ui/minimal_parts.dart';
 /// ```
+///
+/// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
 library;
 
 export 'package:ui_core/ui_core.dart';
@@ -28,10 +30,13 @@ export 'src/minimal/internal/field.dart';
 export 'src/minimal/internal/give_way_row.dart';
 export 'src/minimal/internal/kit_paint.dart';
 export 'src/minimal/internal/lucide_cut.g.dart';
+export 'src/minimal/internal/menu_keys.dart';
 export 'src/minimal/internal/page_foot.dart';
+export 'src/minimal/internal/platform_words.dart';
 export 'src/minimal/internal/rail_action.dart';
 export 'src/minimal/internal/sheet_header.dart';
 export 'src/minimal/internal/styled.dart';
+export 'src/minimal/internal/tap_band.dart';
 export 'src/minimal/internal/text_entry.dart';
 export 'src/minimal/internal/today_mark.dart';
 export 'src/minimal/internal/trailing_glyph.dart';

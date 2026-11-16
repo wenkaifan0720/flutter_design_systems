@@ -8,6 +8,7 @@ import 'package:minimal_ui/minimal_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'habits.dart';
+import 'kit_words.dart';
 
 /// A habit's page: its name and note, its properties (status and repeat
 /// set from their menus), the last twelve weeks as a heat map with its key,
@@ -22,6 +23,7 @@ class KitHabitPage extends StatefulWidget {
     this.id = 'HAB-4',
     this.parent = 'Today',
     this.onArchived,
+    this.asking = false,
   });
 
   final KitHabits? habits;
@@ -34,6 +36,9 @@ class KitHabitPage extends StatefulWidget {
   /// shows another habit.
   final VoidCallback? onArchived;
 
+  /// Whether the page opens asking whether to archive the habit.
+  final bool asking;
+
   @override
   State<KitHabitPage> createState() => _HabitPageState();
 }
@@ -42,6 +47,17 @@ class _HabitPageState extends State<KitHabitPage> {
   late final KitHabits _own = KitHabits();
   KitHabits get _habits => widget.habits ?? _own;
   bool _favourite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.asking) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final habit = _habits.byId(widget.id);
+        if (mounted && habit != null) _archive(habit);
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -54,11 +70,13 @@ class _HabitPageState extends State<KitHabitPage> {
         await showMinimalDialog<bool>(
           context,
           builder: (_) => MinimalDialog(
-            title: 'Archive ${habit.name}?',
-            message:
-                'It leaves Today and stops reminding you. Its record is kept.',
-            confirmLabel: 'Archive',
-            cancelLabel: 'Keep',
+            title: ar('Archive ${habit.name}?', 'أتؤرشف «${habit.name}»؟'),
+            message: ar(
+              'It leaves Today and stops reminding you. Its record is kept.',
+              'تغادر «اليوم» ولن تذكّرك بعد الآن. يبقى سجلها محفوظًا.',
+            ),
+            confirmLabel: ar('Archive', 'أرشفة'),
+            cancelLabel: ar('Keep', 'أبقِها'),
             destructive: true,
           ),
         ) ??
@@ -69,9 +87,9 @@ class _HabitPageState extends State<KitHabitPage> {
     if (!mounted) return;
     showMinimalSnackBar(
       context,
-      '${habit.name} archived',
+      ar('${habit.name} archived', 'أُرشفت «${habit.name}»'),
       icon: LucideIcons.archive,
-      actionLabel: 'Undo',
+      actionLabel: ar('Undo', 'تراجع'),
       onAction: undo,
     );
   }
@@ -81,9 +99,11 @@ class _HabitPageState extends State<KitHabitPage> {
     final undo = _habits.setPaused(habit, paused);
     showMinimalSnackBar(
       context,
-      paused ? '${habit.name} paused' : '${habit.name} resumed',
+      paused
+          ? ar('${habit.name} paused', 'أُوقفت «${habit.name}»')
+          : ar('${habit.name} resumed', 'استُؤنفت «${habit.name}»'),
       icon: paused ? LucideIcons.pause : LucideIcons.play,
-      actionLabel: 'Undo',
+      actionLabel: ar('Undo', 'تراجع'),
       onAction: undo,
     );
   }
@@ -106,26 +126,29 @@ class _HabitPageState extends State<KitHabitPage> {
     final streak = _habits.streak(habit);
     return MinimalScaffold(
       topBar: MinimalAppBar(
-        parent: widget.parent,
+        // The default page it came from, in the gallery's language.
+        parent: widget.parent == 'Today' ? ar('Today', 'اليوم') : widget.parent,
         subtitle: habit.id,
         actions: [
           MinimalIconButton(
             LucideIcons.star,
-            label: 'Favourite',
+            label: ar('Favourite', 'مفضلة'),
             selected: _favourite,
             onPressed: () => setState(() => _favourite = !_favourite),
           ),
           MinimalMenu.button(
             LucideIcons.ellipsis,
-            label: 'Habit actions',
+            label: ar('Habit actions', 'إجراءات العادة'),
             items: [
               MinimalMenuItem(
-                habit.paused ? 'Resume' : 'Pause',
+                habit.paused
+                    ? ar('Resume', 'استئناف')
+                    : ar('Pause', 'إيقاف مؤقت'),
                 icon: habit.paused ? LucideIcons.play : LucideIcons.pause,
                 onPressed: () => _pause(habit, !habit.paused),
               ),
               MinimalMenuItem(
-                'Archive',
+                ar('Archive', 'أرشفة'),
                 icon: LucideIcons.archive,
                 destructive: true,
                 startsGroup: true,
@@ -148,17 +171,19 @@ class _HabitPageState extends State<KitHabitPage> {
             properties: [
               MinimalProperty(
                 icon: LucideIcons.circleDot,
-                label: 'Status',
-                value: habit.paused ? 'Paused' : 'Active',
+                label: ar('Status', 'الحالة'),
+                value: habit.paused
+                    ? ar('Paused', 'متوقفة')
+                    : ar('Active', 'نشطة'),
                 tone: habit.paused ? MinimalTone.neutral : MinimalTone.success,
                 items: [
                   MinimalMenuItem(
-                    'Active',
+                    ar('Active', 'نشطة'),
                     selected: !habit.paused,
                     onPressed: () => _pause(habit, false),
                   ),
                   MinimalMenuItem(
-                    'Paused',
+                    ar('Paused', 'متوقفة'),
                     selected: habit.paused,
                     onPressed: () => _pause(habit, true),
                   ),
@@ -166,7 +191,7 @@ class _HabitPageState extends State<KitHabitPage> {
               ),
               MinimalProperty(
                 icon: LucideIcons.repeat,
-                label: 'Repeats',
+                label: ar('Repeats', 'التكرار'),
                 value: habit.repeat,
                 items: [
                   for (final repeat in kitHabitRepeats)
@@ -179,27 +204,29 @@ class _HabitPageState extends State<KitHabitPage> {
               ),
               MinimalProperty(
                 icon: LucideIcons.bell,
-                label: 'Reminder',
-                value: habit.reminder ?? 'None',
+                label: ar('Reminder', 'التذكير'),
+                value: habit.reminder ?? ar('None', 'لا شيء'),
                 mono: habit.reminder != null,
               ),
               MinimalProperty(
                 icon: LucideIcons.flame,
-                label: 'Streak',
-                value: '${streak}d',
-                detail: habit.best > streak ? 'best ${habit.best}d' : null,
+                label: ar('Streak', 'السلسلة'),
+                value: kitDays(streak),
+                detail: habit.best > streak
+                    ? ar('best ${habit.best}d', 'الأفضل ${kitDays(habit.best)}')
+                    : null,
                 mono: true,
               ),
               MinimalProperty(
                 icon: LucideIcons.calendar,
-                label: 'Started',
+                label: ar('Started', 'البداية'),
                 value: MinimalFormat.isoDate(habit.started),
                 mono: true,
               ),
             ],
           ),
           MinimalSectionHeader(
-            'Last 12 weeks',
+            ar('Last 12 weeks', 'آخر 12 أسبوعًا'),
             // The days up to and including today: the blank weekend ahead
             // is not a day missed.
             count: record.isEmpty ? null : '$kept / ${record.length}',
@@ -212,7 +239,10 @@ class _HabitPageState extends State<KitHabitPage> {
           ),
           if (record.isEmpty)
             Text(
-              'No days yet. The record starts with the first day kept.',
+              ar(
+                'No days yet. The record starts with the first day kept.',
+                'لا أيام بعد. يبدأ السجل بأول يوم تلتزم به.',
+              ),
               style: t.bodySmall.c(t.mutedForeground),
             )
           else
@@ -223,11 +253,14 @@ class _HabitPageState extends State<KitHabitPage> {
                 weeks: 12,
                 today: today,
                 legend: true,
-                semanticLabel: '$kept of the last ${record.length} days kept',
+                semanticLabel: ar(
+                  '$kept of the last ${record.length} days kept',
+                  'التُزم بها $kept من آخر ${record.length} يومًا',
+                ),
               ),
             ),
-          const MinimalSectionHeader(
-            'Activity',
+          MinimalSectionHeader(
+            ar('Activity', 'النشاط'),
             padding: EdgeInsets.fromLTRB(
               0,
               MinimalSpacing.s24,
@@ -240,17 +273,17 @@ class _HabitPageState extends State<KitHabitPage> {
               if (_habits.kept(habit))
                 MinimalActivity(
                   at: DateTime(2026, 8, 28, 7, 12),
-                  text: 'Marked done',
+                  text: ar('Marked done', 'عُلّمت منجزة'),
                 ),
               if (habit.record.isNotEmpty) ...[
                 MinimalActivity(
                   at: DateTime(2026, 8, 27, 7, 40),
-                  text: 'Marked done',
-                  detail: 'note added',
+                  text: ar('Marked done', 'عُلّمت منجزة'),
+                  detail: ar('note added', 'أُضيفت ملاحظة'),
                 ),
                 MinimalActivity(
                   at: DateTime(2026, 8, 26, 6, 58),
-                  text: 'Marked done',
+                  text: ar('Marked done', 'عُلّمت منجزة'),
                 ),
               ],
               MinimalActivity(
@@ -261,7 +294,7 @@ class _HabitPageState extends State<KitHabitPage> {
                   9,
                   30,
                 ),
-                text: 'Created',
+                text: ar('Created', 'أُنشئت'),
               ),
             ],
           ),

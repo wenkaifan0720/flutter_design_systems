@@ -57,7 +57,8 @@ class _Slide extends StatelessWidget {
 }
 
 /// The slides in a carousel as tall as their words: 160 at the default
-/// size, growing with the text scale so a larger size never cuts a slide.
+/// size, growing faster than the text scale, since larger words also wrap
+/// onto more lines, so a larger size never cuts a slide.
 class _Slides extends StatelessWidget {
   const _Slides({
     this.label,
@@ -71,10 +72,12 @@ class _Slides extends StatelessWidget {
   final bool loop;
   final Duration? autoplay;
 
+  static double _height(double scale) => 160 * scale + 48 * (scale - 1);
+
   @override
   Widget build(BuildContext context) => MinimalCarouselView(
     label: label,
-    height: MediaQuery.textScalerOf(context).scale(160),
+    height: _height(MediaQuery.textScalerOf(context).scale(10) / 10),
     viewportFraction: viewportFraction,
     loop: loop,
     autoplay: autoplay,

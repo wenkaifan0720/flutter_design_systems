@@ -1,9 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../internal/kit_paint.dart';
+import '../internal/menu_keys.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../theme.dart';
 
 /// Minimal's press feedback for a surface the kit does not already cover
@@ -29,12 +33,18 @@ import '../theme.dart';
 /// it renders its bare child and lets taps through. A component that owns a
 /// control API passes `enabled: onPressed != null`.
 ///
-/// Also the kit's touch-target guarantee: taps within a
-/// [MinimalLayout.minHitTarget] square centred on the control land, however
-/// small it paints — a 32 px bar button still LOOKS 32 px. The margin lives
-/// in hit testing alone, so it reaches only as far as the boxes around the
-/// control: a parent that hugs a small control (a 28 px strip, a bare
-/// `Row` of pills) stands it in a [MinimalHitTarget] to hand the margin on.
+/// Also the kit's touch-target guarantee: the control is laid out at least
+/// the tap-target floor for what reaches it ([DesignTapTarget]: 44 px square
+/// at a finger, 24 at a pointer, from [MinimalLayout.tapTargets]), its face
+/// placed by [tapAlignment] (centred unless a part says otherwise: a bare
+/// checkbox stands on its start keyline, a field's trailing key on its
+/// end) and painted at its own size — a 32 px bar button still LOOKS 32
+/// px, with the room round it in the layout, so the area a tap reaches, the
+/// box a screen reader outlines and the layout agree (Material's padded tap
+/// target). Density tightens the face, never the target. A part of a larger
+/// control that lays the target out itself (a segment in its track) passes
+/// `tapTarget: false`; inside a box that holds it tight, the target cannot
+/// grow and the box is the target.
 ///
 /// [toggled] and [checked] put a switch's or a checkbox's state on the
 /// control's own node. `focusable: false` is a part of a larger focus stop
@@ -65,6 +75,7 @@ class MinimalPressable extends StatefulWidget {
     this.selected,
     this.toggled,
     this.checked,
+    this.inMutuallyExclusiveGroup = false,
     this.link = false,
     this.focusable = true,
     this.focusInside,
@@ -73,6 +84,8 @@ class MinimalPressable extends StatefulWidget {
     this.face,
     this.ink,
     this.outset,
+    this.tapTarget = true,
+    this.tapAlignment,
   }) : assert(
          (child == null) != (builder == null),
          'a pressable takes a child or a builder, one of them',
@@ -125,6 +138,11 @@ class MinimalPressable extends StatefulWidget {
   /// control's own node; null for a control that is not one.
   final bool? checked;
 
+  /// Whether [checked] is one choice of a set where one is chosen (a radio),
+  /// announced on the control's own node: a screen reader says a radio
+  /// button, not a checkbox.
+  final bool inMutuallyExclusiveGroup;
+
   /// Announce a link rather than a button: words that go somewhere
   /// ([MinimalLink]), on the control's own node.
   final bool link;
@@ -143,7 +161,7 @@ class MinimalPressable extends StatefulWidget {
   /// keeps one of its own.
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   /// The fill the press wash lands on (a filled button's), and [ink] its
@@ -154,6 +172,18 @@ class MinimalPressable extends StatefulWidget {
   /// The ink of the [face]'s words.
   final Color? ink;
 
+  /// Whether the control is laid out at least the tap-target floor
+  /// ([DesignTapTarget]); false for a part whose larger control lays the
+  /// target out round it.
+  final bool tapTarget;
+
+  /// Where the face stands in its tap target, the target growing away from
+  /// the edges it names (mirrored right to left):
+  /// [AlignmentDirectional.centerStart] keeps a face on its start keyline.
+  /// Null: the part's own placement under a [MinimalTapAlignment], else
+  /// centred.
+  final AlignmentGeometry? tapAlignment;
+
   /// How far the press wash and the keyboard ring reach past the child's
   /// box on each side, [shape] drawn on the grown box; the child's layout
   /// and hit area stay its own. A flush form row's words line up with the
@@ -163,6 +193,90 @@ class MinimalPressable extends StatefulWidget {
 
   @override
   State<MinimalPressable> createState() => _MinimalPressableState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, Set<WidgetState> states)
+        >.has('builder', builder),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        EnumProperty<HitTestBehavior>(
+          'behavior',
+          behavior,
+          defaultValue: HitTestBehavior.opaque,
+        ),
+      )
+      ..add(DoubleProperty('radius', radius, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('toggled', toggled, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('checked', checked, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'inMutuallyExclusiveGroup',
+          value: inMutuallyExclusiveGroup,
+          ifTrue: 'inMutuallyExclusiveGroup',
+        ),
+      )
+      ..add(FlagProperty('link', value: link, ifTrue: 'link'))
+      ..add(
+        FlagProperty(
+          'focusable',
+          value: focusable,
+          ifFalse: 'focusable: false',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'focusInside',
+          focusInside,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(ColorProperty('face', face, defaultValue: null))
+      ..add(ColorProperty('ink', ink, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'tapTarget',
+          value: tapTarget,
+          ifFalse: 'tapTarget: false',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'tapAlignment',
+          tapAlignment,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'outset',
+          outset,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _MinimalPressableState extends State<MinimalPressable> {
@@ -201,6 +315,9 @@ class _MinimalPressableState extends State<MinimalPressable> {
                 borderRadius: BorderRadius.circular(widget.radius!),
               ));
     final inside = widget.focusInside ?? widget.radius == 0;
+    // The ring, unless the row it presses paints the keyboard's place (an
+    // open menu's item, on the muted fill).
+    final ringed = _focus && enabled && !MinimalPaintsFocus.of(context);
     // The look's wash: the ink at 8% while pressed. Hover leaves the face
     // as it is; an app's overlay may say otherwise.
     final wash =
@@ -210,80 +327,103 @@ class _MinimalPressableState extends State<MinimalPressable> {
           face: widget.face,
           faceInk: widget.ink,
         ).withValues(alpha: enabled && _down ? 0.08 : 0.0);
-    // The inflated hit region is the outermost layer: a render box only
-    // hit-tests a child the point falls inside, so anything wrapped around
-    // it would cut the margin off again.
-    // It is also the control's node for a screen reader (the Semantics below
-    // folds into it), as big as the region a tap lands in.
-    return _PressTarget(
-      inset: _nudge,
-      child: Semantics(
-        button: !widget.link,
-        link: widget.link,
-        enabled: enabled,
-        selected: widget.selected,
-        toggled: widget.toggled,
-        checked: widget.checked,
-        label: widget.semanticLabel,
-        child: _focusScope(
-          FocusableActionDetector(
-            focusNode: widget.focusNode,
-            autofocus: widget.autofocus,
-            enabled: enabled,
-            includeFocusSemantics: widget.focusable,
-            mouseCursor: enabled
-                ? SystemMouseCursors.click
-                : SystemMouseCursors.basic,
-            onShowFocusHighlight: (v) => setState(() => _focus = v),
-            onShowHoverHighlight: (v) => setState(() => _hover = v),
-            actions: <Type, Action<Intent>>{
-              ActivateIntent: CallbackAction<ActivateIntent>(
+    // The tap target is the outermost layer: laid out at the floor, so the
+    // area a tap reaches is the box a screen reader outlines (the node
+    // below spans it).
+    final control = Semantics(
+      container: true,
+      button: !widget.link,
+      link: widget.link,
+      enabled: enabled,
+      selected: widget.selected,
+      toggled: widget.toggled,
+      checked: widget.checked,
+      inMutuallyExclusiveGroup: widget.inMutuallyExclusiveGroup ? true : null,
+      label: widget.semanticLabel,
+      child: _focusScope(
+        FocusableActionDetector(
+          focusNode: widget.focusNode,
+          autofocus: widget.autofocus,
+          enabled: enabled,
+          includeFocusSemantics: widget.focusable,
+          mouseCursor: enabled
+              ? SystemMouseCursors.click
+              : SystemMouseCursors.basic,
+          onShowFocusHighlight: (v) => setState(() => _focus = v),
+          onShowHoverHighlight: (v) => setState(() => _hover = v),
+          actions: <Type, Action<Intent>>{
+            ActivateIntent: CallbackAction<ActivateIntent>(
+              onInvoke: (_) {
+                widget.onPressed?.call();
+                return null;
+              },
+            ),
+            // In a browser Enter is a button's press alone
+            // (ButtonActivateIntent), as on the web: a button, a toggle
+            // button or a link takes it; a checkbox or a radio keeps to
+            // Space.
+            if (widget.checked == null)
+              ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
                 onInvoke: (_) {
                   widget.onPressed?.call();
                   return null;
                 },
               ),
-            },
-            child: GestureDetector(
-              behavior: widget.behavior,
-              onTap: enabled ? widget.onPressed : null,
-              onTapDown: enabled ? (_) => _setDown(true) : null,
-              onTapUp: enabled ? (_) => _setDown(false) : null,
-              onTapCancel: enabled ? () => _setDown(false) : null,
-              child: AnimatedOpacity(
-                opacity: enabled ? 1 : 0.45,
-                duration: context.minimalStill
-                    ? Duration.zero
-                    : MinimalMotion.fast,
-                child: _reach(
-                  context,
-                  child,
-                  // Outside the edge the ring stands past a gap of the
-                  // ground, so it reads on a face filled in its own ink.
-                  inside
-                      ? minimalFrame(
-                          shape,
-                          fill: wash,
-                          side: _focus && enabled
-                              ? BorderSide(
-                                  color: t.ring,
-                                  width: t.focusWidth,
-                                  strokeAlign: BorderSide.strokeAlignInside,
-                                )
-                              : BorderSide.none,
-                        )
-                      : minimalRingFrame(
-                          shape,
-                          wash: wash,
-                          ring: _focus && enabled ? t.ring : null,
-                          ground: minimalGround(context),
-                          width: t.focusWidth,
-                        ),
-                ),
+          },
+          child: GestureDetector(
+            behavior: widget.behavior,
+            onTap: enabled ? widget.onPressed : null,
+            onTapDown: enabled ? (_) => _setDown(true) : null,
+            onTapUp: enabled ? (_) => _setDown(false) : null,
+            onTapCancel: enabled ? () => _setDown(false) : null,
+            child: AnimatedOpacity(
+              opacity: enabled ? 1 : 0.45,
+              duration: context.minimalStill
+                  ? Duration.zero
+                  : MinimalMotion.fast,
+              child: _reach(
+                context,
+                child,
+                // Outside the edge the ring stands past a gap of the
+                // ground, so it reads on a face filled in its own ink.
+                inside
+                    ? minimalFrame(
+                        shape,
+                        fill: wash,
+                        side: ringed
+                            ? BorderSide(
+                                color: t.ring,
+                                width: t.focusWidth,
+                                strokeAlign: BorderSide.strokeAlignInside,
+                              )
+                            : BorderSide.none,
+                      )
+                    : minimalRingFrame(
+                        shape,
+                        wash: wash,
+                        ring: ringed ? t.ring : null,
+                        ground: minimalGround(context),
+                        width: t.focusWidth,
+                      ),
               ),
             ),
           ),
         ),
+      ),
+    );
+    if (!widget.tapTarget) return control;
+    return minimalInlineNode(
+      context,
+      DesignTapTarget(
+        alignment:
+            widget.tapAlignment ??
+            MinimalTapAlignment.maybeOf(context) ??
+            AlignmentDirectional.center,
+        // The target's own node says whether the control is enabled, not
+        // only the node it merges: Flutter's contrast guideline reads a
+        // node's own flags, and would hold a disabled control's dimmed words
+        // to the contrast of live ones.
+        child: Semantics(enabled: enabled, child: control),
       ),
     );
   }
@@ -325,10 +465,6 @@ class _MinimalPressableState extends State<MinimalPressable> {
     );
   }
 
-  /// How far inside the edge a tap in the inflated margin lands: a hair, so
-  /// the child's own gesture detector takes it.
-  static const double _nudge = 0.1;
-
   /// A part of a larger focus stop is kept out of keyboard traversal.
   Widget _focusScope(Widget child) =>
       widget.focusable ? child : ExcludeFocus(child: child);
@@ -351,6 +487,10 @@ class _MinimalPressableState extends State<MinimalPressable> {
 /// ```dart
 /// MinimalHitTarget(line: 28, child: Row(children: pills))
 /// ```
+@Deprecated(
+  'Not needed: since 0.2.0 each Minimal control lays its own tap target out '
+  '(ui_core\'s DesignTapTarget), whatever its parent. Remove the wrapper.',
+)
 class MinimalHitTarget extends SingleChildRenderObjectWidget {
   /// Pads [child]'s hit area to 44 px.
   const MinimalHitTarget({super.key, this.line, this.inset = 4, super.child});
@@ -370,6 +510,14 @@ class MinimalHitTarget extends SingleChildRenderObjectWidget {
     (renderObject as _RenderHitTarget)
       ..line = line
       ..inset = inset;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('line', line, defaultValue: null))
+      ..add(DoubleProperty('inset', inset, defaultValue: 4));
   }
 }
 
@@ -406,37 +554,5 @@ class _RenderHitTarget extends RenderProxyBox {
         into(position.dy, size.height),
       ),
     );
-  }
-}
-
-/// A pressable's own [MinimalHitTarget], which is also its semantics node:
-/// the node's rect is the [MinimalLayout.minHitTarget] square a tap lands in,
-/// so touch exploration finds a 32 px button wherever a finger would press it.
-class _PressTarget extends MinimalHitTarget {
-  const _PressTarget({super.inset, super.child});
-
-  @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderPressTarget(line, inset);
-}
-
-class _RenderPressTarget extends _RenderHitTarget {
-  _RenderPressTarget(super.line, super.inset);
-
-  @override
-  Rect get semanticBounds => Rect.fromCenter(
-    center: size.center(Offset.zero),
-    width: size.width < _RenderHitTarget._min
-        ? _RenderHitTarget._min
-        : size.width,
-    height: size.height < _RenderHitTarget._min
-        ? _RenderHitTarget._min
-        : size.height,
-  );
-
-  @override
-  void describeSemanticsConfiguration(SemanticsConfiguration config) {
-    super.describeSemanticsConfiguration(config);
-    config.isSemanticBoundary = true;
   }
 }

@@ -4,6 +4,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -14,8 +15,9 @@ import '../internal/cap_label.dart';
 import '../internal/controls.dart';
 import '../internal/face.dart';
 import '../internal/field.dart';
-import '../internal/text_entry.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
+import '../internal/text_entry.dart';
 import '../localizations.dart';
 import '../theme.dart';
 import 'pressable.dart';
@@ -160,7 +162,7 @@ class MinimalTextField extends StatefulWidget {
   /// Whether it takes input.
   final bool enabled;
 
-  /// Whether its text is shown but not edited.
+  /// {@macro minimal.readOnly}
   final bool readOnly;
 
   /// Whether it takes focus when it first shows.
@@ -169,7 +171,7 @@ class MinimalTextField extends StatefulWidget {
   /// The keyboard it asks for.
   final TextInputType? keyboardType;
 
-  /// The keyboard's action key.
+  /// {@macro minimal.textInputAction}
   final TextInputAction? textInputAction;
 
   /// Reports the text when the keyboard's action is pressed.
@@ -213,7 +215,10 @@ class MinimalTextField extends StatefulWidget {
   /// Runs when the keyboard's action finishes editing, before
   /// [onSubmitted]; unstated, the field's own default (Next moves focus on,
   /// Done unfocuses). A form that moves Next past its own controls says
-  /// where here.
+  /// where here. A field that keeps the focus after Enter (one that adds
+  /// another) takes Enter here and leaves [onSubmitted] unset: Flutter
+  /// restarts the text input of a field told of a submit that still holds
+  /// the focus, and in a browser it then takes no typing.
   final VoidCallback? onEditingComplete;
 
   /// A control at the box's end, after the value (and the clear glyph): a
@@ -239,6 +244,128 @@ class MinimalTextField extends StatefulWidget {
 
   @override
   State<MinimalTextField> createState() => _MinimalTextFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty('obscureText', value: obscureText, ifTrue: 'obscureText'),
+      )
+      ..add(IntProperty('maxLines', maxLines, defaultValue: 1))
+      ..add(IntProperty('minLines', minLines, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(FlagProperty('bare', value: bare, ifTrue: 'bare'))
+      ..add(DiagnosticsProperty<TextStyle>('style', style, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<TextCapitalization>(
+          'textCapitalization',
+          textCapitalization,
+          defaultValue: TextCapitalization.none,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autocorrect',
+          value: autocorrect,
+          ifFalse: 'autocorrect: false',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'enableSuggestions',
+          enableSuggestions,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(FlagProperty('clearable', value: clearable, ifTrue: 'clearable'))
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onFocusChanged',
+          onFocusChanged,
+        ),
+      )
+      ..add(FlagProperty('mono', value: mono, ifTrue: 'mono'))
+      ..add(StringProperty('suffix', suffix, defaultValue: null))
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget field)>.has(
+          'fieldBuilder',
+          fieldBuilder,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>(
+          'fieldStyle',
+          fieldStyle,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _MinimalTextFieldState extends State<MinimalTextField>
@@ -286,6 +413,7 @@ class _MinimalTextFieldState extends State<MinimalTextField>
 
     Widget field = TextField(
       controller: controller,
+      selectionControls: minimalSelectionControls(context),
       focusNode: focusNode,
       enabled: widget.enabled,
       readOnly: widget.readOnly,
@@ -322,7 +450,9 @@ class _MinimalTextFieldState extends State<MinimalTextField>
     if (Material.maybeOf(context) == null) {
       field = Material(type: MaterialType.transparency, child: field);
     }
-    if (bare) return field;
+    // At a finger the bare line stands in a band as tall as the floor, so a
+    // title and the note under it each keep a finger's height.
+    if (bare) return MinimalTapBand(child: field);
 
     final showClear =
         widget.clearable &&
@@ -373,7 +503,7 @@ class _MinimalTextFieldState extends State<MinimalTextField>
         minHeight: height,
       ),
       padding:
-          so.padding ??
+          so.paddingIn(context) ??
           EdgeInsetsDirectional.only(
             start: inset.left,
             end: inset.right,
@@ -398,7 +528,7 @@ class _MinimalTextFieldState extends State<MinimalTextField>
         children: [
           if (icon != null) ...[
             Padding(
-              padding: EdgeInsets.only(top: multiline ? 2 : 0),
+              padding: EdgeInsets.only(top: multiline ? MinimalSpacing.s2 : 0),
               child: MinimalIcon(
                 icon,
                 size: MinimalIconSize.i16,
@@ -420,29 +550,44 @@ class _MinimalTextFieldState extends State<MinimalTextField>
           ],
           if (showClear) ...[
             const MinimalGap(MinimalSpacing.s4),
-            MinimalPressable(
-              onPressed: _clear,
-              semanticLabel: MinimalLocalizations.of(context)
-                  .clear(label ?? widget.hint),
-              shape: t.shapes.mark,
-              // As tall as the box inside its rim at most: a compact
-              // field (28) keeps its height with the glyph in it.
-              child: SizedBox.square(
-                dimension: math.min(
-                  MinimalChromeMetrics.controlSm,
-                  height - 2 * t.rim,
-                ),
-                child: MinimalIcon(
-                  LucideIcons.circleX,
-                  size: MinimalIconSize.i16,
-                  color: t.textTertiary,
+            // The glyph keeps a finger's width laid out, inside the box,
+            // and the box's height inside its rim (a grown box's too); the
+            // band round the box gives it the rest.
+            minimalInlineTargets(
+              context,
+              height: height - 2 * t.rim,
+              MinimalPressable(
+                onPressed: _clear,
+                tapAlignment: AlignmentDirectional.centerEnd,
+                semanticLabel: MinimalLocalizations.of(context)
+                    .clear(label ?? widget.hint),
+                shape: t.shapes.mark,
+                // As tall as the box inside its rim at most: a compact
+                // field (28) keeps its height with the glyph in it.
+                child: SizedBox.square(
+                  dimension: math.min(
+                    MinimalChromeMetrics.controlSm,
+                    height - 2 * t.rim,
+                  ),
+                  child: MinimalIcon(
+                    LucideIcons.circleX,
+                    size: MinimalIconSize.i16,
+                    color: t.textTertiary,
+                  ),
                 ),
               ),
             ),
           ],
           if (trailing != null) ...[
             const MinimalGap(MinimalSpacing.s4),
-            trailing,
+            minimalInlineTargets(
+              context,
+              height: height - 2 * t.rim,
+              MinimalTapAlignment(
+                alignment: AlignmentDirectional.centerEnd,
+                child: trailing,
+              ),
+            ),
           ],
         ],
       ),
@@ -459,11 +604,12 @@ class _MinimalTextFieldState extends State<MinimalTextField>
           ),
           const MinimalGap(MinimalChromeMetrics.iconGap),
         ],
-        // Taps in the air the label and the message leave around the box
-        // still reach it: the clear glyph keeps its 44 px target, and a tap
-        // anywhere else on the box focuses the field (the field's own tap,
-        // placing the caret, wins the arena where it lands).
-        MinimalHitTarget(
+        // A tap anywhere on the box focuses the field (the field's own tap,
+        // placing the caret, and the clear glyph's win the arena where they
+        // land).
+        // At a finger the box stands in a band as tall as the floor, laid
+        // out: a tap in it lands on the box's nearest edge.
+        MinimalTapBand(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             // A pointer's convenience: the field's own node is the screen

@@ -1,8 +1,11 @@
 // ignore_for_file: avoid_relative_lib_imports
 // The example's three apps, each filling the window (design6 A2, wide5).
+import 'package:flutter/foundation.dart'
+    show debugDefaultTargetPlatformOverride;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
+import 'package:minimal_ui/minimal_host.dart';
 
 import '../example/lib/kit_gallery/apps/app_frame.dart';
 import '../example/lib/main.dart';
@@ -103,6 +106,33 @@ void main() {
       }
     }
 
+    // Every mark on Today presses (a paused habit's resumes it), so each
+    // lays out the same tap target and the titles keep one keyline.
+    testWidgets('Today\'s titles share one keyline, the paused one too', (
+      tester,
+    ) async {
+      await openApp(tester, 'habits', phone);
+      final start = tester.getTopLeft(find.text('Meditate')).dx;
+      expect(
+        tester.getTopLeft(find.text('Water the plants')).dx,
+        closeTo(start, 0.01),
+      );
+      await tester.tap(
+        find.descendant(
+          of: find.ancestor(
+            of: find.text('Water the plants'),
+            matching: find.byType(MinimalListTile),
+          ),
+          matching: find.byType(MinimalStatusIcon),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Water the plants resumed'), findsOneWidget);
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+      expect(find.text('Paused'), findsWidgets);
+    });
+
     testWidgets('Ritual runs its happy path, every change undone', (
       tester,
     ) async {
@@ -182,6 +212,48 @@ void main() {
         );
         expect(find.text('Minimal'), findsWidgets);
       }
+    });
+
+    // The apps are apps on Flutter's own Material, whose page routes read
+    // the app's theme: the example gives it Minimal's motion, so a drill-in
+    // never takes the platform's slide or zoom (the coordinator's walk saw a
+    // look's pages fly in on the web).
+    testWidgets('a drill-in fades in Minimal\'s few pixels on every platform', (
+      tester,
+    ) async {
+      for (final platform in TargetPlatform.values) {
+        debugDefaultTargetPlatformOverride = platform;
+        for (final size in const [phone, laptop]) {
+          final why = '$platform at ${size.width.round()}';
+          tester.view
+            ..physicalSize = size
+            ..devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          await tester.pumpWidget(const SizedBox());
+          await tester.pumpWidget(
+            GalleryApp.at(
+              Uri.parse('http://localhost/?app=habits&screen=habits'),
+            ),
+          );
+          await tester.pumpAndSettle();
+          // The Habits tab's row (Today, kept in its stack, lists it too).
+          await tester.tap(find.text('Meditate').last);
+          await tester.pump();
+          await tester.pump(MinimalChromeMetrics.push ~/ 2);
+          final words = find.text('Ten minutes, before the phone.').last;
+          final mid = tester.getTopLeft(words);
+          await tester.pumpAndSettle();
+          final end = tester.getTopLeft(words);
+          expect(mid.dy, end.dy, reason: why);
+          expect(
+            (mid.dx - end.dx).abs(),
+            lessThanOrEqualTo(MinimalChromeMetrics.pushSlide),
+            reason: why,
+          );
+        }
+      }
+      // Unset before the test ends: the binding checks it before tear-downs.
+      debugDefaultTargetPlatformOverride = null;
     });
   });
 }

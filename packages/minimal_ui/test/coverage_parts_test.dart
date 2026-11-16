@@ -187,12 +187,16 @@ void main() {
       await tester.pumpWidget(_host(groups(CrossAxisAlignment.stretch)));
       expect(tester.takeException(), isNull);
       for (final (t, framing) in [
-        (MinimalButtonGroup, Container),
-        (MinimalToggleGroup<String>, MinimalHitTarget),
+        (MinimalButtonGroup, find.byType(Container)),
+        // The strip's band: the room round its frame, as wide as the frame.
+        (
+          MinimalToggleGroup<String>,
+          find.byWidgetPredicate(
+            (w) => w.runtimeType.toString() == 'MinimalTapBand',
+          ),
+        ),
       ]) {
-        final frame = find
-            .descendant(of: group(t), matching: find.byType(framing))
-            .first;
+        final frame = find.descendant(of: group(t), matching: framing).first;
         expect(
           tester.getSize(frame).width,
           moreOrLessEquals(wide[t]!, epsilon: 1),
@@ -421,9 +425,12 @@ void main() {
     ) async {
       final seen = <int>[];
       await tester.pumpWidget(_host(rating(seen, clear: true)));
+      // One gesture holds the row; a tap picks the star under it.
       final stars = find.descendant(
         of: find.byType(MinimalRating),
-        matching: find.byType(GestureDetector),
+        matching: find.byWidgetPredicate(
+          (w) => w.runtimeType.toString() == '_Star',
+        ),
       );
       await tester.tap(stars.at(3));
       await tester.pump();
@@ -676,7 +683,7 @@ void main() {
   });
 
   group('MinimalPageDots and MinimalStepProgress', () {
-    testWidgets('dots say where the reader is and jump on a tap', (
+    testWidgets('dots say where the reader is and step on a tap', (
       tester,
     ) async {
       final handle = tester.ensureSemantics();
@@ -684,12 +691,26 @@ void main() {
       await tester.pumpWidget(
         _host(MinimalPageDots(count: 4, selectedIndex: 1, onChanged: seen.add)),
       );
-      expect(find.bySemanticsLabel('Page 2 of 4'), findsWidgets);
-      final dots = find.byType(MinimalPressable);
+      // One adjustable control, hugging its dots: its value is the page.
+      final control = find
+          .descendant(
+            of: find.byType(MinimalPageDots),
+            matching: find.byType(Semantics),
+          )
+          .first;
+      expect(
+        tester.getSemantics(control).getSemanticsData().value,
+        'Page 2 of 4',
+      );
+      final dots = find.descendant(
+        of: find.byType(MinimalPageDots),
+        matching: find.byType(AnimatedContainer),
+      );
       expect(dots, findsNWidgets(4));
+      // A tap after the current dot steps on one page; on it, nothing.
       await tester.tap(dots.at(3));
       await tester.tap(dots.at(1), warnIfMissed: false);
-      expect(seen, [3]);
+      expect(seen, [2]);
       handle.dispose();
     });
 

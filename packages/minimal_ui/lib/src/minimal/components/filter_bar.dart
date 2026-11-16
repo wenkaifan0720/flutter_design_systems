@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
@@ -5,6 +6,7 @@ import '../internal/cap_label.dart';
 import '../internal/controls.dart';
 import '../internal/edge_fade.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../shapes.dart';
 import '../theme.dart';
 import 'pressable.dart';
@@ -63,11 +65,10 @@ class MinimalFilter extends StatelessWidget {
   /// The filter's height: a small control's.
   static const double height = MinimalChromeMetrics.controlSm;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -140,6 +141,25 @@ class MinimalFilter extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IntProperty('count', count, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// A strip of [MinimalFilter]s over a list: full bleed, a hairline under it,
@@ -200,19 +220,15 @@ class MinimalFilterBar extends StatelessWidget {
                 padding: padding.copyWith(
                   end: trailing == null ? padding.end : MinimalSpacing.s8,
                 ),
-                // The 28 px filters stand in a strip that hugs them; the hit
-                // target hands their 44 px margin on into the strip's
-                // padding.
-                child: MinimalHitTarget(
-                  line: MinimalFilter.height,
-                  child: Row(
-                    children: [
-                      for (final (i, child) in children.indexed) ...[
-                        if (i > 0) const MinimalGap(MinimalSpacing.s4),
-                        child,
-                      ],
+                // Each 28 px filter is laid out at the tap floor, the strip
+                // as tall as their targets.
+                child: Row(
+                  children: [
+                    for (final (i, child) in children.indexed) ...[
+                      if (i > 0) const MinimalGap(MinimalSpacing.s4),
+                      child,
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -220,10 +236,27 @@ class MinimalFilterBar extends StatelessWidget {
           if (trailing != null)
             Padding(
               padding: EdgeInsetsDirectional.only(end: padding.end),
-              child: trailing,
+              child: MinimalTapAlignment(
+                alignment: AlignmentDirectional.centerEnd,
+                child: trailing,
+              ),
             ),
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('divider', value: divider, ifFalse: 'divider: false'))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsDirectional>(
+          'padding',
+          padding,
+          defaultValue: defaultPadding,
+        ),
+      );
   }
 }

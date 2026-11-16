@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -5,8 +8,10 @@ import 'package:ui_core/ui_core.dart';
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
+import '../internal/controls.dart';
 import '../internal/face.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../internal/trailing_glyph.dart';
 import '../theme.dart';
 import 'card.dart';
@@ -43,7 +48,9 @@ import 'pressable.dart';
 /// label tags under an issue's title — in the caption register. [metaWidth]
 /// stands [meta] in a fixed, end-aligned column so an accessory before it
 /// ([MinimalWeekDots], a sparkline) lines up down the list whatever the figure
-/// (`4d`, `12d`).
+/// (`4d`, `12d`). At large text (from [MinimalChromeMetrics.rowStackScale])
+/// the [trailing] part and [meta] drop under the title, as iOS stacks a
+/// row's detail at its accessibility sizes.
 ///
 /// ```dart
 /// MinimalListTile(icon: LucideIcons.circleDashed, title: 'Drink water', meta: '10d', onTap: open)
@@ -141,7 +148,8 @@ class MinimalListTile extends StatelessWidget {
   /// The title in the secondary ink: a record that is done or archived.
   final bool muted;
 
-  /// The 36 px register for a dense list.
+  /// The 36 px register for a dense list; a row that presses keeps the tap
+  /// floor (44 at a finger) whatever the density.
   final bool dense;
 
   /// False dims the row and swallows taps (a record the user cannot open
@@ -153,11 +161,10 @@ class MinimalListTile extends StatelessWidget {
   /// gutter on the page.
   final EdgeInsetsGeometry? padding;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -186,18 +193,22 @@ class MinimalListTile extends StatelessWidget {
         : muted
         ? t.mutedForeground
         : t.foreground;
-    final twoLines = sub != null || below != null;
+    // At large text what follows the title (its trailing part and meta)
+    // drops under it.
+    final trail = trailing;
+    final stacked =
+        (trail != null || meta != null) &&
+        MediaQuery.textScalerOf(context).scale(10) / 10 >=
+            MinimalChromeMetrics.rowStackScale;
+    final twoLines = sub != null || below != null || stacked;
 
     // The leading mark centred in a slot of one width, so the title's
-    // keyline does not move with the mark's size. The slot hands a leading
-    // control's 44 px target on past its own narrow box.
-    Widget slot(Widget mark) => MinimalHitTarget(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minWidth: leadingWidth ?? MinimalIconSize.i18,
-        ),
-        child: Center(widthFactor: 1, heightFactor: 1, child: mark),
+    // keyline does not move with the mark's size.
+    Widget slot(Widget mark) => ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: leadingWidth ?? MinimalIconSize.i18,
       ),
+      child: Center(widthFactor: 1, heightFactor: 1, child: mark),
     );
 
     // A cell of its own on the row's middle, by its capitals.
@@ -213,8 +224,8 @@ class MinimalListTile extends StatelessWidget {
           );
 
     // The content line spans the row's whole box — its height and its side
-    // padding — so a leading or trailing control's 44 px margin lands
-    // inside it rather than being cut off at a padded inner edge. The side
+    // padding — so a leading or trailing control's target stands inside it
+    // rather than being cut off at a padded inner edge. The side
     // padding is therefore laid out as the line's own first and last gaps,
     // and the vertical breath belongs to the words alone.
     // The selection wash fades in and out (Minimal's short fade).
@@ -224,7 +235,12 @@ class MinimalListTile extends StatelessWidget {
       ),
       builder: (context, _) => Container(
         constraints: BoxConstraints(
-          minHeight: dense ? t.rowHeightCompact : t.rowHeight,
+          // A row that presses stands at least the tap floor: a finger's
+          // 44 whatever the density; the dense 36 holds for a pointer.
+          minHeight: math.max(
+            dense ? t.rowHeightCompact : t.rowHeight,
+            onTap == null ? 0 : minimalTapFloor(context),
+          ),
         ),
         child: Row(
           children: [
@@ -286,12 +302,31 @@ class MinimalListTile extends StatelessWidget {
                         child: below,
                       ),
                     ],
+                    if (stacked) ...[
+                      const MinimalGap(MinimalSpacing.s4),
+                      Wrap(
+                        spacing: _gap,
+                        runSpacing: MinimalSpacing.s4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [?trail, ?metaText],
+                      ),
+                    ],
                   ],
                 ),
               ),
             ),
-            if (trailing != null) ...[const MinimalGap(_gap), trailing!],
-            if (metaText != null) ...[
+            if (trail != null && !stacked) ...[
+              const MinimalGap(_gap),
+              // Last in the row, a control stands on the end keyline.
+              if (metaText == null)
+                MinimalTapAlignment(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: trail,
+                )
+              else
+                trail,
+            ],
+            if (metaText != null && !stacked) ...[
               const MinimalGap(_gap),
               if (metaWidth == null)
                 metaText
@@ -336,6 +371,44 @@ class MinimalListTile extends StatelessWidget {
 
   /// Air between the row's glyph, text and accessories.
   static const double _gap = MinimalChromeMetrics.rowIconGap;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(ColorProperty('iconColor', iconColor, defaultValue: null))
+      ..add(DoubleProperty('leadingWidth', leadingWidth, defaultValue: null))
+      ..add(StringProperty('meta', meta, defaultValue: null))
+      ..add(DoubleProperty('metaWidth', metaWidth, defaultValue: null))
+      ..add(StringProperty('metaLabel', metaLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(FlagProperty('chevron', value: chevron, ifTrue: 'chevron'))
+      ..add(
+        FlagProperty('destructive', value: destructive, ifTrue: 'destructive'),
+      )
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(FlagProperty('muted', value: muted, ifTrue: 'muted'))
+      ..add(FlagProperty('dense', value: dense, ifTrue: 'dense'))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// A vertical group of [MinimalListTile]s divided by hairlines — Minimal's
@@ -442,6 +515,18 @@ class MinimalListSection extends StatelessWidget {
               children: children,
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(FlagProperty('divided', value: divided, ifFalse: 'divided: false'))
+      ..add(FlagProperty('gutter', value: gutter, ifFalse: 'gutter: false'))
+      ..add(FlagProperty('inset', value: inset, ifTrue: 'inset'));
   }
 }
 

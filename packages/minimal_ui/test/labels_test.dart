@@ -76,6 +76,13 @@ Future<void> _check(WidgetTester tester, String at) async {
 
 void main() {
   setUpAll(loadKeylineFonts);
+  // Decoded marks and pictures stay in the image cache past their test:
+  // cleared, so leak tracking sees them disposed.
+  tearDown(
+    () => imageCache
+      ..clear()
+      ..clearLiveImages(),
+  );
 
   for (final density in const ['standard', 'compact']) {
     for (final page in examplePages) {

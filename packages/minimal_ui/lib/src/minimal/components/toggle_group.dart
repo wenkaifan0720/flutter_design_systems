@@ -2,6 +2,9 @@
 /// underline), painted on ui_core's toggle group.
 library;
 
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -13,8 +16,8 @@ import '../internal/face.dart';
 import '../internal/give_way_row.dart';
 import '../internal/kit_paint.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../theme.dart';
-import 'pressable.dart';
 
 /// One toggle of a [MinimalToggleGroup]: the [value] it stands for, its
 /// [label], a 16 px [icon], or both. An icon alone needs a [semanticLabel].
@@ -155,12 +158,17 @@ class MinimalToggleGroup<T> extends StatelessWidget {
       return MinimalFace(
         ink: inkTo,
         height: outlined ? height - 2 * t.rim : height,
+        // At a finger every cell of the joined strip stands a finger wide;
+        // the band round the strip gives it the floor's height.
         constraints: BoxConstraints(
-          minWidth: outlined ? height - 2 * t.rim : height,
+          minWidth: math.max(
+            outlined ? height - 2 * t.rim : height,
+            minimalTapFloor(context),
+          ),
         ),
         alignment: Alignment.center,
         padding:
-            so.padding ??
+            so.paddingIn(context) ??
             EdgeInsets.symmetric(
               horizontal: words == null ? 0 : MinimalControlMetrics.segmentPad,
             ),
@@ -256,7 +264,30 @@ class MinimalToggleGroup<T> extends StatelessWidget {
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,
       heightFactor: 1,
-      child: MinimalHitTarget(child: body),
+      // At a finger the strip stands in a band as tall as the floor, each
+      // toggle a finger wide.
+      child: minimalTapStrip(context, body),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalToggleItem<T>>('items', items))
+      ..add(IterableProperty<T>('selected', selected))
+      ..add(
+        ObjectFlagProperty<ValueChanged<Set<T>>>.has('onChanged', onChanged),
+      )
+      ..add(FlagProperty('multiple', value: multiple, ifTrue: 'multiple'))
+      ..add(FlagProperty('allowEmpty', value: allowEmpty, ifTrue: 'allowEmpty'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('small', value: small, ifTrue: 'small'))
+      ..add(
+        FlagProperty('outlined', value: outlined, ifFalse: 'outlined: false'),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
   }
 }

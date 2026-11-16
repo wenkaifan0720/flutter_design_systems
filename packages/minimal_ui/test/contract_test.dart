@@ -384,6 +384,67 @@ void main() {
       expect(find.text('Inbox page'), findsNothing);
     });
 
+    testWidgets('an app\'s own page route under MinimalTheme alone moves '
+        'Minimal\'s way on every platform', (tester) async {
+      for (final platform in TargetPlatform.values) {
+        final why = '$platform';
+        await tester.pumpWidget(
+          MaterialApp(
+            key: ValueKey(platform),
+            theme: ThemeData(platform: platform),
+            builder: (context, navigator) =>
+                MinimalTheme(data: _light, child: navigator!),
+            home: Builder(
+              builder: (context) => MinimalScaffold(
+                body: MinimalButton(
+                  'Open',
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) =>
+                          const MinimalScaffold(body: Text('Run page')),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        final under = tester.getTopLeft(find.text('Open'));
+        await tester.tap(find.text('Open'));
+        await tester.pump();
+        await tester.pump(MinimalChromeMetrics.push ~/ 2);
+        final mid = tester.getTopLeft(find.text('Run page'));
+        // The page underneath stands where it was.
+        expect(tester.getTopLeft(find.text('Open')), under, reason: why);
+        await tester.pump(MinimalChromeMetrics.push);
+        final end = tester.getTopLeft(find.text('Run page'));
+        await tester.pumpAndSettle();
+        // In place by the end of Minimal's push.
+        expect(tester.getTopLeft(find.text('Run page')), end, reason: why);
+        // Halfway it stands a few pixels from its place, along the line
+        // only: not the platform's slide across the screen, nor a zoom.
+        expect(mid.dy, end.dy, reason: why);
+        expect(
+          (mid.dx - end.dx).abs(),
+          inInclusiveRange(0.5, MinimalChromeMetrics.pushSlide),
+          reason: why,
+        );
+        // The pop is the push reversed.
+        Navigator.of(tester.element(find.text('Run page'))).pop();
+        await tester.pump();
+        await tester.pump(MinimalChromeMetrics.pop ~/ 2);
+        final back = tester.getTopLeft(find.text('Run page'));
+        expect(back.dy, end.dy, reason: why);
+        expect(
+          (back.dx - end.dx).abs(),
+          lessThanOrEqualTo(MinimalChromeMetrics.pushSlide),
+          reason: why,
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('Run page'), findsNothing, reason: why);
+      }
+    });
+
     testWidgets('the bar derives its exit: none on a root, a back that pops '
         'on a pushed page', (tester) async {
       Widget? rootExit;
@@ -527,17 +588,17 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _page(
-          SizedBox(
+          const SizedBox(
             width: 300,
             child: MinimalBottomSheet(
               title: 'New habit',
-              accessory: const Text('Create another habit after this one'),
-              leading: const MinimalSheetAction('Cancel'),
-              trailing: const MinimalSheetAction(
+              accessory: Text('Create another habit after this one'),
+              leading: MinimalSheetAction('Cancel'),
+              trailing: MinimalSheetAction(
                 'Create habit',
                 isDefaultAction: true,
               ),
-              child: const SizedBox(height: 20),
+              child: SizedBox(height: 20),
             ),
           ),
         ),

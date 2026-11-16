@@ -1,10 +1,15 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/edge_fade.dart';
+import '../internal/controls.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../localizations.dart';
 import '../theme.dart';
 import 'button.dart';
@@ -182,78 +187,111 @@ class MinimalCodeBlock extends StatelessWidget {
               ),
       ),
     );
+    // On the end keyline: its target grows toward the start and down.
     final copy = copyable
-        ? MinimalIconButton(
-            LucideIcons.copy,
-            label: MinimalLocalizations.of(context).copy,
-            size: MinimalButtonSize.small,
-            variant: MinimalIconButtonVariant.ghost,
-            onPressed: () => _copy(context),
+        ? MinimalTapAlignment(
+            alignment: AlignmentDirectional.centerEnd,
+            child: MinimalIconButton(
+              LucideIcons.copy,
+              label: MinimalLocalizations.of(context).copy,
+              size: MinimalButtonSize.small,
+              variant: MinimalIconButtonVariant.ghost,
+              onPressed: () => _copy(context),
+            ),
           )
         : null;
 
+    final well = Container(
+      width: double.infinity,
+      decoration: minimalFrame(
+        t.shapes.small,
+        fill: t.sunken,
+        side: BorderSide(color: t.border, width: t.hairline),
+      ),
+      child: label != null
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    start: MinimalSpacing.s12,
+                    end: MinimalSpacing.s4,
+                    top: MinimalSpacing.s4,
+                  ),
+                  // As tall as the copy button's target: 28 at a
+                  // pointer, a finger's 44 at a finger.
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: MinimalChromeMetrics.controlSm,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            label.toUpperCase(),
+                            style: t.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        ?copy,
+                      ],
+                    ),
+                  ),
+                ),
+                body,
+              ],
+            )
+          // The body spans the well, as under a caption band: a short
+          // line starts at the left in every language rather than
+          // hugging the start edge.
+          : body,
+    );
     return Semantics(
       container: true,
       label: MinimalLocalizations.of(context).code(label),
-      child: Container(
-        width: double.infinity,
-        decoration: minimalFrame(
-          t.shapes.small,
-          fill: t.sunken,
-          side: BorderSide(color: t.border, width: t.hairline),
-        ),
-        child: label != null
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: MinimalSpacing.s12,
-                      end: MinimalSpacing.s4,
-                      top: MinimalSpacing.s4,
-                    ),
-                    child: SizedBox(
-                      height: MinimalChromeMetrics.controlSm,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              label.toUpperCase(),
-                              style: t.label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          ?copy,
-                        ],
-                      ),
-                    ),
+      child: label != null || copy == null
+          ? well
+          // The copy action stands on the first line's middle, as it stands
+          // on the caption band's. It floats over the whole block, rim and
+          // all: inside the rim a finger's target stood a pixel past the
+          // well's box, where no tap reaches. Never so high that its target
+          // stands past the block's top.
+          : Stack(
+              fit: StackFit.passthrough,
+              children: [
+                well,
+                PositionedDirectional(
+                  top: math.max(
+                    t.hairline + MinimalSpacing.s12 + lineBox / 2,
+                    minimalTapFloor(context) / 2,
                   ),
-                  body,
-                ],
-              )
-            : Stack(
-                // The body spans the well, as under a caption band: a
-                // short line starts at the left in every language rather
-                // than hugging the start edge.
-                fit: StackFit.passthrough,
-                children: [
-                  body,
-                  // The copy action stands on the first line's middle, as
-                  // it stands on the caption band's.
-                  if (copy != null)
-                    PositionedDirectional(
-                      top: MinimalSpacing.s12 + lineBox / 2,
-                      end: MinimalSpacing.s4,
-                      child: FractionalTranslation(
-                        translation: const Offset(0, -0.5),
-                        child: copy,
-                      ),
-                    ),
-                ],
-              ),
-      ),
+                  end: t.hairline + MinimalSpacing.s4,
+                  child: FractionalTranslation(
+                    translation: const Offset(0, -0.5),
+                    child: copy,
+                  ),
+                ),
+              ],
+            ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('code', code))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        FlagProperty('copyable', value: copyable, ifFalse: 'copyable: false'),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onCopy', onCopy))
+      ..add(StringProperty('copiedMessage', copiedMessage, defaultValue: null))
+      ..add(FlagProperty('wrap', value: wrap, ifTrue: 'wrap'))
+      ..add(
+        FlagProperty('lineNumbers', value: lineNumbers, ifTrue: 'lineNumbers'),
+      );
   }
 }
 
@@ -330,6 +368,12 @@ class MinimalKbd extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('keyLabel', keyLabel));
   }
 }
 

@@ -18,6 +18,29 @@ const List<String> _people = [
   'Gus Lindqvist',
 ];
 
+// Longer than the list's height: it opens scrolled to the value.
+const List<String> _zones = [
+  'Honolulu',
+  'Anchorage',
+  'Los Angeles',
+  'Denver',
+  'Chicago',
+  'New York',
+  'São Paulo',
+  'London',
+  'Lisbon',
+  'Berlin',
+  'Stockholm',
+  'Athens',
+  'Istanbul',
+  'Dubai',
+  'Mumbai',
+  'Singapore',
+  'Tokyo',
+  'Sydney',
+  'Auckland',
+];
+
 const List<String> _labels = [
   'bug',
   'design',
@@ -64,6 +87,16 @@ Widget kitComboboxDemo(Brightness brightness) => kitScreen(
         ),
       ],
     ),
+    kitSection(
+      'A long list',
+      children: [
+        const _Zone(),
+        kitNote(
+          'It opens on its value, near the end, and the keys keep '
+          'the highlighted row in view.',
+        ),
+      ],
+    ),
   ],
 );
 
@@ -86,6 +119,27 @@ class _AssigneeState extends State<_Assignee> {
     displayString: (p) => p,
     value: _who,
     onSelected: (p) => setState(() => _who = p),
+  );
+}
+
+class _Zone extends StatefulWidget {
+  const _Zone();
+
+  @override
+  State<_Zone> createState() => _ZoneState();
+}
+
+class _ZoneState extends State<_Zone> {
+  String _zone = 'Tokyo';
+
+  @override
+  Widget build(BuildContext context) => MinimalCombobox<String>(
+    label: 'Time zone',
+    icon: LucideIcons.globe,
+    options: _zones,
+    displayString: (z) => z,
+    value: _zone,
+    onSelected: (z) => setState(() => _zone = z),
   );
 }
 

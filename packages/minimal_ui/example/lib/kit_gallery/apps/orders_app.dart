@@ -10,25 +10,33 @@ import 'package:minimal_ui/minimal_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../demos/screen_orders.dart';
+import '../kit_words.dart';
 import 'app_frame.dart';
 
 /// The back office, standing in the window, [gallery] its way out.
 class KitOrdersApp extends StatelessWidget {
-  const KitOrdersApp({super.key, required this.gallery});
+  const KitOrdersApp({super.key, required this.gallery, this.screen});
 
   final KitGalleryLink? gallery;
 
+  /// The screen it opens at, one of [screens]; null opens Orders.
+  final String? screen;
+
+  /// The morning's orders; the products on the counter.
+  static const screens = ['orders', 'products'];
+
   @override
   Widget build(BuildContext context) => KitApp(
-    name: 'Lund Bakery',
+    name: ar('Lund Bakery', 'مخبز لوند'),
     gallery: gallery,
+    initial: screen == 'products' ? 1 : 0,
     destinations: [
       (
-        item: const MinimalNavItem(LucideIcons.receiptText, 'Orders'),
+        item: MinimalNavItem(LucideIcons.receiptText, ar('Orders', 'الطلبات')),
         root: (context) => KitOrdersPage(leading: KitApp.leading(context)),
       ),
       (
-        item: const MinimalNavItem(LucideIcons.croissant, 'Products'),
+        item: MinimalNavItem(LucideIcons.croissant, ar('Products', 'المنتجات')),
         root: (_) => const _Products(),
       ),
     ],
@@ -39,13 +47,13 @@ class KitOrdersApp extends StatelessWidget {
 /// came out of the oven this morning.
 typedef _Product = ({String name, int cents, int baked});
 
-const List<_Product> _products = [
-  (name: 'Cardamom bun', cents: 340, baked: 96),
-  (name: 'Cinnamon roll', cents: 340, baked: 84),
-  (name: 'Butter croissant', cents: 340, baked: 72),
-  (name: 'Blueberry muffin', cents: 340, baked: 48),
-  (name: 'Rye loaf', cents: 680, baked: 24),
-  (name: 'Sourdough loaf', cents: 720, baked: 30),
+List<_Product> get _products => [
+  (name: ar('Cardamom bun', 'كعكة الهيل'), cents: 340, baked: 96),
+  (name: ar('Cinnamon roll', 'لفافة القرفة'), cents: 340, baked: 84),
+  (name: ar('Butter croissant', 'كرواسون بالزبدة'), cents: 340, baked: 72),
+  (name: ar('Blueberry muffin', 'مافن التوت الأزرق'), cents: 340, baked: 48),
+  (name: ar('Rye loaf', 'رغيف الجاودار'), cents: 680, baked: 24),
+  (name: ar('Sourdough loaf', 'رغيف العجين المخمّر'), cents: 720, baked: 30),
 ];
 
 class _Products extends StatefulWidget {
@@ -56,40 +64,48 @@ class _Products extends StatefulWidget {
 }
 
 class _ProductsState extends State<_Products> {
-  final Set<String> _soldOut = {'Blueberry muffin'};
+  final Set<String> _soldOut = {ar('Blueberry muffin', 'مافن التوت الأزرق')};
 
   @override
   Widget build(BuildContext context) => MinimalScaffold(
     topBar: MinimalAppBar(
       leading: KitApp.leading(context),
-      title: 'Products',
-      subtitle: '${_products.length - _soldOut.length} on sale',
+      title: ar('Products', 'المنتجات'),
+      subtitle: ar(
+        '${_products.length - _soldOut.length} on sale',
+        '${_products.length - _soldOut.length} معروضة للبيع',
+      ),
     ),
     padding: EdgeInsets.zero,
-    body: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const MinimalSectionHeader('On the counter today'),
-        MinimalListSection(
-          children: [
-            for (final p in _products)
-              MinimalListTile(
-                title: p.name,
-                subtitle:
-                    '${MinimalFormat.money(p.cents, symbol: '€')} · '
-                    '${_soldOut.contains(p.name) ? 'Sold out' : '${p.baked} baked'}',
-                muted: _soldOut.contains(p.name),
-                trailing: MinimalSwitch(
-                  value: !_soldOut.contains(p.name),
-                  label: '${p.name} on sale',
-                  onChanged: (on) => setState(
-                    () => on ? _soldOut.remove(p.name) : _soldOut.add(p.name),
+    // One column of rows: the form measure on a wide window, as Settings.
+    body: KitApp.measured(
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          MinimalSectionHeader(
+            ar('On the counter today', 'على الكاونتر اليوم'),
+          ),
+          MinimalListSection(
+            children: [
+              for (final p in _products)
+                MinimalListTile(
+                  title: p.name,
+                  subtitle:
+                      '${MinimalFormat.money(p.cents, symbol: '€')} · '
+                      '${_soldOut.contains(p.name) ? ar('Sold out', 'نفد') : ar('${p.baked} baked', 'خُبز ${p.baked}')}',
+                  muted: _soldOut.contains(p.name),
+                  trailing: MinimalSwitch(
+                    value: !_soldOut.contains(p.name),
+                    label: ar('${p.name} on sale', '«${p.name}» معروض للبيع'),
+                    onChanged: (on) => setState(
+                      () => on ? _soldOut.remove(p.name) : _soldOut.add(p.name),
+                    ),
                   ),
                 ),
-              ),
-          ],
-        ),
-      ],
+            ],
+          ),
+        ],
+      ),
     ),
   );
 }

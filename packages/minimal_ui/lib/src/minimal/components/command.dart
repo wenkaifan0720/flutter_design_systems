@@ -5,6 +5,7 @@ library;
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -205,6 +206,39 @@ class MinimalCommand extends StatefulWidget {
 
   @override
   State<MinimalCommand> createState() => _MinimalCommandState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<MinimalCommandItem>('actions', actions))
+      ..add(
+        ObjectFlagProperty<ValueChanged<MinimalCommandItem>>.has(
+          'onSelected',
+          onSelected,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('initialQuery', initialQuery, defaultValue: ''))
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifFalse: 'autofocus: false',
+        ),
+      )
+      ..add(StringProperty('emptyTitle', emptyTitle, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// ui_core's palette, Minimal's paint.
@@ -240,7 +274,10 @@ DesignCommandPalette _palette(
         controller: f.controller,
         focusNode: f.focusNode,
         hint: hint ?? words.commandHint,
-        onSubmitted: (_) => f.submit(),
+        // Enter in onEditingComplete, with no onSubmitted: the field keeps the
+        // focus, and Flutter restarts the text input of a field told of a submit
+        // that still holds it, which in a browser then takes no typing.
+        onEditingComplete: f.submit,
         clearable: true,
       ),
     ),
@@ -286,22 +323,22 @@ class _MinimalCommandState extends State<MinimalCommand> {
   @override
   Widget build(BuildContext context) {
     final onSelected = widget.onSelected;
-    return Material(
-      type: MaterialType.transparency,
-      child: _palette(
-        context,
-        actions: widget.actions,
-        hint: widget.hint,
-        emptyTitle: widget.emptyTitle,
-        style: widget.style,
-        controller: _query,
-        label: MinimalLocalizations.of(context).commands,
-        autofocus: widget.autofocus,
-        focusNode: widget.focusNode,
-        onSelected: onSelected == null
-            ? null
-            : (c) => onSelected(c.data! as MinimalCommandItem),
-      ),
+    // No Material round it (its search field brings its own): a
+    // transparent Material is a square clip, a square shape inside the
+    // round card the palette stands in.
+    return _palette(
+      context,
+      actions: widget.actions,
+      hint: widget.hint,
+      emptyTitle: widget.emptyTitle,
+      style: widget.style,
+      controller: _query,
+      label: MinimalLocalizations.of(context).commands,
+      autofocus: widget.autofocus,
+      focusNode: widget.focusNode,
+      onSelected: onSelected == null
+          ? null
+          : (c) => onSelected(c.data! as MinimalCommandItem),
     );
   }
 }
@@ -465,12 +502,16 @@ class _ResultRow extends StatelessWidget {
         child: Opacity(
           opacity: action.enabled ? 1 : 0.45,
           child: Container(
-            // Larger text grows the row, so its words keep their air.
+            // Larger text grows the row, so its words keep their air; at a
+            // finger it stands at least the tap floor.
             constraints: BoxConstraints(
-              minHeight: minimalGrownHeight(context, t.rowHeightCompact),
+              minHeight: math.max(
+                minimalGrownHeight(context, t.rowHeightCompact),
+                minimalTapFloor(context),
+              ),
             ),
             padding:
-                so.padding ??
+                so.paddingIn(context) ??
                 const EdgeInsets.symmetric(horizontal: _CommandMetrics.rowPad),
             decoration: minimalFrame(
               shape,
@@ -479,7 +520,7 @@ class _ResultRow extends StatelessWidget {
             foregroundDecoration: pressed
                 ? minimalFrame(
                     shape,
-                    fill: so.overlay ?? t.foreground.withValues(alpha: 0.06),
+                    fill: so.wash ?? t.foreground.withValues(alpha: 0.06),
                   )
                 : null,
             child: Row(

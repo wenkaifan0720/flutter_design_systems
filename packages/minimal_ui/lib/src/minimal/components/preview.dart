@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../internal/rail_action.dart';
@@ -141,6 +142,33 @@ class MinimalPreview extends StatelessWidget {
   Widget _stage() {
     final under = this.under;
     return under == null ? const SizedBox.expand() : _root(under);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<MinimalThemeData>('light', light))
+      ..add(DiagnosticsProperty<MinimalThemeData>('dark', dark))
+      ..add(
+        EnumProperty<MinimalPresentation>(
+          'presentation',
+          presentation,
+          defaultValue: MinimalPresentation.root,
+        ),
+      )
+      ..add(IterableProperty<MinimalNavItem>('tabs', tabs))
+      ..add(IntProperty('activeIndex', activeIndex, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<MinimalShellAction>(
+          'action',
+          action,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
+      );
   }
 }
 

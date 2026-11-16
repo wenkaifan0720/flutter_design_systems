@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../shapes.dart';
 import '../theme.dart';
 import 'pressable.dart';
@@ -62,15 +64,35 @@ class MinimalSwitch extends StatefulWidget {
   /// This switch's style, over `components.switchTheme`.
   final MinimalStyle? style;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
   State<MinimalSwitch> createState() => _MinimalSwitchState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('showLabel', value: showLabel, ifTrue: 'showLabel'))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 // The track and thumb, per the mockup's mini switch grown to the lead's
@@ -123,6 +145,12 @@ class _MinimalSwitchState extends State<MinimalSwitch> {
       onPressed: enabled ? () => _commit(!widget.value) : null,
       enabled: enabled,
       shape: widget.showLabel ? t.shapes.mark : track,
+      // A bare mark stands on its start keyline, its target growing
+      // toward the end (a list row's trailing slot says the end).
+      tapAlignment:
+          MinimalTapAlignment.maybeOf(context) ??
+          AlignmentDirectional.centerStart,
+
       style: MinimalStyleOf(layers, const {}).press,
       semanticLabel: widget.label,
       // On the pressable's own node: one control that is a button AND

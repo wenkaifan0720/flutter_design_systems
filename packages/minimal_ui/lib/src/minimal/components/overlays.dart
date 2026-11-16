@@ -3,6 +3,7 @@
 /// sheet and anchored overlay.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -20,9 +21,10 @@ import 'sheet.dart';
 
 /// A panel the full height of the screen, from its start or end edge: a
 /// record's details beside a list, filters, settings, a phone's navigation.
-/// The surface with a rim on its inner edge and the large shadow; its inner
-/// corners take `shapes.large` (the outer ones stand on the screen's edge),
-/// like the bottom sheet's drawer. A header prints [title] (and [subtitle]
+/// The surface with a rim on its inner edge and the large shadow, square:
+/// it runs from the screen's top edge to its bottom, where a round corner
+/// would show the shadow square behind it (shadcn's sheet is square too). A
+/// style's shape rounds its inner corners alone. A header prints [title] (and [subtitle]
 /// as its pill) with a close button; [child] scrolls under it, and the
 /// footer holds [leading] and [trailing] over a hairline.
 ///
@@ -105,7 +107,10 @@ class MinimalSheet extends StatelessWidget {
     final so = MinimalStyleOf([style, t.components.bottomSheet], const {});
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final onLeft = (side == MinimalSide.start) != rtl;
-    final shape = _inner(so.shape ?? t.shapes.large, onLeft: onLeft);
+    final own = so.shape;
+    final shape = own == null
+        ? const RoundedRectangleBorder()
+        : _inner(own, onLeft: onLeft);
     final leading = this.leading;
     final trailing = this.trailing;
     return Material(
@@ -168,6 +173,35 @@ class MinimalSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(
+        EnumProperty<MinimalSide>('side', side, defaultValue: MinimalSide.end),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalSheetAction>(
+          'leading',
+          leading,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalSheetAction>(
+          'trailing',
+          trailing,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -314,6 +348,29 @@ class MinimalPopover extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, VoidCallback close)
+        >.has('content', content),
+      )
+      ..add(
+        EnumProperty<MinimalSide>(
+          'side',
+          side,
+          defaultValue: MinimalSide.bottom,
+        ),
+      )
+      ..add(DoubleProperty('width', width, defaultValue: 280))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// A preview shown while a pointer rests on [child], or the keyboard is on
@@ -378,4 +435,21 @@ class MinimalHoverCard extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<MinimalSide>(
+          'side',
+          side,
+          defaultValue: MinimalSide.bottom,
+        ),
+      )
+      ..add(DoubleProperty('width', width, defaultValue: 280))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
+  }
 }

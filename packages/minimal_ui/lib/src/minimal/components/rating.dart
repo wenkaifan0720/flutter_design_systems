@@ -3,13 +3,14 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../internal/kit_paint.dart';
+import '../internal/tap_band.dart';
 import '../localizations.dart';
 import '../theme.dart';
-import 'pressable.dart';
 
 /// A score out of [max] stars — a review, a difficulty, how a session went:
 /// stars drawn in the ink when filled and on the control edge when not. A
@@ -25,7 +26,7 @@ import 'pressable.dart';
 /// ends, and a screen reader hears it as a slider ("3 of 5").
 ///
 /// ```dart
-/// MinimalRating(value: stars, onChanged: (v) => setState(() => stars = v), label: 'Your rating')
+/// MinimalRating(value: stars.toDouble(), onChanged: (v) => setState(() => stars = v), label: 'Your rating')
 /// ```
 class MinimalRating extends StatefulWidget {
   /// A rating out of [max] stars.
@@ -39,7 +40,9 @@ class MinimalRating extends StatefulWidget {
     this.allowClear = true,
     this.focusNode,
     this.autofocus = false,
-  }) : assert(max > 0);
+  }) : assert(max > 0, 'a rating has at least one star'),
+       assert(value >= 0 && value <= max, 'value lies within 0..max'),
+       assert(size > 0, 'a star has a size');
 
   /// The score, 0..[max]; a read-only rating may show a half.
   final double value;
@@ -59,15 +62,40 @@ class MinimalRating extends StatefulWidget {
   /// A tap on the current score clears it.
   final bool allowClear;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
   State<MinimalRating> createState() => _MinimalRatingState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(IntProperty('max', max, defaultValue: 5))
+      ..add(DoubleProperty('size', size, defaultValue: 20))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'allowClear',
+          value: allowClear,
+          ifFalse: 'allowClear: false',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _MinimalRatingState extends State<MinimalRating> {
@@ -132,15 +160,6 @@ class _MinimalRatingState extends State<MinimalRating> {
             ink: preview != null ? t.textTertiary : t.foreground,
             edge: t.input,
             stroke: t.rim,
-            onTap: live
-                ? () => _set(
-                    widget.allowClear && i + 1 == value.round() ? 0 : i + 1,
-                  )
-                : null,
-            onHover: live ? () => setState(() => _preview = i + 1) : null,
-            onPress: live
-                ? (down) => setState(() => _preview = down ? i + 1 : null)
-                : null,
           ),
       ],
     );
@@ -176,27 +195,55 @@ class _MinimalRatingState extends State<MinimalRating> {
         child: MouseRegion(
           cursor: SystemMouseCursors.click,
           onExit: (_) => setState(() => _preview = null),
-          child: MinimalHitTarget(
-            child: DecoratedBox(
-              position: DecorationPosition.foreground,
-              decoration: minimalRingFrame(
-                t.shapes.small,
-                // Keyboard focus only: a tap focuses it without a ring.
-                ring:
-                    _focused &&
-                        FocusManager.instance.highlightMode ==
-                            FocusHighlightMode.traditional
-                    ? t.ring
-                    : null,
-                ground: minimalGround(context),
-                width: t.focusWidth,
+          // At a finger the stars stand in a band as tall as the floor, a
+          // tap in it landing on the star under it.
+          // The row is one target: a tap anywhere in it, or in the band
+          // round it, picks the star under it, so a finger meets no gap
+          // between two stars.
+          child: MinimalTapBand(
+            child: MouseRegion(
+              onHover: (e) =>
+                  setState(() => _preview = _starAt(e.localPosition, cell)),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (d) =>
+                    setState(() => _preview = _starAt(d.localPosition, cell)),
+                onTapUp: (d) {
+                  final star = _starAt(d.localPosition, cell);
+                  setState(() => _preview = null);
+                  _set(widget.allowClear && star == now ? 0 : star);
+                },
+                onTapCancel: () => setState(() => _preview = null),
+                child: DecoratedBox(
+                  position: DecorationPosition.foreground,
+                  decoration: minimalRingFrame(
+                    t.shapes.small,
+                    // Keyboard focus only: a tap focuses it without a ring.
+                    ring:
+                        _focused &&
+                            FocusManager.instance.highlightMode ==
+                                FocusHighlightMode.traditional
+                        ? t.ring
+                        : null,
+                    ground: minimalGround(context),
+                    width: t.focusWidth,
+                  ),
+                  child: stars,
+                ),
               ),
-              child: stars,
             ),
           ),
         ),
       ),
     );
+  }
+
+  /// The star (1..max) under [at] in the row of cells [cell] wide, counted
+  /// from the start edge.
+  int _starAt(Offset at, double cell) {
+    final i = (at.dx / cell).floor().clamp(0, widget.max - 1);
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return (rtl ? widget.max - 1 - i : i) + 1;
   }
 
   static String _format(double v) =>
@@ -211,9 +258,6 @@ class _Star extends StatelessWidget {
     required this.ink,
     required this.edge,
     required this.stroke,
-    required this.onTap,
-    required this.onHover,
-    required this.onPress,
   });
 
   final double size;
@@ -224,15 +268,10 @@ class _Star extends StatelessWidget {
   final Color ink;
   final Color edge;
   final double stroke;
-  final VoidCallback? onTap;
-  final VoidCallback? onHover;
-
-  /// A finger or a button going down on this star (true) or lifting (false).
-  final ValueChanged<bool>? onPress;
 
   @override
   Widget build(BuildContext context) {
-    final star = SizedBox(
+    return SizedBox(
       width: extent,
       height: extent,
       child: Center(
@@ -246,18 +285,6 @@ class _Star extends StatelessWidget {
             rtl: Directionality.of(context) == TextDirection.rtl,
           ),
         ),
-      ),
-    );
-    if (onTap == null) return star;
-    return MouseRegion(
-      onHover: (_) => onHover?.call(),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapDown: (_) => onPress?.call(true),
-        onTapUp: (_) => onPress?.call(false),
-        onTapCancel: () => onPress?.call(false),
-        onTap: onTap,
-        child: star,
       ),
     );
   }

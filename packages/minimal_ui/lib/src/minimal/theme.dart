@@ -1,13 +1,16 @@
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'chrome_metrics.dart';
 import 'component_themes.dart';
-import 'components/pressable.dart' show MinimalHitTarget;
+import 'components/routes.dart';
 import 'internal/lucide_cut.g.dart';
+import 'internal/platform_words.dart';
 import 'knobs.dart';
 import 'shapes.dart';
 
@@ -247,6 +250,12 @@ class MinimalGap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(width: size, height: size);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('size', size));
+  }
 }
 
 /// Minimal's glyph: an icon drawn at the theme's stroke, in the quiet ink
@@ -322,6 +331,16 @@ class MinimalIcon extends StatelessWidget {
       semanticLabel: semanticLabel,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IconDataProperty('icon', icon))
+      ..add(DoubleProperty('size', size, defaultValue: MinimalIconSize.i18))
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 /// Responsive layout invariants shared by Minimal apps.
@@ -332,9 +351,19 @@ abstract final class MinimalLayout {
   /// From this width the layout is a desktop's: a rail, the widest measure.
   static const double expanded = 960;
 
-  /// The touch-target floor. [MinimalPressable] pads every 28–32 px control's
-  /// hit area out to it without changing what it paints.
+  /// The touch-target floor. At a finger every 28–32 px control is laid
+  /// out at least this square ([DesignTapTarget], Material's padded tap
+  /// target), its face as it paints, centred in it.
   static const double minHitTarget = 44;
+
+  /// The pointer's target floor (WCAG 2.5.8): what a mouse or a trackpad
+  /// needs, where [minHitTarget] is a finger's.
+  static const double pointerHitTarget = 24;
+
+  /// Minimal's floors, declared by [MinimalTheme] for the parts under it:
+  /// [minHitTarget] for a finger, [pointerHitTarget] for a pointer.
+  /// Density never moves them. They are ui_core's own floors.
+  static const DesignTapTargets tapTargets = DesignTapTargets.fallback;
 
   /// Whether the screen is narrower than [compact].
   static bool isCompact(BuildContext context) =>
@@ -373,18 +402,14 @@ abstract final class MinimalLayout {
   /// that does not expand) at that width on its start from [compact] up,
   /// whatever stretches it (a column's stretch); itself below, where a
   /// phone's column may stretch it.
-  /// The hold passes the control's 44 px target on (a box rejects a tap
-  /// outside its own size before its child sees it).
   static Widget holdWidth(BuildContext context, Widget child) =>
       isCompact(context)
       ? child
-      : MinimalHitTarget(
-          child: Align(
-            alignment: AlignmentDirectional.centerStart,
-            widthFactor: 1,
-            heightFactor: 1,
-            child: child,
-          ),
+      : Align(
+          alignment: AlignmentDirectional.centerStart,
+          widthFactor: 1,
+          heightFactor: 1,
+          child: child,
         );
 
   /// The measure a form or a settings page keeps: 640 px from [compact], the
@@ -1060,7 +1085,15 @@ class MinimalThemeData with Diagnosticable {
     this.typeface = MinimalTypeface.look,
     this.components = const MinimalComponentThemes(),
     this.iconStroke = 1.75,
-  }) : _chosenDensity = density,
+  }) : assert(
+         iconStroke >= 1.5 && iconStroke <= 2,
+         'MinimalThemeData.iconStroke is $iconStroke. Minimal\'s strokes are '
+         'thin: between 1.5 and 2, the strokes of the two Lucide cuts its '
+         'icon font draws. Outside them a painted glyph (a status mark, a '
+         'check) no longer matches the icons, and past 2 they stop reading '
+         'thin.',
+       ),
+       _chosenDensity = density,
        text = text ?? MinimalTextTheme.of(colors, typeface),
        shadowSm = shadowSm ?? _shadow(colors, 0),
        shadowMd = shadowMd ?? _shadow(colors, 1),
@@ -1159,6 +1192,9 @@ class MinimalThemeData with Diagnosticable {
   final MinimalTextTheme text;
 
   /// The faintest lift: a pressed segment's plate, a raised chip.
+  ///
+  /// Each of the three shadows is a soft neutral drop. A coloured or spread
+  /// shadow in any of them is a glow, which Minimal never draws.
   final List<BoxShadow> shadowSm;
 
   /// What floats over the page: a menu or a snack bar. Minimal separates
@@ -1216,7 +1252,9 @@ class MinimalThemeData with Diagnosticable {
       density.height(MinimalChromeMetrics.rowCompact);
 
   /// The stroke weight of a Lucide glyph (the icon font draws it; a painted
-  /// status glyph matches it).
+  /// status glyph matches it). Between 1.5 and 2, the strokes of the two
+  /// Lucide cuts the font draws; a debug build asserts it, since past 2 the
+  /// icons stop reading thin.
   final double iconStroke;
 
   /// Which appearance this theme is for.
@@ -1461,7 +1499,8 @@ class MinimalThemeData with Diagnosticable {
           : MinimalDensity.lerp(density, other.density, t),
       typeface: MinimalTypeface.lerp(typeface, other.typeface, t),
       components: MinimalComponentThemes.lerp(components, other.components, t),
-      iconStroke: lerpDouble(iconStroke, other.iconStroke, t)!,
+      // An overshooting curve stays in the stroke's range.
+      iconStroke: lerpDouble(iconStroke, other.iconStroke, t)!.clamp(1.5, 2.0),
     );
   }
 
@@ -1560,10 +1599,14 @@ class _MinimalScope extends InheritedTheme {
 /// `MaterialApp`, a `CupertinoApp` or a `WidgetsApp` alike, and every look
 /// installs the same way (`<Look>Theme(data: <Look>ThemeData.preset(...))`).
 /// Under it, Flutter's own text field and scroll bar wear Minimal's caret,
-/// selection, handles and bar, with no ink, and every text has Minimal's
-/// body style to fall back on. Another one restyles a part of the tree. An
-/// `InheritedTheme`, so what a route or an overlay captures keeps the
-/// Minimal it was raised in.
+/// selection, handles and bar, with no ink, every text has Minimal's body
+/// style to fall back on, and a page route the app pushes (a
+/// `MaterialPageRoute`, a router's page, of the Material Minimal stands on)
+/// moves Minimal's way on every platform ([minimalPageTransitions]), not the
+/// platform's slide or zoom; an app on Flutter's own `MaterialApp` puts the
+/// same map in its `ThemeData`, as [minimalPageTransitions] shows.
+/// Another one restyles a part of the tree. An `InheritedTheme`, so what a
+/// route or an overlay captures keeps the Minimal it was raised in.
 ///
 /// ```dart
 /// MaterialApp(
@@ -1596,20 +1639,13 @@ class MinimalTheme extends StatelessWidget {
   /// What it styles.
   final Widget child;
 
-  /// The theme in scope at [context]. Throws when there is none.
-  /// `context.minimalTheme` is the same.
-  static MinimalThemeData of(BuildContext context) {
-    final found = maybeOf(context);
-    if (found == null) {
-      throw FlutterError.fromParts([
-        ErrorSummary('No MinimalTheme in scope.'),
-        ErrorHint(
-          "Put a MinimalTheme in the app's builder, or above this widget.",
-        ),
-      ]);
-    }
-    return found;
-  }
+  /// The theme in scope at [context], or the standard light theme when there
+  /// is none, as `Theme.of` gives Material's default.
+  /// `context.minimalTheme` is the same; [maybeOf] answers null instead.
+  static MinimalThemeData of(BuildContext context) =>
+      maybeOf(context) ?? _fallback;
+
+  static final MinimalThemeData _fallback = MinimalThemeData.standard();
 
   /// The theme in scope at [context], or null.
   static MinimalThemeData? maybeOf(BuildContext context) =>
@@ -1626,20 +1662,34 @@ class MinimalTheme extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget under = child;
-    // Flutter's text field under a CupertinoApp or a WidgetsApp still asks
-    // for Material's words.
-    if (Localizations.maybeLocaleOf(context) != null &&
-        Localizations.of<MaterialLocalizations>(
-              context,
-              MaterialLocalizations,
-            ) ==
-            null) {
+    // The Material and Cupertino machinery under the look (an editable, its
+    // text menu, a route) asks for Material's and Cupertino's words: under a
+    // CupertinoApp or a WidgetsApp, under an app whose words are another
+    // library's (flutter_localizations' under the look's own Material), or
+    // under one in a language they lack. Where the app gives none, the look
+    // gives its own (internal/platform_words.dart). On iOS a field's text
+    // menu reads Cupertino's.
+    final words = <LocalizationsDelegate<Object?>>[
+      if (Localizations.of<MaterialLocalizations>(
+            context,
+            MaterialLocalizations,
+          ) ==
+          null)
+        minimalMaterialWords,
+      if (Localizations.of<CupertinoLocalizations>(
+            context,
+            CupertinoLocalizations,
+          ) ==
+          null)
+        minimalCupertinoWords,
+    ];
+    if (Localizations.maybeLocaleOf(context) != null && words.isNotEmpty) {
       // An override sets the direction from its locale's words again; the
       // app's own direction (a Directionality it placed) stands.
       final direction = Directionality.maybeOf(context);
       under = Localizations.override(
         context: context,
-        delegates: const [DefaultMaterialLocalizations.delegate],
+        delegates: words,
         child: direction == null
             ? under
             : Directionality(textDirection: direction, child: under),
@@ -1649,33 +1699,56 @@ class MinimalTheme extends StatelessWidget {
     // in scope, so stepping the theme reaches them all.
     final contrast = MediaQuery.maybeHighContrastOf(context) ?? false;
     final shown = contrast ? data.highContrast : data;
+    // The bridge keeps the platform of the theme it stands under (an app
+    // that sets one, the platform a debug session switches to): a field's
+    // handles and menu are that platform's.
+    final platform = Theme.of(context).platform;
     return _MinimalScope(
       data: shown,
       dark: contrast ? darkData?.highContrast : darkData,
       child: Theme(
-        data: _bridges[shown] ??= _materialUnder(shown),
+        data: (_bridges[shown] ??= {})[platform] ??= _materialUnder(
+          shown,
+          platform,
+        ),
         child: ScrollConfiguration(
           behavior: MinimalScrollBehavior(shown.borderStrong),
           child: IconTheme.merge(
             data: IconThemeData(color: shown.mutedForeground),
             // Minimal's own text default: it replaces WidgetsApp's error
             // style for any text outside a part that sets its own.
-            child: DefaultTextStyle(style: shown.body, child: under),
+            child: DefaultTextStyle(
+              style: shown.body,
+              // Minimal's tap-target floors, which its parts lay out at.
+              child: DesignTapTargetScope(
+                targets: MinimalLayout.tapTargets,
+                child: under,
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  static final Expando<ThemeData> _bridges = Expando<ThemeData>('minimal');
+  static const PageTransitionsTheme _pageTransitions = PageTransitionsTheme(
+    builders: minimalPageTransitions,
+  );
+
+  static final Expando<Map<TargetPlatform, ThemeData>> _bridges =
+      Expando<Map<TargetPlatform, ThemeData>>('minimal');
 
   /// What Flutter's own widgets under Minimal read (a text field's caret,
   /// selection and handles, a divider, a scaffold's ground), in Minimal's
   /// colours, with no ink, splash or highlight. Private: an app never sees
   /// a Material type in Minimal's API, and no Minimal part reads a token
   /// from it.
-  static ThemeData _materialUnder(MinimalThemeData t) => ThemeData(
+  static ThemeData _materialUnder(
+    MinimalThemeData t,
+    TargetPlatform platform,
+  ) => ThemeData(
     useMaterial3: true,
+    platform: platform,
     brightness: t.brightness,
     fontFamily: t.body.fontFamily,
     scaffoldBackgroundColor: t.background,
@@ -1686,6 +1759,9 @@ class MinimalTheme extends StatelessWidget {
     splashColor: const Color(0x00000000),
     focusColor: t.ring,
     materialTapTargetSize: MaterialTapTargetSize.padded,
+    // Minimal's push and pop on every platform: a web build or a desktop
+    // would otherwise slide or zoom an app's own page routes in.
+    pageTransitionsTheme: _pageTransitions,
     // The theme's density is read by Minimal's own parts, at its own step.
     // Material's default is compact on a desktop (and a web build opened on
     // one), which would move a text field's line 4 px under its box there.

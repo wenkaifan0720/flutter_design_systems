@@ -14,6 +14,7 @@ import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../kit.dart';
+import '../kit_words.dart';
 
 Widget kitScreenNewHabitDemo(Brightness brightness) => MinimalPreview(
   light: kitTheme(Brightness.light),
@@ -23,12 +24,12 @@ Widget kitScreenNewHabitDemo(Brightness brightness) => MinimalPreview(
   tabs: _tabs,
   // The very page the Today screen shows, dimmed under the card.
   under: const KitTodayPage(),
-  child: const KitNewHabitPage(name: 'Stretch before bed'),
+  child: KitNewHabitPage(name: ar('Stretch before bed', 'تمدد قبل النوم')),
 );
 
-const List<MinimalNavItem> _tabs = [
-  MinimalNavItem(LucideIcons.calendarCheck, 'Today'),
-  MinimalNavItem(LucideIcons.listChecks, 'Habits'),
-  MinimalNavItem(LucideIcons.activity, 'Trends'),
-  MinimalNavItem(LucideIcons.settings, 'Settings'),
+List<MinimalNavItem> get _tabs => [
+  MinimalNavItem(LucideIcons.calendarCheck, ar('Today', 'اليوم')),
+  MinimalNavItem(LucideIcons.listChecks, ar('Habits', 'العادات')),
+  MinimalNavItem(LucideIcons.activity, ar('Trends', 'الاتجاهات')),
+  MinimalNavItem(LucideIcons.settings, ar('Settings', 'الإعدادات')),
 ];

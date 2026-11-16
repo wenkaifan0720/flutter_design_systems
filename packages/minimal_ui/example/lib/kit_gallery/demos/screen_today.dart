@@ -13,6 +13,7 @@ import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../kit.dart';
+import '../kit_words.dart';
 
 Widget kitScreenTodayDemo(Brightness brightness) => MinimalPreview(
   light: kitTheme(Brightness.light),
@@ -23,7 +24,7 @@ Widget kitScreenTodayDemo(Brightness brightness) => MinimalPreview(
     builder: (context) => KitTodayPage(
       onNew: () => showMinimalSnackBar(
         context,
-        'New habit opens as a sheet',
+        ar('New habit opens as a sheet', 'تُفتح «عادة جديدة» في لوحة'),
         icon: LucideIcons.plus,
       ),
     ),
@@ -51,7 +52,7 @@ Widget kitScreenTodayDeskDemo(Brightness brightness) => MinimalPreview(
               selected: 'HAB-4',
               onNew: () => showMinimalSnackBar(
                 context,
-                'New habit opens as a sheet',
+                ar('New habit opens as a sheet', 'تُفتح «عادة جديدة» في لوحة'),
                 icon: LucideIcons.plus,
               ),
             ),
@@ -68,9 +69,9 @@ Widget kitScreenTodayDeskDemo(Brightness brightness) => MinimalPreview(
 /// do there.
 const double _masterWidth = 400;
 
-const List<MinimalNavItem> _tabs = [
-  MinimalNavItem(LucideIcons.calendarCheck, 'Today'),
-  MinimalNavItem(LucideIcons.listChecks, 'Habits'),
-  MinimalNavItem(LucideIcons.activity, 'Trends'),
-  MinimalNavItem(LucideIcons.settings, 'Settings'),
+List<MinimalNavItem> get _tabs => [
+  MinimalNavItem(LucideIcons.calendarCheck, ar('Today', 'اليوم')),
+  MinimalNavItem(LucideIcons.listChecks, ar('Habits', 'العادات')),
+  MinimalNavItem(LucideIcons.activity, ar('Trends', 'الاتجاهات')),
+  MinimalNavItem(LucideIcons.settings, ar('Settings', 'الإعدادات')),
 ];

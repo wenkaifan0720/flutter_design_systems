@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter/widgets.dart';
 
@@ -59,6 +60,12 @@ class MinimalGroundScope extends StatelessWidget {
             ),
           ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(EnumProperty<MinimalGround>('ground', ground));
+  }
 }
 
 class _MinimalGroundMark extends InheritedWidget {

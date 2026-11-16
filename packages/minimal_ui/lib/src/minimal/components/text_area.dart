@@ -1,6 +1,7 @@
 /// A multi-line text field: notes, a description, a message.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -65,7 +66,7 @@ class MinimalTextArea extends StatelessWidget {
   /// Whether it takes input.
   final bool enabled;
 
-  /// Whether its text is shown but not edited.
+  /// {@macro minimal.readOnly}
   final bool readOnly;
 
   /// Its focus; null keeps its own.
@@ -74,7 +75,7 @@ class MinimalTextArea extends StatelessWidget {
   /// This box's style, over `components.textField`.
   final MinimalStyle? fieldStyle;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -96,4 +97,43 @@ class MinimalTextArea extends StatelessWidget {
     textCapitalization: TextCapitalization.sentences,
     fieldStyle: fieldStyle,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(IntProperty('minLines', minLines, defaultValue: 3))
+      ..add(IntProperty('maxLines', maxLines, defaultValue: 8))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>(
+          'fieldStyle',
+          fieldStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }

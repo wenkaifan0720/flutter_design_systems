@@ -20,15 +20,25 @@ Widget kitDisclosureDemo(Brightness brightness) => kitScreen(
         Builder(
           builder: (context) {
             final t = context.minimalTheme;
+            // The rules run the words' line; at large text a word gives
+            // way (ellipsized) before the row runs past the page.
+            Widget word(String w) => Flexible(
+              child: Text(
+                w,
+                style: t.body,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            );
             return SizedBox(
-              height: 24,
+              height: MediaQuery.textScalerOf(context).scale(24),
               child: Row(
                 children: [
-                  Text('Edit', style: t.body),
+                  word('Edit'),
                   const MinimalDivider.vertical(),
-                  Text('Share', style: t.body),
+                  word('Share'),
                   const MinimalDivider.vertical(),
-                  Text('Archive', style: t.body),
+                  word('Archive'),
                 ],
               ),
             );

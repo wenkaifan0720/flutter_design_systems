@@ -1,6 +1,7 @@
 /// A notice that stands in the page: an inline alert.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -88,7 +89,7 @@ class MinimalBanner extends StatelessWidget {
     final titleStyle = so.text(t.body.medium, t.foreground);
     final body = Padding(
       padding:
-          so.padding ??
+          so.paddingIn(context) ??
           const EdgeInsetsDirectional.fromSTEB(
             MinimalSpacing.s12,
             MinimalSpacing.s12,
@@ -156,5 +157,25 @@ class MinimalBanner extends StatelessWidget {
         child: MinimalGroundFill(fill: so.fill ?? t.card, child: body),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(
+        EnumProperty<MinimalTone>(
+          'tone',
+          tone,
+          defaultValue: MinimalTone.neutral,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDismissed', onDismissed))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
   }
 }

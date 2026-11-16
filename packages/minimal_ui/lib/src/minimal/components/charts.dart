@@ -3,6 +3,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../internal/controls.dart';
@@ -145,6 +146,20 @@ class MinimalBarChart extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<double>('values', values))
+      ..add(IterableProperty<String>('labels', labels, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 120))
+      ..add(IntProperty('highlight', highlight, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has('onBarPressed', onBarPressed),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 /// A trend line with no axes — the shape of a series inside a stat, a KPI
@@ -211,6 +226,18 @@ class MinimalSparkline extends StatelessWidget {
     final label = semanticLabel;
     if (label == null) return ExcludeSemantics(child: paint);
     return Semantics(label: label, image: true, child: paint);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<double>('data', data))
+      ..add(DoubleProperty('height', height, defaultValue: 40))
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(FlagProperty('area', value: area, ifFalse: 'area: false'))
+      ..add(FlagProperty('endDot', value: endDot, ifFalse: 'endDot: false'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

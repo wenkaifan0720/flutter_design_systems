@@ -1,8 +1,10 @@
 /// The n-of-m segmented summary bar and a row's inline week of squares.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '../localizations.dart';
 import '../theme.dart';
 import 'tag.dart';
 
@@ -111,7 +113,8 @@ class MinimalSegmentBar extends StatelessWidget {
       ],
     );
     final announced =
-        semanticLabel ?? '$filled of $total${noun == null ? '' : ' $noun'}';
+        semanticLabel ??
+        MinimalLocalizations.of(context).countOf(filled, total, noun: noun);
     if (noun == null && !showPercent) {
       return Semantics(
         label: announced,
@@ -203,6 +206,27 @@ class MinimalSegmentBar extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('value', value))
+      ..add(IntProperty('total', total))
+      ..add(
+        EnumProperty<MinimalTone>(
+          'tone',
+          tone,
+          defaultValue: MinimalTone.success,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('labelWidth', labelWidth, defaultValue: null))
+      ..add(
+        FlagProperty('showPercent', value: showPercent, ifTrue: 'showPercent'),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 /// A row's inline week — seven 7 px squares, oldest first: the kept days
@@ -254,7 +278,7 @@ class MinimalWeekDots extends StatelessWidget {
     final count = completedDays.where((k) => k).length;
     final corner = MinimalSegmentBar.cornerOf(t);
     return Semantics(
-      label: semanticLabel ?? '$count of 7 days kept',
+      label: semanticLabel ?? MinimalLocalizations.of(context).daysKept(count),
       excludeSemantics: true,
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -276,5 +300,15 @@ class MinimalWeekDots extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<bool>('completedDays', completedDays))
+      ..add(IntProperty('currentDay', currentDay, defaultValue: null))
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }

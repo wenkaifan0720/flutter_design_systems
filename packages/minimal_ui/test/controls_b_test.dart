@@ -65,6 +65,7 @@ void main() {
     ) async {
       final handle = tester.ensureSemantics();
       final controller = TextEditingController(text: 'Morning run');
+      addTearDown(controller.dispose);
       final typed = <String>[];
       await tester.pumpWidget(
         _host(
@@ -168,6 +169,7 @@ void main() {
       expect(
         tester
             .getSemantics(find.text('Pick a time after 06:00.'))
+            .getSemanticsData()
             .flagsCollection
             .isLiveRegion,
         isTrue,
@@ -181,8 +183,11 @@ void main() {
         _host(const MinimalTextField(label: 'Team', enabled: false)),
       );
       final node = tester.getSemantics(find.bySemanticsLabel('Team'));
-      expect(node.flagsCollection.isEnabled, Tristate.isFalse);
-      expect(node.flagsCollection.isTextField, isTrue);
+      expect(
+        node.getSemanticsData().flagsCollection.isEnabled,
+        Tristate.isFalse,
+      );
+      expect(node.getSemanticsData().flagsCollection.isTextField, isTrue);
       handle.dispose();
     });
 
@@ -214,7 +219,7 @@ void main() {
         _host(MinimalTextField(label: 'Name', focusNode: focus)),
       );
       final node = tester.getSemantics(find.bySemanticsLabel('Name'));
-      expect(node.flagsCollection.isTextField, isTrue);
+      expect(node.getSemanticsData().flagsCollection.isTextField, isTrue);
       expect(node.rect.height, MinimalLayout.minHitTarget);
       // The box's top edge, above the one line of text it paints.
       final box = tester.getRect(
@@ -286,6 +291,7 @@ void main() {
       expect(
         tester
             .getSemantics(find.bySemanticsLabel('Show'))
+            .getSemanticsData()
             .flagsCollection
             .isButton,
         isTrue,
@@ -441,7 +447,11 @@ void main() {
       );
       expect(find.text('SCHEDULE'), findsOneWidget);
       expect(
-        tester.getSemantics(find.text('SCHEDULE')).flagsCollection.isHeader,
+        tester
+            .getSemantics(find.text('SCHEDULE'))
+            .getSemanticsData()
+            .flagsCollection
+            .isHeader,
         isTrue,
       );
       expect(find.text('Reminders follow the device time zone.'), findsOne);
@@ -459,7 +469,7 @@ void main() {
       await tester.tap(find.text('Archive habit'));
       expect(taps, 1);
       final node = tester.getSemantics(find.bySemanticsLabel('Archive habit'));
-      expect(node.flagsCollection.isButton, isTrue);
+      expect(node.getSemanticsData().flagsCollection.isButton, isTrue);
       handle.dispose();
     });
 
@@ -479,7 +489,7 @@ void main() {
         ),
       );
       final node = tester.getSemantics(find.bySemanticsLabel('Goal'));
-      expect(node.flagsCollection.isTextField, isTrue);
+      expect(node.getSemanticsData().flagsCollection.isTextField, isTrue);
       await tester.enterText(find.byType(TextField), '30');
       expect(typed, ['30']);
       expect(find.text('Between 1 and 240 minutes.'), findsOneWidget);
@@ -572,7 +582,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Every evening'), findsNothing);
       final node = tester.getSemantics(find.bySemanticsLabel(RegExp('Owner')));
-      expect(node.flagsCollection.isEnabled, Tristate.isFalse);
+      expect(
+        node.getSemanticsData().flagsCollection.isEnabled,
+        Tristate.isFalse,
+      );
       // Its value drops to the quiet ink, so dimmed it never reads
       // stronger than an enabled row's.
       final t = MinimalThemeData.preset('standard', Brightness.light);
@@ -746,8 +759,11 @@ void main() {
       final node = tester.getSemantics(
         find.bySemanticsLabel(RegExp('No actions')),
       );
-      expect(node.flagsCollection.isButton, isTrue);
-      expect(node.flagsCollection.isEnabled, Tristate.isFalse);
+      expect(node.getSemanticsData().flagsCollection.isButton, isTrue);
+      expect(
+        node.getSemanticsData().flagsCollection.isEnabled,
+        Tristate.isFalse,
+      );
       handle.dispose();
     });
   });
@@ -828,7 +844,10 @@ void main() {
       final chosen = tester.getSemantics(
         find.bySemanticsLabel('Friday, 21 August 2026'),
       );
-      expect(chosen.flagsCollection.isSelected, Tristate.isTrue);
+      expect(
+        chosen.getSemanticsData().flagsCollection.isSelected,
+        Tristate.isTrue,
+      );
       expect(
         find.bySemanticsLabel('Friday, 28 August 2026, Today'),
         findsOneWidget,
@@ -836,7 +855,10 @@ void main() {
       final early = tester.getSemantics(
         find.bySemanticsLabel('Sunday, 2 August 2026'),
       );
-      expect(early.flagsCollection.isEnabled, Tristate.isFalse);
+      expect(
+        early.getSemanticsData().flagsCollection.isEnabled,
+        Tristate.isFalse,
+      );
       await tester.tap(find.bySemanticsLabel('Next month'));
       await tester.pump();
       expect(find.text('September 2026'), findsOneWidget);
@@ -925,7 +947,10 @@ void main() {
       final pill = tester.getSemantics(
         find.bySemanticsLabel(RegExp('^Created, date')),
       );
-      expect(pill.flagsCollection.isEnabled, Tristate.isFalse);
+      expect(
+        pill.getSemanticsData().flagsCollection.isEnabled,
+        Tristate.isFalse,
+      );
       await tester.tap(find.text('2 Jun 2026'), warnIfMissed: false);
       await tester.pumpAndSettle();
       expect(find.text('June 2026'), findsNothing);
@@ -1006,6 +1031,7 @@ void main() {
       expect(
         tester
             .getSemantics(find.bySemanticsLabel('Open'))
+            .getSemanticsData()
             .flagsCollection
             .isSelected,
         Tristate.isTrue,
@@ -1071,6 +1097,7 @@ void main() {
       expect(
         tester
             .getSemantics(find.bySemanticsLabel(RegExp('Search habits')))
+            .getSemanticsData()
             .flagsCollection
             .isButton,
         isTrue,
@@ -1117,7 +1144,10 @@ void main() {
         _host(const MinimalSearchEntry(label: 'Search archive')),
       );
       final node = tester.getSemantics(find.bySemanticsLabel('Search archive'));
-      expect(node.flagsCollection.isEnabled, Tristate.isFalse);
+      expect(
+        node.getSemanticsData().flagsCollection.isEnabled,
+        Tristate.isFalse,
+      );
       handle.dispose();
     });
   });
@@ -1158,7 +1188,10 @@ void main() {
         ),
       );
       final weekly = tester.getSemantics(find.bySemanticsLabel('Weekly'));
-      expect(weekly.flagsCollection.isEnabled, Tristate.isFalse);
+      expect(
+        weekly.getSemanticsData().flagsCollection.isEnabled,
+        Tristate.isFalse,
+      );
       await tester.tap(find.text('Every day'));
       expect(taps, 1);
       handle.dispose();
@@ -1271,7 +1304,9 @@ void main() {
       tester,
     ) async {
       final input = TextEditingController(text: 'Morning run');
+      addTearDown(input.dispose);
       final search = TextEditingController(text: 'run');
+      addTearDown(search.dispose);
       final scopes = <int>[];
       await tester.pumpWidget(
         _host(
@@ -1303,6 +1338,30 @@ void main() {
       expect(scopes, [2]);
     });
 
+    // The 28 glyph stands in the taller toolbar box: the box's air under
+    // it, and the band round the box, are the glyph's, not the field's.
+    testWidgets('the toolbar search\'s clear takes taps under its glyph', (
+      tester,
+    ) async {
+      final search = TextEditingController();
+      addTearDown(search.dispose);
+      await tester.pumpWidget(
+        _host(
+          MinimalSearchField(
+            controller: search,
+            presentation: MinimalSearchPresentation.toolbar,
+          ),
+        ),
+      );
+      for (final dy in [3.0, 7.0]) {
+        search.text = 'read';
+        await tester.pump();
+        await tapBelow(tester, find.bySemanticsLabel('Clear'), dy);
+        await tester.pump();
+        expect(search.text, isEmpty, reason: '$dy px under the glyph');
+      }
+    });
+
     testWidgets('the search entry and its filter square take taps below', (
       tester,
     ) async {
@@ -1317,7 +1376,11 @@ void main() {
           ),
         ),
       );
-      await tapBelow(tester, find.bySemanticsLabel('Filters'), 5);
+      // The square's node spans its reach, the floor tall: its bottom row,
+      // 5 px under the face, takes the tap.
+      final square = tester.getRect(find.bySemanticsLabel('Filters'));
+      expect(square.height, 44);
+      await tester.tapAt(square.bottomCenter - const Offset(0, 1));
       await tapBelow(tester, find.text('Search habits'), 10);
       expect(filtered, 1);
       expect(opened, 1);

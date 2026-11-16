@@ -1,11 +1,13 @@
 /// Navigation for wide windows: a rail of glyphs, and a sidebar of rows.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
+import '../internal/controls.dart';
 import '../internal/face.dart';
 import '../theme.dart';
 import 'nav_bar.dart';
@@ -86,30 +88,62 @@ class MinimalNavigationRail extends StatelessWidget {
       child: Column(
         children: [
           if (lead != null) ...[lead, const MinimalGap(MinimalSpacing.s12)],
-          _walk(
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (var i = 0; i < destinations.length; i++)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: MinimalSpacing.s4),
-                    child: _RailCell(
-                      // A tab's walkthrough key finds it in the rail too.
-                      key: destinations[i].key,
-                      item: destinations[i],
-                      selected: i == selectedIndex,
-                      shape: shape,
-                      onPressed: select == null ? null : () => select(i),
+          // The places stand at the top and the foot at the bottom; when
+          // large text makes them taller than the rail, they scroll.
+          Expanded(
+            child: Align(
+              alignment: Alignment.topCenter,
+              // Cut a scrolled run past the rail's room, but not a place's
+              // focus ring, drawn outside its cell.
+              child: ClipRect(
+                clipper: const MinimalRingRoom(),
+                child: SingleChildScrollView(
+                  clipBehavior: Clip.none,
+                  child: _walk(
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (var i = 0; i < destinations.length; i++)
+                          Padding(
+                            padding: const EdgeInsets.only(
+                              bottom: MinimalSpacing.s4,
+                            ),
+                            child: _RailCell(
+                              // A tab's walkthrough key finds it in the rail too.
+                              key: destinations[i].key,
+                              item: destinations[i],
+                              selected: i == selectedIndex,
+                              shape: shape,
+                              onPressed: select == null
+                                  ? null
+                                  : () => select(i),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-              ],
+                ),
+              ),
             ),
           ),
-          const Spacer(),
           ?trail,
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalNavItem>('destinations', destinations))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      );
   }
 }
 
@@ -280,11 +314,28 @@ class MinimalNavigationDrawer extends StatelessWidget {
         color: t.card,
         border: rtl ? Border(left: t.rule) : Border(right: t.rule),
       ),
-      padding: const EdgeInsets.all(MinimalSpacing.s8),
+      padding: EdgeInsets.fromLTRB(
+        MinimalSpacing.s8,
+        head == null ? MinimalSpacing.s8 : 0,
+        MinimalSpacing.s8,
+        MinimalSpacing.s8,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (head != null) ...[head, const MinimalGap(MinimalSpacing.s8)],
+          // The head stands in a band a page's bar tall, centred in it, so
+          // it lines up with the bars of the panes beside the drawer.
+          if (head != null)
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                minHeight: MinimalChromeMetrics.barHeight,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [head],
+              ),
+            ),
           Expanded(
             child: SingleChildScrollView(
               child: _walk(
@@ -299,6 +350,21 @@ class MinimalNavigationDrawer extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalNavigationSection>('sections', sections))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(DoubleProperty('width', width, defaultValue: 248));
   }
 }
 

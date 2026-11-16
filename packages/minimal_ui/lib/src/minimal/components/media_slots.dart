@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart' show SynchronousFuture;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show AssetManifest, rootBundle;
 import 'package:flutter/widgets.dart';
 
@@ -80,6 +80,14 @@ class MinimalMediaImage extends StatefulWidget {
 
   @override
   State<MinimalMediaImage> createState() => _MinimalMediaImageState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('slotId', slotId))
+      ..add(EnumProperty<BoxFit>('fit', fit, defaultValue: BoxFit.cover));
+  }
 }
 
 class _MinimalMediaImageState extends State<MinimalMediaImage> {

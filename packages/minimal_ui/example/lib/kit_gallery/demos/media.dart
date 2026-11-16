@@ -226,21 +226,28 @@ class _RevealNoteState extends State<_RevealNote> {
               ),
             ),
           ),
+          // The note under a rule of its own: no face of its own, so
+          // nothing square stands in the card's round corners.
           MinimalReveal(
             visible: _note,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(
-                MinimalCard.inset,
-                MinimalSpacing.s12,
-                MinimalCard.inset,
-                MinimalSpacing.s12,
-              ),
-              decoration: BoxDecoration(border: Border(top: t.rule)),
-              child: Text(
-                'Out the door before 8. Any distance counts. Legs heavy '
-                'after Thursday — keep it easy until Sunday.',
-                style: t.bodySmall.c(t.mutedForeground),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                MinimalDivider(space: t.hairline),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    MinimalCard.inset,
+                    MinimalSpacing.s12,
+                    MinimalCard.inset,
+                    MinimalSpacing.s12,
+                  ),
+                  child: Text(
+                    'Out the door before 8. Any distance counts. Legs heavy '
+                    'after Thursday — keep it easy until Sunday.',
+                    style: t.bodySmall.c(t.mutedForeground),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

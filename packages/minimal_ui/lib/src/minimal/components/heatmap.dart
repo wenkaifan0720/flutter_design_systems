@@ -4,6 +4,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../localizations.dart';
@@ -81,6 +82,15 @@ class MinimalHeatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    assert(
+      levels.every((level) => level >= 0 && level <= 2),
+      'a day\'s level is 0, 1 or 2',
+    );
+    assert(
+      today == null || (today! >= 0 && today! < levels.length),
+      'today is an index into levels',
+    );
+    assert(weeks == null || weeks! > 0, 'weeks is at least 1');
     final t = context.minimalTheme;
     final columns = weeks ?? (levels.length / 7).ceil();
     final kept = levels.where((l) => l > 0).length;
@@ -158,6 +168,17 @@ class MinimalHeatmap extends StatelessWidget {
               ],
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<int>('levels', levels))
+      ..add(IntProperty('weeks', weeks, defaultValue: null))
+      ..add(IntProperty('today', today, defaultValue: null))
+      ..add(FlagProperty('legend', value: legend, ifTrue: 'legend'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

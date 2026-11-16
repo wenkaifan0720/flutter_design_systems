@@ -168,7 +168,9 @@ class _LiveState extends State<_Live> {
 /// stands closer to the frame's edge than that, so every row it crosses
 /// hides whole under it, as on a phone — no clipped letters either side.
 /// The frame is the rows' own height: whole rows, the last closed by the
-/// frame's edge, no band under it.
+/// frame's edge, no band under it. Nothing clips it: the rows hold no fill
+/// to cut and the scrim takes the frame's shape, so the card's shadow is
+/// whole, never cut flat by the frame as by a clip round it.
 class _OverPage extends StatelessWidget {
   const _OverPage();
 
@@ -186,22 +188,23 @@ class _OverPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     return Container(
-      clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
         color: t.background,
         shape: t.shapes.medium.copyWith(
           side: BorderSide(color: t.border, width: t.hairline),
         ),
       ),
-      // The rows size the frame; the scrim and the card stand over them.
+      // The rows size the frame, or the card when large text makes it the
+      // taller; the scrim and the card stand over the rows.
       child: Stack(
+        alignment: Alignment.center,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (final (i, (name, streak)) in _habits.indexed)
                 Container(
-                  height: t.rowHeight,
+                  constraints: BoxConstraints(minHeight: t.rowHeight),
                   padding: MinimalInsets.gutter,
                   decoration: BoxDecoration(
                     border: i == _habits.length - 1
@@ -224,28 +227,31 @@ class _OverPage extends StatelessWidget {
                 ),
             ],
           ),
-          Positioned.fill(child: ColoredBox(color: t.overlay)),
           Positioned.fill(
-            child: Center(
-              // The screen's gutter at its sides, as showMinimalDialog
-              // stands it.
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: MinimalChromeMetrics.gutter,
-                  vertical: MinimalSpacing.s16,
-                ),
-                child: MinimalDialog(
-                  title: 'Delete Morning run?',
-                  message: 'Its 71 check-ins go with it.',
-                  confirmLabel: 'Delete',
-                  cancelLabel: 'Cancel',
-                  destructive: true,
-                  // It stands for the raised card, so it floats like one.
-                  elevated: true,
-                  onConfirm: () {},
-                  onCancel: () {},
-                ),
+            child: DecoratedBox(
+              decoration: ShapeDecoration(
+                color: t.overlay,
+                shape: t.shapes.medium,
               ),
+            ),
+          ),
+          // The screen's gutter at its sides, as showMinimalDialog stands
+          // it.
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: MinimalChromeMetrics.gutter,
+              vertical: MinimalSpacing.s16,
+            ),
+            child: MinimalDialog(
+              title: 'Delete Morning run?',
+              message: 'Its 71 check-ins go with it.',
+              confirmLabel: 'Delete',
+              cancelLabel: 'Cancel',
+              destructive: true,
+              // It stands for the raised card, so it floats like one.
+              elevated: true,
+              onConfirm: () {},
+              onCancel: () {},
             ),
           ),
         ],

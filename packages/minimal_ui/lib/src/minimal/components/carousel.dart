@@ -2,6 +2,7 @@
 /// ui_core's carousel.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -190,5 +191,42 @@ class MinimalCarouselView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(DoubleProperty('height', height, defaultValue: 200))
+      ..add(
+        DoubleProperty('viewportFraction', viewportFraction, defaultValue: 1),
+      )
+      ..add(FlagProperty('loop', value: loop, ifTrue: 'loop'))
+      ..add(
+        DiagnosticsProperty<Duration>('autoplay', autoplay, defaultValue: null),
+      )
+      ..add(IntProperty('initialPage', initialPage, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onPageChanged',
+          onPageChanged,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'showControls',
+          value: showControls,
+          ifFalse: 'showControls: false',
+        ),
+      );
   }
 }

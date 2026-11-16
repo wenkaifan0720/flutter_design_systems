@@ -49,22 +49,24 @@ Widget _note(BuildContext context, String line) {
 
 // A pane stands on the card's own ground: a fill of its own would paint over
 // the card's rounded rim at its corners.
-Widget _pane(BuildContext context, String title, String body) => Container(
-  padding: const EdgeInsets.all(MinimalSpacing.s12),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(title, style: context.minimalTheme.label),
-      const MinimalGap(MinimalSpacing.s8),
-      Text(
-        body,
-        style: context.minimalTheme.bodySmall.c(
-          context.minimalTheme.mutedForeground,
-        ),
+// Its words scroll when large text makes them taller than the pane.
+Widget _pane(BuildContext context, String title, String body) =>
+    SingleChildScrollView(
+      padding: const EdgeInsets.all(MinimalSpacing.s12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: context.minimalTheme.label),
+          const MinimalGap(MinimalSpacing.s8),
+          Text(
+            body,
+            style: context.minimalTheme.bodySmall.c(
+              context.minimalTheme.mutedForeground,
+            ),
+          ),
+        ],
       ),
-    ],
-  ),
-);
+    );
 
 Widget kitPanesDemo(Brightness brightness) => kitScreen(
   brightness: brightness,

@@ -1,6 +1,7 @@
 /// A titled row that opens to show more: a disclosure, an accordion's item.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -64,15 +65,49 @@ class MinimalDisclosure extends StatefulWidget {
   /// The air around [child] under the row.
   final EdgeInsetsGeometry padding;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
   State<MinimalDisclosure> createState() => _MinimalDisclosureState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>('leading', leading, defaultValue: null),
+      )
+      ..add(
+        FlagProperty(
+          'initiallyExpanded',
+          value: initiallyExpanded,
+          ifTrue: 'initiallyExpanded',
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.only(bottom: MinimalSpacing.s12),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _MinimalDisclosureState extends State<MinimalDisclosure> {

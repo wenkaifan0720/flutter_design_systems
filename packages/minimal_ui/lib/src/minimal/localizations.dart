@@ -3,6 +3,7 @@
 /// takes the caller's words when given and these otherwise.
 library;
 
+import 'package:flutter/foundation.dart' show SynchronousFuture;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -20,7 +21,8 @@ export 'package:ui_core/ui_core.dart'
 /// [DefaultDesignLocalizations], overrides the words it translates and adds
 /// a delegate for it to `localizationsDelegates`, and every part speaks
 /// them. The words only Minimal says (Try again, Copy, the composer's
-/// buttons) are English in 0.1.0.
+/// buttons) are translated the same way: extend [MinimalLocalizationsEn],
+/// override them, and add [MinimalLocalizations.delegateOf] your words.
 ///
 /// ```dart
 /// Text(MinimalLocalizations.of(context).back)
@@ -29,10 +31,24 @@ abstract class MinimalLocalizations {
   /// Const constructor, for subclasses.
   const MinimalLocalizations();
 
-  /// The words in force at [context]: the shared words of
-  /// [DesignLocalizations.of], and Minimal's own in English.
+  /// The words in force at [context]: the app's own, when its
+  /// `localizationsDelegates` load a [MinimalLocalizations]
+  /// ([delegateOf]); else the shared words of [DesignLocalizations.of], and
+  /// Minimal's own in English.
   static MinimalLocalizations of(BuildContext context) =>
+      Localizations.of<MinimalLocalizations>(context, MinimalLocalizations) ??
       MinimalLocalizationsEn(DesignLocalizations.of(context));
+
+  /// A delegate that loads [words] for the locales [isSupported] accepts
+  /// (every locale when null), for an app's `localizationsDelegates`.
+  ///
+  /// ```dart
+  /// MaterialApp(localizationsDelegates: [MinimalLocalizations.delegateOf(const MinimalLocalizationsEn(), isSupported: (l) => l.languageCode == 'en'), DesignLocalizations.delegate])
+  /// ```
+  static LocalizationsDelegate<MinimalLocalizations> delegateOf(
+    MinimalLocalizations words, {
+    bool Function(Locale locale)? isSupported,
+  }) => _MinimalWordsDelegate(words, isSupported);
 
   /// A month and its year, as a calendar heads its grid ("August 2026").
   String monthYear(DateTime month);
@@ -330,6 +346,58 @@ abstract class MinimalLocalizations {
 
   /// Said when a palette's results change: how many match.
   String results(int count);
+
+  // A status's and a priority's names are words of their own, not a method
+  // on the enum: a component copied into an app (its enums renamed) still
+  // speaks the app's words through them.
+
+  /// A backlog task's name, as a row, a badge or a screen reader says it
+  /// (MinimalTaskStatus.labelIn picks a status's word).
+  String get taskBacklog => 'Backlog';
+
+  /// A task's name while it is planned, not started.
+  String get taskTodo => 'Todo';
+
+  /// A task's name while it is worked on.
+  String get taskActive => 'In progress';
+
+  /// A finished task's name.
+  String get taskDone => 'Done';
+
+  /// A task's name once started, then put aside.
+  String get taskPaused => 'Paused';
+
+  /// A dropped task's name.
+  String get taskCancelled => 'Cancelled';
+
+  /// The urgent priority's name, as a menu or a row prints it
+  /// (MinimalPriority.labelIn picks a priority's word).
+  String get priorityUrgent => 'Urgent';
+
+  /// The high priority's name.
+  String get priorityHigh => 'High';
+
+  /// The medium priority's name.
+  String get priorityMedium => 'Medium';
+
+  /// The low priority's name.
+  String get priorityLow => 'Low';
+
+  /// What a task with no priority set says, in a menu and to a screen
+  /// reader.
+  String get priorityNone => 'No priority';
+
+  /// What a screen reader hears for a count out of a total: "4 of 5
+  /// kept", with the [noun] when given.
+  String countOf(int value, int total, {String? noun}) =>
+      '$value of $total${noun == null ? '' : ' $noun'}';
+
+  /// What a screen reader hears for a week's dots: "4 of 7 days kept".
+  String daysKept(int count) => '$count of 7 days kept';
+
+  /// What a screen reader hears for a priority's glyph, [priority] its
+  /// name: "High priority" ([priorityNone] is heard alone).
+  String priorityNamed(String priority) => '$priority priority';
 }
 
 /// Minimal's words: the [shared] ones from ui_core, Minimal's own in
@@ -595,4 +663,26 @@ class MinimalLocalizationsEn extends MinimalLocalizations {
   String get notifications => shared.toasterRegionLabel;
   @override
   String results(int count) => shared.commandPaletteResultsMessage(count);
+}
+
+/// Loads one set of Minimal's words: [MinimalLocalizations.delegateOf].
+class _MinimalWordsDelegate
+    extends LocalizationsDelegate<MinimalLocalizations> {
+  const _MinimalWordsDelegate(this.words, this.supports);
+
+  final MinimalLocalizations words;
+  final bool Function(Locale locale)? supports;
+
+  @override
+  bool isSupported(Locale locale) => supports?.call(locale) ?? true;
+
+  @override
+  Future<MinimalLocalizations> load(Locale locale) =>
+      SynchronousFuture<MinimalLocalizations>(words);
+
+  @override
+  bool shouldReload(_MinimalWordsDelegate old) => !identical(old.words, words);
+
+  @override
+  String toString() => 'MinimalLocalizations.delegateOf(${words.runtimeType})';
 }

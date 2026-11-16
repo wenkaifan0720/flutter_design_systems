@@ -1,12 +1,13 @@
 import 'dart:math' as math;
 
-import 'package:flutter/rendering.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
 import '../internal/column_plan.dart';
+import '../internal/controls.dart';
 import '../internal/edge_fade.dart';
 import '../localizations.dart';
 import '../theme.dart';
@@ -29,7 +30,6 @@ abstract final class _TableMetrics {
   static const double sortGlyph = 12;
   static const double sortGap = 2;
   static const double cellPad = 6;
-  static const double headerReach = 7;
 }
 
 /// One column of a [MinimalTable]: its header [label], how much of the width
@@ -294,6 +294,21 @@ class MinimalTable extends StatelessWidget {
       return width.ceilToDouble();
     }
 
+    // A sortable column stands at least a finger wide at a finger: its
+    // header is a button.
+    final floor = minimalTapFloor(context);
+    // The room column [i]'s header can count on from the gaps beside it,
+    // half of each (_grid): a gap after a column of figures keeps its whole
+    // width, any other closes to the tight gap once room is short.
+    double lent(int i) {
+      double half(int at) =>
+          (columns[at - 1].numeric || columns[at - 1].mono
+              ? MinimalColumnMetrics.gap
+              : MinimalColumnMetrics.tightGap) /
+          2;
+      return (i > 0 ? half(i) : 0) + (i + 1 < columns.length ? half(i + 1) : 0);
+    }
+
     MinimalPlanColumn plan(int i, MinimalColumn column) {
       var words =
           measure(column.label.toUpperCase(), _headerType(t)) +
@@ -322,13 +337,21 @@ class MinimalTable extends StatelessWidget {
       }
       final content = math.max(words, badges);
       final figures = column.numeric || column.mono;
-      if (column.width case final width?) {
+      if (column.width case final asked?) {
+        final width = column.sortable ? math.max(asked, floor) : asked;
         final grown = scaler.scale(width) <= width
             ? width
             : math.min(scaler.scale(width), math.max(width, content));
+        // Short of width, a sortable column gives way no narrower than the
+        // floor, less the gaps' halves its header's target takes.
         return MinimalPlanColumn.fixed(
           grown,
-          least: widgets ? null : math.min(grown, content),
+          least: widgets
+              ? null
+              : math.max(
+                  math.min(grown, content),
+                  column.sortable ? floor - lent(i) : 0,
+                ),
           figures: figures,
         );
       }
@@ -430,24 +453,14 @@ class MinimalTable extends StatelessWidget {
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _PinnedHeader(
-                  // A pinned header takes no point outside its extent, so a
-                  // sortable one carries its reach as a band of the page's
-                  // ground above the header row.
+                  // A sortable band stands the tap floor tall.
                   extent:
-                      _TableMetrics.header +
-                      2 * t.hairline +
-                      (sorts ? _TableMetrics.headerReach : 0),
-                  child: sorts
-                      ? ColoredBox(
-                          color: t.background,
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              top: _TableMetrics.headerReach,
-                            ),
-                            child: _HeaderReach(child: header),
-                          ),
-                        )
-                      : header,
+                      math.max(
+                        _TableMetrics.header,
+                        sorts ? minimalTapFloor(context) : 0,
+                      ) +
+                      2 * t.hairline,
+                  child: header,
                 ),
               ),
               SliverList.list(children: body),
@@ -503,7 +516,34 @@ class MinimalTable extends StatelessWidget {
         );
       },
     );
-    return sorts ? _HeaderReach(child: boxed) : boxed;
+    return boxed;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalColumn>('columns', columns))
+      ..add(IterableProperty<MinimalTableRow>('rows', rows))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has('onRowPressed', onRowPressed),
+      )
+      ..add(IntProperty('sortColumn', sortColumn, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'sortAscending',
+          value: sortAscending,
+          ifFalse: 'sortAscending: false',
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<void Function(int column, bool ascending)>.has(
+          'onSort',
+          onSort,
+        ),
+      )
+      ..add(StringProperty('emptyLabel', emptyLabel, defaultValue: null))
+      ..add(DoubleProperty('minWidth', minWidth, defaultValue: null));
   }
 }
 
@@ -541,19 +581,38 @@ typedef _Layout = ({MinimalColumnPlan plan, int? fill});
 /// the row and each cell's words carry their capitals on its middle, so a
 /// 12 px mono id and a 13 px name read as one line (their baselines a third
 /// of a pixel apart), level with a badge or a control in the next cell.
-Widget _grid(_Layout layout, List<Widget> cells) => Padding(
-  padding: const EdgeInsets.symmetric(horizontal: _TableMetrics.inset),
-  child: Row(
-    children: [
-      for (final (i, cell) in cells.indexed) ...[
-        if (i > 0) SizedBox(width: layout.plan.gapBefore(i)),
-        if (i == layout.fill)
-          Expanded(child: cell)
-        else
-          SizedBox(width: layout.plan.widths[i], child: cell),
+Widget _grid(_Layout layout, List<Widget> cells, {bool lend = false}) {
+  final n = cells.length;
+  (double, double) side(int i) => lend ? _lent(layout, i, n) : (0.0, 0.0);
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: _TableMetrics.inset),
+    child: Row(
+      children: [
+        for (final (i, cell) in cells.indexed) ...[
+          if (i > 0)
+            SizedBox(
+              width: layout.plan.gapBefore(i) - side(i - 1).$2 - side(i).$1,
+            ),
+          if (i == layout.fill)
+            Expanded(child: cell)
+          else
+            SizedBox(
+              width: layout.plan.widths[i] + side(i).$1 + side(i).$2,
+              child: cell,
+            ),
+        ],
       ],
-    ],
-  ),
+    ),
+  );
+}
+
+/// The halves of the gaps at column [i]'s start and end (of [n]) its header
+/// cell takes, padding its words back by as much: a sortable header's
+/// target reaches into the air between columns, its words keep their
+/// column.
+(double, double) _lent(_Layout layout, int i, int n) => (
+  i > 0 ? layout.plan.gapBefore(i) / 2 : 0.0,
+  i + 1 < n ? layout.plan.gapBefore(i + 1) / 2 : 0.0,
 );
 
 class _HeaderRow extends StatelessWidget {
@@ -581,15 +640,22 @@ class _HeaderRow extends StatelessWidget {
     final grounded = MinimalTableGround.of(context);
     final rule = grounded ? t.rule.copyWith(color: _clear) : t.rule;
     final band = Container(
-      constraints: const BoxConstraints(minHeight: _TableMetrics.header),
+      // A band whose headers sort stands at least the tap floor.
+      constraints: BoxConstraints(
+        minHeight: math.max(
+          _TableMetrics.header,
+          onSort == null ? 0 : minimalTapFloor(context),
+        ),
+      ),
       decoration: BoxDecoration(
         color: grounded ? null : t.muted,
         border: Border(top: rule, bottom: rule),
       ),
-      child: _grid(layout, [
+      child: _grid(lend: true, layout, [
         for (final (i, column) in columns.indexed)
           _HeaderCell(
             column: column,
+            lent: _lent(layout, i, columns.length),
             type: type,
             active: sortColumn == i,
             ascending: sortAscending,
@@ -616,6 +682,7 @@ const Color _clear = Color(0x00000000);
 class _HeaderCell extends StatelessWidget {
   const _HeaderCell({
     required this.column,
+    required this.lent,
     required this.type,
     required this.active,
     required this.ascending,
@@ -623,6 +690,9 @@ class _HeaderCell extends StatelessWidget {
   });
 
   final MinimalColumn column;
+
+  /// The gaps' halves at its start and end the cell takes ([_lent]).
+  final (double, double) lent;
   final TextStyle type;
   final bool active;
   final bool ascending;
@@ -654,75 +724,41 @@ class _HeaderCell extends StatelessWidget {
           )
         : null;
     const gap = MinimalGap(_TableMetrics.sortGap);
-    final content = Row(
-      mainAxisAlignment: column._end
-          ? MainAxisAlignment.end
-          : MainAxisAlignment.start,
-      children: [
-        text,
-        if (glyph != null) ...[gap, glyph],
-      ],
-    );
-    final cell = SizedBox(height: _TableMetrics.header, child: content);
-    if (onPressed == null) return Semantics(header: true, child: cell);
-    return _ReachTarget(
-      child: MinimalPressable(
-        onPressed: onPressed,
-        shape: t.shapes.mark,
-        selected: active,
-        semanticLabel: active
-            ? '${column.label}, sorted ${ascending ? 'ascending' : 'descending'}'
-            : '${column.label}, sort',
-        child: ExcludeSemantics(child: cell),
+    final content = Padding(
+      padding: EdgeInsetsDirectional.only(start: lent.$1, end: lent.$2),
+      child: Row(
+        mainAxisAlignment: column._end
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
+        children: [
+          text,
+          if (glyph != null) ...[gap, glyph],
+        ],
       ),
     );
+    if (onPressed == null) {
+      return Semantics(
+        header: true,
+        child: SizedBox(height: _TableMetrics.header, child: content),
+      );
+    }
+    // A sortable header fills the band, the tap floor tall: its wash is the
+    // cell's whole height.
+    final cell = SizedBox(
+      height: math.max(_TableMetrics.header, minimalTapFloor(context)),
+      child: content,
+    );
+    return MinimalPressable(
+      onPressed: onPressed,
+      shape: t.shapes.mark,
+      selected: active,
+      semanticLabel: active
+          ? '${column.label}, sorted ${ascending ? 'ascending' : 'descending'}'
+          : '${column.label}, sort',
+      child: ExcludeSemantics(child: cell),
+    );
   }
 }
-
-/// Lets a sortable header cell take taps a little above the table (the
-/// 30 px band alone is under the 44 px minimum), so whatever sits above a
-/// sortable table gives up that sliver. Below the band the first row keeps
-/// its own taps. Only a point over a sortable header ([_ReachTarget]) is
-/// taken: above a label header the tap passes on.
-class _HeaderReach extends SingleChildRenderObjectWidget {
-  const _HeaderReach({required super.child});
-
-  @override
-  RenderObject createRenderObject(BuildContext context) => _RenderHeaderReach();
-}
-
-class _RenderHeaderReach extends RenderProxyBox {
-  @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    if (size.contains(position)) {
-      return super.hitTest(result, position: position);
-    }
-    if (position.dx < 0 ||
-        position.dx > size.width ||
-        position.dy < -_TableMetrics.headerReach ||
-        position.dy >= 0) {
-      return false;
-    }
-    // The same column, halfway down the header band.
-    final inside = Offset(position.dx, _TableMetrics.header / 2);
-    final probe = BoxHitTestResult();
-    if (!super.hitTest(probe, position: inside) ||
-        !probe.path.any((entry) => entry.target is _RenderReachTarget)) {
-      return false;
-    }
-    return super.hitTest(result, position: inside);
-  }
-}
-
-/// Marks a sortable header cell as a target [_HeaderReach] may extend.
-class _ReachTarget extends SingleChildRenderObjectWidget {
-  const _ReachTarget({required super.child});
-
-  @override
-  RenderObject createRenderObject(BuildContext context) => _RenderReachTarget();
-}
-
-class _RenderReachTarget extends RenderProxyBox {}
 
 class _PinnedHeader extends SliverPersistentHeaderDelegate {
   _PinnedHeader({required this.extent, required this.child});
@@ -772,7 +808,13 @@ class _BodyRow extends StatelessWidget {
     // across the frame.
     final grounded = MinimalTableGround.of(context);
     Widget content = Container(
-      constraints: const BoxConstraints(minHeight: _TableMetrics.row),
+      // A row that opens stands at least the tap floor (44 at a finger).
+      constraints: BoxConstraints(
+        minHeight: math.max(
+          _TableMetrics.row,
+          onPressed == null ? 0 : minimalTapFloor(context),
+        ),
+      ),
       alignment: AlignmentDirectional.centerStart,
       // The selected row is said by the selection's wash alone: the one
       // wash the look allows, and no bar of the accent beside it.

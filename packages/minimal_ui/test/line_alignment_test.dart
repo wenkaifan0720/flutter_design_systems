@@ -33,7 +33,9 @@ const InputDecorationTheme _hostDecoration = InputDecorationTheme(
 );
 
 /// Minimal as an app's page has it, at [density], its text at [scale], and
-/// with [host] an app's decoration theme over the page.
+/// with [host] an app's decoration theme over the page. Read for a finger on
+/// every platform: the checks compare platforms, and a pointer's 24 px tap
+/// floor lays out less room round the same faces by design.
 DesignAlignmentTheme _page(
   MinimalDensity density, {
   double scale = 1,
@@ -55,7 +57,10 @@ DesignAlignmentTheme _page(
       ),
       home: Builder(
         builder: (context) {
-          final page = Material(type: MaterialType.transparency, child: child);
+          final page = DesignTapTargetScope(
+            targets: const DesignTapTargets(input: DesignInput.touch),
+            child: Material(type: MaterialType.transparency, child: child),
+          );
           return MediaQuery(
             data: MediaQuery.of(context)
                 .copyWith(textScaler: TextScaler.linear(scale)),

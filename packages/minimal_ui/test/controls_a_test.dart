@@ -10,6 +10,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
 
+import 'faces.dart';
+
 // The host stands above the Navigator, as an app mounts it.
 Widget _host(Widget child, {MinimalDensity? density}) => MaterialApp(
   builder: (context, navigator) => MinimalHost(
@@ -247,7 +249,7 @@ void main() {
       await tester.pumpWidget(
         _host(MinimalSwitch(value: false, onChanged: (_) => taps += 1)),
       );
-      final box = tester.getRect(find.byType(MinimalSwitch));
+      final box = faceOf(tester, find.byType(MinimalSwitch));
       expect(box.height, 18);
       await tester.tapAt(box.topCenter - const Offset(0, 12));
       expect(taps, 1);
@@ -802,7 +804,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(seen, [1, 0]);
 
-      final strip = tester.getRect(
+      final strip = faceOf(
+        tester,
         find.bySubtype<MinimalSegmentedButton<Object?>>(),
       );
       expect(strip.height, MinimalChromeMetrics.control);
@@ -888,7 +891,8 @@ void main() {
           ),
         ),
       );
-      final box = tester.getRect(
+      final box = faceOf(
+        tester,
         find.bySubtype<MinimalSegmentedButton<Object?>>(),
       );
       expect(box.width, lessThan(300));
@@ -1080,7 +1084,7 @@ void main() {
         ),
       );
       expect(find.text('2'), findsOneWidget);
-      expect(tester.getSize(find.byType(MinimalChip)).height, 28);
+      expect(faceOf(tester, find.byType(MinimalChip)).height, 28);
       await tester.tap(find.text('Open'));
       expect(taps, 1);
       final node = tester.getSemantics(find.text('Open'));
@@ -1170,10 +1174,12 @@ void main() {
           ),
         ),
       );
-      final mon = tester.getRect(
+      final mon = faceOf(
+        tester,
         find.ancestor(of: find.text('Mon'), matching: find.byType(MinimalChip)),
       );
-      final sat = tester.getRect(
+      final sat = faceOf(
+        tester,
         find.ancestor(of: find.text('Sat'), matching: find.byType(MinimalChip)),
       );
       expect(mon.height, MinimalChromeMetrics.controlSm);
@@ -1196,7 +1202,7 @@ void main() {
           ),
         ),
       );
-      final chip = tester.getRect(find.byType(MinimalChip));
+      final chip = faceOf(tester, find.byType(MinimalChip));
       await tester.tapAt(chip.topCenter - const Offset(0, 6));
       expect(taps, 1);
     });
@@ -1360,15 +1366,20 @@ void main() {
       await tester.pumpWidget(
         _host(
           // Pinned: this compares platforms at one density, and an unset
-          // density is compact on a desktop by design.
+          // density is compact on a desktop by design; and for one input, a
+          // finger's, as a touch screen on a desktop is (a pointer's 24 px
+          // floor lays out less room round the same faces).
           density: MinimalDensity.standard,
-          SizedBox(
-            width: 320,
-            child: KeyedSubtree(
-              key: entry,
-              child: wrap == null
-                  ? c.part
-                  : Builder(builder: (context) => wrap(context, c.part)),
+          DesignTapTargetScope(
+            targets: const DesignTapTargets(input: DesignInput.touch),
+            child: SizedBox(
+              width: 320,
+              child: KeyedSubtree(
+                key: entry,
+                child: wrap == null
+                    ? c.part
+                    : Builder(builder: (context) => wrap(context, c.part)),
+              ),
             ),
           ),
         ),

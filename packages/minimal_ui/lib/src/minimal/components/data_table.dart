@@ -4,6 +4,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -11,6 +12,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
 import '../internal/column_plan.dart';
+import '../internal/controls.dart';
 import '../internal/edge_fade.dart';
 import '../internal/field.dart';
 import '../internal/kit_paint.dart';
@@ -156,6 +158,42 @@ class MinimalDataTable<R> extends StatefulWidget {
 
   @override
   State<MinimalDataTable<R>> createState() => _MinimalDataTableState<R>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<R>('rows', rows))
+      ..add(IterableProperty<MinimalDataColumn<R>>('columns', columns))
+      ..add(ObjectFlagProperty<Object Function(R row)>.has('rowKey', rowKey))
+      ..add(IntProperty('pageSize', pageSize, defaultValue: null))
+      ..add(StringProperty('query', query, defaultValue: ''))
+      ..add(
+        ObjectFlagProperty<bool Function(R row, String query)>.has(
+          'filter',
+          filter,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'selectable',
+          value: selectable,
+          ifFalse: 'selectable: false',
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<List<R>>>.has(
+          'onSelectionChanged',
+          onSelectionChanged,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<R>>.has(
+          'onRowActivated',
+          onRowActivated,
+        ),
+      );
+  }
 }
 
 class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
@@ -313,10 +351,13 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
     const inset = MinimalChromeMetrics.gutter;
     final byId = {for (final (i, c) in widget.columns.indexed) '$i': c};
     final plan = _measure(context, headerType);
-    final lead = widget.selectable ? _check : inset;
+    // The check column: a finger wide at a finger, so the boxes' target
+    // (the header's select-all) stands whole.
+    final check = math.max(_check, minimalTapFloor(context));
+    final lead = widget.selectable ? check : inset;
     // The air after the last column: the gutter, or, past a check column,
     // the air before its boxes, so the two sides match.
-    final trail = widget.selectable ? (_check - _box) / 2 : inset;
+    final trail = widget.selectable ? (check - _box) / 2 : inset;
     // The width it scrolls at: the least that cuts nothing that must stay
     // whole.
     final need = lead + trail + minimalLeastExtent(plan);
@@ -371,6 +412,17 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
       ],
     );
 
+    // A row that selects or opens, and a band whose headers sort, stand at
+    // least the tap floor (44 at a finger); a pointer keeps the compact
+    // 40 and 30.
+    final rowFloor = widget.selectable || widget.onRowActivated != null
+        ? minimalTapFloor(context)
+        : 0.0;
+    final headerFloor =
+        widget.selectable || widget.columns.any((c) => c.sortable)
+        ? minimalTapFloor(context)
+        : 0.0;
+
     Widget tableAt(MinimalColumnPlan layout) => DesignDataTable<R>(
       controller: _table,
       selectable: widget.selectable,
@@ -382,7 +434,7 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
         final c = byId[column.id]!;
         const shape = RoundedRectangleBorder();
         return Container(
-          height: _header,
+          height: math.max(_header, headerFloor + t.rule.width),
           alignment: c.numeric
               ? AlignmentDirectional.centerEnd
               : AlignmentDirectional.centerStart,
@@ -422,7 +474,7 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
       headerRowBuilder: (context, header) {
         final grounded = MinimalTableGround.of(context);
         final band = Container(
-          height: _header,
+          height: math.max(_header, headerFloor + t.rule.width),
           padding: EdgeInsetsDirectional.only(end: trail),
           decoration: BoxDecoration(
             color: grounded ? null : t.muted,
@@ -432,7 +484,7 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
             children: [
               if (widget.selectable)
                 SizedBox(
-                  width: _check,
+                  width: check,
                   child: Center(
                     child: MinimalPressable(
                       onPressed: _table.togglePage,
@@ -483,7 +535,7 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
         const shape = RoundedRectangleBorder();
         final grounded = MinimalTableGround.of(context);
         final line = Container(
-          constraints: const BoxConstraints(minHeight: _row),
+          constraints: BoxConstraints(minHeight: math.max(_row, rowFloor)),
           padding: EdgeInsetsDirectional.only(end: trail),
           decoration: BoxDecoration(
             color: row.selected && !grounded ? t.selection : null,
@@ -499,7 +551,7 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
             children: [
               if (widget.selectable)
                 SizedBox(
-                  width: _check,
+                  width: check,
                   child: Center(
                     // The row's own press toggles it; the box only shows it.
                     child: ExcludeSemantics(child: box(row.selected, const {})),
@@ -530,7 +582,7 @@ class _MinimalDataTableState<R> extends State<MinimalDataTable<R>> {
         // The count starts on the table's leading edge: the check boxes'
         // where they lead the rows, else the cells'.
         padding: EdgeInsetsDirectional.only(
-          start: widget.selectable ? (_check - _box) / 2 : inset,
+          start: widget.selectable ? (check - _box) / 2 : inset,
           end: trail - MinimalSpacing.s8,
           top: MinimalSpacing.s4,
         ),

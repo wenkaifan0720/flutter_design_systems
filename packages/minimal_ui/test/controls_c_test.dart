@@ -9,6 +9,8 @@ import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'faces.dart';
+
 // The host stands above the Navigator, as an app mounts it, so overlays (a
 // dialog, a toast) read the same tokens as the page.
 Widget _host(Widget child, {Brightness brightness = Brightness.light}) =>
@@ -32,6 +34,13 @@ Widget _row(String name, {VoidCallback? onTap}) => GestureDetector(
 );
 
 void main() {
+  // Decoded marks and pictures stay in the image cache past their test:
+  // cleared, so leak tracking sees them disposed.
+  tearDown(
+    () => imageCache
+      ..clear()
+      ..clearLiveImages(),
+  );
   group('MinimalSwipeActions', () {
     testWidgets('a drag past half reveals the trailing squares, and a '
         'tap on one performs it and closes the row', (tester) async {
@@ -443,12 +452,14 @@ void main() {
       await tester.pumpWidget(
         _host(SizedBox(width: 300, child: MinimalComposer(onSend: (_) {}))),
       );
-      final rest = tester.getSize(find.byType(MinimalComposer)).height;
+      // The box rests at 40, in a band the floor tall at a finger.
+      final rest = faceOf(tester, find.byType(MinimalComposer)).height;
       expect(rest, 40);
+      expect(tester.getSize(find.byType(MinimalComposer)).height, 44);
       await tester.enterText(find.byType(TextField), 'one\ntwo\nthree');
       await tester.pump();
       expect(
-        tester.getSize(find.byType(MinimalComposer)).height,
+        faceOf(tester, find.byType(MinimalComposer)).height,
         greaterThan(rest),
       );
     });
@@ -569,6 +580,55 @@ void main() {
       await tester.tap(find.bySemanticsLabel('Send message'));
       expect((attached, removed), (1, 1));
       expect(sent, ['']);
+    });
+
+    // A grown draft and a chip leave air over the seats: it is theirs, so
+    // attach and send reach a finger's height however tall the box stands.
+    testWidgets('attach and send take a tap over their seats', (tester) async {
+      final draft = TextEditingController(
+        text:
+            'Ran 5.2 km before 8. Knee felt fine on the hills, slower on '
+            'the flat. Keeping the streak going tomorrow.',
+      );
+      addTearDown(draft.dispose);
+      for (final chip in [false, true]) {
+        var attached = 0;
+        var removed = 0;
+        final sent = <String>[];
+        await tester.pumpWidget(
+          _host(
+            SizedBox(
+              width: 360,
+              child: MinimalComposer(
+                key: ValueKey(chip),
+                controller: chip ? null : draft,
+                attachment: chip ? 'run.gpx' : null,
+                onAttach: () => attached += 1,
+                onRemoveAttachment: () => removed += 1,
+                onSend: sent.add,
+              ),
+            ),
+          ),
+        );
+        final what = chip ? 'under a chip' : 'beside a grown draft';
+        if (!chip) {
+          expect(
+            tester.getSize(find.byType(TextField)).height,
+            greaterThan(40),
+            reason: 'a grown draft',
+          );
+        }
+        Offset over(String label) =>
+            tester.getRect(find.bySemanticsLabel(label)).topCenter -
+            const Offset(0, 6);
+        await tester.tapAt(over('Add attachment'));
+        await tester.pump();
+        expect(attached, 1, reason: what);
+        await tester.tapAt(over('Send message'));
+        await tester.pump();
+        expect(sent, hasLength(1), reason: what);
+        expect(removed, 0, reason: what);
+      }
     });
 
     testWidgets('disabled takes no text and sends nothing, dimmed once', (
@@ -694,6 +754,13 @@ void main() {
       await tester.tap(button);
       expect(taps, 1);
       handle.dispose();
+      // The mark's decode finishes here, in the cache the tearDown clears,
+      // rather than in the next test's real-time wait, where nothing would
+      // dispose it.
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pump();
     });
 
     testWidgets('email says so; a provider the app does not bundle draws '
@@ -932,6 +999,25 @@ void main() {
       await tester.pumpAndSettle();
       expect(await answer, isTrue);
       answer = await raise(tester);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(await answer, isNull);
+    });
+
+    // The card holds focus so Enter can answer, but it is no stop of Tab's:
+    // a stop there shows nothing (the web walk found two blank stops a lap).
+    testWidgets('Tab goes round the buttons, never the card', (tester) async {
+      final answer = await raise(tester);
+      final card = FocusManager.instance.primaryFocus;
+      expect(card, isNotNull);
+      final stops = <FocusNode?>[];
+      for (var i = 0; i < 4; i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+        stops.add(FocusManager.instance.primaryFocus);
+      }
+      expect(stops, isNot(contains(card)));
+      expect(stops.toSet(), hasLength(2));
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
       expect(await answer, isNull);

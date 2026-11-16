@@ -1,6 +1,7 @@
 /// A slim progress bar: determinate, or sweeping while the total is unknown.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../theme.dart';
@@ -24,7 +25,7 @@ class MinimalLinearProgressIndicator extends StatefulWidget {
     required this.label,
     this.tone = MinimalTone.primary,
     this.height = MinimalLinearProgressIndicator.thickness,
-  });
+  }) : assert(height > 0, 'a bar has a height');
 
   /// The fraction done, clamped to 0..1; null while the total is unknown.
   final double? value;
@@ -48,6 +49,28 @@ class MinimalLinearProgressIndicator extends StatefulWidget {
   @override
   State<MinimalLinearProgressIndicator> createState() =>
       _MinimalLinearProgressIndicatorState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(StringProperty('label', label))
+      ..add(
+        EnumProperty<MinimalTone>(
+          'tone',
+          tone,
+          defaultValue: MinimalTone.primary,
+        ),
+      )
+      ..add(
+        DoubleProperty(
+          'height',
+          height,
+          defaultValue: MinimalLinearProgressIndicator.thickness,
+        ),
+      );
+  }
 }
 
 class _MinimalLinearProgressIndicatorState

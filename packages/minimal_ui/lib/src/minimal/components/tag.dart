@@ -2,6 +2,7 @@
 /// here because status, badge and KPI components speak in it too.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../internal/cap_label.dart';
@@ -190,4 +191,20 @@ class MinimalTag extends StatelessWidget {
 
   /// The air either side of the label.
   static const double _padX = 6;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(
+        EnumProperty<MinimalTone>(
+          'tone',
+          tone,
+          defaultValue: MinimalTone.neutral,
+        ),
+      )
+      ..add(EnumProperty<MinimalTone>('dot', dot, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null));
+  }
 }

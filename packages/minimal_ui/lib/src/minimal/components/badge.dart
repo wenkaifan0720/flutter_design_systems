@@ -1,6 +1,7 @@
 /// A count, or a dot, on the corner of a glyph or a face.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
@@ -93,7 +94,7 @@ class MinimalBadge extends StatelessWidget {
               minWidth: least?.width ?? _height,
               minHeight: least?.height ?? _height,
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: MinimalSpacing.s4),
             decoration: minimalFrame(shape, fill: fill, side: ring),
             // The plain count's hairline, inside its edge, so it still reads
             // as a capsule where its fill is nearly the ground.
@@ -159,6 +160,25 @@ class MinimalBadge extends StatelessWidget {
     // Amber takes the dark ink in either mode.
     MinimalTone.warning => t.isLightAppearance ? t.foreground : t.textInverse,
   };
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count, defaultValue: null))
+      ..add(IntProperty('max', max, defaultValue: 99))
+      ..add(
+        EnumProperty<MinimalTone>(
+          'tone',
+          tone,
+          defaultValue: MinimalTone.destructive,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// Where a badge stands on its host's top-end corner. A count's first

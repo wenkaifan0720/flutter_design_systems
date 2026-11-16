@@ -1,8 +1,13 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
+import '../internal/controls.dart';
 import '../internal/field.dart';
+import '../internal/menu_keys.dart';
 import '../internal/styled.dart';
 import '../localizations.dart';
 import '../shapes.dart';
@@ -50,6 +55,14 @@ class MinimalDescriptionList extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: properties,
       ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      IterableProperty<MinimalProperty>('properties', this.properties),
     );
   }
 }
@@ -130,11 +143,10 @@ class MinimalProperty extends StatelessWidget {
   /// leading edge; the current one carries `selected: true`.
   final List<MinimalMenuItem>? items;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -155,6 +167,10 @@ class MinimalProperty extends StatelessWidget {
     final child = this.child;
     // A child with no words of our own speaks for itself.
     final childSpeaks = child != null && semanticValue == null;
+    // From 160% text the value stands under its label, at the label's
+    // start, rather than truncate in what the label's grown column leaves;
+    // there a value with its detail may take a second line.
+    final stacked = scaler.scale(10) / 10 >= MinimalChromeMetrics.rowStackScale;
 
     final Widget shown;
     if (child != null) {
@@ -195,13 +211,27 @@ class MinimalProperty extends StatelessWidget {
             ],
           ],
         ),
-        maxLines: 1,
+        maxLines: stacked ? 2 : 1,
         overflow: TextOverflow.ellipsis,
       );
     }
 
+    final dot = [
+      if (tone != null && value != null) ...[
+        _Dot(color: t.tone(tone).indicator),
+        const MinimalGap(MinimalChromeMetrics.iconGap),
+      ],
+    ];
+    final name = minimalCapLabel(
+      Text(
+        label,
+        style: type.c(t.mutedForeground),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
     Widget lead = Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: stacked ? MainAxisSize.max : MainAxisSize.min,
       children: [
         SizedBox(
           width: _PropertyMetrics.glyphColumn,
@@ -211,54 +241,83 @@ class MinimalProperty extends StatelessWidget {
           ),
         ),
         const MinimalGap(_PropertyMetrics.columnGap),
-        SizedBox(
-          width: scaler.scale(_PropertyMetrics.labelColumn),
-          child: minimalCapLabel(
-            Text(
-              label,
-              style: type.c(t.mutedForeground),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+        if (stacked)
+          Flexible(child: name)
+        else ...[
+          SizedBox(
+            width: scaler.scale(_PropertyMetrics.labelColumn),
+            child: name,
           ),
-        ),
-        const MinimalGap(_PropertyMetrics.columnGap),
-        if (tone != null && value != null) ...[
-          _Dot(color: t.tone(tone).indicator),
-          const MinimalGap(MinimalChromeMetrics.iconGap),
+          const MinimalGap(_PropertyMetrics.columnGap),
+          ...dot,
         ],
       ],
     );
+    // Our own words by their capitals; a child places its own.
+    final valuePart = Builder(
+      builder: (context) {
+        valueContext = context;
+        return child == null ? minimalCapLabel(shown) : shown;
+      },
+    );
+
     // Only the words below are announced, unless the child speaks: then
     // the label is ours and the rest is the child's.
     if (childSpeaks) lead = ExcludeSemantics(child: lead);
 
     Widget row = Container(
-      constraints: BoxConstraints(minHeight: t.rowHeightCompact),
+      // A row that opens its picker stands at least the tap floor (44 at a
+      // finger); a pointer keeps the compact row.
+      constraints: BoxConstraints(
+        minHeight: math.max(
+          t.rowHeightCompact,
+          onPressed == null ? 0 : minimalTapFloor(context),
+        ),
+      ),
       // Painted over the row's foot: the label and value are centred on
       // the whole row, the rule's pixel with it.
       foregroundDecoration: BoxDecoration(border: Border(bottom: t.rule)),
-      child: Row(
-        children: [
-          lead,
-          Expanded(
-            child: Padding(
+      child: stacked
+          ? Padding(
               padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s4),
-              // Our own words by their capitals; a child places its own.
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                heightFactor: 1,
-                child: Builder(
-                  builder: (context) {
-                    valueContext = context;
-                    return child == null ? minimalCapLabel(shown) : shown;
-                  },
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  lead,
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      start:
+                          _PropertyMetrics.glyphColumn +
+                          _PropertyMetrics.columnGap,
+                    ),
+                    child: Row(
+                      children: [
+                        ...dot,
+                        Flexible(child: valuePart),
+                      ],
+                    ),
+                  ),
+                ],
               ),
+            )
+          : Row(
+              children: [
+                lead,
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: MinimalSpacing.s4,
+                    ),
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      heightFactor: 1,
+                      child: valuePart,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
 
     final spoken =
@@ -276,18 +335,48 @@ class MinimalProperty extends StatelessWidget {
     if (onPressed == null) {
       return Semantics(container: true, label: announced, child: row);
     }
-    return MinimalPressable(
-      focusNode: focusNode,
-      autofocus: autofocus,
-      onPressed: onPressed,
-      shape: t.shapes.mark,
-      // Reaching past the words, the ring stays inside the reach, clear of
-      // a card's edge.
-      outset: MinimalFieldMetrics.rowReach,
-      focusInside: true,
-      semanticLabel: announced,
-      child: row,
+    // Opening its menu, it is a menu button: Down opens it too.
+    return minimalOpensOnDown(
+      open: this.onPressed == null ? onPressed : null,
+      child: MinimalPressable(
+        focusNode: focusNode,
+        autofocus: autofocus,
+        onPressed: onPressed,
+        shape: t.shapes.mark,
+        // Reaching past the words, the ring stays inside the reach, clear of
+        // a card's edge.
+        outset: MinimalFieldMetrics.rowReach,
+        focusInside: true,
+        semanticLabel: announced,
+        child: row,
+      ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IconDataProperty('icon', icon))
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(StringProperty('semanticValue', semanticValue, defaultValue: null))
+      ..add(StringProperty('detail', detail, defaultValue: null))
+      ..add(FlagProperty('mono', value: mono, ifTrue: 'mono'))
+      ..add(EnumProperty<MinimalTone>('tone', tone, defaultValue: null))
+      ..add(StringProperty('placeholder', placeholder, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        IterableProperty<MinimalMenuItem>('items', items, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -342,11 +431,10 @@ class MinimalPropertyPill extends StatelessWidget {
   /// The property's choices, opened as a menu anchored to the pill.
   final List<MinimalMenuItem>? items;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -361,52 +449,81 @@ class MinimalPropertyPill extends StatelessWidget {
     final announced = hasValue
         ? (name == null ? label : '$name, $label')
         : '$label, not set';
-    return MinimalPressable(
-      focusNode: focusNode,
-      autofocus: autofocus,
-      onPressed: onPressed,
-      enabled: onPressed != null,
-      shape: MinimalShapes.inset(t.shapes.small, 1),
-      semanticLabel: announced,
-      child: ExcludeSemantics(
-        child: Container(
-          constraints: const BoxConstraints(
-            minHeight: MinimalChromeMetrics.controlSm,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: _PropertyMetrics.pillPad,
-            vertical: MinimalSpacing.s2,
-          ),
-          decoration: minimalFrame(
-            MinimalShapes.inset(t.shapes.small, 1),
-            // A set value prints in the ink, an unset name in the muted ink;
-            // neither is filled (nothing on the page is a tinted pill).
-            side: BorderSide(color: t.border, width: t.hairline),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              MinimalIcon(
-                icon,
-                size: MinimalIconSize.i14,
-                color: hasValue ? t.foreground : t.mutedForeground,
-              ),
-              const MinimalGap(MinimalChromeMetrics.iconGap),
-              Flexible(
-                child: minimalCapLabel(
-                  Text(
-                    label,
-                    style: type.c(hasValue ? t.foreground : t.mutedForeground),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+    // Opening its menu, it is a menu button: Down opens it too.
+    return minimalOpensOnDown(
+      open: this.onPressed == null ? onPressed : null,
+      child: MinimalPressable(
+        focusNode: focusNode,
+        autofocus: autofocus,
+        onPressed: onPressed,
+        enabled: onPressed != null,
+        shape: MinimalShapes.inset(t.shapes.small, 1),
+        semanticLabel: announced,
+        child: ExcludeSemantics(
+          child: Container(
+            constraints: const BoxConstraints(
+              minHeight: MinimalChromeMetrics.controlSm,
+            ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: _PropertyMetrics.pillPad,
+              vertical: MinimalSpacing.s2,
+            ),
+            decoration: minimalFrame(
+              MinimalShapes.inset(t.shapes.small, 1),
+              // A set value prints in the ink, an unset name in the muted ink;
+              // neither is filled (nothing on the page is a tinted pill).
+              side: BorderSide(color: t.border, width: t.hairline),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                MinimalIcon(
+                  icon,
+                  size: MinimalIconSize.i14,
+                  color: hasValue ? t.foreground : t.mutedForeground,
+                ),
+                const MinimalGap(MinimalChromeMetrics.iconGap),
+                Flexible(
+                  child: minimalCapLabel(
+                    Text(
+                      label,
+                      style: type.c(
+                        hasValue ? t.foreground : t.mutedForeground,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IconDataProperty('icon', icon))
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('name', name, defaultValue: null))
+      ..add(FlagProperty('hasValue', value: hasValue, ifTrue: 'hasValue'))
+      ..add(FlagProperty('mono', value: mono, ifTrue: 'mono'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        IterableProperty<MinimalMenuItem>('items', items, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -426,14 +543,17 @@ class MinimalPropertyBar extends StatelessWidget {
   final List<MinimalPropertyPill> pills;
 
   @override
-  Widget build(BuildContext context) => MinimalHitTarget(
-    line: MinimalChromeMetrics.controlSm,
-    child: Wrap(
-      spacing: MinimalChromeMetrics.iconGap,
-      runSpacing: MinimalChromeMetrics.iconGap,
-      children: pills,
-    ),
+  Widget build(BuildContext context) => Wrap(
+    spacing: MinimalChromeMetrics.iconGap,
+    runSpacing: MinimalChromeMetrics.iconGap,
+    children: pills,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<MinimalPropertyPill>('pills', pills));
+  }
 }
 
 class _Dot extends StatelessWidget {

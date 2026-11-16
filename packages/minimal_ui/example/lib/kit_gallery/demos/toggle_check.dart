@@ -101,8 +101,8 @@ class _Strip extends StatelessWidget {
 }
 
 /// A control over its caption, both on the column's start, so the first
-/// stands on the page's keyline. The control stands as near its section's
-/// label as any other specimen does (it pads its own hit area to 44 px).
+/// stands on the page's keyline. The control's slot is a finger's 44, so
+/// the control lays its whole tap target out in it.
 class _Labeled extends StatelessWidget {
   const _Labeled(this.caption, this.control);
 
@@ -118,10 +118,10 @@ class _Labeled extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // One slot as tall as the tallest control (a 20 px switch or a
-          // large check), so every caption in the strip shares a line.
+          // One slot as tall as a finger's target (the controls' faces are
+          // 16 to 20 px), so every caption in the strip shares a line.
           SizedBox(
-            height: MinimalSpacing.s24,
+            height: MinimalLayout.minHitTarget,
             child: Align(
               alignment: AlignmentDirectional.centerStart,
               child: control,

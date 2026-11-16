@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show Unicode;
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -164,6 +164,16 @@ class MinimalAppBar extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(StringProperty('parent', parent, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('large', large, defaultValue: null));
   }
 }
 

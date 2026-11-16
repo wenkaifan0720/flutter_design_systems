@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -117,5 +118,16 @@ class MinimalSection extends StatelessWidget {
         children: [header, child],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('count', count, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAction', onAction))
+      ..add(FlagProperty('gutter', value: gutter, ifTrue: 'gutter'));
   }
 }

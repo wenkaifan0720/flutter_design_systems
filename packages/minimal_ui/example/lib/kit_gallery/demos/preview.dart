@@ -89,26 +89,34 @@ class _PresentationsState extends State<_Presentations> {
               borderRadius: BorderRadius.circular(t.sheetRadius),
               child: AspectRatio(
                 aspectRatio: 390 / 844,
+                // The phone drawn at three quarters is a picture of the
+                // page, looked at rather than used: its rows at that scale
+                // stand under a finger's 44, so it takes no taps and reads
+                // as one image.
                 child: FittedBox(
                   child: SizedBox(
                     width: 390,
                     height: 844,
-                    child: MinimalPreview(
-                      // A new presentation is a new stage: the page is raised
-                      // afresh on its route.
-                      key: ValueKey(_presentation),
-                      light: kitTheme(Brightness.light),
-                      dark: kitTheme(Brightness.dark),
-                      brightness: widget.brightness,
-                      presentation: _presentation,
-                      tabs: _tabs,
-                      activeIndex: 1,
-                      // A detail page is never a nav root: as a root the
-                      // preview shows the list it is reached from.
-                      under: const _HabitsRoot(),
-                      child: _presentation == MinimalPresentation.root
-                          ? const _HabitsRoot()
-                          : const _HabitPage(),
+                    child: _Picture(
+                      label:
+                          'The ${_presentation.name} presentation, previewed',
+                      child: MinimalPreview(
+                        // A new presentation is a new stage: the page is raised
+                        // afresh on its route.
+                        key: ValueKey(_presentation),
+                        light: kitTheme(Brightness.light),
+                        dark: kitTheme(Brightness.dark),
+                        brightness: widget.brightness,
+                        presentation: _presentation,
+                        tabs: _tabs,
+                        activeIndex: 1,
+                        // A detail page is never a nav root: as a root the
+                        // preview shows the list it is reached from.
+                        under: const _HabitsRoot(),
+                        child: _presentation == MinimalPresentation.root
+                            ? const _HabitsRoot()
+                            : const _HabitPage(),
+                      ),
                     ),
                   ),
                 ),
@@ -318,4 +326,19 @@ class _NestedHost extends StatelessWidget {
       ],
     );
   }
+}
+
+/// A scaled page shown as a picture: no taps, one image to a screen reader.
+class _Picture extends StatelessWidget {
+  const _Picture({required this.label, required this.child});
+
+  final String label;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    image: true,
+    label: label,
+    child: ExcludeSemantics(child: IgnorePointer(child: child)),
+  );
 }

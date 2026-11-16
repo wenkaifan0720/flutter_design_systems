@@ -5,6 +5,7 @@ import '../chrome_metrics.dart';
 import '../component_themes.dart';
 import '../theme.dart';
 import 'styled.dart';
+import 'tap_band.dart';
 
 /// Geometry the form controls share — the text field, the search field,
 /// the form, picker, choice and date rows — named once so a field and a
@@ -50,7 +51,7 @@ double minimalFieldWordsStart(
   final t = context.minimalTheme;
   final so = MinimalStyleOf([fieldStyle, t.components.textField], const {});
   final direction = Directionality.of(context);
-  final padding = so.padding?.resolve(direction);
+  final padding = so.padding(direction);
   final inset = padding == null
       ? t.density
             .padding(const EdgeInsets.only(left: MinimalFieldMetrics.inset))
@@ -211,20 +212,34 @@ class MinimalFieldErrorScope extends InheritedWidget {
 }
 
 /// A boxed field's value area as one screen-reader node — the text input
-/// and the name a caller puts on it — whose bounds are the
-/// [MinimalLayout.minHitTarget] band a tap lands in (the box and the margin
-/// [MinimalHitTarget] hands on), not the one line of text it paints: the
-/// target a screen reader outlines, and an accessibility audit measures,
-/// is the one a finger has.
+/// and the name a caller puts on it — whose bounds are the band a tap lands
+/// in (the box grown to the band's tap floor, [minimalBandFloor],
+/// which the band round the box lays out), not the one line of text it
+/// paints: the target a screen reader outlines, and an accessibility audit
+/// measures, is the one a finger or a pointer has.
 class MinimalFieldTarget extends SingleChildRenderObjectWidget {
   /// One screen-reader node around [child], the size of its touch target.
   const MinimalFieldTarget({super.key, super.child});
 
   @override
-  RenderObject createRenderObject(BuildContext context) => _RenderFieldTarget();
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderFieldTarget(minimalBandFloor(context));
+
+  @override
+  void updateRenderObject(BuildContext context, RenderObject renderObject) =>
+      (renderObject as _RenderFieldTarget).floor = minimalBandFloor(context);
 }
 
 class _RenderFieldTarget extends RenderProxyBox {
+  _RenderFieldTarget(this._floor);
+
+  double _floor;
+  set floor(double v) {
+    if (v == _floor) return;
+    _floor = v;
+    markNeedsSemanticsUpdate();
+  }
+
   @override
   void describeSemanticsConfiguration(SemanticsConfiguration config) {
     super.describeSemanticsConfiguration(config);
@@ -233,10 +248,10 @@ class _RenderFieldTarget extends RenderProxyBox {
       ..isMergingSemanticsOfDescendants = true;
   }
 
-  /// The painted value area, grown about its centre to the 44 px band.
+  /// The painted value area, grown about its centre to the floor's band.
   @override
   Rect get semanticBounds {
-    const min = MinimalLayout.minHitTarget;
+    final min = _floor;
     final width = size.width < min ? min : size.width;
     final height = size.height < min ? min : size.height;
     return Rect.fromCenter(
@@ -244,5 +259,35 @@ class _RenderFieldTarget extends RenderProxyBox {
       width: width,
       height: height,
     );
+  }
+
+  /// A tap anywhere in [semanticBounds] reaches the input: one the line
+  /// itself does not take (past it, or on the sliver its capitals' shift
+  /// leaves at an edge) lands on the line's middle at the same place along
+  /// it, so the area a tap reaches is the one a screen reader outlines (as
+  /// far as the field's box, and the band round it, let it through).
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (size.contains(position) && super.hitTest(result, position: position)) {
+      return true;
+    }
+    if (!semanticBounds.contains(position)) return false;
+    // Half a pixel in from either end (a box holds its far edge no more),
+    // then further in while the line's own box, shifted by its capitals or
+    // its caret's room, leaves the end bare.
+    for (final edge in const [0.5, 4.0, 8.0]) {
+      if (size.width < 2 * edge) break;
+      final inside = Offset(
+        position.dx.clamp(edge, size.width - edge),
+        size.height / 2,
+      );
+      final hit = result.addWithRawTransform(
+        transform: MatrixUtils.forceToPoint(inside),
+        position: inside,
+        hitTest: (result, _) => super.hitTest(result, position: inside),
+      );
+      if (hit) return true;
+    }
+    return false;
   }
 }

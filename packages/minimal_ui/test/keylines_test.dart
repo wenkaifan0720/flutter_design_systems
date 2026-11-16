@@ -582,7 +582,16 @@ Future<void> loadKeylineFonts() =>
 
 /// The keylines a container keeps beyond one, by screen and part, each a
 /// decision with its reason.
-const Map<String, ({int lead, int trail, String why})> _declared = {};
+const Map<String, ({int lead, int trail, String why})> _declared = {
+  // On the sheet's 354 px (the page margin both sides) the property pills
+  // wrap after the third, short of the edge: a run of pills ends ragged as a
+  // line of words does, and the footer's button keeps the card's edge.
+  'habits/new at 390 MinimalScaffold': (
+    lead: 1,
+    trail: 2,
+    why: 'the property pills wrap ragged, as a line of words does',
+  ),
+};
 
 void main() {
   setUpAll(loadKeylineFonts);
@@ -598,7 +607,8 @@ void main() {
         image.dispose();
         expect(boxes, isNotEmpty);
         for (final box in boxes) {
-          final allowed = _declared['${screen.name} ${box.kind}'];
+          final allowed =
+              _declared['${screen.name} at ${size.width.round()} ${box.kind}'];
           final where =
               '${screen.name} at ${size.width.round()}\n'
               '${box.describe()}';

@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../theme.dart';
 import 'pressable.dart';
 
@@ -61,7 +63,7 @@ class MinimalCheckbox extends StatelessWidget {
   /// agreement still to tick); null keeps one of its own.
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -78,6 +80,11 @@ class MinimalCheckbox extends StatelessWidget {
             },
       enabled: onChanged != null,
       shape: _ownShape(t, size),
+      // A bare mark stands on its start keyline, its target growing
+      // toward the end (a list row's trailing slot says the end).
+      tapAlignment:
+          MinimalTapAlignment.maybeOf(context) ??
+          AlignmentDirectional.centerStart,
       style: MinimalStyleOf(layers, const {}).press,
       semanticLabel: label,
       checked: value,
@@ -90,6 +97,27 @@ class MinimalCheckbox extends StatelessWidget {
         states: {...states, if (value) WidgetState.selected},
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(DoubleProperty('size', size, defaultValue: 16))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -138,6 +166,18 @@ class MinimalCheckMark extends StatelessWidget {
         states: {if (value) WidgetState.selected},
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(DoubleProperty('size', size, defaultValue: 16))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
   }
 }
 

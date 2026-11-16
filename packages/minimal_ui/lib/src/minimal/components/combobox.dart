@@ -4,6 +4,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -13,9 +14,10 @@ import '../component_themes.dart';
 import '../internal/cap_label.dart';
 import '../internal/controls.dart';
 import '../internal/field.dart';
-import '../internal/text_entry.dart';
 import '../internal/kit_paint.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
+import '../internal/text_entry.dart';
 import '../localizations.dart';
 import '../shapes.dart';
 import '../theme.dart';
@@ -58,7 +60,10 @@ double _startOf(EdgeInsetsGeometry padding, TextDirection direction) {
 /// The card's leading inset before its rows, in [style] over the menu's.
 double _cardStart(BuildContext context, MinimalStyle? style) {
   final t = context.minimalTheme;
-  final card = MinimalStyleOf([style, t.components.menu], const {}).padding;
+  final card = MinimalStyleOf([
+    style,
+    t.components.menu,
+  ], const {}).paddingIn(context);
   return _startOf(card ?? _cardInset, Directionality.of(context));
 }
 
@@ -73,9 +78,10 @@ double _rowStart(BuildContext context, double value, MinimalStyle? style) =>
 /// A text field that suggests from [options] as you type: a city, an
 /// assignee, a country. The field is a [MinimalTextField] with a chevron at
 /// its end; the list opens under it in Minimal's panel of 32 px rows, the
-/// highlighted row (the keyboard's, or the pointer's) in the selection
-/// fill and the chosen value with a check. Words no option fits say so in
-/// the panel ("No results").
+/// chosen value in the full ink at medium weight with a check (the other
+/// options muted), and the highlighted row (the keyboard's, or the
+/// pointer's) on the muted fill. Words no option fits say so in the panel
+/// ("No results").
 ///
 /// Up and Down move the highlight, Enter takes it, Escape hides the list,
 /// a tap takes an option; a screen reader hears the highlight and whether
@@ -158,7 +164,7 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
   /// The list's panel style, over `components.menu`.
   final MinimalStyle? listStyle;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -175,6 +181,9 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
       displayStringForOption: displayString,
       value: value,
       onSelected: onSelected,
+      // The pointer's row and the keys' are painted alike (the muted fill):
+      // one place, which the pointer moves, as in a native menu.
+      highlightFollowsPointer: true,
       requireSelection: requireSelection,
       controller: controller,
       focusNode: focusNode,
@@ -189,7 +198,10 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
         controller: field.controller,
         focusNode: field.focusNode,
         autofocus: autofocus,
-        onSubmitted: (_) => field.submit(),
+        // Enter in onEditingComplete, with no onSubmitted: the field keeps the
+        // focus, and Flutter restarts the text input of a field told of a submit
+        // that still holds it, which in a browser then takes no typing.
+        onEditingComplete: field.submit,
         fieldStyle: fieldStyle,
         trailing: Padding(
           padding: const EdgeInsetsDirectional.only(end: MinimalSpacing.s8),
@@ -204,6 +216,7 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
         states: states,
         label: displayString(option),
         checked: states.chosen,
+        choosing: value != null,
         start: start,
         style: listStyle,
       ),
@@ -228,6 +241,63 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('options', options))
+      ..add(
+        ObjectFlagProperty<String Function(T option)>.has(
+          'displayString',
+          displayString,
+        ),
+      )
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(
+        FlagProperty(
+          'requireSelection',
+          value: requireSelection,
+          ifTrue: 'requireSelection',
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>(
+          'fieldStyle',
+          fieldStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>(
+          'listStyle',
+          listStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -307,15 +377,62 @@ class MinimalMultiSelect<T extends Object> extends StatefulWidget {
   /// The list's panel style, over `components.menu`.
   final MinimalStyle? listStyle;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
   State<MinimalMultiSelect<T>> createState() => _MinimalMultiSelectState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('values', values))
+      ..add(
+        ObjectFlagProperty<ValueChanged<List<T>>>.has('onChanged', onChanged),
+      )
+      ..add(IterableProperty<T>('options', options))
+      ..add(
+        ObjectFlagProperty<String Function(T value)>.has(
+          'displayString',
+          displayString,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<T? Function(String text)>.has('onCreate', onCreate),
+      )
+      ..add(IntProperty('maxTags', maxTags, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>(
+          'fieldStyle',
+          fieldStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>(
+          'listStyle',
+          listStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _MinimalMultiSelectState<T extends Object>
@@ -349,7 +466,10 @@ class _MinimalMultiSelectState<T extends Object>
     final start = _rowStart(
       context,
       tagBox.rim(t.border, t.rim).width +
-          _startOf(tagBox.padding ?? _tagBoxInset, Directionality.of(context)) +
+          _startOf(
+            tagBox.paddingIn(context) ?? _tagBoxInset,
+            Directionality.of(context),
+          ) +
           t.hairline +
           _tagWords,
       widget.listStyle,
@@ -374,27 +494,37 @@ class _MinimalMultiSelectState<T extends Object>
         foregroundDecoration: minimalStateLayer(t, shape, {
           if (tag.focused) WidgetState.focused,
         }, ground: minimalGround(context)),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(name, style: t.caption.medium.c(t.foreground)),
-            const MinimalGap(MinimalSpacing.s2),
-            if (widget.enabled)
-              MinimalPressable(
-                onPressed: tag.onDeleted,
-                focusable: false,
-                semanticLabel: words.removeItem(name),
-                shape: MinimalShapes.inset(shape, MinimalSpacing.s2),
-                child: SizedBox.square(
-                  dimension: _tagHeight - 2 * MinimalSpacing.s2,
-                  child: MinimalIcon(
-                    LucideIcons.x,
-                    size: MinimalIconSize.i14,
-                    color: t.mutedForeground,
+        // A tap on the tag's rim lands inside, on the part under it: the
+        // rim is the remove key's too, not a pixel no tap reaches.
+        child: MinimalTapReach(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(name, style: t.caption.medium.c(t.foreground)),
+              const MinimalGap(MinimalSpacing.s2),
+              // The remove key stands the tag's whole height, so the box's
+              // air above and below the tag reaches it.
+              if (widget.enabled)
+                SizedBox(
+                  height:
+                      minimalGrownHeight(context, _tagHeight) - 2 * t.hairline,
+                  child: MinimalPressable(
+                    onPressed: tag.onDeleted,
+                    focusable: false,
+                    semanticLabel: words.removeItem(name),
+                    shape: MinimalShapes.inset(shape, MinimalSpacing.s2),
+                    child: SizedBox.square(
+                      dimension: _tagHeight - 2 * MinimalSpacing.s2,
+                      child: MinimalIcon(
+                        LucideIcons.x,
+                        size: MinimalIconSize.i14,
+                        color: t.mutedForeground,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -425,7 +555,7 @@ class _MinimalMultiSelectState<T extends Object>
                 ),
           ),
           alignment: AlignmentDirectional.centerStart,
-          padding: so.padding ?? _tagBoxInset,
+          padding: so.paddingIn(context) ?? _tagBoxInset,
           decoration: minimalFrame(
             shape,
             fill: so.fill ?? (states.off ? t.sunken : t.card),
@@ -452,6 +582,8 @@ class _MinimalMultiSelectState<T extends Object>
     final input = DesignTagInput<T>(
       values: widget.values,
       onChanged: widget.onChanged,
+      // One place, as the combobox's.
+      highlightFollowsPointer: true,
       options: widget.options,
       displayStringForOption: widget.displayString,
       onCreate: widget.onCreate,
@@ -462,10 +594,14 @@ class _MinimalMultiSelectState<T extends Object>
       fieldBuilder: (context, field) {
         Widget text = TextField(
           controller: field.controller,
+          selectionControls: minimalSelectionControls(context),
           focusNode: field.focusNode,
           autofocus: widget.autofocus,
           enabled: widget.enabled,
-          onSubmitted: (_) => field.submit(),
+          // Enter in onEditingComplete, with no onSubmitted: the field keeps the
+          // focus, and Flutter restarts the text input of a field told of a submit
+          // that still holds it, which in a browser then takes no typing.
+          onEditingComplete: field.submit,
           cursorColor: t.primary,
           cursorWidth: MinimalFieldMetrics.cursor,
           style: t.body.c(t.foreground),
@@ -476,13 +612,16 @@ class _MinimalMultiSelectState<T extends Object>
         );
         // The line by its capitals, level with the tags' words beside it.
         text = minimalCapLabel(text);
-        // Alone, the entry's words stand where the first tag's will.
-        if (widget.values.isEmpty) {
-          text = Padding(
-            padding: EdgeInsetsDirectional.only(start: t.hairline + _tagWords),
-            child: text,
-          );
-        }
+        // Alone, the entry's words stand where the first tag's will. The
+        // padding stays, at none, once a tag stands before it: a wrapper that
+        // came and went would build the field again as the first tag came or
+        // the last went, dropping its text input mid-typing.
+        text = Padding(
+          padding: EdgeInsetsDirectional.only(
+            start: widget.values.isEmpty ? t.hairline + _tagWords : 0,
+          ),
+          child: text,
+        );
         if (label != null) text = Semantics(label: label, child: text);
         if (Material.maybeOf(context) == null) {
           text = Material(type: MaterialType.transparency, child: text);
@@ -499,18 +638,29 @@ class _MinimalMultiSelectState<T extends Object>
       surfaceBuilder: (context, list) =>
           _surface(context, list, widget.listStyle),
       // The box round the tags and the entry: the suggestions open from it.
+      // A tap in the box's air above or below the tags reaches the one
+      // under it.
       layoutBuilder: (context, tags, field) => group(
-        Wrap(
-          spacing: MinimalSpacing.s4,
-          runSpacing: MinimalSpacing.s4,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            ...tags,
-            ConstrainedBox(
-              constraints: const BoxConstraints(minWidth: 96, maxWidth: 240),
-              child: IntrinsicWidth(child: field),
-            ),
-          ],
+        MinimalTapReach(
+          child: Wrap(
+            spacing: MinimalSpacing.s4,
+            runSpacing: MinimalSpacing.s4,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              ...tags,
+              // The entry's node reaches as far as its outline: a tap past
+              // its line lands on it.
+              MinimalFieldTarget(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: 96,
+                    maxWidth: 240,
+                  ),
+                  child: IntrinsicWidth(child: field),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -525,7 +675,8 @@ class _MinimalMultiSelectState<T extends Object>
           ),
           const MinimalGap(MinimalChromeMetrics.iconGap),
         ],
-        MinimalHitTarget(child: input),
+        // At a finger the field stands in a band as tall as the floor.
+        minimalTapStrip(context, input),
         if (message != null) ...[
           const MinimalGap(MinimalChromeMetrics.iconGap),
           Semantics(

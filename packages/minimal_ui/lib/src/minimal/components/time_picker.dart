@@ -1,6 +1,7 @@
 /// A clock time: the date picker in its time mode.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'date_picker.dart';
@@ -73,5 +74,32 @@ class MinimalTimePicker extends StatelessWidget {
               DateTime(value.year, value.month, value.day, d.hour, d.minute),
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<DateTime>('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(FlagProperty('wheel', value: wheel, ifTrue: 'wheel'))
+      ..add(
+        FlagProperty(
+          'use24HourFormat',
+          value: use24HourFormat,
+          ifFalse: 'use24HourFormat: false',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'confirmSelection',
+          value: confirmSelection,
+          ifTrue: 'confirmSelection',
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null));
   }
 }

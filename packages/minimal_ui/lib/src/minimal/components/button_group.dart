@@ -1,6 +1,7 @@
 /// A row of related actions joined into one bordered bar: a toolbar.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
@@ -8,6 +9,7 @@ import '../component_themes.dart';
 import '../internal/cap_label.dart';
 import '../internal/give_way_row.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../theme.dart';
 import 'pressable.dart';
 
@@ -152,16 +154,30 @@ class MinimalButtonGroup extends StatelessWidget {
               ),
       ),
     );
+    // At a finger the strip stands in a band as tall as the floor, each
+    // cell a finger wide.
+    final banded = minimalTapStrip(context, bar);
     // Expanded, it fills a phone's column and stops at the control measure
     // (320) from a tablet up, as an expanded button.
-    if (expand) return MinimalLayout.capControl(context, bar);
+    if (expand) return MinimalLayout.capControl(context, banded);
     // The frame hugs its cells, also in a column that stretches it.
     return Align(
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,
       heightFactor: 1,
-      child: bar,
+      child: banded,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalButtonGroupItem>('items', items))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'));
   }
 }
 
@@ -205,7 +221,7 @@ class _Cell extends StatelessWidget {
         return Container(
           height: height,
           padding:
-              so.padding ??
+              so.paddingIn(context) ??
               t.density.padding(
                 EdgeInsets.symmetric(
                   horizontal: label == null

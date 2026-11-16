@@ -2,6 +2,7 @@
 /// row.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -9,6 +10,7 @@ import 'package:ui_core/ui_core.dart';
 import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
 import '../internal/field.dart';
+import '../internal/tap_band.dart';
 import '../internal/trailing_glyph.dart';
 import '../theme.dart';
 import 'date_picker.dart';
@@ -99,6 +101,14 @@ class MinimalFormSection extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('footer', footer, defaultValue: null));
+  }
 }
 
 /// A 44 px hairline form row for a control or an action: an optional
@@ -141,11 +151,10 @@ class MinimalFormRow extends StatelessWidget {
   /// A glyph before the label, in the quiet ink.
   final IconData? icon;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -157,25 +166,63 @@ class MinimalFormRow extends StatelessWidget {
         (onPressed == null
             ? null
             : MinimalTrailingChevron(color: t.textTertiary));
+    final head = Row(
+      children: [
+        if (icon != null) ...[
+          MinimalIcon(icon),
+          const MinimalGap(MinimalFieldMetrics.rowIconGap),
+        ],
+        Expanded(child: minimalCapLabel(Text(label, style: t.body))),
+      ],
+    );
+    // From 160% text a control of the caller's stands under the label, at
+    // its start, as a list row's trailing part does, rather than squeeze
+    // the label or its own words; the chevron of a row that opens stays.
+    final stacked =
+        this.trailing != null &&
+        MediaQuery.textScalerOf(context).scale(10) / 10 >=
+            MinimalChromeMetrics.rowStackScale;
     final row = Container(
       constraints: BoxConstraints(minHeight: t.rowHeight),
       padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s4),
       // Painted over the row's foot: what the row holds is centred on the
       // whole row, the rule's pixel with it.
       foregroundDecoration: BoxDecoration(border: Border(bottom: t.rule)),
-      child: Row(
-        children: [
-          if (icon != null) ...[
-            MinimalIcon(icon),
-            const MinimalGap(MinimalFieldMetrics.rowIconGap),
-          ],
-          Expanded(child: minimalCapLabel(Text(label, style: t.body))),
-          if (trailing != null) ...[
-            const MinimalGap(MinimalSpacing.s12),
-            trailing,
-          ],
-        ],
-      ),
+      child: stacked && trailing != null
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                head,
+                const MinimalGap(MinimalSpacing.s4),
+                Padding(
+                  padding: EdgeInsetsDirectional.only(
+                    start: icon == null
+                        ? 0
+                        : MinimalIconSize.i18 + MinimalFieldMetrics.rowIconGap,
+                  ),
+                  // Its face on the label's keyline, its target reaching
+                  // past it.
+                  child: MinimalTapAlignment(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: trailing,
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(child: head),
+                if (trailing != null) ...[
+                  const MinimalGap(MinimalSpacing.s12),
+                  // Its face on the end keyline, its target reaching in.
+                  MinimalTapAlignment(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: trailing,
+                  ),
+                ],
+              ],
+            ),
     );
     return MinimalPressable(
       focusNode: focusNode,
@@ -185,6 +232,23 @@ class MinimalFormRow extends StatelessWidget {
       outset: MinimalFieldMetrics.rowReach,
       child: row,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -248,13 +312,17 @@ class MinimalInputRow extends StatefulWidget {
   /// The keyboard it asks for.
   final TextInputType? keyboardType;
 
+  /// {@template minimal.textInputAction}
   /// The keyboard's action key.
+  /// {@endtemplate}
   final TextInputAction? textInputAction;
 
   /// Whether it takes input.
   final bool enabled;
 
+  /// {@template minimal.readOnly}
   /// Whether its text is shown but not edited.
+  /// {@endtemplate}
   final bool readOnly;
 
   /// Whether it hides what is typed.
@@ -269,11 +337,66 @@ class MinimalInputRow extends StatefulWidget {
   /// A glyph before the label, the property-row register.
   final IconData? icon;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
   State<MinimalInputRow> createState() => _MinimalInputRowState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
+      ..add(
+        FlagProperty('obscureText', value: obscureText, ifTrue: 'obscureText'),
+      )
+      ..add(IntProperty('maxLines', maxLines, defaultValue: 1))
+      ..add(FlagProperty('mono', value: mono, ifTrue: 'mono'))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// The input row's measure: the label column's width bounds beside the
@@ -353,71 +476,75 @@ class _MinimalInputRowState extends State<MinimalInputRow> {
           );
     // The whole row is the field's target, well past the 44 px floor: a tap
     // on the label or in the row's padding focuses the field. The field's
-    // own tap (placing the caret) wins the arena where it lands.
+    // own tap (placing the caret) wins the arena where it lands. The pointer
+    // shows the text cursor over all of it, as over the field.
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: widget.enabled ? _focus.requestFocus : null,
-      // Disabled, the words dim; the rule keeps its neighbours' strength.
-      child: Container(
-        constraints: BoxConstraints(minHeight: t.rowHeight),
-        padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s12),
-        // Painted over the row's foot, as every ruled row's: the label
-        // and the field are centred on the whole row.
-        foregroundDecoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: ruleColor, width: t.hairline),
+      child: MouseRegion(
+        cursor: widget.enabled ? SystemMouseCursors.text : MouseCursor.defer,
+        // Disabled, the words dim; the rule keeps its neighbours' strength.
+        child: Container(
+          constraints: BoxConstraints(minHeight: t.rowHeight),
+          padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s12),
+          // Painted over the row's foot, as every ruled row's: the label
+          // and the field are centred on the whole row.
+          foregroundDecoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: ruleColor, width: t.hairline),
+            ),
           ),
-        ),
-        child: Opacity(
-          opacity: widget.enabled ? 1 : 0.45,
-          child: LayoutBuilder(
-            builder: (context, c) {
-              if (c.maxWidth < _RowMetrics.stackBelow) {
+          child: Opacity(
+            opacity: widget.enabled ? 1 : 0.45,
+            child: LayoutBuilder(
+              builder: (context, c) {
+                if (c.maxWidth < _RowMetrics.stackBelow) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      label,
+                      const MinimalGap(MinimalSpacing.s4),
+                      field,
+                      if (message != null) ...[
+                        const MinimalGap(MinimalSpacing.s4),
+                        message,
+                      ],
+                    ],
+                  );
+                }
+                final labelWidth = (c.maxWidth * _RowMetrics.labelShare).clamp(
+                  _RowMetrics.labelMin,
+                  _RowMetrics.labelMax,
+                );
+                // The message starts under the field it describes, not under
+                // the label.
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    label,
-                    const MinimalGap(MinimalSpacing.s4),
-                    field,
-                    if (message != null) ...[
-                      const MinimalGap(MinimalSpacing.s4),
-                      message,
-                    ],
+                    Row(
+                      crossAxisAlignment: widget.maxLines > 1
+                          ? CrossAxisAlignment.start
+                          : CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(width: labelWidth, child: label),
+                        const MinimalGap(MinimalSpacing.s8),
+                        Expanded(child: field),
+                      ],
+                    ),
+                    if (message != null)
+                      Padding(
+                        padding: EdgeInsetsDirectional.only(
+                          top: MinimalSpacing.s4,
+                          start: labelWidth + MinimalSpacing.s8,
+                        ),
+                        child: message,
+                      ),
                   ],
                 );
-              }
-              final labelWidth = (c.maxWidth * _RowMetrics.labelShare).clamp(
-                _RowMetrics.labelMin,
-                _RowMetrics.labelMax,
-              );
-              // The message starts under the field it describes, not under
-              // the label.
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    crossAxisAlignment: widget.maxLines > 1
-                        ? CrossAxisAlignment.start
-                        : CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(width: labelWidth, child: label),
-                      const MinimalGap(MinimalSpacing.s8),
-                      Expanded(child: field),
-                    ],
-                  ),
-                  if (message != null)
-                    Padding(
-                      padding: EdgeInsetsDirectional.only(
-                        top: MinimalSpacing.s4,
-                        start: labelWidth + MinimalSpacing.s8,
-                      ),
-                      child: message,
-                    ),
-                ],
-              );
-            },
+              },
+            ),
           ),
         ),
       ),

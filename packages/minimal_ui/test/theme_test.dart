@@ -405,4 +405,13 @@ void main() {
       same(MinimalIcon.stroked(LucideIcons.house, 1.75)),
     );
   });
+
+  test('the icons\' stroke stays thin: 1.5 to 2, and past it a debug '
+      'build says so', () {
+    final t = MinimalThemeData.standard();
+    expect(t.copyWith(iconStroke: 1.5).iconStroke, 1.5);
+    expect(t.copyWith(iconStroke: 2).iconStroke, 2);
+    expect(() => t.copyWith(iconStroke: 3), throwsAssertionError);
+    expect(() => t.copyWith(iconStroke: 1), throwsAssertionError);
+  });
 }

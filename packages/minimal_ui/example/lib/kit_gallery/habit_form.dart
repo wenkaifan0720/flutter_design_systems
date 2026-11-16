@@ -8,6 +8,7 @@ import 'package:minimal_ui/minimal_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'habits.dart';
+import 'kit_words.dart';
 
 /// The create form, as a page the sheet card carries: its bar is the card
 /// header (the quiet title, the close), the name is the page's own field,
@@ -42,9 +43,9 @@ class _KitNewHabitPageState extends State<KitNewHabitPage> {
   bool _another = false;
 
   // The set properties, and the one still to choose (null).
-  String _repeat = 'Every evening';
+  String _repeat = ar('Every evening', 'كل مساء');
   String _reminder = '21:30';
-  String _group = 'Evening';
+  String _group = ar('Evening', 'المساء');
   String? _goal;
 
   @override
@@ -74,13 +75,13 @@ class _KitNewHabitPageState extends State<KitNewHabitPage> {
       repeat: _repeat,
       reminder: _reminder,
     );
-    final message = '$name added to $_group';
+    final message = ar('$name added to $_group', 'أُضيفت «$name» إلى $_group');
     final undo = habit == null ? null : () => habits!.remove(habit);
     void toast(BuildContext context) => showMinimalSnackBar(
       context,
       message,
       icon: LucideIcons.check,
-      actionLabel: undo == null ? null : 'Undo',
+      actionLabel: undo == null ? null : ar('Undo', 'تراجع'),
       onAction: undo,
     );
     if (_another) {
@@ -126,20 +127,23 @@ class _KitNewHabitPageState extends State<KitNewHabitPage> {
     final t = context.minimalTheme;
     final named = _name.text.trim().isNotEmpty;
     return MinimalScaffold(
-      topBar: const MinimalAppBar(title: 'New habit', subtitle: 'Habits'),
+      topBar: MinimalAppBar(
+        title: ar('New habit', 'عادة جديدة'),
+        subtitle: ar('Habits', 'العادات'),
+      ),
       // The card's own footer line: the switch prints its own words; when
       // they and the actions do not share a line, the actions drop under
       // them, each keeping its edge.
       footer: MinimalSheetFooter(
         accessory: MinimalSwitch(
           value: _another,
-          label: 'Create another',
+          label: ar('Create another', 'إنشاء أخرى'),
           showLabel: true,
           onChanged: (on) => setState(() => _another = on),
         ),
-        leading: const MinimalSheetAction('Cancel'),
+        leading: MinimalSheetAction(ar('Cancel', 'إلغاء')),
         trailing: MinimalSheetAction(
-          'Create habit',
+          ar('Create habit', 'إنشاء العادة'),
           isDefaultAction: true,
           enabled: named,
           onPressed: _create,
@@ -151,7 +155,7 @@ class _KitNewHabitPageState extends State<KitNewHabitPage> {
           MinimalTextField(
             bare: true,
             controller: _name,
-            hint: 'Habit name',
+            hint: ar('Habit name', 'اسم العادة'),
             style: t.h1,
             autofocus: widget.name.isEmpty,
             textCapitalization: TextCapitalization.sentences,
@@ -160,7 +164,7 @@ class _KitNewHabitPageState extends State<KitNewHabitPage> {
           MinimalTextField(
             bare: true,
             controller: _note,
-            hint: 'Add a note…',
+            hint: ar('Add a note…', 'أضف ملاحظة…'),
             style: t.body,
             minLines: 1,
             maxLines: 4,
@@ -171,14 +175,14 @@ class _KitNewHabitPageState extends State<KitNewHabitPage> {
             pills: [
               _pill(
                 icon: LucideIcons.repeat,
-                name: 'Repeat',
+                name: ar('Repeat', 'التكرار'),
                 value: _repeat,
                 choices: kitHabitRepeats,
                 pick: (v) => _repeat = v,
               ),
               _pill(
                 icon: LucideIcons.bell,
-                name: 'Reminder',
+                name: ar('Reminder', 'التذكير'),
                 value: _reminder,
                 mono: true,
                 choices: const ['06:30', '07:00', '21:00', '21:30', '22:00'],
@@ -186,16 +190,20 @@ class _KitNewHabitPageState extends State<KitNewHabitPage> {
               ),
               _pill(
                 icon: LucideIcons.folder,
-                name: 'Group',
+                name: ar('Group', 'المجموعة'),
                 value: _group,
                 choices: kitHabitGroups,
                 pick: (v) => _group = v,
               ),
               _pill(
                 icon: LucideIcons.target,
-                name: 'Goal',
+                name: ar('Goal', 'الهدف'),
                 value: _goal,
-                choices: const ['3 a week', '5 a week', 'Every time'],
+                choices: [
+                  ar('3 a week', '3 في الأسبوع'),
+                  ar('5 a week', '5 في الأسبوع'),
+                  ar('Every time', 'كل مرة'),
+                ],
                 pick: (v) => _goal = v,
               ),
             ],

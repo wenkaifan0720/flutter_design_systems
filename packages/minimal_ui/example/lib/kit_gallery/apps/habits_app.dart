@@ -14,14 +14,31 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../habit_form.dart';
 import '../habit_page.dart';
 import '../habits.dart';
+import '../kit_words.dart';
 import '../today_page.dart';
 import 'app_frame.dart';
 
-/// Ritual, standing in the window, [gallery] its way out.
+/// Ritual, standing in the window, [gallery] its way out, opened at
+/// [screen].
 class KitHabitsApp extends StatefulWidget {
-  const KitHabitsApp({super.key, required this.gallery});
+  const KitHabitsApp({super.key, required this.gallery, this.screen});
 
   final KitGalleryLink? gallery;
+
+  /// The screen it opens at, one of [screens]; null opens Today.
+  final String? screen;
+
+  /// Today; a habit's page (on a laptop, beside Today); New habit raised
+  /// over Today; the habit's page asking whether to archive it; every
+  /// habit; settings.
+  static const screens = [
+    'today',
+    'habit',
+    'new-habit',
+    'archive',
+    'habits',
+    'settings',
+  ];
 
   @override
   State<KitHabitsApp> createState() => _KitHabitsAppState();
@@ -38,19 +55,24 @@ class _KitHabitsAppState extends State<KitHabitsApp> {
 
   @override
   Widget build(BuildContext context) => KitApp(
-    name: 'Ritual',
+    name: ar('Ritual', 'طقوس'),
     gallery: widget.gallery,
+    initial: switch (widget.screen) {
+      'habits' => 1,
+      'settings' => 2,
+      _ => 0,
+    },
     destinations: [
       (
-        item: const MinimalNavItem(LucideIcons.calendarCheck, 'Today'),
-        root: (_) => _TodayRoot(habits: _habits),
+        item: MinimalNavItem(LucideIcons.calendarCheck, ar('Today', 'اليوم')),
+        root: (_) => _TodayRoot(habits: _habits, opening: widget.screen),
       ),
       (
-        item: const MinimalNavItem(LucideIcons.listChecks, 'Habits'),
+        item: MinimalNavItem(LucideIcons.listChecks, ar('Habits', 'العادات')),
         root: (_) => _AllHabits(habits: _habits),
       ),
       (
-        item: const MinimalNavItem(LucideIcons.settings, 'Settings'),
+        item: MinimalNavItem(LucideIcons.settings, ar('Settings', 'الإعدادات')),
         root: (_) => _Settings(habits: _habits),
       ),
     ],
@@ -67,7 +89,7 @@ void _newHabit(BuildContext context, KitHabits habits) {
       context,
       message,
       icon: LucideIcons.check,
-      actionLabel: undo == null ? null : 'Undo',
+      actionLabel: undo == null ? null : ar('Undo', 'تراجع'),
       onAction: undo,
     ),
   );
@@ -79,13 +101,15 @@ void _newHabit(BuildContext context, KitHabits habits) {
   );
 }
 
-/// Opens [habit]'s page on [context]'s tab, its bar's way back to [parent].
+/// Opens [habit]'s page on [context]'s tab, its bar's way back to [parent];
+/// [asking], asking whether to archive it.
 void _open(
   BuildContext context,
   KitHabits habits,
   KitHabit habit,
-  String parent,
-) {
+  String parent, {
+  bool asking = false,
+}) {
   final navigator = Navigator.of(context);
   navigator.push(
     MaterialPageRoute<void>(
@@ -94,6 +118,7 @@ void _open(
         id: habit.id,
         parent: parent,
         onArchived: navigator.pop,
+        asking: asking,
       ),
     ),
   );
@@ -101,9 +126,12 @@ void _open(
 
 /// Today: the day's list; on a laptop, the open habit's page beside it.
 class _TodayRoot extends StatefulWidget {
-  const _TodayRoot({required this.habits});
+  const _TodayRoot({required this.habits, this.opening});
 
   final KitHabits habits;
+
+  /// The screen the app opens at ([KitHabitsApp.screens]).
+  final String? opening;
 
   @override
   State<_TodayRoot> createState() => _TodayRootState();
@@ -111,10 +139,41 @@ class _TodayRoot extends StatefulWidget {
 
 class _TodayRootState extends State<_TodayRoot> {
   String _selected = 'HAB-4';
+  bool _wide = false;
+
+  /// Whether the open habit's page, on its first build, asks whether to
+  /// archive it.
+  late bool _asking = widget.opening == 'archive';
 
   /// The list's width beside the detail: a phone's, so its rows read as
   /// they do there.
   static const double _listWidth = 400;
+
+  @override
+  void initState() {
+    super.initState();
+    final opening = widget.opening;
+    if (opening == 'habit' || opening == 'archive' || opening == 'new-habit') {
+      // Once Today stands: beside it on a laptop the habit is already open.
+      WidgetsBinding.instance.addPostFrameCallback((_) => _openAt(opening!));
+    }
+  }
+
+  void _openAt(String opening) {
+    if (!mounted) return;
+    final habits = widget.habits;
+    if (opening == 'new-habit') return _newHabit(context, habits);
+    final habit = habits.byId(_selected);
+    if (_wide || habit == null) return;
+    _asking = false;
+    _open(
+      context,
+      habits,
+      habit,
+      ar('Today', 'اليوم'),
+      asking: opening == 'archive',
+    );
+  }
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -125,6 +184,7 @@ class _TodayRootState extends State<_TodayRoot> {
   );
 
   Widget _build(BuildContext context, {required bool wide}) {
+    _wide = wide;
     final habits = widget.habits;
     final list = KitTodayPage(
       habits: habits,
@@ -133,7 +193,7 @@ class _TodayRootState extends State<_TodayRoot> {
       onNew: () => _newHabit(context, habits),
       onOpen: (habit) => wide
           ? setState(() => _selected = habit.id)
-          : _open(context, habits, habit, 'Today'),
+          : _open(context, habits, habit, ar('Today', 'اليوم')),
     );
     if (!wide) return list;
     return ListenableBuilder(
@@ -154,6 +214,7 @@ class _TodayRootState extends State<_TodayRoot> {
                       habits: habits,
                       id: shown.id,
                       parent: null,
+                      asking: _asking,
                     ),
             ),
           ],
@@ -175,57 +236,71 @@ class _AllHabits extends StatelessWidget {
     builder: (context, _) => MinimalScaffold(
       topBar: MinimalAppBar(
         leading: KitApp.leading(context),
-        title: 'Habits',
+        title: ar('Habits', 'العادات'),
         subtitle: '${habits.habits.length}',
         actions: [
           MinimalIconButton(
             LucideIcons.plus,
-            label: 'New habit',
+            label: ar('New habit', 'عادة جديدة'),
             variant: MinimalIconButtonVariant.primary,
             onPressed: () => _newHabit(context, habits),
           ),
         ],
       ),
       padding: EdgeInsets.zero,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (habits.habits.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s48),
-              child: MinimalEmptyState(
-                icon: LucideIcons.listChecks,
-                title: 'No habits yet',
-                body: 'Start with one small thing you want to do every day.',
-                actionLabel: 'New habit',
-                onAction: () => _newHabit(context, habits),
+      // One column of rows: the form measure on a wide window, as Settings.
+      body: KitApp.measured(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (habits.habits.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: MinimalSpacing.s48,
+                ),
+                child: MinimalEmptyState(
+                  icon: LucideIcons.listChecks,
+                  title: ar('No habits yet', 'لا عادات بعد'),
+                  body: ar(
+                    'Start with one small thing you want to do every day.',
+                    'ابدأ بشيء صغير تريد فعله كل يوم.',
+                  ),
+                  actionLabel: ar('New habit', 'عادة جديدة'),
+                  onAction: () => _newHabit(context, habits),
+                ),
               ),
-            ),
-          for (final group in kitHabitGroups)
-            if (habits.habits.any((h) => h.group == group)) ...[
-              MinimalSectionHeader(
-                group,
-                count: '${habits.habits.where((h) => h.group == group).length}',
-              ),
-              MinimalListSection(
-                children: [
-                  for (final habit in habits.habits.where(
-                    (h) => h.group == group,
-                  ))
-                    MinimalListTile(
-                      title: habit.name,
-                      subtitle: [
-                        habit.paused ? 'Paused' : habit.repeat,
-                        if (habit.reminder != null) habit.reminder!,
-                      ].join(' · '),
-                      muted: habit.paused,
-                      chevron: true,
-                      onTap: () => _open(context, habits, habit, 'Habits'),
-                    ),
-                ],
-              ),
-            ],
-        ],
+            for (final group in kitHabitGroups)
+              if (habits.habits.any((h) => h.group == group)) ...[
+                MinimalSectionHeader(
+                  group,
+                  count:
+                      '${habits.habits.where((h) => h.group == group).length}',
+                ),
+                MinimalListSection(
+                  children: [
+                    for (final habit in habits.habits.where(
+                      (h) => h.group == group,
+                    ))
+                      MinimalListTile(
+                        title: habit.name,
+                        subtitle: [
+                          habit.paused ? ar('Paused', 'متوقفة') : habit.repeat,
+                          if (habit.reminder != null) habit.reminder!,
+                        ].join(' · '),
+                        muted: habit.paused,
+                        chevron: true,
+                        onTap: () => _open(
+                          context,
+                          habits,
+                          habit,
+                          ar('Habits', 'العادات'),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+          ],
+        ),
       ),
     ),
   );
@@ -244,17 +319,20 @@ class _Settings extends StatefulWidget {
 class _SettingsState extends State<_Settings> {
   bool _reminders = true;
   bool _summary = false;
-  String _weekStarts = 'Monday';
+  String _weekStarts = ar('Monday', 'الاثنين');
 
   Future<void> _erase() async {
     final sure =
         await showMinimalDialog<bool>(
           context,
-          builder: (_) => const MinimalDialog(
-            title: 'Erase every habit?',
-            message: 'Today and Habits empty, and their records go with them.',
-            confirmLabel: 'Erase',
-            cancelLabel: 'Keep',
+          builder: (_) => MinimalDialog(
+            title: ar('Erase every habit?', 'أتمحو كل العادات؟'),
+            message: ar(
+              'Today and Habits empty, and their records go with them.',
+              'تفرغ «اليوم» و«العادات»، وتذهب سجلاتها معها.',
+            ),
+            confirmLabel: ar('Erase', 'امحُ'),
+            cancelLabel: ar('Keep', 'أبقِها'),
             destructive: true,
           ),
         ) ??
@@ -263,49 +341,48 @@ class _SettingsState extends State<_Settings> {
     final undo = widget.habits.clear();
     showMinimalSnackBar(
       context,
-      'Every habit erased',
+      ar('Every habit erased', 'مُحيت كل العادات'),
       icon: LucideIcons.trash2,
-      actionLabel: 'Undo',
+      actionLabel: ar('Undo', 'تراجع'),
       onAction: undo,
     );
   }
 
   @override
   Widget build(BuildContext context) => MinimalScaffold(
-    topBar: MinimalAppBar(leading: KitApp.leading(context), title: 'Settings'),
-    // A form keeps the form measure on a wide window, on the title's edge:
-    // each switch near enough its label to read as its pair.
-    body: Align(
-      alignment: AlignmentDirectional.topStart,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: MinimalLayout.formWidth(context)),
-        child: _sections(context),
-      ),
+    topBar: MinimalAppBar(
+      leading: KitApp.leading(context),
+      title: ar('Settings', 'الإعدادات'),
     ),
+    // A form keeps the form measure on a wide window, on the title's edge.
+    body: KitApp.measured(_sections(context)),
   );
 
   Widget _sections(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       MinimalFormSection(
-        title: 'Reminders',
-        footer: 'Each habit reminds you at its own time.',
+        title: ar('Reminders', 'التذكيرات'),
+        footer: ar(
+          'Each habit reminds you at its own time.',
+          'تذكّرك كل عادة في وقتها.',
+        ),
         children: [
           MinimalFormRow(
-            label: 'Remind me',
+            label: ar('Remind me', 'ذكّرني'),
             icon: LucideIcons.bell,
             trailing: MinimalSwitch(
               value: _reminders,
-              label: 'Remind me',
+              label: ar('Remind me', 'ذكّرني'),
               onChanged: (on) => setState(() => _reminders = on),
             ),
           ),
           MinimalFormRow(
-            label: 'Sunday summary',
+            label: ar('Sunday summary', 'ملخص الأحد'),
             icon: LucideIcons.mail,
             trailing: MinimalSwitch(
               value: _summary,
-              label: 'Sunday summary',
+              label: ar('Sunday summary', 'ملخص الأحد'),
               onChanged: (on) => setState(() => _summary = on),
             ),
           ),
@@ -313,20 +390,28 @@ class _SettingsState extends State<_Settings> {
       ),
       const MinimalGap(MinimalSpacing.s24),
       MinimalFormSection(
-        title: 'Week',
+        title: ar('Week', 'الأسبوع'),
         children: [
           MinimalFormRow(
-            label: 'Starts on',
+            label: ar('Starts on', 'يبدأ في'),
             icon: LucideIcons.calendar,
-            trailing: SizedBox(
-              width: 176,
+            // At least 176 wide, and as wide as its words at large text.
+            trailing: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 176),
               child: MinimalSegmentedButton<String>(
-                segments: const [
-                  MinimalButtonSegment('Monday', 'Monday'),
-                  MinimalButtonSegment('Sunday', 'Sunday'),
+                expand: false,
+                segments: [
+                  MinimalButtonSegment(
+                    ar('Monday', 'الاثنين'),
+                    ar('Monday', 'الاثنين'),
+                  ),
+                  MinimalButtonSegment(
+                    ar('Sunday', 'الأحد'),
+                    ar('Sunday', 'الأحد'),
+                  ),
                 ],
                 value: _weekStarts,
-                label: 'Week starts on',
+                label: ar('Week starts on', 'يبدأ الأسبوع في'),
                 small: true,
                 onChanged: (day) => setState(() => _weekStarts = day),
               ),
@@ -336,14 +421,17 @@ class _SettingsState extends State<_Settings> {
       ),
       const MinimalGap(MinimalSpacing.s24),
       MinimalFormSection(
-        title: 'Data',
+        title: ar('Data', 'البيانات'),
         children: [
           MinimalFormRow(
-            label: 'Export as CSV',
+            label: ar('Export as CSV', 'تصدير بصيغة CSV'),
             icon: LucideIcons.download,
             onPressed: () => showMinimalSnackBar(
               context,
-              'ritual-2026-08-28.csv saved to Downloads',
+              ar(
+                'ritual-2026-08-28.csv saved to Downloads',
+                'حُفظ ritual-2026-08-28.csv في التنزيلات',
+              ),
               icon: LucideIcons.download,
             ),
           ),
@@ -356,7 +444,7 @@ class _SettingsState extends State<_Settings> {
         gutter: false,
         children: [
           MinimalListTile(
-            title: 'Erase every habit',
+            title: ar('Erase every habit', 'امحُ كل العادات'),
             icon: LucideIcons.trash2,
             destructive: true,
             onTap: _erase,

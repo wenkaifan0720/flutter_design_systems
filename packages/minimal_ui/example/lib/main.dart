@@ -1,7 +1,9 @@
 // The Minimal gallery: every part the package exports, live, on pages with plain names, by day and by night, and
 // made yours. The sidebar (a drawer on a phone) moves between the pages; the bar on top opens the Customize panel and
 // switches the appearance, and every page takes the theme the panel sets. Each page stacks the gallery's own demos.
+import 'package:flutter/foundation.dart' show SynchronousFuture;
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -12,6 +14,7 @@ import 'kit_gallery/apps/habits_app.dart';
 import 'kit_gallery/apps/issues_app.dart';
 import 'kit_gallery/apps/orders_app.dart';
 import 'kit_gallery/kit.dart';
+import 'kit_gallery/kit_words.dart';
 import 'kit_gallery/theme.dart';
 
 Future<void> main() async {
@@ -180,13 +183,14 @@ final ExamplePage previewPage = (
 );
 
 /// One app of the example: its link (`?app=habits`), its name and glyph, a
-/// line on what it is, and the app itself, given its way out.
+/// line on what it is, and the app itself, given its way out and the screen
+/// it opens at (null for its first).
 typedef ExampleApp = ({
   String slug,
   String name,
   IconData icon,
   String about,
-  Widget Function(KitGalleryLink gallery) build,
+  Widget Function(KitGalleryLink gallery, String? screen) build,
 });
 
 /// The three apps the look is shown in, each filling the window.
@@ -196,21 +200,21 @@ final List<ExampleApp> exampleApps = [
     name: 'Ritual',
     icon: LucideIcons.calendarCheck,
     about: 'A habit tracker: the day\'s list, a habit\'s record, a new habit',
-    build: (gallery) => KitHabitsApp(gallery: gallery),
+    build: (gallery, screen) => KitHabitsApp(gallery: gallery, screen: screen),
   ),
   (
     slug: 'issues',
     name: 'Tracker',
     icon: LucideIcons.circleUser,
     about: 'An issue tracker: my issues by status, each beside its page',
-    build: (gallery) => KitIssuesApp(gallery: gallery),
+    build: (gallery, screen) => KitIssuesApp(gallery: gallery, screen: screen),
   ),
   (
     slug: 'orders',
     name: 'Lund Bakery',
     icon: LucideIcons.croissant,
     about: 'A bakery\'s back office: the morning\'s figures, orders, products',
-    build: (gallery) => KitOrdersApp(gallery: gallery),
+    build: (gallery, screen) => KitOrdersApp(gallery: gallery, screen: screen),
   ),
 ];
 
@@ -226,6 +230,7 @@ class GalleryApp extends StatefulWidget {
     super.key,
     this.initialPage = 0,
     this.initialApp,
+    this.initialScreen,
     this.initialBrightness = Brightness.light,
     this.initialKnobs = const Knobs(),
   });
@@ -233,9 +238,10 @@ class GalleryApp extends StatefulWidget {
   /// The gallery a link opens: `?page=buttons&appearance=dark&radius=12`
   /// starts on that page (its name in lower case, words joined by hyphens), by
   /// night, with those corners, so a page can be linked to directly;
-  /// `?app=habits` opens that app, filling the window; `&dir=rtl` reads it
-  /// right to left and `&text=1.3` shows it at the largest text size
-  /// Minimal lays out (MinimalChromeMetrics.maxTextScale).
+  /// `?app=habits` opens that app, filling the window, and `&screen=habit`
+  /// opens it at that screen (everyday_screens.dart lists them); `&dir=rtl`
+  /// reads it right to left and `&text=2` shows it at the largest text size
+  /// Minimal lays out (MinimalChromeMetrics.maxTextScale, 200%).
   factory GalleryApp.at(Uri address) {
     final q = address.queryParameters;
     final page = galleryPagesAll.indexWhere(
@@ -245,6 +251,7 @@ class GalleryApp extends StatefulWidget {
     return GalleryApp(
       initialPage: page < 0 ? 0 : page,
       initialApp: app < 0 ? null : app,
+      initialScreen: q['screen'],
       initialBrightness: q['appearance'] == 'dark'
           ? Brightness.dark
           : Brightness.light,
@@ -270,6 +277,10 @@ class GalleryApp extends StatefulWidget {
 
   /// An index into [exampleApps]; null opens the gallery.
   final int? initialApp;
+
+  /// The screen [initialApp] opens at; null (or one it doesn't know) opens
+  /// its first.
+  final String? initialScreen;
   final Brightness initialBrightness;
   final Knobs initialKnobs;
 
@@ -288,12 +299,16 @@ final List<ExamplePage> galleryPagesAll = [
 class _GalleryAppState extends State<GalleryApp> {
   late var _page = widget.initialPage;
   late int? _app = widget.initialApp;
+  late String? _screen = widget.initialScreen;
   late var _brightness = widget.initialBrightness;
   late var _knobs = widget.initialKnobs;
 
   void _setKnobs(Knobs knobs) => setState(() => _knobs = knobs);
   void _open(int page) => setState(() => _page = page);
-  void _openApp(int app) => setState(() => _app = app);
+  void _openApp(int app) => setState(() {
+    _app = app;
+    _screen = null;
+  });
 
   void _customize(BuildContext context) => showMinimalBottomSheet<void>(
     context,
@@ -320,11 +335,24 @@ class _GalleryAppState extends State<GalleryApp> {
     // an app of its own.
     kitEmbedded = true;
     kitShownTheme = _knobs.themed ? _knobs.theme : null;
+    // Right to left, the gallery speaks Arabic: the apps' words and the
+    // words Minimal says on its own.
+    kitArabic = _knobs.direction == TextDirection.rtl;
     return MaterialApp(
       title: 'Minimal',
+      // Minimal's page motion for the routes the apps push.
+      theme: kitAppTheme,
+      // The app's language, of the 30 ui_core speaks, as an ordinary app
+      // opts in: ui_core's words and Flutter's own. Minimal gives its
+      // Material and Cupertino words itself, in the app's language.
+      localizationsDelegates: const [
+        DesignLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
+      ],
+      supportedLocales: DesignLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
-        final host = Directionality(
+        Widget host = Directionality(
           textDirection: _knobs.direction,
           child: MinimalHost(
             light: kitTheme(Brightness.light),
@@ -333,6 +361,16 @@ class _GalleryAppState extends State<GalleryApp> {
             child: child!,
           ),
         );
+        if (kitArabic) {
+          host = Localizations.override(
+            context: context,
+            delegates: [
+              MinimalLocalizations.delegateOf(KitArabicWords()),
+              _arabicDesignWords,
+            ],
+            child: host,
+          );
+        }
         if (_knobs.textScale == 1) return host;
         return MediaQuery(
           data: MediaQuery.of(context)
@@ -343,15 +381,16 @@ class _GalleryAppState extends State<GalleryApp> {
       home: _app != null
           // An app is the whole window: no gallery around it.
           ? KeyedSubtree(
-              key: ValueKey('app ${_app!}'),
-              child: exampleApps[_app!].build(_link),
+              // A new language builds the app afresh, its data in it.
+              key: ValueKey('app ${_app!} ${_knobs.direction}'),
+              child: exampleApps[_app!].build(_link, _screen),
             )
           : Builder(
               builder: (context) => LayoutBuilder(
                 builder: (context, box) {
                   final wide = box.maxWidth >= _sidebarWidth;
                   final page = ExamplePageView(
-                    key: ValueKey(_page),
+                    key: ValueKey('$_page ${_knobs.direction}'),
                     page: galleryPagesAll[_page],
                     brightness: _brightness,
                     onOpen: _open,
@@ -985,13 +1024,14 @@ class _CustomizePanelState extends State<CustomizePanel> {
         MinimalSection(
           title: 'Text size',
           child: _natural(
-            3,
+            4,
             MinimalSegmentedButton<double>(
               segments: const [
-                // MinimalHost lays text out at most at maxTextScale (130%).
+                // MinimalHost lays text out at most at maxTextScale (200%).
                 MinimalButtonSegment(1.0, '100%'),
-                MinimalButtonSegment(1.15, '115%'),
                 MinimalButtonSegment(1.3, '130%'),
+                MinimalButtonSegment(1.6, '160%'),
+                MinimalButtonSegment(2.0, '200%'),
               ],
               value: k.textScale,
               label: 'Text size',
@@ -1019,3 +1059,25 @@ Widget _natural(int segments, Widget child) => Align(
     child: child,
   ),
 );
+
+/// ui_core's own Arabic, for the gallery's right-to-left mode, whatever
+/// the app's locale.
+const LocalizationsDelegate<DesignLocalizations> _arabicDesignWords =
+    _ArabicDesignWordsDelegate();
+
+class _ArabicDesignWordsDelegate
+    extends LocalizationsDelegate<DesignLocalizations> {
+  const _ArabicDesignWordsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => true;
+
+  @override
+  Future<DesignLocalizations> load(Locale locale) =>
+      SynchronousFuture<DesignLocalizations>(
+        DesignLocalizations.forLocale(const Locale('ar')),
+      );
+
+  @override
+  bool shouldReload(_ArabicDesignWordsDelegate old) => false;
+}

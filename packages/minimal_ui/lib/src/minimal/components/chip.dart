@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
@@ -69,11 +70,10 @@ class MinimalChip extends StatelessWidget {
   /// This chip's style, over `components.chip`.
   final MinimalStyle? style;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -127,7 +127,7 @@ class MinimalChip extends StatelessWidget {
                 ),
           ),
           padding:
-              so.padding ??
+              so.paddingIn(context) ??
               EdgeInsetsDirectional.only(start: pad.left, end: pad.right),
           decoration: minimalFrame(
             so.shape ?? own,
@@ -182,6 +182,28 @@ class MinimalChip extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(IntProperty('count', count, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// A chip strip that cannot overflow: its chips wrap onto new lines, 6 px
@@ -211,13 +233,30 @@ class MinimalChipRow extends StatelessWidget {
   final double runSpacing;
 
   @override
-  Widget build(BuildContext context) => MinimalHitTarget(
-    line: MinimalChromeMetrics.controlSm,
-    child: Wrap(
-      spacing: spacing,
-      runSpacing: runSpacing,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: children,
-    ),
+  Widget build(BuildContext context) => Wrap(
+    spacing: spacing,
+    runSpacing: runSpacing,
+    crossAxisAlignment: WrapCrossAlignment.center,
+    children: children,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DoubleProperty(
+          'spacing',
+          spacing,
+          defaultValue: MinimalChromeMetrics.iconGap,
+        ),
+      )
+      ..add(
+        DoubleProperty(
+          'runSpacing',
+          runSpacing,
+          defaultValue: MinimalChromeMetrics.iconGap,
+        ),
+      );
+  }
 }

@@ -1,6 +1,7 @@
 /// Single-choice rows and the hairline group that holds them.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -12,7 +13,9 @@ import 'pressable.dart';
 
 /// One option of a single choice: a 44 px hairline row — an optional
 /// leading glyph or mark, the title (and a quiet subtitle), and the accent
-/// check at the end when it is the choice. The row draws its own bottom
+/// check at the end when it is the choice, its title then in the full ink at
+/// medium weight (in a [MinimalSelectionGroup] with a choice, the other
+/// titles stay muted). The row draws its own bottom
 /// rule, like every Minimal row; stack them in a [MinimalSelectionGroup].
 /// A null [onPressed] disables the option.
 ///
@@ -57,11 +60,10 @@ class MinimalChoiceRow extends StatelessWidget {
   /// Chooses it; null disables it.
   final VoidCallback? onPressed;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -70,9 +72,13 @@ class MinimalChoiceRow extends StatelessWidget {
     final subtitle = this.subtitle;
     final leading = this.leading;
     final content = this.content;
-    final inset =
-        context.dependOnInheritedWidgetOfExactType<_ChoiceInset>()?.padding ??
-        EdgeInsets.zero;
+    final group = context.dependOnInheritedWidgetOfExactType<_ChoiceInset>();
+    final inset = group?.padding ?? EdgeInsets.zero;
+    // Minimal says a choice in ink and weight: the chosen row's words in the
+    // full ink at medium weight, the rest of its group muted.
+    final ink = (group?.choosing ?? false) && !selected
+        ? t.mutedForeground
+        : t.foreground;
     // Painted over the row's foot, so the row's words and check are centred
     // on the whole row. Outside the press, so a disabled row dims its words
     // and keeps its rule as strong as its neighbours'.
@@ -110,7 +116,7 @@ class MinimalChoiceRow extends StatelessWidget {
                           minimalCapLabel(
                             Text(
                               title,
-                              style: selected ? t.body.medium : t.body,
+                              style: (selected ? t.body.medium : t.body).c(ink),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -134,13 +140,32 @@ class MinimalChoiceRow extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('selected', selected))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// A single choice set out as hairline rows: a rule over the first
 /// [MinimalChoiceRow], each row's own rule under it, no card and no inset of
 /// its own (the page's gutter is the inset). Where the group runs edge to
 /// edge (a phone page's lists do), [padding] insets the rows' words and
-/// checks while the rules still span the screen. The arrow keys walk the
+/// checks while the rules still span the screen. Once a row is chosen the
+/// others' titles stay muted, so the choice reads at a glance. The arrow keys walk the
 /// options. Keep the chosen value in page state and wire every available
 /// option to update it.
 ///
@@ -176,6 +201,7 @@ class MinimalSelectionGroup extends StatelessWidget {
           decoration: BoxDecoration(border: Border(top: t.rule)),
           child: _ChoiceInset(
             padding: padding,
+            choosing: children.any((c) => c is MinimalChoiceRow && c.selected),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -186,14 +212,35 @@ class MinimalSelectionGroup extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<EdgeInsetsGeometry>(
+        'padding',
+        padding,
+        defaultValue: EdgeInsets.zero,
+      ),
+    );
+  }
 }
 
 /// The side padding a [MinimalSelectionGroup] hands its rows.
 class _ChoiceInset extends InheritedWidget {
-  const _ChoiceInset({required this.padding, required super.child});
+  const _ChoiceInset({
+    required this.padding,
+    required this.choosing,
+    required super.child,
+  });
 
   final EdgeInsetsGeometry padding;
 
+  /// Whether one of the group's rows is chosen: the others' words then stay
+  /// in the muted ink.
+  final bool choosing;
+
   @override
-  bool updateShouldNotify(_ChoiceInset old) => padding != old.padding;
+  bool updateShouldNotify(_ChoiceInset old) =>
+      padding != old.padding || choosing != old.choosing;
 }

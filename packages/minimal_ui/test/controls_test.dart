@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
 
+import 'faces.dart';
+
 // The host stands above the Navigator, as an app mounts it, so overlays (a
 // sheet, a toast) read the same tokens as the page.
 Widget _host(Widget child) => MaterialApp(
@@ -70,7 +72,7 @@ void main() {
         MinimalIconButton(Icons.add, label: 'Add', onPressed: () => taps += 1),
       ),
     );
-    final box = tester.getRect(find.byType(MinimalIconButton));
+    final box = faceOf(tester, find.byType(MinimalIconButton));
     expect(box.height, MinimalChromeMetrics.barControl);
     await tester.tapAt(box.topCenter - const Offset(0, 5));
     expect(taps, 1);

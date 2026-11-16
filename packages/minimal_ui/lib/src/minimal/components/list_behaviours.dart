@@ -3,10 +3,14 @@
 /// reorderable list, pull to refresh and tree.
 library;
 
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../internal/controls.dart';
 import '../internal/kit_paint.dart';
 import '../internal/styled.dart';
 import '../localizations.dart';
@@ -127,6 +131,41 @@ class MinimalReorderableListView<T extends Object> extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('items', items))
+      ..add(
+        ObjectFlagProperty<void Function(int from, int to)>.has(
+          'onReorder',
+          onReorder,
+        ),
+      )
+      ..add(ObjectFlagProperty<String Function(T item)>.has('labelOf', labelOf))
+      ..add(
+        ObjectFlagProperty<Widget Function(BuildContext context, T item)>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(ObjectFlagProperty<Object Function(T item)>.has('keyOf', keyOf))
+      ..add(
+        FlagProperty(
+          'shrinkWrap',
+          value: shrinkWrap,
+          ifFalse: 'shrinkWrap: false',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A list refreshed by a pull past its top: an inbox, a feed. While the
@@ -204,7 +243,18 @@ class MinimalRefreshIndicator extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<Future<void> Function()>.has('onRefresh', onRefresh),
+    );
+  }
 }
+
+/// A tree row's height at a pointer.
+const double _treeRow = 32;
 
 /// Nested things opened level by level: folders and files, a project's
 /// areas, a document's outline. Each row is 32 px: indented 16 px a level,
@@ -263,6 +313,30 @@ class MinimalTreeView<T extends Object> extends StatefulWidget {
 
   @override
   State<MinimalTreeView<T>> createState() => _MinimalTreeViewState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('roots', roots))
+      ..add(
+        ObjectFlagProperty<List<T> Function(T node)>.has(
+          'childrenOf',
+          childrenOf,
+        ),
+      )
+      ..add(ObjectFlagProperty<String Function(T node)>.has('labelOf', labelOf))
+      ..add(
+        ObjectFlagProperty<IconData? Function(T node, bool expanded)>.has(
+          'iconOf',
+          iconOf,
+        ),
+      )
+      ..add(IterableProperty<T>('initiallyExpanded', initiallyExpanded))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 class _MinimalTreeViewState<T extends Object>
@@ -314,7 +388,14 @@ class _MinimalTreeViewState<T extends Object>
             ? t.foreground
             : t.mutedForeground;
         return Container(
-          height: 32,
+          // The compact 32 for a pointer, grown with the words; at a finger
+          // the row stands at least the tap floor.
+          constraints: BoxConstraints(
+            minHeight: math.max(
+              minimalGrownHeight(context, _treeRow),
+              minimalTapFloor(context),
+            ),
+          ),
           padding: EdgeInsetsDirectional.only(
             start: MinimalSpacing.s4 + 16.0 * item.row.depth,
             end: MinimalSpacing.s8,

@@ -2,6 +2,7 @@
 /// ui_core's range slider.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -56,7 +57,9 @@ class MinimalRangeSlider extends StatelessWidget {
     this.unit,
     this.showLabel = true,
     this.style,
-  });
+  }) : assert(min < max, 'min is below max'),
+       assert(divisions == null || divisions > 0, 'divisions is at least 1'),
+       assert(minGap >= 0, 'minGap is never negative');
 
   /// What the range sets: printed over the track unless [showLabel] is
   /// false, and the thumbs' names for a screen reader.
@@ -107,6 +110,10 @@ class MinimalRangeSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    assert(
+      values.start >= min && values.end <= max,
+      'values lie within min..max',
+    );
     final t = context.minimalTheme;
     final words = MinimalLocalizations.of(context);
     final enabled = onChanged != null;
@@ -158,7 +165,7 @@ class MinimalRangeSlider extends StatelessWidget {
                   height: _thumb + 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: ts.overlay ?? fill.withValues(alpha: 0.16),
+                    color: ts.wash ?? fill.withValues(alpha: 0.16),
                   ),
                 ),
               if (states.ring)
@@ -231,6 +238,44 @@ class MinimalRangeSlider extends StatelessWidget {
       ],
     );
     return enabled ? body : Opacity(opacity: 0.45, child: body);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(DoubleProperty('minGap', minGap, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      )
+      ..add(StringProperty('unit', unit, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'showLabel',
+          value: showLabel,
+          ifFalse: 'showLabel: false',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
   }
 }
 

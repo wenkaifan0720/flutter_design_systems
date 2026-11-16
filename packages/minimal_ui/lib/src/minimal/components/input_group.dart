@@ -5,6 +5,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
@@ -18,6 +19,7 @@ import '../internal/field.dart';
 import '../internal/give_way_row.dart';
 import '../internal/kit_paint.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../internal/text_entry.dart';
 import '../localizations.dart';
 import '../shapes.dart';
@@ -106,7 +108,7 @@ class MinimalInputGroup extends StatefulWidget {
   /// The keyboard the platform shows.
   final TextInputType? keyboardType;
 
-  /// The keyboard's action key.
+  /// {@macro minimal.textInputAction}
   final TextInputAction? textInputAction;
 
   /// What the field lets through as it is typed.
@@ -121,11 +123,73 @@ class MinimalInputGroup extends StatefulWidget {
   /// The box's style, over `components.textField`.
   final MinimalStyle? style;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
   State<MinimalInputGroup> createState() => _MinimalInputGroupState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('prefixText', prefixText, defaultValue: null))
+      ..add(StringProperty('suffixText', suffixText, defaultValue: null))
+      ..add(FlagProperty('mono', value: mono, ifTrue: 'mono'))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _MinimalInputGroupState extends State<MinimalInputGroup>
@@ -153,6 +217,7 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
 
     Widget field = TextField(
       controller: controller,
+      selectionControls: minimalSelectionControls(context),
       focusNode: focusNode,
       autofocus: widget.autofocus,
       enabled: widget.enabled,
@@ -304,7 +369,9 @@ class _MinimalInputGroupState extends State<MinimalInputGroup>
       message: message,
       error: error != null,
       enabled: widget.enabled,
-      child: MinimalHitTarget(child: group),
+      // At a finger the group stands in a band as tall as the floor, its
+      // add-ons a finger wide.
+      child: minimalTapStrip(context, group),
     );
   }
 }
@@ -409,7 +476,7 @@ class MinimalPasswordField extends StatefulWidget {
   /// one rather than the saved one.
   final bool newPassword;
 
-  /// The keyboard's action key.
+  /// {@macro minimal.textInputAction}
   final TextInputAction? textInputAction;
 
   /// Called with the text as it changes.
@@ -423,6 +490,59 @@ class MinimalPasswordField extends StatefulWidget {
 
   @override
   State<MinimalPasswordField> createState() => _MinimalPasswordFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('hideOnBlur', value: hideOnBlur, ifTrue: 'hideOnBlur'))
+      ..add(
+        FlagProperty('newPassword', value: newPassword, ifTrue: 'newPassword'),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>(
+          'fieldStyle',
+          fieldStyle,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _MinimalPasswordFieldState extends State<MinimalPasswordField> {
@@ -512,7 +632,11 @@ class MinimalInputOtp extends StatelessWidget {
     this.obscureText = false,
     this.keyboardType = TextInputType.number,
     this.style,
-  });
+  }) : assert(length > 0, 'a code has at least one box'),
+       assert(
+         groupSize == null || groupSize > 0,
+         'a group joins at least one box',
+       );
 
   /// How many boxes.
   final int length;
@@ -688,9 +812,63 @@ class MinimalInputOtp extends StatelessWidget {
       enabled: enabled,
       child: Align(
         alignment: AlignmentDirectional.centerStart,
-        child: MinimalHitTarget(child: field),
+        child: MinimalTapBand(child: field),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('length', length, defaultValue: 6))
+      ..add(IntProperty('groupSize', groupSize, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onCompleted',
+          onCompleted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+        ),
+      )
+      ..add(IterableProperty<String>('autofillHints', autofillHints))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        FlagProperty('obscureText', value: obscureText, ifTrue: 'obscureText'),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: TextInputType.number,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
   }
 }
 

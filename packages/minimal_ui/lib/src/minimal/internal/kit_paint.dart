@@ -355,7 +355,7 @@ class MinimalKitPanel extends StatelessWidget {
       child: minimalClip(
         shape,
         child: Padding(
-          padding: so.padding ?? padding,
+          padding: so.paddingIn(context) ?? padding,
           child: DefaultTextStyle(
             style: t.bodySmall.c(t.foreground),
             child: MinimalGroundFill(fill: so.fill ?? t.card, child: child),
@@ -415,9 +415,13 @@ OutlinedBorder minimalKitRowShape(MinimalThemeData t, [MinimalStyle? style]) {
 }
 
 /// One 32 px row of an open list or menu (an option, a menu item, an
-/// action). The active row (the keyboard's, or the pointer's: an open list
-/// follows the pointer) takes the selection fill; a chosen value its check;
-/// a destructive action the destructive ink.
+/// action). A chosen value is said as Minimal says a choice: its words in
+/// the full ink at medium weight, with the accent check; in a list that
+/// picks one ([choosing]) the other options stay in the muted ink. The
+/// active row (the keyboard's, or the pointer's: an open list follows the
+/// pointer) takes the muted fill, a place and not a choice, so it never
+/// reads as a second chosen row; a destructive action the destructive
+/// ink.
 class MinimalKitRow extends StatelessWidget {
   /// A row of a list a ui_core behaviour drives.
   const MinimalKitRow({
@@ -428,6 +432,7 @@ class MinimalKitRow extends StatelessWidget {
     this.leading,
     this.trailing,
     this.checked = false,
+    this.choosing = false,
     this.destructive = false,
     this.start = MinimalSpacing.s8,
     this.style,
@@ -449,8 +454,13 @@ class MinimalKitRow extends StatelessWidget {
   /// A widget after the label: a shortcut, a count, a chevron.
   final Widget? trailing;
 
-  /// Whether it shows a check.
+  /// Whether it is chosen: its check, and its words in the full ink at
+  /// medium weight.
   final bool checked;
+
+  /// Whether it is one option of a list that picks one: unchosen, its words
+  /// stay in the muted ink, so the chosen one reads at a glance.
+  final bool choosing;
 
   /// Whether it is destructive, in the destructive ink.
   final bool destructive;
@@ -474,6 +484,8 @@ class MinimalKitRow extends StatelessWidget {
         ? t.textTertiary
         : destructive
         ? t.destructiveInk
+        : choosing && !checked
+        ? t.mutedForeground
         : t.foreground;
     final glyph = icon;
     final lead = leading;
@@ -486,7 +498,7 @@ class MinimalKitRow extends StatelessWidget {
         top: MinimalSpacing.s4,
         bottom: MinimalSpacing.s4,
       ),
-      decoration: minimalFrame(shape, fill: active ? t.selection : null),
+      decoration: minimalFrame(shape, fill: active ? t.muted : null),
       foregroundDecoration: minimalFrame(
         shape,
         fill: MinimalKitStates(states).down
@@ -509,7 +521,7 @@ class MinimalKitRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: t.bodySmall.c(ink),
+              style: (checked ? t.bodySmall.medium : t.bodySmall).c(ink),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

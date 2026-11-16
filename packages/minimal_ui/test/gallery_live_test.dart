@@ -13,6 +13,10 @@ import '../example/lib/kit_gallery/apps/app_frame.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/main.dart';
 
+/// Exported for 0.1's callers, drawn by no part since ui_core's
+/// DesignTapTarget took its place.
+const _retired = {'MinimalHitTarget'};
+
 /// Every public widget class the package's library declares, outside its
 /// internal helpers.
 Set<String> _exportedWidgets() {
@@ -115,6 +119,11 @@ void main() {
     expect(app.initialKnobs.density, Density.compact);
     final ritual = GalleryApp.at(Uri.parse('http://localhost/?app=habits'));
     expect(exampleApps[ritual.initialApp!].name, 'Ritual');
+    expect(ritual.initialScreen, isNull);
+    final habit = GalleryApp.at(
+      Uri.parse('http://localhost/?app=habits&screen=habit'),
+    );
+    expect(habit.initialScreen, 'habit');
     final inventory = GalleryApp.at(
       Uri.parse('http://localhost/?page=inventory'),
     );
@@ -130,7 +139,7 @@ void main() {
     final exported = _exportedWidgets();
     expect(exported, isNotEmpty);
     expect(
-      exported.difference(built).toList()..sort(),
+      exported.difference(built).difference(_retired).toList()..sort(),
       isEmpty,
       reason: 'each of these needs a live demo on one of the example pages',
     );

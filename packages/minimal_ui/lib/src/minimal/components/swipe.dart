@@ -4,6 +4,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -171,6 +172,28 @@ class MinimalSwipeActions extends StatelessWidget {
         child: ColoredBox(color: t.background, child: child),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalSwipeAction>('leading', leading))
+      ..add(IterableProperty<MinimalSwipeAction>('trailing', trailing))
+      ..add(
+        FlagProperty(
+          'allowsFullSwipe',
+          value: allowsFullSwipe,
+          ifTrue: 'allowsFullSwipe',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'initiallyOpen',
+          value: initiallyOpen,
+          ifTrue: 'initiallyOpen',
+        ),
+      );
   }
 }
 
@@ -368,5 +391,13 @@ class MinimalDismissible extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDismissed', onDismissed))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }

@@ -4,10 +4,13 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
+import '../localizations.dart';
 import '../theme.dart';
 import 'pressable.dart';
 import 'tag.dart';
@@ -42,6 +45,20 @@ enum MinimalTaskStatus {
 
   /// The tone a [MinimalStatusBadge] for this state speaks in.
   final MinimalTone tone;
+
+  /// The state's name in the app's words at [context]
+  /// ([MinimalLocalizations]): [label] unless the app translates it.
+  String labelIn(BuildContext context) {
+    final words = MinimalLocalizations.of(context);
+    return switch (this) {
+      backlog => words.taskBacklog,
+      todo => words.taskTodo,
+      active => words.taskActive,
+      done => words.taskDone,
+      paused => words.taskPaused,
+      cancelled => words.taskCancelled,
+    };
+  }
 }
 
 /// The glyph of a [MinimalTaskStatus], painted at the icon stroke so it sits in a
@@ -103,17 +120,16 @@ class MinimalStatusIcon extends StatelessWidget {
         MinimalTaskStatus.cancelled => t.textTertiary,
       };
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final label = semanticLabel ?? status.label;
+    final label = semanticLabel ?? status.labelIn(context);
     final glyph = SizedBox.square(
       dimension: size,
       child: CustomPaint(
@@ -132,11 +148,34 @@ class MinimalStatusIcon extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: tap,
+      // A row's leading control: its face on the start keyline.
+      tapAlignment:
+          MinimalTapAlignment.maybeOf(context) ??
+          AlignmentDirectional.centerStart,
       shape: const CircleBorder(),
       semanticLabel: label,
       checked: checked ?? status == MinimalTaskStatus.done,
       child: ExcludeSemantics(child: glyph),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<MinimalTaskStatus>('status', status))
+      ..add(DoubleProperty('size', size, defaultValue: MinimalIconSize.i18))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('checked', checked, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -257,6 +296,19 @@ enum MinimalPriority {
 
   /// The priority's name, as a list or a screen reader says it.
   final String label;
+
+  /// The priority's name in the app's words at [context]
+  /// ([MinimalLocalizations]): [label] unless the app translates it.
+  String labelIn(BuildContext context) {
+    final words = MinimalLocalizations.of(context);
+    return switch (this) {
+      urgent => words.priorityUrgent,
+      high => words.priorityHigh,
+      medium => words.priorityMedium,
+      low => words.priorityLow,
+      none => words.priorityNone,
+    };
+  }
 }
 
 /// The glyph of a [MinimalPriority], painted to sit beside a
@@ -293,19 +345,19 @@ class MinimalPriorityIcon extends StatelessWidget {
   /// Makes the glyph a control; null leaves it a mark.
   final VoidCallback? onPressed;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final label = priority == MinimalPriority.none
-        ? priority.label
-        : '${priority.label} priority';
+        ? priority.labelIn(context)
+        : MinimalLocalizations.of(context)
+              .priorityNamed(priority.labelIn(context));
     // One item at its box for ui_core's keyline check: "no priority" is three
     // faint dashes whose ink it cannot find.
     final glyph = DesignKeylineFace(
@@ -330,10 +382,30 @@ class MinimalPriorityIcon extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       onPressed: tap,
+      tapAlignment:
+          MinimalTapAlignment.maybeOf(context) ??
+          AlignmentDirectional.centerStart,
       shape: t.shapes.mark,
       semanticLabel: label,
       child: ExcludeSemantics(child: glyph),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<MinimalPriority>('priority', priority))
+      ..add(DoubleProperty('size', size, defaultValue: MinimalIconSize.i16))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -430,14 +502,20 @@ class MinimalStatusBadge extends StatelessWidget {
     super.key,
     this.tone = MinimalTone.neutral,
     this.dot = true,
-  });
+  }) : status = null;
 
-  /// A badge for a [MinimalTaskStatus], in its label and tone.
-  MinimalStatusBadge.status(MinimalTaskStatus status, {Key? key})
-    : this(status.label, key: key, tone: status.tone);
+  /// A badge for a [MinimalTaskStatus], in its tone, saying its name in
+  /// the app's words ([MinimalTaskStatus.labelIn]).
+  MinimalStatusBadge.status(MinimalTaskStatus this.status, {super.key})
+    : label = '',
+      tone = status.tone,
+      dot = true;
 
-  /// What it says.
+  /// What it says; a [MinimalStatusBadge.status] says its [status]'s name.
   final String label;
+
+  /// The status a [MinimalStatusBadge.status] stands for.
+  final MinimalTaskStatus? status;
 
   /// Its dot's tone.
   final MinimalTone tone;
@@ -497,7 +575,10 @@ class MinimalStatusBadge extends StatelessWidget {
           ],
           Flexible(
             child: Text(
-              label,
+              switch (status) {
+                final status? => status.labelIn(context),
+                null => label,
+              },
               style: labelStyleOf(t).c(loud ? colors.foreground : t.foreground),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -506,5 +587,23 @@ class MinimalStatusBadge extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(
+        EnumProperty<MinimalTaskStatus>('status', status, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<MinimalTone>(
+          'tone',
+          tone,
+          defaultValue: MinimalTone.neutral,
+        ),
+      )
+      ..add(FlagProperty('dot', value: dot, ifFalse: 'dot: false'));
   }
 }

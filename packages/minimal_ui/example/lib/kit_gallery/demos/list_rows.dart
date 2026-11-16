@@ -82,10 +82,14 @@ class _Page extends StatelessWidget {
                 leading: const MinimalPriorityIcon(MinimalPriority.high),
                 leadingWidth: _lead,
                 title: 'Streak resets when the phone changes time zone',
-                below: Row(
+                // The tag drops under the id when large text leaves no
+                // room beside it.
+                below: Wrap(
+                  spacing: MinimalSpacing.s8,
+                  runSpacing: MinimalSpacing.s4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text('HAB-12', style: t.mono.c(t.mutedForeground)),
-                    const MinimalGap(MinimalSpacing.s8),
                     const MinimalTag('Bug', dot: MinimalTone.destructive),
                   ],
                 ),

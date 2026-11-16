@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -14,7 +15,6 @@ import '../localizations.dart';
 import '../theme.dart';
 import 'button.dart';
 import 'icon_button.dart';
-import 'pressable.dart';
 
 /// One action in a sheet's footer row — `Cancel` beside `Create habit`.
 ///
@@ -116,11 +116,29 @@ class MinimalSheetFooter extends StatelessWidget {
   /// a switch's) 44 px targets on.
   static Widget _footer({required Widget? accessory, required Widget actions}) {
     if (accessory == null) {
-      return MinimalHitTarget(
-        child: Align(alignment: AlignmentDirectional.centerEnd, child: actions),
-      );
+      return Align(alignment: AlignmentDirectional.centerEnd, child: actions);
     }
-    return MinimalHitTarget(child: _FooterLine(children: [accessory, actions]));
+    return _FooterLine(children: [accessory, actions]);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<MinimalSheetAction>(
+          'leading',
+          leading,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalSheetAction>(
+          'trailing',
+          trailing,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -482,6 +500,36 @@ class MinimalBottomSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(FlagProperty('safe', value: safe, ifTrue: 'safe'))
+      ..add(FlagProperty('floating', value: floating, ifTrue: 'floating'))
+      ..add(
+        FlagProperty('closable', value: closable, ifFalse: 'closable: false'),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalSheetAction>(
+          'leading',
+          leading,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalSheetAction>(
+          'trailing',
+          trailing,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
   }
 }
 

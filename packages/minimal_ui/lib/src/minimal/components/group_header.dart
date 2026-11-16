@@ -1,11 +1,13 @@
 /// The uppercase group label with its mono count.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
+import '../internal/controls.dart';
 import '../theme.dart';
 import 'pressable.dart';
 
@@ -97,7 +99,7 @@ class MinimalSectionHeader extends StatelessWidget {
             turns: expanded ? 0 : -0.25,
             duration: turn,
             curve: MinimalMotion.out,
-            child: MinimalIcon(
+            child: const MinimalIcon(
               LucideIcons.chevronDown,
               size: MinimalIconSize.i14,
             ),
@@ -117,7 +119,15 @@ class MinimalSectionHeader extends StatelessWidget {
         ),
         if (end != null) ...[
           const MinimalGap(MinimalSpacing.s8),
-          minimalCapLabel(Text(end, style: t.mono.medium.c(t.mutedForeground))),
+          // Figures, written left to right whatever the line's direction:
+          // `71 / 82` keeps its order in Arabic.
+          minimalCapLabel(
+            Text(
+              end,
+              style: t.mono.medium.c(t.mutedForeground),
+              textDirection: TextDirection.ltr,
+            ),
+          ),
         ] else if (action != null && !split) ...[
           const MinimalGap(MinimalSpacing.s8),
           action,
@@ -139,7 +149,11 @@ class MinimalSectionHeader extends StatelessWidget {
       child: Semantics(
         header: true,
         expanded: expanded,
-        child: Padding(
+        // A header that folds its group stands at least the tap floor (44
+        // at a finger), its words centred in it.
+        child: Container(
+          constraints: BoxConstraints(minHeight: minimalTapFloor(context)),
+          alignment: AlignmentDirectional.centerStart,
           padding: !split
               ? resolved
               : rtl
@@ -164,5 +178,29 @@ class MinimalSectionHeader extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('count', count, defaultValue: null))
+      ..add(
+        FlagProperty('expanded', value: expanded, ifFalse: 'expanded: false'),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onExpansionChanged',
+          onExpansionChanged,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: MinimalSectionHeader.inset,
+        ),
+      );
   }
 }

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
@@ -10,6 +12,7 @@ import '../internal/cap_label.dart';
 import '../internal/controls.dart';
 import '../internal/field.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../internal/text_entry.dart';
 import '../localizations.dart';
 import '../shapes.dart';
@@ -80,6 +83,20 @@ class MinimalNumberField extends StatefulWidget {
 
   @override
   State<MinimalNumberField> createState() => _MinimalNumberFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('value', value))
+      ..add(IntProperty('min', min))
+      ..add(IntProperty('max', max))
+      ..add(IntProperty('step', step, defaultValue: 1))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(ObjectFlagProperty<String Function(int)>.has('format', format))
+      ..add(StringProperty('unit', unit, defaultValue: null));
+  }
 }
 
 class _MinimalNumberFieldState extends State<MinimalNumberField> {
@@ -205,13 +222,17 @@ class _MinimalNumberFieldState extends State<MinimalNumberField> {
       // A stepper with no onChanged dims as a whole below, so its buttons
       // are announced disabled without dimming a second time.
       if (!live) {
-        return Semantics(
-          container: true,
-          button: true,
-          enabled: false,
-          label: action,
-          value: spoken(widget.value),
-          child: glyph,
+        // The key keeps its target's room, so a stepper switched off keeps
+        // its size.
+        return DesignTapTarget(
+          child: Semantics(
+            container: true,
+            button: true,
+            enabled: false,
+            label: action,
+            value: spoken(widget.value),
+            child: glyph,
+          ),
         );
       }
       return MinimalPressable(
@@ -222,6 +243,8 @@ class _MinimalNumberFieldState extends State<MinimalNumberField> {
         child: Semantics(
           value: spoken(widget.value),
           child: GestureDetector(
+            // The whole key holds, not only its glyph.
+            behavior: HitTestBehavior.opaque,
             excludeFromSemantics: true,
             onLongPressStart: enabled ? (_) => _hold(direction) : null,
             onLongPressEnd: (_) => _stop(),
@@ -274,8 +297,9 @@ class _MinimalNumberFieldState extends State<MinimalNumberField> {
         ],
       ),
     );
-    return MinimalHitTarget(
-      child: live ? control : Opacity(opacity: 0.45, child: control),
-    );
+    // At a finger the field stands in a band as tall as the floor, its
+    // steppers a finger wide.
+    final banded = minimalTapStrip(context, control);
+    return live ? banded : Opacity(opacity: 0.45, child: banded);
   }
 }

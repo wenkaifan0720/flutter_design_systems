@@ -4,13 +4,16 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:flutter/rendering.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
+import '../internal/controls.dart';
+import '../internal/kit_paint.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../localizations.dart';
 import '../theme.dart';
 import 'icon_button.dart';
@@ -61,7 +64,12 @@ class MinimalPagination extends StatelessWidget {
     required this.pageCount,
     this.onPageChanged,
     this.siblings = 1,
-  }) : assert(pageCount > 0);
+  }) : assert(pageCount > 0, 'a pager holds at least one page'),
+       assert(
+         page >= 0 && page < pageCount,
+         'page counts from 0 to pageCount - 1',
+       ),
+       assert(siblings >= 0, 'siblings is never negative');
 
   /// The current page, from 0.
   final int page;
@@ -162,6 +170,21 @@ class MinimalPagination extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('page', page))
+      ..add(IntProperty('pageCount', pageCount))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onPageChanged',
+          onPageChanged,
+        ),
+      )
+      ..add(IntProperty('siblings', siblings, defaultValue: 1));
+  }
 }
 
 class _PageCell extends StatelessWidget {
@@ -228,13 +251,18 @@ class _PageCell extends StatelessWidget {
 /// for each, the current one drawn long in the ink, the rest small on the
 /// control edge's ink (3:1 on the ground) — a capsule role, so the dots
 /// follow `shapes.pill`. The
-/// current dot grows into place in [MinimalMotion.base]. With
-/// [onChanged] each dot is a control that jumps to its page.
+/// current dot grows into place in [MinimalMotion.base].
+///
+/// With [onChanged] the dots are one control, as iOS's page control is: a
+/// tap before the current dot goes back a page, a tap after it on a page,
+/// the arrow keys step it, and a screen reader adjusts it (swipe up or
+/// down). The dots are too small to tap one by one; the control is laid
+/// out at the tap floor round them.
 ///
 /// ```dart
 /// MinimalPageDots(count: 4, selectedIndex: page, onChanged: controller.jumpToPage)
 /// ```
-class MinimalPageDots extends StatelessWidget {
+class MinimalPageDots extends StatefulWidget {
   /// A dot for each of [count] pages.
   const MinimalPageDots({
     super.key,
@@ -242,7 +270,11 @@ class MinimalPageDots extends StatelessWidget {
     required this.selectedIndex,
     this.onChanged,
     this.position,
-  });
+  }) : assert(count > 0, 'dots for at least one page'),
+       assert(
+         selectedIndex >= 0 && selectedIndex < count,
+         'selectedIndex counts from 0 to count - 1',
+       );
 
   /// How many pages there are.
   final int count;
@@ -250,7 +282,7 @@ class MinimalPageDots extends StatelessWidget {
   /// The current page, from 0.
   final int selectedIndex;
 
-  /// Reports the dot pressed; null leaves the dots still.
+  /// Reports the page the control steps to; null leaves the dots still.
   final ValueChanged<int>? onChanged;
 
   /// Where the pages are while they move, in pages (1.5 is half way from the
@@ -263,95 +295,163 @@ class MinimalPageDots extends StatelessWidget {
   static const double _long = 18;
   static const double _cell = 16;
 
+  /// A dot's cell across: the dot and its air either side.
+  static const double _pitch = _dot + 2 * MinimalSpacing.s4;
+
   @override
-  Widget build(BuildContext context) {
+  State<MinimalPageDots> createState() => _MinimalPageDotsState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(DoubleProperty('position', position, defaultValue: null));
+  }
+}
+
+class _MinimalPageDotsState extends State<MinimalPageDots> {
+  bool _focus = false;
+
+  void _step(int by) {
+    final next = widget.selectedIndex + by;
+    if (next < 0 || next >= widget.count) return;
+    widget.onChanged?.call(next);
+  }
+
+  // A tap before the current dot steps back, after it on.
+  void _tapAt(Offset at, bool rtl) {
+    const pitch = MinimalPageDots._pitch;
+    final start = widget.selectedIndex * pitch;
+    final end = start + MinimalPageDots._long + 2 * MinimalSpacing.s4;
+    final x = rtl ? context.size!.width - at.dx : at.dx;
+    if (x < start) _step(-1);
+    if (x > end) _step(1);
+  }
+
+  // The dots hug their run on their start, whatever stretches them: the
+  // control is as wide as the dots it steps through, not its column.
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    widthFactor: 1,
+    heightFactor: 1,
+    child: _control(context),
+  );
+
+  Widget _control(BuildContext context) {
     final t = context.minimalTheme;
     final l = MinimalLocalizations.of(context);
-    final at = position;
+    final count = widget.count;
+    final selected = widget.selectedIndex;
+    final at = widget.position;
     // Followed frame by frame, the dots must not ease after it as well.
     final duration = context.minimalStill || at != null
         ? Duration.zero
         : MinimalMotion.base;
     final shape = t.shapes.pill;
-    final press = onChanged;
+    final press = widget.onChanged;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
     // How much of the current page's long dot dot [i] wears: whole on the
     // page, none a page away, measured round the ring (the last page's
     // neighbour on the far side is the first).
     double share(int i) {
-      if (at == null) return i == selectedIndex ? 1 : 0;
+      if (at == null) return i == selected ? 1 : 0;
       final d = (i - at).abs();
       return math.max(0.0, 1 - math.min(d, count - d));
     }
 
-    return Semantics(
-      container: true,
-      label: l.pageOf(selectedIndex + 1, count),
-      child: MinimalHitTarget(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (var i = 0; i < count; i++)
-              _OwnSides(
-                child: MinimalPressable(
-                  onPressed: press == null || i == selectedIndex
-                      ? null
-                      : () => press(i),
-                  focusable: press != null,
-                  shape: shape,
-                  semanticLabel: l.pageOf(i + 1, count),
-                  child: SizedBox(
-                    height: _cell,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: MinimalSpacing.s4,
-                      ),
-                      child: Center(
-                        child: AnimatedContainer(
-                          duration: duration,
-                          curve: MinimalMotion.out,
-                          width: _dot + (_long - _dot) * share(i),
-                          height: _dot,
-                          decoration: minimalFrame(
-                            shape,
-                            // The other pages on the control edge's ink,
-                            // 3:1 on the ground: a hairline's grey would
-                            // all but vanish.
-                            fill: Color.lerp(t.input, t.foreground, share(i)),
-                          ),
-                        ),
-                      ),
-                    ),
+    final dots = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < count; i++)
+          SizedBox(
+            height: MinimalPageDots._cell,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: MinimalSpacing.s4,
+              ),
+              child: Center(
+                child: AnimatedContainer(
+                  duration: duration,
+                  curve: MinimalMotion.out,
+                  width:
+                      MinimalPageDots._dot +
+                      (MinimalPageDots._long - MinimalPageDots._dot) * share(i),
+                  height: MinimalPageDots._dot,
+                  decoration: minimalFrame(
+                    shape,
+                    // The other pages on the control edge's ink, 3:1 on
+                    // the ground: a hairline's grey would all but vanish.
+                    fill: Color.lerp(t.input, t.foreground, share(i)),
                   ),
                 ),
               ),
-          ],
+            ),
+          ),
+      ],
+    );
+    if (press == null) {
+      return Semantics(
+        container: true,
+        label: l.pageOf(selected + 1, count),
+        child: ExcludeSemantics(child: dots),
+      );
+    }
+    return Semantics(
+      container: true,
+      value: l.pageOf(selected + 1, count),
+      increasedValue: selected < count - 1
+          ? l.pageOf(selected + 2, count)
+          : null,
+      decreasedValue: selected > 0 ? l.pageOf(selected, count) : null,
+      onIncrease: selected < count - 1 ? () => _step(1) : null,
+      onDecrease: selected > 0 ? () => _step(-1) : null,
+      child: ExcludeSemantics(
+        child: FocusableActionDetector(
+          onShowFocusHighlight: (v) => setState(() => _focus = v),
+          mouseCursor: SystemMouseCursors.click,
+          shortcuts: minimalSeekShortcuts,
+          actions: <Type, Action<Intent>>{
+            MinimalSeekIntent: CallbackAction<MinimalSeekIntent>(
+              onInvoke: (intent) {
+                final forward = switch (intent.seek) {
+                  MinimalSeek.right => !rtl,
+                  MinimalSeek.left => rtl,
+                  MinimalSeek.last => true,
+                  MinimalSeek.first => false,
+                };
+                _step(forward ? 1 : -1);
+                return null;
+              },
+            ),
+          },
+          // Laid out at the floor round the dots, a tap in the room landing
+          // on the nearest dot's side of the current one.
+          child: MinimalTapBand(
+            across: count * MinimalPageDots._pitch,
+            child: Builder(
+              builder: (context) => GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapUp: (d) => _tapAt(d.localPosition, rtl),
+                child: DecoratedBox(
+                  position: DecorationPosition.foreground,
+                  decoration: minimalRingFrame(
+                    shape,
+                    ring: _focus ? t.ring : null,
+                    ground: minimalGround(context),
+                    width: t.focusWidth,
+                  ),
+                  child: dots,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
-  }
-}
-
-/// Takes a point only between its own sides, at any height. The dots stand
-/// edge to edge, narrower than a touch target, so one dot's 44 px margin
-/// would reach into the next and take its taps; this keeps each tap on the
-/// dot under it, while the row's [MinimalHitTarget] still pads the ends and
-/// the height.
-class _OwnSides extends SingleChildRenderObjectWidget {
-  const _OwnSides({super.child});
-
-  @override
-  RenderObject createRenderObject(BuildContext context) => _RenderOwnSides();
-}
-
-class _RenderOwnSides extends RenderProxyBox {
-  @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    if (position.dx < 0 || position.dx >= size.width) return false;
-    if (hitTestChildren(result, position: position)) {
-      result.add(BoxHitTestEntry(this, position));
-      return true;
-    }
-    return false;
   }
 }
 
@@ -392,6 +492,11 @@ class MinimalStepProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    assert(steps.isNotEmpty, 'a step progress has at least one step');
+    assert(
+      current >= 0 && current <= steps.length,
+      'current counts from 0 to steps.length (all done)',
+    );
     final t = context.minimalTheme;
     final l = MinimalLocalizations.of(context);
     return LayoutBuilder(
@@ -502,6 +607,20 @@ class MinimalStepProgress extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('steps', steps))
+      ..add(IntProperty('current', current))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onStepPressed',
+          onStepPressed,
+        ),
+      );
   }
 }
 

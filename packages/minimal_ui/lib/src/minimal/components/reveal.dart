@@ -45,6 +45,14 @@ class MinimalReveal extends StatefulWidget {
 
   @override
   State<MinimalReveal> createState() => _MinimalRevealState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('visible', visible))
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical));
+  }
 }
 
 class _MinimalRevealState extends State<MinimalReveal>

@@ -1,12 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
 import '../theme.dart';
 
 /// A dense single-line metadata row: small fixed [leading] and [trailing]
 /// adornments around a flexible [middle] that ellipsizes. Only [middle]
 /// absorbs width; keep the fixed slots to a glyph, a tag, an id or a time
-/// so the row always fits its line.
+/// so the row always fits its line. At large text (from
+/// [MinimalChromeMetrics.rowStackScale]) the slots flow onto lines of their
+/// own.
 ///
 /// Minimal sets the line's registers: the middle prints in
 /// [MinimalThemeData.bodySmall], the adornments in [MinimalThemeData.mono] in
@@ -73,6 +77,33 @@ class MinimalMetaRow extends StatelessWidget {
         ),
       );
     }
+    // At large text the slots flow onto lines of their own (the middle
+    // still ellipsizes at the row's width) rather than run off the line.
+    if (MediaQuery.textScalerOf(context).scale(10) / 10 >=
+        MinimalChromeMetrics.rowStackScale) {
+      return DefaultTextStyle.merge(
+        style: t.bodySmall,
+        child: Wrap(
+          spacing: spacing,
+          runSpacing: MinimalSpacing.s2,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            ?lead,
+            DefaultTextStyle.merge(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              child: minimalCapLabel(middle),
+            ),
+            if (trailing != null)
+              DefaultTextStyle.merge(
+                style: figure,
+                child: minimalCapLabel(trailing!),
+              ),
+          ],
+        ),
+      );
+    }
     return DefaultTextStyle.merge(
       style: t.bodySmall,
       child: Row(
@@ -96,5 +127,15 @@ class MinimalMetaRow extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('leadingWidth', leadingWidth, defaultValue: null))
+      ..add(
+        DoubleProperty('spacing', spacing, defaultValue: MinimalSpacing.s8),
+      );
   }
 }

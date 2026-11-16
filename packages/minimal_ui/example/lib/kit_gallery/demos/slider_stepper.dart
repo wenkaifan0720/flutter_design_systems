@@ -275,40 +275,44 @@ class _TakingsState extends State<_Takings> {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final words = t.bodySmall.c(t.mutedForeground);
-    return Row(
+    // The figures and the button share a line while they fit; at a larger
+    // text size the button goes under them.
+    return OverflowBar(
+      alignment: MainAxisAlignment.spaceBetween,
+      overflowSpacing: MinimalSpacing.s8,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // The default style: the theme's figure.
-              MinimalCounter(
-                _takings,
-                format: (v) => MinimalFormat.money(v, symbol: '€'),
-              ),
-              const MinimalGap(MinimalSpacing.s2),
-              // The count is a figure (mono); the words stay in the body
-              // face.
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text('from', style: words),
-                  const MinimalGap(MinimalSpacing.s4),
-                  MinimalCounter(_sales, style: t.mono.copyWith(fontSize: 13)),
-                  const MinimalGap(MinimalSpacing.s4),
-                  Flexible(
-                    child: Text(
-                      'sales today',
-                      style: words,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // The default style: the theme's figure.
+            MinimalCounter(
+              _takings,
+              format: (v) => MinimalFormat.money(v, symbol: '€'),
+            ),
+            const MinimalGap(MinimalSpacing.s2),
+            // The count is a figure (mono); the words stay in the body
+            // face.
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text('from', style: words),
+                const MinimalGap(MinimalSpacing.s4),
+                MinimalCounter(_sales, style: t.mono.copyWith(fontSize: 13)),
+                const MinimalGap(MinimalSpacing.s4),
+                Flexible(
+                  child: Text(
+                    'sales today',
+                    style: words,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
         MinimalButton(
           'Add sale',

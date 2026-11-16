@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -107,11 +108,10 @@ class MinimalCard extends StatelessWidget {
   static _MinimalCardScope? _scope(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<_MinimalCardScope>();
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -122,7 +122,7 @@ class MinimalCard extends StatelessWidget {
     final so = MinimalStyleOf(layers, minimalStates(selected: chosen));
     final shape = so.shape ?? t.shapes.medium;
     final padding =
-        (this.padding ?? so.padding)?.resolve(
+        (this.padding ?? so.paddingIn(context))?.resolve(
           Directionality.maybeOf(context),
         ) ??
         const EdgeInsets.all(inset);
@@ -178,6 +178,34 @@ class MinimalCard extends StatelessWidget {
         child: MinimalGroundFill(fill: fill, child: child),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(FlagProperty('flat', value: flat, ifTrue: 'flat'))
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 

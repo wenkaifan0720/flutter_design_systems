@@ -11,6 +11,8 @@ import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../kit_words.dart';
+
 /// One destination of an app: its tab, and the root page the tab opens.
 typedef KitAppDestination = ({MinimalNavItem item, WidgetBuilder root});
 
@@ -67,6 +69,28 @@ class KitApp extends StatefulWidget {
     if (!(ModalRoute.of(context)?.isFirst ?? true)) return null;
     return KitGalleryButton(link: link);
   }
+
+  /// A page's one column of rows or fields at the form measure on a wide
+  /// window, on the title's edge: each row's control (a switch, a chevron)
+  /// near enough its words to read as its pair, never a desktop-wide line.
+  /// A pane only a little wider than the measure (a tablet's) it fills,
+  /// rather than leave a stray margin at its end.
+  static Widget measured(Widget child) => LayoutBuilder(
+    builder: (context, box) {
+      final measure = MinimalLayout.formWidth(context);
+      return Align(
+        alignment: AlignmentDirectional.topStart,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: box.maxWidth - measure < MinimalSpacing.s48 * 2
+                ? box.maxWidth
+                : measure,
+          ),
+          child: child,
+        ),
+      );
+    },
+  );
 
   @override
   State<KitApp> createState() => _KitAppState();
@@ -235,10 +259,14 @@ class KitListAndDetail extends StatefulWidget {
     required this.detail,
     required this.parent,
     this.listWidth = 400,
+    this.opened = false,
   });
 
   /// The row open beside the list when the app opens wide.
   final String initial;
+
+  /// Whether a phone opens on [initial]'s page, pushed over the list.
+  final bool opened;
 
   /// The list, its [open] row marked (null on a phone), [onOpen] opening one.
   final Widget Function(String? open, ValueChanged<String> onOpen) list;
@@ -264,6 +292,23 @@ class KitListAndDetail extends StatefulWidget {
 
 class _KitListAndDetailState extends State<KitListAndDetail> {
   late String _open = widget.initial;
+  bool _wide = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.opened) {
+      // Once the list stands: beside it the row is already open.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || _wide) return;
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => widget.detail(widget.initial, widget.parent),
+          ),
+        );
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -274,6 +319,7 @@ class _KitListAndDetailState extends State<KitListAndDetail> {
   );
 
   Widget _build(BuildContext context, {required bool wide}) {
+    _wide = wide;
     final list = widget.list(
       wide ? _open : null,
       (id) => wide
@@ -359,21 +405,23 @@ class KitGalleryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MinimalMenu.button(
     LucideIcons.layoutGrid,
-    label: 'Gallery',
+    label: ar('Gallery', 'المعرض'),
     items: [
       MinimalMenuItem(
-        'Back to the gallery',
+        ar('Back to the gallery', 'العودة إلى المعرض'),
         icon: LucideIcons.arrowLeft,
         onPressed: link.onBack,
       ),
       MinimalMenuItem(
-        link.dark ? 'Light appearance' : 'Dark appearance',
+        link.dark
+            ? ar('Light appearance', 'المظهر الفاتح')
+            : ar('Dark appearance', 'المظهر الداكن'),
         icon: link.dark ? LucideIcons.sun : LucideIcons.moon,
         startsGroup: true,
         onPressed: link.onAppearance,
       ),
       MinimalMenuItem(
-        'Customize',
+        ar('Customize', 'تخصيص'),
         icon: LucideIcons.slidersHorizontal,
         onPressed: () => link.onCustomize(context),
       ),

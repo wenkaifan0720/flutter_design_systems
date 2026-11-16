@@ -4,6 +4,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -148,7 +149,9 @@ class MinimalLineChart extends StatelessWidget {
   /// The plot's height.
   final double height;
 
+  /// {@template minimal.loading}
   /// Whether the data is still coming: a skeleton.
+  /// {@endtemplate}
   final bool loading;
 
   /// What a chart with no values says.
@@ -172,6 +175,21 @@ class MinimalLineChart extends StatelessWidget {
     format: format ?? _figure,
     area: false,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalChartSeries>('series', series))
+      ..add(IterableProperty<String>('labels', labels, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'))
+      ..add(StringProperty('emptyLabel', emptyLabel, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      );
+  }
 }
 
 /// A [MinimalLineChart] with the ground under each line filled with one
@@ -205,7 +223,7 @@ class MinimalAreaChart extends StatelessWidget {
   /// Its plot's height.
   final double height;
 
-  /// Whether the data is still coming: a skeleton.
+  /// {@macro minimal.loading}
   final bool loading;
 
   /// What a chart with no values says.
@@ -228,6 +246,21 @@ class MinimalAreaChart extends StatelessWidget {
     format: format ?? _figure,
     area: true,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalChartSeries>('series', series))
+      ..add(IterableProperty<String>('labels', labels, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'))
+      ..add(StringProperty('emptyLabel', emptyLabel, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      );
+  }
 }
 
 class _SeriesChart extends StatefulWidget {
@@ -258,6 +291,13 @@ class _SeriesChart extends StatefulWidget {
 class _SeriesChartState extends State<_SeriesChart> {
   int? _at;
   bool _focused = false;
+  final _ChartWords _words = _ChartWords();
+
+  @override
+  void dispose() {
+    _words.dispose();
+    super.dispose();
+  }
 
   int get _count =>
       widget.series.fold(0, (n, s) => math.max(n, s.values.length));
@@ -462,9 +502,12 @@ class _SeriesChartState extends State<_SeriesChart> {
               labelGap: _labelGap,
               rtl: Directionality.of(context) == TextDirection.rtl,
               scaler: scaler,
+              words: _words,
             ),
           );
+          // Reading a line is aiming at a point: the crosshair.
           return MouseRegion(
+            cursor: SystemMouseCursors.precise,
             onHover: (e) => setState(() => _at = index(e.localPosition.dx)),
             onExit: (_) => setState(() => _at = null),
             child: GestureDetector(
@@ -504,7 +547,9 @@ class _SeriesChartState extends State<_SeriesChart> {
     final ring =
         _focused &&
         FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
-    return Semantics(
+    // The plot is the chart's node and its focus stop: what a tap reaches
+    // is what a screen reader outlines; the legend above it is printed.
+    final node = Semantics(
       container: true,
       label: widget.semanticLabel,
       value: at == null || n == 0 ? null : _readout(at),
@@ -527,13 +572,15 @@ class _SeriesChartState extends State<_SeriesChart> {
                   )
                 : BorderSide.none,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [?legend, plot],
-          ),
+          child: plot,
         ),
       ),
+    );
+    if (legend == null) return node;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [legend, node],
     );
   }
 }
@@ -689,6 +736,40 @@ class _EmptyPlotPainter extends CustomPainter {
       old.rule != rule || old.stroke != stroke;
 }
 
+/// A series chart's words (its scale figures and labels), each laid out once
+/// and kept while their style and scale hold: a frame's painter reuses the
+/// last frame's, and the chart's state disposes them with itself.
+class _ChartWords {
+  final Map<String, TextPainter> _laid = {};
+  TextStyle? _style;
+  TextScaler? _scaler;
+
+  /// [s] laid out in [style] at [scaler].
+  TextPainter of(String s, TextStyle style, TextScaler scaler) {
+    if (style != _style || scaler != _scaler) {
+      dispose();
+      _style = style;
+      _scaler = scaler;
+    }
+    return _laid.putIfAbsent(
+      s,
+      () => TextPainter(
+        text: TextSpan(text: s, style: style),
+        textDirection: TextDirection.ltr,
+        textScaler: scaler,
+        maxLines: 1,
+      )..layout(),
+    );
+  }
+
+  void dispose() {
+    for (final painter in _laid.values) {
+      painter.dispose();
+    }
+    _laid.clear();
+  }
+}
+
 class _SeriesPainter extends CustomPainter {
   _SeriesPainter({
     required this.series,
@@ -710,6 +791,7 @@ class _SeriesPainter extends CustomPainter {
     required this.labelGap,
     required this.rtl,
     required this.scaler,
+    required this.words,
   });
 
   final List<List<double>> series;
@@ -740,12 +822,10 @@ class _SeriesPainter extends CustomPainter {
   final bool rtl;
   final TextScaler scaler;
 
-  TextPainter _text(String s) => TextPainter(
-    text: TextSpan(text: s, style: figure),
-    textDirection: TextDirection.ltr,
-    textScaler: scaler,
-    maxLines: 1,
-  )..layout();
+  /// The chart's laid-out words, which its state owns and disposes.
+  final _ChartWords words;
+
+  TextPainter _text(String s) => words.of(s, figure, scaler);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -955,7 +1035,7 @@ class MinimalPieChart extends StatefulWidget {
   /// Whether it lists the parts beside the ring.
   final bool legend;
 
-  /// Whether the data is still coming: a skeleton.
+  /// {@macro minimal.loading}
   final bool loading;
 
   /// What a chart with no values says.
@@ -969,6 +1049,24 @@ class MinimalPieChart extends StatefulWidget {
 
   @override
   State<MinimalPieChart> createState() => _MinimalPieChartState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalChartSlice>('slices', slices))
+      ..add(StringProperty('centerLabel', centerLabel, defaultValue: null))
+      ..add(StringProperty('centerValue', centerValue, defaultValue: null))
+      ..add(DoubleProperty('size', size, defaultValue: 168))
+      ..add(DoubleProperty('thickness', thickness, defaultValue: 22))
+      ..add(FlagProperty('legend', value: legend, ifFalse: 'legend: false'))
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'))
+      ..add(StringProperty('emptyLabel', emptyLabel, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      );
+  }
 }
 
 class _MinimalPieChartState extends State<MinimalPieChart> {
@@ -1064,7 +1162,9 @@ class _MinimalPieChartState extends State<MinimalPieChart> {
       );
     } else {
       final picked = at == null ? null : widget.slices[at];
+      // A slice is picked by a tap, as a control is.
       donut = MouseRegion(
+        cursor: SystemMouseCursors.click,
         onHover: (e) => setState(() => _at = _sliceAt(e.localPosition)),
         onExit: (_) => setState(() => _at = null),
         child: GestureDetector(
@@ -1171,7 +1271,10 @@ class _MinimalPieChartState extends State<MinimalPieChart> {
     final summary = [
       for (final s in widget.slices) '${s.label} ${format(s.value)}',
     ].join(', ');
-    return Semantics(
+    // The ring is the chart's node and its focus stop: what a tap reaches
+    // is what a screen reader outlines (the legend beside it is printed,
+    // its words already in the ring's value).
+    final ringed = Semantics(
       container: true,
       label: widget.semanticLabel,
       value: at == null
@@ -1184,51 +1287,51 @@ class _MinimalPieChartState extends State<MinimalPieChart> {
           _focused = v;
           if (!v) _at = null;
         }),
-        child: LayoutBuilder(
-          builder: (context, box) {
-            final ringed = DecoratedBox(
-              position: DecorationPosition.foreground,
-              decoration: minimalFrame(
-                const CircleBorder(),
-                side: ring
-                    ? BorderSide(
-                        color: t.ring,
-                        width: t.focusWidth,
-                        strokeAlign: BorderSide.strokeAlignOutside,
-                      )
-                    : BorderSide.none,
-              ),
-              child: donut,
-            );
-            if (legend == null) return Center(child: ringed);
-            final wide = box.maxWidth >= widget.size + 200;
-            // A legend no wider than it reads: as wide as its longest label
-            // and its figures (at most [_legendWidth]), so each figure
-            // stands just past the labels instead of out at the far edge.
-            final held = ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: _legendWidth),
-              child: IntrinsicWidth(child: legend),
-            );
-            return wide
-                ? Row(
-                    children: [
-                      ringed,
-                      const MinimalGap(MinimalSpacing.s24),
-                      Flexible(child: held),
-                    ],
+        child: DecoratedBox(
+          position: DecorationPosition.foreground,
+          decoration: minimalFrame(
+            const CircleBorder(),
+            side: ring
+                ? BorderSide(
+                    color: t.ring,
+                    width: t.focusWidth,
+                    strokeAlign: BorderSide.strokeAlignOutside,
                   )
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Center(child: ringed),
-                      const MinimalGap(MinimalSpacing.s16),
-                      Center(child: held),
-                    ],
-                  );
-          },
+                : BorderSide.none,
+          ),
+          child: donut,
         ),
       ),
+    );
+    return LayoutBuilder(
+      builder: (context, box) {
+        if (legend == null) return Center(child: ringed);
+        final wide = box.maxWidth >= widget.size + 200;
+        // A legend no wider than it reads: as wide as its longest label
+        // and its figures (at most [_legendWidth]), so each figure
+        // stands just past the labels instead of out at the far edge.
+        final held = ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: _legendWidth),
+          child: IntrinsicWidth(child: legend),
+        );
+        return wide
+            ? Row(
+                children: [
+                  ringed,
+                  const MinimalGap(MinimalSpacing.s24),
+                  Flexible(child: held),
+                ],
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(child: ringed),
+                  const MinimalGap(MinimalSpacing.s16),
+                  Center(child: held),
+                ],
+              );
+      },
     );
   }
 }

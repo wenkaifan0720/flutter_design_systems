@@ -2,6 +2,7 @@
 /// an inline calendar.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -12,6 +13,7 @@ import '../internal/cap_label.dart';
 import '../internal/field.dart';
 import '../internal/kit_paint.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../internal/today_mark.dart';
 import '../localizations.dart';
 import '../shapes.dart';
@@ -126,6 +128,49 @@ class MinimalDatePicker extends StatefulWidget {
 
   @override
   State<MinimalDatePicker> createState() => _MinimalDatePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<DateTime>('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(
+        EnumProperty<MinimalDatePickerMode>(
+          'mode',
+          mode,
+          defaultValue: MinimalDatePickerMode.dateAndTime,
+        ),
+      )
+      ..add(
+        EnumProperty<MinimalDatePickerPresentation>(
+          'presentation',
+          presentation,
+          defaultValue: MinimalDatePickerPresentation.compact,
+        ),
+      )
+      ..add(DiagnosticsProperty<DateTime>('first', first, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime>('last', last, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'use24HourFormat',
+          value: use24HourFormat,
+          ifFalse: 'use24HourFormat: false',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'confirmSelection',
+          value: confirmSelection,
+          ifTrue: 'confirmSelection',
+        ),
+      )
+      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null));
+  }
 }
 
 /// The date picker's geometry: a day's 44 px slot around its 32 px mark,
@@ -618,20 +663,26 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
                   ),
                 ),
               ),
-              MinimalIconButton(
-                LucideIcons.chevronLeftDir,
-                label: MinimalLocalizations.of(context).previousMonth,
-                size: MinimalButtonSize.small,
-                onPressed: enabled ? () => _stepMonth(-1) : null,
+              MinimalTapAlignment(
+                // On the end keyline: the target grows toward the start.
+                alignment: AlignmentDirectional.centerEnd,
+                child: MinimalIconButton(
+                  LucideIcons.chevronLeftDir,
+                  label: MinimalLocalizations.of(context).previousMonth,
+                  size: MinimalButtonSize.small,
+                  onPressed: enabled ? () => _stepMonth(-1) : null,
+                ),
               ),
-              // Wide enough that neither button's padded target reaches
-              // into the other's face.
-              const MinimalGap(MinimalSpacing.s8),
-              MinimalIconButton(
-                LucideIcons.chevronRightDir,
-                label: MinimalLocalizations.of(context).nextMonth,
-                size: MinimalButtonSize.small,
-                onPressed: enabled ? () => _stepMonth(1) : null,
+              MinimalGap(minimalArrowGap(context)),
+              MinimalTapAlignment(
+                // On the end keyline: the target grows toward the start.
+                alignment: AlignmentDirectional.centerEnd,
+                child: MinimalIconButton(
+                  LucideIcons.chevronRightDir,
+                  label: MinimalLocalizations.of(context).nextMonth,
+                  size: MinimalButtonSize.small,
+                  onPressed: enabled ? () => _stepMonth(1) : null,
+                ),
               ),
             ],
           ),
@@ -830,11 +881,72 @@ class _TimeColumnState extends State<_TimeColumn> {
     super.dispose();
   }
 
+  bool _focus = false;
+
+  /// The value [by] rows from the selected one, round the loop.
+  int _stepped(int by) {
+    final values = widget.values;
+    final n = values.length;
+    return values[((_selectedIndex + by) % n + n) % n];
+  }
+
+  void _step(int by) => widget.onChanged?.call(_stepped(by));
+
+  // The wheel takes the tap and picks the row under it.
+  void _tapAt(Offset at) {
+    final values = widget.values;
+    final row = ((_scroll.offset + at.dy) / _DateMetrics.timeItem).floor();
+    widget.onChanged?.call(values[row % values.length]);
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final onChanged = widget.onChanged;
     final cell = MinimalShapes.inset(t.shapes.small, 1);
+    final text = widget.text;
+    final list = SizedBox(
+      height: _DateMetrics.timeItem * _DateMetrics.timeVisible,
+      child: ListView.builder(
+        controller: _scroll,
+        itemExtent: _DateMetrics.timeItem,
+        itemCount: widget.values.length * _laps,
+        itemBuilder: (context, i) {
+          final v = widget.values[i % widget.values.length];
+          final selected = v == widget.selected;
+          return Container(
+            alignment: Alignment.center,
+            // The picked value says so in ink, as a chosen chip does: its
+            // hairline and figure in the ink, the figure at medium weight,
+            // the rest muted. No wash, and no second accent slab beside the
+            // calendar's. The keyboard's ring stands round it.
+            decoration: minimalFrame(
+              cell,
+              side: selected
+                  ? BorderSide(color: t.foreground, width: t.rim)
+                  : BorderSide.none,
+            ),
+            foregroundDecoration: selected && _focus
+                ? minimalRingFrame(
+                    cell,
+                    ring: t.ring,
+                    ground: minimalGround(context),
+                    width: t.focusWidth,
+                  )
+                : null,
+            child: Text(
+              text(v),
+              style: selected
+                  ? t.monoValue.medium.c(t.foreground)
+                  : t.monoValue.c(t.mutedForeground),
+              // A time reads left to right in every language, its period
+              // after the hour (5 AM, never AM 5).
+              textDirection: TextDirection.ltr,
+            ),
+          );
+        },
+      ),
+    );
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -849,56 +961,54 @@ class _TimeColumnState extends State<_TimeColumn> {
             ),
           ),
         ),
+        // The column is one control: a tap picks the row under it, the
+        // arrow keys step it, and a screen reader adjusts it.
         Semantics(
           label: widget.label,
           container: true,
-          child: SizedBox(
-            height: _DateMetrics.timeItem * _DateMetrics.timeVisible,
-            child: ListView.builder(
-              controller: _scroll,
-              itemExtent: _DateMetrics.timeItem,
-              itemCount: widget.values.length * _laps,
-              // The laps repeat the same values: no index to announce.
-              addSemanticIndexes: false,
-              itemBuilder: (context, i) {
-                final v = widget.values[i % widget.values.length];
-                final selected = v == widget.selected;
-                return SizedBox(
-                  height: _DateMetrics.timeItem,
-                  child: MinimalPressable(
-                    onPressed: onChanged == null ? null : () => onChanged(v),
-                    enabled: onChanged != null,
-                    selected: selected,
-                    shape: cell,
-                    child: Container(
-                      alignment: Alignment.center,
-                      // The picked value says so in ink, as a chosen chip
-                      // does: its hairline and figure in the ink, the
-                      // figure at medium weight, the rest muted. No wash,
-                      // and no second accent slab beside the calendar's.
-                      decoration: minimalFrame(
-                        cell,
-                        side: selected
-                            ? BorderSide(color: t.foreground, width: t.rim)
-                            : BorderSide.none,
-                      ),
-                      child: Text(
-                        widget.text(v),
-                        style: selected
-                            ? t.monoValue.medium.c(t.foreground)
-                            : t.monoValue.c(t.mutedForeground),
-                        // A time reads left to right in every language,
-                        // its period after the hour (5 AM, never AM 5).
-                        textDirection: TextDirection.ltr,
-                      ),
-                    ),
-                  ),
-                );
+          enabled: onChanged != null,
+          value: text(widget.selected),
+          increasedValue: onChanged == null ? null : text(_stepped(1)),
+          decreasedValue: onChanged == null ? null : text(_stepped(-1)),
+          onIncrease: onChanged == null ? null : () => _step(1),
+          onDecrease: onChanged == null ? null : () => _step(-1),
+          child: ExcludeSemantics(
+            child: FocusableActionDetector(
+              enabled: onChanged != null,
+              mouseCursor: onChanged == null
+                  ? SystemMouseCursors.basic
+                  : SystemMouseCursors.click,
+              onShowFocusHighlight: (v) => setState(() => _focus = v),
+              shortcuts: const <ShortcutActivator, Intent>{
+                SingleActivator(LogicalKeyboardKey.arrowDown): _WheelStep(1),
+                SingleActivator(LogicalKeyboardKey.arrowUp): _WheelStep(-1),
               },
+              actions: <Type, Action<Intent>>{
+                _WheelStep: CallbackAction<_WheelStep>(
+                  onInvoke: (intent) {
+                    _step(intent.by);
+                    return null;
+                  },
+                ),
+              },
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapUp: onChanged == null
+                    ? null
+                    : (d) => _tapAt(d.localPosition),
+                child: list,
+              ),
             ),
           ),
         ),
       ],
     );
   }
+}
+
+/// A wheel's step by [by] rows.
+class _WheelStep extends Intent {
+  const _WheelStep(this.by);
+
+  final int by;
 }

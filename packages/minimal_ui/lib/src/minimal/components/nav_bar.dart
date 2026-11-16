@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
@@ -172,6 +173,33 @@ class MinimalNavigationBar extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalNavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('action', action, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAction', onAction))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'actionAccent',
+          value: actionAccent,
+          ifTrue: 'actionAccent',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Key>('actionKey', actionKey, defaultValue: null),
+      );
   }
 }
 

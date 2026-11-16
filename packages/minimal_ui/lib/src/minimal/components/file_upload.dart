@@ -1,6 +1,7 @@
 /// A place to drop or pick files, and the files on their way up.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -182,6 +183,24 @@ class MinimalFileUpload extends StatelessWidget {
         for (final file in files) _FileRow(file: file, onRemove: onRemove),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('link', link, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onBrowse', onBrowse))
+      ..add(FlagProperty('dragOver', value: dragOver, ifTrue: 'dragOver'))
+      ..add(IterableProperty<MinimalUploadFile>('files', files))
+      ..add(
+        ObjectFlagProperty<ValueChanged<MinimalUploadFile>>.has(
+          'onRemove',
+          onRemove,
+        ),
+      );
   }
 }
 

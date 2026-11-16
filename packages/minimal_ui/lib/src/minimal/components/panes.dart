@@ -3,6 +3,7 @@
 /// split view.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -83,6 +84,44 @@ class MinimalScrollArea extends StatefulWidget {
 
   @override
   State<MinimalScrollArea> createState() => _MinimalScrollAreaState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(
+        FlagProperty('alwaysShown', value: alwaysShown, ifTrue: 'alwaysShown'),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: EdgeInsets.zero,
+        ),
+      );
+  }
 }
 
 class _MinimalScrollAreaState extends State<MinimalScrollArea> {
@@ -119,7 +158,7 @@ class _MinimalScrollAreaState extends State<MinimalScrollArea> {
           opacity: thumb.visible ? 1 : 0,
           duration: still ? Duration.zero : MinimalMotion.base,
           child: Padding(
-            padding: const EdgeInsets.all(3),
+            padding: const EdgeInsets.all(_thumbInset),
             child: DecoratedBox(
               decoration: ShapeDecoration(
                 shape: const StadiumBorder(),
@@ -298,6 +337,32 @@ class MinimalResizable extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.horizontal))
+      ..add(DoubleProperty('fraction', fraction, defaultValue: null))
+      ..add(
+        DoubleProperty('initialFraction', initialFraction, defaultValue: 0.5),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
+      ..add(DoubleProperty('minFirst', minFirst, defaultValue: 0))
+      ..add(DoubleProperty('minSecond', minSecond, defaultValue: 0))
+      ..add(FlagProperty('handle', value: handle, ifTrue: 'handle'))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// Paints [child] moved to the nearest device pixel, so a hairline placed at
@@ -334,3 +399,7 @@ class _RenderSnap extends RenderProxyBox {
   void paint(PaintingContext context, Offset offset) =>
       super.paint(context, Offset(_snap(offset.dx), _snap(offset.dy)));
 }
+
+/// The air round a scroll thumb inside its track: a 3 px rule-and-a-half
+/// that keeps the 6 px thumb clear of the pane's edge and its hairline.
+const double _thumbInset = 3;

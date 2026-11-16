@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../theme.dart';
@@ -37,6 +38,15 @@ class MinimalCounter extends StatefulWidget {
 
   @override
   State<MinimalCounter> createState() => _MinimalCounterState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('value', value))
+      ..add(DiagnosticsProperty<TextStyle>('style', style, defaultValue: null))
+      ..add(ObjectFlagProperty<String Function(int)>.has('format', format));
+  }
 }
 
 class _MinimalCounterState extends State<MinimalCounter> {

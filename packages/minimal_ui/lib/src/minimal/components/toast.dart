@@ -4,6 +4,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -276,7 +277,7 @@ class MinimalSnackBar extends StatelessWidget {
         minHeight: MinimalLayout.minHitTarget + 2 * rim.width,
       ),
       padding:
-          so.padding ??
+          so.paddingIn(context) ??
           const EdgeInsetsDirectional.only(
             start: MinimalSpacing.s12,
             end: MinimalSpacing.s4,
@@ -328,5 +329,18 @@ class MinimalSnackBar extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAction', onAction))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
   }
 }

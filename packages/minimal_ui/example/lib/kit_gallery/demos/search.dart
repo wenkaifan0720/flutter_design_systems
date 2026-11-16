@@ -199,10 +199,9 @@ class _EntriesState extends State<_Entries> {
 
   @override
   Widget build(BuildContext context) {
-    // The page's field stack: the section's 12 between 44 px bands, as the
-    // States fields stand, about 24 between faces. The two-line entry fills
-    // its band, so 8 more stand on each side of it for the air a one-line
-    // band holds round its face.
+    // The page's field stack: the section's 12 between bands, as the
+    // States fields stand. Every band keeps the same air round its face,
+    // the two-line entry's too, so the faces stand evenly apart.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -211,7 +210,7 @@ class _EntriesState extends State<_Entries> {
           shortcut: 'Ctrl K',
           onPressed: () => _open(context),
         ),
-        const MinimalGap(MinimalSpacing.s20),
+        const MinimalGap(MinimalSpacing.s12),
         MinimalSearchEntry(
           label: 'Search issues',
           detail: 'In Habits · 6 open',
@@ -219,7 +218,7 @@ class _EntriesState extends State<_Entries> {
           onFilter: () => setState(() => _filters = !_filters),
           filtersActive: _filters,
         ),
-        const MinimalGap(MinimalSpacing.s20),
+        const MinimalGap(MinimalSpacing.s12),
         MinimalSearchEntry(
           label: 'Search orders',
           onPressed: () => _open(context),

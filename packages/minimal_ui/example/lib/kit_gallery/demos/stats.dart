@@ -334,21 +334,23 @@ class _BarsDemoState extends State<_BarsDemo> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        // The day and the week's total share a line while they fit; at a
+        // larger text size the total goes under the day.
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.end,
+          runSpacing: MinimalSpacing.s4,
           children: [
-            Expanded(
-              child: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(text: '${_names[i]} · ', style: t.h3),
-                    TextSpan(text: '${_minutes[i].toInt()}', style: t.figure),
-                    TextSpan(text: ' min', style: t.h3.c(t.mutedForeground)),
-                  ],
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(text: '${_names[i]} · ', style: t.h3),
+                  TextSpan(text: '${_minutes[i].toInt()}', style: t.figure),
+                  TextSpan(text: ' min', style: t.h3.c(t.mutedForeground)),
+                ],
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             Text.rich(
               TextSpan(

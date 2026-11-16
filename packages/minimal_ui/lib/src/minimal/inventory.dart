@@ -3,6 +3,7 @@
 /// specimen of it, built live) or why Minimal has none.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/inventory.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -199,9 +200,9 @@ final DesignInventory minimalInventory = DesignInventory(
     ),
     _live(
       'ButtonGroup',
-      (_) => MinimalButtonGroup(
+      (_) => const MinimalButtonGroup(
         // Acts that run once (a kept choice is the toggle group's).
-        items: const [
+        items: [
           MinimalButtonGroupItem(
             icon: LucideIcons.chevronLeftDir,
             semanticLabel: 'Previous week',
@@ -1240,5 +1241,25 @@ class MinimalInventoryGallery extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      );
   }
 }

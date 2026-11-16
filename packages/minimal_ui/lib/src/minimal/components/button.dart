@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
@@ -110,11 +111,15 @@ class MinimalButton extends StatelessWidget {
   /// This button's style, over its variant's component theme.
   final MinimalStyle? style;
 
+  /// {@template minimal.focusNode}
   /// Its focus node, for a caller that moves focus to it; null keeps one
   /// of its own.
+  /// {@endtemplate}
   final FocusNode? focusNode;
 
+  /// {@template minimal.autofocus}
   /// Whether it takes keyboard focus when it first appears.
+  /// {@endtemplate}
   final bool autofocus;
 
   @override
@@ -181,9 +186,12 @@ class MinimalButton extends StatelessWidget {
         // without, so every variant takes the density's height and a row
         // of them shares one; a larger text scale still grows it.
         padding:
-            so.padding ??
+            so.paddingIn(context) ??
             t.density.padding(
-              EdgeInsets.symmetric(horizontal: hPad, vertical: 2),
+              EdgeInsets.symmetric(
+                horizontal: hPad,
+                vertical: MinimalSpacing.s2,
+              ),
             ),
         decoration: minimalFrame(
           so.shape ?? t.shapes.small,
@@ -263,6 +271,42 @@ class MinimalButton extends StatelessWidget {
       ),
     ],
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        EnumProperty<MinimalButtonVariant>(
+          'variant',
+          variant,
+          defaultValue: MinimalButtonVariant.primary,
+        ),
+      )
+      ..add(
+        EnumProperty<MinimalButtonSize>(
+          'size',
+          size,
+          defaultValue: MinimalButtonSize.medium,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// A busy button's spinner: a quarter arc in [ink] on a faint ring of it,

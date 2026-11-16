@@ -9,40 +9,48 @@ import 'package:minimal_ui/minimal_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../demos/screen_issues.dart';
+import '../kit_words.dart';
 import 'app_frame.dart';
 
 /// The tracker, standing in the window, [gallery] its way out.
 class KitIssuesApp extends StatelessWidget {
-  const KitIssuesApp({super.key, required this.gallery});
+  const KitIssuesApp({super.key, required this.gallery, this.screen});
 
   final KitGalleryLink? gallery;
 
+  /// The screen it opens at, one of [screens]; null opens My issues.
+  final String? screen;
+
+  /// My issues (on a laptop, the first beside them); an issue's page.
+  static const screens = ['my-issues', 'issue'];
+
   @override
   Widget build(BuildContext context) => KitApp(
-    name: 'Tracker',
+    name: ar('Tracker', 'المتتبّع'),
     gallery: gallery,
     destinations: [
       (
-        item: const MinimalNavItem(LucideIcons.circleUser, 'My issues'),
+        item: MinimalNavItem(LucideIcons.circleUser, ar('My issues', 'مهامي')),
         root: (context) => KitListAndDetail(
           initial: 'ENG-142',
+          opened: screen == 'issue',
           list: (open, onOpen) => KitIssuesPage(
             open: open,
             onOpen: onOpen,
             leading: KitApp.leading(context),
           ),
           detail: (id, parent) => KitIssuePage(id: id, parent: parent),
-          parent: 'My issues',
+          parent: ar('My issues', 'مهامي'),
           listWidth: 480,
         ),
       ),
       (
-        item: const MinimalNavItem(LucideIcons.inbox, 'Inbox'),
+        item: MinimalNavItem(LucideIcons.inbox, ar('Inbox', 'الوارد')),
         root: (context) => KitListAndDetail(
           initial: 'ENG-157',
           list: (open, onOpen) => _Inbox(open: open, onOpen: onOpen),
           detail: (id, parent) => KitIssuePage(id: id, parent: parent),
-          parent: 'Inbox',
+          parent: ar('Inbox', 'الوارد'),
           listWidth: 480,
         ),
       ),
@@ -53,31 +61,39 @@ class KitIssuesApp extends StatelessWidget {
 /// What happened on my issues, newest first: who, what, on which issue.
 typedef _Note = ({String who, String what, String issue, String when});
 
-const List<_Note> _notes = [
-  (who: 'Oskar Lind', what: 'assigned you', issue: 'ENG-157', when: '9 min'),
+List<_Note> get _notes => [
   (
-    who: 'Ines Duarte',
-    what: 'commented: "Seen it twice on the Lund till"',
+    who: ar('Oskar Lind', 'عمر الخطيب'),
+    what: ar('assigned you', 'أسند إليك مهمة'),
+    issue: 'ENG-157',
+    when: ar('9 min', '9 د'),
+  ),
+  (
+    who: ar('Ines Duarte', 'هالة منصور'),
+    what: ar(
+      'commented: “Seen it twice on the Lund till”',
+      'علّقت: «رأيتها مرتين على صندوق لوند»',
+    ),
     issue: 'ENG-142',
-    when: '42 min',
+    when: ar('42 min', '42 د'),
   ),
   (
-    who: 'Tom Alves',
-    what: 'moved to In progress',
+    who: ar('Tom Alves', 'طارق عيسى'),
+    what: ar('moved to In progress', 'نقل مهمة إلى «قيد التنفيذ»'),
     issue: 'ENG-138',
-    when: '2 h',
+    when: ar('2 h', '2 س'),
   ),
   (
-    who: 'Hanna Berg',
-    what: 'raised the priority to Medium',
+    who: ar('Hanna Berg', 'هند البرغوثي'),
+    what: ar('raised the priority to Medium', 'رفعت الأولوية إلى «متوسطة»'),
     issue: 'ENG-149',
-    when: '3 h',
+    when: ar('3 h', '3 س'),
   ),
   (
-    who: 'Liv Sande',
-    what: 'mentioned you',
+    who: ar('Liv Sande', 'لينا سعادة'),
+    what: ar('mentioned you', 'أشارت إليك'),
     issue: 'ENG-121',
-    when: 'Yesterday',
+    when: ar('Yesterday', 'أمس'),
   ),
 ];
 
@@ -91,7 +107,7 @@ class _Inbox extends StatelessWidget {
   Widget build(BuildContext context) => MinimalScaffold(
     topBar: MinimalAppBar(
       leading: KitApp.leading(context),
-      title: 'Inbox',
+      title: ar('Inbox', 'الوارد'),
       subtitle: '${_notes.length}',
     ),
     padding: EdgeInsets.zero,

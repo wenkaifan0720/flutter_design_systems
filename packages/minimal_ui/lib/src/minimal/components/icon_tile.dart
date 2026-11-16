@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../internal/styled.dart';
@@ -62,5 +63,20 @@ class MinimalIconTile extends StatelessWidget {
         color: neutral ? t.mutedForeground : colors.foreground,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IconDataProperty('icon', icon))
+      ..add(
+        EnumProperty<MinimalTone>(
+          'tone',
+          tone,
+          defaultValue: MinimalTone.neutral,
+        ),
+      )
+      ..add(DoubleProperty('size', size, defaultValue: 28));
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -190,6 +191,28 @@ class MinimalMedia extends StatelessWidget {
       label: label,
       child: ExcludeSemantics(child: image),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<MinimalPlaceholderImage>(
+          'src',
+          src,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('media', media, defaultValue: null))
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(DoubleProperty('radius', radius, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(EnumProperty<BoxFit>('fit', fit, defaultValue: BoxFit.cover))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

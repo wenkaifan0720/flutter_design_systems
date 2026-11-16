@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
@@ -59,6 +61,23 @@ class MinimalTabBar extends StatefulWidget {
 
   @override
   State<MinimalTabBar> createState() => _MinimalTabBarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('tabs', tabs))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(IterableProperty<int?>('counts', counts, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: EdgeInsets.zero,
+        ),
+      );
+  }
 }
 
 const double _underline = 2;
@@ -147,6 +166,9 @@ class _MinimalTabBarState extends State<MinimalTabBar> {
           shape: t.shapes.mark,
           selected: selected,
           focusable: false,
+          // The first tab's words start on the strip's inset, its target
+          // reaching on past them.
+          tapAlignment: i == 0 ? AlignmentDirectional.centerStart : null,
           // The tab paints its own wash, wider than its words.
           style: _ownWash,
           builder: (context, states) => SizedBox(
@@ -154,10 +176,22 @@ class _MinimalTabBarState extends State<MinimalTabBar> {
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                // The press wash and the strip's focus ring stand [_halo]
-                // past the words on either side, so neither hugs a glyph;
-                // the tab's width, and so the strip's layout, stay the
-                // words'.
+                // The press wash covers the tab's whole tap target and
+                // [_halo] past it, so the cell a tap reaches is the cell
+                // that shows it.
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: _TargetWash(
+                      color: states.down
+                          ? minimalPressInk(t).withValues(alpha: 0.08)
+                          : null,
+                      shape: t.shapes.mark,
+                    ),
+                  ),
+                ),
+                // The strip's focus ring stands [_halo] past the words on
+                // either side, so it never hugs a glyph; the tab's width,
+                // and so the strip's layout, stay the words'.
                 Positioned(
                   left: -_halo,
                   right: -_halo,
@@ -167,9 +201,6 @@ class _MinimalTabBarState extends State<MinimalTabBar> {
                     child: DecoratedBox(
                       decoration: minimalFrame(
                         t.shapes.mark,
-                        fill: states.down
-                            ? minimalPressInk(t).withValues(alpha: 0.08)
-                            : null,
                         side: selected && _focus && enabled
                             ? BorderSide(
                                 color: t.ring,
@@ -308,4 +339,74 @@ class _StripClip extends CustomClipper<Rect> {
 
   @override
   bool shouldReclip(_StripClip oldClipper) => false;
+}
+
+/// A tab's press wash: over the tap target the tab stands in, [_halo] past
+/// it at either side, as tall as the tab.
+class _TargetWash extends LeafRenderObjectWidget {
+  const _TargetWash({required this.color, required this.shape});
+
+  final Color? color;
+  final ShapeBorder shape;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderTargetWash(color, shape);
+
+  @override
+  void updateRenderObject(BuildContext context, RenderObject renderObject) =>
+      (renderObject as _RenderTargetWash)
+        ..color = color
+        ..shape = shape;
+}
+
+class _RenderTargetWash extends RenderBox {
+  _RenderTargetWash(this._color, this._shape);
+
+  Color? _color;
+  set color(Color? v) {
+    if (v == _color) return;
+    _color = v;
+    markNeedsPaint();
+  }
+
+  ShapeBorder _shape;
+  set shape(ShapeBorder v) {
+    if (v == _shape) return;
+    _shape = v;
+    markNeedsPaint();
+  }
+
+  @override
+  bool get sizedByParent => true;
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => constraints.biggest;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final color = _color;
+    if (color == null || color.a == 0) return;
+    var rect = Rect.fromLTRB(-_halo, 0, size.width + _halo, size.height);
+    RenderObject? up = parent;
+    while (up != null && up is! RenderDesignTapTarget) {
+      up = up.parent;
+    }
+    if (up is RenderDesignTapTarget && up.hasSize) {
+      final back = Matrix4.tryInvert(getTransformTo(up));
+      if (back != null) {
+        final target = MatrixUtils.transformRect(back, Offset.zero & up.size);
+        rect = Rect.fromLTRB(
+          target.left - _halo,
+          0,
+          target.right + _halo,
+          size.height,
+        );
+      }
+    }
+    context.canvas.drawPath(
+      _shape.getOuterPath(rect.shift(offset)),
+      Paint()..color = color,
+    );
+  }
 }

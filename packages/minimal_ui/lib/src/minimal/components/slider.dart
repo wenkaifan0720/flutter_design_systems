@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -108,15 +109,71 @@ class MinimalSlider extends StatefulWidget {
   /// This slider's style, over `components.slider`.
   final MinimalStyle? style;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
   State<MinimalSlider> createState() => _MinimalSliderState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(
+        FlagProperty(
+          'showLabel',
+          value: showLabel,
+          ifFalse: 'showLabel: false',
+        ),
+      )
+      ..add(DoubleProperty('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(StringProperty('valueLabel', valueLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      )
+      ..add(StringProperty('unit', unit, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'leadingIcon',
+          leadingIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'trailingIcon',
+          trailingIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 const double _thumb = 16;
@@ -221,7 +278,8 @@ class _MinimalSliderState extends State<MinimalSlider> {
                 }
               : null,
           onTapUp: enabled ? (_) => _end() : null,
-          onTapCancel: _cancel,
+          // Off, it holds no recognizer at all: nothing there acts.
+          onTapCancel: enabled ? _cancel : null,
           onHorizontalDragStart: enabled
               ? (d) {
                   setState(() => _down = true);
@@ -232,7 +290,7 @@ class _MinimalSliderState extends State<MinimalSlider> {
               ? (d) => _change(at(d.localPosition.dx))
               : null,
           onHorizontalDragEnd: enabled ? (_) => _end() : null,
-          onHorizontalDragCancel: _cancel,
+          onHorizontalDragCancel: enabled ? _cancel : null,
           child: CustomPaint(
             size: Size(c.maxWidth, _strip),
             painter: _TrackPainter(
@@ -243,9 +301,7 @@ class _MinimalSliderState extends State<MinimalSlider> {
               fill: so.fill ?? t.primary,
               tick: t.textTertiary,
               thumb: so.foreground ?? t.card,
-              halo: _down
-                  ? so.overlay ?? t.primary.withValues(alpha: 0.16)
-                  : null,
+              halo: _down ? so.wash ?? t.primary.withValues(alpha: 0.16) : null,
               ring: _focus ? t.ring : null,
               ringWidth: t.focusWidth,
               slot: so.shape ?? t.shapes.pill,

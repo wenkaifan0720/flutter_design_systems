@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -34,6 +35,12 @@ class MinimalLoadingState extends StatelessWidget {
     spin: true,
     title: message ?? MinimalLocalizations.of(context).loading,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('message', message, defaultValue: null));
+  }
 }
 
 /// The centred, screen-reader-announced error state with an optional retry
@@ -76,6 +83,15 @@ class MinimalErrorState extends StatelessWidget {
             onPressed: onRetry,
           ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry));
+  }
 }
 
 /// The centred empty state with an optional call to action — the empty
@@ -124,6 +140,17 @@ class MinimalEmptyState extends StatelessWidget {
             onPressed: onAction,
           ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IconDataProperty('icon', icon))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('body', body, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAction', onAction));
+  }
 }
 
 /// What a [MinimalStatusView] reports.
@@ -239,6 +266,18 @@ class MinimalStatusView extends StatelessWidget {
               onPressed: act,
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<MinimalStatusKind>('status', status))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAction', onAction));
   }
 }
 

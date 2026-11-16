@@ -1,11 +1,16 @@
 /// A single choice among a few visible options: radios.
 library;
 
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
+import '../internal/controls.dart';
 import '../internal/styled.dart';
+import '../internal/tap_band.dart';
 import '../shapes.dart';
 import '../theme.dart';
 import 'pressable.dart';
@@ -84,7 +89,7 @@ class MinimalRadio extends StatelessWidget {
   /// Its focus; null keeps its own.
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -135,14 +140,43 @@ class MinimalRadio extends StatelessWidget {
             },
       enabled: enabled,
       shape: own,
+      // A bare mark stands on its start keyline, its target growing
+      // toward the end (a list row's trailing slot says the end).
+      tapAlignment:
+          MinimalTapAlignment.maybeOf(context) ??
+          AlignmentDirectional.centerStart,
+
       style: MinimalStyleOf(layers, const {}).press,
       semanticLabel: label,
       checked: selected,
+      inMutuallyExclusiveGroup: true,
       focusNode: focusNode,
       autofocus: autofocus,
       builder: (context, states) =>
           mark({...states, if (selected) WidgetState.selected}),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('selected', selected))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(DoubleProperty('size', size, defaultValue: 16))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -236,6 +270,22 @@ class MinimalRadioGroup<T> extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalRadioOption<T>>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(
+        EnumProperty<Axis>('direction', direction, defaultValue: Axis.vertical),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _Option<T> extends StatelessWidget {
@@ -257,47 +307,76 @@ class _Option<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final description = option.description;
-    final words = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(option.label, style: t.body.c(t.foreground)),
-        if (description != null)
-          Text(description, style: t.bodySmall.c(t.mutedForeground)),
-      ],
-    );
-    return Opacity(
-      opacity: disabled ? 0.45 : 1,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onPressed,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: t.density.height(MinimalLayout.minHitTarget - 8),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                // The circle's centre on the label's first line.
-                padding: const EdgeInsets.only(top: 3),
-                child: MinimalRadio(
-                  selected: selected,
-                  onPressed: onPressed,
-                  // The option dims as a whole; the radio stays undimmed
-                  // inside it so the two do not compound.
-                  enabled: true,
-                  label: option.label,
-                  style: style,
-                ),
-              ),
-              const MinimalGap(MinimalSpacing.s8 + 2),
-              Flexible(child: ExcludeSemantics(child: words)),
-            ],
-          ),
+    final press = onPressed;
+    // The whole option is the control, as a radio list tile is: a tap, the
+    // click cursor and the press wash anywhere on its mark or its words,
+    // one node for a screen reader that reads its label and description.
+    // It stands at least the tap floor (44 for a finger), its words
+    // centred in it, so a column of options is a column of targets.
+    final option_ = Container(
+      constraints: BoxConstraints(
+        minHeight: math.max(
+          t.density.height(MinimalLayout.minHitTarget - MinimalSpacing.s8),
+          minimalTapFloor(context),
         ),
       ),
+      alignment: AlignmentDirectional.centerStart,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            // The circle's centre on the label's first line.
+            padding: const EdgeInsets.only(top: _markDrop),
+            child: ExcludeSemantics(
+              child: MinimalRadio(selected: selected, style: style),
+            ),
+          ),
+          // The checkbox rows' gap: a form's words start on one edge, 28 in.
+          const MinimalGap(MinimalSpacing.s12),
+          Flexible(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(option.label, style: t.body.c(t.foreground)),
+                if (description != null)
+                  Text(description, style: t.bodySmall.c(t.mutedForeground)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+    if (press == null && !disabled) {
+      // A choice shown, not offered: still a radio to a screen reader.
+      return Semantics(
+        container: true,
+        checked: selected,
+        inMutuallyExclusiveGroup: true,
+        child: option_,
+      );
+    }
+    return MinimalPressable(
+      onPressed: press == null
+          ? null
+          : () {
+              HapticFeedback.selectionClick();
+              press();
+            },
+      enabled: !disabled,
+      checked: selected,
+      inMutuallyExclusiveGroup: true,
+      // The wash and the ring stand clear of the mark and the words.
+      outset: const EdgeInsetsDirectional.symmetric(
+        horizontal: MinimalSpacing.s8,
+      ),
+      child: option_,
     );
   }
+
+  /// How far the circle stands below the option's top: its centre on the
+  /// label's first line (a 20 px line, a 16 px circle, 2 px of leading
+  /// over the cap height).
+  static const double _markDrop = 3;
 }

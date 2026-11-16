@@ -1,6 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
+import '../chrome_metrics.dart';
 import '../theme.dart';
 
 /// Geometry the small controls share — the filter pill, the tabs' counts,
@@ -95,6 +97,14 @@ int minimalSeekIndex(
   };
 }
 
+/// The least a tap reaches on a control at [context], by what reaches it:
+/// the floors [MinimalTheme] declares ([MinimalLayout.tapTargets]), 44 for
+/// a finger and 24 for a pointer. A row or a strip that is its own tap
+/// target stands at least this tall; a compact face stands in the same
+/// target with more room round it, so density never moves it.
+double minimalTapFloor(BuildContext context) =>
+    DesignTapTargets.of(context).floorOn().height;
+
 /// A control's [height] grown by what the text scale adds to its 16 px
 /// label line, so the words keep at 130% the air they have at 100% (the
 /// control grows taller rather than crowd its words); [height] itself at
@@ -110,4 +120,19 @@ extension MinimalCountFigure on MinimalThemeData {
   /// The mono face at a count's size.
   TextStyle get countFigure =>
       mono.copyWith(fontSize: MinimalControlMetrics.countFigure);
+}
+
+/// A clip as large as its box and a focus ring's reach round it (its gap and
+/// its stroke): what cuts a scrolled run of controls without cutting the
+/// ring of the one at its edge.
+class MinimalRingRoom extends CustomClipper<Rect> {
+  /// The clip.
+  const MinimalRingRoom();
+
+  @override
+  Rect getClip(Size size) =>
+      (Offset.zero & size).inflate(2 * MinimalChromeMetrics.focusRing);
+
+  @override
+  bool shouldReclip(MinimalRingRoom oldClipper) => false;
 }

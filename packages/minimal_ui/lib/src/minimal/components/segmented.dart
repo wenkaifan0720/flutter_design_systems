@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -79,6 +80,21 @@ class MinimalSegmentedButton<T> extends StatefulWidget {
   @override
   State<MinimalSegmentedButton<T>> createState() =>
       _MinimalSegmentedButtonState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalButtonSegment<T>>('segments', segments))
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('small', value: small, ifTrue: 'small'))
+      ..add(FlagProperty('expand', value: expand, ifFalse: 'expand: false'))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// One segment of a [MinimalSegmentedButton]: the [value] it stands for, its
@@ -152,6 +168,8 @@ class _MinimalSegmentedButtonState<T> extends State<MinimalSegmentedButton<T>> {
           ),
         );
     const pad = MinimalControlMetrics.segmentInset;
+    final band = math.max(height, minimalTapFloor(context));
+    final air = (band - height) / 2;
     final outline = strip.shape ?? t.shapes.small;
     // The thumb sits 2 px inside the strip, its corners as much rounder
     // as keeps the two concentric.
@@ -220,7 +238,7 @@ class _MinimalSegmentedButtonState<T> extends State<MinimalSegmentedButton<T>> {
           ink: inkTo,
           alignment: Alignment.center,
           padding:
-              so.padding ??
+              so.paddingIn(context) ??
               const EdgeInsets.symmetric(
                 horizontal: MinimalControlMetrics.segmentPad,
               ),
@@ -271,27 +289,50 @@ class _MinimalSegmentedButtonState<T> extends State<MinimalSegmentedButton<T>> {
       }
       // The track is the focus stop, so a segment is a tap and a
       // screen-reader button but never a stop of its own.
+      // A segment takes the band's whole height, so a tap anywhere across
+      // the track (its inset too) and the room round it lands on a segment;
+      // its wash stands where the thumb does.
       return MinimalPressable(
         onPressed: () => _select(i),
         shape: inner,
+        outset: EdgeInsets.symmetric(vertical: -(air + pad)),
         style: MinimalStyleOf(layers, const {}).press,
         selected: selected,
         focusable: false,
+        tapTarget: false,
         builder: (context, states) => content(states),
       );
     }
 
-    Widget track = Container(
-      height: height,
-      padding: const EdgeInsets.all(pad),
-      // The track stands on the ground in its hairline; no well.
-      decoration: minimalFrame(outline, side: strip.rim(t.border, t.rim)),
+    // At a finger the control is laid out at the tap floor: the track keeps
+    // its compact face, centred, and its segments take the band round it.
+    Widget track = SizedBox(
+      height: band,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          thumb,
-          Row(
-            children: [for (var i = 0; i < n; i++) Expanded(child: segment(i))],
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: air),
+            child: DecoratedBox(
+              // The track stands on the ground in its hairline; no well.
+              decoration: minimalFrame(
+                outline,
+                side: strip.rim(t.border, t.rim),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(pad),
+                child: Stack(fit: StackFit.expand, children: [thumb]),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: pad),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < n; i++) Expanded(child: segment(i)),
+              ],
+            ),
           ),
         ],
       ),
@@ -302,25 +343,23 @@ class _MinimalSegmentedButtonState<T> extends State<MinimalSegmentedButton<T>> {
     if (widget.expand) track = MinimalLayout.capControl(context, track);
     if (!enabled) track = Opacity(opacity: 0.45, child: track);
 
-    return MinimalHitTarget(
-      child: Semantics(
-        container: true,
-        label: widget.label,
-        explicitChildNodes: true,
-        child: FocusableActionDetector(
-          enabled: enabled,
-          onShowFocusHighlight: (v) => setState(() => _focus = v),
-          shortcuts: minimalSeekShortcuts,
-          actions: <Type, Action<Intent>>{
-            MinimalSeekIntent: CallbackAction<MinimalSeekIntent>(
-              onInvoke: (intent) {
-                _move(intent.seek, rtl);
-                return null;
-              },
-            ),
-          },
-          child: track,
-        ),
+    return Semantics(
+      container: true,
+      label: widget.label,
+      explicitChildNodes: true,
+      child: FocusableActionDetector(
+        enabled: enabled,
+        onShowFocusHighlight: (v) => setState(() => _focus = v),
+        shortcuts: minimalSeekShortcuts,
+        actions: <Type, Action<Intent>>{
+          MinimalSeekIntent: CallbackAction<MinimalSeekIntent>(
+            onInvoke: (intent) {
+              _move(intent.seek, rtl);
+              return null;
+            },
+          ),
+        },
+        child: track,
       ),
     );
   }

@@ -3,6 +3,7 @@
 /// a preview or a toast reads these; `MinimalShell` publishes them.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// The app-level act beside the shell's tabs: the one thing reachable from
@@ -66,4 +67,10 @@ class MinimalShellInsets extends InheritedWidget {
 
   @override
   bool updateShouldNotify(MinimalShellInsets old) => allowance != old.allowance;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('allowance', allowance));
+  }
 }

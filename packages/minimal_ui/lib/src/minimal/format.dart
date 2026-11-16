@@ -56,14 +56,17 @@ abstract final class MinimalFormat {
     MinimalLocalizations words = const MinimalLocalizationsEn(),
   }) => '${d.day} ${words.monthsShort[d.month - 1]}';
 
-  /// "Fri", or "Friday" with `short: false`.
+  /// "Fri", or "Friday" with `short: false`. Short is the name's first
+  /// three letters in a Latin script, which abbreviates that way; a name in
+  /// another script prints whole (Arabic's الجمعة, never الج).
   static String weekday(
     DateTime d, {
     bool short = true,
     MinimalLocalizations words = const MinimalLocalizationsEn(),
   }) {
     final name = words.weekdays[d.weekday - 1];
-    return short ? name.substring(0, 3) : name;
+    final latin = name.runes.every((r) => r < 0x0250);
+    return short && latin && name.length > 3 ? name.substring(0, 3) : name;
   }
 
   /// The time of day in Minimal's register: the 24-hour [clock],

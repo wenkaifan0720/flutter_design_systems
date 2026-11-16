@@ -241,7 +241,7 @@ void main() {
       expect(find.byType(MinimalStatusBadge), findsNWidgets(3));
     });
 
-    testWidgets('a sortable header takes taps just above its band', (
+    testWidgets('a sortable header takes taps across its floor-tall band', (
       tester,
     ) async {
       final calls = <int>[];
@@ -266,14 +266,16 @@ void main() {
             .ancestor(of: find.text('QTY'), matching: find.byType(SizedBox))
             .first,
       );
-      await tester.tapAt(Offset(qty.center.dx, header.top - 6));
+      // The band stands the floor tall: its top row of pixels sorts.
+      expect(header.height, 44);
+      await tester.tapAt(Offset(qty.center.dx, header.top + 2));
       expect(calls, [2]);
-      // Above a label header the tap is not taken.
+      // A label header takes no tap.
       final customer = tester.getRect(find.text('CUSTOMER'));
-      await tester.tapAt(Offset(customer.center.dx, header.top - 6));
+      await tester.tapAt(Offset(customer.center.dx, header.top + 2));
       expect(calls, [2]);
-      // Further out it is the page's again.
-      await tester.tapAt(Offset(qty.center.dx, header.top - 12));
+      // Above the band it is the page's.
+      await tester.tapAt(Offset(qty.center.dx, header.top - 6));
       expect(calls, [2]);
     });
 
@@ -862,6 +864,37 @@ void main() {
       expect(clipboard, 'curl https://api.ritual.app');
       expect(copied, 1);
       expect(find.text('Copied to clipboard'), findsOneWidget);
+      await tester.pump(MinimalChromeMetrics.toast);
+      await tester.pump();
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      );
+    });
+
+    // Floating over line 1, a finger's target reaches the block's top
+    // edge: the rim is the target's too, not a pixel no tap reaches.
+    testWidgets('a captionless block\'s copy takes a tap on its top rim', (
+      tester,
+    ) async {
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async => null,
+      );
+      var copied = 0;
+      await tester.pumpWidget(
+        _app(
+          MinimalCodeBlock(
+            'curl https://api.ritual.app',
+            onCopy: () => copied++,
+          ),
+        ),
+      );
+      final block = tester.getRect(find.byType(MinimalCodeBlock));
+      final copy = tester.getRect(find.bySemanticsLabel('Copy'));
+      await tester.tapAt(Offset(copy.center.dx, block.top + 0.5));
+      await tester.pump();
+      expect(copied, 1);
       await tester.pump(MinimalChromeMetrics.toast);
       await tester.pump();
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(

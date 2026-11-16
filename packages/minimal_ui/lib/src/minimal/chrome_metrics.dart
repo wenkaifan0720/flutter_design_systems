@@ -13,10 +13,11 @@ abstract final class MinimalChromeMetrics {
   /// The screen gutter: the side inset of a page's type and of every bar.
   static const double gutter = 18;
 
-  /// The largest text scale a Minimal surface lays out at. [MinimalHost]
-  /// clamps the ambient scaler here: a 44 px row holds its 14 px label at
-  /// 1.3× on two lines' worth of leading, and nothing past it.
-  static const double maxTextScale = 1.3;
+  /// The largest text scale a Minimal surface lays out at: twice the
+  /// platform's size. [MinimalHost] clamps the ambient scaler here; up to
+  /// it, rows and controls grow taller with their words rather than cut
+  /// them, and long words wrap or end in an ellipsis.
+  static const double maxTextScale = 2.0;
 
   /// Width of the keyboard focus ring every focusable control draws, outside
   /// its own edge.
@@ -139,10 +140,17 @@ abstract final class MinimalChromeMetrics {
   /// action instead of squeezing both onto one line.
   static const double actionBarStackScale = 1.2;
 
+  /// The text scale from which a list row's trailing part and meta drop
+  /// under its title, as iOS stacks a row's detail at its accessibility
+  /// sizes: the title keeps the row's width rather than give it away.
+  static const double rowStackScale = 1.6;
+
   // ── Sheet ──
 
-  /// The modal card's inset from the screen's sides and bottom edge.
-  static const double sheetInset = 10;
+  /// The modal card's inset from the screen's sides and bottom edge: the
+  /// page's [gutter], so a floating card starts on the page's margin, where
+  /// the content under it does.
+  static const double sheetInset = gutter;
 
   /// The card's own padding around its header, content and footer.
   static const double sheetPad = 14;

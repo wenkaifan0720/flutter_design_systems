@@ -2,6 +2,7 @@
 /// swatches, painted on ui_core's colour picker.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -73,6 +74,17 @@ class MinimalColorPicker extends StatefulWidget {
 
   @override
   State<MinimalColorPicker> createState() => _MinimalColorPickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<Color>>.has('onChanged', onChanged))
+      ..add(FlagProperty('showAlpha', value: showAlpha, ifTrue: 'showAlpha'))
+      ..add(IterableProperty<Color>('swatches', swatches))
+      ..add(DoubleProperty('areaHeight', areaHeight, defaultValue: 160));
+  }
 }
 
 class _MinimalColorPickerState extends State<MinimalColorPicker> {
@@ -282,34 +294,32 @@ class _MinimalColorPickerState extends State<MinimalColorPicker> {
         ),
         if (widget.swatches.isNotEmpty) ...[
           const MinimalGap(_gap),
-          MinimalHitTarget(
-            child: Wrap(
-              spacing: MinimalSpacing.s8,
-              runSpacing: MinimalSpacing.s8,
-              children: [
-                for (final c in widget.swatches)
-                  MinimalPressable(
-                    onPressed: () => _colour.color = c,
-                    shape: t.shapes.mark,
-                    selected: c == _colour.color,
-                    semanticLabel: _hexOf(c),
-                    child: Container(
-                      width: 24,
-                      height: 24,
-                      decoration: minimalFrame(
-                        t.shapes.mark,
-                        fill: c,
-                        side: BorderSide(
-                          color: c == _colour.color
-                              ? t.foreground
-                              : t.borderStrong,
-                          width: c == _colour.color ? 2 : t.hairline,
-                        ),
+          Wrap(
+            spacing: MinimalSpacing.s8,
+            runSpacing: MinimalSpacing.s8,
+            children: [
+              for (final c in widget.swatches)
+                MinimalPressable(
+                  onPressed: () => _colour.color = c,
+                  shape: t.shapes.mark,
+                  selected: c == _colour.color,
+                  semanticLabel: _hexOf(c),
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: minimalFrame(
+                      t.shapes.mark,
+                      fill: c,
+                      side: BorderSide(
+                        color: c == _colour.color
+                            ? t.foreground
+                            : t.borderStrong,
+                        width: c == _colour.color ? 2 : t.hairline,
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ],
       ],

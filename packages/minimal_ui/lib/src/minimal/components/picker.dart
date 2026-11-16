@@ -2,12 +2,14 @@
 /// menu or a sheet.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
 import '../internal/field.dart';
+import '../internal/menu_keys.dart';
 import '../localizations.dart';
 import '../theme.dart';
 import 'menu.dart';
@@ -111,15 +113,41 @@ class MinimalSelect<T> extends StatefulWidget {
   /// A glyph before the label, the property-row register.
   final IconData? icon;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
   State<MinimalSelect<T>> createState() => _MinimalSelectState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(IterableProperty<MinimalSelectOption<T>>('options', options))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(
+        EnumProperty<MinimalSelectPresentation>(
+          'presentation',
+          presentation,
+          defaultValue: MinimalSelectPresentation.menu,
+        ),
+      )
+      ..add(StringProperty('prompt', prompt, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _MinimalSelectState<T> extends State<MinimalSelect<T>> {
@@ -189,80 +217,86 @@ class _MinimalSelectState<T> extends State<MinimalSelect<T>> {
     // Painted over the row's foot: the label and value are centred on the
     // whole row, the rule's pixel with it. Outside the press, so a disabled
     // row dims its words and keeps its rule as strong as its neighbours'.
-    return Container(
-      foregroundDecoration: BoxDecoration(border: Border(bottom: t.rule)),
-      child: MinimalPressable(
-        focusNode: widget.focusNode,
-        autofocus: widget.autofocus,
-        onPressed: _enabled ? _open : null,
-        enabled: _enabled,
-        radius: 0,
-        outset: MinimalFieldMetrics.rowReach,
-        child: Container(
-          key: _fieldKey,
-          constraints: BoxConstraints(minHeight: t.rowHeight),
-          padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s8),
-          child: Row(
-            children: [
-              if (icon != null) ...[
-                MinimalIcon(icon),
-                const MinimalGap(MinimalFieldMetrics.rowIconGap),
-              ],
-              Expanded(
-                flex: 2,
-                child: minimalCapLabel(
-                  Text(
-                    widget.label,
-                    style: t.body.c(t.mutedForeground),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+    // A menu button: Down opens the menu too.
+    return minimalOpensOnDown(
+      open: _enabled && widget.presentation == MinimalSelectPresentation.menu
+          ? _open
+          : null,
+      child: Container(
+        foregroundDecoration: BoxDecoration(border: Border(bottom: t.rule)),
+        child: MinimalPressable(
+          focusNode: widget.focusNode,
+          autofocus: widget.autofocus,
+          onPressed: _enabled ? _open : null,
+          enabled: _enabled,
+          radius: 0,
+          outset: MinimalFieldMetrics.rowReach,
+          child: Container(
+            key: _fieldKey,
+            constraints: BoxConstraints(minHeight: t.rowHeight),
+            padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s8),
+            child: Row(
+              children: [
+                if (icon != null) ...[
+                  MinimalIcon(icon),
+                  const MinimalGap(MinimalFieldMetrics.rowIconGap),
+                ],
+                Expanded(
+                  flex: 2,
+                  child: minimalCapLabel(
+                    Text(
+                      widget.label,
+                      style: t.body.c(t.mutedForeground),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
-              ),
-              const MinimalGap(MinimalSpacing.s12),
-              Flexible(
-                flex: 3,
-                child: Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (chosenIcon != null) ...[
-                        MinimalIcon(
-                          chosenIcon,
-                          size: MinimalIconSize.i16,
-                          color: valueInk,
-                        ),
-                        const MinimalGap(MinimalChromeMetrics.iconGap),
-                      ],
-                      Flexible(
-                        child: minimalCapLabel(
-                          Text(
-                            chosen?.label ??
-                                widget.prompt ??
-                                MinimalLocalizations.of(context).choose,
-                            style: t.body.c(
-                              chosen == null ? t.textTertiary : valueInk,
+                const MinimalGap(MinimalSpacing.s12),
+                Flexible(
+                  flex: 3,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (chosenIcon != null) ...[
+                          MinimalIcon(
+                            chosenIcon,
+                            size: MinimalIconSize.i16,
+                            color: valueInk,
+                          ),
+                          const MinimalGap(MinimalChromeMetrics.iconGap),
+                        ],
+                        Flexible(
+                          child: minimalCapLabel(
+                            Text(
+                              chosen?.label ??
+                                  widget.prompt ??
+                                  MinimalLocalizations.of(context).choose,
+                              style: t.body.c(
+                                chosen == null ? t.textTertiary : valueInk,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.end,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.end,
                           ),
                         ),
-                      ),
-                      const MinimalGap(MinimalChromeMetrics.iconGap),
-                      MinimalIcon(
-                        widget.presentation == MinimalSelectPresentation.menu
-                            ? LucideIcons.chevronsUpDown
-                            : LucideIcons.chevronRightDir,
-                        size: MinimalIconSize.i16,
-                        color: t.textTertiary,
-                      ),
-                    ],
+                        const MinimalGap(MinimalChromeMetrics.iconGap),
+                        MinimalIcon(
+                          widget.presentation == MinimalSelectPresentation.menu
+                              ? LucideIcons.chevronsUpDown
+                              : LucideIcons.chevronRightDir,
+                          size: MinimalIconSize.i16,
+                          color: t.textTertiary,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -319,5 +353,21 @@ class MinimalSelectionList<T> extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(IterableProperty<MinimalSelectOption<T>>('options', options))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: EdgeInsets.zero,
+        ),
+      );
   }
 }

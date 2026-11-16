@@ -583,8 +583,10 @@ class _Metrics extends StatelessWidget {
     return _Panel(
       rows: [
         for (final (name, value) in metrics)
-          SizedBox(
-            height: 36,
+          // 36 tall, and taller where a larger text size wraps a value onto
+          // a second line.
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 36),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
@@ -592,16 +594,19 @@ class _Metrics extends StatelessWidget {
                   Expanded(
                     child: Text(name, style: t.bodySmall.c(t.mutedForeground)),
                   ),
-                  Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(text: value, style: t.mono),
-                        if (words[name] case final tail?)
-                          TextSpan(
-                            text: tail,
-                            style: t.bodySmall.c(t.mutedForeground),
-                          ),
-                      ],
+                  Flexible(
+                    child: Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(text: value, style: t.mono),
+                          if (words[name] case final tail?)
+                            TextSpan(
+                              text: tail,
+                              style: t.bodySmall.c(t.mutedForeground),
+                            ),
+                        ],
+                      ),
+                      textAlign: TextAlign.end,
                     ),
                   ),
                 ],

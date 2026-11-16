@@ -181,6 +181,17 @@ void main() {
     expect(german.monthYear(day), 'März 2026');
   });
 
+  test('a short weekday cuts a Latin name to three letters, never another '
+      'script\'s', () {
+    final friday = DateTime(2026, 8, 28);
+    expect(MinimalFormat.weekday(friday), 'Fri');
+    expect(MinimalFormat.weekday(friday, words: const _Arabic()), 'الجمعة');
+    expect(
+      MinimalFormat.weekday(friday, short: false, words: const _Arabic()),
+      'الجمعة',
+    );
+  });
+
   test('English says every word', () {
     const en = MinimalLocalizationsEn();
     expect(en.months, hasLength(12));
@@ -200,4 +211,20 @@ void main() {
     expect(en.relativeDay(2), 'In 2 days');
     expect(en.relativeDay(9), '');
   });
+}
+
+/// Minimal's words with Arabic weekdays, Monday first.
+class _Arabic extends MinimalLocalizationsEn {
+  const _Arabic();
+
+  @override
+  List<String> get weekdays => const [
+    'الاثنين',
+    'الثلاثاء',
+    'الأربعاء',
+    'الخميس',
+    'الجمعة',
+    'السبت',
+    'الأحد',
+  ];
 }

@@ -17,6 +17,7 @@ import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../kit.dart';
+import '../kit_words.dart';
 
 Widget kitScreenOrdersDemo(Brightness brightness) => kitSurface(
   brightness: brightness,
@@ -29,26 +30,30 @@ Widget kitScreenOrdersDemo(Brightness brightness) => kitSurface(
   ),
 );
 
-const List<MinimalNavItem> _tabs = [
-  MinimalNavItem(LucideIcons.receiptText, 'Orders'),
-  MinimalNavItem(LucideIcons.croissant, 'Products'),
-  MinimalNavItem(LucideIcons.users, 'Customers'),
-  MinimalNavItem(LucideIcons.chartNoAxesColumn, 'Reports'),
+List<MinimalNavItem> get _tabs => [
+  MinimalNavItem(LucideIcons.receiptText, ar('Orders', 'الطلبات')),
+  MinimalNavItem(LucideIcons.croissant, ar('Products', 'المنتجات')),
+  MinimalNavItem(LucideIcons.users, ar('Customers', 'العملاء')),
+  MinimalNavItem(LucideIcons.chartNoAxesColumn, ar('Reports', 'التقارير')),
 ];
 
 /// Where an order stands: waiting for the oven, in it, on the shelf,
 /// collected — or overdue before it was ever baked.
 enum _Stage {
-  queued('Queued', MinimalTone.neutral),
-  late('Late', MinimalTone.warning),
-  baking('Baking', MinimalTone.primary),
-  ready('Ready', MinimalTone.success),
-  pickedUp('Picked up', MinimalTone.neutral);
+  queued('Queued', 'في الانتظار', MinimalTone.neutral),
+  late('Late', 'متأخر', MinimalTone.warning),
+  baking('Baking', 'في الفرن', MinimalTone.primary),
+  ready('Ready', 'جاهز', MinimalTone.success),
+  pickedUp('Picked up', 'استُلم', MinimalTone.neutral);
 
-  const _Stage(this.label, this.tone);
+  const _Stage(this.english, this.arabic, this.tone);
 
-  final String label;
+  final String english;
+  final String arabic;
   final MinimalTone tone;
+
+  /// The stage's name in the gallery's language.
+  String get label => ar(english, arabic);
 }
 
 /// One order: its number, who it is for, how many items, when it is due,
@@ -80,33 +85,53 @@ _Order _order(
 
 /// Not yet on the shelf: two past their slot, two in the oven, two
 /// waiting their turn.
-final List<_Order> _open = [
-  _order(1047, 'Hanna Berg', 3, '09:30', _Stage.late, overdue: true),
-  _order(1048, 'Liv Sande', 4, '09:40', _Stage.late, overdue: true),
-  _order(1046, 'Oskar Lind', 1, '09:50', _Stage.baking),
-  _order(1045, 'Café Morgen', 24, '10:00', _Stage.baking),
-  _order(1042, 'Studio North', 12, '11:00', _Stage.queued),
-  _order(1041, 'Mara Quintero', 2, '11:15', _Stage.queued),
+List<_Order> get _open => [
+  _order(
+    1047,
+    ar('Hanna Berg', 'هند البرغوثي'),
+    3,
+    '09:30',
+    _Stage.late,
+    overdue: true,
+  ),
+  _order(
+    1048,
+    ar('Liv Sande', 'لينا سعادة'),
+    4,
+    '09:40',
+    _Stage.late,
+    overdue: true,
+  ),
+  _order(1046, ar('Oskar Lind', 'عمر الخطيب'), 1, '09:50', _Stage.baking),
+  _order(1045, ar('Café Morgen', 'مقهى الصباح'), 24, '10:00', _Stage.baking),
+  _order(
+    1042,
+    ar('Studio North', 'استوديو الشمال'),
+    12,
+    '11:00',
+    _Stage.queued,
+  ),
+  _order(1041, ar('Mara Quintero', 'مريم القنطار'), 2, '11:15', _Stage.queued),
 ];
 
 /// On the shelf, waiting for their customers. Only an order that is not
 /// ready by its slot is late, so the strip's two late orders are the two
 /// open ones above.
-final List<_Order> _ready = [
-  _order(1038, 'Ines Duarte', 2, '09:35', _Stage.ready),
-  _order(1039, 'Tom Alves', 6, '09:45', _Stage.ready),
-  _order(1040, 'Jonas Weber', 1, '09:55', _Stage.ready),
-  _order(1043, 'Elif Kaya', 2, '10:05', _Stage.ready),
-  _order(1044, 'Bruno Maier', 8, '10:10', _Stage.ready),
-  _order(1049, 'Sofie Dahl', 3, '10:20', _Stage.ready),
-  _order(1050, 'Arne Vik', 1, '10:30', _Stage.ready),
-  _order(1051, 'Lotte Janssen', 5, '10:45', _Stage.ready),
-  _order(1052, 'Kiosk am Park', 30, '11:30', _Stage.ready),
+List<_Order> get _ready => [
+  _order(1038, ar('Ines Duarte', 'هالة منصور'), 2, '09:35', _Stage.ready),
+  _order(1039, ar('Tom Alves', 'طارق عيسى'), 6, '09:45', _Stage.ready),
+  _order(1040, ar('Jonas Weber', 'يونس وهبة'), 1, '09:55', _Stage.ready),
+  _order(1043, ar('Elif Kaya', 'إيلاف قايا'), 2, '10:05', _Stage.ready),
+  _order(1044, ar('Bruno Maier', 'باسل معلوف'), 8, '10:10', _Stage.ready),
+  _order(1049, ar('Sofie Dahl', 'صوفيا دلّال'), 3, '10:20', _Stage.ready),
+  _order(1050, ar('Arne Vik', 'عرفان فكري'), 1, '10:30', _Stage.ready),
+  _order(1051, ar('Lotte Janssen', 'لطيفة جنيد'), 5, '10:45', _Stage.ready),
+  _order(1052, ar('Kiosk am Park', 'كشك الحديقة'), 30, '11:30', _Stage.ready),
 ];
 
 /// Collected since the doors opened at seven: 1015 to 1037, most recent
 /// first, one every six minutes or so.
-final List<_Order> _done = [
+List<_Order> get _done => [
   for (var i = 0; i < 23; i++)
     _order(
       1037 - i,
@@ -117,18 +142,18 @@ final List<_Order> _done = [
     ),
 ];
 
-const List<String> _regulars = [
-  'Pia Moreno',
-  'Emil Strand',
-  'Noor Haddad',
-  'Café Morgen',
-  'Felix Aalto',
-  'Greta Lund',
-  'Studio North',
-  'Yusuf Demir',
-  'Clara Nyberg',
-  'Theo Brandt',
-  'Maja Holm',
+List<String> get _regulars => [
+  ar('Pia Moreno', 'بشرى مراد'),
+  ar('Emil Strand', 'إميل صرّاف'),
+  ar('Noor Haddad', 'نور حداد'),
+  ar('Café Morgen', 'مقهى الصباح'),
+  ar('Felix Aalto', 'فارس العطار'),
+  ar('Greta Lund', 'غادة لحود'),
+  ar('Studio North', 'استوديو الشمال'),
+  ar('Yusuf Demir', 'يوسف دمير'),
+  ar('Clara Nyberg', 'كلارا نجار'),
+  ar('Theo Brandt', 'ثائر برّاج'),
+  ar('Maja Holm', 'مايا حلمي'),
 ];
 
 /// Minutes past midnight as the day's mono clock (`07:04`).
@@ -146,7 +171,11 @@ const double _tableFrom = MinimalLayout.compact;
 const double _wideFrom = 840;
 
 /// How an order came in, by its number.
-String _channel(_Order o) => const ['Counter', 'App', 'Phone'][o.id % 3];
+String _channel(_Order o) => [
+  ar('Counter', 'الكاونتر'),
+  ar('App', 'التطبيق'),
+  ar('Phone', 'الهاتف'),
+][o.id % 3];
 
 /// When it was placed: most of an hour before its slot, earlier for the
 /// bigger ones, and never later than this morning (it is 09:48).
@@ -166,7 +195,11 @@ String _total(_Order o) => MinimalFormat.money(o.qty * _each, symbol: '€');
 
 /// What is in it: its items over at most three of the counter's goods.
 List<({String name, int count})> _lines(_Order o) {
-  const goods = ['Cardamom bun', 'Cinnamon roll', 'Butter croissant'];
+  final goods = [
+    ar('Cardamom bun', 'كعكة الهيل'),
+    ar('Cinnamon roll', 'لفافة القرفة'),
+    ar('Butter croissant', 'كرواسون بالزبدة'),
+  ];
   final kinds = o.qty < goods.length ? o.qty : goods.length;
   final lines = <({String name, int count})>[];
   var left = o.qty;
@@ -179,7 +212,9 @@ List<({String name, int count})> _lines(_Order o) {
 }
 
 /// "3 items", "1 item".
-String _items(int qty) => qty == 1 ? '1 item' : '$qty items';
+String _items(int qty) => kitArabic
+    ? (qty == 1 ? 'قطعة واحدة' : '$qty قطع')
+    : (qty == 1 ? '1 item' : '$qty items');
 
 /// The table's columns by what they hold, so a sort survives the table
 /// gaining or losing its wide columns.
@@ -198,7 +233,11 @@ class KitOrdersPage extends StatefulWidget {
 }
 
 class _KitOrdersPageState extends State<KitOrdersPage> {
-  static const List<String> _ranges = ['Today', 'Yesterday', 'This week'];
+  static List<String> get _ranges => [
+    ar('Today', 'اليوم'),
+    ar('Yesterday', 'أمس'),
+    ar('This week', 'هذا الأسبوع'),
+  ];
 
   String _range = _ranges.first;
   int _view = 0;
@@ -233,9 +272,9 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
 
   /// What moves [o] on, by where it stands; null once it is collected.
   String? _next(_Order o) => switch (o.stage) {
-    _Stage.ready => 'Mark picked up',
+    _Stage.ready => ar('Mark picked up', 'علّمه مستلمًا'),
     _Stage.pickedUp => null,
-    _ => 'Mark ready',
+    _ => ar('Mark ready', 'علّمه جاهزًا'),
   };
 
   /// Moves [o] to its next list, with a toast whose Undo puts it back.
@@ -257,9 +296,11 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
     });
     showMinimalSnackBar(
       context,
-      '#${o.id} ${moved.stage == _Stage.ready ? 'ready' : 'picked up'}',
+      kitArabic
+          ? '#${o.id} ${moved.stage == _Stage.ready ? 'جاهز' : 'استُلم'}'
+          : '#${o.id} ${moved.stage == _Stage.ready ? 'ready' : 'picked up'}',
       icon: LucideIcons.check,
-      actionLabel: 'Undo',
+      actionLabel: ar('Undo', 'تراجع'),
       onAction: () {
         if (!mounted) return;
         setState(() {
@@ -277,7 +318,7 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
       setState(() => _selected = o.id);
       showMinimalSheet<void>(
         context,
-        title: 'Order #${o.id}',
+        title: ar('Order #${o.id}', 'الطلب #${o.id}'),
         subtitle: o.customer,
         builder: (_) => _OrderDetails(o),
         trailing: next == null
@@ -299,7 +340,7 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
       MaterialPageRoute<void>(
         builder: (page) => MinimalScaffold(
           topBar: MinimalAppBar(
-            parent: 'Orders',
+            parent: ar('Orders', 'الطلبات'),
             title: '#${o.id}',
             subtitle: o.customer,
           ),
@@ -340,20 +381,20 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
         if (o.overdue) o,
     ]..sort((a, b) => a.due.compareTo(b.due));
     final views = [
-      ('Open', _openRows.length),
-      ('Ready', _readyRows.length),
-      ('Done', _doneRows.length),
+      (ar('Open', 'مفتوحة'), _openRows.length),
+      (ar('Ready', 'جاهزة'), _readyRows.length),
+      (ar('Done', 'منتهية'), _doneRows.length),
     ];
     final orders = _openRows.length + _readyRows.length + _doneRows.length;
     return MinimalScaffold(
       topBar: MinimalAppBar(
         leading: widget.leading,
-        title: 'Orders',
+        title: ar('Orders', 'الطلبات'),
         // The range menu stands beside the title it scopes.
         titleTrailing: MinimalMenu.button(
           LucideIcons.calendarDays,
           text: _range,
-          label: 'Date range',
+          label: ar('Date range', 'النطاق الزمني'),
           items: [
             for (final range in _ranges)
               MinimalMenuItem(
@@ -378,23 +419,31 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
             sliver: SliverToBoxAdapter(
               child: MinimalStatRow.joined(
                 children: [
-                  const MinimalStat(
-                    label: 'Revenue',
+                  MinimalStat(
+                    label: ar('Revenue', 'الإيرادات'),
                     value: '€1,284',
                     delta: '12%',
-                    detail: 'vs last Fri',
+                    detail: ar('vs last Fri', 'مقارنة بالجمعة الماضية'),
                     spark: _week,
                     weight: 1.3,
                   ),
                   MinimalStat(
-                    label: 'Orders',
+                    label: ar('Orders', 'الطلبات'),
                     value: '$orders',
-                    detail: '${_openRows.length} open',
+                    detail: ar(
+                      '${_openRows.length} open',
+                      '${_openRows.length} مفتوحة',
+                    ),
                   ),
                   MinimalStat(
-                    label: 'Late',
+                    label: ar('Late', 'متأخرة'),
                     value: '${late.length}',
-                    detail: late.isEmpty ? 'none' : 'since ${late.first.due}',
+                    detail: late.isEmpty
+                        ? ar('none', 'لا شيء')
+                        : ar(
+                            'since ${late.first.due}',
+                            'منذ ${late.first.due}',
+                          ),
                     tone: late.isEmpty ? null : MinimalTone.warning,
                   ),
                 ],
@@ -470,33 +519,33 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
               mono: true,
               sortable: true,
             ),
-            _Col.customer => const MinimalColumn('Customer'),
-            _Col.channel => const MinimalColumn('Channel', width: 88),
-            _Col.placed => const MinimalColumn(
-              'Placed',
+            _Col.customer => MinimalColumn(ar('Customer', 'العميل')),
+            _Col.channel => MinimalColumn(ar('Channel', 'القناة'), width: 88),
+            _Col.placed => MinimalColumn(
+              ar('Placed', 'وقت الطلب'),
               width: 64,
               numeric: true,
             ),
-            _Col.qty => const MinimalColumn(
-              'Qty',
+            _Col.qty => MinimalColumn(
+              ar('Qty', 'الكمية'),
               width: 38,
               numeric: true,
               sortable: true,
             ),
-            _Col.due => const MinimalColumn(
-              'Due',
+            _Col.due => MinimalColumn(
+              ar('Due', 'الموعد'),
               width: 56,
               numeric: true,
               sortable: true,
             ),
-            _Col.total => const MinimalColumn(
-              'Total',
+            _Col.total => MinimalColumn(
+              ar('Total', 'المجموع'),
               width: 88,
               numeric: true,
               sortable: true,
             ),
-            _Col.status => const MinimalColumn(
-              'Status',
+            _Col.status => MinimalColumn(
+              ar('Status', 'الحالة'),
               width: 88,
               alignEnd: true,
             ),
@@ -533,10 +582,13 @@ class _KitOrdersPageState extends State<KitOrdersPage> {
             ],
             faded: o.stage == _Stage.pickedUp,
             selected: o.id == _selected,
-            semanticLabel:
-                'Order ${o.id}, ${o.customer}, ${o.qty} items, '
-                'due ${o.due}, ${o.stage.label}'
-                '${o.overdue && o.stage != _Stage.late ? ', overdue' : ''}',
+            semanticLabel: kitArabic
+                ? 'الطلب ${o.id}، ${o.customer}، ${_items(o.qty)}، '
+                      'الموعد ${o.due}، ${o.stage.label}'
+                      '${o.overdue && o.stage != _Stage.late ? '، متأخر' : ''}'
+                : 'Order ${o.id}, ${o.customer}, ${o.qty} items, '
+                      'due ${o.due}, ${o.stage.label}'
+                      '${o.overdue && o.stage != _Stage.late ? ', overdue' : ''}',
           ),
       ],
     );
@@ -559,32 +611,32 @@ class _OrderDetails extends StatelessWidget {
           properties: [
             MinimalProperty(
               icon: LucideIcons.circleDot,
-              label: 'Status',
+              label: ar('Status', 'الحالة'),
               value: o.stage.label,
               tone: o.stage.tone,
             ),
             MinimalProperty(
               icon: LucideIcons.clock,
-              label: 'Due',
+              label: ar('Due', 'الموعد'),
               value: o.due,
-              detail: o.overdue ? 'overdue' : null,
+              detail: o.overdue ? ar('overdue', 'متأخر') : null,
               mono: true,
             ),
             MinimalProperty(
               icon: LucideIcons.store,
-              label: 'Channel',
+              label: ar('Channel', 'القناة'),
               value: _channel(o),
             ),
             MinimalProperty(
               icon: LucideIcons.receiptText,
-              label: 'Placed',
+              label: ar('Placed', 'وقت الطلب'),
               value: _placed(o),
               mono: true,
             ),
           ],
         ),
         MinimalSectionHeader(
-          'Items',
+          ar('Items', 'القطع'),
           count: '${o.qty}',
           padding: const EdgeInsets.fromLTRB(
             0,
@@ -602,7 +654,7 @@ class _OrderDetails extends StatelessWidget {
                     '${line.count} × ${MinimalFormat.money(_each, symbol: '€')}',
                 meta: MinimalFormat.money(line.count * _each, symbol: '€'),
               ),
-            MinimalListTile(title: 'Total', meta: _total(o)),
+            MinimalListTile(title: ar('Total', 'المجموع'), meta: _total(o)),
           ],
         ),
       ],

@@ -1,24 +1,61 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../theme.dart';
 
 /// Minimal's route registers: [MinimalPage], the go_router page every push
 /// rides, [MinimalFadeRoute], the peer register that replaces a page in
-/// place, and [MinimalPageTransitions], the motion [MinimalHost] installs for
-/// every page route under it.
+/// place, and [minimalPageTransitions], the push every page route plays.
 ///
 /// Both registers take their durations from [MinimalChromeMetrics] and
 /// collapse to nothing when [MinimalMotion.animate] is off, so golden and
 /// walkthrough frames stay deterministic; under the platform's reduce-motion
 /// setting the page appears in place.
 
+/// Minimal's push for every platform, for a `PageTransitionsTheme`: a page
+/// fades in over [MinimalChromeMetrics.pushSlide] and a pop reverses it, where
+/// the platform's own would slide or zoom it in.
+///
+/// [MinimalTheme] puts it in the Material theme it builds. An app on
+/// Flutter's own `MaterialApp` puts it in its `ThemeData` too, since a
+/// `MaterialPageRoute` plays the push its own Material's theme names:
+///
+/// ```dart
+/// MaterialApp(
+///   theme: ThemeData(
+///     pageTransitionsTheme: const PageTransitionsTheme(
+///       builders: minimalPageTransitions,
+///     ),
+///   ),
+///   builder: (context, child) =>
+///       MinimalTheme(data: MinimalThemeData.standard(), child: child!),
+///   home: const InboxPage(),
+/// )
+/// ```
+const Map<TargetPlatform, PageTransitionsBuilder> minimalPageTransitions = {
+  TargetPlatform.android: MinimalPageTransitions(),
+  TargetPlatform.fuchsia: MinimalPageTransitions(),
+  // iOS's swipe back from the screen's leading edge, round Minimal's push.
+  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+    MinimalPageTransitions(),
+  ),
+  TargetPlatform.linux: MinimalPageTransitions(),
+  TargetPlatform.macOS: MinimalPageTransitions(),
+  TargetPlatform.windows: MinimalPageTransitions(),
+};
+
 /// Minimal's push, as a [PageTransitionsBuilder]: the incoming page fades
 /// in over [MinimalChromeMetrics.push] while travelling
 /// [MinimalChromeMetrics.pushSlide] from the trailing side, and leaves the
 /// same way over [MinimalChromeMetrics.pop]. The page underneath stays
-/// exactly where it is — no parallax, no dim. [MinimalHost] installs it for
-/// every platform, so a plain `MaterialPageRoute` moves the same way.
+/// exactly where it is — no parallax, no dim. [minimalPageTransitions] maps
+/// it to every platform.
+///
+/// Minimal's push replaces the platform's, and with it iOS's swipe back from
+/// the screen's edge: iOS's entry in [minimalPageTransitions] wraps it in
+/// ui_core's [DesignSwipeBackPageTransitionsBuilder], which puts the swipe
+/// back round it.
 class MinimalPageTransitions extends PageTransitionsBuilder {
   /// Minimal's push and pop.
   const MinimalPageTransitions();

@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '../chrome_metrics.dart';
 import '../format.dart';
+import '../internal/controls.dart';
 import '../internal/field.dart';
 import '../localizations.dart';
 import '../theme.dart';
@@ -59,6 +62,14 @@ class MinimalTimeline extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalActivity>('entries', entries))
+      ..add(StringProperty('emptyLabel', emptyLabel, defaultValue: null));
   }
 }
 
@@ -144,11 +155,10 @@ class MinimalActivity extends StatelessWidget {
   /// Opens the entry; null leaves it a plain row.
   final VoidCallback? onPressed;
 
-  /// Its focus node, for a caller that moves focus to it; null keeps one
-  /// of its own.
+  /// {@macro minimal.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes keyboard focus when it first appears.
+  /// {@macro minimal.autofocus}
   final bool autofocus;
 
   @override
@@ -162,82 +172,101 @@ class MinimalActivity extends StatelessWidget {
     final tone = this.tone;
     final slot = tone != null || _DotSlot.keptIn(context);
     final event = t.bodySmall;
+    // Data, written left to right whatever the line's direction
+    // (`28 Aug 09:06` keeps its order in Arabic), at its column's start.
+    final stampText = Text(
+      when,
+      style: t.mono.c(t.mutedForeground),
+      textDirection: TextDirection.ltr,
+      textAlign: Directionality.of(context) == TextDirection.rtl
+          ? TextAlign.right
+          : TextAlign.left,
+      maxLines: 1,
+      overflow: TextOverflow.clip,
+      softWrap: false,
+    );
+    final eventText = Text.rich(
+      TextSpan(
+        children: [
+          // The dot rides the first line, centred on it; in a log
+          // with dots, an entry without one keeps its slot empty.
+          if (slot)
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  end: MinimalSpacing.s8,
+                ),
+                child: tone == null
+                    ? const SizedBox.square(dimension: _ActivityMetrics.dot)
+                    : Container(
+                        width: _ActivityMetrics.dot,
+                        height: _ActivityMetrics.dot,
+                        decoration: BoxDecoration(
+                          color: t.tone(tone).indicator,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+              ),
+            ),
+          if (actor != null)
+            TextSpan(text: '$actor ', style: t.bodySmall.medium),
+          TextSpan(text: text, style: event),
+          if (figure != null) ...[
+            TextSpan(text: ' ', style: event),
+            TextSpan(
+              text: figure,
+              style: t.mono.copyWith(
+                fontSize: event.fontSize,
+                height: event.height,
+                color: event.color,
+              ),
+            ),
+          ],
+          // The dot holds to the word before it, so a wrapped
+          // detail never starts its line with the dot.
+          if (detail != null)
+            TextSpan(
+              text: ' · $detail',
+              style: t.bodySmall.c(t.mutedForeground),
+            ),
+        ],
+      ),
+    );
+    // From 160% text the stamp stands over its event rather than
+    // squeeze it into what the grown time column leaves.
+    final stacked = scaler.scale(10) / 10 >= MinimalChromeMetrics.rowStackScale;
     final row = Container(
+      // An entry that opens stands at least the tap floor (44 at a finger),
+      // its lines centred in it.
+      constraints: onPressed == null
+          ? null
+          : BoxConstraints(minHeight: minimalTapFloor(context)),
+      alignment: onPressed == null ? null : AlignmentDirectional.centerStart,
       padding: const EdgeInsets.symmetric(vertical: _ActivityMetrics.pad),
       decoration: _LastEntry.marks(context)
           ? null
           : BoxDecoration(border: Border(bottom: t.rule)),
       // The 12 px stamp and the 13 px event share the first line's
       // baseline, whatever the type scale.
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          SizedBox(
-            width: scaler.scale(_ActivityMetrics.timeColumn),
-            child: Text(
-              when,
-              style: t.mono.c(t.mutedForeground),
-              maxLines: 1,
-              overflow: TextOverflow.clip,
-              softWrap: false,
+      child: stacked
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [stampText, eventText],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                SizedBox(
+                  width: scaler.scale(_ActivityMetrics.timeColumn),
+                  child: stampText,
+                ),
+                const MinimalGap(_ActivityMetrics.gap),
+                Expanded(child: eventText),
+              ],
             ),
-          ),
-          const MinimalGap(_ActivityMetrics.gap),
-          Expanded(
-            child: Text.rich(
-              TextSpan(
-                children: [
-                  // The dot rides the first line, centred on it; in a log
-                  // with dots, an entry without one keeps its slot empty.
-                  if (slot)
-                    WidgetSpan(
-                      alignment: PlaceholderAlignment.middle,
-                      child: Padding(
-                        padding: const EdgeInsetsDirectional.only(
-                          end: MinimalSpacing.s8,
-                        ),
-                        child: tone == null
-                            ? const SizedBox.square(
-                                dimension: _ActivityMetrics.dot,
-                              )
-                            : Container(
-                                width: _ActivityMetrics.dot,
-                                height: _ActivityMetrics.dot,
-                                decoration: BoxDecoration(
-                                  color: t.tone(tone).indicator,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                      ),
-                    ),
-                  if (actor != null)
-                    TextSpan(text: '$actor ', style: t.bodySmall.medium),
-                  TextSpan(text: text, style: event),
-                  if (figure != null) ...[
-                    TextSpan(text: ' ', style: event),
-                    TextSpan(
-                      text: figure,
-                      style: t.mono.copyWith(
-                        fontSize: event.fontSize,
-                        height: event.height,
-                        color: event.color,
-                      ),
-                    ),
-                  ],
-                  // The dot holds to the word before it, so a wrapped
-                  // detail never starts its line with the dot.
-                  if (detail != null)
-                    TextSpan(
-                      text: ' · $detail',
-                      style: t.bodySmall.c(t.mutedForeground),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
     );
     final what = figure == null ? text : '$text $figure';
     final announced = [when, ?actor, what, ?detail].join(', ');
@@ -260,5 +289,27 @@ class MinimalActivity extends StatelessWidget {
       semanticLabel: announced,
       child: ExcludeSemantics(child: row),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('at', at))
+      ..add(StringProperty('text', text))
+      ..add(StringProperty('figure', figure, defaultValue: null))
+      ..add(StringProperty('actor', actor, defaultValue: null))
+      ..add(StringProperty('detail', detail, defaultValue: null))
+      ..add(EnumProperty<MinimalTone>('tone', tone, defaultValue: null))
+      ..add(StringProperty('stamp', stamp, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }

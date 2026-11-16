@@ -5,6 +5,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +16,7 @@ import '../component_themes.dart';
 import '../internal/cap_label.dart';
 import '../internal/controls.dart';
 import '../internal/kit_paint.dart';
+import '../internal/menu_keys.dart';
 import '../internal/styled.dart';
 import '../localizations.dart';
 import '../shapes.dart';
@@ -50,7 +52,8 @@ class MinimalMenuItem {
   /// A glyph before the label.
   final IconData? icon;
 
-  /// The current choice of a menu that picks one: a check at the end.
+  /// The current choice of a menu that picks one: its words in the full ink
+  /// at medium weight and a check at the end, the other items muted.
   final bool selected;
 
   /// The destructive register: the label and glyph in the destructive ink.
@@ -79,7 +82,15 @@ enum MinimalMenuTrigger {
 /// label, a mono shortcut, a check for the current choice. It opens under
 /// the control (above it when the space is below is short), aligned to the
 /// control's nearer edge, fades in over [MinimalMotion.fast], and closes on a
-/// choice, a tap outside or Escape. The arrow keys walk the items.
+/// choice, a tap outside or Escape, handing the keys back to the control.
+///
+/// Its keys are a menu button's. Opened from a key (Enter, Space or Down)
+/// it starts on the chosen item, else the first enabled one; opened by the
+/// pointer it starts on none, and the first arrow lands there. The arrows
+/// walk the enabled items round, Home and End go to the ends, a letter to
+/// the next item it starts, and Enter or Space takes the item. The item the
+/// pointer or the keyboard is on takes the muted fill: a place, never a
+/// second choice.
 ///
 /// `trigger: longPress` adds a context menu to content while its ordinary
 /// tap stays the content's own: the content takes the press wash while
@@ -181,22 +192,53 @@ class MinimalMenu extends StatefulWidget {
     // inside them too, so its surface and its content read one scope.
     final themes = InheritedTheme.capture(from: context, to: navigator.context);
     final still = context.minimalStill;
-    return navigator.push<T>(
-      _PopoverRoute<T>(
-        anchor: anchor,
-        label: label,
-        dismissLabel: '${MinimalLocalizations.of(context).dismiss} $label',
-        width: width,
-        duration: still ? Duration.zero : MinimalMotion.fast,
-        themes: themes,
-        builder: builder,
-        style: style,
-      ),
-    );
+    // Closed, the keys go back where they were: the control that opened it.
+    final returnTo = FocusManager.instance.primaryFocus;
+    return navigator
+        .push<T>(
+          _PopoverRoute<T>(
+            anchor: anchor,
+            label: label,
+            dismissLabel: '${MinimalLocalizations.of(context).dismiss} $label',
+            width: width,
+            duration: still ? Duration.zero : MinimalMotion.fast,
+            themes: themes,
+            builder: builder,
+            style: style,
+          ),
+        )
+        .whenComplete(() {
+          if (returnTo != null &&
+              (returnTo.context?.mounted ?? false) &&
+              returnTo.canRequestFocus) {
+            returnTo.requestFocus();
+          }
+        });
   }
 
   @override
   State<MinimalMenu> createState() => _MinimalMenuState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<MinimalMenuItem>('items', items))
+      ..add(
+        EnumProperty<MinimalMenuTrigger>(
+          'trigger',
+          trigger,
+          defaultValue: MinimalMenuTrigger.tap,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('text', text, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('small', small))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// Present a [MinimalMenu]'s anchored menu from any control — a picker row, a
@@ -212,6 +254,7 @@ Future<void> showMinimalMenu(
   MinimalStyle? style,
 }) async {
   if (items.isEmpty) return;
+  final fromKeys = minimalOpenedByKeys();
   final chosen = await MinimalMenu.popover<int>(
     context,
     anchor: anchor,
@@ -220,7 +263,7 @@ Future<void> showMinimalMenu(
     // an expanded button covers that control's width.
     width: math.max(width, anchor.width),
     style: style,
-    builder: (context) => _MenuSurface(items: items),
+    builder: (context) => _MenuSurface(items: items, fromKeys: fromKeys),
   );
   if (chosen != null) items[chosen].onPressed?.call();
 }
@@ -309,13 +352,16 @@ class _MinimalMenuState extends State<MinimalMenu> {
                 ),
               ));
     if (widget.trigger == MinimalMenuTrigger.tap) {
-      final trigger = MinimalPressable(
-        onPressed: _show,
-        enabled: widget.items.isNotEmpty,
-        semanticLabel:
-            widget.label ?? MinimalLocalizations.of(context).moreActions,
-        shape: text == null ? t.shapes.small : _pill(t),
-        child: child,
+      final trigger = minimalOpensOnDown(
+        open: widget.items.isEmpty ? null : _show,
+        child: MinimalPressable(
+          onPressed: _show,
+          enabled: widget.items.isNotEmpty,
+          semanticLabel:
+              widget.label ?? MinimalLocalizations.of(context).moreActions,
+          shape: text == null ? t.shapes.small : _pill(t),
+          child: child,
+        ),
       );
       // The kit's own square or pill keeps the width of what it shows,
       // whatever stretches it, from the compact width up, as a button does.
@@ -605,23 +651,165 @@ class _PopoverLayout extends SingleChildLayoutDelegate {
       anchor != old.anchor || width != old.width || safe != old.safe;
 }
 
-/// The menu's items in the card, walked by the arrow keys.
-class _MenuSurface extends StatelessWidget {
-  const _MenuSurface({required this.items});
+/// The menu's items in the card, and its keys: a menu button's (see
+/// [MinimalMenu]). One item at most is the place, the one with the keys,
+/// which the pointer moves too; it takes the muted fill.
+class _MenuSurface extends StatefulWidget {
+  const _MenuSurface({required this.items, required this.fromKeys});
 
   final List<MinimalMenuItem> items;
+
+  /// Whether a key opened it: it then starts on the chosen item.
+  final bool fromKeys;
+
+  @override
+  State<_MenuSurface> createState() => _MenuSurfaceState();
+}
+
+class _MenuSurfaceState extends State<_MenuSurface> {
+  // The card's own stop, holding the keys while no item has them (a menu
+  // the pointer opened, or the pointer gone off the items). Never a Tab
+  // stop.
+  final FocusNode _card = FocusNode(debugLabel: 'menu', skipTraversal: true);
+  late final List<FocusNode> _items = [
+    for (final item in widget.items) FocusNode(debugLabel: item.label),
+  ];
+
+  // The item with the keys, or null.
+  int? _place;
+
+  @override
+  void initState() {
+    super.initState();
+    for (final (i, node) in _items.indexed) {
+      node.addListener(() => _focusMoved(i));
+    }
+    // Once laid out, so the item can scroll into view.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final start = widget.fromKeys ? _start(1) : null;
+      if (start == null) {
+        _card.requestFocus();
+      } else {
+        _go(start, ScrollPositionAlignmentPolicy.keepVisibleAtEnd);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _card.dispose();
+    for (final node in _items) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  void _focusMoved(int i) {
+    final has = _items[i].hasPrimaryFocus;
+    if (has && _place != i) {
+      setState(() => _place = i);
+    } else if (!has && _place == i) {
+      setState(() => _place = null);
+    }
+  }
+
+  bool _enabled(int i) => widget.items[i].onPressed != null;
+
+  /// Where the first arrow lands: the chosen item, else the first enabled
+  /// one going down, the last going up.
+  int? _start(int direction) {
+    final chosen = widget.items.indexWhere((item) => item.selected);
+    if (chosen >= 0 && _enabled(chosen)) return chosen;
+    return _next(direction > 0 ? -1 : widget.items.length, direction);
+  }
+
+  /// The next enabled item from [from] in [direction], round the ends; null
+  /// when none is enabled.
+  int? _next(int from, int direction) {
+    final n = widget.items.length;
+    for (var step = 1; step <= n; step++) {
+      final i = (from + direction * step) % n;
+      if (_enabled(i)) return i;
+    }
+    return null;
+  }
+
+  /// The next enabled item after the place whose label starts with the
+  /// letter [event] types.
+  int? _typed(KeyEvent event) {
+    final keyboard = HardwareKeyboard.instance;
+    if (keyboard.isControlPressed ||
+        keyboard.isMetaPressed ||
+        keyboard.isAltPressed) {
+      return null;
+    }
+    final letter = event.character?.trim().toLowerCase() ?? '';
+    if (letter.isEmpty) return null;
+    final from = _place ?? -1;
+    final n = widget.items.length;
+    for (var step = 1; step <= n; step++) {
+      final i = (from + step) % n;
+      if (_enabled(i) &&
+          widget.items[i].label.trim().toLowerCase().startsWith(letter)) {
+        return i;
+      }
+    }
+    return null;
+  }
+
+  void _go(int i, ScrollPositionAlignmentPolicy policy) {
+    final node = _items[i];
+    node.requestFocus();
+    final context = node.context;
+    if (context != null) {
+      Scrollable.ensureVisible(context, alignmentPolicy: policy);
+    }
+  }
+
+  // Enter and Space take the item through its own press; Escape is the
+  // route's.
+  KeyEventResult _key(FocusNode node, KeyEvent event) {
+    if (event is KeyUpEvent) return KeyEventResult.ignored;
+    const end = ScrollPositionAlignmentPolicy.keepVisibleAtEnd;
+    const start = ScrollPositionAlignmentPolicy.keepVisibleAtStart;
+    final place = _place;
+    final key = event.logicalKey;
+    final (
+      int? to,
+      ScrollPositionAlignmentPolicy policy,
+    ) = key == LogicalKeyboardKey.arrowDown
+        ? (place == null ? _start(1) : _next(place, 1), end)
+        : key == LogicalKeyboardKey.arrowUp
+        ? (place == null ? _start(-1) : _next(place, -1), start)
+        : key == LogicalKeyboardKey.home
+        ? (_next(-1, 1), start)
+        : key == LogicalKeyboardKey.end
+        ? (_next(widget.items.length, -1), end)
+        : (_typed(event), end);
+    if (to == null) {
+      return key == LogicalKeyboardKey.arrowDown ||
+              key == LogicalKeyboardKey.arrowUp ||
+              key == LogicalKeyboardKey.home ||
+              key == LogicalKeyboardKey.end
+          ? KeyEventResult.handled
+          : KeyEventResult.ignored;
+    }
+    _go(to, policy);
+    return KeyEventResult.handled;
+  }
 
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
+    final items = widget.items;
     // A menu that picks one announces every item's selected state; a menu
     // of plain actions announces none.
     final choosing = items.any((item) => item.selected);
-    return Shortcuts(
-      shortcuts: const <ShortcutActivator, Intent>{
-        SingleActivator(LogicalKeyboardKey.arrowDown): NextFocusIntent(),
-        SingleActivator(LogicalKeyboardKey.arrowUp): PreviousFocusIntent(),
-      },
+    return Focus(
+      focusNode: _card,
+      includeSemantics: false,
+      onKeyEvent: _key,
       child: FocusTraversalGroup(
         child: Padding(
           padding: const EdgeInsets.all(MinimalSpacing.s4),
@@ -637,10 +825,24 @@ class _MenuSurface extends StatelessWidget {
                     ),
                     child: Container(height: t.hairline, color: t.border),
                   ),
-                _MenuAction(
-                  item: item,
-                  choosing: choosing,
-                  onPressed: () => Navigator.of(context).pop(i),
+                // The pointer moves the place: one place, whichever moved
+                // it last; off the items, none.
+                MouseRegion(
+                  onEnter: (_) {
+                    if (mounted && _enabled(i)) _items[i].requestFocus();
+                  },
+                  onExit: (_) {
+                    if (mounted && _items[i].hasPrimaryFocus) {
+                      _card.requestFocus();
+                    }
+                  },
+                  child: _MenuAction(
+                    item: item,
+                    choosing: choosing,
+                    focusNode: _items[i],
+                    place: _place == i,
+                    onPressed: () => Navigator.of(context).pop(i),
+                  ),
                 ),
               ],
             ],
@@ -652,74 +854,95 @@ class _MenuSurface extends StatelessWidget {
 }
 
 /// One 32 px item. Its box clips the pressable's padded hit area, so two
-/// abutting items never take each other's taps.
+/// abutting items never take each other's taps. The [place] (the item the
+/// keys or the pointer are on) takes the muted fill in place of a ring.
 class _MenuAction extends StatelessWidget {
   const _MenuAction({
     required this.item,
     required this.choosing,
+    required this.focusNode,
+    required this.place,
     required this.onPressed,
   });
 
   final MinimalMenuItem item;
   final bool choosing;
+  final FocusNode focusNode;
+  final bool place;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final ink = item.destructive ? t.destructiveInk : t.foreground;
+    // A menu that picks one says its choice as Minimal says one: the chosen
+    // item's words in the full ink at medium weight, with its check, and the
+    // others muted.
+    final ink = item.destructive
+        ? t.destructiveInk
+        : choosing && !item.selected
+        ? t.mutedForeground
+        : t.foreground;
     final enabled = item.onPressed != null;
     final shortcut = item.shortcut;
     final icon = item.icon;
+    final shape = MinimalShapes.inset(t.shapes.medium, MinimalSpacing.s4);
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: _MenuMetrics.itemHeight),
-      child: MinimalPressable(
-        onPressed: enabled ? onPressed : null,
-        enabled: enabled,
-        shape: MinimalShapes.inset(t.shapes.medium, MinimalSpacing.s4),
-        selected: choosing ? item.selected : null,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: _MenuMetrics.itemHeight),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: MinimalSpacing.s8,
-              vertical: MinimalSpacing.s4,
+      child: MinimalPaintsFocus(
+        child: MinimalPressable(
+          focusNode: focusNode,
+          onPressed: enabled ? onPressed : null,
+          enabled: enabled,
+          shape: shape,
+          selected: choosing ? item.selected : null,
+          child: Container(
+            constraints: const BoxConstraints(
+              minHeight: _MenuMetrics.itemHeight,
             ),
-            child: Row(
-              children: [
-                if (icon != null) ...[
-                  MinimalIcon(
-                    icon,
-                    size: MinimalIconSize.i16,
-                    color: item.destructive
-                        ? t.destructiveInk
-                        : t.mutedForeground,
-                  ),
-                  const MinimalGap(MinimalSpacing.s8),
-                ],
-                Expanded(
-                  child: minimalCapLabel(
-                    Text(
-                      item.label,
-                      style: t.bodySmall.c(ink),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+            decoration: minimalFrame(shape, fill: place ? t.muted : null),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: MinimalSpacing.s8,
+                vertical: MinimalSpacing.s4,
+              ),
+              child: Row(
+                children: [
+                  if (icon != null) ...[
+                    MinimalIcon(
+                      icon,
+                      size: MinimalIconSize.i16,
+                      color: item.destructive
+                          ? t.destructiveInk
+                          : t.mutedForeground,
+                    ),
+                    const MinimalGap(MinimalSpacing.s8),
+                  ],
+                  Expanded(
+                    child: minimalCapLabel(
+                      Text(
+                        item.label,
+                        style:
+                            (item.selected ? t.bodySmall.medium : t.bodySmall)
+                                .c(ink),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
-                ),
-                if (shortcut != null) ...[
-                  const MinimalGap(MinimalSpacing.s8),
-                  MinimalKbd.chord(shortcut),
+                  if (shortcut != null) ...[
+                    const MinimalGap(MinimalSpacing.s8),
+                    MinimalKbd.chord(shortcut),
+                  ],
+                  if (item.selected) ...[
+                    const MinimalGap(MinimalSpacing.s8),
+                    MinimalIcon(
+                      LucideIcons.check,
+                      size: MinimalIconSize.i16,
+                      color: t.primaryInk,
+                    ),
+                  ],
                 ],
-                if (item.selected) ...[
-                  const MinimalGap(MinimalSpacing.s8),
-                  MinimalIcon(
-                    LucideIcons.check,
-                    size: MinimalIconSize.i16,
-                    color: t.primaryInk,
-                  ),
-                ],
-              ],
+              ),
             ),
           ),
         ),

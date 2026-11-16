@@ -1,6 +1,7 @@
 /// A short line that names a control: a tooltip.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
@@ -53,6 +54,23 @@ class MinimalTooltip extends StatefulWidget {
 
   @override
   State<MinimalTooltip> createState() => _MinimalTooltipState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'waitDuration',
+          waitDuration,
+          defaultValue: const Duration(milliseconds: 500),
+        ),
+      );
+  }
 }
 
 class _MinimalTooltipState extends State<MinimalTooltip> {
@@ -97,7 +115,7 @@ class _MinimalTooltipState extends State<MinimalTooltip> {
           constraints: const BoxConstraints(maxWidth: 280),
           child: Container(
             padding:
-                so.padding ??
+                so.paddingIn(context) ??
                 const EdgeInsets.symmetric(
                   horizontal: MinimalSpacing.s8,
                   vertical: MinimalSpacing.s4,

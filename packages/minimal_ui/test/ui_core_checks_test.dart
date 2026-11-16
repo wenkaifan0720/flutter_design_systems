@@ -192,6 +192,13 @@ String _kind(Widget w) => w.runtimeType.toString().split('<').first;
 
 void main() {
   setUpAll(loadKeylineFonts);
+  // Decoded marks and pictures stay in the image cache past their test:
+  // cleared, so leak tracking sees them disposed.
+  tearDown(
+    () => imageCache
+      ..clear()
+      ..clearLiveImages(),
+  );
 
   group('rows by drawn outline', () {
     for (final density in const ['standard', 'compact']) {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
@@ -39,8 +40,11 @@ class MinimalActionBar extends StatelessWidget {
   final String label;
 
   /// The summary's figure — a total, a count, a time — printed in the mono
-  /// [MinimalThemeData.figure], and the quiet prose line under it.
-  final String? summary, detail;
+  /// [MinimalThemeData.figure].
+  final String? summary;
+
+  /// The quiet prose line under the [summary].
+  final String? detail;
 
   /// A composed summary in place of [summary] and [detail].
   final Widget? summaryContent;
@@ -146,5 +150,18 @@ class MinimalActionBar extends StatelessWidget {
       ),
       child: body,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: ''))
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(StringProperty('detail', detail, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
+      ..add(StringProperty('busyLabel', busyLabel, defaultValue: null))
+      ..add(FlagProperty('floating', value: floating, ifTrue: 'floating'));
   }
 }
