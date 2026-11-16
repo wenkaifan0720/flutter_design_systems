@@ -1,6 +1,8 @@
 /// A value along an inked track, with a circular drag handle.
 library;
 
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -9,6 +11,8 @@ import 'package:flutter/services.dart';
 import 'theme.dart';
 import 'component_themes.dart';
 import 'styled.dart';
+import 'internal/style_guard.dart';
+import 'knobs.dart' show ComicSpace;
 
 /// An adjustable value with keyboard, pointer and accessibility actions.
 ///
@@ -77,11 +81,62 @@ class ComicSlider extends StatefulWidget {
   /// share their track's ends.
   static const double inset = 12;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   State<ComicSlider> createState() => _ComicSliderState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('value', value))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(double)>.has(
+          'valueLabel',
+          valueLabel,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'quiet',
+          value: quiet,
+          ifTrue: 'quiet',
+          defaultValue: false,
+        ),
+      )
+      ..add(DoubleProperty('rowWidth', rowWidth, defaultValue: 200))
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _ComicSliderState extends State<ComicSlider> {
@@ -167,7 +222,7 @@ class _ComicSliderState extends State<ComicSlider> {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), live = widget.onChanged != null;
-    final look = ComicStyleOf(
+    final look = comicStyleOf(
       [widget.style, t.sliderTheme],
       comicStates(
         enabled: live,
@@ -278,8 +333,8 @@ class _ComicSliderState extends State<ComicSlider> {
             ExcludeSemantics(
               child: Wrap(
                 alignment: WrapAlignment.spaceBetween,
-                spacing: 12,
-                runSpacing: 4,
+                spacing: ComicSpace.near,
+                runSpacing: ComicSpace.tight,
                 children: [
                   Text(widget.label, style: t.type.title),
                   Text(_words(widget.value), style: t.type.body),

@@ -13,6 +13,7 @@ import 'package:flutter/widgets.dart';
 import '../press.dart';
 import '../styled.dart';
 import '../theme.dart';
+import '../knobs.dart' show ComicSpace;
 
 /// The trough: [shape] filled with [fill] and ringed by [rim], holding [cells] in reading order.
 ///
@@ -159,7 +160,7 @@ class ComicTrackFace extends StatelessWidget {
     required this.shape,
     required this.child,
     this.gap = ComicTrack.inset,
-    this.padding = const EdgeInsets.symmetric(horizontal: 14),
+    this.padding = const EdgeInsets.symmetric(horizontal: ComicSpace.gap),
     this.overlay,
     this.fill,
   });
@@ -523,7 +524,10 @@ double comicFieldWordsAt(ComicThemeData t) => t.density
 /// list sets its words on [EdgeInsetsDirectional.start].
 EdgeInsetsDirectional comicFieldInset(ComicThemeData t) {
   final p = t.density.padding(
-    const EdgeInsets.symmetric(horizontal: comicFieldWords, vertical: 8),
+    const EdgeInsets.symmetric(
+      horizontal: comicFieldWords,
+      vertical: ComicSpace.close,
+    ),
   );
   return EdgeInsetsDirectional.fromSTEB(p.left, p.top, p.right, p.bottom);
 }

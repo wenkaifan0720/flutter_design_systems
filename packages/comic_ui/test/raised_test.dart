@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:comic_ui/comic_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
@@ -177,10 +179,12 @@ void main() {
           builder: (context) => ComicButton(
             'Open',
             onPressed: () {
-              showComicDialog<void>(
-                context,
-                barrierDismissible: false,
-                builder: (_) => const ComicDialog(title: 'Stay'),
+              unawaited(
+                showComicDialog<void>(
+                  context,
+                  barrierDismissible: false,
+                  builder: (_) => const ComicDialog(title: 'Stay'),
+                ),
               );
             },
           ),
@@ -253,6 +257,8 @@ void main() {
     );
     await tester.tap(find.text('OPEN'));
     await tester.pumpAndSettle();
+    // Opened by the pointer, the first Down lights the first choice; the next passes over the one that is off.
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
     await tester.pumpAndSettle();
@@ -453,12 +459,14 @@ void main() {
               still: true,
             ),
           );
-          showComicDialog<void>(
-            source,
-            builder: (_) => ComicDialog(
-              title: 'A longer title for this issue',
-              message: List.filled(30, 'A line of explanation.').join(' '),
-              actions: [ComicButton('Keep this issue', onPressed: () {})],
+          unawaited(
+            showComicDialog<void>(
+              source,
+              builder: (_) => ComicDialog(
+                title: 'A longer title for this issue',
+                message: List.filled(30, 'A line of explanation.').join(' '),
+                actions: [ComicButton('Keep this issue', onPressed: () {})],
+              ),
             ),
           );
           await tester.pumpAndSettle();
@@ -466,12 +474,14 @@ void main() {
           expect(tester.hasRunningAnimations, isFalse);
           await tester.sendKeyEvent(LogicalKeyboardKey.escape);
           await tester.pumpAndSettle();
-          showComicBottomSheet<void>(
-            source,
-            builder: (_) => const ComicBottomSheet(
-              title: 'Issue details',
-              child: Text(
-                'The sheet can hold a long description and wraps its words.',
+          unawaited(
+            showComicBottomSheet<void>(
+              source,
+              builder: (_) => const ComicBottomSheet(
+                title: 'Issue details',
+                child: Text(
+                  'The sheet can hold a long description and wraps its words.',
+                ),
               ),
             ),
           );

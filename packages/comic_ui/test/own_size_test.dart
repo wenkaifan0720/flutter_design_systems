@@ -33,8 +33,8 @@ class _Fixed {
   /// The words are the art's middle: a burst's figure, a ring's initials.
   final bool wordsCentred;
 
-  /// A press with a least target of [size]: as tall as its target, as wide as its drawn face (no wider than the
-  /// target), the target's sides standing outward beside the face, so the face starts on its parent's start.
+  /// A press with a least target of [size]: laid out at its target (the design kit's tap target), its face centred
+  /// in it, the target starting on its parent's start.
   final bool faceWide;
 }
 
@@ -126,7 +126,10 @@ final _fills = <String, _Fill>{
 /// pieces inside a row of their own. `support.dart`'s `check` holds these at both widths in the other tests.
 const _flows = <String, String>{
   'ComicChart': 'the plot fills width; axis labels and legend stand outside its own height',
-  'ComicPageDots': 'a wrapping row of caption marks, each in its full target',
+  'ComicPageDots': 'a wrapping row of caption marks; with a callback, one control round them',
+  'ComicPlated':
+      'paints the hard print under the part it wraps, at that part\'s size',
+  'ComicScreenScrim': 'the dot-screen backdrop, painted to the page it covers',
   'ComicSkeleton': 'the placeholder fills available width when none is given',
   'ComicStars':
       'a row of small drawings, each its own size, standing at the start',

@@ -1,4 +1,6 @@
 // Heads and small words: lettered titles, a section's head on the gutter, a panel's head, labels, tags and the small print.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -7,12 +9,12 @@ import 'glyphs.dart';
 
 import 'frames.dart';
 import 'internal/geometry.dart';
-import 'internal/reach.dart';
 import 'layout.dart';
 import 'theme.dart';
 import 'localizations.dart';
 import 'press.dart';
 import 'internal/cap_label.dart';
+import 'knobs.dart' show ComicSpace;
 
 /// Words in the lettering, in caps, plain: a panel's title. Pass any `t.type` style from the lettering set; `panel` if left out.
 ///
@@ -27,7 +29,10 @@ class ComicLetters extends StatelessWidget {
     this.style,
     this.textAlign,
     this.maxLines,
-  });
+  }) : assert(
+         maxLines == null || maxLines > 0,
+         'lettering shows at least one line',
+       );
 
   /// The words displayed in this composition.
   final String words;
@@ -48,6 +53,16 @@ class ComicLetters extends StatelessWidget {
     maxLines: maxLines,
     overflow: maxLines == null ? null : TextOverflow.ellipsis,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('words', words))
+      ..add(DiagnosticsProperty<TextStyle>('style', style, defaultValue: null))
+      ..add(EnumProperty<TextAlign>('textAlign', textAlign, defaultValue: null))
+      ..add(IntProperty('maxLines', maxLines, defaultValue: null));
+  }
 }
 
 /// A section's head, on the gutter between tiers: big lettering, a small word after it on one baseline. If both won't fit on
@@ -76,7 +91,12 @@ class ComicSectionHeader extends StatelessWidget {
             style: t.type.label.copyWith(color: t.colors.textSecondary),
           );
     return Padding(
-      padding: EdgeInsets.fromLTRB(2, t.desk ? 22 : 16, 2, 0),
+      padding: EdgeInsets.fromLTRB(
+        ComicSpace.fine,
+        t.desk ? ComicSpace.room : ComicSpace.gap,
+        ComicSpace.fine,
+        0,
+      ),
       child: small == null
           ? head
           : LayoutBuilder(
@@ -102,18 +122,30 @@ class ComicSectionHeader extends StatelessWidget {
                         textBaseline: TextBaseline.alphabetic,
                         children: [
                           head,
-                          const SizedBox(width: 12),
+                          const SizedBox(width: ComicSpace.near),
                           Flexible(child: small),
                         ],
                       )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
-                        children: [head, const SizedBox(height: 4), small],
+                        children: [
+                          head,
+                          const SizedBox(height: ComicSpace.tight),
+                          small,
+                        ],
                       );
               },
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('note', note, defaultValue: null));
   }
 }
 
@@ -170,7 +202,7 @@ class ComicPanelHead extends StatelessWidget {
             children: [
               ComicLetters(title, style: style),
               if (sub != null) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: ComicSpace.tight),
                 Text(sub!, style: t.type.small),
               ],
             ],
@@ -182,6 +214,18 @@ class ComicPanelHead extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('sub', sub, defaultValue: null))
+      ..add(StringProperty('more', more, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onMore', onMore))
+      ..add(DiagnosticsProperty<TextStyle>('style', style, defaultValue: null))
+      ..add(DoubleProperty('gapBelow', gapBelow, defaultValue: 12));
   }
 }
 
@@ -236,6 +280,24 @@ class ComicStars extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('of', of, defaultValue: 5))
+      ..add(DoubleProperty('size', size, defaultValue: 13))
+      ..add(
+        FlagProperty(
+          'onPaper',
+          value: onPaper,
+          ifTrue: 'onPaper',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _StarPainter extends CustomPainter {
@@ -276,16 +338,16 @@ class ComicMoreLink extends StatelessWidget {
     this.autofocus = false,
   });
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String label;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -312,7 +374,7 @@ class ComicMoreLink extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 2),
+          const SizedBox(width: ComicSpace.fine),
           Icon(
             Directionality.of(context) == TextDirection.rtl
                 ? ComicGlyphs.chevronLeft
@@ -323,6 +385,29 @@ class ComicMoreLink extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -349,6 +434,21 @@ class ComicLabel extends StatelessWidget {
         color: quiet ? t.colors.textSecondary : t.colors.text,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('words', words))
+      ..add(
+        FlagProperty(
+          'quiet',
+          value: quiet,
+          ifTrue: 'quiet',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -393,7 +493,10 @@ class ComicTag extends StatelessWidget {
       child: Container(
         // The words keep 4 px inside the rim, past a capsule's curve.
         constraints: const BoxConstraints(minHeight: 30),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        padding: const EdgeInsets.symmetric(
+          horizontal: ComicSpace.gap,
+          vertical: ComicSpace.close,
+        ),
         decoration: ShapeDecoration(
           color: fill,
           shape: t.shapes.capsule.copyWith(
@@ -405,7 +508,7 @@ class ComicTag extends StatelessWidget {
           children: [
             if (icon != null && !iconEnd) ...[
               Icon(icon, size: 14, color: letters),
-              const SizedBox(width: 5),
+              const SizedBox(width: ComicSpace.tight),
             ],
             Flexible(
               child: CapLabel(
@@ -422,13 +525,30 @@ class ComicTag extends StatelessWidget {
               ),
             ),
             if (icon != null && iconEnd) ...[
-              const SizedBox(width: 5),
+              const SizedBox(width: ComicSpace.tight),
               Icon(icon, size: 14, color: letters),
             ],
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('word', word))
+      ..add(EnumProperty<ComicSpeaker>('tone', tone, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'iconEnd',
+          value: iconEnd,
+          ifTrue: 'iconEnd',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -457,7 +577,12 @@ class ComicIndicia extends StatelessWidget {
       color: t.colors.textSecondary,
     );
     return Padding(
-      padding: const EdgeInsets.fromLTRB(2, 6, 2, 12),
+      padding: const EdgeInsets.fromLTRB(
+        ComicSpace.fine,
+        ComicSpace.close,
+        ComicSpace.fine,
+        ComicSpace.near,
+      ),
       child: Text.rich(
         TextSpan(
           style: style,
@@ -475,6 +600,14 @@ class ComicIndicia extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('words', words))
+      ..add(StringProperty('lead', lead, defaultValue: null));
   }
 }
 
@@ -520,49 +653,54 @@ class ComicRating extends StatelessWidget {
     final t = ComicTheme.of(context);
     final c = t.colors;
     final words = ComicLocalizations.of(context);
-    // Each star keeps its target's slot, the wash's ring round it; the first slot's lead and the wash's room stand
-    // outward, so the first star starts on the column's edge as the read-only stars do.
-    final face = size + 8;
-    final room = (math.max(face, ComicTapTarget.targetOf(context)) - face) / 2;
-    return ComicOutward(
-      margin: EdgeInsetsDirectional.only(start: room + 4),
-      child: Semantics(
-        label: label,
-        value: words.rating(value, of),
-        container: true,
-        explicitChildNodes: true,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (var i = 0; i < of; i++)
-              Padding(
-                padding: EdgeInsets.all(room),
-                child: ComicPressable(
-                  label: words.rate(i + 1, of),
-                  selected: i + 1 == value,
-                  target: true,
-                  outline: WidgetStatePropertyAll(t.shapes.full),
-                  onPressed: onChanged == null
-                      ? null
-                      : () =>
-                            onChanged!(clearable && i + 1 == value ? 0 : i + 1),
-                  child: SizedBox.square(
-                    dimension: face,
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: CustomPaint(
-                        painter: _StarPainter(
-                          i < value ? c.caption : c.card,
-                          c.text,
-                        ),
-                      ),
-                    ),
-                  ),
+    // Each star's press stands at its floor (the design kit's tap target), the star itself on its slot's start, so the
+    // first inks on the column's keyline as the read-only stars do; the stars sit a floor apart. The marks of a press
+    // (the dots under the pointer, the chosen disc) fill the star's own round face; the focus ring stands round it.
+    return Semantics(
+      label: label,
+      value: words.rating(value, of),
+      container: true,
+      explicitChildNodes: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < of; i++)
+            ComicPressable(
+              label: words.rate(i + 1, of),
+              selected: i + 1 == value,
+              targetAlignment: AlignmentDirectional.centerStart,
+              outline: WidgetStatePropertyAll(t.shapes.full),
+              onPressed: onChanged == null
+                  ? null
+                  : () => onChanged!(clearable && i + 1 == value ? 0 : i + 1),
+              child: SizedBox.square(
+                dimension: size,
+                child: CustomPaint(
+                  painter: _StarPainter(i < value ? c.caption : c.card, c.text),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IntProperty('value', value))
+      ..add(IntProperty('of', of, defaultValue: 5))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(DoubleProperty('size', size, defaultValue: 28))
+      ..add(
+        FlagProperty(
+          'clearable',
+          value: clearable,
+          ifFalse: 'clearable: false',
+          defaultValue: true,
+        ),
+      );
   }
 }

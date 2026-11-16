@@ -16,8 +16,52 @@ import 'package:comic_ui/comic_ui.dart';
 import '../example/lib/gallery_pages.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/theme.dart';
+import '../example/lib/main.dart' show GalleryCustom;
 
 export '../example/lib/gallery_pages.dart';
+
+/// The corner scales the 0.1.x gallery offered. 0.2.0 deprecates `ComicShapes.rounded` and `copyWith(shapes:)`, since
+/// Comic is square, and its gallery offers them no more; until they go, these tests still draw every part on them.
+enum GalleryCorners {
+  /// Square inked controls and surfaces: the look's own.
+  square,
+
+  /// A restrained small corner scale.
+  small,
+
+  /// A medium corner scale.
+  medium,
+
+  /// A generous corner scale.
+  large,
+}
+
+/// The gallery's settings on one of [GalleryCorners].
+class CornerCustom extends GalleryCustom {
+  /// [corners] beside the panel's own settings.
+  const CornerCustom({
+    this.corners = GalleryCorners.square,
+    super.bold,
+    super.density,
+    super.oneFace,
+    super.colours,
+  });
+
+  /// The corner scale.
+  final GalleryCorners corners;
+
+  /// Flutter borders on [corners].
+  ComicShapes get shapes => switch (corners) {
+    GalleryCorners.square => const ComicShapes(),
+    GalleryCorners.small => ComicShapes.rounded(4),
+    GalleryCorners.medium => ComicShapes.rounded(8),
+    GalleryCorners.large => ComicShapes.rounded(12),
+  };
+
+  @override
+  ComicThemeData theme(String preset, Brightness brightness) =>
+      super.theme(preset, brightness).copyWith(shapes: shapes);
+}
 
 /// The gallery's phone width.
 const galleryWidth = 390.0;

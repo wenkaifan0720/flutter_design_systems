@@ -1,7 +1,7 @@
 // The example's Customize panel, at every setting it offers: Flutter's four guidelines on every gallery page, by day and
 // by night (Android's 48 px and iOS's 44 px targets, labelled targets, text contrast read with each word's own ink). For
-// the corner scale, a heavy stroke and a compact density, a golden of every section; and a golden of one press
-// caught between two shapes. `flutter test --update-goldens` records them.
+// a heavy stroke and a compact density, a golden of every section; and a golden of one press caught between two
+// shapes. Comic's corners and type sizes are the look's own: the panel offers neither (0.2.0). `flutter test --update-goldens` records them.
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
@@ -17,35 +17,22 @@ import 'support.dart';
 
 /// Every setting: each knob away from the look's own, each pair of your own colours, and every knob at once.
 final Map<String, GalleryCustom> settings = {
-  'square corners': const GalleryCustom(corners: GalleryCorners.square),
-  'small corners': const GalleryCustom(corners: GalleryCorners.small),
-  'medium corners': const GalleryCustom(corners: GalleryCorners.medium),
-  'large corners': const GalleryCustom(corners: GalleryCorners.large),
   'bold strokes': const GalleryCustom(bold: true),
   'comfortable': const GalleryCustom(density: ComicDensity.comfortable),
   'compact': const GalleryCustom(density: ComicDensity.compact),
-  'shantell alone larger': const GalleryCustom(oneFace: true, typeScale: 1.15),
-  'smaller type': const GalleryCustom(typeScale: .9),
+  'shantell alone': const GalleryCustom(oneFace: true),
   for (final pair in galleryColours)
     pair.name.toLowerCase(): GalleryCustom(colours: pair),
   'every knob': GalleryCustom(
-    corners: GalleryCorners.large,
     bold: true,
     density: ComicDensity.compact,
     oneFace: true,
-    typeScale: 1.15,
     colours: galleryColours.first,
   ),
 };
 
 /// The settings every section has a golden in.
-const goldenSettings = [
-  'small corners',
-  'medium corners',
-  'large corners',
-  'bold strokes',
-  'compact',
-];
+const goldenSettings = ['bold strokes', 'compact'];
 
 /// The goldens are kept beside the catalog and laid here by the package build; a published copy compares nothing.
 final bool _recorded =

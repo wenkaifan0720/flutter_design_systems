@@ -2,7 +2,7 @@
 // numbers and says nothing about what they count: a figure's words are the page's.
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../balloons.dart';
@@ -13,6 +13,7 @@ import '../people.dart';
 import '../print.dart';
 import '../theme.dart';
 import '../styled.dart';
+import '../knobs.dart' show ComicSpace;
 
 /// Which ink fills a bar. `dots` the group's halftone, `lead` the lamp with drama dots, `you` the flat act.
 enum ComicBarFill {
@@ -183,7 +184,7 @@ class ComicBar extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: ComicSpace.close),
                   Text(
                     figure ?? '$value',
                     textAlign: TextAlign.end,
@@ -191,7 +192,7 @@ class ComicBar extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: ComicSpace.close),
               ComicBar(
                 value: value,
                 of: of,
@@ -234,6 +235,21 @@ class ComicBar extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('figure', figure, defaultValue: null))
+      ..add(DiagnosticsProperty<num>('value', value))
+      ..add(DiagnosticsProperty<num>('of', of))
+      ..add(
+        EnumProperty<ComicBarFill>('ink', ink, defaultValue: ComicBarFill.dots),
+      )
+      ..add(DoubleProperty('height', height, defaultValue: 22))
+      ..add(StringProperty('stamp', stamp, defaultValue: null));
+  }
 }
 
 /// A row of a bar list: a head or a word, a name, its bar, its figure.
@@ -249,7 +265,7 @@ class ComicBarEntry {
     this.isLeading = false,
   });
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String label;
 
   /// The current value represented by the control or record.
@@ -281,7 +297,7 @@ class ComicBarList extends StatelessWidget {
     required this.entries,
     this.of,
     this.labelWidth,
-  });
+  }) : assert(of == null || of > 0, 'a bar list\'s total is more than nothing');
 
   /// The entries displayed in order.
   final List<ComicBarEntry> entries;
@@ -302,12 +318,14 @@ class ComicBarList extends StatelessWidget {
       children: [
         for (final e in entries)
           Padding(
-            padding: EdgeInsets.symmetric(vertical: t.desk ? 6 : 5),
+            padding: EdgeInsets.symmetric(
+              vertical: t.desk ? ComicSpace.close : ComicSpace.tight,
+            ),
             child: Row(
               children: [
                 if (hasHead) ...[
                   SizedBox(width: t.desk ? 30 : 28, child: e.leading),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: ComicSpace.close),
                 ],
                 SizedBox(
                   width: labelWidth ?? (t.desk ? 60 : 52),
@@ -329,13 +347,13 @@ class ComicBarList extends StatelessWidget {
                         ),
                       ),
                       if (e.suffix != null) ...[
-                        const SizedBox(width: 2),
+                        const SizedBox(width: ComicSpace.fine),
                         e.suffix!,
                       ],
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: ComicSpace.close),
                 Expanded(
                   child: ComicBar(
                     value: e.value,
@@ -348,7 +366,7 @@ class ComicBarList extends StatelessWidget {
                         : ComicBarFill.dots,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: ComicSpace.close),
                 ConstrainedBox(
                   constraints: BoxConstraints(minWidth: t.desk ? 26 : 24),
                   child: Text(
@@ -363,6 +381,15 @@ class ComicBarList extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicBarEntry>('entries', entries))
+      ..add(DiagnosticsProperty<num>('of', of, defaultValue: null))
+      ..add(DoubleProperty('labelWidth', labelWidth, defaultValue: null));
+  }
 }
 
 /// One option of a [ComicTally].
@@ -375,9 +402,9 @@ class ComicVote {
     this.people = const [],
     this.isLeading = false,
     this.stamp,
-  });
+  }) : assert(count >= 0, 'a vote\'s count is never below nothing');
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String label;
 
   /// [note]: secondary explanatory text. [stamp]: an optional stamped label beside the chart.
@@ -411,7 +438,7 @@ class ComicTally extends StatelessWidget {
     this.waiting,
     this.yours,
     this.yoursIcon,
-  });
+  }) : assert(of >= 0, 'a tally\'s total is never below nothing');
 
   /// [question]: the question heading the tally. [subtitle]: secondary information printed with the entry. [waiting]: the number of people who have not answered. [yours]: the viewer's response or share.
   final String? question, subtitle, waiting, yours;
@@ -435,12 +462,12 @@ class ComicTally extends StatelessWidget {
       children: [
         if (question != null)
           Padding(
-            padding: const EdgeInsets.only(bottom: 4),
+            padding: const EdgeInsets.only(bottom: ComicSpace.tight),
             child: ComicLetters(question!, style: t.type.question),
           ),
         if (subtitle != null)
           Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: ComicSpace.near),
             child: Text(
               subtitle!,
               style: t.type.text(
@@ -462,7 +489,7 @@ class ComicTally extends StatelessWidget {
           ),
         if (waiting != null || yours != null)
           Container(
-            padding: const EdgeInsets.only(top: 12),
+            padding: const EdgeInsets.only(top: ComicSpace.near),
             decoration: BoxDecoration(
               border: Border(top: BorderSide(color: c.divider, width: 2)),
             ),
@@ -481,7 +508,7 @@ class ComicTally extends StatelessWidget {
                     children: [
                       if (yoursIcon != null) ...[
                         Icon(yoursIcon, size: 14, color: c.primaryText),
-                        const SizedBox(width: 3),
+                        const SizedBox(width: ComicSpace.nib),
                       ],
                       Flexible(
                         child: Text(
@@ -502,6 +529,32 @@ class ComicTally extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('question', question, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(StringProperty('waiting', waiting, defaultValue: null))
+      ..add(StringProperty('yours', yours, defaultValue: null))
+      ..add(IntProperty('of', of))
+      ..add(IterableProperty<ComicVote>('options', options))
+      ..add(
+        IterableProperty<ComicPerson>(
+          'waitingPeople',
+          waitingPeople,
+          defaultValue: const [],
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'yoursIcon',
+          yoursIcon,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -526,7 +579,7 @@ class _Option extends StatelessWidget {
         ? name
         : o.note!.length <= 12
         ? Wrap(
-            spacing: 4,
+            spacing: ComicSpace.tight,
             crossAxisAlignment: WrapCrossAlignment.end,
             children: [name, note],
           )
@@ -570,7 +623,10 @@ class _Option extends StatelessWidget {
     );
     return Container(
       alignment: AlignmentDirectional.bottomStart,
-      padding: const EdgeInsets.only(top: 9, bottom: 10),
+      padding: const EdgeInsets.only(
+        top: ComicSpace.close,
+        bottom: ComicSpace.close,
+      ),
       decoration: first
           ? null
           : BoxDecoration(
@@ -581,11 +637,11 @@ class _Option extends StatelessWidget {
           Row(
             children: [
               Expanded(child: label),
-              const SizedBox(width: 8),
+              const SizedBox(width: ComicSpace.close),
               count,
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: ComicSpace.close),
           Row(
             children: [
               Expanded(
@@ -598,7 +654,7 @@ class _Option extends StatelessWidget {
                 ),
               ),
               if (people) ...[
-                const SizedBox(width: 8),
+                const SizedBox(width: ComicSpace.close),
                 // One width in every option: bars are only true to their counts if they're all the same length.
                 SizedBox(
                   width: 134,
@@ -734,7 +790,7 @@ class ComicFlow extends StatelessWidget {
     final c = t.colors;
     final total = from.fold<num>(0, (a, b) => a + b.amount).toDouble();
     final k = perUnit ?? (total <= 0 ? 1.0 : 165 / total);
-    const gap = 14.0;
+    const gap = ComicSpace.gap;
     double textHeight(String words, TextStyle style) {
       final painter = TextPainter(
         text: TextSpan(text: words, style: style),
@@ -792,7 +848,7 @@ class ComicFlow extends StatelessWidget {
                 children: [
                   if (from[i].person != null) ...[
                     from[i].person!,
-                    const SizedBox(width: 8),
+                    const SizedBox(width: ComicSpace.close),
                   ],
                   Expanded(
                     child: Column(
@@ -843,7 +899,7 @@ class ComicFlow extends StatelessWidget {
               height: math.max(stack, 1),
               color: c.nightLine,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: ComicSpace.close),
           ],
           Expanded(
             child: Column(
@@ -851,7 +907,7 @@ class ComicFlow extends StatelessWidget {
               children: [
                 if (intoPerson != null) ...[
                   intoPerson!,
-                  const SizedBox(height: 4),
+                  const SizedBox(height: ComicSpace.tight),
                 ],
                 Text(
                   into,
@@ -882,6 +938,23 @@ class ComicFlow extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicFlowFrom>('from', from))
+      ..add(StringProperty('into', into))
+      ..add(StringProperty('intoFigure', intoFigure, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ComicPerson>(
+          'intoPerson',
+          intoPerson,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('perUnit', perUnit, defaultValue: null));
   }
 }
 
@@ -930,7 +1003,7 @@ class ComicShare {
   /// Creates a [ComicShare].
   const ComicShare(this.label, this.amount, {this.figure, this.note, this.ink});
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String label;
 
   /// The amount represented by this entry.
@@ -1118,7 +1191,7 @@ class ComicShares extends StatelessWidget {
         ),
         if (scaleStart != null || scaleEnd != null || scaleNote != null)
           Padding(
-            padding: const EdgeInsets.only(top: 6),
+            padding: const EdgeInsets.only(top: ComicSpace.close),
             child: ComicFitRow(
               fill: 1,
               fillShare: .34,
@@ -1137,7 +1210,7 @@ class ComicShares extends StatelessWidget {
               ],
             ),
           ),
-        const SizedBox(height: 12),
+        const SizedBox(height: ComicSpace.near),
         for (var i = 0; i < parts.length; i++)
           _KeyRow(
             parts[i],
@@ -1148,6 +1221,17 @@ class ComicShares extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicShare>('parts', parts))
+      ..add(StringProperty('stamp', stamp, defaultValue: null))
+      ..add(StringProperty('scaleStart', scaleStart, defaultValue: null))
+      ..add(StringProperty('scaleEnd', scaleEnd, defaultValue: null))
+      ..add(StringProperty('scaleNote', scaleNote, defaultValue: null));
   }
 }
 
@@ -1167,11 +1251,11 @@ class _KeyRow extends StatelessWidget {
             : Border(top: BorderSide(color: c.divider, width: 2)),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7.5),
+        padding: const EdgeInsets.symmetric(vertical: ComicSpace.close),
         child: Row(
           children: [
             SizedBox(width: 18, height: 18, child: swatch),
-            const SizedBox(width: 10),
+            const SizedBox(width: ComicSpace.close),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1194,7 +1278,7 @@ class _KeyRow extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: ComicSpace.close),
             Text(part.figure ?? '${part.amount}', style: t.type.number(24)),
           ],
         ),
@@ -1206,9 +1290,10 @@ class _KeyRow extends StatelessWidget {
 /// One column of [ComicUnits].
 class ComicUnitColumn {
   /// Creates a [ComicUnitColumn].
-  const ComicUnitColumn(this.label, this.count, {this.now = false});
+  const ComicUnitColumn(this.label, this.count, {this.now = false})
+    : assert(count >= 0, 'a column\'s count is never below nothing');
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String label;
 
   /// The count printed in the main figure.
@@ -1316,7 +1401,7 @@ class ComicUnits extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: ComicSpace.tight),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(col.label.toUpperCase(), maxLines: 1, style: label),
@@ -1331,6 +1416,12 @@ class ComicUnits extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<ComicUnitColumn>('columns', columns));
+  }
 }
 
 /// A slice of a [ComicPieChart].
@@ -1338,7 +1429,7 @@ class ComicSlice {
   /// Creates a [ComicSlice].
   const ComicSlice(this.label, this.amount, {this.figure, this.share});
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String label;
 
   /// The amount represented by this entry.
@@ -1467,7 +1558,7 @@ class ComicPieChart extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Padding(
-                  padding: const EdgeInsets.all(5),
+                  padding: const EdgeInsets.all(ComicSpace.tight),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1539,7 +1630,7 @@ class ComicPieChart extends StatelessWidget {
       children: [
         for (var i = 0; i < slices.length; i++)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
+            padding: const EdgeInsets.symmetric(vertical: ComicSpace.tight),
             child: Row(
               children: [
                 Container(
@@ -1552,15 +1643,15 @@ class ComicPieChart extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: ComicSpace.close),
                 Expanded(child: Text(slices[i].label, style: labelStyle)),
-                const SizedBox(width: 8),
+                const SizedBox(width: ComicSpace.close),
                 Text(
                   slices[i].figure ?? '${slices[i].amount}',
                   style: t.type.data,
                 ),
                 if (slices[i].share != null) ...[
-                  const SizedBox(width: 5),
+                  const SizedBox(width: ComicSpace.tight),
                   SizedBox(
                     width: shareWidth,
                     child: Text(
@@ -1584,7 +1675,7 @@ class ComicPieChart extends StatelessWidget {
             ? Row(
                 children: [
                   pie,
-                  const SizedBox(width: 14),
+                  const SizedBox(width: ComicSpace.gap),
                   Expanded(child: key),
                 ],
               )
@@ -1597,6 +1688,15 @@ class ComicPieChart extends StatelessWidget {
               );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicSlice>('slices', slices))
+      ..add(StringProperty('centre', centre, defaultValue: null))
+      ..add(StringProperty('unit', unit, defaultValue: null));
   }
 }
 
@@ -1701,7 +1801,10 @@ class ComicSegments extends StatelessWidget {
         return ComicColumn(
           children: [
             Container(
-              margin: const EdgeInsets.only(top: 4, bottom: 6),
+              margin: const EdgeInsets.only(
+                top: ComicSpace.tight,
+                bottom: ComicSpace.close,
+              ),
               height: 30,
               decoration: ShapeDecoration(
                 color: c.unlit,
@@ -1709,7 +1812,7 @@ class ComicSegments extends StatelessWidget {
                     .copyWith(side: BorderSide(color: c.nightLine, width: 3)),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(3),
+                padding: const EdgeInsets.all(ComicSpace.nib),
                 // The parts sit inside the track's own outline, concentric with it.
                 child: ClipPath(
                   clipper: ShapeBorderClipper(
@@ -1754,10 +1857,10 @@ class ComicSegments extends StatelessWidget {
             // The key comes after the scale, which belongs to the bar's ends.
             if (left.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.only(top: ComicSpace.close),
                 child: Wrap(
-                  spacing: 14,
-                  runSpacing: 6,
+                  spacing: ComicSpace.gap,
+                  runSpacing: ComicSpace.close,
                   children: [
                     for (final i in left)
                       Row(
@@ -1776,9 +1879,9 @@ class ComicSegments extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: ComicSpace.close),
                           Text(_label(i), maxLines: 1, style: under),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: ComicSpace.close),
                           Text(amount(amounts[i]), maxLines: 1, style: scale),
                         ],
                       ),
@@ -1789,6 +1892,18 @@ class ComicSegments extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<num>('amounts', amounts))
+      ..add(IntProperty('long', long, defaultValue: null))
+      ..add(IterableProperty<String>('labels', labels, defaultValue: null))
+      ..add(StringProperty('scaleStart', scaleStart, defaultValue: null))
+      ..add(StringProperty('scaleEnd', scaleEnd, defaultValue: null))
+      ..add(StringProperty('scaleNote', scaleNote, defaultValue: null));
   }
 }
 
@@ -1883,7 +1998,7 @@ class ComicProgressCells extends StatelessWidget {
                   .copyWith(side: BorderSide(color: c.nightLine, width: 2)),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(2),
+              padding: const EdgeInsets.all(ComicSpace.fine),
               child: ClipPath(
                 clipper: ShapeBorderClipper(
                   shape: comicInsetShape(
@@ -1908,5 +2023,14 @@ class ComicProgressCells extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('total', total))
+      ..add(IntProperty('completed', completed))
+      ..add(IntProperty('started', started, defaultValue: 0));
   }
 }

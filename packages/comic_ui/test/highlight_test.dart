@@ -3,13 +3,14 @@
 // over a part paints no mark at all; the press's wash and the focus ring take the outline the part itself paints (its
 // ShapeDecoration or its painter's shape), and a frameless part (a row, a link) must still take a step of the shape
 // theme. The focus ring stands concentric outside it.
+// These read a private painter's fields by name, so the calls are dynamic.
+// ignore_for_file: avoid_dynamic_calls
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_parts.dart';
 
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/design_review.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import 'gallery_support.dart';
@@ -96,7 +97,7 @@ void main() {
   );
 
   for (final corners in GalleryCorners.values) {
-    final custom = GalleryCustom(corners: corners);
+    final custom = CornerCustom(corners: corners);
     final shapes = custom.shapes;
     final steps = {
       for (final s in [
@@ -196,22 +197,20 @@ void main() {
               await mouse.moveTo(centre);
               await tester.pump();
               await tester.pump(const Duration(milliseconds: 400));
-              // An open menu's active row follows the pointer (polish3 §1): its
-              // row takes the lamp, and the keys go on from it.
-              var inMenu = false;
+              // The pointer lays a light Ben-Day shade on the part's own outline (0.2.0: states in Comic's ink); an
+              // open menu's active row follows the pointer (polish3 §1).
               if (highlight.mounted) {
-                highlight.visitAncestorElements((e) {
-                  inMenu = e.widget is ComicMenu<Object?>;
-                  return !inMenu;
-                });
-              }
-              if (highlight.mounted && !inMenu && _mark(highlight) != null) {
-                failures.add('$where: a pointer over it painted a mark');
+                final dynamic hovered = _mark(highlight);
+                if (hovered != null && hovered.drawn != drawn) {
+                  failures.add('$where: hover shade on ${hovered.drawn}');
+                }
               }
               await mouse.moveTo(Offset.zero);
               final finger = await tester.startGesture(centre);
               await tester.pump();
               await tester.pump(const Duration(milliseconds: 400));
+              // A touch's press lands once the tap is sure of itself; its shade swells on the press motion after.
+              await tester.pump(const Duration(milliseconds: 200));
               if (highlight.mounted) {
                 final dynamic pressed = _mark(highlight);
                 if (pressed != null) washed++;

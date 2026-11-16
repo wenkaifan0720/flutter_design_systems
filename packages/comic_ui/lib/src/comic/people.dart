@@ -1,11 +1,15 @@
 // People: initials or a caller-supplied portrait, a compact row and a cast standing in a line.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 
 import 'layout.dart';
+import 'press.dart' show ComicScreened;
 import 'theme.dart';
+import 'knobs.dart' show ComicSpace;
 
 class _RingPainter extends CustomPainter {
   _RingPainter(this.color, this.width, this.dashed);
@@ -151,9 +155,35 @@ class ComicPerson extends StatelessWidget {
       child: Semantics(
         image: true,
         label: label ?? initials,
-        child: out ? Opacity(opacity: c.dark ? .72 : .55, child: head) : head,
+        child: ComicScreened(
+          on: out,
+          amount: c.dark ? .28 : .45,
+          // Out of the set, not disabled: the face screened back as it is.
+          dots: false,
+          child: head,
+        ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('initials', initials, defaultValue: null))
+      ..add(StringProperty('slotId', slotId, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'isCurrentUser',
+          value: isCurrentUser,
+          ifTrue: 'isCurrentUser',
+          defaultValue: false,
+        ),
+      )
+      ..add(FlagProperty('out', value: out, ifTrue: 'out', defaultValue: false))
+      ..add(DoubleProperty('size', size, defaultValue: 36))
+      ..add(IntProperty('fillIndex', fillIndex, defaultValue: 0));
   }
 }
 
@@ -170,7 +200,7 @@ class ComicPeople extends StatelessWidget {
     super.key,
     this.max = 5,
     this.overlap = false,
-  });
+  }) : assert(max > 0, 'a row of people shows at least one');
 
   /// People displayed beside this content.
   final List<ComicPerson> people;
@@ -200,12 +230,16 @@ class ComicPeople extends StatelessWidget {
                     child: shown[i],
                   )
                 : Padding(
-                    padding: EdgeInsetsDirectional.only(start: i == 0 ? 0 : 3),
+                    padding: EdgeInsetsDirectional.only(
+                      start: i == 0 ? 0 : ComicSpace.nib,
+                    ),
                     child: shown[i],
                   ),
           if (more > 0)
             Padding(
-              padding: const EdgeInsetsDirectional.only(start: 5),
+              padding: const EdgeInsetsDirectional.only(
+                start: ComicSpace.tight,
+              ),
               child: Text(
                 '+$more',
                 style: t.type.text(
@@ -219,6 +253,22 @@ class ComicPeople extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicPerson>('people', people))
+      ..add(IntProperty('max', max, defaultValue: 5))
+      ..add(
+        FlagProperty(
+          'overlap',
+          value: overlap,
+          ifTrue: 'overlap',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -298,7 +348,7 @@ class ComicLineup extends StatelessWidget {
               final who = cast[i];
               return ComicColumn(
                 children: [
-                  ComicGrow(child: const SizedBox.shrink()),
+                  const ComicGrow(child: SizedBox.shrink()),
                   comicOwnSize(
                     width: w,
                     height: w * over,
@@ -323,8 +373,18 @@ class ComicLineup extends StatelessWidget {
                     ),
                     child: Padding(
                       padding: t.desk
-                          ? const EdgeInsets.fromLTRB(2, 10, 2, 5)
-                          : const EdgeInsets.fromLTRB(2, 8, 2, 3),
+                          ? const EdgeInsets.fromLTRB(
+                              ComicSpace.fine,
+                              ComicSpace.close,
+                              ComicSpace.fine,
+                              ComicSpace.tight,
+                            )
+                          : const EdgeInsets.fromLTRB(
+                              ComicSpace.fine,
+                              ComicSpace.close,
+                              ComicSpace.fine,
+                              ComicSpace.nib,
+                            ),
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
@@ -346,5 +406,11 @@ class ComicLineup extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<ComicCast>('cast', cast));
   }
 }

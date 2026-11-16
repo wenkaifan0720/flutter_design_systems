@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../heads.dart';
 import '../theme.dart';
+import '../knobs.dart' show ComicSpace;
 
 /// A section with nothing in it yet: a drawing of your own if you like, a lettered title, a line, a way forward.
 ///
@@ -34,23 +36,37 @@ class ComicEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+      padding: const EdgeInsets.symmetric(
+        vertical: ComicSpace.gap,
+        horizontal: ComicSpace.near,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (art != null) ...[art!, const SizedBox(height: 10)],
+          if (art != null) ...[art!, const SizedBox(height: ComicSpace.close)],
           Semantics(
             label: title,
             excludeSemantics: true,
             child: ComicLetters(title, textAlign: TextAlign.center),
           ),
           if (body != null) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: ComicSpace.close),
             Text(body!, textAlign: TextAlign.center, style: t.type.small),
           ],
-          if (action != null) ...[const SizedBox(height: 14), action!],
+          if (action != null) ...[
+            const SizedBox(height: ComicSpace.gap),
+            action!,
+          ],
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('body', body, defaultValue: null));
   }
 }

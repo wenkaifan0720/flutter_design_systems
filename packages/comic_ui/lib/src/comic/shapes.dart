@@ -9,10 +9,10 @@ import 'package:flutter/painting.dart';
 /// Buttons and fields use [small], cards and menus use [medium], and dialogs
 /// and sheets use [large]. [capsule] follows the family for chips and tracks;
 /// [full] stays round for identity and circular interaction affordances.
-/// Every slot accepts any caller-supplied [OutlinedBorder].
+/// Every slot accepts any caller-supplied [OutlinedBorder]; Comic's own are square.
 ///
 /// ```dart
-/// ComicThemeData.offset().copyWith(shapes: ComicShapes.rounded(8))
+/// ComicTheme.of(context).shapes.medium
 /// ```
 @immutable
 class ComicShapes with Diagnosticable {
@@ -31,10 +31,10 @@ class ComicShapes with Diagnosticable {
   /// tab bar and the card under it, wear one corner; dialogs and sheets use
   /// one and a half. A small mark (a checkbox) caps its own corner so it never
   /// reads as round.
-  ///
-  /// ```dart
-  /// ComicShapes.rounded(8)
-  /// ```
+  @Deprecated(
+    "Comic is square: only speech and heads are round (law 2). Give one part its own corner through its style's "
+    'shape instead. This feature was deprecated after v0.2.0.',
+  )
   factory ComicShapes.rounded(double radius) {
     assert(radius >= 0);
     OutlinedBorder border(double value) =>

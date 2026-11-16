@@ -2,6 +2,7 @@
 // slider, a calendar and a date range, and a wheel picker. Each stands
 // on the look's own parts: the text field's inked frame, the slider's rail and knob, the date picker's caption cells,
 // the menu's raised face.
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'dart:async';
@@ -28,6 +29,8 @@ import '../raised.dart';
 import '../slider.dart' show ComicSlider;
 import '../styled.dart';
 import '../theme.dart';
+import '../internal/style_guard.dart';
+import '../knobs.dart' show ComicSpace;
 
 // ---------------------------------------------------------------------------------------------------------------------
 // The text field's parts, shared by the rows that hold an editor inside a frame of their own.
@@ -48,14 +51,14 @@ Widget _fieldFrame(
   bool bleed = false,
 }) {
   final t = ComicTheme.of(context), c = t.colors;
-  final look = ComicStyleOf([t.textFieldTheme], states);
+  final look = comicStyleOf([t.textFieldTheme], states);
   final error =
           states.contains(WidgetState.error) || comicFieldInError(context),
       focused = states.contains(WidgetState.focused);
   final shape = look.shape ?? t.shapes.small;
   final rim = comicRim(t, look, error ? c.tones.danger : c.nightLine);
-  return Opacity(
-    opacity: states.contains(WidgetState.disabled) ? .55 : 1,
+  return ComicScreened(
+    on: states.contains(WidgetState.disabled),
     child: ComicHighlight(
       states: {if (focused) WidgetState.focused},
       shape: shape,
@@ -131,11 +134,11 @@ Widget _fieldColumn(
       children: [
         if (label != null) ...[
           ExcludeSemantics(child: Text(label, style: t.type.title)),
-          const SizedBox(height: 6),
+          const SizedBox(height: ComicSpace.close),
         ],
         child,
         if (error != null || helper != null) ...[
-          const SizedBox(height: 6),
+          const SizedBox(height: ComicSpace.close),
           error == null
               ? ExcludeSemantics(
                   child: Text(
@@ -163,6 +166,7 @@ class ComicBareEditor extends StatelessWidget {
     this.enabled = true,
     this.onChanged,
     this.onSubmitted,
+    this.onEditingComplete,
     this.keyboardType,
     this.inputFormatters,
     this.autofocus = false,
@@ -183,13 +187,17 @@ class ComicBareEditor extends StatelessWidget {
   /// [onChanged]: told each edit. [onSubmitted]: told the keyboard's done.
   final ValueChanged<String>? onChanged, onSubmitted;
 
+  /// In place of Flutter's own finish to the keyboard's done, which drops the focus: an editor that takes one value
+  /// after another (a tag input's) keeps it with `() {}`.
+  final VoidCallback? onEditingComplete;
+
   /// The keyboard the platform shows.
   final TextInputType? keyboardType;
 
   /// Filters applied to each edit.
   final List<TextInputFormatter>? inputFormatters;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -215,6 +223,7 @@ class ComicBareEditor extends StatelessWidget {
             enabled: enabled,
             onChanged: onChanged,
             onSubmitted: onSubmitted,
+            onEditingComplete: onEditingComplete,
             keyboardType: keyboardType,
             inputFormatters: inputFormatters,
             style: style,
@@ -244,6 +253,68 @@ class ComicBareEditor extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<FocusNode>('focusNode', focusNode))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticHint', semanticHint, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -318,11 +389,84 @@ class ComicPasswordField extends StatefulWidget {
   /// Overrides the toggle's localized names, shown and hidden.
   final String? showLabel, hideLabel;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   State<ComicPasswordField> createState() => _ComicPasswordFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'hideOnBlur',
+          value: hideOnBlur,
+          ifTrue: 'hideOnBlur',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: const [AutofillHints.password],
+        ),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('showLabel', showLabel, defaultValue: null))
+      ..add(StringProperty('hideLabel', hideLabel, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _ComicPasswordFieldState extends State<ComicPasswordField>
@@ -354,13 +498,17 @@ class _ComicPasswordFieldState extends State<ComicPasswordField>
         textInputAction: widget.textInputAction,
         keyboardType: TextInputType.visiblePassword,
         obscureText: password.obscured,
-        trailing: Semantics(
-          toggled: !password.obscured,
-          child: ComicIconButton(
-            password.obscured ? ComicGlyphs.show : ComicGlyphs.hide,
-            style: comicInFieldIcon,
-            label: password.toggleLabel,
-            onPressed: widget.enabled ? password.toggle : null,
+        // The reveal is one toggle: its state is read on its own button, not left as a node of its own.
+        trailing: MergeSemantics(
+          child: Semantics(
+            toggled: !password.obscured,
+            child: ComicIconButton(
+              password.obscured ? ComicGlyphs.show : ComicGlyphs.hide,
+              style: comicInFieldIcon,
+              targetAlignment: AlignmentDirectional.centerEnd,
+              label: password.toggleLabel,
+              onPressed: widget.enabled ? password.toggle : null,
+            ),
           ),
         ),
       ),
@@ -420,11 +568,80 @@ class ComicInputGroup extends StatefulWidget {
   /// Add-ons before the field and after it, in reading order: a glyph, a unit's words, a button.
   final List<Widget> leading, trailing;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   State<ComicInputGroup> createState() => _ComicInputGroupState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<Widget>('leading', leading, defaultValue: const []),
+      )
+      ..add(
+        IterableProperty<Widget>('trailing', trailing, defaultValue: const []),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _ComicInputGroupState extends State<ComicInputGroup>
@@ -464,7 +681,7 @@ class _ComicInputGroupState extends State<ComicInputGroup>
           children: [
             for (final part in widget.leading) ...[
               addOn(part),
-              const SizedBox(width: 10),
+              const SizedBox(width: ComicSpace.close),
             ],
             Expanded(
               child: ComicBareEditor(
@@ -482,7 +699,7 @@ class _ComicInputGroupState extends State<ComicInputGroup>
               ),
             ),
             for (final part in widget.trailing) ...[
-              const SizedBox(width: 10),
+              const SizedBox(width: ComicSpace.close),
               addOn(part),
             ],
           ],
@@ -493,7 +710,8 @@ class _ComicInputGroupState extends State<ComicInputGroup>
 }
 
 /// Several values chosen as tags in the text field's frame, with an editor after them that suggests more as you
-/// type, on the menu's raised face. Enter takes the lit suggestion (or, with [onCreate], the typed words);
+/// type, on the menu's raised face. Down or Up opens the suggestions (every option not yet chosen, until words are
+/// typed), and the keys wrap at their ends; Enter takes the lit suggestion (or, with [onCreate], the typed words);
 /// Backspace on an empty editor steps onto the tags, and Backspace or Delete removes one. The behaviour is the design
 /// kit's `DesignTagInput`.
 ///
@@ -516,6 +734,7 @@ class ComicMultiSelect<T extends Object> extends StatefulWidget {
     this.error,
     this.enabled = true,
     this.maxTags,
+    this.isOptionEnabled,
     this.focusNode,
     this.autofocus = false,
   });
@@ -548,14 +767,75 @@ class ComicMultiSelect<T extends Object> extends StatefulWidget {
   /// The most tags it takes; null for no limit.
   final int? maxTags;
 
+  /// Whether a suggestion can be taken; null: all can. One that cannot shows in the secondary ink, and the keys, the
+  /// pointer and Enter pass over it.
+  final bool Function(T option)? isOptionEnabled;
+
   /// The editor's caller-owned focus.
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   State<ComicMultiSelect<T>> createState() => _ComicMultiSelectState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('values', values))
+      ..add(
+        ObjectFlagProperty<ValueChanged<List<T>>>.has('onChanged', onChanged),
+      )
+      ..add(IterableProperty<T>('options', options, defaultValue: const []))
+      ..add(
+        ObjectFlagProperty<FutureOr<Iterable<T>> Function(String query)>.has(
+          'search',
+          search,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(T value)>.has('labelOf', labelOf),
+      )
+      ..add(
+        ObjectFlagProperty<T? Function(String text)>.has('onCreate', onCreate),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(IntProperty('maxTags', maxTags, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<bool Function(T option)>.has(
+          'isOptionEnabled',
+          isOptionEnabled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _ComicMultiSelectState<T extends Object>
@@ -578,11 +858,14 @@ class _ComicMultiSelectState<T extends Object>
       displayStringForOption: _words,
       onCreate: widget.onCreate,
       maxTags: widget.maxTags,
+      isOptionEnabled: widget.isOptionEnabled,
+      // The pointer's row and the keys' wear the same dots: one place, the pointer moving it.
+      highlightFollowsPointer: true,
       focusNode: focus,
       semanticLabel: widget.label,
       deleteLabel: words.delete,
       surfaceBuilder: (context, list) => ComicRaisedFrame(child: list),
-      // Its options' words start on the field's .
+      // Its options' words start on the field's words.
       optionBuilder: (context, option, states) => ComicMenuRowFace(
         states: states,
         label: _words(option),
@@ -605,7 +888,10 @@ class _ComicMultiSelectState<T extends Object>
           hint: widget.values.isEmpty ? widget.hint : null,
           semanticHint: widget.error ?? widget.helper,
           enabled: widget.enabled,
-          onSubmitted: (_) => field.submit(),
+          // Enter adds a tag and the editor keeps the focus for the next, as a tag input's does. The add runs here, with
+          // no onSubmitted: a field told of a submit that keeps its focus has its text input restarted, and in a
+          // browser the restarted input takes no typing.
+          onEditingComplete: field.submit,
         ),
       ),
       layoutBuilder: (context, tags, field) => ListenableBuilder(
@@ -629,7 +915,11 @@ class _ComicMultiSelectState<T extends Object>
                     comicFieldWordsAt(t),
                     0,
                   ),
-                  child: Wrap(spacing: 6, runSpacing: 6, children: tags),
+                  child: Wrap(
+                    spacing: ComicSpace.close,
+                    runSpacing: ComicSpace.close,
+                    children: tags,
+                  ),
                 ),
               field,
             ],
@@ -677,7 +967,10 @@ class _ComicTag extends StatelessWidget {
           shape: shape.copyWith(side: BorderSide(color: c.nightLine, width: 2)),
         ),
         child: Padding(
-          padding: const EdgeInsetsDirectional.only(start: 10, end: 2),
+          padding: const EdgeInsetsDirectional.only(
+            start: ComicSpace.close,
+            end: ComicSpace.fine,
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -742,7 +1035,10 @@ class ComicRangeSlider extends StatelessWidget {
     this.endLabel,
     this.quiet = false,
     this.rowWidth = 240,
-  });
+  }) : assert(
+         divisions == null || divisions > 0,
+         'a range slider has at least one division',
+       );
 
   /// Its name, above the rail.
   final String label;
@@ -779,7 +1075,7 @@ class ComicRangeSlider extends StatelessWidget {
     final t = ComicTheme.of(context), c = t.colors;
     final live = onChanged != null;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final look = ComicStyleOf(
+    final look = comicStyleOf(
       [t.sliderTheme],
       {if (!live) WidgetState.disabled},
     );
@@ -829,8 +1125,8 @@ class ComicRangeSlider extends StatelessWidget {
                 container: true,
                 child: Wrap(
                   alignment: WrapAlignment.spaceBetween,
-                  spacing: 12,
-                  runSpacing: 4,
+                  spacing: ComicSpace.near,
+                  runSpacing: ComicSpace.tight,
                   children: [
                     Text(label, style: t.type.title),
                     ExcludeSemantics(
@@ -847,6 +1143,40 @@ class ComicRangeSlider extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has(
+          'valueLabel',
+          valueLabel,
+        ),
+      )
+      ..add(StringProperty('startLabel', startLabel, defaultValue: null))
+      ..add(StringProperty('endLabel', endLabel, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'quiet',
+          value: quiet,
+          ifTrue: 'quiet',
+          defaultValue: false,
+        ),
+      )
+      ..add(DoubleProperty('rowWidth', rowWidth, defaultValue: 240));
   }
 }
 
@@ -953,7 +1283,7 @@ String _locale(BuildContext context) {
 /// Down by month, Home and End along the week).
 ///
 /// ```dart
-/// ComicCalendar(controller: DesignCalendarController(firstDate: DateTime(2026), lastDate: DateTime(2027)), onChanged: (day) => setState(() {}))
+/// ComicCalendar(controller: calendar, onChanged: (day) => setState(() {}))
 /// ```
 class ComicCalendar extends StatelessWidget {
   /// Creates a [ComicCalendar].
@@ -1005,6 +1335,8 @@ class ComicCalendar extends StatelessWidget {
                 ? ComicGlyphs.chevronRight
                 : ComicGlyphs.chevronLeft,
             label: DesignLocalizations.of(context).previousMonthTooltip,
+            // The arrows stand on the header's keylines, their targets growing inward.
+            targetAlignment: AlignmentDirectional.centerStart,
             onPressed: header.previous,
           ),
           Expanded(
@@ -1023,12 +1355,13 @@ class ComicCalendar extends StatelessWidget {
                 ? ComicGlyphs.chevronLeft
                 : ComicGlyphs.chevronRight,
             label: DesignLocalizations.of(context).nextMonthTooltip,
+            targetAlignment: AlignmentDirectional.centerEnd,
             onPressed: header.next,
           ),
         ],
       ),
       weekdayBuilder: (context, weekday, label) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: ComicSpace.close),
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
@@ -1041,8 +1374,8 @@ class ComicCalendar extends StatelessWidget {
         ),
       ),
       monthsBuilder: (context, months) => Wrap(
-        spacing: 24,
-        runSpacing: 16,
+        spacing: ComicSpace.room,
+        runSpacing: ComicSpace.gap,
         children: [
           for (final month in months)
             ConstrainedBox(
@@ -1058,10 +1391,38 @@ class ComicCalendar extends StatelessWidget {
     );
     return onChanged != null
         ? calendar
-        : Opacity(
-            opacity: .55,
+        : ComicScreened(
+            on: true,
             child: IgnorePointer(child: ExcludeFocus(child: calendar)),
           );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(IntProperty('months', months, defaultValue: 1))
+      ..add(
+        IntProperty(
+          'firstWeekday',
+          firstWeekday,
+          defaultValue: DateTime.monday,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -1094,8 +1455,8 @@ class _CalendarDay extends StatelessWidget {
         ? c.text
         : c.textSecondary;
     final shape = t.shapes.small;
-    return Opacity(
-      opacity: day.enabled ? 1 : .45,
+    return ComicScreened(
+      on: !day.enabled,
       child: ComicHighlight(
         states: states,
         shape: shape,
@@ -1199,6 +1560,42 @@ class ComicDateRangePicker extends StatefulWidget {
 
   @override
   State<ComicDateRangePicker> createState() => _ComicDateRangePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
+      ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
+      ..add(
+        DiagnosticsProperty<DesignDateRange>(
+          'value',
+          value,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignDateRange>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(IntProperty('months', months, defaultValue: 1))
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IntProperty(
+          'firstWeekday',
+          firstWeekday,
+          defaultValue: DateTime.monday,
+        ),
+      );
+  }
 }
 
 class _ComicDateRangePickerState extends State<ComicDateRangePicker> {
@@ -1250,7 +1647,7 @@ class _ComicDateRangePickerState extends State<ComicDateRangePicker> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Semantics(liveRegion: true, child: Text(words, style: t.type.section)),
-        const SizedBox(height: 8),
+        const SizedBox(height: ComicSpace.close),
         ComicCalendar(
           controller: _calendar,
           months: widget.months,
@@ -1367,11 +1764,41 @@ class ComicWheelPicker<T> extends StatefulWidget {
   /// The caller-owned focus.
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   State<ComicWheelPicker<T>> createState() => _ComicWheelPickerState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<T>('values', values))
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(
+        ObjectFlagProperty<String Function(T value)>.has('labelOf', labelOf),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(DoubleProperty('itemExtent', itemExtent, defaultValue: 44))
+      ..add(IntProperty('visible', visible, defaultValue: 5))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
@@ -1439,7 +1866,7 @@ class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
         children: [
           Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
+              padding: const EdgeInsets.symmetric(horizontal: ComicSpace.close),
               child: SizedBox(
                 height: widget.itemExtent,
                 width: double.infinity,
@@ -1534,8 +1961,8 @@ class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
             onShowHoverHighlight: (value) => setState(() => _hovered = value),
             child: LimitedBox(
               maxWidth: 200,
-              child: Opacity(
-                opacity: live ? 1 : .5,
+              child: ComicScreened(
+                on: !live,
                 child: ComicHighlight(
                   states: {
                     if (_focused) WidgetState.focused,
@@ -1648,11 +2075,107 @@ class ComicInputOtp extends StatefulWidget {
   /// What the platform may fill it with.
   final Iterable<String> autofillHints;
 
-  /// Per-state appearance above the component theme.
+  /// {@macro comic.style}
   final ComicStyle? style;
 
   @override
   State<ComicInputOtp> createState() => _ComicInputOtpState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IntProperty('length', length, defaultValue: 6))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: TextInputAction.done,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onCompleted',
+          onCompleted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget input)>.has(
+          'decorate',
+          decorate,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget line)>.has(
+          'failureLine',
+          failureLine,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: const [],
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: const [AutofillHints.oneTimeCode],
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _ComicInputOtpState extends State<ComicInputOtp> {
@@ -1682,7 +2205,7 @@ class _ComicInputOtpState extends State<ComicInputOtp> {
   Widget _box(BuildContext context, DesignOtpSlot slot) {
     final t = ComicTheme.of(context), c = t.colors;
     final live = slot.active && slot.focused;
-    final look = ComicStyleOf(
+    final look = comicStyleOf(
       [widget.style, t.textFieldTheme],
       {
         if (live) WidgetState.focused,
@@ -1697,8 +2220,8 @@ class _ComicInputOtpState extends State<ComicInputOtp> {
     );
     final shape = look.shape ?? t.shapes.small;
     // The box taking the next character wears the look's ring, as a text field does.
-    return Opacity(
-      opacity: slot.enabled ? 1 : .55,
+    return ComicScreened(
+      on: !slot.enabled,
       child: ComicHighlight(
         states: {if (live) WidgetState.focused},
         shape: shape,
@@ -1747,12 +2270,14 @@ class _ComicInputOtpState extends State<ComicInputOtp> {
       autofillHints: widget.autofillHints,
       onChanged: widget.onChanged,
       onCompleted: widget.onCompleted,
-      contextMenuBuilder: (context, anchors, items) =>
-          ComicTextContextMenu(anchors: anchors, buttonItems: items),
+      contextMenuBuilder: (_, anchors, items) => ComicTextContextMenu(
+        anchors: anchors,
+        buttonItems: ComicTextContextMenu.labelled(context, items),
+      ),
       layoutBuilder: (context, slots) => Row(
         children: [
           for (final (i, slot) in slots.indexed) ...[
-            if (i > 0) const SizedBox(width: 8),
+            if (i > 0) const SizedBox(width: ComicSpace.close),
             Expanded(child: slot),
           ],
         ],

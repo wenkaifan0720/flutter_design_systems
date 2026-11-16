@@ -19,42 +19,78 @@ Widget kitCoverDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-Widget kitSpecimenCover() => const ComicCover(
-  masthead: 'Huzzah!',
-  subtitle: 'The first',
-  emphasis: 'issue!',
-  issue: ComicCoverBox('No. 27', 'so far'),
-  price: ComicCoverBox('12', 'to read'),
-  date: ComicCoverBox('Wed 11 Nov', 'mild, 9°'),
-  burst: ComicCoverBurst('23', over: 'Only', under: 'to go!'),
-  say: 'A line from the cast, in a balloon.',
-  sayer: 2,
-  cast: [
-    ComicCast('Sam', portrait: ComicPortrait(ComicBust.bob)),
-    ComicCast(
-      'You',
-      portrait: ComicPortrait(ComicBust.puff),
-      isCurrentUser: true,
+Widget kitSpecimenCover() => Builder(
+  builder: (context) => ComicCover(
+    masthead: kitSay(context, 'Huzzah!'),
+    subtitle: kitSay(context, 'The first'),
+    emphasis: kitSay(context, 'issue!'),
+    issue: ComicCoverBox(kitSay(context, 'No. 27'), kitSay(context, 'so far')),
+    price: ComicCoverBox('12', kitSay(context, 'to read')),
+    date: ComicCoverBox(
+      kitSay(context, 'Wed 11 Nov'),
+      kitSay(context, 'mild, 9°'),
     ),
-    ComicCast('Alex', portrait: ComicPortrait(ComicBust.spikes)),
-    ComicCast('Robin', portrait: ComicPortrait(ComicBust.topknot)),
-  ],
-);
-
-Widget kitSpecimenSplash() => const ComicSplash(
-  title: 'The long\nweekend',
-  caption: 'Meanwhile, by the lake…',
-  note: 'Fri 4 – Sun 6 Dec',
-  art: ComicArtBand(
-    ground: 2,
-    leading: ComicMark(ComicMarks.cabin),
-    markSize: 180,
+    burst: ComicCoverBurst(
+      '23',
+      over: kitSay(context, 'Only'),
+      under: kitSay(context, 'to go!'),
+    ),
+    say: kitSay(context, 'A line from the cast, in a balloon.'),
+    sayer: 2,
+    cast: [
+      ComicCast(kitSay(context, 'Sam'), portrait: ComicPortrait(ComicBust.bob)),
+      ComicCast(
+        kitSay(context, 'You'),
+        portrait: ComicPortrait(ComicBust.puff),
+        isCurrentUser: true,
+      ),
+      ComicCast(
+        kitSay(context, 'Alex'),
+        portrait: ComicPortrait(ComicBust.spikes),
+      ),
+      ComicCast(
+        kitSay(context, 'Robin'),
+        portrait: ComicPortrait(ComicBust.topknot),
+      ),
+    ],
   ),
-  burst: ComicCoverBurst('23', over: 'In', under: 'days!'),
-  facts: [('162', 'Kilometres'), ('Six', 'Walkers'), ('Easy', 'Grade')],
 );
 
-Widget kitSpecimenEmpty() => const ComicEmptyState(
-  title: 'Nothing here yet',
-  body: 'The first one will show up here.',
+Widget kitSpecimenSplash() => Builder(
+  builder: (context) => ComicSplash(
+    title: kitSay(context, 'The long\nweekend'),
+    caption: kitSay(context, 'Meanwhile, by the lake…'),
+    note: kitSay(context, 'Fri 4 – Sun 6 Dec'),
+    // At a desk the title runs twice the phone's size across the panel's foot and the burst takes its top end: the
+    // cabin stands smaller, up and toward the start, between the note and the title. Centred, the title covered it.
+    art: ComicTheme.of(context).desk
+        ? ComicArtBand(
+            ground: 2,
+            leading: ComicMark(ComicMarks.cabin),
+            markSize: 120,
+            markInset: const EdgeInsetsDirectional.only(end: 200, bottom: 130),
+          )
+        : ComicArtBand(
+            ground: 2,
+            leading: ComicMark(ComicMarks.cabin),
+            markSize: 180,
+          ),
+    burst: ComicCoverBurst(
+      '23',
+      over: kitSay(context, 'In'),
+      under: kitSay(context, 'days!'),
+    ),
+    facts: [
+      ('162', kitSay(context, 'Kilometres')),
+      (kitSay(context, 'Six'), kitSay(context, 'Walkers')),
+      (kitSay(context, 'Easy'), kitSay(context, 'Grade')),
+    ],
+  ),
+);
+
+Widget kitSpecimenEmpty() => Builder(
+  builder: (context) => ComicEmptyState(
+    title: kitSay(context, 'Nothing here yet'),
+    body: kitSay(context, 'The first one will show up here.'),
+  ),
 );

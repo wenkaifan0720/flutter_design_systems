@@ -1,6 +1,8 @@
 // The heroes: the cover, which is the look's whole home, and the splash, which any page's first panel can be. Each has a compact
 // form through `ComicPanel(compact: true)`: a band about 130 tall on a phone. On a desktop the cover stays whole, and a compact splash
 // stands about 380 tall with the work beside it.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -13,6 +15,11 @@ import '../print.dart';
 import '../rows.dart';
 import '../theme.dart';
 import '../press.dart';
+import '../internal/lettering.dart' show comicLetteringScaler;
+import '../knobs.dart' show ComicSpace;
+
+/// The masthead keeps clear of the cover's figure, which stands at the end of the band: the figure's width and its gap.
+const double _mastheadClear = 110;
 
 /// One corner box of a cover: a big line in the lettering, a small one under it.
 class ComicCoverBox {
@@ -22,7 +29,7 @@ class ComicCoverBox {
   /// [big]: uses the emphasized, larger presentation. [small]: uses the smaller visual treatment.
   final String big, small;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 }
 
@@ -60,6 +67,10 @@ class _Corner extends StatelessWidget {
             Text(
               box.big.toUpperCase(),
               maxLines: 1,
+              textScaler: comicLetteringScaler(
+                context,
+                t.type.letter(t.desk ? 34 : 24),
+              ),
               style: t.type.letter(
                 t.desk ? 34 : 24,
                 lineHeight: .9,
@@ -67,7 +78,7 @@ class _Corner extends StatelessWidget {
                 tracking: .04,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: ComicSpace.fine),
             Text(
               box.small.toUpperCase(),
               maxLines: 1,
@@ -135,13 +146,34 @@ class ComicCover extends StatelessWidget {
   /// The people shown in the lineup, in order.
   final List<ComicCast> cast;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
   /// Its short form on a phone, for a page that isn't the look's home.
   final bool compact;
 
-  Widget _top(ComicThemeData t, {bool fillDate = false}) {
+  Widget _top(ComicThemeData t, {bool fillDate = false, bool stack = false}) {
+    // Under large text on a phone the three boxes can't share a line: the date takes one of its own, below, and the
+    // last box above runs to the end. Left at their own widths, they framed a corner of bare art over the date's line,
+    // which read as a panel gone missing (the fresh-eyes read, 11-15).
+    if (stack && date != null && (issue != null || price != null)) {
+      final above = [
+        if (issue != null) _Corner(issue!),
+        if (price != null) _Corner(price!, you: true),
+      ];
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ComicFitRow(
+            fill: above.length - 1,
+            gap: 0,
+            align: ComicFitAlign.bottom,
+            children: above,
+          ),
+          _Corner(date!, end: true),
+        ],
+      );
+    }
     final spacer = const SizedBox.shrink();
     final kids = <Widget>[
       if (issue != null) _Corner(issue!),
@@ -176,10 +208,10 @@ class ComicCover extends StatelessWidget {
     ],
   );
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -209,7 +241,7 @@ class ComicCover extends StatelessWidget {
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.only(bottom: ComicSpace.close),
             child: ComicColumn(
               children: [
                 if (issue != null)
@@ -220,7 +252,12 @@ class ComicCover extends StatelessWidget {
                     child: _Corner(issue!),
                   ),
                 Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(10, 8, 110, 0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(
+                    ComicSpace.close,
+                    ComicSpace.close,
+                    _mastheadClear,
+                    0,
+                  ),
                   child: ComicLettering(
                     masthead,
                     size: 56,
@@ -273,7 +310,12 @@ class ComicCover extends StatelessWidget {
 
             final type = ComicColumn(
               children: [
-                _top(t, fillDate: !desk),
+                _top(
+                  t,
+                  fillDate: !desk,
+                  stack:
+                      !desk && MediaQuery.textScalerOf(context).scale(10) > 15,
+                ),
                 Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(
                     desk ? 24 : 10,
@@ -303,37 +345,75 @@ class ComicCover extends StatelessWidget {
                   ),
                 if (!desk && (burst != null || say != null))
                   Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(2, 2, 10, 8),
-                    child: Row(
-                      children: [
-                        if (burst != null) ...[
-                          ComicBurst(
-                            number: burst!.number,
-                            over: burst!.over,
-                            under: burst!.under,
-                            width: 186,
-                            height: 160,
-                            wordSize: 16,
-                            numberSize: 36,
-                            seed: 11,
-                          ),
-                          const SizedBox(width: 2),
-                        ],
-                        if (say != null)
-                          Expanded(
-                            child: ComicBalloon(
-                              say,
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      ComicSpace.fine,
+                      ComicSpace.fine,
+                      ComicSpace.close,
+                      ComicSpace.close,
+                    ),
+                    // Beside the burst while the balloon holds its widest word (large text widens it); under the
+                    // burst, across the cover, once it would break a word.
+                    child: Builder(
+                      builder: (context) {
+                        final word = say == null
+                            ? 0.0
+                            : comicWidestWord(
+                                say!.toUpperCase(),
+                                t.type.balloon.copyWith(fontSize: 13),
+                                textScaler: MediaQuery.textScalerOf(context),
+                              );
+                        final beside = burst == null || word + 48 <= w - 200;
+                        final pop = burst == null
+                            ? null
+                            : ComicBurst(
+                                number: burst!.number,
+                                over: burst!.over,
+                                under: burst!.under,
+                                width: 186,
+                                height: 160,
+                                wordSize: 16,
+                                numberSize: 36,
+                                seed: 11,
+                              );
+                        Widget balloon(double left, double width) =>
+                            ComicBalloon(
+                              say!,
                               small: true,
                               fill: true,
                               room: false,
-                              tailAt: tailFor(188, math.max(1, w - 200)),
-                            ),
-                          ),
-                      ],
+                              tailAt: tailFor(left, width),
+                            );
+                        if (!beside) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              pop!,
+                              const SizedBox(height: ComicSpace.fine),
+                              if (say != null)
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: balloon(0, math.max(1, w - 12)),
+                                ),
+                            ],
+                          );
+                        }
+                        return Row(
+                          children: [
+                            if (pop != null) ...[
+                              pop,
+                              const SizedBox(width: ComicSpace.fine),
+                            ],
+                            if (say != null)
+                              Expanded(
+                                child: balloon(188, math.max(1, w - 200)),
+                              ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 if (desk) SizedBox(height: say == null ? 24 : 112),
-                ComicGrow(child: const SizedBox.shrink()),
+                const ComicGrow(child: SizedBox.shrink()),
                 ComicLineup(cast),
               ],
             );
@@ -383,6 +463,58 @@ class ComicCover extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('masthead', masthead))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(StringProperty('emphasis', emphasis, defaultValue: null))
+      ..add(StringProperty('say', say, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ComicCoverBox>('issue', issue, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<ComicCoverBox>('price', price, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<ComicCoverBox>('date', date, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<ComicCoverBurst>(
+          'burst',
+          burst,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('sayer', sayer, defaultValue: null))
+      ..add(IterableProperty<ComicCast>('cast', cast, defaultValue: const []))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        FlagProperty(
+          'compact',
+          value: compact,
+          ifTrue: 'compact',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -524,9 +656,12 @@ class ComicSplash extends StatelessWidget {
             children: [
               if (caption != null)
                 ComicCaption(caption!, icon: captionIcon, tight: true),
-              const SizedBox(height: 10),
+              const SizedBox(height: ComicSpace.close),
               Padding(
-                padding: const EdgeInsetsDirectional.only(start: 12, end: 8),
+                padding: const EdgeInsetsDirectional.only(
+                  start: ComicSpace.near,
+                  end: ComicSpace.close,
+                ),
                 child: ComicLettering(
                   title,
                   size: 36,
@@ -572,12 +707,13 @@ class ComicSplash extends StatelessWidget {
           ComicColumn(
             children: [
               if (caption != null) ComicCaption(caption!, icon: captionIcon),
+              // The note keeps clear of the burst at its end: under large text it wraps before the burst, never under it.
               if (note != null)
                 Padding(
                   padding: EdgeInsetsDirectional.only(
                     start: desk ? 18 : 12,
                     top: desk ? 10 : 8,
-                    end: burst != null ? (desk ? 300 : 12) : 12,
+                    end: burst != null ? (desk ? 300 : 150) : 12,
                   ),
                   child: ComicCaption(note!, free: true),
                 ),
@@ -618,14 +754,26 @@ class ComicSplash extends StatelessWidget {
         if (caption != null) ComicCaption(caption!, icon: captionIcon),
         Padding(
           padding: desk
-              ? const EdgeInsets.fromLTRB(30, 24, 30, 30)
-              : const EdgeInsets.fromLTRB(14, 14, 14, 0),
+              ? const EdgeInsets.fromLTRB(
+                  ComicSpace.tier,
+                  ComicSpace.room,
+                  ComicSpace.tier,
+                  ComicSpace.tier,
+                )
+              : const EdgeInsets.fromLTRB(
+                  ComicSpace.gap,
+                  ComicSpace.gap,
+                  ComicSpace.gap,
+                  0,
+                ),
           child: ComicColumn(
             children: [
               _title(t, heroSize ?? (desk ? 88 : t.type.hero.fontSize!)),
               if (balloon != null)
                 Padding(
-                  padding: EdgeInsets.only(top: desk ? 22 : 14),
+                  padding: EdgeInsets.only(
+                    top: desk ? ComicSpace.room : ComicSpace.gap,
+                  ),
                   // The drawing keeps the page's right side: a long line from the author wraps, it doesn't cover it.
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
@@ -697,5 +845,63 @@ class ComicSplash extends StatelessWidget {
               ],
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(DiagnosticsProperty<Widget>('art', art, defaultValue: null))
+      ..add(DiagnosticsProperty<Widget>('figure', figure, defaultValue: null))
+      ..add(DiagnosticsProperty<Widget>('balloon', balloon, defaultValue: null))
+      ..add(StringProperty('caption', caption, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('sfx', sfx, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'captionIcon',
+          captionIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ComicCoverBurst>(
+          'burst',
+          burst,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<(String, String)>(
+          'facts',
+          facts,
+          defaultValue: const [],
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'factsCentred',
+          value: factsCentred,
+          ifTrue: 'factsCentred',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        EnumProperty<ComicSplashLayout>(
+          'layout',
+          layout,
+          defaultValue: ComicSplashLayout.titleLow,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'compact',
+          value: compact,
+          ifTrue: 'compact',
+          defaultValue: false,
+        ),
+      )
+      ..add(DoubleProperty('heroSize', heroSize, defaultValue: null));
   }
 }

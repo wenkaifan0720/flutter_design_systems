@@ -168,13 +168,16 @@ void main() {
       });
     }
 
-    testWidgets('of throws without one, maybeOf answers null', (tester) async {
+    testWidgets('of gives Comic\'s default without one, maybeOf answers '
+        'null', (tester) async {
       await tester.pumpWidget(
         const Directionality(textDirection: TextDirection.ltr, child: _probe),
       );
       final context = tester.element(find.byKey(const Key('probe')));
       expect(ComicTheme.maybeOf(context), isNull);
-      expect(() => ComicTheme.of(context), throwsFlutterError);
+      final fallback = ComicTheme.of(context);
+      expect(fallback.colors.paper, ComicThemeData.offset().colors.paper);
+      expect(fallback.colors.brightness, Brightness.light);
     });
 
     testWidgets('a nested one restyles its subtree only', (tester) async {
@@ -276,8 +279,8 @@ void main() {
         MaterialApp(
           home: ComicTheme(
             data: ComicThemeData.offset(),
-            child: Column(
-              children: const [
+            child: const Column(
+              children: [
                 ComicDotsScope(child: SizedBox(key: Key('dots'))),
                 ComicLetteringScope(
                   Color(0xFFFF00FF),

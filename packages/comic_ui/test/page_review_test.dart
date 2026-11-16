@@ -32,7 +32,7 @@ Future<void> _pumpLive(
   double width,
   Brightness brightness,
 ) async {
-  final custom = GalleryCustom(), preset = kitShownPreset;
+  final custom = const GalleryCustom(), preset = kitShownPreset;
   kitShownTheme = (b) => custom.theme(preset, b);
   addTearDown(() => kitShownTheme = null);
   tester.view.devicePixelRatio = 1;

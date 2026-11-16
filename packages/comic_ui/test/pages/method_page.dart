@@ -164,11 +164,11 @@ class _MethodPageState extends State<MethodPage> {
               ),
             ],
           ),
-          ComicTier(
-            spans: const [5, 7],
+          const ComicTier(
+            spans: [5, 7],
             phone: ComicTierLayout.stack,
             children: [
-              const ComicPanel(
+              ComicPanel(
                 caption: 'What it adds up to',
                 child: ComicPieChart(
                   centre: '420',
@@ -183,7 +183,7 @@ class _MethodPageState extends State<MethodPage> {
               ComicPanel(
                 caption: 'Per serving',
                 child: ComicColumn(
-                  children: const [
+                  children: [
                     ComicKvRow(
                       'First part',
                       '50 g',

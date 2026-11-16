@@ -5,6 +5,8 @@ import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart' show SchedulerBinding;
+import 'package:flutter/services.dart' show SystemChannels;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/src/comic/balloons.dart'
@@ -355,7 +357,7 @@ void main() {
       tester,
     ) async {
       for (final typeface in [
-        const ComicTypeface(),
+        ComicTypeface.look,
         const ComicTypeface(display: 'ShantellSans', scale: 1.25),
       ]) {
         await tester.pumpWidget(
@@ -395,6 +397,39 @@ void main() {
       }
     });
 
+    testWidgets('lays out again when the system fonts change', (tester) async {
+      // On the web a glyph the faces lack comes from a fallback font loaded after the first frame; the engine then
+      // says the fonts changed. Painters kept from before it would print boxes for those glyphs.
+      await tester.pumpWidget(
+        comicApp(
+          ComicTheme(
+            data: ComicThemeData.offset(),
+            child: const Center(child: ComicLettering('مرحى!', size: 40)),
+          ),
+        ),
+      );
+      final lettering = tester.renderObject<RenderComicLettering>(
+        find.byType(ComicLettering),
+      );
+      expect(lettering.debugNeedsLayout, isFalse);
+      // The message as the engine sends it. The lettering asks for its layout in the next frame's callbacks; one
+      // registered after it reads whether it did.
+      await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
+        SystemChannels.system.name,
+        SystemChannels.system.codec.encodeMessage(const {
+          'type': 'fontsChange',
+        }),
+        (_) {},
+      );
+      bool? asked;
+      SchedulerBinding.instance.scheduleFrameCallback(
+        (_) => asked = lettering.debugNeedsLayout,
+      );
+      await tester.pump();
+      expect(asked, isTrue);
+      expect(lettering.debugNeedsLayout, isFalse);
+    });
+
     Future<(RenderComicLettering, List<int>, int, int)> pump(
       WidgetTester tester,
       TextDirection dir,
@@ -412,14 +447,14 @@ void main() {
             child: Center(
               child: RepaintBoundary(
                 key: key,
-                child: ColoredBox(
-                  color: const Color(0xFFFFFFFF),
+                child: const ColoredBox(
+                  color: Color(0xFFFFFFFF),
                   child: SizedBox(
                     width: 460,
                     child: ComicLettering(
                       'Huzzah!',
                       size: 100,
-                      fill: const Color(0xFFFFD21F),
+                      fill: Color(0xFFFFD21F),
                       style: ComicLetteringStyle.masthead,
                     ),
                   ),

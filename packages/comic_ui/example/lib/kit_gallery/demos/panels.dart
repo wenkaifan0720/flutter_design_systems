@@ -196,28 +196,40 @@ Widget kitSpecimenFigures() => const ComicFigures([
   ('1 h 30', 'In all'),
 ], highlightLast: true);
 
-Widget kitSpecimenAmountRow() => const ComicColumn(
-  children: [
-    ComicAmountRow('2 tsp', 'smoked paprika', isFirst: true),
-    ComicAmountRow('3 × 400 g', 'tins of something,', note: 'drained'),
-  ],
+Widget kitSpecimenAmountRow() => Builder(
+  builder: (context) => ComicColumn(
+    children: [
+      ComicAmountRow(
+        kitSay(context, '2 tsp'),
+        kitSay(context, 'smoked paprika'),
+        isFirst: true,
+      ),
+      ComicAmountRow(
+        '3 × 400 g',
+        kitSay(context, 'tins of something,'),
+        note: kitSay(context, 'drained'),
+      ),
+    ],
+  ),
 );
 
-Widget kitSpecimenLedgerRow() => const ComicColumn(
-  children: [
-    ComicLedgerRow(
-      date: 'Tue 10 Nov',
-      title: 'The first',
-      subtitle: 'One line',
-      value: '540',
-      isFirst: true,
-    ),
-    ComicLedgerRow(
-      date: 'Sun 8 Nov',
-      title: 'The second',
-      subtitle: 'Yours',
-      value: '114',
-      isCurrentUser: true,
-    ),
-  ],
+Widget kitSpecimenLedgerRow() => Builder(
+  builder: (context) => ComicColumn(
+    children: [
+      ComicLedgerRow(
+        date: kitSay(context, 'Tue 10 Nov'),
+        title: kitSay(context, 'The first'),
+        subtitle: kitSay(context, 'One line'),
+        value: '540',
+        isFirst: true,
+      ),
+      ComicLedgerRow(
+        date: kitSay(context, 'Sun 8 Nov'),
+        title: kitSay(context, 'The second'),
+        subtitle: kitSay(context, 'Yours'),
+        value: '114',
+        isCurrentUser: true,
+      ),
+    ],
+  ),
 );

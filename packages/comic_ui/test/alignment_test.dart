@@ -8,7 +8,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/main.dart';
 import 'gallery_support.dart';
 import 'support.dart';
 
@@ -100,7 +99,7 @@ void main() {
   ];
 
   for (final corners in GalleryCorners.values) {
-    final custom = GalleryCustom(corners: corners);
+    final custom = CornerCustom(corners: corners);
     for (final width in [galleryWidth, 1440.0]) {
       final at = '${corners.name}/${width.toInt()}';
 
@@ -323,14 +322,14 @@ void main() {
       testWidgets('$at: a field\'s icons centre on its line', (tester) async {
         await pump(
           tester,
-          ComicColumn(
+          const ComicColumn(
             children: [
               ComicTextField(
                 initialValue: 'Kim Bell',
-                leading: const Icon(ComicGlyphs.search),
-                trailing: const Icon(ComicGlyphs.close),
+                leading: Icon(ComicGlyphs.search),
+                trailing: Icon(ComicGlyphs.close),
               ),
-              const ComicSearchField(hint: 'Search issues'),
+              ComicSearchField(hint: 'Search issues'),
             ],
           ),
         );

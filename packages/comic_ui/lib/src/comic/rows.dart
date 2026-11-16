@@ -1,4 +1,5 @@
 // Rows and lists. Each row draws its own 2 px rule on its top edge; in a list the first has none.
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'dart:math' as math;
@@ -7,13 +8,15 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'controls.dart';
+import 'entries.dart' show ComicRadioGroup;
 import 'layout.dart';
 import 'theme.dart';
 import 'press.dart';
 import 'component_themes.dart';
 import 'internal/row_frame.dart';
-import 'styled.dart';
 import 'internal/cap_label.dart';
+import 'internal/style_guard.dart';
+import 'knobs.dart' show ComicSpace;
 
 /// A row with a rule on its top edge. [strong] is the 3 px contour a total stands under.
 ///
@@ -42,9 +45,30 @@ class ComicRuled extends StatelessWidget {
       color: strong ? c.nightLine : c.divider,
       thickness: strong ? t.rim(3) : t.rule(2),
       lights: RowFrame.lightsOf(context),
-      reach: RowFrame.reachOf(context) + RowFrame.endsOf(context),
       child: child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        FlagProperty(
+          'rule',
+          value: rule,
+          ifFalse: 'rule: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'strong',
+          value: strong,
+          ifTrue: 'strong',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -53,33 +77,29 @@ class _Ruled extends SingleChildRenderObjectWidget {
     required this.color,
     required this.thickness,
     required this.lights,
-    required this.reach,
     required super.child,
   });
   final Color color;
   final double thickness;
   final RowLights? lights;
-  final EdgeInsets reach;
 
   @override
   _RenderRuled createRenderObject(BuildContext context) =>
-      _RenderRuled(color, thickness, lights, reach);
+      _RenderRuled(color, thickness, lights);
 
   @override
   void updateRenderObject(BuildContext context, _RenderRuled renderObject) {
     renderObject
       ..color = color
       ..thickness = thickness
-      ..lights = lights
-      ..reach = reach;
+      ..lights = lights;
   }
 }
 
 class _RenderRuled extends RenderShiftedBox {
-  _RenderRuled(this._color, this._thickness, this._lights, this._reach)
-    : super(null);
+  _RenderRuled(this._color, this._thickness, this._lights) : super(null);
 
-  // In a group, the rule stands aside where a lit row meets it, and the row's press reaches past its edges.
+  // In a group, the rule stands aside where a lit row meets it.
   RowLights? _lights;
   set lights(RowLights? value) {
     if (value == _lights) return;
@@ -87,12 +107,6 @@ class _RenderRuled extends RenderShiftedBox {
     _lights = value;
     if (attached) _lights?.addListener(markNeedsPaint);
     markNeedsPaint();
-  }
-
-  EdgeInsets _reach;
-  set reach(EdgeInsets value) {
-    if (value == _reach) return;
-    _reach = value;
   }
 
   @override
@@ -105,22 +119,6 @@ class _RenderRuled extends RenderShiftedBox {
   void detach() {
     _lights?.removeListener(markNeedsPaint);
     super.detach();
-  }
-
-  @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    final reach = Rect.fromLTRB(
-      -_reach.left,
-      -_reach.top,
-      size.width + _reach.right,
-      size.height + _reach.bottom,
-    );
-    if (!reach.contains(position)) return false;
-    if (hitTestChildren(result, position: position) || hitTestSelf(position)) {
-      result.add(BoxHitTestEntry(this, position));
-      return true;
-    }
-    return false;
   }
 
   Color _color;
@@ -212,6 +210,12 @@ class ComicList extends StatelessWidget {
     gap: gap,
     children: [for (final c in children) ComicGrow(child: c)],
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('gap', gap, defaultValue: 0));
+  }
 }
 
 /// A label at the start, a value at the end, on one baseline, and [share] if there's a third figure, in the lettering or the
@@ -254,7 +258,12 @@ class ComicKvRow extends StatelessWidget {
     return ComicRuled(
       rule: !isFirst,
       child: Padding(
-        padding: EdgeInsets.fromLTRB(quiet ? 14 : 0, 7, 0, 7),
+        padding: EdgeInsets.fromLTRB(
+          quiet ? ComicSpace.gap : 0,
+          ComicSpace.close,
+          0,
+          ComicSpace.close,
+        ),
         child: ComicFitRow(
           fill: 0,
           gap: 10,
@@ -322,6 +331,40 @@ class ComicKvRow extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('share', share, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'isFirst',
+          value: isFirst,
+          ifTrue: 'isFirst',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'quiet',
+          value: quiet,
+          ifTrue: 'quiet',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'selected',
+          value: selected,
+          ifTrue: 'selected',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 /// The row a list of numbers ends on, under the full contour: a word, a big lettered value.
@@ -344,7 +387,10 @@ class ComicTotalRow extends StatelessWidget {
     return ComicRuled(
       strong: true,
       child: Padding(
-        padding: const EdgeInsets.only(top: 10, bottom: 6),
+        padding: const EdgeInsets.only(
+          top: ComicSpace.close,
+          bottom: ComicSpace.close,
+        ),
         child: ComicFitRow(
           fill: 0,
           gap: 10,
@@ -366,6 +412,15 @@ class ComicTotalRow extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('note', note, defaultValue: null));
   }
 }
 
@@ -428,10 +483,10 @@ class ComicListTile extends StatelessWidget {
   /// No rule above: the first row of a list.
   final bool isFirst;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -482,7 +537,7 @@ class ComicListTile extends StatelessWidget {
             ),
             if (subtitle != null) Text(subtitle!, style: t.type.meta),
             if (note != null) ...[
-              const SizedBox(height: 4),
+              const SizedBox(height: ComicSpace.tight),
               Text(note!, style: t.type.meta),
             ],
           ],
@@ -510,7 +565,10 @@ class ComicListTile extends StatelessWidget {
               gap: c.maxWidth >= 520 ? 12 : 10,
               content: Row(
                 children: [
-                  if (leading != null) ...[leading!, const SizedBox(width: 12)],
+                  if (leading != null) ...[
+                    leading!,
+                    const SizedBox(width: ComicSpace.near),
+                  ],
                   Expanded(child: words),
                 ],
               ),
@@ -525,7 +583,10 @@ class ComicListTile extends StatelessWidget {
                   16,
               content: Row(
                 children: [
-                  if (leading != null) ...[leading!, const SizedBox(width: 12)],
+                  if (leading != null) ...[
+                    leading!,
+                    const SizedBox(width: ComicSpace.near),
+                  ],
                   Expanded(child: words),
                 ],
               ),
@@ -543,14 +604,20 @@ class ComicListTile extends StatelessWidget {
                 );
           final mark = leading == null
               ? const <Widget>[]
-              : <Widget>[leading!, const SizedBox(width: 12)];
+              : <Widget>[leading!, const SizedBox(width: ComicSpace.near)];
           if (wide) {
             return Row(
               children: [
                 ...mark,
                 Expanded(child: words),
-                if (side != null) ...[const SizedBox(width: 12), side],
-                if (action != null) ...[const SizedBox(width: 12), action!],
+                if (side != null) ...[
+                  const SizedBox(width: ComicSpace.near),
+                  side,
+                ],
+                if (action != null) ...[
+                  const SizedBox(width: ComicSpace.near),
+                  action!,
+                ],
               ],
             );
           }
@@ -568,11 +635,14 @@ class ComicListTile extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(child: words),
-                        if (side != null) ...[const SizedBox(width: 10), side],
+                        if (side != null) ...[
+                          const SizedBox(width: ComicSpace.close),
+                          side,
+                        ],
                       ],
                     ),
                     if (action != null) ...[
-                      const SizedBox(height: 10),
+                      const SizedBox(height: ComicSpace.close),
                       action!,
                     ],
                   ],
@@ -598,7 +668,7 @@ class ComicListTile extends StatelessWidget {
       );
     }
     if (onPressed != null) {
-      final face = enabled ? row : Opacity(opacity: .45, child: row);
+      final face = ComicScreened(on: !enabled, child: row);
       row = ComicPressable(
         focusNode: focusNode,
         autofocus: autofocus,
@@ -625,13 +695,73 @@ class ComicListTile extends StatelessWidget {
         child: grouped != null
             ? ComicLetteringScope(t.colors.onCaption, child: row)
             : Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ComicSpace.close,
+                ),
                 child: ComicLetteringScope(t.colors.onCaption, child: row),
               ),
       );
     }
     if (grouped != null) row = RowReach(reach: reach, child: row);
     return ComicRuled(rule: !isFirst, child: row);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'selected',
+          value: selected,
+          ifTrue: 'selected',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'destructive',
+          value: destructive,
+          ifTrue: 'destructive',
+          defaultValue: false,
+        ),
+      )
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        FlagProperty(
+          'isFirst',
+          value: isFirst,
+          ifTrue: 'isFirst',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -778,6 +908,7 @@ class ComicTimedRow extends StatelessWidget {
     final t = ComicTheme.of(context);
     final c = t.colors;
     final desk = t.desk;
+    final lettering = t.type.letter(20, lineHeight: 1.05, tracking: .04);
     final row = Padding(
       padding: EdgeInsets.fromLTRB(
         inset,
@@ -788,14 +919,20 @@ class ComicTimedRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // The time's column holds its widest word at any text size: a time never breaks inside itself.
           SizedBox(
-            width: desk ? 62 : 58,
-            child: Text(
-              time.toUpperCase(),
-              style: t.type.letter(20, lineHeight: 1.05, tracking: .04),
+            width: math.max(
+              desk ? 62.0 : 58.0,
+              comicWidestWord(
+                    time.toUpperCase(),
+                    lettering,
+                    textScaler: MediaQuery.textScalerOf(context),
+                  ) +
+                  1,
             ),
+            child: Text(time.toUpperCase(), style: lettering),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: ComicSpace.close),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -807,7 +944,10 @@ class ComicTimedRow extends StatelessWidget {
               ],
             ),
           ),
-          if (trailing != null) ...[const SizedBox(width: 10), trailing!],
+          if (trailing != null) ...[
+            const SizedBox(width: ComicSpace.close),
+            trailing!,
+          ],
         ],
       ),
     );
@@ -815,6 +955,32 @@ class ComicTimedRow extends StatelessWidget {
       rule: !isFirst,
       child: selected ? ColoredBox(color: c.inset, child: row) : row,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('time', time))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'isFirst',
+          value: isFirst,
+          ifTrue: 'isFirst',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'selected',
+          value: selected,
+          ifTrue: 'selected',
+          defaultValue: false,
+        ),
+      )
+      ..add(DoubleProperty('inset', inset, defaultValue: 0));
   }
 }
 
@@ -840,7 +1006,7 @@ class ComicSwitchRow extends StatelessWidget {
   /// Per-state appearance of the inner switch.
   final ComicStyle? style;
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String label;
 
   /// Secondary explanatory text.
@@ -855,7 +1021,7 @@ class ComicSwitchRow extends StatelessWidget {
   /// Caller-owned focus for the row as one switch.
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -869,11 +1035,11 @@ class ComicSwitchRow extends StatelessWidget {
       button: false,
       focusNode: focusNode,
       onPressed: onChanged == null ? null : () => onChanged!(!value),
-      overlay: ComicStyleOf([style, t.switchTheme], const {}).overlay,
+      overlay: comicStyleOf([style, t.switchTheme], const {}).overlay,
       builder: (context, states) => ComicRuled(
         rule: !isFirst,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
+          padding: const EdgeInsets.symmetric(vertical: ComicSpace.close),
           child: Row(
             children: [
               Expanded(
@@ -886,12 +1052,12 @@ class ComicSwitchRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: ComicSpace.near),
               ExcludeFocus(
                 child: IgnorePointer(
                   child: ExcludeSemantics(
                     child: ComicSwitch(
-                      style: ComicStyleOf([
+                      style: comicStyleOf([
                         style,
                         t.switchTheme,
                       ], states).freeze(),
@@ -907,6 +1073,47 @@ class ComicSwitchRow extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'value',
+          value: value,
+          ifTrue: 'value',
+          ifFalse: 'value: false',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'isFirst',
+          value: isFirst,
+          ifTrue: 'isFirst',
+          defaultValue: false,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -993,7 +1200,7 @@ class ComicFacts extends StatelessWidget {
                     style: figure,
                     textAlign: centred ? TextAlign.center : null,
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: ComicSpace.fine),
                   Text(
                     centred ? note.toUpperCase() : note,
                     style: centred
@@ -1046,6 +1253,24 @@ class ComicFacts extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<(String, String)>('items', items))
+      ..add(
+        FlagProperty('bare', value: bare, ifTrue: 'bare', defaultValue: false),
+      )
+      ..add(
+        FlagProperty(
+          'centred',
+          value: centred,
+          ifTrue: 'centred',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 /// A labelled group in a form: a label, then the control, a line of help under it.
@@ -1064,9 +1289,10 @@ class ComicFormField extends StatelessWidget {
     this.required = false,
     this.enabled = true,
     this.focusNode,
+    this.group,
   });
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String label;
 
   /// Content placed inside this widget.
@@ -1087,12 +1313,19 @@ class ComicFormField extends StatelessWidget {
   /// The control's focus: a press on the label asks for it.
   final FocusNode? focusNode;
 
+  /// Whether [child] is a group of controls: the label names the group and each control keeps its own node on a
+  /// screen reader. Null reads it from [child]: a [ComicChoices] or a [ComicRadioGroup] is a group; anything else is
+  /// one control, whose node takes the label, help and error.
+  final bool? group;
+
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
+    final many = group ?? (child is ComicChoices || child is ComicRadioGroup);
     // No room of its own above the label: a form field stands where its column puts it, as a text field or a
     // select beside it does, so a form keeps one rhythm whichever part each row is.
     return DesignField(
+      mergeSemantics: !many,
       labelText: label,
       helperText: help,
       errorText: error,
@@ -1124,12 +1357,12 @@ class ComicFormField extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: ComicSpace.close),
           // The control shows the error too: a field's rim in the danger tone, not only the line under it.
           comicFieldTrouble(error: error != null, child: parts.control),
           if (error != null || help != null)
             Padding(
-              padding: const EdgeInsets.only(top: 6),
+              padding: const EdgeInsets.only(top: ComicSpace.close),
               child: ExcludeSemantics(
                 child: Text(
                   error ?? help!,
@@ -1143,5 +1376,38 @@ class ComicFormField extends StatelessWidget {
       ),
       child: child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('help', help, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'required',
+          value: required,
+          ifTrue: 'required',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('group', group, defaultValue: null));
   }
 }

@@ -23,7 +23,7 @@ void main() {
 
   group('ComicTier', () {
     const p = ComicPanel(child: Text('A few words in a panel'));
-    final longPanel = ComicPanel(caption: long, child: const Text(longLine));
+    final longPanel = const ComicPanel(caption: long, child: Text(longLine));
     for (final reflow in ComicTierLayout.values) {
       for (final n in const [1, 2, 3, 4, 5, 7]) {
         check(
@@ -92,7 +92,7 @@ void main() {
     check('empty', () => const ComicPanel());
     check(
       'long',
-      () => ComicPanel(caption: longLine, child: const Text(longLine)),
+      () => const ComicPanel(caption: longLine, child: Text(longLine)),
     );
     check(
       'bleed, pressable',
@@ -190,7 +190,7 @@ void main() {
     );
     check(
       'a lineup of twelve, long names',
-      () => ComicLineup([for (var i = 0; i < 12; i++) ComicCast(long)]),
+      () => ComicLineup([for (var i = 0; i < 12; i++) const ComicCast(long)]),
     );
   });
 
@@ -498,7 +498,7 @@ void main() {
           height: 128,
           child: ComicArtBand(
             ground: g,
-            leading: ComicMark(ComicMarks.peak),
+            leading: const ComicMark(ComicMarks.peak),
             sfx: 'Crunch!',
             caption: 'A date',
           ),
@@ -548,7 +548,7 @@ void main() {
         when: longLine,
         title: longLine,
         where: longLine,
-        leading: ComicMark(ComicMarks.peak),
+        leading: const ComicMark(ComicMarks.peak),
         people: _heads(40),
         tally: longLine,
         big: true,
@@ -767,7 +767,7 @@ void main() {
         burst: const ComicCoverBurst('1,234,567,890', over: long, under: long),
         say: longLine,
         sayer: 40,
-        cast: [for (var i = 0; i < 12; i++) ComicCast(long)],
+        cast: [for (var i = 0; i < 12; i++) const ComicCast(long)],
       ),
     );
     check(

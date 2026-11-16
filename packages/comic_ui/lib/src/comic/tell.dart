@@ -1,6 +1,7 @@
 /// Status in print: marks, announcements, progress and waiting space.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'dart:math' as math;
@@ -16,8 +17,11 @@ import 'theme.dart';
 import 'component_themes.dart';
 import 'styled.dart';
 import 'layout.dart';
+import 'print.dart' show ComicScreenGrid;
 import 'tones.dart';
 import 'internal/cap_label.dart';
+import 'internal/style_guard.dart';
+import 'knobs.dart' show ComicSpace;
 
 /// A different mark for every meaning, so colour is never the only cue.
 ///
@@ -44,6 +48,14 @@ class ComicToneMark extends StatelessWidget {
     color: ComicTheme.of(context).colors.tones.of(tone),
     size: size,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<ComicTone>('tone', tone))
+      ..add(DoubleProperty('size', size, defaultValue: 28));
+  }
 }
 
 /// A status panel with a mark, words and optional action.
@@ -99,7 +111,7 @@ class ComicBanner extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ExcludeSemantics(child: leading ?? ComicToneMark(tone)),
-            const SizedBox(width: 12),
+            const SizedBox(width: ComicSpace.near),
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -107,10 +119,13 @@ class ComicBanner extends StatelessWidget {
                 children: [
                   if (title != null) ...[
                     Text(title!, style: t.type.title),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: ComicSpace.tight),
                   ],
                   Text(message, style: t.type.body),
-                  if (action != null) ...[const SizedBox(height: 8), action!],
+                  if (action != null) ...[
+                    const SizedBox(height: ComicSpace.close),
+                    action!,
+                  ],
                 ],
               ),
             ),
@@ -124,6 +139,20 @@ class ComicBanner extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(EnumProperty<ComicTone>('tone', tone, defaultValue: ComicTone.info))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDismiss', onDismiss))
+      ..add(StringProperty('dismissLabel', dismissLabel, defaultValue: null))
+      ..add(
+        FlagProperty('live', value: live, ifTrue: 'live', defaultValue: false),
+      );
   }
 }
 
@@ -157,6 +186,16 @@ class ComicCircularProgressIndicator extends StatefulWidget {
   @override
   State<ComicCircularProgressIndicator> createState() =>
       _ComicCircularProgressState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(DoubleProperty('size', size, defaultValue: 32))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(ColorProperty('color', color, defaultValue: null));
+  }
 }
 
 class _ComicCircularProgressState extends State<ComicCircularProgressIndicator>
@@ -332,6 +371,15 @@ class ComicLinearProgressIndicator extends StatefulWidget {
   @override
   State<ComicLinearProgressIndicator> createState() =>
       _ComicLinearProgressIndicatorState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 12));
+  }
 }
 
 class _ComicLinearProgressIndicatorState
@@ -417,7 +465,8 @@ class _ComicLinearProgressIndicatorState
   }
 }
 
-/// A quiet placeholder that pulses unless reduced motion is requested.
+/// A quiet placeholder that pulses unless reduced motion is requested: its Ben-Day dots swell and shrink, drawn, not
+/// faded (law 6).
 ///
 /// ```dart
 /// ComicSkeleton(width: 160, height: 20)
@@ -436,6 +485,15 @@ class ComicSkeleton extends StatefulWidget {
   final String? label;
   @override
   State<ComicSkeleton> createState() => _ComicSkeletonState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 20))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 class _ComicSkeletonState extends State<ComicSkeleton>
@@ -468,15 +526,26 @@ class _ComicSkeletonState extends State<ComicSkeleton>
     label: widget.label,
     child: ExcludeSemantics(
       child: RepaintBoundary(
-        child: FadeTransition(
-          opacity: Tween<double>(begin: .5, end: 1).animate(_motion),
-          child: SizedBox(
-            width: widget.width,
-            height: widget.height,
-            child: DecoratedBox(
-              decoration: ShapeDecoration(
-                color: ComicTheme.of(context).colors.track,
+        child: SizedBox(
+          width: widget.width,
+          height: widget.height,
+          child: DecoratedBox(
+            decoration: ShapeDecoration(
+              color: ComicTheme.of(context).colors.track,
+              shape: ComicTheme.of(context).shapes.small,
+            ),
+            child: ClipPath(
+              clipper: ShapeBorderClipper(
                 shape: ComicTheme.of(context).shapes.small,
+                textDirection: Directionality.of(context),
+              ),
+              child: CustomPaint(
+                painter: _PulsePainter(
+                  _motion,
+                  ComicTheme.of(context).colors.text,
+                  MediaQuery.devicePixelRatioOf(context),
+                ),
+                child: const SizedBox.expand(),
               ),
             ),
           ),
@@ -493,7 +562,8 @@ class _ComicSkeletonState extends State<ComicSkeleton>
 /// ```
 class ComicBadge extends StatelessWidget {
   /// Creates a count badge.
-  const ComicBadge(this.count, {super.key, this.label, this.style});
+  const ComicBadge(this.count, {super.key, this.label, this.style})
+    : assert(count >= 0, 'a badge\'s count is never below nothing');
 
   /// Appearance above the badge component theme.
   final ComicStyle? style;
@@ -506,10 +576,10 @@ class ComicBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
-    final look = ComicStyleOf([style, t.badgeTheme], const {}),
+    final look = comicStyleOf([style, t.badgeTheme], const {}),
         rim = comicRim(
           t,
-          ComicStyleOf([style, t.badgeTheme], const {}),
+          comicStyleOf([style, t.badgeTheme], const {}),
           t.colors.nightLine,
           2,
         );
@@ -526,9 +596,14 @@ class ComicBadge extends StatelessWidget {
             ),
             padding:
                 (look.padding(Directionality.of(context)) ??
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2))
+                        const EdgeInsets.symmetric(
+                          horizontal: ComicSpace.close,
+                          vertical: ComicSpace.fine,
+                        ))
                     .add(
-                      shape == null ? EdgeInsets.zero : const EdgeInsets.all(6),
+                      shape == null
+                          ? EdgeInsets.zero
+                          : const EdgeInsets.all(ComicSpace.close),
                     ),
             decoration: ShapeDecoration(
               color: look.fill ?? t.colors.caption,
@@ -552,6 +627,15 @@ class ComicBadge extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(IntProperty('count', count))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -585,4 +669,33 @@ class ComicSuccessState extends StatelessWidget {
     action: action,
     live: true,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message));
+  }
+}
+
+/// A skeleton's dots, one every [_pulsePitch], from [_pulseLow] to [_pulseHigh] round as the pulse runs.
+const double _pulsePitch = 5, _pulseLow = .35, _pulseHigh = .9;
+
+class _PulsePainter extends CustomPainter {
+  _PulsePainter(this.pulse, this.ink, this.dpr) : super(repaint: pulse);
+  final Animation<double> pulse;
+  final Color ink;
+  final double dpr;
+
+  @override
+  void paint(Canvas canvas, Size size) => ComicScreenGrid(
+    _pulsePitch,
+    _pulseLow + (_pulseHigh - _pulseLow) * pulse.value,
+    dpr,
+  ).paint(canvas, Offset.zero & size, ink);
+
+  @override
+  bool shouldRepaint(_PulsePainter old) =>
+      old.pulse != pulse || old.ink != ink || old.dpr != dpr;
 }

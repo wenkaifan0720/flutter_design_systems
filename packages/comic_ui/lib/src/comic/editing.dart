@@ -2,11 +2,13 @@
 // itself is Flutter's, and so are its gestures, autofill, IME and semantics.
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
 
 import 'internal/geometry.dart';
 import 'localizations.dart';
 import 'press.dart';
 import 'theme.dart';
+import 'knobs.dart' show ComicSpace;
 
 /// Whether [platform] edits by touch: handles and a menu over the selection, rather than a pointer's right-click menu.
 bool comicTouchEditing(TargetPlatform platform) => switch (platform) {
@@ -108,13 +110,50 @@ class ComicTextContextMenu extends StatelessWidget {
   static Widget editable(BuildContext context, EditableTextState state) =>
       ComicTextContextMenu(
         anchors: state.contextMenuAnchors,
-        buttonItems: state.contextMenuButtonItems,
+        buttonItems: labelled(state.context, state.contextMenuButtonItems),
       );
 
-  /// The words for [item]: its own label, else the part's word for its kind.
+  /// [items], each with its words read at [context], the field's own: the menu itself stands in the app's overlay,
+  /// above the words Comic's theme gives the field.
+  static List<ContextMenuButtonItem> labelled(
+    BuildContext context,
+    List<ContextMenuButtonItem> items,
+  ) => [
+    for (final item in items)
+      item.label == null ? item.copyWith(label: labelOf(context, item)) : item,
+  ];
+
+  /// The words for [item]: its own label, else the part's word for its kind: Comic's own where the app installed them
+  /// for its language (or speaks English), else Material's, which follow the app's language.
   static String labelOf(BuildContext context, ContextMenuButtonItem item) {
     if (item.label != null) return item.label!;
-    final w = ComicLocalizations.of(context);
+    final own = Localizations.of<ComicLocalizations>(
+      context,
+      ComicLocalizations,
+    );
+    final english = Localizations.maybeLocaleOf(context)?.languageCode == 'en';
+    final platform = own == null && !english
+        ? Localizations.of<MaterialLocalizations>(
+            context,
+            MaterialLocalizations,
+          )
+        : null;
+    if (platform != null) {
+      final word = switch (item.type) {
+        ContextMenuButtonType.cut => platform.cutButtonLabel,
+        ContextMenuButtonType.copy => platform.copyButtonLabel,
+        ContextMenuButtonType.paste => platform.pasteButtonLabel,
+        ContextMenuButtonType.selectAll => platform.selectAllButtonLabel,
+        ContextMenuButtonType.delete => platform.deleteButtonTooltip,
+        ContextMenuButtonType.lookUp => platform.lookUpButtonLabel,
+        ContextMenuButtonType.searchWeb => platform.searchWebButtonLabel,
+        ContextMenuButtonType.share => platform.shareButtonLabel,
+        ContextMenuButtonType.liveTextInput => platform.scanTextButtonLabel,
+        _ => null,
+      };
+      if (word != null) return word;
+    }
+    final w = own ?? const ComicLocalizationsEn();
     return switch (item.type) {
       ContextMenuButtonType.cut => w.cut,
       ContextMenuButtonType.copy => w.copy,
@@ -144,7 +183,7 @@ class ComicTextContextMenu extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(horizontal: ComicSpace.gap),
               child: Align(
                 alignment: touch
                     ? Alignment.center
@@ -217,5 +256,17 @@ class ComicTextContextMenu extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextSelectionToolbarAnchors>('anchors', anchors),
+      )
+      ..add(
+        IterableProperty<ContextMenuButtonItem>('buttonItems', buttonItems),
+      );
   }
 }

@@ -1,6 +1,7 @@
 // The example's controls change the mounted gallery at phone and desktop widths.
 import 'package:flutter/widgets.dart';
 import 'package:material_ui/material_ui.dart' show MaterialApp;
+import 'package:flutter/services.dart' show JSONMethodCodec, MethodCall;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 
@@ -58,6 +59,38 @@ void main() {
       }
     });
   }
+
+  testWidgets('a link the browser pushes later opens its page in place', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1440, 1000);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(const GalleryApp());
+    await settle(tester);
+    // As the web engine passes on an address the reader edits: the app's navigator has no named route for it.
+    final message = const JSONMethodCodec().encodeMethodCall(
+      const MethodCall('pushRouteInformation', {
+        'location': '/buttons?theme=dark&dir=ltr&text=100',
+        'state': null,
+      }),
+    );
+    await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
+      'flutter/navigation',
+      message,
+      (_) {},
+    );
+    await settle(tester);
+    expect(tester.takeException(), isNull);
+    expect(find.byKey(const ValueKey('live/buttons')), findsOneWidget);
+    expect(
+      tester
+          .widget<ComicIconButton>(find.byKey(const ValueKey('appearance')))
+          .label,
+      'Day',
+      reason: 'The link asked for the night',
+    );
+  });
 
   testWidgets(
     'visited pages retain their controls independently per appearance',
@@ -299,8 +332,6 @@ void main() {
         expect(tester.takeException(), isNull);
       }
 
-      await choose('Medium');
-      expect(shown().shapes, ComicShapes.rounded(8));
       await choose('Bold');
       expect(shown().strokes, ComicStrokes.bold);
       await choose('Compact');
@@ -309,6 +340,8 @@ void main() {
       await settle(tester);
       expect(find.byType(CustomizePanel), findsNothing);
       expect(shown().strokes, ComicStrokes.bold);
+      // Customize offers no corners: a panel's corners stay the look's (law 2).
+      expect(shown().shapes, const ComicShapes());
     });
   }
 }

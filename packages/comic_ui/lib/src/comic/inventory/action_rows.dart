@@ -1,6 +1,8 @@
 // The action rows the shared inventory adds: the floating action button, a button group, a toggle group
 // and a split button on the design kit's behaviour, and a keyboard key. Each stands on the look's own parts: the act
 // button's face, the segmented control's trough, the menu's raised face.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -14,6 +16,9 @@ import '../raised.dart';
 import '../styled.dart';
 import '../theme.dart';
 import '../internal/cap_label.dart';
+import '../internal/menu_rows.dart';
+import '../internal/style_guard.dart';
+import '../knobs.dart' show ComicSpace;
 
 /// One action in a [ComicButtonGroup].
 @immutable
@@ -58,7 +63,7 @@ class ComicButtonGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
-    final look = ComicStyleOf([t.segmentedButtonTheme], const {});
+    final look = comicStyleOf([t.segmentedButtonTheme], const {});
     final rim = comicRim(t, look, c.nightLine);
     final outer = look.shape ?? t.shapes.capsule;
     final inner = ComicTrack.cellShape(outer, rim);
@@ -100,6 +105,14 @@ class ComicButtonGroup extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicButtonGroupItem>('items', items))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 Widget _words(
@@ -114,7 +127,7 @@ Widget _words(
     mainAxisSize: MainAxisSize.min,
     children: [
       if (icon != null) Icon(icon, size: 18, color: ink),
-      if (icon != null && !iconOnly) const SizedBox(width: 6),
+      if (icon != null && !iconOnly) const SizedBox(width: ComicSpace.close),
       if (!iconOnly || icon == null)
         CapLabel(child: Text(label, maxLines: 1, softWrap: false, style: text)),
     ],
@@ -178,11 +191,11 @@ class ComicToggleGroup<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
-    final look = ComicStyleOf([t.segmentedButtonTheme], const {});
+    final look = comicStyleOf([t.segmentedButtonTheme], const {});
     final rim = comicRim(t, look, c.nightLine);
     final outer = look.shape ?? t.shapes.capsule;
     final inner = ComicTrack.cellShape(outer, rim);
-    final lit = ComicStyleOf(
+    final lit = comicStyleOf(
       [t.segmentedButtonTheme],
       const {WidgetState.selected},
     );
@@ -218,11 +231,57 @@ class ComicToggleGroup<T> extends StatelessWidget {
           fill: on ? (lit.fill ?? c.caption) : null,
           child: _words(t, labelOf(value), iconOf?.call(value), iconOnly, ink),
         );
-        return states.contains(WidgetState.disabled)
-            ? Opacity(opacity: .5, child: face)
-            : face;
+        return ComicScreened(
+          on: states.contains(WidgetState.disabled),
+          child: face,
+        );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('values', values))
+      ..add(IterableProperty<T>('selected', selected))
+      ..add(
+        ObjectFlagProperty<ValueChanged<Set<T>>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(T value)>.has('labelOf', labelOf),
+      )
+      ..add(
+        ObjectFlagProperty<IconData? Function(T value)>.has('iconOf', iconOf),
+      )
+      ..add(
+        FlagProperty(
+          'iconOnly',
+          value: iconOnly,
+          ifTrue: 'iconOnly',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'multiple',
+          value: multiple,
+          ifTrue: 'multiple',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'allowEmpty',
+          value: allowEmpty,
+          ifTrue: 'allowEmpty',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<bool Function(T value)>.has('isEnabled', isEnabled),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -271,11 +330,12 @@ class ComicSplitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
-    final look = ComicStyleOf([t.filledButtonTheme], const {});
+    final look = comicStyleOf([t.filledButtonTheme], const {});
     final outer = look.shape ?? t.shapes.small;
     final rim = comicRim(t, look, c.nightLine);
     final inner = comicInsetShape(outer, rim.width + 3);
     final height = t.density.height(48);
+    ComicLastInput.follow();
     return DesignSplitButton(
       label: label,
       onPressed: onPressed,
@@ -286,20 +346,25 @@ class ComicSplitButton extends StatelessWidget {
           for (final a in actions)
             DesignSplitAction(label: a.label, onPressed: a.onPressed),
       ],
-      layoutBuilder: (context, main, toggle) => DecoratedBox(
-        decoration: ShapeDecoration(
-          color: look.fill ?? c.primary,
-          shape: outer.copyWith(side: rim),
-        ),
-        child: IntrinsicHeight(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              main,
-              Container(width: rim.width, color: rim.color),
-              toggle,
-            ],
+      // The act's two halves stand on one print (law 4), as the act does.
+      layoutBuilder: (context, main, toggle) => ComicPlated(
+        down: false,
+        shape: outer,
+        child: DecoratedBox(
+          decoration: ShapeDecoration(
+            color: look.fill ?? c.primary,
+            shape: outer.copyWith(side: rim),
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                main,
+                Container(width: rim.width, color: rim.color),
+                toggle,
+              ],
+            ),
           ),
         ),
       ),
@@ -345,15 +410,29 @@ class ComicSplitButton extends StatelessWidget {
             ),
           ),
         );
-        return states.contains(WidgetState.disabled)
-            ? Opacity(opacity: .5, child: face)
-            : face;
+        return ComicScreened(
+          on: states.contains(WidgetState.disabled),
+          child: face,
+        );
       },
-      itemBuilder: (context, action, states) =>
-          ComicMenuRowFace(states: states, label: action.label),
+      itemBuilder: (context, action, states) => comicMenuRow(
+        context,
+        states,
+        (states) => ComicMenuRowFace(states: states, label: action.label),
+      ),
       surfaceBuilder: (context, info, items) =>
           comicRaisedSurface(context, info.animation, info.maxSize, items),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(IterableProperty<ComicSplitAction>('actions', actions))
+      ..add(StringProperty('menuLabel', menuLabel, defaultValue: null));
   }
 }
 
@@ -364,20 +443,31 @@ Widget comicRaisedSurface(
   Size maxSize,
   List<Widget> items, {
   double width = 320,
-}) => FadeTransition(
-  opacity: presence,
+}) => AnimatedBuilder(
+  // Drawn, not faded (law 6): the panel pops in from .92 at full ink and is gone the moment it has closed.
+  animation: presence,
+  builder: (context, child) => presence.isDismissed
+      ? const SizedBox.shrink()
+      : Transform.scale(
+          scale: .92 + .08 * Curves.easeOutBack.transform(presence.value),
+          alignment: Alignment.topCenter,
+          child: child,
+        ),
   child: ConstrainedBox(
     constraints: BoxConstraints(
       maxHeight: maxSize.height,
       maxWidth: math.min(width, maxSize.width),
     ),
-    child: ComicRaisedFrame(
-      child: SingleChildScrollView(
-        child: IntrinsicWidth(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: items,
+    // One current row: none while the pointer opened the menu and nothing has moved since (comicMenuRow).
+    child: ComicMenuSurface(
+      child: ComicRaisedFrame(
+        child: SingleChildScrollView(
+          child: IntrinsicWidth(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: items,
+            ),
           ),
         ),
       ),
@@ -408,7 +498,7 @@ class ComicKbd extends StatelessWidget {
     Widget cap(String key) => DecoratedBox(
       decoration: ShapeDecoration(color: c.nightLine, shape: t.shapes.small),
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 2),
+        padding: const EdgeInsets.only(bottom: ComicSpace.fine),
         child: DecoratedBox(
           decoration: ShapeDecoration(
             color: c.card,
@@ -420,7 +510,10 @@ class ComicKbd extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              padding: const EdgeInsets.symmetric(
+                horizontal: ComicSpace.close,
+                vertical: ComicSpace.nib,
+              ),
               child: Center(
                 widthFactor: 1,
                 heightFactor: 1,
@@ -445,7 +538,9 @@ class ComicKbd extends StatelessWidget {
             for (var i = 0; i < keys.length; i++) ...[
               if (i > 0)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: ComicSpace.tight,
+                  ),
                   // In ink, as the caps' letters are.
                   child: Text('+', style: words),
                 ),
@@ -455,5 +550,11 @@ class ComicKbd extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<String>('keys', keys));
   }
 }

@@ -21,145 +21,211 @@ Widget kitRaisedDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-/// Live controls that raise each surface for real: a toast, a dialog, a sheet, a menu, a tooltip and a snack bar.
+/// Live controls that raise each surface for real: a toast, a dialog, a sheet, a menu, a tooltip and a snack bar, and a
+/// page pushed over the gallery as an app's own route, which Comic's theme turns in a cut.
 Widget kitTryRaised() => Builder(
-  builder: (context) => Wrap(
-    spacing: 8,
-    runSpacing: 8,
-    children: [
-      ComicButton(
-        'Toast',
-        onPressed: () =>
-            showComicToast(context, 'Link copied', tone: ComicTone.success),
-      ),
-      ComicButton(
-        'Dialog',
-        onPressed: () => showComicDialog<void>(
-          context,
-          builder: (context) => ComicDialog(
-            title: 'Keep this issue?',
-            message: 'It will stay in your collection.',
-            // The same decision as the page's own: Later, then the confirming act last.
-            actions: [
-              ComicButton.text(
-                'Later',
-                onPressed: () => Navigator.pop(context),
+  builder: (context) => Builder(
+    builder: (context) => Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        ComicButton(
+          kitSay(context, 'Toast'),
+          onPressed: () => showComicToast(
+            context,
+            kitSay(context, 'Link copied'),
+            tone: ComicTone.success,
+          ),
+        ),
+        ComicButton(
+          kitSay(context, 'Dialog'),
+          onPressed: () => showComicDialog<void>(
+            context,
+            builder: (context) => ComicDialog(
+              title: kitSay(context, 'Keep this issue?'),
+              message: kitSay(context, 'It will stay in your collection.'),
+              // The same decision as the page's own: Later, then the confirming act last.
+              actions: [
+                ComicButton.text(
+                  kitSay(context, 'Later'),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                ComicButton.filled(
+                  kitSay(context, 'Keep'),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+        ),
+        ComicButton(
+          kitSay(context, 'Sheet'),
+          onPressed: () => showComicBottomSheet<void>(
+            context,
+            builder: (_) => ComicBottomSheet(
+              title: kitSay(context, 'Issue details'),
+              child: Text(
+                kitSay(context, 'A longer explanation belongs in this panel.'),
               ),
-              ComicButton.filled(
-                'Keep',
-                onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ),
+        ComicMenuAnchor<String>(
+          items: [
+            ComicMenuItem('save', kitSay(context, 'Save')),
+            ComicMenuItem('share', kitSay(context, 'Share')),
+          ],
+          onSelected: (value) => kitFeedback(
+            context,
+            value == 'save'
+                ? kitSay(context, 'Issue saved.')
+                : kitSay(context, 'Share link copied.'),
+          ),
+          builder: (context, open) =>
+              ComicButton(kitSay(context, 'Menu'), onPressed: open),
+        ),
+        ComicTooltip(
+          message: kitSay(context, 'Save this issue to your collection'),
+          child: Builder(
+            builder: (anchor) => ComicButton(
+              kitSay(context, 'Explain'),
+              onPressed: () {
+                final box = anchor.findRenderObject()! as RenderBox;
+                showComicTooltip(
+                  context,
+                  message: kitSay(
+                    context,
+                    'Save this issue to your collection',
+                  ),
+                  anchor: box.localToGlobal(Offset.zero) & box.size,
+                );
+              },
+            ),
+          ),
+        ),
+        ComicButton(
+          kitSay(context, 'Announcement'),
+          onPressed: () => showComicSnackBar(
+            context,
+            kitSay(context, 'Issue saved'),
+            actionLabel: kitSay(context, 'Undo'),
+            onAction: () =>
+                kitFeedback(context, kitSay(context, 'Save undone.')),
+          ),
+        ),
+        ComicButton(
+          kitSay(context, 'Page'),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) => ComicScaffold(
+                topBar: ComicAppBar(title: kitSay(context, 'The second issue')),
+                body: ComicSections(
+                  children: [
+                    ComicPanel(
+                      caption: kitSay(context, 'Issue details'),
+                      child: Text(
+                        kitSay(context, 'Read it again whenever you like.'),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
         ),
-      ),
-      ComicButton(
-        'Sheet',
-        onPressed: () => showComicBottomSheet<void>(
-          context,
-          builder: (_) => const ComicBottomSheet(
-            title: 'Issue details',
-            child: Text('A longer explanation belongs in this panel.'),
-          ),
-        ),
-      ),
-      ComicMenuAnchor<String>(
-        items: const [
-          ComicMenuItem('save', 'Save'),
-          ComicMenuItem('share', 'Share'),
-        ],
-        onSelected: (value) => kitFeedback(
-          context,
-          value == 'save' ? 'Issue saved.' : 'Share link copied.',
-        ),
-        builder: (context, open) => ComicButton('Menu', onPressed: open),
-      ),
-      ComicTooltip(
-        message: 'Save this issue to your collection',
-        child: Builder(
-          builder: (anchor) => ComicButton(
-            'Explain',
-            onPressed: () {
-              final box = anchor.findRenderObject()! as RenderBox;
-              showComicTooltip(
-                context,
-                message: 'Save this issue to your collection',
-                anchor: box.localToGlobal(Offset.zero) & box.size,
-              );
-            },
-          ),
-        ),
-      ),
-      ComicButton(
-        'Announcement',
-        onPressed: () => showComicSnackBar(
-          context,
-          'Issue saved',
-          actionLabel: 'Undo',
-          onAction: () => kitFeedback(context, 'Save undone.'),
-        ),
-      ),
-    ],
+      ],
+    ),
   ),
 );
 
-Widget _raised(Widget child, double height) => SizedBox(
-  height: height,
-  child: Builder(
-    builder: (context) => Stack(
-      fit: StackFit.expand,
-      children: [
-        // This page is inactive under the modal, like a route below a barrier.
-        ExcludeSemantics(
-          child: Semantics(
-            enabled: false,
-            child: const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('Your collection\nIssue 12\nIssue 11'),
-            ),
-          ),
-        ),
-        ColoredBox(color: ComicTheme.of(context).colors.scrim),
-        child,
-      ],
-    ),
-  ),
-);
-Widget kitSpecimenDialog() => kitState<String?>(
-  null,
-  (context, value, change) => _raised(
-    ComicDialog(
-      title: 'Keep this issue?',
-      message: value ?? 'Read it again whenever you like.',
-      actions: [
-        ComicButton.text('Later', onPressed: () => change('Saved for later.')),
-        ComicButton.filled(
-          'Keep',
-          onPressed: () => change('Issue kept in your collection.'),
-        ),
-      ],
-    ),
-    340,
-  ),
-);
-Widget kitSpecimenSheet() => kitState(
-  true,
-  (context, value, change) => value
-      ? _raised(
-          // A sheet rises from the foot and is as tall as what it holds: the page shows above it, under the scrim.
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: ComicBottomSheet(
-              title: 'Issue details',
-              onClose: () => change(false),
-              child: const Text(
-                'A panel for the longer explanation, with room to read and a clear way back.',
+/// A modal over a page: at least [height] tall, and as tall as [child] when its words grow (large text), so the
+/// modal is never cut; [child] stands at [alignment].
+Widget _raised(
+  Widget child,
+  double height, {
+  AlignmentGeometry alignment = Alignment.center,
+}) => SizedBox(
+  width: double.infinity,
+  child: ConstrainedBox(
+    constraints: BoxConstraints(minHeight: height),
+    child: Builder(
+      builder: (context) => Stack(
+        alignment: alignment,
+        children: [
+          // This page is inactive under the modal, like a route below a barrier.
+          Positioned.fill(
+            child: ExcludeSemantics(
+              child: Semantics(
+                enabled: false,
+                child: Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Text(
+                    kitSay(context, 'Your collection\nIssue 12\nIssue 11'),
+                  ),
+                ),
               ),
             ),
           ),
-          300,
-        )
-      : ComicButton('Show details', onPressed: () => change(true)),
+          // The modal's screen: Ben-Day dots over the page, as a live modal draws it.
+          Positioned.fill(
+            child: ComicScreenScrim(
+              animation: kAlwaysCompleteAnimation,
+              ink: ComicTheme.of(context).colors.scrim,
+            ),
+          ),
+          child,
+        ],
+      ),
+    ),
+  ),
+);
+Widget kitSpecimenDialog() => Builder(
+  builder: (context) => kitState<String?>(
+    null,
+    (context, value, change) => _raised(
+      ComicDialog(
+        title: kitSay(context, 'Keep this issue?'),
+        message: value ?? kitSay(context, 'Read it again whenever you like.'),
+        actions: [
+          ComicButton.text(
+            kitSay(context, 'Later'),
+            onPressed: () => change(kitSay(context, 'Saved for later.')),
+          ),
+          ComicButton.filled(
+            kitSay(context, 'Keep'),
+            onPressed: () =>
+                change(kitSay(context, 'Issue kept in your collection.')),
+          ),
+        ],
+      ),
+      340,
+    ),
+  ),
+);
+Widget kitSpecimenSheet() => Builder(
+  builder: (context) => kitState(
+    true,
+    (context, value, change) => value
+        ? _raised(
+            // A sheet rises from the foot and is as tall as what it holds: the page shows above it, under the scrim.
+            ComicBottomSheet(
+              title: kitSay(context, 'Issue details'),
+              onClose: () => change(false),
+              child: Text(
+                kitSay(
+                  context,
+                  'A panel for the longer explanation, with room to read and a clear way back.',
+                ),
+              ),
+            ),
+            300,
+            alignment: Alignment.bottomCenter,
+          )
+        : ComicButton(
+            kitSay(context, 'Show details'),
+            onPressed: () => change(true),
+          ),
+  ),
 );
 const _cities = [
   'Amsterdam',
@@ -191,33 +257,46 @@ Widget kitSpecimenAutocomplete() => Builder(
 );
 
 Widget kitSpecimenMenu() => Builder(
-  builder: (context) => ComicMenu<String>(
-    items: const [
-      ComicMenuItem('save', 'Save this issue'),
-      ComicMenuItem('share', 'Share'),
-      ComicMenuItem('print', 'Print', enabled: false),
-    ],
-    onSelected: (value) => kitFeedback(
-      context,
-      value == 'save' ? 'Issue saved.' : 'Share link copied.',
+  builder: (context) => Builder(
+    builder: (context) => ComicMenu<String>(
+      items: [
+        ComicMenuItem('save', kitSay(context, 'Save this issue')),
+        ComicMenuItem('share', kitSay(context, 'Share')),
+        ComicMenuItem('print', kitSay(context, 'Print'), enabled: false),
+      ],
+      onSelected: (value) => kitFeedback(
+        context,
+        value == 'save'
+            ? kitSay(context, 'Issue saved.')
+            : kitSay(context, 'Share link copied.'),
+      ),
     ),
   ),
 );
-Widget kitSpecimenTooltip() =>
-    const ComicTooltipFace(message: 'Save this issue');
-Widget kitSpecimenSnackBar() => kitState(
-  true,
-  (context, value, change) => value
-      ? ComicSnackBar(
-          'Issue saved to your collection',
-          actionLabel: 'Undo',
-          onAction: () => change(false),
-          onDismiss: () => change(false),
-        )
-      : ComicButton.text('Save again', onPressed: () => change(true)),
+Widget kitSpecimenTooltip() => Builder(
+  builder: (context) =>
+      ComicTooltipFace(message: kitSay(context, 'Save this issue')),
+);
+Widget kitSpecimenSnackBar() => Builder(
+  builder: (context) => kitState(
+    true,
+    (context, value, change) => value
+        ? ComicSnackBar(
+            kitSay(context, 'Issue saved to your collection'),
+            actionLabel: kitSay(context, 'Undo'),
+            onAction: () => change(false),
+            onDismiss: () => change(false),
+          )
+        : ComicButton.text(
+            kitSay(context, 'Save again'),
+            onPressed: () => change(true),
+          ),
+  ),
 );
 
-Widget kitSpecimenToast() => const Align(
-  alignment: AlignmentDirectional.centerStart,
-  child: ComicToast('Link copied', tone: ComicTone.success),
+Widget kitSpecimenToast() => Builder(
+  builder: (context) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    child: ComicToast(kitSay(context, 'Link copied'), tone: ComicTone.success),
+  ),
 );

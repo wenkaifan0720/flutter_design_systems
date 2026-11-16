@@ -39,42 +39,57 @@ Widget kitControlsDemo(Brightness brightness) => kitScreen(
 );
 
 Widget kitSpecimenActButton() => Builder(
-  builder: (context) => ComicButton.filled(
-    'Do the thing',
-    icon: LucideIcons.play,
-    onPressed: () => kitFeedback(context, 'The task is done.'),
+  builder: (context) => Builder(
+    builder: (context) => ComicButton.filled(
+      kitSay(context, 'Do the thing'),
+      icon: LucideIcons.play,
+      onPressed: () =>
+          kitFeedback(context, kitSay(context, 'The task is done.')),
+    ),
   ),
 );
 
 Widget kitSpecimenLineButton() => Builder(
-  builder: (context) => ComicButton(
-    'Later',
-    icon: LucideIcons.clock,
-    onPressed: () => kitFeedback(context, 'Saved for later.'),
+  builder: (context) => Builder(
+    builder: (context) => ComicButton(
+      kitSay(context, 'Later'),
+      icon: LucideIcons.clock,
+      onPressed: () =>
+          kitFeedback(context, kitSay(context, 'Saved for later.')),
+    ),
   ),
 );
 
-Widget kitSpecimenIconButton() => kitState(
-  false,
-  (context, value, change) => ComicIconButton(
-    LucideIcons.bell,
-    label: 'Alerts',
-    selected: value,
-    onPressed: () => change(!value),
+Widget kitSpecimenIconButton() => Builder(
+  builder: (context) => kitState(
+    false,
+    (context, value, change) => ComicIconButton(
+      LucideIcons.bell,
+      label: kitSay(context, 'Alerts'),
+      // Alone on its column, the face stands on the keyline and its target grows toward the end.
+      targetAlignment: AlignmentDirectional.centerStart,
+      selected: value,
+      onPressed: () => change(!value),
+    ),
   ),
 );
 
-Widget kitSpecimenField() => const ComicColumn(
-  gap: 10,
-  children: [
-    ComicTextField(hint: 'As it should be on the list'),
-    ComicTextField(hint: 'Write a reply', onPaper: true),
-  ],
+Widget kitSpecimenField() => Builder(
+  builder: (context) => ComicColumn(
+    gap: 10,
+    children: [
+      ComicTextField(hint: kitSay(context, 'As it should be on the list')),
+      ComicTextField(hint: kitSay(context, 'Write a reply'), onPaper: true),
+    ],
+  ),
 );
 
 Widget kitSpecimenSendButton() => Builder(
-  builder: (context) =>
-      ComicSendButton(onPressed: () => kitFeedback(context, 'Message sent.')),
+  builder: (context) => Builder(
+    builder: (context) => ComicSendButton(
+      onPressed: () => kitFeedback(context, kitSay(context, 'Message sent.')),
+    ),
+  ),
 );
 
 Widget kitSpecimenSelectField() => kitState(
@@ -192,34 +207,40 @@ Widget kitSpecimenSwitch() => Wrap(
 );
 
 Widget kitPressTile() => Builder(
-  builder: (context) {
-    final t = ComicTheme.of(context);
-    // A tile of one line keeps to its words, as a button does (ui_core's DesignWidthCheck).
-    return Align(
-      alignment: AlignmentDirectional.centerStart,
-      child: ComicPressable(
-        onPressed: () => kitFeedback(context, 'Issue 12 opened.'),
-        label: 'Issue 12',
-        outline: WidgetStatePropertyAll(t.shapes.medium),
-        child: DecoratedBox(
-          decoration: ShapeDecoration(
-            // On paper, as every panel is: an unfilled contour showed the gutter through it (r4).
-            color: t.colors.card,
-            shape: t.shapes.medium.copyWith(
-              side: BorderSide(color: t.colors.nightLine, width: 2.5),
+  builder: (context) => Builder(
+    builder: (context) {
+      final t = ComicTheme.of(context);
+      // A tile of one line keeps to its words, as a button does (ui_core's DesignWidthCheck).
+      return Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: ComicPressable(
+          onPressed: () =>
+              kitFeedback(context, kitSay(context, 'Issue 12 opened.')),
+          label: kitSay(context, 'Issue 12'),
+          outline: WidgetStatePropertyAll(t.shapes.medium),
+          child: DecoratedBox(
+            decoration: ShapeDecoration(
+              // On paper, as every panel is: an unfilled contour showed the gutter through it (r4).
+              color: t.colors.card,
+              shape: t.shapes.medium.copyWith(
+                side: BorderSide(color: t.colors.nightLine, width: 2.5),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text(kitSay(context, 'Issue 12'), style: t.type.title),
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Text('Issue 12', style: t.type.title),
-          ),
         ),
-      ),
-    );
-  },
+      );
+    },
+  ),
 );
 
-Widget kitSpecimenSearch() => const ComicSearchField(hint: 'Search issues');
+Widget kitSpecimenSearch() => Builder(
+  builder: (context) =>
+      ComicSearchField(hint: kitSay(context, 'Search issues')),
+);
 
 Widget kitSpecimenSelect() => kitState(
   'print',
@@ -257,8 +278,12 @@ Widget kitSpecimenSegmented() => kitState(
     onChanged: change,
   ),
 );
-Widget kitSpecimenTextArea() =>
-    const ComicTextArea(label: 'Notes', hint: 'A few words about the issue');
+Widget kitSpecimenTextArea() => Builder(
+  builder: (context) => ComicTextArea(
+    label: kitSay(context, 'Notes'),
+    hint: kitSay(context, 'A few words about the issue'),
+  ),
+);
 Widget kitSpecimenCheckRow() => kitState(
   true,
   (context, value, change) =>

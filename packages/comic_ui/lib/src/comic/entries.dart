@@ -1,6 +1,7 @@
 /// Input controls built from Comic's captions, fields and pressable panels.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -19,6 +20,8 @@ import 'press.dart';
 import 'raised.dart';
 import 'theme.dart';
 import 'internal/cap_label.dart';
+import 'internal/style_guard.dart';
+import 'knobs.dart' show ComicSpace;
 
 /// A multiline field, using Flutter's editor and Comic's selection menu.
 ///
@@ -42,7 +45,11 @@ class ComicTextArea extends StatelessWidget {
     this.minLines,
     this.focusNode,
     this.autofocus = false,
-  });
+  }) : assert(maxLines > 0, 'a field shows at least one line'),
+       assert(
+         minLines == null || (minLines > 0 && minLines <= maxLines),
+         'minLines is at least one and no more than maxLines',
+       );
 
   /// Field label, prompt and supporting messages.
   final String? label, hint, helper, error, initialValue;
@@ -68,7 +75,7 @@ class ComicTextArea extends StatelessWidget {
   /// Whether the area asks for the focus when it first appears.
   final bool autofocus;
 
-  /// Per-state appearance above the component theme.
+  /// {@macro comic.style}
   final ComicStyle? style;
   @override
   Widget build(BuildContext context) => ComicTextField(
@@ -86,6 +93,55 @@ class ComicTextArea extends StatelessWidget {
     focusNode: focusNode,
     autofocus: autofocus,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('initialValue', initialValue, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(IntProperty('maxLines', maxLines, defaultValue: 4))
+      ..add(IntProperty('minLines', minLines, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// A search field with a clear control and standard submit behavior.
@@ -144,10 +200,73 @@ class ComicSearchField extends StatefulWidget {
   /// Wraps the editable input with application-specific content.
   final Widget Function(Widget input)? decorate;
 
-  /// Per-state appearance above the component theme.
+  /// {@macro comic.style}
   final ComicStyle? style;
   @override
   State<ComicSearchField> createState() => _ComicSearchFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('hint', hint))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(StringProperty('clearLabel', clearLabel, defaultValue: null))
+      ..add(StringProperty('name', name, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget input)>.has(
+          'decorate',
+          decorate,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _ComicSearchFieldState extends State<ComicSearchField> {
@@ -273,13 +392,13 @@ class ComicSelect<T> extends StatelessWidget {
   /// Supporting text, replaced by [error] when present.
   final String? helper, error;
 
-  /// Per-state appearance above the component theme.
+  /// {@macro comic.style}
   final ComicStyle? style;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -298,7 +417,7 @@ class ComicSelect<T> extends StatelessWidget {
         children: [
           if (label != null) ...[
             Text(label!, style: t.type.title),
-            const SizedBox(height: 6),
+            const SizedBox(height: ComicSpace.close),
           ],
           ComicMenuAnchor<T>(
             matchAnchorWidth: true,
@@ -321,7 +440,7 @@ class ComicSelect<T> extends StatelessWidget {
             ),
           ),
           if (error != null || helper != null) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: ComicSpace.close),
             Semantics(
               liveRegion: error != null,
               child: Text(error ?? helper!, style: t.type.small),
@@ -330,6 +449,35 @@ class ComicSelect<T> extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicSelectOption<T>>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -370,10 +518,10 @@ class ComicCheckRow extends StatelessWidget {
   /// Changes the value; absent means disabled.
   final ValueChanged<bool>? onChanged;
 
-  /// Per-state appearance above the component theme.
+  /// {@macro comic.style}
   final ComicStyle? style;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -386,12 +534,12 @@ class ComicCheckRow extends StatelessWidget {
     error: isError,
     button: false,
     onPressed: onChanged == null ? null : () => onChanged!(!value),
-    overlay: ComicStyleOf([
+    overlay: comicStyleOf([
       style,
       ComicTheme.of(context).checkboxTheme,
     ], const {}).overlay,
     builder: (context, states) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: ComicSpace.close),
       child: Row(
         children: [
           ExcludeFocus(
@@ -401,7 +549,7 @@ class ComicCheckRow extends StatelessWidget {
                   child: ComicCheckbox(
                     label: label,
                     isError: isError,
-                    style: ComicStyleOf([
+                    style: comicStyleOf([
                       style,
                       ComicTheme.of(context).checkboxTheme,
                     ], states).freeze(),
@@ -412,7 +560,7 @@ class ComicCheckRow extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: ComicSpace.near),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -428,6 +576,47 @@ class ComicCheckRow extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'value',
+          value: value,
+          ifTrue: 'value',
+          ifFalse: 'value: false',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'isError',
+          value: isError,
+          ifTrue: 'isError',
+          defaultValue: false,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 /// One radio choice and its optional explanation.
@@ -477,10 +666,23 @@ class ComicRadioGroup<T> extends StatefulWidget {
   /// Receives a choice; absent means disabled.
   final ValueChanged<T>? onChanged;
 
-  /// Per-state appearance above the component theme.
+  /// {@macro comic.style}
   final ComicStyle? style;
   @override
   State<ComicRadioGroup<T>> createState() => _ComicRadioGroupState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<ComicRadio<T>>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _ComicRadioGroupState<T> extends State<ComicRadioGroup<T>> {
@@ -521,7 +723,7 @@ class _ComicRadioGroupState<T> extends State<ComicRadioGroup<T>> {
           for (var i = 0; i < widget.options.length; i++)
             // The row's side room stands outward, its wash round the ring, the ring on the column's edge.
             ComicOutward(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
+              margin: const EdgeInsets.symmetric(horizontal: ComicSpace.tight),
               child: ComicPressable(
                 focusNode: _nodes[i],
                 label: widget.options[i].label,
@@ -569,12 +771,12 @@ class _ComicRadioGroupState<T> extends State<ComicRadioGroup<T>> {
                   }
                   return KeyEventResult.handled;
                 },
-                overlay: ComicStyleOf([
+                overlay: comicStyleOf([
                   widget.style,
                   t.radioTheme,
                 ], const {}).overlay,
                 builder: (context, states) {
-                  final look = ComicStyleOf([
+                  final look = comicStyleOf([
                     widget.style,
                     t.radioTheme,
                   ], states);
@@ -618,7 +820,7 @@ class _ComicRadioGroupState<T> extends State<ComicRadioGroup<T>> {
                             );
                           },
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: ComicSpace.close),
                         Expanded(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -704,10 +906,26 @@ class ComicSegmentedButton<T> extends StatefulWidget {
   /// out of it.
   final double rowSegmentWidth;
 
-  /// Per-state appearance above the component theme.
+  /// {@macro comic.style}
   final ComicStyle? style;
   @override
   State<ComicSegmentedButton<T>> createState() => _ComicSegmentedState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<ComicButtonSegment<T>>('segments', segments))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(
+        DoubleProperty('rowSegmentWidth', rowSegmentWidth, defaultValue: 104),
+      )
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
@@ -776,13 +994,13 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
     }
     final t = ComicTheme.of(context), c = t.colors;
     final layers = [widget.style, t.segmentedButtonTheme];
-    final track = ComicStyleOf(layers, const {});
+    final track = comicStyleOf(layers, const {});
     final rim = comicRim(t, track, c.nightLine);
     // One trough at a field's height and rim, the segments side by side in it with no dividers, one width each; the
     // chosen one is a thumb, the trough's own outline moved in by its rim and 4 px, and it slides.
     final outer = track.shape ?? t.shapes.capsule;
     final inner = ComicTrack.cellShape(outer, rim);
-    final lit = ComicStyleOf(layers, const {WidgetState.selected});
+    final lit = comicStyleOf(layers, const {WidgetState.selected});
     return Semantics(
       label: widget.label,
       container: true,
@@ -834,7 +1052,7 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
               }
             },
       builder: (context, states) {
-        final look = ComicStyleOf(layers, states);
+        final look = comicStyleOf(layers, states);
         final ink =
             look.foreground ??
             (chosen
@@ -851,7 +1069,7 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
             children: [
               if (segment.icon != null) ...[
                 Icon(segment.icon, size: look.iconSize ?? 18, color: ink),
-                const SizedBox(width: 6),
+                const SizedBox(width: ComicSpace.close),
               ],
               CapLabel(
                 child: Text(
@@ -875,7 +1093,11 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
 @immutable
 class ComicDroppedFile {
   /// Creates a file row.
-  const ComicDroppedFile(this.name, {this.size, this.progress, this.error});
+  const ComicDroppedFile(this.name, {this.size, this.progress, this.error})
+    : assert(
+        progress == null || (progress >= 0 && progress <= 1),
+        'progress runs from 0 to 1',
+      );
 
   /// The file's name.
   final String name;
@@ -934,6 +1156,25 @@ class ComicFileUpload extends StatefulWidget {
 
   @override
   State<ComicFileUpload> createState() => _ComicFileDropState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(
+        IterableProperty<ComicDroppedFile>(
+          'files',
+          files,
+          defaultValue: const [],
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onChoose', onChoose))
+      ..add(ObjectFlagProperty<ValueChanged<Object>>.has('onDrop', onDrop))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onRemove', onRemove))
+      ..add(StringProperty('error', error, defaultValue: null));
+  }
 }
 
 class _ComicFileDropState extends State<ComicFileUpload> {
@@ -968,28 +1209,31 @@ class _ComicFileDropState extends State<ComicFileUpload> {
           shape: t.shapes.medium.copyWith(side: rim),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          padding: const EdgeInsets.symmetric(
+            horizontal: ComicSpace.gap,
+            vertical: ComicSpace.wide,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ExcludeSemantics(
                 child: Icon(ComicGlyphs.upload, size: 28, color: c.text),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: ComicSpace.close),
               Text(
                 words.dropFiles,
                 textAlign: TextAlign.center,
                 style: t.type.title,
               ),
               if (widget.hint != null) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: ComicSpace.tight),
                 Text(
                   widget.hint!,
                   textAlign: TextAlign.center,
                   style: t.type.small,
                 ),
               ],
-              const SizedBox(height: 12),
+              const SizedBox(height: ComicSpace.near),
               ComicButton(words.chooseFiles, onPressed: widget.onChoose),
             ],
           ),
@@ -1007,10 +1251,10 @@ class _ComicFileDropState extends State<ComicFileUpload> {
           // The field label's face, as a text field's and a select's: the
           // look's small capitals are a section's, not a field's.
           ExcludeSemantics(child: Text(widget.label, style: t.type.title)),
-          const SizedBox(height: 6),
+          const SizedBox(height: ComicSpace.close),
           well,
           if (widget.error != null) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: ComicSpace.close),
             Semantics(
               liveRegion: true,
               child: Text(
@@ -1020,7 +1264,7 @@ class _ComicFileDropState extends State<ComicFileUpload> {
             ),
           ],
           for (final (i, file) in widget.files.indexed) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: ComicSpace.close),
             DecoratedBox(
               decoration: ShapeDecoration(
                 color: c.card,
@@ -1065,7 +1309,7 @@ class _ComicFileDropState extends State<ComicFileUpload> {
                           else if (file.size != null)
                             Text(file.size!, style: t.type.small),
                           if (file.progress != null) ...[
-                            const SizedBox(height: 4),
+                            const SizedBox(height: ComicSpace.tight),
                             ComicLinearProgressIndicator(
                               value: file.progress,
                               label: file.name,
@@ -1077,7 +1321,7 @@ class _ComicFileDropState extends State<ComicFileUpload> {
                     ),
                     // The remove stands bare in the row's frame, clear of the progress bar beside it.
                     if (widget.onRemove != null) ...[
-                      const SizedBox(width: 8),
+                      const SizedBox(width: ComicSpace.close),
                       ComicIconButton(
                         ComicGlyphs.x,
                         style: comicInFieldIcon,

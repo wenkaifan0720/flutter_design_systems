@@ -128,11 +128,11 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(CustomizePanel),
-        matching: find.text('Large'),
+        matching: find.text('Bold'),
       ),
     );
     await settle(tester);
-    expect(shown().shapes, ComicShapes.rounded(12));
+    expect(shown().strokes, ComicStrokes.bold);
     // Natural widths: a two-way strip is not stretched across the window.
     final strokes = find.descendant(
       of: find.byType(CustomizePanel),

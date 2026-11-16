@@ -1,11 +1,13 @@
 // The page's chrome: the top bar (a masthead on a desktop), the phone's tab bar, the page's column, and what the generator's
 // routes and stubs stand on. `ComicScaffold` assembles them. The bar stays while a page scrolls under it.
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/host.dart';
 
 import 'glyphs.dart';
 import 'host.dart';
+import 'nav.dart';
 
 import 'balloons.dart';
 import 'controls.dart';
@@ -20,44 +22,7 @@ import 'theme.dart';
 import 'localizations.dart';
 import 'press.dart';
 import 'internal/cap_label.dart';
-
-/// The app, as its chrome names it.
-class ComicBrand {
-  /// Creates a [ComicBrand].
-  const ComicBrand({required this.name});
-
-  /// The displayed name of this record or person.
-  final String name;
-}
-
-/// One application destination, with its labels, glyph and activation callback.
-class ComicNavItem {
-  /// Creates a [ComicNavItem].
-  const ComicNavItem({
-    required this.label,
-    required this.short,
-    required this.icon,
-    this.onPressed,
-    this.key,
-    this.badge,
-    this.badgeLabel,
-  });
-
-  /// `label` in the masthead; `short` under the icon in the tab bar.
-  final String label, short;
-
-  /// The optional glyph beside the words.
-  final IconData icon;
-
-  /// Called when activated; null disables the action.
-  final VoidCallback? onPressed;
-
-  /// The walkthrough key on its hit target.
-  final Key? key;
-
-  /// Printed count or an empty string for a dot; spoken with the destination.
-  final String? badge, badgeLabel;
-}
+import 'knobs.dart' show ComicSpace;
 
 class _NavTap extends StatelessWidget {
   const _NavTap({
@@ -103,7 +68,12 @@ class ComicLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(2, 2, 6, 4),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        ComicSpace.fine,
+        ComicSpace.fine,
+        ComicSpace.close,
+        ComicSpace.tight,
+      ),
       child: ComicLettering(
         name,
         size: t.desk ? 46 : 34,
@@ -113,6 +83,12 @@ class ComicLogo extends StatelessWidget {
         style: ComicLetteringStyle.logo,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('name', name));
   }
 }
 
@@ -138,13 +114,17 @@ class ComicGroupChip extends StatelessWidget {
   /// People displayed beside this content.
   final List<ComicPerson> people;
 
+  /// {@template comic.onPressed}
   /// Called when activated; null disables the action.
+  /// {@endtemplate}
   final VoidCallback? onPressed;
 
+  /// {@template comic.focusNode}
   /// The caller's focus node, if any; the part makes its own when null.
+  /// {@endtemplate}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -161,7 +141,7 @@ class ComicGroupChip extends StatelessWidget {
         children: [
           if (people.isNotEmpty) ...[
             ComicPeople(people, overlap: true, max: 3),
-            const SizedBox(width: 8),
+            const SizedBox(width: ComicSpace.close),
           ],
           Flexible(
             child: CapLabel(
@@ -178,12 +158,38 @@ class ComicGroupChip extends StatelessWidget {
             ),
           ),
           if (onPressed != null) ...[
-            const SizedBox(width: 8),
+            const SizedBox(width: ComicSpace.close),
             Icon(ComicGlyphs.chevronDown, size: 18, color: t.colors.text),
           ],
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(
+        IterableProperty<ComicPerson>('people', people, defaultValue: const []),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -205,7 +211,7 @@ class _NavLink extends StatelessWidget {
         height: ComicTapTarget.targetOf(context) < 40
             ? 40
             : ComicTapTarget.targetOf(context),
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        padding: const EdgeInsets.symmetric(horizontal: ComicSpace.gap),
         decoration: on
             ? ShapeDecoration(
                 color: c.caption,
@@ -218,7 +224,7 @@ class _NavLink extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(item.icon, size: 19, color: ink),
-            const SizedBox(width: 7),
+            const SizedBox(width: ComicSpace.close),
             CapLabel(
               child: Text(
                 item.label.toUpperCase(),
@@ -288,7 +294,7 @@ class ComicNavigationBar extends StatelessWidget {
               : () => onDestinationSelected!(i),
           on: on,
           builder: (context, states) => Padding(
-            padding: const EdgeInsets.only(top: 4),
+            padding: const EdgeInsets.only(top: ComicSpace.tight),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -364,7 +370,7 @@ class ComicNavigationBar extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: ComicSpace.nib),
                 ComicStateLerp<Color?>(
                   value: on ? c.text : c.textSecondary,
                   lerp: Color.lerp,
@@ -386,7 +392,12 @@ class ComicNavigationBar extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(6, 7, 6, 10 + bottom),
+        padding: EdgeInsets.fromLTRB(
+          ComicSpace.close,
+          ComicSpace.close,
+          ComicSpace.close,
+          10 + bottom,
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -401,6 +412,23 @@ class ComicNavigationBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicNavItem>('destinations', destinations))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      );
   }
 }
 
@@ -449,7 +477,7 @@ class _TabAct extends StatelessWidget {
             ),
           ),
           if ((action.label ?? '').isNotEmpty) ...[
-            const SizedBox(height: 3),
+            const SizedBox(height: ComicSpace.nib),
             word(action.label!, c.text),
           ],
         ],
@@ -473,7 +501,9 @@ class ComicTab {
   /// The optional glyph beside the words.
   final IconData icon;
 
+  /// {@template comic.label}
   /// The visible or spoken name of the component.
+  /// {@endtemplate}
   final String label;
 
   /// The key attached to the item's interactive target.
@@ -522,8 +552,18 @@ class ComicScaffold extends StatelessWidget {
     final chrome = ComicChromeScope.maybeOf(context);
     final sheet = RoutePresentation.of(context) == RoutePresentation.sheet;
     final inset = t.desk
-        ? const EdgeInsets.fromLTRB(32, 24, 32, 56)
-        : const EdgeInsets.fromLTRB(12, 12, 12, 22);
+        ? const EdgeInsets.fromLTRB(
+            ComicSpace.tier,
+            ComicSpace.room,
+            ComicSpace.tier,
+            ComicSpace.spread + ComicSpace.gap,
+          )
+        : const EdgeInsets.fromLTRB(
+            ComicSpace.near,
+            ComicSpace.near,
+            ComicSpace.near,
+            ComicSpace.room,
+          );
     final bar =
         topBar ?? (chrome != null && !sheet ? const ComicAppBar() : null);
     final bar0 = topBar;
@@ -594,7 +634,12 @@ class ComicScaffold extends StatelessWidget {
                 child: SafeArea(
                   top: false,
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+                    padding: const EdgeInsets.fromLTRB(
+                      ComicSpace.near,
+                      ComicSpace.near,
+                      ComicSpace.near,
+                      ComicSpace.near,
+                    ),
                     child: t.desk && !sheet
                         ? Align(
                             alignment: AlignmentDirectional.centerEnd,
@@ -612,6 +657,35 @@ class ComicScaffold extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        FlagProperty(
+          'scroll',
+          value: scroll,
+          ifFalse: 'scroll: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'fullBleed',
+          value: fullBleed,
+          ifTrue: 'fullBleed',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'scrollController',
+          scrollController,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -655,13 +729,13 @@ class ComicBackButton extends StatelessWidget {
   /// Uses the close action instead of a back arrow.
   final bool close;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -679,8 +753,41 @@ class ComicBackButton extends StatelessWidget {
               ? DesignLocalizations.of(context).closeButtonLabel
               : DesignLocalizations.of(context).backButtonTooltip),
       size: 38,
+      // The way out stands on its bar's start keyline, its target growing toward the end.
+      targetAlignment: AlignmentDirectional.centerStart,
       onPressed: onPressed,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'close',
+          value: close,
+          ifTrue: 'close',
+          defaultValue: false,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -762,11 +869,13 @@ class ComicAppBar extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.only(bottom: 3),
+          padding: const EdgeInsets.only(bottom: ComicSpace.nib),
           child: SizedBox(
             height: t.desk ? 75 : 57,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: t.desk ? 32 : 12),
+              padding: EdgeInsets.symmetric(
+                horizontal: t.desk ? ComicSpace.tier : ComicSpace.near,
+              ),
               child: Row(
                 children: [
                   if (exit != null) ...[exit, SizedBox(width: gap)],
@@ -780,7 +889,7 @@ class ComicAppBar extends StatelessWidget {
                             ),
                           ),
                   if (masthead) ...[
-                    const SizedBox(width: 36),
+                    const SizedBox(width: ComicSpace.tier + ComicSpace.tight),
                     Expanded(
                       child: Align(
                         alignment: AlignmentDirectional.centerStart,
@@ -791,7 +900,8 @@ class ComicAppBar extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               for (var i = 0; i < chrome.nav.length; i++) ...[
-                                if (i > 0) const SizedBox(width: 6),
+                                if (i > 0)
+                                  const SizedBox(width: ComicSpace.close),
                                 _NavLink(chrome.nav[i], i == chrome.active),
                               ],
                             ],
@@ -813,6 +923,15 @@ class ComicAppBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(DiagnosticsProperty<Widget>('leading', leading, defaultValue: null))
+      ..add(DiagnosticsProperty<Widget>('logo', logo, defaultValue: null));
   }
 }
 
@@ -878,10 +997,10 @@ class ComicInput extends StatelessWidget {
   /// Per-state appearance forwarded to the public control.
   final ComicStyle? style;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -895,6 +1014,46 @@ class ComicInput extends StatelessWidget {
     onChanged: onChanged,
     onSubmitted: onSubmitted,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('initialValue', initialValue, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _NoPicturePainter extends CustomPainter {
@@ -947,7 +1106,7 @@ class ComicMedia extends StatelessWidget {
   /// The width divided by the height of the picture.
   final double aspect;
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String? label;
 
   /// How the image or drawing fits its allocated bounds.
@@ -1008,6 +1167,20 @@ class ComicMedia extends StatelessWidget {
         ? ComicFill(maxWidth: 1200, child: picture)
         : comicOwnSize(width: width, child: picture);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('slotId', slotId))
+      ..add(DoubleProperty('aspect', aspect, defaultValue: 4 / 3))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(EnumProperty<BoxFit>('fit', fit, defaultValue: BoxFit.cover))
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(
+        FlagProperty('bare', value: bare, ifTrue: 'bare', defaultValue: false),
+      );
+  }
 }
 
 /// A picture over its words, bleeding to its panel's contour: one piece of a collection, a place, a person. The picture is your
@@ -1057,13 +1230,13 @@ class ComicPictureCard extends StatelessWidget {
   /// The width divided by the height of the picture.
   final double aspect;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -1087,13 +1260,18 @@ class ComicPictureCard extends StatelessWidget {
           ),
           ComicGrow(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              padding: const EdgeInsets.fromLTRB(
+                ComicSpace.near,
+                ComicSpace.close,
+                ComicSpace.near,
+                ComicSpace.near,
+              ),
               child: ComicColumn(
                 children: [
                   Text(title, style: t.type.title),
                   if (subtitle != null) Text(subtitle!, style: t.type.meta),
                   if (figure != null || trailing != null) ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: ComicSpace.close),
                     // The figure and the tag stand at the card's foot, so a tier's cards keep them on one line whatever
                     // their titles wrap to.
                     const ComicGrow(child: SizedBox.shrink()),
@@ -1113,6 +1291,34 @@ class ComicPictureCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('slotId', slotId))
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(StringProperty('figure', figure, defaultValue: null))
+      ..add(DoubleProperty('aspect', aspect, defaultValue: 4 / 3))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -1134,7 +1340,7 @@ class ComicLoadingState extends StatelessWidget {
       child: Semantics(
         label: label ?? DesignLocalizations.of(context).loadingLabel,
         child: Padding(
-          padding: const EdgeInsets.all(40),
+          padding: const EdgeInsets.all(ComicSpace.spread),
           child: ComicThought(
             '...',
             style: t.type.letter(
@@ -1147,6 +1353,12 @@ class ComicLoadingState extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -1195,4 +1407,14 @@ class ComicErrorState extends StatelessWidget {
                 )),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry))
+      ..add(StringProperty('retryLabel', retryLabel, defaultValue: null));
+  }
 }

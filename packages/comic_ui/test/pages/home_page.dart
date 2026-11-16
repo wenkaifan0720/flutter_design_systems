@@ -205,7 +205,7 @@ class HomePage extends StatelessWidget {
                 countWord: 'days to go',
                 title: 'The long weekend',
                 where: 'A cabin by the water, two nights',
-                leading: ComicMark(ComicMarks.cabin, onNight: true),
+                leading: const ComicMark(ComicMarks.cabin, onNight: true),
                 ground: 4,
                 people: _group,
                 trailing: const ComicTag(

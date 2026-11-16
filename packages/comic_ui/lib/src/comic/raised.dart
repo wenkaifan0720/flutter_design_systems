@@ -6,7 +6,7 @@ import 'package:ui_core/ui_core.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show SynchronousFuture;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart' show ShellInsets;
@@ -15,6 +15,8 @@ import 'glyphs.dart';
 
 import 'balloons.dart';
 import 'controls.dart';
+import 'internal/menu_open.dart';
+import 'print.dart' show ComicScreenGrid;
 import 'frames.dart';
 import 'localizations.dart';
 import 'press.dart';
@@ -27,6 +29,8 @@ import 'tell.dart';
 import 'tones.dart';
 import 'internal/cap_label.dart';
 import 'internal/track.dart';
+import 'internal/style_guard.dart';
+import 'knobs.dart' show ComicSpace;
 
 class _Carried {
   _Carried(BuildContext context, NavigatorState navigator)
@@ -70,7 +74,7 @@ class _WordsDelegate extends LocalizationsDelegate<ComicLocalizations> {
   bool shouldReload(_WordsDelegate old) => !identical(words, old.words);
 }
 
-class _ComicRoute<T> extends PopupRoute<T> {
+class _ComicRoute<T> extends PopupRoute<T> with ComicScreenedRoute<T> {
   _ComicRoute({
     required this.carried,
     required this.builder,
@@ -95,8 +99,13 @@ class _ComicRoute<T> extends PopupRoute<T> {
   bool get barrierDismissible => dismissible;
   @override
   String get barrierLabel => closeLabel;
+  // The page behind is screened, not dimmed (law 1: nothing see-through): Ben-Day dots of the night ink swell over
+  // it as the layer comes in, and the barrier under them takes the presses.
   @override
-  Color? get barrierColor => dimBackground ? carried.scrim : null;
+  Color? get barrierColor => null;
+
+  @override
+  Color? get screenInk => dimBackground ? carried.scrim : null;
   @override
   Duration get transitionDuration =>
       sheet || drawer ? carried.motion.travel : carried.motion.raise;
@@ -285,7 +294,7 @@ class _SheetFrame extends StatelessWidget {
 /// [barrierDismissible] controls only presses on the scrim.
 ///
 /// ```dart
-/// showComicDialog(context, builder: (_) => ComicDialog(title: 'Keep this issue?'))
+/// showComicDialog<void>(context, builder: (_) => ComicDialog(title: 'Keep this issue?'))
 /// ```
 Future<T?> showComicDialog<T>(
   BuildContext context, {
@@ -354,7 +363,7 @@ class ComicDialog extends StatelessWidget {
         // The actions stand at the trailing end in reading order, the confirming one last (11-12), as every system a
         // product team knows sets a dialog's.
         OverflowBar(
-          spacing: 8,
+          spacing: ComicSpace.close,
           overflowSpacing: 8,
           alignment: MainAxisAlignment.end,
           overflowAlignment: OverflowBarAlignment.end,
@@ -363,6 +372,18 @@ class ComicDialog extends StatelessWidget {
         ),
     ],
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(EnumProperty<ComicTone>('tone', tone, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _ModalPanel extends StatelessWidget {
@@ -375,7 +396,12 @@ class _ModalPanel extends StatelessWidget {
     final media = MediaQuery.of(context), t = ComicTheme.of(context);
     return SafeArea(
       child: Padding(
-        padding: EdgeInsets.fromLTRB(16, 16, 16, media.viewInsets.bottom + 16),
+        padding: EdgeInsets.fromLTRB(
+          ComicSpace.gap,
+          ComicSpace.gap,
+          ComicSpace.gap,
+          media.viewInsets.bottom + 16,
+        ),
         child: Align(
           alignment: Alignment.center,
           child: ConstrainedBox(
@@ -393,10 +419,16 @@ class _ModalPanel extends StatelessWidget {
               scopesRoute: true,
               explicitChildNodes: true,
               child: SingleChildScrollView(
+                // The panel stands on its print, which the scroll view would clip: the print's room is inside it.
+                padding: const EdgeInsetsDirectional.only(
+                  end: comicRaisedPlate,
+                  bottom: comicRaisedPlate,
+                ),
                 child: _RaisedFrame(
                   style: style,
                   theme: t.dialogTheme,
                   shape: t.shapes.large,
+                  plate: true,
                   child: ComicColumn(
                     gap: 16,
                     skipEmpty: true,
@@ -425,7 +457,7 @@ class _ModalPanel extends StatelessWidget {
 /// Raises a sheet from the page's foot, carrying its theme and direction.
 ///
 /// ```dart
-/// showComicBottomSheet(context, builder: (_) => ComicBottomSheet(title: 'Details', child: Text('Issue 12')))
+/// showComicBottomSheet<void>(context, builder: (_) => ComicBottomSheet(title: 'Details', child: Text('Issue 12')))
 /// ```
 Future<T?> showComicBottomSheet<T>(
   BuildContext context, {
@@ -492,10 +524,10 @@ class ComicBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context),
         safe = MediaQuery.paddingOf(context).bottom;
-    final look = ComicStyleOf([style, t.sheetTheme], const {}),
+    final look = comicStyleOf([style, t.sheetTheme], const {}),
         rim = comicRim(
           t,
-          ComicStyleOf([style, t.sheetTheme], const {}),
+          comicStyleOf([style, t.sheetTheme], const {}),
           t.colors.nightLine,
           3,
         );
@@ -507,7 +539,7 @@ class ComicBottomSheet extends StatelessWidget {
           )
         : SingleChildScrollView(
             controller: controller,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(ComicSpace.gap),
             child: child,
           );
     return Semantics(
@@ -531,7 +563,7 @@ class ComicBottomSheet extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 8),
+                  const SizedBox(height: ComicSpace.close),
                   if (title != null || onClose != null || showClose)
                     Padding(
                       padding: const EdgeInsetsDirectional.fromSTEB(
@@ -577,12 +609,17 @@ class ComicBottomSheet extends StatelessWidget {
                   if (actions.isNotEmpty)
                     ComicRuled(
                       child: Padding(
-                        padding: EdgeInsets.fromLTRB(16, 12, 16, 14 + safe),
+                        padding: EdgeInsets.fromLTRB(
+                          ComicSpace.gap,
+                          ComicSpace.near,
+                          ComicSpace.gap,
+                          14 + safe,
+                        ),
                         // On a phone the actions stack, each across the sheet; from 600 wide they keep to their
                         // words in one line, as a dialog's (the design kit's checks: a sheet's spanning acts are a fault).
                         child: t.width >= 600
                             ? OverflowBar(
-                                spacing: 8,
+                                spacing: ComicSpace.close,
                                 overflowSpacing: 8,
                                 overflowDirection: VerticalDirection.up,
                                 children: actions,
@@ -603,6 +640,34 @@ class ComicBottomSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(IterableProperty<Widget>('slivers', slivers, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose))
+      ..add(StringProperty('closeLabel', closeLabel, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'showClose',
+          value: showClose,
+          ifFalse: 'showClose: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -634,9 +699,13 @@ class ComicMenuItem<T> {
   final bool selected;
 }
 
-/// An inked menu. Its active item, the one Enter takes, wears the look's selection fill and follows both the pointer
-/// and the Arrow, Home and End keys, as a desktop menu's does; the focused choice stays visible inside a scrolling
-/// menu. The current option ([ComicMenuItem.selected]) carries a check, and the menu opens with it active.
+/// An inked menu. The current option ([ComicMenuItem.selected]) is printed chosen, as every chosen thing in Comic is:
+/// the caption's flat yellow, its words in the caption's ink, and a check. Opened from the keys, [showComicMenu]'s menu
+/// opens with it (else the first item) active; opened by the pointer, with no item active until the pointer reaches
+/// one or a key lights it. The active item, the one Enter takes, wears the pointer's light Ben-Day shade (swollen
+/// under the press) and follows both the pointer and the keys, one item at a time, as a desktop menu's does: the arrows (wrapping at the ends), Home and End, and a typed letter
+/// (the next item it starts; letters typed in a run spell the start). Dots, never the chosen fill nor a line, so it
+/// can't read as a second choice or a divider. The focused choice stays visible inside a scrolling menu.
 ///
 /// ```dart
 /// ComicMenu<String>(items: const [ComicMenuItem('save', 'Save')], onSelected: save)
@@ -650,7 +719,8 @@ class ComicMenu<T> extends StatefulWidget {
     this.onSelected,
     this.autofocus = false,
     this.wordsAt,
-  }) : _raised = false;
+  }) : _raised = false,
+       _quiet = false;
 
   /// The menu [showComicMenu] raises: standing on its plate over the page, scrolling inside its rim.
   const ComicMenu._raised({
@@ -660,9 +730,13 @@ class ComicMenu<T> extends StatefulWidget {
     this.onSelected,
     this.autofocus = false,
     this.wordsAt,
+    this._quiet = false,
   }) : _raised = true;
 
   final bool _raised;
+
+  // Opened by the pointer: no item is active until the pointer reaches one or a key is pressed.
+  final bool _quiet;
 
   /// Options in reading order.
   final List<ComicMenuItem<T>> items;
@@ -681,19 +755,46 @@ class ComicMenu<T> extends StatefulWidget {
   final ComicStyle? style;
   @override
   State<ComicMenu<T>> createState() => _ComicMenuState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicMenuItem<T>>('items', items))
+      ..add(DoubleProperty('wordsAt', wordsAt, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _ComicMenuState<T> extends State<ComicMenu<T>> {
   final _nodes = <FocusNode>[];
 
-  /// The item the pointer or the keys last reached: Enter takes it, and it wears the selection fill.
+  /// The item the pointer or the keys last reached: Enter takes it, and it wears the pointer's shade.
   int? _active;
+
+  /// A menu the pointer opened lights no item (its focus waits on the first, unshown) until the pointer reaches one
+  /// or a key is pressed, so a row never reads as current before anything chose it.
+  late bool _quiet = widget._quiet;
   void _sync() {
     while (_nodes.length < widget.items.length) {
       final i = _nodes.length;
       _nodes.add(
         FocusNode()..addListener(() {
-          if (_nodes.length > i && _nodes[i].hasFocus && _active != i) {
+          if (_nodes.length > i &&
+              _nodes[i].hasFocus &&
+              _active != i &&
+              !_quiet) {
             setState(() => _active = i);
           }
         }),
@@ -708,6 +809,7 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
   /// The pointer reaches item [i]: it becomes the active one, and the keys go on from it.
   void _reach(int i) {
     if (!widget.items[i].enabled || widget.onSelected == null) return;
+    _quiet = false;
     if (_active != i) setState(() => _active = i);
     if (!_nodes[i].hasFocus) _nodes[i].requestFocus();
   }
@@ -726,17 +828,73 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
 
   @override
   void dispose() {
+    _run?.cancel();
     for (final node in _nodes) {
       node.dispose();
     }
     super.dispose();
   }
 
+  /// The letters typed in a run; a pause of [_typeAhead] ends it.
+  String _typed = '';
+  Timer? _run;
+  static const _typeAhead = Duration(milliseconds: 700);
+
   KeyEventResult _key(int index, KeyEvent event) {
     if (event is! KeyDownEvent || widget.onSelected == null) {
       return KeyEventResult.ignored;
     }
     final key = event.logicalKey;
+    final enabled = [
+      for (var i = 0; i < widget.items.length; i++)
+        if (widget.items[i].enabled) i,
+    ];
+    if (enabled.isEmpty) return KeyEventResult.ignored;
+    // A quiet menu's first key lights the item the keys stand on (the chosen one, or the first), or the last going
+    // up, and takes nothing: Enter and Space light it too, so nothing unseen is ever taken.
+    final wasQuiet = _quiet;
+    if (_quiet) {
+      final up =
+          key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.end;
+      if (up ||
+          key == LogicalKeyboardKey.arrowDown ||
+          key == LogicalKeyboardKey.home ||
+          key == LogicalKeyboardKey.enter ||
+          key == LogicalKeyboardKey.numpadEnter ||
+          key == LogicalKeyboardKey.space) {
+        _quiet = false;
+        _go(
+          up
+              ? enabled.last
+              : enabled.contains(index)
+              ? index
+              : enabled.first,
+          backwards: !up,
+        );
+        return KeyEventResult.handled;
+      }
+    }
+    // A typed letter jumps to the next item its words start with; letters typed in a run spell the start.
+    final typed = _letter(event);
+    if (typed != null) {
+      _quiet = false;
+      _typed += typed;
+      _run?.cancel();
+      _run = Timer(_typeAhead, () => _typed = '');
+      final from = enabled.indexOf(index);
+      // One letter looks past the active item, so the same letter steps through the items it starts; a longer run
+      // keeps the active item while it still fits. In a quiet menu nothing is active yet: the search starts on the
+      // item the keys stand on.
+      final skip = _typed.length == 1 && !wasQuiet ? 1 : 0;
+      for (var n = 0; n < enabled.length; n++) {
+        final i = enabled[(from + skip + n) % enabled.length];
+        if (widget.items[i].label.toLowerCase().startsWith(_typed)) {
+          _go(i, backwards: false);
+          break;
+        }
+      }
+      return KeyEventResult.handled;
+    }
     final backwards = key == LogicalKeyboardKey.arrowUp;
     if (!backwards &&
         key != LogicalKeyboardKey.arrowDown &&
@@ -744,36 +902,52 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
         key != LogicalKeyboardKey.end) {
       return KeyEventResult.ignored;
     }
-    final enabled = [
-      for (var i = 0; i < widget.items.length; i++)
-        if (widget.items[i].enabled) i,
-    ];
-    if (enabled.isNotEmpty) {
-      final current = enabled.indexOf(index);
-      final next = key == LogicalKeyboardKey.home
+    final current = enabled.indexOf(index);
+    _go(
+      key == LogicalKeyboardKey.home
           ? enabled.first
           : key == LogicalKeyboardKey.end
           ? enabled.last
-          : enabled[(current + (backwards ? -1 : 1)) % enabled.length];
-      final node = _nodes[next];
-      node.requestFocus();
-      final binding = WidgetsBinding.instance;
-      binding.addPostFrameCallback((_) {
-        if (!mounted || !node.hasFocus) return;
-        final target = node.context;
-        if (target == null) return;
-        unawaited(
-          Scrollable.ensureVisible(
-            target,
-            alignmentPolicy: backwards || key == LogicalKeyboardKey.home
-                ? ScrollPositionAlignmentPolicy.keepVisibleAtStart
-                : ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
-          ),
-        );
-      });
-      binding.ensureVisualUpdate();
-    }
+          : enabled[(current + (backwards ? -1 : 1)) % enabled.length],
+      backwards: backwards || key == LogicalKeyboardKey.home,
+    );
     return KeyEventResult.handled;
+  }
+
+  /// The printable letter [event] types, lower case, with no modifier held; null for any other key.
+  static String? _letter(KeyEvent event) {
+    final character = event.character;
+    if (character == null || character.length != 1) return null;
+    final unit = character.codeUnitAt(0);
+    if (unit <= 0x20 || unit == 0x7f) return null;
+    final keys = HardwareKeyboard.instance;
+    if (keys.isControlPressed || keys.isMetaPressed || keys.isAltPressed) {
+      return null;
+    }
+    return character.toLowerCase();
+  }
+
+  /// Moves the keys to item [next], keeping it in view inside a scrolling menu.
+  void _go(int next, {required bool backwards}) {
+    final node = _nodes[next];
+    // The item the keys already stand on gains no focus, so it is lit here.
+    if (_active != next) setState(() => _active = next);
+    node.requestFocus();
+    final binding = WidgetsBinding.instance;
+    binding.addPostFrameCallback((_) {
+      if (!mounted || !node.hasFocus) return;
+      final target = node.context;
+      if (target == null) return;
+      unawaited(
+        Scrollable.ensureVisible(
+          target,
+          alignmentPolicy: backwards
+              ? ScrollPositionAlignmentPolicy.keepVisibleAtStart
+              : ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+        ),
+      );
+    });
+    binding.ensureVisualUpdate();
   }
 
   @override
@@ -785,7 +959,7 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
     final first = current >= 0
         ? current
         : widget.items.indexWhere((item) => item.enabled);
-    final look = ComicStyleOf([widget.style, t.menuTheme], const {});
+    final look = comicStyleOf([widget.style, t.menuTheme], const {});
     final frame = look.shape ?? t.shapes.medium;
     // A row sits 4 px inside the rim, so its corner is the menu's minus that inset: concentric, never a square
     // block inside a rounded menu. Its wash and ring take the same outline.
@@ -800,7 +974,7 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
       style: widget.style,
       theme: t.menuTheme,
       shape: t.shapes.medium,
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(ComicSpace.tight),
       plate: widget._raised,
       scrolls: widget._raised,
       child: Column(
@@ -822,55 +996,69 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
                     : () => widget.onSelected!(widget.items[i].value),
                 keys: (_, event) => _key(i, event),
                 outline: WidgetStatePropertyAll(row),
+                // The active row's shade is the menu's own, below: it follows the keys as well as the pointer, so the
+                // keys' row needs no ring (one round a row is painted over by the next, and reads as a rule).
+                wash: false,
+                ring: false,
                 builder: (context, states) {
                   final lit = _active == i && states.enabled;
-                  final ink = lit
+                  final chosen = widget.items[i].selected;
+                  final ink = chosen
                       ? t.colors.onCaption
                       : states.enabled
                       ? t.colors.text
                       : t.colors.textSecondary;
                   // A row is at least the touch target tall, so the target never centres a shorter row off the
                   // menu's inset (the row's corner stays concentric with the rim).
-                  return ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: ComicTapTarget.targetOf(context),
-                    ),
-                    child: ComicStateDecoration(
-                      decoration: ShapeDecoration(
-                        shape: row,
-                        color: lit ? t.colors.caption : t.colors.card,
+                  return ComicHighlight(
+                    states: {
+                      if (lit) WidgetState.hovered,
+                      if (lit && states.pressed) WidgetState.pressed,
+                    },
+                    shape: row,
+                    ring: false,
+                    washColor: chosen ? t.colors.onCaption : null,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: ComicTapTarget.targetOf(context),
                       ),
-                      child: Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                          start,
-                          12,
-                          12,
-                          12,
+                      child: ComicStateDecoration(
+                        decoration: ShapeDecoration(
+                          shape: row,
+                          color: chosen ? t.colors.caption : t.colors.card,
                         ),
-                        child: IconTheme.merge(
-                          data: IconThemeData(color: ink),
-                          child: Row(
-                            children: [
-                              if (widget.items[i].icon != null) ...[
-                                Icon(widget.items[i].icon, size: 20),
-                                const SizedBox(width: 10),
-                              ],
-                              Expanded(
-                                child: CapLabel(
-                                  child: Text(
-                                    widget.items[i].label,
-                                    style: t.type.body.copyWith(color: ink),
+                        child: Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(
+                            start,
+                            12,
+                            12,
+                            12,
+                          ),
+                          child: IconTheme.merge(
+                            data: IconThemeData(color: ink),
+                            child: Row(
+                              children: [
+                                if (widget.items[i].icon != null) ...[
+                                  Icon(widget.items[i].icon, size: 20),
+                                  const SizedBox(width: ComicSpace.close),
+                                ],
+                                Expanded(
+                                  child: CapLabel(
+                                    child: Text(
+                                      widget.items[i].label,
+                                      style: t.type.body.copyWith(color: ink),
+                                    ),
                                   ),
                                 ),
-                              ),
-                              // The current option's mark, so the active one and the chosen one never read alike.
-                              if (widget.items[i].selected) ...[
-                                const SizedBox(width: 10),
-                                ExcludeSemantics(
-                                  child: Icon(ComicGlyphs.check, size: 20),
-                                ),
+                                // The current option's mark beside its fill, so it reads without its colour too.
+                                if (chosen) ...[
+                                  const SizedBox(width: ComicSpace.close),
+                                  const ExcludeSemantics(
+                                    child: Icon(ComicGlyphs.check, size: 20),
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -932,6 +1120,19 @@ class _AnchorLayout extends SingleChildLayoutDelegate {
       matchAnchorWidth != old.matchAnchorWidth;
 }
 
+// The keys that open a menu: one is down while a menu opens from the keyboard (a press runs on the key's down).
+final _openingKeys = <LogicalKeyboardKey>{
+  LogicalKeyboardKey.enter,
+  LogicalKeyboardKey.numpadEnter,
+  LogicalKeyboardKey.space,
+  LogicalKeyboardKey.select,
+  LogicalKeyboardKey.arrowDown,
+  LogicalKeyboardKey.arrowUp,
+};
+
+bool _openedByKeys() =>
+    HardwareKeyboard.instance.logicalKeysPressed.any(_openingKeys.contains);
+
 /// Opens a menu beside a rectangle in global coordinates and returns its value.
 /// [matchAnchorWidth] gives a select menu the field's width, within the viewport.
 /// The dismissal barrier is transparent; dialogs and sheets retain their scrims.
@@ -951,6 +1152,8 @@ Future<T?> showComicMenu<T>(
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
   final box = navigator.overlay!.context.findRenderObject()! as RenderBox;
   final local = anchor.shift(-box.localToGlobal(Offset.zero));
+  // Opened from the keys, it lights its first item (or the chosen one); opened by the pointer, none until it moves.
+  final quiet = !_openedByKeys();
   return _raise<T>(
     context,
     (context) => CustomSingleChildLayout(
@@ -963,6 +1166,7 @@ Future<T?> showComicMenu<T>(
       child: ComicMenu<T>._raised(
         style: style,
         autofocus: true,
+        quiet: quiet,
         items: items,
         // A select's list sets its words on the field's (a list that opens from a field).
         wordsAt: matchAnchorWidth
@@ -1010,21 +1214,96 @@ class ComicMenuAnchor<T> extends StatelessWidget {
   /// Matches the menu to the anchor width, as a select field requires.
   final bool matchAnchorWidth;
   @override
-  Widget build(BuildContext context) => Builder(
-    builder: (anchorContext) => builder(anchorContext, () async {
-      final room = anchorContext.findRenderObject();
-      if (room is! RenderBox || !room.hasSize) return;
-      // A dropdown's face may stand narrower than the room it is given (comicDropdownWidth): open from the face.
-      final box = comicAnchorFaceOf(room);
-      final result = await showComicMenu<T>(
-        anchorContext,
-        anchor: box.localToGlobal(Offset.zero) & box.size,
-        items: items,
-        style: style,
-        matchAnchorWidth: matchAnchorWidth,
+  Widget build(BuildContext context) => _MenuAnchorHost<T>(anchor: this);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicMenuItem<T>>('items', items))
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, VoidCallback open)
+        >.has('builder', builder),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(
+        FlagProperty(
+          'matchAnchorWidth',
+          value: matchAnchorWidth,
+          ifTrue: 'matchAnchorWidth',
+          defaultValue: false,
+        ),
       );
-      if (result != null && anchorContext.mounted) onSelected?.call(result);
-    }),
+  }
+}
+
+// Keeps whether a ComicMenuAnchor's menu is up, for its anchor to announce (ComicMenuOpen).
+class _MenuAnchorHost<T> extends StatefulWidget {
+  const _MenuAnchorHost({required this.anchor});
+
+  final ComicMenuAnchor<T> anchor;
+
+  @override
+  State<_MenuAnchorHost<T>> createState() => _MenuAnchorHostState<T>();
+}
+
+class _MenuAnchorHostState<T> extends State<_MenuAnchorHost<T>> {
+  bool _open = false;
+
+  /// Round the anchor, taking no focus itself: its first focusable part (a select's field) takes the focus back when
+  /// the menu closes, whether it was opened by the keys or by the pointer, chosen from or dismissed.
+  final _anchorFocus = FocusNode(
+    debugLabel: 'ComicMenuAnchor',
+    canRequestFocus: false,
+    skipTraversal: true,
+  );
+
+  @override
+  void dispose() {
+    _anchorFocus.dispose();
+    super.dispose();
+  }
+
+  void _refocus() =>
+      _anchorFocus.traversalDescendants.firstOrNull?.requestFocus();
+
+  Future<void> _show(BuildContext anchorContext) async {
+    final room = anchorContext.findRenderObject();
+    if (room is! RenderBox || !room.hasSize) return;
+    // A dropdown's face may stand narrower than the room it is given (comicDropdownWidth): open from the face.
+    final box = comicAnchorFaceOf(room);
+    final anchor = widget.anchor;
+    setState(() => _open = true);
+    final result =
+        await showComicMenu<T>(
+          anchorContext,
+          anchor: box.localToGlobal(Offset.zero) & box.size,
+          items: anchor.items,
+          style: anchor.style,
+          matchAnchorWidth: anchor.matchAnchorWidth,
+        ).whenComplete(() {
+          if (!mounted) return;
+          setState(() => _open = false);
+          _refocus();
+        });
+    if (result != null && anchorContext.mounted) {
+      widget.anchor.onSelected?.call(result);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => ComicMenuOpen(
+    open: _open,
+    child: Focus(
+      focusNode: _anchorFocus,
+      includeSemantics: false,
+      child: Builder(
+        builder: (anchorContext) =>
+            widget.anchor.builder(anchorContext, () => _show(anchorContext)),
+      ),
+    ),
   );
 }
 
@@ -1105,6 +1384,12 @@ class _OverlayMotionState extends State<_OverlayMotion>
 
   @override
   void dispose() {
+    // Its overlay went away under it, never dismissed: the entry ends with it.
+    final entry = widget.handle.entry;
+    widget.handle.entry = null;
+    entry
+      ?..remove()
+      ..dispose();
     widget.handle.finish();
     _controller.dispose();
     super.dispose();
@@ -1144,6 +1429,16 @@ class ComicTooltipFace extends StatelessWidget {
       ),
     ]),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// Shows a tooltip without taking keyboard focus. Escape dismisses it.
@@ -1225,6 +1520,23 @@ class ComicTooltip extends StatefulWidget {
   final ComicStyle? style;
   @override
   State<ComicTooltip> createState() => _ComicTooltipState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'waitDuration',
+          waitDuration,
+          defaultValue: const Duration(milliseconds: 400),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _ComicTooltipState extends State<ComicTooltip> {
@@ -1363,7 +1675,7 @@ class ComicSnackBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ExcludeSemantics(child: ComicToneMark(tone!)),
-              const SizedBox(width: 12),
+              const SizedBox(width: ComicSpace.near),
               Expanded(child: Text(message, style: t.type.body)),
             ],
           );
@@ -1389,13 +1701,14 @@ class ComicSnackBar extends StatelessWidget {
         style: style,
         theme: t.snackBarTheme,
         shape: t.shapes.medium,
+        plate: true,
         child: inline
             ? Row(
                 children: [
                   Expanded(child: words),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: ComicSpace.gap),
                   for (final (i, action) in actions.indexed) ...[
-                    if (i > 0) const SizedBox(width: 8),
+                    if (i > 0) const SizedBox(width: ComicSpace.close),
                     action,
                   ],
                 ],
@@ -1406,21 +1719,21 @@ class ComicSnackBar extends StatelessWidget {
                 children: [
                   if (title != null) ...[
                     CapLabel(child: Text(title!, style: t.type.panel)),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: ComicSpace.close),
                   ],
                   words,
                   // The message's descenders stood on the action's rim: a beat of room between the words and the
                   // actions.
                   if (actions.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: ComicSpace.near),
                     Wrap(
                       alignment: WrapAlignment.end,
                       // Centred across the run: the dismiss keeps a full finger's target around a face that density
                       // makes shorter, and on the run's top its face stood 2 px under the action's (ui_core's
                       // DesignRowCheck, comfortable and compact, 11-11).
                       crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: ComicSpace.close,
+                      runSpacing: ComicSpace.close,
                       children: actions,
                     ),
                   ],
@@ -1428,6 +1741,22 @@ class ComicSnackBar extends StatelessWidget {
               ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(EnumProperty<ComicTone>('tone', tone, defaultValue: null))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAction', onAction))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDismiss', onDismiss))
+      ..add(StringProperty('dismissLabel', dismissLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -1490,12 +1819,39 @@ class _ToastShown {
   final String? dismissLabel;
 }
 
+/// Holds an overlay entry for as long as its overlay stands: when the overlay goes, the entry is removed and
+/// disposed with it (the toaster's entry has no other end).
+class _OverlayLifetime extends StatefulWidget {
+  const _OverlayLifetime({required this.entry, required this.child});
+
+  final OverlayEntry entry;
+  final Widget child;
+
+  @override
+  State<_OverlayLifetime> createState() => _OverlayLifetimeState();
+}
+
+class _OverlayLifetimeState extends State<_OverlayLifetime> {
+  @override
+  void dispose() {
+    widget.entry
+      ..remove()
+      ..dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 /// The design kit's toaster on a navigator's overlay: empty, it takes no room and no press.
 class _ToastHost {
   _ToastHost(OverlayState overlay, ComicLocalizations words) {
-    overlay.insert(
-      OverlayEntry(
-        builder: (context) => DesignToaster(
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (context) => _OverlayLifetime(
+        entry: entry,
+        child: DesignToaster(
           key: key,
           regionLabel: words.notifications,
           toastBuilder: _toastFace,
@@ -1503,6 +1859,7 @@ class _ToastHost {
         ),
       ),
     );
+    overlay.insert(entry);
   }
 
   final key = GlobalKey<DesignToasterState>();
@@ -1545,7 +1902,9 @@ class _ToastHost {
             );
           },
           child: Padding(
-            padding: EdgeInsets.only(top: view.index == 0 ? 0 : 8),
+            padding: EdgeInsets.only(
+              top: view.index == 0 ? 0 : ComicSpace.close,
+            ),
             child: ComicSnackBar._toasted(
               toast.message,
               style: shown.style,
@@ -1622,16 +1981,20 @@ class ComicToast extends StatelessWidget {
         style: style,
         theme: t.snackBarTheme,
         shape: t.shapes.medium,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        plate: true,
+        padding: const EdgeInsets.symmetric(
+          horizontal: ComicSpace.gap,
+          vertical: ComicSpace.close,
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (tone != null) ...[
               ComicToneMark(tone!),
-              const SizedBox(width: 10),
+              const SizedBox(width: ComicSpace.close),
             ] else if (icon != null) ...[
               Icon(icon, size: 20, color: t.colors.text),
-              const SizedBox(width: 10),
+              const SizedBox(width: ComicSpace.close),
             ],
             Flexible(
               child: Text(
@@ -1645,6 +2008,18 @@ class ComicToast extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(EnumProperty<ComicTone>('tone', tone, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -1747,7 +2122,7 @@ class _RaisedFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context),
-        look = ComicStyleOf([style, theme], const {});
+        look = comicStyleOf([style, theme], const {});
     final rim = comicRim(t, look, t.colors.nightLine, 3);
     final fill = look.fill ?? t.colors.card;
     final direction = Directionality.of(context);
@@ -1831,7 +2206,7 @@ class ComicRaisedFrame extends StatelessWidget {
   const ComicRaisedFrame({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(4),
+    this.padding = const EdgeInsets.all(ComicSpace.tight),
     this.shape,
     this.style,
     this.plate = true,
@@ -1864,12 +2239,37 @@ class ComicRaisedFrame extends StatelessWidget {
       child: child,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.all(ComicSpace.tight),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(
+        FlagProperty(
+          'plate',
+          value: plate,
+          ifFalse: 'plate: false',
+          defaultValue: true,
+        ),
+      );
+  }
 }
 
 /// Where a row's words start inside a list that opens from a field : on the field's words, less
 /// the frame's rim and the 4 its rows stand in. Never under 6.
 double comicFieldListWords(ComicThemeData t, [ComicStyle? style]) {
-  final look = ComicStyleOf([style, t.menuTheme], const {});
+  final look = comicStyleOf([style, t.menuTheme], const {});
   final inset = comicRim(t, look, t.colors.nightLine, 3).width + 4;
   return math.max(6.0, comicFieldInset(t).start - inset);
 }
@@ -1877,16 +2277,18 @@ double comicFieldListWords(ComicThemeData t, [ComicStyle? style]) {
 /// The outline of a row inside a [ComicRaisedFrame]: the frame's own, inset by its rim and 4, so a lit row stays
 /// concentric with the rim.
 OutlinedBorder comicMenuRowShape(ComicThemeData t) {
-  final look = ComicStyleOf([t.menuTheme], const {});
+  final look = comicStyleOf([t.menuTheme], const {});
   return comicInsetShape(
     look.shape ?? t.shapes.medium,
     comicRim(t, look, t.colors.nightLine, 3).width + 4,
   );
 }
 
-/// One row of a raised menu whose list the design kit drives: lit with the selection fill while the keyboard or the
-/// pointer is on it (a menu's active row, the one Enter takes), a check when [checked], the quiet ink when disabled.
-/// At least the touch target tall. Kept out of the barrel.
+/// One row of a raised menu whose list the design kit drives. Chosen ([checked]) is printed as Comic prints every
+/// chosen thing: the caption's flat yellow, its words in the caption's ink, and a check. The active row, while the
+/// keyboard or the pointer is on it (the one Enter takes), wears the pointer's light Ben-Day shade, swollen under the
+/// press: dots, never the chosen fill nor a line, so it can't read as a second choice or a divider. The quiet ink when
+/// disabled. At least the touch target tall. Kept out of the barrel.
 class ComicMenuRowFace extends StatelessWidget {
   /// Creates a [ComicMenuRowFace].
   const ComicMenuRowFace({
@@ -1896,6 +2298,7 @@ class ComicMenuRowFace extends StatelessWidget {
     this.icon,
     this.trailing,
     this.checked = false,
+    this.mark = true,
     this.lead,
     this.start,
     this.danger = false,
@@ -1925,8 +2328,11 @@ class ComicMenuRowFace extends StatelessWidget {
   /// Something at the row's end: a shortcut, a submenu's arrow.
   final Widget? trailing;
 
-  /// Chosen: a check at the end.
+  /// Chosen: the caption's fill, and a check at the end.
   final bool checked;
+
+  /// Whether a [checked] row carries the check beside its fill. A tree's picked row is its fill alone.
+  final bool mark;
 
   /// Room before the words, for a nested row.
   final double? lead;
@@ -1941,68 +2347,129 @@ class ComicMenuRowFace extends StatelessWidget {
             states.contains(WidgetState.hovered) ||
             states.contains(WidgetState.pressed) ||
             states.contains(WidgetState.selected));
-    final ink = lit
+    final ink = checked
         ? t.colors.onCaption
         : enabled
         ? (danger ? t.colors.tones.danger : t.colors.text)
         : t.colors.textSecondary;
-    return ConstrainedBox(
-      constraints: BoxConstraints(minHeight: ComicTapTarget.targetOf(context)),
-      child: DecoratedBox(
-        decoration: ShapeDecoration(
-          shape: shape ?? comicMenuRowShape(t),
-          color: lit
-              ? (enabled && states.contains(WidgetState.pressed)
-                    ? Color.alphaBlend(
-                        t.colors.onCaption.withValues(alpha: .1),
-                        t.colors.caption,
-                      )
-                    : t.colors.caption)
-              : t.colors.card,
+    final outline = shape ?? comicMenuRowShape(t);
+    return ComicHighlight(
+      states: {
+        if (lit) WidgetState.hovered,
+        if (lit && states.contains(WidgetState.pressed)) WidgetState.pressed,
+      },
+      shape: outline,
+      ring: false,
+      washColor: checked ? t.colors.onCaption : null,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: ComicTapTarget.targetOf(context),
         ),
-        child: Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(
-            (start ?? 12) + (lead ?? 0),
-            12,
-            12,
-            12,
+        child: DecoratedBox(
+          decoration: ShapeDecoration(
+            shape: outline,
+            color: checked ? t.colors.caption : t.colors.card,
           ),
-          child: IconTheme.merge(
-            data: IconThemeData(color: ink),
-            child: Row(
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: 20),
-                  const SizedBox(width: 10),
-                ],
-                Expanded(
-                  child: CapLabel(
-                    child: Text(label, style: t.type.body.copyWith(color: ink)),
+          child: Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(
+              (start ?? 12) + (lead ?? 0),
+              12,
+              12,
+              12,
+            ),
+            child: IconTheme.merge(
+              data: IconThemeData(color: ink),
+              child: Row(
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 20),
+                    const SizedBox(width: ComicSpace.close),
+                  ],
+                  Expanded(
+                    child: CapLabel(
+                      child: Text(
+                        label,
+                        style: t.type.body.copyWith(color: ink),
+                      ),
+                    ),
                   ),
-                ),
-                if (trailing != null) ...[
-                  const SizedBox(width: 10),
-                  DefaultTextStyle.merge(
-                    style: t.type.small.copyWith(color: ink),
-                    child: trailing!,
-                  ),
+                  if (trailing != null) ...[
+                    const SizedBox(width: ComicSpace.close),
+                    // Words (a shortcut's) put their capitals on the row's middle, as the label's are: centred by
+                    // their box, small words sit high. An icon is centred as it is.
+                    if (trailing is Text)
+                      CapLabel(
+                        child: DefaultTextStyle.merge(
+                          style: t.type.small.copyWith(color: ink),
+                          child: trailing!,
+                        ),
+                      )
+                    else
+                      DefaultTextStyle.merge(
+                        style: t.type.small.copyWith(color: ink),
+                        child: trailing!,
+                      ),
+                  ],
+                  if (checked && mark) ...[
+                    const SizedBox(width: ComicSpace.close),
+                    const ExcludeSemantics(
+                      child: Icon(ComicGlyphs.check, size: 20),
+                    ),
+                  ],
                 ],
-                if (checked) ...[
-                  const SizedBox(width: 10),
-                  ExcludeSemantics(child: Icon(ComicGlyphs.check, size: 20)),
-                ],
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('start', start, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'danger',
+          value: danger,
+          ifTrue: 'danger',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(IterableProperty<WidgetState>('states', states))
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'checked',
+          value: checked,
+          ifTrue: 'checked',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'mark',
+          value: mark,
+          ifFalse: 'no mark',
+          defaultValue: true,
+        ),
+      )
+      ..add(DoubleProperty('lead', lead, defaultValue: null));
+  }
 }
 
 /// A field that offers matching choices as a person types: the menu's own face under the field, the field's width.
-/// Its active row wears the selection fill and follows both the pointer and the Up and Down keys; Enter or a press
-/// takes it and writes its words into the field. Options match on [displayStringForOption]'s words, any part, any case.
+/// Down or Up opens the list on the option taken (else the first), showing every option until the words are edited,
+/// then the matches. Its active row wears the pointer's light Ben-Day shade and follows both the pointer and the Up and
+/// Down keys, which wrap at the ends; Enter or a press takes it and writes its words into the field, which keeps the
+/// focus, and while the field holds them the list shows that option chosen (the caption's flat yellow and a check).
+/// Options match on [displayStringForOption]'s words, any part, any case.
 ///
 /// ```dart
 /// ComicCombobox<String>(label: 'City', options: const ['Lisbon', 'London', 'Lyon'], onSelected: pick)
@@ -2020,12 +2487,17 @@ class ComicCombobox<T extends Object> extends StatefulWidget {
     this.helper,
     this.initialValue,
     this.maxOptions = 6,
+    this.isOptionEnabled,
     this.focusNode,
     this.autofocus = false,
   });
 
   /// Everything the field can offer, in the order offered.
   final List<T> options;
+
+  /// Whether an option can be taken; null: all can. One that cannot shows in the secondary ink, and the keys, the
+  /// pointer and Enter pass over it.
+  final bool Function(T option)? isOptionEnabled;
 
   /// An option's words in the field and in the list; `toString` when absent.
   final String Function(T option)? displayStringForOption;
@@ -2036,20 +2508,62 @@ class ComicCombobox<T extends Object> extends StatefulWidget {
   /// [label]: the field's name. [hint]: its placeholder. [helper]: a line under it. [initialValue]: its starting text.
   final String? label, hint, helper, initialValue;
 
-  /// How many matches the list shows at most.
+  /// How many matches typed words show at most. With no words typed, or the words of the option taken, the list
+  /// offers every option, scrolling.
   final int maxOptions;
 
   /// Appearance of the list above the menu's component theme.
   final ComicStyle? style;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   State<ComicCombobox<T>> createState() => _ComicComboboxState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('options', options))
+      ..add(
+        ObjectFlagProperty<String Function(T option)>.has(
+          'displayStringForOption',
+          displayStringForOption,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('initialValue', initialValue, defaultValue: null))
+      ..add(IntProperty('maxOptions', maxOptions, defaultValue: 6))
+      ..add(
+        ObjectFlagProperty<bool Function(T option)>.has(
+          'isOptionEnabled',
+          isOptionEnabled,
+        ),
+      )
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
@@ -2066,9 +2580,20 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
   String _words(T option) =>
       widget.displayStringForOption?.call(option) ?? option.toString();
 
+  /// The option last taken, while the field still holds its words: the list shows it chosen.
+  T? _taken;
+
+  void _take(T option) {
+    setState(() => _taken = option);
+    widget.onSelected?.call(option);
+  }
+
+  bool _chosen(T option) => option == _taken && _text.text == _words(option);
+
   Iterable<T> _search(String text) {
     final query = text.trim().toLowerCase();
-    if (query.isEmpty) return const [];
+    // No words yet: every option, so Down opens the list on an empty field.
+    if (query.isEmpty) return widget.options;
     return widget.options
         .where((option) => _words(option).toLowerCase().contains(query))
         .take(widget.maxOptions);
@@ -2082,7 +2607,13 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
       focusNode: widget.focusNode,
       search: _search,
       displayStringForOption: _words,
-      onSelected: widget.onSelected,
+      // The option taken: an opened list starts on it.
+      value: _taken,
+      isOptionEnabled: widget.isOptionEnabled,
+      // The pointer's row and the keys' wear the same dots: one place, the pointer moving it, so two rows never read
+      // as two current options.
+      highlightFollowsPointer: true,
+      onSelected: _take,
       semanticLabel: widget.label,
       fieldBuilder: (context, field) => ComicTextField(
         controller: field.controller,
@@ -2091,12 +2622,17 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
         label: widget.label,
         hint: widget.hint,
         helper: widget.helper,
-        onSubmitted: (_) => field.submit(),
+        // Enter takes the highlighted option and the field keeps the focus, as a combobox's does: Flutter's own
+        // finish to a done action would drop it. The take runs here, with no onSubmitted: a field told of a submit
+        // that keeps its focus has its text input restarted, and in a browser the restarted input takes no typing.
+        onEditingComplete: field.submit,
       ),
-      // Its options' words start on the field's .
+      // Its options' words start on the field's words. The kit marks the value selected; Comic prints the chosen option yellow and checked while the field holds its
+      // words, so the face takes the keys' and the pointer's states alone.
       optionBuilder: (context, option, states) => ComicMenuRowFace(
-        states: states,
+        states: states.difference(const {WidgetState.selected}),
         label: _words(option),
+        checked: _chosen(option),
         start: comicFieldListWords(ComicTheme.of(context), widget.style),
       ),
       surfaceBuilder: (context, list) =>
@@ -2119,4 +2655,105 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
       },
     ),
   );
+}
+
+/// The page behind a modal layer, screened (law 1: nothing see-through): Ben-Day dots of [ink], opaque, swelling over the
+/// whole screen with [animation] and shrinking away with it (law 6: drawn, not faded). The page shows between the dots.
+/// Comic's routes lay it under their barrier; a route of your own can too. Give it the theme's `colors.scrim`: black
+/// dots by day, and by night the night's cream line, a reverse screen that knocks the black ground back.
+///
+/// ```dart
+/// ComicScreenScrim(animation: animation, ink: ComicTheme.of(context).colors.scrim)
+/// ```
+class ComicScreenScrim extends StatelessWidget {
+  /// Creates a [ComicScreenScrim].
+  const ComicScreenScrim({
+    super.key,
+    required this.animation,
+    required this.ink,
+  });
+
+  /// The layer's own coming and going: 0 is no dots, 1 the whole screen.
+  final Animation<double> animation;
+
+  /// The dots' ink; its alpha is dropped, as print has none.
+  final Color ink;
+
+  @override
+  Widget build(BuildContext context) {
+    final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (context, _) => SizedBox.expand(
+          child: CustomPaint(
+            painter: _ScrimPainter(
+              ink.withValues(alpha: 1),
+              ComicScreenGrid(
+                comicScrimPitch,
+                comicScrimRadius * animation.value.clamp(0, 1),
+                dpr,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<Animation<double>>('animation', animation))
+      ..add(ColorProperty('ink', ink));
+  }
+}
+
+/// A modal route whose page behind is screened, not dimmed (law 1): a [ComicScreenScrim] of [screenInk] under its
+/// barrier, which still takes the presses. Give the route no barrier colour of its own.
+///
+/// ```dart
+/// class IssueRoute<T> extends RawDialogRoute<T> with ComicScreenedRoute<T> { IssueRoute({required super.pageBuilder}) : super(barrierColor: null, barrierLabel: 'Close'); @override Color? get screenInk => const Color(0x99000000); }
+/// ```
+mixin ComicScreenedRoute<T> on ModalRoute<T> {
+  /// The dots' ink; null leaves the page as it is.
+  Color? get screenInk;
+
+  @override
+  Widget buildModalBarrier() {
+    final barrier = super.buildModalBarrier();
+    final ink = screenInk;
+    if (ink == null || offstage) return barrier;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        IgnorePointer(
+          child: ComicScreenScrim(animation: animation!, ink: ink),
+        ),
+        barrier,
+      ],
+    );
+  }
+}
+
+/// The modal screen's dots: one every [comicScrimPitch], [comicScrimRadius] round at full strength, about a quarter of
+/// the page in ink: the page still reads behind, screened back.
+const double comicScrimPitch = 6, comicScrimRadius = 1.25;
+
+class _ScrimPainter extends CustomPainter {
+  const _ScrimPainter(this.ink, this.grid);
+  final Color ink;
+  final ComicScreenGrid grid;
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (grid.radius <= 0) return;
+    grid.paint(canvas, Offset.zero & size, ink);
+  }
+
+  @override
+  bool shouldRepaint(_ScrimPainter old) =>
+      old.ink != ink ||
+      old.grid.radius != grid.radius ||
+      old.grid.pitch != grid.pitch;
 }

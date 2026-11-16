@@ -1,0 +1,44 @@
+# Comic's data-driven fixes: `dart fix --apply` moves a caller off what 0.2.0 deprecates, where the move is mechanical.
+# Rounded corners, a free motion and free stroke widths have no mechanical fix: their deprecation messages say what
+# to use. test_fixes/ holds each fix's before and after (`dart fix --compare-to-golden test_fixes`).
+version: 1
+transforms:
+  - title: "Rename to 'standard'"
+    date: 2026-11-14
+    element:
+      uris: ['comic_ui.dart']
+      field: 'look'
+      inClass: 'ComicStrokes'
+    changes:
+      - kind: 'rename'
+        newName: 'standard'
+
+  - title: "Remove 'scale'"
+    date: 2026-11-14
+    element:
+      uris: ['comic_ui.dart']
+      constructor: ''
+      inClass: 'ComicTypeface'
+    changes:
+      - kind: 'removeParameter'
+        name: 'scale'
+
+  - title: "Remove 'scale'"
+    date: 2026-11-14
+    element:
+      uris: ['comic_ui.dart']
+      constructor: 'app'
+      inClass: 'ComicTypeface'
+    changes:
+      - kind: 'removeParameter'
+        name: 'scale'
+
+  - title: "Remove 'scale'"
+    date: 2026-11-14
+    element:
+      uris: ['comic_ui.dart']
+      method: 'copyWith'
+      inClass: 'ComicTypeface'
+    changes:
+      - kind: 'removeParameter'
+        name: 'scale'

@@ -1,5 +1,7 @@
 // Layout: the 12-column grid and a column whose rows take up the slack. Panels in a tier share a height and their lists
 // grow, so no card ends in a hole. Neither needs IntrinsicHeight, and neither crashes under a scroll view.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
@@ -63,6 +65,15 @@ class ComicFill extends SingleChildRenderObjectWidget {
       ..limit = maxWidth
       ..aspect = aspect
       ..lone = loneWidth;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('maxWidth', maxWidth))
+      ..add(DoubleProperty('aspect', aspect, defaultValue: null))
+      ..add(DoubleProperty('loneWidth', loneWidth, defaultValue: 240));
   }
 }
 
@@ -236,6 +247,23 @@ class ComicColumn extends MultiChildRenderObjectWidget {
       ..spineX = spineX
       ..spineColor = spineColor
       ..dir = Directionality.of(context);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('gap', gap, defaultValue: 0))
+      ..add(
+        FlagProperty(
+          'skipEmpty',
+          value: skipEmpty,
+          ifTrue: 'skipEmpty',
+          defaultValue: false,
+        ),
+      )
+      ..add(DoubleProperty('spineX', spineX, defaultValue: null))
+      ..add(ColorProperty('spineColor', spineColor, defaultValue: null));
   }
 }
 
@@ -510,6 +538,16 @@ class ComicEqualRow extends MultiChildRenderObjectWidget {
       ..pull = pull
       ..dir = Directionality.of(context);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<int>('flex', flex))
+      ..add(DoubleProperty('gap', gap, defaultValue: 0))
+      ..add(IntProperty('columns', columns, defaultValue: null))
+      ..add(DoubleProperty('pull', pull, defaultValue: 0));
+  }
 }
 
 class _EqualRowData extends ContainerBoxParentData<RenderBox> {}
@@ -692,6 +730,12 @@ class ComicRow extends StatelessWidget {
     }
     return ComicEqualRow(flex: spans, gap: 16, columns: 12, children: children);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<int>('spans', spans));
+  }
 }
 
 /// Vertical alignment of a fitted row's children.
@@ -750,6 +794,31 @@ class ComicFitRow extends MultiChildRenderObjectWidget {
       .._w = this
       .._dir = Directionality.of(context)
       ..markNeedsLayout();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('fill', fill))
+      ..add(DoubleProperty('gap', gap, defaultValue: 8))
+      ..add(DoubleProperty('fillMin', fillMin, defaultValue: 0))
+      ..add(DoubleProperty('fillShare', fillShare, defaultValue: 0))
+      ..add(
+        EnumProperty<ComicFitAlign>(
+          'align',
+          align,
+          defaultValue: ComicFitAlign.center,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'shrink',
+          value: shrink,
+          ifTrue: 'shrink',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -911,6 +980,12 @@ class ComicAutoRow extends MultiChildRenderObjectWidget {
       .._dir = Directionality.of(context)
       ..markNeedsLayout();
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('gap', gap, defaultValue: 14));
+  }
 }
 
 class _AutoRowData extends ContainerBoxParentData<RenderBox> {}
@@ -1055,6 +1130,15 @@ class ComicGridOf extends StatelessWidget {
     }
     return ComicColumn(gap: runGap ?? gap, children: rows);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('columns', columns))
+      ..add(DoubleProperty('gap', gap, defaultValue: 8))
+      ..add(DoubleProperty('runGap', runGap, defaultValue: null));
+  }
 }
 
 /// Start and end on one baseline, pushed apart; if they don't fit on a line, end drops under start. CSS flex-wrap with
@@ -1090,6 +1174,22 @@ class ComicSplit extends MultiChildRenderObjectWidget {
       .._bottoms = bottoms
       .._dir = Directionality.of(context)
       ..markNeedsLayout();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('gap', gap, defaultValue: 14))
+      ..add(DoubleProperty('runGap', runGap, defaultValue: 0))
+      ..add(
+        FlagProperty(
+          'bottoms',
+          value: bottoms,
+          ifTrue: 'bottoms',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -1238,6 +1338,21 @@ class ComicBalancedText extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(DiagnosticsProperty<TextStyle>('style', style))
+      ..add(
+        EnumProperty<TextAlign>(
+          'textAlign',
+          textAlign,
+          defaultValue: TextAlign.center,
+        ),
+      );
+  }
 }
 
 /// The width of the widest word of [text] in [style] at [textScaler] (pass the context's, `MediaQuery.textScalerOf`):
@@ -1306,6 +1421,23 @@ class ComicBeside extends MultiChildRenderObjectWidget {
       .._atEnd = objectAtEnd
       .._dir = Directionality.of(context)
       ..markNeedsLayout();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('gap', gap, defaultValue: 16))
+      ..add(DoubleProperty('minWords', minWords, defaultValue: 140))
+      ..add(DoubleProperty('maxObject', maxObject, defaultValue: .42))
+      ..add(
+        FlagProperty(
+          'objectAtEnd',
+          value: objectAtEnd,
+          ifTrue: 'objectAtEnd',
+          defaultValue: false,
+        ),
+      );
   }
 }
 

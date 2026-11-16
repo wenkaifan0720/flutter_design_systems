@@ -122,7 +122,7 @@ void main() {
     expect(ComicStyle.lerp(null, styled, 0), isNull);
     expect(ComicStyle.lerp(styled, null, 1), isNull);
     expect(ComicStyle.lerp(unset, styled, .75)!.fill!.resolve({}), Colors.red);
-    const ownStrokes = ComicStrokes();
+    const ownStrokes = ComicStrokes.standard;
     expect(ComicStrokes.lerp(ownStrokes, ComicStrokes.bold, 0), ownStrokes);
     expect(
       ComicStrokes.lerp(ownStrokes, ComicStrokes.bold, 1),

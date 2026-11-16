@@ -13,9 +13,10 @@ import 'dart:typed_data';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/main.dart';
+import 'gallery_support.dart' show CornerCustom, GalleryCorners;
 import 'support.dart';
 
 /// One painted outline: [kind] is `fill`, `ring` (a stroke's line), `inner` or `outer` (a rim's two edges).
@@ -460,61 +461,67 @@ void main() {
   });
   for (final corners in GalleryCorners.values) {
     for (final bold in [false, true]) {
-      final custom = GalleryCustom(corners: corners, bold: bold);
+      final custom = CornerCustom(corners: corners, bold: bold);
       final setting = '${corners.name}${bold ? ', bold' : ''}';
-      testWidgets('$setting: every nested outline is concentric', (
-        tester,
-      ) async {
-        FocusManager.instance.highlightStrategy =
-            FocusHighlightStrategy.alwaysTraditional;
-        addTearDown(
-          () => FocusManager.instance.highlightStrategy =
-              FocusHighlightStrategy.automatic,
-        );
-        tester.view.devicePixelRatio = 1;
-        tester.view.physicalSize = const Size(480, 900);
-        addTearDown(tester.view.reset);
-        final failures = <String>[];
-        var pairs = 0;
-        for (final part in _parts()) {
-          const key = ValueKey('part');
-          await tester.pumpWidget(
-            MaterialApp(
-              home: ComicTheme(
-                data: custom.theme('offset', Brightness.light),
-                child: Builder(
-                  builder: (context) => ColoredBox(
-                    color: ComicTheme.of(context).colors.background,
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: SizedBox(
-                          width: 440,
-                          child: KeyedSubtree(key: key, child: part.build()),
+      testWidgets(
+        '$setting: every nested outline is concentric',
+        (tester) async {
+          FocusManager.instance.highlightStrategy =
+              FocusHighlightStrategy.alwaysTraditional;
+          addTearDown(
+            () => FocusManager.instance.highlightStrategy =
+                FocusHighlightStrategy.automatic,
+          );
+          tester.view.devicePixelRatio = 1;
+          tester.view.physicalSize = const Size(480, 900);
+          addTearDown(tester.view.reset);
+          final failures = <String>[];
+          var pairs = 0;
+          for (final part in _parts()) {
+            const key = ValueKey('part');
+            await tester.pumpWidget(
+              MaterialApp(
+                home: ComicTheme(
+                  data: custom.theme('offset', Brightness.light),
+                  child: Builder(
+                    builder: (context) => ColoredBox(
+                      color: ComicTheme.of(context).colors.background,
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: SizedBox(
+                            width: 440,
+                            child: KeyedSubtree(key: key, child: part.build()),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          );
-          await tester.pump(const Duration(milliseconds: 600));
-          if (part.focus != null) {
-            await _focusIn(tester, find.byKey(key), index: part.focus!);
+            );
+            await tester.pump(const Duration(milliseconds: 600));
+            if (part.focus != null) {
+              await _focusIn(tester, find.byKey(key), index: part.focus!);
+            }
+            expect(tester.takeException(), isNull, reason: part.name);
+            final ro = tester.renderObject(find.byKey(key));
+            final (f, n) = _check(ro, '$setting / ${part.name}');
+            failures.addAll(f);
+            pairs += n;
+            FocusManager.instance.primaryFocus?.unfocus();
           }
-          expect(tester.takeException(), isNull, reason: part.name);
-          final ro = tester.renderObject(find.byKey(key));
-          final (f, n) = _check(ro, '$setting / ${part.name}');
-          failures.addAll(f);
-          pairs += n;
-          FocusManager.instance.primaryFocus?.unfocus();
-        }
-        debugPrint('nested $setting: $pairs nested pairs measured');
-        expect(pairs, greaterThan(20));
-        expect(failures, isEmpty, reason: failures.join('\n'));
-      });
+          debugPrint('nested $setting: $pairs nested pairs measured');
+          expect(pairs, greaterThan(20));
+          expect(failures, isEmpty, reason: failures.join('\n'));
+        },
+        // Painting a part into flutter_test's TestRecordingPaintingContext pushes the layers a follower's leader
+        // makes, and the recording context never disposes them.
+        experimentalLeakTesting: LeakTesting.settings.withIgnored(
+          classes: ['LeaderLayer'],
+        ),
+      );
     }
   }
 }

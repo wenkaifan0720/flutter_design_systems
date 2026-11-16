@@ -1,5 +1,6 @@
 // Routine controls share Comic's ink, lettering and conventional corner scale.
 // Speech balloons belong to messages, not to actions or editing surfaces.
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'dart:math' as math;
@@ -24,6 +25,9 @@ import 'localizations.dart';
 import 'editing.dart';
 import 'tell.dart';
 import 'internal/cap_label.dart';
+import 'internal/menu_open.dart';
+import 'internal/style_guard.dart';
+import 'knobs.dart' show ComicSpace;
 
 // Marks retain a four-pixel reading gutter within the caller's outline.
 // Their hit target grows with the face.
@@ -40,13 +44,14 @@ double _markExtent(
   final body = shape is CircleBorder || shape is StadiumBorder
       ? (glyph + 2 * clearance) * math.sqrt2
       : glyph + 2 * clearance + 2 * comicCornerInset(shape, direction);
-  return math.max(
-    base,
-    body +
-        (vertical ? dimensions.vertical : dimensions.horizontal) +
-        2 * rim.width +
-        .5,
-  );
+  // The face a shape needs is taken up to a whole, even size: inside an even target (48 or 44) it then has as much
+  // room on either side, so it stands on whole pixels with its centre on the target's, beside a bar's title.
+  final needed =
+      body +
+      (vertical ? dimensions.vertical : dimensions.horizontal) +
+      2 * rim.width +
+      .5;
+  return math.max(base, 2 * (needed / 2 - 1e-6).ceilToDouble());
 }
 
 /// A button's visual scale. Its input target remains at least 48 on touch.
@@ -151,7 +156,9 @@ class ComicButton extends StatelessWidget {
   /// Whether the button asks for the focus when it first appears.
   final bool autofocus;
 
+  /// {@template comic.style}
   /// Per-state appearance above the component theme.
+  /// {@endtemplate}
   final ComicStyle? style;
 
   /// Whether the button deletes or loses something: drawn in the danger tone.
@@ -202,6 +209,53 @@ class ComicButton extends StatelessWidget {
       boxed: _variant == _ButtonVariant.outlined,
     ),
   };
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        EnumProperty<ComicButtonSize>(
+          'size',
+          size,
+          defaultValue: ComicButtonSize.medium,
+        ),
+      )
+      ..add(
+        FlagProperty('busy', value: busy, ifTrue: 'busy', defaultValue: false),
+      )
+      ..add(DiagnosticsProperty<bool>('showBusy', showBusy, defaultValue: null))
+      ..add(
+        FlagProperty('wide', value: wide, ifTrue: 'wide', defaultValue: false),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'isDestructiveAction',
+          value: isDestructiveAction,
+          ifTrue: 'isDestructiveAction',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 enum _ButtonVariant { outlined, filled, text }
@@ -251,7 +305,7 @@ class _Filled extends StatelessWidget {
     final t = ComicTheme.of(context), c = t.colors;
     final small = size == ComicButtonSize.small;
     final layers = [style, t.filledButtonTheme];
-    final look = ComicStyleOf(layers, const {});
+    final look = comicStyleOf(layers, const {});
     final drawn = ComicPressable(
       onPressed: onPressed,
       label: label,
@@ -260,8 +314,9 @@ class _Filled extends StatelessWidget {
       autofocus: autofocus,
       outline: look.shapes(t.shapes.small),
       overlay: look.overlay,
+      plate: true,
       builder: (context, states) {
-        final look = ComicStyleOf(layers, states);
+        final look = comicStyleOf(layers, states);
         final ink = look.foreground ?? (destructive ? c.card : c.onPrimary);
         final text = (small ? t.type.buttonSmall : t.type.button)
             .merge(look.textStyle)
@@ -275,7 +330,10 @@ class _Filled extends StatelessWidget {
         final padding =
             look.padding(Directionality.of(context)) ??
             t.density.padding(
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              const EdgeInsets.symmetric(
+                horizontal: ComicSpace.gap,
+                vertical: ComicSpace.near,
+              ),
             );
         final rim = comicRim(t, look, c.nightLine);
         return AnimatedComicShape(
@@ -377,7 +435,7 @@ class _Outlined extends StatelessWidget {
 
   final ComicButtonSize size;
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String label;
 
   /// The optional glyph beside the words.
@@ -385,7 +443,7 @@ class _Outlined extends StatelessWidget {
 
   final Widget? leading;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
   /// Per-state face style, above the component theme and the look.
@@ -395,7 +453,7 @@ class _Outlined extends StatelessWidget {
     final t = ComicTheme.of(context), c = t.colors;
     final small = size == ComicButtonSize.small;
     final layers = [style, t.buttonTheme];
-    final look = ComicStyleOf(layers, const {});
+    final look = comicStyleOf(layers, const {});
     final drawn = ComicPressable(
       onPressed: onPressed,
       label: label,
@@ -404,8 +462,9 @@ class _Outlined extends StatelessWidget {
       autofocus: autofocus,
       outline: look.shapes(t.shapes.small),
       overlay: look.overlay,
+      plate: true,
       builder: (context, states) {
-        final look = ComicStyleOf(layers, states);
+        final look = comicStyleOf(layers, states);
         final ink = look.foreground ?? (c.dark ? c.text : c.onPaper);
         final text = (small ? t.type.buttonSmall : t.type.button)
             .merge(look.textStyle)
@@ -419,17 +478,37 @@ class _Outlined extends StatelessWidget {
         final padding =
             look.padding(Directionality.of(context)) ??
             t.density.padding(
-              EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              const EdgeInsets.symmetric(
+                horizontal: ComicSpace.gap,
+                vertical: ComicSpace.near,
+              ),
             );
         final rim = comicRim(t, look, c.nightLine);
         return AnimatedComicShape(
           shape: look.shape ?? t.shapes.small,
           builder: (context, shape) {
+            // A button keeps to a measure (200 on a phone, 320 on a desk), never narrower than its widest word: its
+            // words wrap between words, at any text size, never inside one.
+            final glyph = (showBusy ?? busy) || leading != null || icon != null
+                ? (look.iconSize ?? 20) + 8
+                : 0.0;
+            final measure = math.max(
+              t.desk ? 320.0 : 200.0,
+              comicWidestWord(
+                    label.toUpperCase(),
+                    text,
+                    textScaler: comicLetteringScaler(context, text),
+                  ) +
+                  glyph +
+                  padding.horizontal +
+                  (shape?.dimensions.horizontal ?? 0) +
+                  1,
+            );
             final content = ConstrainedBox(
               constraints: BoxConstraints(
                 minWidth: minimum?.width ?? 0,
                 minHeight: minimum?.height ?? height,
-                maxWidth: wide ? double.infinity : (t.desk ? 320 : 200),
+                maxWidth: wide ? double.infinity : measure,
               ),
               child: Padding(
                 padding: padding.add(shape?.dimensions ?? EdgeInsets.zero),
@@ -510,15 +589,16 @@ class ComicIconButton extends StatelessWidget {
     this.badgeLabel,
     this.dot = false,
     this.autofocus = false,
+    this.targetAlignment = AlignmentDirectional.center,
   });
 
   /// The optional glyph beside the words.
   final IconData icon;
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String label;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
   /// The visual size in logical pixels.
@@ -539,15 +619,19 @@ class ComicIconButton extends StatelessWidget {
   /// Per-state face style, above the component theme and the look.
   final ComicStyle? style;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
+
+  /// Where the face stands in its tap target when the target is larger than the face: centred, or on the edges named,
+  /// the target growing away from them ([AlignmentDirectional.centerStart] for a face on its column's start keyline, a
+  /// month's back arrow; [AlignmentDirectional.centerEnd] for a field's trailing key).
+  final AlignmentGeometry targetAlignment;
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
     final layers = [style, t.iconButtonTheme];
-    final base = ComicStyleOf(layers, const {});
-    final target = math.max(size, ComicTapTarget.targetOf(context));
+    final base = comicStyleOf(layers, const {});
     return comicOwnSize(
       child: ComicPressable(
         autofocus: autofocus,
@@ -558,125 +642,105 @@ class ComicIconButton extends StatelessWidget {
         value: badgeLabel,
         outline: base.shapes(t.shapes.small),
         overlay: base.overlay,
+        sink: onPressed == null,
+        targetAlignment: targetAlignment,
         builder: (context, states) {
-          final look = ComicStyleOf(layers, states);
+          final look = comicStyleOf(layers, states);
           final rim = comicRim(t, look, c.nightLine);
           return AnimatedComicShape(
             shape: look.shape ?? t.shapes.small,
             builder: (context, shape) => comicOwnSize(
-              width: math.max(
-                target,
-                _markExtent(
-                  look.minimumSize?.width ?? t.density.height(size),
-                  look.iconSize ?? 20,
-                  shape,
-                  rim,
-                  Directionality.of(context),
-                  vertical: false,
-                ),
+              width: _markExtent(
+                look.minimumSize?.width ?? t.density.height(size),
+                look.iconSize ?? 20,
+                shape,
+                rim,
+                Directionality.of(context),
+                vertical: false,
               ),
-              height: math.max(
-                target,
-                _markExtent(
-                  look.minimumSize?.height ?? t.density.height(size),
-                  look.iconSize ?? 20,
-                  shape,
-                  rim,
-                  Directionality.of(context),
-                  vertical: true,
-                ),
+              height: _markExtent(
+                look.minimumSize?.height ?? t.density.height(size),
+                look.iconSize ?? 20,
+                shape,
+                rim,
+                Directionality.of(context),
+                vertical: true,
               ),
-              child: Center(
-                child: ComicPressFace(
-                  child: comicOwnSize(
-                    width: _markExtent(
-                      look.minimumSize?.width ?? t.density.height(size),
-                      look.iconSize ?? 20,
-                      shape,
-                      rim,
-                      Directionality.of(context),
-                      vertical: false,
+              // An inked face stands on its print and sinks onto it (law 4); a disabled one has none, nor has a
+              // bare glyph styled without a rim (a field's reveal, a chip's close).
+              child: _onPrint(
+                onPressed != null &&
+                    rim.style != BorderStyle.none &&
+                    rim.width > 0,
+                states.pressed,
+                shape,
+                ComicStateDecoration(
+                  decoration: ShapeDecoration(
+                    color:
+                        look.fill ??
+                        (selected
+                            ? c.caption
+                            : c.dark
+                            ? c.card
+                            : c.control),
+                    shape: (shape ?? const RoundedRectangleBorder()).copyWith(
+                      side: rim,
                     ),
-                    height: _markExtent(
-                      look.minimumSize?.height ?? t.density.height(size),
-                      look.iconSize ?? 20,
-                      shape,
-                      rim,
-                      Directionality.of(context),
-                      vertical: true,
-                    ),
-                    child: ComicStateDecoration(
-                      decoration: ShapeDecoration(
-                        color:
-                            look.fill ??
-                            (selected
-                                ? c.caption
-                                : c.dark
-                                ? c.card
-                                : c.control),
-                        shape: (shape ?? const RoundedRectangleBorder())
-                            .copyWith(side: rim),
+                  ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Center(
+                        child: Padding(
+                          padding: shape?.dimensions ?? EdgeInsets.zero,
+                          child: Icon(
+                            icon,
+                            size: look.iconSize ?? 20,
+                            color:
+                                look.foreground ??
+                                (selected
+                                    ? c.onCaption
+                                    : c.dark
+                                    ? c.text
+                                    : c.onPaper),
+                          ),
+                        ),
                       ),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Center(
-                            child: Padding(
-                              padding: shape?.dimensions ?? EdgeInsets.zero,
-                              child: Icon(
-                                icon,
-                                size: look.iconSize ?? 20,
-                                color:
-                                    look.foreground ??
-                                    (selected
-                                        ? c.onCaption
-                                        : c.dark
-                                        ? c.text
-                                        : c.onPaper),
+                      if (badge != null || dot)
+                        PositionedDirectional(
+                          top: -6,
+                          end: -6,
+                          child: ExcludeSemantics(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 3,
+                                vertical: 1,
                               ),
+                              decoration: ShapeDecoration(
+                                color: c.caption,
+                                shape:
+                                    (badge == null
+                                            ? t.shapes.full
+                                            : t.shapes.capsule)
+                                        .copyWith(
+                                          side: BorderSide(color: c.nightLine),
+                                        ),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 8,
+                                minHeight: 8,
+                              ),
+                              child: badge == null
+                                  ? null
+                                  : Text(
+                                      badge! > 99 ? '99+' : '$badge',
+                                      style: ComicTheme.of(context).type.label
+                                          .copyWith(color: c.onCaption),
+                                    ),
                             ),
                           ),
-                          if (badge != null || dot)
-                            PositionedDirectional(
-                              top: -6,
-                              end: -6,
-                              child: ExcludeSemantics(
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 3,
-                                    vertical: 1,
-                                  ),
-                                  decoration: ShapeDecoration(
-                                    color: c.caption,
-                                    shape:
-                                        (badge == null
-                                                ? t.shapes.full
-                                                : t.shapes.capsule)
-                                            .copyWith(
-                                              side: BorderSide(
-                                                color: c.nightLine,
-                                              ),
-                                            ),
-                                  ),
-                                  constraints: const BoxConstraints(
-                                    minWidth: 8,
-                                    minHeight: 8,
-                                  ),
-                                  child: badge == null
-                                      ? null
-                                      : Text(
-                                          badge! > 99 ? '99+' : '$badge',
-                                          style: ComicTheme.of(context)
-                                              .type
-                                              .label
-                                              .copyWith(color: c.onCaption),
-                                        ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -686,10 +750,64 @@ class ComicIconButton extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(DoubleProperty('size', size, defaultValue: 40))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'selected',
+          value: selected,
+          ifTrue: 'selected',
+          defaultValue: false,
+        ),
+      )
+      ..add(FlagProperty('dot', value: dot, ifTrue: 'dot', defaultValue: false))
+      ..add(IntProperty('badge', badge, defaultValue: null))
+      ..add(StringProperty('badgeLabel', badgeLabel, defaultValue: null))
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'targetAlignment',
+          targetAlignment,
+          defaultValue: AlignmentDirectional.center,
+        ),
+      );
+  }
 }
 
-/// A field on the control surface. [onPaper] uses the paper surface and conversational
-/// lettering for a reply; its outline remains on the same corner scale.
+// An icon button's face on its print, sinking onto it under the press; a disabled face stands flat.
+Widget _onPrint(bool live, bool down, OutlinedBorder? shape, Widget face) =>
+    live
+    ? ComicPlated(
+        down: down,
+        shape: shape ?? const RoundedRectangleBorder(),
+        child: face,
+      )
+    : face;
+
+/// A field on the control surface. [onPaper] uses the paper surface for a reply by day; by night every field is on the
+/// night card. Its outline remains on the same corner scale.
 /// [maxLines] above one makes a note box; [trailing] holds a send button or a unit.
 ///
 /// ```dart
@@ -730,7 +848,11 @@ class ComicTextField extends StatelessWidget {
     this.failureLine,
     this.nameOnly = false,
     this.showLabel = true,
-  });
+  }) : assert(maxLines > 0, 'a field shows at least one line'),
+       assert(
+         minLines == null || (minLines > 0 && minLines <= maxLines),
+         'minLines is at least one and no more than maxLines',
+       );
 
   /// The caller-owned editing controller.
   final TextEditingController? controller;
@@ -757,7 +879,7 @@ class ComicTextField extends StatelessWidget {
   /// number or code in groups ("0042 1187") holds [TextDirection.ltr] in a right-to-left app, or its groups swap.
   final TextDirection? textDirection;
 
-  /// [onPaper]: uses the paper surface for a reply. [obscureText]: hides entered text.
+  /// [onPaper]: uses the paper surface for a reply, by day. [obscureText]: hides entered text.
   final bool onPaper, obscureText;
 
   /// The label stays above the frame, even while focused.
@@ -827,7 +949,7 @@ class ComicTextField extends StatelessWidget {
     final t = ComicTheme.of(context);
     final c = t.colors;
     final wrong = error != null || comicFieldInError(context);
-    final look = ComicStyleOf(
+    final look = comicStyleOf(
       [style, t.textFieldTheme],
       comicStates(
         enabled: enabled,
@@ -836,16 +958,10 @@ class ComicTextField extends StatelessWidget {
         error: wrong,
       ),
     );
-    final inputInk = onPaper
-        ? c.onPaper
-        : c.dark
-        ? c.text
-        : c.onPaper;
-    final inputHint = onPaper
-        ? c.hint
-        : c.dark
-        ? c.textSecondary
-        : c.hint;
+    // By night a reply is printed as every field is, on the night card in cream: on day paper it stood as a lit box
+    // whose cream rim vanished into its fill (the fresh-eyes read, 11-15).
+    final inputInk = c.dark ? c.text : c.onPaper;
+    final inputHint = c.dark ? c.textSecondary : c.hint;
     // A talking field's rim is the night line too: by night the ink line vanished on the ground and the field read
     // 2.5 px shorter than the send button beside it (ui_core's DesignRowCheck); by day the two lines are one.
     final rim = comicRim(t, look, wrong ? c.tones.danger : c.nightLine);
@@ -900,18 +1016,19 @@ class ComicTextField extends StatelessWidget {
           decoration: InputDecoration(
             isCollapsed: true,
             border: InputBorder.none,
+            // A note box's hint wraps over its lines, as its words would; a one-line field's ends in an ellipsis.
             hint: hint == null
                 ? null
                 : ExcludeSemantics(
                     child: Text(
                       hint!,
                       style: textStyle.copyWith(color: inputHint),
-                      maxLines: 1,
+                      maxLines: maxLines,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
             hintStyle: textStyle.copyWith(color: inputHint),
-            hintMaxLines: 1,
+            hintMaxLines: maxLines,
             contentPadding: EdgeInsets.symmetric(vertical: reach),
           ),
         ),
@@ -933,6 +1050,7 @@ class ComicTextField extends StatelessWidget {
         ? ComicIconButton(
             hidden ? ComicGlyphs.show : ComicGlyphs.hide,
             style: comicInFieldIcon,
+            targetAlignment: AlignmentDirectional.centerEnd,
             label: hidden
                 ? (revealLabels?.$1 ??
                       DesignLocalizations.of(context).showPasswordLabel)
@@ -953,10 +1071,10 @@ class ComicTextField extends StatelessWidget {
           decoration: ShapeDecoration(
             color:
                 look.fill ??
-                (onPaper
-                    ? c.paper
-                    : c.dark
+                (c.dark
                     ? c.card
+                    : onPaper
+                    ? c.paper
                     : c.control),
             shape: (shape ?? const RoundedRectangleBorder()).copyWith(
               side: rim,
@@ -994,7 +1112,7 @@ class ComicTextField extends StatelessWidget {
                         children: [
                           if (leading != null) ...[
                             leading!,
-                            const SizedBox(width: 8),
+                            const SizedBox(width: ComicSpace.close),
                           ],
                           if (prefix != null) ...[
                             Text(
@@ -1003,11 +1121,11 @@ class ComicTextField extends StatelessWidget {
                                 fontWeight: FontWeight.w800,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: ComicSpace.close),
                           ],
                           Expanded(child: input),
                           if (trailing != null) ...[
-                            const SizedBox(width: 10),
+                            const SizedBox(width: ComicSpace.close),
                             trailing,
                           ],
                         ],
@@ -1018,32 +1136,43 @@ class ComicTextField extends StatelessWidget {
         ),
       ),
     );
-    return Semantics(
+    // A tap anywhere in the frame, beside the words too, reaches the field: the frame is the box a tap reaches and
+    // the one a screen reader outlines (the label and the line under it are read with it, not outlined).
+    final framed = Semantics(
       validationResult: error == null
           ? SemanticsValidationResult.none
           : SemanticsValidationResult.invalid,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (label != null && showLabel) ...[
-            ExcludeSemantics(child: Text(label!, style: t.type.title)),
-            const SizedBox(height: 6),
-          ],
-          Opacity(opacity: enabled ? 1 : .55, child: frame),
-          if (error != null || helper != null) ...[
-            const SizedBox(height: 6),
-            _fieldLine(
-              Text(
-                error ?? helper!,
-                style: t.type.small.copyWith(
-                  color: error == null ? c.textSecondary : c.tones.danger,
-                ),
+      child: MouseRegion(
+        cursor: enabled ? SystemMouseCursors.text : SystemMouseCursors.basic,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          excludeFromSemantics: true,
+          onTap: enabled ? effectiveFocus.requestFocus : null,
+          child: ComicScreened(on: !enabled, child: frame),
+        ),
+      ),
+    );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (label != null && showLabel) ...[
+          ExcludeSemantics(child: Text(label!, style: t.type.title)),
+          const SizedBox(height: ComicSpace.close),
+        ],
+        framed,
+        if (error != null || helper != null) ...[
+          const SizedBox(height: ComicSpace.close),
+          _fieldLine(
+            Text(
+              error ?? helper!,
+              style: t.type.small.copyWith(
+                color: error == null ? c.textSecondary : c.tones.danger,
               ),
             ),
-          ],
+          ),
         ],
-      ),
+      ],
     );
   }
 
@@ -1051,6 +1180,166 @@ class ComicTextField extends StatelessWidget {
       ? ExcludeSemantics(child: line)
       : failureLine?.call(line) ??
             Semantics(container: true, liveRegion: true, child: line);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('initialValue', initialValue, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('prefix', prefix, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Widget>('trailing', trailing, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<Widget>('leading', leading, defaultValue: null))
+      ..add(IntProperty('maxLines', maxLines, defaultValue: 1))
+      ..add(IntProperty('minLines', minLines, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<TextDirection>(
+          'textDirection',
+          textDirection,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'onPaper',
+          value: onPaper,
+          ifTrue: 'onPaper',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'obscureText',
+          value: obscureText,
+          ifTrue: 'obscureText',
+          defaultValue: false,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'password',
+          value: password,
+          ifTrue: 'password',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<(String, String)>(
+          'revealLabels',
+          revealLabels,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget input)>.has(
+          'decorate',
+          decorate,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget line)>.has(
+          'failureLine',
+          failureLine,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'nameOnly',
+          value: nameOnly,
+          ifTrue: 'nameOnly',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'showLabel',
+          value: showLabel,
+          ifFalse: 'showLabel: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _FieldFocus extends StatefulWidget {
@@ -1131,10 +1420,10 @@ class ComicSendButton extends StatelessWidget {
   /// Per-state appearance above the icon theme.
   final ComicStyle? style;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -1156,6 +1445,30 @@ class ComicSendButton extends StatelessWidget {
         ),
       ]),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -1185,20 +1498,20 @@ class ComicSelectField extends StatelessWidget {
   /// Secondary explanatory text.
   final String? note;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
     final layers = [style, t.textFieldTheme],
-        base = ComicStyleOf([style, t.textFieldTheme], const {});
+        base = comicStyleOf([style, t.textFieldTheme], const {});
     // A dropdown's face: its content's width, at most comicDropdownMost from 600 up.
     return comicDropdownWidth(
       context,
@@ -1207,13 +1520,26 @@ class ComicSelectField extends StatelessWidget {
         autofocus: autofocus,
         onPressed: onPressed,
         label: value,
+        // Under a ComicMenuAnchor (a select), expanded while its list is up.
+        expanded: ComicMenuOpen.of(context),
+        // The Down arrow opens it, as Enter and Space do.
+        keys: onPressed == null
+            ? null
+            : (_, event) {
+                if (event is! KeyDownEvent ||
+                    event.logicalKey != LogicalKeyboardKey.arrowDown) {
+                  return KeyEventResult.ignored;
+                }
+                onPressed!();
+                return KeyEventResult.handled;
+              },
         outline: base.shapes(t.shapes.small),
         overlay: base.overlay,
         builder: (context, states) {
-          final look = ComicStyleOf(layers, states),
+          final look = comicStyleOf(layers, states),
               rim = comicRim(
                 t,
-                ComicStyleOf(layers, states),
+                comicStyleOf(layers, states),
                 comicFieldInError(context) ? c.tones.danger : c.nightLine,
               );
           final ink = look.foreground ?? (c.dark ? c.text : c.onPaper);
@@ -1281,6 +1607,31 @@ class ComicSelectField extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 /// A short filter or quick reply, as wide as its word, on the family's capsule step. It wears the lamp when [selected]; a choice is lit,
@@ -1325,10 +1676,10 @@ class ComicChip extends StatelessWidget {
   VoidCallback? get _press =>
       onSelected == null ? onPressed : () => onSelected!(!selected);
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String label;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
   /// Removes this chip through a separate control.
@@ -1358,7 +1709,7 @@ class ComicChip extends StatelessWidget {
     }
     final t = ComicTheme.of(context), c = t.colors;
     final layers = [style, t.chipTheme],
-        base = ComicStyleOf([style, t.chipTheme], const {});
+        base = comicStyleOf([style, t.chipTheme], const {});
     return ComicPressable(
       onPressed: _press,
       focusNode: focusNode,
@@ -1368,8 +1719,8 @@ class ComicChip extends StatelessWidget {
       outline: base.shapes(t.shapes.capsule),
       overlay: base.overlay,
       builder: (context, states) {
-        final look = ComicStyleOf(layers, states),
-            rim = comicRim(t, ComicStyleOf(layers, states), c.nightLine);
+        final look = comicStyleOf(layers, states),
+            rim = comicRim(t, comicStyleOf(layers, states), c.nightLine);
         return AnimatedComicShape(
           shape: look.shape ?? t.shapes.capsule,
           builder: (context, shape) => ComicStateDecoration.box(
@@ -1386,7 +1737,9 @@ class ComicChip extends StatelessWidget {
                           ),
                         ))
                     .add(
-                      shape == null ? EdgeInsets.zero : const EdgeInsets.all(6),
+                      shape == null
+                          ? EdgeInsets.zero
+                          : const EdgeInsets.all(ComicSpace.close),
                     ),
             decoration: ShapeDecoration(
               color:
@@ -1437,7 +1790,7 @@ class ComicChip extends StatelessWidget {
                                   ? c.text
                                   : c.onPaper),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: ComicSpace.close),
                         Flexible(
                           child: CapLabel(
                             child: Text(
@@ -1481,7 +1834,7 @@ class ComicChip extends StatelessWidget {
     // the plain one's height in one row with it (11-12): the cross stands inside the face, the room at its end held
     // for it, as a password field's eye stands inside the field.
     Widget face(Set<WidgetState> states) {
-      final look = ComicStyleOf(layers, states);
+      final look = comicStyleOf(layers, states);
       // The words move to their new ink with the plate under them.
       return ComicStateLerp<Color?>(
         value:
@@ -1518,7 +1871,7 @@ class ComicChip extends StatelessWidget {
                       .add(
                         shape == null
                             ? EdgeInsets.zero
-                            : const EdgeInsets.all(6),
+                            : const EdgeInsets.all(ComicSpace.close),
                       )
                       .resolve(direction);
               return ComicStateDecoration.box(
@@ -1549,10 +1902,10 @@ class ComicChip extends StatelessWidget {
                   children: [
                     if (icon != null) ...[
                       Icon(icon, size: look.iconSize ?? 18, color: ink),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: ComicSpace.close),
                     ],
                     Flexible(child: words),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: ComicSpace.close),
                     // The cross's place: it stands over it, the chip's whole height.
                     const SizedBox(width: _crossBox),
                   ],
@@ -1564,7 +1917,7 @@ class ComicChip extends StatelessWidget {
       );
     }
 
-    final base = ComicStyleOf(layers, const {});
+    final base = comicStyleOf(layers, const {});
     // A chip that takes nothing at all is disabled, and says so as the plain chip does: its press stays, with nothing
     // to run. A chip that only removes shows its words, its cross the one press.
     final Widget chip = _press == null && !disabled
@@ -1579,7 +1932,7 @@ class ComicChip extends StatelessWidget {
             overlay: base.overlay,
             builder: (context, states) => face(states),
           );
-    final look = ComicStyleOf(layers, {
+    final look = comicStyleOf(layers, {
       if (disabled) WidgetState.disabled,
       if (selected) WidgetState.selected,
     });
@@ -1628,6 +1981,52 @@ class ComicChip extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has('onSelected', onSelected),
+      )
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDeleted', onDeleted))
+      ..add(
+        StringProperty(
+          'deleteButtonTooltipMessage',
+          deleteButtonTooltipMessage,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'selected',
+          value: selected,
+          ifTrue: 'selected',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// A square tick box, with its tap target around it.
@@ -1658,7 +2057,7 @@ class ComicCheckbox extends StatelessWidget {
   /// Reports a new value; null disables changes.
   final ValueChanged<bool?>? onChanged;
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String label;
 
   /// Whether validation failed, announced and exposed as WidgetState.error.
@@ -1667,18 +2066,17 @@ class ComicCheckbox extends StatelessWidget {
   /// Per-state face style, above the component theme and the look.
   final ComicStyle? style;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
     final layers = [style, t.checkboxTheme];
-    final base = ComicStyleOf(layers, const {});
-    final target = ComicTapTarget.targetOf(context);
+    final base = comicStyleOf(layers, const {});
     return comicOwnSize(
       child: ComicPressable(
         focusNode: focusNode,
@@ -1699,11 +2097,13 @@ class ComicCheckbox extends StatelessWidget {
         checked: value == true,
         mixed: value == null,
         button: false,
+        // A bare box stands on its column's start keyline, its target growing toward the end.
+        targetAlignment: AlignmentDirectional.centerStart,
         // The marks are the box's own: drawn below, on the mark, not on its larger target.
         wash: false,
         ring: false,
         builder: (context, states) {
-          final look = ComicStyleOf(layers, states);
+          final look = comicStyleOf(layers, states);
           final box = comicCappedShape(t.shapes.small, 7);
           final rim = comicRim(
             t,
@@ -1715,82 +2115,54 @@ class ComicCheckbox extends StatelessWidget {
           return AnimatedComicShape(
             shape: look.shape ?? box,
             builder: (context, shape) => comicOwnSize(
-              width: math.max(
-                target,
-                _markExtent(
-                  look.minimumSize?.width ?? 26,
-                  18,
-                  shape,
-                  rim,
-                  Directionality.of(context),
-                  vertical: false,
-                ),
+              width: _markExtent(
+                look.minimumSize?.width ?? 26,
+                18,
+                shape,
+                rim,
+                Directionality.of(context),
+                vertical: false,
               ),
-              height: math.max(
-                target,
-                _markExtent(
-                  look.minimumSize?.height ?? 26,
-                  18,
-                  shape,
-                  rim,
-                  Directionality.of(context),
-                  vertical: true,
-                ),
+              height: _markExtent(
+                look.minimumSize?.height ?? 26,
+                18,
+                shape,
+                rim,
+                Directionality.of(context),
+                vertical: true,
               ),
-              child: Center(
-                child: ComicPressFace(
-                  child: comicOwnSize(
-                    width: _markExtent(
-                      look.minimumSize?.width ?? 26,
-                      18,
-                      shape,
-                      rim,
-                      Directionality.of(context),
-                      vertical: false,
-                    ),
-                    height: _markExtent(
-                      look.minimumSize?.height ?? 26,
-                      18,
-                      shape,
-                      rim,
-                      Directionality.of(context),
-                      vertical: true,
-                    ),
-                    child: ComicHighlight(
-                      states: states,
-                      shape: shape ?? box,
-                      wash: onChanged != null,
-                      overlay: onChanged == null
-                          ? null
-                          : base.overlay?.resolve(states),
-                      child: ComicStateDecoration(
-                        decoration: ShapeDecoration(
-                          color:
-                              look.fill ??
-                              (value != false
-                                  ? c.caption
-                                  : c.dark
-                                  ? c.card
-                                  : c.control),
-                          shape: (shape ?? box).copyWith(side: rim),
-                        ),
-                        child: value != false
-                            ? Center(
-                                child: Padding(
-                                  padding: shape?.dimensions ?? EdgeInsets.zero,
-                                  child: Icon(
-                                    value == null
-                                        ? ComicGlyphs.minus
-                                        : ComicGlyphs.check,
-                                    size: 18,
-                                    color: look.foreground ?? c.onCaption,
-                                  ),
-                                ),
-                              )
-                            : null,
-                      ),
-                    ),
+              child: ComicHighlight(
+                states: states,
+                shape: shape ?? box,
+                wash: onChanged != null,
+                overlay: onChanged == null
+                    ? null
+                    : base.overlay?.resolve(states),
+                child: ComicStateDecoration(
+                  decoration: ShapeDecoration(
+                    color:
+                        look.fill ??
+                        (value != false
+                            ? c.caption
+                            : c.dark
+                            ? c.card
+                            : c.control),
+                    shape: (shape ?? box).copyWith(side: rim),
                   ),
+                  child: value != false
+                      ? Center(
+                          child: Padding(
+                            padding: shape?.dimensions ?? EdgeInsets.zero,
+                            child: Icon(
+                              value == null
+                                  ? ComicGlyphs.minus
+                                  : ComicGlyphs.check,
+                              size: 18,
+                              color: look.foreground ?? c.onCaption,
+                            ),
+                          ),
+                        )
+                      : null,
                 ),
               ),
             ),
@@ -1798,6 +2170,47 @@ class ComicCheckbox extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        FlagProperty(
+          'tristate',
+          value: tristate,
+          ifTrue: 'tristate',
+          defaultValue: false,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<bool?>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label))
+      ..add(
+        FlagProperty(
+          'isError',
+          value: isError,
+          ifTrue: 'isError',
+          defaultValue: false,
+        ),
+      )
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -1845,10 +2258,10 @@ class ComicChoiceBox extends StatelessWidget {
   /// (ComicChoices sets it). Null keeps [padding] inside the rim.
   final double? wordsAt;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String? label;
 
   /// Optional caller-owned focus node.
@@ -1863,14 +2276,14 @@ class ComicChoiceBox extends StatelessWidget {
   EdgeInsets _inset(EdgeInsets room) =>
       wordsAt == null ? room : room.copyWith(left: wordsAt, right: wordsAt);
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
     final layers = [style, t.optionTheme],
-        look = ComicStyleOf([style, t.optionTheme], const {});
+        look = comicStyleOf([style, t.optionTheme], const {});
     return ComicPressable(
       autofocus: autofocus,
       onPressed: onPressed,
@@ -1885,8 +2298,8 @@ class ComicChoiceBox extends StatelessWidget {
       outline: look.shapes(t.shapes.small),
       overlay: look.overlay,
       builder: (context, states) {
-        final look = ComicStyleOf(layers, states),
-            rim = comicRim(t, ComicStyleOf(layers, states), c.nightLine);
+        final look = comicStyleOf(layers, states),
+            rim = comicRim(t, comicStyleOf(layers, states), c.nightLine);
         return AnimatedComicShape(
           shape: look.shape ?? t.shapes.small,
           builder: (context, shape) => ComicStateDecoration(
@@ -1927,6 +2340,64 @@ class ComicChoiceBox extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(
+        FlagProperty('many', value: many, ifTrue: 'many', defaultValue: false),
+      )
+      ..add(
+        FlagProperty(
+          'inGroup',
+          value: inGroup,
+          ifTrue: 'inGroup',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'selected',
+          value: selected,
+          ifTrue: 'selected',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(DoubleProperty('wordsAt', wordsAt, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<KeyEventResult Function(FocusNode, KeyEvent)>.has(
+          'onKeyEvent',
+          onKeyEvent,
+        ),
+      )
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -1981,7 +2452,7 @@ class ComicChoices extends StatelessWidget {
       builder: (context, box) {
         // The words stand on a text field's inner keyline, so choices and fields stacked in a panel share it.
         final pad = comicFieldWordsAt(t);
-        const gap = 6.0;
+        const gap = ComicSpace.close;
         // From 600 up a tile keeps to its words, side by side as chips are (no button or segmented control
         // stretches to its column), a tile with a note too, its name over its note (the design kit's checks holds a group
         // of choices to what its tiles take); on a phone they share the column in a grid.
@@ -1994,7 +2465,9 @@ class ComicChoices extends StatelessWidget {
                 ComicChoiceBox(
                   style: style,
                   selected: o.value == value,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: ComicSpace.close,
+                  ),
                   wordsAt: pad,
                   label: o.label,
                   onPressed: onChanged == null
@@ -2018,7 +2491,7 @@ class ComicChoices extends StatelessWidget {
                         children: [
                           name,
                           if (o.note != null) ...[
-                            const SizedBox(height: 2),
+                            const SizedBox(height: ComicSpace.fine),
                             Text(o.note!, style: tt.type.meta),
                           ],
                         ],
@@ -2068,7 +2541,7 @@ class ComicChoices extends StatelessWidget {
               ComicChoiceBox(
                 style: style,
                 selected: o.value == value,
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.symmetric(vertical: ComicSpace.close),
                 wordsAt: pad,
                 label: o.label,
                 onPressed: onChanged == null ? null : () => onChanged!(o.value),
@@ -2085,7 +2558,7 @@ class ComicChoices extends StatelessWidget {
                             ),
                           ),
                           if (o.note != null) ...[
-                            const SizedBox(width: 12),
+                            const SizedBox(width: ComicSpace.near),
                             Flexible(
                               child: CapLabel(
                                 child: Text(
@@ -2117,7 +2590,7 @@ class ComicChoices extends StatelessWidget {
                             ),
                           ),
                           if (o.note != null) ...[
-                            const SizedBox(height: 2),
+                            const SizedBox(height: ComicSpace.fine),
                             Text(o.note!, style: tt.type.meta),
                           ],
                         ],
@@ -2130,6 +2603,20 @@ class ComicChoices extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicChoice>('options', options))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -2154,7 +2641,7 @@ class ComicNumberField extends StatelessWidget {
     this.note,
     this.lessLabel,
     this.moreLabel,
-  });
+  }) : assert(step > 0, 'a number field steps by more than nothing');
 
   /// The count shown.
   final int value;
@@ -2201,7 +2688,7 @@ class ComicNumberField extends StatelessWidget {
     final t = ComicTheme.of(context);
     final c = t.colors;
     final layers = [style, t.stepperTheme];
-    final look = ComicStyleOf(layers, const {});
+    final look = comicStyleOf(layers, const {});
     // One trough at a field's height: less and more are square cells at its ends, the count between them. A press
     // marks a cell in the trough's outline moved in by the rim and 2 px, so the marks are concentric with it.
     final rim = comicRim(t, look, c.nightLine);
@@ -2278,7 +2765,7 @@ class ComicNumberField extends StatelessWidget {
                       style: number,
                     ),
                     if (unit != null) ...[
-                      const SizedBox(width: 6),
+                      const SizedBox(width: ComicSpace.close),
                       Text(
                         unit!.toUpperCase(),
                         maxLines: 1,
@@ -2309,11 +2796,32 @@ class ComicNumberField extends StatelessWidget {
         if (t.width >= 600) IntrinsicWidth(child: track) else track,
         if (note != null)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: ComicSpace.close),
             child: Text(note!, style: t.type.small),
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(IntProperty('min', min, defaultValue: null))
+      ..add(IntProperty('max', max, defaultValue: null))
+      ..add(IntProperty('step', step, defaultValue: 1))
+      ..add(
+        ObjectFlagProperty<String Function(int value)>.has('format', format),
+      )
+      ..add(StringProperty('unit', unit, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('lessLabel', lessLabel, defaultValue: null))
+      ..add(StringProperty('moreLabel', moreLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -2418,19 +2926,19 @@ class ComicSwitch extends StatelessWidget {
   /// Reports a new value; null disables changes.
   final ValueChanged<bool>? onChanged;
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String? label;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
-    final base = ComicStyleOf([style, t.switchTheme], const {});
+    final base = comicStyleOf([style, t.switchTheme], const {});
     final target = ComicTapTarget.targetOf(context);
     return comicOwnSize(
       width: 48,
@@ -2445,7 +2953,7 @@ class ComicSwitch extends StatelessWidget {
         wash: false,
         ring: false,
         builder: (context, states) {
-          final look = ComicStyleOf([style, t.switchTheme], states);
+          final look = comicStyleOf([style, t.switchTheme], states);
           return AnimatedComicShape(
             shape: look.shape ?? t.shapes.capsule,
             builder: (context, shape) => Center(
@@ -2482,6 +2990,38 @@ class ComicSwitch extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'value',
+          value: value,
+          ifTrue: 'value',
+          ifFalse: 'value: false',
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -2535,7 +3075,7 @@ class _Action extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     final layers = [style, boxed ? t.filledButtonTheme : t.textButtonTheme];
-    final base = ComicStyleOf(layers, const {});
+    final base = comicStyleOf(layers, const {});
     final drawn = ComicPressable(
       onPressed: onPressed,
       label: label,
@@ -2546,10 +3086,11 @@ class _Action extends StatelessWidget {
       // column gives it, as they do (a sheet's stacked actions, full width). Only the quiet words stand centred in a
       // least target of their own.
       target: !boxed,
+      plate: boxed,
       outline: base.shapes(t.shapes.small),
       overlay: base.overlay,
       builder: (context, states) {
-        final look = ComicStyleOf(layers, states);
+        final look = comicStyleOf(layers, states);
         final ink =
             look.foreground ??
             (danger ? t.colors.tones.danger : t.colors.shadeText);
@@ -2629,8 +3170,9 @@ class _Action extends StatelessWidget {
         );
       },
     );
-    // Quiet words with no surface at rest start on their column's edge: the room before them stands outward, the wash
-    // round them still. Held at a set width (a phone's stacked actions) they stay centred in it.
+    // Quiet words with no surface at rest start on their column's edge: the room before them is drawn outward only (its
+    // wash and ring), and the box they take, the one a tap and a screen reader reach, stands at least the floor. Held
+    // at a set width (a phone's stacked actions) they stay centred in it.
     final dir = Directionality.of(context);
     final restShape = base.shape ?? t.shapes.small;
     final rest =
@@ -2640,7 +3182,10 @@ class _Action extends StatelessWidget {
     final pad = rest
         ? (base.padding(dir) ??
                   t.density.padding(
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    const EdgeInsets.symmetric(
+                      horizontal: ComicSpace.gap,
+                      vertical: ComicSpace.near,
+                    ),
                   ))
               .add(restShape.dimensions)
               .resolve(dir)
@@ -2652,7 +3197,14 @@ class _Action extends StatelessWidget {
         : EdgeInsets.only(left: lead);
     final placed = lead == 0
         ? drawn
-        : ComicOutward(margin: room, inwardWhenHeld: true, child: drawn);
+        : DesignTapTarget(
+            minSize: Size.square(ComicTapTarget.targetOf(context)),
+            child: ComicOutward(
+              margin: room,
+              inwardWhenHeld: true,
+              child: drawn,
+            ),
+          );
     return ComicButtonRoom(
       child: wide ? SizedBox(width: double.infinity, child: placed) : placed,
     );

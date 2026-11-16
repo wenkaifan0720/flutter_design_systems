@@ -1,5 +1,7 @@
 // The comic page: square inked panels, narration captions, and the tiers they stand in. Nothing here has a lip shadow; a
 // panel is a 3 px contour on a flat fill, and the white between panels is the gutter.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -8,9 +10,12 @@ import 'package:ui_core/ui_core.dart';
 import 'layout.dart';
 import 'print.dart';
 import 'theme.dart';
+import 'internal/reach.dart' show RingInClip;
 import 'press.dart';
 import 'component_themes.dart';
 import 'styled.dart';
+import 'internal/style_guard.dart';
+import 'knobs.dart' show ComicSpace;
 
 /// Who a filled label belongs to: `lamp` is the narrator and today, `ink` a fact in full contour, `you` is yours, `shade` the
 /// group, `paper` a plain box. Each brings its own letters.
@@ -83,7 +88,7 @@ class ComicCaption extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     final (fill, letters) = comicToneInks(tone, t.colors);
-    final look = ComicStyleOf([style, t.badgeTheme], const {});
+    final look = comicStyleOf([style, t.badgeTheme], const {});
     final line = comicRim(t, look, t.colors.nightLine);
     final size = tight ? 11.0 : 12.0;
     return Align(
@@ -132,7 +137,9 @@ class ComicCaption extends StatelessWidget {
                         ))
                     .add(shape?.dimensions ?? EdgeInsets.zero)
                     .add(
-                      shape == null ? EdgeInsets.zero : const EdgeInsets.all(6),
+                      shape == null
+                          ? EdgeInsets.zero
+                          : const EdgeInsets.all(ComicSpace.close),
                     )
                     .resolve(Directionality.of(context))
                     .startAt(wordsAt, Directionality.of(context)),
@@ -145,7 +152,7 @@ class ComicCaption extends StatelessWidget {
                     size: look.iconSize ?? 15,
                     color: look.foreground ?? letters,
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: ComicSpace.close),
                 ],
                 Flexible(
                   child: Text(
@@ -167,6 +174,34 @@ class ComicCaption extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('wordsAt', wordsAt, defaultValue: null))
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(StringProperty('words', words))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        EnumProperty<ComicSpeaker>(
+          'tone',
+          tone,
+          defaultValue: ComicSpeaker.narrator,
+        ),
+      )
+      ..add(
+        FlagProperty('free', value: free, ifTrue: 'free', defaultValue: false),
+      )
+      ..add(
+        FlagProperty(
+          'tight',
+          value: tight,
+          ifTrue: 'tight',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -257,8 +292,13 @@ double _startOf(EdgeInsetsGeometry insets, BuildContext context) {
 
 /// The everyday inside of a panel: 14 on a phone, 20 22 22 on a desktop.
 EdgeInsets comicPanelInset(ComicThemeData t) => t.desk
-    ? const EdgeInsets.fromLTRB(22, 20, 22, 22)
-    : const EdgeInsets.all(14);
+    ? const EdgeInsets.fromLTRB(
+        ComicSpace.room,
+        ComicSpace.wide,
+        ComicSpace.room,
+        ComicSpace.room,
+      )
+    : const EdgeInsets.all(ComicSpace.gap);
 
 /// The panel: a 3 px square contour on a fill, with an optional caption in its corner. Every box on a page is one of these. It
 /// takes the height its tier gives it, and its child grows to fill that. Children: anything. [bleed] takes away the inside, for
@@ -315,7 +355,7 @@ class ComicPanel extends StatelessWidget {
   /// Space between the content and its boundary.
   final EdgeInsetsGeometry? padding;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
   /// What a screen reader says of a pressable panel.
@@ -324,16 +364,16 @@ class ComicPanel extends StatelessWidget {
   /// The selection state of a selectable panel; null omits that state.
   final bool? selected;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context),
-        look = ComicStyleOf([
+        look = comicStyleOf([
           style,
           ComicTheme.of(context).cardTheme,
         ], const {});
@@ -365,10 +405,10 @@ class ComicPanel extends StatelessWidget {
   Widget _build(BuildContext context, Set<WidgetState> states) {
     final t = ComicTheme.of(context);
     final c = t.colors;
-    final look = ComicStyleOf([style, t.cardTheme], states),
+    final look = comicStyleOf([style, t.cardTheme], states),
         rim = comicRim(
           t,
-          ComicStyleOf([style, t.cardTheme], states),
+          comicStyleOf([style, t.cardTheme], states),
           c.nightLine,
           3,
         );
@@ -457,9 +497,11 @@ class ComicPanel extends StatelessWidget {
                   shape: comicInsetShape(shape, rim.width),
                   textDirection: Directionality.of(context),
                 ),
-                child: Padding(
-                  padding: shape.copyWith(side: BorderSide.none).dimensions,
-                  child: content,
+                child: RingInClip(
+                  child: Padding(
+                    padding: shape.copyWith(side: BorderSide.none).dimensions,
+                    child: content,
+                  ),
                 ),
               ),
             ),
@@ -478,7 +520,10 @@ class ComicPanel extends StatelessWidget {
                 padding: EdgeInsets.all(rim.width),
                 child: ClipPath(
                   clipper: clip,
-                  child: ColoredBox(color: fill, child: inner),
+                  child: ColoredBox(
+                    color: fill,
+                    child: RingInClip(child: inner),
+                  ),
                 ),
               ),
             ),
@@ -491,13 +536,91 @@ class ComicPanel extends StatelessWidget {
             ),
             child: Padding(
               padding: EdgeInsets.all(rim.width),
-              child: ClipRect(child: inner),
+              child: ClipRect(child: RingInClip(child: inner)),
             ),
           );
         }
         return box;
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(StringProperty('caption', caption, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'captionIcon',
+          captionIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ComicSpeaker>(
+          'captionTone',
+          captionTone,
+          defaultValue: ComicSpeaker.narrator,
+        ),
+      )
+      ..add(
+        EnumProperty<ComicPanelFill>(
+          'ground',
+          ground,
+          defaultValue: ComicPanelFill.plain,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'bleed',
+          value: bleed,
+          ifTrue: 'bleed',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'compact',
+          value: compact,
+          ifTrue: 'compact',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'shrinkWrap',
+          value: shrinkWrap,
+          ifTrue: 'shrinkWrap',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -514,11 +637,12 @@ enum ComicTierLayout {
   stack,
 }
 
-/// A tier of a comic page: panels side by side on a desktop, sharing a height and a 16 gutter, reflowed on a phone with a 10
-/// gutter. Give it plain children, usually `ComicPanel`s. It picks their shares by how many there are: one takes the row, two
-/// halves, three thirds, four quarters, five with the last one wider. [spans] sets them yourself, in parts of their sum, on a
-/// desktop only: on a phone the tier reflows by [phone] and the spans don't hold. Where a column would be under 130 (grown
-/// with the text size) it stacks them, however wide the window. Keep it to two or three tiers before a splash breaks
+/// A tier of a comic page: panels side by side from 600 up (a tablet, a desk), sharing a height and a 16 gutter, reflowed
+/// on a phone (under 600) with a 10 gutter. Give it plain children, usually `ComicPanel`s. It picks their shares by how
+/// many there are: one takes the row, two halves, three thirds, four quarters, five with the last one wider. [spans] sets
+/// them yourself, in parts of their sum, from 600 up only: on a phone the tier reflows by [phone] and the spans don't
+/// hold. Where a column would be under 130 (grown with the text size) it reflows as on a phone, however wide the
+/// window. Keep it to two or three tiers before a splash breaks
 /// them up. [slanted] cuts the gutter between two panels on a lean, once a page.
 ///
 /// ```dart
@@ -537,7 +661,7 @@ class ComicTier extends StatelessWidget {
   /// Child widgets in their display order.
   final List<Widget> children;
 
-  /// The panels' shares on a desktop, in parts of their sum. A phone reflows by [phone] instead.
+  /// The panels' shares from 600 up, in parts of their sum. A phone reflows by [phone] instead.
   final List<int>? spans;
 
   /// How a tier reflows on a compact screen.
@@ -578,7 +702,9 @@ class ComicTier extends StatelessWidget {
     if (children.isEmpty) return const SizedBox.shrink();
     final t = ComicTheme.of(context);
     final flex = spans ?? _shares(children.length);
-    final gap = t.desk ? 16.0 : 10.0;
+    // A tablet lays a tier across as a desk does (a stretched phone column wastes its width), in the same gutter.
+    final across = t.window != ComicWindowSizeClass.compact;
+    final gap = across ? 16.0 : 10.0;
     final slant = slanted && children.length == 2
         ? (t.desk ? 44.0 : 18.0)
         : 0.0;
@@ -589,8 +715,8 @@ class ComicTier extends StatelessWidget {
         final w = box.hasBoundedWidth ? box.maxWidth : t.width;
         final sum = flex.fold<int>(0, (a, b) => a + b);
         final smallest = flex.reduce(math.min);
-        final across = (w + gap) * smallest / sum - gap >= least;
-        if (t.desk && across) {
+        final fits = (w + gap) * smallest / sum - gap >= least;
+        if (across && fits) {
           if (children.length <= 5 || spans != null) {
             return _row(children, flex, gap, slant);
           }
@@ -633,6 +759,28 @@ class ComicTier extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<int>('spans', spans, defaultValue: null))
+      ..add(
+        EnumProperty<ComicTierLayout>(
+          'phone',
+          phone,
+          defaultValue: ComicTierLayout.pairs,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'slanted',
+          value: slanted,
+          ifTrue: 'slanted',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 /// A column of panels inside a tier, with the page's gutter. [grow] lets its last panel take the height the tier has left, so
@@ -660,6 +808,19 @@ class ComicPanelStack extends StatelessWidget {
             : children[i],
     ],
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      FlagProperty(
+        'grow',
+        value: grow,
+        ifFalse: 'grow: false',
+        defaultValue: true,
+      ),
+    );
+  }
 }
 
 /// A box inside a panel, a step off its fill: one room of three, one figure of three.
@@ -673,7 +834,12 @@ class ComicWell extends StatelessWidget {
     super.key,
     this.style,
     required this.child,
-    this.padding = const EdgeInsets.fromLTRB(8, 8, 8, 9),
+    this.padding = const EdgeInsets.fromLTRB(
+      ComicSpace.close,
+      ComicSpace.close,
+      ComicSpace.close,
+      ComicSpace.close,
+    ),
     this.lamp = false,
   });
 
@@ -691,7 +857,7 @@ class ComicWell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
-    final look = ComicStyleOf([style, t.cardTheme], const {});
+    final look = comicStyleOf([style, t.cardTheme], const {});
     final rim = comicRim(t, look, c.nightLine);
     Widget inside = lamp
         ? ComicLetteringScope(c.onCaption, child: child)
@@ -725,6 +891,28 @@ class ComicWell extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.fromLTRB(
+            ComicSpace.close,
+            ComicSpace.close,
+            ComicSpace.close,
+            ComicSpace.close,
+          ),
+        ),
+      )
+      ..add(
+        FlagProperty('lamp', value: lamp, ifTrue: 'lamp', defaultValue: false),
+      );
+  }
 }
 
 /// What a `ComicPanel(compact: true)` tells the star inside it; a star asks with [comicCompactHere].
@@ -740,6 +928,14 @@ class ComicCompactScope extends InheritedWidget {
   final bool on;
   @override
   bool updateShouldNotify(ComicCompactScope old) => old.on != on;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      FlagProperty('on', value: on, ifTrue: 'on', ifFalse: 'on: false'),
+    );
+  }
 }
 
 /// Whether a star should draw its compact form: inside a compact frame, on a phone.

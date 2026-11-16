@@ -41,6 +41,12 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
+    // Comic's page change, a cut: Flutter's MaterialPageRoute reads Flutter's Theme, which Comic doesn't reach.
+    theme: ThemeData(
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: comicPageTransitions,
+      ),
+    ),
     builder: (context, child) => ComicTheme(
       data: ComicThemeData.offset(MediaQuery.platformBrightnessOf(context)),
       child: child!,
@@ -49,6 +55,14 @@ class App extends StatelessWidget {
   );
 }
 ```
+
+A page changes as a comic's panel does: a cut, the next page whole in its first frame. comic_ui stands on
+material_ui, so the routes Comic's own theme reaches cut already; a `MaterialPageRoute` your app pushes on Flutter's
+`MaterialApp` reads Flutter's `Theme`, and flies in unless that theme carries `comicPageTransitions`, the
+`theme:` line above. The one map fits both Materials' `PageTransitionsTheme`. On iOS a page still pops with a swipe
+from the screen's leading edge, the page following the finger: the map wraps the cut there in ui_core's
+`DesignSwipeBackPageTransitionsBuilder`. A map of your own built on `ComicPageTransitionsBuilder` keeps the swipe the
+same way, or with `designSwipeBack(map)`.
 
 With `CupertinoApp`:
 
@@ -208,9 +222,8 @@ focus target takes an optional `focusNode` and `autofocus`; a field takes an opt
 when you give none. `ComicDialog`, `ComicBottomSheet`, `ComicMenu`, `ComicTooltip` and `ComicSnackBar` each have a
 `showComic...` function.
 
-In 0.1.0 a part's words are a `String` (`label`, `title`) and its icon an `IconData` (`icon`), where Flutter's own
-widgets take a `Widget`. A later release adds a `Widget` slot beside each one, with the `String` or `IconData` made
-optional, so code written now keeps working.
+A part's words are a `String` (`label`, `title`) and its icon an `IconData` (`icon`), where Flutter's own widgets
+take a `Widget`.
 
 ## Pictures
 
@@ -244,9 +257,26 @@ final branded = ComicThemeData.from(
 );
 ```
 
-Every part also takes a `style:` (a `ComicStyle` of `WidgetStateProperty` slots: fill, foreground, edge, overlay,
-side, shape, padding, minimumSize, textStyle, iconSize), resolved above its component theme in
-`ComicThemeData.copyWith`. `AnimatedComicTheme` moves a subtree from one theme to another.
+The parts people restyle most take a `style:` (a `ComicStyle` of `WidgetStateProperty` slots: fill, foreground, edge,
+overlay, side, shape, padding, minimumSize, textStyle, iconSize), resolved above their component theme in
+`ComicThemeData.copyWith`:
+
+- buttons: `ComicButton` (and `.filled`, `.text`), `ComicIconButton`, `ComicSendButton`, `ComicLink`;
+- fields: text field, text area, search, select and select field, number field, one-time code, combobox, `ComicInput`;
+- choices: checkbox, check row, radio group, switch, switch row, chip, choice boxes, segmented button, slider;
+- the date and time pickers;
+- surfaces: panel, card, picture card, well, caption, balloon;
+- raised surfaces: dialog, bottom sheet, sheet, menu and menu anchor, tooltip, snack bar, toast;
+- avatars and badges.
+
+The rest (the app bar, navigation bar, rail and drawer, tabs, list rows, charts, progress, and Comic's own art) take
+their look from the theme alone. Every fill and overlay a style gives is an opaque ink: a see-through one asserts in a
+debug build (law 1). `AnimatedComicTheme` moves a subtree from one theme to another.
+
+What a theme may change is what keeps it a comic: the edition's inks (`ComicThemeData.from`), the text face
+(`ComicTypeface`), density (`ComicDensity`), and the ink's weight in two steps, `ComicStrokes.standard` and
+`ComicStrokes.bold`. Comic stays square, its motion a cut and a pop, and its type at the look's sizes under the
+platform's text scaling.
 
 ## How Comic is built
 

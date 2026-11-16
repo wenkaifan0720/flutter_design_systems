@@ -76,16 +76,9 @@ void main() {
         isEmpty,
         reason: 'a row is lit by the focus',
       );
-      expect(
-        faces.singleWhere((f) => f.label == 'Cover').states,
-        contains(WidgetState.selected),
-      );
-      expect(
-        faces
-            .where((f) => f.states.contains(WidgetState.selected))
-            .map((f) => f.label),
-        ['Cover'],
-      );
+      expect(faces.where((f) => f.checked).map((f) => f.label), [
+        'Cover',
+      ], reason: 'the picked row is not the chosen one');
       tree.dispose();
     },
   );

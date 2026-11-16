@@ -77,10 +77,12 @@ Widget kitSpecimenLoadingState() =>
     const SizedBox(height: 140, child: ComicLoadingState());
 
 Widget kitSpecimenErrorState() => Builder(
-  builder: (context) => ComicErrorState(
-    title: 'That did not load',
-    message: 'Check the line and try again.',
-    onRetry: () => kitFeedback(context, 'Trying again.'),
+  builder: (context) => Builder(
+    builder: (context) => ComicErrorState(
+      title: kitSay(context, 'That did not load'),
+      message: kitSay(context, 'Check the line and try again.'),
+      onRetry: () => kitFeedback(context, kitSay(context, 'Trying again.')),
+    ),
   ),
 );
 
@@ -91,7 +93,9 @@ Widget kitSpecimenButton() => Builder(
   ),
 );
 
-Widget kitSpecimenInput() => const ComicInput(hint: 'A plain input');
+Widget kitSpecimenInput() => Builder(
+  builder: (context) => ComicInput(hint: kitSay(context, 'A plain input')),
+);
 
 Widget kitSpecimenScreen() => const ComicScaffold(
   topBar: ComicAppBar(title: 'A page'),

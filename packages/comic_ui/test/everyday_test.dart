@@ -172,8 +172,8 @@ void main() {
     );
     check(
       'with notes',
-      () => ComicChoices(
-        options: const [
+      () => const ComicChoices(
+        options: [
           ComicChoice('Near Mint', note: 'Minimal sleeve lines'),
           ComicChoice('Light Marks', note: 'Sharp corners'),
           ComicChoice('Play Wear', note: 'Some'),

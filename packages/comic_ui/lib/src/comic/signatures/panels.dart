@@ -1,5 +1,7 @@
 // Panels that carry something: an event, a memory, a step, a voice, a chapter. Each is a `ComicPanel` already laid out, on plain
 // data; a page stands them in a `ComicTier` and need not write their insides.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -17,6 +19,7 @@ import '../component_themes.dart';
 import '../internal/track.dart';
 import '../theme.dart';
 import '../localizations.dart';
+import '../knobs.dart' show ComicSpace;
 
 /// A coloured band of dots with a drawing on it: where an event's or a memory's picture goes when you have no picture. [ground]
 /// is 1 to 4 (lamp, tint, you, night), the fourth lighting the drawing's loose lines. Give it a [leading], or any [child] such as a
@@ -102,6 +105,24 @@ class ComicArtBand extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('ground', ground, defaultValue: 1))
+      ..add(DoubleProperty('markSize', markSize, defaultValue: 104))
+      ..add(DoubleProperty('sfxSize', sfxSize, defaultValue: 22))
+      ..add(StringProperty('sfx', sfx, defaultValue: null))
+      ..add(StringProperty('caption', caption, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'markInset',
+          markInset,
+          defaultValue: EdgeInsets.zero,
+        ),
+      );
+  }
 }
 
 /// Something coming up: a date in its caption, a title, where, who's in, a count. Its drawing or picture stands in a cell at its
@@ -160,13 +181,13 @@ class ComicEventPanel extends StatelessWidget {
   /// Content after the main words.
   final Widget? trailing;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -190,7 +211,7 @@ class ComicEventPanel extends StatelessWidget {
     final foot = people.isEmpty && cnt == null && trailing == null
         ? null
         : Padding(
-            padding: const EdgeInsets.only(top: 4),
+            padding: const EdgeInsets.only(top: ComicSpace.tight),
             child: big && desk
                 ? ComicSplit(
                     start: ComicPeople(people, max: 6),
@@ -209,15 +230,25 @@ class ComicEventPanel extends StatelessWidget {
           );
     final words = Padding(
       padding: desk
-          ? const EdgeInsets.fromLTRB(16, 14, 16, 16)
-          : const EdgeInsets.fromLTRB(14, 12, 14, 14),
+          ? const EdgeInsets.fromLTRB(
+              ComicSpace.gap,
+              ComicSpace.gap,
+              ComicSpace.gap,
+              ComicSpace.gap,
+            )
+          : const EdgeInsets.fromLTRB(
+              ComicSpace.gap,
+              ComicSpace.near,
+              ComicSpace.gap,
+              ComicSpace.gap,
+            ),
       child: ComicColumn(
         gap: 6,
         children: [
           if (count != null)
             Wrap(
-              spacing: 6,
-              runSpacing: 2,
+              spacing: ComicSpace.close,
+              runSpacing: ComicSpace.fine,
               crossAxisAlignment: WrapCrossAlignment.end,
               children: [
                 Text(
@@ -252,7 +283,9 @@ class ComicEventPanel extends StatelessWidget {
             ground: ground,
             leading: leading,
             markSize: markSize,
-            markInset: desk ? const EdgeInsets.only(top: 18) : EdgeInsets.zero,
+            markInset: desk
+                ? const EdgeInsets.only(top: ComicSpace.gap)
+                : EdgeInsets.zero,
             child: art,
           )
         : null;
@@ -318,6 +351,42 @@ class ComicEventPanel extends StatelessWidget {
       label: title,
       child: body,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('when', when))
+      ..add(StringProperty('title', title))
+      ..add(
+        DiagnosticsProperty<IconData>('whenIcon', whenIcon, defaultValue: null),
+      )
+      ..add(StringProperty('where', where, defaultValue: null))
+      ..add(StringProperty('tally', tally, defaultValue: null))
+      ..add(StringProperty('count', count, defaultValue: null))
+      ..add(StringProperty('countWord', countWord, defaultValue: null))
+      ..add(IntProperty('ground', ground, defaultValue: 1))
+      ..add(
+        IterableProperty<ComicPerson>('people', people, defaultValue: const []),
+      )
+      ..add(FlagProperty('big', value: big, ifTrue: 'big', defaultValue: false))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -388,13 +457,13 @@ class ComicMarkPanel extends StatelessWidget {
   /// A picture or a scene behind the mark.
   final Widget? art;
 
-  /// Called when activated; null disables the action.
+  /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -454,7 +523,7 @@ class ComicMarkPanel extends StatelessWidget {
                     ),
                     if (words != null)
                       Padding(
-                        padding: const EdgeInsets.only(top: 2),
+                        padding: const EdgeInsets.only(top: ComicSpace.fine),
                         child: Text(
                           words!,
                           style: t.type.text(
@@ -473,6 +542,33 @@ class ComicMarkPanel extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('date', date, defaultValue: null))
+      ..add(StringProperty('sfx', sfx, defaultValue: null))
+      ..add(StringProperty('words', words, defaultValue: null))
+      ..add(IntProperty('ground', ground, defaultValue: 1))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -522,7 +618,7 @@ class ComicStepPanel extends StatelessWidget {
     final corner = Container(
       width: 30,
       height: 30,
-      padding: const EdgeInsets.all(6),
+      padding: const EdgeInsets.all(ComicSpace.close),
       alignment: Alignment.center,
       decoration: ShapeDecoration(
         color: c.caption,
@@ -546,7 +642,7 @@ class ComicStepPanel extends StatelessWidget {
           ground: ground,
           leading: leading,
           markSize: desk ? 100 : (long ? 100 : 92),
-          markInset: const EdgeInsets.only(top: 12),
+          markInset: const EdgeInsets.only(top: ComicSpace.near),
         ),
         PositionedDirectional(top: 0, start: 0, child: corner),
         if (sfx != null)
@@ -564,7 +660,12 @@ class ComicStepPanel extends StatelessWidget {
       ],
     );
     final body = Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(12, 10, 10, 12),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        ComicSpace.near,
+        ComicSpace.close,
+        ComicSpace.close,
+        ComicSpace.near,
+      ),
       child: ComicColumn(
         children: [
           ComicGrow(
@@ -574,7 +675,7 @@ class ComicStepPanel extends StatelessWidget {
             ),
           ),
           if (action != null) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: ComicSpace.close),
             Align(
               alignment: AlignmentDirectional.centerStart,
               widthFactor: 1,
@@ -600,6 +701,19 @@ class ComicStepPanel extends StatelessWidget {
             )
           : _StepRow(line: line, art: artCell, body: body),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('number', number))
+      ..add(StringProperty('words', words))
+      ..add(IntProperty('ground', ground, defaultValue: 1))
+      ..add(StringProperty('sfx', sfx, defaultValue: null))
+      ..add(
+        FlagProperty('long', value: long, ifTrue: 'long', defaultValue: false),
+      );
   }
 }
 
@@ -675,7 +789,7 @@ class ComicVoicePanel extends StatelessWidget {
               ),
               child: ComicBalloon(words, small: !desk, fill: true, tailAt: .5),
             ),
-            ComicGrow(child: const SizedBox(height: 4)),
+            const ComicGrow(child: SizedBox(height: ComicSpace.tight)),
             Center(
               heightFactor: 1,
               child: comicOwnSize(
@@ -695,7 +809,12 @@ class ComicVoicePanel extends StatelessWidget {
                 ),
               ),
               child: Padding(
-                padding: EdgeInsets.fromLTRB(4, 8, 4, 9),
+                padding: const EdgeInsets.fromLTRB(
+                  ComicSpace.tight,
+                  ComicSpace.close,
+                  ComicSpace.tight,
+                  ComicSpace.close,
+                ),
                 child: Text(
                   name.toUpperCase(),
                   textAlign: TextAlign.center,
@@ -713,6 +832,19 @@ class ComicVoicePanel extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('words', words))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('time', time, defaultValue: null))
+      ..add(StringProperty('slotId', slotId, defaultValue: null))
+      ..add(
+        FlagProperty('warm', value: warm, ifTrue: 'warm', defaultValue: false),
+      );
   }
 }
 
@@ -798,6 +930,14 @@ class ComicChapterPanel extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('caption', caption, defaultValue: null));
+  }
 }
 
 /// One person speaking in a thread: a head, then a balloon whose tail reaches back at them. It keeps the head's size and lets the
@@ -817,7 +957,10 @@ class ComicSpeech extends StatelessWidget {
     this.child,
     this.rating,
     this.when,
-  });
+  }) : assert(
+         rating == null || (rating >= 0 && rating <= 5),
+         'stars run from none to five',
+       );
 
   /// Stars out of five, for a review: [author], the stars and [when] then stand over the words.
   final int? rating;
@@ -845,7 +988,7 @@ class ComicSpeech extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         person,
-        const SizedBox(width: 12),
+        const SizedBox(width: ComicSpace.near),
         fill
             ? Expanded(
                 child: ComicBalloon(
@@ -883,8 +1026,8 @@ class ComicSpeech extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Wrap(
-          spacing: 8,
-          runSpacing: 2,
+          spacing: ComicSpace.close,
+          runSpacing: ComicSpace.fine,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             if (author != null) Text(author!.toUpperCase(), style: head),
@@ -892,7 +1035,7 @@ class ComicSpeech extends StatelessWidget {
             if (when != null) Text(when!.toUpperCase(), style: head),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: ComicSpace.tight),
         if (text != null)
           Text(
             text!.toUpperCase(),
@@ -900,6 +1043,20 @@ class ComicSpeech extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('rating', rating, defaultValue: null))
+      ..add(StringProperty('when', when, defaultValue: null))
+      ..add(DiagnosticsProperty<ComicPerson>('person', person))
+      ..add(StringProperty('text', text, defaultValue: null))
+      ..add(StringProperty('author', author, defaultValue: null))
+      ..add(
+        FlagProperty('fill', value: fill, ifTrue: 'fill', defaultValue: false),
+      );
   }
 }
 
@@ -929,7 +1086,7 @@ class ComicReply extends StatelessWidget {
   /// Placeholder text shown when the field is empty.
   final String? hint;
 
-  /// The visible or spoken name of the component.
+  /// {@macro comic.label}
   final String? label;
 
   /// The optional glyph beside the words.
@@ -983,7 +1140,7 @@ class ComicReply extends StatelessWidget {
     final row = Row(
       children: [
         person,
-        const SizedBox(width: 10),
+        const SizedBox(width: ComicSpace.close),
         Expanded(
           child: ComicTextField(
             onPaper: true,
@@ -992,7 +1149,7 @@ class ComicReply extends StatelessWidget {
             onSubmitted: onSubmitted,
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: ComicSpace.close),
         act,
       ],
     );
@@ -1005,6 +1162,38 @@ class ComicReply extends StatelessWidget {
             ),
           )
         : row;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicPerson>('person', person))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onSend', onSend))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'plain',
+          value: plain,
+          ifTrue: 'plain',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -1061,6 +1250,16 @@ class ComicClaim extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('before', before, defaultValue: null))
+      ..add(StringProperty('after', after, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('figure', figure));
+  }
 }
 
 /// A row of two to four figures in wells, the last on the lamp if [highlightLast]: a recipe's times, a booking's nights. Lettered numbers,
@@ -1088,7 +1287,12 @@ class ComicFigures extends StatelessWidget {
         for (var i = 0; i < items.length; i++)
           ComicWell(
             lamp: highlightLast && i == items.length - 1,
-            padding: const EdgeInsets.fromLTRB(10, 8, 10, 13),
+            padding: const EdgeInsets.fromLTRB(
+              ComicSpace.close,
+              ComicSpace.close,
+              ComicSpace.close,
+              ComicSpace.near,
+            ),
             child: Builder(
               builder: (context) {
                 final t = ComicTheme.of(context);
@@ -1105,7 +1309,7 @@ class ComicFigures extends StatelessWidget {
                         style: t.type.letter(24, lineHeight: 1, tracking: .03),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: ComicSpace.tight),
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       alignment: AlignmentDirectional.centerStart,
@@ -1128,6 +1332,21 @@ class ComicFigures extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<(String, String)>('items', items))
+      ..add(
+        FlagProperty(
+          'highlightLast',
+          value: highlightLast,
+          ifTrue: 'highlightLast',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -1167,7 +1386,7 @@ class ComicAmountRow extends StatelessWidget {
               ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 9.5),
+        padding: const EdgeInsets.symmetric(vertical: ComicSpace.close),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
@@ -1179,7 +1398,7 @@ class ComicAmountRow extends StatelessWidget {
                 style: t.type.text(16, 1.4, weight: FontWeight.w800).tabular,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: ComicSpace.close),
             Expanded(
               child: Text.rich(
                 TextSpan(
@@ -1196,6 +1415,23 @@ class ComicAmountRow extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('amount', amount))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'isFirst',
+          value: isFirst,
+          ifTrue: 'isFirst',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -1240,7 +1476,10 @@ class ComicLedgerRow extends StatelessWidget {
               ),
       ),
       child: Padding(
-        padding: EdgeInsets.only(top: isFirst ? 3 : 12, bottom: 12),
+        padding: EdgeInsets.only(
+          top: isFirst ? ComicSpace.nib : ComicSpace.near,
+          bottom: ComicSpace.near,
+        ),
         child: Row(
           children: [
             if (date != null) ...[
@@ -1257,7 +1496,7 @@ class ComicLedgerRow extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: ComicSpace.close),
             ],
             Expanded(
               child: Column(
@@ -1275,7 +1514,7 @@ class ComicLedgerRow extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: ComicSpace.close),
             Text(
               value.toUpperCase(),
               style: t.type.letter(24, lineHeight: .95, tracking: .03),
@@ -1284,5 +1523,31 @@ class ComicLedgerRow extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('date', date, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'isFirst',
+          value: isFirst,
+          ifTrue: 'isFirst',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'isCurrentUser',
+          value: isCurrentUser,
+          ifTrue: 'isCurrentUser',
+          defaultValue: false,
+        ),
+      );
   }
 }

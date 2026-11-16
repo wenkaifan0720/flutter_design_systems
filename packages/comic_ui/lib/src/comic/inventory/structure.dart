@@ -1,6 +1,7 @@
 // The structural rows the shared inventory adds: the menu bar, the command palette, the data table, the
 // scroll area, a resizable split, a reorderable list, swipe actions, pull to refresh and a tree. The design kit keeps
 // the behaviour; every part here is Comic's ink: a rim, a caption fill for what is lit, a ring for the keyboard.
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:flutter/widgets.dart';
 
@@ -9,12 +10,17 @@ import '../glyphs.dart';
 import '../layout.dart';
 import '../localizations.dart';
 import '../moves.dart';
+import '../internal/reach.dart' show RingInClip;
 import '../press.dart';
 import '../raised.dart';
 import '../rows.dart';
 import '../styled.dart';
 import '../tell.dart';
 import '../theme.dart';
+import '../knobs.dart' show ComicSpace;
+import '../internal/cap_label.dart';
+import '../internal/style_guard.dart';
+import '../internal/menu_rows.dart';
 import 'action_rows.dart' show comicRaisedSurface;
 import 'inputs.dart' show ComicBareEditor;
 
@@ -46,13 +52,14 @@ class ComicMenuBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
-    final look = ComicStyleOf([t.menuTheme], _none);
+    final look = comicStyleOf([t.menuTheme], _none);
     final rim = comicRim(t, look, c.nightLine, 3);
     final shape = (look.shape ?? t.shapes.medium).copyWith(side: rim);
     final itemShape = comicInsetShape(
       look.shape ?? t.shapes.medium,
       rim.width + 4,
     );
+    ComicLastInput.follow();
     return DesignMenuBar(
       menus: menus,
       semanticLabel: label ?? DesignLocalizations.of(context).menuBarLabel,
@@ -66,7 +73,7 @@ class ComicMenuBar extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 for (final (i, item) in items.indexed) ...[
-                  if (i > 0) const SizedBox(width: 2),
+                  if (i > 0) const SizedBox(width: ComicSpace.fine),
                   item,
                 ],
               ],
@@ -76,16 +83,20 @@ class ComicMenuBar extends StatelessWidget {
       ),
       itemBuilder: (context, entry, level, states) {
         if (level == DesignMenuLevel.menu) {
-          return ComicMenuRowFace(
-            states: states,
-            label: entry.label,
-            icon: entry.data is IconData ? entry.data! as IconData : null,
-            checked: entry.checked == true,
-            trailing: entry.isSubmenu
-                ? const Icon(ComicGlyphs.forward, size: 18)
-                : entry.shortcut == null
-                ? null
-                : Text(entry.shortcut!),
+          return comicMenuRow(
+            context,
+            states,
+            (states) => ComicMenuRowFace(
+              states: states,
+              label: entry.label,
+              icon: entry.data is IconData ? entry.data! as IconData : null,
+              checked: entry.checked == true,
+              trailing: entry.isSubmenu
+                  ? const Icon(ComicGlyphs.forward, size: 18)
+                  : entry.shortcut == null
+                  ? null
+                  : Text(entry.shortcut!),
+            ),
           );
         }
         final lit = _lit(states), off = states.contains(WidgetState.disabled);
@@ -104,7 +115,7 @@ class ComicMenuBar extends StatelessWidget {
               color: lit ? c.caption : const Color(0x00000000),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(horizontal: ComicSpace.gap),
               // Its own height: under a parent that hands a tall loose height the bar stays a bar, and its menus
               // open under it.
               child: Center(
@@ -120,7 +131,7 @@ class ComicMenuBar extends StatelessWidget {
         );
       },
       dividerBuilder: (context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(vertical: ComicSpace.tight),
         child: SizedBox(
           height: t.rule(),
           child: ColoredBox(color: c.divider),
@@ -134,6 +145,14 @@ class ComicMenuBar extends StatelessWidget {
         width: 280,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<DesignMenuEntry>('menus', menus))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -156,26 +175,37 @@ DesignCommandPalette _palette(
   controller: controller,
   semanticLabel: label ?? DesignLocalizations.of(context).commandPaletteLabel,
   resultsMessage: DesignLocalizations.of(context).commandPaletteResultsMessage,
-  fieldBuilder: (context, field) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 12),
-    child: Row(
-      children: [
-        Icon(
-          ComicGlyphs.search,
-          size: 20,
-          color: ComicTheme.of(context).colors.text,
+  // A tap anywhere in the field's row, the glass too, reaches the field: the row is the box a screen reader outlines.
+  fieldBuilder: (context, field) => MouseRegion(
+    cursor: SystemMouseCursors.text,
+    child: GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      excludeFromSemantics: true,
+      onTap: field.focusNode.requestFocus,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: ComicSpace.near),
+        child: Row(
+          children: [
+            Icon(
+              ComicGlyphs.search,
+              size: 20,
+              color: ComicTheme.of(context).colors.text,
+            ),
+            const SizedBox(width: ComicSpace.close),
+            Expanded(
+              child: ComicBareEditor(
+                focusNode: field.focusNode,
+                controller: field.controller,
+                label:
+                    label ??
+                    DesignLocalizations.of(context).commandPaletteLabel,
+                hint: hint ?? ComicLocalizations.of(context).searchCommands,
+                onSubmitted: (_) => field.submit(),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: ComicBareEditor(
-            focusNode: field.focusNode,
-            controller: field.controller,
-            label: label ?? DesignLocalizations.of(context).commandPaletteLabel,
-            hint: hint ?? ComicLocalizations.of(context).searchCommands,
-            onSubmitted: (_) => field.submit(),
-          ),
-        ),
-      ],
+      ),
     ),
   ),
   // The keyboard's row is the lit one; a resting pointer must not light a second.
@@ -188,7 +218,12 @@ DesignCommandPalette _palette(
   groupBuilder: (context, group) {
     final t = ComicTheme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 4),
+      padding: const EdgeInsets.fromLTRB(
+        ComicSpace.near,
+        ComicSpace.close,
+        ComicSpace.near,
+        ComicSpace.tight,
+      ),
       child: Text(
         group.toUpperCase(),
         style: t.type.label.copyWith(color: t.colors.textSecondary),
@@ -198,7 +233,7 @@ DesignCommandPalette _palette(
   emptyBuilder: (context) {
     final t = ComicTheme.of(context);
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(ComicSpace.wide),
       child: Text(
         DesignLocalizations.of(context).noResultsLabel,
         style: t.type.body,
@@ -294,7 +329,7 @@ class ComicCommand extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     return _FocusWithin(
-      shape: ComicStyleOf([t.menuTheme], _none).shape ?? t.shapes.medium,
+      shape: comicStyleOf([t.menuTheme], _none).shape ?? t.shapes.medium,
       // A palette standing in the page: no plate, which is for one floating over it.
       child: ComicRaisedFrame(
         plate: false,
@@ -311,6 +346,39 @@ class ComicCommand extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<DesignCommand>('commands', commands))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<DesignCommand>>.has('onRun', onRun))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(DoubleProperty('maxHeight', maxHeight, defaultValue: 320));
   }
 }
 
@@ -333,7 +401,11 @@ Future<void> showComicCommand(
   );
   return showDesignCommandPalette(
     context: context,
-    barrierColor: ComicTheme.of(context).colors.scrim,
+    // Screened with dots, not dimmed (law 1).
+    barrierBuilder: (context, animation) => ComicScreenScrim(
+      animation: animation,
+      ink: ComicTheme.of(context).colors.scrim,
+    ),
     barrierLabel: DesignLocalizations.of(context).commandPaletteBarrierLabel,
     palette: (run) => _palette(
       context,
@@ -347,7 +419,7 @@ Future<void> showComicCommand(
     surfaceBuilder: (context, palette) => carry(
       context,
       Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(ComicSpace.gap),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
           child: ComicRaisedFrame(child: palette),
@@ -396,7 +468,10 @@ class ComicDataTable<R> extends StatelessWidget {
   Widget _cell(double floor, bool numeric, Widget child) => ConstrainedBox(
     constraints: BoxConstraints(minHeight: floor),
     child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(
+        horizontal: ComicSpace.near,
+        vertical: ComicSpace.close,
+      ),
       child: Align(
         alignment: numeric
             ? AlignmentDirectional.centerEnd
@@ -430,9 +505,13 @@ class ComicDataTable<R> extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Flexible(child: Text(column.label, style: t.type.title)),
+              // Centred on its capitals, as every control's label is: laid out by its line box it drew 0.6 to 0.8 device
+              // px low under FreeType's hinting (Linux), where the row check reads the row's centres.
+              Flexible(
+                child: CapLabel(child: Text(column.label, style: t.type.title)),
+              ),
               if (sort != null) ...[
-                const SizedBox(width: 4),
+                const SizedBox(width: ComicSpace.tight),
                 Icon(
                   sort == DesignSortDirection.ascending
                       ? ComicGlyphs.chevronUp
@@ -537,7 +616,7 @@ class ComicDataTable<R> extends StatelessWidget {
                   ),
           ),
           if (controller.pageCount > 1) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: ComicSpace.near),
             Center(
               child: ComicPagination(
                 count: controller.pageCount,
@@ -549,6 +628,24 @@ class ComicDataTable<R> extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+      )
+      ..add(
+        FlagProperty(
+          'selectable',
+          value: selectable,
+          ifFalse: 'selectable: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<R>>.has('onActivate', onActivate));
   }
 }
 
@@ -586,16 +683,15 @@ class ComicScrollArea extends StatelessWidget {
   /// What a screen reader calls the region.
   final String? label;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
-    final motion = ComicMotion.of(context);
     return DesignScrollArea(
       focusNode: focusNode,
       autofocus: autofocus,
@@ -603,11 +699,11 @@ class ComicScrollArea extends StatelessWidget {
       axis: axis,
       visibility: visibility,
       semanticLabel: label,
-      thumbBuilder: (context, thumb) => AnimatedOpacity(
-        opacity: thumb.visible ? 1 : 0,
-        duration: motion.state,
+      // The thumb is there or it isn't: a cut, not a fade (law 6).
+      thumbBuilder: (context, thumb) => Visibility.maintain(
+        visible: thumb.visible,
         child: Padding(
-          padding: const EdgeInsets.all(3),
+          padding: const EdgeInsets.all(ComicSpace.nib),
           child: DecoratedBox(
             decoration: ShapeDecoration(
               color: thumb.states.contains(WidgetState.pressed)
@@ -626,6 +722,37 @@ class ComicScrollArea extends StatelessWidget {
       ),
       child: child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ScrollController>('controller', controller))
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical))
+      ..add(
+        EnumProperty<DesignScrollbarVisibility>(
+          'visibility',
+          visibility,
+          defaultValue: DesignScrollbarVisibility.auto,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -649,7 +776,10 @@ class ComicResizable extends StatelessWidget {
     this.label,
     this.focusNode,
     this.autofocus = false,
-  });
+  }) : assert(
+         fraction == null || (fraction >= 0 && fraction <= 1),
+         'the first pane\'s share runs from 0 to 1',
+       );
 
   /// The pane before the rule.
   final Widget first;
@@ -675,10 +805,10 @@ class ComicResizable extends StatelessWidget {
   /// What a screen reader calls the rule.
   final String? label;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
@@ -729,6 +859,38 @@ class ComicResizable extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.horizontal))
+      ..add(DoubleProperty('fraction', fraction, defaultValue: null))
+      ..add(
+        DoubleProperty('initialFraction', initialFraction, defaultValue: .5),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
+      ..add(DoubleProperty('minFirst', minFirst, defaultValue: 0))
+      ..add(DoubleProperty('minSecond', minSecond, defaultValue: 0))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -811,9 +973,14 @@ class ComicReorderableListView<T extends Object> extends StatelessWidget {
       controller: controller,
       padding: padding,
       movedMessage: DesignLocalizations.of(context).reorderableListMovedMessage,
-      proxyDecorator: (child, index, animation) => DecoratedBox(
-        decoration: ShapeDecoration(color: c.card, shape: shape),
-        child: child,
+      // The carried row is lifted off the page: it stands on its print (law 4) until it is put down.
+      proxyDecorator: (child, index, animation) => ComicPlated(
+        down: false,
+        shape: t.shapes.small,
+        child: DecoratedBox(
+          decoration: ShapeDecoration(color: c.card, shape: shape),
+          child: child,
+        ),
       ),
       itemBuilder: (context, item, reorder) => DecoratedBox(
         decoration: BoxDecoration(
@@ -854,6 +1021,49 @@ class ComicReorderableListView<T extends Object> extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('items', items))
+      ..add(
+        ObjectFlagProperty<void Function(int from, int to)>.has(
+          'onReorder',
+          onReorder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(BuildContext context, T item)>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(ObjectFlagProperty<String Function(T item)>.has('labelOf', labelOf))
+      ..add(ObjectFlagProperty<Object Function(T item)>.has('keyOf', keyOf))
+      ..add(
+        FlagProperty(
+          'shrinkWrap',
+          value: shrinkWrap,
+          ifTrue: 'shrinkWrap',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -900,6 +1110,49 @@ class ComicSwipeActions extends StatefulWidget {
 
   @override
   State<ComicSwipeActions> createState() => _ComicSwipeActionsState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        IterableProperty<DesignSwipeAction>(
+          'startActions',
+          startActions,
+          defaultValue: const [],
+        ),
+      )
+      ..add(
+        IterableProperty<DesignSwipeAction>(
+          'endActions',
+          endActions,
+          defaultValue: const [],
+        ),
+      )
+      ..add(DoubleProperty('actionExtent', actionExtent, defaultValue: 88))
+      ..add(
+        FlagProperty(
+          'fullSwipe',
+          value: fullSwipe,
+          ifFalse: 'fullSwipe: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onOpenChanged',
+          onOpenChanged,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'initiallyOpen',
+          value: initiallyOpen,
+          ifTrue: 'initiallyOpen',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _ComicSwipeActionsState extends State<ComicSwipeActions> {
@@ -913,79 +1166,85 @@ class _ComicSwipeActionsState extends State<ComicSwipeActions> {
     // the row the cut stands the ring's width further out, so the row's own ring shows whole.
     return ClipRect(
       clipper: _SwipeClip(_rowFocused ? t.focus.gap + t.focus.width : 0),
-      child: DesignSwipeActions(
-        startActions: widget.startActions,
-        endActions: widget.endActions,
-        actionExtent: widget.actionExtent,
-        fullSwipe: widget.fullSwipe,
-        onOpenChanged: widget.onOpenChanged,
-        initiallyOpen: widget.initiallyOpen,
-        actionBuilder: (context, action, state) {
-          final fill = action.destructive ? c.tones.danger : c.caption;
-          final ink = action.destructive ? c.card : c.onCaption;
-          // A plate runs the row's full height and takes the control step, as
-          // every framed part does; its wash and ring take that same plate.
-          final plate = t.shapes.small;
-          // The strip is clipped at the plates' edge, so a ring outside one would not show: the keyboard's ring stands
-          // inside the plate, an opaque band of the card between it and the fill.
-          final room = t.focus.gap + t.focus.width;
-          final face = ComicHighlight(
-            states: state.states,
-            shape: plate,
-            washColor: ink,
-            ring: false,
-            child: DecoratedBox(
-              decoration: ShapeDecoration(color: fill, shape: plate),
-              child: ClipRect(
-                child: OverflowBox(
-                  maxWidth: double.infinity,
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (action.data is IconData)
-                          Icon(action.data! as IconData, size: 20, color: ink),
-                        Text(
-                          action.label,
-                          softWrap: false,
-                          style: t.type.small.copyWith(
-                            color: ink,
-                            fontWeight: state.armed ? FontWeight.w700 : null,
+      child: RingInClip(
+        child: DesignSwipeActions(
+          startActions: widget.startActions,
+          endActions: widget.endActions,
+          actionExtent: widget.actionExtent,
+          fullSwipe: widget.fullSwipe,
+          onOpenChanged: widget.onOpenChanged,
+          initiallyOpen: widget.initiallyOpen,
+          actionBuilder: (context, action, state) {
+            final fill = action.destructive ? c.tones.danger : c.caption;
+            final ink = action.destructive ? c.card : c.onCaption;
+            // A plate runs the row's full height and takes the control step, as
+            // every framed part does; its wash and ring take that same plate.
+            final plate = t.shapes.small;
+            // The strip is clipped at the plates' edge, so a ring outside one would not show: the keyboard's ring stands
+            // inside the plate, an opaque band of the card between it and the fill.
+            final room = t.focus.gap + t.focus.width;
+            final face = ComicHighlight(
+              states: state.states,
+              shape: plate,
+              washColor: ink,
+              ring: false,
+              child: DecoratedBox(
+                decoration: ShapeDecoration(color: fill, shape: plate),
+                child: ClipRect(
+                  child: OverflowBox(
+                    maxWidth: double.infinity,
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (action.data is IconData)
+                            Icon(
+                              action.data! as IconData,
+                              size: 20,
+                              color: ink,
+                            ),
+                          Text(
+                            action.label,
+                            softWrap: false,
+                            style: t.type.small.copyWith(
+                              color: ink,
+                              fontWeight: state.armed ? FontWeight.w700 : null,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          );
-          if (!state.states.contains(WidgetState.focused)) return face;
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              face,
-              Positioned.fill(
-                child: Padding(
-                  padding: EdgeInsets.all(room),
-                  child: ComicHighlight(
-                    states: state.states,
-                    shape: comicInsetShape(plate, room),
-                    wash: false,
-                    ringGap: c.card,
-                    child: const SizedBox.expand(),
+            );
+            if (!state.states.contains(WidgetState.focused)) return face;
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                face,
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.all(room),
+                    child: ComicHighlight(
+                      states: state.states,
+                      shape: comicInsetShape(plate, room),
+                      wash: false,
+                      ringGap: c.card,
+                      child: const SizedBox.expand(),
+                    ),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
-        child: Focus(
-          canRequestFocus: false,
-          skipTraversal: true,
-          includeSemantics: false,
-          onFocusChange: (focused) => setState(() => _rowFocused = focused),
-          child: widget.child,
+              ],
+            );
+          },
+          child: Focus(
+            canRequestFocus: false,
+            skipTraversal: true,
+            includeSemantics: false,
+            onFocusChange: (focused) => setState(() => _rowFocused = focused),
+            child: widget.child,
+          ),
         ),
       ),
     );
@@ -1057,6 +1316,14 @@ class ComicRefreshIndicator extends StatelessWidget {
       child: child,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<Future<void> Function()>.has('onRefresh', onRefresh),
+    );
+  }
 }
 
 /// A nested list that opens and closes: folders, chapters, an org chart. Press a parent to open it, a leaf to activate
@@ -1098,18 +1365,17 @@ class ComicTreeView<T extends Object> extends StatelessWidget {
       onActivate: onActivate,
       semanticLabel: label,
       levelHint: DesignLocalizations.of(context).treeLevelHint,
-      // A tree keeps a picked row, so the fill is the pick's (and a press's) and the keyboard's row wears the ring:
-      // lit by focus as a menu's row is, it could not be told from the picked one.
+      // A tree keeps a picked row, chosen as Comic prints every chosen thing (the caption's yellow, a press's dots on it),
+      // and the keyboard's row wears the ring: lit by focus as a menu's row is, it could not be told from a pointer's.
       rowBuilder: (context, item) => Stack(
         children: [
           ComicMenuRowFace(
-            states: {
-              ...item.states.difference(const {
-                WidgetState.hovered,
-                WidgetState.focused,
-              }),
-              if (item.selected) WidgetState.selected,
-            },
+            states: item.states.difference(const {
+              WidgetState.hovered,
+              WidgetState.focused,
+            }),
+            checked: item.selected,
+            mark: false,
             label: labelOf(item.row.node),
             lead: 20.0 * item.row.depth + (item.hasChildren ? 0 : 30),
             icon: !item.hasChildren
@@ -1135,5 +1401,17 @@ class ComicTreeView<T extends Object> extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignTreeController<T>>('controller', controller),
+      )
+      ..add(ObjectFlagProperty<String Function(T node)>.has('labelOf', labelOf))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }

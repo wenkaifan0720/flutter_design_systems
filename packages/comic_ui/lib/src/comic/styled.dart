@@ -1,10 +1,12 @@
 // How a styled part reads its style and draws its shape: the layers in order, and a shape that animates to each new
 // one, as a Material 3 button's does when a state changes it.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
-import 'component_themes.dart';
 import 'theme.dart';
 
 /// The concentric shape inside [shape], with each corner reduced by [inset].
@@ -125,6 +127,20 @@ class AnimatedComicShape extends StatelessWidget {
           builder(context, now is OutlinedBorder ? now : shape),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, OutlinedBorder? shape)
+        >.has('builder', builder),
+      );
+  }
 }
 
 // Material's ShapeBorderTween, without Material.
@@ -142,85 +158,9 @@ class _ShapeTween extends Tween<ShapeBorder?> {
 /// final look = ComicStyleOf([style, ComicTheme.of(context).chipTheme], states);
 /// final fill = look.fill ?? colors.card;
 /// ```
-@immutable
-class ComicStyleOf {
-  /// The [layers] read at [states].
-  const ComicStyleOf(this.layers, this.states);
-
-  /// The styles, first wins.
-  final List<ComicStyle?> layers;
-
-  /// The part's states.
-  final Set<WidgetState> states;
-
-  T? _first<T>(WidgetStateProperty<T?>? Function(ComicStyle s) slot) =>
-      ComicStyle.first(layers, slot, states);
-
-  /// The face.
-  Color? get fill => _first((s) => s.fill);
-
-  /// The words and icons.
-  Color? get foreground => _first((s) => s.foreground);
-
-  /// The rim's colour.
-  Color? get edge => _first((s) => s.edge);
-
-  /// The whole rim.
-  BorderSide? get side => _first((s) => s.side);
-
-  /// The outline.
-  OutlinedBorder? get shape => _first((s) => s.shape);
-
-  /// The room inside, resolved for [direction].
-  EdgeInsets? padding(TextDirection direction) =>
-      _first((s) => s.padding)?.resolve(direction);
-
-  /// The least size of the face.
-  Size? get minimumSize => _first((s) => s.minimumSize);
-
-  /// The words' style.
-  TextStyle? get textStyle => _first((s) => s.textStyle);
-
-  /// An icon's size.
-  double? get iconSize => _first((s) => s.iconSize);
-
-  /// Freezes resolved values so a grouped control can pass its states to an inner mark.
-  ///
-  /// ```dart
-  /// ComicCheckbox(label: 'Keep issue', value: true, style: look.freeze())
-  /// ```
-  ComicStyle freeze() {
-    WidgetStateProperty<T?>? fixed<T>(T? value) =>
-        value == null ? null : WidgetStatePropertyAll(value);
-    return ComicStyle(
-      fill: fixed(fill),
-      foreground: fixed(foreground),
-      edge: fixed(edge),
-      overlay: fixed(ComicStyle.first(layers, (s) => s.overlay, states)),
-      side: fixed(side),
-      shape: fixed(shape),
-      padding: fixed(_first((s) => s.padding)),
-      minimumSize: fixed(minimumSize),
-      textStyle: fixed(textStyle),
-      iconSize: fixed(iconSize),
-    );
-  }
-
-  /// The same layers at other [states].
-  ComicStyleOf at(Set<WidgetState> states) => ComicStyleOf(layers, states);
-
-  /// The shape for any states, as the press reads it for its ring and wash; [fallback] when no layer gives one.
-  WidgetStateProperty<OutlinedBorder?> shapes(OutlinedBorder? fallback) =>
-      WidgetStateProperty.resolveWith((states) => at(states).shape ?? fallback);
-
-  /// The overlay for any states, as the press reads it.
-  WidgetStateProperty<Color?>? get overlay =>
-      layers.any((l) => l?.overlay != null)
-      ? WidgetStateProperty.resolveWith(
-          (states) => ComicStyle.first(layers, (s) => s.overlay, states),
-        )
-      : null;
-}
+///
+/// The design kit's [DesignStyleOf] under Comic's name.
+typedef ComicStyleOf = DesignStyleOf;
 
 /// The rim a styled part draws: [side] when set, else [edge] (or [fallback]) at the theme's regular stroke.
 ///

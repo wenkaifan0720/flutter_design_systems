@@ -101,7 +101,7 @@ class RowFrame extends InheritedWidget {
       shape != old.shape || reach != old.reach || lights != old.lights;
 }
 
-/// A group's rows, one under another at the full width, taking presses in the [reach] past their own edges.
+/// A group's rows, one under another at the full width, drawing into the [reach] past their own edges.
 class RowGroup extends StatefulWidget {
   /// Creates a group of [children] whose fills take [shape].
   const RowGroup({
@@ -299,23 +299,6 @@ class _RenderRowColumn extends RenderBox
   double? computeDistanceToActualBaseline(TextBaseline baseline) =>
       defaultComputeDistanceToFirstActualBaseline(baseline);
 
-  // A row's press reaches past the group's padding: so does the group's.
-  @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    final reach = Rect.fromLTRB(
-      -_reach.left,
-      0,
-      size.width + _reach.right,
-      size.height,
-    );
-    if (!reach.contains(position)) return false;
-    if (hitTestChildren(result, position: position) || hitTestSelf(position)) {
-      result.add(BoxHitTestEntry(this, position));
-      return true;
-    }
-    return false;
-  }
-
   @override
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
       defaultHitTestChildren(result, position: position);
@@ -325,8 +308,8 @@ class _RenderRowColumn extends RenderBox
       defaultPaint(context, offset);
 }
 
-/// A row that reaches [reach] past its own edges, left and right, in what it draws and the presses it takes; it lays
-/// out as wide as its slot.
+/// A row that reaches [reach] past its own edges, left and right, in what it draws (its fill, its press's shade); it
+/// lays out as wide as its slot, and a tap and a screen reader reach that slot, the one box.
 class RowReach extends SingleChildRenderObjectWidget {
   /// Lets [child] reach [reach] past the row's edges.
   const RowReach({super.key, required this.reach, required super.child});
@@ -417,21 +400,9 @@ class RenderRowReach extends RenderShiftedBox {
     );
   }
 
+  // A screen reader outlines the slot, as a tap reaches it; the reach outside is drawn only.
   @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    final reach = Rect.fromLTRB(
-      -_reach.left,
-      -_reach.top,
-      size.width + _reach.right,
-      size.height + _reach.bottom,
-    );
-    if (!reach.contains(position)) return false;
-    if (hitTestChildren(result, position: position) || hitTestSelf(position)) {
-      result.add(BoxHitTestEntry(this, position));
-      return true;
-    }
-    return false;
-  }
+  Rect? describeSemanticsClip(RenderObject? child) => Offset.zero & size;
 }
 
 /// Marks a group's row lit while [lit], so the rules beside it stand aside.

@@ -159,14 +159,61 @@ final _misreads = <(RegExp, String)>[
   ),
 ];
 
+/// Misreads known only from several of a report's [problems] together, never from a label: why each one is.
+Map<String, String> _misreadTogether(List<String> problems) {
+  final why = <String, String>{};
+  // A face read its rim's width in at both ends while level as laid out.
+  final ends = RegExp(
+    r'^(a button "[^"]+" beside a button "[^"]+"): its (top|bottom) is level with theirs as laid out, 5 device px (below|above) as drawn$',
+  );
+  final inset = <String, Set<String>>{};
+  for (final problem in problems) {
+    final m = ends.firstMatch(problem);
+    if (m != null && (m[2] == 'top') == (m[3] == 'below')) {
+      (inset[m[1]!] ??= {}).add(m[2]!);
+    }
+  }
+  for (final problem in problems) {
+    final m = ends.firstMatch(problem);
+    if (m != null && inset[m[1]!]?.length == 2) {
+      why[problem] =
+          "a printed face beside an unprinted one by day (a busy button beside a disabled one): level as laid out "
+          'and as drawn (11-15 pictures), the printed face is read 2.5 px in at both ends, its ink rim taken for '
+          'ground beside its print';
+    }
+  }
+  // Every capitals reading of a page the same distance off the line taken for the row's centre: the controls agree
+  // with one another, and the line is the surface they stand on.
+  final caps = RegExp(
+    r'''^a button "[^"]+" beside a button "[^"]+": the capitals of "[^"]+" are ([\d.]+ px (?:below|above)) the row's centre line as laid out, ([\d.]+ device px (?:below|above)) as drawn$''',
+  );
+  final offsets = {
+    for (final problem in problems)
+      if (caps.firstMatch(problem) case final m?) '${m[1]} ${m[2]}',
+  };
+  final held = problems.where(caps.hasMatch).length;
+  if (held >= 2 && offsets.length == 1) {
+    for (final problem in problems.where(caps.hasMatch)) {
+      why[problem] =
+          "buttons with no face of their own, each at the foot of its own card in a grid (the overview's Open): "
+          'their capitals are level with one another, all the same distance from a centre line that is the '
+          "cards' middle, the card each stands on read as its face (11-15 pictures)";
+    }
+  }
+  return why;
+}
+
 /// Prints [report] for [what], misreads apart, and returns the problems that are real.
 List<String> _report(String what, DesignAlignmentReport report) {
   final real = <String>[], misread = <String>[];
+  final together = _misreadTogether(report.problems);
   for (final problem in report.problems) {
-    final why = _misreads
-        .where((m) => m.$1.hasMatch(problem))
-        .map((m) => m.$2)
-        .firstOrNull;
+    final why =
+        together[problem] ??
+        _misreads
+            .where((m) => m.$1.hasMatch(problem))
+            .map((m) => m.$2)
+            .firstOrNull;
     if (why == null) {
       real.add(problem);
     } else {

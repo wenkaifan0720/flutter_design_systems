@@ -1,6 +1,7 @@
 /// Navigation and progress through views, drawn as the comic's captions.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'dart:ui' show SemanticsRole;
@@ -9,13 +10,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 
 import 'chrome.dart';
+import 'nav.dart';
 import 'glyphs.dart';
-import 'internal/reach.dart';
 import 'internal/track.dart';
 import 'localizations.dart';
 import 'press.dart';
 import 'theme.dart';
 import 'internal/cap_label.dart';
+import 'knobs.dart' show ComicSpace;
 
 /// A permanent side navigation panel for a wide layout.
 ///
@@ -66,12 +68,15 @@ class ComicNavigationDrawer extends StatelessWidget {
         ),
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(ComicSpace.near),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (header != null) ...[header!, const SizedBox(height: 16)],
+                if (header != null) ...[
+                  header!,
+                  const SizedBox(height: ComicSpace.gap),
+                ],
                 // The destinations are a list: a screen reader counts them, and they read as a list's rows.
                 Semantics(
                   container: true,
@@ -104,7 +109,7 @@ class ComicNavigationDrawer extends StatelessWidget {
                                 shape: t.shapes.small,
                               ),
                               child: Padding(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(ComicSpace.near),
                                 child: Row(
                                   children: [
                                     Icon(
@@ -113,7 +118,7 @@ class ComicNavigationDrawer extends StatelessWidget {
                                           ? t.colors.onCaption
                                           : t.colors.text,
                                     ),
-                                    const SizedBox(width: 12),
+                                    const SizedBox(width: ComicSpace.near),
                                     Expanded(
                                       child: CapLabel(
                                         child: Text(
@@ -136,13 +141,31 @@ class ComicNavigationDrawer extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (footer != null) ...[const SizedBox(height: 16), footer!],
+                if (footer != null) ...[
+                  const SizedBox(height: ComicSpace.gap),
+                  footer!,
+                ],
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicNavItem>('destinations', destinations))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -177,20 +200,51 @@ class ComicTabBar extends StatefulWidget {
   final String? label;
   @override
   State<ComicTabBar> createState() => _ComicTabBarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('tabs', tabs))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 class _ComicTabBarState extends State<ComicTabBar> {
   final List<FocusNode> _nodes = [];
+  final ScrollController _scroll = ScrollController();
   @override
   void initState() {
     super.initState();
     _syncNodes();
+    _showChosen();
   }
 
   @override
   void didUpdateWidget(ComicTabBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     _syncNodes();
+    if (oldWidget.selectedIndex != widget.selectedIndex) _showChosen();
+  }
+
+  // Where the tabs scroll, the chosen one is brought inside the rim after the frame: a cut, as a page change is. Only
+  // the bar's own row moves; the page around it stays where it is.
+  void _showChosen() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _nodes.isEmpty || !_scroll.hasClients) return;
+      final chosen = _nodes[widget.selectedIndex.clamp(0, _nodes.length - 1)]
+          .context
+          ?.findRenderObject();
+      if (chosen == null || !chosen.attached) return;
+      for (final policy in const [
+        ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+        ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+      ]) {
+        _scroll.position.ensureVisible(chosen, alignmentPolicy: policy);
+      }
+    });
   }
 
   void _syncNodes() {
@@ -207,6 +261,7 @@ class _ComicTabBarState extends State<ComicTabBar> {
     for (final node in _nodes) {
       node.dispose();
     }
+    _scroll.dispose();
     super.dispose();
   }
 
@@ -254,67 +309,120 @@ class _ComicTabBarState extends State<ComicTabBar> {
     // bar on a wide screen does (the design kit's checks holds a tab bar to what its tabs take). It scrolls sideways only
     // when they need more. Each tab says it is one, inside a bar that says it is a tab bar.
     final wide = t.width >= 600;
+    // A tab's own width: its words at the reader's text size, the face's padding, and the inset each side.
+    final scaler = MediaQuery.textScalerOf(context);
+    var widest = 0.0;
+    for (final tab in widget.tabs) {
+      final words = TextPainter(
+        text: TextSpan(text: tab, style: t.type.title),
+        textDirection: Directionality.of(context),
+        maxLines: 1,
+        textScaler: scaler,
+      )..layout();
+      final own = words.width + 2 * (ComicSpace.gap + ComicTrack.inset);
+      words.dispose();
+      if (own > widest) widest = own;
+    }
     return LayoutBuilder(
-      builder: (context, box) => SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: !wide && box.hasBoundedWidth ? box.maxWidth : 0,
+      builder: (context, box) {
+        // A phone's tabs that need more than the row (large text): the trough's rim holds still at the row's ends and
+        // the tabs scroll inside it, each at its own width, so the one past the end shows cut by the rim. Scrolled
+        // with them, the rim's end went off the screen with the last tab, and nothing said there was one (the
+        // fresh-eyes read, 11-15).
+        final inside =
+            !wide &&
+            box.hasBoundedWidth &&
+            widest * widget.tabs.length + 2 * rim.width > box.maxWidth;
+        final bar = _bar(
+          context,
+          rim: inside ? rim.copyWith(color: const Color(0x00000000)) : rim,
+          equal: !wide && !inside,
+          minWidth: !wide && box.hasBoundedWidth ? box.maxWidth : 0,
+          outer: outer,
+          inner: inner,
+        );
+        if (!inside) return bar;
+        return DecoratedBox(
+          position: DecorationPosition.foreground,
+          decoration: ShapeDecoration(shape: outer.copyWith(side: rim)),
+          child: ClipPath(
+            clipper: ShapeBorderClipper(shape: outer),
+            child: bar,
           ),
-          child: Semantics(
-            role: SemanticsRole.tabBar,
-            label: widget.label ?? ComicLocalizations.of(context).tabs,
-            container: true,
-            explicitChildNodes: true,
-            child: ComicTrack(
-              shape: outer,
-              rim: rim,
-              fill: c.dark ? c.card : c.control,
-              thumb: c.caption,
-              equal: !wide,
-              lit: widget.tabs.isEmpty
-                  ? null
-                  : widget.selectedIndex.clamp(0, widget.tabs.length - 1),
-              cells: [
-                for (var i = 0; i < widget.tabs.length; i++)
-                  MergeSemantics(
-                    child: Semantics(
-                      role: SemanticsRole.tab,
-                      child: ComicPressable(
-                        label: widget.tabs[i],
-                        button: false,
-                        selected: i == widget.selectedIndex,
-                        focusNode: _nodes[i],
-                        wash: false,
-                        ring: false,
-                        sink: false,
-                        keys: (_, event) => _keys(i, event),
-                        onPressed: widget.onChanged == null
-                            ? null
-                            : () => widget.onChanged!(i),
-                        builder: (context, states) => ComicTrackFace(
-                          states: states,
-                          shape: inner,
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          child: CapLabel(
-                            child: Text(
-                              widget.tabs[i],
-                              maxLines: 1,
-                              style: t.type.title.copyWith(
-                                color: i == widget.selectedIndex
-                                    ? c.onCaption
-                                    : c.dark
-                                    ? c.text
-                                    : c.onPaper,
-                              ),
+        );
+      },
+    );
+  }
+
+  Widget _bar(
+    BuildContext context, {
+    required BorderSide rim,
+    required bool equal,
+    required double minWidth,
+    required OutlinedBorder outer,
+    required OutlinedBorder inner,
+  }) {
+    final t = ComicTheme.of(context), c = t.colors;
+    return SingleChildScrollView(
+      controller: _scroll,
+      scrollDirection: Axis.horizontal,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minWidth: minWidth),
+        child: Semantics(
+          role: SemanticsRole.tabBar,
+          label: widget.label ?? ComicLocalizations.of(context).tabs,
+          container: true,
+          explicitChildNodes: true,
+          child: ComicTrack(
+            shape: outer,
+            rim: rim,
+            fill: c.dark ? c.card : c.control,
+            thumb: c.caption,
+            equal: equal,
+            lit: widget.tabs.isEmpty
+                ? null
+                : widget.selectedIndex.clamp(0, widget.tabs.length - 1),
+            cells: [
+              for (var i = 0; i < widget.tabs.length; i++)
+                MergeSemantics(
+                  child: Semantics(
+                    role: SemanticsRole.tab,
+                    child: ComicPressable(
+                      label: widget.tabs[i],
+                      button: false,
+                      selected: i == widget.selectedIndex,
+                      focusNode: _nodes[i],
+                      wash: false,
+                      ring: false,
+                      sink: false,
+                      keys: (_, event) => _keys(i, event),
+                      onPressed: widget.onChanged == null
+                          ? null
+                          : () => widget.onChanged!(i),
+                      builder: (context, states) => ComicTrackFace(
+                        states: states,
+                        shape: inner,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: ComicSpace.gap,
+                        ),
+                        child: CapLabel(
+                          child: Text(
+                            widget.tabs[i],
+                            maxLines: 1,
+                            style: t.type.title.copyWith(
+                              color: i == widget.selectedIndex
+                                  ? c.onCaption
+                                  : c.dark
+                                  ? c.text
+                                  : c.onPaper,
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
       ),
@@ -322,7 +430,10 @@ class _ComicTabBarState extends State<ComicTabBar> {
   }
 }
 
-/// Page indicators with a full target around each small caption mark.
+/// Page indicators: a small caption mark a page, the current one longer. With [onChanged] the row is one control, as
+/// a phone's page control is: a press on a mark goes to its page, the arrow keys step (Home and End to the ends), and
+/// a screen reader adjusts it as a slider. One target, the whole row's height, instead of a row of small ones each
+/// inside its neighbours' reach.
 ///
 /// ```dart
 /// ComicPageDots(count: 4, selectedIndex: 1, label: 'Pages', onChanged: select)
@@ -379,31 +490,193 @@ class ComicPageDots extends StatelessWidget {
       bottom: 13,
     );
     Widget dot(int i) => Padding(padding: slot(i), child: mark(i));
-    if (onChanged == null) {
-      return Semantics(
+    final choose = onChanged;
+    if (choose != null && count > 0) {
+      return _ChoosingDots(
+        count: count,
+        selectedIndex: selectedIndex,
         label: label,
-        value: '${count == 0 ? 0 : selectedIndex + 1} / $count',
-        child: ExcludeSemantics(
-          child: Wrap(children: [for (var i = 0; i < count; i++) dot(i)]),
+        onChanged: choose,
+        dot: (i, states) => Padding(
+          key: ValueKey('page-dot/$i'),
+          padding: slot(i),
+          child: ComicHighlight(
+            states: states,
+            shape: t.shapes.full,
+            ring: false,
+            child: mark(i),
+          ),
         ),
       );
     }
-    return Wrap(
-      children: [
-        for (var i = 0; i < count; i++)
-          Padding(
-            padding: slot(i),
-            child: ComicPressable(
-              label: '$label ${i + 1} / $count',
-              selected: i == selectedIndex,
-              onPressed: () => onChanged!(i),
-              target: true,
-              // The wash and the ring are the mark's own outline; the target stands around it.
-              outline: WidgetStatePropertyAll(t.shapes.full),
-              child: mark(i),
+    return Semantics(
+      label: label,
+      value: '${count == 0 ? 0 : selectedIndex + 1} / $count',
+      child: ExcludeSemantics(
+        child: Wrap(children: [for (var i = 0; i < count; i++) dot(i)]),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged));
+  }
+}
+
+/// [ComicPageDots] taking presses: one focusable, adjustable row.
+class _ChoosingDots extends StatefulWidget {
+  const _ChoosingDots({
+    required this.count,
+    required this.selectedIndex,
+    required this.label,
+    required this.onChanged,
+    required this.dot,
+  });
+
+  final int count, selectedIndex;
+  final String label;
+  final ValueChanged<int> onChanged;
+  final Widget Function(int i, Set<WidgetState> states) dot;
+
+  @override
+  State<_ChoosingDots> createState() => _ChoosingDotsState();
+}
+
+class _Step extends Intent {
+  const _Step(this.to);
+
+  /// A page index, or one of the ends: [_first] and [_last]; otherwise a step from the current page.
+  final int to;
+}
+
+const int _first = -1000, _last = 1000;
+
+class _ChoosingDotsState extends State<_ChoosingDots> {
+  late List<GlobalKey> _keys = _make();
+  int? _hovered, _down;
+  var _focused = false;
+
+  List<GlobalKey> _make() => [
+    for (var i = 0; i < widget.count; i++) GlobalKey(),
+  ];
+
+  @override
+  void didUpdateWidget(_ChoosingDots old) {
+    super.didUpdateWidget(old);
+    if (old.count != widget.count) {
+      _keys = _make();
+      _hovered = _down = null;
+    }
+  }
+
+  void _go(int i) {
+    final next = i.clamp(0, widget.count - 1);
+    if (next != widget.selectedIndex) widget.onChanged(next);
+  }
+
+  // The mark nearest [global] along the row: every press lands on a page, the gaps between marks included.
+  int? _at(Offset global) {
+    int? best;
+    var gap = double.infinity;
+    for (var i = 0; i < _keys.length; i++) {
+      final box = _keys[i].currentContext?.findRenderObject();
+      if (box is! RenderBox || !box.hasSize) continue;
+      final centre = box.localToGlobal(box.size.center(Offset.zero));
+      final d = (centre.dx - global.dx).abs();
+      if (d < gap) {
+        gap = d;
+        best = i;
+      }
+    }
+    return best;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = ComicTheme.of(context);
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final at = widget.selectedIndex, count = widget.count;
+    String value(int i) => '${i + 1} / $count';
+    return Semantics(
+      container: true,
+      slider: true,
+      label: widget.label,
+      value: value(at),
+      increasedValue: at + 1 < count ? value(at + 1) : null,
+      decreasedValue: at > 0 ? value(at - 1) : null,
+      onIncrease: at + 1 < count ? () => _go(at + 1) : null,
+      onDecrease: at > 0 ? () => _go(at - 1) : null,
+      child: FocusableActionDetector(
+        mouseCursor: SystemMouseCursors.click,
+        onShowFocusHighlight: (v) => setState(() => _focused = v),
+        onShowHoverHighlight: (v) {
+          if (!v) setState(() => _hovered = null);
+        },
+        shortcuts: {
+          const SingleActivator(LogicalKeyboardKey.arrowLeft): _Step(
+            rtl ? 1 : -1,
+          ),
+          const SingleActivator(LogicalKeyboardKey.arrowRight): _Step(
+            rtl ? -1 : 1,
+          ),
+          const SingleActivator(LogicalKeyboardKey.home): const _Step(_first),
+          const SingleActivator(LogicalKeyboardKey.end): const _Step(_last),
+        },
+        actions: {
+          _Step: CallbackAction<_Step>(
+            onInvoke: (step) => _go(switch (step.to) {
+              _first => 0,
+              _last => count - 1,
+              final by => at + by,
+            }),
+          ),
+        },
+        child: MouseRegion(
+          onHover: (e) {
+            final i = _at(e.position);
+            if (i != _hovered) setState(() => _hovered = i);
+          },
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            // A screen reader adjusts the row; a tap at its middle would land on whichever page stood there.
+            excludeFromSemantics: true,
+            onTapDown: (d) => setState(() => _down = _at(d.globalPosition)),
+            onTapCancel: () => setState(() => _down = null),
+            onTapUp: (d) {
+              final i = _at(d.globalPosition);
+              setState(() => _down = null);
+              if (i != null) _go(i);
+            },
+            child: ComicHighlight(
+              states: {if (_focused) WidgetState.focused},
+              shape: t.shapes.full,
+              wash: false,
+              child: ExcludeSemantics(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < count; i++)
+                      KeyedSubtree(
+                        key: _keys[i],
+                        child: widget.dot(i, {
+                          if (_hovered == i) WidgetState.hovered,
+                          if (_down == i) WidgetState.pressed,
+                          if (i == at) WidgetState.selected,
+                        }),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
-      ],
+        ),
+      ),
     );
   }
 }
@@ -447,15 +720,15 @@ class ComicStepProgress extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ExcludeSemantics(child: Text(phase ?? name, style: t.type.title)),
-          const SizedBox(height: 8),
+          const SizedBox(height: ComicSpace.close),
           ExcludeSemantics(
             child: Wrap(
-              spacing: 6,
-              runSpacing: 6,
+              spacing: ComicSpace.close,
+              runSpacing: ComicSpace.close,
               children: [
                 for (var i = 0; i < count; i++)
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(ComicSpace.close),
                     decoration: ShapeDecoration(
                       color: i <= currentStep
                           ? t.colors.caption
@@ -488,6 +761,16 @@ class ComicStepProgress extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('currentStep', currentStep))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('phase', phase, defaultValue: null));
   }
 }
 
@@ -546,7 +829,7 @@ class ComicNavigationRail extends StatelessWidget {
             ? item.onPressed
             : () => onDestinationSelected!(i),
         builder: (context, states) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
+          padding: const EdgeInsets.symmetric(vertical: ComicSpace.close),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -575,7 +858,7 @@ class ComicNavigationRail extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: ComicSpace.tight),
               SizedBox(
                 width: 80,
                 child: Text(
@@ -612,14 +895,17 @@ class ComicNavigationRail extends StatelessWidget {
         child: SizedBox(
           width: 88,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: ComicSpace.near),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (leading != null) ...[leading!, const SizedBox(height: 16)],
+                if (leading != null) ...[
+                  leading!,
+                  const SizedBox(height: ComicSpace.gap),
+                ],
                 for (var i = 0; i < destinations.length; i++) destination(i),
                 if (trailing != null) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: ComicSpace.gap),
                   trailing!,
                 ],
               ],
@@ -628,6 +914,21 @@ class ComicNavigationRail extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicNavItem>('destinations', destinations))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -665,77 +966,88 @@ class ComicBreadcrumb extends StatelessWidget {
     final c = t.colors;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final words = t.type.text(14, 1.3, weight: FontWeight.w700);
+    // A step's room either side of its words; the first step's words start on the trail's keyline, its room after them.
+    const side = EdgeInsets.symmetric(horizontal: ComicSpace.close);
+    const lead = EdgeInsetsDirectional.only(end: ComicSpace.close);
     return Semantics(
       label: label ?? ComicLocalizations.of(context).breadcrumbs,
       container: true,
       explicitChildNodes: true,
-      // A step's side room stands outward from the first, so the trail's words start on the column's edge.
-      child: ComicOutward(
-        margin: const EdgeInsetsDirectional.only(start: 6),
-        child: Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          runSpacing: 0,
-          children: [
-            for (var i = 0; i < items.length; i++) ...[
-              if (i == items.length - 1 || items[i].onPressed == null)
-                Semantics(
-                  // The current page is said as such; an inert ancestor is plain words.
-                  selected: i == items.length - 1 ? true : null,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minHeight: ComicTapTarget.target,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Center(
-                        widthFactor: 1,
-                        child: Text(
-                          items[i].label,
-                          style: words.copyWith(color: c.text),
-                        ),
+      // Each step stands at its floor with its side room inside: a tap and a screen reader reach the same box.
+      child: Wrap(
+        crossAxisAlignment: WrapCrossAlignment.center,
+        runSpacing: 0,
+        children: [
+          for (var i = 0; i < items.length; i++) ...[
+            if (i == items.length - 1 || items[i].onPressed == null)
+              Semantics(
+                // The current page is said as such; an inert ancestor is plain words.
+                selected: i == items.length - 1 ? true : null,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: ComicTapTarget.targetOf(context),
+                  ),
+                  child: Padding(
+                    padding: i == 0 ? lead : side,
+                    child: Center(
+                      widthFactor: 1,
+                      child: Text(
+                        items[i].label,
+                        style: words.copyWith(color: c.text),
                       ),
                     ),
                   ),
-                )
-              else
-                ComicPressable(
-                  link: true,
-                  label: items[i].label,
-                  outline: WidgetStatePropertyAll(t.shapes.small),
-                  onPressed: items[i].onPressed,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minHeight: ComicTapTarget.target,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: Center(
-                        widthFactor: 1,
-                        child: Text(
-                          items[i].label,
-                          style: words.copyWith(
-                            color: c.shadeText,
-                            decoration: TextDecoration.underline,
-                            decorationColor: c.shadeText,
-                          ),
+                ),
+              )
+            else
+              ComicPressable(
+                link: true,
+                label: items[i].label,
+                outline: WidgetStatePropertyAll(t.shapes.small),
+                onPressed: items[i].onPressed,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: ComicTapTarget.target,
+                    // The first step's words stand on the keyline; its room after them keeps it at the floor.
+                    minWidth: i == 0 ? ComicTapTarget.targetOf(context) : 0,
+                  ),
+                  child: Padding(
+                    padding: i == 0 ? lead : side,
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      widthFactor: 1,
+                      child: Text(
+                        items[i].label,
+                        style: words.copyWith(
+                          color: c.shadeText,
+                          decoration: TextDecoration.underline,
+                          decorationColor: c.shadeText,
                         ),
                       ),
                     ),
                   ),
                 ),
-              if (i < items.length - 1)
-                ExcludeSemantics(
-                  child: Icon(
-                    rtl ? ComicGlyphs.chevronLeft : ComicGlyphs.chevronRight,
-                    size: 16,
-                    color: c.textSecondary,
-                  ),
+              ),
+            if (i < items.length - 1)
+              ExcludeSemantics(
+                child: Icon(
+                  rtl ? ComicGlyphs.chevronLeft : ComicGlyphs.chevronRight,
+                  size: 16,
+                  color: c.textSecondary,
                 ),
-            ],
+              ),
           ],
-        ),
+        ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicCrumb>('items', items))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -801,7 +1113,7 @@ class ComicPagination extends StatelessWidget {
       builder: (context, states) => ComicTrackFace(
         states: states,
         shape: inner,
-        padding: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(horizontal: ComicSpace.tight),
         // Every cell is at least the platform's target wide: 44, or 48 where a touch reaches it.
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -933,5 +1245,16 @@ class ComicPagination extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('page', page))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(IntProperty('window', window, defaultValue: 1))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }

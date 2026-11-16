@@ -4,6 +4,7 @@ library;
 export 'comic/balloons.dart'
     hide comicBalloonPath, ComicBurstFit, ComicBurstLedger;
 export 'comic/chrome.dart';
+export 'comic/nav.dart';
 export 'comic/controls.dart';
 export 'comic/frames.dart'
     hide
@@ -17,7 +18,12 @@ export 'comic/layout.dart'
     hide comicWidestWord, RenderComicBeside, comicOwnSize, ComicFill;
 export 'comic/people.dart';
 export 'comic/press.dart'
-    hide ComicStateDecoration, ComicStateLerp, comicStateCurve;
+    hide
+        ComicStateDecoration,
+        ComicStateLerp,
+        comicStateCurve,
+        ComicPlated,
+        ComicScreened;
 export 'comic/print.dart'
     hide ComicScreenGrid, ComicDotFade, RenderComicLettering;
 export 'comic/rows.dart';
@@ -87,9 +93,12 @@ export 'package:ui_core/ui_core.dart'
         DesignTableColumn,
         DesignTableController;
 export 'package:ui_core/ui_core.dart' show DesignMenuEntry;
+export 'package:ui_core/ui_core.dart'
+    show DesignLocalizations, DefaultDesignLocalizations;
 export 'package:ui_core/ui_core.dart' show DesignRangeValues;
 export 'package:ui_core/ui_core.dart' show DesignScrollbarVisibility;
 export 'package:ui_core/ui_core.dart' show DesignSheetEdge;
+export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
 export 'package:ui_core/ui_core.dart' show DesignSwipeAction;
 export 'package:ui_core/ui_core.dart' show DesignTreeController;
 

@@ -1,12 +1,15 @@
 /// Secondary actions and chips on the same control scale as the primary action.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'press.dart';
 import 'theme.dart';
 import 'component_themes.dart';
 import 'styled.dart';
+import 'internal/style_guard.dart';
+import 'knobs.dart' show ComicSpace;
 
 /// A textual navigation action, underlined and announced as a link.
 ///
@@ -40,14 +43,16 @@ class ComicLink extends StatelessWidget {
   /// Navigation callback; null is disabled.
   final VoidCallback? onPressed;
 
+  /// {@template comic.autofocus}
   /// Whether the part asks for the focus when it first appears.
+  /// {@endtemplate}
   final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     final layers = [style, t.textButtonTheme];
-    final base = ComicStyleOf(layers, const {});
+    final base = comicStyleOf(layers, const {});
     // A link is words: given a whole column, they start on its edge, as every other line in it does, never centred in
     // their least target (11-12).
     return Align(
@@ -70,7 +75,7 @@ class ComicLink extends StatelessWidget {
       outline: base.shapes(t.shapes.small),
       overlay: base.overlay,
       builder: (context, states) {
-        final look = ComicStyleOf(layers, states);
+        final look = comicStyleOf(layers, states);
         return AnimatedComicShape(
           shape: look.shape ?? t.shapes.small,
           builder: (context, shape) => Container(
@@ -80,7 +85,9 @@ class ComicLink extends StatelessWidget {
             ),
             padding:
                 look.padding(Directionality.of(context)) ??
-                t.density.padding(const EdgeInsets.symmetric(vertical: 12)),
+                t.density.padding(
+                  const EdgeInsets.symmetric(vertical: ComicSpace.near),
+                ),
             decoration: ShapeDecoration(
               color: look.fill,
               shape: (shape ?? const RoundedRectangleBorder()).copyWith(
@@ -103,5 +110,37 @@ class ComicLink extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(StringProperty('label', label))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'inSentence',
+          value: inSentence,
+          ifFalse: 'inSentence: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
   }
 }

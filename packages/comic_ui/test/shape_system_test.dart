@@ -1,5 +1,7 @@
 // The exported-component census and the actual rendered contours agree under
 // every Customize choice. Adding an export without a rendered specimen fails.
+// These read a private painter's fields by name, so the calls are dynamic.
+// ignore_for_file: avoid_dynamic_calls
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -9,7 +11,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_parts.dart';
 
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/design_review.dart';
 import 'gallery_support.dart';
@@ -159,7 +160,7 @@ void main() {
   });
   for (final corners in GalleryCorners.values) {
     for (final mode in Brightness.values) {
-      final custom = GalleryCustom(corners: corners);
+      final custom = CornerCustom(corners: corners);
       final theme = custom.theme('offset', mode);
       final built = <String>{};
       for (final page in galleryPages) {

@@ -63,6 +63,14 @@ const _tabs = [
   ComicNavItem(label: 'Places', short: 'Places', icon: LucideIcons.compass),
 ];
 
+/// What a part's builder made, disposed once its test is over.
+final List<ChangeNotifier> _made = [];
+
+T _own<T extends ChangeNotifier>(T value) {
+  _made.add(value);
+  return value;
+}
+
 final _parts = <String, _Part>{
   'ComicPressable': _Part(
     (hit) => ComicPressable(
@@ -193,6 +201,9 @@ final _parts = <String, _Part>{
       label: 'Pages',
       onChanged: _on(hit),
     ),
+    // One adjustable control, as a slider: arrows step it, a tap goes to the nearest page.
+    keys: false,
+    pressable: false,
   ),
   'ComicNavigationRail': _Part(
     (hit) => SizedBox(
@@ -291,6 +302,7 @@ final _parts = <String, _Part>{
       ],
       onSelected: _on(hit),
     ),
+    lit: true,
   ),
   'ComicMenuAnchor': _Part(
     (hit) => ComicMenuAnchor<String>(
@@ -392,11 +404,13 @@ final _parts = <String, _Part>{
   ),
   'ComicCalendar': _Part(
     (hit) => ComicCalendar(
-      controller: DesignCalendarController(
-        firstDate: DateTime(2026),
-        lastDate: DateTime(2027),
-        initialMonth: DateTime(2026, 11),
-        currentDate: DateTime(2026, 11, 9),
+      controller: _own(
+        DesignCalendarController(
+          firstDate: DateTime(2026),
+          lastDate: DateTime(2027),
+          initialMonth: DateTime(2026, 11),
+          currentDate: DateTime(2026, 11, 9),
+        ),
       ),
       onChanged: _on(hit),
     ),
@@ -438,11 +452,17 @@ final _parts = <String, _Part>{
   ),
   'ComicDataTable': _Part(
     (hit) => ComicDataTable<String>(
-      controller: DesignTableController<String>(
-        rows: const ['Issue 12'],
-        columns: [
-          DesignTableColumn(id: 'title', label: 'Issue', sortKey: (row) => row),
-        ],
+      controller: _own(
+        DesignTableController<String>(
+          rows: const ['Issue 12'],
+          columns: [
+            DesignTableColumn(
+              id: 'title',
+              label: 'Issue',
+              sortKey: (row) => row,
+            ),
+          ],
+        ),
       ),
       cellBuilder: (context, row, column) => Text(row),
       onActivate: _on(hit),
@@ -452,9 +472,11 @@ final _parts = <String, _Part>{
   ),
   'ComicTreeView': _Part(
     (hit) => ComicTreeView<String>(
-      controller: DesignTreeController<String>(
-        roots: const ['Issue 12'],
-        childrenOf: (node) => const [],
+      controller: _own(
+        DesignTreeController<String>(
+          roots: const ['Issue 12'],
+          childrenOf: (node) => const [],
+        ),
       ),
       labelOf: (node) => node,
       onActivate: _on(hit),
@@ -687,6 +709,12 @@ List<DesignPressableState> _pressables(WidgetTester tester) => tester
 
 void main() {
   setUpAll(loadComicFonts);
+  tearDown(() {
+    for (final made in _made) {
+      made.dispose();
+    }
+    _made.clear();
+  });
 
   test('every part that takes a callback is named in the table', () {
     final found = _interactive();
@@ -706,13 +734,17 @@ void main() {
 
   test('no part keeps a press of its own: every tap stands on the design kit\'s pressable', () {
     // The few gesture detectors left are drags (the slider, the sheet's grip, a chart's reading line), the tooltip's
-    // long press, the page dots' tap-either-side and a form field's label, whose tap focuses its control as the
-    // design kit's own label does; none of them a press.
+    // long press, the page dots' one control (a tap goes to the nearest page, as a slider's does), and a form field's
+    // label, its frame and the command palette's field row, whose tap focuses the field as the design kit's own label
+    // does; none of them a press.
     final allowed = {
       'slider.dart': 1,
       'raised.dart': 1,
       'chart.dart': 1,
       'rows.dart': 1,
+      'moves.dart': 1,
+      'controls.dart': 1,
+      'structure.dart': 1,
     };
     for (final file in Directory(
       'lib/src/comic',

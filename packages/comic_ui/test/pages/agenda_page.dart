@@ -21,9 +21,9 @@ class AgendaPage extends StatelessWidget {
             spans: const [8, 4],
             phone: ComicTierLayout.stack,
             children: [
-              ComicPanelStack(
+              const ComicPanelStack(
                 children: [
-                  const ComicSplash(
+                  ComicSplash(
                     compact: true,
                     layout: ComicSplashLayout.titleHigh,
                     title: 'Five things\ntoday',

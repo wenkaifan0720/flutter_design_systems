@@ -8,10 +8,14 @@ import 'tones.dart';
 import 'component_themes.dart';
 import 'shapes.dart';
 import 'knobs.dart';
-import 'fonts.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
+import 'package:ui_core/ui_core.dart';
+
+import 'press.dart' show ComicTapTarget;
+import 'internal/platform_words.dart';
 
 /// The width where the phone layout becomes the 12-column desktop layout.
 const double comicDeskWidth = 1024;
@@ -324,8 +328,11 @@ class ComicColors with Diagnosticable {
     required this.highlight,
   });
 
-  /// The dimmed ground behind modal surfaces.
-  Color get scrim => const Color(0x99000000);
+  /// The ink of the dot screen over the page behind a modal surface: black by day; by night the night's cream line, a
+  /// reverse screen that knocks the black ground back as black dots knock the paper back by day. Black dots on the
+  /// night's black screened nothing but the cream words, and cut those into pieces (the fresh-eyes read, 11-15).
+  Color get scrim =>
+      brightness == Brightness.dark ? nightLine : const Color(0x99000000);
 
   /// Semantic status inks on the current panel ground.
   ComicTones get tones => status ?? (dark ? ComicTones.dark : ComicTones.light);
@@ -1540,7 +1547,7 @@ class ComicThemeData with Diagnosticable {
     this.width,
     this.onDots, {
     this.shapes = const ComicShapes(),
-    this.strokes = const ComicStrokes(),
+    this.strokes = ComicStrokes.standard,
     this.density = ComicDensity.standard,
     this.typeface = ComicTypeface.look,
     this.components = const ComicComponentThemes(),
@@ -1785,11 +1792,19 @@ class ComicThemeData with Diagnosticable {
     ComicColors? colors,
     double? width,
     bool? onDots,
+    @Deprecated(
+      "Comic is square: only speech and heads are round (law 2). Give one part its own corner through its style's "
+      'shape instead. This feature was deprecated after v0.2.0.',
+    )
     ComicShapes? shapes,
     ComicStrokes? strokes,
     ComicDensity? density,
     ComicTypeface? typeface,
     ComicComponentThemes? components,
+    @Deprecated(
+      "Comic's motion is a quick cut and a small pop; Reduce Motion turns it to cuts (ComicMotion.still) by itself. "
+      'This feature was deprecated after v0.2.0.',
+    )
     ComicMotion? motion,
     ComicTones? tones,
     ComicStyle? filledButtonTheme,
@@ -2029,22 +2044,16 @@ class ComicTheme extends InheritedTheme {
   /// The theme for what is under it.
   final ComicThemeData data;
 
-  /// The theme in scope at [context]: the nearest [ComicTheme], `ComicDotsScope` or `ComicLetteringScope`. Throws when there is
-  /// none. `context.comicTheme` is the same.
-  static ComicThemeData of(BuildContext context) {
-    final found = maybeOf(context);
-    if (found == null) {
-      throw FlutterError.fromParts([
-        ErrorSummary('No Comic theme in scope.'),
-        ErrorHint(
-          'Put a ComicTheme in the app\'s builder, or above this widget.',
-        ),
-      ]);
-    }
-    return found;
-  }
+  /// The theme in scope at [context]: the nearest [ComicTheme], `ComicDotsScope` or `ComicLetteringScope`, else
+  /// Comic's default ([ComicThemeData.offset] by day), as `Theme.of` gives Material's. `context.comicTheme` is the
+  /// same; [maybeOf] tells whether one is there.
+  static ComicThemeData of(BuildContext context) =>
+      maybeOf(context) ??
+      _fallback.atWidth(MediaQuery.maybeSizeOf(context)?.width ?? 0);
 
-  /// The theme in scope at [context], or null.
+  static final ComicThemeData _fallback = ComicThemeData.offset();
+
+  /// The theme in scope at [context], or null when no [ComicTheme] is above it.
   static ComicThemeData? maybeOf(BuildContext context) => context
       .dependOnInheritedWidgetOfExactType<ComicTheme>()
       ?.data
@@ -2089,17 +2098,27 @@ class _FieldTrouble extends InheritedWidget {
   bool updateShouldNotify(_FieldTrouble oldWidget) => error != oldWidget.error;
 }
 
-/// Material's words where [context] has none, for a `Localizations` that raises a surface: Flutter's text field under a
-/// CupertinoApp or a WidgetsApp still asks for them. Kept out of the barrel.
-List<LocalizationsDelegate<dynamic>> comicMaterialWords(BuildContext context) =>
-    Localizations.maybeLocaleOf(context) != null &&
-        Localizations.of<MaterialLocalizations>(
-              context,
-              MaterialLocalizations,
-            ) ==
-            null
-    ? const [DefaultMaterialLocalizations.delegate]
-    : const [];
+/// Material's and Cupertino's words where [context] has none, for a `Localizations` that raises a surface: Flutter's
+/// text field under a CupertinoApp or a WidgetsApp still asks for them, and so does one under an app in any language
+/// whose words are not those of the libraries Comic is built on (on iOS a field's selection reads Cupertino's). They
+/// never throw for want of a language ([comicMaterialWordsDelegate]). Kept out of the barrel.
+List<LocalizationsDelegate<dynamic>> comicMaterialWords(BuildContext context) {
+  if (Localizations.maybeLocaleOf(context) == null) return const [];
+  return [
+    if (Localizations.of<MaterialLocalizations>(
+          context,
+          MaterialLocalizations,
+        ) ==
+        null)
+      comicMaterialWordsDelegate,
+    if (Localizations.of<CupertinoLocalizations>(
+          context,
+          CupertinoLocalizations,
+        ) ==
+        null)
+      comicCupertinoWordsDelegate,
+  ];
+}
 
 class _ComicInstall extends StatelessWidget {
   const _ComicInstall({
@@ -2127,9 +2146,16 @@ class _ComicInstall extends StatelessWidget {
             : Directionality(textDirection: direction, child: under),
       );
     }
+    // Comic's tap floors (44 for a pointer, 48 for a finger), unless the app declares its own above.
+    if (DesignTapTargets.maybeOf(context) == null) {
+      under = DesignTapTargetScope(
+        targets: ComicTapTarget.targets,
+        child: under,
+      );
+    }
     final scoped = data.atWidth(MediaQuery.sizeOf(context).width);
     return Theme(
-      data: _comicMaterialUnder(data.colors),
+      data: _comicMaterialUnder(data.colors, data.typeface),
       child: ScrollConfiguration(
         behavior: ComicScrollBehavior(data.colors.outline),
         child: IconTheme.merge(
@@ -2141,16 +2167,31 @@ class _ComicInstall extends StatelessWidget {
   }
 }
 
-final Expando<ThemeData> _bridges = Expando<ThemeData>();
+final Expando<(ComicTypeface, ThemeData)> _bridges =
+    Expando<(ComicTypeface, ThemeData)>();
 
-/// What Flutter's own widgets under Comic read (the text field's caret, selection and density), in Comic's colours, with
-/// no ink, splash or highlight. Not part of the package's barrel: an app never sees a Material type in Comic's API.
-ThemeData _comicMaterialUnder(ComicColors c) => _bridges[c] ??= ThemeData(
+/// What Flutter's own widgets under Comic read (the text field's caret, selection and density), in Comic's colours and
+/// its text face, with no ink, splash or highlight. Not part of the package's barrel: an app never sees a Material type
+/// in Comic's API.
+ThemeData _comicMaterialUnder(ComicColors c, ComicTypeface face) {
+  final kept = _bridges[c];
+  // ThemeData fixes its platform when made: one made for another platform (a test's platform variant) is made again.
+  if (kept != null &&
+      kept.$1 == face &&
+      kept.$2.platform == defaultTargetPlatform) {
+    return kept.$2;
+  }
+  final made = _comicMaterialOf(c, face);
+  _bridges[c] = (face, made);
+  return made;
+}
+
+ThemeData _comicMaterialOf(ComicColors c, ComicTypeface face) => ThemeData(
   useMaterial3: true,
   brightness: c.brightness,
   visualDensity: VisualDensity.standard,
-  fontFamily: 'ShantellSans',
-  package: comicFontPackage,
+  fontFamily: face.text,
+  package: face.textPackage,
   scaffoldBackgroundColor: c.background,
   canvasColor: c.background,
   colorScheme: ColorScheme(
@@ -2164,6 +2205,10 @@ ThemeData _comicMaterialUnder(ComicColors c) => _bridges[c] ??= ThemeData(
     surface: c.card,
     onSurface: c.text,
   ),
+  // Every platform's page change is Comic's cut, so a page an app pushes under Comic never flies in.
+  pageTransitionsTheme: const PageTransitionsTheme(
+    builders: comicPageTransitions,
+  ),
   splashFactory: NoSplash.splashFactory,
   highlightColor: Colors.transparent,
   hoverColor: Colors.transparent,
@@ -2174,6 +2219,61 @@ ThemeData _comicMaterialUnder(ComicColors c) => _bridges[c] ??= ThemeData(
     selectionColor: c.shade.withValues(alpha: .35),
   ),
 );
+
+/// Comic's page change for every platform, a map of the widgets layer's `PageTransitionsBuilder`s: one map fits both
+/// Materials' `PageTransitionsTheme`. Comic's own Material theme carries it, for apps on material_ui. An app on Flutter's
+/// own `MaterialApp` puts it in its own `ThemeData`, as the example does: Flutter's `MaterialPageRoute` reads Flutter's
+/// theme, which Comic doesn't reach, and would fly in. See [ComicPageTransitionsBuilder]. On iOS the cut stands in
+/// ui_core's `DesignSwipeBackPageTransitionsBuilder`, so the swipe from the screen's leading edge still takes a page
+/// back, the page following the finger.
+///
+/// ```dart
+/// MaterialApp(
+///   theme: ThemeData(
+///     pageTransitionsTheme: const PageTransitionsTheme(
+///       builders: comicPageTransitions,
+///     ),
+///   ),
+///   home: const Text('The first page'),
+/// )
+/// ```
+const Map<TargetPlatform, PageTransitionsBuilder> comicPageTransitions = {
+  TargetPlatform.android: ComicPageTransitionsBuilder(),
+  TargetPlatform.fuchsia: ComicPageTransitionsBuilder(),
+  // iOS's swipe back from the screen's edge, round Comic's cut.
+  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+    ComicPageTransitionsBuilder(),
+  ),
+  TargetPlatform.linux: ComicPageTransitionsBuilder(),
+  TargetPlatform.macOS: ComicPageTransitionsBuilder(),
+  TargetPlatform.windows: ComicPageTransitionsBuilder(),
+};
+
+/// Comic's page change: a cut, as the eye jumps to the next panel. A page pushed or popped stands in its place at full
+/// ink in its first frame: nothing travels in from a side, fades or zooms (laws 1 and 3). [ComicTheme] gives it to the
+/// routes it reaches (Comic's own pages among them); an app's `MaterialApp` gives [comicPageTransitions] to its own
+/// theme, so a `MaterialPageRoute` it pushes cuts too. The cut alone takes no swipe: [comicPageTransitions] wraps it on
+/// iOS in ui_core's `DesignSwipeBackPageTransitionsBuilder`, which keeps the swipe from the leading edge; a map of your
+/// own does the same.
+class ComicPageTransitionsBuilder extends PageTransitionsBuilder {
+  /// Creates Comic's page change.
+  const ComicPageTransitionsBuilder();
+
+  @override
+  Duration get transitionDuration => Duration.zero;
+
+  @override
+  Duration get reverseTransitionDuration => Duration.zero;
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => child;
+}
 
 /// Animates to a new [data] over [duration] (200 ms, Material's `AnimatedTheme` default), as `AnimatedTheme` does:
 /// colours blend through [ComicThemeData.lerp].
@@ -2328,6 +2428,12 @@ class ComicLetteringScope extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ColorProperty('letters', letters));
+  }
 }
 
 /// `context.comicTheme`: the theme in scope.
@@ -2337,6 +2443,8 @@ extension ComicThemeContext on BuildContext {
 }
 
 /// Default semantic inks for light paper.
+// The inks live here, with every colour of the theme; ComicTones.light and .dark name them.
+// ignore: use_named_constants
 const comicLightTones = ComicTones(
   info: Color(0xff164e8a),
   success: Color(0xff24602f),
@@ -2345,6 +2453,7 @@ const comicLightTones = ComicTones(
 );
 
 /// Default semantic inks for dark paper.
+// ignore: use_named_constants
 const comicDarkTones = ComicTones(
   info: Color(0xff9ccaff),
   success: Color(0xff9fdfa6),

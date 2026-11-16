@@ -8,35 +8,47 @@ import 'package:flutter/painting.dart';
 
 import 'fonts.dart';
 
-/// The widths every styled part's rims and rules read, in logical pixels: [hairline] for the rules inside a part (the
-/// act plate's inner rule, a segment's, a card's second line), [regular] for a part's rim, [heavy] for the focus ring
-/// and a chosen part's rim. Null keeps the look's own ink contours, with heavier focus marks.
+/// The weight of Comic's ink, in two steps: [standard], the look's own contours part by part, and [bold], rims at 4
+/// and the focus ring at 5. Each step names the widths every styled part's rims and rules read, in logical pixels:
+/// [hairline] for the rules inside a part (the act plate's inner rule, a segment's, a card's second line), [regular]
+/// for a part's rim, [heavy] for the focus ring and a chosen part's rim; null keeps the look's own ink contours.
 ///
 /// ```dart
-/// final theme = ComicThemeData.offset().copyWith(
-///   strokes: const ComicStrokes(regular: 2, heavy: 3),
-/// );
+/// final theme = ComicThemeData.offset().copyWith(strokes: ComicStrokes.bold);
 /// ```
 @immutable
 class ComicStrokes with Diagnosticable {
   /// The named widths; null keeps the look's.
+  @Deprecated(
+    'Use ComicStrokes.standard or ComicStrokes.bold instead: Comic inks in two weights. '
+    'This feature was deprecated after v0.2.0.',
+  )
   const ComicStrokes({this.hairline, this.regular, this.heavy})
     : assert(hairline == null || hairline > 0),
       assert(regular == null || regular > 0),
       assert(heavy == null || heavy > 0);
 
-  /// The look's own widths: 2, 2.5 and 3.
-  static const ComicStrokes look = ComicStrokes(
-    hairline: 2,
-    regular: 2.5,
-    heavy: 3,
-  );
+  const ComicStrokes._({this.hairline, this.regular, this.heavy});
+
+  /// The look's own ink: each part's contour as it was drawn, with heavier focus marks. A theme's default.
+  static const ComicStrokes standard = ComicStrokes._();
 
   /// Rims at 4 and the focus ring at 5: a bolder line for a brand that wants it.
-  static const ComicStrokes bold = ComicStrokes(
+  static const ComicStrokes bold = ComicStrokes._(
     hairline: 3,
     regular: 4,
     heavy: 5,
+  );
+
+  /// The look's widths as one even line: 2, 2.5 and 3.
+  @Deprecated(
+    'Use ComicStrokes.standard instead: the look\'s own contours, part by part. '
+    'This feature was deprecated after v0.2.0.',
+  )
+  static const ComicStrokes look = ComicStrokes._(
+    hairline: 2,
+    regular: 2.5,
+    heavy: 3,
   );
 
   /// The rules inside a part.
@@ -52,8 +64,12 @@ class ComicStrokes with Diagnosticable {
   bool get isEmpty => hairline == null && regular == null && heavy == null;
 
   /// This with the named widths changed.
+  @Deprecated(
+    'Use ComicStrokes.standard or ComicStrokes.bold instead: Comic inks in two weights. '
+    'This feature was deprecated after v0.2.0.',
+  )
   ComicStrokes copyWith({double? hairline, double? regular, double? heavy}) =>
-      ComicStrokes(
+      ComicStrokes._(
         hairline: hairline ?? this.hairline,
         regular: regular ?? this.regular,
         heavy: heavy ?? this.heavy,
@@ -65,7 +81,7 @@ class ComicStrokes with Diagnosticable {
     if (t == 1) return b;
     double? l(double? x, double? y, double own) =>
         x == null && y == null ? null : lerpDouble(x ?? own, y ?? own, t);
-    return ComicStrokes(
+    return ComicStrokes._(
       hairline: l(a.hairline, b.hairline, 2),
       regular: l(a.regular, b.regular, 2.5),
       heavy: l(a.heavy, b.heavy, 3),
@@ -182,15 +198,19 @@ class ComicDensity with Diagnosticable {
   }
 }
 
-/// The two faces and the size scale the type is set in: [display] for heads, numerals and the balance (the look's
-/// Bangers), [text] for everything read (the look's ShantellSans), each from [displayPackage] and [textPackage] (the package
-/// that bundles it, null for the app's own fonts), every size times [scale]. The look's faces are the default; an app's
-/// own fonts work when it declares them in its pubspec and loads them before the first frame. Each face's cap height
-/// ([displayCapHeight], [textCapHeight]) sets its capitals on a control's middle: name it with the face.
+const String _scaleGone =
+    'Use the platform text scaling (MediaQuery.textScaler) instead: it serves readers without breaking the '
+    'lettering. This feature was deprecated after v0.2.0.';
+
+/// The two faces the type is set in: [display] for heads, numerals and the balance (the look's Bangers), [text] for
+/// everything read (the look's ShantellSans), each from [displayPackage] and [textPackage] (the package that bundles it,
+/// null for the app's own fonts). The look's faces are the default; an app's own fonts work when it declares them in
+/// its pubspec and loads them before the first frame. Each face's cap height ([displayCapHeight], [textCapHeight]) sets
+/// its capitals on a control's middle: name it with the face. Sizes follow the platform's text scaling.
 ///
 /// ```dart
 /// final theme = ComicThemeData.offset().copyWith(
-///   typeface: const ComicTypeface(display: 'ShantellSans', text: 'ShantellSans', displayCapHeight: 0.700, scale: 1.1),
+///   typeface: const ComicTypeface(display: 'ShantellSans', text: 'ShantellSans', displayCapHeight: 0.700),
 /// );
 /// ```
 @immutable
@@ -201,7 +221,7 @@ class ComicTypeface with Diagnosticable {
     this.text = 'ShantellSans',
     this.displayPackage = comicFontPackage,
     this.textPackage = comicFontPackage,
-    this.scale = 1,
+    @Deprecated(_scaleGone) this.scale = 1,
     this.displayCapHeight = 0.721,
     this.textCapHeight = 0.700,
   }) : assert(scale > 0);
@@ -210,7 +230,7 @@ class ComicTypeface with Diagnosticable {
   const ComicTypeface.app({
     required this.display,
     required this.text,
-    this.scale = 1,
+    @Deprecated(_scaleGone) this.scale = 1,
     this.displayCapHeight = 0.7,
     this.textCapHeight = 0.7,
   }) : displayPackage = null,
@@ -232,6 +252,10 @@ class ComicTypeface with Diagnosticable {
   final String? textPackage;
 
   /// Every size times this.
+  @Deprecated(
+    'Use the platform text scaling (MediaQuery.textScaler) instead: it serves readers without breaking the '
+    'lettering. This feature was deprecated after v0.2.0.',
+  )
   final double scale;
 
   /// The height of [display]'s capitals as a fraction of its size: the font's OS/2 `sCapHeight` over its
@@ -245,7 +269,7 @@ class ComicTypeface with Diagnosticable {
   ComicTypeface copyWith({
     String? display,
     String? text,
-    double? scale,
+    @Deprecated(_scaleGone) double? scale,
     double? displayCapHeight,
     double? textCapHeight,
   }) => ComicTypeface(
@@ -305,4 +329,46 @@ class ComicTypeface with Diagnosticable {
     properties.add(DoubleProperty('displayCapHeight', displayCapHeight));
     properties.add(DoubleProperty('textCapHeight', textCapHeight));
   }
+}
+
+/// Comic's spacing: the room between and around things, on a 4-point grid, so a page's gaps and insets agree. Parts
+/// take theirs from here; the fine steps under the grid ([hair], [fine], [nib]) set a mark against its rim. A value
+/// off the grid is an optical one, named where it is used, with its reason.
+///
+/// ```dart
+/// Padding(padding: const EdgeInsets.all(ComicSpace.near), child: Text('Issue 12'))
+/// ```
+abstract final class ComicSpace {
+  /// 1: a hairline's nudge.
+  static const double hair = 1;
+
+  /// 2: a mark's breath against its neighbour.
+  static const double fine = 2;
+
+  /// 3: a pen nib, the step between a rim and what it holds.
+  static const double nib = 3;
+
+  /// 4: words against their glyph, a tag's inset.
+  static const double tight = 4;
+
+  /// 8: a label over its field, chips beside each other.
+  static const double close = 8;
+
+  /// 12: a part's inset, items in a list.
+  static const double near = 12;
+
+  /// 16: a panel's inset, fields side by side.
+  static const double gap = 16;
+
+  /// 20: fields down a form.
+  static const double wide = 20;
+
+  /// 24: a raised panel's inset, a desktop page's top.
+  static const double room = 24;
+
+  /// 32: sections down a page, a desktop page's margin.
+  static const double tier = 32;
+
+  /// 40: around an empty state, columns apart.
+  static const double spread = 40;
 }

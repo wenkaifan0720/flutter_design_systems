@@ -1,9 +1,10 @@
 // The Comic gallery: every part the package exports, live, on pages with plain names. The look's own navigation moves
 // between them: a side nav at a desktop's width, a drawer from the app bar's menu button on a phone. The app bar's
-// moon or sun turns the page to night or day; Customize opens the theme's knobs (the preset, the corners, the strokes,
-// the density, the type, your own colours, the reading direction and the text scaling) and every page takes them as
-// you set them.
+// moon or sun turns the page to night or day; Customize opens the theme's knobs (the preset, the strokes, the density,
+// the faces, your own colours, the reading direction and the text scaling) and every page takes them as you set them.
+// Comic's corners stay square and its type at the look's sizes: the platform's text scaling serves readers.
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/comic_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -126,6 +127,11 @@ class GalleryPageDeckState extends State<GalleryPageDeck> {
       navigatorKey: _navigator,
       debugShowCheckedModeBanner: false,
       title: 'Comic',
+      theme: ThemeData(
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: comicPageTransitions,
+        ),
+      ),
       home: content,
     );
   }
@@ -143,21 +149,6 @@ Future<void> main() async {
   // The faces before the first frame: on the web the words never flash in a fallback face.
   await comicLoadFonts();
   runApp(const GalleryApp());
-}
-
-/// The conventional corner scales offered by Customize.
-enum GalleryCorners {
-  /// Square inked controls and surfaces.
-  square,
-
-  /// A restrained small corner scale.
-  small,
-
-  /// A medium corner scale.
-  medium,
-
-  /// A generous corner scale.
-  large,
 }
 
 /// Three printing inks for `ComicThemeData.from`: act, caption and shade.
@@ -196,18 +187,13 @@ const List<GalleryColours> galleryColours = [
 class GalleryCustom {
   /// The panel's settings.
   const GalleryCustom({
-    this.corners = GalleryCorners.square,
     this.bold = false,
     this.density = ComicDensity.standard,
     this.oneFace = false,
-    this.typeScale = 1,
     this.colours,
     this.direction = TextDirection.ltr,
     this.textScale = 1,
   });
-
-  /// The corner scale.
-  final GalleryCorners corners;
 
   /// Rims at 4 and the focus ring at 5.
   final bool bold;
@@ -218,9 +204,6 @@ class GalleryCustom {
   /// Shantell Sans for the heads too, in place of Bangers.
   final bool oneFace;
 
-  /// Every type size times this.
-  final double typeScale;
-
   /// Your own colours in place of the preset's; null keeps the preset.
   final GalleryColours? colours;
 
@@ -229,14 +212,6 @@ class GalleryCustom {
 
   /// The system's text scaling the pages see, as a reader's accessibility setting would set it.
   final double textScale;
-
-  /// Flutter borders on the chosen corner scale.
-  ComicShapes get shapes => switch (corners) {
-    GalleryCorners.square => const ComicShapes(),
-    GalleryCorners.small => ComicShapes.rounded(4),
-    GalleryCorners.medium => ComicShapes.rounded(8),
-    GalleryCorners.large => ComicShapes.rounded(12),
-  };
 
   /// [preset] in [brightness], or your own colours, with every knob set.
   ComicThemeData theme(String preset, Brightness brightness) {
@@ -250,32 +225,26 @@ class GalleryCustom {
             brightness: brightness,
           );
     return base.copyWith(
-      shapes: shapes,
-      strokes: bold ? ComicStrokes.bold : const ComicStrokes(),
+      strokes: bold ? ComicStrokes.bold : ComicStrokes.standard,
       density: density,
       typeface: ComicTypeface.look.copyWith(
         display: oneFace ? 'ShantellSans' : null,
-        scale: typeScale,
       ),
     );
   }
 
   /// This with the named settings changed; [colours] is set as given.
   GalleryCustom copyWith({
-    GalleryCorners? corners,
     bool? bold,
     ComicDensity? density,
     bool? oneFace,
-    double? typeScale,
     GalleryColours? Function()? colours,
     TextDirection? direction,
     double? textScale,
   }) => GalleryCustom(
-    corners: corners ?? this.corners,
     bold: bold ?? this.bold,
     density: density ?? this.density,
     oneFace: oneFace ?? this.oneFace,
-    typeScale: typeScale ?? this.typeScale,
     colours: colours == null ? this.colours : colours(),
     direction: direction ?? this.direction,
     textScale: textScale ?? this.textScale,
@@ -286,16 +255,27 @@ class GalleryCustom {
 ///
 /// A link opens any page in a given theme, direction and text size, the scheme every look's gallery shares:
 /// `/#/<page>?theme=dark&dir=rtl&text=200` (the page's id, as `buttons` or `dialogs`; `theme` light or dark; `dir`
-/// ltr or rtl; `text` the text scaling in percent).
+/// ltr or rtl; `text` the text scaling in percent). Right to left reads in Arabic: the everyday screens, the pages'
+/// names and the sections' labels, so the direction is checked on real script, not English reordered.
 class GalleryApp extends StatefulWidget {
   /// The gallery, opening on the page, theme, direction and text size its link names, else the overview by day.
-  const GalleryApp({super.key});
+  /// [page], [brightness] and [direction], when given, open it there whatever the link says.
+  const GalleryApp({super.key, this.page, this.brightness, this.direction});
+
+  /// The page it opens on, by its id (as `buttons` or `form`).
+  final String? page;
+
+  /// Whether it opens by day or by night.
+  final Brightness? brightness;
+
+  /// The direction it opens in; right to left reads in Arabic.
+  final TextDirection? direction;
 
   @override
   State<GalleryApp> createState() => _GalleryAppState();
 }
 
-class _GalleryAppState extends State<GalleryApp> {
+class _GalleryAppState extends State<GalleryApp> with WidgetsBindingObserver {
   var _page = livePages.first.id;
   var _preset = kitShownPreset;
   var _brightness = Brightness.light;
@@ -307,17 +287,50 @@ class _GalleryAppState extends State<GalleryApp> {
   @override
   void initState() {
     super.initState();
+    // Watching before the app's own navigator does, so a link the browser pushes later comes here first.
+    WidgetsBinding.instance.addObserver(this);
     final link = Uri.tryParse(Uri.base.fragment);
-    if (link == null) return;
+    if (link != null) _follow(link);
+    if (livePages.any((page) => page.id == widget.page)) _page = widget.page!;
+    _brightness = widget.brightness ?? _brightness;
+    _custom = _custom.copyWith(direction: widget.direction);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Opens what [link] names: its page, and its theme, direction and text size where it gives them.
+  void _follow(Uri link) {
     final id = link.pathSegments.where((part) => part.isNotEmpty).firstOrNull;
     if (livePages.any((page) => page.id == id)) _page = id!;
     final query = link.queryParameters;
-    if (query['theme'] == 'dark') _brightness = Brightness.dark;
+    _brightness = switch (query['theme']) {
+      'dark' => Brightness.dark,
+      'light' => Brightness.light,
+      _ => _brightness,
+    };
     final text = int.tryParse(query['text'] ?? '');
     _custom = _custom.copyWith(
-      direction: query['dir'] == 'rtl' ? TextDirection.rtl : null,
+      direction: switch (query['dir']) {
+        'rtl' => TextDirection.rtl,
+        'ltr' => TextDirection.ltr,
+        _ => null,
+      },
       textScale: text != null && text >= 50 && text <= 400 ? text / 100 : null,
     );
+  }
+
+  // A link the browser pushes after the start (an address the reader edits, or Back to the opening link) is followed
+  // in place. The app's navigator knows no named routes: given the link, it would find no page for it and throw.
+  @override
+  Future<bool> didPushRouteInformation(
+    RouteInformation routeInformation,
+  ) async {
+    setState(() => _follow(routeInformation.uri));
+    return true;
   }
 
   @override
@@ -329,16 +342,35 @@ class _GalleryAppState extends State<GalleryApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Comic',
-      builder: (context, child) => Directionality(
-        textDirection: custom.direction,
-        child: MediaQuery(
-          data: MediaQuery.of(context)
-              .copyWith(textScaler: TextScaler.linear(custom.textScale)),
-          child: ComicHost(
-            light: custom.theme(preset, Brightness.light),
-            dark: custom.theme(preset, Brightness.dark),
-            brightness: _brightness,
-            child: child!,
+      // Comic's page change, a cut, for the pages the gallery pushes, as an app gives it to its own routes.
+      theme: ThemeData(
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: comicPageTransitions,
+        ),
+      ),
+      // ui_core's 30 languages, as an ordinary app gives them: a device in one of them hears the parts' shared words
+      // (Cancel, Close, Today) in it, and right to left the gallery reads Arabic, Comic's own words with it.
+      // flutter_localizations gives Flutter's Material and Cupertino words; Comic's theme gives its own library's.
+      locale: custom.direction == TextDirection.rtl ? const Locale('ar') : null,
+      supportedLocales: DesignLocalizations.supportedLocales,
+      localizationsDelegates: [
+        DesignLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
+        KitComicWords(arabic: custom.direction == TextDirection.rtl),
+      ],
+      builder: (context, child) => KitWords(
+        arabic: custom.direction == TextDirection.rtl,
+        child: Directionality(
+          textDirection: custom.direction,
+          child: MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(custom.textScale)),
+            child: ComicHost(
+              light: custom.theme(preset, Brightness.light),
+              dark: custom.theme(preset, Brightness.dark),
+              brightness: _brightness,
+              child: child!,
+            ),
           ),
         ),
       ),
@@ -355,8 +387,8 @@ class _GalleryAppState extends State<GalleryApp> {
     final items = [
       for (final page in livePages)
         ComicNavItem(
-          label: page.title,
-          short: page.title,
+          label: kitSay(context, page.title),
+          short: kitSay(context, page.title),
           icon: page.icon,
           key: ValueKey('nav/${page.id}'),
         ),
@@ -377,7 +409,7 @@ class _GalleryAppState extends State<GalleryApp> {
         );
     final night = _brightness == Brightness.dark;
     final bar = ComicAppBar(
-      title: livePages[at].title,
+      title: kitSay(context, livePages[at].title),
       leading: wide
           ? null
           : ComicIconButton(
@@ -516,20 +548,6 @@ class CustomizePanel extends StatelessWidget {
             ),
           ),
         _Labelled(
-          'Corners',
-          ComicSegmentedButton<GalleryCorners>(
-            label: 'Corners',
-            value: c.corners,
-            segments: const [
-              ComicButtonSegment(GalleryCorners.square, 'Square'),
-              ComicButtonSegment(GalleryCorners.small, 'Small'),
-              ComicButtonSegment(GalleryCorners.medium, 'Medium'),
-              ComicButtonSegment(GalleryCorners.large, 'Large'),
-            ],
-            onChanged: (v) => onChanged(c.copyWith(corners: v)),
-          ),
-        ),
-        _Labelled(
           'Strokes',
           ComicSegmentedButton<bool>(
             label: 'Strokes',
@@ -564,19 +582,6 @@ class CustomizePanel extends StatelessWidget {
               ComicButtonSegment(true, 'Shantell alone'),
             ],
             onChanged: (v) => onChanged(c.copyWith(oneFace: v)),
-          ),
-        ),
-        _Labelled(
-          'Type size',
-          ComicSegmentedButton<double>(
-            label: 'Type size',
-            value: c.typeScale,
-            segments: const [
-              ComicButtonSegment(.9, 'Smaller'),
-              ComicButtonSegment(1.0, 'Standard'),
-              ComicButtonSegment(1.15, 'Larger'),
-            ],
-            onChanged: (v) => onChanged(c.copyWith(typeScale: v)),
           ),
         ),
         _Labelled(

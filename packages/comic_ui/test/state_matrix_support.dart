@@ -438,9 +438,9 @@ List<MatrixRow> matrixRows() {
       240,
       (f) => f.selected || f.disabled || f.error
           ? null
-          : ComicBreadcrumb([
+          : const ComicBreadcrumb([
               ComicCrumb('Home', onPressed: _tap),
-              const ComicCrumb('Issue 12'),
+              ComicCrumb('Issue 12'),
             ]),
     ),
     _row(
@@ -464,13 +464,13 @@ List<MatrixRow> matrixRows() {
           DesignMenuEntry(
             label: 'File',
             children: [
-              if (!off) DesignMenuEntry(label: 'New', onPressed: _tap),
+              if (!off) const DesignMenuEntry(label: 'New', onPressed: _tap),
             ],
           ),
           DesignMenuEntry(
             label: 'Edit',
             children: [
-              if (!off) DesignMenuEntry(label: 'Undo', onPressed: _tap),
+              if (!off) const DesignMenuEntry(label: 'Undo', onPressed: _tap),
             ],
           ),
         ],
@@ -481,15 +481,19 @@ List<MatrixRow> matrixRows() {
       360,
       (f) => f.error
           ? null
-          : ComicCalendar(
-              controller: DesignCalendarController(
+          : _Owned(
+              key: ValueKey(f),
+              () => DesignCalendarController(
                 firstDate: DateTime(2026),
                 lastDate: DateTime(2027, 12, 31),
                 initialMonth: DateTime(2026, 11),
                 currentDate: day,
                 selectedDate: f.selected ? day : null,
               ),
-              onChanged: f.disabled ? null : (_) {},
+              (calendar) => ComicCalendar(
+                controller: calendar,
+                onChanged: f.disabled ? null : (_) {},
+              ),
             ),
     ),
     _row(
@@ -563,10 +567,10 @@ List<MatrixRow> matrixRows() {
     _idle(
       'Status view',
       340,
-      () => ComicColumn(
+      () => const ComicColumn(
         gap: 16,
         children: [
-          const ComicStatusView.empty(title: 'No issues on this shelf'),
+          ComicStatusView.empty(title: 'No issues on this shelf'),
           ComicStatusView.error(title: 'It did not load', onRetry: _tap),
         ],
       ),
@@ -600,29 +604,46 @@ List<MatrixRow> matrixRows() {
     ),
     _row('Data table', 560, (f) {
       if (f.disabled || f.error) return null;
-      final table = DesignTableController<String>(
-        rows: const ['The Long Night', 'Harbor Lights'],
-        pageSize: 4,
-        columns: [
-          DesignTableColumn(id: 'title', label: 'Issue', sortKey: (row) => row),
-        ],
-      );
-      if (f.selected) table.toggle('The Long Night');
-      return ComicDataTable<String>(
-        controller: table,
-        cellBuilder: (context, row, column) => Text(row),
+      return _Owned(
+        key: ValueKey(f),
+        () {
+          final table = DesignTableController<String>(
+            rows: const ['The Long Night', 'Harbor Lights'],
+            pageSize: 4,
+            columns: [
+              DesignTableColumn(
+                id: 'title',
+                label: 'Issue',
+                sortKey: (row) => row,
+              ),
+            ],
+          );
+          if (f.selected) table.toggle('The Long Night');
+          return table;
+        },
+        (table) => ComicDataTable<String>(
+          controller: table,
+          cellBuilder: (context, row, column) => Text(row),
+        ),
       );
     }),
     _row('Tree view', 280, (f) {
       if (f.disabled || f.error) return null;
-      final tree = DesignTreeController<String>(
-        roots: const ['Issue 12', 'Issue 13'],
-        expanded: const ['Issue 12'],
-        childrenOf: (node) =>
-            node == 'Issue 12' ? const ['Cover', 'Story'] : const [],
+      return _Owned(
+        key: ValueKey(f),
+        () {
+          final tree = DesignTreeController<String>(
+            roots: const ['Issue 12', 'Issue 13'],
+            expanded: const ['Issue 12'],
+            childrenOf: (node) =>
+                node == 'Issue 12' ? const ['Cover', 'Story'] : const [],
+          );
+          if (f.selected) tree.select('Cover');
+          return tree;
+        },
+        (tree) =>
+            ComicTreeView<String>(controller: tree, labelOf: (node) => node),
       );
-      if (f.selected) tree.select('Cover');
-      return ComicTreeView<String>(controller: tree, labelOf: (node) => node);
     }),
     _idle(
       'Reorderable list',
@@ -638,7 +659,7 @@ List<MatrixRow> matrixRows() {
     _idle(
       'Swipe actions',
       320,
-      () => ComicSwipeActions(
+      () => const ComicSwipeActions(
         initiallyOpen: true,
         endActions: [
           DesignSwipeAction(
@@ -647,29 +668,33 @@ List<MatrixRow> matrixRows() {
             onPressed: _tap,
           ),
         ],
-        child: const ComicListTile(title: 'Issue 12', subtitle: 'Slide left'),
+        child: ComicListTile(title: 'Issue 12', subtitle: 'Slide left'),
       ),
     ),
-    _idle('Scroll area', 260, () {
-      final held = ScrollController();
-      return SizedBox(
-        height: 120,
-        child: ComicScrollArea(
-          controller: held,
-          visibility: DesignScrollbarVisibility.always,
-          child: ListView(
+    _idle(
+      'Scroll area',
+      260,
+      () => _Owned(
+        ScrollController.new,
+        (held) => SizedBox(
+          height: 120,
+          child: ComicScrollArea(
             controller: held,
-            children: [
-              for (var i = 1; i <= 10; i++)
-                Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Text('Letter $i'),
-                ),
-            ],
+            visibility: DesignScrollbarVisibility.always,
+            child: ListView(
+              controller: held,
+              children: [
+                for (var i = 1; i <= 10; i++)
+                  Padding(
+                    padding: const EdgeInsets.all(6),
+                    child: Text('Letter $i'),
+                  ),
+              ],
+            ),
           ),
         ),
-      );
-    }),
+      ),
+    ),
     _idle(
       'Resizable',
       340,
@@ -697,13 +722,13 @@ List<MatrixRow> matrixRows() {
     _idle(
       'Side sheet',
       320,
-      () => SizedBox(
+      () => const SizedBox(
         height: 240,
         child: ComicSheet(
           title: 'Filters',
           onClose: _tap,
           actions: [ComicButton('Apply', onPressed: _tap)],
-          child: const Text('Only unread issues.'),
+          child: Text('Only unread issues.'),
         ),
       ),
     ),
@@ -781,3 +806,25 @@ List<MatrixRow> matrixRows() {
 }
 
 const List<String> _weeks = ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4'];
+
+/// A row's part that owns the controller it shows: made once, disposed with the part, so leak tracking finds none.
+class _Owned<T extends ChangeNotifier> extends StatefulWidget {
+  // Keyed by the row's flags, so another state makes its own controller.
+  const _Owned(this.make, this.show, {super.key});
+  final T Function() make;
+  final Widget Function(T controller) show;
+  @override
+  State<_Owned<T>> createState() => _OwnedState<T>();
+}
+
+class _OwnedState<T extends ChangeNotifier> extends State<_Owned<T>> {
+  late final T _controller = widget.make();
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.show(_controller);
+}

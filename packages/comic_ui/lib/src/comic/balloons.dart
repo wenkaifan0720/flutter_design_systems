@@ -1,15 +1,26 @@
 // What people say and what numbers shout: balloons, thought clouds, bursts and stamps. Each shape is drawn from the words it
 // holds, one path for body and tail, so a tail can't come away from a balloon whatever the words do.
+
 import 'dart:math' as math;
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'internal/geometry.dart';
+import 'internal/lettering.dart' show comicRightToLeftScript;
 import 'layout.dart';
 import 'theme.dart';
 import 'component_themes.dart';
 import 'styled.dart';
+import 'internal/style_guard.dart';
+import 'knobs.dart' show ComicSpace;
+
+/// A balloon's rim, which its words stand clear of before their grid inset.
+const double _balloonRim = 2.5;
+
+/// A sound word's plate rim at its full size, the same.
+const double _soundRim = 2.5;
 
 /// Where a balloon's tail leaves it. `bottomStart` and `bottomEnd` hang under it, `side` points back at a speaker standing at
 /// its start, `top` rises from it, `none` is a caption in a balloon's shape.
@@ -210,17 +221,29 @@ class ComicBalloon extends StatelessWidget {
     final t = ComicTheme.of(context);
     final c = t.colors;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final look = ComicStyleOf([style], const {}),
-        rim = comicRim(t, ComicStyleOf([style], const {}), c.outline);
+    final look = comicStyleOf([style], const {}),
+        rim = comicRim(t, comicStyleOf([style], const {}), c.outline);
     final textStyle = t.type.balloon
         .merge(look.textStyle)
         .copyWith(
           fontSize: small ? 13 : null,
           color: look.foreground ?? c.onPaper,
         );
+    // The words stand clear of the rim by a grid step, a point lower than the step alone sets them: lettering's optical
+    // centre is above its box's.
     final inset = small
-        ? const EdgeInsetsDirectional.fromSTEB(14.5, 11.5, 14.5, 12.5)
-        : const EdgeInsetsDirectional.fromSTEB(18.5, 13.5, 18.5, 14.5);
+        ? const EdgeInsetsDirectional.fromSTEB(
+            _balloonRim + ComicSpace.near,
+            _balloonRim + ComicSpace.close + ComicSpace.hair,
+            _balloonRim + ComicSpace.near,
+            _balloonRim + ComicSpace.close + ComicSpace.fine,
+          )
+        : const EdgeInsetsDirectional.fromSTEB(
+            _balloonRim + ComicSpace.gap,
+            _balloonRim + ComicSpace.near - ComicSpace.hair,
+            _balloonRim + ComicSpace.gap,
+            _balloonRim + ComicSpace.near,
+          );
     final byStyle = t.type.text(
       12,
       1.25,
@@ -238,7 +261,7 @@ class ComicBalloon extends StatelessWidget {
         ?child,
         if (by != null)
           Padding(
-            padding: const EdgeInsets.only(top: 6),
+            padding: const EdgeInsets.only(top: ComicSpace.close),
             child: Text(by!.toUpperCase(), style: byStyle),
           ),
       ],
@@ -284,6 +307,42 @@ class ComicBalloon extends StatelessWidget {
             heightFactor: 1,
             child: shape,
           );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(StringProperty('words', words, defaultValue: null))
+      ..add(StringProperty('by', by, defaultValue: null))
+      ..add(
+        EnumProperty<ComicTail>(
+          'tail',
+          tail,
+          defaultValue: ComicTail.bottomStart,
+        ),
+      )
+      ..add(DoubleProperty('tailAt', tailAt, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'room',
+          value: room,
+          ifFalse: 'room: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        FlagProperty('fill', value: fill, ifTrue: 'fill', defaultValue: false),
+      )
+      ..add(
+        FlagProperty(
+          'small',
+          value: small,
+          ifTrue: 'small',
+          defaultValue: false,
+        ),
+      );
   }
 }
 
@@ -418,7 +477,7 @@ class ComicThought extends StatelessWidget {
               Directionality.of(context) == TextDirection.rtl,
             ),
             child: Padding(
-              padding: EdgeInsets.only(bottom: trail ? 26 : 0),
+              padding: EdgeInsets.only(bottom: trail ? ComicSpace.room : 0),
               child: Center(
                 child: SizedBox(
                   width: w + 1,
@@ -431,6 +490,30 @@ class ComicThought extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('words', words))
+      ..add(
+        FlagProperty(
+          'trailEnd',
+          value: trailEnd,
+          ifTrue: 'trailEnd',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'trail',
+          value: trail,
+          ifFalse: 'trail: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(DiagnosticsProperty<TextStyle>('style', style, defaultValue: null));
+  }
 }
 
 /// A line laid out for a burst, with its place in the block.
@@ -440,22 +523,26 @@ class _Line {
   final double y;
 }
 
-/// The lines of a burst fitted into its star: laid out once, scaled down whole until no corner of any line crosses the star's
-/// edge. So a number of any length fits, and never clips.
+/// The lines of a burst fitted into its star: laid out once, scaled down whole until no point along any line's edges
+/// stands within [clear] of the star's edge. So a number of any length fits, and never clips.
 class ComicBurstFit {
-  ComicBurstFit._(this._lines, this.height, this.scale);
+  ComicBurstFit._(this._lines, this.height, this.scale, this.clear);
   final List<_Line> _lines;
 
   /// [height]: the allocated height in logical pixels. [scale]: the scale applied to the fitted drawing.
   final double height, scale;
+
+  /// How far inside the star's edge the words keep: the outline's inner half and a hair of the fill.
+  final double clear;
 
   /// Creates a [ComicBurstFit].
   factory ComicBurstFit(
     Path star,
     Offset centre,
     List<(String, TextStyle, double)> rows,
-    TextDirection dir,
-  ) {
+    TextDirection dir, {
+    double clear = 0,
+  }) {
     final lines = <_Line>[];
     var y = 0.0;
     for (final (text, style, after) in rows) {
@@ -467,12 +554,18 @@ class ComicBurstFit {
       lines.add(_Line(tp, y));
       y += tp.height + after;
     }
-    final fit = ComicBurstFit._(lines, y, 1);
-    return ComicBurstFit._(lines, y, fit._fit(star, centre));
+    final fit = ComicBurstFit._(lines, y, 1, clear);
+    return ComicBurstFit._(lines, y, fit._fit(star, centre), clear);
   }
 
-  /// Whether every line's ink, at [k], stands inside [star].
+  /// Whether every line's ink, at [k], stands inside [star], [clear] in from its edge.
   bool holds(Path star, Offset centre, double k) {
+    bool inside(double x, double y) {
+      final at = Offset(x, y) * k;
+      final d = at.distance;
+      return star.contains(centre + (d == 0 ? at : at + at / d * clear));
+    }
+
     for (final l in _lines) {
       final size = l.painter.text!.style!.fontSize!;
       // The glyphs' box inside the line's: a line box leaves room over and under the caps.
@@ -480,8 +573,13 @@ class ComicBurstFit {
       final w = l.painter.width / 2 - insetX;
       final top = l.y - height / 2 + insetY;
       final bottom = l.y + l.painter.height - height / 2 - insetY;
-      for (final (x, y) in [(-w, top), (w, top), (-w, bottom), (w, bottom)]) {
-        if (!star.contains(centre + Offset(x, y) * k)) return false;
+      // Along its edges, not only at its corners: a star's valleys cut in between them ("DAYS!" ran into two).
+      for (var i = 0; i <= 8; i++) {
+        final x = -w + 2 * w * i / 8;
+        if (!inside(x, top) || !inside(x, bottom)) return false;
+      }
+      for (final x in [-w, w]) {
+        if (!inside(x, (top + bottom) / 2)) return false;
       }
     }
     return true;
@@ -557,7 +655,7 @@ class _BurstPainter extends CustomPainter {
     }
     canvas.drawPath(star, fillPaint(front));
     canvas.drawPath(star, edge);
-    final fit = ComicBurstFit(star, c, rows, dir);
+    final fit = ComicBurstFit(star, c, rows, dir, clear: stroke / 2 + 1.5);
     fit.paint(canvas, c);
     fit.dispose();
     canvas.restore();
@@ -664,6 +762,29 @@ class ComicBurst extends StatefulWidget {
   final int seed;
   @override
   State<ComicBurst> createState() => _ComicBurstState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('number', number))
+      ..add(StringProperty('over', over, defaultValue: null))
+      ..add(StringProperty('under', under, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'large',
+          value: large,
+          ifTrue: 'large',
+          defaultValue: false,
+        ),
+      )
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(DoubleProperty('wordSize', wordSize, defaultValue: null))
+      ..add(DoubleProperty('numberSize', numberSize, defaultValue: null))
+      ..add(DoubleProperty('tilt', tilt, defaultValue: -8))
+      ..add(IntProperty('seed', seed, defaultValue: 3));
+  }
 }
 
 class _ComicBurstState extends State<ComicBurst> {
@@ -729,10 +850,14 @@ class _ComicBurstState extends State<ComicBurst> {
       color: c.onCaption,
       tracking: .04,
     );
+    // A word in a right-to-left script stands in the text face: the lettering face's "!" sat over its last letter.
+    TextStyle wordIn(String words) => comicRightToLeftScript(words)
+        ? t.type.text(ws, 1, weight: FontWeight.w800, color: c.onCaption)
+        : word;
     final rows = <(String, TextStyle, double)>[
-      if (w.over != null) (w.over!.toUpperCase(), word, 1),
+      if (w.over != null) (w.over!.toUpperCase(), wordIn(w.over!), 1),
       (w.number.toUpperCase(), figure, 2),
-      if (w.under != null) (w.under!.toUpperCase(), word, 0),
+      if (w.under != null) (w.under!.toUpperCase(), wordIn(w.under!), 0),
     ];
     return comicOwnSize(
       width: bw,
@@ -831,6 +956,34 @@ class ComicPop extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('number', number))
+      ..add(DoubleProperty('width', width, defaultValue: 48))
+      ..add(DoubleProperty('height', height, defaultValue: 42))
+      ..add(DoubleProperty('size', size, defaultValue: 24))
+      ..add(DoubleProperty('tilt', tilt, defaultValue: 0))
+      ..add(IntProperty('seed', seed, defaultValue: 7))
+      ..add(
+        FlagProperty(
+          'plate',
+          value: plate,
+          ifTrue: 'plate',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'isCurrentUser',
+          value: isCurrentUser,
+          ifTrue: 'isCurrentUser',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 /// A rubber stamp: a word or two on paper, tilted, in the lettering. For a status, not a count: Paid, Sold out, In the lead.
@@ -859,7 +1012,7 @@ class ComicStamp extends StatelessWidget {
       alignment: AlignmentDirectional.topStart,
       widthFactor: 1,
       heightFactor: 1,
-      child: Transform.rotate(
+      child: _Tilted(
         angle: tilt * math.pi / 180,
         child: DecoratedBox(
           decoration: ShapeDecoration(
@@ -870,8 +1023,18 @@ class ComicStamp extends StatelessWidget {
           ),
           child: Padding(
             padding: tight
-                ? const EdgeInsets.fromLTRB(7, 4, 7, 3)
-                : const EdgeInsets.fromLTRB(10.5, 5.5, 10.5, 4.5),
+                ? const EdgeInsets.fromLTRB(
+                    ComicSpace.close,
+                    ComicSpace.tight,
+                    ComicSpace.close,
+                    ComicSpace.nib,
+                  )
+                : const EdgeInsets.fromLTRB(
+                    _soundRim + ComicSpace.close,
+                    _soundRim + ComicSpace.nib,
+                    _soundRim + ComicSpace.close,
+                    _soundRim + ComicSpace.fine,
+                  ),
             child: Text(
               word.toUpperCase(),
               style: t.type.letter(
@@ -886,4 +1049,123 @@ class ComicStamp extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('word', word))
+      ..add(DoubleProperty('tilt', tilt, defaultValue: -7))
+      ..add(
+        FlagProperty(
+          'tight',
+          value: tight,
+          ifTrue: 'tight',
+          defaultValue: false,
+        ),
+      );
+  }
+}
+
+/// [child] laid out as it is, standing as wide and tall as it is once turned by [angle] about its centre: a tilted
+/// stamp takes the room its corners reach, so it never pokes into the words around it.
+class _Tilted extends SingleChildRenderObjectWidget {
+  const _Tilted({required this.angle, required super.child});
+
+  final double angle;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderTilted(angle);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderTilted renderObject) =>
+      renderObject.angle = angle;
+}
+
+class _RenderTilted extends RenderProxyBox {
+  _RenderTilted(this._angle);
+
+  double _angle;
+  set angle(double value) {
+    if (value == _angle) return;
+    _angle = value;
+    markNeedsLayout();
+  }
+
+  Size _turned(Size s) {
+    final cos = math.cos(_angle).abs(), sin = math.sin(_angle).abs();
+    return Size(s.width * cos + s.height * sin, s.width * sin + s.height * cos);
+  }
+
+  Matrix4 get _transform {
+    final c = child!.size;
+    return Matrix4.translationValues(size.width / 2, size.height / 2, 0)
+      ..multiply(Matrix4.rotationZ(_angle))
+      ..multiply(Matrix4.translationValues(-c.width / 2, -c.height / 2, 0));
+  }
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) {
+    final c = child;
+    if (c == null) return constraints.smallest;
+    return constraints.constrain(_turned(c.getDryLayout(constraints.loosen())));
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) => _intrinsic().width;
+
+  @override
+  double computeMaxIntrinsicWidth(double height) => _intrinsic().width;
+
+  @override
+  double computeMinIntrinsicHeight(double width) => _intrinsic().height;
+
+  @override
+  double computeMaxIntrinsicHeight(double width) => _intrinsic().height;
+
+  Size _intrinsic() {
+    final c = child;
+    if (c == null) return Size.zero;
+    final w = c.getMaxIntrinsicWidth(double.infinity);
+    return _turned(Size(w, c.getMaxIntrinsicHeight(w)));
+  }
+
+  @override
+  void performLayout() {
+    final c = child;
+    if (c == null) {
+      size = constraints.smallest;
+      return;
+    }
+    c.layout(constraints.loosen(), parentUsesSize: true);
+    size = constraints.constrain(_turned(c.size));
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final c = child;
+    if (c == null) return;
+    layer = context.pushTransform(
+      needsCompositing,
+      offset,
+      _transform,
+      (context, offset) => context.paintChild(c, offset),
+      oldLayer: layer is TransformLayer ? layer! as TransformLayer : null,
+    );
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    final c = child;
+    if (c == null) return false;
+    return result.addWithPaintTransform(
+      transform: _transform,
+      position: position,
+      hitTest: (result, position) => c.hitTest(result, position: position),
+    );
+  }
+
+  @override
+  void applyPaintTransform(RenderBox child, Matrix4 transform) =>
+      transform.multiply(_transform);
 }

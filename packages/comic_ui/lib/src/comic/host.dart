@@ -1,12 +1,15 @@
 // Comic's part of the host an app runs its pages under: the app's host around the navigator, its pages and sheets, the
 // shell's action, the scope its chrome reads, and the preview frame. The package exports it from its host library, not
 // the main one: an app draws its screens from the main library.
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/host.dart';
 
 import 'chrome.dart';
+import 'nav.dart';
 import 'press.dart';
+import 'raised.dart' show ComicScreenedRoute;
 import 'theme.dart';
 
 ComicBrand _brand(String? name) => ComicBrand(name: name ?? '');
@@ -62,6 +65,18 @@ class ComicChromeScope extends InheritedWidget {
       old.brand != brand ||
       old.nav != nav ||
       old.action != action;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicBrand>('brand', brand))
+      ..add(IterableProperty<ComicNavItem>('nav', nav))
+      ..add(IntProperty('active', active))
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      );
+  }
 }
 
 /// The app's host, mounted once around the router's navigator: Comic's theme, ground and text defaults.
@@ -117,6 +132,21 @@ class ComicHost extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ComicThemeData>('light', light, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<ComicThemeData>('dark', dark, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
+      );
   }
 }
 
@@ -216,11 +246,11 @@ class ComicSheetPage<T> extends Page<T> {
       );
     }
     if (t.desk) {
-      return RawDialogRoute<T>(
+      return _ScreenedDialogRoute<T>(
+        t.colors.scrim,
         settings: this,
         barrierDismissible: true,
         barrierLabel: DesignLocalizations.of(context).closeButtonLabel,
-        barrierColor: const Color(0x8C000000),
         pageBuilder: (sheetContext, _, _) => Center(
           child: SizedBox(
             width: 560,
@@ -233,10 +263,11 @@ class ComicSheetPage<T> extends Page<T> {
         ),
       );
     }
-    return ModalBottomSheetRoute<T>(
+    return _ScreenedSheetRoute<T>(
+      t.colors.scrim,
       settings: this,
       backgroundColor: const Color(0x00000000),
-      modalBarrierColor: const Color(0x8C000000),
+      modalBarrierColor: const Color(0x00000000),
       elevation: 0,
       isScrollControlled: true,
       builder: (sheetContext) => Padding(
@@ -386,4 +417,82 @@ class ComicPreview extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ComicThemeData>('light', light, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<ComicThemeData>('dark', dark, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<ComicPresentation>(
+          'presentation',
+          presentation,
+          defaultValue: ComicPresentation.root,
+        ),
+      )
+      ..add(IterableProperty<ComicTab>('tabs', tabs, defaultValue: const []))
+      ..add(IntProperty('activeIndex', activeIndex, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'drawer',
+          value: drawer,
+          ifTrue: 'drawer',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        EnumProperty<PreviewPlatform>(
+          'platform',
+          platform,
+          defaultValue: PreviewPlatform.android,
+        ),
+      )
+      ..add(
+        EnumProperty<Brightness>(
+          'brightness',
+          brightness,
+          defaultValue: Brightness.light,
+        ),
+      );
+  }
+}
+
+// The page behind a routed sheet is screened, not dimmed (law 1), as behind every raised layer of Comic's.
+class _ScreenedDialogRoute<T> extends RawDialogRoute<T>
+    with ComicScreenedRoute<T> {
+  _ScreenedDialogRoute(
+    this.screenInk, {
+    required super.pageBuilder,
+    super.settings,
+    super.barrierDismissible,
+    super.barrierLabel,
+  }) : super(barrierColor: null);
+
+  @override
+  final Color screenInk;
+}
+
+class _ScreenedSheetRoute<T> extends ModalBottomSheetRoute<T>
+    with ComicScreenedRoute<T> {
+  _ScreenedSheetRoute(
+    this.screenInk, {
+    required super.builder,
+    required super.isScrollControlled,
+    super.settings,
+    super.backgroundColor,
+    super.modalBarrierColor,
+    super.elevation,
+  });
+
+  @override
+  final Color screenInk;
 }

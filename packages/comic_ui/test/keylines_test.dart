@@ -504,6 +504,7 @@ void main() {
               ..writeAsBytesSync(png!.buffer.asUint8List());
           }
           final w = image.width;
+          image.dispose();
           // The rows a button's drawn outline covers, read down a line just inside its leading edge.
           (int, int)? drawn(Rect r) {
             final x = ((r.left - origin.dx + 8) * dpr).round();

@@ -1,6 +1,8 @@
 /// Containers and disclosure in the vocabulary of inked panels and ruled rows.
 library;
 
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -15,6 +17,8 @@ import 'component_themes.dart';
 import 'press.dart';
 import 'rows.dart';
 import 'theme.dart';
+import 'internal/style_guard.dart';
+import 'knobs.dart' show ComicSpace;
 
 /// An inked card with a title and a stack of content. Given a height (cards sharing a row), a child wrapped in
 /// [ComicGrow] takes the slack, so what follows it (an action) stands on the card's foot, on one line across the row.
@@ -53,6 +57,14 @@ class ComicCard extends StatelessWidget {
       ],
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(StringProperty('title', title));
+  }
 }
 
 /// A ruled group whose rows retain their own semantics and controls.
@@ -72,7 +84,7 @@ class ComicListSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
-    final look = ComicStyleOf([t.cardTheme], const {});
+    final look = comicStyleOf([t.cardTheme], const {});
     final inset =
         (look.padding(Directionality.of(context)) ?? comicPanelInset(t))
             .resolve(Directionality.of(context));
@@ -105,6 +117,12 @@ class ComicListSection extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -144,14 +162,51 @@ class ComicDisclosure extends StatefulWidget {
   /// Reports a requested state change once.
   final ValueChanged<bool>? onExpansionChanged;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   State<ComicDisclosure> createState() => _ComicDisclosureState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(
+        FlagProperty(
+          'initiallyExpanded',
+          value: initiallyExpanded,
+          ifTrue: 'initiallyExpanded',
+          defaultValue: false,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onExpansionChanged',
+          onExpansionChanged,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _ComicDisclosureState extends State<ComicDisclosure> {
@@ -162,7 +217,7 @@ class _ComicDisclosureState extends State<ComicDisclosure> {
     final duration = ComicMotion.of(context).state;
     final content = _open
         ? Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: ComicSpace.near),
             child: widget.child,
           )
         : const SizedBox.shrink();
@@ -182,7 +237,7 @@ class _ComicDisclosureState extends State<ComicDisclosure> {
               widget.onExpansionChanged?.call(next);
             },
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: const EdgeInsets.symmetric(vertical: ComicSpace.near),
               child: Row(
                 children: [
                   Expanded(
@@ -191,7 +246,7 @@ class _ComicDisclosureState extends State<ComicDisclosure> {
                       style: ComicTheme.of(context).type.title,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: ComicSpace.close),
                   Icon(_open ? ComicGlyphs.chevronUp : ComicGlyphs.chevronDown),
                 ],
               ),
@@ -239,7 +294,7 @@ class ComicTable extends StatelessWidget {
             children: [
               for (var i = 0; i < rows.length; i++)
                 Padding(
-                  padding: EdgeInsets.only(top: i == 0 ? 0 : 12),
+                  padding: EdgeInsets.only(top: i == 0 ? 0 : ComicSpace.near),
                   child: ComicPanel(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -266,7 +321,7 @@ class ComicTable extends StatelessWidget {
               children: [
                 for (final column in columns)
                   Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(ComicSpace.near),
                     child: Semantics(
                       header: true,
                       child: Text(column, style: t.type.title),
@@ -279,7 +334,7 @@ class ComicTable extends StatelessWidget {
                 children: [
                   for (final cell in row)
                     Padding(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(ComicSpace.near),
                       child: Text(cell, style: t.type.body),
                     ),
                 ],
@@ -288,5 +343,13 @@ class ComicTable extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('columns', columns))
+      ..add(IterableProperty<List<String>>('rows', rows));
   }
 }

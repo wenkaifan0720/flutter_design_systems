@@ -14,7 +14,10 @@ import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/comic_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'kit_words.dart';
 import 'theme.dart';
+
+export 'kit_words.dart';
 
 /// The sample tabs a chrome demo shows.
 const kitTabs = [
@@ -112,7 +115,13 @@ final DateTime kitToday = DateTime(2026, 11, 6);
 Widget kitSection(String label, {required List<Widget> children}) =>
     RepaintBoundary(
       key: ValueKey('kit-section/$label'),
-      child: ComicColumn(gap: 12, children: [ComicLabel(label), ...children]),
+      child: ComicColumn(
+        gap: 12,
+        children: [
+          Builder(builder: (context) => ComicLabel(kitSay(context, label))),
+          ...children,
+        ],
+      ),
     );
 
 /// Where a catalog specimen sits on its stage (the specimen's `frame` in

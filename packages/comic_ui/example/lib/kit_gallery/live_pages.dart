@@ -548,7 +548,7 @@ Widget _sizes() => Builder(
     children: [
       for (final size in ComicButtonSize.values)
         ComicButton(
-          size.name[0].toUpperCase() + size.name.substring(1),
+          kitSay(context, size.name[0].toUpperCase() + size.name.substring(1)),
           size: size,
           onPressed: () => kitFeedback(context, 'The ${size.name} one.'),
         ),
@@ -556,82 +556,97 @@ Widget _sizes() => Builder(
   ),
 );
 
-Widget _busy() => Wrap(
-  spacing: 12,
-  runSpacing: 12,
-  children: [
-    ComicButton.filled('Saving', busy: true, onPressed: () {}),
-    const ComicButton.filled('Unavailable'),
-    const ComicButton('Unavailable'),
-    const ComicButton.text('Unavailable'),
-  ],
-);
-
-Widget _fieldStates() => const ComicColumn(
-  gap: 16,
-  children: [
-    ComicTextField(
-      label: 'Email address',
-      hint: 'you@example.com',
-      helper: 'We only write about your orders.',
-      keyboardType: TextInputType.emailAddress,
-    ),
-    ComicTextField(
-      label: 'Full name',
-      initialValue: 'Alex',
-      error: 'Write your whole name, as on your card.',
-    ),
-    ComicTextField(
-      label: 'Member number',
-      initialValue: '0042 1187',
-      // A number in groups reads left to right in a right-to-left app too.
-      textDirection: TextDirection.ltr,
-      enabled: false,
-    ),
-    ComicTextField(
-      label: 'Amount',
-      prefix: '€',
-      initialValue: '24',
-      keyboardType: TextInputType.number,
-    ),
-  ],
-);
-
-Widget _back() => Builder(
-  builder: (context) => Row(
+Widget _busy() => Builder(
+  builder: (context) => Wrap(
+    spacing: 12,
+    runSpacing: 12,
     children: [
-      ComicBackButton(onPressed: () => kitFeedback(context, 'Back a page.')),
-      const SizedBox(width: 12),
-      ComicBackButton(
-        close: true,
-        onPressed: () => kitFeedback(context, 'Closed.'),
+      ComicButton.filled(
+        kitSay(context, 'Saving'),
+        busy: true,
+        onPressed: () {},
+      ),
+      ComicButton.filled(kitSay(context, 'Unavailable')),
+      ComicButton(kitSay(context, 'Unavailable')),
+      ComicButton.text(kitSay(context, 'Unavailable')),
+    ],
+  ),
+);
+
+Widget _fieldStates() => Builder(
+  builder: (context) => ComicColumn(
+    gap: 16,
+    children: [
+      ComicTextField(
+        label: kitSay(context, 'Email address'),
+        hint: 'you@example.com',
+        helper: kitSay(context, 'We only write about your orders.'),
+        keyboardType: TextInputType.emailAddress,
+      ),
+      ComicTextField(
+        label: kitSay(context, 'Full name'),
+        initialValue: kitSay(context, 'Alex'),
+        error: kitSay(context, 'Write your whole name, as on your card.'),
+      ),
+      ComicTextField(
+        label: kitSay(context, 'Member number'),
+        initialValue: '0042 1187',
+        // A number in groups reads left to right in a right-to-left app too.
+        textDirection: TextDirection.ltr,
+        enabled: false,
+      ),
+      ComicTextField(
+        label: kitSay(context, 'Amount'),
+        prefix: '€',
+        initialValue: '24',
+        keyboardType: TextInputType.number,
       ),
     ],
   ),
 );
 
-Widget _drawer() => kitState(
-  0,
-  (context, value, change) => Align(
-    alignment: AlignmentDirectional.centerStart,
-    child: ComicButton(
-      'Open the drawer',
-      icon: LucideIcons.menu,
-      onPressed: () async {
-        final chosen = await showComicNavigationDrawer<int>(
-          context,
-          builder: (context) => ComicNavigationDrawer(
-            header: const ComicLogo('Huzzah!'),
-            destinations: kitTabs,
-            selectedIndex: value,
-            onDestinationSelected: (i) => Navigator.of(context).pop(i),
-          ),
-        );
-        if (chosen != null && context.mounted) {
-          change(chosen);
-          kitFeedback(context, '${kitTabs[chosen].label} chosen.');
-        }
-      },
+Widget _back() => Builder(
+  builder: (context) => Builder(
+    builder: (context) => Row(
+      children: [
+        ComicBackButton(
+          onPressed: () =>
+              kitFeedback(context, kitSay(context, 'Back a page.')),
+        ),
+        const SizedBox(width: 12),
+        ComicBackButton(
+          close: true,
+          onPressed: () => kitFeedback(context, kitSay(context, 'Closed.')),
+        ),
+      ],
+    ),
+  ),
+);
+
+Widget _drawer() => Builder(
+  builder: (context) => kitState(
+    0,
+    (context, value, change) => Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: ComicButton(
+        kitSay(context, 'Open the drawer'),
+        icon: LucideIcons.menu,
+        onPressed: () async {
+          final chosen = await showComicNavigationDrawer<int>(
+            context,
+            builder: (context) => ComicNavigationDrawer(
+              header: ComicLogo(kitSay(context, 'Huzzah!')),
+              destinations: kitTabs,
+              selectedIndex: value,
+              onDestinationSelected: (i) => Navigator.of(context).pop(i),
+            ),
+          );
+          if (chosen != null && context.mounted) {
+            change(chosen);
+            kitFeedback(context, '${kitTabs[chosen].label} chosen.');
+          }
+        },
+      ),
     ),
   ),
 );

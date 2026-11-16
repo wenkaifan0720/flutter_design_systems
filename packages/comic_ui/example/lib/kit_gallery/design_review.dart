@@ -299,29 +299,35 @@ Widget reviewDialog(Brightness brightness) =>
 /// The screen's body alone, for the live example's page of the same name.
 Widget reviewDialogBody() => Builder(
   builder: (context) => ComicCard(
-    title: 'Saved items',
+    title: kitSay(context, 'Saved items'),
     children: [
-      const Text(
-        'Your collection has 12 saved items. You can keep them for later.',
+      Text(
+        kitSay(
+          context,
+          'Your collection has 12 saved items. You can keep them for later.',
+        ),
       ),
       Align(
         alignment: AlignmentDirectional.centerStart,
         child: ComicButton(
-          'Review saved items',
+          kitSay(context, 'Review saved items'),
           key: const ValueKey('review/dialog-open'),
           onPressed: () async {
             final keep = await showComicDialog<bool>(
               context,
               builder: (context) => ComicDialog(
-                title: 'Keep your saved items?',
-                message: 'Keep the collection for another day, or remove these items from your list.',
+                title: kitSay(context, 'Keep your saved items?'),
+                message: kitSay(
+                  context,
+                  'Keep the collection for another day, or remove these items from your list.',
+                ),
                 actions: [
                   ComicButton.text(
-                    'Remove them',
+                    kitSay(context, 'Remove them'),
                     onPressed: () => Navigator.pop(context, false),
                   ),
                   ComicButton.filled(
-                    'Keep them',
+                    kitSay(context, 'Keep them'),
                     onPressed: () => Navigator.pop(context, true),
                   ),
                 ],
@@ -330,7 +336,9 @@ Widget reviewDialogBody() => Builder(
             if (context.mounted && keep != null) {
               kitFeedback(
                 context,
-                keep ? 'Your items are kept.' : 'Your items were removed.',
+                keep
+                    ? kitSay(context, 'Your items are kept.')
+                    : kitSay(context, 'Your items were removed.'),
               );
             }
           },

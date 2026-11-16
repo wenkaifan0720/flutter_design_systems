@@ -1,3 +1,136 @@
+## 0.2.0
+
+Comic draws its states in its own ink now: nothing on the page is see-through.
+
+- Hovering a part lays Ben-Day dots on it and pressing swells them. A disabled part is screened, not faded: an ink fill
+  (a filled or danger button, a ticked box, a chosen chip) becomes a Ben-Day screen of that same ink on the paper, a
+  dot every 7 at every size, and its words, icons and lines stay solid in one screened ink that keeps 3:1 against the
+  dots by day and by night. A part with no ink fill is screened back toward the paper, opaque.
+- Buttons stand on a hard offset print and sink onto it when pressed: the filled and outlined buttons, the danger and
+  split buttons, and icon buttons with a rim. Dialogs, snack bars and toasts stand on a plate.
+- A dialog's, sheet's or side sheet's backdrop is a dot screen over the page that swells in as it opens. Give your own
+  modal routes the same with `ComicScreenedRoute`, or draw it with `ComicScreenScrim`.
+- The keyboard's focus ring goes round a part and its print, with emanata ticks at its corners.
+- `ComicPageDots` with `onChanged` is one control: press a mark to go to its page, step with the arrow keys, Home and
+  End for the ends; a screen reader adjusts it as a slider.
+- The split button's menu pops in instead of fading.
+- In an open list (a select's, a menu's, a menu bar's, a combobox's) the chosen option is printed in the caption's flat
+  yellow beside its check; 0.1.0 gave the yellow to the row the pointer or the keys were on and marked the chosen one
+  with the check alone. That row, the one Enter takes, now wears the hover's light dots on the card, so it never reads
+  as a second choice or a divider; on the chosen row the dots print in the caption's ink. A combobox checks the option
+  it took while its field holds its words, and a tree's picked row keeps the yellow, without a check.
+- A select takes the keys as a desktop select does. Down opens it, as Enter and Space do, on the chosen option (the
+  first when none is). In the list the arrows wrap, Home and End go to the ends, and a typed letter jumps to the next
+  option it starts (letters typed in a run spell the start). Enter chooses and Escape dismisses, and either way the
+  focus goes back to the field, after a pointer opened it too. Its field tells a screen reader whether the list is
+  open: expanded while it's up, collapsed otherwise.
+- A combobox's and a tag input's list (ui_core 0.2.0's own keys): Down or Up on a closed list opens it without moving,
+  on a combobox's option taken (else the first), and shows every option until the words are edited, where 0.1.0's
+  combobox opened nothing on an empty field; the arrows wrap. A menu bar's menu jumps to a typed letter, as a select's
+  list does. `ComicCombobox.isOptionEnabled` and `ComicMultiSelect.isOptionEnabled` mark options that can't be taken:
+  in the secondary ink, passed over by the keys, the pointer and Enter. Their list keeps one highlight, the pointer
+  moving it and the keys going on from it (ui_core's `highlightFollowsPointer`, on), as a native menu's does: the
+  pointer's row and the keys' wear the same dots, and two would read as two current options. A long list opens with
+  its value in view, and Android's back closes an open list or popover before it pops the page. `ComicCombobox.maxOptions` caps the matches of
+  typed words alone. Enter keeps the focus in a combobox and in a tag input, for the next tag, where Flutter's done
+  dropped it (`ComicBareEditor.onEditingComplete` for an editor of your own), and keeps the field's text input, so a
+  browser goes on taking the typing after Enter (a field told of a submit restarts its input, and the web's restarted
+  input took none: give an editor that keeps its focus `onEditingComplete`, not `onSubmitted`). A menu row's shortcut
+  stands with its capitals on the row's middle.
+- Every open menu (a select's list, an overflow menu, a menu bar's menu, a split button's) has one current row. The
+  pointer moves it: a row the pointer moves over takes the focus, and the keys go on from there, so the pointer's row
+  and the keys' never read as two. A menu the pointer opened lights no row until the pointer moves over one or a key
+  is pressed: the first Down, Home, Enter or Space lights the first row (a select's, its value) and does nothing
+  else, where it moved past it or took it. A menu the keys opened (Enter, Space, Down) lights the first.
+- A page change is a cut on every platform: a page pushed or popped stands in its place, whole, in its first frame,
+  where Flutter's default slid or zoomed it in from the side. `ComicTheme` gives it to the routes it reaches, Comic's own
+  pages among them; give `comicPageTransitions` to your `MaterialApp`'s `PageTransitionsTheme` and the
+  `MaterialPageRoute`s you push cut too, as the example does (the README shows the line). comic_ui's own theme is
+  material_ui's, which Flutter's `MaterialPageRoute` never reads; the one map fits both Materials. On iOS the edge
+  swipe still takes a page back, the page following the finger: the map wraps the cut there in ui_core's
+  `DesignSwipeBackPageTransitionsBuilder` (`ComicPageTransitionsBuilder` alone takes no swipe).
+- A `ComicTier` lays its panels across from 600 up, a tablet's width as a desk's, in the 16 gutter; 0.1.0 reflowed it as
+  on a phone up to 1024, so a tablet showed a phone's stretched column. Its `phone` layout holds under 600 alone, as
+  its documentation said, and a column under 130 still reflows.
+- Every control stands on the design kit's tap target: the box it takes in a layout, the area a tap reaches and the
+  box a screen reader outlines are now the same. Comic's floors stay 48 by 48 for a finger and 44 by 44 for a pointer;
+  declare others with a `DesignTapTargetScope` above `ComicTheme`. A bare checkbox, the rating's stars, a month's
+  arrows, the back button, a carousel's first arrow and the breadcrumb trail's first step keep their faces on the
+  column's keyline, the target growing away from it (`ComicIconButton.targetAlignment` for your own). **Breaking:** an
+  icon button or checkbox narrower than the floor now takes the floor's width in a row, where 0.1.0 let its target
+  stand outward over its neighbours. Pick touch or pointer floors with `DesignTapTargetScope`, no longer with
+  Material's `materialTapTargetSize`.
+- `ComicFormField` round a group of choices or radios lets a screen reader reach each choice on its own; it read the
+  whole group as one button. `group` says so for a group of your own.
+- A tap anywhere in a text field's frame focuses it, beside its words too, and a focus ring inside a panel keeps plain
+  corners where the panel's edge would cut its ticks.
+- `ComicSpace`, the spacing scale on a 4-point grid. Every part takes its gaps and insets from it; a few moved by a
+  point or two to sit on the grid.
+- `ComicBrand` and `ComicNavItem` live in their own library, still exported from `comic_ui.dart`, so a bar copied out
+  of the package keeps reading them.
+- `ComicStyle` and `ComicStyleOf` are now the design kit's `DesignStyle` and `DesignStyleOf` under Comic's names. The
+  slots and calls are the same, so your code builds as it was, and a style made for another look on the same kit
+  works here too.
+- Fields, sheets and menus no longer crash in apps set to a language other than English; their built-in labels
+  now follow the app's language.
+- The parts' shared words come in 30 languages. Add `DesignLocalizations.delegate` to your app's
+  `localizationsDelegates`, and its `supportedLocales` to yours, and they follow the reader's language.
+- The command palette's backdrop is the dot screen too; it was a flat dim.
+- At large text sizes a button is never narrower than its longest word, and a timed row's time never breaks. On a
+  phone, the cover's balloon moves under the burst rather than break a word, and the splash's note wraps before the
+  burst. A note box's hint wraps over its lines.
+- The example gallery reads in Arabic when it runs right to left, on every everyday screen.
+- Comic's lettering falls back to its text face for a script the display face lacks, so Arabic and other scripts show
+  instead of empty boxes. A tilted stamp takes the room its corners reach, and the cover's date box stacks under the
+  issue and price at large text on a phone.
+- On the web, lettering laid out before a fallback font arrived kept its empty boxes; it lays out again when the
+  system's fonts change, as Flutter's own text does. Words in a right-to-left script are lettered in the text face,
+  the burst's words over and under its number too: the display face's slanted "!" sat over the script's last letter.
+- A burst keeps its words off its outline: they fit with a little of the fill between them and the star's edge,
+  checked along each line and not only at its corners, where a valley between two spikes could cut in.
+- By night the modal screen is printed in the night's cream line (`ComicColors.scrim`): a reverse screen that knocks
+  the black ground back, as black dots knock the paper back by day. Black dots on the night's black screened nothing
+  but the cream words, and cut those into pieces.
+- By night `ComicTextField(onPaper: true)` stands on the night card in cream, as every field does; it stayed on day
+  paper with its cream rim lost in its fill.
+- A phone's tab bar whose tabs need more than its row (at large text) holds its rim at the row's ends and scrolls the
+  tabs inside it, each at its own width, so the next tab shows, cut by the rim; the chosen tab is scrolled into view.
+  The rim used to scroll away with the last tab, and nothing showed there was one.
+- At large text on a phone, the cover's last box above the date runs to the row's end, where bare art showed through.
+- `ComicTheme.of` gives Comic's default theme (Offset, by day) when no `ComicTheme` is above, as `Theme.of` does;
+  `ComicTheme.maybeOf` still answers null. Selecting text on iOS no longer throws when your `ComicHost` sits under
+  `home` rather than in the app's `builder`.
+- Every part describes the values it was built with in Flutter's inspector and in a failing test's widget tree, its
+  defaults hidden.
+- A value out of its range now asserts in debug builds: a field of no lines, a number field that steps by nothing,
+  progress past 1, a review of more than five stars, a badge or count below zero.
+- Every example in the API docs is compiled and run by the package's tests.
+- `comicInventory`'s calendar, data table, tree view and scroll area specimens dispose the controllers they make; they
+  made a new one on every build and never disposed it.
+- The internal render boxes `ComicPressFace`, `RenderComicPressFace`, `RenderComicOutward` and `RenderRowReach` left
+  `comic_parts.dart`, the copy-out parts library, which may change in any version.
+- Customising keeps Comic a comic. Deprecated, each still working until a later version removes it:
+  - `ComicShapes.rounded` and `ComicThemeData.copyWith(shapes:)`: Comic is square, with only speech and heads round.
+    Give one part its own corner through its style's `shape`.
+  - `ComicThemeData.copyWith(motion:)`: Comic's motion is a quick cut and a small pop. Reduce Motion still turns it
+    into cuts (`ComicMotion.still`) by itself.
+  - `ComicTypeface.scale` and the `scale:` of its constructors and `copyWith`: the platform's text scaling serves
+    readers without breaking the lettering. `dart fix --apply` removes the argument.
+  - Strokes come in two steps, `ComicStrokes.standard` (the look's own contours, a theme's default) and
+    `ComicStrokes.bold`. The `ComicStrokes(...)` constructor with free widths and `ComicStrokes.copyWith` are
+    deprecated; `ComicStrokes.look` is now `ComicStrokes.standard`, and `dart fix --apply` renames it.
+- A part whose style gives a see-through fill or overlay asserts in debug builds, naming law 1 (flat opaque inks). It is
+  an assert, not a clamp: a release build draws the colour as given.
+- Flutter's own widgets under Comic (a text field's selection, a Material part an app adds) set their words in the
+  theme's text face, so a `ComicTypeface` you give reaches them. 0.1.0 always used Shantell Sans.
+- The example gallery's Customize panel no longer offers rounded corners or a type scale.
+- The example gallery follows a link the browser pushes after it starts (an address you edit, or Back to the
+  opening link) in place; it threw, having no named route for it. At a desk, the splash's cabin stands clear of its
+  title.
+- The 0.1.0 notes said every part takes a `style:`. The parts that do are buttons, fields, choices, the pickers,
+  surfaces, raised surfaces, avatars and badges, and the README lists them. The README no longer promises `Widget`
+  slots beside the `String` labels.
+
 ## 0.1.0
 
 First release of Comic: a Flutter design system that draws an app as a page of a printed comic.

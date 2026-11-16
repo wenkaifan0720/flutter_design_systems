@@ -647,7 +647,9 @@ void main() {
         );
         final image = await boundary.toImage();
         final data = await image.toByteData();
-        return (image.width, image.height, data!);
+        final (width, height) = (image.width, image.height);
+        image.dispose();
+        return (width, height, data!);
       }))!;
       Color at(int x, int y) {
         final i = (y * width + x) * 4;

@@ -1,0 +1,6 @@
+# The fix pairs' own options. `dart fix` moves only what the analyzer reports, and a use of a deprecated member from
+# this same package is reported by this lint alone. The package's own analysis leaves test_fixes/ out, so only
+# `dart fix --compare-to-golden test_fixes` reads these files.
+linter:
+  rules:
+    - deprecated_member_use_from_same_package

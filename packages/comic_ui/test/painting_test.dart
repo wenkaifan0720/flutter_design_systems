@@ -230,8 +230,12 @@ void main() {
       expect(
         find.descendant(
           of: boundary.first,
+          // An animated builder, or a painter that repaints on the animation itself (the skeleton's dots).
           matching: find.byWidgetPredicate(
-            (w) => w is AnimatedBuilder || w is FadeTransition,
+            (w) =>
+                w is AnimatedBuilder ||
+                w is FadeTransition ||
+                (w is CustomPaint && w.painter != null),
           ),
         ),
         findsWidgets,

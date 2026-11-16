@@ -122,15 +122,17 @@ Widget kitSpecimenLabel() => const ComicColumn(
   children: [ComicLabel('Delivery'), ComicLabel('Optional', quiet: true)],
 );
 
-Widget kitSpecimenTag() => const Wrap(
-  spacing: 8,
-  runSpacing: 8,
-  children: [
-    ComicTag('New', tone: ComicSpeaker.narrator),
-    ComicTag('Plain'),
-    ComicTag('Yours', tone: ComicSpeaker.currentUser),
-    ComicTag('Shade', tone: ComicSpeaker.group),
-  ],
+Widget kitSpecimenTag() => Builder(
+  builder: (context) => Wrap(
+    spacing: 8,
+    runSpacing: 8,
+    children: [
+      ComicTag(kitSay(context, 'New'), tone: ComicSpeaker.narrator),
+      ComicTag(kitSay(context, 'Plain')),
+      ComicTag(kitSay(context, 'Yours'), tone: ComicSpeaker.currentUser),
+      ComicTag(kitSay(context, 'Shade'), tone: ComicSpeaker.group),
+    ],
+  ),
 );
 
 // At the size a score stands alone; 13 is the size inline in a row's subline.

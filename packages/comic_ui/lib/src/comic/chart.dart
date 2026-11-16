@@ -5,14 +5,16 @@ import 'package:ui_core/ui_core.dart';
 
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'layout.dart';
 import 'localizations.dart';
 import 'press.dart';
+import 'print.dart' show ComicScreenGrid;
 import 'theme.dart';
+import 'knobs.dart' show ComicSpace;
 
 /// One named series; a missing value breaks the line.
 @immutable
@@ -128,6 +130,37 @@ class ComicChart extends StatefulWidget {
 
   @override
   State<ComicChart> createState() => _ComicChartState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<ComicChartSeries>('series', series))
+      ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
+      ..add(
+        EnumProperty<ComicChartType>(
+          'type',
+          type,
+          defaultValue: ComicChartType.line,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ComicChartBand>('band', band, defaultValue: null),
+      )
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(ObjectFlagProperty<String Function(double)>.has('format', format))
+      ..add(
+        FlagProperty(
+          'loading',
+          value: loading,
+          ifTrue: 'loading',
+          defaultValue: false,
+        ),
+      )
+      ..add(StringProperty('empty', empty, defaultValue: null));
+  }
 }
 
 /// The chart row's three names (the shared stems): a [ComicChart] of inked lines, of an area under them, or of grouped
@@ -190,6 +223,30 @@ class ComicLineChart extends StatelessWidget {
     loading: loading,
     empty: empty,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<ComicChartSeries>('series', series))
+      ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
+      ..add(
+        DiagnosticsProperty<ComicChartBand>('band', band, defaultValue: null),
+      )
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(ObjectFlagProperty<String Function(double)>.has('format', format))
+      ..add(
+        FlagProperty(
+          'loading',
+          value: loading,
+          ifTrue: 'loading',
+          defaultValue: false,
+        ),
+      )
+      ..add(StringProperty('empty', empty, defaultValue: null));
+  }
 }
 
 /// A [ComicChart] with the area under each line filled: a running total, a level over time.
@@ -437,6 +494,7 @@ class _ComicChartState extends State<ComicChart> {
                 child: RepaintBoundary(
                   child: CustomPaint(
                     painter: _ChartInk(
+                      dpr: MediaQuery.devicePixelRatioOf(context),
                       widget.series,
                       widget._bars,
                       widget.band,
@@ -465,7 +523,7 @@ class _ComicChartState extends State<ComicChart> {
                 Positioned.fill(
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(ComicSpace.gap),
                       child: Text(
                         widget.empty ?? words.noData,
                         textAlign: TextAlign.center,
@@ -529,7 +587,7 @@ class _ComicChartState extends State<ComicChart> {
             shape: t.shapes.small.copyWith(side: BorderSide(color: c.text)),
           ),
         ),
-        const SizedBox(width: 6),
+        const SizedBox(width: ComicSpace.close),
         Text(words, style: axis),
       ],
     );
@@ -569,10 +627,10 @@ class _ComicChartState extends State<ComicChart> {
                     ),
                   ),
                 if (!widget.loading && !nothing) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: ComicSpace.close),
                   Wrap(
-                    spacing: 12,
-                    runSpacing: 6,
+                    spacing: ComicSpace.near,
+                    runSpacing: ComicSpace.close,
                     children: [
                       for (final (i, s) in widget.series.indexed)
                         entry(c.series[i % c.series.length], s.label),
@@ -737,7 +795,11 @@ class _ChartInk extends CustomPainter {
     this.at,
     this.loading = false,
     this.textScaler = TextScaler.noScaling,
+    this.dpr = 1,
   });
+
+  /// The device's pixels per logical pixel: an area's dots land on whole ones.
+  final double dpr;
   final List<ComicChartSeries> series;
   final bool bars, area, loading;
   final ComicChartBand? band;
@@ -921,10 +983,7 @@ class _ChartInk extends CustomPainter {
             under
               ..lineTo(run.last.dx, y(0))
               ..close();
-            canvas.drawPath(
-              under,
-              Paint()..color = color.withValues(alpha: .28),
-            );
+            _screen(canvas, under, color, _areaRadius, dpr);
           }
         }
         if (faint) {
@@ -969,6 +1028,7 @@ class _ChartInk extends CustomPainter {
 
   @override
   bool shouldRepaint(_ChartInk old) =>
+      old.dpr != dpr ||
       !listEquals(old.series, series) ||
       old.bars != bars ||
       old.area != area ||
@@ -1046,15 +1106,44 @@ class ComicSparkline extends StatelessWidget {
             t.colors,
             Directionality.of(context),
             area,
+            MediaQuery.devicePixelRatioOf(context),
           ),
         ),
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<double?>('values', values))
+      ..add(DoubleProperty('width', width, defaultValue: 96))
+      ..add(DoubleProperty('height', height, defaultValue: 28))
+      ..add(
+        FlagProperty(
+          'area',
+          value: area,
+          ifFalse: 'area: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(ObjectFlagProperty<String Function(double)>.has('format', format));
+  }
 }
 
 class _SparkInk extends CustomPainter {
-  _SparkInk(this.values, this.colors, this.direction, this.area);
+  _SparkInk(
+    this.values,
+    this.colors,
+    this.direction,
+    this.area, [
+    this.dpr = 1,
+  ]);
+
+  /// The device's pixels per logical pixel: the area's dots land on whole ones.
+  final double dpr;
   final List<double?> values;
   final ComicColors colors;
   final TextDirection direction;
@@ -1120,7 +1209,7 @@ class _SparkInk extends CustomPainter {
         under
           ..lineTo(run.last.dx, box.bottom)
           ..close();
-        canvas.drawPath(under, Paint()..color = color.withValues(alpha: .5));
+        _screen(canvas, under, color, _sparkRadius, dpr);
       }
     }
     // The line is inked, as every line on the page: a series colour alone
@@ -1148,8 +1237,25 @@ class _SparkInk extends CustomPainter {
 
   @override
   bool shouldRepaint(_SparkInk old) =>
+      old.dpr != dpr ||
       !listEquals(old.values, values) ||
       old.colors != colors ||
       old.direction != direction ||
       old.area != area;
+}
+
+/// An area under a line is a Ben-Day tint of the line's ink (law 1: flat inks, nothing see-through): a dot every
+/// [_areaPitch], [_areaRadius] round under a chart's line (about a quarter of the area in ink), [_sparkRadius] under a
+/// sparkline's, which is small enough to want half.
+const double _areaPitch = 5, _areaRadius = 1.05, _sparkRadius = 1.4;
+
+void _screen(Canvas canvas, Path area, Color ink, double radius, double dpr) {
+  canvas.save();
+  canvas.clipPath(area);
+  ComicScreenGrid(
+    _areaPitch,
+    radius,
+    dpr,
+  ).paint(canvas, area.getBounds(), ink.withValues(alpha: 1));
+  canvas.restore();
 }

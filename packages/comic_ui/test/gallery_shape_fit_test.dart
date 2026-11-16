@@ -5,7 +5,6 @@ import 'package:comic_ui/comic_ui.dart';
 
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/kit.dart';
-import '../example/lib/main.dart';
 import 'gallery_support.dart';
 import 'shape_fit_support.dart';
 import 'support.dart';
@@ -23,7 +22,7 @@ void main() {
             '$id / ${corners.name} / $width / ${brightness.name}: 4 px outline clearance',
             (tester) async {
               kitShownTheme = (brightness) =>
-                  GalleryCustom(corners: corners).theme('offset', brightness);
+                  CornerCustom(corners: corners).theme('offset', brightness);
               addTearDown(() => kitShownTheme = null);
               final page = galleryPages.singleWhere((page) => page.id == id);
               await pumpGalleryPage(

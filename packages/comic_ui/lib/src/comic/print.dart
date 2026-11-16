@@ -1,13 +1,13 @@
 // The print devices: Ben-Day dots, action lines and outlined lettering. All vector, all whole-pixel, none of it animated.
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/geometry.dart';
+import 'internal/lettering.dart' show comicRightToLeftScript;
 import 'theme.dart';
 import 'knobs.dart';
 
@@ -176,6 +176,24 @@ class ComicBenDay extends StatelessWidget {
       child: child == null ? _empty : RepaintBoundary(child: child),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('color', color))
+      ..add(DoubleProperty('pitch', pitch, defaultValue: 9))
+      ..add(DoubleProperty('radius', radius, defaultValue: 2.2))
+      ..add(DoubleProperty('rowFactor', rowFactor, defaultValue: .5))
+      ..add(
+        FlagProperty(
+          'staggered',
+          value: staggered,
+          ifFalse: 'staggered: false',
+          defaultValue: true,
+        ),
+      );
+  }
 }
 
 /// A halftone that fades, as on a cover: dots largest at [from] and gone by [reach], in the design's own box (see
@@ -355,6 +373,28 @@ class ComicCoverPrint extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Offset>(
+          'origin',
+          origin,
+          defaultValue: const Offset(640, 210),
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'dots',
+          value: dots,
+          ifFalse: 'dots: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(IntProperty('wedges', wedges, defaultValue: 30));
+  }
 }
 
 /// Action lines alone, in any colour: every other wedge of a sunburst, behind a [child].
@@ -403,6 +443,22 @@ class ComicActionLines extends StatelessWidget {
       child: child ?? _empty,
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(ColorProperty('ground', ground, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Offset>(
+          'origin',
+          origin,
+          defaultValue: const Offset(520, 330),
+        ),
+      )
+      ..add(IntProperty('wedges', wedges, defaultValue: 30));
+  }
 }
 
 /// How lettering is outlined: contour width, then the layers behind it from nearest to farthest.
@@ -515,16 +571,44 @@ class ComicLettering extends LeafRenderObjectWidget {
       ComicTheme.of(context).typeface,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(DoubleProperty('size', size, defaultValue: 60))
+      ..add(DoubleProperty('lineHeight', lineHeight, defaultValue: .95))
+      ..add(DoubleProperty('tracking', tracking, defaultValue: .035))
+      ..add(ColorProperty('fill', fill, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ComicLetteringStyle>(
+          'style',
+          style,
+          defaultValue: ComicLetteringStyle.title,
+        ),
+      )
+      ..add(FlagProperty('fit', value: fit, ifTrue: 'fit', defaultValue: false))
+      ..add(
+        EnumProperty<TextAlign>('align', align, defaultValue: TextAlign.start),
+      )
+      ..add(
+        IterableProperty<(String, Color)>('spans', spans, defaultValue: null),
+      );
+  }
 }
 
-/// Lays out and paints the [ComicLettering] widget.
-class RenderComicLettering extends RenderBox {
+/// Lays out and paints the [ComicLettering] widget. It lays out again when the system's fonts change, as a paragraph
+/// does: on the web a glyph the faces lack (Arabic in the lettering) comes from a fallback font that arrives after the
+/// first frame, and painters laid out before it would keep its boxes.
+class RenderComicLettering extends RenderBox
+    with RelayoutWhenSystemFontsChangeMixin {
   /// Creates a [RenderComicLettering].
   RenderComicLettering(
     ComicLettering widget,
     ComicColors colors,
     TextDirection direction, [
-    ComicTypeface typeface = const ComicTypeface(),
+    ComicTypeface typeface = ComicTypeface.look,
   ]) : _w = widget,
        _c = colors,
        _dir = direction,
@@ -559,10 +643,19 @@ class RenderComicLettering extends RenderBox {
     _ => _c.outline,
   };
 
+  // Words in a right-to-left script stand in the text face: the lettering face has none of their letters, and its
+  // slanted "!" sat over the script's last letter.
+  bool get _script => comicRightToLeftScript(_w.text);
+
   TextStyle _style(double size, Color? color, Paint? foreground) => TextStyle(
     inherit: false,
-    fontFamily: _typeface.display,
-    package: _typeface.displayPackage,
+    fontFamily: _script ? _typeface.text : _typeface.display,
+    package: _script ? _typeface.textPackage : _typeface.displayPackage,
+    // A glyph the lettering face lacks (Arabic, Cyrillic, an accent) comes from the text face, then the platform's
+    // own fonts, as the theme's lettering does: never a box.
+    fontFamilyFallback: _typeface.displayPackage == _typeface.textPackage
+        ? [_typeface.text]
+        : null,
     fontSize: size,
     height: ((size * _w.lineHeight).roundToDouble() - .01) / size,
     letterSpacing: size * _w.tracking,
@@ -788,5 +881,18 @@ class ComicSfx extends StatelessWidget {
     return tilt == 0
         ? words
         : Transform.rotate(angle: tilt * math.pi / 180, child: words);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(DoubleProperty('size', size, defaultValue: 24))
+      ..add(ColorProperty('fill', fill, defaultValue: null))
+      ..add(DoubleProperty('tilt', tilt, defaultValue: 0))
+      ..add(
+        FlagProperty('big', value: big, ifTrue: 'big', defaultValue: false),
+      );
   }
 }

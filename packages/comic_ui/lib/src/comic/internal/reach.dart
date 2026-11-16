@@ -19,38 +19,10 @@ class RowMark extends InheritedWidget {
   bool updateShouldNotify(RowMark oldWidget) => false;
 }
 
-/// Marks [child] as a press's drawn face: the press is as wide as it, and its least target's sides pad outward beside
-/// it, hit-tested and read by a screen reader only, so a face starts on its column's edge. A part whose face stands
-/// inside a box of its own (a tick's mark in its target) marks the mark; the deepest mark down the press's chain of
-/// single children is the face.
-class ComicPressFace extends SingleChildRenderObjectWidget {
-  /// Creates a [ComicPressFace].
-  const ComicPressFace({super.key, required super.child});
-
-  @override
-  RenderComicPressFace createRenderObject(BuildContext context) =>
-      RenderComicPressFace();
-}
-
-/// The render box of a [ComicPressFace].
-class RenderComicPressFace extends RenderProxyBox {
-  /// The size the face last took: the press lays itself out at it, and an ancestor other than the parent may not read
-  /// [size] during layout.
-  Size get laidOut => _laidOut;
-  Size _laidOut = Size.zero;
-
-  @override
-  void performLayout() {
-    super.performLayout();
-    _laidOut = Size.copy(size);
-  }
-}
-
 /// Stands [child] [margin] outward on each side and takes no room for it: the room a press keeps round a face with no
-/// surface at rest (a radio row's, a quiet button's start, a trail's first link) is painted (its wash and ring),
-/// hit-tested where the boxes round it let a touch reach and read by a screen reader where it stands, while the face
-/// starts on its column's edge. Where a neighbour's own box stands in the margin, a touch there is the
-/// neighbour's. With [inwardWhenHeld], a parent holding it at a set width (a stretching column) keeps the room inside,
+/// surface at rest (a radio row's sides, a quiet button's start) is painted only (its wash and ring), while the face
+/// starts on its column's edge. A tap and a screen reader reach the box it takes, never the room: the area a tap
+/// reaches is the box a screen reader outlines. With [inwardWhenHeld], a parent holding it at a set width (a stretching column) keeps the room inside,
 /// so a stretched button's words stay centred in the room it is given.
 class ComicOutward extends SingleChildRenderObjectWidget {
   /// Creates a [ComicOutward].
@@ -186,43 +158,22 @@ class RenderComicOutward extends RenderShiftedBox {
     (child.parentData! as BoxParentData).offset = Offset(-m.left, -m.top);
   }
 
-  // Whether a box beside this one, in a parent of several, holds [position]: its own box comes before this margin.
-  bool _neighbourAt(Offset position) {
-    final parent = this.parent;
-    if (parent
-        is! ContainerRenderObjectMixin<
-          RenderBox,
-          ContainerBoxParentData<RenderBox>
-        >) {
-      return false;
-    }
-    final at = position + (parentData! as BoxParentData).offset;
-    for (
-      RenderBox? box = parent.firstChild;
-      box != null;
-      box = (box.parentData! as ContainerBoxParentData<RenderBox>).nextSibling
-    ) {
-      if (box == this) continue;
-      if (((box.parentData! as BoxParentData).offset & box.size).contains(at)) {
-        return true;
-      }
-    }
-    return false;
-  }
+  // A screen reader outlines the box this takes, as a tap reaches it; the room outside is drawn only.
+  @override
+  Rect? describeSemanticsClip(RenderObject? child) => Offset.zero & size;
+}
+
+/// Marks [child] as standing inside a container that clips at its edge (a panel's frame, a swipe row): a focus ring
+/// under it keeps plain corners, since its emanata would reach past the clip (law 3: only the top layer breaks a
+/// border).
+class RingInClip extends InheritedWidget {
+  /// Creates a [RingInClip].
+  const RingInClip({super.key, required super.child});
+
+  /// Whether [context] stands inside a [RingInClip].
+  static bool of(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<RingInClip>() != null;
 
   @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    final child = this.child;
-    if (child == null) return false;
-    final offset = (child.parentData! as BoxParentData).offset;
-    if (!size.contains(position) &&
-        (!(offset & child.size).contains(position) || _neighbourAt(position))) {
-      return false;
-    }
-    if (hitTestChildren(result, position: position) || hitTestSelf(position)) {
-      result.add(BoxHitTestEntry(this, position));
-      return true;
-    }
-    return false;
-  }
+  bool updateShouldNotify(RingInClip oldWidget) => false;
 }

@@ -1,5 +1,7 @@
 // The drawn things: plain shapes in ink, read from compact strings so a page never hand-draws. A drawing's colours are the
 // print run's, so every preset and mode recolours it. `ComicMark` is an object by name, `ComicBust` a head and shoulders.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -330,6 +332,33 @@ class ComicDrawing extends StatelessWidget {
       size: Size.infinite,
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('data', data))
+      ..add(EnumProperty<BoxFit>('fit', fit, defaultValue: BoxFit.contain))
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'alignment',
+          alignment,
+          defaultValue: Alignment.center,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'onNight',
+          value: onNight,
+          ifTrue: 'onNight',
+          defaultValue: false,
+        ),
+      )
+      ..add(DiagnosticsProperty<Rect>('viewBox', viewBox, defaultValue: null))
+      ..add(
+        FlagProperty('flat', value: flat, ifTrue: 'flat', defaultValue: false),
+      );
+  }
 }
 
 /// An object, drawn. For a plan, a place, a memory or a step, when you have no picture.
@@ -461,6 +490,22 @@ class ComicMark extends StatelessWidget {
       child: ComicDrawing(_marks[mark]!, onNight: onNight),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<ComicMarks>('mark', mark))
+      ..add(DoubleProperty('size', size, defaultValue: 104))
+      ..add(
+        FlagProperty(
+          'onNight',
+          value: onNight,
+          ifTrue: 'onNight',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 /// A drawn head and shoulders, by what you see. Not anyone. Use `ComicPortrait(cropped: true)` for a small head, or
@@ -525,6 +570,22 @@ class ComicPortrait extends StatelessWidget {
     viewBox: cropped ? const Rect.fromLTWH(12, 9, 76, 76) : null,
     flat: cropped,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<ComicBust>('bust', bust, defaultValue: null))
+      ..add(StringProperty('name', name, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'cropped',
+          value: cropped,
+          ifTrue: 'cropped',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 /// Picks a bust by a name's own letters, so a name keeps its drawing between runs.

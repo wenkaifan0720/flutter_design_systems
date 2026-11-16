@@ -1,17 +1,19 @@
 // The reading rows the shared inventory adds: a divider, a timeline, a description list, a status view
 // over the look's own loading, empty, error and success states, and an action sheet on the bottom sheet's face.
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
-import 'package:flutter/rendering.dart' show OverflowBoxFit;
 import 'package:flutter/widgets.dart';
 
 import '../chrome.dart';
 import '../controls.dart';
+import '../internal/reach.dart' show ComicOutward;
 import '../localizations.dart';
 import '../press.dart';
 import '../raised.dart';
 import '../signatures/empty.dart';
 import '../tell.dart';
 import '../theme.dart';
+import '../knobs.dart' show ComicSpace;
 
 /// An inked rule between parts of a page: across ([Axis.horizontal]) or down a row. With [label] the words stand in
 /// the middle of the rule, in the lettering ("or", a date).
@@ -61,7 +63,9 @@ class ComicDivider extends StatelessWidget {
               children: [
                 Expanded(child: rule),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: ComicSpace.near,
+                  ),
                   child: Text(
                     label!.toUpperCase(),
                     style: t.type.letter(
@@ -76,6 +80,15 @@ class ComicDivider extends StatelessWidget {
               ],
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.horizontal))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('space', space, defaultValue: 16));
   }
 }
 
@@ -156,7 +169,7 @@ class ComicTimeline extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: ComicSpace.gap),
                   Expanded(
                     child: Padding(
                       padding: EdgeInsets.only(
@@ -185,7 +198,7 @@ class ComicTimeline extends StatelessWidget {
                           if (entry.time != null)
                             Text(entry.time!, style: t.type.small),
                           if (entry.body != null) ...[
-                            const SizedBox(height: 4),
+                            const SizedBox(height: ComicSpace.tight),
                             Text(entry.body!, style: t.type.body),
                           ],
                         ],
@@ -198,6 +211,12 @@ class ComicTimeline extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<ComicTimelineEntry>('entries', entries));
   }
 }
 
@@ -322,10 +341,15 @@ class ComicDescriptionList extends StatelessWidget {
           children: [
             for (final (i, entry) in entries.indexed) ...[
               if (i > 0)
-                ColoredBox(color: c.divider, child: const SizedBox(height: 1)),
+                ColoredBox(
+                  color: c.divider,
+                  child: const SizedBox(height: ComicSpace.hair),
+                ),
               MergeSemantics(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: ComicSpace.close,
+                  ),
                   child: beside
                       ? Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,7 +361,7 @@ class ComicDescriptionList extends StatelessWidget {
                                 style: term,
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: ComicSpace.gap),
                             Expanded(
                               child: Text(entry.detail, style: t.type.body),
                             ),
@@ -347,7 +371,7 @@ class ComicDescriptionList extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(entry.term.toUpperCase(), style: term),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: ComicSpace.tight),
                             Text(entry.detail, style: t.type.body),
                           ],
                         ),
@@ -358,6 +382,14 @@ class ComicDescriptionList extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicDescriptionItem>('entries', entries))
+      ..add(DoubleProperty('besideFrom', besideFrom, defaultValue: 480));
   }
 }
 
@@ -440,6 +472,16 @@ class ComicStatusView extends StatelessWidget {
       action: action,
     ),
   };
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry));
+  }
 }
 
 enum _Status { loading, empty, error, success }
@@ -517,7 +559,7 @@ class ComicActionSheet<T> extends StatelessWidget {
         children: [
           if (message != null) ...[
             Text(message!, style: t.type.body.copyWith(color: c.textSecondary)),
-            const SizedBox(height: 12),
+            const SizedBox(height: ComicSpace.near),
           ],
           for (final action in actions)
             _SheetRowReach(
@@ -540,7 +582,7 @@ class ComicActionSheet<T> extends StatelessWidget {
                 ),
               ),
             ),
-          const SizedBox(height: 12),
+          const SizedBox(height: ComicSpace.near),
           ComicButton(
             cancelLabel ?? DesignLocalizations.of(context).cancelButtonLabel,
             onPressed: onCancel ?? () => Navigator.maybePop(context),
@@ -549,22 +591,31 @@ class ComicActionSheet<T> extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicSheetAction<T>>('actions', actions))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(StringProperty('cancelLabel', cancelLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onCancel', onCancel));
+  }
 }
 
 /// An action sheet's row reaching into the sheet's margin by its words' inset ([ComicMenuRowFace]'s 12) on either
-/// side, so its words start on the title's and the cancel's edge while its lit face keeps that room round them.
+/// side, so its words start on the title's and the cancel's edge while its lit face keeps that room round them. The
+/// room is painted only ([ComicOutward]): a tap and a screen reader reach the row's box in the column.
 class _SheetRowReach extends StatelessWidget {
   const _SheetRowReach({required this.child});
   final Widget child;
   static const double _reach = 12;
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, box) => OverflowBox(
-      fit: OverflowBoxFit.deferToChild,
-      minWidth: box.maxWidth + 2 * _reach,
-      maxWidth: box.maxWidth + 2 * _reach,
-      child: child,
-    ),
+  Widget build(BuildContext context) => ComicOutward(
+    margin: const EdgeInsets.symmetric(horizontal: _reach),
+    child: child,
   );
 }
 

@@ -1,9 +1,14 @@
-// A pointer over a part changes nothing it paints (polish3 §1). For every pressable, field and slider on every live
-// page, in every corner family, the pixels around the part are the same with the pointer away and with it over the
-// part, and the pointer shows the right cursor: the hand on what presses, the I-beam on a field, the open hand on a
-// slider, the arrow on whatever is disabled. The look's exceptions are left out: an open menu's or an autocomplete's
-// active row (it follows the pointer), a tooltip, a chart's readout and the rating's preview of the stars it would set.
-// Reduce Motion is on, so a hover change would show at once and a spinner stands still between the two pictures.
+// A pointer over a part lays its Ben-Day dots on it and changes nothing else (0.2.0, the second signature move; 0.1.0
+// showed nothing, polish3 §1). For every pressable, field and slider on every live page, in every corner family: a
+// press that takes presses changes its own face under the pointer and not one pixel more than a hairline beyond its
+// box (a grouped row's rules stand aside at its edge); a disabled or busy press, a field and a slider change nothing;
+// and the pointer shows the right cursor: the hand on what presses, the I-beam on a field, the open hand on a slider,
+// the arrow on whatever is disabled. A press inside one that lights as a whole (a table's row round its pick box) may
+// light that one with it, the pointer being over both; a press the pointer can't reach at its middle (a switch row's
+// own switch, a carousel's card beside the current one) is the press over it's to light, and is left out. The look's
+// exceptions are left out too: an open menu's or an autocomplete's active row (it follows the pointer), a tooltip, a
+// chart's readout and the rating's preview of the stars it would set.
+// Reduce Motion is on, so a hover change shows at once and a spinner stands still between the two pictures.
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -12,9 +17,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
+import 'package:comic_ui/src/comic/raised.dart' show ComicRaisedFrame;
 
 // ignore_for_file: avoid_relative_lib_imports
-import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/live_pages.dart';
 import 'gallery_support.dart';
@@ -66,7 +71,8 @@ MouseCursor _expected(Element e, String kind) {
   }
 }
 
-Future<Uint8List> _pixels(WidgetTester tester, Rect rect) async {
+/// The picture of [rect] at one pixel a point, and its width in pixels.
+Future<(Uint8List, int)> _pixels(WidgetTester tester, Rect rect) async {
   final boundary = tester.renderObject<RenderRepaintBoundary>(
     find.byKey(_shot),
   );
@@ -75,25 +81,35 @@ Future<Uint8List> _pixels(WidgetTester tester, Rect rect) async {
   final bytes = await tester.runAsync(() async {
     final image = await layer.toImage(local, pixelRatio: 1);
     final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final width = image.width;
     image.dispose();
-    return data!.buffer.asUint8List();
+    return (data!.buffer.asUint8List(), width);
   });
   return bytes!;
 }
 
-int _differing(Uint8List a, Uint8List b) {
-  if (a.length != b.length) return -1;
-  var n = 0;
+/// The pixels that differ between [a] and [b], pictures [width] wide: within [inner] and outside it.
+(int, int) _differing(Uint8List a, Uint8List b, int width, Rect inner) {
+  if (a.length != b.length) return (-1, -1);
+  var (inside, outside) = (0, 0);
   for (var i = 0; i < a.length; i += 4) {
     if (a[i] != b[i] ||
         a[i + 1] != b[i + 1] ||
         a[i + 2] != b[i + 2] ||
         a[i + 3] != b[i + 3]) {
-      n++;
+      final p = i ~/ 4;
+      if (inner.contains(Offset((p % width) + .5, (p ~/ width) + .5))) {
+        inside++;
+      } else {
+        outside++;
+      }
     }
   }
-  return n;
+  return (inside, outside);
 }
+
+/// How far past a part's box its hover may reach: a grouped row's rules standing aside at its edge.
+const _hairline = 3.0;
 
 void main() {
   setUpAll(() async {
@@ -137,6 +153,7 @@ void main() {
             ),
           ),
         );
+        // The field's own fills: an autocomplete's list, which opens as its field takes the focus, has its own.
         List<Color?> fills() => [
           for (final e
               in find
@@ -144,7 +161,17 @@ void main() {
                     of: find.byKey(const ValueKey('field')),
                     matching: find.byType(DecoratedBox),
                   )
-                  .evaluate())
+                  .evaluate()
+                  .toSet()
+                  .difference(
+                    find
+                        .descendant(
+                          of: find.byType(ComicRaisedFrame),
+                          matching: find.byType(DecoratedBox),
+                        )
+                        .evaluate()
+                        .toSet(),
+                  ))
             if ((e.widget as DecoratedBox).decoration
                 case final ShapeDecoration d)
               d.color
@@ -168,10 +195,10 @@ void main() {
   }
 
   for (final corners in GalleryCorners.values) {
-    final custom = GalleryCustom(corners: corners);
+    final custom = CornerCustom(corners: corners);
     for (final page in livePages) {
       testWidgets(
-        '${corners.name}: a pointer over ${page.id} changes nothing',
+        '${corners.name}: a pointer over ${page.id} lays dots on what it presses and nothing else',
         (tester) async {
           kitShownTheme = (b) => custom.theme('offset', b);
           addTearDown(() => kitShownTheme = null);
@@ -231,7 +258,28 @@ void main() {
               _ => 'field',
             };
             final where = '$kind "$name" at ${rect.topLeft}';
-            final region = rect.inflate(8);
+            // What the pointer reaches at the part's middle: a press it can't reach is the one over it's to light.
+            final hit = tester
+                .hitTestOnBinding(rect.center)
+                .path
+                .map((entry) => entry.target)
+                .whereType<RenderBox>()
+                .toList();
+            final reached = hit.any((t) => _inside(t, box));
+            if (kind == 'press' && !reached) continue;
+            // A press inside one that lights as a whole lights that one with it: the pointer is over both.
+            var around = rect;
+            element.visitAncestorElements((a) {
+              if (a.widget is! ComicPressable && a.widget is! ComicHighlight) {
+                return true;
+              }
+              final outer = a.renderObject;
+              if (outer is RenderBox && outer.hasSize) {
+                around = outer.localToGlobal(Offset.zero) & outer.size;
+              }
+              return false;
+            });
+            final region = around.inflate(8);
             await mouse.moveTo(park);
             await tester.pump();
             await tester.pump(const Duration(milliseconds: 600));
@@ -241,20 +289,37 @@ void main() {
             await tester.pump(const Duration(milliseconds: 600));
             if (!element.mounted) continue;
             final hovered = await _pixels(tester, region);
-            final changed = _differing(idle, hovered);
-            if (changed != 0) {
-              failures.add('$where: $changed pixels change under the pointer');
+            final inner = Rect.fromLTWH(
+              8 - _hairline,
+              8 - _hairline,
+              around.width + _hairline * 2,
+              around.height + _hairline * 2,
+            );
+            final (inside, outside) = _differing(
+              idle.$1,
+              hovered.$1,
+              hovered.$2,
+              inner,
+            );
+            final live =
+                kind == 'press' &&
+                (element.widget as ComicPressable).onPressed != null &&
+                !(element.widget as ComicPressable).busy;
+            if (outside != 0) {
+              failures.add('$where: $outside pixels change beyond it');
+            }
+            if (live && inside == 0) {
+              failures.add('$where: no dots under the pointer');
+            } else if (!live && inside != 0) {
+              failures.add(
+                '$where: $inside pixels change, and it takes no press',
+              );
             }
             final cursor = RendererBinding.instance.mouseTracker
                 .debugDeviceActiveCursor(1);
             final want = _expected(element, kind);
             // A part whose centre another pressable covers shows that one's cursor; only check uncovered parts.
-            final top = tester
-                .hitTestOnBinding(rect.center)
-                .path
-                .map((entry) => entry.target)
-                .whereType<RenderBox>()
-                .firstOrNull;
+            final top = hit.firstOrNull;
             final covered =
                 top != null &&
                 top != box &&

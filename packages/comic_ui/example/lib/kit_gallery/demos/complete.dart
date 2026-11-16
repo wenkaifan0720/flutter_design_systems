@@ -1,6 +1,8 @@
 /// Navigation, reading, status and people, using the same inked-panel grammar.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 import 'package:comic_ui/comic_ui.dart';
 
@@ -71,26 +73,33 @@ Widget kitCompleteDemo(Brightness brightness) => kitScreen(
 // A quiet button has no frame to fill, so the phone's stretching column would leave its word floating mid-row: it
 // stands at the start, as the link does.
 Widget kitSpecimenQuiet() => Builder(
-  builder: (context) => Align(
-    alignment: AlignmentDirectional.centerStart,
-    child: ComicButton.text(
-      'Later',
-      onPressed: () => kitFeedback(context, 'Saved for later.'),
+  builder: (context) => Builder(
+    builder: (context) => Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: ComicButton.text(
+        kitSay(context, 'Later'),
+        onPressed: () =>
+            kitFeedback(context, kitSay(context, 'Saved for later.')),
+      ),
     ),
   ),
 );
 Widget kitSpecimenDanger() => Builder(
-  builder: (context) => ComicButton(
-    'Remove issue',
-    isDestructiveAction: true,
-    icon: ComicGlyphs.trash2,
-    onPressed: () => kitFeedback(context, 'Issue removed.'),
+  builder: (context) => Builder(
+    builder: (context) => ComicButton(
+      kitSay(context, 'Remove issue'),
+      isDestructiveAction: true,
+      icon: ComicGlyphs.trash2,
+      onPressed: () => kitFeedback(context, kitSay(context, 'Issue removed.')),
+    ),
   ),
 );
 Widget kitSpecimenLink() => Builder(
-  builder: (context) => ComicLink(
-    'Read this issue',
-    onPressed: () => kitFeedback(context, 'Issue opened.'),
+  builder: (context) => Builder(
+    builder: (context) => ComicLink(
+      kitSay(context, 'Read this issue'),
+      onPressed: () => kitFeedback(context, kitSay(context, 'Issue opened.')),
+    ),
   ),
 );
 Widget kitSpecimenFilter() => kitState(
@@ -159,49 +168,67 @@ Widget kitSpecimenCard() => const ComicCard(
   title: 'This issue',
   children: [Text('Twelve pages, printed in two inks.')],
 );
-Widget kitSpecimenGrouped() => const ComicListSection(
-  label: 'Publication',
-  children: [
-    ComicKvRow('Pages', '24', isFirst: true),
-    ComicKvRow('Print run', '500'),
-  ],
+Widget kitSpecimenGrouped() => Builder(
+  builder: (context) => ComicListSection(
+    label: kitSay(context, 'Publication'),
+    children: [
+      ComicKvRow(kitSay(context, 'Pages'), '24', isFirst: true),
+      ComicKvRow(kitSay(context, 'Print run'), '500'),
+    ],
+  ),
 );
-Widget kitSpecimenDisclosure() => const ComicDisclosure(
-  title: 'About this edition',
-  initiallyExpanded: true,
-  child: Text('An offset reprint of the original issue.'),
+Widget kitSpecimenDisclosure() => Builder(
+  builder: (context) => ComicDisclosure(
+    title: kitSay(context, 'About this edition'),
+    initiallyExpanded: true,
+    child: Text(kitSay(context, 'An offset reprint of the original issue.')),
+  ),
 );
-Widget kitSpecimenTable() => const ComicTable(
-  columns: ['Issue', 'Pages'],
-  rows: [
-    ['Twelve', '24'],
-    ['Thirteen', '32'],
-  ],
+Widget kitSpecimenTable() => Builder(
+  builder: (context) => ComicTable(
+    columns: [kitSay(context, 'Issue'), kitSay(context, 'Pages')],
+    rows: [
+      [kitSay(context, 'Twelve'), '24'],
+      [kitSay(context, 'Thirteen'), '32'],
+    ],
+  ),
 );
-Widget kitSpecimenNotice() => Column(
-  mainAxisSize: MainAxisSize.min,
-  children: [
-    for (final tone in ComicTone.values)
-      Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: ComicBanner(switch (tone) {
-          ComicTone.info => 'A new issue arrives Friday.',
-          ComicTone.success => 'Your issue is saved.',
-          ComicTone.warning => 'Only a few copies remain.',
-          ComicTone.danger => 'We could not save this issue.',
-        }, tone: tone),
+Widget kitSpecimenNotice() => Builder(
+  builder: (context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      for (final tone in ComicTone.values)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: ComicBanner(switch (tone) {
+            ComicTone.info => kitSay(context, 'A new issue arrives Friday.'),
+            ComicTone.success => kitSay(context, 'Your issue is saved.'),
+            ComicTone.warning => kitSay(context, 'Only a few copies remain.'),
+            ComicTone.danger => kitSay(
+              context,
+              'We could not save this issue.',
+            ),
+          }, tone: tone),
+        ),
+    ],
+  ),
+);
+Widget kitSpecimenSpinner() => Builder(
+  builder: (context) => Wrap(
+    spacing: 16,
+    children: [
+      ComicCircularProgressIndicator(
+        value: .5,
+        label: kitSay(context, 'Half uploaded'),
       ),
-  ],
+      ComicCircularProgressIndicator(label: kitSay(context, 'Loading')),
+    ],
+  ),
 );
-Widget kitSpecimenSpinner() => const Wrap(
-  spacing: 16,
-  children: [
-    ComicCircularProgressIndicator(value: .5, label: 'Half uploaded'),
-    ComicCircularProgressIndicator(label: 'Loading'),
-  ],
+Widget kitSpecimenProgress() => Builder(
+  builder: (context) =>
+      ComicLinearProgressIndicator(value: .6, label: kitSay(context, 'Upload')),
 );
-Widget kitSpecimenProgress() =>
-    const ComicLinearProgressIndicator(value: .6, label: 'Upload');
 Widget kitSpecimenSkeleton() => const Column(
   mainAxisSize: MainAxisSize.min,
   crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,13 +239,17 @@ Widget kitSpecimenSkeleton() => const Column(
   ],
 );
 // A badge keeps its own size at the column's start, as it would beside the thing it counts.
-Widget kitSpecimenBadge() => const Align(
-  alignment: AlignmentDirectional.centerStart,
-  child: ComicBadge(12, label: 'Unread issues'),
+Widget kitSpecimenBadge() => Builder(
+  builder: (context) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    child: ComicBadge(12, label: kitSay(context, 'Unread issues')),
+  ),
 );
-Widget kitSpecimenSuccess() => const ComicSuccessState(
-  title: 'Saved',
-  message: 'Your issue is ready to read.',
+Widget kitSpecimenSuccess() => Builder(
+  builder: (context) => ComicSuccessState(
+    title: kitSay(context, 'Saved'),
+    message: kitSay(context, 'Your issue is ready to read.'),
+  ),
 );
 Widget kitSpecimenAvatar() => const Wrap(
   spacing: 12,
@@ -234,8 +265,14 @@ Widget kitSpecimenPile() => const ComicAvatarGroup([
   ComicFace('AM'),
   ComicFace('LT'),
 ], label: 'Five contributors');
-Widget kitSpecimenMeter() =>
-    const ComicMeter(label: 'Capacity', value: 35, max: 100, unit: 'pages');
+Widget kitSpecimenMeter() => Builder(
+  builder: (context) => ComicMeter(
+    label: kitSay(context, 'Capacity'),
+    value: 35,
+    max: 100,
+    unit: kitSay(context, 'pages'),
+  ),
+);
 
 Widget kitSpecimenChart() => const ComicChart(
   label: 'Weekly pages',
@@ -296,7 +333,8 @@ Widget kitSpecimenPagination() => kitState(
 Widget kitSpecimenCarousel() => Builder(
   builder: (context) => ComicCarouselView(
     label: 'This week',
-    height: 180,
+    // Tall enough for its two lines at any text size: 180 at the reader's own size, growing with larger text.
+    height: math.max(180, MediaQuery.textScalerOf(context).scale(76) + 40),
     children: [
       for (final (title, note) in const [
         ('The night shift', 'Twelve pages'),

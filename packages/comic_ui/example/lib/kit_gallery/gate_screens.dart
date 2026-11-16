@@ -41,9 +41,11 @@ Widget _act(BuildContext context, String label, String done) {
   );
 }
 
-/// Two fields side by side from 600 up, stacked on a phone unless they are short ([phone]).
+/// Two fields side by side from 600 up, stacked on a phone unless they are short ([phone]); short ones stack too
+/// under large text, where a label wraps and would stand one field's frame below the other's.
 Widget _pair(BuildContext context, Widget a, Widget b, {bool phone = false}) {
-  if (!phone && ComicTheme.of(context).width < 600) {
+  final large = MediaQuery.textScalerOf(context).scale(10) > 15;
+  if ((!phone || large) && ComicTheme.of(context).width < 600) {
     return ComicColumn(gap: 20, children: [a, b]);
   }
   return Row(
@@ -57,18 +59,28 @@ Widget _pair(BuildContext context, Widget a, Widget b, {bool phone = false}) {
 }
 
 /// A lone control in a form of pairs: from 600 up it takes the first cell of the grid the pairs set, so its edges
-/// meet theirs (a [_controlCap] box ends between the grid's columns); across the column on a phone.
+/// meet theirs (a [_controlCap] box ends between the grid's columns); across the column on a phone, and where a cell
+/// is too narrow for a choice's words (a tablet's panel beside another), so a select never cuts its value short.
 Widget _firstCell(BuildContext context, Widget child) {
   if (ComicTheme.of(context).width < 600) {
     return SizedBox(width: double.infinity, child: child);
   }
-  return Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Expanded(child: child),
-      const SizedBox(width: 16),
-      const Spacer(),
-    ],
+  // The longest choice's words ('Standard delivery', about 150) with the field's padding and its chevron: about 205.
+  final least = MediaQuery.textScalerOf(context).scale(224);
+  return LayoutBuilder(
+    builder: (context, box) {
+      if ((box.maxWidth - 16) / 2 < least) {
+        return SizedBox(width: double.infinity, child: child);
+      }
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: child),
+          const SizedBox(width: 16),
+          const Spacer(),
+        ],
+      );
+    },
   );
 }
 
@@ -80,65 +92,68 @@ Widget _hug(Widget panel) => ComicPanelStack(grow: false, children: [panel]);
 Widget gateAccount() => kitState(
   'standard',
   (context, delivery, deliver) => kitState(true, (context, updates, update) {
+    String say(String en) => kitSay(context, en);
     final form = ComicPanel(
-      caption: 'Where do we send it?',
+      caption: say('Where do we send it?'),
       child: ComicColumn(
         gap: 20,
         children: [
           _pair(
             context,
-            const ComicTextField(
-              label: 'Full name',
-              initialValue: 'Alex Morgan',
+            ComicTextField(
+              label: say('Full name'),
+              initialValue: say('Alex Morgan'),
             ),
-            const ComicTextField(
-              label: 'Email address',
+            ComicTextField(
+              label: say('Email address'),
               initialValue: 'alex@example.com',
               keyboardType: TextInputType.emailAddress,
             ),
           ),
-          const ComicTextField(
-            label: 'Street and number',
-            initialValue: '12 Harbour Lane',
+          ComicTextField(
+            label: say('Street and number'),
+            initialValue: say('12 Harbour Lane'),
           ),
           _pair(
             context,
-            const ComicTextField(label: 'Town', initialValue: 'Brighton'),
-            const ComicTextField(label: 'Postcode', initialValue: 'BN1 4AA'),
+            ComicTextField(label: say('Town'), initialValue: say('Brighton')),
+            ComicTextField(label: say('Postcode'), initialValue: 'BN1 4AA'),
           ),
           _firstCell(
             context,
             ComicSelect<String>(
-              label: 'Delivery',
+              label: say('Delivery'),
               value: delivery,
-              options: const [
-                ComicSelectOption('standard', 'Standard delivery'),
-                ComicSelectOption('express', 'Express delivery'),
-                ComicSelectOption('collect', 'Collect in store'),
+              options: [
+                ComicSelectOption('standard', say('Standard delivery')),
+                ComicSelectOption('express', say('Express delivery')),
+                ComicSelectOption('collect', say('Collect in store')),
               ],
               onChanged: deliver,
             ),
           ),
           ComicCheckRow(
-            label: 'Email me delivery updates',
+            label: say('Email me delivery updates'),
             value: updates,
             onChanged: update,
           ),
-          _act(context, 'Save details', 'Delivery details saved.'),
+          _act(context, say('Save details'), say('Delivery details saved.')),
         ],
       ),
     );
     final help = ComicPanel(
-      caption: 'On file',
+      caption: say('On file'),
       child: ComicColumn(
         gap: 20,
         children: [
-          const ComicKvRow('Member since', 'March 2024', isFirst: true),
-          const ComicKvRow('Orders', '7'),
-          const ComicKvRow('Plan', 'Monthly, 4 issues'),
+          ComicKvRow(say('Member since'), say('March 2024'), isFirst: true),
+          ComicKvRow(say('Orders'), '7'),
+          ComicKvRow(say('Plan'), say('Monthly, 4 issues')),
           // The screen tells this; no one says it: a narrator's caption, not a balloon.
-          const ComicCaption(
-            'We only use your address for this order and the ones after it.',
+          ComicCaption(
+            say(
+              'We only use your address for this order and the ones after it.',
+            ),
             free: true,
           ),
         ],
@@ -155,6 +170,7 @@ Widget gateAccount() => kitState(
 /// Settings: two panels of switches, and the app's one remark in a narrator's caption.
 Widget gateSettings() => Builder(
   builder: (context) {
+    String say(String en) => kitSay(context, en);
     Widget rows(List<(String, String, bool)> items) => ComicColumn(
       gap: 0,
       children: [
@@ -162,8 +178,8 @@ Widget gateSettings() => Builder(
           kitState(
             initial,
             (context, value, change) => ComicSwitchRow(
-              label: label,
-              note: note,
+              label: say(label),
+              note: say(note),
               value: value,
               isFirst: i == 0,
               onChanged: change,
@@ -179,7 +195,7 @@ Widget gateSettings() => Builder(
           phone: ComicTierLayout.stack,
           children: [
             ComicPanel(
-              caption: 'Tell me when',
+              caption: say('Tell me when'),
               child: rows(const [
                 ('A new issue is out', 'On the morning it comes out', true),
                 ('My order ships', 'With its tracking number', true),
@@ -187,7 +203,7 @@ Widget gateSettings() => Builder(
               ]),
             ),
             ComicPanel(
-              caption: 'Reading',
+              caption: say('Reading'),
               child: rows(const [
                 ('Download new issues', 'On Wi-Fi only', true),
                 ('Panel by panel', 'One panel at a time on a phone', false),
@@ -199,29 +215,27 @@ Widget gateSettings() => Builder(
         // The screen tells this; no one says it: a narrator's caption, not a balloon. On a desktop it takes the first
         // panel's column, so its edges stand on the tier's; on a phone, the column.
         if (ComicTheme.of(context).desk)
-          const ComicTier(
-            spans: [6, 6],
+          ComicTier(
+            spans: const [6, 6],
             children: [
-              ComicCaption(
-                'You can change these any time. Messages about your account and orders always come through.',
-                free: true,
-              ),
-              SizedBox.shrink(),
+              ComicCaption(say(_settingsRemark), free: true),
+              const SizedBox.shrink(),
             ],
           )
         else
-          const ComicCaption(
-            'You can change these any time. Messages about your account and orders always come through.',
-            free: true,
-          ),
+          ComicCaption(say(_settingsRemark), free: true),
       ],
     );
   },
 );
 
+const _settingsRemark =
+    'You can change these any time. Messages about your account and orders always come through.';
+
 /// Library: the reader's issues as a tier of covers, each with its state as a tag; how many wait to be read is the burst.
 Widget gateLibrary() => kitState(0, (context, tab, change) {
   final t = ComicTheme.of(context);
+  String say(String en) => kitSay(context, en);
   const issues = [
     ('The first issue', 1, 'Ready to read', ComicMarks.peak),
     ('A small adventure', 2, 'Ready to read', ComicMarks.tent),
@@ -246,18 +260,18 @@ Widget gateLibrary() => kitState(0, (context, tab, change) {
           ground: number,
           leading: ComicMark(mark, onNight: number == 4),
         ),
-        title: title,
-        subtitle: 'Issue $number',
+        title: say(title),
+        subtitle: '${say('Issue')} $number',
         // Each state its own ink: the warm lamp waits to be read, the second print colour is kept, paper is done.
         trailing: ComicTag(
-          state,
+          say(state),
           tone: switch (state) {
             'Ready to read' => ComicSpeaker.narrator,
             'Saved' => ComicSpeaker.group,
             _ => null,
           },
         ),
-        onPressed: () => kitFeedback(context, '$title opened.'),
+        onPressed: () => kitFeedback(context, '${say(title)} opened.'),
       ),
   ];
   while (covers.length % perRow != 0) {
@@ -274,19 +288,23 @@ Widget gateLibrary() => kitState(0, (context, tab, change) {
             child: ComicColumn(
               gap: 4,
               children: [
-                Text('YOUR SHELF', style: t.type.panel),
-                Text('Your issues, on every device.', style: t.type.body),
+                Text(say('YOUR SHELF'), style: t.type.panel),
+                Text(say('Your issues, on every device.'), style: t.type.body),
               ],
             ),
           ),
           const SizedBox(width: 16),
-          ComicBurst(number: '$ready', over: 'Ready', under: 'to read!'),
+          ComicBurst(
+            number: '$ready',
+            over: say('Ready'),
+            under: say('to read!'),
+          ),
         ],
       ),
       _capped(
         context,
         ComicTabBar(
-          tabs: const ['All', 'Saved', 'Finished'],
+          tabs: [say('All'), say('Saved'), say('Finished')],
           selectedIndex: tab,
           onChanged: change,
         ),
@@ -300,6 +318,9 @@ Widget gateLibrary() => kitState(0, (context, tab, change) {
 Widget gateShop() => kitState(
   'Card',
   (context, pay, choose) => kitState('Standard', (context, delivery, deliver) {
+    String say(String en) => kitSay(context, en);
+    ComicChoice choice(String label, String note) =>
+        ComicChoice(say(label), value: label, note: say(note));
     final shipping = switch (delivery) {
       'Express' => 6,
       'Collect' => 0,
@@ -307,66 +328,66 @@ Widget gateShop() => kitState(
     };
     final total = 18 + shipping;
     final order = ComicPanel(
-      caption: 'Your order',
+      caption: say('Your order'),
       child: ComicColumn(
         gap: 0,
         children: [
-          const ComicLedgerRow(
-            title: 'The first issue',
-            subtitle: 'Print, one copy',
+          ComicLedgerRow(
+            title: say('The first issue'),
+            subtitle: say('Print, one copy'),
             value: '€12',
             isFirst: true,
           ),
-          const ComicLedgerRow(
-            title: 'Bookmarks',
-            subtitle: 'A set of three',
+          ComicLedgerRow(
+            title: say('Bookmarks'),
+            subtitle: say('A set of three'),
             value: '€6',
           ),
           ComicLedgerRow(
-            title: 'Delivery',
-            subtitle: delivery,
-            value: shipping == 0 ? 'Free' : '€$shipping',
+            title: say('Delivery'),
+            subtitle: say(delivery),
+            value: shipping == 0 ? say('Free') : '€$shipping',
           ),
-          ComicTotalRow('To pay', '€$total', note: 'VAT included'),
+          ComicTotalRow(say('To pay'), '€$total', note: say('VAT included')),
         ],
       ),
     );
     final payment = ComicPanel(
-      caption: 'Delivery and payment',
+      caption: say('Delivery and payment'),
       child: ComicColumn(
         gap: 20,
         children: [
           ComicFormField(
-            'Delivery',
+            say('Delivery'),
             child: ComicChoices(
-              options: const [
-                ComicChoice('Standard', note: '3 to 5 days, €3'),
-                ComicChoice('Express', note: 'Next day, €6'),
-                ComicChoice('Collect', note: 'In store, free'),
+              options: [
+                choice('Standard', '3 to 5 days, €3'),
+                choice('Express', 'Next day, €6'),
+                choice('Collect', 'In store, free'),
               ],
               value: delivery,
               onChanged: deliver,
             ),
           ),
           ComicFormField(
-            'Pay with',
+            say('Pay with'),
             child: ComicChoices(
-              options: const [
-                ComicChoice('Card', note: 'Visa, Mastercard'),
-                ComicChoice('Phone wallet', note: 'On this device'),
-                ComicChoice('Invoice', note: 'Within 14 days'),
+              options: [
+                choice('Card', 'Visa, Mastercard'),
+                choice('Phone wallet', 'On this device'),
+                choice('Invoice', 'Within 14 days'),
               ],
               value: pay,
               onChanged: choose,
             ),
           ),
           if (pay == 'Card') ...[
-            const ComicTextField(
-              label: 'Name on the card',
-              initialValue: 'Alex Morgan',
+            ComicTextField(
+              label: say('Name on the card'),
+              initialValue: say('Alex Morgan'),
             ),
-            const ComicTextField(
-              label: 'Card number',
+            ComicTextField(
+              label: say('Card number'),
               initialValue: '4242 4242 4242 4242',
               keyboardType: TextInputType.number,
               // A card's numbers read left to right in a right-to-left app too.
@@ -374,13 +395,13 @@ Widget gateShop() => kitState(
             ),
             _pair(
               context,
-              const ComicTextField(
-                label: 'Expiry',
+              ComicTextField(
+                label: say('Expiry'),
                 initialValue: '08 / 28',
                 textDirection: TextDirection.ltr,
               ),
-              const ComicTextField(
-                label: 'Security code',
+              ComicTextField(
+                label: say('Security code'),
                 initialValue: '123',
                 keyboardType: TextInputType.number,
                 textDirection: TextDirection.ltr,
@@ -388,7 +409,11 @@ Widget gateShop() => kitState(
               phone: true,
             ),
           ],
-          _act(context, 'Pay €$total', 'Order placed. Thank you!'),
+          _act(
+            context,
+            '${say('Pay')} €$total',
+            say('Order placed. Thank you!'),
+          ),
         ],
       ),
     );

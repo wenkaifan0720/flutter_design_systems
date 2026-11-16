@@ -18,6 +18,13 @@ TextScaler comicLetteringScaler(BuildContext context, TextStyle style) {
   return scaler.clamp(maxScaleFactor: comicLetteringMost / size);
 }
 
+/// Whether [text] holds a letter of a right-to-left script (Hebrew, Arabic and their presentation forms). The
+/// lettering face has none of their letters, and its slanted punctuation, drawn to follow a capital, sat over the
+/// script's last letter: words in such a script are set in the text face.
+bool comicRightToLeftScript(String text) => _rightToLeft.hasMatch(text);
+
+final RegExp _rightToLeft = RegExp('[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]');
+
 double _contrast(Color a, Color b) {
   final x = a.computeLuminance(), y = b.computeLuminance();
   return (x > y ? x + .05 : y + .05) / (x > y ? y + .05 : x + .05);

@@ -101,37 +101,41 @@ class _HeldState<T> extends State<_Held<T>> {
 
 // ------------------------------------------------------------------ actions
 
-Widget kitSpecimenButtonGroup() => ComicButtonGroup(
-  label: 'Text',
-  items: [
-    ComicButtonGroupItem('Copy', onPressed: () {}),
-    ComicButtonGroupItem('Paste', onPressed: () {}),
-    ComicButtonGroupItem('Clear', onPressed: () {}),
-  ],
+Widget kitSpecimenButtonGroup() => Builder(
+  builder: (context) => ComicButtonGroup(
+    label: kitSay(context, 'Text'),
+    items: [
+      ComicButtonGroupItem(kitSay(context, 'Copy'), onPressed: () {}),
+      ComicButtonGroupItem(kitSay(context, 'Paste'), onPressed: () {}),
+      ComicButtonGroupItem(kitSay(context, 'Clear'), onPressed: () {}),
+    ],
+  ),
 );
 
 Widget kitSpecimenToggleGroup() => kitState<Set<String>>(
   const {'Bold'},
   (context, on, change) => ComicToggleGroup<String>(
-    label: 'Style',
+    label: kitSay(context, 'Style'),
     values: const ['Bold', 'Italic', 'Underline'],
     selected: on,
     multiple: true,
     allowEmpty: true,
-    labelOf: (value) => value,
+    labelOf: (value) => kitSay(context, value),
     onChanged: change,
   ),
 );
 
-Widget kitSpecimenSplitButton() => Align(
-  alignment: AlignmentDirectional.centerStart,
-  child: ComicSplitButton(
-    'Save',
-    onPressed: () {},
-    actions: [
-      ComicSplitAction('Save as copy', onPressed: () {}),
-      ComicSplitAction('Save and close', onPressed: () {}),
-    ],
+Widget kitSpecimenSplitButton() => Builder(
+  builder: (context) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    child: ComicSplitButton(
+      kitSay(context, 'Save'),
+      onPressed: () {},
+      actions: [
+        ComicSplitAction(kitSay(context, 'Save as copy'), onPressed: () {}),
+        ComicSplitAction(kitSay(context, 'Save and close'), onPressed: () {}),
+      ],
+    ),
   ),
 );
 
@@ -147,21 +151,28 @@ Widget kitSpecimenKbd() => const Wrap(
 
 // -------------------------------------------------------------------- entry
 
-Widget kitSpecimenPasswordField() => const ComicPasswordField(
-  label: 'Password',
-  hint: 'At least eight letters',
-  helper: 'Letters and a number.',
+Widget kitSpecimenPasswordField() => Builder(
+  builder: (context) => ComicPasswordField(
+    label: kitSay(context, 'Password'),
+    hint: kitSay(context, 'At least eight letters'),
+    helper: kitSay(context, 'Letters and a number.'),
+  ),
 );
 
-Widget kitSpecimenInputGroup() => const ComicInputGroup(
-  label: 'Price',
-  hint: '0.00',
-  leading: [Text('USD')],
-  trailing: [Icon(ComicGlyphs.info, size: 18)],
-  keyboardType: TextInputType.number,
+Widget kitSpecimenInputGroup() => Builder(
+  builder: (context) => ComicInputGroup(
+    label: kitSay(context, 'Price'),
+    hint: '0.00',
+    leading: [Text(kitSay(context, 'USD'))],
+    trailing: [Icon(ComicGlyphs.info, size: 18)],
+    keyboardType: TextInputType.number,
+  ),
 );
 
-Widget kitSpecimenCode() => const ComicInputOtp(label: 'Verification code');
+Widget kitSpecimenCode() => Builder(
+  builder: (context) =>
+      ComicInputOtp(label: kitSay(context, 'Verification code')),
+);
 
 Widget kitSpecimenMultiSelect() => kitState<List<String>>(
   const ['Noir', 'Western'],
@@ -223,95 +234,118 @@ Widget kitSpecimenWheelPicker() => kitState<int>(
 
 // ------------------------------------------------------------------ reading
 
-Widget kitSpecimenDivider() => const ComicColumn(
-  gap: 8,
-  children: [
-    ComicDivider(),
-    ComicDivider(label: 'Or'),
-  ],
-);
-
-Widget kitSpecimenTimeline() => const ComicTimeline(
-  entries: [
-    ComicTimelineEntry('Pencilled', time: 'Monday'),
-    ComicTimelineEntry(
-      'Inked',
-      time: 'Today',
-      step: ComicTimelineStatus.current,
-    ),
-    ComicTimelineEntry(
-      'At the printer',
-      time: 'Friday',
-      step: ComicTimelineStatus.upcoming,
-    ),
-  ],
-);
-
-Widget kitSpecimenDescriptionList() => const ComicDescriptionList(
-  entries: [
-    ComicDescriptionItem('Writer', 'Ana Ruiz'),
-    ComicDescriptionItem('Inks', 'Nia Walker'),
-    ComicDescriptionItem('Pages', '24'),
-  ],
-);
-
-// One state at a time, as an app shows it: four stacked read as four answers at once.
-Widget kitSpecimenStatusView() => kitState<int>(
-  2,
-  (context, state, change) => ComicColumn(
-    gap: 16,
+Widget kitSpecimenDivider() => Builder(
+  builder: (context) => ComicColumn(
+    gap: 8,
     children: [
-      ComicSegmentedButton<int>(
-        label: 'State',
-        value: state,
-        segments: const [
-          ComicButtonSegment(0, 'Busy'),
-          ComicButtonSegment(1, 'Empty'),
-          ComicButtonSegment(2, 'Error'),
-          ComicButtonSegment(3, 'Done'),
-        ],
-        onChanged: change,
-      ),
-      switch (state) {
-        0 => const ComicStatusView.loading(label: 'Fetching your issues'),
-        1 => const ComicStatusView.empty(title: 'No issues on this shelf'),
-        2 => ComicStatusView.error(
-          title: 'The issue did not load',
-          onRetry: () => change(0),
-        ),
-        _ => const ComicStatusView.success(
-          title: 'Sent to the printer',
-          message: 'It goes out on Friday.',
-        ),
-      },
+      ComicDivider(),
+      ComicDivider(label: kitSay(context, 'Or')),
     ],
   ),
 );
 
-Widget kitSpecimenActionSheet() => Builder(
-  builder: (context) => ComicColumn(
-    gap: 12,
-    children: [
-      ComicActionSheet<String>(
-        title: 'Issue 12',
-        actions: const [
-          ComicSheetAction('Share', value: 'share'),
-          ComicSheetAction('Duplicate', value: 'copy'),
-        ],
-        onSelected: (_) {},
+Widget kitSpecimenTimeline() => Builder(
+  builder: (context) => ComicTimeline(
+    entries: [
+      ComicTimelineEntry(
+        kitSay(context, 'Pencilled'),
+        time: kitSay(context, 'Monday'),
       ),
-      ComicButton(
-        'Open as a sheet',
-        onPressed: () => showComicActionSheet<String>(
-          context,
-          title: 'Issue 12',
-          actions: const [
-            ComicSheetAction('Share', value: 'share'),
-            ComicSheetAction('Duplicate', value: 'copy'),
-          ],
-        ),
+      ComicTimelineEntry(
+        kitSay(context, 'Inked'),
+        time: kitSay(context, 'Today'),
+        step: ComicTimelineStatus.current,
+      ),
+      ComicTimelineEntry(
+        kitSay(context, 'At the printer'),
+        time: kitSay(context, 'Friday'),
+        step: ComicTimelineStatus.upcoming,
       ),
     ],
+  ),
+);
+
+Widget kitSpecimenDescriptionList() => Builder(
+  builder: (context) => ComicDescriptionList(
+    entries: [
+      ComicDescriptionItem(
+        kitSay(context, 'Writer'),
+        kitSay(context, 'Ana Ruiz'),
+      ),
+      ComicDescriptionItem(
+        kitSay(context, 'Inks'),
+        kitSay(context, 'Nia Walker'),
+      ),
+      ComicDescriptionItem(kitSay(context, 'Pages'), '24'),
+    ],
+  ),
+);
+
+// One state at a time, as an app shows it: four stacked read as four answers at once.
+Widget kitSpecimenStatusView() => Builder(
+  builder: (context) => kitState<int>(
+    2,
+    (context, state, change) => ComicColumn(
+      gap: 16,
+      children: [
+        ComicSegmentedButton<int>(
+          label: kitSay(context, 'State'),
+          value: state,
+          segments: [
+            ComicButtonSegment(0, kitSay(context, 'Busy')),
+            ComicButtonSegment(1, kitSay(context, 'Empty')),
+            ComicButtonSegment(2, kitSay(context, 'Error')),
+            ComicButtonSegment(3, kitSay(context, 'Done')),
+          ],
+          onChanged: change,
+        ),
+        switch (state) {
+          0 => ComicStatusView.loading(
+            label: kitSay(context, 'Fetching your issues'),
+          ),
+          1 => ComicStatusView.empty(
+            title: kitSay(context, 'No issues on this shelf'),
+          ),
+          2 => ComicStatusView.error(
+            title: kitSay(context, 'The issue did not load'),
+            onRetry: () => change(0),
+          ),
+          _ => ComicStatusView.success(
+            title: kitSay(context, 'Sent to the printer'),
+            message: kitSay(context, 'It goes out on Friday.'),
+          ),
+        },
+      ],
+    ),
+  ),
+);
+
+Widget kitSpecimenActionSheet() => Builder(
+  builder: (context) => Builder(
+    builder: (context) => ComicColumn(
+      gap: 12,
+      children: [
+        ComicActionSheet<String>(
+          title: kitSay(context, 'Issue 12'),
+          actions: [
+            ComicSheetAction(kitSay(context, 'Share'), value: 'share'),
+            ComicSheetAction(kitSay(context, 'Duplicate'), value: 'copy'),
+          ],
+          onSelected: (_) {},
+        ),
+        ComicButton(
+          kitSay(context, 'Open as a sheet'),
+          onPressed: () => showComicActionSheet<String>(
+            context,
+            title: kitSay(context, 'Issue 12'),
+            actions: [
+              ComicSheetAction(kitSay(context, 'Share'), value: 'share'),
+              ComicSheetAction(kitSay(context, 'Duplicate'), value: 'copy'),
+            ],
+          ),
+        ),
+      ],
+    ),
   ),
 );
 
@@ -385,7 +419,7 @@ Widget kitSpecimenCommand() => Builder(
   builder: (context) => ComicColumn(
     gap: 12,
     children: [
-      ComicCommand(commands: _commands, maxHeight: 240),
+      ComicCommand(commands: _commands),
       ComicButton(
         'Open over the page',
         onPressed: () => showComicCommand(context, commands: _commands),
@@ -412,79 +446,86 @@ String _cell(_Issue issue, String column) => switch (column) {
   _ => '${issue.pages}',
 };
 
-Widget kitSpecimenDataTable() => _Held<DesignTableController<_Issue>>(
-  create: () => DesignTableController<_Issue>(
-    rows: _issues,
-    pageSize: 4,
-    columns: [
-      DesignTableColumn(
-        id: 'title',
-        label: 'Issue',
-        sortKey: (issue) => issue.title,
-      ),
-      DesignTableColumn(
-        id: 'writer',
-        label: 'Writer',
-        sortKey: (issue) => issue.writer,
-      ),
-      DesignTableColumn(
-        id: 'pages',
-        label: 'Pages',
-        sortKey: (issue) => issue.pages,
-        numeric: true,
-      ),
-    ],
-  ),
-  dispose: (held) => held.dispose(),
-  builder: (context, held) => ComicDataTable<_Issue>(
-    controller: held,
-    cellBuilder: (context, issue, column) => Text(_cell(issue, column.id)),
+Widget kitSpecimenDataTable() => Builder(
+  builder: (context) => _Held<DesignTableController<_Issue>>(
+    create: () => DesignTableController<_Issue>(
+      rows: _issues,
+      pageSize: 4,
+      columns: [
+        DesignTableColumn(
+          id: 'title',
+          label: kitSay(context, 'Issue'),
+          sortKey: (issue) => issue.title,
+        ),
+        DesignTableColumn(
+          id: 'writer',
+          label: kitSay(context, 'Writer'),
+          sortKey: (issue) => issue.writer,
+        ),
+        DesignTableColumn(
+          id: 'pages',
+          label: kitSay(context, 'Pages'),
+          sortKey: (issue) => issue.pages,
+          numeric: true,
+        ),
+      ],
+    ),
+    dispose: (held) => held.dispose(),
+    builder: (context, held) => ComicDataTable<_Issue>(
+      controller: held,
+      cellBuilder: (context, issue, column) =>
+          Text(kitSay(context, _cell(issue, column.id))),
+    ),
   ),
 );
 
-Widget kitScrollArea() => _Held<ScrollController>(
-  create: ScrollController.new,
-  dispose: (held) => held.dispose(),
-  // The region stands in a panel, so the line the scroll cuts reads as the region's edge, not a fault.
-  builder: (context, held) => SizedBox(
-    height: 180,
-    child: ComicPanel(
-      bleed: true,
-      child: ComicScrollArea(
-        controller: held,
-        visibility: DesignScrollbarVisibility.always,
-        label: 'Letters to the editor',
-        child: ListView(
+Widget kitScrollArea() => Builder(
+  builder: (context) => _Held<ScrollController>(
+    create: ScrollController.new,
+    dispose: (held) => held.dispose(),
+    // The region stands in a panel, so the line the scroll cuts reads as the region's edge, not a fault.
+    builder: (context, held) => SizedBox(
+      height: 180,
+      child: ComicPanel(
+        bleed: true,
+        child: ComicScrollArea(
           controller: held,
-          padding: const EdgeInsetsDirectional.only(start: 16),
-          children: [
-            for (var i = 1; i <= 14; i++)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 8, 16, 8),
-                child: Text('Letter $i to the editor'),
-              ),
-          ],
+          visibility: DesignScrollbarVisibility.always,
+          label: kitSay(context, 'Letters to the editor'),
+          child: ListView(
+            controller: held,
+            padding: const EdgeInsetsDirectional.only(start: 16),
+            children: [
+              for (var i = 1; i <= 14; i++)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 8, 16, 8),
+                  child: Text('Letter $i to the editor'),
+                ),
+            ],
+          ),
         ),
       ),
     ),
   ),
 );
 
-Widget kitResizable() => SizedBox(
-  height: 160,
-  child: ComicResizable(
-    minFirst: 80,
-    minSecond: 80,
-    first: Builder(
-      builder: (context) => ColoredBox(
-        color: ComicTheme.of(context).colors.card,
-        child: const Center(child: Text('Issues')),
+Widget kitResizable() => Builder(
+  builder: (context) => SizedBox(
+    height: 160,
+    child: ComicResizable(
+      minFirst: 80,
+      minSecond: 80,
+      first: Builder(
+        builder: (context) => ColoredBox(
+          color: ComicTheme.of(context).colors.card,
+          child: Center(child: Text(kitSay(context, 'Issues'))),
+        ),
       ),
-    ),
-    second: Builder(
-      builder: (context) => ColoredBox(
-        color: ComicTheme.of(context).colors.inset,
-        child: const Center(child: Text('The page')),
+      second: Builder(
+        builder: (context) => ColoredBox(
+          color: ComicTheme.of(context).colors.inset,
+          child: Center(child: Text(kitSay(context, 'The page'))),
+        ),
       ),
     ),
   ),
@@ -494,73 +535,81 @@ Widget kitSpecimenReorderable() => kitState<List<String>>(
   const ['Pencils', 'Inks', 'Letters', 'Colours'],
   (context, steps, change) => ComicReorderableListView<String>(
     items: steps,
-    labelOf: (step) => step,
+    labelOf: (step) => kitSay(context, step),
     shrinkWrap: true,
     onReorder: (from, to) {
       final next = [...steps];
       next.insert(to, next.removeAt(from));
       change(next);
     },
-    itemBuilder: (context, step) => Text(step),
+    itemBuilder: (context, step) => Text(kitSay(context, step)),
   ),
 );
 
-Widget kitSpecimenSwipeActions() => ComicColumn(
-  gap: 8,
-  children: [
-    ComicSwipeActions(
-      initiallyOpen: true,
-      endActions: [
-        DesignSwipeAction(
-          label: 'Archive',
-          data: ComicGlyphs.check,
-          onPressed: () {},
+Widget kitSpecimenSwipeActions() => Builder(
+  builder: (context) => ComicColumn(
+    gap: 8,
+    children: [
+      ComicSwipeActions(
+        initiallyOpen: true,
+        endActions: [
+          DesignSwipeAction(
+            label: kitSay(context, 'Archive'),
+            data: ComicGlyphs.check,
+            onPressed: () {},
+          ),
+          DesignSwipeAction(
+            label: kitSay(context, 'Delete'),
+            data: ComicGlyphs.delete,
+            destructive: true,
+            onPressed: () {},
+          ),
+        ],
+        // A row slid open shows its end beside the actions: give it one, as a list row has.
+        child: ComicListTile(
+          title: kitSay(context, 'Issue 12'),
+          subtitle: kitSay(context, 'Slide left'),
+          trailing: ComicTag(kitSay(context, 'Unread')),
         ),
-        DesignSwipeAction(
-          label: 'Delete',
-          data: ComicGlyphs.delete,
-          destructive: true,
-          onPressed: () {},
+      ),
+      ComicSwipeActions(
+        endActions: [
+          DesignSwipeAction(
+            label: kitSay(context, 'Delete'),
+            destructive: true,
+            onPressed: () {},
+          ),
+        ],
+        child: ComicListTile(
+          title: kitSay(context, 'Issue 13'),
+          subtitle: kitSay(context, 'Slide left'),
+          trailing: ComicTag(kitSay(context, 'Read')),
         ),
-      ],
-      // A row slid open shows its end beside the actions: give it one, as a list row has.
-      child: const ComicListTile(
-        title: 'Issue 12',
-        subtitle: 'Slide left',
-        trailing: ComicTag('Unread'),
       ),
-    ),
-    ComicSwipeActions(
-      endActions: [
-        DesignSwipeAction(label: 'Delete', destructive: true, onPressed: () {}),
-      ],
-      child: const ComicListTile(
-        title: 'Issue 13',
-        subtitle: 'Slide left',
-        trailing: ComicTag('Read'),
-      ),
-    ),
-  ],
+    ],
+  ),
 );
 
-Widget kitRefresh() => SizedBox(
-  height: 200,
-  // A mouse may pull it too, here where there is no finger.
-  child: ScrollConfiguration(
-    behavior: const MaterialScrollBehavior().copyWith(
-      dragDevices: PointerDeviceKind.values.toSet(),
-    ),
-    child: ComicRefreshIndicator(
-      onRefresh: () => Future<void>.delayed(const Duration(seconds: 1)),
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(
-          parent: BouncingScrollPhysics(),
+Widget kitRefresh() => Builder(
+  builder: (context) => SizedBox(
+    height: 200,
+    // A mouse may pull it too, here where there is no finger.
+    child: ScrollConfiguration(
+      behavior: const MaterialScrollBehavior().copyWith(
+        dragDevices: PointerDeviceKind.values.toSet(),
+      ),
+      child: ComicRefreshIndicator(
+        onRefresh: () => Future<void>.delayed(const Duration(seconds: 1)),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          children: [
+            ComicListTile(title: kitSay(context, 'Pull this list down')),
+            ComicListTile(title: kitSay(context, 'Issue 12')),
+            ComicListTile(title: kitSay(context, 'Issue 13')),
+          ],
         ),
-        children: const [
-          ComicListTile(title: 'Pull this list down'),
-          ComicListTile(title: 'Issue 12'),
-          ComicListTile(title: 'Issue 13'),
-        ],
       ),
     ),
   ),
@@ -583,8 +632,8 @@ Widget kitSpecimenTree() => _Held<DesignTreeController<String>>(
     shrinkWrap: true,
     child: ComicTreeView<String>(
       controller: held,
-      label: 'The run',
-      labelOf: (node) => node,
+      label: kitSay(context, 'The run'),
+      labelOf: (node) => kitSay(context, node),
     ),
   ),
 );
@@ -593,117 +642,139 @@ Widget kitSpecimenTree() => _Held<DesignTreeController<String>>(
 
 // On a stage of its own, the page dimmed under it like a route below a barrier: a sheet beside a hole read as a
 // card floating in the column (r3).
-Widget kitSpecimenSideSheet() => SizedBox(
-  height: 340,
-  child: Builder(
-    builder: (context) => Stack(
-      fit: StackFit.expand,
-      children: [
-        ExcludeSemantics(
-          child: Semantics(
-            enabled: false,
-            child: const Padding(
-              padding: EdgeInsets.all(12),
-              child: Text('Your collection\nIssue 12\nIssue 11'),
+Widget kitSpecimenSideSheet() => Builder(
+  builder: (context) => SizedBox(
+    height: 340,
+    child: Builder(
+      builder: (context) => Stack(
+        fit: StackFit.expand,
+        children: [
+          ExcludeSemantics(
+            child: Semantics(
+              enabled: false,
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  kitSay(context, 'Your collection\nIssue 12\nIssue 11'),
+                ),
+              ),
             ),
           ),
-        ),
-        ColoredBox(color: ComicTheme.of(context).colors.scrim),
-        Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: SizedBox(
-            width: 320,
-            child: ComicSheet(
-              title: 'Filters',
-              showClose: true,
-              onClose: () {},
-              actions: [ComicButton('Apply', onPressed: () {})],
-              child: const Text('Only unread issues, newest first.'),
+          // The modal's screen: Ben-Day dots over the page, as a live modal draws it.
+          ComicScreenScrim(
+            animation: kAlwaysCompleteAnimation,
+            ink: ComicTheme.of(context).colors.scrim,
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: SizedBox(
+              width: 320,
+              child: ComicSheet(
+                title: kitSay(context, 'Filters'),
+                showClose: true,
+                onClose: () {},
+                actions: [
+                  ComicButton(kitSay(context, 'Apply'), onPressed: () {}),
+                ],
+                child: Text(
+                  kitSay(context, 'Only unread issues, newest first.'),
+                ),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   ),
 );
 
 Widget kitOpenSideSheet() => Builder(
-  builder: (context) => Wrap(
-    spacing: 8,
-    runSpacing: 8,
-    children: [
-      ComicButton(
-        'From the end',
-        onPressed: () => showComicSheet<void>(
-          context,
-          builder: (context) => ComicSheet(
-            title: 'Filters',
-            actions: [
-              ComicButton(
-                'Apply',
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ],
-            child: const Text('Only unread issues, newest first.'),
-          ),
-        ),
-      ),
-      ComicButton(
-        'From the start',
-        onPressed: () => showComicSheet<void>(
-          context,
-          edge: DesignSheetEdge.start,
-          builder: (context) => const ComicSheet(
-            title: 'The run',
-            child: Text('Twelve issues so far.'),
-          ),
-        ),
-      ),
-    ],
-  ),
-);
-
-Widget kitPopover() => Align(
-  alignment: AlignmentDirectional.centerStart,
-  child: ComicPopover(
-    label: 'Filters',
-    anchorBuilder: (context, anchor) =>
-        ComicButton('Filter', onPressed: anchor.toggle),
-    builder: (context, close) => ComicColumn(
-      gap: 8,
+  builder: (context) => Builder(
+    builder: (context) => Wrap(
+      spacing: 8,
+      runSpacing: 8,
       children: [
-        const Text('Show only the issues you have not read.'),
-        ComicButton('Apply', onPressed: close),
+        ComicButton(
+          kitSay(context, 'From the end'),
+          onPressed: () => showComicSheet<void>(
+            context,
+            builder: (context) => ComicSheet(
+              title: kitSay(context, 'Filters'),
+              actions: [
+                ComicButton(
+                  kitSay(context, 'Apply'),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+              child: Text(kitSay(context, 'Only unread issues, newest first.')),
+            ),
+          ),
+        ),
+        ComicButton(
+          kitSay(context, 'From the start'),
+          onPressed: () => showComicSheet<void>(
+            context,
+            edge: DesignSheetEdge.start,
+            builder: (context) => ComicSheet(
+              title: kitSay(context, 'The run'),
+              child: Text(kitSay(context, 'Twelve issues so far.')),
+            ),
+          ),
+        ),
       ],
     ),
   ),
 );
 
-Widget kitHoverCard() => Align(
-  alignment: AlignmentDirectional.centerStart,
-  child: ComicHoverCard(
-    label: 'About Ada Okafor',
-    card: const Text('Ada Okafor inks the run from issue 12 on.'),
-    child: ComicLink('Ada Okafor', onPressed: () {}),
+Widget kitPopover() => Builder(
+  builder: (context) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    child: ComicPopover(
+      label: kitSay(context, 'Filters'),
+      anchorBuilder: (context, anchor) =>
+          ComicButton(kitSay(context, 'Filter'), onPressed: anchor.toggle),
+      builder: (context, close) => ComicColumn(
+        gap: 8,
+        children: [
+          Text(kitSay(context, 'Show only the issues you have not read.')),
+          ComicButton(kitSay(context, 'Apply'), onPressed: close),
+        ],
+      ),
+    ),
   ),
 );
 
-Widget kitToastStack() => kitState<int>(
-  1,
-  (context, next, change) => Align(
+Widget kitHoverCard() => Builder(
+  builder: (context) => Align(
     alignment: AlignmentDirectional.centerStart,
-    child: ComicButton(
-      'Raise a notice',
-      onPressed: () {
-        showComicSnackBar(
-          context,
-          'Issue $next saved',
-          actionLabel: 'Undo',
-          onAction: () {},
-          duration: const Duration(seconds: 6),
-        );
-        change(next + 1);
-      },
+    child: ComicHoverCard(
+      label: kitSay(context, 'About Ada Okafor'),
+      card: Text(kitSay(context, 'Ada Okafor inks the run from issue 12 on.')),
+      child: ComicLink(kitSay(context, 'Ada Okafor'), onPressed: () {}),
+    ),
+  ),
+);
+
+Widget kitToastStack() => Builder(
+  builder: (context) => kitState<int>(
+    1,
+    (context, next, change) => Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: ComicButton(
+        kitSay(context, 'Raise a notice'),
+        onPressed: () {
+          showComicSnackBar(
+            context,
+            KitWords.arabicOf(context)
+                ? 'حُفظ العدد $next'
+                : 'Issue $next saved',
+            actionLabel: kitSay(context, 'Undo'),
+            onAction: () {},
+            duration: const Duration(seconds: 6),
+          );
+          change(next + 1);
+        },
+      ),
     ),
   ),
 );

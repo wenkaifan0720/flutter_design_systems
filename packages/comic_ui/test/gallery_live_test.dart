@@ -1,4 +1,5 @@
 // Exercise the actual specimen builders shipped in the example, not replicas.
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
@@ -306,15 +307,45 @@ void main() {
   });
   testWidgets('page dots choose another page', (tester) async {
     await _mount(tester, kitSpecimenDots());
-    final presses = find.descendant(
-      of: find.byType(ComicPageDots),
-      matching: find.byType(ComicPressable),
-    );
-    await _tap(tester, presses.last);
+    // The row is one control: a press on a mark goes to its page.
+    await _tap(tester, find.byKey(const ValueKey('page-dot/3')));
     expect(
       tester.widget<ComicPageDots>(find.byType(ComicPageDots)).selectedIndex,
       3,
     );
+  });
+  testWidgets('page dots step with the arrow keys, as one slider', (
+    tester,
+  ) async {
+    await _mount(tester, kitSpecimenDots());
+    final dots = find.byType(ComicPageDots);
+    int at() => tester.widget<ComicPageDots>(dots).selectedIndex;
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pump();
+    expect(at(), 2);
+    await tester.sendKeyEvent(LogicalKeyboardKey.end);
+    await tester.pump();
+    expect(at(), 3);
+    await tester.sendKeyEvent(LogicalKeyboardKey.home);
+    await tester.pump();
+    expect(at(), 0);
+    final handle = tester.ensureSemantics();
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Preview pages')),
+      matchesSemantics(
+        label: 'Preview pages',
+        value: '1 / 4',
+        increasedValue: '2 / 4',
+        isSlider: true,
+        isFocusable: true,
+        isFocused: true,
+        hasIncreaseAction: true,
+        hasFocusAction: true,
+      ),
+    );
+    handle.dispose();
   });
   testWidgets('disclosure collapses and opens', (tester) async {
     await _mount(tester, kitSpecimenDisclosure());

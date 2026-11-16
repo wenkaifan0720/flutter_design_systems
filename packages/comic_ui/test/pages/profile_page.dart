@@ -101,12 +101,12 @@ class _ProfilePageState extends State<ProfilePage> {
             ],
           ),
           const ComicSectionHeader('Your people', note: '6 of you'),
-          ComicPanel(
+          const ComicPanel(
             bleed: true,
             caption: 'Everyone',
             captionIcon: LucideIcons.users,
             child: ComicCoverPrint(
-              child: const ComicLineup([
+              child: ComicLineup([
                 ComicCast(
                   'You',
                   portrait: ComicPortrait(ComicBust.puff),

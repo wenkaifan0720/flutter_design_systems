@@ -1,6 +1,8 @@
 /// People and quantities in the comic's inked frames.
 library;
 
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -17,6 +19,8 @@ import 'styled.dart';
 import 'layout.dart';
 import 'tell.dart';
 import 'internal/lettering.dart';
+import 'internal/style_guard.dart';
+import 'knobs.dart' show ComicSpace;
 
 Size _avatarSize(double size, ComicStyleOf look) {
   return Size(
@@ -70,7 +74,7 @@ Size _avatarSize(double size, ComicStyleOf look) {
   TextDirection direction,
 ) {
   // The glyph box grown by 4 px on every side must stay inside the contour.
-  const gap = 4.25;
+  const gap = ComicSpace.tight;
   final (line, reach) = text;
   final half = face.shortestSide / 2;
   final double outer;
@@ -162,13 +166,13 @@ class ComicAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = ComicTheme.of(context).colors;
-    final look = ComicStyleOf([
+    final look = comicStyleOf([
           style,
           t.avatarTheme,
         ], comicStates(selected: selected)),
         rim = comicRim(
           t,
-          ComicStyleOf([style, t.avatarTheme], comicStates(selected: selected)),
+          comicStyleOf([style, t.avatarTheme], comicStates(selected: selected)),
           c.nightLine,
         );
     final frame = _avatarSize(size, look);
@@ -305,6 +309,27 @@ class ComicAvatar extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
+      ..add(StringProperty('initials', initials))
+      ..add(
+        DiagnosticsProperty<ImageProvider>('image', image, defaultValue: null),
+      )
+      ..add(StringProperty('name', name, defaultValue: null))
+      ..add(DoubleProperty('size', size, defaultValue: 40))
+      ..add(
+        FlagProperty(
+          'selected',
+          value: selected,
+          ifTrue: 'selected',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 /// Data for a face pile.
@@ -361,7 +386,7 @@ class ComicAvatarGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
-    final frame = _avatarSize(size, ComicStyleOf([t.avatarTheme], const {}));
+    final frame = _avatarSize(size, comicStyleOf([t.avatarTheme], const {}));
     final shown = faces.take(max).toList(),
         rest = faces.length - faces.take(max).length;
     final n = shown.length + (rest > 0 ? 1 : 0), step = frame.width * .75;
@@ -394,6 +419,16 @@ class ComicAvatarGroup extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ComicFace>('faces', faces))
+      ..add(IntProperty('max', max, defaultValue: 4))
+      ..add(DoubleProperty('size', size, defaultValue: 36))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -442,14 +477,14 @@ class ComicMeter extends StatelessWidget {
           children: [
             Wrap(
               alignment: WrapAlignment.spaceBetween,
-              spacing: 12,
-              runSpacing: 4,
+              spacing: ComicSpace.near,
+              runSpacing: ComicSpace.tight,
               children: [
                 Text(label, style: t.type.title),
                 Text(words, style: t.type.body),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: ComicSpace.close),
             ComicLinearProgressIndicator(
               value: ((value - min) / (max - min)).clamp(0, 1),
             ),
@@ -457,6 +492,17 @@ class ComicMeter extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('value', value))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(StringProperty('unit', unit, defaultValue: null));
   }
 }
 
@@ -499,14 +545,40 @@ class ComicCarouselView extends StatefulWidget {
   /// Reports the item that settles in view.
   final ValueChanged<int>? onChanged;
 
-  /// The caller's focus node, if any; the part makes its own when null.
+  /// {@macro comic.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the part asks for the focus when it first appears.
+  /// {@macro comic.autofocus}
   final bool autofocus;
 
   @override
   State<ComicCarouselView> createState() => _ComicCarouselState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('height', height, defaultValue: 220))
+      ..add(DoubleProperty('itemWidth', itemWidth, defaultValue: null))
+      ..add(IntProperty('initialIndex', initialIndex, defaultValue: 0))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _ComicCarouselState extends State<ComicCarouselView> {
@@ -556,7 +628,7 @@ class _ComicCarouselState extends State<ComicCarouselView> {
             child: ExcludeSemantics(
               excluding: i != _index,
               child: Padding(
-                padding: const EdgeInsetsDirectional.only(end: 12),
+                padding: const EdgeInsetsDirectional.only(end: ComicSpace.near),
                 child: ClipPath(
                   clipper: ShapeBorderClipper(
                     shape: t.shapes.medium,
@@ -589,15 +661,17 @@ class _ComicCarouselState extends State<ComicCarouselView> {
                   ),
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: ComicSpace.tight),
               // The steps and the dots start where the item in view does.
               Row(
-                spacing: 16,
+                spacing: ComicSpace.gap,
                 children: [
                   if (t.desk)
                     ComicIconButton(
                       rtl ? ComicGlyphs.chevronRight : ComicGlyphs.chevronLeft,
                       label: words.previous,
+                      // On the item's start keyline, its target growing toward the dots.
+                      targetAlignment: AlignmentDirectional.centerStart,
                       onPressed: controls.previous,
                     ),
                   Flexible(

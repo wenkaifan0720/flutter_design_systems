@@ -1,5 +1,6 @@
 // The raised rows the shared inventory adds: a side sheet, a popover and a hover card. The design kit runs
 // the route and the anchoring; each surface is a Comic panel, inked in the shape family's corners.
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'dart:math' as math;
@@ -14,12 +15,14 @@ import '../raised.dart';
 import '../rows.dart';
 import '../styled.dart';
 import '../theme.dart';
+import '../internal/style_guard.dart';
+import '../knobs.dart' show ComicSpace;
 
 /// Raises [builder]'s [ComicSheet] from the screen's side: the end edge unless [edge] says otherwise. A tap on the
 /// scrim or a drag toward the edge closes it. Completes with what the sheet popped.
 ///
 /// ```dart
-/// showComicSheet(context, builder: (_) => const ComicSheet(title: 'Filters', child: Text('Only unread')))
+/// showComicSheet<void>(context, builder: (_) => const ComicSheet(title: 'Filters', child: Text('Only unread')))
 /// ```
 Future<T?> showComicSheet<T>(
   BuildContext context, {
@@ -34,11 +37,15 @@ Future<T?> showComicSheet<T>(
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
   final carry = comicCarryTo(context, navigator);
   return navigator.push<T>(
+    // The page behind is screened with dots, not dimmed (law 1), as behind every raised layer of Comic's.
     DesignSideSheetRoute<T>(
+      barrierBuilder: (context, animation) => ComicScreenScrim(
+        animation: animation,
+        ink: ComicTheme.of(context).colors.scrim,
+      ),
       edge: edge,
       width: width,
       barrierDismissible: barrierDismissible,
-      barrierColor: ComicTheme.of(context).colors.scrim,
       barrierLabel:
           closeLabel ?? DesignLocalizations.of(context).closeButtonLabel,
       semanticLabel: label,
@@ -90,16 +97,16 @@ class ComicSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
-    final look = ComicStyleOf([style, t.sheetTheme], const {});
+    final look = comicStyleOf([style, t.sheetTheme], const {});
     final rim = comicRim(t, look, t.colors.nightLine, 3);
     final shape = (look.shape ?? t.shapes.large).copyWith(side: rim);
     final body = SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(ComicSpace.gap),
       child: child,
     );
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(ComicSpace.close),
         child: DecoratedBox(
           decoration: ShapeDecoration(
             color: look.fill ?? t.colors.card,
@@ -155,7 +162,12 @@ class ComicSheet extends StatelessWidget {
                   if (actions.isNotEmpty)
                     ComicRuled(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+                        padding: const EdgeInsets.fromLTRB(
+                          ComicSpace.gap,
+                          ComicSpace.near,
+                          ComicSpace.gap,
+                          ComicSpace.gap,
+                        ),
                         child: ComicColumn(
                           gap: 8,
                           skipEmpty: true,
@@ -170,6 +182,26 @@ class ComicSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose))
+      ..add(StringProperty('closeLabel', closeLabel, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'showClose',
+          value: showClose,
+          ifFalse: 'showClose: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -256,10 +288,50 @@ class ComicPopover extends StatelessWidget {
     overlayBuilder: (context, info) => _panel(
       info,
       width,
-      const EdgeInsets.all(14),
+      const EdgeInsets.all(ComicSpace.gap),
       builder(context, info.close),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, VoidCallback close)
+        >.has('builder', builder),
+      )
+      ..add(
+        EnumProperty<DesignOverlaySide>(
+          'side',
+          side,
+          defaultValue: DesignOverlaySide.below,
+        ),
+      )
+      ..add(
+        EnumProperty<DesignOverlayAlign>(
+          'align',
+          align,
+          defaultValue: DesignOverlayAlign.start,
+        ),
+      )
+      ..add(DoubleProperty('width', width, defaultValue: 320))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MenuController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onOpenChanged',
+          onOpenChanged,
+        ),
+      );
+  }
 }
 
 /// A card that comes up while the pointer rests on [child], or the keyboard is on it, and goes when it leaves: more
@@ -312,6 +384,28 @@ class ComicHoverCard extends StatelessWidget {
     ),
     anchorBuilder: (context, anchor) => child,
     overlayBuilder: (context, info) =>
-        _panel(info, width, const EdgeInsets.all(14), card),
+        _panel(info, width, const EdgeInsets.all(ComicSpace.gap), card),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<DesignOverlaySide>(
+          'side',
+          side,
+          defaultValue: DesignOverlaySide.below,
+        ),
+      )
+      ..add(
+        EnumProperty<DesignOverlayAlign>(
+          'align',
+          align,
+          defaultValue: DesignOverlayAlign.start,
+        ),
+      )
+      ..add(DoubleProperty('width', width, defaultValue: 280))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }

@@ -1,6 +1,7 @@
 /// Date and time choices in the comic's caption grid, without a platform skin.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'dart:math' as math;
@@ -20,6 +21,8 @@ import 'theme.dart';
 import 'component_themes.dart';
 import 'styled.dart';
 import 'internal/cap_label.dart';
+import 'knobs.dart' show ComicSpace;
+import 'internal/style_guard.dart';
 
 DateTime _day(DateTime day) => DateTime(day.year, day.month, day.day);
 String _locale(BuildContext context) {
@@ -95,6 +98,49 @@ class ComicDatePicker extends StatefulWidget {
 
   @override
   State<ComicDatePicker> createState() => _ComicDatePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IntProperty(
+          'firstWeekday',
+          firstWeekday,
+          defaultValue: DateTime.monday,
+        ),
+      )
+      ..add(
+        IterableProperty<String>('monthNames', monthNames, defaultValue: null),
+      )
+      ..add(IterableProperty<String>('dayNames', dayNames, defaultValue: null))
+      ..add(StringProperty('previousLabel', previousLabel, defaultValue: null))
+      ..add(StringProperty('nextLabel', nextLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _ComicDatePickerState extends State<ComicDatePicker> {
@@ -215,7 +261,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
       {WidgetState.selected},
       {WidgetState.disabled},
     ]) {
-      final look = ComicStyleOf([widget.style, t.datePickerTheme], states);
+      final look = comicStyleOf([widget.style, t.datePickerTheme], states);
       final shape = look.shape ?? t.shapes.small;
       final rim = comicRim(
         t,
@@ -278,16 +324,16 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
               }
             : null,
         sink: false,
-        overlay: ComicStyleOf([
+        overlay: comicStyleOf([
           widget.style,
           t.datePickerTheme,
         ], const {}).overlay,
-        outline: ComicStyleOf([
+        outline: comicStyleOf([
           widget.style,
           t.datePickerTheme,
         ], const {}).shapes(t.shapes.small),
         builder: (context, states) {
-          final look = ComicStyleOf([widget.style, t.datePickerTheme], states);
+          final look = comicStyleOf([widget.style, t.datePickerTheme], states);
           final rim = comicRim(
             t,
             look,
@@ -305,7 +351,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
             ])
               comicRim(
                 t,
-                ComicStyleOf([widget.style, t.datePickerTheme], s),
+                comicStyleOf([widget.style, t.datePickerTheme], s),
                 t.colors.divider,
                 w,
               ).width,
@@ -329,7 +375,9 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
                         .add(
                           shape == null
                               ? EdgeInsets.zero
-                              : const EdgeInsets.symmetric(horizontal: 4),
+                              : const EdgeInsets.symmetric(
+                                  horizontal: ComicSpace.tight,
+                                ),
                         )
                         .add(EdgeInsets.all(reserve)),
                 // The number alone sets the cell, its capitals on the middle; today's dot is laid over the cell
@@ -381,6 +429,8 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
       label:
           widget.previousLabel ??
           DesignLocalizations.of(context).previousMonthTooltip,
+      // The arrows stand on the header's keylines, their targets growing inward.
+      targetAlignment: AlignmentDirectional.centerStart,
       onPressed: canBack
           ? () => _walk(_bound(_shiftMonth(-1)), focus: false)
           : null,
@@ -389,6 +439,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
       rtl ? ComicGlyphs.chevronLeft : ComicGlyphs.chevronRight,
       label:
           widget.nextLabel ?? DesignLocalizations.of(context).nextMonthTooltip,
+      targetAlignment: AlignmentDirectional.centerEnd,
       onPressed: canNext
           ? () => _walk(_bound(_shiftMonth(1)), focus: false)
           : null,
@@ -431,8 +482,8 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
               children: [
                 month,
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: ComicSpace.close,
+                  runSpacing: ComicSpace.close,
                   alignment: WrapAlignment.center,
                   children: [previous, next],
                 ),
@@ -446,7 +497,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
                 next,
               ],
             ),
-          const SizedBox(height: 8),
+          const SizedBox(height: ComicSpace.close),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: SizedBox(
@@ -463,7 +514,9 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
                         for (var i = 0; i < 7; i++)
                           Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: ComicSpace.close,
+                              ),
                               child: Text(
                                 (widget.dayNames ??
                                     words.weekdaysShort)[(widget.firstWeekday -
@@ -675,6 +728,30 @@ class ComicTimePicker extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ComicTime>('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<ComicTime>>.has('onChanged', onChanged),
+      )
+      ..add(IntProperty('minuteStep', minuteStep, defaultValue: 1))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'use24hFormat',
+          use24hFormat,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hourLabel', hourLabel, defaultValue: null))
+      ..add(StringProperty('minuteLabel', minuteLabel, defaultValue: null))
+      ..add(StringProperty('periodLabel', periodLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
