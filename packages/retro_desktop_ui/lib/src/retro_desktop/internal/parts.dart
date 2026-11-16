@@ -3,10 +3,11 @@
 import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart'
-    show GestureBinding, PointerDownEvent, PointerHoverEvent;
+    show GestureBinding, PointerDownEvent, PointerEvent, PointerHoverEvent;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart' show HardwareKeyboard, KeyDownEvent;
+import 'package:flutter/services.dart'
+    show HardwareKeyboard, KeyDownEvent, KeyEvent;
 
 import '../component_themes.dart';
 import '../editing.dart';
@@ -16,6 +17,7 @@ import '../shapes.dart';
 import '../theme.dart';
 import 'caps.dart';
 import 'face.dart';
+import '../tokens.dart';
 
 /// Whether the last input was a key (else the pointer's press or move): a menu lights its focused row only for the
 /// keyboard, as the period's menus lit the row the keys moved to; opened by the pointer, the focus a menu puts on its
@@ -30,28 +32,46 @@ abstract final class RetroDesktopLastInput {
     return _byKey;
   }
 
-  /// Starts following the input; once is enough.
+  /// Starts following the input; calling it again is harmless.
   static void listen() {
+    // The keyboard's handler goes in again each time, taken out first so it is never in twice: a test binding clears
+    // the keyboard's handlers after each test, and a flag alone left every test after the first unheard.
+    HardwareKeyboard.instance
+      ..removeHandler(_onKey)
+      ..addHandler(_onKey);
     if (_listening) return;
     _listening = true;
-    HardwareKeyboard.instance.addHandler((event) {
-      if (event is KeyDownEvent) _byKey = true;
-      return false;
-    });
-    GestureBinding.instance.pointerRouter.addGlobalRoute((event) {
-      if (event is PointerDownEvent || event is PointerHoverEvent) {
-        _byKey = false;
-      }
-    });
+    GestureBinding.instance.pointerRouter.addGlobalRoute(_onPointer);
+  }
+
+  static bool _onKey(KeyEvent event) {
+    if (event is KeyDownEvent) _byKey = true;
+    return false;
+  }
+
+  static void _onPointer(PointerEvent event) {
+    if (event is PointerDownEvent || event is PointerHoverEvent) {
+      _byKey = false;
+    }
   }
 }
+
+/// Whether a menu's row stands lit: the keyboard's row once a key was the last input, else the row under the
+/// pointer. The look draws the two alike, in the highlight's bar, so a menu has one current row, as the period's had:
+/// with the pointer resting on one row and the keys on another, the keys' row alone. Opened by a click a menu lights
+/// none until the pointer or the keys move (the focus ui_core puts on its first row is the keys' place, unlit).
+bool retroDesktopMenuRowLit(Set<WidgetState> states, {required bool enabled}) =>
+    enabled &&
+    (RetroDesktopLastInput.byKey
+        ? states.contains(WidgetState.focused)
+        : states.contains(WidgetState.hovered));
 
 /// A raised panel: a popup's, a menu's, a sheet's. The machine's grey, the
 /// family's outline and the hard shadow every raised thing casts.
 Widget retroDesktopPanel(
   BuildContext context, {
   required Widget child,
-  EdgeInsetsGeometry padding = const EdgeInsets.all(4),
+  EdgeInsetsGeometry padding = const EdgeInsets.all(RetroDesktopSpacing.s4),
   RetroDesktopStyle? style,
   RetroDesktopStyle? component,
 }) {
@@ -64,7 +84,7 @@ Widget retroDesktopPanel(
       ),
     ],
     states: const {},
-    component: (component ?? t.menuTheme).merge(
+    component: (component ?? t.menuTheme).over(
       RetroDesktopStyle(fill: WidgetStatePropertyAll(t.colors.platinum)),
     ),
     style: style,
@@ -129,15 +149,21 @@ Widget retroDesktopLitRow(
 }
 
 /// A segment's ground while it is held or chosen: Platinum's darker grey, or
-/// Chisel's sunken face over its held grey. Null draws nothing extra.
+/// Chisel's sunken face over its held grey. Null draws nothing extra. Its words
+/// sink a pixel with the face unless [sink] is false (a list's chosen row,
+/// whose words stay on the list's one line).
 Widget retroDesktopHeldGround(
   RetroDesktopThemeData t, {
   required bool held,
   required Widget child,
   double bleed = 0,
+  bool sink = true,
 }) {
   final c = t.colors;
   if (!held) return child;
+  final words = sink
+      ? Transform.translate(offset: const Offset(1, 1), child: child)
+      : child;
   if (!t.chisel) {
     // On whole device pixels, as the frame round it is drawn: a ground at a
     // fractional edge would leave a pale row against the frame's bevel.
@@ -160,7 +186,7 @@ Widget retroDesktopHeldGround(
           bleed: bleed,
         ),
         // The words sink a pixel with the face; the segment keeps its size.
-        child: Transform.translate(offset: const Offset(1, 1), child: child),
+        child: words,
       ),
     );
   }
@@ -173,8 +199,40 @@ Widget retroDesktopHeldGround(
     child: RetroDesktopPixelPaint(
       painter: _GroundPainter(retroDesktopChiselHeldBox(c)),
       // The words sink a pixel; the segment keeps its size.
-      child: Transform.translate(offset: const Offset(1, 1), child: child),
+      child: words,
     ),
+  );
+}
+
+/// A menu's row that takes the keyboard's focus as the pointer moves over it, so the keys go on from the row the
+/// pointer lit (beside [retroDesktopMenuRowLit]). Only a move does: a row that comes to stand under a resting pointer (a
+/// menu opened from the keys) leaves the keys where they are. Built inside the row's own [Focus]; it draws nothing.
+class RetroDesktopPointerFocus extends StatelessWidget {
+  /// [child], a row that takes the focus under a moving pointer while [enabled].
+  const RetroDesktopPointerFocus({
+    super.key,
+    required this.enabled,
+    required this.child,
+  });
+
+  /// Whether the row can take the focus.
+  final bool enabled;
+
+  /// The row.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => MouseRegion(
+    opaque: false,
+    onHover: enabled
+        ? (_) {
+            final node = Focus.maybeOf(context, createDependency: false);
+            if (node != null && node.canRequestFocus && !node.hasFocus) {
+              node.requestFocus();
+            }
+          }
+        : null,
+    child: child,
   );
 }
 
@@ -259,13 +317,18 @@ Widget retroDesktopSunkenBox(
   BuildContext context, {
   required Set<WidgetState> states,
   required Widget child,
-  EdgeInsetsGeometry padding = const EdgeInsetsDirectional.fromSTEB(8, 0, 6, 0),
+  EdgeInsetsGeometry padding = const EdgeInsetsDirectional.fromSTEB(
+    RetroDesktopSpacing.s8,
+    0,
+    RetroDesktopSpacing.s6,
+    0,
+  ),
   RetroDesktopStyle? style,
 }) {
   final t = RetroDesktopTheme.of(context);
   return retroDesktopFace(
     states: states,
-    component: t.textFieldTheme.merge(
+    component: t.textFieldTheme.over(
       RetroDesktopStyle(fill: WidgetStatePropertyAll(t.colors.paper)),
     ),
     style: style,
@@ -277,6 +340,12 @@ Widget retroDesktopSunkenBox(
 
 /// A bare editor in the look's type and caret, for parts that draw their own
 /// box round it (an input group, a combobox, a tag input, a palette).
+///
+/// Enter: a part whose field gives the focus up on Enter passes [onSubmitted]; a
+/// part whose field keeps it (a combobox, a tag input) passes
+/// [onEditingComplete] alone. Never both: Flutter restarts the text input of a
+/// field told of a submit that still has the focus, and in a browser the
+/// restarted input takes no typing.
 Widget retroDesktopBareEditor(
   BuildContext context, {
   required TextEditingController controller,
@@ -287,6 +356,7 @@ Widget retroDesktopBareEditor(
   bool obscure = false,
   ValueChanged<String>? onChanged,
   ValueChanged<String>? onSubmitted,
+  VoidCallback? onEditingComplete,
   TextInputType? keyboardType,
   String? semanticLabel,
 }) {
@@ -323,6 +393,7 @@ Widget retroDesktopBareEditor(
             obscureText: obscure,
             onChanged: onChanged,
             onSubmitted: onSubmitted,
+            onEditingComplete: onEditingComplete,
             keyboardType: keyboardType,
             style: style,
             selectionControls: RetroDesktopTextSelectionControls.of(
@@ -432,7 +503,12 @@ class _RenderOutdent extends RenderShiftedBox {
     );
   }
 
-  // The child is hit where it is painted, over the box's edge too.
+  // A screen reader outlines the box, which is what a tap reaches: past the edge the column's own bounds stop a tap
+  // (hit testing reaches a child only inside its parent), so the face hung over it is drawn, not reached.
+  @override
+  Rect? describeSemanticsClip(RenderObject? child) => Offset.zero & size;
+
+  // The child is hit where it is painted, as far as the parent lets a press reach.
   @override
   bool hitTest(BoxHitTestResult result, {required Offset position}) {
     final c = child;

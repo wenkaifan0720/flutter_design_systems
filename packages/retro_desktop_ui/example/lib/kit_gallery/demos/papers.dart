@@ -6,10 +6,12 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
 import '../kit.dart';
+import 'papers_words.dart';
 // The demo art is the example's; a test or page that draws it reads it from there.
 // ignore: avoid_relative_lib_imports
 import '../../demo_art.dart';
@@ -33,6 +35,22 @@ enum KitPapersWindow {
 
   /// What was deleted.
   bin,
+}
+
+/// A moment the app can open on, so a link shows it: a search typed, a
+/// change not saved yet, an order that failed.
+enum KitPapersMoment {
+  /// The app at rest.
+  none,
+
+  /// "list" typed in the documents' Find field: two of six match.
+  search,
+
+  /// Your details changed, and the window asked to close: save first?
+  unsaved,
+
+  /// An order for copies that could not be sent: try again?
+  failedOrder,
 }
 
 /// What the example around the app gives it: the one way back to the
@@ -68,14 +86,22 @@ class KitPapersHost extends InheritedWidget {
 }
 
 /// The app as a whole screen, with [front] the active window ([alone]: the
-/// only one).
+/// only one), opening on [moment], reading [direction] (else the example's
+/// choice). Right to left it speaks Hebrew, the look's own words (Cancel,
+/// Clear, Close) with it.
 Widget kitPapersScreen(
   KitPapersWindow front,
   Brightness brightness, {
   bool alone = false,
+  KitPapersMoment moment = KitPapersMoment.none,
+  TextDirection? direction,
 }) => kitAppScreen(
   brightness: brightness,
-  home: KitPapers(front: front, alone: alone),
+  direction: direction,
+  words: (direction ?? kitShownDirection) == TextDirection.rtl
+      ? const [KitPapersHebrewDesignWords.delegate]
+      : null,
+  home: KitPapers(front: front, alone: alone, moment: moment),
 );
 
 /// One document on the disk.
@@ -186,14 +212,56 @@ String _shortDate(String changed) => changed.startsWith('Today, ')
     ? changed.substring('Today, '.length)
     : changed.split(',').first;
 
-/// The documents list's state: which row is selected and how it sorts.
+/// The documents list's state: which row is selected, how it sorts and what
+/// the Find field holds.
 class KitDocumentsView extends ChangeNotifier {
-  /// Starts on the document named first, sorted by name.
-  KitDocumentsView([this._selected = 'Project notes']);
+  /// Starts on the document named first, sorted by name, [query] found.
+  KitDocumentsView([this._selected = 'Project notes', String query = ''])
+    : find = TextEditingController(text: query) {
+    find.addListener(_found);
+    _found();
+  }
 
   String _selected;
   int _sort = 0;
   bool _ascending = true;
+
+  /// The Find field's words: a document shows when its name or kind holds
+  /// them.
+  final TextEditingController find;
+
+  /// The Find field's focus, which File > Find… moves to.
+  final FocusNode findFocus = FocusNode(debugLabel: 'Find a document');
+
+  var _query = '';
+
+  void _found() {
+    final q = find.text.trim().toLowerCase();
+    if (q == _query) return;
+    _query = q;
+    // A selection the search hides moves to the first that shows.
+    final shown = rows;
+    if (shown.isNotEmpty && !shown.any((r) => r.name == _selected)) {
+      _selected = shown.first.name;
+    }
+    notifyListeners();
+  }
+
+  /// What the Find field holds, trimmed and in lower case; empty: all.
+  String get query => _query;
+
+  /// Whether the list reads in Hebrew: names and kinds sort by their Hebrew.
+  /// Find matches either language.
+  bool hebrew = false;
+
+  String _shown(String english) => hebrew ? papersHebrewFor(english) : english;
+
+  @override
+  void dispose() {
+    find.dispose();
+    findFocus.dispose();
+    super.dispose();
+  }
 
   /// The selected document's name.
   String get selected => _selected;
@@ -223,19 +291,25 @@ class KitDocumentsView extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// The documents in this order.
+  /// The documents the Find field leaves, in this order.
   List<KitPaper> get rows {
+    bool holds(String english) =>
+        english.toLowerCase().contains(_query) ||
+        papersHebrewFor(english).contains(_query);
+    bool shows(KitPaper p) => _query.isEmpty || holds(p.name) || holds(p.kind);
+    int byName(KitPaper a, KitPaper b) =>
+        _shown(a.name).compareTo(_shown(b.name));
     int compare(KitPaper a, KitPaper b) => switch (_sort) {
-      1 => a.kind.compareTo(b.kind),
+      1 => _shown(a.kind).compareTo(_shown(b.kind)),
       // A smaller age is newer: oldest first is the larger age first.
       2 => b.age.compareTo(a.age),
       3 => a.bytes.compareTo(b.bytes),
-      _ => a.name.compareTo(b.name),
+      _ => byName(a, b),
     };
-    final out = [...kitPapers]
+    final out = [...kitPapers.where(shows)]
       ..sort((a, b) {
         final c = compare(a, b);
-        final d = c == 0 ? a.name.compareTo(b.name) : c;
+        final d = c == 0 ? byName(a, b) : c;
         return _ascending ? d : -d;
       });
     return out;
@@ -279,14 +353,15 @@ class KitDocuments extends StatelessWidget {
             figures: k == 3,
             end: k == 3,
           );
+      final say = context.say;
       final list = RetroDesktopListTable(
-        label: 'Documents',
+        label: say('Documents'),
         columns: [
-          column(0, 'Name', null),
-          if (!phone) column(1, 'Kind', 96),
+          column(0, say('Name'), null),
+          if (!phone) column(1, say('Kind'), 96),
           // As wide as its longest date, 'Yesterday, 16:40'.
-          column(2, 'Changed', phone ? 104 : 148),
-          if (!phone) column(3, 'Size', 76),
+          column(2, say('Changed'), phone ? 104 : 148),
+          if (!phone) column(3, say('Size'), 76),
         ],
         ascending: view.ascending,
         onSort: (k) => view.sortBy(phone && k == 1 ? 2 : k),
@@ -297,31 +372,53 @@ class KitDocuments extends StatelessWidget {
           for (final r in rows)
             RetroDesktopListTableRow(
               key: ValueKey(r.name),
-              title: r.name,
+              title: say(r.name),
               icon: r.icon,
-              note: phone ? '${r.kind}, ${r.size}' : null,
+              note: phone ? '${say(r.kind)}, ${r.size}' : null,
               cells: [
-                if (!phone) (r.kind, null),
-                (phone ? _shortDate(r.changed) : r.changed, null),
+                if (!phone) (say(r.kind), null),
+                (say(phone ? _shortDate(r.changed) : r.changed), null),
                 if (!phone) (r.size, null),
               ],
             ),
         ],
       );
-      if (phone) return list;
+      final find = RetroDesktopSearchField(
+        hint: say('Find a document'),
+        name: say('Find a document'),
+        controller: view.find,
+        focusNode: view.findFocus,
+      );
+      // Nothing found: the list's place says so, and how to find more.
+      final shown = rows.isNotEmpty || view.query.isEmpty
+          ? list
+          : RetroDesktopEmpty(
+              title: context.papersHebrew
+                  ? 'אין מסמכים שתואמים ל״${view.find.text.trim()}״'
+                  : 'No documents match “${view.find.text.trim()}”',
+              body: say(
+                'Check the spelling, or look for a kind: document, '
+                'checklist or notebook.',
+              ),
+            );
+      if (phone) {
+        return RetroDesktopColumn(gap: 12, children: [find, shown]);
+      }
+      final some = rows.isNotEmpty;
       return RetroDesktopColumn(
         gap: 12,
         children: [
-          list,
+          find,
+          shown,
           _Buttons([
             RetroDesktopButton(
-              'Order copies…',
-              onPressed: () => onOrder(view.selected),
+              say('Order copies…'),
+              onPressed: some ? () => onOrder(view.selected) : null,
             ),
             RetroDesktopButton(
-              'Open',
+              say('Open'),
               isDefaultAction: true,
-              onPressed: () => onOpen(view.selected),
+              onPressed: some ? () => onOpen(view.selected) : null,
             ),
           ]),
         ],
@@ -333,11 +430,23 @@ class KitDocuments extends StatelessWidget {
 /// Your details: the name on what you share and order, and where new
 /// documents go. Label over field, "Cancel" beside the ringed default.
 class KitDetailsForm extends StatefulWidget {
-  /// The form; [onDone] runs after either button.
-  const KitDetailsForm({super.key, this.onDone});
+  /// The form; [onDone] runs after either button, [onEdited] at the first
+  /// change.
+  const KitDetailsForm({
+    super.key,
+    this.onDone,
+    this.onEdited,
+    this.name = 'Alex Lee',
+  });
 
   /// Closes the window it stands in, if any.
   final VoidCallback? onDone;
+
+  /// Told when a field changes, so closing the window can ask to save.
+  final VoidCallback? onEdited;
+
+  /// The name the form opens with.
+  final String name;
 
   @override
   State<KitDetailsForm> createState() => _KitDetailsFormState();
@@ -347,48 +456,63 @@ class _KitDetailsFormState extends State<KitDetailsForm> {
   var _where = 'local';
 
   void _done(String message) {
-    showRetroDesktopSnackBar(context, message);
+    showRetroDesktopSnackBar(context, context.say(message));
     widget.onDone?.call();
   }
 
+  void _edited([Object? _]) => widget.onEdited?.call();
+
   @override
-  Widget build(BuildContext context) => RetroDesktopColumn(
-    gap: 16,
-    children: [
-      Text(
-        'Your name goes on the documents you share and on the copies you '
-        'order.',
-        style: context.retroDesktopTheme.type.meta,
-      ),
-      const RetroDesktopTextField(label: 'Name', initial: 'Alex Lee'),
-      const RetroDesktopTextField(
-        label: 'Email address',
-        initial: 'alex@example.com',
-        keyboardType: TextInputType.emailAddress,
-      ),
-      RetroDesktopSelect<String>(
-        label: 'Save new documents to',
-        value: _where,
-        options: const [
-          RetroDesktopOption('local', 'This computer'),
-          RetroDesktopOption('shared', 'The shared disk'),
-        ],
-        onChanged: (value) => setState(() => _where = value),
-      ),
-      _Buttons([
-        // The look's one secondary button is the push button.
-        RetroDesktopButton(
-          'Cancel',
-          onPressed: () => _done('Your details are as they were'),
+  Widget build(BuildContext context) {
+    final say = context.say;
+    return RetroDesktopColumn(
+      gap: 16,
+      children: [
+        Text(
+          say(
+            'Your name goes on the documents you share and on the copies you '
+            'order.',
+          ),
+          style: context.retroDesktopTheme.type.meta,
         ),
-        RetroDesktopButton(
-          'Save',
-          isDefaultAction: true,
-          onPressed: () => _done('Your details are saved'),
+        RetroDesktopTextField(
+          label: say('Name'),
+          initial: say(widget.name),
+          onChanged: _edited,
         ),
-      ]),
-    ],
-  );
+        RetroDesktopTextField(
+          label: say('Email address'),
+          initial: 'alex@example.com',
+          keyboardType: TextInputType.emailAddress,
+          onChanged: _edited,
+        ),
+        RetroDesktopSelect<String>(
+          label: say('Save new documents to'),
+          value: _where,
+          options: [
+            RetroDesktopOption('local', say('This computer')),
+            RetroDesktopOption('shared', say('The shared disk')),
+          ],
+          onChanged: (value) {
+            setState(() => _where = value);
+            _edited();
+          },
+        ),
+        _Buttons([
+          // The look's one secondary button is the push button.
+          RetroDesktopButton(
+            say('Cancel'),
+            onPressed: () => _done('Your details are as they were'),
+          ),
+          RetroDesktopButton(
+            say('Save'),
+            isDefaultAction: true,
+            onPressed: () => _done('Your details are saved'),
+          ),
+        ]),
+      ],
+    );
+  }
 }
 
 /// How the workspace behaves: checkboxes in named groups, which take effect
@@ -398,59 +522,62 @@ class KitSettingsPanel extends StatelessWidget {
   const KitSettingsPanel({super.key});
 
   @override
-  Widget build(BuildContext context) => RetroDesktopColumn(
-    gap: 16,
-    children: [
-      RetroDesktopGroupBox(
-        title: 'Documents',
-        child: RetroDesktopColumn(
-          children: [
-            kitValue(
-              true,
-              (value, change) => RetroDesktopCheckRow(
-                label: 'Save as I type',
-                note: 'Every change is kept as you make it.',
-                value: value,
-                onChanged: change,
+  Widget build(BuildContext context) {
+    final say = context.say;
+    return RetroDesktopColumn(
+      gap: 16,
+      children: [
+        RetroDesktopGroupBox(
+          title: say('Documents'),
+          child: RetroDesktopColumn(
+            children: [
+              kitValue(
+                true,
+                (value, change) => RetroDesktopCheckRow(
+                  label: say('Save as I type'),
+                  note: say('Every change is kept as you make it.'),
+                  value: value,
+                  onChanged: change,
+                ),
               ),
-            ),
-            kitValue(
-              false,
-              (value, change) => RetroDesktopCheckRow(
-                label: 'Keep a copy on this computer',
-                note: 'Open your documents without a connection.',
-                value: value,
-                onChanged: change,
+              kitValue(
+                false,
+                (value, change) => RetroDesktopCheckRow(
+                  label: say('Keep a copy on this computer'),
+                  note: say('Open your documents without a connection.'),
+                  value: value,
+                  onChanged: change,
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
-      RetroDesktopGroupBox(
-        title: 'Notices',
-        child: kitValue(
-          true,
-          (value, change) => RetroDesktopCheckRow(
-            label: 'Tell me when a shared document changes',
-            value: value,
-            onChanged: change,
+            ],
           ),
         ),
-      ),
-      RetroDesktopDisclosure(
-        title: 'Advanced',
-        child: kitValue(
-          false,
-          (value, change) => RetroDesktopCheckRow(
-            label: 'Send a report when something goes wrong',
-            note: 'It holds no document, only what failed.',
-            value: value,
-            onChanged: change,
+        RetroDesktopGroupBox(
+          title: say('Notices'),
+          child: kitValue(
+            true,
+            (value, change) => RetroDesktopCheckRow(
+              label: say('Tell me when a shared document changes'),
+              value: value,
+              onChanged: change,
+            ),
           ),
         ),
-      ),
-    ],
-  );
+        RetroDesktopDisclosure(
+          title: say('Advanced'),
+          child: kitValue(
+            false,
+            (value, change) => RetroDesktopCheckRow(
+              label: say('Send a report when something goes wrong'),
+              note: say('It holds no document, only what failed.'),
+              value: value,
+              onChanged: change,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 /// Printed copies of a document, bound and posted: the order as a table with
@@ -458,13 +585,22 @@ class KitSettingsPanel extends StatelessWidget {
 /// you pay.
 class KitPrintOrder extends StatefulWidget {
   /// An order for copies of [document]; [onDone] runs after either button.
-  const KitPrintOrder({super.key, required this.document, this.onDone});
+  /// [failed]: it opens on the alert of an order the print shop never got.
+  const KitPrintOrder({
+    super.key,
+    required this.document,
+    this.onDone,
+    this.failed = false,
+  });
 
   /// The document's name.
   final String document;
 
   /// Closes the window it stands in, if any.
   final VoidCallback? onDone;
+
+  /// Whether it opens on a failed order's alert.
+  final bool failed;
 
   @override
   State<KitPrintOrder> createState() => _KitPrintOrderState();
@@ -478,9 +614,46 @@ class _KitPrintOrderState extends State<KitPrintOrder> {
   static String _money(int cents) =>
       '\$${cents ~/ 100}.${(cents % 100).toString().padLeft(2, '0')}';
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.failed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _failed();
+      });
+    }
+  }
+
   void _done(String message) {
-    showRetroDesktopSnackBar(context, message);
+    showRetroDesktopSnackBar(context, context.say(message));
     widget.onDone?.call();
+  }
+
+  // The period's stop alert: what happened, that nothing is lost, and the
+  // one thing to do, ringed.
+  Future<void> _failed() async {
+    final again = await showRetroDesktopDialog<bool>(
+      context,
+      builder: (context) => RetroDesktopDialog(
+        title: context.say('The order wasn’t sent'),
+        message: context.say(
+          'Papers couldn’t reach the print shop. Check your connection, '
+          'then try again: your order is kept.',
+        ),
+        tone: RetroDesktopTone.danger,
+        actions: [
+          RetroDesktopDialogAction(context.say('Cancel'), value: false),
+          RetroDesktopDialogAction(
+            context.say('Try again'),
+            value: true,
+            isDefaultAction: true,
+          ),
+        ],
+      ),
+    );
+    if (mounted && again == true) {
+      _done('Copies ordered: they arrive by post');
+    }
   }
 
   @override
@@ -489,37 +662,46 @@ class _KitPrintOrderState extends State<KitPrintOrder> {
     // A bound copy costs a base and a little a page.
     final each = 300 + doc.pages * 50;
     final postage = _post == 'standard' ? 400 : 1200;
+    final say = context.say;
     return RetroDesktopColumn(
       gap: 16,
       children: [
         RetroDesktopTable(
-          columns: const [
-            RetroDesktopTableColumn('Item', flex: 3),
+          columns: [
+            RetroDesktopTableColumn(say('Item'), flex: 3),
             RetroDesktopTableColumn(
-              'Copies',
+              say('Copies'),
               width: 76,
               figures: true,
               end: true,
             ),
             RetroDesktopTableColumn(
-              'Price',
+              say('Price'),
               width: 72,
               figures: true,
               end: true,
             ),
           ],
           rows: [
-            ['${doc.name}, bound', '$_copies', _money(each * _copies)],
             [
-              _post == 'standard' ? 'Postage, standard' : 'Postage, express',
+              context.papersHebrew
+                  ? '${say(doc.name)}, כרוך'
+                  : '${doc.name}, bound',
+              '$_copies',
+              _money(each * _copies),
+            ],
+            [
+              say(
+                _post == 'standard' ? 'Postage, standard' : 'Postage, express',
+              ),
               '',
               _money(postage),
             ],
           ],
-          due: ('Amount due', _money(each * _copies + postage)),
+          due: (say('Amount due'), _money(each * _copies + postage)),
         ),
         RetroDesktopSelect<int>(
-          label: 'Copies',
+          label: say('Copies'),
           value: _copies,
           options: [for (var n = 1; n <= 5; n++) RetroDesktopOption(n, '$n')],
           onChanged: (value) => setState(() => _copies = value),
@@ -527,35 +709,38 @@ class _KitPrintOrderState extends State<KitPrintOrder> {
         // The name and the address in one field, as a label is written: two
         // fields ran the form past a 900 desk under two windows and cut its
         // buttons, and side by side they left the window's keylines.
-        const RetroDesktopTextField(
-          label: 'Deliver to',
-          initial: 'Alex Lee, 12 Harbour Street, Leith',
+        RetroDesktopTextField(
+          label: say('Deliver to'),
+          initial: say('Alex Lee, 12 Harbour Street, Leith'),
         ),
         RetroDesktopRadioGroup<String>(
-          label: 'Postage',
+          label: say('Postage'),
           value: _post,
           onChanged: (value) => setState(() => _post = value),
-          options: const [
-            RetroDesktopRadio('standard', 'Standard, in 3 to 5 days, \$4.00'),
-            RetroDesktopRadio('express', 'Express, the next day, \$12.00'),
+          options: [
+            RetroDesktopRadio(
+              'standard',
+              say('Standard, in 3 to 5 days, \$4.00'),
+            ),
+            RetroDesktopRadio('express', say('Express, the next day, \$12.00')),
           ],
         ),
         RetroDesktopSelect<String>(
-          label: 'Pay with',
+          label: say('Pay with'),
           value: _pay,
-          options: const [
-            RetroDesktopOption('card', 'The card ending 4242'),
-            RetroDesktopOption('invoice', 'An invoice, due in 30 days'),
+          options: [
+            RetroDesktopOption('card', say('The card ending 4242')),
+            RetroDesktopOption('invoice', say('An invoice, due in 30 days')),
           ],
           onChanged: (value) => setState(() => _pay = value),
         ),
         _Buttons([
           RetroDesktopButton(
-            'Cancel',
+            say('Cancel'),
             onPressed: () => _done('No copies ordered'),
           ),
           RetroDesktopButton(
-            'Place order',
+            say('Place order'),
             isDefaultAction: true,
             onPressed: () => _done('Copies ordered: they arrive by post'),
           ),
@@ -591,6 +776,7 @@ class KitPapers extends StatefulWidget {
     super.key,
     this.front = KitPapersWindow.documents,
     this.alone = false,
+    this.moment = KitPapersMoment.none,
   });
 
   /// The window in front when the app opens.
@@ -598,6 +784,9 @@ class KitPapers extends StatefulWidget {
 
   /// Whether it opens with no other window.
   final bool alone;
+
+  /// The moment it opens on.
+  final KitPapersMoment moment;
 
   @override
   State<KitPapers> createState() => _KitPapersState();
@@ -618,12 +807,43 @@ class _KitPapersState extends State<KitPapers> {
     final w => [KitPapersWindow.documents, KitPapersWindow.document, w],
   };
   final _view = KitDocumentsView();
+  var _started = false;
   var _opened = 'Project notes';
   var _ordering = 'Project notes';
   String? _icon;
+  // Whether Your details holds a change not saved yet.
+  late var _detailsEdited = widget.moment == KitPapersMoment.unsaved;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.moment == KitPapersMoment.unsaved) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _close(KitPapersWindow.details);
+      });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final hebrew = context.papersHebrew;
+    _view.hebrew = hebrew;
+    if (_started) return;
+    _started = true;
+    // The search a link opens on, typed in the app's language: two of six.
+    if (widget.moment == KitPapersMoment.search) {
+      _view.find.text = hebrew ? 'רשימת' : 'list';
+    }
+    // The window's foot counts what the Find field leaves.
+    _view.addListener(_viewChanged);
+  }
+
+  void _viewChanged() => setState(() {});
 
   @override
   void dispose() {
+    _view.removeListener(_viewChanged);
     _view.dispose();
     super.dispose();
   }
@@ -637,7 +857,45 @@ class _KitPapersState extends State<KitPapers> {
     });
   }
 
-  void _close(KitPapersWindow w) => setState(() => _open.remove(w));
+  void _close(KitPapersWindow w) {
+    if (w == KitPapersWindow.details && _detailsEdited) {
+      _closeEdited();
+      return;
+    }
+    setState(() => _open.remove(w));
+  }
+
+  // Closing your details with a change in them: the period's three answers,
+  // Save ringed, "Don't save" at the far start, away from it.
+  Future<void> _closeEdited() async {
+    final answer = await showRetroDesktopDialog<String>(
+      context,
+      builder: (context) => RetroDesktopDialog(
+        title: context.say('Save the changes to your details?'),
+        message: context.say(
+          'If you close without saving, your changes are lost.',
+        ),
+        tone: RetroDesktopTone.warning,
+        actions: [
+          RetroDesktopDialogAction(context.say('Don’t save'), value: 'discard'),
+          RetroDesktopDialogAction(context.say('Cancel'), value: 'cancel'),
+          RetroDesktopDialogAction(
+            context.say('Save'),
+            value: 'save',
+            isDefaultAction: true,
+          ),
+        ],
+      ),
+    );
+    if (!mounted || answer == null || answer == 'cancel') return;
+    if (answer == 'save' && context.mounted) {
+      showRetroDesktopSnackBar(context, context.say('Your details are saved'));
+    }
+    setState(() {
+      _detailsEdited = false;
+      _open.remove(KitPapersWindow.details);
+    });
+  }
 
   void _openDocument(String name) {
     _view.select(name);
@@ -650,14 +908,26 @@ class _KitPapersState extends State<KitPapers> {
     _front(KitPapersWindow.prints);
   }
 
-  static String _title(KitPapersWindow w, String opened) => switch (w) {
+  // File > Find…: the documents window in front, its Find field focused.
+  void _find() {
+    if (!_open.contains(KitPapersWindow.documents)) {
+      setState(() => _open.add(KitPapersWindow.documents));
+    } else {
+      _front(KitPapersWindow.documents);
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _view.findFocus.requestFocus();
+    });
+  }
+
+  String _title(KitPapersWindow w, String opened) => context.say(switch (w) {
     KitPapersWindow.documents => 'Documents',
     KitPapersWindow.document => opened,
     KitPapersWindow.details => 'Your details',
     KitPapersWindow.settings => 'Settings',
     KitPapersWindow.prints => 'Order printed copies',
     KitPapersWindow.bin => 'Bin',
-  };
+  });
 
   static IconData _glyph(KitPapersWindow w) => switch (w) {
     KitPapersWindow.documents => RetroDesktopGlyphs.folder,
@@ -683,26 +953,36 @@ class _KitPapersState extends State<KitPapers> {
 
   Widget _window(KitPapersWindow w, {VoidCallback? onClose}) {
     final doc = _paper(_opened);
+    final say = context.say;
+    final he = context.papersHebrew;
     return RetroDesktopWindow(
       key: ValueKey('papers-window/${w.name}'),
       title: _title(w, _opened),
       icon: _glyph(w),
       onClose: onClose ?? () => _close(w),
-      info: w == KitPapersWindow.documents
-          ? '${kitPapers.length} documents'
-          : null,
-      infoEnd: w == KitPapersWindow.documents ? '1.2 GB available' : null,
+      info: w != KitPapersWindow.documents
+          ? null
+          : _view.query.isEmpty
+          ? (he
+                ? '${kitPapers.length} מסמכים'
+                : '${kitPapers.length} documents')
+          : (he
+                ? '${_view.rows.length} מתוך ${kitPapers.length} מסמכים'
+                : '${_view.rows.length} of ${kitPapers.length} documents'),
+      infoEnd: w == KitPapersWindow.documents ? say('1.2 GB available') : null,
       status: switch (w) {
         KitPapersWindow.document => [
-          '*${doc.pages}* ${doc.pages == 1 ? 'page' : 'pages'}',
+          he
+              ? '*${doc.pages}* ${doc.pages == 1 ? 'עמוד' : 'עמודים'}'
+              : '*${doc.pages}* ${doc.pages == 1 ? 'page' : 'pages'}',
           doc.size,
         ],
-        KitPapersWindow.settings => const ['Changes are kept as you make them'],
+        KitPapersWindow.settings => [say('Changes are kept as you make them')],
         _ => const [],
       },
       statusAction: w == KitPapersWindow.document
           ? RetroDesktopButton(
-              'Order copies…',
+              say('Order copies…'),
               size: RetroDesktopButtonSize.small,
               onPressed: () => _order(_opened),
             )
@@ -715,24 +995,36 @@ class _KitPapersState extends State<KitPapers> {
         ),
         KitPapersWindow.document => RetroDesktopDocument(
           key: ValueKey(doc.name),
-          path: const ['Documents'],
-          title: doc.name,
-          meta: [('Kind', doc.kind), ('Changed', doc.changed)],
-          paragraphs: doc.paragraphs,
+          path: [say('Documents')],
+          title: say(doc.name),
+          meta: [
+            (say('Kind'), say(doc.kind)),
+            (say('Changed'), say(doc.changed)),
+          ],
+          paragraphs: [for (final p in doc.paragraphs) say(p)],
         ),
         KitPapersWindow.details => KitDetailsForm(
-          onDone: () => _close(KitPapersWindow.details),
+          name: widget.moment == KitPapersMoment.unsaved
+              ? 'Alex Lee-Morgan'
+              : 'Alex Lee',
+          onEdited: () => _detailsEdited = true,
+          // Save and Cancel say what to do with the changes: no question.
+          onDone: () => setState(() {
+            _detailsEdited = false;
+            _open.remove(KitPapersWindow.details);
+          }),
         ),
         KitPapersWindow.settings => const KitSettingsPanel(),
         KitPapersWindow.prints => KitPrintOrder(
           key: ValueKey(_ordering),
           document: _ordering,
+          failed: widget.moment == KitPapersMoment.failedOrder,
           onDone: () => _close(KitPapersWindow.prints),
         ),
-        KitPapersWindow.bin => const RetroDesktopEmpty(
-          title: 'The bin is empty',
-          body: 'What you delete waits here for 30 days.',
-          art: RetroDesktopDeskArt(RetroDesktopDeskMark.bin),
+        KitPapersWindow.bin => RetroDesktopEmpty(
+          title: say('The bin is empty'),
+          body: say('What you delete waits here for 30 days.'),
+          art: const RetroDesktopDeskArt(RetroDesktopDeskMark.bin),
         ),
       },
     );
@@ -740,68 +1032,75 @@ class _KitPapersState extends State<KitPapers> {
 
   List<DesignMenuEntry> _menus(KitPapersHost? host) {
     final front = _open.isEmpty ? null : _open.last;
+    final say = context.say;
     DesignMenuEntry sort(int k, String label) => DesignMenuEntry(
-      label: label,
+      label: say(label),
       checked: _view.sort == k,
       onPressed: () => setState(() => _view.sortBy(k)),
     );
     return [
       DesignMenuEntry(
-        label: 'Papers',
+        label: say('Papers'),
         children: [
           DesignMenuEntry(
-            label: 'About Papers',
+            label: say('About Papers'),
             onPressed: () => showRetroDesktopSnackBar(
               context,
-              'Papers keeps your documents in one place',
+              say('Papers keeps your documents in one place'),
             ),
           ),
           const DesignMenuEntry.divider(),
           DesignMenuEntry(
-            label: 'Your details…',
+            label: say('Your details…'),
             onPressed: () => _front(KitPapersWindow.details),
           ),
           DesignMenuEntry(
-            label: 'Settings…',
+            label: say('Settings…'),
             shortcut: 'Ctrl+,',
             onPressed: () => _front(KitPapersWindow.settings),
           ),
         ],
       ),
       DesignMenuEntry(
-        label: 'File',
+        label: say('File'),
         children: [
           DesignMenuEntry(
-            label: 'Open',
+            label: say('Open'),
             shortcut: 'Ctrl+O',
             onPressed: () => _openDocument(_view.selected),
           ),
           DesignMenuEntry(
-            label: 'Close window',
+            label: say('Close window'),
             shortcut: 'Ctrl+W',
             onPressed: front == null ? null : () => _close(front),
           ),
           const DesignMenuEntry.divider(),
           DesignMenuEntry(
-            label: 'Order printed copies…',
+            label: say('Find…'),
+            shortcut: 'Ctrl+F',
+            onPressed: _find,
+          ),
+          const DesignMenuEntry.divider(),
+          DesignMenuEntry(
+            label: say('Order printed copies…'),
             shortcut: 'Ctrl+P',
             onPressed: () => _order(_view.selected),
           ),
         ],
       ),
-      const DesignMenuEntry(
-        label: 'Edit',
+      DesignMenuEntry(
+        label: say('Edit'),
         // Nothing is chosen, so the edit commands have no onPressed: unavailable.
         children: [
-          DesignMenuEntry(label: 'Undo', shortcut: 'Ctrl+Z'),
-          DesignMenuEntry.divider(),
-          DesignMenuEntry(label: 'Cut', shortcut: 'Ctrl+X'),
-          DesignMenuEntry(label: 'Copy', shortcut: 'Ctrl+C'),
-          DesignMenuEntry(label: 'Paste', shortcut: 'Ctrl+V'),
+          DesignMenuEntry(label: say('Undo'), shortcut: 'Ctrl+Z'),
+          const DesignMenuEntry.divider(),
+          DesignMenuEntry(label: say('Cut'), shortcut: 'Ctrl+X'),
+          DesignMenuEntry(label: say('Copy'), shortcut: 'Ctrl+C'),
+          DesignMenuEntry(label: say('Paste'), shortcut: 'Ctrl+V'),
         ],
       ),
       DesignMenuEntry(
-        label: 'View',
+        label: say('View'),
         children: [
           sort(0, 'By name'),
           sort(1, 'By kind'),
@@ -810,7 +1109,7 @@ class _KitPapersState extends State<KitPapers> {
           if (host != null) ...[
             const DesignMenuEntry.divider(),
             DesignMenuEntry(
-              label: 'Night',
+              label: say('Night'),
               checked: host.night,
               onPressed: () => host.onNight(!host.night),
             ),
@@ -818,7 +1117,7 @@ class _KitPapersState extends State<KitPapers> {
         ],
       ),
       DesignMenuEntry(
-        label: 'Window',
+        label: say('Window'),
         children: [
           for (final w in KitPapersWindow.values)
             DesignMenuEntry(
@@ -836,7 +1135,7 @@ class _KitPapersState extends State<KitPapers> {
   Widget _icons({required bool rail}) {
     Widget icon(String name, Widget art, VoidCallback open) =>
         RetroDesktopDeskIcon(
-          name,
+          context.say(name),
           art: art,
           selected: _icon == name,
           onPressed: () => setState(() => _icon = name),
@@ -881,8 +1180,10 @@ class _KitPapersState extends State<KitPapers> {
 
   Widget _desk(BuildContext context) => LayoutBuilder(
     builder: (context, room) {
-      const margin = 24.0, rail = 96.0;
-      final reach = room.maxWidth - rail - margin;
+      const margin = 24.0;
+      // The icons' rail at the desk's end, as wide as an icon at this text size (its name grows with the text).
+      final icon = RetroDesktopDeskIcon.widthOf(context);
+      final reach = room.maxWidth - (icon + 12) - margin;
       // The list stands at the desk's start; every other window opens
       // beside it, each new one a step down and in from the last, as
       // windows stacked on a desk do. A step is a whole title bar and its
@@ -918,9 +1219,8 @@ class _KitPapersState extends State<KitPapers> {
         final active = w == _open.last;
         places.add((w, start, top, width));
         placed.add(
-          LayoutId(
+          KeyedSubtree(
             key: ValueKey('papers/${w.name}'),
-            id: w,
             child: Listener(
               onPointerDown: (_) => _front(w),
               child: RetroDesktopWindowScope(
@@ -944,16 +1244,14 @@ class _KitPapersState extends State<KitPapers> {
             top: 16,
             end: 6,
             bottom: 16,
-            width: 84,
+            width: icon,
             child: _icons(rail: true),
           ),
           Positioned.fill(
-            child: CustomMultiChildLayout(
-              delegate: _DeskWindows(
-                places,
-                step: cascade,
-                rtl: Directionality.of(context) == TextDirection.rtl,
-              ),
+            child: _DeskWindows(
+              places,
+              step: cascade,
+              rtl: Directionality.of(context) == TextDirection.rtl,
               children: placed,
             ),
           ),
@@ -961,6 +1259,65 @@ class _KitPapersState extends State<KitPapers> {
       );
     },
   );
+
+  // From a tablet's width to the desk's (600 up to 1024): the list and the window in front of it side by side, as two
+  // windows tiled on a small screen, each scrolling on its own; a window alone keeps its desk width, the desk's icons
+  // at the end. One window stretched across a tablet read as a phone's screen blown up, half of it empty.
+  static const _tiledFrom = 600.0;
+
+  Widget _tiled(BuildContext context) {
+    if (_open.isEmpty) return _phone(context);
+    final others = _open.where((w) => w != KitPapersWindow.documents);
+    final panes = [
+      if (_open.contains(KitPapersWindow.documents)) KitPapersWindow.documents,
+      if (others.isNotEmpty) others.last,
+    ];
+    Widget pane(KitPapersWindow w) => SingleChildScrollView(
+      key: ValueKey('papers-tiled/${w.name}'),
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Listener(
+        onPointerDown: (_) => _front(w),
+        child: RetroDesktopWindowScope(
+          active: w == _open.last,
+          compact: true,
+          child: _window(w),
+        ),
+      ),
+    );
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(12, 12, 12, 0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: panes.length == 2
+            ? [
+                Expanded(child: pane(panes.first)),
+                const SizedBox(width: 12),
+                Expanded(child: pane(panes.last)),
+              ]
+            : [
+                Expanded(
+                  child: Align(
+                    alignment: AlignmentDirectional.topStart,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: _width(panes.single),
+                      ),
+                      child: pane(panes.single),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: RetroDesktopDeskIcon.widthOf(context),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _icons(rail: true),
+                  ),
+                ),
+              ],
+      ),
+    );
+  }
 
   Widget _phone(BuildContext context) {
     if (_open.isEmpty) {
@@ -1001,6 +1358,7 @@ class _KitPapersState extends State<KitPapers> {
     final keys = <ShortcutActivator, VoidCallback>{};
     key(LogicalKeyboardKey.keyO, () => _openDocument(_view.selected), keys);
     key(LogicalKeyboardKey.keyP, () => _order(_view.selected), keys);
+    key(LogicalKeyboardKey.keyF, _find, keys);
     key(LogicalKeyboardKey.comma, () => _front(KitPapersWindow.settings), keys);
     if (front != null) key(LogicalKeyboardKey.keyW, () => _close(front), keys);
     return CallbackShortcuts(
@@ -1013,7 +1371,7 @@ class _KitPapersState extends State<KitPapers> {
           topBar: ListenableBuilder(
             listenable: _view,
             builder: (context, _) => RetroDesktopMenuBar(
-              label: 'Papers',
+              label: context.say('Papers'),
               // On a phone the titles and the way back need the mark's room.
               leading: t.desk ? const RetroDesktopSystemMark() : null,
               menus: _menus(host),
@@ -1022,13 +1380,17 @@ class _KitPapersState extends State<KitPapers> {
               trailing: host == null
                   ? null
                   : RetroDesktopButton(
-                      'Gallery',
+                      context.say('Gallery'),
                       size: RetroDesktopButtonSize.small,
                       onPressed: host.onGallery,
                     ),
             ),
           ),
-          body: t.desk ? _desk(context) : _phone(context),
+          body: t.desk
+              ? _desk(context)
+              : t.width >= _tiledFrom
+              ? _tiled(context)
+              : _phone(context),
         ),
       ),
     );
@@ -1036,52 +1398,93 @@ class _KitPapersState extends State<KitPapers> {
 }
 
 /// The desk's windows, back to front, each at its start and top and as tall
-/// as it holds. One stepped in front of another reaches at least a step past
-/// that one's foot, as its head stands a step under that one's head: no edge
-/// of it crosses the words in the other's foot (a Settings window over a
-/// document cut its "Order copies…" in half).
-class _DeskWindows extends MultiChildLayoutDelegate {
-  _DeskWindows(this.places, {required this.step, required this.rtl});
+/// as it holds: stretched past the window behind it, a short form stood over
+/// a band of empty grey under its buttons. Only where its foot would end in
+/// the foot of a window behind it (the last step of that one) does it reach
+/// 8 past that one's foot, so no edge of it crosses the words there (a
+/// Settings window over a document cut its "Order copies…" in half).
+class _DeskWindows extends MultiChildRenderObjectWidget {
+  const _DeskWindows(
+    this.places, {
+    required this.step,
+    required this.rtl,
+    required super.children,
+  });
 
-  /// Each window with its start, top and width.
+  /// Each window (one a child, in order) with its start, top and width.
   final List<(KitPapersWindow, double, double, double)> places;
   final double step;
   final bool rtl;
 
   @override
-  void performLayout(Size size) {
-    final laid = <Rect>[];
-    for (final (w, start, top, width) in places) {
-      if (!hasChild(w)) continue;
-      final left = rtl ? size.width - start - width : start;
-      var least = 0.0;
-      for (final r in laid) {
-        final across = r.left < left + width && left < r.right;
-        if (across && r.bottom > top && r.bottom + step - top > least) {
-          least = r.bottom + step - top;
-        }
-      }
-      final room = size.height - top;
-      final height = layoutChild(
-        w,
-        BoxConstraints(
-          minWidth: width,
-          maxWidth: width,
-          minHeight: least < room ? least : (room > 0 ? room : 0),
-        ),
-      ).height;
-      positionChild(w, Offset(left, top));
-      laid.add(Rect.fromLTWH(left, top, width, height));
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderDeskWindows(places, step, rtl);
+
+  @override
+  void updateRenderObject(BuildContext context, RenderObject renderObject) {
+    (renderObject as _RenderDeskWindows)
+      ..places = places
+      ..step = step
+      ..rtl = rtl
+      ..markNeedsLayout();
+  }
+}
+
+class _DeskWindowData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderDeskWindows extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _DeskWindowData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _DeskWindowData> {
+  _RenderDeskWindows(this.places, this.step, this.rtl);
+
+  List<(KitPapersWindow, double, double, double)> places;
+  double step;
+  bool rtl;
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _DeskWindowData) {
+      child.parentData = _DeskWindowData();
     }
   }
 
   @override
-  bool shouldRelayout(_DeskWindows old) {
-    if (old.step != step || old.rtl != rtl) return true;
-    if (old.places.length != places.length) return true;
-    for (var i = 0; i < places.length; i++) {
-      if (old.places[i] != places[i]) return true;
+  void performLayout() {
+    size = constraints.biggest;
+    final laid = <Rect>[];
+    var child = firstChild;
+    for (final (_, start, top, width) in places) {
+      if (child == null) break;
+      final left = rtl ? size.width - start - width : start;
+      child.layout(BoxConstraints.tightFor(width: width), parentUsesSize: true);
+      var height = child.size.height;
+      var least = 0.0;
+      for (final r in laid) {
+        final across = r.left < left + width && left < r.right;
+        final foot = top + height;
+        if (across && foot > r.bottom - step && foot < r.bottom + 8) {
+          if (r.bottom + 8 - top > least) least = r.bottom + 8 - top;
+        }
+      }
+      if (least > height) {
+        child.layout(
+          BoxConstraints(minWidth: width, maxWidth: width, minHeight: least),
+          parentUsesSize: true,
+        );
+        height = child.size.height;
+      }
+      (child.parentData! as _DeskWindowData).offset = Offset(left, top);
+      laid.add(Rect.fromLTWH(left, top, width, height));
+      child = childAfter(child);
     }
-    return false;
   }
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }

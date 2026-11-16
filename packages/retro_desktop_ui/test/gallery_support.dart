@@ -221,3 +221,77 @@ String slug(String label) => label
     .toLowerCase()
     .replaceAll(RegExp('[^a-z0-9]+'), '_')
     .replaceAll(RegExp(r'^_|_$'), '');
+
+/// Flutter's Android 48 px tap-target guideline, with one exemption keyed to a type: a calendar's day, at least 44 wide
+/// and 48 tall. A day is a press in a week's row of seven Expanded cells, in ui_core's [DesignCalendar] (a
+/// [DesignPressable]) or in [RetroDesktopDatePicker] (a [RetroDesktopPressable]). On a phone a week of 48 px days is
+/// wider than a window's column, so a day takes its seventh of the row and at least the touch floor of 44 (iOS's, which
+/// it meets), as Material's own phone date picker's days are narrower than 48 too. Every other node keeps Flutter's 48.
+///
+/// The days of each week must tile their row with no dead gap between them (a tap between two days reaches one), and
+/// none may overhang the next; a gap or an overlap fails here.
+AccessibilityGuideline androidTargetsBesideCalendarDays(WidgetTester tester) {
+  final days = [
+    for (final (calendar, press) in const [
+      (DesignCalendar, DesignPressable),
+      (RetroDesktopDatePicker, RetroDesktopPressable),
+    ])
+      ...find
+          .descendant(of: find.byType(calendar), matching: find.byType(press))
+          .evaluate(),
+  ];
+  // The days' names, read from the day cells themselves: only a node a day cell made carries one.
+  final names = <String>{};
+  final rows = <Widget, List<Rect>>{};
+  for (final element in days) {
+    final box = element.renderObject;
+    if (box is! RenderBox || !box.hasSize) continue;
+    // A week's row: seven Expanded cells (a month's head, with its arrows, is not one).
+    final row = element.findAncestorWidgetOfExactType<Row>();
+    if (row == null ||
+        row.children.length != 7 ||
+        !row.children.every((c) => c is Expanded)) {
+      continue;
+    }
+    final widget = element.widget;
+    final name = widget is DesignPressable
+        ? widget.semanticLabel
+        : (widget as RetroDesktopPressable).label;
+    if (name != null) names.add(name);
+    (rows[row] ??= []).add(box.localToGlobal(Offset.zero) & box.size);
+  }
+  for (final rects in rows.values) {
+    rects.sort((a, b) => a.left.compareTo(b.left));
+    for (var i = 1; i < rects.length; i++) {
+      final gap = rects[i].left - rects[i - 1].right;
+      expect(
+        gap.abs(),
+        lessThanOrEqualTo(.5),
+        reason:
+            'a calendar\'s days tile their row: ${rects[i - 1]} then ${rects[i]} '
+            '${gap > 0 ? 'leave a gap' : 'overlap'} of ${gap.abs()}',
+      );
+    }
+  }
+  return _CalendarDaysExempt(names);
+}
+
+class _CalendarDaysExempt extends MinimumTapTargetGuideline {
+  const _CalendarDaysExempt(this.days)
+    : super(
+        size: const Size(48, 48),
+        link: 'https://support.google.com/accessibility/android/answer/7101858?hl=en',
+      );
+
+  final Set<String> days;
+
+  @override
+  bool shouldSkipNode(SemanticsNode node) {
+    if (super.shouldSkipNode(node)) return true;
+    final data = node.getSemanticsData();
+    return data.flagsCollection.isButton &&
+        days.contains(data.label) &&
+        data.rect.width >= 44 - 1e-6 &&
+        data.rect.height >= 48 - 1e-6;
+  }
+}

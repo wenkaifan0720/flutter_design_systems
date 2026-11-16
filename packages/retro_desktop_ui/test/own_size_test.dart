@@ -26,6 +26,7 @@ class _Fixed {
     this.build, {
     this.wordsCentred = false,
     this.reach = false,
+    this.keyline = false,
     this.centred = false,
   });
   final Size size;
@@ -33,6 +34,10 @@ class _Fixed {
 
   /// It presses, so the Android test host reserves 48 lp, with its art centered in that target.
   final bool reach;
+
+  /// Its art stands on the start edge of its target, not the target's middle, so it keeps its column's keyline and
+  /// the target reaches past its end: a bare checkbox's box.
+  final bool keyline;
 
   /// The words are the art's middle: a monogram's initials.
   final bool wordsCentred;
@@ -85,6 +90,7 @@ final _fixed = <String, _Fixed>{
     const Size(18, 18),
     () => const RetroDesktopCheckbox(value: false, label: 'Option'),
     reach: true,
+    keyline: true,
   ),
 
   'RetroDesktopPriority': _Fixed(
@@ -493,7 +499,9 @@ void main() {
                 }
                 final reach = part.reach
                     ? Offset(
-                        math.max(0, (48 - part.size.width) / 2),
+                        part.keyline
+                            ? 0
+                            : math.max(0, (48 - part.size.width) / 2),
                         math.max(0, (48 - part.size.height) / 2),
                       )
                     : Offset.zero;

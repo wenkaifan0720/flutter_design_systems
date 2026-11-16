@@ -9,6 +9,7 @@ import '../theme.dart';
 import '../pixels.dart';
 import '../press.dart';
 import '../shapes.dart';
+import '../tokens.dart';
 
 /// Internal surface scale; public shape slots remain OutlinedBorder values.
 enum RetroDesktopFaceScale {
@@ -128,7 +129,8 @@ OutlinedBorder retroDesktopEdgeShape(
 /// rule, its bevel a row lower, meeting the panel's).
 /// [defaultRing] draws the appearance's default-button ring outside the face;
 /// with [ringInBox] the ring stands inside the part's box, the face giving it
-/// its room, so the part shows the size of every button beside it.
+/// its room, so the part shows the size of every button beside it. [ringColor]
+/// inks the ring in place of the frame's.
 Widget retroDesktopFace({
   required Widget child,
   required Set<WidgetState> states,
@@ -143,6 +145,7 @@ Widget retroDesktopFace({
   bool ringInside = false,
   bool defaultRing = false,
   bool ringInBox = false,
+  Color? ringColor,
   ({Color light, Color shade})? bevelTint,
   Gradient? gradient,
   Color? flat,
@@ -152,6 +155,7 @@ Widget retroDesktopFace({
     vertical: 8,
   ),
 }) => _Face(
+  ringColor: ringColor,
   states: states,
   component: component,
   style: style,
@@ -192,7 +196,7 @@ Widget retroDesktopFieldNote(
         ),
         child: Icon(RetroDesktopGlyphs.warning, size: size, color: style.color),
       ),
-      const SizedBox(width: 5),
+      const SizedBox(width: RetroDesktopSpacing.s4 + RetroDesktopSpacing.px),
       Expanded(child: Text(text, style: style)),
     ],
   );
@@ -225,7 +229,8 @@ Color retroDesktopMiddleTone(Gradient gradient) {
 /// A plain glyph that presses, inside a field's box at its end: a password's
 /// eye, a search's clear. It has no face of its own (the field is its face),
 /// its glyph in the field's secondary ink, the ink's own colour while held;
-/// on a desk its reach is only pressed, so the field keeps one line's height.
+/// on a desk its reach is the pointer's floor, which the field's line holds,
+/// its glyph on the field's end inset.
 Widget retroDesktopFieldButton(
   BuildContext context, {
   required IconData icon,
@@ -237,8 +242,9 @@ Widget retroDesktopFieldButton(
     onPressed: onPressed,
     label: label,
     inside: true,
+    alignment: AlignmentDirectional.centerEnd,
     builder: (context, states) => Padding(
-      padding: const EdgeInsets.all(2),
+      padding: const EdgeInsets.all(RetroDesktopSpacing.s2),
       child: Icon(
         icon,
         size: 15,
@@ -265,7 +271,12 @@ double retroDesktopButtonFaceHeight(BuildContext context) {
       MediaQuery.textScalerOf(context).scale(style.fontSize ?? 14) *
       (style.height ?? 1.2);
   final pad = t.density
-      .apply(const EdgeInsets.symmetric(vertical: 7), TextDirection.ltr)
+      .apply(
+        const EdgeInsets.symmetric(
+          vertical: RetroDesktopSpacing.s6 + RetroDesktopSpacing.px,
+        ),
+        TextDirection.ltr,
+      )
       .top;
   return line + 2 * pad + 2 * retroDesktopFaceRim(t);
 }
@@ -280,7 +291,12 @@ double retroDesktopSmallButtonFaceHeight(BuildContext context) {
       MediaQuery.textScalerOf(context).scale(style.fontSize ?? 14) *
       (style.height ?? 1.2);
   final pad = t.density
-      .apply(const EdgeInsets.symmetric(vertical: 3), TextDirection.ltr)
+      .apply(
+        const EdgeInsets.symmetric(
+          vertical: RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
+        ),
+        TextDirection.ltr,
+      )
       .top;
   return line + 2 * pad + 2 * retroDesktopFaceRim(t);
 }
@@ -384,7 +400,10 @@ class _Face extends StatelessWidget {
     this.flat,
     this.shadows,
     this.bevelTint,
+    this.ringColor,
   });
+  // The default ring's ink in place of the frame's (a quiet one in a window behind).
+  final Color? ringColor;
   final Gradient? gradient;
   // Platinum's bevel in a coloured face's own light and shade, so the colour
   // runs to the outline instead of stopping at a grey line inside it.
@@ -585,6 +604,14 @@ class _Face extends StatelessWidget {
                 openDepth: openDepth,
                 chisel: bevel ? chiselEdge : null,
                 keepSide: keepSide || !bevel,
+                // By night a raised part's line is lifted off the graphite on its lit sides only, the top and the
+                // left, and falls to the frame's black below and right: a light line all round read as a glow, not
+                // a part lit from the top left. Pressed, it turns in with the bevel: black above and left, lit below
+                // and right (a light line all round read as the plate going flat, not in).
+                outlineShade: c.dark && !chisel && bevel && !sunken && !keepSide
+                    ? c.outline
+                    : null,
+                outlineIn: down,
               ),
               child: Padding(
                 padding: outline.dimensions.add(
@@ -688,7 +715,8 @@ class _Face extends StatelessWidget {
           plain,
           ring,
           theme.chisel ? 0 : 1,
-          theme.colors.dark ? theme.colors.control : theme.colors.outline,
+          ringColor ??
+              (theme.colors.dark ? theme.colors.control : theme.colors.outline),
           Directionality.of(context),
         ),
         child: face,
@@ -838,9 +866,18 @@ class _BevelPainter extends RetroDesktopPixelPainter {
     this.openDepth = 0,
     this.chisel,
     this.keepSide = true,
+    this.outlineShade,
+    this.outlineIn = false,
   });
   final double openDepth;
   final OutlinedBorder shape;
+
+  // The outline's colour where it faces down and right; null: its own all round.
+  final Color? outlineShade;
+
+  // Turned in, as the part is pressed: [outlineShade] where the outline faces up and left, its own colour down and
+  // right.
+  final bool outlineIn;
   final double width;
   final Color light, shade;
   final TextDirection direction;
@@ -965,6 +1002,16 @@ class _BevelPainter extends RetroDesktopPixelPainter {
           edge.outerLight,
           edge.outerShade,
         );
+      } else if (outlineShade case final below?
+          when shape.side.width > 0 && shape.side.style != BorderStyle.none) {
+        _step(
+          canvas,
+          shape.getOuterPath(rect, textDirection: direction),
+          shape.getInnerPath(rect, textDirection: direction),
+          shape.side.strokeInset,
+          outlineIn ? below : shape.side.color,
+          outlineIn ? shape.side.color : below,
+        );
       } else {
         shape.paint(canvas, rect, textDirection: direction);
       }
@@ -998,7 +1045,9 @@ class _BevelPainter extends RetroDesktopPixelPainter {
       openBottom != old.openBottom ||
       openDepth != old.openDepth ||
       chisel != old.chisel ||
-      keepSide != old.keepSide;
+      keepSide != old.keepSide ||
+      outlineShade != old.outlineShade ||
+      outlineIn != old.outlineIn;
 }
 
 /// Chisel's drop button at the end of a field with a list behind it (the

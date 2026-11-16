@@ -174,14 +174,18 @@ void main() {
           tester,
           f.value,
           b,
-          RetroDesktopCheckbox(label: 'Agree', value: false, onChanged: _take),
+          const RetroDesktopCheckbox(
+            label: 'Agree',
+            value: false,
+            onChanged: _take,
+          ),
         );
         final boxSize = tester.getSize(find.byType(RetroDesktopPressable));
         await _still(
           tester,
           f.value,
           b,
-          RetroDesktopCheckbox(
+          const RetroDesktopCheckbox(
             label: 'Agree',
             value: false,
             isError: true,
@@ -199,7 +203,7 @@ void main() {
           tester,
           f.value,
           b,
-          RetroDesktopCheckbox(
+          const RetroDesktopCheckbox(
             label: 'Agree',
             value: false,
             isError: true,
@@ -217,13 +221,13 @@ void main() {
           tester,
           f.value,
           b,
-          RetroDesktopRating(label: 'Rating', value: 3, onChanged: _take),
+          const RetroDesktopRating(label: 'Rating', value: 3, onChanged: _take),
         );
         final (off, offSize) = await _still(
           tester,
           f.value,
           b,
-          RetroDesktopRating(
+          const RetroDesktopRating(
             label: 'Rating',
             value: 3,
             onChanged: _take,
@@ -277,11 +281,15 @@ void main() {
 
       testWidgets('$name: a held checkbox or radio shows it', (tester) async {
         for (final child in <Widget>[
-          RetroDesktopCheckbox(label: 'Agree', value: false, onChanged: _take),
-          RetroDesktopRadioGroup<int>(
+          const RetroDesktopCheckbox(
+            label: 'Agree',
+            value: false,
+            onChanged: _take,
+          ),
+          const RetroDesktopRadioGroup<int>(
             label: 'Delivery',
             onChanged: _take,
-            options: const [
+            options: [
               RetroDesktopRadio(1, 'Standard'),
               RetroDesktopRadio(2, 'Express'),
             ],

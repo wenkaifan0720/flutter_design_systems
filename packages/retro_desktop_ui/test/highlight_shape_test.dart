@@ -5,6 +5,8 @@
 // claims them and draws them from its resolved outline); a part with no face
 // draws them in the family's control step. The ring sits outside the outline
 // at the theme's gap, concentric (inside it for parts joined to neighbours).
+// The look's painters are private, so these checks read their fields dynamically.
+// ignore_for_file: avoid_dynamic_calls
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

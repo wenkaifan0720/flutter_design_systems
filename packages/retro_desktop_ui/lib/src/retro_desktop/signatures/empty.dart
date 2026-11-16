@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../theme.dart';
+import '../tokens.dart';
 
 /// A window with nothing in it yet: an optional drawing, a title in the system face and a line.
 ///
@@ -29,16 +31,27 @@ class RetroDesktopEmpty extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: RetroDesktopSpacing.s16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (art != null) ...[art!, const SizedBox(height: 8)],
+          if (art != null) ...[
+            art!,
+            const SizedBox(height: RetroDesktopSpacing.s8),
+          ],
           Text(title, textAlign: TextAlign.center, style: t.type.small),
-          const SizedBox(height: 4),
+          const SizedBox(height: RetroDesktopSpacing.s4),
           Text(body, textAlign: TextAlign.center, style: t.type.note),
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('body', body));
   }
 }

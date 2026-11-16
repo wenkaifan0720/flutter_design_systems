@@ -1,0 +1,9 @@
+# The data-driven fixes' pairs: they use what a version deprecates on purpose, so the package's own analysis leaves
+# them out (its analysis_options.yaml excludes test_fixes/**), and this file makes them a context of their own that
+# `dart fix --compare-to-golden test_fixes` reads. They sit inside the package, so a deprecated use is the
+# same-package lint's to report (an app's, outside the package, is reported as it always is).
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    deprecated_member_use_from_same_package: true

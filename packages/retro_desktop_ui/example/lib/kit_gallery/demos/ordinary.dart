@@ -6,6 +6,7 @@ import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
 import '../kit.dart';
 import 'papers.dart';
+import 'papers_words.dart';
 
 /// The six product layouts reviewed in the package's design contact sheet.
 const kitOrdinaryScreens = [
@@ -94,6 +95,13 @@ class _Documents extends StatefulWidget {
 
 class _DocumentsState extends State<_Documents> {
   final _view = KitDocumentsView();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _view.hebrew = context.papersHebrew;
+  }
+
   @override
   void dispose() {
     _view.dispose();

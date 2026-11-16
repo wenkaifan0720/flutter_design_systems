@@ -1,10 +1,12 @@
 // Heads and small type. A window's title bar is the section head, so there are few: a sentence, an eyebrow, a label.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'controls.dart';
 import 'layout.dart';
 import 'theme.dart';
 import 'component_themes.dart';
+import 'tokens.dart';
 
 /// Text that sets `*words*` in italic, and keeps all else as given: a sentence with one title in it.
 ///
@@ -20,12 +22,12 @@ class RetroDesktopText extends StatelessWidget {
     this.textAlign,
     this.maxLines,
     this.overflow,
-  });
+  }) : assert(maxLines == null || maxLines > 0);
 
   /// The text displayed by this part.
   final String text;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final TextStyle style;
 
   /// How text is aligned within its available width.
@@ -66,6 +68,19 @@ class RetroDesktopText extends StatelessWidget {
       overflow: overflow,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(DiagnosticsProperty<TextStyle>('style', style))
+      ..add(EnumProperty<TextAlign>('textAlign', textAlign, defaultValue: null))
+      ..add(IntProperty('maxLines', maxLines, defaultValue: null))
+      ..add(
+        EnumProperty<TextOverflow>('overflow', overflow, defaultValue: null),
+      );
+  }
 }
 
 /// A small line over a head: who it is for, what it is, when.
@@ -87,6 +102,12 @@ class RetroDesktopEyebrow extends StatelessWidget {
       style: t.type.caption.copyWith(color: t.colors.textTertiary),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('text', text));
+  }
 }
 
 /// A page's sentence in the system face, 30 lp to 34: what the active window is saying. One to a window.
@@ -103,6 +124,12 @@ class RetroDesktopHeadline extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Text(text, style: RetroDesktopTheme.of(context).type.head);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('text', text));
+  }
 }
 
 /// A small head in the system face, with its line: inside a window, over what belongs to it.
@@ -156,6 +183,14 @@ class RetroDesktopSectionHeader extends StatelessWidget {
       children: [words, trailing!],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('note', note, defaultValue: null));
+  }
 }
 
 /// A small head over what follows inside a window: a triangle if [open] says it can fold, a small note at its end.
@@ -180,7 +215,12 @@ class RetroDesktopPartHead extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(2, 2, 4, 8),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        RetroDesktopSpacing.s2,
+        RetroDesktopSpacing.s2,
+        RetroDesktopSpacing.s4,
+        RetroDesktopSpacing.s8,
+      ),
       child: RetroDesktopFitRow(
         fill: 0,
         gap: 8,
@@ -194,7 +234,7 @@ class RetroDesktopPartHead extends StatelessWidget {
                       ? AxisDirection.down
                       : (rtl ? AxisDirection.left : AxisDirection.right),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: RetroDesktopSpacing.s8),
               ],
               Expanded(
                 child: Text(
@@ -219,6 +259,15 @@ class RetroDesktopPartHead extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('open', open, defaultValue: null));
+  }
 }
 
 /// A small label over a value or a field.
@@ -235,6 +284,12 @@ class RetroDesktopLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Text(text, style: RetroDesktopTheme.of(context).type.caption);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('text', text));
+  }
 }
 
 /// Whose it is: two letters on a small ink chip, at the menu bar's end or a row's start.
@@ -249,7 +304,7 @@ class RetroDesktopMonogram extends StatelessWidget {
   /// The letters displayed when an image is unavailable.
   final String initials;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
@@ -284,5 +339,19 @@ class RetroDesktopMonogram extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('initials', initials))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }

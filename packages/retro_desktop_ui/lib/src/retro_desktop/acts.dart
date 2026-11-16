@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -10,7 +12,10 @@ import 'glyphs.dart';
 import 'layout.dart'
     show retroDesktopButtonFill, retroDesktopHugs, retroDesktopOwnSize;
 import 'internal/caps.dart';
+import 'tokens.dart';
 import 'internal/parts.dart' show retroDesktopOutdent;
+import 'internal/modal.dart';
+import 'frames.dart' show retroDesktopActiveHere;
 
 const _clear = Color(0x00000000);
 
@@ -82,7 +87,9 @@ class RetroDesktopButton extends StatelessWidget {
   /// The visible or accessible name of this part.
   final String label;
 
+  /// {@template retro_desktop.onPressed}
   /// Called when the action is activated; null makes the action unavailable.
+  /// {@endtemplate}
   final VoidCallback? onPressed;
 
   /// Whether this is the window's default action, the one Return presses (CupertinoDialogAction's flag).
@@ -104,10 +111,14 @@ class RetroDesktopButton extends StatelessWidget {
   /// Overrides whether the busy indicator is drawn; busy behavior is unchanged.
   final bool? showBusy;
 
+  /// {@template retro_desktop.focusNode}
   /// An optional externally owned focus node; the caller disposes it.
+  /// {@endtemplate}
   final FocusNode? focusNode;
 
+  /// {@template retro_desktop.autofocus}
   /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@endtemplate}
   final bool autofocus;
 
   /// The glyph shown with the content.
@@ -148,21 +159,26 @@ class RetroDesktopButton extends StatelessWidget {
       );
     }
     if (isDefaultAction) {
-      return _DefaultButton(
-        label,
-        onPressed: onPressed,
-        size: size,
-        wide: wide,
-        busy: busy,
-        showBusy: showBusy,
-        focusNode: focusNode,
-        autofocus: autofocus,
-        icon:
-            icon ??
-            (isDestructiveAction ? RetroDesktopGlyphs.triangleAlert : null),
-        mark: mark,
-        iconOnPhone: iconOnPhone,
-        style: style,
+      // Only the front window's default is Return's: in a window behind, or under an alert, it keeps its place and
+      // its ring, quiet.
+      return RetroDesktopModalWatch(
+        builder: (context) => _DefaultButton(
+          label,
+          onPressed: onPressed,
+          size: size,
+          wide: wide,
+          busy: busy,
+          showBusy: showBusy,
+          focusNode: focusNode,
+          autofocus: autofocus,
+          icon:
+              icon ??
+              (isDestructiveAction ? RetroDesktopGlyphs.triangleAlert : null),
+          mark: mark,
+          iconOnPhone: iconOnPhone,
+          quiet: !retroDesktopActiveHere(context),
+          style: style,
+        ),
       );
     }
     return _PlainButton(
@@ -181,6 +197,57 @@ class RetroDesktopButton extends StatelessWidget {
       style: style,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        FlagProperty(
+          'isDefaultAction',
+          value: isDefaultAction,
+          ifTrue: 'isDefaultAction',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'isDestructiveAction',
+          value: isDestructiveAction,
+          ifTrue: 'isDestructiveAction',
+        ),
+      )
+      ..add(
+        EnumProperty<RetroDesktopButtonSize>(
+          'size',
+          size,
+          defaultValue: RetroDesktopButtonSize.medium,
+        ),
+      )
+      ..add(FlagProperty('wide', value: wide, ifTrue: 'wide'))
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
+      ..add(DiagnosticsProperty<bool>('showBusy', showBusy, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        FlagProperty('iconOnPhone', value: iconOnPhone, ifTrue: 'iconOnPhone'),
+      )
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 // The default face: the highlight in a ringed frame.
@@ -197,13 +264,14 @@ class _DefaultButton extends StatelessWidget {
     this.icon,
     this.mark,
     this.iconOnPhone = false,
+    this.quiet = false,
     this.style,
   });
 
   /// The visible or accessible name of this part.
   final String label;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
   /// The size of the visible face; minimum interactive reach is retained.
@@ -214,13 +282,16 @@ class _DefaultButton extends StatelessWidget {
   /// Whether the action is in progress and further activation is blocked.
   final bool wide, busy;
 
+  /// In a window that isn't the front one: a plain grey face in a grey ring, in the same box.
+  final bool quiet;
+
   /// Overrides whether the busy indicator is drawn; busy behavior is unchanged.
   final bool? showBusy;
 
-  /// An optional externally owned focus node; the caller disposes it.
+  /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   /// The glyph shown with the content.
@@ -232,7 +303,9 @@ class _DefaultButton extends StatelessWidget {
   /// Whether compact layouts show the glyph instead of the full label.
   final bool iconOnPhone;
 
+  /// {@template retro_desktop.style}
   /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@endtemplate}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) => wide
@@ -278,40 +351,65 @@ class _DefaultButton extends StatelessWidget {
           // The ring is the button's outline: beside a plain button it shows
           // the same top and bottom.
           ringInBox: true,
+          // In a window behind, the ring stands in the inactive grey round a plain face: the place and the size stay,
+          // and the one default Return presses is the front window's.
+          ringColor: quiet ? c.textTertiary : null,
           // The blue runs to the outline, which stands on the keyline: a grey
           // shade line inside it read as the face stopping short.
           // Lit at the top left, in shade at the bottom right, by day and by night (law 2), so a press turns the bevel in
           // and does not only darken the face: mixed with the greys, both edges stood paler than the blue, and by night
           // both darker.
-          bevelTint: (
-            light: Color.lerp(c.highlightFaceTop, const Color(0xFFFFFFFF), .5)!,
-            shade: c.highlightDark,
-          ),
-          flat: c.highlight,
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: const [0, .6, 1],
-            colors: states.contains(WidgetState.pressed)
-                ? [
-                    c.highlightFaceBottom,
-                    c.highlightFaceBottom,
-                    c.highlightFaceMiddle,
-                  ]
-                : [
+          bevelTint: quiet
+              ? null
+              : (
+                  light: Color.lerp(
                     c.highlightFaceTop,
-                    c.highlightFaceMiddle,
-                    c.highlightFaceBottom,
-                  ],
-          ),
+                    const Color(0xFFFFFFFF),
+                    .5,
+                  )!,
+                  shade: c.highlightDark,
+                ),
+          flat: quiet ? null : c.highlight,
+          gradient: quiet
+              ? LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: states.contains(WidgetState.pressed)
+                      ? [c.platinum, c.platinumDark]
+                      : [c.platinumLight, c.platinum],
+                )
+              : LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: const [0, .6, 1],
+                  colors: states.contains(WidgetState.pressed)
+                      ? [
+                          c.highlightFaceBottom,
+                          c.highlightFaceBottom,
+                          c.highlightFaceMiddle,
+                        ]
+                      : [
+                          c.highlightFaceTop,
+                          c.highlightFaceMiddle,
+                          c.highlightFaceBottom,
+                        ],
+                ),
 
-          component: t.defaultButtonTheme.merge(
-            RetroDesktopStyle(
-              foreground: WidgetStatePropertyAll(c.onHighlight),
-              textStyle: WidgetStatePropertyAll(t.type.chrome),
-              iconSize: const WidgetStatePropertyAll(15),
-            ),
-          ),
+          component: quiet
+              ? t.buttonTheme.over(
+                  RetroDesktopStyle(
+                    foreground: WidgetStatePropertyAll(c.text),
+                    textStyle: WidgetStatePropertyAll(t.type.chrome),
+                    iconSize: const WidgetStatePropertyAll(15),
+                  ),
+                )
+              : t.defaultButtonTheme.over(
+                  RetroDesktopStyle(
+                    foreground: WidgetStatePropertyAll(c.onHighlight),
+                    textStyle: WidgetStatePropertyAll(t.type.chrome),
+                    iconSize: const WidgetStatePropertyAll(15),
+                  ),
+                ),
           padding: EdgeInsets.symmetric(
             horizontal: compact ? 8 : 17,
             vertical: compact
@@ -329,7 +427,7 @@ class _DefaultButton extends StatelessWidget {
               else if (glyph != null)
                 Icon(glyph),
               if ((leading != null || glyph != null) && words.isNotEmpty)
-                const SizedBox(width: 6),
+                const SizedBox(width: RetroDesktopSpacing.s6),
               if (words.isNotEmpty)
                 Flexible(
                   child: RetroDesktopCaps(
@@ -365,7 +463,7 @@ class _PlainButton extends StatelessWidget {
   /// The visible or accessible name of this part.
   final String label;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
   /// The size of the visible face; minimum interactive reach is retained.
@@ -379,10 +477,10 @@ class _PlainButton extends StatelessWidget {
   /// Overrides whether the busy indicator is drawn; busy behavior is unchanged.
   final bool? showBusy;
 
-  /// An optional externally owned focus node; the caller disposes it.
+  /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   /// The glyph shown with the content.
@@ -397,7 +495,7 @@ class _PlainButton extends StatelessWidget {
   /// Whether compact layouts show the glyph instead of the full label.
   final bool iconOnPhone;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) => wide
@@ -449,7 +547,7 @@ class _PlainButton extends StatelessWidget {
                 : [c.platinumLight, c.platinum],
           ),
 
-          component: t.buttonTheme.merge(
+          component: t.buttonTheme.over(
             RetroDesktopStyle(
               foreground: WidgetStatePropertyAll(c.text),
               textStyle: WidgetStatePropertyAll(t.type.chrome),
@@ -473,7 +571,7 @@ class _PlainButton extends StatelessWidget {
               else if (glyph != null)
                 Icon(glyph),
               if ((leading != null || glyph != null) && words.isNotEmpty)
-                const SizedBox(width: 6),
+                const SizedBox(width: RetroDesktopSpacing.s6),
               if (words.isNotEmpty)
                 Flexible(
                   child: RetroDesktopCaps(
@@ -513,7 +611,7 @@ class _ExtraButton extends StatelessWidget {
   final bool? showBusy;
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
   final RetroDesktopStyle? style;
   @override
@@ -542,7 +640,7 @@ class _ExtraButton extends StatelessWidget {
           scale: RetroDesktopFaceScale.button,
           flat: isDefaultAction ? t.colors.text : null,
           component: isDefaultAction
-              ? t.defaultButtonTheme.merge(
+              ? t.defaultButtonTheme.over(
                   RetroDesktopStyle(
                     fill: WidgetStatePropertyAll(t.colors.text),
                     foreground: WidgetStatePropertyAll(t.colors.paper),
@@ -552,7 +650,7 @@ class _ExtraButton extends StatelessWidget {
                 )
               // No surface at rest on any ground: a window-coloured fill stood as a grey slab on a lighter card. Held
               // or focused, the window's face.
-              : t.textButtonTheme.merge(
+              : t.textButtonTheme.over(
                   RetroDesktopStyle(
                     fill: WidgetStateProperty.resolveWith(
                       (states) => bevel ? t.colors.platinum : _clear,
@@ -594,7 +692,7 @@ class _ExtraButton extends StatelessWidget {
               else if (glyph != null)
                 Icon(glyph),
               if (glyph != null || mark != null || (showBusy ?? busy))
-                const SizedBox(width: 6),
+                const SizedBox(width: RetroDesktopSpacing.s6),
               Flexible(
                 child: RetroDesktopCaps(
                   Text(label, textAlign: TextAlign.center),
@@ -642,10 +740,10 @@ class RetroDesktopLink extends StatelessWidget {
     this.busy = false,
   });
 
-  /// An optional externally owned focus node; the caller disposes it.
+  /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   /// Whether the link follows surrounding text instead of standing alone.
@@ -657,10 +755,10 @@ class RetroDesktopLink extends StatelessWidget {
   /// The visible or accessible name of this part.
   final String label;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
@@ -700,5 +798,30 @@ class RetroDesktopLink extends StatelessWidget {
                 ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('inSentence', value: inSentence, ifTrue: 'inSentence'))
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }

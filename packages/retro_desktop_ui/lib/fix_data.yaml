@@ -1,0 +1,14 @@
+# retro_desktop_ui's data-driven fixes: `dart fix --apply` moves callers off what a version deprecates.
+# Each transform has its pair under test_fixes/ (`dart fix --compare-to-golden test_fixes`).
+version: 1
+transforms:
+  # 0.2.0: the look's motion is its own (instant, as the period was), not a setting.
+  - title: "Remove 'motion'"
+    date: 2026-11-14
+    element:
+      uris: ['package:retro_desktop_ui/retro_desktop_ui.dart']
+      method: 'copyWith'
+      inClass: 'RetroDesktopThemeData'
+    changes:
+      - kind: 'removeParameter'
+        name: 'motion'

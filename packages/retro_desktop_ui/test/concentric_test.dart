@@ -8,6 +8,8 @@
 // middle of each edge and along each corner's diagonal. A rounded or round
 // corner keeps the gap; a square one keeps square, so its diagonal is the gap
 // times the square root of two. Within half a pixel.
+// The look's painters are private, so these checks read their fields dynamically.
+// ignore_for_file: avoid_dynamic_calls
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';

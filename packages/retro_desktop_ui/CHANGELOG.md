@@ -1,3 +1,121 @@
+## 0.2.0
+
+Retro Desktop on ui_core 0.2.0.
+
+- **Fields, sheets and menus no longer crash in apps set to a language other than English; their built-in labels now
+  follow the app's language.** In 0.1.0 a text field threw "No MaterialLocalizations found" in an app in German or
+  Arabic, even one with `flutter_localizations`, whose words are Flutter's own, not those of `material_ui` and
+  `cupertino_ui` that the look is drawn with. The look now loads their translations itself: a field's copy and paste
+  menu and its selection handles read "Kopieren" in German and Arabic in Arabic, on Android and iOS, and English in a
+  language they don't have.
+- **Selecting text with the theme under your home page.** On iOS, a field's selection handles and menu build above
+  the page, and threw "No Retro Desktop theme in scope" when `RetroDesktopTheme` sat under the app's `home` rather
+  than in its `builder`. `RetroDesktopTheme.of` now gives the look's default (classic, by day) where no theme is
+  above, as `Theme.of` does; `RetroDesktopTheme.maybeOf` still gives null there.
+- **A tap lands where the control is.** The area a tap or click reaches, the box a screen reader outlines and the
+  control's layout are now the same box (ui_core's `DesignTapTarget`): nothing is pressed past a control's edge any
+  more, so a press near two controls goes to the one under it. Under a pointer a control is at least 24 wide and 44
+  high; under a finger at least 48 by 48. A quiet button's outline is the box a tap reaches, not the face that hangs
+  over its column's edge.
+- **Calendars fit a phone.** A day is 44 wide under a finger, so a week fits a phone's window: no day hangs past its
+  column where a tap couldn't reach it.
+- **Night lighting.** By night a raised part is lit from the top left, as by day: its top and left edges were black
+  and read as a hole. Pressed, its outline turns in with its bevel, dark above and left and lit below and right; it
+  went flat grey all round.
+- **Only the front window is active.** Under an alert, a dialog or a sheet, the window behind draws its title bar
+  without stripes, its default button quiet (a grey ring round a plain face, in the same place) and its chosen row in
+  grey, as any window behind does, so one default button answers Return. Closing the alert gives the front back; a
+  menu leaves the window it drops from active. An alert that opens while a menu or a popover is open closes it, the
+  focus in the alert, rather than standing over a menu with its row still lit.
+- **Alerts and side sheets stand below the menu bar.** At twice the text size on a phone a tall alert covered the
+  bar's last row; it now stands below the bar and scrolls if it must, and on a desk it stands where it did. A side
+  sheet stood over the bar's end; it now stands 8 below the bar.
+- **Pages change in place.** `RetroDesktopPageRoute` pushes a page the look's way: it stands in its place at once and
+  pops the same way, where a `MaterialPageRoute` slid in from the side or zoomed, as the platform does (on a Mac, the
+  Cupertino slide). For an app's own `MaterialPageRoute`s, `retroDesktopPageTransitions` is the look's page change on
+  every platform, one map for Flutter's `ThemeData.pageTransitionsTheme` and material_ui's (the README's setup and
+  "Pages change in place"); a Material page route pushed under `RetroDesktopTheme` in a `material_ui` app already
+  changes this way.
+- **Menus come and go at once.** A menu bar's menu, a split button's menu and a popover faded in over a quarter second and
+  lingered as long after their item was chosen (ui_core keeps a closing panel until its presence spring settles); they
+  now stand whole in their first frame and are gone in the first frame after a choice, as the period's menus were.
+- **An open list shows its choice.** In a select's list, a combobox's list and a menu with a choice (a menu bar's
+  checked item), the chosen option stands in the held well, the darker grey with its bevel turned in, and carries its
+  check; the row under the pointer or the keyboard takes the highlight bar. In 0.1.0 both were the highlight bar, and
+  the chosen row lost its mark as soon as the pointer entered the list.
+- **List and menu keys.** A combobox's list keys are ui_core 0.2.0's: the arrows go round, Page Up and Page Down jump,
+  Down or Up on a closed list only opens it, an opened list starts on the choice and shows every option until you edit
+  the words. A menu bar's menu goes to the item a typed letter starts. And a menu opened from the keyboard as an
+  app's first input lights its row: the look followed the keys only once a menu asked, so that first key went unseen.
+  In a combobox's list the pointer moves the one lit row and the keys go on from it, as in a select's list and the
+  period's pop-up menus; a long list opens with its choice in view and keeps the lit row in view as the keys move it.
+- **Enter in a combobox keeps the field.** Enter takes the lit option and the field keeps the focus, so you can type
+  the next words at once, in a browser too. In 0.1.0 Enter took the option and the focus with it.
+- **One lit row in a menu.** A menu bar's menu, a split button's menu and a `RetroDesktopMenuAnchor`'s menu light one
+  row, the keys' or the pointer's, whichever moved last; the pointer moving over a row takes the keys' place, so the
+  keys go on from the row it lit. With the pointer resting on one row while the keys moved to another, both were lit;
+  and an anchor's menu opened from the keys under a resting pointer lost its keys' row. Opened by a click a menu still
+  lights no row until the pointer or the keys move; opened by the keys, its first.
+- **The back swipe on iOS.** A page pushed with `RetroDesktopPageRoute`, or a `MaterialPageRoute` under
+  `retroDesktopPageTransitions`, pops with the edge swipe again on iOS (ui_core's
+  `DesignSwipeBackPageTransitionsBuilder` round the look's change): the page follows the finger while it is held and
+  still stands in place otherwise. The look's change in place had dropped the swipe Flutter's Cupertino slide carries.
+- **Android's back closes what is open first.** A menu bar's menu, a split button's menu, a popover and a combobox's
+  list close on back, the innermost first, and the page stays; the back after pops it. Before, it popped the page
+  under them.
+- **A phone's title bar has only its close box.** Off the desk a window is the screen, so its zoom and window-shade
+  boxes did nothing; they are gone, and the stripes run evenly on both sides of the title.
+- **The close box turns in** while it is held, as every pressed part does.
+- **Table heads fit their words in every script.** On the web a column head in Hebrew was measured before its font
+  arrived and drew cut to an ellipsis; a table now measures again when a font loads.
+- **Large text.** A window's information strip keeps its count whole at large text sizes; its other fact moves to the
+  next line instead of cutting the count short.
+- **A bottom sheet is a window.** Its title and its close box stand in a title bar, striped while it is in front, as a
+  side sheet's do, on a phone and on a desk; raised with `showRetroDesktopBottomSheet` and given a title but no
+  `onClose`, its close box closes it. In 0.1.0 the title stood in the sheet's body beside a Close button, and a sheet
+  given no `onClose` had no way out that showed. An action sheet stays a panel, its Cancel its way out.
+- **Short sheets.** A sheet too short for a line of its content and its footer (while it opens, or on a short screen
+  with the keyboard up) lets the footer scroll with the content, so its content always shows a line.
+- **Desk icon names read whole at large text sizes.** A name broke inside a word ("Docu" over "ments"); an icon's
+  name plate now grows with the text (`RetroDesktopDeskIcon.widthOf` gives a rail its width) and a name breaks only
+  between words, on two lines at most. One that still can't fit stands on one line cut in its middle, as the Finder
+  cut a long name ("Quarterly…ation"), and a screen reader reads it whole.
+- **The scroll box keeps one length,** as the period's did (24 under a pointer, 44 under a finger), instead of growing
+  and shrinking as a long list builds its rows.
+- **One style for every look.** `RetroDesktopStyle` is now ui_core's `DesignStyle` under the look's name, with the
+  same slots, and `RetroDesktopStyleOf` reads a part's layers at its states. Code that builds or passes a
+  `RetroDesktopStyle` is unchanged.
+- **Deprecated:** `RetroDesktopThemeData.copyWith(motion:)`. The look is instant, as the period was: its motion is
+  part of the look, not a setting. Leave the argument out (`dart fix --apply` removes it); Reduce Motion is still
+  honoured. It goes in 0.3.0.
+- **What keeps the look, written down.** The README and the API docs now say which customisations stay Retro Desktop:
+  a part's `shape` is the appearance's, drawn on the pixel grid (a stadium or a large radius is drawn smooth and off
+  it); the desktop, paper, text and highlight colours are yours, while the machine's greys and the bevel and outline
+  colours are steps of one bevel, retuned together or not at all. The README's hover example now gives Balloon Help (a
+  tooltip) instead of a hover wash the period never drew.
+- **Breaking:** `a.merge(b)` keeps each of `a`'s slots whole, as `ButtonStyle.merge` does. If `a` sets a slot for
+  some states only (a fill for pressed, say), `b`'s value no longer shows in the other states: at rest the button
+  shows its theme's fill, not `b`'s. To keep 0.1.0's result, where `b` filled in every state `a` left open, write
+  `DesignStyle.layered([a, b])` in place of `a.merge(b)`.
+- **30 languages.** Add `DesignLocalizations.delegate` to your app's `localizationsDelegates` (and
+  `DesignLocalizations.supportedLocales` to its `supportedLocales`) and the parts speak your app's language, with its
+  dates, digits and plurals. The Material and Cupertino words the parts' machinery needs come with the look, so an app
+  needs nothing more for them.
+- **`RetroDesktopSpacing`** names the look's spacing steps on its 2-pixel grid (`px`, `s2` … `s40`), for your own
+  layouts to keep its rhythm; the theme declares the grid to ui_core (`DesignSpacingScope`).
+- **In the inspector.** Every public widget lists the fields it was built with in Flutter's inspector and in a failing
+  test's tree, those left at their defaults hidden.
+- **Mistakes show in debug builds.** A value out of its range asserts: a selected index before the first, a text field
+  or text of no lines, a negative indent or tree level, a scale of no divisions or no top.
+- **Every example in the docs compiles and runs,** in the package's own tests.
+- **Plumbing** (`retro_desktop_parts.dart`, outside semver). `RetroDesktopReach` is now a widget that builds ui_core's
+  tap target, with `RetroDesktopReach.floor`; `RenderRetroDesktopReach` takes that floor and an alignment.
+- **Example.** Papers finds documents as you type, asks before closing a document with unsaved changes, says when an
+  order for printed copies fails, and speaks Hebrew right to left. Its windows on a desk are as tall as what they
+  hold. On a tablet it tiles the documents list and the window in front side by side; a window alone keeps its desk
+  width beside the desk's icons. The gallery runs in each of the 30 languages with
+  Flutter's own words beside ui_core's, as an ordinary app does.
+
 ## 0.1.0
 
 The first release of Retro Desktop: a pixel-era desktop UI for Flutter.

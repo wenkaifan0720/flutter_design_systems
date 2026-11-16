@@ -5,7 +5,11 @@ export 'retro_desktop/chrome.dart';
 export 'retro_desktop/controls.dart'
     hide retroDesktopFillHeight, retroDesktopCheckFace;
 export 'retro_desktop/frames.dart'
-    hide retroDesktopCompactHere, retroDesktopActiveHere;
+    hide
+        retroDesktopCompactHere,
+        retroDesktopActiveHere,
+        retroDesktopTitleBar,
+        retroDesktopWindowFrame;
 export 'retro_desktop/heads.dart';
 export 'retro_desktop/layout.dart'
     hide
@@ -35,7 +39,8 @@ export 'retro_desktop/theme.dart' hide RetroDesktopOffHighlight;
 
 export 'retro_desktop/behavior.dart';
 export 'retro_desktop/press.dart';
-export 'retro_desktop/component_themes.dart' hide RetroDesktopComponentThemes;
+export 'retro_desktop/component_themes.dart'
+    hide RetroDesktopComponentThemes, RetroDesktopStyleLayers;
 
 export 'retro_desktop/editing.dart';
 export 'retro_desktop/localizations.dart';

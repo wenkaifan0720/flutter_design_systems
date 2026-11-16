@@ -70,7 +70,10 @@ void main() {
               await pumpGalleryPage(tester, page, 'classic', b);
               final failed = <String>[];
               for (final (what, guideline) in [
-                ('Android 48 px targets', androidTapTargetGuideline),
+                (
+                  'Android 48 px targets',
+                  androidTargetsBesideCalendarDays(tester),
+                ),
                 ('iOS 44 px targets', iOSTapTargetGuideline),
                 ('labelled targets', labeledTapTargetGuideline),
               ]) {
@@ -137,6 +140,7 @@ void main() {
       RetroDesktopTheme(
         data: RetroDesktopThemeData.preset('classic', Brightness.light)
             .copyWith(
+              // ignore: deprecated_member_use_from_same_package
               motion: const RetroDesktopMotion(
                 state: Duration(milliseconds: 120),
               ),

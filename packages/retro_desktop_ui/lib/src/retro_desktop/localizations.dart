@@ -1,6 +1,7 @@
 // The words only Retro Desktop's parts say, and its date and number formats. The words every look says (Cancel, Close,
 // Today, Next month, Loading) are ui_core's DesignLocalizations, under MaterialLocalizations' names: the parts read them
 // there, so an app translates them once for every look by extending DefaultDesignLocalizations.
+import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -27,6 +28,7 @@ abstract class RetroDesktopLocalizations {
       ) ??
       _WidgetWords(
         Localizations.of<WidgetsLocalizations>(context, WidgetsLocalizations),
+        Localizations.of<MaterialLocalizations>(context, MaterialLocalizations),
       );
 
   /// Loads Retro Desktop's English words for an English locale.
@@ -294,22 +296,41 @@ class _RetroDesktopLocalizationsDelegate
   bool shouldReload(_RetroDesktopLocalizationsDelegate old) => false;
 }
 
-// Prefer Flutter's installed editing words when no look delegate was supplied.
+// The text menu's words when no look delegate was supplied: the app's own editing words (flutter_localizations gives
+// them in its language); where it gives none, WidgetsApp's English defaults stand in, and the Material words say them
+// instead, which the look loads in the app's language (RetroDesktopTheme); else English.
 class _WidgetWords extends RetroDesktopLocalizationsEn {
-  const _WidgetWords(this.widgets);
+  _WidgetWords(WidgetsLocalizations? widgets, this.material)
+    : widgets = widgets.runtimeType == DefaultWidgetsLocalizations
+          ? null
+          : widgets;
   final WidgetsLocalizations? widgets;
+  final MaterialLocalizations? material;
   @override
-  String get cut => widgets?.cutButtonLabel ?? super.cut;
+  String get cut =>
+      widgets?.cutButtonLabel ?? material?.cutButtonLabel ?? super.cut;
   @override
-  String get copy => widgets?.copyButtonLabel ?? super.copy;
+  String get copy =>
+      widgets?.copyButtonLabel ?? material?.copyButtonLabel ?? super.copy;
   @override
-  String get paste => widgets?.pasteButtonLabel ?? super.paste;
+  String get paste =>
+      widgets?.pasteButtonLabel ?? material?.pasteButtonLabel ?? super.paste;
   @override
-  String get selectAll => widgets?.selectAllButtonLabel ?? super.selectAll;
+  String get selectAll =>
+      widgets?.selectAllButtonLabel ??
+      material?.selectAllButtonLabel ??
+      super.selectAll;
   @override
-  String get lookUp => widgets?.lookUpButtonLabel ?? super.lookUp;
+  String get lookUp =>
+      widgets?.lookUpButtonLabel ?? material?.lookUpButtonLabel ?? super.lookUp;
   @override
-  String get searchWeb => widgets?.searchWebButtonLabel ?? super.searchWeb;
+  String get searchWeb =>
+      widgets?.searchWebButtonLabel ??
+      material?.searchWebButtonLabel ??
+      super.searchWeb;
   @override
-  String get share => widgets?.shareButtonLabel ?? super.share;
+  String get share =>
+      widgets?.shareButtonLabel ?? material?.shareButtonLabel ?? super.share;
+  @override
+  String get scanText => material?.scanTextButtonLabel ?? super.scanText;
 }

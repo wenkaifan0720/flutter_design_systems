@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -10,6 +11,7 @@ import 'glyphs.dart';
 import 'theme.dart';
 import 'press.dart';
 import 'rows.dart';
+import 'tokens.dart';
 
 /// An avatar in the family's mark shape (a circle under rounded corners) with an image and initials fallback.
 ///
@@ -43,7 +45,7 @@ class RetroDesktopAvatar extends StatelessWidget {
   /// The name identifying this item.
   final String? name;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
@@ -62,7 +64,7 @@ class RetroDesktopAvatar extends StatelessWidget {
         ) ??
         t.shapes.full;
     final fallback = Padding(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(RetroDesktopSpacing.s4),
       child: FittedBox(
         fit: BoxFit.scaleDown,
         child: Text(
@@ -105,6 +107,26 @@ class RetroDesktopAvatar extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('initials', initials))
+      ..add(
+        DiagnosticsProperty<ImageProvider>('image', image, defaultValue: null),
+      )
+      ..add(DoubleProperty('size', size, defaultValue: 40))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(StringProperty('name', name, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A wrapping collection of people; every name remains available to accessibility.
@@ -128,6 +150,14 @@ class RetroDesktopAvatarGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Wrap(spacing: spacing, runSpacing: spacing, children: children);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopAvatar>('children', children))
+      ..add(DoubleProperty('spacing', spacing, defaultValue: 4));
+  }
 }
 
 /// An image or arbitrary caller-supplied artwork in a frame of the family's surface shape.
@@ -163,7 +193,7 @@ class RetroDesktopPicture extends StatelessWidget {
   /// Where the content sits within its available space.
   final AlignmentGeometry alignment;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
@@ -212,6 +242,31 @@ class RetroDesktopPicture extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(
+        DiagnosticsProperty<ImageProvider>('image', image, defaultValue: null),
+      )
+      ..add(DoubleProperty('aspectRatio', aspectRatio, defaultValue: 16 / 9))
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'alignment',
+          alignment,
+          defaultValue: Alignment.center,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A bevelled plate in the family's surface shape, optionally pressable or floating above the desktop.
@@ -224,7 +279,7 @@ class RetroDesktopSurface extends StatelessWidget {
   const RetroDesktopSurface({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(12),
+    this.padding = const EdgeInsets.all(RetroDesktopSpacing.s12),
     this.selected = false,
     this.pressed = false,
     this.floating = false,
@@ -250,19 +305,19 @@ class RetroDesktopSurface extends StatelessWidget {
   /// Whether this surface draws its raised shadow.
   final bool floating;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
   /// The visible or accessible name of this part.
   final String? label;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
-  /// The focus node this part uses; when null it makes and disposes its own.
+  /// {@macro retro_desktop.ownFocusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   @override
@@ -301,6 +356,39 @@ class RetroDesktopSurface extends StatelessWidget {
             builder: (context, states) => face(states),
           );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.all(RetroDesktopSpacing.s12),
+        ),
+      )
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(FlagProperty('pressed', value: pressed, ifTrue: 'pressed'))
+      ..add(FlagProperty('floating', value: floating, ifTrue: 'floating'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// A content plate in the family's surface shape with a leading heading, separate from window chrome.
@@ -318,7 +406,7 @@ class RetroDesktopCard extends StatelessWidget {
     this.children,
   }) : assert(child == null || children == null);
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The heading displayed above the content.
@@ -353,6 +441,21 @@ class RetroDesktopCard extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(IterableProperty<Widget>('children', children, defaultValue: null));
+  }
 }
 
 /// A titled list of rows with optional explanatory text below it.
@@ -370,7 +473,7 @@ class RetroDesktopListSection extends StatelessWidget {
     required this.children,
   });
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The heading displayed above the content.
@@ -390,7 +493,7 @@ class RetroDesktopListSection extends StatelessWidget {
       children: [
         if (title != null)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s8),
             child: Semantics(
               header: true,
               child: Text(title!, style: t.type.small),
@@ -420,11 +523,26 @@ class RetroDesktopListSection extends StatelessWidget {
         ),
         if (footer != null)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: RetroDesktopSpacing.s8),
             child: Text(footer!, style: t.type.note),
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('footer', footer, defaultValue: null));
   }
 }
 
@@ -519,7 +637,9 @@ class RetroDesktopDivider extends StatelessWidget {
     this.indent = 0,
     this.endIndent = 0,
     this.style,
-  }) : _etched = false;
+  }) : assert(indent >= 0),
+       assert(endIndent >= 0),
+       _etched = false;
 
   /// Creates an etched separator: the divider theme's edge colour over its fill.
   const RetroDesktopDivider.etched({
@@ -537,7 +657,7 @@ class RetroDesktopDivider extends StatelessWidget {
   /// Space after the divider in reading order.
   final double endIndent;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
@@ -595,6 +715,21 @@ class RetroDesktopDivider extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('indent', indent, defaultValue: 0))
+      ..add(DoubleProperty('endIndent', endIndent, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -655,7 +790,7 @@ class RetroDesktopAmount extends StatelessWidget {
             if (label != null) Text(label!, style: t.type.note),
             Wrap(
               crossAxisAlignment: WrapCrossAlignment.end,
-              spacing: 6,
+              spacing: RetroDesktopSpacing.s6,
               children: [
                 Text(
                   value,
@@ -680,6 +815,23 @@ class RetroDesktopAmount extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('unit', unit, defaultValue: null))
+      ..add(StringProperty('was', was, defaultValue: null))
+      ..add(
+        EnumProperty<RetroDesktopAmountScale>(
+          'scale',
+          scale,
+          defaultValue: RetroDesktopAmountScale.display,
+        ),
+      );
+  }
 }
 
 /// A labelled meter on a known range.
@@ -699,7 +851,7 @@ class RetroDesktopMeter extends StatelessWidget {
   }) : assert(max > min),
        assert(value >= min && value <= max);
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The visible or accessible name of this part.
@@ -719,4 +871,21 @@ class RetroDesktopMeter extends StatelessWidget {
     style: style,
     value: (value - min) / (max - min),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('value', value))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1));
+  }
 }

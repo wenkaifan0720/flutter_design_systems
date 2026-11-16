@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'theme.dart';
 
@@ -175,6 +177,110 @@ class RetroDesktopMotion {
     exit,
     standard,
   );
+}
+
+/// A page pushed the look's way: it stands in its place at once, as the period's screens changed, and goes the same
+/// way when popped; nothing travels across the screen. With a [RetroDesktopMotion.travel] set, it fades in over that
+/// time and out over [RetroDesktopMotion.leave], still in its place; Reduce Motion makes it instant again. Push your
+/// app's own pages with it: a `MaterialPageRoute` takes your `MaterialApp`'s page transitions, the platform's slide or
+/// zoom, unless you set them (the README's "Pages").
+///
+/// ```dart
+/// RetroDesktopPageRoute<void>(builder: (context) => const Text('Project notes'))
+/// ```
+class RetroDesktopPageRoute<T> extends PageRoute<T> {
+  /// Creates a [RetroDesktopPageRoute] that builds its page with [builder].
+  RetroDesktopPageRoute({
+    required this.builder,
+    super.settings,
+    super.fullscreenDialog,
+    this.maintainState = true,
+  });
+
+  /// Builds the page.
+  final WidgetBuilder builder;
+
+  @override
+  final bool maintainState;
+
+  // The look's motion where the navigator stands (its theme above the app's pages), read as the route needs it.
+  RetroDesktopMotion get _motion {
+    final context = navigator?.context;
+    return context == null
+        ? RetroDesktopMotion.still
+        : RetroDesktopMotion.of(context);
+  }
+
+  @override
+  Duration get transitionDuration => _motion.travel;
+
+  @override
+  Duration get reverseTransitionDuration => _motion.leave;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) => Semantics(
+    scopesRoute: true,
+    explicitChildNodes: true,
+    child: builder(context),
+  );
+
+  CurvedAnimation? _fade;
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final motion = RetroDesktopMotion.of(context);
+    final page = motion.travel == Duration.zero && motion.leave == Duration.zero
+        ? child
+        : FadeTransition(
+            opacity: _fade ??= CurvedAnimation(
+              parent: animation,
+              curve: motion.enter,
+              reverseCurve: motion.exit,
+            ),
+            child: child,
+          );
+    // On iOS the swipe back from the screen's edge pops it, as it does every page there (ui_core's swipe back).
+    return defaultTargetPlatform == TargetPlatform.iOS
+        ? const DesignSwipeBackPageTransitionsBuilder(
+            _AsBuilt(),
+          ).buildTransitions(this, context, animation, secondaryAnimation, page)
+        : page;
+  }
+
+  @override
+  void dispose() {
+    _fade?.dispose();
+    super.dispose();
+  }
+}
+
+// The page as [RetroDesktopPageRoute] built it, for ui_core's swipe back to stand round.
+class _AsBuilt extends PageTransitionsBuilder {
+  const _AsBuilt();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => child;
 }
 
 /// The keyboard focus outline: [width] of [color], [gap] outside the focused part's own outline and concentric with it.

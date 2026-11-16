@@ -1,5 +1,6 @@
 // Shared inventory for the source-enumerated reach and keyboard laws.
 import 'package:flutter/widgets.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -9,7 +10,7 @@ import '../example/lib/demo_art.dart';
 
 final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   'RetroDesktopPressable': (hit) =>
-      RetroDesktopPressable(onPressed: hit, child: Text('Press')),
+      RetroDesktopPressable(onPressed: hit, child: const Text('Press')),
   'RetroDesktopButton (isDefaultAction)': (hit) =>
       RetroDesktopButton('Save', isDefaultAction: true, onPressed: hit),
   'RetroDesktopButton': (hit) => RetroDesktopButton('Back', onPressed: hit),
@@ -54,18 +55,18 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     onExpansionChanged: hit == null ? null : (_) => hit(),
     note: '12',
     title: 'Versions',
-    child: Text('Inside'),
+    child: const Text('Inside'),
   ),
   'RetroDesktopChoiceBox': (hit) => RetroDesktopChoiceBox(
     onPressed: hit,
     selected: true,
-    child: Text('Today'),
+    child: const Text('Today'),
   ),
   'RetroDesktopChoices': (hit) => RetroDesktopChoices(
     options: [
-      RetroDesktopChoice('Every day', note: 'At nine'),
-      RetroDesktopChoice('Every week', note: 'On Monday'),
-      RetroDesktopChoice('Never'),
+      const RetroDesktopChoice('Every day', note: 'At nine'),
+      const RetroDesktopChoice('Every week', note: 'On Monday'),
+      const RetroDesktopChoice('Never'),
     ],
     onChanged: hit == null ? null : (_) => hit(),
     value: 'Every week',
@@ -80,12 +81,12 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     onChanged: hit == null ? null : (_) => hit(),
     selectedIndex: 0,
     counts: ['3', '4', '5'],
-    child: RetroDesktopWell(child: Text('One row')),
+    child: const RetroDesktopWell(child: Text('One row')),
   ),
   'RetroDesktopWindow': (hit) => RetroDesktopWindow(
     title: 'A window',
     onClose: hit,
-    child: Text('Inside'),
+    child: const Text('Inside'),
   ),
   'RetroDesktopWindowShade': (hit) => RetroDesktopWindowShade(
     title: 'Inbox, 4 new',
@@ -117,8 +118,8 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   ),
   'RetroDesktopListTableRow': (hit) => RetroDesktopListTable(
     columns: [
-      RetroDesktopListTableColumn('Name'),
-      RetroDesktopListTableColumn('Edited', width: 90),
+      const RetroDesktopListTableColumn('Name'),
+      const RetroDesktopListTableColumn('Edited', width: 90),
     ],
     rows: [
       RetroDesktopListTableRow(
@@ -136,18 +137,21 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
   // The table as one control: a row is chosen and opened through the table.
   'RetroDesktopListTable': (hit) => RetroDesktopListTable(
     columns: [
-      RetroDesktopListTableColumn('Name'),
-      RetroDesktopListTableColumn('Edited', width: 90),
+      const RetroDesktopListTableColumn('Name'),
+      const RetroDesktopListTableColumn('Edited', width: 90),
     ],
     rows: [
-      RetroDesktopListTableRow(title: 'One', cells: [('09:14', 'today')]),
-      RetroDesktopListTableRow(title: 'Two', cells: [('18:05', 'yesterday')]),
+      const RetroDesktopListTableRow(title: 'One', cells: [('09:14', 'today')]),
+      const RetroDesktopListTableRow(
+        title: 'Two',
+        cells: [('18:05', 'yesterday')],
+      ),
     ],
     onSelected: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopDeskIcon': (hit) => RetroDesktopDeskIcon(
     'Documents',
-    art: RetroDesktopSystemMark(size: 40),
+    art: const RetroDesktopSystemMark(size: 40),
     onPressed: hit,
   ),
   'RetroDesktopFolder': (hit) => RetroDesktopFolderGrid(
@@ -156,19 +160,19 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
         'First',
         note: '6 things',
         onPressed: hit,
-        art: RetroDesktopFolderArt(selected: false, icon: null),
+        art: const RetroDesktopFolderArt(selected: false, icon: null),
       ),
       RetroDesktopFolder(
         'Second',
         note: '4 things',
         onPressed: hit,
-        art: RetroDesktopFolderArt(selected: false, icon: null),
+        art: const RetroDesktopFolderArt(selected: false, icon: null),
       ),
       RetroDesktopFolder(
         'Third',
         note: '2 things',
         onPressed: hit,
-        art: RetroDesktopFolderArt(selected: false, icon: null),
+        art: const RetroDesktopFolderArt(selected: false, icon: null),
       ),
     ],
   ),
@@ -178,7 +182,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
         'a.pdf',
         kind: 'PDF',
         onPressed: hit,
-        art: RetroDesktopFilePageArt(
+        art: const RetroDesktopFilePageArt(
           kind: RetroDesktopFileArt.text,
           selected: false,
         ),
@@ -187,7 +191,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
         'b.csv',
         kind: 'CSV',
         onPressed: hit,
-        art: RetroDesktopFilePageArt(
+        art: const RetroDesktopFilePageArt(
           kind: RetroDesktopFileArt.text,
           selected: false,
         ),
@@ -196,7 +200,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
         'c.svg',
         kind: 'SVG',
         onPressed: hit,
-        art: RetroDesktopFilePageArt(
+        art: const RetroDesktopFilePageArt(
           kind: RetroDesktopFileArt.text,
           selected: false,
         ),
@@ -223,7 +227,7 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     ],
   ),
   'RetroDesktopPictureCard': (hit) => RetroDesktopPictureCard(
-    art: RetroDesktopObjectArt(RetroDesktopObject.folder),
+    art: const RetroDesktopObjectArt(RetroDesktopObject.folder),
     title: 'One thing',
     onPressed: hit,
   ),
@@ -439,10 +443,12 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopCalendar': (hit) => RetroDesktopCalendar(
-    controller: DesignCalendarController(
-      firstDate: DateTime(2026),
-      lastDate: DateTime(2027),
-      currentDate: DateTime(2026, 6, 10),
+    controller: _owned(
+      DesignCalendarController(
+        firstDate: DateTime(2026),
+        lastDate: DateTime(2027),
+        currentDate: DateTime(2026, 6, 10),
+      ),
     ),
     onChanged: hit == null ? null : (_) => hit(),
   ),
@@ -454,11 +460,17 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'RetroDesktopDataTable': (hit) => RetroDesktopDataTable<String>(
-    controller: DesignTableController<String>(
-      rows: const ['Ada', 'Grace'],
-      columns: [
-        DesignTableColumn<String>(id: 'name', label: 'Name', sortKey: (r) => r),
-      ],
+    controller: _owned(
+      DesignTableController<String>(
+        rows: const ['Ada', 'Grace'],
+        columns: [
+          DesignTableColumn<String>(
+            id: 'name',
+            label: 'Name',
+            sortKey: (r) => r,
+          ),
+        ],
+      ),
     ),
     cellText: (row, column) => row,
     onActivate: hit == null ? null : (_) => hit(),
@@ -472,9 +484,11 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     ),
   ),
   'RetroDesktopTreeView': (hit) => RetroDesktopTreeView<String>(
-    controller: DesignTreeController<String>(
-      roots: const ['Documents'],
-      childrenOf: (node) => const [],
+    controller: _owned(
+      DesignTreeController<String>(
+        roots: const ['Documents'],
+        childrenOf: (node) => const [],
+      ),
     ),
     labelOf: (node) => node,
     onActivate: hit == null ? null : (_) => hit(),
@@ -495,3 +509,9 @@ final retroDesktopInteractiveSamples = <String, Widget Function(VoidCallback?)>{
     onRetry: hit,
   ),
 };
+
+/// [controller], disposed when the test that built it ends.
+C _owned<C extends ChangeNotifier>(C controller) {
+  addTearDown(controller.dispose);
+  return controller;
+}

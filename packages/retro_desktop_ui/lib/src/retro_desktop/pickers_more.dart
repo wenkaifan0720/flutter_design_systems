@@ -3,7 +3,7 @@
 // draws them in Retro Desktop's hand.
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show setEquals;
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -16,6 +16,7 @@ import 'layout.dart' show RetroDesktopReach;
 import 'localizations.dart';
 import 'press.dart';
 import 'theme.dart';
+import 'tokens.dart';
 
 /// A slider's grip, in the appearance's hand: Platinum's grey block with its
 /// ridges, Chisel's bevelled block. Held, it shows its press (Platinum's
@@ -147,7 +148,7 @@ class RetroDesktopRangeSlider extends StatelessWidget {
     this.semanticFormatterCallback,
     this.startLabel,
     this.endLabel,
-  });
+  }) : assert(divisions == null || divisions > 0);
 
   /// The stretch chosen.
   final DesignRangeValues values;
@@ -225,10 +226,35 @@ class RetroDesktopRangeSlider extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ExcludeSemantics(child: Text(label!, style: t.type.body)),
-        const SizedBox(height: 4),
+        const SizedBox(height: RetroDesktopSpacing.s4),
         ranged,
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has(
+          'semanticFormatterCallback',
+          semanticFormatterCallback,
+        ),
+      )
+      ..add(StringProperty('startLabel', startLabel, defaultValue: null))
+      ..add(StringProperty('endLabel', endLabel, defaultValue: null));
   }
 }
 
@@ -363,7 +389,7 @@ class RetroDesktopColorPicker extends StatelessWidget {
           ),
           thumbBuilder: (context, states) => _gripWithRing(t, states),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: RetroDesktopSpacing.s8),
         ListenableBuilder(
           listenable: controller,
           builder: (context, _) => Row(
@@ -372,7 +398,7 @@ class RetroDesktopColorPicker extends StatelessWidget {
                 dimension: 24,
                 child: well(ColoredBox(color: controller.color)),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: RetroDesktopSpacing.s8),
               Text(
                 controller.hex,
                 style: t.type.mono(13, 16).copyWith(color: c.text),
@@ -394,6 +420,17 @@ class RetroDesktopColorPicker extends StatelessWidget {
         child: picker,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignColorController>('controller', controller),
+      )
+      ..add(FlagProperty('showAlpha', value: showAlpha, ifTrue: 'showAlpha'))
+      ..add(DoubleProperty('areaHeight', areaHeight, defaultValue: 160));
   }
 }
 
@@ -466,7 +503,9 @@ Widget _day(
           );
         }
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(
+            horizontal: RetroDesktopSpacing.s2,
+          ),
           child: number,
         );
       },
@@ -502,7 +541,7 @@ Widget _monthHead(
           child: Visibility.maintain(visible: false, child: button),
         );
   return Padding(
-    padding: const EdgeInsets.only(bottom: 4),
+    padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s4),
     // The month between its two steps, one group in the middle.
     child: Center(
       child: Row(
@@ -521,7 +560,9 @@ Widget _monthHead(
           ),
           Flexible(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(
+                horizontal: RetroDesktopSpacing.s12,
+              ),
               child: Text(
                 h.label,
                 textAlign: TextAlign.center,
@@ -626,7 +667,7 @@ class RetroDesktopCalendar extends StatelessWidget {
     this.onChanged,
     this.firstWeekday,
     this.minDayWidth = 36,
-  });
+  }) : assert(minDayWidth > 0);
 
   /// What is chosen, the month shown and the limits; the caller disposes it.
   final DesignCalendarController controller;
@@ -653,7 +694,14 @@ class RetroDesktopCalendar extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     // Seven days reach a finger's width on a phone only with a narrow margin.
     final pad = RetroDesktopReach.least(context) >= 44 ? 4.0 : 8.0;
-    final day = math.max(minDayWidth, RetroDesktopReach.least(context));
+    // Under a finger a day is at least the touch floor wide, and no wider than its seventh where seven of them fit
+    // (a day overhanging its seventh was outlined past where a tap reached it, the next day's taking its edge).
+    final day = math.max(
+      minDayWidth,
+      RetroDesktopReach.padsAcross(context)
+          ? DesignTapTargets.of(context).floorOn().width
+          : RetroDesktopReach.least(context),
+    );
     final box = retroDesktopSunkenBox(
       context,
       states: const {},
@@ -663,8 +711,6 @@ class RetroDesktopCalendar extends StatelessWidget {
         months: months,
         onChanged: onChanged,
         firstWeekday: firstWeekday,
-        // Under a finger a day keeps a full target, overhanging its seventh
-        // where seven of them do not fit.
         minDayWidth: day,
         dayBuilder: _day,
         headerBuilder: (context, h) {
@@ -709,6 +755,21 @@ class RetroDesktopCalendar extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+      )
+      ..add(IntProperty('months', months, defaultValue: 1))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(IntProperty('firstWeekday', firstWeekday, defaultValue: null))
+      ..add(DoubleProperty('minDayWidth', minDayWidth, defaultValue: 36));
+  }
 }
 
 /// A stretch of days: the range read out above two months (one on a phone),
@@ -746,6 +807,35 @@ class RetroDesktopDateRangePicker extends StatefulWidget {
 
   @override
   State<RetroDesktopDateRangePicker> createState() => _RangePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
+      ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
+      ..add(
+        DiagnosticsProperty<DesignDateRange>(
+          'value',
+          value,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignDateRange?>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'initialMonth',
+          initialMonth,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _RangePickerState extends State<RetroDesktopDateRangePicker> {
@@ -786,7 +876,9 @@ class _RangePickerState extends State<RetroDesktopDateRangePicker> {
                   child: Text(widget.label!, style: t.type.body),
                 ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  vertical: RetroDesktopSpacing.s6,
+                ),
                 child: Semantics(
                   liveRegion: true,
                   child: Text(

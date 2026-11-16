@@ -10,9 +10,9 @@ class TablePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RetroDesktopScaffold(
-      topBar: const RetroDesktopAppBar(title: 'This month'),
-      body: const RetroDesktopDesktop(
+    return const RetroDesktopScaffold(
+      topBar: RetroDesktopAppBar(title: 'This month'),
+      body: RetroDesktopDesktop(
         active: 'This month',
         tiles: [
           RetroDesktopWindowColumn(

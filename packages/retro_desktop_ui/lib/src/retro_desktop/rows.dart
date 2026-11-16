@@ -1,5 +1,7 @@
 // Rows: what fills a well. Each is drawn from the concept's `.task`, `.lk`, `.pl`, `.kv` and `.stats`. A rule goes between rows,
 // a selected row takes the highlight, and everything in it reads there by itself.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -16,6 +18,7 @@ import 'heads.dart';
 import 'layout.dart';
 import 'pixels.dart';
 import 'theme.dart';
+import 'tokens.dart';
 
 /// Tells the first row of a list that nothing stands above it.
 class _FirstRow extends InheritedWidget {
@@ -45,10 +48,10 @@ class _RowFrame extends StatelessWidget {
   final String? label;
   final RetroDesktopStyle? style;
 
-  /// The focus node this part uses; when null it makes and disposes its own.
+  /// {@macro retro_desktop.ownFocusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   @override
@@ -68,7 +71,7 @@ class _RowFrame extends StatelessWidget {
         bevel: false,
         ringInside: true,
         padding: EdgeInsets.zero,
-        component: t.listTileTheme.merge(
+        component: t.listTileTheme.over(
           RetroDesktopStyle(
             fill: WidgetStatePropertyAll(
               selected
@@ -166,6 +169,12 @@ class RetroDesktopList extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(FlagProperty('share', value: share, ifTrue: 'share'));
+  }
 }
 
 /// A list row with its action: words at the start, a `RetroDesktopButton` at the end, or under the words on a phone.
@@ -196,7 +205,7 @@ class RetroDesktopListTile extends StatelessWidget {
     this.autofocus = false,
   });
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// Whether a row that opens something ([onPressed] set) can be opened now;
@@ -237,10 +246,10 @@ class RetroDesktopListTile extends StatelessWidget {
   /// Whether the part represents the current selection.
   final bool selected;
 
-  /// The focus node this part uses; when null it makes and disposes its own.
+  /// {@macro retro_desktop.ownFocusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   @override
@@ -266,7 +275,7 @@ class RetroDesktopListTile extends StatelessWidget {
               enabled: enabled,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: RetroDesktopSpacing.s8),
           action!,
         ],
       );
@@ -320,7 +329,7 @@ class RetroDesktopListTile extends StatelessWidget {
                   style: t.type.meta.merge(appearance).copyWith(color: ink),
                 ),
               if (note != null) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: RetroDesktopSpacing.s4),
                 RetroDesktopText(
                   note!,
                   style: t.type.meta.merge(appearance).copyWith(color: ink),
@@ -338,7 +347,12 @@ class RetroDesktopListTile extends StatelessWidget {
                 );
           return Padding(
             padding: t.density.apply(
-              const EdgeInsets.fromLTRB(10, 8, 10, 8),
+              const EdgeInsets.fromLTRB(
+                RetroDesktopSpacing.s10,
+                RetroDesktopSpacing.s8,
+                RetroDesktopSpacing.s10,
+                RetroDesktopSpacing.s8,
+              ),
               Directionality.of(context),
             ),
             child: LayoutBuilder(
@@ -354,16 +368,25 @@ class RetroDesktopListTile extends StatelessWidget {
                       );
                 final mark = leading == null
                     ? const <Widget>[]
-                    : <Widget>[leading!, const SizedBox(width: 10)];
+                    : <Widget>[
+                        leading!,
+                        const SizedBox(width: RetroDesktopSpacing.s10),
+                      ];
                 if (wide) {
                   return Row(
                     children: [
                       ...mark,
                       Expanded(child: words),
-                      if (side != null) ...[const SizedBox(width: 10), side],
-                      if (big != null) ...[const SizedBox(width: 10), big],
+                      if (side != null) ...[
+                        const SizedBox(width: RetroDesktopSpacing.s10),
+                        side,
+                      ],
+                      if (big != null) ...[
+                        const SizedBox(width: RetroDesktopSpacing.s10),
+                        big,
+                      ],
                       if (action != null) ...[
-                        const SizedBox(width: 10),
+                        const SizedBox(width: RetroDesktopSpacing.s10),
                         action!,
                       ],
                     ],
@@ -384,17 +407,17 @@ class RetroDesktopListTile extends StatelessWidget {
                             children: [
                               Expanded(child: words),
                               if (side != null) ...[
-                                const SizedBox(width: 10),
+                                const SizedBox(width: RetroDesktopSpacing.s10),
                                 side,
                               ],
                               if (big != null) ...[
-                                const SizedBox(width: 10),
+                                const SizedBox(width: RetroDesktopSpacing.s10),
                                 big,
                               ],
                             ],
                           ),
                           if (action != null) ...[
-                            const SizedBox(height: 8),
+                            const SizedBox(height: RetroDesktopSpacing.s8),
                             action!,
                           ],
                         ],
@@ -408,6 +431,36 @@ class RetroDesktopListTile extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('figure', figure, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(FlagProperty('isFirst', value: isFirst, ifTrue: 'isFirst'))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -470,13 +523,13 @@ class RetroDesktopTaskRow extends StatelessWidget {
   /// Reports a request to change the completion state.
   final ValueChanged<bool>? onChanged;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
-  /// The focus node this part uses; when null it makes and disposes its own.
+  /// {@macro retro_desktop.ownFocusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   @override
@@ -518,7 +571,8 @@ class RetroDesktopTaskRow extends StatelessWidget {
             if (overdue != null) Flexible(child: RetroDesktopFlag(overdue!)),
             if (bell)
               Icon(RetroDesktopGlyphs.bell, size: 13, color: c.textSecondary),
-            if (bell && time != null) const SizedBox(width: 6),
+            if (bell && time != null)
+              const SizedBox(width: RetroDesktopSpacing.s6),
             if (time != null)
               Flexible(
                 child: Text(
@@ -557,7 +611,7 @@ class RetroDesktopTaskRow extends StatelessWidget {
                   ),
                 ),
                 if (due.isNotEmpty) ...[
-                  const SizedBox(width: 12),
+                  const SizedBox(width: RetroDesktopSpacing.s12),
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 160),
                     child: Row(mainAxisSize: MainAxisSize.min, children: due),
@@ -571,7 +625,7 @@ class RetroDesktopTaskRow extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 name,
-                const SizedBox(height: 2),
+                const SizedBox(height: RetroDesktopSpacing.s2),
                 RetroDesktopFitRow(
                   fill: due.isEmpty ? 0 : 1,
                   gap: 8,
@@ -590,8 +644,22 @@ class RetroDesktopTaskRow extends StatelessWidget {
               RetroDesktopReach.padsAcross(context) && onChanged != null;
           return Padding(
             padding: reach
-                ? const EdgeInsetsDirectional.fromSTEB(0, 9, 12, 9)
-                : EdgeInsets.fromLTRB(10, t.desk ? 7 : 9, 12, t.desk ? 7 : 9),
+                ? const EdgeInsetsDirectional.fromSTEB(
+                    0,
+                    RetroDesktopSpacing.s8 + RetroDesktopSpacing.px,
+                    RetroDesktopSpacing.s12,
+                    RetroDesktopSpacing.s8 + RetroDesktopSpacing.px,
+                  )
+                : EdgeInsets.fromLTRB(
+                    RetroDesktopSpacing.s10,
+                    t.desk
+                        ? RetroDesktopSpacing.s6 + RetroDesktopSpacing.px
+                        : RetroDesktopSpacing.s8 + RetroDesktopSpacing.px,
+                    RetroDesktopSpacing.s12,
+                    t.desk
+                        ? RetroDesktopSpacing.s6 + RetroDesktopSpacing.px
+                        : RetroDesktopSpacing.s8 + RetroDesktopSpacing.px,
+                  ),
             child: LayoutBuilder(
               builder: (context, room) {
                 final narrow = room.maxWidth < 160;
@@ -633,7 +701,10 @@ class RetroDesktopTaskRow extends StatelessWidget {
                             )
                           : mid,
                     ),
-                    if (!narrow) ...[const SizedBox(width: 12), priorityView],
+                    if (!narrow) ...[
+                      const SizedBox(width: RetroDesktopSpacing.s12),
+                      priorityView,
+                    ],
                   ],
                 );
               },
@@ -642,6 +713,32 @@ class RetroDesktopTaskRow extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(StringProperty('overdue', overdue, defaultValue: null))
+      ..add(StringProperty('time', time, defaultValue: null))
+      ..add(StringProperty('flexibleTime', flexibleTime, defaultValue: null))
+      ..add(FlagProperty('bell', value: bell, ifTrue: 'bell'))
+      ..add(FlagProperty('value', value: value, ifTrue: 'value'))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(FlagProperty('isFirst', value: isFirst, ifTrue: 'isFirst'))
+      ..add(IntProperty('priority', priority, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -743,8 +840,8 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Wrap(
-                        spacing: 6,
-                        runSpacing: 2,
+                        spacing: RetroDesktopSpacing.s6,
+                        runSpacing: RetroDesktopSpacing.s2,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           if (fact.icon != null)
@@ -783,7 +880,7 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                         children: [
                           if (f.icon != null) ...[
                             Icon(f.icon, size: 14, color: c.textTertiary),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: RetroDesktopSpacing.s6),
                           ],
                           Flexible(
                             child: Text(
@@ -797,7 +894,7 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: RetroDesktopSpacing.s10),
                     Expanded(
                       child: SizedBox(
                         height: 3,
@@ -806,7 +903,7 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: RetroDesktopSpacing.s10),
                     SizedBox(
                       width: valueW,
                       child: Text(
@@ -850,7 +947,9 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                     SizedBox(
                       width: col,
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 1),
+                        padding: const EdgeInsets.only(
+                          top: RetroDesktopSpacing.px,
+                        ),
                         child: Text(
                           f.label,
                           style: label,
@@ -858,7 +957,7 @@ class RetroDesktopDescriptionList extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: RetroDesktopSpacing.s10),
                     // The value is what's read: in the reading size, never smaller than its label.
                     Expanded(
                       child: Text(
@@ -875,6 +974,14 @@ class RetroDesktopDescriptionList extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopFact>('facts', facts))
+      ..add(FlagProperty('leaders', value: leaders, ifTrue: 'leaders'));
   }
 }
 
@@ -933,7 +1040,7 @@ class RetroDesktopStats extends StatelessWidget {
           softWrap: false,
           overflow: TextOverflow.ellipsis,
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: RetroDesktopSpacing.s2),
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: AlignmentDirectional.centerStart,
@@ -959,7 +1066,9 @@ class RetroDesktopStats extends StatelessWidget {
       painter: etched ? _StatRule(c, true) : const _Blank(),
       foreground: true,
       child: Padding(
-        padding: EdgeInsets.only(top: etched ? 11 : 0),
+        padding: EdgeInsets.only(
+          top: etched ? RetroDesktopSpacing.s10 + RetroDesktopSpacing.px : 0,
+        ),
         child: LayoutBuilder(
           builder: (context, box) {
             final n = stats.isEmpty ? 1 : stats.length;
@@ -979,7 +1088,9 @@ class RetroDesktopStats extends StatelessWidget {
               children: [
                 for (final s in stats)
                   Padding(
-                    padding: const EdgeInsetsDirectional.only(end: 8),
+                    padding: const EdgeInsetsDirectional.only(
+                      end: RetroDesktopSpacing.s8,
+                    ),
                     child: cell(s),
                   ),
               ],
@@ -988,6 +1099,14 @@ class RetroDesktopStats extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<(String, String, String?)>('stats', stats))
+      ..add(FlagProperty('etched', value: etched, ifFalse: 'etched: false'));
   }
 }
 
@@ -1072,7 +1191,7 @@ class RetroDesktopReadings extends StatelessWidget {
                         softWrap: false,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: RetroDesktopSpacing.s2),
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: AlignmentDirectional.centerStart,
@@ -1098,7 +1217,7 @@ class RetroDesktopReadings extends StatelessWidget {
                       ),
                       // A small unit on the line stands the line 4 lp taller, in every cell of the row.
                       if (reads.any((r) => r.$3 != null))
-                        const SizedBox(height: 4),
+                        const SizedBox(height: RetroDesktopSpacing.s4),
                     ],
                   ),
                 ),
@@ -1107,6 +1226,12 @@ class RetroDesktopReadings extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<(String, String, String?)>('reads', reads));
   }
 }
 
@@ -1203,12 +1328,17 @@ class RetroDesktopMeasures extends StatelessWidget {
             retroDesktopFace(
               states: const {},
               sunken: true,
-              component: t.wellTheme.merge(
+              component: t.wellTheme.over(
                 RetroDesktopStyle(fill: WidgetStatePropertyAll(c.paper)),
               ),
               padding: EdgeInsets.zero,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 5, 8, 5),
+                padding: const EdgeInsets.fromLTRB(
+                  RetroDesktopSpacing.s8,
+                  RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+                  RetroDesktopSpacing.s8,
+                  RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+                ),
                 child: RetroDesktopFitRow(
                   fill: 0,
                   gap: 6,
@@ -1251,6 +1381,12 @@ class RetroDesktopMeasures extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<(String, String, String?)>('items', items));
+  }
 }
 
 /// What a window holds, one under another on the window's gap. A window stretched to its column's end has them spread over
@@ -1285,4 +1421,10 @@ class RetroDesktopSections extends StatelessWidget {
       ],
     ],
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('gap', gap, defaultValue: 12));
+  }
 }

@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,35 +13,48 @@ Widget _host(Widget child) => MaterialApp(
 );
 
 void main() {
-  testWidgets('a sheet\'s heading is its own node: a button label in the '
-      'body keeps its own name', (tester) async {
-    final semantics = tester.ensureSemantics();
-    await tester.pumpWidget(
-      _host(
-        SizedBox(
-          width: 400,
-          height: 400,
-          child: RetroDesktopBottomSheet(
-            title: '12 comments',
-            onClose: () {},
-            actions: [
-              // A kit's signed-out composer: a plain annotation, no container.
-              Semantics(
-                button: true,
-                label: 'Sign in to comment',
-                onTap: () {},
-                child: const SizedBox(width: 200, height: 48),
-              ),
-            ],
-            child: const Text('Where was this filmed?'),
+  // A kit raises the sheet in place, in a route of its own: its title in the title bar merged into the node of the
+  // composer's tap ("12 comments\nSign in to comment") until the title was a heading of its own.
+  for (final inPlace in [false, true]) {
+    testWidgets('a sheet\'s heading is its own node: a button label in the '
+        'body keeps its own name, inPlace=$inPlace', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _host(
+          SizedBox(
+            width: 400,
+            height: 400,
+            child: RetroDesktopBottomSheet(
+              title: '12 comments',
+              onClose: () {},
+              inPlace: inPlace,
+              actions: [
+                // A kit's signed-out composer: a plain annotation, no container.
+                Semantics(
+                  button: true,
+                  label: 'Sign in to comment',
+                  onTap: () {},
+                  child: const SizedBox(width: 200, height: 48),
+                ),
+              ],
+              child: const Text('Where was this filmed?'),
+            ),
           ),
         ),
-      ),
-    );
-    expect(find.bySemanticsLabel('12 comments'), findsWidgets);
-    expect(find.bySemanticsLabel('Sign in to comment'), findsOneWidget);
-    semantics.dispose();
-  });
+      );
+      expect(find.bySemanticsLabel('12 comments'), findsWidgets);
+      expect(find.bySemanticsLabel('Sign in to comment'), findsOneWidget);
+      expect(
+        find.semantics.byPredicate(
+          (node) =>
+              node.label == '12 comments' &&
+              node.getSemanticsData().flagsCollection.isHeader,
+        ),
+        findsOne,
+      );
+      semantics.dispose();
+    });
+  }
 
   for (final (scale, room) in [(1.0, 560.0), (2.5, 320.0)]) {
     testWidgets('a sheet keeps its footer pinned while the body has room, and '
@@ -98,11 +114,11 @@ void main() {
           .ancestor(of: find.text(text), matching: find.byType(Scrollable))
           .evaluate()
           .isNotEmpty;
+      // The title stands in the sheet's title bar, as a window's does, whichever way.
+      expect(inScroll('New piece'), isFalse, reason: 'the title bar stands');
       if (scale == 1.0) {
-        expect(inScroll('New piece'), isFalse, reason: 'the heading is pinned');
         expect(inScroll('Save piece'), isFalse, reason: 'the footer is pinned');
       } else {
-        expect(inScroll('New piece'), isTrue, reason: 'all of it scrolls');
         // The footer is reached by scrolling, and the body's header with it.
         await tester.scrollUntilVisible(find.text('Save piece'), 100);
         expect(inScroll('Save piece'), isTrue);
@@ -195,12 +211,19 @@ void main() {
     );
   }
 
-  testWidgets('a selected menu uses one filled selection', (tester) async {
+  // An open list shows its choice at a glance: one highlight bar, on the chosen row at rest and on the pointer's row
+  // once it moves, and the chosen row keeps its check and, unlit, stands in the held well. In 0.1.0 the pointer's bar
+  // took the only mark the choice had.
+  testWidgets('a menu keeps its choice marked while another row is lit', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _host(
         RetroDesktopMenu<String>(
           items: const [
-            RetroDesktopMenuItem('local', 'This computer', selected: true),
+            RetroDesktopMenuItem('computer', 'This computer'),
+            RetroDesktopMenuItem('disk', 'The shared disk', selected: true),
+            RetroDesktopMenuItem('cloud', 'The cloud'),
           ],
           onSelected: (_) {},
         ),
@@ -209,18 +232,40 @@ void main() {
     final theme = RetroDesktopTheme.of(
       tester.element(find.text('This computer')),
     );
-    expect(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is DecoratedBox &&
-            widget.decoration is ShapeDecoration &&
-            (widget.decoration as ShapeDecoration).color ==
-                theme.colors.highlight,
-      ),
-      findsOneWidget,
+    final bar = find.byWidgetPredicate(
+      (widget) =>
+          widget is DecoratedBox &&
+          widget.decoration is ShapeDecoration &&
+          (widget.decoration as ShapeDecoration).color ==
+              theme.colors.highlight,
     );
-    expect(find.byIcon(RetroDesktopGlyphs.check), findsNothing);
+    bool lit(String label) => find
+        .ancestor(of: find.text(label), matching: bar)
+        .evaluate()
+        .isNotEmpty;
+    int paints(String label) => find
+        .ancestor(
+          of: find.text(label),
+          matching: find.byType(RetroDesktopPixelPaint),
+        )
+        .evaluate()
+        .length;
+    expect(bar, findsOneWidget);
+    expect(lit('The shared disk'), isTrue);
+    expect(find.byIcon(RetroDesktopGlyphs.check), findsOneWidget);
     expect(find.text('✓'), findsNothing);
+
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: tester.getCenter(find.text('The cloud')));
+    addTearDown(mouse.removePointer);
+    await mouse.moveBy(const Offset(1, 0));
+    await tester.pumpAndSettle();
+    expect(bar, findsOneWidget);
+    expect(lit('The cloud'), isTrue);
+    expect(lit('The shared disk'), isFalse);
+    expect(find.byIcon(RetroDesktopGlyphs.check), findsOneWidget);
+    // The held well: a ground and a turned-in bevel round the chosen row, none round a row neither chosen nor lit.
+    expect(paints('The shared disk'), paints('This computer') + 2);
   });
   testWidgets('the dialog heading supplies one route name', (tester) async {
     final semantics = tester.ensureSemantics();
@@ -679,6 +724,7 @@ void main() {
                         locale: const Locale('en', 'GB'),
                         child: RetroDesktopTheme(
                           data: RetroDesktopThemeData.berry().copyWith(
+                            // ignore: deprecated_member_use_from_same_package
                             motion: const RetroDesktopMotion(
                               raise: Duration(seconds: 1),
                               leave: Duration(seconds: 1),
@@ -708,25 +754,31 @@ void main() {
         late Finder face;
         switch (kind) {
           case 'dialog':
-            showRetroDesktopDialog<void>(
-              source,
-              builder: (_) => const RetroDesktopDialog(title: 'Raised'),
+            unawaited(
+              showRetroDesktopDialog<void>(
+                source,
+                builder: (_) => const RetroDesktopDialog(title: 'Raised'),
+              ),
             );
             face = find.byType(RetroDesktopDialog);
           case 'sheet':
-            showRetroDesktopBottomSheet<void>(
-              source,
-              builder: (_) => const RetroDesktopBottomSheet(
-                title: 'Raised',
-                child: Text('Content'),
+            unawaited(
+              showRetroDesktopBottomSheet<void>(
+                source,
+                builder: (_) => const RetroDesktopBottomSheet(
+                  title: 'Raised',
+                  child: Text('Content'),
+                ),
               ),
             );
             face = find.byType(RetroDesktopBottomSheet);
           case 'menu':
-            showRetroDesktopMenu<int>(
-              source,
-              anchor: const Rect.fromLTWH(40, 80, 100, 40),
-              items: const [RetroDesktopMenuItem(1, 'Raised')],
+            unawaited(
+              showRetroDesktopMenu<int>(
+                source,
+                anchor: const Rect.fromLTWH(40, 80, 100, 40),
+                items: const [RetroDesktopMenuItem(1, 'Raised')],
+              ),
             );
             face = find.byType(RetroDesktopMenu<int>);
           case 'tooltip':

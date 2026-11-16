@@ -22,7 +22,11 @@ import 'shapes.dart';
 import 'tone.dart';
 import 'internal/face.dart';
 import 'internal/caps.dart';
-import 'internal/parts.dart' show RetroDesktopLastInput;
+import 'tokens.dart';
+import 'internal/parts.dart' show RetroDesktopLastInput, retroDesktopHeldGround;
+import 'glyphs.dart' show RetroDesktopGlyphs;
+import 'internal/modal.dart';
+import 'frames.dart' show retroDesktopTitleBar, retroDesktopWindowFrame;
 
 class _WordsDelegate extends LocalizationsDelegate<RetroDesktopLocalizations> {
   const _WordsDelegate(this.words);
@@ -155,7 +159,8 @@ mixin _EscapeCloses<T> on PopupRoute<T> {
   }
 }
 
-class _RaisedRoute<T> extends PopupRoute<T> with _EscapeCloses<T> {
+class _RaisedRoute<T> extends PopupRoute<T>
+    with _EscapeCloses<T>, RetroDesktopModalRoute<T> {
   _RaisedRoute({
     required this.carried,
     required this.builder,
@@ -163,6 +168,7 @@ class _RaisedRoute<T> extends PopupRoute<T> with _EscapeCloses<T> {
     required this.escapeDismissible,
     required this.label,
     this.sheet = false,
+    this.modal = true,
   }) : super(
          requestFocus: true,
          traversalEdgeBehavior: TraversalEdgeBehavior.closedLoop,
@@ -170,6 +176,11 @@ class _RaisedRoute<T> extends PopupRoute<T> with _EscapeCloses<T> {
   final _Carried carried;
   final WidgetBuilder builder;
   final bool dismissible, sheet;
+
+  /// A window that takes the front from the one under it (an alert, a dialog, a sheet); a menu leaves it active.
+  final bool modal;
+  @override
+  bool get listsAsModal => modal;
   @override
   final bool escapeDismissible;
   final String label;
@@ -230,24 +241,30 @@ Future<T?> _show<T>(
   bool dismissible = true,
   bool? escapeDismissible,
   bool sheet = false,
+  bool modal = true,
   String? label,
 }) async {
   final navigator = Navigator.of(context, rootNavigator: root);
   final focus = FocusManager.instance.primaryFocus;
   final carried = _Carried(context, navigator.context);
+  final route = _RaisedRoute<T>(
+    carried: carried,
+    builder: builder,
+    dismissible: dismissible,
+    escapeDismissible: escapeDismissible ?? dismissible,
+    sheet: sheet,
+    modal: modal,
+    label: label ?? carried.shared.closeButtonLabel,
+  );
   try {
-    return await navigator.push<T>(
-      _RaisedRoute<T>(
-        carried: carried,
-        builder: builder,
-        dismissible: dismissible,
-        escapeDismissible: escapeDismissible ?? dismissible,
-        sheet: sheet,
-        label: label ?? carried.shared.closeButtonLabel,
-      ),
-    );
+    return await navigator.push<T>(route);
   } finally {
-    if (focus?.context != null && focus!.canRequestFocus) focus.requestFocus();
+    // A menu an alert closed leaves the focus in the alert.
+    if (!route.closedByModal &&
+        focus?.context != null &&
+        focus!.canRequestFocus) {
+      focus.requestFocus();
+    }
   }
 }
 
@@ -256,7 +273,7 @@ class _RaisedSurface extends StatelessWidget {
     required this.child,
     required this.componentTheme,
     this.style,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = const EdgeInsets.all(RetroDesktopSpacing.s16),
     this.scale = RetroDesktopFaceScale.surface,
     this.atFoot = false,
   });
@@ -280,7 +297,7 @@ class _RaisedSurface extends StatelessWidget {
         ),
       ],
       states: const {},
-      component: componentTheme.merge(
+      component: componentTheme.over(
         RetroDesktopStyle(
           fill: WidgetStatePropertyAll(t.colors.platinum),
           shape: atFoot
@@ -299,6 +316,29 @@ class _RaisedSurface extends StatelessWidget {
       child: child,
     );
   }
+}
+
+// A window centred in its room, as Center stands it, but its top at least [least] down: below the menu bar. A window
+// taller than what is left below it gets that much, and scrolls.
+class _BelowBar extends SingleChildLayoutDelegate {
+  const _BelowBar(this.least);
+  final double least;
+
+  @override
+  BoxConstraints getConstraintsForChild(BoxConstraints constraints) =>
+      BoxConstraints(
+        maxWidth: constraints.maxWidth,
+        maxHeight: math.max(0.0, constraints.maxHeight - least),
+      );
+
+  @override
+  Offset getPositionForChild(Size size, Size childSize) => Offset(
+    (size.width - childSize.width) / 2,
+    math.max((size.height - childSize.height) / 2, least),
+  );
+
+  @override
+  bool shouldRelayout(_BelowBar oldDelegate) => oldDelegate.least != least;
 }
 
 /// Opens a dialog, returning the value supplied to Navigator.pop.
@@ -353,15 +393,37 @@ class RetroDesktopDialog extends StatelessWidget {
   /// The actions displayed after the content.
   final List<Widget> actions;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
+    // Where the window's room starts down the screen (its route stands on the whole screen): it stands centred in that
+    // room, but never over the menu bar (at twice the text size on a phone, a tall alert cut the bar's last row).
+    // Only a window raised on its own (showRetroDesktopDialog): one written into a page stands where the page puts it.
+    final raised = ModalRoute.of(context) is _RaisedRoute;
+    final top =
+        MediaQuery.paddingOf(context).top +
+        MediaQuery.viewInsetsOf(context).top +
+        RetroDesktopSpacing.s20;
     return SafeArea(
       child: Padding(
-        padding: MediaQuery.viewInsetsOf(context) + const EdgeInsets.all(20),
-        child: Center(
+        padding:
+            MediaQuery.viewInsetsOf(context) +
+            const EdgeInsets.all(RetroDesktopSpacing.s20),
+        child: ValueListenableBuilder<double>(
+          valueListenable: retroDesktopBarFoot,
+          // One kind of parent for the window's life, so a bar that moves keeps its focus and scroll.
+          builder: (context, foot, window) => raised
+              ? CustomSingleChildLayout(
+                  delegate: _BelowBar(
+                    foot > 0
+                        ? math.max(0.0, foot + RetroDesktopSpacing.s8 - top)
+                        : 0.0,
+                  ),
+                  child: window,
+                )
+              : Center(child: window),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 520),
             // A window taller than the screen (twice the text size on a phone) scrolls whole, its frame with it, as a
@@ -404,7 +466,9 @@ class RetroDesktopDialog extends StatelessWidget {
                                   ),
                                   if (message != null)
                                     Padding(
-                                      padding: const EdgeInsets.only(top: 12),
+                                      padding: const EdgeInsets.only(
+                                        top: RetroDesktopSpacing.s12,
+                                      ),
                                       child: Text(message!),
                                     ),
                                 ],
@@ -416,7 +480,9 @@ class RetroDesktopDialog extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     art,
-                                    const SizedBox(height: 12),
+                                    const SizedBox(
+                                      height: RetroDesktopSpacing.s12,
+                                    ),
                                     words,
                                   ],
                                 );
@@ -425,7 +491,9 @@ class RetroDesktopDialog extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   art,
-                                  const SizedBox(width: 16),
+                                  const SizedBox(
+                                    width: RetroDesktopSpacing.s16,
+                                  ),
                                   Expanded(child: words),
                                 ],
                               );
@@ -433,18 +501,22 @@ class RetroDesktopDialog extends StatelessWidget {
                           ),
                           for (final item in content)
                             Padding(
-                              padding: const EdgeInsets.only(top: 12),
+                              padding: const EdgeInsets.only(
+                                top: RetroDesktopSpacing.s12,
+                              ),
                               child: item,
                             ),
                         ],
                       ),
                       if (actions.isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.only(top: 16),
+                          padding: const EdgeInsets.only(
+                            top: RetroDesktopSpacing.s16,
+                          ),
                           child: Wrap(
                             alignment: WrapAlignment.end,
-                            spacing: 8,
-                            runSpacing: 8,
+                            spacing: RetroDesktopSpacing.s8,
+                            runSpacing: RetroDesktopSpacing.s8,
                             children: actions,
                           ),
                         ),
@@ -457,6 +529,22 @@ class RetroDesktopDialog extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(EnumProperty<RetroDesktopTone>('tone', tone, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -481,7 +569,9 @@ Future<T?> showRetroDesktopBottomSheet<T>(
   label: closeLabel,
 );
 
-/// A scrollable sheet window with a labelled close action.
+/// A scrollable sheet window: its title bar carries [title] and the close box, as a side sheet's does; raised with
+/// [showRetroDesktopBottomSheet] and given a [title] but no [onClose], its close box closes it. Given neither, it is
+/// a raised panel without a title bar, as an action sheet is, its own choices its way out.
 ///
 /// ```dart
 /// RetroDesktopBottomSheet(title: 'Details', child: const Text('Document details'))
@@ -516,7 +606,7 @@ class RetroDesktopBottomSheet extends StatelessWidget {
   /// Scrollable slivers displayed inside the sheet.
   final List<Widget>? slivers;
 
-  /// An optional externally owned controller; the caller disposes it.
+  /// {@macro retro_desktop.controller}
   final ScrollController? controller;
 
   /// The actions displayed after the content.
@@ -528,89 +618,72 @@ class RetroDesktopBottomSheet extends StatelessWidget {
   /// An external presenter owns the height, keyboard and safe-area insets.
   final bool inPlace;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final media = MediaQuery.of(context);
-    Widget heading({required bool narrow}) {
-      final name = title == null
-          ? const SizedBox.shrink()
-          // Its own node: a heading left to merge takes the next unboundaried
-          // label with it (a signed-out composer's "Sign in to comment").
-          : Semantics(
-              container: true,
-              header: true,
-              child: Text(title!, style: t.type.head),
-            );
-      final closeWords =
-          closeLabel ?? DesignLocalizations.of(context).closeButtonLabel;
-      final close = onClose == null
-          ? const SizedBox.shrink()
-          : RetroDesktopButton(closeWords, onPressed: onClose);
-      final split = RetroDesktopSplit(
-        start: name,
-        end: close,
-        gap: 8,
-        runGap: 8,
-      );
-      if (narrow) return split;
-      // Beside the close button while the title's longest word fits there; under large text or in a narrow sheet
-      // the button drops under the title rather than the title breaking inside a word.
-      return LayoutBuilder(
-        builder: (context, box) {
-          final scaler = MediaQuery.textScalerOf(context);
-          final direction = Directionality.of(context);
-          double width(String words, TextStyle style) {
-            final p = TextPainter(
-              text: TextSpan(text: words, style: style),
-              textDirection: direction,
-              textScaler: scaler,
-              maxLines: 1,
-            )..layout();
-            final w = p.width;
-            p.dispose();
-            return w;
-          }
-
-          final word = title == null
-              ? 0.0
-              : title!
-                    .split(RegExp(r'\s+'))
-                    .fold(0.0, (w, s) => math.max(w, width(s, t.type.head)));
-          // The button's words, its padding and bevel, and the gap before it.
-          final beside = onClose == null
-              ? 0.0
-              : width(closeWords, t.type.chrome) + 48;
-          if (word > box.maxWidth - beside) return split;
-          return Row(
-            children: [
-              Expanded(child: name),
-              if (onClose != null) close,
-            ],
-          );
-        },
-      );
-    }
+    // Raised, a sheet with a title always has a way to close it that shows: given no onClose, its close box closes
+    // its route. Built anywhere else (a page that draws it), it has no route of its own to close; untitled (an action
+    // sheet), it is a panel whose own choices, Cancel among them, are its way out.
+    final close =
+        onClose ??
+        (title != null && !inPlace && ModalRoute.of(context) is _RaisedRoute
+            ? () => Navigator.maybePop(context)
+            : null);
+    // A sheet with a title or a close is a window, as the side sheet is, at every width: its title bar carries both,
+    // the close box at its start and the stripes while it is the front window. One with neither (an action sheet
+    // shown in place) is a raised panel, its own choices its way out.
+    final framed = title != null || close != null;
 
     // A sheet's actions stand as a dialog's do: at the trailing end, in
     // reading order, the confirming one last.
     final footer = Padding(
-      padding: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.only(top: RetroDesktopSpacing.s16),
       child: Wrap(
         alignment: WrapAlignment.end,
-        spacing: 8,
-        runSpacing: 8,
+        spacing: RetroDesktopSpacing.s8,
+        runSpacing: RetroDesktopSpacing.s8,
         children: actions,
       ),
     );
     final bodySlivers = slivers ?? [SliverToBoxAdapter(child: child)];
-    final hasHeading = title != null || onClose != null;
     // On a desk a sheet opens as a window in the alert's place, a third of the
     // way down the display, framed all round: docked to the display's foot it
     // stood over its own button with its shadow off screen.
     final floating = !inPlace && t.desk;
+    final inner = LayoutBuilder(
+      builder: (context, room) {
+        // Placed in a scrolling page (a kit screen's body), the sheet has
+        // no height to fill: it takes its content's, and the page scrolls.
+        final bounded = room.hasBoundedHeight;
+        // A narrow action can be taller than the sheet itself.
+        // Keep every part reachable in one scroll view in that case.
+        if (room.maxWidth < 240) {
+          return CustomScrollView(
+            controller: controller,
+            shrinkWrap: !inPlace || !bounded,
+            slivers: [
+              ...bodySlivers,
+              if (actions.isNotEmpty) SliverToBoxAdapter(child: footer),
+            ],
+          );
+        }
+        return _SheetLayout(
+          room: room,
+          inPlace: inPlace,
+          controller: controller,
+          heading: null,
+          flowHeading: null,
+          bodySlivers: bodySlivers,
+          // A list's footer (a composer) stays where the hand is; only a
+          // single body, a form or a page, may scroll with its ends.
+          mayFlow: slivers == null,
+          footer: actions.isNotEmpty ? footer : null,
+        );
+      },
+    );
     final panel = Semantics(
       scopesRoute: !inPlace,
       explicitChildNodes: !inPlace,
@@ -623,51 +696,71 @@ class RetroDesktopBottomSheet extends StatelessWidget {
         // 600 up a column of at most 560 in its middle.
         atFoot: !floating,
         style: style,
-        child: LayoutBuilder(
-          builder: (context, room) {
-            // Placed in a scrolling page (a kit screen's body), the sheet has
-            // no height to fill: it takes its content's, and the page scrolls.
-            final bounded = room.hasBoundedHeight;
-            // A narrow heading and action can be taller than the sheet itself.
-            // Keep every part reachable in one scroll view in that case.
-            if (room.maxWidth < 240) {
-              return CustomScrollView(
-                controller: controller,
-                shrinkWrap: !inPlace || !bounded,
-                slivers: [
-                  if (hasHeading)
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: heading(narrow: true),
-                      ),
-                    ),
-                  ...bodySlivers,
-                  if (actions.isNotEmpty) SliverToBoxAdapter(child: footer),
-                ],
-              );
-            }
-            return _SheetLayout(
-              room: room,
-              inPlace: inPlace,
-              controller: controller,
-              heading: hasHeading ? heading(narrow: false) : null,
-              flowHeading: hasHeading ? heading(narrow: true) : null,
-              bodySlivers: bodySlivers,
-              // A list's footer (a composer) stays where the hand is; only a
-              // single body, a form or a page, may scroll with its ends.
-              mayFlow: slivers == null,
-              footer: actions.isNotEmpty ? footer : null,
-            );
-          },
-        ),
+        padding: framed
+            ? retroDesktopWindowFrame(t)
+            : const EdgeInsets.all(RetroDesktopSpacing.s16),
+        child: !framed
+            ? inner
+            : LayoutBuilder(
+                builder: (context, room) {
+                  final bar = retroDesktopTitleBar(
+                    title: title ?? '',
+                    onClose: close,
+                    closeLabel: closeLabel,
+                  );
+                  // Where the body is narrow, the title wraps tall beside the boxes: the bar scrolls with the body
+                  // and the actions, as one, so it never pushes them out of reach.
+                  if (room.maxWidth - 2 * RetroDesktopSpacing.s12 < 240) {
+                    return CustomScrollView(
+                      controller: controller,
+                      shrinkWrap: !inPlace || !room.hasBoundedHeight,
+                      slivers: [
+                        SliverToBoxAdapter(child: bar),
+                        SliverPadding(
+                          padding: const EdgeInsets.all(
+                            RetroDesktopSpacing.s12,
+                          ),
+                          sliver: SliverMainAxisGroup(
+                            slivers: [
+                              ...bodySlivers,
+                              if (actions.isNotEmpty)
+                                SliverToBoxAdapter(child: footer),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  // The title bar at its own height; the body, 12 in as a window's, takes what is left.
+                  final body = Padding(
+                    padding: const EdgeInsets.all(RetroDesktopSpacing.s12),
+                    child: inner,
+                  );
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      bar,
+                      if (room.hasBoundedHeight)
+                        Flexible(child: body)
+                      else
+                        body,
+                    ],
+                  );
+                },
+              ),
       ),
     );
     if (inPlace) return panel;
     return SafeArea(
       child: Padding(
         padding: floating
-            ? EdgeInsets.fromLTRB(16, 16, 16, 16 + media.viewInsets.bottom)
+            ? EdgeInsets.fromLTRB(
+                RetroDesktopSpacing.s16,
+                RetroDesktopSpacing.s16,
+                RetroDesktopSpacing.s16,
+                16 + media.viewInsets.bottom,
+              )
             : EdgeInsets.only(bottom: media.viewInsets.bottom),
         // On whole pixels: a third of the way down fell between two, and the sheet's hard shadow drew a half-toned
         // row at its foot.
@@ -687,6 +780,31 @@ class RetroDesktopBottomSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('closeLabel', closeLabel, defaultValue: null))
+      ..add(IterableProperty<Widget>('slivers', slivers, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose))
+      ..add(FlagProperty('inPlace', value: inPlace, ifTrue: 'inPlace'))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -785,7 +903,7 @@ class _SheetLayoutState extends State<_SheetLayout> {
     final heading = widget.heading == null
         ? null
         : Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s12),
             child: widget.heading,
           );
     final footer = widget.footer;
@@ -797,7 +915,7 @@ class _SheetLayoutState extends State<_SheetLayout> {
           if (widget.flowHeading case final flowHeading?)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s12),
                 child: flowHeading,
               ),
             ),
@@ -874,6 +992,9 @@ class _RenderPinned extends RenderBox
   ValueChanged<double> onPinned;
   bool _clipped = false;
 
+  // The least of its body a short sheet shows: a finger's line.
+  static const double _bodyLine = 48;
+
   @override
   void setupParentData(RenderBox child) {
     if (child.parentData is! _PinnedParentData) {
@@ -891,27 +1012,31 @@ class _RenderPinned extends RenderBox
     heading.layout(across, parentUsesSize: true);
     footer.layout(across, parentUsesSize: true);
     final pinned = heading.size.height + footer.size.height;
-    final rest = math.max(0.0, constraints.maxHeight - pinned);
+    final room = constraints.maxHeight;
+    // A sheet shorter than its ends and a line (opening, or a short screen with the keyboard up) keeps a finger's line of
+    // its body: the heading gives way at the top, and the footer stays where the hand is.
+    final rest = room.isFinite ? math.max(_bodyLine, room - pinned) : room;
     body.layout(
       _fill
           ? BoxConstraints.tightFor(width: width, height: rest)
           : across.copyWith(maxHeight: rest),
       parentUsesSize: true,
     );
-    (heading.parentData! as _PinnedParentData).offset = Offset.zero;
+    final whole = pinned + body.size.height;
+    final gives = room.isFinite && whole > room
+        ? math.min(whole - room, heading.size.height)
+        : 0.0;
+    (heading.parentData! as _PinnedParentData).offset = Offset(0, -gives);
     (body.parentData! as _PinnedParentData).offset = Offset(
       0,
-      heading.size.height,
+      heading.size.height - gives,
     );
     (footer.parentData! as _PinnedParentData).offset = Offset(
       0,
-      heading.size.height + body.size.height,
+      heading.size.height - gives + body.size.height,
     );
-    final whole = pinned + body.size.height;
-    size = constraints.constrain(
-      Size(width, _fill ? constraints.maxHeight : whole),
-    );
-    _clipped = whole > size.height;
+    size = constraints.constrain(Size(width, _fill ? room : whole - gives));
+    _clipped = gives > 0 || whole - gives > size.height;
     onPinned(pinned);
   }
 
@@ -996,10 +1121,26 @@ class RetroDesktopMenu<T> extends StatefulWidget {
   /// The visible or accessible name of this part.
   final String? label;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   State<RetroDesktopMenu<T>> createState() => _MenuState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopMenuItem<T>>('items', items))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _MenuState<T> extends State<RetroDesktopMenu<T>> {
@@ -1015,6 +1156,24 @@ class _MenuState<T> extends State<RetroDesktopMenu<T>> {
 
   // Whether the pointer is over the rows.
   bool _pointerInside = false;
+
+  // The row the pointer last lit, if it has lit one since the menu opened.
+  int? _pointed;
+
+  // The pointer moved over row [i]: it takes the lit row from the keys, and the keys' place, so they go on from it.
+  // One current row, as the period's menus had: the pointer resting on one row while the keys lit another lit both.
+  void _point(int i) {
+    if (!widget.items[i].enabled) return;
+    if (_keyed || _pointed != i || !_pointerInside) {
+      setState(() {
+        _keyed = false;
+        _pointed = i;
+        _pointerInside = true;
+      });
+    }
+    if (!_nodes[i].hasFocus) _nodes[i].requestFocus();
+  }
+
   void _sync() {
     while (_nodes.length < widget.items.length) {
       _nodes.add(FocusNode());
@@ -1066,8 +1225,11 @@ class _MenuState<T> extends State<RetroDesktopMenu<T>> {
     if (next == null) return KeyEventResult.ignored;
     if (!_keyed) {
       // With no row lit yet, the first key lights the first row (or the last,
-      // going up) rather than stepping past the unlit focused one.
-      final lit = widget.items.any((item) => item.enabled && item.selected);
+      // going up) rather than stepping past the unlit focused one; after the
+      // pointer lit one, the keys go on from it.
+      final lit =
+          _pointed != null ||
+          widget.items.any((item) => item.enabled && item.selected);
       if (!lit) {
         next =
             key == LogicalKeyboardKey.arrowUp || key == LogicalKeyboardKey.end
@@ -1109,12 +1271,14 @@ class _MenuState<T> extends State<RetroDesktopMenu<T>> {
     const OutlinedBorder itemShape = RoundedRectangleBorder();
     // Rows without a glyph keep their words in line with those that have one.
     final glyphs = widget.items.any((item) => item.icon != null);
+    // A list with a choice keeps a column at the rows' end for the chosen one's tick.
+    final marks = widget.items.any((item) => item.selected);
     return Semantics(
       label: widget.label,
       child: _RaisedSurface(
         componentTheme: t.menuTheme,
         style: widget.style,
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(vertical: RetroDesktopSpacing.s4),
         child: Focus(
           canRequestFocus: false,
           skipTraversal: true,
@@ -1123,10 +1287,9 @@ class _MenuState<T> extends State<RetroDesktopMenu<T>> {
           onFocusChange: (inside) => setState(() => _focusInside = inside),
           child: MouseRegion(
             opaque: false,
-            onEnter: (_) => setState(() {
-              _pointerInside = true;
-              _keyed = false;
-            }),
+            // Only the pointer's move takes the lit row from the keys (_point): a menu opened from the keys under a
+            // resting pointer keeps its keys' row.
+            onEnter: (_) => setState(() => _pointerInside = true),
             onExit: (_) => setState(() => _pointerInside = false),
             child: SingleChildScrollView(
               child: Column(
@@ -1134,88 +1297,128 @@ class _MenuState<T> extends State<RetroDesktopMenu<T>> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   for (var i = 0; i < widget.items.length; i++)
-                    RetroDesktopPressable(
-                      focusShape: itemShape,
-                      ringInside: true,
-                      focusNode: _nodes[i],
-                      autofocus: i == first,
-                      label: widget.items[i].label,
-                      selected: widget.items[i].selected,
-                      onPressed:
-                          widget.items[i].enabled && widget.onSelected != null
-                          ? () => widget.onSelected!(widget.items[i].value)
-                          : null,
-                      // The keyboard's row is lit, as the period's menus lit it, and the lit row is the focus
-                      // feedback: no ring round it. Driven by the pointer, the row under it is lit, or with
-                      // the pointer off the rows the chosen one.
-                      // Claimed from inside the press (a Builder's context, as
-                      // the slider's thumb claims): from the builder's own
-                      // context the claim missed, and the press drew its ring
-                      // round the row too, hidden in the lit fill until a row
-                      // stood focused and unlit.
-                      builder: (context, states) => Builder(
-                        builder: (context) {
-                          RetroDesktopHighlightClaim.maybeOf(context)
-                              ?.claim(context, states);
-                          final lit = _keyed
-                              ? states.contains(WidgetState.focused) ||
-                                    (widget.items[i].selected && !_focusInside)
-                              : _pointerInside
-                              ? states.contains(WidgetState.hovered) &&
-                                    widget.items[i].enabled
-                              : widget.items[i].selected;
-                          return DecoratedBox(
-                            decoration: ShapeDecoration(
-                              shape: itemShape,
-                              color: lit ? t.colors.highlight : null,
-                            ),
-                            // A menu's rows in the chrome's face, as its bar's
-                            // titles and its button's words are; a field's list
-                            // in the field's.
-                            child: DefaultTextStyle.merge(
-                              style: (field ? const TextStyle() : t.type.chrome)
-                                  .copyWith(
-                                    color: lit
-                                        ? t.colors.onHighlight
-                                        : t.colors.text,
-                                  ),
-                              child: Padding(
-                                // A field's words start 8 px in at its density.
-                                padding: field
-                                    ? EdgeInsetsDirectional.fromSTEB(
-                                        8 * t.density.horizontal,
-                                        10,
-                                        12,
-                                        10,
-                                      )
-                                    : const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 10,
-                                      ),
-                                child: Row(
-                                  children: [
-                                    if (widget.items[i].icon != null) ...[
-                                      Icon(
-                                        widget.items[i].icon,
-                                        size: 18,
-                                        color: lit
-                                            ? t.colors.onHighlight
-                                            : t.colors.text,
-                                      ),
-                                      const SizedBox(width: 8),
-                                    ] else if (glyphs)
-                                      const SizedBox(width: 26),
-                                    Expanded(
-                                      child: RetroDesktopCaps(
-                                        Text(widget.items[i].label),
-                                      ),
+                    MouseRegion(
+                      opaque: false,
+                      onHover: (_) => _point(i),
+                      child: RetroDesktopPressable(
+                        focusShape: itemShape,
+                        ringInside: true,
+                        focusNode: _nodes[i],
+                        autofocus: i == first,
+                        label: widget.items[i].label,
+                        selected: widget.items[i].selected,
+                        onPressed:
+                            widget.items[i].enabled && widget.onSelected != null
+                            ? () => widget.onSelected!(widget.items[i].value)
+                            : null,
+                        // The keyboard's row is lit, as the period's menus lit it, and the lit row is the focus
+                        // feedback: no ring round it. Driven by the pointer, the row under it is lit, or with
+                        // the pointer off the rows the chosen one.
+                        // Claimed from inside the press (a Builder's context, as
+                        // the slider's thumb claims): from the builder's own
+                        // context the claim missed, and the press drew its ring
+                        // round the row too, hidden in the lit fill until a row
+                        // stood focused and unlit.
+                        builder: (context, states) => Builder(
+                          builder: (context) {
+                            RetroDesktopHighlightClaim.maybeOf(context)
+                                ?.claim(context, states);
+                            final chosen = widget.items[i].selected;
+                            final lit = _keyed
+                                ? states.contains(WidgetState.focused) ||
+                                      (chosen && !_focusInside)
+                                : _pointerInside
+                                ? states.contains(WidgetState.hovered) &&
+                                      widget.items[i].enabled
+                                : chosen;
+                            final ink = lit
+                                ? t.colors.onHighlight
+                                : t.colors.text;
+                            // The chosen row, unlit, stands in the look's held well, as a chosen toggle does, its
+                            // words on the list's line and its tick at the end: seen at a glance while the pointer
+                            // or the keyboard lights another row in the highlight's bar, which no well resembles.
+                            return retroDesktopHeldGround(
+                              t,
+                              held: chosen && !lit,
+                              sink: false,
+                              child: DecoratedBox(
+                                decoration: ShapeDecoration(
+                                  shape: itemShape,
+                                  color: lit ? t.colors.highlight : null,
+                                ),
+                                // A menu's rows in the chrome's face, as its bar's
+                                // titles and its button's words are; a field's list
+                                // in the field's.
+                                child: DefaultTextStyle.merge(
+                                  style:
+                                      (field
+                                              ? const TextStyle()
+                                              : t.type.chrome)
+                                          .copyWith(
+                                            color: lit
+                                                ? t.colors.onHighlight
+                                                : t.colors.text,
+                                          ),
+                                  child: Padding(
+                                    // A field's words start 8 px in at its density.
+                                    padding: field
+                                        ? EdgeInsetsDirectional.fromSTEB(
+                                            8 * t.density.horizontal,
+                                            10,
+                                            12,
+                                            10,
+                                          )
+                                        : const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 10,
+                                          ),
+                                    child: Row(
+                                      children: [
+                                        if (widget.items[i].icon != null) ...[
+                                          Icon(
+                                            widget.items[i].icon,
+                                            size: 18,
+                                            color: lit
+                                                ? t.colors.onHighlight
+                                                : t.colors.text,
+                                          ),
+                                          const SizedBox(
+                                            width: RetroDesktopSpacing.s8,
+                                          ),
+                                        ] else if (glyphs)
+                                          // The glyph column's room: a glyph (18) and its gap.
+                                          const SizedBox(
+                                            width: 18 + RetroDesktopSpacing.s8,
+                                          ),
+                                        Expanded(
+                                          child: RetroDesktopCaps(
+                                            Text(widget.items[i].label),
+                                          ),
+                                        ),
+                                        if (marks)
+                                          SizedBox(
+                                            width: 20,
+                                            child: chosen
+                                                ? Align(
+                                                    alignment:
+                                                        AlignmentDirectional
+                                                            .centerEnd,
+                                                    child: Icon(
+                                                      RetroDesktopGlyphs.check,
+                                                      size: 14,
+                                                      color: ink,
+                                                    ),
+                                                  )
+                                                : null,
+                                          ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                     ),
                 ],
@@ -1368,6 +1571,8 @@ Future<T?> showRetroDesktopMenu<T>(
       );
     },
     root: useRootNavigator,
+    // A menu leaves the window it drops from active.
+    modal: false,
     label: closeLabel,
   );
 }
@@ -1485,7 +1690,7 @@ class RetroDesktopTooltipFace extends StatelessWidget {
   /// The message displayed to the user.
   final String message;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   // A label as wide as its words, at its column's start, wherever it is set: stretched across a window it read as a
@@ -1498,10 +1703,27 @@ class RetroDesktopTooltipFace extends StatelessWidget {
       componentTheme: RetroDesktopTheme.of(context).tooltipTheme,
       scale: RetroDesktopFaceScale.control,
       style: style,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: RetroDesktopSpacing.s10,
+        vertical: RetroDesktopSpacing.s6,
+      ),
       child: Text(message),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// Opens a tooltip near a global rectangle without taking keyboard focus.
@@ -1582,10 +1804,31 @@ class RetroDesktopTooltip extends StatefulWidget {
   /// The delay before the tooltip opens.
   final Duration wait;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   State<RetroDesktopTooltip> createState() => _TooltipState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'wait',
+          wait,
+          defaultValue: const Duration(milliseconds: 400),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _TooltipState extends State<RetroDesktopTooltip> {
@@ -1700,7 +1943,7 @@ class RetroDesktopSnackBar extends StatelessWidget {
   /// Called when the user dismisses it with its dismiss button.
   final VoidCallback? onDismissed;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
@@ -1716,7 +1959,7 @@ class RetroDesktopSnackBar extends StatelessWidget {
           children: [
             if (title != null) ...[
               Text(title!, style: t.type.sub),
-              const SizedBox(height: 6),
+              const SizedBox(height: RetroDesktopSpacing.s6),
             ],
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1730,17 +1973,17 @@ class RetroDesktopSnackBar extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: RetroDesktopSpacing.s10),
                 Expanded(child: Text(message)),
               ],
             ),
             if (actionLabel != null || onDismissed != null)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.only(top: RetroDesktopSpacing.s8),
                 child: Wrap(
                   alignment: WrapAlignment.end,
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: RetroDesktopSpacing.s8,
+                  runSpacing: RetroDesktopSpacing.s8,
                   children: [
                     if (actionLabel != null)
                       RetroDesktopButton(actionLabel!, onPressed: onAction),
@@ -1758,6 +2001,32 @@ class RetroDesktopSnackBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(
+        EnumProperty<RetroDesktopTone>(
+          'tone',
+          tone,
+          defaultValue: RetroDesktopTone.info,
+        ),
+      )
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(StringProperty('dismissLabel', dismissLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAction', onAction))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDismissed', onDismissed))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -1945,10 +2214,31 @@ class RetroDesktopMenuAnchor<T> extends StatefulWidget {
   /// builder's open callback is null.
   final ValueChanged<T>? onSelected;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   State<RetroDesktopMenuAnchor<T>> createState() => _MenuAnchorState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopMenuItem<T>>('items', items))
+      ..add(
+        ObjectFlagProperty<Widget Function(BuildContext, VoidCallback?)>.has(
+          'builder',
+          builder,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _MenuAnchorState<T> extends State<RetroDesktopMenuAnchor<T>> {
@@ -2000,7 +2290,7 @@ class RetroDesktopDialogAction<T> extends StatelessWidget {
   /// The current value to display or edit.
   final T? value;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
   /// Whether the part accepts user interaction.
@@ -2019,5 +2309,22 @@ class RetroDesktopDialogAction<T> extends StatelessWidget {
     return isDefaultAction
         ? RetroDesktopButton(label, isDefaultAction: true, onPressed: action)
         : RetroDesktopButton(label, onPressed: action);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        FlagProperty(
+          'isDefaultAction',
+          value: isDefaultAction,
+          ifTrue: 'isDefaultAction',
+        ),
+      );
   }
 }

@@ -2,9 +2,11 @@
 // preview a gallery shows a page in, the shell's action and the chrome its pages read). The package exports it
 // from its host library, not its main one.
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'internal/face.dart';
+import 'internal/modal.dart';
 
 import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
@@ -84,6 +86,18 @@ class RetroDesktopChromeScope extends InheritedWidget {
       old.brand != brand ||
       old.nav != nav ||
       old.action != action;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('brand', brand))
+      ..add(IterableProperty<RetroDesktopNavItem>('nav', nav))
+      ..add(IntProperty('active', active))
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      );
+  }
 }
 
 /// The app's host, mounted once around the router's navigator: Retro Desktop's theme, desk and text defaults.
@@ -137,6 +151,29 @@ class RetroDesktopHost extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopThemeData>(
+          'light',
+          light,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<RetroDesktopThemeData>(
+          'dark',
+          dark,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
+      );
   }
 }
 
@@ -270,7 +307,7 @@ class RetroDesktopSheetPage<T> extends Page<T> {
       );
     }
     if (t.desk) {
-      return RawDialogRoute<T>(
+      return _SheetWindowRoute<T>(
         settings: this,
         barrierDismissible: true,
         barrierLabel: DesignLocalizations.of(context).closeButtonLabel,
@@ -289,7 +326,7 @@ class RetroDesktopSheetPage<T> extends Page<T> {
         ),
       );
     }
-    return ModalBottomSheetRoute<T>(
+    return _SheetFootRoute<T>(
       settings: this,
       barrierLabel: DesignLocalizations.of(context).closeButtonLabel,
       sheetAnimationStyle: AnimationStyle(
@@ -314,6 +351,33 @@ class RetroDesktopSheetPage<T> extends Page<T> {
       ),
     );
   }
+}
+
+// A sheet page's window on a desk and its panel on a phone take the front from the window under them.
+class _SheetWindowRoute<T> extends RawDialogRoute<T>
+    with RetroDesktopModalRoute<T> {
+  _SheetWindowRoute({
+    required super.pageBuilder,
+    super.settings,
+    super.barrierDismissible,
+    super.barrierLabel,
+    super.transitionDuration,
+    super.barrierColor,
+  });
+}
+
+class _SheetFootRoute<T> extends ModalBottomSheetRoute<T>
+    with RetroDesktopModalRoute<T> {
+  _SheetFootRoute({
+    required super.builder,
+    required super.isScrollControlled,
+    super.settings,
+    super.barrierLabel,
+    super.sheetAnimationStyle,
+    super.backgroundColor,
+    super.modalBarrierColor,
+    super.elevation,
+  });
 }
 
 /// How a page stands in its preview.
@@ -455,5 +519,55 @@ class RetroDesktopPreview extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopThemeData>(
+          'light',
+          light,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<RetroDesktopThemeData>(
+          'dark',
+          dark,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<RetroDesktopPresentation>(
+          'presentation',
+          presentation,
+          defaultValue: RetroDesktopPresentation.root,
+        ),
+      )
+      ..add(
+        IterableProperty<RetroDesktopTab>('tabs', tabs, defaultValue: const []),
+      )
+      ..add(IntProperty('activeIndex', activeIndex, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(FlagProperty('drawer', value: drawer, ifTrue: 'drawer'))
+      ..add(
+        EnumProperty<PreviewPlatform>(
+          'platform',
+          platform,
+          defaultValue: PreviewPlatform.android,
+        ),
+      )
+      ..add(
+        EnumProperty<Brightness>(
+          'brightness',
+          brightness,
+          defaultValue: Brightness.light,
+        ),
+      );
   }
 }

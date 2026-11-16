@@ -1,6 +1,9 @@
 // The frame: a desktop of windows. On a phone they stack; from 1024 wide they tile on 12 columns and every column ends on one
 // line. The desktop holds which window is active, so a page can't draw two heroes: a window has no `active` of its own.
+import 'package:flutter/foundation.dart';
+
 import 'internal/marks.dart';
+import 'internal/modal.dart';
 
 import 'dart:math' as math;
 
@@ -21,6 +24,7 @@ import 'layout.dart';
 import 'pixels.dart';
 import 'theme.dart';
 import 'shapes.dart';
+import 'tokens.dart';
 
 /// What a window's content may ask: is this the active window, and should a star draw small.
 ///
@@ -48,11 +52,48 @@ class RetroDesktopWindowScope extends InheritedWidget {
   @override
   bool updateShouldNotify(RetroDesktopWindowScope old) =>
       old.active != active || old.compact != compact;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('active', active))
+      ..add(DiagnosticsProperty<bool>('compact', compact));
+  }
 }
 
-/// True outside a desktop and in its active window.
+/// True outside a desktop and in its active window, and not under an alert, a dialog or a sheet. A part that asks
+/// builds under a [RetroDesktopModalWatch].
 bool retroDesktopActiveHere(BuildContext context) =>
-    RetroDesktopWindowScope.maybeOf(context)?.active ?? true;
+    (RetroDesktopWindowScope.maybeOf(context)?.active ?? true) &&
+    !retroDesktopUnderModal(context);
+
+/// A window's title bar alone, for a raised window the look draws on a surface of its own (a bottom sheet): [title],
+/// a heading for a screen reader, the close box live when [onClose] is given (named [closeLabel] for a screen reader),
+/// striped while the window is the front one.
+Widget retroDesktopTitleBar({
+  required String title,
+  VoidCallback? onClose,
+  String? closeLabel,
+}) => RetroDesktopModalWatch(
+  builder: (context) => _TitleBar(
+    title: title,
+    active: retroDesktopActiveHere(context),
+    onClose: onClose,
+    closeLabel: closeLabel,
+    header: true,
+  ),
+);
+
+/// The room between a window's frame and its title bar and body, in [t]'s appearance.
+EdgeInsets retroDesktopWindowFrame(RetroDesktopThemeData t) => t.chisel
+    ? const EdgeInsets.all(RetroDesktopSpacing.s2 + RetroDesktopSpacing.px)
+    : const EdgeInsets.fromLTRB(
+        RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+        RetroDesktopSpacing.px,
+        RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+        RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+      );
 
 /// Whether a star draws its small form: always in an inactive window, so a page has one hero whatever it writes, and in the
 /// active window on a phone unless the desktop said `whole`. A desktop's active window keeps the whole object.
@@ -73,10 +114,14 @@ class _Chrome extends SingleChildRenderObjectWidget {
 class _RenderChrome extends RenderProxyBox {}
 
 class _BoxPainter extends RetroDesktopPixelPainter {
-  const _BoxPainter(this.c, this.kind, this.shape);
+  const _BoxPainter(this.c, this.kind, this.shape, {this.pressed = false});
   final RetroDesktopColors c;
   final int kind;
   final OutlinedBorder shape;
+
+  /// Held: the box turns in, its face a step darker and its inner line in the frame's ink on the top and the left (the
+  /// light is fixed at the top left in either direction).
+  final bool pressed;
   @override
   void paint(RetroDesktopPixelGrid px, Size s) {
     final canvas = px.canvas;
@@ -89,7 +134,10 @@ class _BoxPainter extends RetroDesktopPixelPainter {
     canvas.drawPath(
       outline.getOuterPath(r),
       // Flat, its bevel doing the modelling (no part fades).
-      Paint()..color = Color.lerp(c.titleBoxDark, c.titleBoxLight, .5)!,
+      Paint()
+        ..color = pressed
+            ? c.titleBoxDark
+            : Color.lerp(c.titleBoxDark, c.titleBoxLight, .5)!,
     );
     outline.paint(canvas, r);
     RetroDesktopShapes.inset(outline, w)
@@ -97,6 +145,12 @@ class _BoxPainter extends RetroDesktopPixelPainter {
           side: BorderSide(color: c.bevelDark, width: w),
         )
         .paint(canvas, r.deflate(w));
+    if (pressed) {
+      // The shade falls inside the top and the start, as a pressed plate's does (law 4).
+      final inner = r.deflate(w);
+      px.fillExact(inner.left, inner.top, inner.right, inner.top + h, line);
+      px.fillExact(inner.left, inner.top, inner.left + w, inner.bottom, line);
+    }
     if (kind == 1) {
       px.frame(
         Rect.fromLTWH(r.left + 2 * w, r.top + 2 * h, 6 * w, 6 * h),
@@ -111,7 +165,7 @@ class _BoxPainter extends RetroDesktopPixelPainter {
 
   @override
   bool shouldRepaint(_BoxPainter o) =>
-      o.c != c || o.kind != kind || o.shape != shape;
+      o.c != c || o.kind != kind || o.shape != shape || o.pressed != pressed;
 }
 
 class _Stripes extends RetroDesktopPixelPainter {
@@ -153,8 +207,13 @@ class _BarLayout extends MultiChildLayoutDelegate {
     this.line = 0,
     this.pixel = 1,
     this.striped = true,
+    this.boxes = true,
   });
   final bool rtl;
+
+  /// Whether the zoom and shade boxes stand at the bar's end; without them the end keeps the close box's room, so the
+  /// title stays on the window's middle and the stripes run alike on both sides.
+  final bool boxes;
 
   /// Whether the title keeps to one line beside its stripes; false: it wraps between stripes of at least 12.
   final bool striped;
@@ -189,7 +248,9 @@ class _BarLayout extends MultiChildLayoutDelegate {
       ),
     );
     final start = side + box;
-    final end = size.width - side - 2 * box - boxGap - boxGap;
+    final end = boxes
+        ? size.width - side - 2 * box - boxGap - boxGap
+        : size.width - side - box;
     final room = end - start;
     final bars = 2 * (min + 2 * margin);
     // A title that wraps (twice the text size on a phone) keeps whole stripes of at least 12 beside its lines: as 6 px
@@ -233,6 +294,7 @@ class _BarLayout extends MultiChildLayoutDelegate {
   @override
   bool shouldRelayout(_BarLayout o) =>
       o.rtl != rtl ||
+      o.boxes != boxes ||
       o.caps != caps ||
       o.line != line ||
       o.pixel != pixel ||
@@ -248,16 +310,30 @@ class _TitleBar extends StatelessWidget {
     this.strong = false,
     this.folded = false,
     this.onClose,
+    this.closeLabel,
     this.style,
+    this.header = false,
   });
   final RetroDesktopStyle? style;
   final String title;
   final IconData? icon;
 
+  /// The close box's name for a screen reader, in place of the shared "Close".
+  final String? closeLabel;
+
   /// [folded]: a window rolled up to its bar, which keeps its fold box even inactive (without it the bar alone read as
   /// a wide push button).
   final bool active, strong, folded;
+
+  /// Whether the title is a heading of its own for a screen reader, as a sheet's is: a window names itself with its
+  /// title, but a sheet's title merged into the node of whatever its body taps.
+  final bool header;
   final VoidCallback? onClose;
+
+  Widget _heading(Widget words) => header && title.isNotEmpty
+      ? Semantics(container: true, header: true, child: words)
+      : words;
+
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
@@ -286,9 +362,13 @@ class _TitleBar extends StatelessWidget {
     if (t.chisel) {
       return _chiselBar(context, t, ink, wordsStyle);
     }
+    // Off the desk (a phone, a tablet) a window fills its screen and is neither shaded nor zoomed: its zoom and shade
+    // boxes, drawn there, read as controls that did nothing; it keeps its close box, the way back.
     Widget box(int kind) => Visibility(
       visible:
-          active || (kind == 0 && onClose != null) || (kind == 2 && folded),
+          (active && (kind == 0 || t.desk)) ||
+          (kind == 0 && onClose != null) ||
+          (kind == 2 && folded),
       maintainSize: true,
       maintainAnimation: true,
       maintainState: true,
@@ -306,7 +386,7 @@ class _TitleBar extends StatelessWidget {
     // stood 3 px past the room the boxes leave).
     final name = LayoutBuilder(
       builder: (context, room) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
+        padding: const EdgeInsets.symmetric(horizontal: RetroDesktopSpacing.s2),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -316,9 +396,9 @@ class _TitleBar extends StatelessWidget {
                 offset: Offset(0, (caps / pixel).roundToDouble() * pixel),
                 child: Icon(icon, size: 14, color: ink),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: RetroDesktopSpacing.s6),
             ],
-            Flexible(child: Text(title, style: wordsStyle)),
+            Flexible(child: _heading(Text(title, style: wordsStyle))),
           ],
         ),
       ),
@@ -359,6 +439,7 @@ class _TitleBar extends StatelessWidget {
                 line: line,
                 pixel: pixel,
                 striped: striped,
+                boxes: t.desk || folded,
               ),
               children: [
                 LayoutId(
@@ -389,9 +470,11 @@ class _TitleBar extends StatelessWidget {
                   LayoutId(
                     id: 'reach',
                     child: RetroDesktopPressable(
-                      label: DesignLocalizations.of(context).closeButtonLabel,
+                      label:
+                          closeLabel ??
+                          DesignLocalizations.of(context).closeButtonLabel,
                       onPressed: onClose,
-                      // Focus rings the 13 pixels drawn, not the padded target.
+                      // Focus rings the 13 pixels drawn, not the padded target; held, the box drawn there turns in.
                       builder: (context, states) => LayoutBuilder(
                         builder: (context, room) => Stack(
                           children: [
@@ -402,7 +485,21 @@ class _TitleBar extends StatelessWidget {
                                   .roundToDouble(),
                               width: 13,
                               height: 13,
-                              child: _CloseRing(states: states),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  if (states.contains(WidgetState.pressed))
+                                    RetroDesktopPixelPaint(
+                                      painter: _BoxPainter(
+                                        c,
+                                        0,
+                                        t.shapes.small,
+                                        pressed: true,
+                                      ),
+                                    ),
+                                  _CloseRing(states: states),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -476,12 +573,17 @@ extension _ChiselTitleBar on _TitleBar {
             .roundToDouble() *
         pixel;
     // A narrow window keeps its close button and some of its title: the shade
-    // and zoom buttons give way first, then the icon.
+    // and zoom buttons give way first, then the icon. Off the desk (a phone, a
+    // tablet) a window fills its screen and is neither shaded nor zoomed: it
+    // keeps its close button alone, the way back. A folded window keeps them
+    // anywhere, as Platinum's keeps its fold box: the bar alone read as a
+    // wide push button.
     return LayoutBuilder(
       builder: (context, constraints) {
         final room = constraints.maxWidth - 10;
         final withIcon = icon != null && room - 18 >= 16 + 24;
-        final all = room - (withIcon ? 18 : 0) >= 3 * 16 + 2 + 24;
+        final all =
+            (t.desk || folded) && room - (withIcon ? 18 : 0) >= 3 * 16 + 2 + 24;
         return _Chrome(
           child: SizedBox(
             height: height,
@@ -492,28 +594,39 @@ extension _ChiselTitleBar on _TitleBar {
                 // keeps its title and buttons on its middle line.
                 Positioned.fill(
                   child: Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(4, 0, 2, 0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      RetroDesktopSpacing.s4,
+                      0,
+                      RetroDesktopSpacing.s2,
+                      0,
+                    ),
                     child: Row(
                       children: [
                         if (withIcon) ...[
                           Icon(icon, size: 14, color: ink),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: RetroDesktopSpacing.s4),
                         ],
                         Expanded(
                           // The capitals' middle, not the line's, on the
                           // bar's middle line with the glyph and buttons.
                           child: Transform.translate(
                             offset: Offset(0, -lift),
-                            child: Text(
-                              title,
-                              style: wordsStyle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            child: _heading(
+                              Text(
+                                title,
+                                style: wordsStyle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        if (all) ...[box(2), box(1), const SizedBox(width: 2)],
+                        const SizedBox(width: RetroDesktopSpacing.s4),
+                        if (all) ...[
+                          box(2),
+                          box(1),
+                          const SizedBox(width: RetroDesktopSpacing.s2),
+                        ],
                         onClose == null || reach
                             ? box(0)
                             : RetroDesktopPressable(
@@ -531,7 +644,9 @@ extension _ChiselTitleBar on _TitleBar {
                     bottom: 0,
                     width: retroDesktopReach,
                     child: RetroDesktopPressable(
-                      label: DesignLocalizations.of(context).closeButtonLabel,
+                      label:
+                          closeLabel ??
+                          DesignLocalizations.of(context).closeButtonLabel,
                       onPressed: onClose,
                       // Focus marks the button drawn, not the padded target.
                       builder: (context, states) => Stack(
@@ -540,7 +655,9 @@ extension _ChiselTitleBar on _TitleBar {
                           Align(
                             alignment: AlignmentDirectional.centerEnd,
                             child: Padding(
-                              padding: const EdgeInsetsDirectional.only(end: 2),
+                              padding: const EdgeInsetsDirectional.only(
+                                end: RetroDesktopSpacing.s2,
+                              ),
                               child: SizedBox(
                                 width: 16,
                                 height: 14,
@@ -681,7 +798,7 @@ class RetroDesktopWindow extends StatelessWidget {
   /// and has none of its own.
   final bool fills;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The heading displayed above the content.
@@ -712,17 +829,27 @@ class RetroDesktopWindow extends StatelessWidget {
   final VoidCallback? onClose;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => RetroDesktopModalWatch(builder: _build);
+
+  Widget _build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
-    // A window inside a window is drawn inactive: a page can't get a second hero by nesting one.
+    // A window inside a window is drawn inactive: a page can't get a second hero by nesting one. So is one under an
+    // alert, a dialog or a sheet: the window in front is the active one (law 3).
     final active =
         (RetroDesktopWindowScope.maybeOf(context)?.active ?? false) &&
-        context.getInheritedWidgetOfExactType<_InsideWindow>() == null;
+        context.getInheritedWidgetOfExactType<_InsideWindow>() == null &&
+        !retroDesktopUnderModal(context);
     final states = <WidgetState>{if (active) WidgetState.selected};
     final flush = child is RetroDesktopFlush;
     final inset = t.density.apply(
-      padding ?? const EdgeInsets.fromLTRB(12, 12, 12, 8),
+      padding ??
+          const EdgeInsets.fromLTRB(
+            RetroDesktopSpacing.s12,
+            RetroDesktopSpacing.s12,
+            RetroDesktopSpacing.s12,
+            RetroDesktopSpacing.s8,
+          ),
       Directionality.of(context),
     );
     final body = flush && padding == null
@@ -732,7 +859,7 @@ class RetroDesktopWindow extends StatelessWidget {
     // share: the strip and the foot keep their own 8.
     final words = flush && padding == null
         ? t.density.apply(
-            const EdgeInsets.symmetric(horizontal: 8),
+            const EdgeInsets.symmetric(horizontal: RetroDesktopSpacing.s8),
             Directionality.of(context),
           )
         : inset;
@@ -744,7 +871,7 @@ class RetroDesktopWindow extends StatelessWidget {
         states: states,
         style: style,
         scale: RetroDesktopFaceScale.window,
-        component: t.windowTheme.merge(
+        component: t.windowTheme.over(
           RetroDesktopStyle(
             fill: WidgetStatePropertyAll(c.platinum),
             // Activation highlights the title; the body stays on grey.
@@ -753,9 +880,7 @@ class RetroDesktopWindow extends StatelessWidget {
         ),
         padding: EdgeInsets.zero,
         child: Padding(
-          padding: t.chisel
-              ? const EdgeInsets.all(3)
-              : const EdgeInsets.fromLTRB(5, 1, 5, 5),
+          padding: retroDesktopWindowFrame(t),
           child: RetroDesktopColumn(
             children: [
               _TitleBar(
@@ -789,6 +914,34 @@ class RetroDesktopWindow extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('fills', value: fills, ifTrue: 'fills'))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('info', info, defaultValue: null))
+      ..add(StringProperty('infoEnd', infoEnd, defaultValue: null))
+      ..add(StringProperty('infoFlag', infoFlag, defaultValue: null))
+      ..add(IterableProperty<String>('status', status, defaultValue: const []))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose));
   }
 }
 
@@ -829,63 +982,86 @@ class _InfoStrip extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s4),
       child: RetroDesktopPixelPaint(
         painter: _RulePainter(c.bevelDark, c.bevelLight),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 22),
           child: Padding(
-            padding: EdgeInsets.fromLTRB(inset.left, 1, inset.right, 0),
-            child: RetroDesktopFitRow(
-              fill: 0,
-              gap: 8,
-              fillShare: .3,
-              children: [
-                Text(
-                  info ?? '',
-                  style: t.type.caption,
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (end != null || flag != null)
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (flag != null) ...[
-                        Flexible(
-                          child: DecoratedBox(
-                            decoration: ShapeDecoration(
-                              color: c.text,
-                              shape: t.shapes.full,
+            padding: EdgeInsets.fromLTRB(
+              inset.left,
+              RetroDesktopSpacing.px,
+              inset.right,
+              0,
+            ),
+            // The count at the start and the fact at the end on one line while both fit; past that (large text
+            // on a phone) the end fact steps under the count, each whole, rather than the count being cut to a
+            // third of the strip ("6 docu…").
+            child: LayoutBuilder(
+              builder: (context, box) => Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                // One line stands on the strip's middle, as it did in a row; two fill it.
+                runAlignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: RetroDesktopSpacing.s8,
+                children: [
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: box.maxWidth),
+                    child: Text(
+                      info ?? '',
+                      style: t.type.caption,
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (end != null || flag != null)
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: box.maxWidth),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (flag != null) ...[
+                            Flexible(
+                              child: DecoratedBox(
+                                decoration: ShapeDecoration(
+                                  color: c.text,
+                                  shape: t.shapes.full,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    RetroDesktopSpacing.s4,
+                                    RetroDesktopSpacing.px,
+                                    RetroDesktopSpacing.s4,
+                                    0,
+                                  ),
+                                  child: Text(
+                                    flag!,
+                                    style: t.type.pixel(15, 14, color: c.paper),
+                                    maxLines: 1,
+                                    softWrap: false,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(4, 1, 4, 0),
+                            const SizedBox(width: RetroDesktopSpacing.s4),
+                          ],
+                          if (end != null)
+                            Flexible(
                               child: Text(
-                                flag!,
-                                style: t.type.pixel(15, 14, color: c.paper),
+                                end!,
+                                style: t.type.caption,
                                 maxLines: 1,
                                 softWrap: false,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                      ],
-                      if (end != null)
-                        Flexible(
-                          child: Text(
-                            end!,
-                            style: t.type.caption,
-                            maxLines: 1,
-                            softWrap: false,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                    ],
-                  ),
-              ],
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -941,9 +1117,9 @@ class _Status extends StatelessWidget {
                   children: [
                     for (var i = 0; i < status.length; i++) ...[
                       if (i > 0 || action != null) ...[
-                        const SizedBox(width: 10),
+                        const SizedBox(width: RetroDesktopSpacing.s10),
                         _StatusRule(c.dark ? c.bevelLight : c.bevelDark),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: RetroDesktopSpacing.s10),
                       ],
                       // Each as wide as its words while they fit. Past that they give way in proportion to their words,
                       // not equally, and wrap at a space (large text): a status cut to "kept as you …" said nothing.
@@ -1023,7 +1199,7 @@ class RetroDesktopWell extends StatelessWidget implements RetroDesktopFlush {
   /// Insets around the content.
   final EdgeInsetsGeometry? padding;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
@@ -1033,7 +1209,7 @@ class RetroDesktopWell extends StatelessWidget implements RetroDesktopFlush {
     return DesignKeylineFace(
       child: retroDesktopFace(
         states: const {},
-        component: t.wellTheme.merge(
+        component: t.wellTheme.over(
           RetroDesktopStyle(fill: WidgetStatePropertyAll(t.colors.paper)),
         ),
         scale: RetroDesktopFaceScale.surface,
@@ -1043,6 +1219,26 @@ class RetroDesktopWell extends StatelessWidget implements RetroDesktopFlush {
         child: child,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -1059,10 +1255,15 @@ class RetroDesktopToolbar extends StatelessWidget {
     required this.children,
     this.gap = 8,
     this.style,
-    this.padding = const EdgeInsetsDirectional.fromSTEB(12, 10, 8, 6),
+    this.padding = const EdgeInsetsDirectional.fromSTEB(
+      RetroDesktopSpacing.s12,
+      RetroDesktopSpacing.s10,
+      RetroDesktopSpacing.s8,
+      RetroDesktopSpacing.s6,
+    ),
   });
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The child widgets in reading order.
@@ -1109,7 +1310,7 @@ class RetroDesktopToolbar extends StatelessWidget {
     }
     return retroDesktopFace(
       states: const {},
-      component: t.toolbarTheme.merge(
+      component: t.toolbarTheme.over(
         const RetroDesktopStyle(
           fill: WidgetStatePropertyAll(Color(0x00000000)),
           side: WidgetStatePropertyAll(BorderSide.none),
@@ -1120,6 +1321,32 @@ class RetroDesktopToolbar extends StatelessWidget {
       padding: padding,
       child: body,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('gap', gap, defaultValue: 8))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsetsDirectional.fromSTEB(
+            RetroDesktopSpacing.s12,
+            RetroDesktopSpacing.s10,
+            RetroDesktopSpacing.s8,
+            RetroDesktopSpacing.s6,
+          ),
+        ),
+      );
   }
 }
 
@@ -1146,7 +1373,7 @@ class RetroDesktopToolRule extends StatelessWidget {
   const RetroDesktopToolRule({super.key});
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 4),
+    padding: const EdgeInsets.symmetric(horizontal: RetroDesktopSpacing.s4),
     child: retroDesktopOwnSize(
       width: 2,
       height: 20,
@@ -1176,18 +1403,26 @@ class RetroDesktopToolNote extends StatelessWidget {
     final t = RetroDesktopTheme.of(context);
     if (!t.desk) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: RetroDesktopSpacing.s4),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
             Icon(icon, size: 14, color: t.colors.textSecondary),
-            const SizedBox(width: 6),
+            const SizedBox(width: RetroDesktopSpacing.s6),
           ],
           Text(text, style: t.type.caption, maxLines: 1, softWrap: false),
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null));
   }
 }
 
@@ -1226,14 +1461,38 @@ class RetroDesktopDeskIcon extends StatefulWidget {
   /// Opens it: a second press soon after the first, Return, or on a phone one press.
   final VoidCallback? onOpen;
 
-  /// The focus node this part uses; when null it makes and disposes its own.
+  /// {@macro retro_desktop.ownFocusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
+
+  /// The width an icon takes at [context]'s text size, for a rail of icons: 84 at 100%, its name's plate growing
+  /// with the text so a name reads whole (168 at 200%).
+  static double widthOf(BuildContext context) =>
+      (84 * math.max(1.0, MediaQuery.textScalerOf(context).scale(12) / 12))
+          .roundToDouble();
 
   @override
   State<RetroDesktopDeskIcon> createState() => _RetroDesktopDeskIconState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onOpen', onOpen))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _RetroDesktopDeskIconState extends State<RetroDesktopDeskIcon> {
@@ -1263,13 +1522,14 @@ class _RetroDesktopDeskIconState extends State<RetroDesktopDeskIcon> {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     final lit = widget.selected;
+    final width = RetroDesktopDeskIcon.widthOf(context);
     final face = SizedBox(
-      width: 84,
+      width: width,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           widget.art,
-          const SizedBox(height: 4),
+          const SizedBox(height: RetroDesktopSpacing.s4),
           // The plate takes the family's control shape, as a file's name does.
           DecoratedBox(
             decoration: ShapeDecoration(
@@ -1277,15 +1537,16 @@ class _RetroDesktopDeskIconState extends State<RetroDesktopDeskIcon> {
               shape: t.shapes.small.copyWith(side: BorderSide.none),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Text(
+              padding: const EdgeInsets.symmetric(
+                horizontal: RetroDesktopSpacing.s4,
+              ),
+              child: _IconName(
                 widget.name,
-                style: t.type
+                t.type
                     .text(12, 15, weight: FontWeight.w600)
                     .copyWith(color: lit ? c.onHighlight : null),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                // The plate's room: the icon's width, less the plate's 4 a side.
+                width - 2 * RetroDesktopSpacing.s4,
               ),
             ),
           ),
@@ -1320,6 +1581,79 @@ class _RetroDesktopDeskIconState extends State<RetroDesktopDeskIcon> {
   }
 }
 
+// A desk icon's name, whole, on at most two lines broken only between words ("Docu" over "ments" broke inside one). A
+// name that can't be (a word too long for its line, or three lines of words) stands on one line cut in its middle, as
+// the Finder cut a long name ("Quarterly…report"): never an ellipsis inside a two-line name. Measured again when a
+// font arrives (on the web a script's font loads after the first frame).
+class _IconName extends StatelessWidget {
+  const _IconName(this.name, this.style, this.room);
+
+  final String name;
+  final TextStyle style;
+  final double room;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: PaintingBinding.instance.systemFonts,
+    builder: (context, _) => _build(context),
+  );
+
+  Widget _build(BuildContext context) {
+    final scaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+    bool fits(String words) {
+      final p = TextPainter(
+        text: TextSpan(text: words, style: style),
+        textDirection: direction,
+        textScaler: scaler,
+        maxLines: 1,
+      )..layout();
+      final w = p.width;
+      p.dispose();
+      return w <= room;
+    }
+
+    final whole = name.trim();
+    final lines = <String>[];
+    for (final word in whole.split(RegExp(r'\s+'))) {
+      if (lines.isNotEmpty && fits('${lines.last} $word')) {
+        lines.last = '${lines.last} $word';
+      } else {
+        lines.add(word);
+      }
+    }
+    Widget line(String words) => Text(
+      words,
+      style: style,
+      textAlign: TextAlign.center,
+      maxLines: 1,
+      softWrap: false,
+      overflow: TextOverflow.clip,
+    );
+    if (lines.length <= 2 && lines.every(fits)) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [for (final words in lines) line(words)],
+      );
+    }
+    // The most of its start and end that fit either side of the ellipsis, the start the longer by one.
+    final chars = whole.characters.toList();
+    String cut(int keep) =>
+        '${chars.take((keep + 1) ~/ 2).join().trimRight()}…'
+        '${chars.skip(chars.length - keep ~/ 2).join().trimLeft()}';
+    var lo = 0, hi = chars.length - 1;
+    while (lo < hi) {
+      final mid = (lo + hi + 1) ~/ 2;
+      if (fits(cut(mid))) {
+        lo = mid;
+      } else {
+        hi = mid - 1;
+      }
+    }
+    return line(cut(lo));
+  }
+}
+
 /// A collapsed window: its title bar alone, seated in a column, the route to what it holds. A phone hides it, so its route
 /// must also be a tab.
 ///
@@ -1338,7 +1672,7 @@ class RetroDesktopWindowShade extends StatelessWidget {
     this.autofocus = false,
   });
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The heading displayed above the content.
@@ -1347,13 +1681,13 @@ class RetroDesktopWindowShade extends StatelessWidget {
   /// The glyph shown with the content.
   final IconData? icon;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
-  /// The focus node this part uses; when null it makes and disposes its own.
+  /// {@macro retro_desktop.ownFocusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   @override
@@ -1366,11 +1700,16 @@ class RetroDesktopWindowShade extends StatelessWidget {
       style: style,
       scale: RetroDesktopFaceScale.window,
       padding: EdgeInsets.zero,
-      component: t.windowTheme.merge(
+      component: t.windowTheme.over(
         RetroDesktopStyle(fill: WidgetStatePropertyAll(c.platinum)),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(5, 1, 5, 1),
+        padding: const EdgeInsets.fromLTRB(
+          RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+          RetroDesktopSpacing.px,
+          RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+          RetroDesktopSpacing.px,
+        ),
         child: _TitleBar(
           title: title,
           style: style,
@@ -1391,6 +1730,30 @@ class RetroDesktopWindowShade extends StatelessWidget {
             onPressed: onPressed,
             child: RetroDesktopReach(child: bar),
           );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -1416,7 +1779,7 @@ class RetroDesktopAlert extends StatelessWidget {
     this.floating = true,
   });
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// Whether changes are announced as a live region.
@@ -1465,10 +1828,15 @@ class RetroDesktopAlert extends StatelessWidget {
         states: const {},
         style: style,
         scale: RetroDesktopFaceScale.window,
-        component: t.noticeTheme.merge(
+        component: t.noticeTheme.over(
           RetroDesktopStyle(fill: WidgetStatePropertyAll(c.platinum)),
         ),
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+        padding: const EdgeInsets.fromLTRB(
+          RetroDesktopSpacing.s16,
+          RetroDesktopSpacing.s16,
+          RetroDesktopSpacing.s16,
+          RetroDesktopSpacing.s12,
+        ),
         child: Padding(
           padding: EdgeInsets.zero,
           child: RetroDesktopColumn(
@@ -1530,7 +1898,7 @@ class RetroDesktopAlert extends StatelessWidget {
                     children: [
                       Text(title, style: titleStyle),
                       if (body != null) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: RetroDesktopSpacing.s4),
                         Text(
                           body!,
                           style: t.type.note.merge(words).copyWith(color: ink),
@@ -1544,7 +1912,7 @@ class RetroDesktopAlert extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             markView,
-                            const SizedBox(height: 8),
+                            const SizedBox(height: RetroDesktopSpacing.s8),
                             textView,
                           ],
                         )
@@ -1552,7 +1920,7 @@ class RetroDesktopAlert extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             markView,
-                            const SizedBox(width: 14),
+                            const SizedBox(width: RetroDesktopSpacing.s14),
                             Expanded(child: textView),
                           ],
                         );
@@ -1572,8 +1940,8 @@ class RetroDesktopAlert extends StatelessWidget {
                   end: Wrap(
                     alignment: WrapAlignment.end,
                     crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 8,
-                    runSpacing: 8,
+                    spacing: RetroDesktopSpacing.s8,
+                    runSpacing: RetroDesktopSpacing.s8,
                     children: actions,
                   ),
                 ),
@@ -1582,6 +1950,39 @@ class RetroDesktopAlert extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'liveRegion',
+          value: liveRegion,
+          ifFalse: 'liveRegion: false',
+        ),
+      )
+      ..add(
+        FlagProperty('floating', value: floating, ifFalse: 'floating: false'),
+      )
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('body', body, defaultValue: null))
+      ..add(StringProperty('meta', meta, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'icon',
+          icon,
+          defaultValue: RetroDesktopGlyphs.triangleAlert,
+        ),
+      );
   }
 }
 
@@ -1692,7 +2093,12 @@ class RetroDesktopDesktop extends StatelessWidget {
     if (!t.desk) {
       final order = _phoneOrder(entries, specs, chosen);
       return Padding(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
+        padding: const EdgeInsets.fromLTRB(
+          RetroDesktopSpacing.s12,
+          RetroDesktopSpacing.s12,
+          RetroDesktopSpacing.s12,
+          RetroDesktopSpacing.s20,
+        ),
         child: RetroDesktopColumn(
           gap: 12,
           children: [
@@ -1755,6 +2161,22 @@ class RetroDesktopDesktop extends StatelessWidget {
       walk(specs[(from + k) % specs.length]);
     }
     return out;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopWindowColumn>('tiles', tiles))
+      ..add(StringProperty('active', active, defaultValue: null))
+      ..add(FlagProperty('whole', value: whole, ifTrue: 'whole'))
+      ..add(
+        IterableProperty<String>(
+          'phoneOrder',
+          phoneOrder,
+          defaultValue: const [],
+        ),
+      );
   }
 }
 

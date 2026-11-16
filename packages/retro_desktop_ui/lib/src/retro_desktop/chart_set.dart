@@ -1,5 +1,6 @@
 // The chart rows' shared stems: a line, a bar, an area and a pie (the donut) chart, each the one plot
 // (`RetroDesktopChart`) in its kind, so a developer reaches for the chart by the name every look gives it.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'chart.dart';
@@ -61,6 +62,26 @@ class RetroDesktopLineChart extends StatelessWidget {
     loading: loading,
     style: style,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<RetroDesktopChartSeries>('series', series))
+      ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(ObjectFlagProperty<String Function(double)>.has('format', format))
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// Values side by side as bars, the series hatched apart, every gridline
@@ -119,6 +140,26 @@ class RetroDesktopBarChart extends StatelessWidget {
     loading: loading,
     style: style,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<RetroDesktopChartSeries>('series', series))
+      ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(ObjectFlagProperty<String Function(double)>.has('format', format))
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A running amount as a line with the ground under it tinted: storage used,
@@ -177,6 +218,26 @@ class RetroDesktopAreaChart extends StatelessWidget {
     loading: loading,
     style: style,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<RetroDesktopChartSeries>('series', series))
+      ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(ObjectFlagProperty<String Function(double)>.has('format', format))
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// Shares of a whole as a ring, each share hatched apart, the total in its
@@ -235,4 +296,24 @@ class RetroDesktopPieChart extends StatelessWidget {
     loading: loading,
     style: style,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<RetroDesktopChartSeries>('series', series))
+      ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(ObjectFlagProperty<String Function(double)>.has('format', format))
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }

@@ -37,6 +37,7 @@ void main() {
         defaultButtonTheme: const RetroDesktopStyle(
           fill: WidgetStatePropertyAll(Color(0xff333333)),
         ),
+        // ignore: deprecated_member_use_from_same_package
         motion: const RetroDesktopMotion(state: Duration(milliseconds: 200)),
       );
       final direct = base.copyWith(
@@ -404,7 +405,8 @@ void main() {
     await tester.pump();
     expect(seen, contains(WidgetState.pressed));
     await mouse.up();
-    await tester.pump();
+    // A press shows for its least time (ui_core's minimumPressDuration) once let go.
+    await tester.pump(kPressTimeout);
     expect(seen, isNot(contains(WidgetState.pressed)));
   });
 
@@ -433,6 +435,7 @@ void main() {
       await tester.pumpWidget(
         app(
           RetroDesktopThemeData.berry().copyWith(
+            // ignore: deprecated_member_use_from_same_package
             motion: const RetroDesktopMotion(state: Duration(seconds: 1)),
           ),
         ),
@@ -506,10 +509,10 @@ void main() {
             ? 48.0
             : 44.0;
         // On a touch screen the reach pads across as well as down; on a desk
-        // only down, and the face keeps its own width (RetroDesktopReach).
+        // down and to the pointer floor across, 24 (ui_core's DesignTapTarget).
         expect(
           tester.getSize(find.byType(RetroDesktopPressable)),
-          target == 48 ? Size.square(target) : Size(8, target),
+          target == 48 ? Size.square(target) : Size(24, target),
         );
       }
     },
@@ -551,7 +554,7 @@ void main() {
       };
       expect(
         tester.getSize(find.byType(RetroDesktopPressable)),
-        target == 48 ? Size.square(target) : Size(8, target),
+        target == 48 ? Size.square(target) : Size(24, target),
       );
       expect(tester.takeException(), isNull);
     }

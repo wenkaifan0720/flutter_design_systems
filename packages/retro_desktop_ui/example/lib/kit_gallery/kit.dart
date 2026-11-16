@@ -123,22 +123,42 @@ Widget kitScreen({
   ),
 );
 
+/// The app's own Material, Cupertino and Widgets words for the gallery's apps: the published example sets Flutter's
+/// (`GlobalMaterialLocalizations.delegates`, from flutter_localizations), as an ordinary app does. Without them the
+/// look's theme still gives its parts' Material and Cupertino words.
+List<LocalizationsDelegate<dynamic>> kitHostWords = const [];
+
+/// The words the gallery's apps load: [words] (a page's own) first, then ui_core's in the app's language, one of 30
+/// ([DesignLocalizations.supportedLocales]), then the app's own ([kitHostWords]).
+List<LocalizationsDelegate<dynamic>> kitWords([
+  List<LocalizationsDelegate<Object>>? words,
+]) => [...?words, DesignLocalizations.delegate, ...kitHostWords];
+
 /// A screen that is a whole application: [home] draws its own menu bar, so
-/// the gallery's sample bar of places stays out.
-Widget kitAppScreen({required Brightness brightness, required Widget home}) =>
-    MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Retro Desktop',
-      builder: (context, child) => _kitDirected(
-        RetroDesktopHost(
-          light: kitTheme(Brightness.light),
-          dark: kitTheme(Brightness.dark),
-          brightness: brightness,
-          child: child ?? const SizedBox.shrink(),
-        ),
-      ),
-      home: home,
-    );
+/// the gallery's sample bar of places stays out. [words] load the look's own
+/// words in the app's language; [direction], when given, is the way it reads
+/// (else the example's choice, [kitShownDirection]).
+Widget kitAppScreen({
+  required Brightness brightness,
+  required Widget home,
+  List<LocalizationsDelegate<Object>>? words,
+  TextDirection? direction,
+}) => MaterialApp(
+  debugShowCheckedModeBanner: false,
+  title: 'Retro Desktop',
+  localizationsDelegates: kitWords(words),
+  supportedLocales: DesignLocalizations.supportedLocales,
+  builder: (context, child) => _kitDirected(
+    RetroDesktopHost(
+      light: kitTheme(Brightness.light),
+      dark: kitTheme(Brightness.dark),
+      brightness: brightness,
+      child: child ?? const SizedBox.shrink(),
+    ),
+    direction,
+  ),
+  home: home,
+);
 
 /// A screen whose [body] scrolls itself and fills what the bars leave.
 Widget kitFilledScreen({
@@ -225,9 +245,11 @@ TextDirection? kitShownDirection;
 
 // A screen is an app of its own, and its Localizations sets its locale's
 // direction: the example's choice is carried inside it.
-Widget _kitDirected(Widget child) => kitShownDirection == null
-    ? child
-    : Directionality(textDirection: kitShownDirection!, child: child);
+Widget _kitDirected(Widget child, [TextDirection? direction]) =>
+    switch (direction ?? kitShownDirection) {
+      null => child,
+      final shown => Directionality(textDirection: shown, child: child),
+    };
 
 /// The preset's light and dark themes.
 RetroDesktopThemeData kitTheme(Brightness brightness) =>
@@ -246,6 +268,8 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
       (active, change) => MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Retro Desktop',
+        localizationsDelegates: kitWords(),
+        supportedLocales: DesignLocalizations.supportedLocales,
         builder: (context, child) => _kitDirected(
           RetroDesktopHost(
             light: kitTheme(Brightness.light),
@@ -333,6 +357,8 @@ Widget kitSpecimenStage({
   (active, change) => MaterialApp(
     debugShowCheckedModeBanner: false,
     title: 'Retro Desktop',
+    localizationsDelegates: kitWords(),
+    supportedLocales: DesignLocalizations.supportedLocales,
     builder: (context, home) => RetroDesktopHost(
       light: RetroDesktopThemeData.preset(style, Brightness.light),
       dark: RetroDesktopThemeData.preset(style, Brightness.dark),

@@ -1,5 +1,7 @@
 // What a window lists: sorted columns, icons of folders and files, a tree with its shares, a checklist, a table, a document.
 // Each stands flush in a window and brings its own well, so a window that holds one has nothing to pad.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart' show kDoubleTapTimeout;
@@ -14,6 +16,7 @@ import '../glyphs.dart';
 import '../controls.dart';
 import '../frames.dart';
 import '../internal/face.dart' show RetroDesktopFaceScale, retroDesktopFace;
+import '../internal/modal.dart' show RetroDesktopModalWatch;
 import '../layout.dart';
 import '../acts.dart' show RetroDesktopButtonSize;
 import '../pixels.dart';
@@ -23,6 +26,7 @@ import '../localizations.dart';
 import '../component_themes.dart';
 import '../wayfinding.dart';
 import '../internal/caps.dart';
+import '../tokens.dart';
 
 // Keep specified columns readable on narrow screens by scrolling the full table, with the look's scroll bar under it:
 // clipped at the frame with no bar, its last column read as cut off mid-word rather than as more to the side.
@@ -103,7 +107,7 @@ class _SidewaysBar extends StatelessWidget {
             border: Border(top: BorderSide(color: c.outline)),
           ),
           child: Padding(
-            padding: const EdgeInsets.only(top: 1),
+            padding: const EdgeInsets.only(top: RetroDesktopSpacing.px),
             child: LayoutBuilder(
               builder: (context, box) => ListenableBuilder(
                 listenable: Listenable.merge([controller, metrics]),
@@ -256,7 +260,7 @@ class RetroDesktopListTableRow {
   /// `(figure, small line)`.
   final List<(String, String?)> cells;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
   /// The stable identity of this item.
@@ -385,7 +389,9 @@ class _ColumnHeadState extends State<_ColumnHead> {
               4,
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(
+            horizontal: RetroDesktopSpacing.s8,
+          ),
           child: RetroDesktopFitRow(
             fill: 0,
             gap: 6,
@@ -565,7 +571,8 @@ class RetroDesktopListTable extends StatefulWidget
     this.onSort,
     this.ascending = false,
     this.label,
-  });
+  }) : assert(total == null || total >= 0),
+       assert(selected == null || selected >= 0);
 
   /// The enclosing well's shape, rim, fill and spacing over its component theme.
   final RetroDesktopStyle? style;
@@ -599,6 +606,28 @@ class RetroDesktopListTable extends StatefulWidget
 
   @override
   State<RetroDesktopListTable> createState() => _RetroDesktopListTableState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<RetroDesktopListTableColumn>('columns', columns))
+      ..add(IterableProperty<RetroDesktopListTableRow>('rows', rows))
+      ..add(IntProperty('total', total, defaultValue: null))
+      ..add(IntProperty('selected', selected, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onOpen', onOpen))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSort', onSort))
+      ..add(FlagProperty('ascending', value: ascending, ifTrue: 'ascending'))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 class _RetroDesktopListTableState extends State<RetroDesktopListTable> {
@@ -678,13 +707,18 @@ class _RetroDesktopListTableState extends State<RetroDesktopListTable> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => RetroDesktopModalWatch(builder: _build);
+
+  Widget _build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     final columns = widget.columns;
     final rows = widget.rows;
     final total = widget.total;
     final rtl = Directionality.of(context) == TextDirection.rtl;
+    // In a window behind, or under an alert, the chosen row stays chosen in a grey band, its words in ink: the lit
+    // band is the front window's (law 3).
+    final front = retroDesktopActiveHere(context);
     final bar = t.desk && total != null && total > rows.length;
     // A set column grows with the reader's text (at twice the size, 80 lp held "Ed…" and "09:…"); the table scrolls
     // across when the columns no longer fit.
@@ -700,13 +734,18 @@ class _RetroDesktopListTableState extends State<RetroDesktopListTable> {
     Widget row(int i) {
       final r = rows[i];
       final lit = _choosing && widget.selected == i;
-      final ink = lit ? c.onHighlight : null;
+      final ink = lit && front ? c.onHighlight : null;
       final cells = <Widget>[
         for (var k = 1; k < columns.length; k++)
           SizedBox(
             width: widthOf(k),
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+              padding: const EdgeInsets.fromLTRB(
+                RetroDesktopSpacing.s8,
+                RetroDesktopSpacing.s6,
+                RetroDesktopSpacing.s8,
+                RetroDesktopSpacing.s6,
+              ),
               child: k - 1 < r.cells.length
                   ? Column(
                       crossAxisAlignment: columns[k].end
@@ -750,7 +789,7 @@ class _RetroDesktopListTableState extends State<RetroDesktopListTable> {
           // under it included.
           painter: _CellTint(
             i == 0 ? null : c.divider,
-            lit ? c.highlight : c.paperDim,
+            lit ? (front ? c.highlight : c.platinumDark) : c.paperDim,
             lit
                 ? (0, box.maxWidth)
                 : _columnSpan(
@@ -772,7 +811,14 @@ class _RetroDesktopListTableState extends State<RetroDesktopListTable> {
             children: [
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(8, i == 0 ? 6 : 7, 8, 6),
+                  padding: EdgeInsets.fromLTRB(
+                    RetroDesktopSpacing.s8,
+                    i == 0
+                        ? RetroDesktopSpacing.s6
+                        : RetroDesktopSpacing.s6 + RetroDesktopSpacing.px,
+                    RetroDesktopSpacing.s8,
+                    RetroDesktopSpacing.s6,
+                  ),
                   child: Row(
                     children: [
                       Icon(
@@ -781,7 +827,7 @@ class _RetroDesktopListTableState extends State<RetroDesktopListTable> {
                         color:
                             ink ?? (r.selected ? c.highlight : c.textSecondary),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: RetroDesktopSpacing.s10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -890,7 +936,7 @@ class _RetroDesktopListTableState extends State<RetroDesktopListTable> {
           ? RetroDesktopPixelPaint(
               painter: _ScrollBarPainter(c, rows.length / total, rtl),
               child: Padding(
-                padding: EdgeInsetsDirectional.only(
+                padding: const EdgeInsetsDirectional.only(
                   end: _ScrollBarPainter.width,
                 ),
                 child: viewport,
@@ -983,17 +1029,27 @@ class RetroDesktopTable extends StatelessWidget implements RetroDesktopFlush {
   /// The amount to pay, set apart at the foot under a double rule: its label at the start, its figure larger at the end.
   /// Pass the figure formatted, with its currency.
   final (String, String)? due;
+
+  // Measured again when a font arrives: on the web a script's fallback font loads after the first frame, and a head
+  // measured without it ("עותקים", Copies) was cut to an ellipsis once it drew.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: PaintingBinding.instance.systemFonts,
+    builder: (context, _) => _build(context),
+  );
+
+  Widget _build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     final amount = due;
     final scaler = MediaQuery.textScalerOf(context);
+    final locale = Localizations.maybeLocaleOf(context);
     double measure(String words, TextStyle style) {
       final p = TextPainter(
         text: TextSpan(text: words, style: style),
         textDirection: Directionality.of(context),
         textScaler: scaler,
+        locale: locale,
         maxLines: 1,
       )..layout();
       final w = p.width;
@@ -1082,7 +1138,12 @@ class RetroDesktopTable extends StatelessWidget implements RetroDesktopFlush {
             return SizedBox(
               width: widths[k],
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 7, 8, 7),
+                padding: const EdgeInsets.fromLTRB(
+                  RetroDesktopSpacing.s8,
+                  RetroDesktopSpacing.s6 + RetroDesktopSpacing.px,
+                  RetroDesktopSpacing.s8,
+                  RetroDesktopSpacing.s6 + RetroDesktopSpacing.px,
+                ),
                 child: Text(
                   word,
                   style: style,
@@ -1120,7 +1181,10 @@ class RetroDesktopTable extends StatelessWidget implements RetroDesktopFlush {
                 under: sum ? null : c.divider,
               ),
               child: Padding(
-                padding: EdgeInsets.only(top: sum ? 1 : 0, bottom: sum ? 0 : 1),
+                padding: EdgeInsets.only(
+                  top: sum ? RetroDesktopSpacing.px : 0,
+                  bottom: sum ? 0 : RetroDesktopSpacing.px,
+                ),
                 child: Row(children: cells),
               ),
             );
@@ -1152,6 +1216,25 @@ class RetroDesktopTable extends StatelessWidget implements RetroDesktopFlush {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<RetroDesktopTableColumn>('columns', columns))
+      ..add(IterableProperty<List<String>>('rows', rows))
+      ..add(IterableProperty<String>('total', total, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<(String, String)>('due', due, defaultValue: null),
+      );
+  }
 }
 
 /// The amount due at a table's foot: a double rule over it, the label in the text face, the figure larger in the
@@ -1166,7 +1249,12 @@ class _Due extends StatelessWidget {
     return RetroDesktopPixelPaint(
       painter: _DoubleRule(c.dark ? c.textSecondary : c.outline),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 12, 8, 10),
+        padding: const EdgeInsets.fromLTRB(
+          RetroDesktopSpacing.s8,
+          RetroDesktopSpacing.s12,
+          RetroDesktopSpacing.s8,
+          RetroDesktopSpacing.s10,
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
@@ -1180,7 +1268,7 @@ class _Due extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: RetroDesktopSpacing.s12),
             Text(
               figure,
               style: t.type.mono(18, 22, weight: FontWeight.w700),
@@ -1235,7 +1323,7 @@ class RetroDesktopFolder {
   /// Whether the part represents the current selection.
   final bool selected;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
   /// The stable identity of this item.
@@ -1279,7 +1367,7 @@ class RetroDesktopFolderGrid extends StatelessWidget
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsets.only(bottom: 2),
+            padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s2),
             child: retroDesktopOwnSize(
               width: 56,
               height: 44,
@@ -1292,19 +1380,21 @@ class RetroDesktopFolderGrid extends StatelessWidget
                   ),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: RetroDesktopSpacing.s4),
           DecoratedBox(
             decoration: ShapeDecoration(
               shape: t.shapes.small,
               color: f.selected ? c.highlight : null,
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 5),
+              padding: const EdgeInsets.symmetric(
+                horizontal: RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+              ),
               child: name,
             ),
           ),
           if (f.note != null) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: RetroDesktopSpacing.s4),
             Text(
               f.note!,
               style: t.type.text(12, 15, color: c.textTertiary),
@@ -1340,8 +1430,18 @@ class RetroDesktopFolderGrid extends StatelessWidget
       style: style,
       child: Padding(
         padding: t.desk
-            ? const EdgeInsets.fromLTRB(8, 16, 8, 14)
-            : const EdgeInsets.fromLTRB(6, 14, 6, 12),
+            ? const EdgeInsets.fromLTRB(
+                RetroDesktopSpacing.s8,
+                RetroDesktopSpacing.s16,
+                RetroDesktopSpacing.s8,
+                RetroDesktopSpacing.s14,
+              )
+            : const EdgeInsets.fromLTRB(
+                RetroDesktopSpacing.s6,
+                RetroDesktopSpacing.s14,
+                RetroDesktopSpacing.s6,
+                RetroDesktopSpacing.s12,
+              ),
         child: LayoutBuilder(
           builder: (context, box) => RetroDesktopGridOf(
             columns: math.max(1, ((box.maxWidth + gap) / (100 + gap)).floor()),
@@ -1352,6 +1452,20 @@ class RetroDesktopFolderGrid extends StatelessWidget
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<RetroDesktopFolder>('items', items));
   }
 }
 
@@ -1383,7 +1497,7 @@ class RetroDesktopFile {
   /// Whether the part represents the current selection.
   final bool selected;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
   /// The stable identity of this item.
@@ -1484,7 +1598,12 @@ class RetroDesktopFileGrid extends StatelessWidget
                       color: c.text,
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(4, 1, 4, 0),
+                      padding: const EdgeInsets.fromLTRB(
+                        RetroDesktopSpacing.s4,
+                        RetroDesktopSpacing.px,
+                        RetroDesktopSpacing.s4,
+                        0,
+                      ),
                       child: Text(
                         f.kind,
                         style: t.type
@@ -1499,19 +1618,25 @@ class RetroDesktopFileGrid extends StatelessWidget
               ],
             ),
           ),
-          const SizedBox(height: 5),
+          const SizedBox(
+            height: RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+          ),
           DecoratedBox(
             decoration: ShapeDecoration(
               shape: t.shapes.small,
               color: f.selected ? c.highlight : null,
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 3),
+              padding: const EdgeInsets.symmetric(
+                horizontal: RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
+              ),
               child: nameText,
             ),
           ),
           if (f.note != null) ...[
-            const SizedBox(height: 5),
+            const SizedBox(
+              height: RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+            ),
             Text(
               f.note!,
               textAlign: TextAlign.center,
@@ -1543,7 +1668,12 @@ class RetroDesktopFileGrid extends StatelessWidget
     return RetroDesktopWell(
       style: style,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(6, 14, 6, 12),
+        padding: const EdgeInsets.fromLTRB(
+          RetroDesktopSpacing.s6,
+          RetroDesktopSpacing.s14,
+          RetroDesktopSpacing.s6,
+          RetroDesktopSpacing.s12,
+        ),
         child: LayoutBuilder(
           builder: (context, box) {
             final columns = math.max(
@@ -1561,6 +1691,20 @@ class RetroDesktopFileGrid extends StatelessWidget
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<RetroDesktopFile>('items', items));
   }
 }
 
@@ -1637,7 +1781,7 @@ class RetroDesktopTreeRow {
     required this.share,
     this.level = 0,
     this.open,
-  });
+  }) : assert(level >= 0);
 
   /// The name identifying this item.
   final String name;
@@ -1733,8 +1877,13 @@ class RetroDesktopTreeBars extends StatelessWidget {
                           size: 9,
                         )
                       else
-                        const SizedBox(width: 9),
-                      const SizedBox(width: 5),
+                        const SizedBox(
+                          width:
+                              RetroDesktopSpacing.s8 + RetroDesktopSpacing.px,
+                        ),
+                      const SizedBox(
+                        width: RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+                      ),
                     ],
                     Expanded(
                       child: Text(
@@ -1754,7 +1903,7 @@ class RetroDesktopTreeBars extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: RetroDesktopSpacing.s8),
               Expanded(
                 child: share == null
                     ? const SizedBox.shrink()
@@ -1770,7 +1919,7 @@ class RetroDesktopTreeBars extends StatelessWidget {
                         ),
                       ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: RetroDesktopSpacing.s8),
               SizedBox(
                 width: valueW,
                 child: Text(
@@ -1793,7 +1942,7 @@ class RetroDesktopTreeBars extends StatelessWidget {
               row(r.name, r.value, r.share, r.level, r.open),
             if (total != null)
               Padding(
-                padding: const EdgeInsets.only(top: 2),
+                padding: const EdgeInsets.only(top: RetroDesktopSpacing.s2),
                 child: RetroDesktopColumn(
                   gap: 3,
                   children: [
@@ -1806,6 +1955,15 @@ class RetroDesktopTreeBars extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopTreeRow>('rows', rows))
+      ..add(StringProperty('totalName', totalName, defaultValue: null))
+      ..add(StringProperty('total', total, defaultValue: null));
   }
 }
 
@@ -1906,7 +2064,14 @@ class RetroDesktopChecklist extends StatelessWidget {
           minHeight: toggle == null ? 0 : RetroDesktopReach.least(context),
         ),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(6, 8, 6, i == items.length - 1 ? 8 : 9),
+          padding: EdgeInsets.fromLTRB(
+            RetroDesktopSpacing.s6,
+            RetroDesktopSpacing.s8,
+            RetroDesktopSpacing.s6,
+            i == items.length - 1
+                ? RetroDesktopSpacing.s8
+                : RetroDesktopSpacing.s8 + RetroDesktopSpacing.px,
+          ),
           child: Align(
             alignment: AlignmentDirectional.centerStart,
             heightFactor: 1,
@@ -1960,6 +2125,28 @@ class RetroDesktopChecklist extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'icon',
+          icon,
+          defaultValue: RetroDesktopGlyphs.listChecks,
+        ),
+      )
+      ..add(IterableProperty<RetroDesktopCheckItem>('items', items));
+  }
 }
 
 class _CheckLine extends StatelessWidget {
@@ -1976,8 +2163,8 @@ class _CheckLine extends StatelessWidget {
     final chips = item.chips.isEmpty
         ? null
         : Wrap(
-            spacing: 6,
-            runSpacing: 4,
+            spacing: RetroDesktopSpacing.s6,
+            runSpacing: RetroDesktopSpacing.s4,
             children: [
               for (final chip in item.chips)
                 RetroDesktopChip(
@@ -2006,7 +2193,9 @@ class _CheckLine extends StatelessWidget {
     } else {
       // A list that only shows: the box is the control and keeps its own reach, so the row stands as tall as it.
       check = Padding(
-        padding: const EdgeInsets.only(top: 3),
+        padding: const EdgeInsets.only(
+          top: RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
+        ),
         child: RetroDesktopCheckbox(value: item.value, label: item.text),
       );
     }
@@ -2026,7 +2215,7 @@ class _CheckLine extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         check,
-                        const SizedBox(width: 12),
+                        const SizedBox(width: RetroDesktopSpacing.s12),
                         Flexible(child: words),
                       ],
                     )
@@ -2054,13 +2243,18 @@ class _CheckLine extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 check,
-                const SizedBox(width: 12),
+                const SizedBox(width: RetroDesktopSpacing.s12),
                 Expanded(child: content),
               ],
             ),
     );
   }
 }
+
+// A printed page's margins, not a part's insets: wide at the sides, and a little deeper at the foot than the head, as a
+// page's text block sits a touch high. A phone keeps the proportions in less room.
+const _deskPageMargins = EdgeInsets.fromLTRB(46, 34, 46, 38);
+const _phonePageMargins = EdgeInsets.fromLTRB(16, 20, 16, 22);
 
 /// A document on paper: where it lives, a big title, its dates, tags, paragraphs set to read, then what you add. It brings its
 /// well; a phone tightens its margins. `(label, value)` for [meta], the value heavier.
@@ -2120,9 +2314,7 @@ class RetroDesktopDocument extends StatelessWidget
     digit.dispose();
     return RetroDesktopWell(
       style: style,
-      padding: t.desk
-          ? const EdgeInsets.fromLTRB(46, 34, 46, 38)
-          : const EdgeInsets.fromLTRB(16, 20, 16, 22),
+      padding: t.desk ? _deskPageMargins : _phonePageMargins,
       child: RetroDesktopColumn(
         gap: t.desk ? 20 : 18,
         children: [
@@ -2133,8 +2325,8 @@ class RetroDesktopDocument extends StatelessWidget
           RetroDesktopBalancedText(title, style: t.type.title),
           if (meta.isNotEmpty)
             Wrap(
-              spacing: 12,
-              runSpacing: 2,
+              spacing: RetroDesktopSpacing.s12,
+              runSpacing: RetroDesktopSpacing.s2,
               children: [
                 for (final m in meta)
                   Text.rich(
@@ -2158,8 +2350,8 @@ class RetroDesktopDocument extends StatelessWidget
             ),
           if (tags.isNotEmpty || addTag != null)
             Wrap(
-              spacing: 6,
-              runSpacing: 6,
+              spacing: RetroDesktopSpacing.s6,
+              runSpacing: RetroDesktopSpacing.s6,
               children: [
                 for (final tag in tags)
                   RetroDesktopChip(tag, leading: const Text('#')),
@@ -2186,5 +2378,36 @@ class RetroDesktopDocument extends StatelessWidget
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title))
+      ..add(IterableProperty<String>('path', path, defaultValue: const []))
+      ..add(IterableProperty<String>('tags', tags, defaultValue: const []))
+      ..add(
+        IterableProperty<String>(
+          'paragraphs',
+          paragraphs,
+          defaultValue: const [],
+        ),
+      )
+      ..add(
+        IterableProperty<(String, String)>(
+          'meta',
+          meta,
+          defaultValue: const [],
+        ),
+      )
+      ..add(StringProperty('addTag', addTag, defaultValue: null));
   }
 }

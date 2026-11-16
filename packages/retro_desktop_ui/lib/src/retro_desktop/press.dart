@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart' show RenderCustomPaint;
@@ -162,6 +164,67 @@ class RetroDesktopPressable extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<Widget Function(BuildContext, Set<WidgetState>)>.has(
+          'builder',
+          builder,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onLongPress', onLongPress))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('checked', checked, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('toggled', toggled, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
+      ..add(FlagProperty('button', value: button, ifFalse: 'button: false'))
+      ..add(FlagProperty('link', value: link, ifTrue: 'link'))
+      ..add(FlagProperty('inGroup', value: inGroup, ifTrue: 'inGroup'))
+      ..add(FlagProperty('error', value: error, ifTrue: 'error'))
+      ..add(FlagProperty('mixed', value: mixed, ifTrue: 'mixed'))
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<WidgetStatesController>(
+          'statesController',
+          statesController,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'alignment',
+          alignment,
+          defaultValue: Alignment.center,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>(
+          'focusShape',
+          focusShape,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('ringInside', value: ringInside, ifTrue: 'ringInside'))
+      ..add(
+        DiagnosticsProperty<MouseCursor>('cursor', cursor, defaultValue: null),
+      )
+      ..add(FlagProperty('inside', value: inside, ifTrue: 'inside'));
+  }
 }
 
 /// Which part under a [RetroDesktopPressable] draws its focus feedback.
@@ -299,6 +362,19 @@ class RetroDesktopHighlight extends StatelessWidget {
       ),
       child: child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('insideColor', insideColor, defaultValue: null))
+      ..add(DoubleProperty('beyond', beyond, defaultValue: 0))
+      ..add(FlagProperty('inside', value: inside, ifTrue: 'inside'))
+      ..add(DiagnosticsProperty<OutlinedBorder>('shape', shape))
+      ..add(FlagProperty('hovered', value: hovered, ifTrue: 'hovered'))
+      ..add(FlagProperty('focused', value: focused, ifTrue: 'focused'))
+      ..add(ColorProperty('hoverColor', hoverColor, defaultValue: null));
   }
 }
 

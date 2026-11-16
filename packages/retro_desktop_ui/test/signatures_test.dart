@@ -364,14 +364,14 @@ void main() {
     check('a title', () => const RetroDesktopDocument(title: 'x'));
     check(
       'everything, long',
-      () => RetroDesktopDocument(
+      () => const RetroDesktopDocument(
         title: longLine,
-        path: const [long, long, long, long],
-        meta: const [(long, longLine), ('Edited', 'today'), ('', '')],
-        tags: const [long, 'Kept', long, ''],
+        path: [long, long, long, long],
+        meta: [(long, longLine), ('Edited', 'today'), ('', '')],
+        tags: [long, 'Kept', long, ''],
         addTag: long,
-        paragraphs: const [longLine, longLine, ''],
-        children: const [
+        paragraphs: [longLine, longLine, ''],
+        children: [
           RetroDesktopChecklist(
             title: long,
             items: [RetroDesktopCheckItem(longLine, value: true)],
@@ -806,7 +806,7 @@ void main() {
         wet: long,
         days: [
           for (var i = 0; i < 5; i++)
-            RetroDesktopDayRange(
+            const RetroDesktopDayRange(
               weekday: long,
               date: long,
               icon: LucideIcons.sun,

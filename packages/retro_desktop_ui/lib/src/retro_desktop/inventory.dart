@@ -1,6 +1,7 @@
 // Retro Desktop's answer to the shared component inventory (ui_core's DesignInventoryRow.all, 89 rows): for each row the
 // part that answers it, `RetroDesktop<Stem>`, as a small live specimen, or the reason the look leaves it out. The live
 // gallery lists it, and a test verifies it (every row answered once, every specimen the row's own class).
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/inventory.dart';
@@ -29,6 +30,7 @@ import 'tell.dart';
 import 'theme.dart';
 import 'tone.dart';
 import 'wayfinding.dart';
+import 'tokens.dart';
 
 void _none() {}
 void _drop(Object? _) {}
@@ -49,18 +51,20 @@ const _bin = RetroDesktopNavItem(
   icon: RetroDesktopGlyphs.delete,
 );
 
-// The specimens' controllers: one gallery shows the inventory at a time, so each specimen keeps one for the app's life.
-// A scroll controller is the exception: a page laid out again (a lazy list growing) can hold the old specimen and the new
-// one for a frame, and one controller under both scroll views throws; each scroll area keeps its own (_OwnScroll).
-final _day = DesignCalendarController(
+// The specimens' controllers: each specimen owns its own (_Own), made when it is first built and disposed with it, as
+// each scroll area keeps its own scroll controller (_OwnScroll).
+DesignCalendarController _day(BuildContext context) => DesignCalendarController(
   firstDate: DateTime(2026, 6),
   lastDate: DateTime(2026, 9, 30),
   selectedDate: DateTime(2026, 6, 14),
   currentDate: DateTime(2026, 6, 10),
 );
-// The colour picker's starts on the theme's highlight, the first time it is built.
-DesignColorController? _colour;
-final _files = DesignTableController<_File>(
+// The colour picker's starts on the theme's highlight.
+DesignColorController _colour(BuildContext context) =>
+    DesignColorController(RetroDesktopTheme.of(context).colors.highlight);
+DesignTableController<_File> _files(
+  BuildContext context,
+) => DesignTableController<_File>(
   rows: const [_File('Budget', 12), _File('Letters', 48), _File('Notes', 3)],
   columns: [
     DesignTableColumn<_File>(id: 'name', label: 'Name', sortKey: (f) => f.name),
@@ -72,11 +76,12 @@ final _files = DesignTableController<_File>(
     ),
   ],
 );
-final _folders = DesignTreeController<String>(
-  roots: const ['System'],
-  expanded: const ['System'],
-  childrenOf: (n) => n == 'System' ? const ['Fonts', 'Sounds'] : const [],
-);
+DesignTreeController<String> _folders(BuildContext context) =>
+    DesignTreeController<String>(
+      roots: const ['System'],
+      expanded: const ['System'],
+      childrenOf: (n) => n == 'System' ? const ['Fonts', 'Sounds'] : const [],
+    );
 
 class _File {
   const _File(this.name, this.size);
@@ -134,14 +139,14 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     DesignInventoryEntry.present(
       'Button',
       (_) => const Wrap(
-        spacing: 8,
-        runSpacing: 8,
+        spacing: RetroDesktopSpacing.s8,
+        runSpacing: RetroDesktopSpacing.s8,
         children: [
           RetroDesktopButton('Save', isDefaultAction: true, onPressed: _none),
           RetroDesktopButton('Cancel', onPressed: _none),
           // Room for the face a quiet button shows held, which stands out past its start by its padding.
           Padding(
-            padding: EdgeInsetsDirectional.only(start: 10),
+            padding: EdgeInsetsDirectional.only(start: RetroDesktopSpacing.s10),
             child: RetroDesktopButton.text('More', onPressed: _none),
           ),
           RetroDesktopButton(
@@ -185,7 +190,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'SplitButton',
-      (_) => RetroDesktopSplitButton(
+      (_) => const RetroDesktopSplitButton(
         label: 'Save',
         onPressed: _none,
         actions: [
@@ -217,7 +222,8 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'PasswordField',
-      (_) => RetroDesktopPasswordField(label: 'Password', onChanged: _drop),
+      (_) =>
+          const RetroDesktopPasswordField(label: 'Password', onChanged: _drop),
     ),
     DesignInventoryEntry.present(
       'InputGroup',
@@ -371,15 +377,14 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'Calendar',
-      (_) => RetroDesktopCalendar(controller: _day),
+      (_) => _Own(_day, (day) => RetroDesktopCalendar(controller: day)),
     ),
     const DesignInventoryEntry.absent('WheelPicker', _absentWheel),
     DesignInventoryEntry.present(
       'ColorPicker',
-      (context) => RetroDesktopColorPicker(
-        controller: _colour ??= DesignColorController(
-          RetroDesktopTheme.of(context).colors.highlight,
-        ),
+      (_) => _Own(
+        _colour,
+        (colour) => RetroDesktopColorPicker(controller: colour),
       ),
     ),
     DesignInventoryEntry.present(
@@ -460,7 +465,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'MenuBar',
-      (_) => RetroDesktopMenuBar(
+      (_) => const RetroDesktopMenuBar(
         menus: [
           DesignMenuEntry(
             label: 'File',
@@ -542,9 +547,13 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'DataTable',
-      (_) => RetroDesktopDataTable<_File>(
-        controller: _files,
-        cellText: (f, column) => column.id == 'name' ? f.name : '${f.size} KB',
+      (_) => _Own(
+        _files,
+        (files) => RetroDesktopDataTable<_File>(
+          controller: files,
+          cellText: (f, column) =>
+              column.id == 'name' ? f.name : '${f.size} KB',
+        ),
       ),
     ),
     DesignInventoryEntry.present('Divider', (_) => const RetroDesktopDivider()),
@@ -559,7 +568,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
             children: [
               for (var i = 1; i <= 12; i++)
                 Padding(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(RetroDesktopSpacing.s6),
                   child: Text('Document $i'),
                 ),
             ],
@@ -590,10 +599,13 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     const DesignInventoryEntry.absent('RefreshIndicator', _absentRefresh),
     DesignInventoryEntry.present(
       'TreeView',
-      (_) => RetroDesktopTreeView<String>(
-        label: 'Folders',
-        controller: _folders,
-        labelOf: (n) => n,
+      (_) => _Own(
+        _folders,
+        (folders) => RetroDesktopTreeView<String>(
+          label: 'Folders',
+          controller: folders,
+          labelOf: (n) => n,
+        ),
       ),
     ),
     DesignInventoryEntry.present(
@@ -684,7 +696,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'ActionSheet',
-      (_) => RetroDesktopActionSheet(
+      (_) => const RetroDesktopActionSheet(
         title: 'Budget',
         actions: [
           RetroDesktopActionSheetAction('Duplicate', onPressed: _none),
@@ -765,7 +777,7 @@ final DesignInventory retroDesktopInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'StatusView',
-      (_) => RetroDesktopStatusView(
+      (_) => const RetroDesktopStatusView(
         status: RetroDesktopStatus.error,
         title: 'Could not load',
         onRetry: _none,
@@ -840,7 +852,12 @@ class RetroDesktopInventoryGallery extends StatelessWidget {
   const RetroDesktopInventoryGallery({
     super.key,
     this.controller,
-    this.padding = const EdgeInsetsDirectional.fromSTEB(16, 8, 32, 32),
+    this.padding = const EdgeInsetsDirectional.fromSTEB(
+      RetroDesktopSpacing.s16,
+      RetroDesktopSpacing.s8,
+      RetroDesktopSpacing.s32,
+      RetroDesktopSpacing.s32,
+    ),
   });
 
   /// The list's scroll controller.
@@ -872,7 +889,10 @@ class RetroDesktopInventoryGallery extends StatelessWidget {
       controller: scroll,
       padding: padding,
       groupBuilder: (context, group, live, total) => Padding(
-        padding: const EdgeInsets.only(top: 20, bottom: 10),
+        padding: const EdgeInsets.only(
+          top: RetroDesktopSpacing.s20,
+          bottom: RetroDesktopSpacing.s10,
+        ),
         child: RetroDesktopSectionHeader(group, note: '$live of $total'),
       ),
       rowBuilder: (context, row, entry, specimen) {
@@ -893,7 +913,7 @@ class RetroDesktopInventoryGallery extends StatelessWidget {
         return KeyedSubtree(
           key: ValueKey<String>('inventory-${row.id}'),
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s10),
             child: RetroDesktopCard(
               child: RetroDesktopColumn(
                 gap: 12,
@@ -918,7 +938,7 @@ class RetroDesktopInventoryGallery extends StatelessWidget {
                     children: [
                       if (title != row.name) ...[
                         Text(row.name, style: t.type.meta),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: RetroDesktopSpacing.s8),
                       ],
                       sized ??
                           Text(
@@ -940,9 +960,63 @@ class RetroDesktopInventoryGallery extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsetsDirectional.fromSTEB(
+            RetroDesktopSpacing.s16,
+            RetroDesktopSpacing.s8,
+            RetroDesktopSpacing.s32,
+            RetroDesktopSpacing.s32,
+          ),
+        ),
+      );
+  }
 }
 
 // A scroll view's own controller, made and disposed with it.
+// A specimen's own controller: [make] runs once its context can read the theme, and the controller is disposed with
+// the specimen.
+class _Own<C extends ChangeNotifier> extends StatefulWidget {
+  const _Own(this.make, this.builder);
+  final C Function(BuildContext context) make;
+  final Widget Function(C controller) builder;
+  @override
+  State<_Own<C>> createState() => _OwnState<C>();
+}
+
+class _OwnState<C extends ChangeNotifier> extends State<_Own<C>> {
+  C? _own;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _own ??= widget.make(context);
+  }
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(_own!);
+}
+
 class _OwnScroll extends StatefulWidget {
   const _OwnScroll(this.builder);
   final Widget Function(ScrollController scroll) builder;

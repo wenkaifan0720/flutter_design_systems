@@ -13,6 +13,9 @@ import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import '../example/lib/kit_gallery/demos/raised.dart';
 import '../example/lib/kit_gallery/kit.dart';
 
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart'
+    show LeakTesting;
+
 import 'shape_fit_test.dart' show shapeSpecimens;
 import 'support.dart';
 
@@ -141,6 +144,9 @@ void main() {
       expect(opened, greaterThan(60));
       await tester.pumpWidget(const SizedBox());
       await tester.pump(const Duration(seconds: 5));
-    });
+      // A walk of every specimen and every press in one go: ui_core's longWalkLeakTesting (the package's
+      // flutter_test_config.dart). Telling the test helpers' objects apart keeps a stack for every object the walk
+      // makes, and ran a Linux test process out of memory; each part's own tests keep tracking its leaks.
+    }, experimentalLeakTesting: LeakTesting.settings.withIgnoredAll());
   }
 }

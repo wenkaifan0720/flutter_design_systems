@@ -116,8 +116,8 @@ final _fullWidthRow = Misread(
   'full-width row',
   'a table head, a sheet or palette row, a selectable card or a chart\'s '
       'surface spans its container and presses whole; it is a row, not a button',
-  r'(Overview|List|Lists and tables|All components): a (button|group of '
-      r'choices) "(Name|Size)": '
+  r'(Overview|List|Lists and tables|All components|Search): a (button|group '
+      r'of choices) "(Name|Size)": '
       r'\d|Dialogs and sheets: a button "(Documents|Archive)": \d|'
       r'(Navigation|All components): a button "New document": \d|'
       r'Cards and media: a button "Open folder": \d|Charts: a button: \d',
@@ -187,6 +187,17 @@ final _ruledRow = Misread(
 );
 
 /// The row check's misreads ([DesignRowCheck]).
+// The gallery's desk at 1024: the documents window stands in front of the document window and reaches past its foot,
+// so the document's "Order copies…" (531 to 579 down) is covered and no tap reaches it; the documents window's own
+// Open (475 to 523) is the one in sight. The row check reads every box, covered or not, and pairs the two.
+final _coveredWindow = Misread(
+  'covered window',
+  'a window behind another: the row check reads the button the front window '
+      'covers beside the front window\'s own',
+  r'1024\.0: a button "Open" beside a button "Order copies…": its top is \d+ '
+      r'px below theirs',
+);
+
 final rowMisreads = [
   _gradientFace,
   _iconTile,
@@ -195,10 +206,30 @@ final rowMisreads = [
   _choiceTile,
   _callerContent,
   _heldSinks,
+  _coveredWindow,
 ];
 
 /// The row check's misreads in Chisel alone, after [rowMisreads].
 final chiselRowMisreads = <Misread>[];
+
+// Platinum by night (since 6fdc3279aa) lights a button's top and left with a pale rim and keeps its bottom and right
+// black: two tones round one face, against a dark ground. The check reads a button's drawn bottom short (and so its
+// centre line high), by night only. Probe 2026-11-14 (probe_night_rows_test, Buttons, Checkout and Save changes at
+// 390): every probed button is drawn on the same device rows by night as by day (Small and Add 24 to 119 from the box
+// top, the others 12 to 131, Cancel level with Place order), and ui_core's own DrawnPixels.outline reads the same
+// outline by night as by day against every surface round the row. A row's layout does not change with the time of
+// day, and the same rows by day hold.
+final _nightRim = Misread(
+  'Platinum night rim',
+  'by night Platinum lights a button\'s top and left and keeps its bottom and '
+      'right black; the check reads its drawn bottom short, though every '
+      'button is drawn on the same rows as by day',
+  r'a button "[^"]*" beside a button "[^"]*": (its bottom is|the capitals '
+      r'of|its icon is)',
+);
+
+/// The row check's misreads in Platinum by night alone, after [rowMisreads].
+final platinumNightRowMisreads = [_nightRim];
 
 // Chisel's sunken box on the current check row's tint: its white fill and light lower bevel stand within the check's
 // ink threshold of the pale tint, so the box is read by its dark upper bevel alone, a third of its height (drawn, its

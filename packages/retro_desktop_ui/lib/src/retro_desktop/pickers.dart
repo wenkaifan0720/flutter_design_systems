@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart' show OverflowBoxFit;
@@ -19,6 +21,7 @@ import 'localizations.dart';
 import 'press.dart';
 import 'raised.dart';
 import 'theme.dart';
+import 'tokens.dart';
 
 DateTime _day(DateTime date) => DateTime(date.year, date.month, date.day);
 DateTime _month(DateTime date) => DateTime(date.year, date.month);
@@ -48,13 +51,32 @@ class RetroDesktopDatePicker extends StatefulWidget {
   /// The latest selectable day, inclusive; defaults to December 31, 2100.
   final DateTime? last;
 
-  /// Reports the value selected by the user; null prevents changes.
+  /// {@macro retro_desktop.onChanged}
   final ValueChanged<DateTime>? onChanged;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   State<RetroDesktopDatePicker> createState() => _DatePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime>('first', first, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime>('last', last, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _DatePickerState extends State<RetroDesktopDatePicker> {
@@ -172,8 +194,13 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
           const {},
         ) ??
         Size.zero;
-    // A day is a whole target: 48 under a finger, 44 under a pointer.
-    final slot = math.max(RetroDesktopReach.least(context), minimum.width);
+    // A day is a whole target: the touch floor (44) under a finger, the desk's 44 under a pointer.
+    final slot = math.max(
+      RetroDesktopReach.padsAcross(context)
+          ? DesignTapTargets.of(context).floorOn().width
+          : RetroDesktopReach.least(context),
+      minimum.width,
+    );
     final week = 7 * slot;
     final height = math.max(
       math.max(slot, minimum.height),
@@ -181,14 +208,13 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
           24 * t.density.vertical,
     );
     final title = words.formatMonthYear(month);
-    // Seven 48-wide days need 336. The month stands in the calendar's sunken
+    // Seven 44-wide days need 308. The month stands in the calendar's sunken
     // box, as "A calendar" does: one face for both, its edge on the column's.
     // A slot a little short of the box takes the shortfall from the box's side
     // padding, so its face stays on the column's edges and every day keeps its
-    // whole target; up to 24 more (a phone window's 328, its 324 at the
-    // comfortable density) overhangs the padding by half the rest on each
-    // side, the picker whole and centred; narrower slots share out the week. From 600 up a month keeps its own width at its
-    // column's start, not the column's.
+    // whole target; narrower slots share out the week. Nothing overhangs the
+    // column: a day past its edge was drawn where no tap reached it. From 600
+    // up a month keeps its own width at its column's start, not the column's.
     final pad = RetroDesktopReach.least(context) >= 44 ? 4.0 : 8.0;
     final h = t.density.horizontal;
     // The density rounds a padding to whole pixels: the side is reckoned in
@@ -216,7 +242,7 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
         // A column too narrow for seven whole targets (a window inside a phone's page, 268) narrows the days to share
         // it, down to the calendar's 36 a day, rather than scroll the weekend out of sight: each day keeps its height.
         var days = week;
-        if (short > 24) {
+        if (short > 0) {
           days = math.max(
             7 * 36.0,
             7 * ((constraints.maxWidth - frame) / 7).floorToDouble(),
@@ -274,7 +300,8 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
             title,
           ),
         );
-        if (short <= 0 || short > 24) return picker;
+        // Only a column narrower than seven of the calendar's 36-wide days leaves the week wider than it, centred.
+        if (short <= 0) return picker;
         return OverflowBox(
           fit: OverflowBoxFit.deferToChild,
           minWidth: days + frame - give,
@@ -325,7 +352,9 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
               ),
               Flexible(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: RetroDesktopSpacing.s12,
+                  ),
                   child: Semantics(
                     liveRegion: true,
                     // The calendar's month head and weekday names, one style
@@ -395,7 +424,9 @@ class _DatePickerState extends State<RetroDesktopDatePicker> {
                         for (var col = 0; col < 7; col++)
                           Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: RetroDesktopSpacing.s8,
+                              ),
                               child: Text(
                                 heads[(first - 1 + col) % 7],
                                 textAlign: TextAlign.center,
@@ -682,18 +713,18 @@ class RetroDesktopTimePicker extends StatelessWidget {
   /// The current value to display or edit.
   final RetroDesktopTime? value;
 
-  /// Reports the value selected by the user; null prevents changes.
+  /// {@macro retro_desktop.onChanged}
   final ValueChanged<RetroDesktopTime>? onChanged;
 
   /// Whether to use a 24-hour clock; null follows the host preference.
   final bool? use24Hour;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
-    final appearance = (style ?? const RetroDesktopStyle()).merge(
+    final appearance = (style ?? const RetroDesktopStyle()).over(
       t.timePickerTheme,
     );
     final words = RetroDesktopLocalizations.of(context);
@@ -711,8 +742,8 @@ class RetroDesktopTimePicker extends StatelessWidget {
     // onto a second line ("Morning or evening" in Chisel's wider face) rises
     // above its field rather than pushing it below its neighbours'.
     return Wrap(
-      spacing: 12 * t.density.horizontal,
-      runSpacing: 12 * t.density.vertical,
+      spacing: RetroDesktopSpacing.s12 * t.density.horizontal,
+      runSpacing: RetroDesktopSpacing.s12 * t.density.vertical,
       crossAxisAlignment: WrapCrossAlignment.end,
       children: [
         SizedBox(
@@ -774,6 +805,35 @@ class RetroDesktopTimePicker extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopTime>(
+          'value',
+          value,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<RetroDesktopTime>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('use24Hour', use24Hour, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 

@@ -192,7 +192,7 @@ void main() {
             await pumpGalleryPage(tester, page, kitPreset, b);
             await expectLater(
               tester,
-              meetsGuideline(androidTapTargetGuideline),
+              meetsGuideline(androidTargetsBesideCalendarDays(tester)),
             );
             await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
             await expectLater(

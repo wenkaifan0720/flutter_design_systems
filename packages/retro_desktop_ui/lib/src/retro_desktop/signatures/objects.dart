@@ -1,5 +1,7 @@
 // The stars: what a page's active window holds. Each reads the window around it, and draws small in an inactive window at any
 // width and in the active one on a phone, unless the desktop said `whole`. So two big things on one page can't happen.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -13,6 +15,7 @@ import '../rows.dart';
 import '../theme.dart';
 import '../shapes.dart';
 import '../component_themes.dart';
+import '../tokens.dart';
 
 class _TilePainter extends RetroDesktopPixelPainter {
   const _TilePainter(
@@ -258,14 +261,19 @@ class RetroDesktopDayTile extends StatelessWidget {
                       SizedBox(
                         height: bandH - 1,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 7),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal:
+                                RetroDesktopSpacing.s6 + RetroDesktopSpacing.px,
+                          ),
                           child: stacked
                               ? Column(
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     bandWords(month),
-                                    const SizedBox(height: 4),
+                                    const SizedBox(
+                                      height: RetroDesktopSpacing.s4,
+                                    ),
                                     bandWords(year!),
                                   ],
                                 )
@@ -295,7 +303,12 @@ class RetroDesktopDayTile extends StatelessWidget {
                       ),
                       if (!small && weekday != null)
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(4, 6, 4, 12),
+                          padding: const EdgeInsets.fromLTRB(
+                            RetroDesktopSpacing.s4,
+                            RetroDesktopSpacing.s6,
+                            RetroDesktopSpacing.s4,
+                            RetroDesktopSpacing.s12,
+                          ),
                           child: Text(
                             weekday!,
                             style: t.type.chrome
@@ -313,6 +326,23 @@ class RetroDesktopDayTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('month', month))
+      ..add(StringProperty('day', day))
+      ..add(StringProperty('year', year, defaultValue: null))
+      ..add(StringProperty('weekday', weekday, defaultValue: null));
   }
 }
 
@@ -344,7 +374,7 @@ class RetroDesktopBigFigure extends StatelessWidget {
         .pixel(size * .5, size * .25)
         .copyWith(letterSpacing: -.02 * size);
     return Padding(
-      padding: EdgeInsets.only(top: small ? 0 : 6),
+      padding: EdgeInsets.only(top: small ? 0 : RetroDesktopSpacing.s6),
       child: FittedBox(
         fit: BoxFit.scaleDown,
         alignment: AlignmentDirectional.topStart,
@@ -366,6 +396,14 @@ class RetroDesktopBigFigure extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('unit', unit, defaultValue: null));
   }
 }
 
@@ -430,8 +468,8 @@ class RetroDesktopHeroHeader extends StatelessWidget {
         if (flag != null || flagNote != null)
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 10,
-            runSpacing: 6,
+            spacing: RetroDesktopSpacing.s10,
+            runSpacing: RetroDesktopSpacing.s6,
             children: [
               if (flag != null) RetroDesktopFlag(flag!),
               if (flagNote != null) RetroDesktopLabel(flagNote!),
@@ -460,10 +498,39 @@ class RetroDesktopHeroHeader extends StatelessWidget {
     }
     return Padding(
       padding: t.desk
-          ? const EdgeInsets.fromLTRB(0, 11, 0, 12)
-          : const EdgeInsets.fromLTRB(0, 9, 0, 18),
+          ? const EdgeInsets.fromLTRB(
+              0,
+              RetroDesktopSpacing.s10 + RetroDesktopSpacing.px,
+              0,
+              RetroDesktopSpacing.s12,
+            )
+          : const EdgeInsets.fromLTRB(
+              0,
+              RetroDesktopSpacing.s8 + RetroDesktopSpacing.px,
+              0,
+              RetroDesktopSpacing.s18,
+            ),
       child: body,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('eyebrow', eyebrow, defaultValue: null))
+      ..add(StringProperty('progressLabel', progressLabel, defaultValue: null))
+      ..add(StringProperty('flag', flag, defaultValue: null))
+      ..add(StringProperty('flagNote', flagNote, defaultValue: null))
+      ..add(DoubleProperty('progress', progress, defaultValue: null))
+      ..add(
+        IterableProperty<(String, String, String?)>(
+          'stats',
+          stats,
+          defaultValue: const [],
+        ),
+      );
   }
 }
 
@@ -514,7 +581,7 @@ class RetroDesktopFigureHero extends StatelessWidget {
     final meaning = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 4,
+      spacing: RetroDesktopSpacing.s4,
       children: [
         Text(title, style: head),
         if (note != null)
@@ -539,7 +606,12 @@ class RetroDesktopFigureHero extends StatelessWidget {
     final hasSide = reads.isNotEmpty || summary != null;
     if (t.desk && !small) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(0, 12, 0, 16),
+        padding: const EdgeInsets.fromLTRB(
+          0,
+          RetroDesktopSpacing.s12,
+          0,
+          RetroDesktopSpacing.s16,
+        ),
         child: RetroDesktopBeside(
           object: figure,
           gap: 22,
@@ -556,7 +628,12 @@ class RetroDesktopFigureHero extends StatelessWidget {
       );
     }
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 12, 0, 14),
+      padding: const EdgeInsets.fromLTRB(
+        0,
+        RetroDesktopSpacing.s12,
+        0,
+        RetroDesktopSpacing.s14,
+      ),
       child: RetroDesktopColumn(
         gap: 14,
         children: [
@@ -565,6 +642,24 @@ class RetroDesktopFigureHero extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('unit', unit, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(
+        IterableProperty<(String, String, String?)>(
+          'reads',
+          reads,
+          defaultValue: const [],
+        ),
+      );
   }
 }
 
@@ -609,6 +704,15 @@ class RetroDesktopReadingHead extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('note', note, defaultValue: null));
+  }
 }
 
 class _Summary extends StatelessWidget {
@@ -618,7 +722,12 @@ class _Summary extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     return RetroDesktopWell(
-      padding: const EdgeInsets.fromLTRB(11, 9, 11, 9),
+      padding: const EdgeInsets.fromLTRB(
+        RetroDesktopSpacing.s10 + RetroDesktopSpacing.px,
+        RetroDesktopSpacing.s8 + RetroDesktopSpacing.px,
+        RetroDesktopSpacing.s10 + RetroDesktopSpacing.px,
+        RetroDesktopSpacing.s8 + RetroDesktopSpacing.px,
+      ),
       child: Text(text, style: t.type.text(16, 24)),
     );
   }

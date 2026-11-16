@@ -36,7 +36,7 @@ class ShelfPage extends StatelessWidget {
                       note: '6 things',
                       selected: true,
                       onPressed: onOpen,
-                      art: RetroDesktopFolderArt(
+                      art: const RetroDesktopFolderArt(
                         selected: true,
                         icon: LucideIcons.star,
                       ),
@@ -46,7 +46,7 @@ class ShelfPage extends StatelessWidget {
                       icon: LucideIcons.bookOpen,
                       note: '4 things',
                       onPressed: onOpen,
-                      art: RetroDesktopFolderArt(
+                      art: const RetroDesktopFolderArt(
                         selected: false,
                         icon: LucideIcons.bookOpen,
                       ),
@@ -56,7 +56,7 @@ class ShelfPage extends StatelessWidget {
                       icon: LucideIcons.house,
                       note: '2 things',
                       onPressed: onOpen,
-                      art: RetroDesktopFolderArt(
+                      art: const RetroDesktopFolderArt(
                         selected: false,
                         icon: LucideIcons.house,
                       ),
@@ -66,7 +66,7 @@ class ShelfPage extends StatelessWidget {
                       icon: LucideIcons.mail,
                       note: '5 things',
                       onPressed: onOpen,
-                      art: RetroDesktopFolderArt(
+                      art: const RetroDesktopFolderArt(
                         selected: false,
                         icon: LucideIcons.mail,
                       ),
@@ -76,7 +76,7 @@ class ShelfPage extends StatelessWidget {
                       icon: LucideIcons.pencil,
                       note: '3 things',
                       onPressed: onOpen,
-                      art: RetroDesktopFolderArt(
+                      art: const RetroDesktopFolderArt(
                         selected: false,
                         icon: LucideIcons.pencil,
                       ),
@@ -86,7 +86,7 @@ class ShelfPage extends StatelessWidget {
                       icon: LucideIcons.hammer,
                       note: '1 thing',
                       onPressed: onOpen,
-                      art: RetroDesktopFolderArt(
+                      art: const RetroDesktopFolderArt(
                         selected: false,
                         icon: LucideIcons.hammer,
                       ),
@@ -151,35 +151,41 @@ class ShelfPage extends StatelessWidget {
                   runGap: 12,
                   children: [
                     RetroDesktopPictureCard(
-                      art: RetroDesktopObjectArt(RetroDesktopObject.folder),
+                      art: const RetroDesktopObjectArt(
+                        RetroDesktopObject.folder,
+                      ),
                       title: 'The first thing',
                       subtitle: 'First kind',
                       figure: '12',
                       onPressed: onOpen,
                     ),
                     RetroDesktopPictureCard(
-                      art: RetroDesktopObjectArt(RetroDesktopObject.text),
+                      art: const RetroDesktopObjectArt(RetroDesktopObject.text),
                       title: 'The second thing',
                       subtitle: 'First kind',
                       figure: '40',
                       onPressed: onOpen,
                     ),
                     RetroDesktopPictureCard(
-                      art: RetroDesktopObjectArt(RetroDesktopObject.disk),
+                      art: const RetroDesktopObjectArt(RetroDesktopObject.disk),
                       title: 'The third thing',
                       subtitle: 'Second kind',
                       figure: '8',
                       onPressed: onOpen,
                     ),
                     RetroDesktopPictureCard(
-                      art: RetroDesktopObjectArt(RetroDesktopObject.table),
+                      art: const RetroDesktopObjectArt(
+                        RetroDesktopObject.table,
+                      ),
                       title: 'The fourth thing',
                       subtitle: 'Second kind',
                       figure: '26',
                       onPressed: onOpen,
                     ),
                     RetroDesktopPictureCard(
-                      art: RetroDesktopObjectArt(RetroDesktopObject.floppy),
+                      art: const RetroDesktopObjectArt(
+                        RetroDesktopObject.floppy,
+                      ),
                       title: 'The fifth thing',
                       subtitle: 'Third kind',
                       figure: '3',

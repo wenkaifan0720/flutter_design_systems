@@ -1,5 +1,7 @@
 // Controls, each drawn on the device's grid from the concept's `.btn`, `.field`, `.chk`, `.chip`, `.prog`, `.tab` and `.group`.
 // Jersey chrome and reading text sit in square or pixel-bevelled faces.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
@@ -23,6 +25,7 @@ import 'layout.dart';
 import 'pixels.dart';
 import 'theme.dart';
 import 'internal/caps.dart';
+import 'tokens.dart';
 
 /// A button with one icon, or a [triangle], in the family's control shape, and a [label] for a screen reader.
 ///
@@ -67,7 +70,7 @@ class RetroDesktopIconButton extends StatelessWidget {
   /// The visible or accessible name of this part.
   final String label;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
   /// The size of the visible face; minimum interactive reach is retained.
@@ -79,13 +82,13 @@ class RetroDesktopIconButton extends StatelessWidget {
   /// An optional count or status announced with the action.
   final String? badgeLabel;
 
-  /// An optional externally owned focus node; the caller disposes it.
+  /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
@@ -104,7 +107,7 @@ class RetroDesktopIconButton extends StatelessWidget {
           // Beside a button it shows a button's height, square.
           component: size == RetroDesktopButtonSize.small
               ? t.iconButtonTheme
-              : t.iconButtonTheme.merge(
+              : t.iconButtonTheme.over(
                   RetroDesktopStyle(
                     minimumSize: WidgetStatePropertyAll(
                       Size.square(retroDesktopButtonFaceHeight(context)),
@@ -112,13 +115,53 @@ class RetroDesktopIconButton extends StatelessWidget {
                   ),
                 ),
           style: style,
-          padding: EdgeInsets.all(size == RetroDesktopButtonSize.small ? 4 : 6),
+          padding: EdgeInsets.all(
+            size == RetroDesktopButtonSize.small
+                ? RetroDesktopSpacing.s4
+                : RetroDesktopSpacing.s6,
+          ),
           child: triangle == null
               ? Icon(icon)
               : RetroDesktopTriangleMark(triangle!, size: 10),
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        EnumProperty<AxisDirection>('triangle', triangle, defaultValue: null),
+      )
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        EnumProperty<RetroDesktopButtonSize>(
+          'size',
+          size,
+          defaultValue: RetroDesktopButtonSize.medium,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(StringProperty('badgeLabel', badgeLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -148,6 +191,14 @@ class RetroDesktopTriangleMark extends StatelessWidget {
       alignment: Alignment.center,
       child: RetroDesktopPixelPaint(painter: _TrianglePainter(c, direction)),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<AxisDirection>('direction', direction))
+      ..add(DoubleProperty('size', size, defaultValue: 12));
   }
 }
 
@@ -194,16 +245,16 @@ class RetroDesktopPopupButton extends StatelessWidget {
   /// The glyph shown with the content.
   final IconData? icon;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
-  /// The focus node this part uses; when null it makes and disposes its own.
+  /// {@macro retro_desktop.ownFocusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   @override
@@ -226,7 +277,7 @@ class RetroDesktopPopupButton extends StatelessWidget {
                 ? [t.colors.platinum, t.colors.platinumDark]
                 : [t.colors.platinumLight, t.colors.platinum],
           ),
-          component: t.buttonTheme.merge(
+          component: t.buttonTheme.over(
             RetroDesktopStyle(
               textStyle: WidgetStatePropertyAll(t.type.chrome),
               // A button's height: beside one it shows the same top and bottom.
@@ -238,13 +289,21 @@ class RetroDesktopPopupButton extends StatelessWidget {
           // Its words start where a field's do: one inset in a column of both.
           // As much under them as over them: on a button's height they stand
           // on its middle (a pixel more under stood them half a pixel high).
-          padding: const EdgeInsetsDirectional.fromSTEB(8, 4, 9, 4),
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            RetroDesktopSpacing.s8,
+            RetroDesktopSpacing.s4,
+            RetroDesktopSpacing.s8 + RetroDesktopSpacing.px,
+            RetroDesktopSpacing.s4,
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (icon != null) ...[Icon(icon), const SizedBox(width: 6)],
+              if (icon != null) ...[
+                Icon(icon),
+                const SizedBox(width: RetroDesktopSpacing.s6),
+              ],
               Flexible(child: RetroDesktopCaps(Text(value))),
-              const SizedBox(width: 8),
+              const SizedBox(width: RetroDesktopSpacing.s8),
               // The PC's menu button drops down; the Mac's popup opens both
               // ways, so it points both ways.
               if (t.chisel)
@@ -262,6 +321,30 @@ class RetroDesktopPopupButton extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('value', value))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -302,12 +385,12 @@ class RetroDesktopTextField extends StatefulWidget {
     this.failureLine,
     this.nameOnly = false,
     this.style,
-  });
+  }) : assert(lines >= 1);
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
-  /// An optional externally owned controller; the caller disposes it.
+  /// {@macro retro_desktop.controller}
   final TextEditingController? controller;
 
   /// The initial value used when no external controller supplies one.
@@ -316,7 +399,7 @@ class RetroDesktopTextField extends StatefulWidget {
   /// Placeholder text shown while the input has no value.
   final String? hint;
 
-  /// Reports the value selected by the user; null prevents changes.
+  /// {@macro retro_desktop.onChanged}
   final ValueChanged<String>? onChanged;
 
   /// Called when the user submits the entered text.
@@ -376,6 +459,108 @@ class RetroDesktopTextField extends StatefulWidget {
   final bool nameOnly;
   @override
   State<RetroDesktopTextField> createState() => _TextFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('initial', initial, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(IntProperty('lines', lines, defaultValue: 1))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty('obscureText', value: obscureText, ifTrue: 'obscureText'),
+      )
+      ..add(FlagProperty('password', value: password, ifTrue: 'password'))
+      ..add(
+        DiagnosticsProperty<(String, String)>(
+          'revealLabels',
+          revealLabels,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget editable)>.has(
+          'decorate',
+          decorate,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget error)>.has(
+          'failureLine',
+          failureLine,
+        ),
+      )
+      ..add(FlagProperty('nameOnly', value: nameOnly, ifTrue: 'nameOnly'));
+  }
 }
 
 class _TextFieldState extends State<RetroDesktopTextField> {
@@ -549,7 +734,9 @@ class _TextFieldState extends State<RetroDesktopTextField> {
                 Semantics(liveRegion: true, child: drawn)
           : ExcludeSemantics(child: drawn);
     }
-    final edge = EdgeInsets.only(top: lines > 1 ? 9 : 0);
+    final edge = EdgeInsets.only(
+      top: lines > 1 ? RetroDesktopSpacing.s8 + RetroDesktopSpacing.px : 0,
+    );
     Widget editorRow({bool showTrailing = true}) => Row(
       crossAxisAlignment: lines > 1
           ? CrossAxisAlignment.start
@@ -566,23 +753,28 @@ class _TextFieldState extends State<RetroDesktopTextField> {
               child: leading,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: RetroDesktopSpacing.s8),
         ],
         Expanded(child: input),
         if (showTrailing && trailing != null) ...[
-          const SizedBox(width: 8),
+          const SizedBox(width: RetroDesktopSpacing.s8),
           Padding(padding: edge, child: trailing),
         ],
       ],
     );
     final field = retroDesktopFace(
       states: states,
-      component: t.textFieldTheme.merge(
+      component: t.textFieldTheme.over(
         RetroDesktopStyle(fill: WidgetStatePropertyAll(c.paper)),
       ),
       style: widget.style,
       sunken: true,
-      padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 6, 0),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        RetroDesktopSpacing.s8,
+        0,
+        RetroDesktopSpacing.s6,
+        0,
+      ),
       child: ConstrainedBox(
         constraints: BoxConstraints(minHeight: tall),
         child: LayoutBuilder(
@@ -595,7 +787,9 @@ class _TextFieldState extends State<RetroDesktopTextField> {
                     Align(
                       alignment: AlignmentDirectional.centerEnd,
                       child: Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
+                        padding: const EdgeInsets.only(
+                          bottom: RetroDesktopSpacing.s4,
+                        ),
                         child: trailing,
                       ),
                     ),
@@ -611,7 +805,7 @@ class _TextFieldState extends State<RetroDesktopTextField> {
       children: [
         if (label != null)
           Padding(
-            padding: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s6),
             child: ExcludeSemantics(child: Text(label, style: t.type.body)),
           ),
         MouseRegion(
@@ -634,13 +828,18 @@ class _TextFieldState extends State<RetroDesktopTextField> {
                   focused: focused,
                   child: Opacity(opacity: enabled ? 1 : .5, child: field),
                 );
-                return reaches ? RetroDesktopReach(child: ringed) : ringed;
+                return reaches
+                    ? RetroDesktopReach(keepsPoint: true, child: ringed)
+                    : ringed;
               },
             ),
           ),
         ),
         if (message != null)
-          Padding(padding: const EdgeInsets.only(top: 6), child: message),
+          Padding(
+            padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
+            child: message,
+          ),
       ],
     );
   }
@@ -658,7 +857,7 @@ class RetroDesktopKbd extends StatelessWidget {
   /// The keyboard shortcuts displayed by this part.
   final String keys;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
@@ -668,7 +867,7 @@ class RetroDesktopKbd extends StatelessWidget {
         states: const {},
         style: style,
         scale: RetroDesktopFaceScale.mark,
-        component: t.badgeTheme.merge(
+        component: t.badgeTheme.over(
           RetroDesktopStyle(
             fill: WidgetStatePropertyAll(t.colors.platinumLight),
             foreground: WidgetStatePropertyAll(t.colors.textSecondary),
@@ -677,10 +876,27 @@ class RetroDesktopKbd extends StatelessWidget {
             ),
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+        padding: const EdgeInsets.symmetric(
+          horizontal: RetroDesktopSpacing.s6,
+          vertical: RetroDesktopSpacing.px,
+        ),
         child: Text(keys),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('keys', keys))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -712,7 +928,7 @@ Widget _checkFace(
     style: style,
     sunken: t.chisel,
     defaultRing: states.contains(WidgetState.error),
-    component: t.checkboxTheme.merge(
+    component: t.checkboxTheme.over(
       RetroDesktopStyle(
         fill: WidgetStatePropertyAll(
           !t.chisel
@@ -791,7 +1007,7 @@ class RetroDesktopCheckbox extends StatelessWidget {
     this.style,
   });
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// False is unchecked, true is checked and null draws the mixed mark.
@@ -800,13 +1016,13 @@ class RetroDesktopCheckbox extends StatelessWidget {
   /// Whether the box shows the error state, for a value that needs attention.
   final bool isError;
 
-  /// An optional externally owned focus node; the caller disposes it.
+  /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
-  /// Reports the value selected by the user; null prevents changes.
+  /// {@macro retro_desktop.onChanged}
   final ValueChanged<bool?>? onChanged;
 
   /// The visible or accessible name of this part.
@@ -815,6 +1031,8 @@ class RetroDesktopCheckbox extends StatelessWidget {
   Widget build(BuildContext context) {
     return retroDesktopOwnSize(
       child: RetroDesktopPressable(
+        // A bare box stands on its column's start edge; its target grows toward the end.
+        alignment: AlignmentDirectional.centerStart,
         checked: value ?? false,
         mixed: value == null,
         error: isError,
@@ -834,6 +1052,31 @@ class RetroDesktopCheckbox extends StatelessWidget {
         builder: (context, states) => _checkFace(context, value, states, style),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(ObjectFlagProperty<ValueChanged<bool?>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label));
   }
 }
 
@@ -857,7 +1100,7 @@ class RetroDesktopCheckRow extends StatelessWidget {
     this.style,
   });
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The visible or accessible name of this part.
@@ -876,13 +1119,13 @@ class RetroDesktopCheckRow extends StatelessWidget {
   /// warning sign as a field's are; giving them sets [error].
   final String? errorText;
 
-  /// An optional externally owned focus node; the caller disposes it.
+  /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
-  /// Reports the value selected by the user; null prevents changes.
+  /// {@macro retro_desktop.onChanged}
   final ValueChanged<bool>? onChanged;
   @override
   Widget build(BuildContext context) {
@@ -914,7 +1157,7 @@ class RetroDesktopCheckRow extends StatelessWidget {
             );
         return Padding(
           padding: t.density.apply(
-            const EdgeInsets.symmetric(vertical: 6),
+            const EdgeInsets.symmetric(vertical: RetroDesktopSpacing.s6),
             Directionality.of(context),
           ),
           child: Row(
@@ -928,7 +1171,7 @@ class RetroDesktopCheckRow extends StatelessWidget {
                   child: _checkFace(context, value, states, style),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: RetroDesktopSpacing.s10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -938,7 +1181,9 @@ class RetroDesktopCheckRow extends StatelessWidget {
                     if (note != null) Text(note!, style: t.type.meta),
                     if (errorText != null)
                       Padding(
-                        padding: const EdgeInsets.only(top: 4),
+                        padding: const EdgeInsets.only(
+                          top: RetroDesktopSpacing.s4,
+                        ),
                         child: ExcludeSemantics(
                           child: retroDesktopFieldNote(
                             t,
@@ -955,6 +1200,33 @@ class RetroDesktopCheckRow extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(FlagProperty('error', value: error, ifTrue: 'error'))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged));
   }
 }
 
@@ -1013,19 +1285,19 @@ class RetroDesktopChip extends StatelessWidget {
   /// Overrides the accessible name of the remove action.
   final String? deleteLabel;
 
-  /// An optional externally owned focus node; the caller disposes it.
+  /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The visible or accessible name of this part.
   final String label;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
   /// Whether the part represents the current selection.
@@ -1071,7 +1343,7 @@ class RetroDesktopChip extends StatelessWidget {
       // An outlined chip's line is solid: a dotted line is the look's focus mark.
       bevel: !_outlined,
       sunken: t.chisel && selected && !_outlined,
-      component: t.chipTheme.merge(
+      component: t.chipTheme.over(
         RetroDesktopStyle(
           fill: _outlined
               ? const WidgetStatePropertyAll(Color(0x00000000))
@@ -1092,7 +1364,10 @@ class RetroDesktopChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[Icon(icon), const SizedBox(width: 4)],
+          if (icon != null) ...[
+            Icon(icon),
+            const SizedBox(width: RetroDesktopSpacing.s4),
+          ],
           // One line: a capsule's round ends never meet a wrapped line. A
           // tag's mark leads its words on that line, so the two share one
           // box and one centre (a mark of its own stood a line of its own
@@ -1134,6 +1409,42 @@ class RetroDesktopChip extends StatelessWidget {
       builder: (context, states) => face(states),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('filter', value: filter, ifTrue: 'filter'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDeleted', onDeleted))
+      ..add(StringProperty('deleteLabel', deleteLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(
+        EnumProperty<RetroDesktopButtonSize>(
+          'size',
+          size,
+          defaultValue: RetroDesktopButtonSize.medium,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null));
+  }
 }
 
 /// An inverted chip for what can't wait: late, overdue, warned. Black on white by day, white on black by night, and never a
@@ -1149,7 +1460,7 @@ class RetroDesktopFlag extends StatelessWidget {
   /// The visible or accessible name of this part.
   final String label;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
@@ -1160,7 +1471,7 @@ class RetroDesktopFlag extends StatelessWidget {
         scale: RetroDesktopFaceScale.mark,
         // Paper, ringed in the words' ink: a flag is a label, and an inverted slab reads as chosen (the state law),
         // by night as the brightest thing on the page.
-        component: t.badgeTheme.merge(
+        component: t.badgeTheme.over(
           RetroDesktopStyle(
             fill: WidgetStatePropertyAll(t.colors.paper),
             foreground: WidgetStatePropertyAll(t.colors.text),
@@ -1169,7 +1480,10 @@ class RetroDesktopFlag extends StatelessWidget {
           ),
         ),
         style: style,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+        padding: const EdgeInsets.symmetric(
+          horizontal: RetroDesktopSpacing.s6,
+          vertical: RetroDesktopSpacing.px,
+        ),
         // One line: a capsule's round ends never meet a wrapped line.
         child: Text(
           label,
@@ -1179,6 +1493,20 @@ class RetroDesktopFlag extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -1212,7 +1540,8 @@ class RetroDesktopPriority extends StatelessWidget {
   /// Creates a [RetroDesktopPriority].
   const RetroDesktopPriority(this.level, {super.key});
 
-  /// 1 to 3.
+  /// 1 to 3. A level past either end draws as the nearest (a task row passes its own priority through, whatever it
+  /// is).
   final int level;
   @override
   Widget build(BuildContext context) => Semantics(
@@ -1228,6 +1557,12 @@ class RetroDesktopPriority extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('level', level));
+  }
 }
 
 class _ProgressPainter extends CustomPainter {
@@ -1393,7 +1728,7 @@ class RetroDesktopLinearProgressIndicator extends StatelessWidget {
   /// Whether the part uses its quieter presentation.
   final bool quiet;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
@@ -1446,13 +1781,29 @@ class RetroDesktopLinearProgressIndicator extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(StringProperty('label', label))
+      ..add(FlagProperty('quiet', value: quiet, ifTrue: 'quiet'))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A disclosure: a triangle, a name, a small line; it opens what it holds in place. With no [child] it's a closed row that
 /// presses, to go somewhere else.
 ///
 /// ```dart
-/// RetroDesktopDisclosure(note: '18 parts', child: table, title: 'Cut list')
+/// RetroDesktopDisclosure(note: '18 parts', title: 'Cut list', child: table)
 /// ```
 class RetroDesktopDisclosure extends StatefulWidget {
   /// Creates a [RetroDesktopDisclosure].
@@ -1483,7 +1834,7 @@ class RetroDesktopDisclosure extends StatefulWidget {
   /// The controlled disclosure state, or null to manage it internally.
   final bool? expanded;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// Reports a request to expand or collapse the disclosure.
@@ -1493,6 +1844,36 @@ class RetroDesktopDisclosure extends StatefulWidget {
   final bool enabled;
   @override
   State<RetroDesktopDisclosure> createState() => _DisclosureState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'initiallyExpanded',
+          value: initiallyExpanded,
+          ifTrue: 'initiallyExpanded',
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onExpansionChanged',
+          onExpansionChanged,
+        ),
+      )
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'));
+  }
 }
 
 class _DisclosureState extends State<RetroDesktopDisclosure> {
@@ -1514,9 +1895,9 @@ class _DisclosureState extends State<RetroDesktopDisclosure> {
       builder: (context, states) => retroDesktopFace(
         states: states,
         style: widget.style,
-        component: t.disclosureTheme.merge(
+        component: t.disclosureTheme.over(
           RetroDesktopStyle(
-            fill: WidgetStatePropertyAll(const Color(0x00000000)),
+            fill: const WidgetStatePropertyAll(Color(0x00000000)),
             side: const WidgetStatePropertyAll(BorderSide.none),
             textStyle: WidgetStatePropertyAll(
               t.type.pixel(
@@ -1557,11 +1938,11 @@ class _DisclosureState extends State<RetroDesktopDisclosure> {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: RetroDesktopSpacing.s8),
             Flexible(
               child: Wrap(
                 crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 12,
+                spacing: RetroDesktopSpacing.s12,
                 children: [
                   Text(widget.title),
                   if (widget.note != null)
@@ -1590,7 +1971,7 @@ class _DisclosureState extends State<RetroDesktopDisclosure> {
 /// highlight by itself: `t.colors.text` and `t.type` answer for the surface.
 ///
 /// ```dart
-/// RetroDesktopChoiceBox(onPressed: () {}, child: Text('Today'), selected: true)
+/// RetroDesktopChoiceBox(onPressed: () {}, selected: true, child: Text('Today'))
 /// ```
 class RetroDesktopChoiceBox extends StatelessWidget {
   /// Creates a [RetroDesktopChoiceBox].
@@ -1609,7 +1990,7 @@ class RetroDesktopChoiceBox extends StatelessWidget {
     this.style,
   });
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The widget displayed inside this part.
@@ -1621,7 +2002,7 @@ class RetroDesktopChoiceBox extends StatelessWidget {
   /// Insets around the content.
   final EdgeInsetsGeometry padding;
 
-  /// Called when the action is activated; null makes the action unavailable.
+  /// {@macro retro_desktop.onPressed}
   final VoidCallback? onPressed;
 
   /// The visible or accessible name of this part.
@@ -1636,10 +2017,10 @@ class RetroDesktopChoiceBox extends StatelessWidget {
   /// Whether the part shares its frame with adjacent group members.
   final bool inGroup;
 
-  /// An optional externally owned focus node; the caller disposes it.
+  /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
   @override
   Widget build(BuildContext context) {
@@ -1665,6 +2046,40 @@ class RetroDesktopChoiceBox extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(FlagProperty('many', value: many, ifTrue: 'many'))
+      ..add(FlagProperty('inGroup', value: inGroup, ifTrue: 'inGroup'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -1748,7 +2163,7 @@ class RetroDesktopChoices extends StatelessWidget {
   /// The value of the value option; none, if null.
   final String? value;
 
-  /// Reports the value selected by the user; null prevents changes.
+  /// {@macro retro_desktop.onChanged}
   final ValueChanged<String>? onChanged;
   @override
   Widget build(BuildContext context) {
@@ -1813,7 +2228,7 @@ class RetroDesktopChoices extends StatelessWidget {
                                   : TextAlign.center,
                             ),
                             if (o.note != null) ...[
-                              const SizedBox(height: 2),
+                              const SizedBox(height: RetroDesktopSpacing.s2),
                               Text(o.note!, style: tt.type.meta),
                             ],
                           ],
@@ -1840,6 +2255,17 @@ class RetroDesktopChoices extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopChoice>('options', options))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      );
+  }
 }
 
 /// A number stepper: a small button each side of a sunk value and its unit, and a note under it.
@@ -1864,7 +2290,7 @@ class RetroDesktopNumberField extends StatelessWidget {
        assert(value >= min && value <= max),
        assert(step > 0);
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The current value to display or edit.
@@ -1879,7 +2305,7 @@ class RetroDesktopNumberField extends StatelessWidget {
   /// The amount added or subtracted by one step.
   final int step;
 
-  /// Reports the value selected by the user; null prevents changes.
+  /// {@macro retro_desktop.onChanged}
   final ValueChanged<int>? onChanged;
 
   /// The unit shown beside the value.
@@ -1903,22 +2329,28 @@ class RetroDesktopNumberField extends StatelessWidget {
     // One row, one height: the two buttons and the value between them all show a button's face height, the buttons
     // square, so the stepper stands level with a button or a field beside it.
     final faceHeight = retroDesktopButtonFaceHeight(context);
-    Widget press(IconData icon, String name, VoidCallback? action) =>
-        RetroDesktopPressable(
-          onPressed: action,
-          label: name,
-          builder: (context, states) => retroDesktopFace(
-            states: states,
-            component: t.stepperTheme.merge(
-              RetroDesktopStyle(
-                minimumSize: WidgetStatePropertyAll(Size.square(faceHeight)),
-              ),
-            ),
-            style: style,
-            padding: const EdgeInsets.all(6),
-            child: Icon(icon),
+    // The keys stand on the stepper's two ends; where a target is wider than its key it grows toward the value.
+    Widget press(
+      IconData icon,
+      String name,
+      VoidCallback? action, {
+      required AlignmentGeometry at,
+    }) => RetroDesktopPressable(
+      alignment: at,
+      onPressed: action,
+      label: name,
+      builder: (context, states) => retroDesktopFace(
+        states: states,
+        component: t.stepperTheme.over(
+          RetroDesktopStyle(
+            minimumSize: WidgetStatePropertyAll(Size.square(faceHeight)),
           ),
-        );
+        ),
+        style: style,
+        padding: const EdgeInsets.all(RetroDesktopSpacing.s6),
+        child: Icon(icon),
+      ),
+    );
     final row = Focus(
       canRequestFocus: false,
       skipTraversal: true,
@@ -1955,7 +2387,12 @@ class RetroDesktopNumberField extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            press(RetroDesktopGlyphs.minus, words.less, less),
+            press(
+              RetroDesktopGlyphs.minus,
+              words.less,
+              less,
+              at: AlignmentDirectional.centerStart,
+            ),
             Flexible(
               child: ExcludeSemantics(
                 // Disabled, the value and its box dim with the buttons.
@@ -1965,7 +2402,7 @@ class RetroDesktopNumberField extends StatelessWidget {
                   opacity: onChanged == null ? .5 : 1,
                   child: retroDesktopFace(
                     states: {if (onChanged == null) WidgetState.disabled},
-                    component: t.stepperTheme.merge(
+                    component: t.stepperTheme.over(
                       RetroDesktopStyle(
                         fill: WidgetStatePropertyAll(t.colors.paper),
                         minimumSize: WidgetStatePropertyAll(
@@ -1977,7 +2414,9 @@ class RetroDesktopNumberField extends StatelessWidget {
                     sunken: true,
                     padding: EdgeInsets.zero,
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: RetroDesktopSpacing.s8,
+                      ),
                       // A one-digit value still gets a box about as wide as
                       // the buttons beside it, its figures on its middle; the
                       // box as wide as they need, not the row's room.
@@ -1988,7 +2427,7 @@ class RetroDesktopNumberField extends StatelessWidget {
                           constraints: const BoxConstraints(minWidth: 24),
                           child: Wrap(
                             alignment: WrapAlignment.center,
-                            spacing: 6,
+                            spacing: RetroDesktopSpacing.s6,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Stack(
@@ -2027,7 +2466,12 @@ class RetroDesktopNumberField extends StatelessWidget {
                 ),
               ),
             ),
-            press(RetroDesktopGlyphs.plus, words.more, more),
+            press(
+              RetroDesktopGlyphs.plus,
+              words.more,
+              more,
+              at: AlignmentDirectional.centerEnd,
+            ),
           ],
         ),
       ),
@@ -2039,11 +2483,32 @@ class RetroDesktopNumberField extends StatelessWidget {
         row,
         if (note != null)
           Padding(
-            padding: const EdgeInsets.only(top: 6),
+            padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
             child: Text(note!, style: t.type.note),
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('value', value))
+      ..add(IntProperty('min', min, defaultValue: 0))
+      ..add(IntProperty('max', max, defaultValue: 100))
+      ..add(IntProperty('step', step, defaultValue: 1))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(StringProperty('unit', unit, defaultValue: ''))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null));
   }
 }
 
@@ -2232,7 +2697,7 @@ class RetroDesktopGroupBox extends StatelessWidget {
     this.count,
   });
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The heading displayed above the content.
@@ -2266,7 +2731,13 @@ class RetroDesktopGroupBox extends StatelessWidget {
       side: side,
     );
     final padding = t.density.apply(
-      slot((s) => s.padding) ?? const EdgeInsets.fromLTRB(15, 33, 15, 15),
+      slot((s) => s.padding) ??
+          const EdgeInsets.fromLTRB(
+            RetroDesktopSpacing.s14 + RetroDesktopSpacing.px,
+            RetroDesktopSpacing.s32 + RetroDesktopSpacing.px,
+            RetroDesktopSpacing.s14 + RetroDesktopSpacing.px,
+            RetroDesktopSpacing.s14 + RetroDesktopSpacing.px,
+          ),
       Directionality.of(context),
     );
     final minimum = slot((s) => s.minimumSize) ?? Size.zero;
@@ -2295,7 +2766,7 @@ class RetroDesktopGroupBox extends StatelessWidget {
                       size: slot((s) => s.iconSize) ?? 16,
                       color: slot((s) => s.foreground) ?? c.text,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: RetroDesktopSpacing.s8),
                   ],
                   Flexible(
                     child: Text(
@@ -2307,7 +2778,7 @@ class RetroDesktopGroupBox extends StatelessWidget {
                     ),
                   ),
                   if (count != null) ...[
-                    const SizedBox(width: 8),
+                    const SizedBox(width: RetroDesktopSpacing.s8),
                     Text(
                       count!,
                       // A count is a fact about the group, not a selection:
@@ -2326,6 +2797,22 @@ class RetroDesktopGroupBox extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('count', count, defaultValue: null));
   }
 }
 
@@ -2390,7 +2877,7 @@ class RetroDesktopFolderTab {
 /// narrow for them all they scroll sideways, rather than crush.
 ///
 /// ```dart
-/// RetroDesktopTabBar(tabs: const ['Today', 'Later'], onChanged: (i) {}, child: list, selectedIndex: 0, counts: ['6', '5'])
+/// RetroDesktopTabBar(tabs: const ['Today', 'Later'], onChanged: (i) {}, selectedIndex: 0, counts: ['6', '5'], child: list)
 /// ```
 class RetroDesktopTabBar extends StatefulWidget implements RetroDesktopFlush {
   /// Creates a [RetroDesktopTabBar].
@@ -2403,9 +2890,9 @@ class RetroDesktopTabBar extends StatefulWidget implements RetroDesktopFlush {
     this.label,
     this.counts = const [],
     this.style,
-  });
+  }) : assert(selectedIndex >= 0);
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The tabs in reading order.
@@ -2414,7 +2901,7 @@ class RetroDesktopTabBar extends StatefulWidget implements RetroDesktopFlush {
   /// The index of the currently selected item.
   final int selectedIndex;
 
-  /// Reports the value selected by the user; null prevents changes.
+  /// {@macro retro_desktop.onChanged}
   final ValueChanged<int>? onChanged;
 
   /// The widget displayed inside this part.
@@ -2427,6 +2914,26 @@ class RetroDesktopTabBar extends StatefulWidget implements RetroDesktopFlush {
   final List<String?> counts;
   @override
   State<RetroDesktopTabBar> createState() => _TabBarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<String>('tabs', tabs))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        IterableProperty<String?>('counts', counts, defaultValue: const []),
+      );
+  }
 }
 
 // Clips an overflowing tab strip to its whole tabs.
@@ -2665,7 +3172,7 @@ class _TabBarState extends State<RetroDesktopTabBar> {
                                 openBottom: selected && widget.child != null,
                                 openDepth: join - rule,
                                 states: states,
-                                component: t.tabBarTheme.merge(
+                                component: t.tabBarTheme.over(
                                   RetroDesktopStyle(
                                     fill: WidgetStatePropertyAll(
                                       selected
@@ -2702,7 +3209,9 @@ class _TabBarState extends State<RetroDesktopTabBar> {
                                   children: [
                                     RetroDesktopCaps(Text(widget.tabs[i])),
                                     if (count != null) ...[
-                                      const SizedBox(width: 6),
+                                      const SizedBox(
+                                        width: RetroDesktopSpacing.s6,
+                                      ),
                                       RetroDesktopCaps(Text(count)),
                                     ],
                                   ],
@@ -2751,7 +3260,7 @@ class _TabBarState extends State<RetroDesktopTabBar> {
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                spacing: 2,
+                spacing: RetroDesktopSpacing.s2,
                 children: [
                   RetroDesktopIconButton(
                     rtl
@@ -2812,7 +3321,9 @@ class _TabBarState extends State<RetroDesktopTabBar> {
           component: t.cardTheme,
           style: RetroDesktopStyle(fill: WidgetStatePropertyAll(selectedFill)),
           scale: RetroDesktopFaceScale.surface,
-          padding: const EdgeInsets.all(9),
+          padding: const EdgeInsets.all(
+            RetroDesktopSpacing.s8 + RetroDesktopSpacing.px,
+          ),
           child: widget.child!,
         ),
       ),

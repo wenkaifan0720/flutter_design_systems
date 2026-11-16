@@ -2,6 +2,8 @@
 // stacks snack bars. All but the action sheet stand on ui_core's behaviour (menus and their keys, the sheet's route,
 // the anchored overlay, the toast queue); this file paints them as the period's
 // desktop raised things: the machine's grey, an outline, the hard shadow, the highlight for the keyboard's row.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
@@ -13,23 +15,27 @@ import 'controls.dart';
 import 'frames.dart';
 import 'glyphs.dart';
 import 'internal/parts.dart';
+import 'internal/presence.dart';
+import 'internal/modal.dart';
 import 'layout.dart'
     show RetroDesktopReach, retroDesktopHugMost, retroDesktopHugs;
 import 'press.dart';
 import 'raised.dart';
 import 'theme.dart';
 import 'internal/caps.dart';
+import 'tokens.dart';
 
-/// A menu's panel under its anchor, fading in as it opens.
+/// A menu's panel under its anchor, there at once as it opens and gone at once
+/// as it closes (the motion's raise and leave, zero by default).
 Widget _panel(
   BuildContext context,
   DesignOverlayInfo info,
   Widget child, {
   double minWidth = 180,
   double? maxWidth,
-  EdgeInsetsGeometry padding = const EdgeInsets.all(4),
-}) => FadeTransition(
-  opacity: info.animation,
+  EdgeInsetsGeometry padding = const EdgeInsets.all(RetroDesktopSpacing.s4),
+}) => RetroDesktopPresence(
+  animation: info.animation,
   child: ConstrainedBox(
     constraints: BoxConstraints(
       minWidth: minWidth,
@@ -78,44 +84,63 @@ class RetroDesktopMenuBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
+    // An alert that opens closes the bar's open menu.
+    return RetroDesktopClosesUnderModal(child: _bar(context, t, c));
+  }
+
+  Widget _bar(
+    BuildContext context,
+    RetroDesktopThemeData t,
+    RetroDesktopColors c,
+  ) {
     return DesignMenuBar(
       menus: menus,
       semanticLabel: label ?? DesignLocalizations.of(context).menuBarLabel,
-      barBuilder: (context, items) => DecoratedBox(
-        decoration: BoxDecoration(
-          color: t.chisel ? c.platinum : c.paper,
-          border: Border(bottom: BorderSide(color: c.control)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          // Where the titles outrun the bar (large text on a phone), they wrap onto a second row between the mark
-          // and the trailing action, as a narrow window's menu bar did: scrolled across, the last titles stood out of
-          // sight with nothing to say they were there.
-          child: LayoutBuilder(
-            builder: (context, box) => Row(
-              children: [
-                if (leading case final leading?)
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(start: 6, end: 6),
-                    child: leading,
-                  ),
-                if (box.hasBoundedWidth)
-                  Expanded(child: Wrap(children: items))
-                else
-                  ...items,
-                // A button in the bar stands off its edges, whatever the text size.
-                if (trailing case final trailing?)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: trailing,
-                  ),
-              ],
+      // An alert stands below the bar, however many rows it wraps to.
+      barBuilder: (context, items) => RetroDesktopBarFoot(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: t.chisel ? c.platinum : c.paper,
+            border: Border(bottom: BorderSide(color: c.control)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: RetroDesktopSpacing.s4,
+            ),
+            // Where the titles outrun the bar (large text on a phone), they wrap onto a second row between the mark
+            // and the trailing action, as a narrow window's menu bar did: scrolled across, the last titles stood out of
+            // sight with nothing to say they were there.
+            child: LayoutBuilder(
+              builder: (context, box) => Row(
+                children: [
+                  if (leading case final leading?)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        start: RetroDesktopSpacing.s6,
+                        end: RetroDesktopSpacing.s6,
+                      ),
+                      child: leading,
+                    ),
+                  if (box.hasBoundedWidth)
+                    Expanded(child: Wrap(children: items))
+                  else
+                    ...items,
+                  // A button in the bar stands off its edges, whatever the text size.
+                  if (trailing case final trailing?)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: RetroDesktopSpacing.s2,
+                      ),
+                      child: trailing,
+                    ),
+                ],
+              ),
             ),
           ),
         ),
       ),
       dividerBuilder: (context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(vertical: RetroDesktopSpacing.s4),
         child: SizedBox(height: 1, child: ColoredBox(color: c.outline)),
       ),
       // A menu is as wide as its longest item and its keys, under its title; a row's label takes what is left of
@@ -134,7 +159,7 @@ class RetroDesktopMenuBar extends StatelessWidget {
           info,
           maxWidth: 360,
           // The lit row runs from rim to rim, the period's bar across the menu (inset 4, it was a modern chip).
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(vertical: RetroDesktopSpacing.s4),
           IntrinsicWidth(
             child: SingleChildScrollView(
               child: Column(
@@ -148,18 +173,16 @@ class RetroDesktopMenuBar extends StatelessWidget {
       ),
       itemBuilder: (context, entry, level, states) {
         final enabled = !states.contains(WidgetState.disabled);
-        // In a menu the keyboard's row is lit, or the row under the pointer: opened by a click, the focus ui_core puts
-        // on the first row lit it before the pointer came near, and it read as chosen (the bar's other menus open
-        // with nothing lit).
+        // In a menu one row is lit, the keyboard's or the pointer's, whichever moved last
+        // (retroDesktopMenuRowLit): opened by a click, the focus ui_core puts on the first row lit it before the
+        // pointer came near, and it read as chosen; and the pointer resting on one row while the keys moved to
+        // another lit both.
         final lit =
             states.contains(WidgetState.selected) ||
             (level == DesignMenuLevel.bar &&
                 states.contains(WidgetState.pressed)) ||
             (level == DesignMenuLevel.menu &&
-                enabled &&
-                (states.contains(WidgetState.hovered) ||
-                    (states.contains(WidgetState.focused) &&
-                        RetroDesktopLastInput.byKey)));
+                retroDesktopMenuRowLit(states, enabled: enabled));
         if (level == DesignMenuLevel.bar) {
           return RetroDesktopHighlight(
             shape: retroDesktopItemShape(t),
@@ -169,7 +192,10 @@ class RetroDesktopMenuBar extends StatelessWidget {
               context,
               lit: lit,
               enabled: enabled,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(
+                horizontal: RetroDesktopSpacing.s10,
+                vertical: RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+              ),
               // A short title ("File") still spans a finger's width, centred.
               child: ConstrainedBox(
                 constraints: BoxConstraints(
@@ -191,57 +217,79 @@ class RetroDesktopMenuBar extends StatelessWidget {
             ),
           );
         }
-        return retroDesktopLitRow(
-          context,
-          lit: lit,
+        // A menu with a choice: its checked row, unlit, stands in the look's held well, as a chosen toggle does,
+        // seen at a glance beside the row the pointer or the keyboard lights in the highlight's bar. The pointer
+        // takes the keys' place as it moves, so the keys go on from the row it lit.
+        return RetroDesktopPointerFocus(
           enabled: enabled,
-          shape: const RoundedRectangleBorder(),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 20,
-                child: entry.checked == true
-                    ? const Icon(RetroDesktopGlyphs.check, size: 14)
-                    : null,
+          child: retroDesktopHeldGround(
+            t,
+            held: entry.checked == true && !lit,
+            sink: false,
+            child: retroDesktopLitRow(
+              context,
+              lit: lit,
+              enabled: enabled,
+              shape: const RoundedRectangleBorder(),
+              padding: const EdgeInsets.symmetric(
+                horizontal: RetroDesktopSpacing.s12,
+                vertical: RetroDesktopSpacing.s6 + RetroDesktopSpacing.px,
               ),
-              // A menu's rows in the chrome's face, as every other menu's and the bar's titles are.
-              Expanded(
-                child: RetroDesktopCaps(
-                  style: t.type.chrome,
-                  Text(
-                    entry.label,
-                    style: t.type.chrome.copyWith(
-                      color: lit
-                          ? c.onHighlight
-                          : (enabled ? c.text : c.textTertiary),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 20,
+                    child: entry.checked == true
+                        ? const Icon(RetroDesktopGlyphs.check, size: 14)
+                        : null,
+                  ),
+                  // A menu's rows in the chrome's face, as every other menu's and the bar's titles are.
+                  Expanded(
+                    child: RetroDesktopCaps(
+                      style: t.type.chrome,
+                      Text(
+                        entry.label,
+                        style: t.type.chrome.copyWith(
+                          color: lit
+                              ? c.onHighlight
+                              : (enabled ? c.text : c.textTertiary),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  if (entry.shortcut != null) ...[
+                    const SizedBox(width: RetroDesktopSpacing.s16),
+                    Text(
+                      entry.shortcut!,
+                      style: t.type.small.copyWith(
+                        color: lit ? c.onHighlight : c.textSecondary,
+                      ),
+                    ),
+                  ],
+                  if (entry.children != null) ...[
+                    const SizedBox(width: RetroDesktopSpacing.s8),
+                    RetroDesktopTriangleMark(
+                      Directionality.of(context) == TextDirection.rtl
+                          ? AxisDirection.left
+                          : AxisDirection.right,
+                      size: 8,
+                    ),
+                  ],
+                ],
               ),
-              if (entry.shortcut != null) ...[
-                const SizedBox(width: 16),
-                Text(
-                  entry.shortcut!,
-                  style: t.type.small.copyWith(
-                    color: lit ? c.onHighlight : c.textSecondary,
-                  ),
-                ),
-              ],
-              if (entry.children != null) ...[
-                const SizedBox(width: 8),
-                RetroDesktopTriangleMark(
-                  Directionality.of(context) == TextDirection.rtl
-                      ? AxisDirection.left
-                      : AxisDirection.right,
-                  size: 8,
-                ),
-              ],
-            ],
+            ),
           ),
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<DesignMenuEntry>('menus', menus))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -286,6 +334,15 @@ class RetroDesktopSheet extends StatelessWidget {
       child: SingleChildScrollView(child: child),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null));
+  }
 }
 
 /// Opens a [RetroDesktopSheet] at [edge]; returns what it is popped with. It
@@ -299,7 +356,7 @@ Future<T?> showRetroDesktopSheet<T>(
   double width = 360,
   IconData? icon,
 }) => Navigator.of(context).push<T>(
-  DesignSideSheetRoute<T>(
+  _SideSheetRoute<T>(
     edge: edge,
     width: width,
     semanticLabel: title,
@@ -309,7 +366,8 @@ Future<T?> showRetroDesktopSheet<T>(
     // A window standing on the desk, 8 off the screen's edges and the bar above it, its shadow showing: against the
     // top bar its top line doubled the bar's into one heavy rule. On a desk it is as tall as what it holds, from the
     // top, up to the screen's height (stretched to the foot, a short form stood over a tall empty grey window); on a
-    // phone it runs the screen's height, as a phone's sheet does.
+    // phone it runs the screen's height, as a phone's sheet does. Where a menu bar runs across the screen it stands
+    // 8 below the bar, as an alert does: nothing the look raises covers the bar.
     builder: (context, sheet) {
       final window = RetroDesktopSheet(
         title: title,
@@ -317,8 +375,17 @@ Future<T?> showRetroDesktopSheet<T>(
         onClose: sheet.close,
         child: builder(context),
       );
-      return Padding(
-        padding: const EdgeInsets.all(8),
+      return ValueListenableBuilder<double>(
+        valueListenable: retroDesktopBarFoot,
+        builder: (context, foot, child) => Padding(
+          padding: EdgeInsets.fromLTRB(
+            RetroDesktopSpacing.s8,
+            foot + RetroDesktopSpacing.s8,
+            RetroDesktopSpacing.s8,
+            RetroDesktopSpacing.s8,
+          ),
+          child: child,
+        ),
         child: RetroDesktopTheme.of(context).desk
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -329,6 +396,19 @@ Future<T?> showRetroDesktopSheet<T>(
     },
   ),
 );
+
+// A side sheet is one of the look's modal windows: the window under it is no longer the front one.
+class _SideSheetRoute<T> extends DesignSideSheetRoute<T>
+    with RetroDesktopModalRoute<T> {
+  _SideSheetRoute({
+    required super.builder,
+    super.edge,
+    super.width,
+    super.barrierColor,
+    super.semanticLabel,
+    super.transitionDuration,
+  });
+}
 
 /// One choice of a [RetroDesktopActionSheet].
 @immutable
@@ -400,17 +480,18 @@ class RetroDesktopActionSheet extends StatelessWidget {
           ),
         if (message != null)
           Padding(
-            padding: const EdgeInsets.only(top: 2),
+            padding: const EdgeInsets.only(top: RetroDesktopSpacing.s2),
             child: Text(
               message!,
               textAlign: TextAlign.center,
               style: t.type.meta,
             ),
           ),
-        if (title != null || message != null) const SizedBox(height: 12),
+        if (title != null || message != null)
+          const SizedBox(height: RetroDesktopSpacing.s12),
         for (final a in actions)
           Padding(
-            padding: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s6),
             // A destructive action is never the sheet's default: a plain button with the caution mark.
             child: a.destructive
                 ? RetroDesktopButton(
@@ -428,7 +509,7 @@ class RetroDesktopActionSheet extends StatelessWidget {
                   ),
           ),
         if (cancelLabel != null) ...[
-          const SizedBox(height: 6),
+          const SizedBox(height: RetroDesktopSpacing.s6),
           RetroDesktopButton(cancelLabel!, wide: true, onPressed: onCancel),
         ],
       ],
@@ -444,6 +525,17 @@ class RetroDesktopActionSheet extends StatelessWidget {
         child: column,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopActionSheetAction>('actions', actions))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(StringProperty('cancelLabel', cancelLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onCancel', onCancel));
   }
 }
 
@@ -520,8 +612,12 @@ class RetroDesktopPopover extends StatelessWidget {
   /// The panel's name for a screen reader.
   final String? semanticLabel;
 
+  // An alert that opens closes the popover.
   @override
-  Widget build(BuildContext context) => DesignAnchoredOverlay(
+  Widget build(BuildContext context) =>
+      RetroDesktopClosesUnderModal(child: _popover(context));
+
+  Widget _popover(BuildContext context) => DesignAnchoredOverlay(
     semanticLabel: semanticLabel ?? label,
     // The panel keeps its own width under a wide anchor.
     placement: const DesignOverlayPlacement(matchAnchorWidth: false),
@@ -534,7 +630,18 @@ class RetroDesktopPopover extends StatelessWidget {
       SingleChildScrollView(child: content(context)),
       minWidth: 0,
       maxWidth: width,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(RetroDesktopSpacing.s12),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<WidgetBuilder>.has('content', content))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(DoubleProperty('width', width, defaultValue: 280))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }

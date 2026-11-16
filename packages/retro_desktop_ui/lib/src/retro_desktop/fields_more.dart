@@ -1,6 +1,8 @@
 // Round 4's fields: a text area, a password field, an input group, a combobox, a multi-select and a form field. The
 // last five stand on ui_core's behaviour (reveal, focus-within, the option list, tags, the field's semantics); this
 // file paints them in Retro Desktop's hand: white boxes sunk into the machine, the highlight for the keyboard's row.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
@@ -15,6 +17,7 @@ import 'pixels.dart';
 import 'press.dart';
 import 'theme.dart';
 import 'internal/caps.dart';
+import 'tokens.dart';
 
 /// A box for a few lines of words: a note, a message, an address. The text
 /// field's box, taller, its words from the top.
@@ -39,7 +42,7 @@ class RetroDesktopTextArea extends StatelessWidget {
     this.onChanged,
   }) : assert(lines > 1);
 
-  /// An optional externally owned controller; the caller disposes it.
+  /// {@macro retro_desktop.controller}
   final TextEditingController? controller;
 
   /// The first words when no controller supplies them.
@@ -57,10 +60,10 @@ class RetroDesktopTextArea extends StatelessWidget {
   /// Whether the box takes input.
   final bool enabled;
 
-  /// An optional externally owned focus node; the caller disposes it.
+  /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   /// Reports each edit.
@@ -82,6 +85,37 @@ class RetroDesktopTextArea extends StatelessWidget {
     keyboardType: TextInputType.multiline,
     textInputAction: TextInputAction.newline,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('initial', initial, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(IntProperty('lines', lines, defaultValue: 4))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      );
+  }
 }
 
 /// A password box with an eye that shows and hides what was typed. ui_core's
@@ -107,13 +141,13 @@ class RetroDesktopPasswordField extends StatelessWidget {
     this.newPassword = false,
   });
 
-  /// An optional externally owned controller; the caller disposes it.
+  /// {@macro retro_desktop.controller}
   final TextEditingController? controller;
 
-  /// An optional externally owned focus node; the caller disposes it.
+  /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   /// The words above the box, in it while empty, and under it.
@@ -162,6 +196,44 @@ class RetroDesktopPasswordField extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        FlagProperty('newPassword', value: newPassword, ifTrue: 'newPassword'),
+      );
+  }
 }
 
 /// A box with words fixed at either end of what is typed: a site's address
@@ -193,13 +265,13 @@ class RetroDesktopInputGroup extends StatefulWidget {
     this.onSubmitted,
   });
 
-  /// An optional externally owned controller; the caller disposes it.
+  /// {@macro retro_desktop.controller}
   final TextEditingController? controller;
 
-  /// An optional externally owned focus node; the caller disposes it.
+  /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   /// The words above the box, in it while empty, and under it.
@@ -229,6 +301,50 @@ class RetroDesktopInputGroup extends StatefulWidget {
 
   @override
   State<RetroDesktopInputGroup> createState() => _InputGroupState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('prefix', prefix, defaultValue: null))
+      ..add(StringProperty('suffix', suffix, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      );
+  }
 }
 
 class _InputGroupState extends State<RetroDesktopInputGroup> {
@@ -268,7 +384,9 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: most),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(
+            horizontal: RetroDesktopSpacing.s8,
+          ),
           child: Center(
             widthFactor: 1,
             child: Builder(
@@ -384,7 +502,9 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
                         ),
                       if (widget.leading != null)
                         Padding(
-                          padding: const EdgeInsetsDirectional.only(start: 8),
+                          padding: const EdgeInsetsDirectional.only(
+                            start: RetroDesktopSpacing.s8,
+                          ),
                           child: IconTheme.merge(
                             data: IconThemeData(size: 15, color: c.text),
                             child: widget.leading!,
@@ -392,13 +512,17 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
                         ),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: RetroDesktopSpacing.s8,
+                          ),
                           child: child,
                         ),
                       ),
                       if (widget.trailing != null)
                         Padding(
-                          padding: const EdgeInsetsDirectional.only(end: 4),
+                          padding: const EdgeInsetsDirectional.only(
+                            end: RetroDesktopSpacing.s4,
+                          ),
                           child: Center(widthFactor: 1, child: widget.trailing),
                         ),
                       if (widget.suffix != null)
@@ -451,14 +575,14 @@ class _Labelled extends StatelessWidget {
     // around it, as a text field's does, so stacked fields keep one rhythm.
     final child = RetroDesktopReach.padsAcross(context)
         ? this.child
-        : RetroDesktopReach(child: this.child);
+        : RetroDesktopReach(keepsPoint: true, child: this.child);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (label != null)
           Padding(
-            padding: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s6),
             child: ExcludeSemantics(child: Text(label!, style: t.type.body)),
           ),
         if (dropdown && MediaQuery.sizeOf(context).width >= 600)
@@ -474,7 +598,7 @@ class _Labelled extends StatelessWidget {
           child,
         if (note != null)
           Padding(
-            padding: const EdgeInsets.only(top: 6),
+            padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
             child: error
                 ? Semantics(
                     liveRegion: true,
@@ -501,42 +625,54 @@ const Widget _listMark = Column(
 
 /// An option in a field's list, as a select's list draws one: the row runs
 /// rim to rim, the keyboard's row lit; its words start where the field's do
-/// (8 px in at the density), on one x down the list; the chosen one's tick
-/// stands at the end, in a column every row keeps.
+/// (8 px in at the density), on one x down the list; the chosen one stands in
+/// the look's held well while unlit, its tick at the end, in a column every
+/// row keeps.
 Widget _optionRow(BuildContext context, String words, Set<WidgetState> states) {
   final t = RetroDesktopTheme.of(context);
   final chosen = states.contains(WidgetState.selected);
-  return retroDesktopLitRow(
-    context,
-    lit: states.contains(WidgetState.focused),
-    enabled: !states.contains(WidgetState.disabled),
-    shape: const RoundedRectangleBorder(),
-    padding: _optionPadding(t),
-    child: Row(
-      children: [
-        Expanded(child: RetroDesktopCaps(Text(words))),
-        SizedBox(
-          width: 20,
-          child: chosen
-              ? const Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: Icon(RetroDesktopGlyphs.check, size: 14),
-                )
-              : null,
-        ),
-      ],
+  final lit = states.contains(WidgetState.focused);
+  return retroDesktopHeldGround(
+    t,
+    held: chosen && !lit,
+    sink: false,
+    child: retroDesktopLitRow(
+      context,
+      lit: lit,
+      enabled: !states.contains(WidgetState.disabled),
+      shape: const RoundedRectangleBorder(),
+      padding: _optionPadding(t),
+      child: Row(
+        children: [
+          Expanded(child: RetroDesktopCaps(Text(words))),
+          SizedBox(
+            width: 20,
+            child: chosen
+                ? const Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: Icon(RetroDesktopGlyphs.check, size: 14),
+                  )
+                : null,
+          ),
+        ],
+      ),
     ),
   );
 }
 
 /// An option's room in a field's list: its words on the field's.
 EdgeInsetsGeometry _optionPadding(RetroDesktopThemeData t) =>
-    EdgeInsetsDirectional.fromSTEB(8 * t.density.horizontal, 8, 8, 8);
+    EdgeInsetsDirectional.fromSTEB(
+      8 * t.density.horizontal,
+      RetroDesktopSpacing.s8,
+      RetroDesktopSpacing.s8,
+      RetroDesktopSpacing.s8,
+    );
 
 /// A field's list: no room at its sides, so its rows reach the rims.
 Widget _listPanel(BuildContext context, Widget list) => retroDesktopPanel(
   context,
-  padding: const EdgeInsets.symmetric(vertical: 4),
+  padding: const EdgeInsets.symmetric(vertical: RetroDesktopSpacing.s4),
   child: list,
 );
 
@@ -590,13 +726,13 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
   /// Whether the box takes input.
   final bool enabled;
 
-  /// An optional externally owned controller; the caller disposes it.
+  /// {@macro retro_desktop.controller}
   final TextEditingController? controller;
 
-  /// An optional externally owned focus node; the caller disposes it.
+  /// {@macro retro_desktop.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   @override
@@ -608,6 +744,9 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
       value: value,
       onSelected: onSelected,
       requireSelection: requireSelection,
+      // One lit row, as in the period's pop-up menus and the look's select: the pointer moves it and the keys go on
+      // from there.
+      highlightFollowsPointer: true,
       controller: controller,
       focusNode: focusNode,
       semanticLabel: label,
@@ -622,7 +761,11 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
           autofocus: autofocus,
           hint: hint,
           enabled: enabled,
-          onSubmitted: (_) => f.submit(),
+          // Enter takes the lit option and the field keeps the focus, so it
+          // comes through onEditingComplete with no onSubmitted: a submit
+          // with the focus kept restarts the text input, and in a browser
+          // typing then goes nowhere.
+          onEditingComplete: f.submit,
           semanticLabel: label,
         ),
       ),
@@ -638,6 +781,48 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
       dropdown: true,
       child: box,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('options', options))
+      ..add(
+        ObjectFlagProperty<String Function(T option)>.has(
+          'displayString',
+          displayString,
+        ),
+      )
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'requireSelection',
+          value: requireSelection,
+          ifTrue: 'requireSelection',
+        ),
+      )
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -687,15 +872,22 @@ class _ListField extends StatelessWidget {
                 ? retroDesktopSunkenBox(
                     context,
                     states: states,
-                    padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 2, 0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      RetroDesktopSpacing.s8,
+                      0,
+                      RetroDesktopSpacing.s2,
+                      0,
+                    ),
                     child: IntrinsicHeight(
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(child: Center(child: child)),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: RetroDesktopSpacing.s6),
                           Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: RetroDesktopSpacing.s2,
+                            ),
                             child: SizedBox(
                               width: 18,
                               child: RetroDesktopPixelPaint(
@@ -718,7 +910,7 @@ class _ListField extends StatelessWidget {
                     child: Row(
                       children: [
                         Expanded(child: child),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: RetroDesktopSpacing.s6),
                         _listMark,
                       ],
                     ),
@@ -790,7 +982,7 @@ class RetroDesktopFormField extends StatelessWidget {
         children: [
           if (parts.label != null)
             Padding(
-              padding: const EdgeInsets.only(bottom: 6),
+              padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.s6),
               child: DefaultTextStyle.merge(
                 style: t.type.body.copyWith(
                   color: enabled ? c.text : c.textTertiary,
@@ -807,14 +999,14 @@ class RetroDesktopFormField extends StatelessWidget {
           parts.control,
           if (parts.errorText != null)
             Padding(
-              padding: const EdgeInsets.only(top: 6),
+              padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
               child: ExcludeSemantics(
                 child: retroDesktopFieldNote(t, parts.errorText!, error: true),
               ),
             )
           else if (parts.helperText != null)
             Padding(
-              padding: const EdgeInsets.only(top: 6),
+              padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
               child: ExcludeSemantics(
                 child: retroDesktopFieldNote(
                   t,
@@ -827,5 +1019,24 @@ class RetroDesktopFormField extends StatelessWidget {
       ),
       child: child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('requiredHint', requiredHint, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('help', help, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(FlagProperty('required', value: required, ifTrue: 'required'))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      );
   }
 }

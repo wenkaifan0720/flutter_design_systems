@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -8,6 +9,7 @@ import 'internal/face.dart';
 import 'localizations.dart';
 import 'press.dart';
 import 'theme.dart';
+import 'tokens.dart';
 
 /// A permanent side navigator made from the same destinations as the bottom bar.
 ///
@@ -25,7 +27,7 @@ class RetroDesktopNavigationDrawer extends StatelessWidget {
     this.footer,
     this.label,
     this.style,
-  });
+  }) : assert(selectedIndex >= 0);
 
   /// The items displayed in their supplied order.
   final List<RetroDesktopNavItem> items;
@@ -45,7 +47,7 @@ class RetroDesktopNavigationDrawer extends StatelessWidget {
   /// The visible or accessible name of this part.
   final String? label;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) => _SideNavigation(
@@ -57,6 +59,28 @@ class RetroDesktopNavigationDrawer extends StatelessWidget {
     label: label,
     style: style,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopNavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A compact side navigator whose icon buttons retain each destination's name.
@@ -75,7 +99,7 @@ class RetroDesktopNavigationRail extends StatelessWidget {
     this.footer,
     this.label,
     this.style,
-  });
+  }) : assert(selectedIndex >= 0);
 
   /// The items displayed in their supplied order.
   final List<RetroDesktopNavItem> items;
@@ -95,7 +119,7 @@ class RetroDesktopNavigationRail extends StatelessWidget {
   /// The visible or accessible name of this part.
   final String? label;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) => _SideNavigation(
@@ -108,6 +132,28 @@ class RetroDesktopNavigationRail extends StatelessWidget {
     style: style,
     rail: true,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopNavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _SideNavigation extends StatelessWidget {
@@ -164,7 +210,7 @@ class _SideNavigation extends StatelessWidget {
                       states: states,
                       bevel: false,
                       ringInside: true,
-                      component: t.navigationBarTheme.merge(
+                      component: t.navigationBarTheme.over(
                         RetroDesktopStyle(
                           fill: WidgetStateProperty.resolveWith(
                             (s) => s.contains(WidgetState.selected)
@@ -201,14 +247,14 @@ class _SideNavigation extends StatelessWidget {
                           else
                             Icon(items[i].icon),
                           if (!rail) ...[
-                            const SizedBox(width: 10),
+                            const SizedBox(width: RetroDesktopSpacing.s10),
                             // The place's name is the row's label: its
                             // capitals on the row's middle, beside its glyph.
                             Expanded(
                               child: RetroDesktopCaps(Text(items[i].label)),
                             ),
                             if (items[i].badgeLabel != null) ...[
-                              const SizedBox(width: 6),
+                              const SizedBox(width: RetroDesktopSpacing.s6),
                               Text(items[i].badgeLabel!),
                             ],
                           ],
@@ -252,13 +298,30 @@ class RetroDesktopPageDots extends StatefulWidget {
   /// The visible or accessible name of this part.
   final String label;
 
-  /// Reports the value selected by the user; null prevents changes.
+  /// {@macro retro_desktop.onChanged}
   final ValueChanged<int>? onChanged;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   State<RetroDesktopPageDots> createState() => _PageDotsState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _PageDotsState extends State<RetroDesktopPageDots> {
@@ -325,6 +388,8 @@ class _PageDotsState extends State<RetroDesktopPageDots> {
                     selected: i == widget.selectedIndex,
                     focusNode: _nodes[i],
                     onPressed: live ? () => choose(i) : null,
+                    // Each dot at its target's start: the first on its column's keyline, the rest a target apart.
+                    alignment: AlignmentDirectional.centerStart,
                     builder: (context, states) => ConstrainedBox(
                       constraints: const BoxConstraints(
                         minWidth: 12,
@@ -399,7 +464,7 @@ class RetroDesktopStepProgress extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: RetroDesktopSpacing.s8),
             Row(
               children: [
                 for (var i = 0; i < count; i++)
@@ -426,12 +491,22 @@ class RetroDesktopStepProgress extends StatelessWidget {
             ),
             if (phase != null)
               Padding(
-                padding: const EdgeInsets.only(top: 6),
+                padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
                 child: Text(phase!, style: t.type.meta),
               ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('currentStep', currentStep))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('phase', phase, defaultValue: null));
   }
 }

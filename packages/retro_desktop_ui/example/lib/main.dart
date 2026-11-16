@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_host.dart';
@@ -22,6 +23,9 @@ import 'kit_gallery/kit.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await retroDesktopLoadFonts();
+  // Flutter's own Material, Cupertino and Widgets words in each of the gallery's 30 languages, beside ui_core's: an
+  // ordinary app's line. The look gives its parts their Material and Cupertino words itself.
+  kitHostWords = GlobalMaterialLocalizations.delegates;
   runApp(const GalleryApp());
 }
 
@@ -309,6 +313,43 @@ final List<ExamplePage> examplePages = [
     build: (b) => kitPapersScreen(KitPapersWindow.prints, b),
   ),
   (
+    name: 'Document',
+    icon: RetroDesktopGlyphs.fileText,
+    build: (b) => kitPapersScreen(KitPapersWindow.document, b),
+  ),
+  (
+    name: 'Search',
+    icon: RetroDesktopGlyphs.search,
+    build: (b) => kitPapersScreen(
+      KitPapersWindow.documents,
+      b,
+      moment: KitPapersMoment.search,
+    ),
+  ),
+  (
+    name: 'Save changes',
+    icon: RetroDesktopGlyphs.warning,
+    build: (b) => kitPapersScreen(
+      KitPapersWindow.details,
+      b,
+      moment: KitPapersMoment.unsaved,
+    ),
+  ),
+  (
+    name: 'Empty',
+    icon: RetroDesktopGlyphs.delete,
+    build: (b) => kitPapersScreen(KitPapersWindow.bin, b),
+  ),
+  (
+    name: 'Error',
+    icon: RetroDesktopGlyphs.circleAlert,
+    build: (b) => kitPapersScreen(
+      KitPapersWindow.prints,
+      b,
+      moment: KitPapersMoment.failedOrder,
+    ),
+  ),
+  (
     name: 'Workspace',
     icon: RetroDesktopGlyphs.contacts,
     build: (b) => kitOrdinaryScreen('tabs', b),
@@ -373,7 +414,18 @@ final List<ExamplePage> examplePages = [
 /// The pages that are the look's own application, Papers, rather than the
 /// gallery's: they open on the whole screen under the app's menu bar, and
 /// leave by its "Gallery".
-const galleryAppPages = {'Overview', 'Form', 'Settings', 'List', 'Checkout'};
+const galleryAppPages = {
+  'Overview',
+  'Form',
+  'Settings',
+  'List',
+  'Checkout',
+  'Document',
+  'Search',
+  'Save changes',
+  'Empty',
+  'Error',
+};
 
 /// The look's menu bar over a small desktop: the brand at its start and
 /// places that switch the page under it. The example's own pages leave it
@@ -660,9 +712,19 @@ class _GalleryAppState extends State<GalleryApp> {
     kitShownChrome = false;
     kitShownDirection = _custom.direction;
     final page = examplePages[_page];
+    final retro = _custom.theme(_preset, _brightness);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Retro Desktop',
+      // A page the app pushes changes in place, as the look's own do, on every platform (the README's "Pages").
+      theme: ThemeData(
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: retroDesktopPageTransitions,
+        ),
+      ),
+      // ui_core's words in the app's language, one of 30.
+      localizationsDelegates: kitWords(),
+      supportedLocales: DesignLocalizations.supportedLocales,
       builder: (context, child) => MediaQuery(
         data: _textScale == null
             ? MediaQuery.of(context)
@@ -670,10 +732,7 @@ class _GalleryAppState extends State<GalleryApp> {
                   .copyWith(textScaler: TextScaler.linear(_textScale!)),
         child: Directionality(
           textDirection: _custom.direction,
-          child: RetroDesktopTheme(
-            data: _custom.theme(_preset, _brightness),
-            child: child!,
-          ),
+          child: RetroDesktopTheme(data: retro, child: child!),
         ),
       ),
       home: Builder(

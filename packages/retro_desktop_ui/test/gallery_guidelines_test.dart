@@ -1,6 +1,8 @@
 // Flutter's four accessibility guidelines on every gallery page, in every preset, by day and by night: Android's 48 px
 // and iOS's 44 px tap targets, a label on every tappable node, and text contrast (4.5:1, 3:1 for large text). Each is
 // evaluated on its own, so one failing never hides another.
+// Android's 48 px excepts one type, a calendar's day, at least 44 by 48: on a phone a week of 48 px days is wider than
+// a window's column (androidTargetsBesideCalendarDays, which also holds the days tiling their rows).
 //
 // Text contrast is read twice. Flutter's guideline reads the ink from a capture at one pixel per logical pixel, where
 // Atkinson's thin strokes at 11 to 13 px are only ever anti-aliased; it flags small words whose ink passes. Where it flags
@@ -24,7 +26,7 @@ void main() {
           await pumpGalleryPage(tester, page, preset, b);
           final failed = <String>[];
           for (final (name, guideline) in [
-            ('Android 48 px targets', androidTapTargetGuideline),
+            ('Android 48 px targets', androidTargetsBesideCalendarDays(tester)),
             ('iOS 44 px targets', iOSTapTargetGuideline),
             ('labelled targets', labeledTapTargetGuideline),
           ]) {

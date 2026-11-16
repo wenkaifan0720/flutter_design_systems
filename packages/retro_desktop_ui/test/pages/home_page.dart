@@ -65,7 +65,7 @@ class HomePage extends StatelessWidget {
                       icon: LucideIcons.star,
                       note: '12 items',
                       onPressed: onOpen,
-                      art: RetroDesktopFolderArt(
+                      art: const RetroDesktopFolderArt(
                         selected: false,
                         icon: LucideIcons.star,
                       ),
@@ -76,7 +76,7 @@ class HomePage extends StatelessWidget {
                       note: '9 items',
                       selected: true,
                       onPressed: onOpen,
-                      art: RetroDesktopFolderArt(
+                      art: const RetroDesktopFolderArt(
                         selected: true,
                         icon: LucideIcons.hammer,
                       ),
@@ -86,7 +86,7 @@ class HomePage extends StatelessWidget {
                       icon: LucideIcons.mail,
                       note: '7 items',
                       onPressed: onOpen,
-                      art: RetroDesktopFolderArt(
+                      art: const RetroDesktopFolderArt(
                         selected: false,
                         icon: LucideIcons.mail,
                       ),
@@ -96,7 +96,7 @@ class HomePage extends StatelessWidget {
                       icon: LucideIcons.bookOpen,
                       note: '5 items',
                       onPressed: onOpen,
-                      art: RetroDesktopFolderArt(
+                      art: const RetroDesktopFolderArt(
                         selected: false,
                         icon: LucideIcons.bookOpen,
                       ),
@@ -106,7 +106,7 @@ class HomePage extends StatelessWidget {
                       icon: LucideIcons.house,
                       note: '4 items',
                       onPressed: onOpen,
-                      art: RetroDesktopFolderArt(
+                      art: const RetroDesktopFolderArt(
                         selected: false,
                         icon: LucideIcons.house,
                       ),
@@ -116,7 +116,7 @@ class HomePage extends StatelessWidget {
                       icon: LucideIcons.pencil,
                       note: '3 items',
                       onPressed: onOpen,
-                      art: RetroDesktopFolderArt(
+                      art: const RetroDesktopFolderArt(
                         selected: false,
                         icon: LucideIcons.pencil,
                       ),

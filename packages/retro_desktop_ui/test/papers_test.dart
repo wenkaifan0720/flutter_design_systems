@@ -376,7 +376,9 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
     try {
       await _pump(tester, KitPapersWindow.details, width: 1440);
-      final field = tester.getRect(find.byType(RetroDesktopTextField).first);
+      final field = tester.getRect(
+        _inWindow('details', find.byType(RetroDesktopTextField)).first,
+      );
       final popup = tester.getRect(find.byType(RetroDesktopSelect<String>));
       expect(field.height, closeTo(popup.height, .01));
     } finally {
@@ -398,7 +400,7 @@ void main() {
       );
       final field = tester.getRect(
         find.descendant(
-          of: find.byType(RetroDesktopTextField).first,
+          of: _inWindow('details', find.byType(RetroDesktopTextField)).first,
           matching: find.byType(EditableText),
         ),
       );
@@ -424,7 +426,9 @@ void main() {
           width: width,
           appearance: appearance,
         );
-        final field = tester.getRect(find.byType(RetroDesktopTextField).first);
+        final field = tester.getRect(
+          _inWindow('details', find.byType(RetroDesktopTextField)).first,
+        );
         final save = tester.getRect(
           find.widgetWithText(RetroDesktopButton, 'Save'),
         );

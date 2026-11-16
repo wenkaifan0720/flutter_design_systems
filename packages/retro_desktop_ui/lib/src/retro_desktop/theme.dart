@@ -5,19 +5,31 @@ import 'dart:ui' show lerpDouble;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:material_ui/material_ui.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'tokens.dart';
 import 'fonts.dart';
 import 'shapes.dart';
 import 'component_themes.dart';
 import 'behavior.dart';
+import 'internal/parts.dart' show RetroDesktopLastInput;
+import 'internal/platform_words.dart';
 
 /// The width where the phone's stack of windows becomes the 12-column tiled desktop.
 const double retroDesktopDeskWidth = 1024;
 
 /// The look's colours by role: the machine's greys and bevels, the paper, the text, the highlight, and the inks the
 /// period's pictures draw with.
+///
+/// Which roles are free: the desktop ([desktop] and its threads), the paper ([paper], [paperDim]), the text and the
+/// highlight (one hue: the act and now) change without leaving the look, and [RetroDesktopColors.from] derives the rest
+/// from one brand colour. The machine's greys ([platinum], [platinumLight], [platinumDark]), the bevel roles
+/// ([bevelLight], [bevelDark], [bevelDarker]) and the outlines ([outline], [control], [pixelOutline]) are parts of the
+/// bevel, not free colours: each is a step of light on one face, lit from the top left, so retune them together (a
+/// lighter or darker machine) or not at all. A bevel lit from below, or a light outline on a light face, reads as a hole
+/// or as nothing.
 @immutable
 class RetroDesktopColors {
   /// Derives the machine, paper and highlight roles from an opaque [primary], over [surface] when given; the
@@ -91,7 +103,7 @@ class RetroDesktopColors {
   final Color platinum, platinumLight, platinumDark;
 
   /// Bevels: [bevelLight] on the top and left, [bevelDark] on the bottom and right, [bevelDarker] the deeper shade of
-  /// ridges and grips.
+  /// ridges and grips. Parts of the bevel, not free colours: retuned, they keep their order of light against the face.
   final Color bevelLight, bevelDark, bevelDarker;
 
   /// [outline] frames a window. [control] outlines a control: a token of its own, so night can lift it off the
@@ -1418,7 +1430,7 @@ class RetroDesktopThemeData with Diagnosticable {
     this.page,
     this.width, {
     this._components = const RetroDesktopComponentThemes(),
-    this.motion = const RetroDesktopMotion(),
+    this.motion = RetroDesktopMotion.still,
     this.appearance = RetroDesktopAppearance.platinum,
     this._density,
     this.typeface = const RetroDesktopTypeface(),
@@ -1621,6 +1633,12 @@ class RetroDesktopThemeData with Diagnosticable {
 
   /// The [appearance]'s outlines by role, for a part drawn in the look's hand. A
   /// component theme still sets one part's own shape.
+  ///
+  /// The shapes are the period's: [RetroDesktopBorder]s, drawn on the pixel grid,
+  /// square or rounded by a few pixels as the appearance says. A component
+  /// theme's or a `style:`'s shape is bound to them too: any other
+  /// [OutlinedBorder] (a stadium, a large radius) is drawn smooth and off the
+  /// pixel grid, and no longer looks like this look.
   RetroDesktopShapes get shapes => RetroDesktopShapes.of(appearance);
 
   /// The look's line widths, for a part drawn in its hand.
@@ -1641,8 +1659,19 @@ class RetroDesktopThemeData with Diagnosticable {
   // Every part's component theme, set through the flat `…Theme:` arguments of [copyWith].
   final RetroDesktopComponentThemes _components;
 
-  /// Instant by default, independently overridable by applications.
+  /// The look's timings: instant ([RetroDesktopMotion.still]), as the period's desktops were. Part of the look, not a
+  /// setting ([copyWith]'s `motion` is deprecated); Reduce Motion is honoured wherever anything moves.
   final RetroDesktopMotion motion;
+
+  // The page change of the Material theme the look builds: [retroDesktopPageTransitions], or a fade in place where a
+  // motion with a travel was set through [copyWith]'s deprecated `motion`.
+  Map<TargetPlatform, PageTransitionsBuilder> get _pageTransitions =>
+      motion == RetroDesktopMotion.still
+      ? retroDesktopPageTransitions
+      : designSwipeBack({
+          for (final platform in TargetPlatform.values)
+            platform: _RetroDesktopPageTransitions(motion),
+        });
 
   /// The keyboard focus outline in the current surface's ink.
   final RetroDesktopFocusRing? _focus;
@@ -1674,6 +1703,10 @@ class RetroDesktopThemeData with Diagnosticable {
   RetroDesktopThemeData copyWith({
     RetroDesktopColors? colors,
     RetroDesktopColors? page,
+    @Deprecated(
+      "Retro Desktop is instant, as the period was: its motion is the look's, not a setting. Leave it out (dart fix "
+      'removes it). This feature was deprecated after v0.2.0.',
+    )
     RetroDesktopMotion? motion,
     RetroDesktopFocusRing? focus,
     RetroDesktopAppearance? appearance,
@@ -1964,36 +1997,63 @@ class RetroDesktopTheme extends StatelessWidget {
   static RetroDesktopThemeData? maybeOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<_RetroDesktopScope>()?.data;
 
-  /// The nearest installed theme; throws if no theme was installed.
-  static RetroDesktopThemeData of(BuildContext context) =>
-      maybeOf(context) ??
-      (throw FlutterError(
-        'No Retro Desktop theme in scope. Install RetroDesktopTheme in the app builder.',
-      ));
+  /// The nearest installed theme, else the look's default (classic, by day) at the screen's width, as `Theme.of`
+  /// falls back: a part built above the theme (a text field's selection handles in the root overlay, when the theme
+  /// sits under the app's home rather than in its builder) still draws. [maybeOf] gives null there.
+  static RetroDesktopThemeData of(BuildContext context) {
+    final installed = maybeOf(context);
+    if (installed != null) return installed;
+    final width = MediaQuery.maybeSizeOf(context)?.width;
+    return width == null ? _default : _default.atWidth(width);
+  }
+
+  static final RetroDesktopThemeData _default = RetroDesktopThemeData.classic();
 
   /// Preset constructor used by the catalog's emitted app theme file.
   static RetroDesktopThemeData preset(String id, Brightness brightness) =>
       RetroDesktopThemeData.preset(id, brightness);
   @override
   Widget build(BuildContext context) {
+    // A menu lights the keyboard's row only when the last input was a key: follow the input from the start, so the
+    // key that opens an app's first menu (Down on the bar's title, Space on a select) already counts. Followed only
+    // once a menu asked, that key went by unseen and the menu opened with nothing lit.
+    RetroDesktopLastInput.listen();
     Widget under = child;
-    if (Localizations.maybeLocaleOf(context) != null &&
-        Localizations.of<MaterialLocalizations>(
-              context,
-              MaterialLocalizations,
-            ) ==
-            null) {
+    // The Material and Cupertino words the app gives none of come from the look (internal/platform_words.dart),
+    // whatever its locale: a missing set never throws.
+    final missing = <LocalizationsDelegate<Object>>[
+      if (Localizations.of<MaterialLocalizations>(
+            context,
+            MaterialLocalizations,
+          ) ==
+          null)
+        retroDesktopMaterialWords,
+      if (Localizations.of<CupertinoLocalizations>(
+            context,
+            CupertinoLocalizations,
+          ) ==
+          null)
+        retroDesktopCupertinoWords,
+    ];
+    if (missing.isNotEmpty) {
       // A Localizations sets the locale's reading direction below it; the
       // app's own Directionality (right to left under an English locale, say)
       // is kept.
       final direction = Directionality.maybeOf(context);
-      under = Localizations.override(
-        context: context,
-        delegates: const [DefaultMaterialLocalizations.delegate],
-        child: direction == null
-            ? under
-            : Directionality(textDirection: direction, child: under),
-      );
+      final kept = direction == null
+          ? under
+          : Directionality(textDirection: direction, child: under);
+      under = Localizations.maybeLocaleOf(context) == null
+          ? Localizations(
+              locale: const Locale('en'),
+              delegates: [...missing, DefaultWidgetsLocalizations.delegate],
+              child: kept,
+            )
+          : Localizations.override(
+              context: context,
+              delegates: missing,
+              child: kept,
+            );
     }
     final scoped = data.atWidth(MediaQuery.sizeOf(context).width);
     return _RetroDesktopScope(
@@ -2017,7 +2077,12 @@ class RetroDesktopTheme extends StatelessWidget {
             data: IconThemeData(color: scoped.colors.text),
             child: DefaultTextStyle.merge(
               style: scoped.type.body,
-              child: under,
+              // The look's spacing steps stand on a 2-pixel grid (RetroDesktopSpacing), which ui_core's spacing
+              // check reads from here.
+              child: DesignSpacingScope(
+                spacing: const DesignSpacing(grid: 2),
+                child: under,
+              ),
             ),
           ),
         ),
@@ -2049,6 +2114,11 @@ class RetroDesktopTheme extends StatelessWidget {
         surface: c.platinum,
         onSurface: c.text,
       ),
+      // A Material page route under the look changes as RetroDesktopPageRoute does, in place, on every platform: left
+      // to the platform it slid in from the side or zoomed.
+      pageTransitionsTheme: PageTransitionsTheme(
+        builders: theme._pageTransitions,
+      ),
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,
       hoverColor: Colors.transparent,
@@ -2066,6 +2136,12 @@ class RetroDesktopTheme extends StatelessWidget {
         selectionHandleColor: c.highlight,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<RetroDesktopThemeData>('data', data));
   }
 }
 
@@ -2188,6 +2264,24 @@ class AnimatedRetroDesktopTheme extends StatelessWidget {
             RetroDesktopTheme(data: value, child: child!),
         child: child,
       );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<RetroDesktopThemeData>('data', data))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'duration',
+          duration,
+          defaultValue: Duration.zero,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Curve>('curve', curve, defaultValue: Curves.linear),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onEnd', onEnd));
+  }
 }
 
 /// A value tween for a complete Retro Desktop theme.
@@ -2251,6 +2345,12 @@ class RetroDesktopOffHighlight extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<RetroDesktopThemeData>('data', data));
+  }
 }
 
 /// `context.retroDesktopTheme`: the theme in scope.
@@ -2362,4 +2462,72 @@ RetroDesktopColors _retroDesktopColorsFrom({
     pixelOutline: edge,
     tones: [for (final tone in base.tones) readable(tone, minimum: 3)],
   );
+}
+
+/// The look's page change on every platform, for your app's `ThemeData.pageTransitionsTheme`, Flutter's `MaterialApp`
+/// or material_ui's: a `MaterialPageRoute` then changes as a [RetroDesktopPageRoute] does, in place and at once, where
+/// the platform's slid in from the side or zoomed (on a Mac, the Cupertino slide). The look's own pages and raised
+/// windows change this way already, and the Material theme the look builds carries it. On iOS the swipe back from
+/// the screen's edge still pops a page (ui_core's [DesignSwipeBackPageTransitionsBuilder] round the look's change):
+/// the page follows the finger while it swipes, and stands in place otherwise.
+///
+/// ```dart
+/// PageTransitionsTheme(builders: retroDesktopPageTransitions)
+/// ```
+const Map<TargetPlatform, PageTransitionsBuilder>
+retroDesktopPageTransitions = {
+  TargetPlatform.android: _RetroDesktopPageTransitions(
+    RetroDesktopMotion.still,
+  ),
+  TargetPlatform.fuchsia: _RetroDesktopPageTransitions(
+    RetroDesktopMotion.still,
+  ),
+  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+    _RetroDesktopPageTransitions(RetroDesktopMotion.still),
+  ),
+  TargetPlatform.linux: _RetroDesktopPageTransitions(RetroDesktopMotion.still),
+  TargetPlatform.macOS: _RetroDesktopPageTransitions(RetroDesktopMotion.still),
+  TargetPlatform.windows: _RetroDesktopPageTransitions(
+    RetroDesktopMotion.still,
+  ),
+};
+
+// The look's page change for a Material page route: in place, at once by default; with a motion's travel, a fade over
+// it, still in place. Equal for an equal motion, so the theme it stands in is the same from one build to the next.
+class _RetroDesktopPageTransitions extends PageTransitionsBuilder {
+  const _RetroDesktopPageTransitions(this.motion);
+
+  final RetroDesktopMotion motion;
+
+  @override
+  Duration get transitionDuration => motion.travel;
+
+  @override
+  Duration get reverseTransitionDuration => motion.leave;
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final still =
+        (motion.travel == Duration.zero && motion.leave == Duration.zero) ||
+        (MediaQuery.maybeDisableAnimationsOf(context) ?? false);
+    return still
+        ? child
+        : FadeTransition(
+            opacity: animation.drive(CurveTween(curve: motion.enter)),
+            child: child,
+          );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is _RetroDesktopPageTransitions && other.motion == motion;
+
+  @override
+  int get hashCode => motion.hashCode;
 }

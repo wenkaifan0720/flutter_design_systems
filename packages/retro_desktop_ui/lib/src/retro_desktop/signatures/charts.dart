@@ -1,6 +1,8 @@
 // Facts as drawings, all from plain data: a gauge with a real thumb, a month, the next hours under a time-lapse of pixel sky,
 // ten days as one pixel shape, hatched bars, a scale with a knob, a span. Everything lands on the device's grid, and nothing
 // is a picture: each is worked out from the numbers it's given.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -20,6 +22,7 @@ import '../localizations.dart';
 import '../component_themes.dart';
 import '../internal/face.dart';
 import '../shapes.dart';
+import '../tokens.dart';
 
 class _GaugePainter extends RetroDesktopPixelPainter {
   const _GaugePainter(this.c, this.share, this.shape, {this.rtl = false});
@@ -127,6 +130,12 @@ class RetroDesktopThumbGauge extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('share', share));
+  }
 }
 
 /// A gauge and its words: the amount big, of what, a share at the end; the bar; a small line each end under it.
@@ -218,6 +227,18 @@ class RetroDesktopGaugeBlock extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('of', of, defaultValue: null))
+      ..add(StringProperty('endLabel', endLabel, defaultValue: null))
+      ..add(StringProperty('footStart', footStart, defaultValue: null))
+      ..add(StringProperty('footEnd', footEnd, defaultValue: null))
+      ..add(DoubleProperty('share', share));
   }
 }
 
@@ -344,15 +365,15 @@ class RetroDesktopMonthHead extends StatelessWidget {
       ),
     );
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: RetroDesktopSpacing.s10),
       // The month's name and its three buttons on one line where they fit, the name at the start and the buttons at
       // the end; where they don't (a phone, twice the text size), the buttons go under the name, each keeping its
       // whole reach and the name its whole word.
       child: Wrap(
         alignment: WrapAlignment.spaceBetween,
         crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 6,
-        runSpacing: 6,
+        spacing: RetroDesktopSpacing.s6,
+        runSpacing: RetroDesktopSpacing.s6,
         children: [
           Text(
             title,
@@ -389,6 +410,16 @@ class RetroDesktopMonthHead extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPrevious', onPrevious))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onToday', onToday))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onNext', onNext));
   }
 }
 
@@ -483,7 +514,12 @@ class RetroDesktopMonthGrid extends StatelessWidget
                       ),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(3, 1, 3, 0),
+                      padding: const EdgeInsets.fromLTRB(
+                        RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
+                        RetroDesktopSpacing.px,
+                        RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
+                        0,
+                      ),
                       child: dayNumber,
                     ),
                   )
@@ -501,7 +537,12 @@ class RetroDesktopMonthGrid extends StatelessWidget
               child: SizedBox(
                 height: height,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(6, 4, 5, 5),
+                  padding: const EdgeInsets.fromLTRB(
+                    RetroDesktopSpacing.s6,
+                    RetroDesktopSpacing.s4,
+                    RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+                    RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -533,7 +574,9 @@ class RetroDesktopMonthGrid extends StatelessWidget
                             ),
                             if (marks.icon != null)
                               Padding(
-                                padding: const EdgeInsets.only(left: 2),
+                                padding: const EdgeInsets.only(
+                                  left: RetroDesktopSpacing.s2,
+                                ),
                                 child: Icon(marks.icon, size: 11, color: ink),
                               ),
                           ],
@@ -642,6 +685,31 @@ class RetroDesktopMonthGrid extends StatelessWidget
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('year', year))
+      ..add(IntProperty('month', month))
+      ..add(IntProperty('today', today, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Map<int, RetroDesktopDayMarks>>(
+          'days',
+          days,
+          defaultValue: const {},
+        ),
+      )
+      ..add(IterableProperty<String>('weekdays', weekdays, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onDay', onDay));
+  }
 }
 
 /// What a page's small marks mean, under a month or a chart. `(mark, words)`, any small widget as the mark.
@@ -661,10 +729,10 @@ class RetroDesktopLegend extends StatelessWidget {
     final c = t.colors;
     // On its column's edge, as the chart it keys stands.
     return Padding(
-      padding: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.only(top: RetroDesktopSpacing.s8),
       child: Wrap(
-        spacing: 14,
-        runSpacing: 4,
+        spacing: RetroDesktopSpacing.s14,
+        runSpacing: RetroDesktopSpacing.s4,
         children: [
           for (final (mark, words) in items)
             Row(
@@ -706,12 +774,20 @@ class RetroDesktopLegend extends StatelessWidget {
                     color: c.textSecondary,
                   ),
                 },
-                const SizedBox(width: 6),
+                const SizedBox(width: RetroDesktopSpacing.s6),
                 Flexible(child: Text(words, style: t.type.caption)),
               ],
             ),
         ],
       ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      IterableProperty<(RetroDesktopLegendMark, String)>('items', items),
     );
   }
 }
@@ -1260,6 +1336,15 @@ class RetroDesktopPixelSky extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopSkyCondition>('kinds', kinds))
+      ..add(IterableProperty<double>('shares', shares, defaultValue: const []))
+      ..add(DoubleProperty('height', height, defaultValue: null));
+  }
 }
 
 class _StepLinePainter extends RetroDesktopPixelPainter {
@@ -1452,7 +1537,10 @@ class RetroDesktopHourStrip extends StatelessWidget
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     if (hours.isEmpty) {
-      return RetroDesktopWell(style: style, child: const SizedBox(height: 40));
+      return RetroDesktopWell(
+        style: style,
+        child: const SizedBox(height: RetroDesktopSpacing.s40),
+      );
     }
     final skyH = t.desk ? 168.0 : 72.0;
     final lineH = t.desk ? 44.0 : 36.0;
@@ -1496,7 +1584,9 @@ class RetroDesktopHourStrip extends StatelessWidget
                         column(
                           i,
                           (h) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: RetroDesktopSpacing.s8,
+                            ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -1511,7 +1601,7 @@ class RetroDesktopHourStrip extends StatelessWidget
                                   softWrap: false,
                                   overflow: TextOverflow.clip,
                                 ),
-                                const SizedBox(height: 6),
+                                const SizedBox(height: RetroDesktopSpacing.s6),
                                 Icon(
                                   h.icon,
                                   size: t.desk ? 22 : 18,
@@ -1540,7 +1630,12 @@ class RetroDesktopHourStrip extends StatelessWidget
                         column(
                           i,
                           (h) => Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 4, 0, 6),
+                            padding: const EdgeInsets.fromLTRB(
+                              0,
+                              RetroDesktopSpacing.s4,
+                              0,
+                              RetroDesktopSpacing.s6,
+                            ),
                             child: Text(
                               h.reading,
                               textAlign: TextAlign.center,
@@ -1561,12 +1656,18 @@ class RetroDesktopHourStrip extends StatelessWidget
                         column(
                           i,
                           (h) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.only(
+                              bottom: RetroDesktopSpacing.s8,
+                            ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 _ShareBar(share: h.share, now: i == 0),
-                                const SizedBox(height: 3),
+                                const SizedBox(
+                                  height:
+                                      RetroDesktopSpacing.s2 +
+                                      RetroDesktopSpacing.px,
+                                ),
                                 Text(
                                   h.shareLabel ??
                                       '${(h.share * 100).round()}${t.desk ? '%' : ''}',
@@ -1592,6 +1693,20 @@ class RetroDesktopHourStrip extends StatelessWidget
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<RetroDesktopHour>('hours', hours));
   }
 }
 
@@ -1791,7 +1906,10 @@ class RetroDesktopRangeShape extends StatelessWidget
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     if (days.isEmpty) {
-      return RetroDesktopWell(style: style, child: const SizedBox(height: 40));
+      return RetroDesktopWell(
+        style: style,
+        child: const SizedBox(height: RetroDesktopSpacing.s40),
+      );
     }
     final p = t.desk ? 3.0 : 2.0;
     var top = days.first.high, bottom = days.first.low;
@@ -1913,7 +2031,7 @@ class RetroDesktopRangeShape extends StatelessWidget
                                 softWrap: false,
                                 overflow: TextOverflow.clip,
                               ),
-                              const SizedBox(height: 1),
+                              const SizedBox(height: RetroDesktopSpacing.px),
                               Text(
                                 d.date,
                                 style: words,
@@ -1925,7 +2043,12 @@ class RetroDesktopRangeShape extends StatelessWidget
                           ),
                         );
                         return Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 8, 0, 4),
+                          padding: const EdgeInsets.fromLTRB(
+                            0,
+                            RetroDesktopSpacing.s8,
+                            0,
+                            RetroDesktopSpacing.s4,
+                          ),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -2007,7 +2130,9 @@ class RetroDesktopRangeShape extends StatelessWidget
                       if (shown.any((d) => d.share > 0 || d.shareLabel != null))
                         perDay(
                           (i, d) => Padding(
-                            padding: const EdgeInsets.only(top: 2),
+                            padding: const EdgeInsets.only(
+                              top: RetroDesktopSpacing.s2,
+                            ),
                             child: Text(
                               d.shareLabel ??
                                   '${(d.share * 100).round()}${t.desk ? '%' : ''}',
@@ -2022,7 +2147,12 @@ class RetroDesktopRangeShape extends StatelessWidget
                       if (shown.any((d) => d.amount != null))
                         perDay(
                           (i, d) => Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 3, 0, 7),
+                            padding: const EdgeInsets.fromLTRB(
+                              0,
+                              RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
+                              0,
+                              RetroDesktopSpacing.s6 + RetroDesktopSpacing.px,
+                            ),
                             child: Text(
                               d.amount ?? '',
                               textAlign: TextAlign.center,
@@ -2063,8 +2193,12 @@ class RetroDesktopRangeShape extends StatelessWidget
                                 ),
                                 if (dry != null)
                                   Wrap(
-                                    spacing: 5,
-                                    runSpacing: 3,
+                                    spacing:
+                                        RetroDesktopSpacing.s4 +
+                                        RetroDesktopSpacing.px,
+                                    runSpacing:
+                                        RetroDesktopSpacing.s2 +
+                                        RetroDesktopSpacing.px,
                                     crossAxisAlignment:
                                         WrapCrossAlignment.center,
                                     children: [
@@ -2107,6 +2241,24 @@ class RetroDesktopRangeShape extends StatelessWidget
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<RetroDesktopDayRange>('days', days))
+      ..add(StringProperty('unit', unit, defaultValue: '°'))
+      ..add(StringProperty('keyLabel', keyLabel, defaultValue: null))
+      ..add(StringProperty('dry', dry, defaultValue: null))
+      ..add(StringProperty('wet', wet, defaultValue: null));
   }
 }
 
@@ -2164,7 +2316,7 @@ TextStyle _noteStyle(RetroDesktopThemeData t) =>
 /// A note on a `RetroDesktopHatchBars`: words over one bar.
 class RetroDesktopBarNote {
   /// Creates a [RetroDesktopBarNote].
-  const RetroDesktopBarNote(this.index, this.words);
+  const RetroDesktopBarNote(this.index, this.words) : assert(index >= 0);
 
   /// The index of the active data position.
   final int index;
@@ -2195,7 +2347,7 @@ class RetroDesktopHatchBars extends StatelessWidget
     this.spanWords,
     this.divider,
     this.nowAt = 0,
-  });
+  }) : assert(max == null || max > 0);
 
   /// The enclosing well's shape, rim, fill and spacing over its component theme.
   final RetroDesktopStyle? style;
@@ -2285,7 +2437,12 @@ class RetroDesktopHatchBars extends StatelessWidget
     return RetroDesktopWell(
       style: style,
       child: Padding(
-        padding: EdgeInsets.fromLTRB(8, 12 + over, 10, 8),
+        padding: EdgeInsets.fromLTRB(
+          RetroDesktopSpacing.s8,
+          12 + over,
+          RetroDesktopSpacing.s10,
+          RetroDesktopSpacing.s8,
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -2305,7 +2462,7 @@ class RetroDesktopHatchBars extends StatelessWidget
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: RetroDesktopSpacing.s8),
             ],
             Expanded(
               child: LayoutBuilder(
@@ -2435,7 +2592,9 @@ class RetroDesktopHatchBars extends StatelessWidget
                       ),
                       if (labels.isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.only(top: 4),
+                          padding: const EdgeInsets.only(
+                            top: RetroDesktopSpacing.s4,
+                          ),
                           child: SizedBox(
                             height: labelsH,
                             child: Stack(
@@ -2470,6 +2629,35 @@ class RetroDesktopHatchBars extends StatelessWidget
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<double>('values', values))
+      ..add(DoubleProperty('max', max, defaultValue: null))
+      ..add(IterableProperty<String>('axis', axis, defaultValue: const []))
+      ..add(IterableProperty<String>('labels', labels, defaultValue: const []))
+      ..add(
+        IterableProperty<RetroDesktopBarNote>(
+          'notes',
+          notes,
+          defaultValue: const [],
+        ),
+      )
+      ..add(IntProperty('spanFrom', spanFrom, defaultValue: null))
+      ..add(IntProperty('spanTo', spanTo, defaultValue: null))
+      ..add(IntProperty('divider', divider, defaultValue: null))
+      ..add(StringProperty('spanWords', spanWords, defaultValue: null))
+      ..add(IntProperty('nowAt', nowAt, defaultValue: 0));
   }
 }
 
@@ -2514,7 +2702,7 @@ class RetroDesktopDayBars extends StatelessWidget {
     required this.labels,
     this.limit,
     this.max,
-  });
+  }) : assert(max == null || max > 0);
 
   /// The values plotted in their supplied order.
   final List<double> values;
@@ -2579,7 +2767,12 @@ class RetroDesktopDayBars extends StatelessWidget {
                   child: ColoredBox(
                     color: c.platinum,
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(2, 0, 3, 0),
+                      padding: const EdgeInsets.fromLTRB(
+                        RetroDesktopSpacing.s2,
+                        0,
+                        RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
+                        0,
+                      ),
                       child: Text(
                         show(limit!),
                         style: t.type.text(
@@ -2623,7 +2816,7 @@ class RetroDesktopDayBars extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: RetroDesktopSpacing.s2),
                             SizedBox(
                               height: math.max(
                                 1,
@@ -2648,7 +2841,9 @@ class RetroDesktopDayBars extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: 3),
+          padding: const EdgeInsets.only(
+            top: RetroDesktopSpacing.s2 + RetroDesktopSpacing.px,
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -2674,6 +2869,16 @@ class RetroDesktopDayBars extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<double>('values', values))
+      ..add(IterableProperty<String>('labels', labels))
+      ..add(DoubleProperty('limit', limit, defaultValue: null))
+      ..add(DoubleProperty('max', max, defaultValue: null));
   }
 }
 
@@ -2907,6 +3112,22 @@ class RetroDesktopScaleBar extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('at', at))
+      ..add(IterableProperty<String>('bands', bands))
+      ..add(StringProperty('fine', fine, defaultValue: null));
+  }
 }
 
 class _SpanPainter extends RetroDesktopPixelPainter {
@@ -3113,5 +3334,18 @@ class RetroDesktopSpanBar extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('from', from))
+      ..add(DoubleProperty('to', to))
+      ..add(DoubleProperty('at', at, defaultValue: null))
+      ..add(StringProperty('fromLabel', fromLabel, defaultValue: null))
+      ..add(StringProperty('toLabel', toLabel, defaultValue: null))
+      ..add(StringProperty('startLabel', startLabel, defaultValue: null))
+      ..add(StringProperty('endLabel', endLabel, defaultValue: null));
   }
 }

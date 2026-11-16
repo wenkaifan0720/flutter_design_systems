@@ -54,6 +54,60 @@ enum RetroDesktopDensity {
   }
 }
 
+/// The look's spacing, on its own 2 px grid. Platinum measured its parts in
+/// whole pixels, and its metrics are mostly even but not on a 4 or 8 point
+/// scale (6 from a window's frame to what it holds, 10 and 14 in its
+/// dialogs). An inset measured from a part's outer edge counts the part's
+/// 1 px bevel or rule as well: a step and [px] (9 is [s8] and a pixel).
+/// Parts scale these by their density.
+///
+/// ```dart
+/// Padding(padding: EdgeInsets.all(RetroDesktopSpacing.s6), child: child)
+/// ```
+abstract final class RetroDesktopSpacing {
+  /// One whole pixel, a bevel's or a rule's width.
+  static const double px = 1;
+
+  /// 2 px, the grid's step.
+  static const double s2 = 2;
+
+  /// 4 px.
+  static const double s4 = 4;
+
+  /// 6 px.
+  static const double s6 = 6;
+
+  /// 8 px.
+  static const double s8 = 8;
+
+  /// 10 px.
+  static const double s10 = 10;
+
+  /// 12 px.
+  static const double s12 = 12;
+
+  /// 14 px.
+  static const double s14 = 14;
+
+  /// 16 px.
+  static const double s16 = 16;
+
+  /// 18 px.
+  static const double s18 = 18;
+
+  /// 20 px.
+  static const double s20 = 20;
+
+  /// 24 px.
+  static const double s24 = 24;
+
+  /// 32 px.
+  static const double s32 = 32;
+
+  /// 40 px.
+  static const double s40 = 40;
+}
+
 /// The look's line widths, read by a part that draws in its hand: a
 /// 1 px frame and rule, as the period drew them, and a 2 px heavy line (a
 /// default button's ring, Platinum's focus ring). Not a setting.

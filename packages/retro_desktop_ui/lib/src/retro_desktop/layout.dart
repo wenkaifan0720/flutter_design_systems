@@ -1,9 +1,13 @@
 // Layout: the 12-column grid and a column whose rows take up the slack. Cards in a row share a height and their lists
 // grow, so no card ends in a hole. Neither needs IntrinsicHeight, and neither crashes under a scroll view.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+
+import 'package:ui_core/ui_core.dart';
 
 import 'theme.dart';
 import 'chrome_metrics.dart';
@@ -11,31 +15,49 @@ import 'chrome_metrics.dart';
 /// The least a control reaches to a finger on a phone, each way.
 const retroDesktopReach = RetroDesktopChromeMetrics.touchTarget;
 
-/// A control's reach: on a phone at least [retroDesktopReach] by [retroDesktopReach] to a finger, its drawing unchanged at
-/// [alignment] in it (the middle, unless the drawing must keep an edge where it was), as a padded tap target is on a touch
-/// screen; on a desk, at least 44 logical pixels high, and as wide as the drawing, so a face starts where its column does:
-/// the reach past its sides is only pressed, never laid out, and gives way to another control's face. A control [inside]
-/// another's face (a field's eye or clear button) is only pressed past its drawing both ways on a desk, so it never makes
-/// the field taller. A press anywhere in the reach lands on the drawing. The width a stretching parent gives passes
-/// through, so a control that fills its row still does. Not exported: the controls wear it themselves.
+/// A control's reach, ui_core's `DesignTapTarget` at the look's floors: the area a press reaches, the box a screen reader
+/// outlines and the layout are one. On a phone at least [retroDesktopReach] by [retroDesktopReach] to a finger, its drawing
+/// unchanged at [alignment] in it (the middle, unless the drawing must keep an edge where it was); on a desk at least 44
+/// logical pixels high and at least the pointer's floor wide (`DesignTapTargets`, 24), so a face starts where its column
+/// does. A control [inside] another's face (a field's eye or clear button) is laid out at the pointer's floor both ways on
+/// a desk, which the field's line holds, so it never makes the field taller. A press anywhere in the reach lands on the
+/// drawing. The width a stretching parent gives passes through, so a control that fills its row still does. Not
+/// exported: the controls wear it themselves.
 ///
 /// ```dart
 /// RetroDesktopReach(child: const Text('Reachable control'))
 /// ```
-class RetroDesktopReach extends SingleChildRenderObjectWidget {
+class RetroDesktopReach extends StatelessWidget {
   /// Creates a [RetroDesktopReach].
   const RetroDesktopReach({
     super.key,
     this.alignment = Alignment.center,
     this.inside = false,
-    super.child,
+    this.keepsPoint = false,
+    this.child,
   });
 
   /// Where the content sits within its available space.
   final AlignmentGeometry alignment;
 
-  /// Whether the control stands inside another's face: on a desk its reach is only pressed, down as well as across.
+  /// Whether the control stands inside another's face: on a desk its reach is the pointer's floor both ways.
   final bool inside;
+
+  /// Whether a press past the drawing lands on the nearest point of it rather than its middle: a field's caret goes
+  /// where the press was.
+  final bool keepsPoint;
+
+  /// The control's drawing.
+  final Widget? child;
+
+  /// The least the reach is laid out, both ways: a finger's reach on a touch screen; on a desk the pointer's floor
+  /// across, and down the desk's reach (the pointer's floor for a control [inside] another's face).
+  static Size floor(BuildContext context, {bool inside = false}) {
+    final reach = least(context);
+    if (padsAcross(context)) return Size.square(reach);
+    final pointer = DesignTapTargets.of(context).pointer;
+    return Size(pointer.width, inside ? pointer.height : reach);
+  }
 
   /// The minimum extent in logical pixels.
   static double least(BuildContext context) =>
@@ -45,55 +67,169 @@ class RetroDesktopReach extends SingleChildRenderObjectWidget {
   /// a target by its box (as a padded Material target is); on a desk the face keeps its own width.
   static bool padsAcross(BuildContext context) =>
       least(context) >= RetroDesktopChromeMetrics.touchTarget;
+
+  @override
+  Widget build(BuildContext context) {
+    final reach = floor(context, inside: inside);
+    // ui_core's tap target, the face at [alignment] in it on whole device pixels. A field whose caret follows the press
+    // keeps the look's own reach, which lays out the same way but presses the nearest point of the field.
+    if (keepsPoint || child == null) {
+      return _OwnReach(
+        alignment: alignment.resolve(Directionality.maybeOf(context)),
+        floor: reach,
+        child: child,
+      );
+    }
+    return DesignTapTarget(
+      minSize: reach,
+      alignment: alignment,
+      child: _OwnHeight(alignment: alignment, child: child),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'alignment',
+          alignment,
+          defaultValue: Alignment.center,
+        ),
+      )
+      ..add(FlagProperty('inside', value: inside, ifTrue: 'inside'))
+      ..add(
+        FlagProperty('keepsPoint', value: keepsPoint, ifTrue: 'keepsPoint'),
+      );
+  }
+}
+
+class _OwnReach extends SingleChildRenderObjectWidget {
+  const _OwnReach({required this.alignment, required this.floor, super.child});
+  final Alignment alignment;
+  final Size floor;
   @override
   RenderRetroDesktopReach createRenderObject(BuildContext context) =>
-      RenderRetroDesktopReach(
-        least(context),
-        alignment.resolve(Directionality.maybeOf(context)),
-        padsAcross(context),
-        inside,
-      );
+      RenderRetroDesktopReach(floor, alignment);
   @override
   void updateRenderObject(
     BuildContext context,
     RenderRetroDesktopReach renderObject,
   ) => renderObject
-    ..least = least(context)
-    ..across = padsAcross(context)
-    ..inside = inside
-    ..alignment = alignment.resolve(Directionality.maybeOf(context));
+    ..floor = floor
+    ..alignment = alignment;
+}
+
+// A face keeps its own height in a parent that stretches it down (a row of fixed height): it is laid out with no least
+// height and stands at [alignment]'s height in what it is given, on whole device pixels, and a press anywhere in that
+// height reaches the nearest point of it. Under loose heights it is the face, unchanged.
+class _OwnHeight extends SingleChildRenderObjectWidget {
+  const _OwnHeight({required this.alignment, super.child});
+  final AlignmentGeometry alignment;
+  @override
+  _RenderOwnHeight createRenderObject(BuildContext context) => _RenderOwnHeight(
+    alignment.resolve(Directionality.maybeOf(context)).y,
+    View.maybeOf(context)?.devicePixelRatio ?? 1,
+  );
+  @override
+  void updateRenderObject(BuildContext context, _RenderOwnHeight r) => r
+    ..y = alignment.resolve(Directionality.maybeOf(context)).y
+    ..ratio = View.maybeOf(context)?.devicePixelRatio ?? 1;
+}
+
+class _RenderOwnHeight extends RenderShiftedBox {
+  _RenderOwnHeight(this._y, this._ratio) : super(null);
+  double _y;
+  set y(double v) {
+    if (v == _y) return;
+    _y = v;
+    markNeedsLayout();
+  }
+
+  double _ratio;
+  set ratio(double v) {
+    if (v == _ratio) return;
+    _ratio = v;
+    markNeedsLayout();
+  }
+
+  static BoxConstraints _inner(BoxConstraints c) => c.copyWith(minHeight: 0);
+
+  double _at(double room, double face) {
+    final free = room - face;
+    if (free <= 0) return 0;
+    return ((free * (_y + 1) / 2) * _ratio + 1e-6).floorToDouble() / _ratio;
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    final kid = child;
+    if (kid == null) return constraints.smallest;
+    return constraints.constrain(kid.getDryLayout(_inner(constraints)));
+  }
+
+  @override
+  double? computeDryBaseline(
+    BoxConstraints constraints,
+    TextBaseline baseline,
+  ) {
+    final kid = child;
+    if (kid == null) return null;
+    final at = kid.getDryBaseline(_inner(constraints), baseline);
+    if (at == null) return null;
+    final face = kid.getDryLayout(_inner(constraints));
+    return at + _at(constraints.constrain(face).height, face.height);
+  }
+
+  @override
+  void performLayout() {
+    final kid = child;
+    if (kid == null) {
+      size = constraints.smallest;
+      return;
+    }
+    kid.layout(_inner(constraints), parentUsesSize: true);
+    size = constraints.constrain(kid.size);
+    (kid.parentData! as BoxParentData).offset = Offset(
+      0,
+      _at(size.height, kid.size.height),
+    );
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    final kid = child;
+    if (kid == null || !kid.hasSize || kid.size.isEmpty) return false;
+    final at = (kid.parentData! as BoxParentData).offset;
+    final on = Offset(
+      position.dx.clamp(at.dx, at.dx + kid.size.width - .01),
+      position.dy.clamp(at.dy, at.dy + kid.size.height - .01),
+    );
+    return result.addWithPaintOffset(
+      offset: at,
+      position: on,
+      hitTest: (result, p) => kid.hitTest(result, position: p),
+    );
+  }
 }
 
 /// Render object used by the corresponding desktop layout widget.
 class RenderRetroDesktopReach extends RenderShiftedBox {
   /// Creates a [RenderRetroDesktopReach].
-  RenderRetroDesktopReach(
-    this._least,
-    this._alignment, [
-    this._across = true,
-    this._inside = false,
-  ]) : super(null);
-  double _least;
-  set least(double v) {
-    if (v == _least) return;
-    _least = v;
+  RenderRetroDesktopReach(this._floor, this._alignment) : super(null);
+
+  /// The least the reach is laid out ([RetroDesktopReach.floor]).
+  Size get floor => _floor;
+  Size _floor;
+  set floor(Size v) {
+    if (v == _floor) return;
+    _floor = v;
     markNeedsLayout();
   }
 
-  bool _across;
-  set across(bool v) {
-    if (v == _across) return;
-    _across = v;
-    markNeedsLayout();
-  }
-
-  bool _inside;
-  set inside(bool v) {
-    if (v == _inside) return;
-    _inside = v;
-    markNeedsLayout();
-  }
-
+  /// Where the drawing stands in its reach.
+  Alignment get alignment => _alignment;
   Alignment _alignment;
   set alignment(Alignment v) {
     if (v == _alignment) return;
@@ -101,24 +237,8 @@ class RenderRetroDesktopReach extends RenderShiftedBox {
     markNeedsLayout();
   }
 
-  // Every reach on screen: a press in one's reach past its face gives way to another's face there.
-  static final Set<RenderRetroDesktopReach> _all = {};
-
-  @override
-  void attach(PipelineOwner owner) {
-    super.attach(owner);
-    _all.add(this);
-  }
-
-  @override
-  void detach() {
-    _all.remove(this);
-    super.detach();
-  }
-
-  // What is laid out: across only on a touch screen; down unless the control stands inside another's face on a desk.
-  double get _leastAcross => _across ? _least : 0;
-  double get _leastDown => _inside && !_across ? 0 : _least;
+  double get _leastAcross => _floor.width;
+  double get _leastDown => _floor.height;
 
   BoxConstraints _inner(BoxConstraints c) => c.copyWith(minHeight: 0);
   Size _outer(BoxConstraints c, Size inner) => c.constrain(
@@ -182,61 +302,6 @@ class RenderRetroDesktopReach extends RenderShiftedBox {
       hitTest: (result, p) => kid.hitTest(result, position: p),
     );
   }
-
-  // On a desk the reach past a narrow face is pressed, not laid out: a press up to half the shortfall from [_least]
-  // beyond either side (and, inside another's face, above or below) lands on the face, unless another control's face is
-  // there. A parent's box still bounds what reaches this (a face on its column's edge reaches inward only).
-  @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    if (size.contains(position)) {
-      return super.hitTest(result, position: position);
-    }
-    if (_across) return false;
-    final across = math.max(0.0, (_least - size.width) / 2);
-    final down = _inside ? math.max(0.0, (_least - size.height) / 2) : 0.0;
-    if (position.dx < -across ||
-        position.dx >= size.width + across ||
-        position.dy < -down ||
-        position.dy >= size.height + down ||
-        _onAnotherFace(position) ||
-        !hitTestChildren(result, position: position)) {
-      return false;
-    }
-    result.add(BoxHitTestEntry(this, position));
-    return true;
-  }
-
-  // Whether [position] lies on another control's face: one that neither holds this one nor is held by it (a field's
-  // reach holds its eye's).
-  bool _onAnotherFace(Offset position) {
-    final at = localToGlobal(position);
-    final around = <RenderObject>{};
-    for (RenderObject? up = parent; up != null; up = up.parent) {
-      around.add(up);
-    }
-    for (final other in _all) {
-      if (identical(other, this) ||
-          !other.attached ||
-          !other.hasSize ||
-          around.contains(other)) {
-        continue;
-      }
-      final face = MatrixUtils.transformRect(
-        other.getTransformTo(null),
-        Offset.zero & other.size,
-      );
-      if (!face.contains(at)) continue;
-      var held = false;
-      for (RenderObject? up = other.parent; up != null; up = up.parent) {
-        if (identical(up, this)) {
-          held = true;
-          break;
-        }
-      }
-      if (!held) return true;
-    }
-    return false;
-  }
 }
 
 /// A part with its own size keeps it, whatever its parent asks. A stretching Column or Row hands tight constraints, which a
@@ -276,7 +341,7 @@ class RetroDesktopFill extends SingleChildRenderObjectWidget {
     this.aspect,
     this.loneWidth = 240,
     required Widget super.child,
-  });
+  }) : assert(maxWidth > 0);
 
   /// The maximum width in logical pixels.
   final double maxWidth;
@@ -295,6 +360,15 @@ class RetroDesktopFill extends SingleChildRenderObjectWidget {
       ..limit = maxWidth
       ..aspect = aspect
       ..lone = loneWidth;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('maxWidth', maxWidth))
+      ..add(DoubleProperty('aspect', aspect, defaultValue: null))
+      ..add(DoubleProperty('loneWidth', loneWidth, defaultValue: 240));
   }
 }
 
@@ -474,6 +548,15 @@ class RetroDesktopColumn extends MultiChildRenderObjectWidget {
       ..spineX = spineX
       ..spineColor = spineColor
       ..dir = Directionality.of(context);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('gap', gap, defaultValue: 0))
+      ..add(DoubleProperty('spineX', spineX, defaultValue: null))
+      ..add(ColorProperty('spineColor', spineColor, defaultValue: null));
   }
 }
 
@@ -716,6 +799,15 @@ class RetroDesktopEqualRow extends MultiChildRenderObjectWidget {
       ..columns = columns
       ..dir = Directionality.of(context);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<int>('flex', flex))
+      ..add(DoubleProperty('gap', gap, defaultValue: 0))
+      ..add(IntProperty('columns', columns, defaultValue: null));
+  }
 }
 
 class _EqualRowData extends ContainerBoxParentData<RenderBox> {}
@@ -894,6 +986,12 @@ class RetroDesktopRow extends StatelessWidget {
       children: children,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<int>('spans', spans));
+  }
 }
 
 /// The alignment choices for a fitted row.
@@ -957,6 +1055,24 @@ class RetroDesktopFitRow extends MultiChildRenderObjectWidget {
       .._w = this
       .._dir = Directionality.of(context)
       ..markNeedsLayout();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('fill', fill))
+      ..add(DoubleProperty('gap', gap, defaultValue: 8))
+      ..add(DoubleProperty('fillMin', fillMin, defaultValue: 0))
+      ..add(DoubleProperty('fillShare', fillShare, defaultValue: 0))
+      ..add(
+        EnumProperty<RetroDesktopFitAlign>(
+          'align',
+          align,
+          defaultValue: RetroDesktopFitAlign.center,
+        ),
+      )
+      ..add(FlagProperty('shrink', value: shrink, ifTrue: 'shrink'));
   }
 }
 
@@ -1105,6 +1221,12 @@ class RetroDesktopAutoRow extends MultiChildRenderObjectWidget {
       .._dir = Directionality.of(context)
       ..markNeedsLayout();
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('gap', gap, defaultValue: 14));
+  }
 }
 
 class _AutoRowData extends ContainerBoxParentData<RenderBox> {}
@@ -1249,6 +1371,15 @@ class RetroDesktopGridOf extends StatelessWidget {
     }
     return RetroDesktopColumn(gap: runGap ?? gap, children: rows);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('columns', columns))
+      ..add(DoubleProperty('gap', gap, defaultValue: 8))
+      ..add(DoubleProperty('runGap', runGap, defaultValue: null));
+  }
 }
 
 /// Start and end on one baseline, pushed apart; if they don't fit on a line, end drops under start. CSS flex-wrap with
@@ -1290,6 +1421,15 @@ class RetroDesktopSplit extends MultiChildRenderObjectWidget {
       .._bottoms = bottoms
       .._dir = Directionality.of(context)
       ..markNeedsLayout();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('gap', gap, defaultValue: 14))
+      ..add(DoubleProperty('runGap', runGap, defaultValue: 0))
+      ..add(FlagProperty('bottoms', value: bottoms, ifTrue: 'bottoms'));
   }
 }
 
@@ -1386,7 +1526,7 @@ class RetroDesktopBalancedText extends StatelessWidget {
   /// The text displayed by this part.
   final String text;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final TextStyle style;
 
   /// How text is aligned within its available width.
@@ -1435,6 +1575,21 @@ class RetroDesktopBalancedText extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(DiagnosticsProperty<TextStyle>('style', style))
+      ..add(
+        EnumProperty<TextAlign>(
+          'textAlign',
+          textAlign,
+          defaultValue: TextAlign.start,
+        ),
+      );
   }
 }
 
@@ -1532,6 +1687,18 @@ class RetroDesktopBeside extends MultiChildRenderObjectWidget {
       .._atEnd = objectAtEnd
       .._dir = Directionality.of(context)
       ..markNeedsLayout();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('gap', gap, defaultValue: 16))
+      ..add(DoubleProperty('minWords', minWords, defaultValue: 140))
+      ..add(DoubleProperty('maxObject', maxObject, defaultValue: .42))
+      ..add(
+        FlagProperty('objectAtEnd', value: objectAtEnd, ifTrue: 'objectAtEnd'),
+      );
   }
 }
 

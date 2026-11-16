@@ -1,6 +1,8 @@
 // What an Retro Desktop field shows while you edit in it, in place of Material's: the selection handles (a square on a stem in the
 // act edge) and the menu over a selection (a bevelled strip on a phone, a card of rows by a desktop's pointer). The field
 // itself is Flutter's, and so are its gestures, autofill, IME and semantics.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart' show Theme;
@@ -11,6 +13,7 @@ import 'behavior.dart';
 import 'localizations.dart';
 import 'press.dart';
 import 'theme.dart';
+import 'tokens.dart';
 
 /// Whether [platform] edits by touch: handles and a menu over the selection, rather than a pointer's right-click menu.
 bool retroDesktopTouchEditing(TargetPlatform platform) => switch (platform) {
@@ -286,7 +289,9 @@ class RetroDesktopTextContextMenu extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(
+                horizontal: RetroDesktopSpacing.s14,
+              ),
               child: Align(
                 alignment: touch
                     ? Alignment.center
@@ -363,5 +368,17 @@ class RetroDesktopTextContextMenu extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextSelectionToolbarAnchors>('anchors', anchors),
+      )
+      ..add(
+        IterableProperty<ContextMenuButtonItem>('buttonItems', buttonItems),
+      );
   }
 }

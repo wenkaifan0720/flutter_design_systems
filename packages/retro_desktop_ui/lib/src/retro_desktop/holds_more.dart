@@ -2,6 +2,8 @@
 // refresh, a tree, a timeline, a tag and a status view. The first seven stand on ui_core's behaviour (sorting, paging,
 // selection, the scroll bar, the divider's drag, reordering, the swipe, the pull, the tree's keys); the last three are
 // paint. This file draws them in Retro Desktop's hand: lists in white wells, the machine's grey for headers and grips.
+import 'package:flutter/foundation.dart';
+
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -23,6 +25,7 @@ import 'tell.dart';
 import 'theme.dart';
 import 'wayfinding.dart';
 import 'internal/caps.dart';
+import 'tokens.dart';
 
 BorderSide _rule(RetroDesktopThemeData t) => BorderSide(
   color: t.colors.divider,
@@ -84,7 +87,7 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
         // The rule under the heads stands below them, not inside each head's box: inside, a sorted head's mark and
         // the rule read as one face whose middle stood 11 px below the words.
         child: Padding(
-          padding: const EdgeInsets.only(bottom: 1),
+          padding: const EdgeInsets.only(bottom: RetroDesktopSpacing.px),
           child: IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -124,7 +127,10 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
           t,
           held: states.contains(WidgetState.pressed),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+            padding: const EdgeInsets.symmetric(
+              horizontal: RetroDesktopSpacing.s8,
+              vertical: RetroDesktopSpacing.s6 + RetroDesktopSpacing.px,
+            ),
             // On the head row's middle line in a head stretched to its row, whichever head stands tallest.
             child: Align(
               alignment: column.numeric
@@ -145,7 +151,7 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
                     ),
                   ),
                   if (sort != null) ...[
-                    const SizedBox(width: 6),
+                    const SizedBox(width: RetroDesktopSpacing.s6),
                     RetroDesktopTriangleMark(
                       sort == DesignSortDirection.ascending
                           ? AxisDirection.up
@@ -160,7 +166,10 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
         ),
       ),
       cellBuilder: (context, row, column) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.symmetric(
+          horizontal: RetroDesktopSpacing.s8,
+          vertical: RetroDesktopSpacing.s8,
+        ),
         child: Align(
           alignment: column.numeric
               ? AlignmentDirectional.centerEnd
@@ -229,7 +238,7 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
           builder: (context, _) => controller.pageCount <= 1
               ? const SizedBox.shrink()
               : Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.only(top: RetroDesktopSpacing.s8),
                   child: Align(
                     alignment: AlignmentDirectional.centerEnd,
                     child: RetroDesktopPagination(
@@ -242,6 +251,32 @@ class RetroDesktopDataTable<R> extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+      )
+      ..add(
+        ObjectFlagProperty<
+          String Function(R row, DesignTableColumn<R> column)
+        >.has('cellText', cellText),
+      )
+      ..add(
+        FlagProperty(
+          'selectable',
+          value: selectable,
+          ifFalse: 'selectable: false',
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<R>>.has('onActivate', onActivate))
+      ..add(StringProperty('selectLabel', selectLabel, defaultValue: null))
+      ..add(
+        StringProperty('selectAllLabel', selectAllLabel, defaultValue: null),
+      );
   }
 }
 
@@ -265,10 +300,10 @@ class RetroDesktopScrollArea extends StatelessWidget {
     this.autofocus = false,
   });
 
-  /// The focus node this part uses; when null it makes and disposes its own.
+  /// {@macro retro_desktop.ownFocusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes the focus when it first appears and nothing else has it.
+  /// {@macro retro_desktop.autofocus}
   final bool autofocus;
 
   /// The scroll view's controller; the caller disposes it.
@@ -291,6 +326,9 @@ class RetroDesktopScrollArea extends StatelessWidget {
       controller: controller,
       axis: axis,
       thickness: 16,
+      // The period's scroll box keeps its size, as long as the floor for what drags it (24 under a pointer, 44 under a
+      // finger): a thumb sized by the content grew and shrank as a lazy list built its rows.
+      thumbLength: DesignTapTargets.of(context).floorOn().height,
       visibility: DesignScrollbarVisibility.always,
       semanticLabel: label,
       focusNode: focusNode,
@@ -336,6 +374,23 @@ class RetroDesktopScrollArea extends StatelessWidget {
       ),
       child: child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(DiagnosticsProperty<ScrollController>('controller', controller))
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -452,6 +507,30 @@ class RetroDesktopResizable extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.horizontal))
+      ..add(
+        DoubleProperty('initialFraction', initialFraction, defaultValue: .5),
+      )
+      ..add(DoubleProperty('minFirst', minFirst, defaultValue: 0))
+      ..add(DoubleProperty('minSecond', minSecond, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// A list whose rows move the period's way: drag a row by its grip and a
@@ -502,6 +581,35 @@ class RetroDesktopReorderableListView<T extends Object> extends StatefulWidget {
   @override
   State<RetroDesktopReorderableListView<T>> createState() =>
       _ReorderableListState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('items', items))
+      ..add(
+        ObjectFlagProperty<void Function(int from, int to)>.has(
+          'onReorder',
+          onReorder,
+        ),
+      )
+      ..add(ObjectFlagProperty<String Function(T item)>.has('labelOf', labelOf))
+      ..add(
+        ObjectFlagProperty<Widget Function(BuildContext context, T item)>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(ObjectFlagProperty<Object Function(T item)>.has('keyOf', keyOf))
+      ..add(
+        FlagProperty(
+          'shrinkWrap',
+          value: shrinkWrap,
+          ifFalse: 'shrinkWrap: false',
+        ),
+      )
+      ..add(StringProperty('gripLabel', gripLabel, defaultValue: null));
+  }
 }
 
 class _ReorderableListState<T extends Object>
@@ -632,7 +740,9 @@ class _ReorderableListState<T extends Object>
                         : null,
                   ),
                   child: Padding(
-                    padding: const EdgeInsetsDirectional.only(start: 12),
+                    padding: const EdgeInsetsDirectional.only(
+                      start: RetroDesktopSpacing.s12,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
@@ -800,7 +910,7 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
     return retroDesktopSunkenBox(
       context,
       states: const {},
-      padding: const EdgeInsets.all(2),
+      padding: const EdgeInsets.all(RetroDesktopSpacing.s2),
       child: DesignTree<T>(
         controller: controller,
         labelOf: labelOf,
@@ -856,7 +966,7 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
                         ),
                         if (icon != null) ...[
                           Icon(icon, size: 16, color: ink),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: RetroDesktopSpacing.s6),
                         ],
                         Expanded(
                           child: Text(
@@ -876,6 +986,21 @@ class RetroDesktopTreeView<T extends Object> extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignTreeController<T>>('controller', controller),
+      )
+      ..add(ObjectFlagProperty<String Function(T node)>.has('labelOf', labelOf))
+      ..add(
+        ObjectFlagProperty<IconData? Function(T node)>.has('iconOf', iconOf),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -967,10 +1092,14 @@ class RetroDesktopTimeline extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 13),
+                  const SizedBox(
+                    width: RetroDesktopSpacing.s12 + RetroDesktopSpacing.px,
+                  ),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.only(
+                        bottom: RetroDesktopSpacing.s12,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1009,6 +1138,14 @@ class RetroDesktopTimeline extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      IterableProperty<RetroDesktopTimelineEntry>('entries', entries),
+    );
+  }
 }
 
 /// A small label on a thing: a category, a state, a count of kind. The
@@ -1040,26 +1177,37 @@ class RetroDesktopTag extends StatelessWidget {
       child: retroDesktopFace(
         states: const {},
         scale: RetroDesktopFaceScale.mark,
-        component: t.badgeTheme.merge(
+        component: t.badgeTheme.over(
           RetroDesktopStyle(
             fill: WidgetStatePropertyAll(c.platinumLight),
             foreground: WidgetStatePropertyAll(c.text),
             textStyle: WidgetStatePropertyAll(t.type.small),
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+        padding: const EdgeInsets.symmetric(
+          horizontal: RetroDesktopSpacing.s6,
+          vertical: RetroDesktopSpacing.px,
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
               Icon(icon, size: 12, color: c.text),
-              const SizedBox(width: 4),
+              const SizedBox(width: RetroDesktopSpacing.s4),
             ],
             RetroDesktopCaps(Text(label)),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null));
   }
 }
 
@@ -1136,4 +1284,14 @@ class RetroDesktopStatusView extends StatelessWidget {
       action: action,
     ),
   };
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<RetroDesktopStatus>('status', status))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry));
+  }
 }

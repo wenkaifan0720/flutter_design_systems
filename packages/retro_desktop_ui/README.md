@@ -19,7 +19,7 @@ ring round the focused thing or Chisel's dotted rectangle, and a selection takes
 
 ```yaml
 dependencies:
-  retro_desktop_ui: ^0.1.0
+  retro_desktop_ui: ^0.2.0
 ```
 
 The package bundles its faces (Jersey 15, Atkinson Hyperlegible Next and Mono) and its icon font; an app needs no
@@ -47,6 +47,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
+    // Pages the app pushes change in place, as the look's own do ("Pages change in place", below).
+    theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders: retroDesktopPageTransitions)),
     builder: (context, child) => RetroDesktopTheme(
       // Follows the platform's light or dark setting.
       data: RetroDesktopThemeData.classic(MediaQuery.platformBrightnessOf(context)),
@@ -102,6 +104,28 @@ class HomePage extends StatelessWidget {
     ),
   );
 }
+```
+
+**Pages change in place.** The period's screens changed at once: nothing in the look slides or zooms, and its own
+pages, sheets, dialogs and menus stand in their places as they open. Push your own pages with `RetroDesktopPageRoute`,
+which does the same and pops the same way. A `MaterialPageRoute` takes your app's own page transitions, by default
+the platform's slide from the side or its zoom (on a Mac, the Cupertino slide), whatever theme the look builds; give
+your app's `ThemeData` the look's `retroDesktopPageTransitions`, one for every platform, as in the setup above, and it
+changes in place too. The map fits Flutter's `ThemeData` and material_ui's alike. On iOS a page still pops with the
+swipe from the screen's leading edge, which lives in Cupertino's slide: the map's iOS entry, and `RetroDesktopPageRoute`
+there, stand ui_core's `DesignSwipeBackPageTransitionsBuilder` round the look's change, so the page follows the finger
+while it swipes and stands in place otherwise. A map of your own keeps the swipe the same way, through ui_core's
+`designSwipeBack(map)`.
+
+```dart
+MaterialApp(
+  theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders: retroDesktopPageTransitions)),
+  builder: (context, child) => RetroDesktopTheme(data: RetroDesktopThemeData.classic(), child: child!),
+  home: const HomePage(),
+);
+
+// From a page:
+Navigator.of(context).push(RetroDesktopPageRoute<void>(builder: (context) => const DocumentPage()));
 ```
 
 ## Everyday parts
@@ -235,7 +259,7 @@ part of your own can follow them the same way.
 - **Touch.** A phone keeps the desktop's materials: windows stack, and every control is a finger's reach. A gesture the
   desktop never had (a swipe, a pull) has no part of its own; its job goes to a button or a menu.
 
-So some parts other kits have are made differently here, and some aren't in 0.1.0:
+So some parts other kits have are made differently here, and some aren't in 0.2.0:
 
 | Elsewhere | In Retro Desktop |
 | --- | --- |
@@ -279,8 +303,9 @@ final theme = RetroDesktopThemeData.from(
 
 The theme's settings are the ones a product changes: the palette (a preset or `from`), light or dark, the
 appearance, the density and, for a brand or a script the bundled faces lack, the `typeface`. Corners, line widths and
-shadows belong to the appearance and are not settings. Text size follows the platform's text scaling and motion its
-Reduce Motion setting.
+shadows belong to the appearance and are not settings, and neither is motion: things appear and go at once, as the
+period's did (`copyWith`'s `motion` is deprecated in 0.2.0; `dart fix --apply` removes it). Text size follows the
+platform's text scaling, and Reduce Motion is honoured wherever anything moves.
 
 ### Appearances
 
@@ -302,19 +327,15 @@ Reduce Motion setting.
 
 ### Hover
 
-Pointer hover changes nothing a part paints: the period's desktops drew no hover state. The pointer says what a part
-does instead (a click cursor over what presses, a grab cursor over what drags, a text cursor over a field). Every
-pressable resolves its styles with `WidgetState.hovered`, so an app that wants a hover style gives one:
+Pointer hover changes nothing a part paints: the period's desktops drew no hover state, and a wash on hover would
+leave the look. The pointer says what a part does instead (a click cursor over what presses, a grab cursor over what
+drags, a text cursor over a field). To say more about what the pointer rests on, give it Balloon Help, as the period
+did:
 
 ```dart
-RetroDesktopButton(
-  'Open',
-  onPressed: () {},
-  style: RetroDesktopStyle(
-    overlay: WidgetStateProperty.resolveWith(
-      (states) => states.contains(WidgetState.hovered) ? const Color(0x14000000) : null,
-    ),
-  ),
+RetroDesktopTooltip(
+  message: 'Opens the document in its own window',
+  child: RetroDesktopButton('Open', onPressed: () {}),
 );
 ```
 
@@ -328,6 +349,18 @@ Each part's component theme (`buttonTheme`, `defaultButtonTheme`, `textFieldThem
 `copyWith`) and each widget's `style:` take a `RetroDesktopStyle`: state-resolved fill, foreground, edge, overlay,
 side, shape, padding, minimum size, text style and icon size. A value the widget's style resolves wins over its
 component theme; what neither resolves falls through to the look's defaults.
+
+What keeps the look:
+
+- **Shapes are the period's.** A style's or a component theme's `shape` takes the appearance's corners
+  (`RetroDesktopShapes`, square or rounded by a few pixels), drawn on the pixel grid. Any other `OutlinedBorder` (a
+  stadium, a large radius) is drawn smooth and off the grid, and no longer looks like Retro Desktop. A `side` keeps to
+  the look's 1 and 2 pixel lines.
+- **Colours: the content and the highlight are yours; the bevel is the look's.** The desktop, the paper, the text and
+  the highlight change freely, and `RetroDesktopThemeData.from` derives a palette from one brand colour. The machine's
+  greys, the bevel roles (`bevelLight`, `bevelDark`, `bevelDarker`) and the outlines (`outline`, `control`,
+  `pixelOutline`) are steps of light on one face, lit from the top left: retune them together (a lighter or darker
+  machine) or not at all.
 
 ## Accessibility and languages
 
@@ -349,7 +382,7 @@ component theme; what neither resolves falls through to the look's defaults.
   To translate them, extend `DefaultDesignLocalizations`, override the words you translate, and add a delegate for
   your subclass to `localizationsDelegates`; every ui_core look then speaks your language. The words only this look
   says (a pager's name, a time picker's wheels, a stepper's More and Less, a file drop's invitation) are
-  `RetroDesktopLocalizations`, English in 0.1.0.
+  `RetroDesktopLocalizations`, English in 0.2.0.
 - **Dates and numbers.** Month and weekday names, dates, numbers and percentages use `intl` in the locale
   `RetroDesktopLocalizations.delegate` loads (add it for a locale other than US English); the calendar starts its week
   on the day `DesignLocalizations.firstDayOfWeek` names, and times are 12- or 24-hour as the platform says.
@@ -357,10 +390,12 @@ component theme; what neither resolves falls through to the look's defaults.
   rest) cover the Latin alphabet. Other scripts (Arabic, Hebrew, Chinese, Japanese, Devanagari, Thai) are drawn in the
   platform's fallback fonts (on the web, the Noto fonts Flutter fetches), so they read, but without the pixel face.
 
-Known limits in 0.1.0: the look's own words ship in English only, and a title in another script loses the period's
+Known limits in 0.2.0: the look's own words ship in English only, and a title in another script loses the period's
 pixel type. The glyphs on buttons, rows and fields (`RetroDesktopGlyphs`) are Lucide's line icons, smooth strokes beside
 the pixel art: a pixel set on a 24 px grid stays sharp only at 24 and 48, and the parts draw their glyphs at 13 to 18,
-so 0.2.0 brings pixel glyphs drawn for those sizes behind the same `RetroDesktopGlyphs` names.
+so a later version brings pixel glyphs drawn for those sizes behind the same `RetroDesktopGlyphs` names. Where a menu
+bar's titles outrun a narrow screen (a phone, large text, a long language), the bar wraps them onto a second row; 0.3.0
+gathers the titles that don't fit into a "…" menu at the bar's end.
 
 ## API notes
 

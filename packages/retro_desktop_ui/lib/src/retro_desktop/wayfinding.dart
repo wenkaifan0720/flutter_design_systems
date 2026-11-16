@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/services.dart';
@@ -15,6 +17,7 @@ import 'localizations.dart';
 import 'pixels.dart';
 import 'press.dart';
 import 'theme.dart';
+import 'tokens.dart';
 
 /// One place in a [RetroDesktopBreadcrumb] trail.
 @immutable
@@ -63,8 +66,8 @@ class RetroDesktopBreadcrumb extends StatelessWidget {
       explicitChildNodes: true,
       child: Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 6,
-        runSpacing: 2,
+        spacing: RetroDesktopSpacing.s6,
+        runSpacing: RetroDesktopSpacing.s2,
         children: [
           for (var i = 0; i < items.length; i++) ...[
             if (i > 0)
@@ -93,7 +96,9 @@ class RetroDesktopBreadcrumb extends StatelessWidget {
                 // A crumb's words on its trail's line: the first on the
                 // column's edge.
                 builder: (context, states) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 1),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: RetroDesktopSpacing.px,
+                  ),
                   child: Text(
                     items[i].label,
                     style: quiet,
@@ -106,6 +111,14 @@ class RetroDesktopBreadcrumb extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopBreadcrumbItem>('items', items))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -224,7 +237,9 @@ class RetroDesktopPagination extends StatelessWidget {
               if (compact)
                 Flexible(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: RetroDesktopSpacing.s4,
+                    ),
                     child: Text(
                       '${words.formatInteger(page + 1)}/${words.formatInteger(count)}',
                       maxLines: 1,
@@ -306,6 +321,23 @@ class RetroDesktopPagination extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('page', page))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -389,7 +421,7 @@ class RetroDesktopRating extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             for (var i = 0; i < max; i++) ...[
-              if (i > 0) const SizedBox(width: 2),
+              if (i > 0) const SizedBox(width: RetroDesktopSpacing.s2),
               star(i, const {}),
             ],
           ],
@@ -442,7 +474,7 @@ class RetroDesktopRating extends StatelessWidget {
                     : null,
                 focusShape: t.shapes.small,
                 builder: (context, states) => Padding(
-                  padding: const EdgeInsets.all(1),
+                  padding: const EdgeInsets.all(RetroDesktopSpacing.px),
                   child: star(i, states),
                 ),
               ),
@@ -450,6 +482,17 @@ class RetroDesktopRating extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('value', value))
+      ..add(IntProperty('max', max, defaultValue: 5))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged));
   }
 }
 
@@ -581,7 +624,7 @@ class RetroDesktopFileUpload extends StatelessWidget {
         children: [
           retroDesktopFace(
             states: {if (active) WidgetState.selected},
-            component: t.wellTheme.merge(
+            component: t.wellTheme.over(
               RetroDesktopStyle(
                 fill: WidgetStatePropertyAll(
                   active ? c.highlightContainer : c.paper,
@@ -596,7 +639,12 @@ class RetroDesktopFileUpload extends StatelessWidget {
             scale: RetroDesktopFaceScale.surface,
             // A sunken well with a solid line: a dotted one is the look's focus mark.
             sunken: true,
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
+            padding: const EdgeInsets.fromLTRB(
+              RetroDesktopSpacing.s16,
+              RetroDesktopSpacing.s18,
+              RetroDesktopSpacing.s16,
+              RetroDesktopSpacing.s18,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -605,18 +653,18 @@ class RetroDesktopFileUpload extends StatelessWidget {
                   size: 28,
                   color: active ? c.highlight : c.textSecondary,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: RetroDesktopSpacing.s8),
                 Text(
                   words.dropFiles,
                   textAlign: TextAlign.center,
                   style: t.type.row,
                 ),
                 if (hint != null) ...[
-                  const SizedBox(height: 2),
+                  const SizedBox(height: RetroDesktopSpacing.s2),
                   Text(hint!, textAlign: TextAlign.center, style: t.type.meta),
                 ],
                 if (onChoose != null) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: RetroDesktopSpacing.s12),
                   RetroDesktopButton(
                     words.chooseFiles,
                     size: RetroDesktopButtonSize.small,
@@ -628,7 +676,7 @@ class RetroDesktopFileUpload extends StatelessWidget {
           ),
           for (var i = 0; i < files.length; i++)
             Padding(
-              padding: const EdgeInsets.only(top: 6),
+              padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
               child: Row(
                 children: [
                   Icon(
@@ -636,7 +684,7 @@ class RetroDesktopFileUpload extends StatelessWidget {
                     size: 16,
                     color: c.textSecondary,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: RetroDesktopSpacing.s8),
                   Expanded(
                     child: Text(
                       files[i],
@@ -658,5 +706,24 @@ class RetroDesktopFileUpload extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onChoose', onChoose))
+      ..add(FlagProperty('active', value: active, ifTrue: 'active'))
+      ..add(IterableProperty<String>('files', files, defaultValue: const []))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onRemove', onRemove))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }

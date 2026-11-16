@@ -11,6 +11,7 @@ import 'internal/face.dart';
 import 'localizations.dart';
 import 'layout.dart';
 import 'press.dart';
+import 'tokens.dart';
 import 'raised.dart' show RetroDesktopTooltipFace;
 
 /// A named series. Missing values leave a gap in a line and no bar.
@@ -78,7 +79,7 @@ class RetroDesktopChart extends StatefulWidget {
        assert(height > 0),
        assert((bandLow == null) == (bandHigh == null));
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The visible or accessible name of this part.
@@ -113,6 +114,35 @@ class RetroDesktopChart extends StatefulWidget {
 
   @override
   State<RetroDesktopChart> createState() => _ChartState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<RetroDesktopChartSeries>('series', series))
+      ..add(IterableProperty<String>('labels', labels))
+      ..add(
+        EnumProperty<RetroDesktopChartType>(
+          'kind',
+          kind,
+          defaultValue: RetroDesktopChartType.line,
+        ),
+      )
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(ObjectFlagProperty<String Function(double)>.has('format', format))
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(DoubleProperty('bandLow', bandLow, defaultValue: null))
+      ..add(DoubleProperty('bandHigh', bandHigh, defaultValue: null))
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'));
+  }
 }
 
 class _ChartState extends State<RetroDesktopChart> {
@@ -247,7 +277,7 @@ class _ChartState extends State<RetroDesktopChart> {
               Positioned.fill(
                 child: retroDesktopFace(
                   states: const {},
-                  component: theme.chartTheme.merge(
+                  component: theme.chartTheme.over(
                     RetroDesktopStyle(
                       fill: WidgetStatePropertyAll(theme.colors.paper),
                     ),
@@ -370,8 +400,8 @@ class _ChartState extends State<RetroDesktopChart> {
       ),
     );
     final legend = Wrap(
-      spacing: 14,
-      runSpacing: 6,
+      spacing: RetroDesktopSpacing.s14,
+      runSpacing: RetroDesktopSpacing.s6,
       children: [
         for (final (index, name)
             in (donut
@@ -396,7 +426,7 @@ class _ChartState extends State<RetroDesktopChart> {
                   ),
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: RetroDesktopSpacing.s6),
               Flexible(child: Text(name, style: note)),
             ],
           ),
@@ -520,14 +550,17 @@ class _ChartState extends State<RetroDesktopChart> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: RetroDesktopSpacing.s8),
                       Expanded(child: plot),
                     ],
                   ),
           ),
           if (labels.isNotEmpty && !donut && !empty && !widget.loading)
             Padding(
-              padding: EdgeInsetsDirectional.only(start: gutter + 8, top: 4),
+              padding: EdgeInsetsDirectional.only(
+                start: gutter + 8,
+                top: RetroDesktopSpacing.s4,
+              ),
               // Each name whole, on one line under its column; where the widest is wider than a column, every
               // second (or third…) one is named, so no word breaks inside itself.
               child: LayoutBuilder(
@@ -587,7 +620,10 @@ class _ChartState extends State<RetroDesktopChart> {
                 },
               ),
             ),
-          if (!empty && !widget.loading) ...[const SizedBox(height: 8), legend],
+          if (!empty && !widget.loading) ...[
+            const SizedBox(height: RetroDesktopSpacing.s8),
+            legend,
+          ],
         ],
       ),
     );
@@ -649,6 +685,17 @@ class RetroDesktopSparkline extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<double?>('values', values))
+      ..add(DoubleProperty('width', width, defaultValue: 96))
+      ..add(DoubleProperty('height', height, defaultValue: 24))
+      ..add(ObjectFlagProperty<String Function(double)>.has('format', format));
   }
 }
 

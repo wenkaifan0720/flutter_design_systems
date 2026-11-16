@@ -147,6 +147,7 @@ void main() {
     tester,
   ) async {
     final theme = RetroDesktopThemeData.classic().copyWith(
+      // ignore: deprecated_member_use_from_same_package
       motion: const RetroDesktopMotion(state: Duration(milliseconds: 200)),
     );
     const snapshot = ValueKey('overlay-snapshot');
@@ -414,7 +415,7 @@ void main() {
         SingleChildScrollView(
           child: Column(
             children: [
-              RetroDesktopWindow(
+              const RetroDesktopWindow(
                 title: 'A longer window title',
                 child: RetroDesktopTextField(
                   label: 'Search',
@@ -482,14 +483,14 @@ void main() {
       const bodyKey = ValueKey('group-body');
       await tester.pumpWidget(
         host(
-          SingleChildScrollView(
+          const SingleChildScrollView(
             child: Column(
               children: [
-                const RetroDesktopGroupBox(
+                RetroDesktopGroupBox(
                   title: 'Settings group',
                   child: Text('Group content', key: bodyKey),
                 ),
-                const RetroDesktopTable(
+                RetroDesktopTable(
                   columns: [
                     RetroDesktopTableColumn('Name'),
                     RetroDesktopTableColumn('Quantity', width: 160),

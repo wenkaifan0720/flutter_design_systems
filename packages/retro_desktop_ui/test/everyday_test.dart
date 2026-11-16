@@ -198,8 +198,8 @@ void main() {
     );
     check(
       'with notes',
-      () => RetroDesktopChoices(
-        options: const [
+      () => const RetroDesktopChoices(
+        options: [
           RetroDesktopChoice('Near Mint', note: 'Minimal sleeve lines'),
           RetroDesktopChoice('Light Marks', note: 'Sharp corners'),
           RetroDesktopChoice('Play Wear', note: 'Some'),
@@ -230,7 +230,7 @@ void main() {
   group('words stay whole', () {
     check(
       'stats',
-      () => RetroDesktopStats(const [
+      () => const RetroDesktopStats([
         ('Average', '3,023', 'six periods'),
         ('This period', '1,204,000', 'of 3,000,000'),
         ('Left', '943', 'to the 30th'),

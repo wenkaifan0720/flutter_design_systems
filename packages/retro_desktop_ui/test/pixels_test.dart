@@ -105,7 +105,7 @@ Future<_Shot> _shoot(
   Widget part, {
   bool boundary = false,
   bool dark = false,
-  RetroDesktopMotion motion = const RetroDesktopMotion(),
+  RetroDesktopMotion motion = RetroDesktopMotion.still,
 }) async {
   const view = Size(1100, 500);
   tester.view.physicalSize = view * dpr;
@@ -114,6 +114,7 @@ Future<_Shot> _shoot(
   final theme = RetroDesktopThemeData.preset(
     'classic',
     dark ? Brightness.dark : Brightness.light,
+    // ignore: deprecated_member_use_from_same_package
   ).copyWith(motion: motion).atWidth(view.width);
   final placed = SizedBox(
     key: _part,

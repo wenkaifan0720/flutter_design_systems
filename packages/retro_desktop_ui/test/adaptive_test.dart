@@ -362,6 +362,7 @@ void main() {
         const RetroDesktopTextField(hint: 'Drag words'),
         reduceMotion: true,
         look: RetroDesktopThemeData.classic().copyWith(
+          // ignore: deprecated_member_use_from_same_package
           motion: const RetroDesktopMotion(move: Duration(milliseconds: 200)),
         ),
       ),

@@ -57,6 +57,16 @@ class RetroDesktopPixelPaint extends SingleChildRenderObjectWidget {
       ..painter = painter
       ..foreground = foreground;
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<RetroDesktopPixelPainter>('painter', painter))
+      ..add(
+        FlagProperty('foreground', value: foreground, ifTrue: 'foreground'),
+      );
+  }
 }
 
 /// Render object used by the corresponding desktop layout widget.

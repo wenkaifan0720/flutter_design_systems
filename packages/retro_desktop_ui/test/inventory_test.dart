@@ -59,11 +59,11 @@ void main() {
       for (final placed in parts) {
         final part = placed is Padding ? placed.child! : placed;
         final name = '${part.runtimeType}'.split('<').first;
-        // The scroll area's specimen holds its own controller in a private
-        // holder (_OwnScroll) around the part.
+        // A specimen that takes a controller holds its own in a private
+        // holder around the part (_Own, _OwnScroll), disposed with it.
         expect(
           name,
-          anyOf(startsWith('RetroDesktop'), '_OwnScroll'),
+          anyOf(startsWith('RetroDesktop'), '_Own', '_OwnScroll'),
           reason: entry.row,
         );
       }

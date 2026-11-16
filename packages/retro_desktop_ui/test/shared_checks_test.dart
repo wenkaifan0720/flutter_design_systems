@@ -160,148 +160,186 @@ void main() {
 
   for (final appearance in RetroDesktopAppearance.values) {
     for (final brightness in Brightness.values) {
-      testWidgets('rows: ${appearance.name} ${brightness.name}, every page '
-          'shows one top and one bottom across each row', (tester) async {
-        addTearDown(tester.view.reset);
-        final problems = <String>[];
-        for (final width in const [390.0, 1440.0]) {
-          for (final density in RetroDesktopDensity.values) {
-            var count = 0;
-            for (final page in examplePages) {
-              await _show(
-                tester,
-                page,
-                width: width,
-                appearance: appearance,
-                brightness: brightness,
-                density: density,
-              );
-              final found = await _read(
-                tester,
-                () => const DesignRowCheck(
-                  look: _look,
-                ).check(tester.binding.rootElement!, runAsync: tester.runAsync),
-              );
-              for (final p in found) {
-                count++;
-                final line = '$width ${density.name} ${page.name}: $p';
-                debugPrint('ROWP ${appearance.name} ${brightness.name} $line');
-                problems.add(line);
+      testWidgets(
+        'rows: ${appearance.name} ${brightness.name}, every page '
+        'shows one top and one bottom across each row',
+        (tester) async {
+          addTearDown(tester.view.reset);
+          final problems = <String>[];
+          for (final width in const [390.0, 1440.0]) {
+            for (final density in RetroDesktopDensity.values) {
+              var count = 0;
+              for (final page in examplePages) {
+                await _show(
+                  tester,
+                  page,
+                  width: width,
+                  appearance: appearance,
+                  brightness: brightness,
+                  density: density,
+                );
+                final found = await _read(
+                  tester,
+                  () => const DesignRowCheck(look: _look).check(
+                    tester.binding.rootElement!,
+                    runAsync: tester.runAsync,
+                  ),
+                );
+                for (final p in found) {
+                  count++;
+                  final line = '$width ${density.name} ${page.name}: $p';
+                  debugPrint(
+                    'ROWP ${appearance.name} ${brightness.name} $line',
+                  );
+                  problems.add(line);
+                }
               }
+              debugPrint(
+                'ROWCHECK ${appearance.name} ${brightness.name} $width '
+                '${density.name}: $count',
+              );
             }
-            debugPrint(
-              'ROWCHECK ${appearance.name} ${brightness.name} $width '
-              '${density.name}: $count',
-            );
           }
-        }
-        final real = withoutMisreads('rows', problems, [
-          ...rowMisreads,
-          if (appearance == RetroDesktopAppearance.chisel) ...chiselRowMisreads,
-        ]);
-        expect(real, isEmpty, reason: real.join('\n'));
-      }, tags: const ['goldens']);
+          final real = withoutMisreads('rows', problems, [
+            ...rowMisreads,
+            if (appearance == RetroDesktopAppearance.chisel)
+              ...chiselRowMisreads,
+            if (appearance == RetroDesktopAppearance.platinum &&
+                brightness == Brightness.dark)
+              ...platinumNightRowMisreads,
+          ]);
+          expect(real, isEmpty, reason: real.join('\n'));
+        },
+        tags: const ['goldens'],
+        // Every example page at two widths and three densities: past the default ten minutes on a busy machine.
+        timeout: const Timeout(Duration(minutes: 30)),
+      );
     }
 
-    testWidgets('widths: ${appearance.name}, from 600 up every select, button, '
-        'stepper and segmented control keeps to its content', (tester) async {
-      addTearDown(tester.view.reset);
-      final problems = <String>[];
-      for (final width in const [600.0, 1024.0, 1440.0, 1920.0]) {
-        var count = 0;
-        for (final page in examplePages) {
-          await _show(
-            tester,
-            page,
-            width: width,
-            appearance: appearance,
-            brightness: Brightness.light,
-          );
-          final found = await _read(
-            tester,
-            () => const DesignWidthCheck(look: _look)
-                .check(tester.binding.rootElement!, runAsync: tester.runAsync),
-          );
-          for (final p in found) {
-            count++;
-            final line = '$width ${page.name}: $p';
-            debugPrint('WIDP ${appearance.name} $line');
-            problems.add(line);
-          }
-        }
-        debugPrint('WIDTHS ${appearance.name} $width: $count');
-      }
-      final real = withoutMisreads('widths', problems, widthMisreads);
-      expect(real, isEmpty, reason: real.join('\n'));
-    }, tags: const ['goldens']);
-
-    testWidgets('lists: ${appearance.name}, every select\'s list is at least '
-        'its field, on its leading edge', (tester) async {
-      addTearDown(tester.view.reset);
-      final problems = <String>[];
-      final selects = find.byWidgetPredicate(
-        (w) => w.runtimeType.toString().startsWith('RetroDesktopSelect<'),
-      );
-      for (final width in const [390.0, 1440.0]) {
-        var count = 0, opened = 0;
-        for (final page in examplePages) {
-          await _show(
-            tester,
-            page,
-            width: width,
-            appearance: appearance,
-            brightness: Brightness.light,
-            still: false,
-            // A screen's height: each select is scrolled into view and
-            // opened there (a page shown whole, 16000 tall, scrolled under
-            // an open list and asserted).
-            tallest: 3200,
-          );
-          final n = selects.evaluate().length;
-          for (var i = 0; i < n; i++) {
-            final field = selects.at(i);
-            final press = find
-                .descendant(
-                  of: field,
-                  matching: find.byType(RetroDesktopPressable),
-                )
-                .first;
-            if (press.evaluate().isEmpty) continue;
-            await tester.ensureVisible(press);
-            await settle(tester);
-            await tester.tap(press, warnIfMissed: false);
-            await settle(tester);
-            opened++;
-            final report = await const DesignWidthCheck(look: _look)
-                .checkList(tester.element(field), runAsync: tester.runAsync);
-            // What opened, when the check finds no list: a menu or none.
-            final menus = find.byWidgetPredicate(
-              (w) => w.runtimeType.toString().startsWith('RetroDesktopMenu<'),
+    testWidgets(
+      'widths: ${appearance.name}, from 600 up every select, button, '
+      'stepper and segmented control keeps to its content',
+      (tester) async {
+        addTearDown(tester.view.reset);
+        final problems = <String>[];
+        for (final width in const [600.0, 1024.0, 1440.0, 1920.0]) {
+          var count = 0;
+          for (final page in examplePages) {
+            await _show(
+              tester,
+              page,
+              width: width,
+              appearance: appearance,
+              brightness: Brightness.light,
             );
-            final shown = menus.evaluate().isEmpty
-                ? 'no menu on screen'
-                : 'a menu at ${tester.getRect(menus.first)}, the field at '
-                      '${tester.getRect(field)}';
-            for (final p in report.problems) {
+            final found = await _read(
+              tester,
+              () => const DesignWidthCheck(
+                look: _look,
+              ).check(tester.binding.rootElement!, runAsync: tester.runAsync),
+            );
+            for (final p in found) {
               count++;
-              final line =
-                  '$width ${page.name} select ${i + 1}: $p'
-                  '${p.startsWith('no list') ? ' ($shown)' : ''}';
-              debugPrint('LISTP ${appearance.name} $line');
+              final line = '$width ${page.name}: $p';
+              debugPrint('WIDP ${appearance.name} $line');
               problems.add(line);
             }
-            await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-            await settle(tester);
           }
+          debugPrint('WIDTHS ${appearance.name} $width: $count');
         }
-        debugPrint('LISTS ${appearance.name} $width: $count of $opened');
-      }
-      final real = withoutMisreads(
-        'lists',
-        problems,
-        appearance == RetroDesktopAppearance.chisel ? chiselListMisreads : [],
-      );
-      expect(real, isEmpty, reason: real.join('\n'));
-    }, tags: const ['goldens']);
+        final real = withoutMisreads('widths', problems, widthMisreads);
+        expect(real, isEmpty, reason: real.join('\n'));
+      },
+      tags: const ['goldens'],
+      // Every example page at five widths: past the default ten minutes on a busy machine.
+      timeout: const Timeout(Duration(minutes: 30)),
+    );
+
+    testWidgets(
+      'lists: ${appearance.name}, every select\'s list is at least '
+      'its field, on its leading edge',
+      (tester) async {
+        addTearDown(tester.view.reset);
+        final problems = <String>[];
+        final selects = find.byWidgetPredicate(
+          (w) => w.runtimeType.toString().startsWith('RetroDesktopSelect<'),
+        );
+        for (final width in const [390.0, 1440.0]) {
+          var count = 0, opened = 0;
+          for (final page in examplePages) {
+            await _show(
+              tester,
+              page,
+              width: width,
+              appearance: appearance,
+              brightness: Brightness.light,
+              still: false,
+              // A screen's height: each select is scrolled into view and
+              // opened there (a page shown whole, 16000 tall, scrolled under
+              // an open list and asserted).
+              tallest: 3200,
+            );
+            final n = selects.evaluate().length;
+            for (var i = 0; i < n; i++) {
+              final field = selects.at(i);
+              final press = find
+                  .descendant(
+                    of: field,
+                    matching: find.byType(RetroDesktopPressable),
+                  )
+                  .first;
+              if (press.evaluate().isEmpty) continue;
+              await tester.ensureVisible(press);
+              await settle(tester);
+              // A select behind a modal (a dialog over its window: Save
+              // changes, Error) is out of a tap's reach, so no list opens.
+              if (find
+                  .descendant(
+                    of: field,
+                    matching: find.byType(RetroDesktopPressable),
+                  )
+                  .hitTestable()
+                  .evaluate()
+                  .isEmpty) {
+                continue;
+              }
+              await tester.tap(press, warnIfMissed: false);
+              await settle(tester);
+              opened++;
+              final report = await const DesignWidthCheck(look: _look)
+                  .checkList(tester.element(field), runAsync: tester.runAsync);
+              // What opened, when the check finds no list: a menu or none.
+              final menus = find.byWidgetPredicate(
+                (w) => w.runtimeType.toString().startsWith('RetroDesktopMenu<'),
+              );
+              final shown = menus.evaluate().isEmpty
+                  ? 'no menu on screen'
+                  : 'a menu at ${tester.getRect(menus.first)}, the field at '
+                        '${tester.getRect(field)}';
+              for (final p in report.problems) {
+                count++;
+                final line =
+                    '$width ${page.name} select ${i + 1}: $p'
+                    '${p.startsWith('no list') ? ' ($shown)' : ''}';
+                debugPrint('LISTP ${appearance.name} $line');
+                problems.add(line);
+              }
+              await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+              await settle(tester);
+            }
+          }
+          debugPrint('LISTS ${appearance.name} $width: $count of $opened');
+        }
+        final real = withoutMisreads(
+          'lists',
+          problems,
+          appearance == RetroDesktopAppearance.chisel ? chiselListMisreads : [],
+        );
+        expect(real, isEmpty, reason: real.join('\n'));
+      },
+      tags: const ['goldens'],
+      // Every select on every example page, opened at two widths: as the widths above.
+      timeout: const Timeout(Duration(minutes: 30)),
+    );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -16,6 +18,7 @@ import 'tone.dart';
 import 'internal/caps.dart';
 import 'internal/marks.dart';
 import 'pixels.dart';
+import 'tokens.dart';
 
 /// A semantic notice using the desktop alert window and a tone-specific glyph.
 ///
@@ -37,7 +40,7 @@ class RetroDesktopBanner extends StatelessWidget {
     this.style,
   });
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// Whether changes are announced as a live region.
@@ -88,6 +91,31 @@ class RetroDesktopBanner extends StatelessWidget {
         ),
     ],
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('live', value: live, ifFalse: 'live: false'))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(StringProperty('dismissLabel', dismissLabel, defaultValue: null))
+      ..add(
+        EnumProperty<RetroDesktopTone>(
+          'tone',
+          tone,
+          defaultValue: RetroDesktopTone.info,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDismissed', onDismissed));
+  }
 }
 
 /// A rectangular count mark, alone or beside another widget.
@@ -114,7 +142,7 @@ class RetroDesktopBadge extends StatelessWidget {
   /// The widget displayed inside this part.
   final Widget? child;
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
   @override
   Widget build(BuildContext context) {
@@ -128,7 +156,10 @@ class RetroDesktopBadge extends StatelessWidget {
           scale: RetroDesktopFaceScale.mark,
           component: t.badgeTheme,
           style: style,
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+          padding: const EdgeInsets.symmetric(
+            horizontal: RetroDesktopSpacing.s4 + RetroDesktopSpacing.px,
+            vertical: RetroDesktopSpacing.px,
+          ),
           child: RetroDesktopCaps(Text(countText)),
         ),
       ),
@@ -142,10 +173,25 @@ class RetroDesktopBadge extends StatelessWidget {
       );
     }
     return Wrap(
-      spacing: 4,
+      spacing: RetroDesktopSpacing.s4,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [child!, badge],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -167,7 +213,7 @@ class RetroDesktopCircularProgressIndicator extends StatefulWidget {
   }) : assert(value == null || (value >= 0 && value <= 1)),
        assert(size >= 12);
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The current value to display or edit.
@@ -181,6 +227,22 @@ class RetroDesktopCircularProgressIndicator extends StatefulWidget {
   @override
   State<RetroDesktopCircularProgressIndicator> createState() =>
       _ProgressState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('size', size, defaultValue: 32));
+  }
 }
 
 class _ProgressState extends State<RetroDesktopCircularProgressIndicator>
@@ -281,7 +343,7 @@ class RetroDesktopSkeleton extends StatelessWidget {
     this.width,
   }) : assert(lines > 0);
 
-  /// Overrides this part's component theme; unresolved slots keep their themed values.
+  /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
 
   /// The number of visible text or placeholder lines.
@@ -332,6 +394,22 @@ class RetroDesktopSkeleton extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<RetroDesktopStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('lines', lines, defaultValue: 3))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('width', width, defaultValue: null));
   }
 }
 
@@ -387,17 +465,17 @@ class RetroDesktopSuccessState extends StatelessWidget {
     return Semantics(
       liveRegion: true,
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(RetroDesktopSpacing.s24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             child ??
                 Icon(RetroDesktopGlyphs.check, size: 40, color: t.colors.text),
-            const SizedBox(height: 12),
+            const SizedBox(height: RetroDesktopSpacing.s12),
             Text(title, textAlign: TextAlign.center, style: t.type.head),
             if (message != null)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.only(top: RetroDesktopSpacing.s8),
                 child: Text(
                   message!,
                   textAlign: TextAlign.center,
@@ -405,11 +483,22 @@ class RetroDesktopSuccessState extends StatelessWidget {
                 ),
               ),
             if (action != null)
-              Padding(padding: const EdgeInsets.only(top: 12), child: action!),
+              Padding(
+                padding: const EdgeInsets.only(top: RetroDesktopSpacing.s12),
+                child: action!,
+              ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null));
   }
 }
 
@@ -443,7 +532,7 @@ class RetroDesktopEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(RetroDesktopSpacing.s24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -455,11 +544,11 @@ class RetroDesktopEmptyState extends StatelessWidget {
               size: 40,
               color: t.colors.textSecondary,
             ),
-          const SizedBox(height: 12),
+          const SizedBox(height: RetroDesktopSpacing.s12),
           Text(title, textAlign: TextAlign.center, style: t.type.head),
           if (message != null)
             Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.only(top: RetroDesktopSpacing.s8),
               child: Text(
                 message!,
                 textAlign: TextAlign.center,
@@ -467,9 +556,20 @@ class RetroDesktopEmptyState extends StatelessWidget {
               ),
             ),
           if (action != null)
-            Padding(padding: const EdgeInsets.only(top: 16), child: action!),
+            Padding(
+              padding: const EdgeInsets.only(top: RetroDesktopSpacing.s16),
+              child: action!,
+            ),
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null));
   }
 }

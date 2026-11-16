@@ -48,6 +48,7 @@ DesignTableController<_Doc> _table(bool selected) {
       ),
     ],
   );
+  addTearDown(controller.dispose);
   if (selected) controller.selectAll();
   return controller;
 }
@@ -58,6 +59,7 @@ DesignTreeController<String> _tree(bool selected) {
     expanded: const ['System'],
     childrenOf: (n) => n == 'System' ? const ['Fonts', 'Sounds'] : const [],
   );
+  addTearDown(controller.dispose);
   if (selected) controller.select('Fonts');
   return controller;
 }
@@ -277,7 +279,9 @@ final Map<String, Widget? Function(String)> stateParts = {
       : RetroDesktopSplitButton(
           label: 'Save',
           onPressed: s == 'disabled' ? null : _noop,
-          actions: [DesignSplitAction(label: 'Save as', onPressed: _noop)],
+          actions: [
+            const DesignSplitAction(label: 'Save as', onPressed: _noop),
+          ],
         ),
   'Text area': (s) => s == 'selected' || s == 'pressed'
       ? null
@@ -358,11 +362,13 @@ final Map<String, Widget? Function(String)> stateParts = {
       : SizedBox(
           width: 320,
           child: RetroDesktopCalendar(
-            controller: DesignCalendarController(
-              firstDate: _june,
-              lastDate: _september,
-              selectedDate: s == 'selected' ? DateTime(2026, 6, 14) : null,
-              currentDate: DateTime(2026, 6, 10),
+            controller: _owned(
+              DesignCalendarController(
+                firstDate: _june,
+                lastDate: _september,
+                selectedDate: s == 'selected' ? DateTime(2026, 6, 14) : null,
+                currentDate: DateTime(2026, 6, 10),
+              ),
             ),
           ),
         ),
@@ -385,7 +391,7 @@ final Map<String, Widget? Function(String)> stateParts = {
       ? SizedBox(
           width: 280,
           child: RetroDesktopColorPicker(
-            controller: DesignColorController(const Color(0xff3366cc)),
+            controller: _owned(DesignColorController(const Color(0xff3366cc))),
           ),
         )
       : null,
@@ -399,7 +405,7 @@ final Map<String, Widget? Function(String)> stateParts = {
                 // A menu with nothing in it is unavailable.
                 children: s == 'disabled'
                     ? const []
-                    : [DesignMenuEntry(label: 'New', onPressed: _noop)],
+                    : [const DesignMenuEntry(label: 'New', onPressed: _noop)],
               ),
           ],
         ),
@@ -483,7 +489,7 @@ final Map<String, Widget? Function(String)> stateParts = {
       ? const RetroDesktopTag('Draft', icon: RetroDesktopGlyphs.tag)
       : null,
   'Status view': (s) => s == 'idle'
-      ? SizedBox(
+      ? const SizedBox(
           width: 320,
           child: RetroDesktopStatusView(
             status: RetroDesktopStatus.error,
@@ -505,7 +511,7 @@ final Map<String, Widget? Function(String)> stateParts = {
       : null,
   'Action sheet': (s) => s == 'selected' || s == 'error' || s == 'disabled'
       ? null
-      : SizedBox(
+      : const SizedBox(
           width: 320,
           child: RetroDesktopActionSheet(
             title: 'Budget',
@@ -639,3 +645,9 @@ Future<TestGesture?> enterState(
 /// The boundary at [key], for the sheets and the law.
 RenderRepaintBoundary stateBoundary(GlobalKey key) =>
     key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+
+/// [controller], disposed when the test that built it ends.
+C _owned<C extends ChangeNotifier>(C controller) {
+  addTearDown(controller.dispose);
+  return controller;
+}

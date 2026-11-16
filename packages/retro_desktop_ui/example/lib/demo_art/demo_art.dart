@@ -1,4 +1,6 @@
 // Catalog and example illustrations; excluded from retro_desktop_ui by design.demoArt.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -134,6 +136,14 @@ class RetroDesktopDeskArt extends StatelessWidget {
       painter: _DeskArtPainter(RetroDesktopTheme.of(context).colors, mark),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<RetroDesktopDeskMark>('mark', mark))
+      ..add(DoubleProperty('size', size, defaultValue: 48));
+  }
 }
 
 /// Marks on the desktop itself: a disk, a floppy and a bin, each with its name, in the rail at a desktop's end with the last
@@ -211,6 +221,14 @@ class RetroDesktopDeskMarks extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      IterableProperty<(RetroDesktopDeskMark, String)>('marks', marks),
     );
   }
 }
@@ -458,6 +476,14 @@ class RetroDesktopObjectArt extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<RetroDesktopObject>('object', object))
+      ..add(DoubleProperty('fill', fill, defaultValue: .8));
+  }
 }
 
 /// A catalog folder illustration. A library folder grid accepts any widget.
@@ -500,6 +526,14 @@ class RetroDesktopFolderArt extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null));
+  }
 }
 
 /// A catalog document illustration. A library file grid accepts any widget.
@@ -532,6 +566,20 @@ class RetroDesktopFilePageArt extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<RetroDesktopFileArt>(
+          'kind',
+          kind,
+          defaultValue: RetroDesktopFileArt.text,
+        ),
+      )
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'));
+  }
 }
 
 const _towerShape = [

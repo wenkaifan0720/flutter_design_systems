@@ -1,5 +1,7 @@
 // Round 4's actions: a button group, a toggle group and a split button. The toggle group and the split button stand
 // on ui_core's behaviour (keys, focus, semantics, the menu); this file only paints them.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
@@ -9,11 +11,13 @@ import 'component_themes.dart';
 import 'controls.dart' show RetroDesktopTriangleMark;
 import 'internal/face.dart';
 import 'internal/parts.dart';
+import 'internal/presence.dart';
 
 import 'layout.dart' show RetroDesktopReach;
 import 'press.dart';
 import 'theme.dart';
 import 'internal/caps.dart';
+import 'tokens.dart';
 
 /// How far a joined strip's frame stands in from its segments' reach, above
 /// and below: the strip shows a button's height (beside one, the same top and
@@ -66,7 +70,7 @@ Widget _joined(BuildContext context, List<Widget> segments) {
               end: Alignment.bottomCenter,
               colors: [c.platinumLight, c.platinum],
             ),
-            component: t.buttonTheme.merge(
+            component: t.buttonTheme.over(
               RetroDesktopStyle(
                 textStyle: WidgetStatePropertyAll(t.type.chrome),
               ),
@@ -135,13 +139,17 @@ Widget _segment(
         minWidth: least,
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        padding: const EdgeInsets.symmetric(
+          horizontal: RetroDesktopSpacing.s10,
+          vertical: RetroDesktopSpacing.s4,
+        ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (icon != null) Icon(icon, size: 16, color: ink),
-            if (icon != null && label != null) const SizedBox(width: 6),
+            if (icon != null && label != null)
+              const SizedBox(width: RetroDesktopSpacing.s6),
             if (label != null)
               Flexible(
                 child: RetroDesktopCaps(
@@ -224,6 +232,14 @@ class RetroDesktopButtonGroup extends StatelessWidget {
           ),
       ]),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<RetroDesktopButtonGroupItem>('items', items))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -319,6 +335,36 @@ class RetroDesktopToggleGroup<T> extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('values', values))
+      ..add(IterableProperty<T>('selected', selected))
+      ..add(
+        ObjectFlagProperty<ValueChanged<Set<T>>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(T value)>.has('labelOf', labelOf),
+      )
+      ..add(
+        ObjectFlagProperty<IconData? Function(T value)>.has('iconOf', iconOf),
+      )
+      ..add(
+        FlagProperty(
+          'showLabels',
+          value: showLabels,
+          ifFalse: 'showLabels: false',
+        ),
+      )
+      ..add(FlagProperty('multiple', value: multiple, ifTrue: 'multiple'))
+      ..add(FlagProperty('allowEmpty', value: allowEmpty, ifTrue: 'allowEmpty'))
+      ..add(
+        ObjectFlagProperty<bool Function(T value)>.has('isEnabled', isEnabled),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// A button with its own menu: the main action on its face, the others behind
@@ -392,32 +438,50 @@ class RetroDesktopSplitButton extends StatelessWidget {
           ),
         );
       },
-      // The keyboard's row is lit, or the row under the pointer, from rim to rim (see RetroDesktopMenuBar).
-      itemBuilder: (context, action, states) => retroDesktopLitRow(
-        context,
-        lit:
-            action.onPressed != null &&
-            (states.contains(WidgetState.hovered) ||
-                (states.contains(WidgetState.focused) &&
-                    RetroDesktopLastInput.byKey)),
+      // One row lit from rim to rim, the keyboard's or the pointer's, whichever moved last; the pointer takes the
+      // keys' place as it moves (see RetroDesktopMenuBar).
+      itemBuilder: (context, action, states) => RetroDesktopPointerFocus(
         enabled: action.onPressed != null,
-        shape: const RoundedRectangleBorder(),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: RetroDesktopCaps(Text(action.label)),
+        child: retroDesktopLitRow(
+          context,
+          lit: retroDesktopMenuRowLit(
+            states,
+            enabled: action.onPressed != null,
+          ),
+          enabled: action.onPressed != null,
+          shape: const RoundedRectangleBorder(),
+          padding: const EdgeInsets.symmetric(
+            horizontal: RetroDesktopSpacing.s16,
+            vertical: RetroDesktopSpacing.s10,
+          ),
+          child: RetroDesktopCaps(Text(action.label)),
+        ),
       ),
       surfaceBuilder: (context, info, items) =>
           _menuPanel(context, info, items),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(IterableProperty<DesignSplitAction>('actions', actions))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('menuLabel', menuLabel, defaultValue: null));
+  }
 }
 
-/// A menu's panel under its anchor, growing from it as the menu opens.
+/// A menu's panel under its anchor, there at once as it opens and gone at once
+/// as it closes (the motion's raise and leave, zero by default).
 Widget _menuPanel(
   BuildContext context,
   DesignOverlayInfo info,
   List<Widget> items,
-) => FadeTransition(
-  opacity: info.animation,
+) => RetroDesktopPresence(
+  animation: info.animation,
   child: ConstrainedBox(
     constraints: BoxConstraints(
       minWidth: 160,
@@ -426,7 +490,7 @@ Widget _menuPanel(
     ),
     child: retroDesktopPanel(
       context,
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: RetroDesktopSpacing.s4),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
