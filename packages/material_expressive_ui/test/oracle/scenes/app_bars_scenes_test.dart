@@ -285,9 +285,9 @@ final OracleGroup appBarsScenes = OracleGroup(
       size: const Size(408, 64),
       build: (context) => _search(scrolled: true),
     ),
-    OracleScene(
+    const OracleScene(
       key: 'app-bars/search-view',
-      size: const Size(408, 112),
+      size: Size(408, 112),
       build: _searchView,
     ),
     OracleScene(

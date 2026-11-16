@@ -39,6 +39,7 @@ library;
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/physics.dart' show SpringSimulation;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -56,6 +57,7 @@ import '../internal/tokens/fab_baseline_tokens.g.dart';
 import '../internal/tokens/fab_medium_tokens.g.dart';
 import '../internal/tokens/floating_toolbar_tokens.g.dart';
 import '../internal/tokens/keys.g.dart';
+import '../internal/style_layers.dart';
 import 'fab.dart' show ExpressiveFabMenu;
 
 // ---------------------------------------------------------------------------
@@ -231,6 +233,73 @@ class ExpressiveFloatingToolbar extends StatefulWidget {
   @override
   State<ExpressiveFloatingToolbar> createState() =>
       _ExpressiveFloatingToolbarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<Axis>('axis', axis, defaultValue: Axis.horizontal),
+      )
+      ..add(
+        EnumProperty<ExpressiveToolbarKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveToolbarKind.standard,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveToolbarFabPosition>(
+          'fabPosition',
+          fabPosition,
+          defaultValue: ExpressiveToolbarFabPosition.end,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveToolbarScrollBehavior?>(
+          'scrollBehavior',
+          scrollBehavior,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveElevationLevel>(
+          'expandedElevation',
+          expandedElevation,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveElevationLevel>(
+          'collapsedElevation',
+          collapsedElevation,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        StringProperty(
+          'expandActionLabel',
+          expandActionLabel,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        StringProperty(
+          'collapseActionLabel',
+          collapseActionLabel,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _ExpressiveFloatingToolbarState extends State<ExpressiveFloatingToolbar> {
@@ -398,7 +467,7 @@ class _ExpressiveFloatingToolbarState extends State<ExpressiveFloatingToolbar> {
       ),
     );
     final theme = context.expressiveTheme;
-    final resolved = theme.toolbarTheme.merge(widget.style);
+    final resolved = theme.toolbarTheme.layeredUnder(widget.style);
     const states = <WidgetState>{};
     final supplied = resolved.shape?.resolve(states);
     final side =
@@ -540,7 +609,7 @@ class _ToolbarBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final direction = Directionality.of(context);
     final theme = context.expressiveTheme;
-    final resolved = theme.toolbarTheme.merge(style);
+    final resolved = theme.toolbarTheme.layeredUnder(style);
     const states = <WidgetState>{};
     final supplied = resolved.shape?.resolve(states);
     final side =
@@ -972,6 +1041,38 @@ class ExpressiveToolbarFab extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(StringProperty('semanticLabel', semanticLabel))
+      ..add(
+        EnumProperty<ExpressiveToolbarKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveToolbarKind.standard,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('tooltip', tooltip, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1091,6 +1192,42 @@ class ExpressiveDockedToolbar extends StatelessWidget {
       label: semanticLabel,
       child: bar,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<ExpressiveToolbarKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveToolbarKind.standard,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveDockedToolbarArrangement>(
+          'arrangement',
+          arrangement,
+          defaultValue: ExpressiveDockedToolbarArrangement.spaceBetween,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveToolbarScrollBehavior?>(
+          'scrollBehavior',
+          scrollBehavior,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('safeArea', safeArea, defaultValue: true))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -1415,6 +1552,33 @@ class ExpressiveToolbarScrollExpansion extends StatefulWidget {
   @override
   State<ExpressiveToolbarScrollExpansion> createState() =>
       _ExpressiveToolbarScrollExpansionState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<bool>(
+          'initiallyExpanded',
+          initiallyExpanded,
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DoubleProperty(
+          'expandThreshold',
+          expandThreshold,
+          defaultValue: FloatingToolbarBehavior.scrollDistanceThreshold,
+        ),
+      )
+      ..add(
+        DoubleProperty(
+          'collapseThreshold',
+          collapseThreshold,
+          defaultValue: FloatingToolbarBehavior.scrollDistanceThreshold,
+        ),
+      );
+  }
 }
 
 class _ExpressiveToolbarScrollExpansionState

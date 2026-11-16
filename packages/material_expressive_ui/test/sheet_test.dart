@@ -48,6 +48,7 @@
 /// takes the system back before the route does.
 library;
 
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -904,9 +905,11 @@ void main() {
         ),
       ),
     );
-    showExpressiveBottomSheet<void>(
-      inner.currentContext!,
-      builder: (context) => const SizedBox(height: _shortHeight),
+    unawaited(
+      showExpressiveBottomSheet<void>(
+        inner.currentContext!,
+        builder: (context) => const SizedBox(height: _shortHeight),
+      ),
     );
     await tester.pumpAndSettle();
     expect(

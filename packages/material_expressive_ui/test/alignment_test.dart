@@ -16,6 +16,7 @@ import 'package:material_expressive_ui/material_expressive_ui.dart';
 import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/trip.dart';
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'gallery_support.dart';
 import 'overlay_fixtures.dart';
 
@@ -452,7 +453,7 @@ void main() {
       );
     }
     measured.clear();
-  });
+  }, experimentalLeakTesting: longWalkLeakTesting);
 
   // The column's edges (shapes.md §7; the coordinator's 11-08 review): on
   // the trip planner's screens, at a phone's width and a desktop's,

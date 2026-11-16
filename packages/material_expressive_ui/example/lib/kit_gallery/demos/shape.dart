@@ -30,7 +30,8 @@ Widget _swatch(
 }) {
   final t = context.expressiveTheme;
   final style = t.type.labelMedium.copyWith(color: t.colors.onSurfaceVariant);
-  return SizedBox(
+  // As wide as the tile, or as its name's longest word at large text.
+  return KitWordCell(
     width: width,
     child: Column(
       children: <Widget>[
@@ -39,23 +40,23 @@ Widget _swatch(
         Semantics(
           label: label,
           excludeSemantics: true,
-          // One paragraph, breakable only where a word starts (a zero-width
-          // space there), and set left to right in either direction: as a
-          // Wrap of words its halves swapped in RTL ("Smallextra", 11-13).
-          child: Text(
-            label.replaceAll(_wordBreak, '\u200B'),
-            style: style,
-            textAlign: TextAlign.center,
+          // Its words in a Wrap, set left to right in either direction (right
+          // to left its halves swapped: "Smallextra", 11-13). A Wrap's least
+          // width is its widest word, so the cell keeps its width until a
+          // word needs more; one paragraph with zero-width spaces measured
+          // as one word, and every long name widened its cell (11-14).
+          child: Wrap(
+            alignment: WrapAlignment.center,
             textDirection: TextDirection.ltr,
+            children: <Widget>[
+              for (final word in kitWords(label)) Text(word, style: style),
+            ],
           ),
         ),
       ],
     ),
   );
 }
-
-/// Where a camelCase name's next word starts: `cookie4|Sided`.
-final RegExp _wordBreak = RegExp('(?<=[a-z0-9])(?=[A-Z])');
 
 /// A tile in [shape], [dimension] square: the corner scale's tiles are 112dp,
 /// wide enough that its 28, 32 and 48dp steps and full each round

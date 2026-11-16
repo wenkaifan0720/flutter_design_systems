@@ -599,27 +599,29 @@ Widget kitSpecimenToggleButtonOn() => Center(
   ),
 );
 
-/// Three tonal buttons sharing the width.
-Widget kitSpecimenButtonGroupReply() => const ExpressiveButtonGroup(
-  expand: true,
-  children: <Widget>[
-    ExpressiveFilledButton.tonal(
-      'Reply',
-      icon: ExpressiveSymbols.reply,
-      onPressed: _noop,
-    ),
-    ExpressiveFilledButton.tonal(
-      'Forward',
-      icon: ExpressiveSymbols.send,
-      onPressed: _noop,
-    ),
-    ExpressiveFilledButton.tonal(
-      'Archive',
-      icon: ExpressiveSymbols.archive,
-      onPressed: _noop,
-    ),
-  ],
-);
+/// Three tonal buttons sharing the width; [icons] false leaves their
+/// words alone, for a narrow tile.
+Widget kitSpecimenButtonGroupReply({bool icons = true}) =>
+    ExpressiveButtonGroup(
+      expand: true,
+      children: <Widget>[
+        ExpressiveFilledButton.tonal(
+          'Reply',
+          icon: icons ? ExpressiveSymbols.reply : null,
+          onPressed: _noop,
+        ),
+        ExpressiveFilledButton.tonal(
+          'Forward',
+          icon: icons ? ExpressiveSymbols.send : null,
+          onPressed: _noop,
+        ),
+        ExpressiveFilledButton.tonal(
+          'Archive',
+          icon: icons ? ExpressiveSymbols.archive : null,
+          onPressed: _noop,
+        ),
+      ],
+    );
 
 /// Day, week or month: the connected group, week chosen.
 Widget kitSpecimenSegmentedRange() => ExpressiveSegmentedButton<String>(

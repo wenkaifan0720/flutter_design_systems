@@ -5,6 +5,7 @@
 /// `DesignSideSheetRoute`).
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -17,6 +18,8 @@ import '../motion.dart';
 import '../spacing.dart';
 import '../strings.dart';
 import '../theme.dart';
+import '../internal/tokens/drag_handle_tokens.g.dart';
+import '../states.dart';
 import 'icon_buttons.dart';
 import 'lists.dart' show ExpressiveDivider;
 
@@ -24,9 +27,9 @@ import 'lists.dart' show ExpressiveDivider;
 
 /// Material's scrollbar (`_ScrollbarDefaultsM3`): 8dp, 12dp with its track
 /// under a pointer, 2dp in from the edge, the full corner.
-const double _barThickness = 8;
-const double _barThicknessHot = 12;
-const double _barMargin = 2;
+const double _barThickness = ExpressiveSpacing.s8;
+const double _barThicknessHot = ExpressiveSpacing.s12;
+const double _barMargin = ExpressiveSpacing.s2;
 
 /// [child], a scroll view on [controller], with Material's scrollbar on its
 /// end edge (or its bottom, [axis] horizontal): a pill thumb of `onSurface`
@@ -166,7 +169,7 @@ class ExpressiveScrollArea extends StatelessWidget {
             ? _FrameRing(
                 shape: t.shapes.medium,
                 color: c.secondary,
-                thickness: 3,
+                thickness: ExpressiveFocusRing.thickness,
                 textDirection: Directionality.of(context),
                 inward: true,
               )
@@ -175,6 +178,31 @@ class ExpressiveScrollArea extends StatelessWidget {
       ),
       child: child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ScrollController>('controller', controller))
+      ..add(
+        DiagnosticsProperty<Axis>('axis', axis, defaultValue: Axis.vertical),
+      )
+      ..add(
+        FlagProperty('alwaysShown', value: alwaysShown, ifTrue: 'alwaysShown'),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('focusable', focusable, defaultValue: true),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -220,8 +248,11 @@ class _FrameRing extends CustomPainter {
 
 /// Compose's adaptive drag handle (`VerticalDragHandle`): a 4 x 48dp pill,
 /// 12 x 52dp while dragged.
-const Size _handle = Size(4, 48);
-const Size _handlePressed = Size(12, 52);
+const Size _handle = Size(DragHandleTokens.width, DragHandleTokens.height);
+const Size _handlePressed = Size(
+  DragHandleTokens.draggedWidth,
+  DragHandleTokens.draggedHeight,
+);
 
 /// [first] and [second] beside each other (or stacked, [axis] vertical)
 /// across a 24dp gutter, the drag handle of Material's adaptive panes in
@@ -249,7 +280,18 @@ class ExpressiveResizable extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     super.key,
-  });
+  }) : assert(
+         minFirst >= 0 && minSecond >= 0,
+         'a pane\'s minimum is not negative',
+       ),
+       assert(
+         initialFraction >= 0 && initialFraction <= 1,
+         'initialFraction is a share of the whole, 0 to 1',
+       ),
+       assert(
+         fraction == null || (fraction >= 0 && fraction <= 1),
+         'fraction is a share of the whole, 0 to 1',
+       );
 
   /// The start (or top) pane.
   final Widget first;
@@ -329,7 +371,7 @@ class ExpressiveResizable extends StatelessWidget {
                 foregroundPainter: _FrameRing(
                   shape: t.shapes.full,
                   color: c.secondary,
-                  thickness: 3,
+                  thickness: ExpressiveFocusRing.thickness,
                   textDirection: Directionality.of(context),
                   inward: false,
                 ),
@@ -340,6 +382,32 @@ class ExpressiveResizable extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Axis>('axis', axis, defaultValue: Axis.horizontal),
+      )
+      ..add(DoubleProperty('fraction', fraction, defaultValue: null))
+      ..add(
+        DoubleProperty('initialFraction', initialFraction, defaultValue: 0.5),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>?>.has('onChanged', onChanged),
+      )
+      ..add(DoubleProperty('minFirst', minFirst, defaultValue: 0))
+      ..add(DoubleProperty('minSecond', minSecond, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -355,7 +423,7 @@ class ExpressiveResizable extends StatelessWidget {
 /// (ui_core's `DesignSideSheetRoute`).
 ///
 /// ```dart
-/// ExpressiveSheet.show(context, title: 'Filters', builder: (context) => filters)
+/// ExpressiveSheet.show<void>(context, title: 'Filters', builder: (context) => filters)
 /// ```
 class ExpressiveSheet extends StatelessWidget {
   /// A side sheet's panel headed [title].
@@ -520,5 +588,20 @@ class ExpressiveSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onClose', onClose))
+      ..add(
+        DiagnosticsProperty<DesignSheetEdge>(
+          'edge',
+          edge,
+          defaultValue: DesignSheetEdge.end,
+        ),
+      );
   }
 }

@@ -113,15 +113,15 @@ final OracleGroup selectionScenes = OracleGroup(
       key: 'selection/checkbox',
       size: const Size(288, 64),
       build: (context) => _row([
-        VisualTag(
+        const VisualTag(
           'checkbox-off',
           child: ExpressiveCheckbox(value: false, onChanged: _ignore),
         ),
-        VisualTag(
+        const VisualTag(
           'checkbox-on',
           child: ExpressiveCheckbox(value: true, onChanged: _ignore),
         ),
-        VisualTag(
+        const VisualTag(
           'checkbox-mixed',
           child: ExpressiveCheckbox(
             value: null,
@@ -129,7 +129,7 @@ final OracleGroup selectionScenes = OracleGroup(
             onChanged: _ignore,
           ),
         ),
-        VisualTag(
+        const VisualTag(
           'checkbox-error-off',
           child: ExpressiveCheckbox(
             value: false,
@@ -137,7 +137,7 @@ final OracleGroup selectionScenes = OracleGroup(
             onChanged: _ignore,
           ),
         ),
-        VisualTag(
+        const VisualTag(
           'checkbox-error-on',
           child: ExpressiveCheckbox(
             value: true,
@@ -151,15 +151,15 @@ final OracleGroup selectionScenes = OracleGroup(
       key: 'selection/checkbox/disabled',
       size: const Size(176, 64),
       build: (context) => _row([
-        VisualTag(
+        const VisualTag(
           'checkbox-off',
           child: ExpressiveCheckbox(value: false, onChanged: null),
         ),
-        VisualTag(
+        const VisualTag(
           'checkbox-on',
           child: ExpressiveCheckbox(value: true, onChanged: null),
         ),
-        VisualTag(
+        const VisualTag(
           'checkbox-mixed',
           child: ExpressiveCheckbox(
             value: null,
@@ -211,20 +211,20 @@ final OracleGroup selectionScenes = OracleGroup(
           'switch-on',
           child: ExpressiveSwitch(value: true, onChanged: _ignore),
         ),
-        VisualTag(
+        const VisualTag(
           'switch-icon-off',
           child: ExpressiveSwitch(
             value: false,
             onChanged: _ignore,
-            uncheckedIcon: const SizedBox.square(dimension: 16),
+            uncheckedIcon: SizedBox.square(dimension: 16),
           ),
         ),
-        VisualTag(
+        const VisualTag(
           'switch-icon-on',
           child: ExpressiveSwitch(
             value: true,
             onChanged: _ignore,
-            checkedIcon: const SizedBox.square(dimension: 16),
+            checkedIcon: SizedBox.square(dimension: 16),
           ),
         ),
       ]),

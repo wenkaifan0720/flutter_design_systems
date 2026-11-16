@@ -25,7 +25,8 @@
 ///   Expressive app may calm dense data, a Standard app never bounces, so
 ///   nothing pins Expressive);
 /// - Reduce Motion, the kit's [DesignMotionPolicy]: spatial springs critically
-///   damped (ζ = 1 at the token's stiffness), effects unchanged.
+///   damped (ζ = 1 at the token's stiffness), effects a short fade (ζ = 1 at
+///   no less than the fastest effects token's 3800).
 ///
 /// Then it runs the spring: `controller.springTo(target, spring)` (the
 /// kit's [DesignSpringDrive], exported here), or one of the implicit helpers —
@@ -86,7 +87,8 @@ class ExpressiveMotion with Diagnosticable {
   /// The scheme the springs come from.
   final ExpressiveMotionScheme scheme;
 
-  /// Whether spatial springs are critically damped (Reduce Motion).
+  /// Whether springs are calmed (Reduce Motion): spatial ones critically
+  /// damped, effects ones a short fade.
   final bool reduceMotion;
 
   /// This motion with [scheme] or [reduceMotion] replaced.
@@ -125,7 +127,8 @@ class ExpressiveMotion with Diagnosticable {
   static bool isSpatial(ExpressiveMotionKey key) => expressiveIsSpatialKey(key);
 
   /// The spring [key] runs here: the scheme's token through the kit's
-  /// policy (a spatial spring critically damped under Reduce Motion).
+  /// policy (under Reduce Motion a spatial spring critically damped, an
+  /// effects spring a short fade).
   SpringDescription spring(ExpressiveMotionKey key) {
     final token = expressiveSpringTokenOf(scheme, key);
     return expressiveIsSpatialKey(key)
@@ -259,6 +262,17 @@ class ExpressiveSpringValue extends StatefulWidget {
 
   @override
   State<ExpressiveSpringValue> createState() => _ExpressiveSpringValueState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(EnumProperty<ExpressiveMotionKey>('motion', motion))
+      ..add(
+        ObjectFlagProperty<ValueWidgetBuilder<double>>.has('builder', builder),
+      );
+  }
 }
 
 class _ExpressiveSpringValueState extends State<ExpressiveSpringValue>
@@ -329,6 +343,16 @@ class ExpressiveSpringTween<T> extends StatefulWidget {
   @override
   State<ExpressiveSpringTween<T>> createState() =>
       _ExpressiveSpringTweenState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(EnumProperty<ExpressiveMotionKey>('motion', motion))
+      ..add(ObjectFlagProperty<ExpressiveLerp<T>>.has('lerp', lerp))
+      ..add(ObjectFlagProperty<ValueWidgetBuilder<T>>.has('builder', builder));
+  }
 }
 
 class _ExpressiveSpringTweenState<T> extends State<ExpressiveSpringTween<T>>

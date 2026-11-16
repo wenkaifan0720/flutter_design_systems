@@ -1,6 +1,7 @@
 /// A theme supplies missing primitive words without replacing app resources.
 library;
 
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -127,4 +128,98 @@ void main() {
     expect(paste, 'App translation');
     expect(tester.takeException(), isNull);
   });
+
+  // An app in another language whose delegates give no Material or
+  // Cupertino words of the primitives' own types (a MaterialApp's load
+  // English only; flutter_localizations' are package:flutter's types): a
+  // field, typed in and its context menu opened, throws nothing on Android
+  // or iOS (0.1.1 threw "No CupertinoLocalizations found" on iOS). With the
+  // theme under the app's home rather than in its builder, the selection's
+  // handles and menu build in the navigator's overlay, above the theme: the
+  // theme they capture brings its words along.
+  for (final underHome in const [false, true]) {
+    for (final locale in const [Locale('en'), Locale('de'), Locale('ar')]) {
+      _fieldInApp(theme, locale, underHome: underHome);
+    }
+  }
+}
+
+void _fieldInApp(
+  ExpressiveThemeData theme,
+  Locale locale, {
+  required bool underHome,
+}) {
+  testWidgets(
+    'a field and its context menu in an app in ${locale.languageCode}, '
+    'the theme ${underHome ? 'under home' : 'in the builder'}',
+    (tester) async {
+      final controller = TextEditingController(text: 'Lisbon in spring');
+      addTearDown(controller.dispose);
+      MaterialLocalizations? material;
+      CupertinoLocalizations? cupertino;
+      final page = Builder(
+        builder: (context) {
+          material = Localizations.of<MaterialLocalizations>(
+            context,
+            MaterialLocalizations,
+          );
+          cupertino = Localizations.of<CupertinoLocalizations>(
+            context,
+            CupertinoLocalizations,
+          );
+          return Center(
+            child: SizedBox(
+              width: 300,
+              child: ExpressiveTextField(controller: controller, label: 'Name'),
+            ),
+          );
+        },
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: locale,
+          supportedLocales: const [Locale('en'), Locale('de'), Locale('ar')],
+          localizationsDelegates: const [_AppWordsDelegate()],
+          builder: underHome
+              ? null
+              : (context, child) => ExpressiveTheme(data: theme, child: child!),
+          home: underHome ? ExpressiveTheme(data: theme, child: page) : page,
+        ),
+      );
+      await tester.pumpAndSettle();
+      // Flutter's own notice that the app's English-only delegates do not
+      // speak its language is a warning, not the failure looked for.
+      final notice = tester.takeException();
+      expect(
+        notice == null || '$notice'.startsWith('Warning: '),
+        isTrue,
+        reason: '$notice',
+      );
+      expect(Localizations.localeOf(tester.element(find.text('Name'))), locale);
+      expect(material, isNotNull);
+      expect(cupertino, isNotNull);
+      final field = find.byType(EditableText);
+      await tester.tap(field);
+      await tester.pumpAndSettle();
+      await tester.enterText(field, 'Porto in May');
+      await tester.pumpAndSettle();
+      await tester.longPress(field);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget.runtimeType.toString().contains('TextSelectionToolbar') &&
+              widget.runtimeType.toString().endsWith('Button'),
+        ),
+        findsWidgets,
+        reason: 'the context menu is open',
+      );
+      expect(controller.text, 'Porto in May');
+    },
+    variant: const TargetPlatformVariant(<TargetPlatform>{
+      TargetPlatform.android,
+      TargetPlatform.iOS,
+    }),
+  );
 }

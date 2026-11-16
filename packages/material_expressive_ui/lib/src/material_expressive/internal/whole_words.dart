@@ -110,6 +110,25 @@ class _RenderWholeWords extends RenderProxyBox {
       ? constraints
       : BoxConstraints(maxWidth: constraints.maxWidth / scale);
 
+  // A slot measured by its label's height (a tab row) stands as tall as the
+  // label prints: at a width that shrinks it, the shrunk label's height.
+  double _heightAt(double width, double Function(RenderBox, double) height) {
+    final child = this.child;
+    if (child == null) return 0;
+    final scale = width.isFinite
+        ? _scaleFor(child, BoxConstraints(maxWidth: width))
+        : 1.0;
+    return height(child, width.isFinite ? width / scale : width) * scale;
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _heightAt(width, (child, w) => child.getMinIntrinsicHeight(w));
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      _heightAt(width, (child, w) => child.getMaxIntrinsicHeight(w));
+
   @override
   Size computeDryLayout(BoxConstraints constraints) {
     final child = this.child;

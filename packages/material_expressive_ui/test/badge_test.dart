@@ -47,9 +47,9 @@ void main() {
       _app(
         ExpressiveTheme(
           data: _theme,
-          child: MediaQuery(
-            data: const MediaQueryData(textScaler: TextScaler.linear(1.3)),
-            child: const SizedBox(
+          child: const MediaQuery(
+            data: MediaQueryData(textScaler: TextScaler.linear(1.3)),
+            child: SizedBox(
               width: 120,
               child: ExpressiveTag(label, icon: ExpressiveSymbols.star),
             ),
@@ -90,7 +90,7 @@ void main() {
 
   testWidgets('a count is a 16dp pill of labelSmall onError on error, 12dp '
       'in from the end and 14dp down to its bottom', (tester) async {
-    await tester.pumpWidget(_app(_badged(ExpressiveBadge.count(3))));
+    await tester.pumpWidget(_app(_badged(const ExpressiveBadge.count(3))));
     final anchor = tester.getRect(find.byKey(_anchor));
     final badge = tester.getRect(find.byKey(_badge));
     expect(badge.height, 16);
@@ -113,20 +113,23 @@ void main() {
 
   testWidgets('a longer count grows by its label plus 4dp a side, and caps '
       'at "999+"', (tester) async {
-    await tester.pumpWidget(_app(_badged(ExpressiveBadge.count(1204))));
+    await tester.pumpWidget(_app(_badged(const ExpressiveBadge.count(1204))));
     expect(find.text('999+'), findsOneWidget);
     final label = tester.getRect(find.text('999+'));
     final badge = tester.getRect(find.byKey(_badge));
     expect(badge.width, label.width + 8);
-    expect(ExpressiveBadge.count(999).label, '999');
-    expect(ExpressiveBadge.count(42, max: 9).label, '9+');
+    expect(const ExpressiveBadge.count(999).label, '999');
+    expect(const ExpressiveBadge.count(42, max: 9).label, '9+');
   });
 
   testWidgets('right to left, the badge stands on the start corner', (
     tester,
   ) async {
     await tester.pumpWidget(
-      _app(_badged(ExpressiveBadge.count(3)), direction: TextDirection.rtl),
+      _app(
+        _badged(const ExpressiveBadge.count(3)),
+        direction: TextDirection.rtl,
+      ),
     );
     final anchor = tester.getRect(find.byKey(_anchor));
     final badge = tester.getRect(find.byKey(_badge));
@@ -143,10 +146,10 @@ void main() {
         GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => taps++,
-          child: ExpressiveBadge.count(
+          child: const ExpressiveBadge.count(
             5,
             semanticLabel: '5 unread',
-            child: const SizedBox(width: 48, height: 48),
+            child: SizedBox(width: 48, height: 48),
           ),
         ),
       ),

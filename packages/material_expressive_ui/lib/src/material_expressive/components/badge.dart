@@ -16,6 +16,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
@@ -28,6 +29,7 @@ import '../internal/tokens/behavior.g.dart';
 import '../internal/tokens/chips_tokens.g.dart';
 import '../spacing.dart';
 import '../theme.dart';
+import '../internal/style_layers.dart';
 import 'feedback.dart' show ExpressiveTone;
 
 /// A badge (Compose `Badge`): a 6dp error-coloured dot, or with a [label]
@@ -92,7 +94,7 @@ class ExpressiveBadge extends StatelessWidget {
   Widget _face(BuildContext context) {
     final t = context.expressiveTheme;
     final label = this.label;
-    final resolved = t.badgeTheme.merge(style);
+    final resolved = t.badgeTheme.layeredUnder(style);
     const states = <WidgetState>{};
     if (label == null) {
       final minimum = resolved.minimumSize?.resolve(states);
@@ -132,7 +134,7 @@ class ExpressiveBadge extends StatelessWidget {
             padding: WidgetStatePropertyAll(
               EdgeInsets.symmetric(horizontal: side),
             ),
-          ).merge(t.badgeTheme),
+          ).layeredUnder(t.badgeTheme),
           shape: t.shapes.full,
           color: t.colors.role(BadgeTokens.largeColor),
           contentColor: t.colors.role(BadgeTokens.largeLabelTextColor),
@@ -161,6 +163,21 @@ class ExpressiveBadge extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -213,7 +230,7 @@ class ExpressiveTag extends StatelessWidget {
       ),
     };
     final glyph = icon;
-    final resolved = t.badgeTheme.merge(style);
+    final resolved = t.badgeTheme.layeredUnder(style);
     const states = <WidgetState>{};
     final ink = resolved.foregroundColor?.resolve(states) ?? content;
     return ConstrainedBox(
@@ -260,5 +277,27 @@ class ExpressiveTag extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(
+        EnumProperty<ExpressiveTone>(
+          'tone',
+          tone,
+          defaultValue: ExpressiveTone.neutral,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData?>('icon', icon, defaultValue: null));
   }
 }

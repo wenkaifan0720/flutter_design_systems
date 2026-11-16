@@ -37,6 +37,7 @@ library;
 import 'dart:math' as math;
 import 'dart:ui' show PathMetric;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
@@ -54,6 +55,7 @@ import '../spacing.dart';
 import '../strings.dart';
 import '../theme.dart';
 import 'hero.dart';
+import '../internal/style_layers.dart';
 
 // ---------------------------------------------------------------------------
 // The indeterminate timelines (ProgressIndicator.kt's keyframes)
@@ -420,6 +422,25 @@ class ExpressiveLinearProgressIndicator extends StatefulWidget {
   @override
   State<ExpressiveLinearProgressIndicator> createState() =>
       _ExpressiveLinearProgressState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(FlagProperty('wavy', value: wavy, ifTrue: 'wavy'))
+      ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(ColorProperty('trackColor', trackColor, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 /// An amount against its limit: the [label] at the start and the figure at
@@ -472,7 +493,7 @@ class ExpressiveMeter extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
     final over = value > limit;
-    final visual = t.meterTheme.merge(style);
+    final visual = t.meterTheme.layeredUnder(style);
     final states = <WidgetState>{if (over) WidgetState.error};
     final ink = visual.foregroundColor?.resolve(states);
     final typography = visual.textStyle?.resolve(states);
@@ -564,6 +585,30 @@ class ExpressiveMeter extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('value', value))
+      ..add(DoubleProperty('limit', limit))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)?>.has(
+          'format',
+          format,
+        ),
+      )
+      ..add(FlagProperty('wavy', value: wavy, ifTrue: 'wavy'));
+  }
 }
 
 class _ExpressiveLinearProgressState
@@ -587,7 +632,7 @@ class _ExpressiveLinearProgressState
       );
     }
     final t = context.expressiveTheme;
-    final visual = t.progressIndicatorTheme.merge(widget.style);
+    final visual = t.progressIndicatorTheme.layeredUnder(widget.style);
     const states = <WidgetState>{};
     final color =
         visual.foregroundColor?.resolve(states) ??
@@ -973,6 +1018,24 @@ class ExpressiveCircularProgressIndicator extends StatefulWidget {
   @override
   State<ExpressiveCircularProgressIndicator> createState() =>
       _ExpressiveCircularProgressState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(FlagProperty('wavy', value: wavy, ifTrue: 'wavy'))
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(ColorProperty('trackColor', trackColor, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 class _ExpressiveCircularProgressState
@@ -996,7 +1059,7 @@ class _ExpressiveCircularProgressState
       );
     }
     final t = context.expressiveTheme;
-    final visual = t.progressIndicatorTheme.merge(widget.style);
+    final visual = t.progressIndicatorTheme.layeredUnder(widget.style);
     const states = <WidgetState>{};
     final color =
         visual.foregroundColor?.resolve(states) ??
@@ -1385,7 +1448,7 @@ class ExpressiveStepProgress extends StatelessWidget {
   Widget build(BuildContext context) {
     assert(labels == null || labels!.length == count, 'a label per step');
     final t = context.expressiveTheme;
-    final visual = t.stepProgressTheme.merge(style);
+    final visual = t.stepProgressTheme.layeredUnder(style);
     Set<WidgetState> states(int i) => <WidgetState>{
       if (i <= currentStep) WidgetState.selected,
     };
@@ -1409,7 +1472,9 @@ class ExpressiveStepProgress extends StatelessWidget {
         states: <WidgetState>{if (reached) WidgetState.selected},
         shape: shape,
         color: color,
-        child: SizedBox(height: LinearProgressIndicatorTokens.trackThickness),
+        child: const SizedBox(
+          height: LinearProgressIndicatorTokens.trackThickness,
+        ),
       ),
     );
     Widget name(int i, TextAlign align) => Text(
@@ -1540,6 +1605,29 @@ class ExpressiveStepProgress extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('currentStep', currentStep))
+      ..add(IterableProperty<String>('labels', labels, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveStepProgressKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveStepProgressKind.numbered,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 

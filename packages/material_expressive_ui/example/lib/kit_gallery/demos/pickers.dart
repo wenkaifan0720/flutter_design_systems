@@ -585,24 +585,60 @@ Widget kitSpecimenDockedDateCheckIn() => ExpressiveDockedDatePicker(
 
 /// The clock dial at 8:15 AM, the hour being chosen.
 Widget kitSpecimenTimePickerDial() => Center(
-  child: ExpressiveTimePicker(
-    controller: ExpressiveTimePickerController(hour: 8, minute: 15),
+  child: _OwnTime(
+    hour: 8,
+    minute: 15,
+    builder: (controller) => ExpressiveTimePicker(controller: controller),
   ),
 );
 
 /// The hour and minute as two fields.
 Widget kitSpecimenTimeInputFields() => Center(
-  child: ExpressiveTimeInput(
-    controller: ExpressiveTimePickerController(hour: 18, minute: 45),
+  child: _OwnTime(
+    hour: 18,
+    minute: 45,
+    builder: (controller) => ExpressiveTimeInput(controller: controller),
   ),
 );
 
 /// The hour and minute as two wheels.
 Widget kitSpecimenTimeScrollWheels() => Center(
-  child: ExpressiveTimeScroll(
-    controller: ExpressiveTimePickerController(hour: 7, minute: 5),
+  child: _OwnTime(
+    hour: 7,
+    minute: 5,
+    builder: (controller) => ExpressiveTimeScroll(controller: controller),
   ),
 );
+
+/// A specimen's time, made for it and disposed with it.
+class _OwnTime extends StatefulWidget {
+  const _OwnTime({
+    required this.hour,
+    required this.minute,
+    required this.builder,
+  });
+
+  final int hour;
+  final int minute;
+  final Widget Function(ExpressiveTimePickerController controller) builder;
+
+  @override
+  State<_OwnTime> createState() => _OwnTimeState();
+}
+
+class _OwnTimeState extends State<_OwnTime> {
+  late final ExpressiveTimePickerController _time =
+      ExpressiveTimePickerController(hour: widget.hour, minute: widget.minute);
+
+  @override
+  void dispose() {
+    _time.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(_time);
+}
 
 final DateTime _calendarToday = DateTime(2026, 11, 10);
 

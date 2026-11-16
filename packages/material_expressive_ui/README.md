@@ -8,7 +8,7 @@ used in large tonal fields, and motion that overshoots and settles. This package
 `material3` 1.5.0-alpha29 (the tokens, the motion springs, the shape library and the components: the button group that
 widens the pressed button, the loading indicator's seven shapes, wavy progress, the floating toolbar, the FAB menu, the
 carousel's masks), each checked against Compose's own renders on an Android emulator. Five presets ship, each light and
-dark at three contrast levels, and any seed colour makes a scheme.
+dark at standard and high contrast, and any seed colour makes a scheme at either.
 
 | Desktop, by day | Phone, by night |
 | --- | --- |
@@ -47,6 +47,12 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
+    // The look's push and pop for Flutter's MaterialPageRoute.
+    theme: ThemeData(
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: expressivePageTransitions,
+      ),
+    ),
     localizationsDelegates: const [
       DefaultDesignLocalizations.delegate,
       ExpressiveLocalizations.delegate,
@@ -69,7 +75,10 @@ class App extends StatelessWidget {
 }
 ```
 
-A `CupertinoApp` or a `WidgetsApp` takes the same `builder:`. The text fields are Flutter's `EditableText` under
+`expressivePageTransitions` is the look's push and pop for every platform (fade-forwards on macOS, Windows, Linux and
+the web, Flutter's predictive back on Android, the Cupertino slide on iOS). The look's own theme carries it, but
+Flutter's `MaterialPageRoute` reads only the app's `ThemeData`: without it there, a page pushed on a Mac slides in
+across the whole window. A `CupertinoApp` or a `WidgetsApp` takes the same `builder:`. The text fields are Flutter's `EditableText` under
 Material's `TextField`, so such an app lists `DefaultMaterialLocalizations.delegate` (or `GlobalMaterialLocalizations`)
 among its `localizationsDelegates`, as for any Material widget. `ExpressiveTheme` sets the text-selection colours below
 it as Compose's `MaterialTheme` does (handles and caret in `primary`, the selection at 40%), whatever Material theme the
@@ -146,7 +155,8 @@ other parts gain widget slots beside their strings in 0.2.0.
 `ExpressiveTheme.of(context)` (or `context.expressiveTheme`) returns the `ExpressiveThemeData` in scope: its colour
 roles (`colors`, Material's 48 roles), the type scale (`type`), the corner scale (`shapes`) and the motion scheme
 (`motion`, standard or expressive springs). There are five presets, each baked by material-color-utilities from a seed
-at the 2025 spec, light and dark, at standard, medium and high contrast:
+at the 2025 spec, light and dark, at standard and high contrast (Material's medium level is left out: its light
+containers take a dragged row's words under 4.5:1):
 
 | Preset | Seed | Variant | Motion |
 |---|---|---|---|
@@ -160,11 +170,16 @@ Each has a factory (`ExpressiveThemeData.ember(Brightness.dark)`), and `Expressi
 takes the id. Restyle part of the tree with a nested `ExpressiveTheme`; `AnimatedExpressiveTheme` springs from one theme
 to the next as Compose animates colour, and `ExpressiveThemeData.lerp` blends two.
 
-`ExpressiveThemeData.from(seed:, brightness:)` derives a colour scheme from an app's seed; `shapes` is M3's shape scale
+`ExpressiveThemeData.preset(id, brightness, contrastLevel: 1)` takes a preset at high contrast (`baseline`,
+Compose's fixed scheme, from its seed). `ExpressiveThemeData.from(seed:, brightness:,
+contrastLevel:)` derives a colour scheme from an app's seed, at Material's standard contrast unless asked;
+`ExpressiveHost` wears the default preset at high contrast when the platform asks for it, and an app's own pair
+(`highContrastLight`, `highContrastDark`) as `MaterialApp` does; `shapes` is M3's shape scale
 (`extraSmall` to `extraExtraLarge`, and `full`), the one way to an app's corners; `density` is `ExpressiveDensity`, in
 Flutter's steps (`standard`, `comfortable`, `compact`), which adapts to the platform when unset (compact where a pointer
 is the norm, standard on touch); `motion` picks the Expressive or Standard motion scheme; the type scale takes a
-brand's own display and text families.
+brand's own display and text families (`type.copyWith(textFamily: 'Inter')`, from the app's assets, or with
+`fontPackage` from a package), which Flutter's own widgets under `ExpressiveHost` wear too.
 
 ```dart
 final theme = ExpressiveThemeData.from(seed: const Color(0xff00695c)).copyWith(
@@ -249,7 +264,9 @@ curve.
 - **Right to left.** Every part mirrors under a right-to-left `Directionality`: rows, fields' leading and trailing
   icons and their prefix and suffix, tabs, segments, navigation, dialogs' actions, chevrons and arrows, sliders and
   progress (which fill from the start side), carousels and swipe actions. Parameters say start and end and take
-  `EdgeInsetsGeometry` and `AlignmentGeometry`. The example's Customize switches the direction for every page.
+  `EdgeInsetsGeometry` and `AlignmentGeometry`. The example's Customize switches the direction for every page;
+  right to left, its trip planner reads in Arabic, the components' words included, so the mirrored app is seen with
+  real right-to-left text.
 - **Large text.** Parts follow the platform's text scale and grow taller rather than cut words; the package's tests lay
   out every gallery page at 2.0 with no overflow. Dialogs and sheets scroll.
 - **Other scripts.** Roboto Flex and Jost cover Latin, Greek and Cyrillic. Other scripts (Arabic, Hebrew, Chinese,

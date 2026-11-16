@@ -10,6 +10,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
 
+import 'flutter_test_config.dart' show longWalkLeakTesting;
+
 Widget _host(
   WidgetBuilder builder, {
   Brightness brightness = Brightness.light,
@@ -62,17 +64,37 @@ void main() {
     // The kit names no classes; this look still gives each row its stem:
     // the row's class, or one of Flutter's kinds of it (the Button row's
     // specimen is an ExpressiveFilledButton, an ExpressiveButton).
-    for (final entry in expressiveInventory.entries.where((e) => e.isPresent)) {
-      final name = entry.builder!(context).runtimeType
-          .toString()
-          .split('<')
+    String stem(Widget widget) =>
+        widget.runtimeType.toString().split('<').first;
+    void isRow(String row, String name) => expect(
+      name == 'Expressive$row' ||
+          (name.startsWith('Expressive') && name.endsWith(row)),
+      isTrue,
+      reason: '$row: $name',
+    );
+    // A specimen that makes its own controller (a time picker's, a data
+    // table's, a scroll area's) stands in an Owned that disposes it; the row's class is the
+    // first widget it builds.
+    final present = expressiveInventory.entries.where((e) => e.isPresent);
+    final owning = [
+      for (final entry in present)
+        if (stem(entry.builder!(context)) == 'Owned') entry,
+    ];
+    for (final entry in present.where((e) => !owning.contains(e))) {
+      isRow(entry.row, stem(entry.builder!(context)));
+    }
+    expect(owning.map((e) => e.row), ['TimePicker', 'DataTable', 'ScrollArea']);
+    for (final entry in owning) {
+      await tester.pumpWidget(_host(entry.builder!));
+      final built = find
+          .descendant(
+            of: find.byWidgetPredicate((w) => stem(w) == 'Owned'),
+            matching: find.byWidgetPredicate(
+              (w) => stem(w).startsWith('Expressive'),
+            ),
+          )
           .first;
-      expect(
-        name == 'Expressive${entry.row}' ||
-            (name.startsWith('Expressive') && name.endsWith(entry.row)),
-        isTrue,
-        reason: '${entry.row}: $name',
-      );
+      isRow(entry.row, stem(tester.widget(built)));
     }
   });
 
@@ -99,7 +121,7 @@ void main() {
         await tester.pump(const Duration(seconds: 2));
       }
       expect(faults, isEmpty);
-    });
+    }, experimentalLeakTesting: longWalkLeakTesting);
   }
 
   testWidgets('the gallery heads each group with what it carries', (
@@ -121,7 +143,8 @@ void main() {
     // Kbd is the Actions row Material has no part for.
     expect(find.text('Actions · 7 of 8'), findsOneWidget);
     expect(find.text('Button (filled/outlined/text/danger)'), findsOneWidget);
-    expect(find.text('ExpressiveButton'), findsOneWidget);
+    // The code name breaks only between its words (a zero-width space).
+    expect(find.text('Expressive\u200BButton'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 2));
   });

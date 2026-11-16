@@ -75,31 +75,38 @@ class _EverydayHost extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: kitAppTheme,
       localizationsDelegates: const [
-        DefaultDesignLocalizations.delegate,
+        DesignLocalizations.delegate,
         DefaultMaterialLocalizations.delegate,
         DefaultWidgetsLocalizations.delegate,
       ],
       // The trip planner reads in the page's direction (its own app's
       // English locale would turn a right-to-left page left to right).
-      builder: (inner, page) => Directionality(
+      builder: (inner, _) => Directionality(
         textDirection:
             Directionality.maybeOf(context) ?? Directionality.of(inner),
         child: ExpressiveHost(
           light: kitTheme(Brightness.light),
           dark: kitTheme(Brightness.dark),
           brightness: brightness,
-          child: page!,
+          // Its own navigator, not its app's: on the web an app's navigator
+          // lets Tab leave the window at the page's last control, and the
+          // gallery's bars and rail around it were never reached.
+          child: Navigator(
+            clipBehavior: Clip.none,
+            routeTraversalEdgeBehavior: TraversalEdgeBehavior.parentScope,
+            // The page stands in its route without a transition: a pushed
+            // route's Cupertino slide (iOS) keeps its edge shadow
+            // painted beside the page, a grey band over the gallery's rail.
+            onGenerateRoute: (settings) => PageRouteBuilder<void>(
+              settings: settings,
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+              pageBuilder: (_, _, _) => child,
+            ),
+          ),
         ),
-      ),
-      // The page stands in its route without a transition: a pushed route's
-      // Cupertino slide (macOS, iOS) keeps its edge shadow painted beside
-      // the page, a grey band over the gallery's rail.
-      onGenerateRoute: (settings) => PageRouteBuilder<void>(
-        settings: settings,
-        transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero,
-        pageBuilder: (_, _, _) => child,
       ),
     );
   }
@@ -208,26 +215,31 @@ class _DialogState extends State<_Dialog> {
   String? _result;
 
   Future<void> _archive() async {
+    final w = TripWords.read(context);
     final archived = await showExpressiveDialog<bool>(
       context: context,
-      builder: (context) => const ExpressiveDialog(
-        title: 'Archive Porto in May?',
-        text: 'The trip leaves your trips. You can restore it from the archive whenever you need it.',
+      builder: (context) => ExpressiveDialog(
+        title: w.archiveTitle,
+        text: w.archiveText,
         actions: [
-          ExpressiveDialogAction('Keep trip', value: false),
-          ExpressiveDialogAction('Archive', value: true, filled: true),
+          ExpressiveDialogAction(w.keepTrip, value: false),
+          ExpressiveDialogAction(w.archive, value: true, filled: true),
         ],
       ),
     );
     if (mounted && archived != null) {
-      setState(() => _result = archived ? 'Trip archived.' : 'Trip kept.');
+      setState(() => _result = archived ? w.tripArchived : w.tripKept);
     }
   }
 
   @override
-  Widget build(BuildContext context) => _Frame(
-    title: 'Past trips',
-    subtitle: 'The trips you have been on with your group.',
+  Widget build(BuildContext context) => _dialogFrame(TripWords.of(context));
+
+  // Right to left, its words are Arabic (TripWords), as the trip
+  // planner's are.
+  Widget _dialogFrame(TripWords w) => _Frame(
+    title: w.pastTrips,
+    subtitle: w.pastTripsLine,
     maxWidth: 680,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -236,14 +248,14 @@ class _DialogState extends State<_Dialog> {
         // A static row in the column: its icon on the column's edge, under
         // the heading, not 16dp in (the list item's inset is for rows that
         // run edge to edge).
-        const ExpressiveListTile(
-          title: Text('Porto in May'),
-          subtitle: Text('12–16 May · Maya, Sam and you'),
-          leading: Icon(ExpressiveSymbols.flight),
-          contentPadding: EdgeInsets.symmetric(vertical: 10),
+        ExpressiveListTile(
+          title: Text(w.portoInMay),
+          subtitle: Text(w.portoLine),
+          leading: const Icon(ExpressiveSymbols.flight),
+          contentPadding: const EdgeInsets.symmetric(vertical: 10),
         ),
         ExpressiveOutlinedButton(
-          'Archive trip',
+          w.archiveTrip,
           key: const ValueKey('everyday-open-dialog'),
           onPressed: _archive,
         ),
@@ -262,37 +274,40 @@ class _Tabs extends StatefulWidget {
 
 class _TabsState extends State<_Tabs> {
   var _selected = 0;
-  static const _trips = [
-    ('Lisbon weekend', '18–21 September · 3 travelers'),
-    ('Kyoto idea', 'Saved for next spring'),
-    ('Porto in May', '12–16 May · Trip completed'),
-  ];
 
   @override
-  Widget build(BuildContext context) => _Frame(
-    title: 'My trips',
-    subtitle: 'A clear place for the next plan and the places you remember.',
+  Widget build(BuildContext context) => _tabsFrame(TripWords.of(context));
+
+  Widget _tabsFrame(TripWords w) => _Frame(
+    title: w.myTrips,
+    subtitle: w.myTripsLine,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 32,
       children: [
         ExpressiveTabBar(
           variant: ExpressiveTabBarVariant.secondary,
-          tabs: const [
+          tabs: [
             ExpressiveTab(
-              label: 'Upcoming',
-              key: ValueKey('everyday-tab-upcoming'),
+              label: w.upcoming,
+              key: const ValueKey('everyday-tab-upcoming'),
             ),
-            ExpressiveTab(label: 'Saved', key: ValueKey('everyday-tab-saved')),
-            ExpressiveTab(label: 'Past', key: ValueKey('everyday-tab-past')),
+            ExpressiveTab(
+              label: w.saved,
+              key: const ValueKey('everyday-tab-saved'),
+            ),
+            ExpressiveTab(
+              label: w.past,
+              key: const ValueKey('everyday-tab-past'),
+            ),
           ],
           selectedIndex: _selected,
           onChanged: (index) => setState(() => _selected = index),
         ),
         ExpressiveListTile(
           key: ValueKey('everyday-trip-$_selected'),
-          title: Text(_trips[_selected].$1),
-          subtitle: Text(_trips[_selected].$2),
+          title: Text(w.myTripRows[_selected].$1),
+          subtitle: Text(w.myTripRows[_selected].$2),
           leading: const Icon(ExpressiveSymbols.flight),
         ),
       ],
@@ -308,24 +323,30 @@ class _Cards extends StatefulWidget {
 }
 
 class _CardsState extends State<_Cards> {
-  String? _selected;
-  static const _places = [
-    ('Lisbon', 'Hills and trams'),
-    ('Porto', 'Riverside walks'),
-    ('Kyoto', 'Quiet gardens'),
-    ('Copenhagen', 'Food and bicycles'),
-    ('Oslo', 'Forest and fjord'),
-    ('Marrakesh', 'Courtyards and cafés'),
+  /// The chosen place's index in [TripWords.places].
+  int? _selected;
+
+  /// Each card's key, in English whatever the words' language.
+  static const _ids = [
+    'Lisbon',
+    'Porto',
+    'Kyoto',
+    'Copenhagen',
+    'Oslo',
+    'Marrakesh',
   ];
 
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
+    final w = TripWords.of(context);
+    final places = w.places;
+    final selected = _selected;
     return _Frame(
-      title: 'Saved places',
-      subtitle: _selected == null
-          ? 'Ideas for your next free weekend.'
-          : '$_selected is selected for your next plan.',
+      title: w.savedPlaces,
+      subtitle: selected == null
+          ? w.savedPlacesLine
+          : w.placeChosen(places[selected].$1),
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Columns by the room the text has: at large text a phone's two
@@ -337,32 +358,36 @@ class _CardsState extends State<_Cards> {
               : room >= 280
               ? 2
               : 1;
-          Widget card(String name, String detail) => ExpressiveCard.filled(
-            key: ValueKey('everyday-card-$name'),
-            onPressed: () => setState(() => _selected = name),
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  ExpressiveSymbols.locationOn,
-                  size: 32,
-                  color: t.colors.primary,
-                ),
-                const SizedBox(height: 20),
-                Text(name, style: t.type.titleMedium),
-                const SizedBox(height: 8),
-                Text(detail, style: t.type.bodyMedium),
-              ],
-            ),
-          );
+          Widget card(int index) {
+            final (name, detail) = places[index];
+            return ExpressiveCard.filled(
+              key: ValueKey('everyday-card-${_ids[index]}'),
+              onPressed: () => setState(() => _selected = index),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    ExpressiveSymbols.locationOn,
+                    size: 32,
+                    color: t.colors.primary,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(name, style: t.type.titleMedium),
+                  const SizedBox(height: 8),
+                  Text(detail, style: t.type.bodyMedium),
+                ],
+              ),
+            );
+          }
+
           // Rows of cards, each row's cards as tall as its tallest.
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: 16,
             children: [
-              for (var row = 0; row < _places.length; row += columns)
+              for (var row = 0; row < places.length; row += columns)
                 IntrinsicHeight(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -370,8 +395,8 @@ class _CardsState extends State<_Cards> {
                     children: [
                       for (var i = row; i < row + columns; i++)
                         Expanded(
-                          child: i < _places.length
-                              ? card(_places[i].$1, _places[i].$2)
+                          child: i < places.length
+                              ? card(i)
                               : const SizedBox.shrink(),
                         ),
                     ],

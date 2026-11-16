@@ -49,7 +49,7 @@ library;
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show ValueListenable, clampDouble;
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart' show SchedulerBinding, SchedulerPhase;
@@ -73,6 +73,7 @@ import '../shape.dart';
 import '../states.dart';
 import '../theme.dart';
 import 'buttons.dart';
+import '../internal/style_layers.dart';
 
 // ---------------------------------------------------------------------------
 // The popup route.
@@ -224,20 +225,44 @@ void _closePopup(BuildContext context, [Object? result]) {
 /// pop must pop the route), and [dispose] with its state. [onBack] is told
 /// when a back took the entry; if the overlay stays open (a caller holding
 /// it open), the component's next build holds the back again.
+///
+/// With [closeWhenCovered], a popup held this way (a combobox's suggestions, a
+/// split button's menu) also closes when its route is covered: a route
+/// pushed over it (an alert, a dialog, a sheet), on its navigator or
+/// another (an alert on the root navigator over a page in a nested one,
+/// which the page's route cannot see but which takes the focus out of it).
+/// Left open, the popup stays drawn in its own route, under the new one,
+/// and is still open when that route is gone.
 class ExpressiveBackHandle {
-  /// A back handle that runs [onBack] when the system goes back.
-  ExpressiveBackHandle({required this.onBack});
+  /// A back handle that runs [onBack] when the system goes back, and, with
+  /// [closeWhenCovered], when a route covers the overlay's.
+  ExpressiveBackHandle({required this.onBack, this.closeWhenCovered = false});
 
   /// Closes the overlay: a back took the entry.
   final VoidCallback onBack;
 
+  /// Whether a cover closes the overlay too, through [onBack]: a route
+  /// pushed over the overlay's route, or the focus leaving that route,
+  /// while the overlay is open. [onBack] is told once the frame that
+  /// covered it is built; the focus stays where the covering route put it.
+  final bool closeWhenCovered;
+
   ModalRoute<Object?>? _route;
   LocalHistoryEntry? _entry;
+
+  // While a cover is watched for: the route the overlay is open over, the
+  // focus scope round its page, and whether it was the top one when last
+  // synced.
+  ModalRoute<Object?>? _watched;
+  FocusNode? _watchedScope;
+  bool _watchedCurrent = true;
+  bool _coverScheduled = false;
 
   /// Holds the back on [context]'s route while [open], and lets it go
   /// otherwise (or when there is no route).
   void sync(BuildContext context, {required bool open}) {
     final route = open ? ModalRoute.of(context) : null;
+    _watch(route, context);
     if (route == _route) return;
     release();
     if (route == null) return;
@@ -264,7 +289,81 @@ class ExpressiveBackHandle {
   }
 
   /// Lets the back go for good.
-  void dispose() => release();
+  void dispose() {
+    release();
+    _watch(null, null);
+  }
+
+  // Watches [route] for a cover while the overlay is open over it: its
+  // being the top route (synced on each build; [ModalRoute.of] rebuilds the
+  // component when it changes), and the focus.
+  void _watch(ModalRoute<Object?>? route, BuildContext? context) {
+    if (!closeWhenCovered) return;
+    if (!identical(route, _watched)) {
+      if (_watched != null) {
+        FocusManager.instance.removeListener(_focusMoved);
+      }
+      _watched = route;
+      _watchedScope = route == null || context == null
+          ? null
+          : _scopeOfRoute(context);
+      _watchedCurrent = route?.isCurrent ?? true;
+      if (route != null) FocusManager.instance.addListener(_focusMoved);
+      return;
+    }
+    if (route == null) return;
+    final current = route.isCurrent;
+    final pushedOver = _watchedCurrent && !current;
+    _watchedCurrent = current;
+    if (pushedOver) _covered();
+  }
+
+  // The focus scope a route puts round its page, which holds the anchor and
+  // the overlay (an overlay portal's child is focused where its portal is):
+  // of the focus nodes round [context], the one its navigator holds.
+  static FocusNode? _scopeOfRoute(BuildContext context) {
+    final navigator = Navigator.maybeOf(context)?.focusNode;
+    final here = Focus.maybeOf(context, scopeOk: true, createDependency: false);
+    if (navigator == null || here == null) return null;
+    for (final node in [here, ...here.ancestors]) {
+      if (identical(node.parent, navigator)) return node;
+    }
+    return null;
+  }
+
+  // Whether the focus is somewhere outside the watched route's page: on a
+  // route over it, or on another navigator's. The app sent to the
+  // background parks the focus on the root scope, which is no cover.
+  bool get _focusLeft {
+    final scope = _watchedScope;
+    final primary = FocusManager.instance.primaryFocus;
+    if (scope == null ||
+        primary == null ||
+        identical(primary, FocusManager.instance.rootScope)) {
+      return false;
+    }
+    return !identical(primary, scope) && !primary.ancestors.contains(scope);
+  }
+
+  void _focusMoved() {
+    if (_focusLeft) _covered();
+  }
+
+  // Tells [onBack] once the frame that covered the route is built (never
+  // mid-build), if the overlay is still open and still covered.
+  void _covered() {
+    if (_coverScheduled) return;
+    _coverScheduled = true;
+    SchedulerBinding.instance
+      ..addPostFrameCallback((_) {
+        _coverScheduled = false;
+        final route = _watched;
+        if (route == null) return;
+        if (route.isCurrent && !_focusLeft) return;
+        onBack();
+      }, debugLabel: 'ExpressiveBackHandle.covered')
+      ..ensureVisualUpdate();
+  }
 
   void _removed(LocalHistoryEntry entry) {
     // [release] removing its own entry.
@@ -409,7 +508,7 @@ class ExpressiveDialog extends StatelessWidget {
     final t = context.expressiveTheme;
     final c = t.colors;
     final body = text != null ? Text(text!) : content;
-    final theme = t.dialogTheme.merge(style);
+    final theme = t.dialogTheme.layeredUnder(style);
     Color on(ExpressiveColorRole role) => ExpressiveComponentThemeData.resolve(
       theme.foregroundColor,
       const <WidgetState>{},
@@ -514,6 +613,29 @@ class ExpressiveDialog extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('text', text, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData?>('icon', icon, defaultValue: null))
+      ..add(
+        IterableProperty<ExpressiveDialogAction>(
+          'actions',
+          actions,
+          defaultValue: const <ExpressiveDialogAction>[],
+        ),
+      );
   }
 }
 
@@ -749,7 +871,7 @@ class ExpressivePlainTooltip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
-    final scoped = t.tooltipTheme.merge(style);
+    final scoped = t.tooltipTheme.layeredUnder(style);
     return ConstrainedBox(
       constraints: const BoxConstraints(
         minWidth: TooltipBehavior.minWidth,
@@ -790,6 +912,27 @@ class ExpressivePlainTooltip extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(
+        DiagnosticsProperty<ExpressiveTooltipCaret?>(
+          'caret',
+          caret,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -848,7 +991,7 @@ class ExpressiveRichTooltip extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
     final c = t.colors;
-    final scoped = t.tooltipTheme.merge(style);
+    final scoped = t.tooltipTheme.layeredUnder(style);
     Color on(ExpressiveColorRole role) =>
         scoped.foregroundColor?.resolve(const {}) ?? c.role(role);
     final hasTitle = title != null;
@@ -927,6 +1070,30 @@ class ExpressiveRichTooltip extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('text', text))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onAction', onAction))
+      ..add(
+        DiagnosticsProperty<ExpressiveTooltipCaret?>(
+          'caret',
+          caret,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -1199,6 +1366,40 @@ class ExpressiveTooltip extends StatefulWidget {
 
   @override
   State<ExpressiveTooltip> createState() => _ExpressiveTooltipState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('text', text, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onAction', onAction))
+      ..add(
+        EnumProperty<ExpressiveTooltipPosition>(
+          'position',
+          position,
+          defaultValue: ExpressiveTooltipPosition.above,
+        ),
+      )
+      ..add(FlagProperty('persistent', value: persistent, ifTrue: 'persistent'))
+      ..add(FlagProperty('caret', value: caret, ifTrue: 'caret'))
+      ..add(
+        DiagnosticsProperty<ExpressiveTooltipController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _ExpressiveTooltipState extends State<ExpressiveTooltip> {
@@ -1381,6 +1582,32 @@ class ExpressiveCoachMark extends StatefulWidget {
 
   @override
   State<ExpressiveCoachMark> createState() => _ExpressiveCoachMarkState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('visible', visible))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('text', text))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onAction', onAction))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onDismissed', onDismissed))
+      ..add(
+        EnumProperty<ExpressiveTooltipPosition>(
+          'position',
+          position,
+          defaultValue: ExpressiveTooltipPosition.below,
+        ),
+      );
+  }
 }
 
 class _ExpressiveCoachMarkState extends State<ExpressiveCoachMark> {
@@ -1559,7 +1786,10 @@ class _TooltipPresenter {
   bool show({required bool timeout}) {
     _timer?.cancel();
     _timer = timeout
-        ? Timer(Duration(milliseconds: TooltipBehavior.showDuration), hide)
+        ? Timer(
+            const Duration(milliseconds: TooltipBehavior.showDuration),
+            hide,
+          )
         : null;
     if (_entry == null) {
       final overlay = Overlay.maybeOf(anchor, rootOverlay: rootOverlay);

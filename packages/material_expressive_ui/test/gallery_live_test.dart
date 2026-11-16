@@ -688,6 +688,125 @@ void main() {
     expect(failures, isEmpty);
   });
 
+  testWidgets('at a wide window Tab from the rail into a page scrolled past '
+      'its top brings the control it reaches into view', (tester) async {
+    // The 11-15 focus pass: Flutter's Tab only scrolls forward, so the
+    // overview's first controls took the focus above the window.
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1440, 900);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(const GalleryApp());
+    await settle(tester);
+    final page = find
+        .descendant(
+          of: find.byKey(const ValueKey('page')),
+          matching: find.byType(Scrollable),
+        )
+        .first;
+    final position = tester.state<ScrollableState>(page).position;
+    position.jumpTo(position.maxScrollExtent);
+    await settle(tester);
+    final rail = find.byType(ExpressiveNavigationRail);
+    Focus.of(
+      tester.element(
+        find
+            .descendant(
+              of: rail,
+              matching: find.text(galleryDestinations.last.title),
+            )
+            .first,
+      ),
+    ).requestFocus();
+    await settle(tester);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await settle(tester);
+    final focused = primaryFocus!.context!;
+    expect(
+      find.descendant(
+        of: rail,
+        matching: find.byElementPredicate((e) => identical(e, focused)),
+      ),
+      findsNothing,
+    );
+    final box = focused.findRenderObject()! as RenderBox;
+    final rect = box.localToGlobal(Offset.zero) & box.size;
+    expect(rect.top, greaterThanOrEqualTo(0), reason: '$rect');
+    expect(rect.bottom, lessThanOrEqualTo(900), reason: '$rect');
+    expect(position.pixels, lessThan(position.maxScrollExtent));
+  });
+
+  testWidgets('Tab reaches the controls a reference page has not built yet', (
+    tester,
+  ) async {
+    // The 11-15 focus pass: the feedback page builds its sections as they
+    // scroll into view, and Tab went from the last one built to the rail;
+    // its error states' Try again, below the window, were never reached.
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(1440, 900);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(const GalleryApp(initialPage: 'feedback'));
+    await settle(tester);
+    expect(find.byType(ExpressiveErrorState), findsNothing);
+    var reached = false;
+    for (var i = 0; i < 48 && !reached; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await settle(tester);
+      reached =
+          primaryFocus?.context
+              ?.findAncestorWidgetOfExactType<ExpressiveErrorState>() !=
+          null;
+    }
+    expect(reached, isTrue);
+    final box = primaryFocus!.context!.findRenderObject()! as RenderBox;
+    final rect = box.localToGlobal(Offset.zero) & box.size;
+    expect(rect.top, greaterThanOrEqualTo(0), reason: '$rect');
+    expect(rect.bottom, lessThanOrEqualTo(900), reason: '$rect');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('right to left, a reference page reads its parts\' own words '
+      'in Arabic', (tester) async {
+    // The 11-15 shots: the feedback page's words were Arabic, its error
+    // state's Try again English (its preview's own app's words).
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(390, 844);
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      const GalleryApp(
+        initialPage: 'feedback',
+        initialCustom: GalleryCustom(direction: 'rtl'),
+      ),
+    );
+    await settle(tester);
+    // Fixed frames, not pumpAndSettle: the page's skeletons never settle.
+    final page = tester
+        .state<ScrollableState>(
+          find
+              .descendant(
+                of: find.byType(KitPage),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        )
+        .position;
+    for (
+      var i = 0;
+      i < 30 && find.byType(ExpressiveErrorState).evaluate().isEmpty;
+      i++
+    ) {
+      page.jumpTo((page.pixels + 400).clamp(0, page.maxScrollExtent));
+      await settle(tester);
+    }
+    expect(
+      find.descendant(
+        of: find.byType(ExpressiveErrorState).first,
+        matching: find.text('أعد المحاولة'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Try again'), findsNothing);
+  });
+
   testWidgets('every page stands in one destination, and the drawer and the '
       'tabs reach it', (tester) async {
     final placed = [for (final d in galleryDestinations) ...d.pages];
@@ -947,24 +1066,28 @@ void main() {
         (widget) => widget is Semantics && widget.properties.label == name,
       );
       expect(label, findsOneWidget, reason: name);
-      // One paragraph, a zero-width space before each word after the first:
-      // a line may break there and nowhere inside a word.
-      final paragraph = tester.renderObject<RenderParagraph>(
-        find.descendant(of: label, matching: find.byType(RichText)),
+      // Its words, one paragraph each, in a Wrap: a line breaks between
+      // them and never inside one.
+      final paragraphs = tester
+          .renderObjectList<RenderParagraph>(
+            find.descendant(of: label, matching: find.byType(RichText)),
+          )
+          .toList();
+      expect(paragraphs, hasLength(greaterThanOrEqualTo(2)), reason: name);
+      expect(
+        paragraphs.map((p) => p.text.toPlainText()).join(),
+        name,
+        reason: name,
       );
-      final plain = paragraph.text.toPlainText();
-      final words = plain.split('\u200B');
-      expect(words, hasLength(greaterThanOrEqualTo(2)), reason: name);
-      var start = 0;
-      for (final word in words) {
+      for (final paragraph in paragraphs) {
+        final word = paragraph.text.toPlainText();
         final tops = {
           for (final box in paragraph.getBoxesForSelection(
-            TextSelection(baseOffset: start, extentOffset: start + word.length),
+            TextSelection(baseOffset: 0, extentOffset: word.length),
           ))
             box.top,
         };
         expect(tops, hasLength(1), reason: '$name: "$word" wrapped');
-        start += word.length + 1;
       }
     }
     expect(tester.takeException(), isNull);

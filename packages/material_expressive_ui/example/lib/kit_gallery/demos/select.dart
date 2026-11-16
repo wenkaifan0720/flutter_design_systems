@@ -20,6 +20,7 @@ Widget kitSelectDemo(Brightness brightness) => kitScreen(
     _Open(),
     _States(),
     _Combobox(),
+    _Long(),
   ],
 );
 
@@ -202,6 +203,37 @@ class _Rich extends StatelessWidget {
         initial: 'standard',
         leading: Icon(ExpressiveSymbols.localShipping),
         supportingText: 'Free over €40',
+      ),
+    ],
+  );
+}
+
+/// A long list, capped as an app caps it, its value near the end: it opens
+/// on the value, and the keys keep their row in view.
+class _Long extends StatefulWidget {
+  const _Long();
+
+  @override
+  State<_Long> createState() => _LongState();
+}
+
+class _LongState extends State<_Long> {
+  String _city = 'Rome';
+
+  @override
+  Widget build(BuildContext context) => kitSection(
+    'A long list opens on its value',
+    children: <Widget>[
+      ExpressiveSelect<String>(
+        options: <ExpressiveSelectOption<String>>[
+          for (final city in _cities)
+            ExpressiveSelectOption<String>(city, city),
+        ],
+        value: _city,
+        onChanged: (city) => setState(() => _city = city),
+        label: 'City',
+        menuMaxHeight: 280,
+        leading: const Icon(ExpressiveSymbols.locationOn),
       ),
     ],
   );

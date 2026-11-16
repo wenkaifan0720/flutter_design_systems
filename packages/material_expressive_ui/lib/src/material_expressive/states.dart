@@ -56,7 +56,7 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show TargetPlatform, kIsWeb, setEquals;
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show
         InkResponse,
@@ -75,16 +75,18 @@ import 'package:ui_core/ui_core.dart';
 import 'component_themes.dart';
 import 'elevation.dart';
 import 'internal/focus_ring.dart';
+import 'internal/group_tap_target.dart';
 import 'internal/tokens/behavior.g.dart';
 import 'internal/width_probe.dart';
 import 'motion.dart';
 import 'theme.dart';
+import 'internal/style_layers.dart';
 
 /// A pressable's shapes (Compose's `ButtonShapes`, plus a toggle's
 /// `checkedShape`): at rest, while pressed, and while selected. Pressed
 /// wins over selected, selected over rest.
 @immutable
-class ExpressivePressShapes {
+class ExpressivePressShapes with Diagnosticable {
   /// Shapes of a pressable: [shape] at rest, with [pressed], [selected],
   /// [focused] and [hovered] variants.
   const ExpressivePressShapes({
@@ -144,6 +146,41 @@ class ExpressivePressShapes {
 
   @override
   int get hashCode => Object.hash(shape, pressed, selected, focused, hovered);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<OutlinedBorder>('shape', shape))
+      ..add(
+        DiagnosticsProperty<OutlinedBorder?>(
+          'pressed',
+          pressed,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<OutlinedBorder?>(
+          'selected',
+          selected,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<OutlinedBorder?>(
+          'focused',
+          focused,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<OutlinedBorder?>(
+          'hovered',
+          hovered,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// What a pressable is to assistive technology.
@@ -210,6 +247,7 @@ class ExpressivePressable extends StatefulWidget {
     this.rippleRadius,
     this.inkRect,
     this.minimumInteractiveSize = true,
+    this.tapTargetAlignment = AlignmentDirectional.center,
     this.focusNode,
     this.autofocus = false,
     this.statesController,
@@ -218,6 +256,7 @@ class ExpressivePressable extends StatefulWidget {
     this.focusRect,
     this.focusShape,
     this.focusInward = false,
+    this.focusRing = true,
     this.markFace = false,
     super.key,
   });
@@ -326,6 +365,12 @@ class ExpressivePressable extends StatefulWidget {
   /// it ([ExpressiveMinimumInteractiveSize]).
   final bool minimumInteractiveSize;
 
+  /// Where a smaller container stands in its touch target: centred, as
+  /// Compose centres it, or on the edge a keyline holds (a stepper's end
+  /// circles: [AlignmentDirectional.centerStart] and `centerEnd`), the
+  /// target growing away from it.
+  final AlignmentGeometry tapTargetAlignment;
+
   /// The focus node; one is made when null.
   final FocusNode? focusNode;
 
@@ -359,6 +404,11 @@ class ExpressivePressable extends StatefulWidget {
   /// a ring outside would lie under the next row's container.
   final bool focusInward;
 
+  /// Whether keyboard focus draws the focus indicator. False where the part
+  /// shows where it stands another way: a menu's row the pointer lit keeps
+  /// the focus (the keys go on from it) on the hover layer, with no ring.
+  final bool focusRing;
+
   /// Whether its drawn face (the surface, inside any 48dp target around it)
   /// is marked for the alignment checks ([DesignKeylineFace]): a face too
   /// faint on its page to read by its pixels (an unchosen tonal segment) is
@@ -367,6 +417,161 @@ class ExpressivePressable extends StatefulWidget {
 
   @override
   State<ExpressivePressable> createState() => _ExpressivePressableState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'componentStyle',
+          componentStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<ExpressivePressShapes>('shapes', shapes))
+      ..add(EnumProperty<ExpressiveMotionKey>('motion', motion))
+      ..add(ColorProperty('color', color))
+      ..add(ColorProperty('contentColor', contentColor))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onLongPress', onLongPress))
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>?>.has(
+          'onPressedChanged',
+          onPressedChanged,
+        ),
+      )
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(FlagProperty('dragged', value: dragged, ifTrue: 'dragged'))
+      ..add(FlagProperty('error', value: error, ifTrue: 'error'))
+      ..add(
+        EnumProperty<ExpressivePressRole>(
+          'role',
+          role,
+          defaultValue: ExpressivePressRole.button,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<SemanticsRole?>(
+          'semanticsRole',
+          semanticsRole,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(StringProperty('tooltip', tooltip, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<BorderSide>(
+          'side',
+          side,
+          defaultValue: BorderSide.none,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveStateElevation>(
+          'elevation',
+          elevation,
+          defaultValue: ExpressiveStateElevation.none,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveMotionKey>(
+          'elevationMotion',
+          elevationMotion,
+          defaultValue: ExpressiveMotionKey.defaultEffects,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveElevationLevel>(
+          'tonalElevation',
+          tonalElevation,
+          defaultValue: ExpressiveElevationLevel.level0,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveMotionKey>(
+          'colorMotion',
+          colorMotion,
+          defaultValue: ExpressiveMotionKey.fastEffects,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('bounded', bounded, defaultValue: true))
+      ..add(DoubleProperty('rippleRadius', rippleRadius, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<Rect Function(Size size)?>.has('inkRect', inkRect),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'minimumInteractiveSize',
+          minimumInteractiveSize,
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'tapTargetAlignment',
+          tapTargetAlignment,
+          defaultValue: AlignmentDirectional.center,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<WidgetStatesController?>(
+          'statesController',
+          statesController,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MouseCursor?>(
+          'mouseCursor',
+          mouseCursor,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'stateLayers',
+          stateLayers,
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Rect Function(Size size)?>.has(
+          'focusRect',
+          focusRect,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<OutlinedBorder?>(
+          'focusShape',
+          focusShape,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty('focusInward', value: focusInward, ifTrue: 'focusInward'),
+      )
+      ..add(
+        FlagProperty('focusRing', value: focusRing, ifFalse: 'no focus ring'),
+      )
+      ..add(FlagProperty('markFace', value: markFace, ifTrue: 'markFace'));
+  }
 }
 
 class _ExpressivePressableState extends State<ExpressivePressable> {
@@ -452,9 +657,8 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
     final states = _states;
     final enabled = _enabled;
     final resolved =
-        (widget.componentStyle ?? const ExpressiveComponentThemeData()).merge(
-          widget.style,
-        );
+        (widget.componentStyle ?? const ExpressiveComponentThemeData())
+            .layeredUnder(widget.style);
     final target =
         resolved.shape?.resolve(states) ??
         widget.shapes.resolve(
@@ -466,7 +670,11 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
 
     // The focus ring fades in and out on the fast effects spring (ringT,
     // 0 to 1) rather than appearing at once.
-    final ringOn = _keyboard && enabled && states.contains(WidgetState.focused);
+    final ringOn =
+        widget.focusRing &&
+        _keyboard &&
+        enabled &&
+        states.contains(WidgetState.focused);
 
     Widget paint(
       Color color,
@@ -576,7 +784,10 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
     );
 
     if (widget.minimumInteractiveSize) {
-      pressable = ExpressiveMinimumInteractiveSize(child: pressable);
+      pressable = ExpressiveMinimumInteractiveSize._inGroup(
+        alignment: widget.tapTargetAlignment,
+        child: pressable,
+      );
     }
     // Whether the parent fixed the width (a button group squishing its
     // members): content under a [ExpressiveFillProbedWidth] then fills it and centres.
@@ -973,6 +1184,14 @@ class ExpressiveSemanticsGroup extends SingleChildRenderObjectWidget {
   void updateRenderObject(BuildContext context, RenderObject renderObject) {
     (renderObject as _RenderMergeSemantics).interactive = interactive;
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      FlagProperty('interactive', value: interactive, ifTrue: 'interactive'),
+    );
+  }
 }
 
 class _RenderMergeSemantics extends RenderProxyBox {
@@ -1055,6 +1274,80 @@ class _RenderMergeSemantics extends RenderProxyBox {
       ..isSemanticBoundary = true
       ..isMergingSemanticsOfDescendants = _merges;
   }
+
+  /// The parts inside kept out of this node's box
+  /// ([ExpressiveOutsideOutline]).
+  final Set<_RenderOutsideOutline> _outside = <_RenderOutsideOutline>{};
+
+  /// This node's box, short of each part kept out of it, from the side
+  /// that part stands nearer.
+  @override
+  Rect get semanticBounds {
+    var bounds = Offset.zero & size;
+    for (final part in _outside) {
+      if (!part.attached || !part.hasSize) continue;
+      final box = MatrixUtils.transformRect(
+        part.getTransformTo(this),
+        Offset.zero & part.size,
+      );
+      bounds = box.left - bounds.left <= bounds.right - box.right
+          ? Rect.fromLTRB(
+              math.min(math.max(bounds.left, box.right), bounds.right),
+              bounds.top,
+              bounds.right,
+              bounds.bottom,
+            )
+          : Rect.fromLTRB(
+              bounds.left,
+              bounds.top,
+              math.max(math.min(bounds.right, box.left), bounds.left),
+              bounds.bottom,
+            );
+    }
+    return bounds;
+  }
+}
+
+/// Keeps [child] out of the box a screen reader outlines for the pressable
+/// round it, cut from the side it stands on: a search bar's trailing
+/// actions, controls with nodes of their own, take the taps there, so the
+/// bar's node ends where its own tap does.
+class ExpressiveOutsideOutline extends SingleChildRenderObjectWidget {
+  /// A part kept out of the enclosing pressable's node.
+  const ExpressiveOutsideOutline({required Widget super.child, super.key});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderOutsideOutline();
+}
+
+class _RenderOutsideOutline extends RenderProxyBox {
+  _RenderMergeSemantics? _group;
+
+  @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    var above = parent;
+    while (above != null && above is! _RenderMergeSemantics) {
+      above = above.parent;
+    }
+    _group = (above as _RenderMergeSemantics?)?.._outside.add(this);
+  }
+
+  @override
+  void detach() {
+    _group
+      ?.._outside.remove(this)
+      ..markNeedsSemanticsUpdate();
+    _group = null;
+    super.detach();
+  }
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    _group?.markNeedsSemanticsUpdate();
+  }
 }
 
 // Flutter collects semantics only when the platform or a caller requests it.
@@ -1095,20 +1388,54 @@ class _MergeSemanticsRegistry {
   }
 }
 
-/// Compose's `Modifier.minimumInteractiveComponentSize()`: [child] keeps
-/// its size but is centred in at least [size] × [size]
-/// (`HostBehavior.minimumInteractiveComponentSize`, 48dp), and a touch in
-/// the margin reaches it.
-class ExpressiveMinimumInteractiveSize extends SingleChildRenderObjectWidget {
+/// Compose's `Modifier.minimumInteractiveComponentSize()` on ui_core's
+/// padded tap target ([DesignTapTarget]): [child] keeps its size, centred in
+/// at least [size] × [size] (`HostBehavior.minimumInteractiveComponentSize`,
+/// 48dp), and a tap anywhere in that area reaches it. The layout, the area a
+/// tap reaches and the box a screen reader outlines are one: the target is
+/// one node, [child]'s semantics merged into it, so wrap one control, never
+/// a group.
+class ExpressiveMinimumInteractiveSize extends StatelessWidget {
   /// A scope keeping [child] at least [size] square to touch.
   const ExpressiveMinimumInteractiveSize({
-    super.child,
+    this.child,
     this.size = HostBehavior.minimumInteractiveComponentSize,
+    this.alignment = AlignmentDirectional.center,
     super.key,
-  });
+  }) : assert(size >= 0, 'a tap target is never negative: $size'),
+       _node = true;
+
+  /// An [ExpressivePressable]'s target: its [ExpressiveSemanticsGroup] is
+  /// the node and already spans the target, keeping a control inside (a
+  /// card's button, a row's switch) a node of its own, which a merging node
+  /// here would take in.
+  const ExpressiveMinimumInteractiveSize._inGroup({
+    required Widget this.child,
+    required this.alignment,
+  }) : size = HostBehavior.minimumInteractiveComponentSize,
+       _node = false;
+
+  final bool _node;
+
+  /// The control the target stands round.
+  final Widget? child;
+
+  /// Where [child] stands in the target: centred (Compose's), or on the
+  /// edges it names, the target growing away from them, mirrored right to
+  /// left.
+  final AlignmentGeometry alignment;
 
   /// The smallest touch target, in dp.
   final double size;
+
+  /// Expressive's floors ([DesignTapTargetScope] in [ExpressiveTheme]): 48 ×
+  /// 48 for a finger and for a pointer alike, as Compose keeps
+  /// `minimumInteractiveComponentSize` on every platform. Density tightens a
+  /// control's face (compact under a pointer), never its target.
+  static const DesignTapTargets targets = DesignTapTargets(
+    touch: Size.square(HostBehavior.minimumInteractiveComponentSize),
+    pointer: Size.square(HostBehavior.minimumInteractiveComponentSize),
+  );
 
   /// Whether touch targets are kept at [context]: false inside an
   /// [ExpressiveShrinkTapTargets].
@@ -1119,13 +1446,40 @@ class ExpressiveMinimumInteractiveSize extends SingleChildRenderObjectWidget {
           false);
 
   @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderMinimumInteractiveSize(enforcedAt(context) ? size : 0);
+  Widget build(BuildContext context) {
+    final minSize = Size.square(enforcedAt(context) ? size : 0);
+    final child = this.child ?? const SizedBox.shrink();
+    if (_node) {
+      return DesignTapTarget(
+        minSize: minSize,
+        alignment: alignment,
+        child: child,
+      );
+    }
+    return ExpressiveGroupTapTarget(
+      minSize: minSize,
+      alignment: alignment,
+      child: child,
+    );
+  }
 
   @override
-  void updateRenderObject(BuildContext context, RenderObject renderObject) {
-    (renderObject as _RenderMinimumInteractiveSize).minSize =
-        enforcedAt(context) ? size : 0;
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DoubleProperty(
+        'size',
+        size,
+        defaultValue: HostBehavior.minimumInteractiveComponentSize,
+      ),
+    );
+    properties.add(
+      DiagnosticsProperty<AlignmentGeometry>(
+        'alignment',
+        alignment,
+        defaultValue: AlignmentDirectional.center,
+      ),
+    );
   }
 }
 
@@ -1152,6 +1506,12 @@ class ExpressiveShrinkTapTargets extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       _ShrunkTapTargets(shrink: shrink, child: child);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<bool>('shrink', shrink));
+  }
 }
 
 class _ShrunkTapTargets extends InheritedWidget {
@@ -1162,85 +1522,6 @@ class _ShrunkTapTargets extends InheritedWidget {
   @override
   bool updateShouldNotify(_ShrunkTapTargets oldWidget) =>
       oldWidget.shrink != shrink;
-}
-
-class _RenderMinimumInteractiveSize extends RenderShiftedBox {
-  _RenderMinimumInteractiveSize(this._minSize) : super(null);
-
-  double _minSize;
-
-  set minSize(double value) {
-    if (value == _minSize) return;
-    _minSize = value;
-    markNeedsLayout();
-  }
-
-  Size _grown(Size child, BoxConstraints constraints) => constraints.constrain(
-    Size(math.max(child.width, _minSize), math.max(child.height, _minSize)),
-  );
-
-  @override
-  double computeMinIntrinsicWidth(double height) =>
-      math.max(super.computeMinIntrinsicWidth(height), _minSize);
-
-  @override
-  double computeMaxIntrinsicWidth(double height) =>
-      math.max(super.computeMaxIntrinsicWidth(height), _minSize);
-
-  @override
-  double computeMinIntrinsicHeight(double width) =>
-      math.max(super.computeMinIntrinsicHeight(width), _minSize);
-
-  @override
-  double computeMaxIntrinsicHeight(double width) =>
-      math.max(super.computeMaxIntrinsicHeight(width), _minSize);
-
-  @override
-  Size computeDryLayout(BoxConstraints constraints) {
-    final child = this.child;
-    if (child == null) return constraints.constrain(Size.square(_minSize));
-    return _grown(child.getDryLayout(constraints), constraints);
-  }
-
-  @override
-  void performLayout() {
-    final child = this.child;
-    if (child == null) {
-      size = constraints.constrain(Size.square(_minSize));
-      return;
-    }
-    child.layout(constraints, parentUsesSize: true);
-    size = _grown(child.size, constraints);
-    (child.parentData! as BoxParentData).offset = Alignment.center.alongOffset(
-      size - child.size as Offset,
-    );
-  }
-
-  /// The drawn component, not the grown touch target: what Compose reports
-  /// as the bounds of a component under `minimumInteractiveComponentSize`
-  /// (an icon button in a toolbar's 48dp slot measures 40dp). No semantics
-  /// node is created here, so accessibility keeps the 48dp target.
-  @override
-  Rect get semanticBounds {
-    final child = this.child;
-    if (child == null || !child.hasSize) return super.semanticBounds;
-    return (child.parentData! as BoxParentData).offset & child.size;
-  }
-
-  @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    if (!size.contains(position)) return false;
-    if (super.hitTest(result, position: position)) return true;
-    final child = this.child;
-    if (child == null) return false;
-    // A touch in the margin reaches the child at its centre.
-    final center = child.size.center(Offset.zero);
-    return result.addWithRawTransform(
-      transform: MatrixUtils.forceToPoint(center),
-      position: center,
-      hitTest: (result, position) => child.hitTest(result, position: center),
-    );
-  }
 }
 
 /// The stateful styling a pressable passes to its content.
@@ -1277,4 +1558,13 @@ class ExpressiveStyleScope extends InheritedWidget {
       style != oldWidget.style ||
       !setEquals(states, oldWidget.states) ||
       inset != oldWidget.inset;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ExpressiveComponentThemeData>('style', style))
+      ..add(IterableProperty<WidgetState>('states', states))
+      ..add(DiagnosticsProperty<EdgeInsetsGeometry>('inset', inset));
+  }
 }

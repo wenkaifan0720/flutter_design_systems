@@ -18,6 +18,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 
@@ -36,6 +37,7 @@ import '../shape.dart';
 import '../spacing.dart';
 import '../theme.dart';
 import 'hero.dart';
+import '../internal/style_layers.dart';
 
 /// The largest positive 31-bit integer: the hash's mask.
 const int _mask31 = 2147483647;
@@ -125,7 +127,7 @@ class ExpressiveImagePlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = context.expressiveTheme;
     final colors = theme.colors;
-    final visual = theme.imageTheme.merge(style);
+    final visual = theme.imageTheme.layeredUnder(style);
     const states = <WidgetState>{};
     final fill = visual.backgroundColor?.resolve(states);
     final tone = ExpressiveMediaTone.of(seed);
@@ -186,6 +188,21 @@ class ExpressiveImagePlaceholder extends StatelessWidget {
             child: wash,
           )
         : wash;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('seed', seed, defaultValue: ''))
+      ..add(DiagnosticsProperty<bool>('glyph', glyph, defaultValue: true));
   }
 }
 
@@ -406,7 +423,7 @@ class ExpressiveMedia extends StatelessWidget {
   ShapeBorder maskIn(ExpressiveThemeData theme) {
     final library = shape;
     return theme.imageTheme
-            .merge(style)
+            .layeredUnder(style)
             .shape
             ?.resolve(const <WidgetState>{}) ??
         (library == null
@@ -437,7 +454,7 @@ class ExpressiveMedia extends StatelessWidget {
       clipBehavior:
           corner == ExpressiveCorner.none &&
               shape == null &&
-              theme.imageTheme.merge(style).shape?.resolve({}) == null
+              theme.imageTheme.layeredUnder(style).shape?.resolve({}) == null
           ? Clip.none
           : Clip.antiAlias,
       shape: maskIn(theme),
@@ -466,6 +483,44 @@ class ExpressiveMedia extends StatelessWidget {
             label: label,
             child: ExcludeSemantics(child: picture),
           );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('slotId', slotId))
+      ..add(DoubleProperty('aspectRatio', aspectRatio, defaultValue: 1))
+      ..add(DiagnosticsProperty<BoxFit>('fit', fit, defaultValue: BoxFit.cover))
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'alignment',
+          alignment,
+          defaultValue: Alignment.center,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveCorner>(
+          'corner',
+          corner,
+          defaultValue: ExpressiveCorner.none,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveMaterialShape>(
+          'shape',
+          shape,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -592,7 +647,7 @@ class ExpressiveAvatar extends StatelessWidget {
     final theme = context.expressiveTheme;
     final colors = theme.colors;
     final resolved = tone ?? ExpressiveMediaTone.of(name);
-    final visual = theme.avatarTheme.merge(style);
+    final visual = theme.avatarTheme.layeredUnder(style);
     const states = <WidgetState>{};
     final ink =
         visual.foregroundColor?.resolve(states) ?? resolved.contentIn(colors);
@@ -688,6 +743,37 @@ class ExpressiveAvatar extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('slotId', slotId, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData?>('icon', icon, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveAvatarSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveAvatarSize.medium,
+        ),
+      )
+      ..add(EnumProperty<ExpressiveMediaTone>('tone', tone, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveMaterialShape>(
+          'shape',
+          shape,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// One face of an [ExpressiveAvatarGroup]: whose, and their picture — an
@@ -751,7 +837,7 @@ class ExpressiveAvatarGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
-    final visual = t.avatarTheme.merge(style);
+    final visual = t.avatarTheme.layeredUnder(style);
     const states = <WidgetState>{};
     final customMask = visual.shape?.resolve(states);
     final mask = customMask ?? const CircleBorder();
@@ -908,6 +994,30 @@ class ExpressiveAvatarGroup extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<ExpressiveFace>('faces', faces))
+      ..add(IntProperty('total', total, defaultValue: null))
+      ..add(IntProperty('max', max, defaultValue: 4))
+      ..add(
+        EnumProperty<ExpressiveAvatarSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveAvatarSize.small,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

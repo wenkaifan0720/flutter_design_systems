@@ -28,6 +28,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Theme;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -133,6 +134,22 @@ class ExpressiveScaffold extends StatefulWidget {
 
   @override
   State<ExpressiveScaffold> createState() => _ExpressiveScreenState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('scroll', scroll, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry?>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('fullBleed', value: fullBleed, ifTrue: 'fullBleed'));
+  }
 }
 
 class _ExpressiveScreenState extends State<ExpressiveScaffold>

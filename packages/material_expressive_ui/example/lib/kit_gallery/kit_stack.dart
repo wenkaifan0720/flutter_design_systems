@@ -90,6 +90,7 @@ class _KitStackState extends State<KitStack> with WidgetsBindingObserver {
     brightness: widget.brightness,
     child: MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: kitAppTheme,
       // The stack's own app reads in the page's direction (its English
       // locale would turn a right-to-left page's demo left to right).
       builder: (inner, _) => Directionality(

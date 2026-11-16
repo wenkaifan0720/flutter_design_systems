@@ -2,8 +2,10 @@
 // system bars, the presentation and the ported Cody v2 preview tests
 // (CONTRACT §8.2; RUN 2 F14). The design kit's GenChrome contract runs the
 // preview's frame, register and brightness separately.
+import 'package:flutter/foundation.dart' show SynchronousFuture;
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart' show SystemUiOverlayStyle;
+import 'package:flutter/services.dart'
+    show LogicalKeyboardKey, SystemUiOverlayStyle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
@@ -307,19 +309,19 @@ void main() {
         Brightness.dark,
       );
       await tester.pumpWidget(
-        ExpressivePreview(
+        const ExpressivePreview(
           brightness: Brightness.dark,
           navigationMode: ExpressiveNavigationMode.threeButton,
           child: Column(
             children: <Widget>[
-              const SizedBox(
+              SizedBox(
                 height: 120,
                 child: AnnotatedRegion<SystemUiOverlayStyle>(
                   value: SystemUiOverlayStyle.dark,
                   child: SizedBox.expand(),
                 ),
               ),
-              const Expanded(
+              Expanded(
                 child: AnnotatedRegion<SystemUiOverlayStyle>(
                   value: SystemUiOverlayStyle(
                     systemNavigationBarIconBrightness: Brightness.light,
@@ -568,4 +570,97 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+
+  testWidgets('Tab goes on from a preview to the page it stands in', (
+    tester,
+  ) async {
+    // On the web an app's own navigator lets focus leave the window at its
+    // last control, so a preview standing its page on one kept the keyboard
+    // from the page around it (11-14). Its navigator is its own and hands
+    // focus on to the page.
+    final after = FocusNode(debugLabel: 'after');
+    addTearDown(after.dispose);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Column(
+          children: [
+            const Expanded(
+              child: ExpressivePreview(
+                platform: PreviewPlatform.android,
+                child: _Page('Home'),
+              ),
+            ),
+            TextButton(
+              focusNode: after,
+              onPressed: () {},
+              child: const Text('After'),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final preview = find.byType(ExpressivePreview);
+    final navigators = tester.widgetList<Navigator>(
+      find.descendant(of: preview, matching: find.byType(Navigator)),
+    );
+    expect(navigators, isNotEmpty);
+    for (final navigator in navigators) {
+      expect(
+        navigator.routeTraversalEdgeBehavior,
+        TraversalEdgeBehavior.parentScope,
+      );
+    }
+    expect(
+      find.descendant(
+        of: preview,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is FocusScope && widget.debugLabel == 'Navigator Scope',
+        ),
+      ),
+      findsNothing,
+      reason: "an app's own navigator leaves the window on the web",
+    );
+    await tester.showKeyboard(find.byType(EditableText));
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+    expect(after.hasPrimaryFocus, isTrue);
+  });
+
+  testWidgets('a preview reads in the language of the page it stands in', (
+    tester,
+  ) async {
+    // The gallery's right-to-left pages are Arabic, their previews' own
+    // words (an error state's Try again) were their own app's English.
+    await tester.pumpWidget(
+      const MaterialApp(
+        localizationsDelegates: [_FrenchWords()],
+        home: ExpressivePreview(
+          platform: PreviewPlatform.android,
+          child: ExpressiveErrorState(title: 'Hors ligne', onRetry: _noop),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Réessayer'), findsOneWidget);
+    expect(find.text('Try again'), findsNothing);
+  });
+}
+
+void _noop() {}
+
+/// The look's words with a French retry, for the language test.
+class _FrenchWords extends LocalizationsDelegate<ExpressiveLocalizations> {
+  const _FrenchWords();
+
+  @override
+  bool isSupported(Locale locale) => true;
+
+  @override
+  Future<ExpressiveLocalizations> load(Locale locale) =>
+      SynchronousFuture(const ExpressiveLocalizations(tryAgain: 'Réessayer'));
+
+  @override
+  bool shouldReload(_FrenchWords old) => false;
 }

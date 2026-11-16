@@ -28,9 +28,17 @@
 ///   1)`). Release commits or cancels by spring (the theme's default spatial
 ///   spring; critically damped under Reduce Motion); a commit fades the page
 ///   out where the gesture left it while the page beneath travels home.
-/// - **iOS** (and macOS): the Cupertino page slide, which carries the edge
-///   swipe-back and the parallax of the page beneath
+/// - **iOS**: the Cupertino page slide, which carries the edge swipe-back
+///   and the parallax of the page beneath
 ///   (`CupertinoRouteTransitionMixin.buildPageTransitions`, 500 ms).
+/// - **Every other platform** (macOS, Windows, Linux, Fuchsia, and the web
+///   on any of them): Android's fade-forwards push, a 96dp travel and a
+///   fade, never a page flying in across the window. Their back is a key, a
+///   button or the browser's, not a gesture the page follows.
+///
+/// [expressivePageTransitions], which `ExpressiveHost`'s theme names, gives
+/// an app's own page routes (a `MaterialPageRoute`, go_router's
+/// `MaterialPage`) the same motion on every platform.
 ///
 /// The push clocks and curves here are the one documented exception to
 /// "springs only" (RUN 2 decision F11): the platform owns them.
@@ -40,6 +48,7 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:cupertino_ui/cupertino_ui.dart'
     show CupertinoPageTransition, CupertinoRouteTransitionMixin;
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Theme;
 import 'package:flutter/services.dart' show PredictiveBackEvent, SwipeEdge;
 import 'package:flutter/widgets.dart';
@@ -47,13 +56,16 @@ import 'package:flutter/widgets.dart';
 import '../motion.dart';
 import '../theme.dart';
 import 'overlays.dart' show ExpressiveBackHandleRoute;
+import 'page_transitions.dart';
 
 /// The go_router [Page] for a route pushed off a root, keyed by go_router's
 /// page key. The page's chrome is derived, never authored: a screen inside
 /// reads the pushed register (`RoutePresentation.of`) from the route's place.
 ///
 /// On Android the push is fade-forwards and the back gesture predictive; on
-/// iOS the push is the Cupertino slide and the back gesture the edge swipe.
+/// iOS the push is the Cupertino slide and the back gesture the edge swipe;
+/// everywhere else (macOS, Windows, Linux, the web) the push is
+/// fade-forwards.
 class ExpressivePage<T> extends Page<T> {
   /// A page showing [child].
   const ExpressivePage({
@@ -67,8 +79,9 @@ class ExpressivePage<T> extends Page<T> {
   /// The page.
   final Widget child;
 
-  /// The Android push and pop clock: AOSP's activity transition, 450 ms
-  /// (`activity_open_enter.xml` and its three siblings, android-37.2).
+  /// The fade-forwards push and pop clock (every platform but iOS): AOSP's
+  /// activity transition, 450 ms (`activity_open_enter.xml` and its three
+  /// siblings, android-37.2).
   static const Duration fadeForwardsDuration = Duration(milliseconds: 450);
 
   /// The iOS push and pop clock: the Cupertino page slide, 500 ms
@@ -88,9 +101,41 @@ class ExpressivePage<T> extends Page<T> {
       _ExpressivePageRoute<T>(page: this, platform: Theme.of(context).platform);
 }
 
-/// Whether [platform] pushes with the Cupertino slide.
-bool _slides(TargetPlatform platform) =>
-    platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
+/// Whether [platform] pushes with the Cupertino slide: iOS alone. On macOS
+/// (the web on a Mac included) the slide carried a page across the whole
+/// window; every platform but iOS pushes with fade-forwards.
+bool _slides(TargetPlatform platform) => platform == TargetPlatform.iOS;
+
+/// The look's push and pop for a page route it does not build itself (a
+/// `MaterialPageRoute`, go_router's `MaterialPage`): the fade-forwards an
+/// [ExpressivePage] pushes with, on its clock
+/// ([ExpressivePage.fadeForwardsDuration]): the page travels 96dp and fades
+/// in while the page beneath travels 96dp the other way; the pop is the
+/// reverse. [expressivePageTransitions] names it for macOS, Windows,
+/// Linux and Fuchsia.
+class ExpressivePageTransitionsBuilder extends PageTransitionsBuilder {
+  /// The look's push and pop.
+  const ExpressivePageTransitionsBuilder();
+
+  @override
+  Duration get transitionDuration => ExpressivePage.fadeForwardsDuration;
+
+  @override
+  DelegatedTransitionBuilder? get delegatedTransition =>
+      _delegatedPageTransition;
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => _FadeForwardsBeneath(
+    animation: secondaryAnimation,
+    child: _FadeForwardsIn(animation: animation, child: child),
+  );
+}
 
 /// The route an [ExpressivePage] stands for.
 class _ExpressivePageRoute<T> extends PageRoute<T>
@@ -198,8 +243,8 @@ mixin ExpressivePredictiveBackRoute<T> on PageRoute<T> {
   /// The gesture's progress when it committed; null until it does.
   double? _committedAt;
 
-  /// The platform whose back the route follows: never iOS or macOS, whose
-  /// back is a swipe.
+  /// The platform whose back the route follows: never iOS, whose back is
+  /// the edge swipe.
   TargetPlatform get predictiveBackPlatform =>
       Theme.of(navigator!.context).platform;
 
@@ -216,7 +261,7 @@ mixin ExpressivePredictiveBackRoute<T> on PageRoute<T> {
   }
 
   /// Claims the system's back gesture (Android): only the page on screen,
-  /// and never on a platform that slides.
+  /// and never on iOS, whose page slides.
   bool _claim(PredictiveBackEvent event) {
     final navigator = this.navigator;
     if (navigator == null ||
@@ -470,6 +515,20 @@ class ExpressivePredictiveBackTransition extends StatefulWidget {
   @override
   State<ExpressivePredictiveBackTransition> createState() =>
       _PredictiveBackTransitionState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressivePredictiveBackRoute<dynamic>>(
+          'route',
+          route,
+        ),
+      )
+      ..add(DiagnosticsProperty<Animation<double>>('animation', animation))
+      ..add(FlagProperty('rise', value: rise, ifTrue: 'rise'));
+  }
 }
 
 class _PredictiveBackTransitionState
@@ -567,6 +626,78 @@ class _PredictiveBackTransitionState
               ),
             ),
           ),
+        ),
+      );
+    },
+    child: widget.child,
+  );
+}
+
+/// A page route's own page in a fade-forwards push and pop, for a route
+/// that is not an [ExpressivePage] (whose page moves in an
+/// [ExpressivePredictiveBackTransition]): it travels 96dp and fades in
+/// (`activity_open_enter`), and back out on the pop (`activity_close_exit`).
+class _FadeForwardsIn extends StatefulWidget {
+  const _FadeForwardsIn({required this.animation, required this.child});
+
+  final Animation<double> animation;
+  final Widget child;
+
+  @override
+  State<_FadeForwardsIn> createState() => _FadeForwardsInState();
+}
+
+class _FadeForwardsInState extends State<_FadeForwardsIn> {
+  late CurvedAnimation _travel;
+  late CurvedAnimation _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _curve();
+  }
+
+  void _curve() {
+    _travel = CurvedAnimation(
+      parent: widget.animation,
+      curve: _kTravelCurve,
+      reverseCurve: _kTravelCurve.flipped,
+    );
+    _fade = CurvedAnimation(
+      parent: widget.animation,
+      curve: _kFadeIn,
+      reverseCurve: _kFadeOut,
+    );
+  }
+
+  @override
+  void didUpdateWidget(_FadeForwardsIn oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.animation != widget.animation) {
+      _travel.dispose();
+      _fade.dispose();
+      _curve();
+    }
+  }
+
+  @override
+  void dispose() {
+    _travel.dispose();
+    _fade.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: widget.animation,
+    builder: (context, child) {
+      final sign = Directionality.of(context) == TextDirection.ltr ? 1 : -1;
+      return IgnorePointer(
+        // A page on its way out takes no taps.
+        ignoring: widget.animation.status == AnimationStatus.reverse,
+        child: Transform.translate(
+          offset: Offset(_kTravel * (1 - _travel.value) * sign, 0),
+          child: Opacity(opacity: _fade.value, child: child),
         ),
       );
     },

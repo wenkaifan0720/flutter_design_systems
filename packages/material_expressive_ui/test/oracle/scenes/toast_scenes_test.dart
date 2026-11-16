@@ -115,10 +115,10 @@ final OracleGroup toastScenes = OracleGroup(
         actionOnNewLine: true,
       ),
     ),
-    OracleScene(
+    const OracleScene(
       key: 'toast/motion/enter',
-      size: const Size(400, 96),
-      motion: const OracleMotion(tags: ['container'], frames: 40),
+      size: Size(400, 96),
+      motion: OracleMotion(tags: ['container'], frames: 40),
       build: _enter,
     ),
   ],

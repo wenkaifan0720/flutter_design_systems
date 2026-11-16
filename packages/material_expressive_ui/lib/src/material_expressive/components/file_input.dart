@@ -8,6 +8,7 @@
 /// input when a drag hovers ([ExpressiveFileUpload.dragging]).
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../elevation.dart';
@@ -61,8 +62,16 @@ class ExpressiveFileUpload extends StatelessWidget {
     this.files = const <ExpressiveChosenFile>[],
     this.onRemove,
     this.semanticLabel,
+    this.focusNode,
+    this.autofocus = false,
     super.key,
   });
+
+  /// The browse button's focus node; one is made when null.
+  final FocusNode? focusNode;
+
+  /// Whether the browse button takes focus when first built.
+  final bool autofocus;
 
   /// What the area asks for: `Drop a receipt here`.
   final String label;
@@ -160,6 +169,8 @@ class ExpressiveFileUpload extends StatelessWidget {
                 child: ExpressiveFilledButton.tonal(
                   browseLabel ?? strings.chooseFiles,
                   icon: ExpressiveSymbols.attachFile,
+                  focusNode: focusNode,
+                  autofocus: autofocus,
                   onPressed: onBrowse,
                 ),
               ),
@@ -181,6 +192,37 @@ class ExpressiveFileUpload extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('label', label))
+      ..add(
+        StringProperty('supportingText', supportingText, defaultValue: null),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onBrowse', onBrowse))
+      ..add(StringProperty('browseLabel', browseLabel, defaultValue: null))
+      ..add(FlagProperty('dragging', value: dragging, ifTrue: 'dragging'))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(
+        IterableProperty<ExpressiveChosenFile>(
+          'files',
+          files,
+          defaultValue: const <ExpressiveChosenFile>[],
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onRemove', onRemove))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

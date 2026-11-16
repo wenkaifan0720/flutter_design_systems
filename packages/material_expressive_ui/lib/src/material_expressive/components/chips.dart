@@ -14,6 +14,8 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart' show RenderProxyBox;
 import 'package:flutter/widgets.dart';
 
 import '../color.dart';
@@ -270,7 +272,7 @@ class ExpressiveChip extends StatelessWidget {
             child: Opacity(
               opacity: enabled ? 1 : InputChipTokens.disabledAvatarOpacity,
               child: ClipPath(
-                clipper: ShapeBorderClipper(shape: const CircleBorder()),
+                clipper: const ShapeBorderClipper(shape: CircleBorder()),
                 child: SizedBox.square(dimension: avatarSize, child: avatar),
               ),
             ),
@@ -417,19 +419,36 @@ class ExpressiveChip extends StatelessWidget {
         InputChipBehavior.iconPadding +
         InputChipTokens.trailingIconSize +
         ChipBehavior.compactHorizontalSpacing;
+    final enforced = ExpressiveMinimumInteractiveSize.enforcedAt(context);
+    final removeWidth = enforced
+        ? math.max(glyphTarget, HostBehavior.minimumInteractiveComponentSize)
+        : glyphTarget;
+    // A chip that acts and removes holds two targets side by side: at least
+    // 48dp for its body beside the remove target's.
+    final body = _action != null && enforced
+        ? ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth:
+                  removeWidth + HostBehavior.minimumInteractiveComponentSize,
+            ),
+            child: chip,
+          )
+        : _action == null && enabled
+        // A chip that only removes (a multi-select's tag) is its words, not
+        // a control: they join the node round it (the tag's, with its
+        // Remove action), not a disabled button of their own.
+        ? Semantics(label: label, excludeSemantics: true, child: chip)
+        : chip;
     return Stack(
       children: <Widget>[
-        chip,
+        // The chip's node ends where the remove target starts: a tap there
+        // removes, so a screen reader outlines the chip short of it.
+        _SemanticsEndCut(cut: removeWidth, child: body),
         PositionedDirectional(
           top: 0,
           bottom: 0,
           end: 0,
-          width: ExpressiveMinimumInteractiveSize.enforcedAt(context)
-              ? math.max(
-                  glyphTarget,
-                  HostBehavior.minimumInteractiveComponentSize,
-                )
-              : glyphTarget,
+          width: removeWidth,
           child: _RemoveTarget(
             label: deleteLabel,
             chipLabel: label,
@@ -705,6 +724,43 @@ class ExpressiveChip extends StatelessWidget {
         );
     }
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(DiagnosticsProperty<IconData?>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData?>(
+          'trailingIcon',
+          trailingIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onDeleted', onDeleted))
+      ..add(StringProperty('deleteLabel', deleteLabel, defaultValue: null))
+      ..add(FlagProperty('elevated', value: elevated, ifTrue: 'elevated'))
+      ..add(FlagProperty('morph', value: morph, ifTrue: 'morph'))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// What one chip draws with: its `*Defaults`' colours, border and
@@ -852,6 +908,9 @@ class _RemoveTarget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
+    // Its own node, over its own target, not the chip's or the tag's round
+    // it.
+    container: true,
     button: true,
     enabled: onDeleted != null,
     label: label ?? ExpressiveLocalizations.of(context).removeChip(chipLabel),
@@ -870,6 +929,51 @@ class _RemoveTarget extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// [child]'s semantics cut [cut] short at its end edge: an input chip's
+/// node, short of its remove target.
+class _SemanticsEndCut extends SingleChildRenderObjectWidget {
+  const _SemanticsEndCut({required this.cut, required super.child});
+
+  final double cut;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderSemanticsEndCut(cut, Directionality.of(context));
+
+  @override
+  void updateRenderObject(BuildContext context, RenderObject renderObject) {
+    (renderObject as _RenderSemanticsEndCut)
+      ..cut = cut
+      ..textDirection = Directionality.of(context);
+  }
+}
+
+class _RenderSemanticsEndCut extends RenderProxyBox {
+  _RenderSemanticsEndCut(this._cut, this._textDirection);
+
+  double _cut;
+  set cut(double value) {
+    if (value == _cut) return;
+    _cut = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  TextDirection _textDirection;
+  set textDirection(TextDirection value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  @override
+  Rect? describeSemanticsClip(RenderObject? child) {
+    final keep = math.max(0.0, size.width - _cut);
+    return _textDirection == TextDirection.ltr
+        ? Rect.fromLTWH(0, 0, keep, size.height)
+        : Rect.fromLTWH(size.width - keep, 0, keep, size.height);
+  }
 }
 
 /// Chips in a row: flowing onto more lines when they do not fit (Compose's
@@ -919,5 +1023,19 @@ class ExpressiveChipRow extends StatelessWidget {
       padding: padding,
       child: Row(spacing: ExpressiveSpacing.s8, children: children),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('scrollable', value: scrollable, ifTrue: 'scrollable'))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry?>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      );
   }
 }

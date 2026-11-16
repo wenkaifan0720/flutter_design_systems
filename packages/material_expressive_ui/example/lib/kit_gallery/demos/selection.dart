@@ -32,15 +32,18 @@ Widget _caption(BuildContext context, String text) {
   );
 }
 
-/// One control over its caption, which is its name: the two are one node to
-/// assistive technology.
-Widget _cell(BuildContext context, String caption, Widget control) =>
+/// One control over its caption, which is its name: the control's node
+/// reads the caption, and a screen reader outlines the control alone, the
+/// box a tap reaches.
+Widget _cell(BuildContext context, String caption, Widget control) => Column(
+  mainAxisSize: MainAxisSize.min,
+  children: <Widget>[
     MergeSemantics(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[control, _caption(context, caption)],
-      ),
-    );
+      child: Semantics(label: caption, child: control),
+    ),
+    ExcludeSemantics(child: _caption(context, caption)),
+  ],
+);
 
 /// Controls in a wrapping grid, each over its caption.
 Widget _grid(BuildContext context, List<(String, Widget)> cells) => Wrap(

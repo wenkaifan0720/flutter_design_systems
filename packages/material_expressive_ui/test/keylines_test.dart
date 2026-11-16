@@ -490,7 +490,7 @@ Future<void> _sheet(WidgetTester tester, List<_Box> boxes, String path) async {
 void main() {
   setUpAll(loadExpressiveFonts);
   final output = Platform.environment['EXPRESSIVE_DESIGN_REVIEW_OUT'];
-  final densities = TargetPlatformVariant(const {
+  final densities = const TargetPlatformVariant({
     TargetPlatform.android,
     TargetPlatform.macOS,
   });

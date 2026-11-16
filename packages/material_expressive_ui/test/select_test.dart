@@ -236,16 +236,15 @@ void main() {
     final semantics = tester.ensureSemantics();
     await tester.pumpWidget(host((context) => liveSelect(initial: 'm')));
     await tester.pumpAndSettle();
-    SemanticsData data() => tester
-        .getSemantics(
-          find
-              .ancestor(
-                of: find.byType(ExpressiveTextField),
-                matching: find.byType(Semantics),
-              )
-              .first,
-        )
-        .getSemanticsData();
+    // The field's own node (its editable text merges into it), over its
+    // container: what a tap reaches is what a screen reader outlines. Open,
+    // the menu is a route of its own and the field is behind it.
+    SemanticsData data() {
+      final node = tester.getSemantics(find.byType(EditableText));
+      expect(node.label, 'Size');
+      return node.getSemanticsData();
+    }
+
     expect(data().flagsCollection.isExpanded.toBoolOrNull(), isFalse);
     await tester.tap(find.byType(ExpressiveTextField));
     await tester.pumpAndSettle();
@@ -346,6 +345,39 @@ void main() {
     expect(menu, findsNothing);
     focus.dispose();
     text.dispose();
+  });
+
+  testWidgets('holding a choice, it offers every option again, the choice '
+      'marked as a select marks it; typing filters again', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final text = TextEditingController();
+    await tester.pumpWidget(host((context) => combobox(controller: text)));
+    await tester.showKeyboard(find.byType(EditableText));
+    await tester.enterText(find.byType(EditableText), 'lo');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('London'), warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(text.text, 'London');
+    expect(menu, findsNothing);
+
+    Finder item(String city) =>
+        find.descendant(of: menu, matching: find.text(city));
+    // Opened again: every city, London the chosen one, by the row's fill.
+    await tester.tap(find.byType(ExpressiveSelectTrailingIcon));
+    await tester.pumpAndSettle();
+    for (final city in cities) {
+      expect(item(city), findsOneWidget);
+    }
+    expect(tester.getSemantics(item('London')), isSemantics(isChecked: true));
+    expect(tester.getSemantics(item('Paris')), isSemantics(isChecked: false));
+
+    // Typing filters again; words no option's label marks nothing.
+    await tester.enterText(find.byType(EditableText), 'Lon');
+    await tester.pumpAndSettle();
+    expect(item('Paris'), findsNothing);
+    expect(tester.getSemantics(item('London')), isSemantics(isChecked: false));
+    text.dispose();
+    semantics.dispose();
   });
 
   testWidgets('the arrow toggles the menu without focusing the field; a tap '

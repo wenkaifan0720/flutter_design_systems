@@ -22,7 +22,7 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
-import 'package:flutter/foundation.dart' show setEquals;
+import 'package:flutter/foundation.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
@@ -41,6 +41,7 @@ import '../motion.dart';
 import '../spacing.dart';
 import '../states.dart';
 import '../theme.dart';
+import '../internal/style_layers.dart';
 
 /// Nothing: the fill of a container Compose leaves `Color.Transparent`.
 const Color _clear = expressiveTransparent;
@@ -171,6 +172,32 @@ class ExpressiveCheckbox extends StatefulWidget {
 
   @override
   State<ExpressiveCheckbox> createState() => _ExpressiveCheckboxState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool?>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<bool>?>.has('onChanged', onChanged))
+      ..add(FlagProperty('tristate', value: tristate, ifTrue: 'tristate'))
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _ExpressiveCheckboxState extends State<ExpressiveCheckbox>
@@ -228,7 +255,7 @@ class _ExpressiveCheckboxState extends State<ExpressiveCheckbox>
       if (widget.value != false) WidgetState.selected,
       if (widget.isError) WidgetState.error,
     };
-    final style = t.checkboxTheme.merge(widget.style);
+    final style = t.checkboxTheme.layeredUnder(widget.style);
     final c = context.expressiveTheme.colors;
     final state = widget.value;
     final enabled = _enabled;
@@ -368,7 +395,7 @@ class _ExpressiveCheckboxState extends State<ExpressiveCheckbox>
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       selected: widget.value != false,
-      style: context.expressiveTheme.checkboxTheme.merge(widget.style),
+      style: context.expressiveTheme.checkboxTheme.layeredUnder(widget.style),
       builder: _mark,
     );
   }
@@ -563,7 +590,7 @@ class ExpressiveRadio extends StatelessWidget {
       if (!enabled) WidgetState.disabled,
       if (selected) WidgetState.selected,
     };
-    final resolved = t.radioTheme.merge(style);
+    final resolved = t.radioTheme.layeredUnder(style);
     final shape = resolved.shape?.resolve(states);
     final inset =
         shape
@@ -667,12 +694,37 @@ class ExpressiveRadio extends StatelessWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       selected: selected,
-      style: context.expressiveTheme.radioTheme.merge(style),
+      style: context.expressiveTheme.radioTheme.layeredUnder(style),
       // A radio is a circle in every family, so it never reads as a
       // checkbox; its halo is a circle too.
       shape: const CircleBorder(),
       builder: _mark,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('selected', selected))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -836,6 +888,30 @@ class ExpressiveRadioGroup<T> extends StatelessWidget {
       ],
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry?>(
+          'contentPadding',
+          contentPadding,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<ExpressiveRadioOption<T>>('options', options))
+      ..add(DiagnosticsProperty<T?>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -923,6 +999,30 @@ class ExpressiveSwitch extends StatefulWidget {
 
   @override
   State<ExpressiveSwitch> createState() => _ExpressiveSwitchState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<bool>?>.has('onChanged', onChanged))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// The thumb's geometry along the track (Compose's `ThumbNode.measure`),
@@ -1114,7 +1214,7 @@ class _ExpressiveSwitchState extends State<ExpressiveSwitch>
       if (checked) WidgetState.selected,
       if (_drag != null) WidgetState.dragged,
     };
-    final style = t.switchTheme.merge(widget.style);
+    final style = t.switchTheme.layeredUnder(widget.style);
     Color disabled(ExpressiveColorRole role, double alpha) =>
         Color.alphaBlend(c.role(role).withValues(alpha: alpha), c.surface);
     // SwitchColors: thumb, track, border, icon by (enabled, checked).
@@ -1393,8 +1493,10 @@ class _ThumbLayout extends SingleChildLayoutDelegate {
 
 /// The row a labelled control lives in (Material's guidance for Compose:
 /// `Modifier.toggleable`/`selectable` on a full-width row, the control
-/// inside with no handler of its own): one line of `ListTokens`' height,
-/// the list's start and end space, the label in `bodyLarge`. Its highlight
+/// inside with no handler of its own): one line of `ListTokens`' height
+/// (two lines', with the list's top and bottom space, when it has
+/// supporting text), the list's start and end space, the label in
+/// `bodyLarge`. Its highlight
 /// is the interactive list item's ([ExpressiveListTile]'s
 /// `ListItemShapes`): 4dp corners at rest, 12dp hovered, 16dp focused and
 /// pressed, never a square over the row.
@@ -1544,11 +1646,22 @@ class _ControlRow extends StatelessWidget {
       child: Builder(
         builder: (context) {
           final scope = ExpressiveStyleScope.maybeOf(context)!;
+          // A row with supporting text is a two-line list item: 72dp, with
+          // the list's 10dp above and below its words, so larger text
+          // grows the row with room round it, not packed into the 56.
+          final twoLine = supportingText != null;
           return ExpressiveStyledContent(
-            minimumSize: const Size(0, ListTokens.itemOneLineContainerHeight),
-            padding: const EdgeInsetsDirectional.only(
+            minimumSize: Size(
+              0,
+              twoLine
+                  ? ListTokens.itemTwoLineContainerHeight
+                  : ListTokens.itemOneLineContainerHeight,
+            ),
+            padding: EdgeInsetsDirectional.only(
               start: ListTokens.itemLeadingSpace,
               end: ListTokens.itemTrailingSpace,
+              top: twoLine ? ListTokens.itemTopSpace : 0,
+              bottom: twoLine ? ListTokens.itemBottomSpace : 0,
             ),
             center: false,
             keylineSides: true,
@@ -1651,6 +1764,43 @@ class ExpressiveCheckboxRow extends StatelessWidget {
       isError: isError,
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry?>(
+          'contentPadding',
+          contentPadding,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(
+        StringProperty('supportingText', supportingText, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<bool?>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<bool>?>.has('onChanged', onChanged))
+      ..add(FlagProperty('tristate', value: tristate, ifTrue: 'tristate'))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// A radio button with its label, the whole row the touch target: one row
@@ -1728,6 +1878,41 @@ class ExpressiveRadioRow extends StatelessWidget {
       enabled: enabled && onPressed != null,
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry?>(
+          'contentPadding',
+          contentPadding,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(
+        StringProperty('supportingText', supportingText, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<bool>('selected', selected))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// A switch with its label before it, the whole row the touch target (the
@@ -1814,4 +1999,39 @@ class ExpressiveSwitchRow extends StatelessWidget {
       uncheckedIcon: uncheckedIcon,
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry?>(
+          'contentPadding',
+          contentPadding,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(
+        StringProperty('supportingText', supportingText, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<bool>?>.has('onChanged', onChanged))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }

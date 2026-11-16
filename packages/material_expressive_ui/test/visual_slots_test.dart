@@ -1,3 +1,6 @@
+// Reads private painters and layouts, which no public type describes.
+// ignore_for_file: avoid_dynamic_calls
+
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart' show MaterialApp;

@@ -28,6 +28,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/physics.dart' show SpringSimulation;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -59,6 +60,7 @@ import '../internal/tokens/filled_button_tokens.g.dart';
 import '../internal/tokens/keys.g.dart';
 import '../internal/tokens/scrim_tokens.g.dart';
 import 'hero.dart';
+import '../internal/style_layers.dart';
 import 'overlays.dart' show ExpressiveBackHandle;
 
 // ---------------------------------------------------------------------------
@@ -430,6 +432,48 @@ class ExpressiveFloatingActionButton extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveFabSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveFabSize.standard,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveFabColor>(
+          'color',
+          color,
+          defaultValue: ExpressiveFabColor.primaryContainer,
+        ),
+      )
+      ..add(FlagProperty('lowered', value: lowered, ifTrue: 'lowered'))
+      ..add(StringProperty('tooltip', tooltip, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -987,6 +1031,85 @@ class ExpressiveFabMenu extends StatefulWidget {
 
   @override
   State<ExpressiveFabMenu> createState() => _ExpressiveFabMenuState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'itemStyle',
+          itemStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(IterableProperty<ExpressiveFabMenuItem>('items', items))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'closeIcon',
+          closeIcon,
+          defaultValue: ExpressiveSymbols.close,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool?>('expanded', expanded, defaultValue: null),
+      )
+      ..add(
+        FlagProperty(
+          'initiallyExpanded',
+          value: initiallyExpanded,
+          ifTrue: 'initiallyExpanded',
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>?>.has(
+          'onExpandedChanged',
+          onExpandedChanged,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveFabSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveFabSize.standard,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveFabMenuColor>(
+          'color',
+          color,
+          defaultValue: ExpressiveFabMenuColor.primary,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<CrossAxisAlignment>(
+          'alignment',
+          alignment,
+          defaultValue: CrossAxisAlignment.end,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('padded', padded, defaultValue: true))
+      ..add(
+        FlagProperty(
+          'overlayItems',
+          value: overlayItems,
+          ifTrue: 'overlayItems',
+        ),
+      )
+      ..add(FlagProperty('scrim', value: scrim, ifTrue: 'scrim'))
+      ..add(
+        DiagnosticsProperty<Key?>('buttonKey', buttonKey, defaultValue: null),
+      );
+  }
 }
 
 class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
@@ -1011,6 +1134,23 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
   final List<AnimationController> _alphas = <AnimationController>[];
   final List<double> _targets = <double>[];
   final List<FocusNode> _itemFocus = <FocusNode>[];
+  final FocusNode _toggleFocus = FocusNode(
+    debugLabel: 'ExpressiveFabMenu toggle',
+  );
+
+  /// One lit item, as in every Expressive menu: the pointer moving over an
+  /// item lights it (and, with the keys among the items, moves their focus
+  /// there, so they go on from it); a key lights the focused item alone,
+  /// with the focus indicator. False until a key moves among the items, or
+  /// the focus comes to an item other than by the pointer.
+  bool _keysLead = false;
+
+  /// The item the pointer last moved over, while it is still on it.
+  int? _pointerOn;
+
+  /// The item whose focus the pointer moved there: focus coming to any
+  /// other item (the keys, a screen reader, the app) is the keys'.
+  FocusNode? _pointerFocus;
   final Set<int> _pending = <int>{};
   bool _startScheduled = false;
   Route<Object?>? _route;
@@ -1045,7 +1185,10 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
       _widths.add(AnimationController.unbounded(vsync: this, value: visible));
       _alphas.add(AnimationController.unbounded(vsync: this, value: visible));
       _targets.add(visible);
-      _itemFocus.add(FocusNode(debugLabel: 'ExpressiveFabMenu item $i'));
+      _itemFocus.add(
+        FocusNode(debugLabel: 'ExpressiveFabMenu item $i')
+          ..addListener(_focusMoved),
+      );
     }
     while (_widths.length > n) {
       _widths.removeLast().dispose();
@@ -1060,6 +1203,24 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
   /// reads the ruler in the item's placement and launches its `animateTo`
   /// in a coroutine, which starts on the next frame; the springs here start
   /// on the frame after the stagger crosses too.
+  void _focusMoved() {
+    if (!mounted) return;
+    setState(() {
+      for (final f in _itemFocus) {
+        if (f.hasPrimaryFocus && f != _pointerFocus) _keysLead = true;
+      }
+    });
+  }
+
+  /// Closing with the focus on an item: the toggle takes it back, so the
+  /// keys go on from what opened the menu (and Enter opens it again). Not
+  /// when an item's act covered the page with another route.
+  void _giveBackFocus() {
+    if (!_itemFocus.any((f) => f.hasFocus)) return;
+    if (!(ModalRoute.isCurrentOf(context) ?? true)) return;
+    _toggleFocus.requestFocus();
+  }
+
   void _staggered() {
     final n = widget.items.length;
     final shown = _shown;
@@ -1133,6 +1294,13 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
     }
     final was = oldWidget.expanded ?? _own;
     if (widget.expanded != null && widget.expanded != was) {
+      if (widget.expanded!) {
+        _keysLead = false;
+        _pointerOn = null;
+        _pointerFocus = null;
+      } else {
+        _giveBackFocus();
+      }
       _run(widget.expanded!);
     }
   }
@@ -1148,8 +1316,11 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
       c.dispose();
     }
     for (final f in _itemFocus) {
-      f.dispose();
+      f
+        ..removeListener(_focusMoved)
+        ..dispose();
     }
+    _toggleFocus.dispose();
     super.dispose();
   }
 
@@ -1177,9 +1348,17 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
     if (expanded == _expanded) return;
     // Closing lets the back go at once, so a pop right after reaches the
     // page; the rebuild holds it again if a caller keeps the menu open.
-    if (!expanded) _back.release();
+    if (!expanded) {
+      _back.release();
+      _giveBackFocus();
+    }
     setState(() {
       if (widget.expanded == null) _own = expanded;
+      if (expanded) {
+        _keysLead = false;
+        _pointerOn = null;
+        _pointerFocus = null;
+      }
     });
     if (widget.expanded == null) _run(expanded);
     widget.onExpandedChanged?.call(expanded);
@@ -1218,20 +1397,39 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
         (FabMenuBaselineTokens.listItemBetweenSpace * dpr).roundToDouble() /
         dpr;
     Widget items() => FocusTraversalGroup(
-      child: Semantics(
-        // Compose reads the items before the toggle
-        // (`traversalIndex = -0.9f`).
-        sortKey: const OrdinalSortKey(-0.9),
-        explicitChildNodes: true,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: widget.alignment,
-          children: <Widget>[
-            for (var i = 0; i < widget.items.length; i++) ...[
-              if (i > 0) SizedBox(height: spacing),
-              _item(t, i),
+      // A key among the items: the keys' item is the lit one. Escape
+      // closes the menu, as Back does.
+      child: Focus(
+        canRequestFocus: false,
+        skipTraversal: true,
+        includeSemantics: false,
+        onKeyEvent: (node, event) {
+          if (_escapes(event)) return KeyEventResult.handled;
+          if (event is! KeyUpEvent &&
+              !_keysLead &&
+              !_modifiers.contains(event.logicalKey)) {
+            setState(() {
+              _keysLead = true;
+              _pointerFocus = null;
+            });
+          }
+          return KeyEventResult.ignored;
+        },
+        child: Semantics(
+          // Compose reads the items before the toggle
+          // (`traversalIndex = -0.9f`).
+          sortKey: const OrdinalSortKey(-0.9),
+          explicitChildNodes: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: widget.alignment,
+            children: <Widget>[
+              for (var i = 0; i < widget.items.length; i++) ...[
+                if (i > 0) SizedBox(height: spacing),
+                _item(t, i),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -1360,7 +1558,7 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
   /// toggle rides the overlay ([ExpressiveFabMenu.scrim]).
   Size get _boxSize {
     final t = context.expressiveTheme;
-    final visual = t.floatingActionButtonTheme.merge(widget.style);
+    final visual = t.floatingActionButtonTheme.layeredUnder(widget.style);
     final states = <WidgetState>{if (_expanded) WidgetState.selected};
     final geometry = _fabGeometry(widget.size);
     final shape = visual.shape?.resolve(states);
@@ -1439,18 +1637,52 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
         ),
       ),
     );
+    final style = (widget.itemStyle ?? const ExpressiveComponentThemeData())
+        .layeredUnder(item.style);
+    final own = t.floatingActionButtonTheme.layeredUnder(style);
+    final content = t.colors.role(widget.color.onContainer);
+    // One lit item: with the keys among the items, the focused one (the
+    // keys' with the focus indicator, else the pointer's, which moved the
+    // focus there); else the one the pointer moved over. Its layer is the
+    // item's own colour, so a pointer resting on an item the keys left
+    // lights nothing; a press keeps its ripple.
+    final keysIn = _itemFocus.any((f) => f.hasPrimaryFocus);
+    final focused = _itemFocus[i].hasPrimaryFocus;
+    final ring = visible && keysIn && focused && _keysLead;
+    final plate = visible && (keysIn ? focused && !_keysLead : _pointerOn == i);
+    final layer = ring || plate
+        ? own.overlayColor?.resolve({
+                ring ? WidgetState.focused : WidgetState.hovered,
+              }) ??
+              t.states.layerOf(content, {
+                ring ? WidgetState.focused : WidgetState.hovered,
+              })
+        : null;
+    Color lit(Color base) =>
+        layer == null ? base : Color.alphaBlend(layer, base);
     final pill = ExpressivePressable(
       key: item.key,
-      style: (widget.itemStyle ?? const ExpressiveComponentThemeData()).merge(
-        item.style,
+      style: style.copyWith(
+        backgroundColor: own.backgroundColor == null
+            ? null
+            : WidgetStateProperty.resolveWith((states) {
+                final base = own.backgroundColor!.resolve(states);
+                return base == null ? null : lit(base);
+              }),
+        overlayColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.pressed)
+              ? own.overlayColor?.resolve(states)
+              : const Color(0x00000000),
+        ),
       ),
       componentStyle: t.floatingActionButtonTheme,
+      focusRing: ring,
       shapes: ExpressivePressShapes.all(
         t.shapes.of(FabMenuBaselineTokens.listItemContainerShape),
       ),
       motion: FloatingActionButtonMenuBehavior.itemWidthMotion,
-      color: t.colors.role(widget.color.container),
-      contentColor: t.colors.role(widget.color.onContainer),
+      color: lit(t.colors.role(widget.color.container)),
+      contentColor: content,
       // Compose's items provide LocalMinimumInteractiveComponentSize 0.
       minimumInteractiveSize: false,
       focusNode: _itemFocus[i],
@@ -1511,10 +1743,47 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
         excluding: !visible,
         child: Opacity(
           opacity: alpha.clamp(0.0, 1.0),
-          child: _debugWrap('item-$i', pill),
+          child: MouseRegion(
+            // The pointer moving, not an item appearing under it, lights
+            // an item.
+            onHover: (_) => _pointerOver(i),
+            onExit: (_) {
+              if (_pointerOn == i) setState(() => _pointerOn = null);
+            },
+            child: _debugWrap('item-$i', pill),
+          ),
         ),
       ),
     );
+  }
+
+  /// Escape pressed while the menu is open: it closes.
+  bool _escapes(KeyEvent event) {
+    if (!_expanded ||
+        event is! KeyDownEvent ||
+        event.logicalKey != LogicalKeyboardKey.escape) {
+      return false;
+    }
+    _request(false);
+    return true;
+  }
+
+  /// The pointer moved over item [i]: it is the lit one, and the keys,
+  /// when they are among the items, go on from it.
+  void _pointerOver(int i) {
+    final focus = _itemFocus[i];
+    final keysIn = _itemFocus.any((f) => f.hasPrimaryFocus);
+    if (_pointerOn == i && !_keysLead && (!keysIn || focus.hasPrimaryFocus)) {
+      return;
+    }
+    setState(() {
+      _pointerOn = i;
+      _keysLead = false;
+      if (keysIn) _pointerFocus = focus;
+    });
+    if (keysIn && !focus.hasPrimaryFocus && focus.canRequestFocus) {
+      focus.requestFocus();
+    }
   }
 
   Widget _button(ExpressiveThemeData t) {
@@ -1565,6 +1834,7 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
       role: ExpressivePressRole.toggle,
       selected: expanded,
       semanticLabel: widget.semanticLabel,
+      focusNode: _toggleFocus,
       onPressed: () => _request(!expanded),
       child: AnimatedBuilder(
         animation: _toggle,
@@ -1581,11 +1851,13 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
       ),
     );
     // Compose keeps the closed size's box and aligns the morphing button to
-    // its top end. Tab or Down from the open toggle moves into the items.
+    // its top end. Tab or Down from the open toggle moves into the items;
+    // Escape closes the menu, as Back does.
     return Focus(
       canRequestFocus: false,
       skipTraversal: true,
       onKeyEvent: (node, event) {
+        if (_escapes(event)) return KeyEventResult.handled;
         final into =
             (event.logicalKey == LogicalKeyboardKey.tab &&
                 !HardwareKeyboard.instance.isShiftPressed) ||
@@ -1594,6 +1866,10 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
             event is KeyDownEvent &&
             into &&
             _itemFocus.isNotEmpty) {
+          setState(() {
+            _keysLead = true;
+            _pointerFocus = null;
+          });
           _itemFocus.first.requestFocus();
           return KeyEventResult.handled;
         }
@@ -1613,6 +1889,22 @@ class _ExpressiveFabMenuState extends State<ExpressiveFabMenu>
       ),
     );
   }
+
+  /// Keys that only change another key: they move nothing.
+  static final Set<LogicalKeyboardKey> _modifiers = <LogicalKeyboardKey>{
+    LogicalKeyboardKey.shift,
+    LogicalKeyboardKey.shiftLeft,
+    LogicalKeyboardKey.shiftRight,
+    LogicalKeyboardKey.control,
+    LogicalKeyboardKey.controlLeft,
+    LogicalKeyboardKey.controlRight,
+    LogicalKeyboardKey.alt,
+    LogicalKeyboardKey.altLeft,
+    LogicalKeyboardKey.altRight,
+    LogicalKeyboardKey.meta,
+    LogicalKeyboardKey.metaLeft,
+    LogicalKeyboardKey.metaRight,
+  };
 
   static Widget _debugWrap(String part, Widget child) {
     final wrap = ExpressiveFabMenu.debugPartWrapper;

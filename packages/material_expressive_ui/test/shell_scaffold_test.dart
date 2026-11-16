@@ -168,7 +168,7 @@ Future<_AppState> _pump(
   final action = !withAction
       ? null
       : customAction ??
-            ShellAction(
+            const ShellAction(
               icon: ExpressiveSymbols.add,
               label: 'New',
               key: _actionKey,
@@ -379,7 +379,7 @@ void main() {
       'down, and a change of tab brings it back', (tester) async {
     await _pump(
       tester,
-      customAction: ExpressiveShellAction(
+      customAction: const ExpressiveShellAction(
         icon: ExpressiveSymbols.chat,
         label: 'Ask',
         collapseOnScroll: true,

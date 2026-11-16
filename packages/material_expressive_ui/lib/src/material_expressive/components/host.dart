@@ -6,12 +6,15 @@
 ///
 /// It pins no platform (CONTRACT §5): the thin `ThemeData`'s platform is
 /// the ambient one, a preview frame's register inside one, so scroll
-/// physics, text handles, page transitions and haptics follow the
-/// platform while everything drawn stays Material. It sets no text-scale
+/// physics, text handles and haptics follow the platform while everything
+/// drawn stays Material. Page transitions are the look's on every platform
+/// (`expressivePageTransitions`): an app's own page routes push
+/// as an `ExpressivePage` does, never with Flutter's default for a
+/// platform the look does not name. It sets no text-scale
 /// clamp: text scales as the platform asks, as in Compose.
 library;
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/host.dart';
@@ -20,7 +23,7 @@ import '../color.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../motion.dart';
 import '../theme.dart';
-import '../type.dart';
+import 'page_transitions.dart' show expressivePageTransitions;
 
 /// The app's host: mounts the Expressive theme in force (light or dark by
 /// [brightness], or by the platform's when null) on an
@@ -41,6 +44,8 @@ class ExpressiveHost extends StatefulWidget {
     required this.child,
     this.light,
     this.dark,
+    this.highContrastLight,
+    this.highContrastDark,
     this.brightness,
     super.key,
   });
@@ -53,6 +58,28 @@ class ExpressiveHost extends StatefulWidget {
 
   /// The dark theme; null wears the default preset's.
   final ExpressiveThemeData? dark;
+
+  /// The light theme while the platform asks for high contrast
+  /// (`MediaQuery.highContrastOf`), as `MaterialApp.highContrastTheme`:
+  /// null wears [light], or the default preset at high contrast when
+  /// [light] is null too.
+  ///
+  /// ```dart
+  /// ExpressiveHost(
+  ///   light: ExpressiveThemeData.from(seed: brand),
+  ///   highContrastLight: ExpressiveThemeData.from(
+  ///     seed: brand,
+  ///     contrastLevel: 1,
+  ///   ),
+  ///   child: child,
+  /// )
+  /// ```
+  final ExpressiveThemeData? highContrastLight;
+
+  /// The dark theme while the platform asks for high contrast, as
+  /// `MaterialApp.highContrastDarkTheme`: null wears [dark], or the default
+  /// preset at high contrast when [dark] is null too.
+  final ExpressiveThemeData? highContrastDark;
 
   /// The brightness to wear; null follows the platform's.
   final Brightness? brightness;
@@ -81,11 +108,20 @@ class ExpressiveHost extends StatefulWidget {
       brightness: theme.brightness,
       platform: platform,
       colorScheme: _materialColorScheme(c, theme.brightness),
-      fontFamily: ExpressiveTextTheme.family,
+      // The theme's text face, under the name Flutter registers it by
+      // (`packages/<package>/<family>` from a package), so Flutter's own
+      // widgets (a Material list tile, a tooltip) wear an app's typeface as
+      // Expressive's parts do.
+      fontFamily: theme.type.bodyLarge.fontFamily,
       scaffoldBackgroundColor: c.surface,
       canvasColor: c.surface,
       visualDensity: VisualDensity.standard,
       materialTapTargetSize: MaterialTapTargetSize.padded,
+      // An app's own page routes push as an ExpressivePage does, on every
+      // platform.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: expressivePageTransitions,
+      ),
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: c.primary,
         selectionColor: _selectionOf(c),
@@ -184,6 +220,47 @@ class ExpressiveHost extends StatefulWidget {
 
   @override
   State<ExpressiveHost> createState() => _ExpressiveHostState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveThemeData?>(
+          'light',
+          light,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveThemeData?>(
+          'dark',
+          dark,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveThemeData?>(
+          'highContrastLight',
+          highContrastLight,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveThemeData?>(
+          'highContrastDark',
+          highContrastDark,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Brightness?>(
+          'brightness',
+          brightness,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// The dark theme a host wears, published for [ExpressiveMediaGround].
@@ -250,19 +327,24 @@ class _ExpressiveHostState extends State<ExpressiveHost> {
         widget.brightness ??
         MediaQuery.maybePlatformBrightnessOf(context) ??
         Brightness.light;
-    final dark =
-        widget.dark ??
+    // The platform's high contrast picks the high-contrast pair, as
+    // MaterialApp does; the default preset has its own, baked.
+    final high = MediaQuery.maybeHighContrastOf(context) ?? false;
+    ExpressiveThemeData preset(Brightness brightness) =>
         ExpressiveThemeData.preset(
           ExpressiveThemeData.defaultPreset,
-          Brightness.dark,
+          brightness,
+          contrastLevel: high ? 1 : 0,
         );
+    final dark =
+        (high ? widget.highContrastDark : null) ??
+        widget.dark ??
+        preset(Brightness.dark);
     final theme = wanted == Brightness.dark
         ? dark
-        : widget.light ??
-              ExpressiveThemeData.preset(
-                ExpressiveThemeData.defaultPreset,
-                Brightness.light,
-              );
+        : (high ? widget.highContrastLight : null) ??
+              widget.light ??
+              preset(Brightness.light);
     // Behaviour follows the platform (CONTRACT §5): never pinned, and a
     // preview frame's register inside one.
     final platform = PreviewFrame.targetPlatformOf(context);

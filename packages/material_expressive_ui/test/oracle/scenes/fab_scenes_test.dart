@@ -211,8 +211,8 @@ final OracleGroup fabScenes = OracleGroup(
     );
   },
   scenes: [
-    OracleScene(key: 'fab/sizes', size: const Size(296, 128), build: _sizes),
-    OracleScene(key: 'fab/colors', size: const Size(232, 160), build: _colors),
+    const OracleScene(key: 'fab/sizes', size: Size(296, 128), build: _sizes),
+    const OracleScene(key: 'fab/colors', size: Size(232, 160), build: _colors),
     OracleScene(
       key: 'fab/extended',
       size: const Size(264, 296),

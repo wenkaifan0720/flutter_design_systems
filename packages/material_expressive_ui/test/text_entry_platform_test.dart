@@ -33,6 +33,14 @@ final Finder _line = _private('_Editable');
 TextEditingController _text(bool typed, String text) =>
     TextEditingController(text: typed ? text : '');
 
+/// The controllers the parts were built with, disposed after each test.
+final List<ChangeNotifier> _controllers = [];
+
+T _made<T extends ChangeNotifier>(T controller) {
+  _controllers.add(controller);
+  return controller;
+}
+
 final List<_Part> _parts = [
   for (final kind in ExpressiveTextFieldKind.values) ...[
     (
@@ -140,7 +148,7 @@ final List<_Part> _parts = [
   (
     name: 'time input',
     build: (typed) => ExpressiveTimeInput(
-      controller: ExpressiveTimePickerController(hour: 7, minute: 30),
+      controller: _made(ExpressiveTimePickerController(hour: 7, minute: 30)),
     ),
     box: _private('_TimeInputPlate'),
     hint: null,
@@ -180,6 +188,12 @@ _Measure _measure(WidgetTester tester, _Part part, bool typed) {
 }
 
 void main() {
+  tearDown(() {
+    for (final controller in _controllers) {
+      controller.dispose();
+    }
+    _controllers.clear();
+  });
   for (final (label, density) in [
     ('standard', ExpressiveDensity.standard),
     ('comfortable', ExpressiveDensity.comfortable),

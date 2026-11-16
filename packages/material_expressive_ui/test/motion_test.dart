@@ -329,15 +329,20 @@ void main() {
   group('Reduce Motion', () {
     for (final scheme in ExpressiveMotionScheme.values) {
       test('${scheme.name}: spatial springs critically damped at the token '
-          'stiffness, effects unchanged', () {
+          'stiffness, effects a short fade', () {
         final reduced = ExpressiveMotion(scheme: scheme, reduceMotion: true);
         final full = ExpressiveMotion(scheme: scheme);
         for (final key in keys) {
           final token = generated(scheme, key);
-          final ratio = ExpressiveMotion.isSpatial(key)
-              ? 1.0
-              : token.dampingRatio;
-          expectSpring(reduced.spring(key), ratio, token.stiffness);
+          // ui_core's policy: a spatial spring keeps its stiffness, an
+          // effects spring runs at no less than its fastest token's.
+          final stiffness = ExpressiveMotion.isSpatial(key)
+              ? token.stiffness
+              : math.max(
+                  token.stiffness,
+                  DesignMotionPolicy.reducedEffectsStiffness,
+                );
+          expectSpring(reduced.spring(key), 1, stiffness);
           expect(reduced.tokenOf(key), full.tokenOf(key));
           expect(step(reduced.spring(key)).peak, lessThanOrEqualTo(1));
         }

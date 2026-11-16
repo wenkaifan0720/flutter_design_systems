@@ -317,9 +317,9 @@ void main() {
       await tester.pumpWidget(_app(const SizedBox()));
       final navigator = tester.state<NavigatorState>(find.byType(Navigator));
       navigator.push(
-        ExpressiveSheetPage<void>(
+        const ExpressiveSheetPage<void>(
           drawer: true,
-          child: const ExpressiveAppBar(title: 'New entry'),
+          child: ExpressiveAppBar(title: 'New entry'),
         ).createRoute(tester.element(find.byType(SizedBox).first)),
       );
       await tester.pumpAndSettle();

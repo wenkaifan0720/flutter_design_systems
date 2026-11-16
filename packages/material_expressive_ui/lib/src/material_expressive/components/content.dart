@@ -17,6 +17,7 @@
 /// corner scale, the spacing scale, component tokens and springs.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../icons.dart';
@@ -35,6 +36,7 @@ import '../states.dart';
 import '../strings.dart';
 import '../theme.dart';
 import 'hero.dart';
+import '../internal/style_layers.dart';
 
 // ---------------------------------------------------------------------------
 // Text
@@ -251,6 +253,50 @@ class ExpressiveText extends StatelessWidget {
         role == ExpressiveTextRole.title;
     return heading ? Semantics(header: true, child: text) : text;
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('data', data))
+      ..add(
+        EnumProperty<ExpressiveTextRole>(
+          'role',
+          role,
+          defaultValue: ExpressiveTextRole.body,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveTextSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveTextSize.medium,
+        ),
+      )
+      ..add(FlagProperty('emphasized', value: emphasized, ifTrue: 'emphasized'))
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextAlign?>(
+          'textAlign',
+          textAlign,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('maxLines', maxLines, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextOverflow?>(
+          'overflow',
+          overflow,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool?>('softWrap', softWrap, defaultValue: null),
+      )
+      ..add(
+        StringProperty('semanticsLabel', semanticsLabel, defaultValue: null),
+      );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -348,6 +394,21 @@ class ExpressiveCounter extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<num>('value', value))
+      ..add(DiagnosticsProperty<TextStyle>('style', style))
+      ..add(
+        ObjectFlagProperty<String Function(num value)?>.has('format', format),
+      )
+      ..add(IntProperty('fractionDigits', fractionDigits, defaultValue: 0))
+      ..add(
+        StringProperty('semanticsLabel', semanticsLabel, defaultValue: null),
+      );
+  }
 }
 
 /// Which way a stat moved.
@@ -540,6 +601,36 @@ class ExpressiveStat extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<num>('value', value))
+      ..add(
+        ObjectFlagProperty<String Function(num value)?>.has('format', format),
+      )
+      ..add(IntProperty('fractionDigits', fractionDigits, defaultValue: 0))
+      ..add(StringProperty('supporting', supporting, defaultValue: null))
+      ..add(EnumProperty<ExpressiveTrend>('trend', trend, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData?>('icon', icon, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveStatSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveStatSize.medium,
+        ),
+      )
+      ..add(FlagProperty('emphasized', value: emphasized, ifTrue: 'emphasized'))
+      ..add(
+        DiagnosticsProperty<CrossAxisAlignment>(
+          'crossAxisAlignment',
+          crossAxisAlignment,
+          defaultValue: CrossAxisAlignment.start,
+        ),
+      );
+  }
 }
 
 /// How large an [ExpressiveAmount] stands.
@@ -665,6 +756,23 @@ class ExpressiveAmount extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(
+        EnumProperty<ExpressiveAmountSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveAmountSize.inline,
+        ),
+      )
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(StringProperty('was', was, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -783,7 +891,7 @@ class ExpressiveRating extends StatelessWidget {
   }) {
     final lit = filled || half;
     final t = context.expressiveTheme;
-    final visual = t.ratingTheme.merge(style);
+    final visual = t.ratingTheme.layeredUnder(style);
     final states = <WidgetState>{if (lit) WidgetState.selected};
     Widget glyph(BuildContext context) => ExpressiveIcon(
       half ? ExpressiveSymbols.starHalf : ExpressiveSymbols.star,
@@ -831,6 +939,30 @@ class ExpressiveRating extends StatelessWidget {
         child: Builder(builder: glyph),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('value', value))
+      ..add(IntProperty('max', max, defaultValue: 5))
+      ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onChanged', onChanged))
+      ..add(
+        EnumProperty<ExpressiveRatingSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveRatingSize.medium,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 
@@ -987,7 +1119,7 @@ class ExpressiveMessageBubble extends StatelessWidget {
     final metaStyle = theme.type.labelSmall.copyWith(color: metaColor);
 
     final states = <WidgetState>{if (failed) WidgetState.error};
-    final resolved = theme.messageBubbleTheme.merge(style);
+    final resolved = theme.messageBubbleTheme.layeredUnder(style);
     final bubble = ExpressiveSurface(
       style: style,
       componentStyle: theme.messageBubbleTheme,
@@ -1087,5 +1219,36 @@ class ExpressiveMessageBubble extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('text', text))
+      ..add(EnumProperty<ExpressiveMessageSide>('side', side))
+      ..add(
+        EnumProperty<ExpressiveMessagePosition>(
+          'position',
+          position,
+          defaultValue: ExpressiveMessagePosition.single,
+        ),
+      )
+      ..add(StringProperty('author', author, defaultValue: null))
+      ..add(StringProperty('timestamp', timestamp, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveMessageStatus>(
+          'status',
+          status,
+          defaultValue: null,
+        ),
+      );
   }
 }

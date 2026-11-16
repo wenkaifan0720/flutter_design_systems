@@ -4,6 +4,7 @@
 /// that are not Material's). [ExpressiveInventoryGallery] lists them, group by group.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/inventory.dart';
 
@@ -43,6 +44,7 @@ import 'components/text_fields.dart';
 import 'components/toast.dart';
 import 'components/wayfinding.dart';
 import 'icons.dart';
+import 'internal/owned.dart';
 import 'shape.dart';
 import 'spacing.dart';
 import 'theme.dart';
@@ -339,8 +341,10 @@ Widget _datePicker(BuildContext context) =>
 Widget _dateRangePicker(BuildContext context) =>
     ExpressiveDateRangePicker(currentDate: _today, onChanged: _dropTwo);
 
-Widget _timePicker(BuildContext context) => ExpressiveTimePicker(
-  controller: ExpressiveTimePickerController(hour: 8, minute: 15),
+Widget _timePicker(BuildContext context) => Owned(
+  create: () => ExpressiveTimePickerController(hour: 8, minute: 15),
+  builder: (context, controller) =>
+      ExpressiveTimePicker(controller: controller),
 );
 
 Widget _calendar(BuildContext context) => ExpressiveCalendar(
@@ -484,8 +488,8 @@ Widget _table(BuildContext context) => const ExpressiveTable(
   ],
 );
 
-Widget _dataTable(BuildContext context) => ExpressiveDataTable<List<String>>(
-  controller: DesignTableController<List<String>>(
+Widget _dataTable(BuildContext context) => Owned(
+  create: () => DesignTableController<List<String>>(
     rows: const <List<String>>[
       <String>['#4821', 'Ada Okafor', '128.40'],
       <String>['#4822', 'Ben Ito', '42.00'],
@@ -506,13 +510,18 @@ Widget _dataTable(BuildContext context) => ExpressiveDataTable<List<String>>(
       ),
     ],
   ),
-  cellBuilder: (context, row, column) => Text(row[int.parse(column.id)]),
+  builder: (context, controller) => ExpressiveDataTable<List<String>>(
+    controller: controller,
+    cellBuilder: (context, row, column) => Text(row[int.parse(column.id)]),
+  ),
 );
 
 Widget _divider(BuildContext context) => const ExpressiveDivider();
 
-Widget _scrollArea(BuildContext context) {
-  final scroll = ScrollController();
+Widget _scrollArea(BuildContext context) =>
+    const Owned(create: ScrollController.new, builder: _scrollAreaWith);
+
+Widget _scrollAreaWith(BuildContext context, ScrollController scroll) {
   return ExpressiveScrollArea(
     controller: scroll,
     alwaysShown: true,
@@ -790,6 +799,9 @@ class ExpressiveInventoryGallery extends StatelessWidget {
       ),
       rowBuilder: (context, row, entry, specimen) {
         final reason = entry?.absentReason;
+        final code = row.isBehaviour
+            ? 'Expressive${row.id} · on ${row.behaviour}'
+            : 'Expressive${row.id}';
         return KeyedSubtree(
           key: ValueKey<String>('inventory-${row.id}'),
           child: Padding(
@@ -805,10 +817,8 @@ class ExpressiveInventoryGallery extends StatelessWidget {
                 ),
                 const SizedBox(height: ExpressiveSpacing.s2),
                 Text(
-                  row.isBehaviour
-                      ? '${'Expressive${row.id}'} · on '
-                            '${row.behaviour}'
-                      : 'Expressive${row.id}',
+                  _wordBreaks(code),
+                  semanticsLabel: code,
                   style: t.type.labelMedium.copyWith(color: c.onSurfaceVariant),
                 ),
                 const SizedBox(height: ExpressiveSpacing.s12),
@@ -841,4 +851,30 @@ class ExpressiveInventoryGallery extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        FlagProperty(
+          'behaviourOnly',
+          value: behaviourOnly,
+          ifTrue: 'behaviourOnly',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      );
+  }
 }
+
+/// A code name breakable only where its next word starts (a zero-width
+/// space there): `ExpressiveFloating|Action|Button` wraps between its words
+/// in a narrow column or at large text, never inside one.
+String _wordBreaks(String name) =>
+    name.replaceAll(RegExp('(?<=[a-z0-9])(?=[A-Z])'), '\u200B');

@@ -33,6 +33,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
@@ -46,6 +47,7 @@ import '../spacing.dart';
 import '../states.dart';
 import '../strings.dart';
 import '../theme.dart';
+import '../internal/style_layers.dart';
 
 // ---------------------------------------------------------------------------
 // Keylines (KeylineList.kt)
@@ -1905,6 +1907,67 @@ class ExpressiveCarouselView extends StatefulWidget {
 
   @override
   State<ExpressiveCarouselView> createState() => _ExpressiveCarouselState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(EnumProperty<ExpressiveCarouselVariant>('variant', variant))
+      ..add(IntProperty('itemCount', itemCount))
+      ..add(
+        ObjectFlagProperty<IndexedWidgetBuilder>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(DoubleProperty('itemExtent', itemExtent, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(DoubleProperty('itemSpacing', itemSpacing, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveCorner>(
+          'itemCorner',
+          itemCorner,
+          defaultValue: ExpressiveCorner.extraLarge,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveCarouselController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onItemTap', onItemTap))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DoubleProperty(
+          'minSmallItemWidth',
+          minSmallItemWidth,
+          defaultValue: CarouselBehavior.minSmallItemSize,
+        ),
+      )
+      ..add(
+        DoubleProperty(
+          'maxSmallItemWidth',
+          maxSmallItemWidth,
+          defaultValue: CarouselBehavior.maxSmallItemSize,
+        ),
+      );
+  }
 }
 
 class _ExpressiveCarouselState extends State<ExpressiveCarouselView> {
@@ -2004,7 +2067,7 @@ class _ExpressiveCarouselState extends State<ExpressiveCarouselView> {
     final theme = context.expressiveTheme;
     final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
     final direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
-    final visual = theme.carouselTheme.merge(widget.style);
+    final visual = theme.carouselTheme.layeredUnder(widget.style);
     final minimum = visual.minimumSize?.resolve(const <WidgetState>{});
     final padding = theme.density.padding(widget.padding.resolve(direction));
     final vertical = widget.vertical;
@@ -2203,7 +2266,7 @@ class _ExpressiveCarouselState extends State<ExpressiveCarouselView> {
         ? Rect.fromLTRB(0, shownStart, crossExtent, shownEnd)
         : Rect.fromLTRB(shownStart, 0, shownEnd, crossExtent);
     final theme = context.expressiveTheme;
-    final visual = theme.carouselTheme.merge(widget.style);
+    final visual = theme.carouselTheme.layeredUnder(widget.style);
     final nativeShape = shape;
     final selected = index == _controller.currentItem;
     final adapted = visual.copyWith(
@@ -2547,7 +2610,7 @@ class ExpressivePageDots extends StatelessWidget {
     if (count == 0) return const SizedBox.shrink();
     final theme = context.expressiveTheme;
     final colors = theme.colors;
-    final visual = theme.pageDotsTheme.merge(style);
+    final visual = theme.pageDotsTheme.layeredUnder(style);
     final dot = visual.iconSize?.resolve(const <WidgetState>{}) ?? dotSize;
     final pill = dot * (pillLength / dotSize);
     final spacing = theme.density.padding(const EdgeInsets.all(gap)).left;
@@ -2723,5 +2786,22 @@ class ExpressivePageDots extends StatelessWidget {
       cursor += length + spacing;
     }
     return best;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onChanged', onChanged))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }

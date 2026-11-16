@@ -141,7 +141,8 @@ class _Family extends StatelessWidget {
                     (on == null ? ExpressiveSpacing.s4 - 1 : 0),
               ),
               child: Text(
-                role.name,
+                kitWordBreaks(role.name),
+                semanticsLabel: role.name,
                 style: TextStyle(
                   color: c.role(on ?? ExpressiveColorRole.onSurface),
                 ),

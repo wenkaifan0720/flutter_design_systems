@@ -39,8 +39,7 @@ library;
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
-import 'package:flutter/foundation.dart'
-    show ValueListenable, visibleForTesting;
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialLocalizations, MaterialType, TextField, Theme;
 import 'package:flutter/rendering.dart';
@@ -55,6 +54,7 @@ import '../component_themes.dart';
 import '../elevation.dart';
 import '../icons.dart';
 import '../internal/cap_label.dart';
+import '../internal/reach.dart';
 import '../internal/styled_content.dart';
 import '../internal/tokens/app_bar_large_flexible_tokens.g.dart';
 import '../internal/tokens/app_bar_medium_flexible_tokens.g.dart';
@@ -65,12 +65,14 @@ import '../internal/tokens/filled_text_field_tokens.g.dart';
 import '../internal/tokens/keys.g.dart';
 import '../internal/tokens/search_bar_tokens.g.dart';
 import '../internal/tokens/search_view_tokens.g.dart';
+import '../internal/word_scope.dart';
 import '../motion.dart';
 import '../states.dart';
 import '../strings.dart';
 import '../theme.dart';
 import 'icon_buttons.dart';
 import 'menus.dart';
+import '../internal/style_layers.dart';
 import 'overlays.dart' show ExpressiveBackHandleRoute, expressiveSettleTime;
 import 'page.dart' show ExpressivePage;
 
@@ -177,6 +179,14 @@ class ExpressiveAppBarScrollScope extends InheritedWidget {
   @override
   bool updateShouldNotify(ExpressiveAppBarScrollScope oldWidget) =>
       scroll != oldWidget.scroll;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<ExpressiveAppBarScroll>('scroll', scroll),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -243,6 +253,30 @@ class ExpressiveAppBarAction extends StatelessWidget {
     onPressed: onPressed,
     semanticLabel: label,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// The authored screen header (CONTRACT §4.2 `ExpressiveAppBar`): Material's
@@ -386,7 +420,7 @@ class ExpressiveAppBar extends StatelessWidget {
   /// `TopAppBarExpandedHeight`, grown for a title that needs more), without
   /// the status bar.
   double collapsedHeightOf(BuildContext context) {
-    final resolved = context.expressiveTheme.appBarTheme.merge(style);
+    final resolved = context.expressiveTheme.appBarTheme.layeredUnder(style);
     const states = <WidgetState>{};
     final outline = resolved.outline?.resolve(states);
     final side =
@@ -491,7 +525,7 @@ class ExpressiveAppBar extends StatelessWidget {
         ExpressiveAppBarScrollScope.maybeOf(context) ??
         ExpressiveAppBarScroll.rest;
     final theme = context.expressiveTheme;
-    final resolved = theme.appBarTheme.merge(style);
+    final resolved = theme.appBarTheme.layeredUnder(style);
     final states = <WidgetState>{
       if (scroll.heightOffset < 0 ||
           scroll.overlappedFraction(collapsedHeightOf(context)) >
@@ -525,6 +559,45 @@ class ExpressiveAppBar extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(
+        IterableProperty<ExpressiveMenuEntry>(
+          'overflow',
+          overflow,
+          defaultValue: const <ExpressiveMenuEntry>[],
+        ),
+      )
+      ..add(EnumProperty<ExpressiveAppBarSize>('size', size))
+      ..add(FlagProperty('centered', value: centered, ifTrue: 'centered'))
+      ..add(FlagProperty('collapsing', value: collapsing, ifTrue: 'collapsing'))
+      ..add(
+        DiagnosticsProperty<ExpressiveAppBarScroll?>(
+          'scroll',
+          scroll,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveSearchBar?>(
+          'search',
+          search,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// The height a title (and subtitle) block needs at [context]: one line of
@@ -549,7 +622,7 @@ double _titleBlockHeight(
             .of(font)
             .merge(
               context.expressiveTheme.appBarTheme
-                  .merge(style)
+                  .layeredUnder(style)
                   .textStyle
                   ?.resolve(const <WidgetState>{}),
             ),
@@ -1421,7 +1494,7 @@ class ExpressiveSearchBar extends StatefulWidget {
   /// The input's height, including its outline inset and requested padding.
   double heightOf(BuildContext context) {
     final theme = context.expressiveTheme;
-    final resolved = theme.searchTheme.merge(style);
+    final resolved = theme.searchTheme.layeredUnder(style);
     const states = <WidgetState>{};
     final shape =
         resolved.shape?.resolve(states) ??
@@ -1497,6 +1570,47 @@ class ExpressiveSearchBar extends StatefulWidget {
 
   @override
   State<ExpressiveSearchBar> createState() => ExpressiveSearchBarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onAvatarTap', onAvatarTap))
+      ..add(StringProperty('avatarLabel', avatarLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ExpressiveSearchResultsBuilder?>.has(
+          'results',
+          results,
+        ),
+      )
+      ..add(FlagProperty('contained', value: contained, ifTrue: 'contained'))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onOpen', onOpen))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onClose', onClose));
+  }
 }
 
 /// The state of an [ExpressiveSearchBar]: opens and closes its view.
@@ -1709,6 +1823,9 @@ class _CollapsedSearchBar extends StatelessWidget {
                     label: bar.avatarLabel,
                   ),
               ],
+              // The actions take their own taps: the bar's node ends
+              // where its own tap does.
+              trailingOutsideOutline: true,
             );
           },
         ),
@@ -1732,7 +1849,7 @@ class _SearchAvatar extends StatelessWidget {
     final circle = SizedBox.square(
       dimension: SearchBarTokens.avatarSize,
       child: ClipPath(
-        clipper: ShapeBorderClipper(shape: shape),
+        clipper: const ShapeBorderClipper(shape: shape),
         child: FittedBox(fit: BoxFit.cover, child: avatar),
       ),
     );
@@ -1743,7 +1860,7 @@ class _SearchAvatar extends StatelessWidget {
         child: onTap == null
             ? Semantics(label: label, image: true, child: circle)
             : ExpressivePressable(
-                shapes: ExpressivePressShapes.all(shape),
+                shapes: const ExpressivePressShapes.all(shape),
                 motion: ExpressiveMotionKey.fastSpatial,
                 color: t.colors
                     .role(SearchBarTokens.containerColor)
@@ -1767,12 +1884,17 @@ class _SearchFieldRow extends StatelessWidget {
     this.leading,
     this.hideDecorativeLeadingWhenNarrow = false,
     this.trailing = const <Widget>[],
+    this.trailingOutsideOutline = false,
   });
 
   final Widget? leading;
   final bool hideDecorativeLeadingWhenNarrow;
   final Widget text;
   final List<Widget> trailing;
+
+  /// Whether [trailing] stays out of the enclosing pressable's node
+  /// ([ExpressiveOutsideOutline]).
+  final bool trailingOutsideOutline;
 
   /// `textFieldHorizontalIconPadding`: the 24dp icon inside its 48dp slot.
   static const double _iconPadding =
@@ -1788,6 +1910,7 @@ class _SearchFieldRow extends StatelessWidget {
     final scope = ExpressiveStyleScope.maybeOf(context);
     final style = scope?.style ?? t.searchTheme;
     final states = scope?.states ?? const <WidgetState>{};
+    final trailingRow = Row(mainAxisSize: MainAxisSize.min, children: trailing);
     return LayoutBuilder(
       builder: (context, constraints) {
         final leading =
@@ -1854,10 +1977,9 @@ class _SearchFieldRow extends StatelessWidget {
                           style.iconSize?.resolve(states) ??
                           FilledTextFieldTokens.trailingIconSize,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: trailing,
-                    ),
+                    child: trailingOutsideOutline
+                        ? ExpressiveOutsideOutline(child: trailingRow)
+                        : trailingRow,
                   ),
                 ),
             ],
@@ -1950,6 +2072,48 @@ class ExpressiveSearchField extends StatefulWidget {
 
   @override
   State<ExpressiveSearchField> createState() => _ExpressiveSearchFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>('clearable', clearable, defaultValue: true),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onCancel', onCancel))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _ExpressiveSearchFieldState extends State<ExpressiveSearchField> {
@@ -1995,7 +2159,7 @@ class _ExpressiveSearchFieldState extends State<ExpressiveSearchField> {
       if (_focus.hasFocus) WidgetState.focused,
       if (_hovered) WidgetState.hovered,
     };
-    final resolved = t.searchTheme.merge(widget.style);
+    final resolved = t.searchTheme.layeredUnder(widget.style);
     final localizations = Localizations.of<MaterialLocalizations>(
       context,
       MaterialLocalizations,
@@ -2027,59 +2191,58 @@ class _ExpressiveSearchFieldState extends State<ExpressiveSearchField> {
               widget.onCancel == null && widget.leading == null,
           leading: leading,
           // The input's node is the field's whole height, as Compose's
-          // decorated `BasicTextField` is: the line is centred in it.
+          // decorated `BasicTextField` is: the line is centred in it, and a
+          // tap anywhere in that height places the caret.
           text: Semantics(
             label:
                 localizations?.searchFieldLabel ??
                 ExpressiveLocalizations.of(context).search,
             hint: widget.hintText ?? ExpressiveLocalizations.of(context).search,
-            child: SizedBox(
+            child: ExpressiveLineReach(
               height: _searchRowHeight(context, resolved, states),
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                // The words by their capitals on the field's middle: the
-                // shift is the entry's, so the hint, the typed text and the
-                // caret share it.
-                child: expressiveFaceLabel(
-                  Stack(
-                    alignment: AlignmentDirectional.centerStart,
-                    children: <Widget>[
-                      if (!hasQuery)
-                        ExcludeSemantics(
-                          child: Text(
-                            widget.hintText ??
-                                ExpressiveLocalizations.of(context).search,
-                            maxLines: 1,
-                            softWrap: false,
-                            overflow: TextOverflow.ellipsis,
-                            style: style.copyWith(
-                              color:
-                                  resolved.foregroundColor?.resolve(states) ??
-                                  t.colors.role(
-                                    SearchBarTokens.supportingTextColor,
-                                  ),
-                            ),
-                          ),
-                        ),
-                      Material(
-                        type: MaterialType.transparency,
-                        child: TextField(
-                          controller: _controller,
-                          focusNode: _focus,
-                          decoration: null,
-                          style: style,
-                          cursorColor: t.colors.role(
-                            FilledTextFieldTokens.caretColor,
-                          ),
+              // The words by their capitals on the field's middle: the
+              // shift is the entry's, so the hint, the typed text and the
+              // caret share it.
+              child: expressiveFaceLabel(
+                Stack(
+                  alignment: AlignmentDirectional.centerStart,
+                  children: <Widget>[
+                    if (!hasQuery)
+                      ExcludeSemantics(
+                        child: Text(
+                          widget.hintText ??
+                              ExpressiveLocalizations.of(context).search,
                           maxLines: 1,
-                          textInputAction: TextInputAction.search,
-                          autofocus: widget.autofocus,
-                          onChanged: widget.onChanged,
-                          onSubmitted: widget.onSubmitted,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          style: style.copyWith(
+                            color:
+                                resolved.foregroundColor?.resolve(states) ??
+                                t.colors.role(
+                                  SearchBarTokens.supportingTextColor,
+                                ),
+                          ),
                         ),
                       ),
-                    ],
-                  ),
+                    Material(
+                      type: MaterialType.transparency,
+                      child: TextField(
+                        controller: _controller,
+                        focusNode: _focus,
+                        contextMenuBuilder: expressiveContextMenu,
+                        decoration: null,
+                        style: style,
+                        cursorColor: t.colors.role(
+                          FilledTextFieldTokens.caretColor,
+                        ),
+                        maxLines: 1,
+                        textInputAction: TextInputAction.search,
+                        autofocus: widget.autofocus,
+                        onChanged: widget.onChanged,
+                        onSubmitted: widget.onSubmitted,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -2518,7 +2681,7 @@ expressiveSearchViewGeometry({
 }) {
   final bounds =
       collapsed ??
-      Rect.fromLTWH(
+      const Rect.fromLTWH(
         0,
         0,
         SearchBarBehavior.minWidth,

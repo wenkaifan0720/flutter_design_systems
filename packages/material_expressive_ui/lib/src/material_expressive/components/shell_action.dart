@@ -4,6 +4,7 @@
 /// screens place an [ExpressiveFloatingActionButton] instead.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 
@@ -246,5 +247,51 @@ class ExpressiveShellAction extends StatelessWidget implements ShellAction {
       semanticLabel: announced,
       onPressed: () => spec.onPressed(context),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ShellAction?>('action', action, defaultValue: null),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('accent', value: accent, ifTrue: 'accent'))
+      ..add(
+        IterableProperty<ExpressiveFabMenuItem>(
+          'menu',
+          menu,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('scrim', value: scrim, ifTrue: 'scrim'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'splashAnchor',
+          value: splashAnchor,
+          ifTrue: 'splashAnchor',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool?>('expanded', expanded, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>?>.has(
+          'onExpandedChanged',
+          onExpandedChanged,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'collapseOnScroll',
+          value: collapseOnScroll,
+          ifTrue: 'collapseOnScroll',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('labelShown', labelShown, defaultValue: true),
+      );
   }
 }

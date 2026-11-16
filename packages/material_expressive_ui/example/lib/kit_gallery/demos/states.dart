@@ -78,7 +78,7 @@ class _Layers extends StatelessWidget {
               // it: a state is a moment, so its name is not read as words
               // resting on the layer.
               for (final (label, states) in _states)
-                SizedBox(
+                KitWordCell(
                   width: ExpressiveSpacing.s64,
                   child: Column(
                     children: <Widget>[
@@ -296,17 +296,11 @@ class _Small extends StatelessWidget {
       'Touch target',
       children: <Widget>[
         Text(
-          'A 32dp control keeps a 48dp touch target around it; a dense row '
-          'can shrink it.',
+          'A 32dp control keeps a 48dp touch target around it: a tap '
+          'anywhere in it presses the control.',
           style: TextStyle(color: c.onSurfaceVariant),
         ),
-        Row(
-          children: <Widget>[
-            small(),
-            const SizedBox(width: kitGap),
-            ExpressiveShrinkTapTargets(child: small()),
-          ],
-        ),
+        Align(alignment: AlignmentDirectional.centerStart, child: small()),
       ],
     );
   }

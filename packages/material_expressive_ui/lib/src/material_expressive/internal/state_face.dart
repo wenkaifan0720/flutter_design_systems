@@ -17,11 +17,14 @@ import 'package:flutter/widgets.dart';
 
 import '../elevation.dart';
 import '../motion.dart';
+import '../spacing.dart';
 import '../theme.dart';
 import 'cap_label.dart';
 import 'focus_ring.dart';
+import 'reach.dart';
 import 'tokens/behavior.g.dart';
 import 'tokens/outlined_text_field_tokens.g.dart';
+import 'word_scope.dart';
 
 /// `md.comp.*.focus.indicator.outline.offset`: the ring's gap.
 const double _ringOffset = 2;
@@ -44,6 +47,7 @@ class ExpressiveStateFace extends StatelessWidget {
     this.motion = ExpressiveMotionKey.fastSpatial,
     this.layers = true,
     this.focusInward = false,
+    this.focusLayer = true,
     super.key,
   });
 
@@ -77,10 +81,22 @@ class ExpressiveStateFace extends StatelessWidget {
   /// Whether the ring stands inside the part (rows stacked flush).
   final bool focusInward;
 
+  /// Whether keyboard focus also lays the focus state layer under the ring.
+  /// A list's row shows the keys' place by the ring alone, as Material's web
+  /// list and menu items do, so it never reads as the pointer's fill.
+  final bool focusLayer;
+
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
-    final layer = layers ? t.states.layerOf(contentColor, states) : null;
+    final layer = layers
+        ? t.states.layerOf(
+            contentColor,
+            focusLayer
+                ? states
+                : (<WidgetState>{...states}..remove(WidgetState.focused)),
+          )
+        : null;
     final fill = layer == null ? color : Color.alphaBlend(layer, color);
     final ring =
         states.contains(WidgetState.focused) &&
@@ -169,7 +185,9 @@ class ExpressiveFieldFrame extends StatelessWidget {
   const ExpressiveFieldFrame({
     required this.states,
     required this.child,
-    this.padding = const EdgeInsetsDirectional.symmetric(horizontal: 4),
+    this.padding = const EdgeInsetsDirectional.symmetric(
+      horizontal: ExpressiveSpacing.s4,
+    ),
     super.key,
   });
 
@@ -244,6 +262,7 @@ class ExpressiveBareField extends StatelessWidget {
     required this.focusNode,
     this.hintText,
     this.onSubmitted,
+    this.onEditingComplete,
     this.onChanged,
     this.enabled = true,
     this.obscureText = false,
@@ -263,8 +282,13 @@ class ExpressiveBareField extends StatelessWidget {
   /// Shown while it is empty.
   final String? hintText;
 
-  /// Enter.
+  /// Enter, in a field that gives the focus up.
   final ValueChanged<String>? onSubmitted;
+
+  /// Enter, in a field that keeps the focus (a multi-select's): never with
+  /// [onSubmitted], whose restart of the text input a browser types into no
+  /// more.
+  final VoidCallback? onEditingComplete;
 
   /// Each edit.
   final ValueChanged<String>? onChanged;
@@ -297,18 +321,21 @@ class ExpressiveBareField extends StatelessWidget {
     // I3: the editable is bare (no decoration, so no InputDecorator whose
     // height density, Material defaults or a counter could change); the
     // placeholder is a sibling on the same line; the line is centred in a
-    // box at least 48dp tall, so larger text grows it.
+    // box at least 48dp tall, so larger text grows it, and a tap anywhere in
+    // the box places the caret, as on a decorated TextField.
     final input = Material(
       type: MaterialType.transparency,
       child: TextField(
         controller: controller,
         focusNode: focusNode,
         enabled: enabled,
+        contextMenuBuilder: expressiveContextMenu,
         obscureText: obscureText,
         autofocus: autofocus,
         keyboardType: keyboardType,
         textInputAction: textInputAction,
         onSubmitted: onSubmitted,
+        onEditingComplete: onEditingComplete,
         onChanged: onChanged,
         style: style,
         cursorColor: c.role(OutlinedTextFieldTokens.caretColor),
@@ -316,40 +343,34 @@ class ExpressiveBareField extends StatelessWidget {
       ),
     );
     final hint = hintText;
-    Widget field = ConstrainedBox(
-      constraints: const BoxConstraints(
-        minHeight: HostBehavior.minimumInteractiveComponentSize,
-      ),
-      child: Align(
-        alignment: AlignmentDirectional.centerStart,
-        widthFactor: 1,
-        heightFactor: 1,
-        // The line by its capitals on the box's middle: the shift is the
-        // entry's, so the hint, the typed text and the caret share it.
-        child: expressiveFaceLabel(
-          hint == null
-              ? input
-              : Stack(
-                  alignment: AlignmentDirectional.centerStart,
-                  children: <Widget>[
-                    ListenableBuilder(
-                      listenable: controller,
-                      builder: (context, _) => Visibility.maintain(
-                        visible: controller.text.isEmpty,
-                        child: ExcludeSemantics(
-                          child: Text(
-                            hint,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: style.copyWith(color: c.onSurfaceVariant),
-                          ),
+    Widget field = ExpressiveLineReach(
+      minHeight: HostBehavior.minimumInteractiveComponentSize,
+      fillWidth: false,
+      // The line by its capitals on the box's middle: the shift is the
+      // entry's, so the hint, the typed text and the caret share it.
+      child: expressiveFaceLabel(
+        hint == null
+            ? input
+            : Stack(
+                alignment: AlignmentDirectional.centerStart,
+                children: <Widget>[
+                  ListenableBuilder(
+                    listenable: controller,
+                    builder: (context, _) => Visibility.maintain(
+                      visible: controller.text.isEmpty,
+                      child: ExcludeSemantics(
+                        child: Text(
+                          hint,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: style.copyWith(color: c.onSurfaceVariant),
                         ),
                       ),
                     ),
-                    input,
-                  ],
-                ),
-        ),
+                  ),
+                  input,
+                ],
+              ),
       ),
     );
     // Named by its label, else by its placeholder (as a text field is): a

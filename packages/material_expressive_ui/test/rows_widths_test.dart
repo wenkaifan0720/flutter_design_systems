@@ -289,7 +289,7 @@ void main() {
     await loadExpressiveFonts();
     await loadBundledFonts();
   });
-  final densities = TargetPlatformVariant(const {
+  final densities = const TargetPlatformVariant({
     TargetPlatform.android,
     TargetPlatform.macOS,
   });

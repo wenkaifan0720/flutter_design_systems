@@ -36,7 +36,7 @@ library;
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show ValueListenable;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
@@ -51,6 +51,7 @@ import '../component_themes.dart';
 import '../elevation.dart';
 import '../strings.dart';
 import '../theme.dart';
+import '../internal/style_layers.dart';
 
 // ---------------------------------------------------------------------------
 // Geometry, built once
@@ -250,6 +251,24 @@ class ExpressiveLoadingIndicator extends StatefulWidget {
   @override
   State<ExpressiveLoadingIndicator> createState() =>
       _ExpressiveLoadingIndicatorState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('progress', progress, defaultValue: null))
+      ..add(FlagProperty('contained', value: contained, ifTrue: 'contained'))
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(ColorProperty('containerColor', containerColor, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 class _ExpressiveLoadingIndicatorState extends State<ExpressiveLoadingIndicator>
@@ -301,7 +320,7 @@ class _ExpressiveLoadingIndicatorState extends State<ExpressiveLoadingIndicator>
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
-    final visual = t.loadingIndicatorTheme.merge(widget.style);
+    final visual = t.loadingIndicatorTheme.layeredUnder(widget.style);
     const states = <WidgetState>{};
     final color =
         visual.foregroundColor?.resolve(states) ??
@@ -485,6 +504,26 @@ class ExpressiveRefreshIndicator extends StatefulWidget {
   @override
   State<ExpressiveRefreshIndicator> createState() =>
       ExpressivePullToRefreshState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Future<void> Function()?>.has(
+          'onRefresh',
+          onRefresh,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 /// The state of an [ExpressiveRefreshIndicator]: [show] refreshes as if pulled.

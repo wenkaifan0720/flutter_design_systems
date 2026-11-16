@@ -8,6 +8,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../icons.dart';
@@ -249,6 +250,15 @@ class ExpressiveBreadcrumb extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveBreadcrumbItem>('items', items))
+      ..add(IntProperty('maxShown', maxShown, defaultValue: 4))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 /// Pagination: previous and next standard icon buttons (`chevron_left`,
@@ -447,5 +457,16 @@ class ExpressivePagination extends StatelessWidget {
             needed <= constraints.maxWidth ? full : compact,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('page', page))
+      ..add(IntProperty('count', count))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(IntProperty('siblings', siblings, defaultValue: 1))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }

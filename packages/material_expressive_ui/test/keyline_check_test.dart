@@ -72,7 +72,7 @@ void main() {
     await loadBundledFonts();
   });
   final output = Platform.environment['EXPRESSIVE_DESIGN_REVIEW_OUT'];
-  final densities = TargetPlatformVariant(const {
+  final densities = const TargetPlatformVariant({
     TargetPlatform.android,
     TargetPlatform.macOS,
   });

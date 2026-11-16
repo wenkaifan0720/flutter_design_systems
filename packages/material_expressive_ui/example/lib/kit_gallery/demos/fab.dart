@@ -343,8 +343,9 @@ class _MenuState extends State<_Menu> {
           shape: t.shapes.large,
           color: t.colors.surfaceContainerLow,
           contentColor: t.colors.onSurface,
+          // Room for the open menu over its button, more at large text.
           child: SizedBox(
-            height: ExpressiveSpacing.s72 * 5,
+            height: ExpressiveSpacing.s72 * (kitLargeText(context) ? 7 : 5),
             child: Align(
               alignment: AlignmentDirectional.bottomEnd,
               child: ExpressiveHeroMoment(

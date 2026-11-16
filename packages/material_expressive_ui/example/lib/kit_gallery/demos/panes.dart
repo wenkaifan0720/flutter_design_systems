@@ -108,7 +108,8 @@ class _Split extends StatelessWidget {
         SizedBox(
           height: 220,
           child: ExpressiveResizable(
-            initialFraction: 0.35,
+            // Wider at large text, so both panes keep their words whole.
+            initialFraction: kitLargeText(context) ? 0.45 : 0.35,
             minFirst: 120,
             minSecond: 160,
             first: pane(

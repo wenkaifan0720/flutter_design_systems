@@ -1,7 +1,10 @@
 /// Every part reserves space for what it paints, at each density.
 library;
 
-import 'dart:ui' show BoxHeightStyle;
+// Reads private painters and layouts, which no public type describes.
+// ignore_for_file: avoid_dynamic_calls
+
+import 'dart:ui' show BoxHeightStyle, Paragraph;
 
 import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
@@ -253,7 +256,7 @@ void main() {
                 children: [
                   Positioned.fromRect(
                     rect: info.contentRect.deflate(12),
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         'Place',
                         maxLines: 1,
@@ -590,7 +593,7 @@ void main() {
       withDismissAction: true,
       onDismiss: () {},
     ),
-    'badge': () => ExpressiveBadge.count(999),
+    'badge': () => const ExpressiveBadge.count(999),
     'tag': () =>
         const ExpressiveTag('A longer label', icon: ExpressiveSymbols.add),
     'checkbox row': () => ExpressiveCheckboxRow(
@@ -909,25 +912,18 @@ void main() {
                 final finder = find.byElementPredicate((e) => e == element);
                 final size = tester.getSize(finder);
                 final path = Path()..addRect(Offset.zero & size);
-                expect(
-                  (Canvas canvas) => painter!.paint(canvas, size),
-                  paints..everything((method, arguments) {
-                    if (method == #drawParagraph) {
-                      final dynamic paragraph = arguments[0];
-                      final at = arguments[1] as Offset;
-                      _inside(
-                        path,
-                        at &
-                            Size(
-                              paragraph.width as double,
-                              paragraph.height as double,
-                            ),
-                        '${entry.key} canvas label $density $width $scale',
-                      );
-                    }
-                    return true;
-                  }),
-                );
+                // The painter disposes its labels once painted, so each
+                // one's box is read as it is drawn.
+                final labels = _Labels();
+                painter!.paint(labels, size);
+                expect(labels.boxes, isNotEmpty);
+                for (final box in labels.boxes) {
+                  _inside(
+                    path,
+                    box,
+                    '${entry.key} canvas label $density $width $scale',
+                  );
+                }
               }
               if (painter.runtimeType.toString() == '_BodyPainter') {
                 final dynamic body = painter;
@@ -985,6 +981,22 @@ void main() {
       }
     });
   }
+}
+
+/// A canvas that keeps the box of each paragraph drawn on it, read while
+/// the paragraph is live, and ignores everything else.
+class _Labels implements Canvas {
+  final List<Rect> boxes = <Rect>[];
+
+  @override
+  void drawParagraph(Paragraph paragraph, Offset offset) =>
+      boxes.add(offset & Size(paragraph.width, paragraph.height));
+
+  @override
+  int getSaveCount() => 1;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
 }
 
 class _FilledSearch extends StatefulWidget {

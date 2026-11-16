@@ -41,6 +41,7 @@ export 'material_expressive/components/media.dart';
 export 'material_expressive/components/menus.dart';
 export 'material_expressive/components/nav.dart';
 export 'material_expressive/components/overlays.dart';
+export 'material_expressive/components/page_transitions.dart';
 export 'material_expressive/components/panes.dart';
 export 'material_expressive/components/pickers.dart';
 export 'material_expressive/components/progress.dart';

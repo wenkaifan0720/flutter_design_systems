@@ -789,34 +789,39 @@ void main() {
   group('reorderable list', () {
     const stops = <String>['A', 'B', 'C'];
 
-    /// The stops in a reorderable list, each item clickable with [onOpen].
-    Widget list(List<(int, int)> moves, {ValueChanged<String>? onOpen}) => _app(
-      Localizations(
-        locale: const Locale('en'),
-        delegates: const <LocalizationsDelegate<Object>>[
-          DefaultWidgetsLocalizations.delegate,
-        ],
-        child: SizedBox(
-          height: 400,
-          child: Overlay(
-            initialEntries: <OverlayEntry>[
-              OverlayEntry(
-                builder: (context) => ExpressiveReorderableListView(
-                  itemCount: stops.length,
-                  onReorder: (from, to) => moves.add((from, to)),
-                  itemBuilder: (context, i) => ExpressiveListTile(
-                    key: ValueKey<String>(stops[i]),
-                    title: Text(stops[i]),
-                    trailing: ExpressiveReorderHandle(index: i),
-                    onTap: onOpen == null ? null : () => onOpen(stops[i]),
-                  ),
-                ),
-              ),
-            ],
+    /// The stops in a reorderable list, each item clickable with [onOpen];
+    /// pumped once per test, which disposes its overlay entry.
+    Widget list(List<(int, int)> moves, {ValueChanged<String>? onOpen}) {
+      final entry = OverlayEntry(
+        builder: (context) => ExpressiveReorderableListView(
+          itemCount: stops.length,
+          onReorder: (from, to) => moves.add((from, to)),
+          itemBuilder: (context, i) => ExpressiveListTile(
+            key: ValueKey<String>(stops[i]),
+            title: Text(stops[i]),
+            trailing: ExpressiveReorderHandle(index: i),
+            onTap: onOpen == null ? null : () => onOpen(stops[i]),
           ),
         ),
-      ),
-    );
+      );
+      addTearDown(
+        () => entry
+          ..remove()
+          ..dispose(),
+      );
+      return _app(
+        Localizations(
+          locale: const Locale('en'),
+          delegates: const <LocalizationsDelegate<Object>>[
+            DefaultWidgetsLocalizations.delegate,
+          ],
+          child: SizedBox(
+            height: 400,
+            child: Overlay(initialEntries: <OverlayEntry>[entry]),
+          ),
+        ),
+      );
+    }
 
     testWidgets('dragging a handle reports the move', (tester) async {
       final moves = <(int, int)>[];

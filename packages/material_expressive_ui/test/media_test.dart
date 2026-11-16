@@ -436,7 +436,7 @@ void main() {
       );
       expect(
         tester.getSize(find.byType(ExpressiveAvatar)),
-        Size.square(ListTokens.itemLeadingAvatarSize),
+        const Size.square(ListTokens.itemLeadingAvatarSize),
       );
       expect(ListTokens.itemLeadingAvatarSize, 40);
       final box = tester.widget<ColoredBox>(

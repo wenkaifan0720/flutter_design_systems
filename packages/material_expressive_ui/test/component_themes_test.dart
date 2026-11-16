@@ -4,7 +4,7 @@
 /// Compose defaults.
 library;
 
-import 'package:material_ui/material_ui.dart' show MaterialApp;
+import 'package:material_ui/material_ui.dart' show ButtonStyle, MaterialApp;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -122,7 +122,7 @@ void main() {
         ),
         padding: const WidgetStatePropertyAll(EdgeInsets.all(16)),
       );
-      final merged = fallback.merge(override);
+      final merged = ExpressiveComponentThemeData.layered([override, fallback]);
       expect(merged.backgroundColor!.resolve({}), const Color(0xff112233));
       expect(
         merged.backgroundColor!.resolve({WidgetState.pressed}),
@@ -141,6 +141,66 @@ void main() {
       expect(fallback.copyWith(), fallback);
     },
   );
+
+  test('merge keeps its own slots whole and fills the rest from the other, '
+      'as ButtonStyle.merge and DesignStyle.merge do', () {
+    final mine = ExpressiveComponentThemeData(
+      backgroundColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.pressed)
+            ? const Color(0xff445566)
+            : null,
+      ),
+    );
+    const other = ExpressiveComponentThemeData(
+      backgroundColor: WidgetStatePropertyAll(Color(0xff112233)),
+      padding: WidgetStatePropertyAll(EdgeInsets.all(8)),
+    );
+    final merged = mine.merge(other);
+    // Its own slot, whole: no fall-through to the other's within it.
+    expect(merged.backgroundColor, same(mine.backgroundColor));
+    expect(merged.backgroundColor!.resolve({}), isNull);
+    // A slot it lacks comes from the other.
+    expect(merged.padding!.resolve({}), const EdgeInsets.all(8));
+    expect(mine.merge(null), same(mine));
+    // Material's own, for comparison: the receiver wins.
+    final button =
+        const ButtonStyle(
+          backgroundColor: WidgetStatePropertyAll(Color(0xff445566)),
+        ).merge(
+          const ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(Color(0xff112233)),
+          ),
+        );
+    expect(button.backgroundColor!.resolve({}), const Color(0xff445566));
+    expect(
+      const ExpressiveComponentThemeData(
+        backgroundColor: WidgetStatePropertyAll(Color(0xff445566)),
+      ).merge(other).backgroundColor!.resolve({}),
+      const Color(0xff445566),
+    );
+  });
+
+  test('layered falls through within a slot, state by state, the first '
+      'layer first', () {
+    const theme = ExpressiveComponentThemeData(
+      backgroundColor: WidgetStatePropertyAll(Color(0xff112233)),
+    );
+    final style = ExpressiveComponentThemeData(
+      backgroundColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.pressed)
+            ? const Color(0xff445566)
+            : null,
+      ),
+    );
+    final layered = ExpressiveComponentThemeData.layered([style, null, theme]);
+    expect(layered.backgroundColor!.resolve({}), const Color(0xff112233));
+    expect(
+      layered.backgroundColor!.resolve({WidgetState.pressed}),
+      const Color(0xff445566),
+    );
+    expect(ExpressiveComponentThemeData.layered([]).isEmpty, isTrue);
+    expect(ExpressiveComponentThemeData.layered([theme]), same(theme));
+  });
 
   test('every preset carries none, light and dark', () {
     for (final id in ExpressiveThemeData.presets) {

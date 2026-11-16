@@ -26,6 +26,7 @@ library;
 
 import 'dart:ui' show lerpDouble;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
@@ -169,6 +170,34 @@ class ExpressiveSplashScreenMark extends StatelessWidget {
     }
     return content;
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<ExpressiveMaterialShape>(
+          'shape',
+          shape,
+          defaultValue: ExpressiveMaterialShape.cookie9Sided,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ExpressiveSplashScreenMarkBuilder?>.has(
+          'builder',
+          builder,
+        ),
+      )
+      ..add(StringProperty('wordmark', wordmark, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveSplashScreenGround>(
+          'ground',
+          ground,
+          defaultValue: ExpressiveSplashScreenGround.surface,
+        ),
+      )
+      ..add(FlagProperty('restoring', value: restoring, ifTrue: 'restoring'));
+  }
 }
 
 /// The shape mark: the library shape at rest, or the loading indicator's
@@ -244,6 +273,27 @@ class ExpressiveSplashScreenSource extends StatefulWidget {
 
   @override
   State<ExpressiveSplashScreenSource> createState() => _SplashSourceState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<ExpressiveMaterialShape>(
+          'shape',
+          shape,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveCorner>(
+          'corner',
+          corner,
+          defaultValue: ExpressiveCorner.extraLarge,
+        ),
+      )
+      ..add(ColorProperty('color', color, defaultValue: null));
+  }
 }
 
 class _SplashSourceState extends State<ExpressiveSplashScreenSource> {
@@ -310,6 +360,27 @@ class ExpressiveSplashScreenAnchor extends StatefulWidget {
 
   @override
   State<ExpressiveSplashScreenAnchor> createState() => _SplashAnchorState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<ExpressiveMaterialShape>(
+          'shape',
+          shape,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveCorner>(
+          'corner',
+          corner,
+          defaultValue: ExpressiveCorner.full,
+        ),
+      )
+      ..add(ColorProperty('color', color, defaultValue: null));
+  }
 }
 
 class _SplashAnchorState extends State<ExpressiveSplashScreenAnchor> {
@@ -389,6 +460,17 @@ class ExpressiveSplashScreen extends StatefulWidget {
 
   @override
   State<ExpressiveSplashScreen> createState() => _ExpressiveSplashScreenState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('restoring', restoring))
+      ..add(DiagnosticsProperty<ExpressiveSplashScreenMark>('mark', mark))
+      ..add(
+        StringProperty('restoringLabel', restoringLabel, defaultValue: null),
+      );
+  }
 }
 
 enum _Phase { mark, handoff, fade, done }

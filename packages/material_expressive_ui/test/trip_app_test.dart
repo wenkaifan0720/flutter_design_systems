@@ -519,7 +519,7 @@ void main() {
           );
         }
       },
-      variant: TargetPlatformVariant(const {
+      variant: const TargetPlatformVariant({
         TargetPlatform.android,
         TargetPlatform.macOS,
       }),

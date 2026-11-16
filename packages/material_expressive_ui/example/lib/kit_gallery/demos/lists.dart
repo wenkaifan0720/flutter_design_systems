@@ -540,16 +540,20 @@ class _Dividers extends StatelessWidget {
         caption('Middle inset'),
         const ExpressiveDivider(inset: ExpressiveDividerInset.both),
         caption('Vertical'),
-        SizedBox(
-          height: 32,
-          child: Row(
-            children: <Widget>[
-              Expanded(child: Center(child: caption('Day'))),
-              const ExpressiveDivider(vertical: true),
-              Expanded(child: Center(child: caption('Week'))),
-              const ExpressiveDivider(vertical: true),
-              Expanded(child: Center(child: caption('Month'))),
-            ],
+        // As tall as its words, at least 32dp: larger text grows it.
+        IntrinsicHeight(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: ExpressiveSpacing.s32),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Expanded(child: Center(child: caption('Day'))),
+                const ExpressiveDivider(vertical: true),
+                Expanded(child: Center(child: caption('Week'))),
+                const ExpressiveDivider(vertical: true),
+                Expanded(child: Center(child: caption('Month'))),
+              ],
+            ),
           ),
         ),
       ],
@@ -626,19 +630,17 @@ Widget kitSpecimenDividerInset() => Column(
   ],
 );
 
-/// Three stops that reorder by their handles.
-Widget kitSpecimenReorderableStops() => SizedBox(
-  height: ExpressiveSpacing.s72 * 3 + ExpressiveSpacing.s8,
-  child: ExpressiveReorderableListView(
-    itemCount: 3,
-    onReorder: (_, _) {},
-    itemBuilder: (context, i) => ExpressiveListTile(
-      key: ValueKey<int>(i),
-      title: Text(const <String>['Belém', 'Alfama', 'LX Factory'][i]),
-      subtitle: Text('Stop ${i + 1}'),
-      leading: const Icon(ExpressiveSymbols.place),
-      trailing: ExpressiveReorderHandle(index: i),
-    ),
+/// Three stops that reorder by their handles: the list as tall as its
+/// rows, so larger text grows it rather than hiding the last stop.
+Widget kitSpecimenReorderableStops() => ExpressiveReorderableListView(
+  itemCount: 3,
+  onReorder: (_, _) {},
+  itemBuilder: (context, i) => ExpressiveListTile(
+    key: ValueKey<int>(i),
+    title: Text(const <String>['Belém', 'Alfama', 'LX Factory'][i]),
+    subtitle: Text('Stop ${i + 1}'),
+    leading: const Icon(ExpressiveSymbols.place),
+    trailing: ExpressiveReorderHandle(index: i),
   ),
 );
 

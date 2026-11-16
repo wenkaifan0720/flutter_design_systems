@@ -24,11 +24,11 @@ final OracleGroup menusScenes = OracleGroup(
     OracleScene(
       key: 'menus/menu/standard',
       size: const Size(152, 224),
-      build: (context) => OracleTag(
+      build: (context) => const OracleTag(
         'menu',
         child: ExpressiveMenuSurface(
           groups: <ExpressiveMenuGroup>[
-            const ExpressiveMenuGroup(<ExpressiveMenuEntry>[
+            ExpressiveMenuGroup(<ExpressiveMenuEntry>[
               ExpressiveMenuItem(
                 'Copy',
                 trailingText: 'Ctrl+C',
@@ -36,7 +36,7 @@ final OracleGroup menusScenes = OracleGroup(
               ),
               ExpressiveMenuItem('Paste', trailingText: 'Ctrl+V'),
             ], label: 'Edit'),
-            const ExpressiveMenuGroup(<ExpressiveMenuEntry>[
+            ExpressiveMenuGroup(<ExpressiveMenuEntry>[
               ExpressiveMenuItem(
                 'Share',
                 supportingText: 'Send a link',
@@ -69,9 +69,9 @@ final OracleGroup menusScenes = OracleGroup(
     OracleScene(
       key: 'menus/menu/vibrant',
       size: const Size(152, 128),
-      build: (context) => OracleTag(
+      build: (context) => const OracleTag(
         'menu',
-        child: const ExpressiveHeroMoment(
+        child: ExpressiveHeroMoment(
           label: 'oracle',
           child: ExpressiveMenuSurface(
             vibrant: true,
@@ -113,7 +113,7 @@ final OracleGroup menusScenes = OracleGroup(
     OracleScene(
       key: 'menus/tooltip/rich',
       size: const Size(344, 176),
-      build: (context) => OracleTag(
+      build: (context) => const OracleTag(
         'tooltip',
         child: ExpressiveRichTooltip(
           title: 'Offline mode',

@@ -1,6 +1,7 @@
 // The behaviour law (looks/COMPLETE.md §2a) over Expressive. Every part that takes a callback is enumerated from the
 // source, so a new one fails here until it is named in the table. Each one: Tab reaches it and its focus layer shows
-// (Compose draws focus as a state layer, not a ring), Enter and Space press it, with no callback it takes no focus and
+// (Compose draws focus as a state layer; a menu's row shows the keys' place by the focus indicator alone, so it never
+// reads as the pointer's fill: one lit row), Enter and Space press it, with no callback it takes no focus and
 // its face is told it is disabled, a hover reaches its face's states, and under Reduce Motion a press settles and
 // nothing loops. Each part lays out with no exception at 390, 768, 1024 and 1440, at text scale 2.0 and right to left
 // (the pattern pages: behaviour_pages_test.dart).
@@ -13,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
+import 'package:material_expressive_ui/src/material_expressive/internal/owned.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/state_face.dart'
     show ExpressiveBareField;
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/behavior.g.dart';
@@ -26,6 +28,7 @@ class _Part {
     this.focus = true,
     this.pressable = true,
     this.disables = true,
+    this.ringOnly = false,
     this.crushes,
   });
   final Widget Function(VoidCallback? hit) build;
@@ -44,6 +47,10 @@ class _Part {
 
   /// With no callback it takes no focus (a text field still takes text, a picker still pages).
   final bool disables;
+
+  /// Its focus shows as the focus indicator alone, no state layer under it: a menu's row, whose keys' place must
+  /// never read as the pointer's fill (as Material's web menu item draws it).
+  final bool ringOnly;
 }
 
 ValueChanged<T>? _on<T>(VoidCallback? hit) => hit == null ? null : (_) => hit();
@@ -320,6 +327,7 @@ final _parts = <String, _Part>{
         ExpressiveMenuGroup([ExpressiveMenuItem('Edit', onPressed: hit)]),
       ],
     ),
+    ringOnly: true,
   ),
   'ExpressiveMenuCheckItem': _Part(
     (hit) => ExpressiveMenuSurface(
@@ -329,6 +337,7 @@ final _parts = <String, _Part>{
         ]),
       ],
     ),
+    ringOnly: true,
   ),
   'ExpressiveMenuRadioItem': _Part(
     (hit) => ExpressiveMenuSurface(
@@ -338,6 +347,7 @@ final _parts = <String, _Part>{
         ]),
       ],
     ),
+    ringOnly: true,
   ),
   // A dialog's or a sheet's action is enabled by `enabled`: with no callback it still closes with its value.
   'ExpressiveDialogAction': _Part(
@@ -680,10 +690,13 @@ final _parts = <String, _Part>{
     disables: false,
   ),
   'ExpressiveDataTable': _Part(
-    (hit) => ExpressiveDataTable<List<String>>(
-      controller: _orders(),
-      onActivate: _on(hit),
-      cellBuilder: (context, row, column) => Text(row[int.parse(column.id)]),
+    (hit) => Owned(
+      create: _orders,
+      builder: (context, orders) => ExpressiveDataTable<List<String>>(
+        controller: orders,
+        onActivate: _on(hit),
+        cellBuilder: (context, row, column) => Text(row[int.parse(column.id)]),
+      ),
     ),
     keys: false,
     pressable: false,
@@ -1001,10 +1014,19 @@ void main() {
                 isNotEmpty,
                 reason: 'the focused press was not told',
               );
-              final layer = focused.first.overlayColor?.resolve(const {
-                WidgetState.focused,
-              });
-              expect(layer?.a ?? 0, greaterThan(0), reason: 'no focus layer');
+              if (part.ringOnly) {
+                final rings = tester
+                    .widgetList<ExpressivePressable>(
+                      find.byType(ExpressivePressable),
+                    )
+                    .where((p) => p.focusRing);
+                expect(rings, hasLength(1), reason: 'no focus indicator');
+              } else {
+                final layer = focused.first.overlayColor?.resolve(const {
+                  WidgetState.focused,
+                });
+                expect(layer?.a ?? 0, greaterThan(0), reason: 'no focus layer');
+              }
             }
             if (part.keys) {
               await tester.sendKeyEvent(LogicalKeyboardKey.enter);

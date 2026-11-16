@@ -13,6 +13,7 @@
 /// [ExpressiveHeroMoment.countOn] and the `ExpressiveHeroMoment(` call sites.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// One hero moment: the scope a hero widget requires. Wrap the one place on
@@ -93,6 +94,12 @@ class ExpressiveHeroMoment extends StatefulWidget {
 
   @override
   State<ExpressiveHeroMoment> createState() => _ExpressiveHeroMomentState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 class _ExpressiveHeroMomentState extends State<ExpressiveHeroMoment> {
@@ -164,6 +171,12 @@ class ExpressiveHeroMomentScope extends InheritedWidget {
   @override
   bool updateShouldNotify(ExpressiveHeroMomentScope oldWidget) =>
       label != oldWidget.label;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// One mounted hero moment, as its route's count holds it.

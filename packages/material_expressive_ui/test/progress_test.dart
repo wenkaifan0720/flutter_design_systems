@@ -113,7 +113,7 @@ void main() {
       );
       expect(
         _paint(tester, ExpressiveLinearProgressIndicator),
-        Size(240, LinearProgressIndicatorTokens.waveHeight),
+        const Size(240, LinearProgressIndicatorTokens.waveHeight),
       );
       expect(LinearProgressIndicatorTokens.waveHeight, 10);
     });
@@ -134,7 +134,7 @@ void main() {
       );
       expect(
         _paint(tester, ExpressiveCircularProgressIndicator),
-        Size.square(CircularProgressIndicatorTokens.waveSize),
+        const Size.square(CircularProgressIndicatorTokens.waveSize),
       );
       expect(CircularProgressIndicatorTokens.waveSize, 48);
     });

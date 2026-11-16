@@ -446,7 +446,7 @@ void main() {
     testWidgets('a disabled slider never reports', (tester) async {
       var reported = false;
       await tester.pumpWidget(
-        _app(ExpressiveSlider(value: 0.5, onChanged: null)),
+        _app(const ExpressiveSlider(value: 0.5, onChanged: null)),
       );
       await tester.drag(find.byType(ExpressiveSlider), const Offset(100, 0));
       await tester.tap(find.byType(ExpressiveSlider));

@@ -34,7 +34,9 @@ void main() {
     expect(base.copyWith(), base);
   });
 
-  test('app seed palettes meet every content and boundary contrast floor', () {
+  test('app seed palettes meet every content and boundary contrast floor, '
+      'at every contrast level', () {
+    final shortfalls = <String>[];
     for (final seed in const [
       Color(0xff00695c),
       Color(0xffffeeee),
@@ -42,27 +44,99 @@ void main() {
       Color(0xff888888),
     ]) {
       for (final brightness in Brightness.values) {
-        final theme = ExpressiveThemeData.from(
-          seed: seed,
-          brightness: brightness,
-        );
-        expect(
-          theme.colors.contrastShortfalls(),
-          isEmpty,
-          reason: '$seed $brightness',
-        );
-        final ink = theme.colors.onTertiaryContainer;
-        final dragged = Color.alphaBlend(
-          theme.states.layerOf(ink, {WidgetState.dragged})!,
-          theme.colors.tertiaryContainer,
-        );
-        expect(
-          expressiveContrastRatio(ink, dragged),
-          greaterThanOrEqualTo(4.5),
-          reason: 'Dragged list text for $seed $brightness',
-        );
+        for (final contrastLevel in const [0.0, 1.0]) {
+          final theme = ExpressiveThemeData.from(
+            seed: seed,
+            brightness: brightness,
+            contrastLevel: contrastLevel,
+          );
+          final label =
+              '#${seed.toARGB32().toRadixString(16)} ${brightness.name} at '
+              '$contrastLevel';
+          for (final MapEntry(:key, :value)
+              in theme.colors.contrastShortfalls().entries) {
+            shortfalls.add('$label: $key ${value.toStringAsFixed(2)}');
+          }
+          final ink = theme.colors.onTertiaryContainer;
+          final dragged = Color.alphaBlend(
+            theme.states.layerOf(ink, {WidgetState.dragged})!,
+            theme.colors.tertiaryContainer,
+          );
+          final ratio = expressiveContrastRatio(ink, dragged);
+          if (ratio < 4.5) {
+            shortfalls.add(
+              '$label: dragged list text ${ratio.toStringAsFixed(2)}',
+            );
+          }
+        }
       }
     }
+    expect(shortfalls, isEmpty);
+  });
+
+  test('every preset level keeps dragged list text readable', () {
+    final shortfalls = <String>[];
+    for (final id in ExpressiveThemeData.presets) {
+      for (final brightness in Brightness.values) {
+        for (final contrastLevel in const [0.0, 1.0]) {
+          final theme = ExpressiveThemeData.preset(
+            id,
+            brightness,
+            contrastLevel: contrastLevel,
+          );
+          final ink = theme.colors.onTertiaryContainer;
+          final dragged = Color.alphaBlend(
+            theme.states.layerOf(ink, {WidgetState.dragged})!,
+            theme.colors.tertiaryContainer,
+          );
+          final ratio = expressiveContrastRatio(ink, dragged);
+          if (ratio < 4.5) {
+            shortfalls.add(
+              '$id ${brightness.name} at $contrastLevel: '
+              '${ratio.toStringAsFixed(2)}',
+            );
+          }
+        }
+      }
+    }
+    expect(shortfalls, isEmpty);
+  });
+
+  test("from(seed) takes Material's contrast level, standard by default", () {
+    const seed = Color(0xff00695c);
+    for (final brightness in Brightness.values) {
+      ExpressiveColorScheme at(double level) => ExpressiveThemeData.from(
+        seed: seed,
+        brightness: brightness,
+        contrastLevel: level,
+      ).colors;
+      final standard = ExpressiveThemeData.from(
+        seed: seed,
+        brightness: brightness,
+      ).colors;
+      expect(standard, at(0));
+      expect(at(1), isNot(standard));
+      // Raising contrast widens the primary pair.
+      expect(
+        _contrast(at(1).onPrimary, at(1).primary),
+        greaterThan(_contrast(standard.onPrimary, standard.primary)),
+      );
+    }
+    // No reduced level: it would read under the look's floors.
+    expect(
+      () => ExpressiveThemeData.from(seed: seed, contrastLevel: -1),
+      throwsAssertionError,
+    );
+    expect(
+      () => ExpressiveThemeData.from(seed: seed, contrastLevel: 1.5),
+      throwsAssertionError,
+    );
+    // Nor one between: Material's medium level takes a dragged row's words
+    // under 4.5:1 on every light seed (3.7:1 at 0.5).
+    expect(
+      () => ExpressiveThemeData.from(seed: seed, contrastLevel: .5),
+      throwsAssertionError,
+    );
   });
 
   group('baseline', () {
@@ -240,6 +314,56 @@ void main() {
         () => expressiveResolveColors(baseline, Brightness.light, contrast: 1),
         throwsStateError,
       );
+    });
+
+    test('every preset comes at standard and high contrast', () {
+      for (final id in ExpressiveThemeData.presets) {
+        final baked = expressiveBakedThemes[id]!;
+        for (final brightness in _brightnesses) {
+          final own = ExpressiveThemeData.preset(id, brightness);
+          expect(
+            ExpressiveThemeData.preset(id, brightness, contrastLevel: 0),
+            own,
+          );
+          for (final level in const [1.0]) {
+            final at = ExpressiveThemeData.preset(
+              id,
+              brightness,
+              contrastLevel: level,
+            );
+            final label = '$id ${brightness.name} at $level';
+            // Only the colours move: the id, motion, type and shapes stay.
+            expect(at.copyWith(colors: own.colors), own, reason: label);
+            expect(at.colors, isNot(own.colors), reason: label);
+            // The baked level where there is one; baseline, Compose's fixed
+            // scheme, from its seed.
+            expect(
+              at.colors,
+              baked.colors.atContrast.isEmpty
+                  ? ExpressiveThemeData.from(
+                      seed: Color(baked.seed),
+                      brightness: brightness,
+                      contrastLevel: level,
+                    ).colors
+                  : expressiveResolveColors(baked, brightness, contrast: level),
+              reason: label,
+            );
+            expect(at.colors.contrastShortfalls(), isEmpty, reason: label);
+          }
+        }
+      }
+      // Medium, baked but refused: a dragged row's words fall under 4.5:1
+      // on its light containers.
+      for (final level in const [.3, .5]) {
+        expect(
+          () => ExpressiveThemeData.preset(
+            'grove',
+            Brightness.light,
+            contrastLevel: level,
+          ),
+          throwsAssertionError,
+        );
+      }
     });
   });
 

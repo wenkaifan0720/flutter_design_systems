@@ -26,8 +26,8 @@
 library;
 
 import 'dart:math' as math;
-import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
@@ -37,6 +37,7 @@ import 'internal/tokens/behavior.g.dart';
 import 'internal/tokens/keys.g.dart';
 import 'motion.dart';
 import 'theme.dart';
+import 'internal/style_layers.dart';
 
 export 'internal/tokens/keys.g.dart' show ExpressiveElevationLevel;
 
@@ -379,7 +380,7 @@ class ExpressiveShadowLight {
 /// dragged or disabled. Precedence: disabled, then pressed, dragged,
 /// focused, hovered, rest.
 @immutable
-class ExpressiveStateElevation {
+class ExpressiveStateElevation with Diagnosticable {
   /// An elevation of [rest] that changes in the given states.
   const ExpressiveStateElevation({
     required this.rest,
@@ -453,6 +454,48 @@ class ExpressiveStateElevation {
   @override
   int get hashCode =>
       Object.hash(rest, pressed, focused, hovered, dragged, disabled);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<ExpressiveElevationLevel>('rest', rest))
+      ..add(
+        EnumProperty<ExpressiveElevationLevel>(
+          'pressed',
+          pressed,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveElevationLevel>(
+          'focused',
+          focused,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveElevationLevel>(
+          'hovered',
+          hovered,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveElevationLevel>(
+          'dragged',
+          dragged,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveElevationLevel>(
+          'disabled',
+          disabled,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// Compose's `Surface`: [child] on a [shape] filled with [color] (tinted by
@@ -537,7 +580,7 @@ class ExpressiveSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = context.expressiveTheme;
     final styled = (componentStyle ?? const ExpressiveComponentThemeData())
-        .merge(style);
+        .layeredUnder(style);
     final supplied = styled.shape?.resolve(states);
     final shape = supplied == null
         ? this.shape
@@ -635,6 +678,84 @@ class ExpressiveSurface extends StatelessWidget {
               ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'componentStyle',
+          componentStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ShapeBorder Function(OutlinedBorder)?>.has(
+          'shapeDecorator',
+          shapeDecorator,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry?>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<WidgetState>(
+          'states',
+          states,
+          defaultValue: const <WidgetState>{},
+        ),
+      )
+      ..add(DiagnosticsProperty<ShapeBorder>('shape', shape))
+      ..add(ColorProperty('color', color))
+      ..add(ColorProperty('contentColor', contentColor, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<BorderSide>(
+          'side',
+          side,
+          defaultValue: BorderSide.none,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveElevationLevel>(
+          'tonalElevation',
+          tonalElevation,
+          defaultValue: ExpressiveElevationLevel.level0,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveElevationLevel>(
+          'shadowElevation',
+          shadowElevation,
+          defaultValue: ExpressiveElevationLevel.level0,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveMotionKey>(
+          'elevationMotion',
+          elevationMotion,
+          defaultValue: ExpressiveMotionKey.defaultEffects,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Clip>(
+          'clipBehavior',
+          clipBehavior,
+          defaultValue: Clip.antiAlias,
+        ),
+      );
   }
 }
 

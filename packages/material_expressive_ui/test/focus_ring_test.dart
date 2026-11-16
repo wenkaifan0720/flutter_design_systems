@@ -5,6 +5,10 @@
 // the ring's gap and half its stroke, each corner the part's grown by the
 // same, and a square corner stays square. A row stacked flush draws it
 // inward: its box the part's less half the stroke, each corner the same less.
+
+// Reads the ring's private painter, which no public type describes.
+// ignore_for_file: avoid_dynamic_calls
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -14,6 +18,7 @@ import 'package:material_expressive_ui/material_expressive_ui.dart';
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/kit.dart';
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'gallery_support.dart';
 import 'overlay_fixtures.dart';
 import 'shape_support.dart';
@@ -171,28 +176,33 @@ void main() {
     FocusManager.instance.highlightStrategy = FocusHighlightStrategy.automatic;
   });
 
-  testWidgets('every focus ring is concentric with its part', (tester) async {
-    final failures = <String>[];
-    for (final page in galleryExamplePages) {
-      await pumpGalleryPage(tester, page, 'baseline', Brightness.light);
-      FocusManager.instance.highlightStrategy =
-          FocusHighlightStrategy.alwaysTraditional;
-      failures.addAll(await _checkRings(tester, page.id));
-      FocusManager.instance.highlightStrategy =
-          FocusHighlightStrategy.automatic;
-      expect(tester.takeException(), isNull, reason: page.id);
-    }
-    await forEachOverlay(
-      tester,
-      ExpressiveThemeData.preset('baseline', Brightness.light),
-      (name) async {
+  testWidgets(
+    'every focus ring is concentric with its part',
+    (tester) async {
+      final failures = <String>[];
+      for (final page in galleryExamplePages) {
+        await pumpGalleryPage(tester, page, 'baseline', Brightness.light);
         FocusManager.instance.highlightStrategy =
             FocusHighlightStrategy.alwaysTraditional;
-        failures.addAll(await _checkRings(tester, 'overlay $name'));
+        failures.addAll(await _checkRings(tester, page.id));
         FocusManager.instance.highlightStrategy =
             FocusHighlightStrategy.automatic;
-      },
-    );
-    expect(failures.toSet().toList(), isEmpty);
-  }, timeout: const Timeout(Duration(minutes: 30)));
+        expect(tester.takeException(), isNull, reason: page.id);
+      }
+      await forEachOverlay(
+        tester,
+        ExpressiveThemeData.preset('baseline', Brightness.light),
+        (name) async {
+          FocusManager.instance.highlightStrategy =
+              FocusHighlightStrategy.alwaysTraditional;
+          failures.addAll(await _checkRings(tester, 'overlay $name'));
+          FocusManager.instance.highlightStrategy =
+              FocusHighlightStrategy.automatic;
+        },
+      );
+      expect(failures.toSet().toList(), isEmpty);
+    },
+    timeout: const Timeout(Duration(minutes: 30)),
+    experimentalLeakTesting: longWalkLeakTesting,
+  );
 }

@@ -62,6 +62,14 @@ enum ExpressiveLanguageHeight {
 
 /// The type scale of one theme: the 30 styles by [ExpressiveTypeKey]
 /// ([of]) and by name.
+///
+/// A brand's typeface replaces the families; the faces Expressive bundles
+/// (Roboto Flex and Jost) come from where it bundles them, an app's own
+/// from the app's assets, or from [fontPackage]:
+///
+/// ```dart
+/// final type = const ExpressiveTextTheme().copyWith(textFamily: 'Inter');
+/// ```
 @immutable
 class ExpressiveTextTheme with Diagnosticable {
   /// A type scale of the given [languageHeight].
@@ -69,7 +77,7 @@ class ExpressiveTextTheme with Diagnosticable {
     this.languageHeight = ExpressiveLanguageHeight.englishLike,
     this.displayFamily = family,
     this.textFamily = family,
-    this.fontPackage = expressiveFontPackage,
+    this.fontPackage,
   });
 
   /// The family used for display and headline styles.
@@ -78,7 +86,11 @@ class ExpressiveTextTheme with Diagnosticable {
   /// The family used for title, body and label styles.
   final String textFamily;
 
-  /// The package bundling the families, or null for app-owned fonts.
+  /// The package that bundles [displayFamily] and [textFamily] when they
+  /// are an app's faces from a package of its own (`'brand_fonts'`); null
+  /// when the app bundles them in its assets. The faces Expressive bundles
+  /// (Roboto Flex, Jost) always come from [expressiveFontPackage], whatever
+  /// this names.
   final String? fontPackage;
 
   /// This scale with the supplied settings replaced.
@@ -86,12 +98,21 @@ class ExpressiveTextTheme with Diagnosticable {
     ExpressiveLanguageHeight? languageHeight,
     String? displayFamily,
     String? textFamily,
+    String? fontPackage,
   }) => ExpressiveTextTheme(
     languageHeight: languageHeight ?? this.languageHeight,
     displayFamily: displayFamily ?? this.displayFamily,
     textFamily: textFamily ?? this.textFamily,
-    fontPackage: fontPackage,
+    fontPackage: fontPackage ?? this.fontPackage,
   );
+
+  /// The faces Expressive bundles, which come from [expressiveFontPackage].
+  static const Set<String> _bundled = <String>{family, 'Jost'};
+
+  /// The package [face] comes from: Expressive's for the faces it
+  /// bundles, else [fontPackage].
+  String? _packageOf(String face) =>
+      _bundled.contains(face) ? expressiveFontPackage : fontPackage;
 
   /// The bundled variable Roboto Flex's family (the module's pubspec), in
   /// [expressiveFontPackage] when a package bundles it.
@@ -127,9 +148,10 @@ class ExpressiveTextTheme with Diagnosticable {
     final display =
         key.name.startsWith('display') || key.name.startsWith('headline');
     final weight = token.fontWeight;
+    final face = display ? displayFamily : textFamily;
     return TextStyle(
-      fontFamily: display ? displayFamily : textFamily,
-      package: fontPackage,
+      fontFamily: face,
+      package: _packageOf(face),
       fontSize: size,
       fontWeight: weight,
       letterSpacing: token.letterSpacing,

@@ -33,14 +33,24 @@ library;
 
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show ScrollCacheExtent;
+import 'package:flutter/rendering.dart' show RenderProxyBox, ScrollCacheExtent;
 import 'package:material_expressive_ui/material_expressive_host.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 
+import 'kit_focus.dart';
 import 'kit_text.dart';
 import 'theme.dart';
 
+export 'kit_focus.dart';
 export 'kit_glyphs.dart';
+
+/// The Flutter `ThemeData` of the gallery's own apps: the look's push and pop
+/// for Flutter's `MaterialPageRoute`, which reads this theme, not the look's.
+final ThemeData kitAppTheme = ThemeData(
+  pageTransitionsTheme: const PageTransitionsTheme(
+    builders: expressivePageTransitions,
+  ),
+);
 
 /// The register of the ambient platform — the smoke matrix's platform under
 /// test, or the device the gallery runs on — for a demo's preview frame. A
@@ -168,21 +178,24 @@ class KitPage extends StatelessWidget {
     ];
     if (KitLiveViewport.of(context)) {
       // On the start edge, where the example's app bar title and tabs
-      // start: one edge down the window, not three.
-      return SafeArea(
-        bottom: allowance == 0,
-        child: Align(
-          alignment: AlignmentDirectional.topStart,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 960),
-            child: ListView.builder(
-              padding: padding,
-              scrollCacheExtent: const ScrollCacheExtent.pixels(0),
-              itemCount: children.length,
-              itemBuilder: (context, index) => _KitPageItem(
-                child: Padding(
-                  padding: EdgeInsets.only(top: index == 0 ? 0 : margin),
-                  child: children[index],
+      // start: one edge down the window, not three. Its own Tab: the page
+      // stands in a preview, an app of its own (KitFocusActions).
+      return KitFocusActions(
+        child: SafeArea(
+          bottom: allowance == 0,
+          child: Align(
+            alignment: AlignmentDirectional.topStart,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 960),
+              child: ListView.builder(
+                padding: padding,
+                scrollCacheExtent: const ScrollCacheExtent.pixels(0),
+                itemCount: children.length,
+                itemBuilder: (context, index) => _KitPageItem(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: index == 0 ? 0 : margin),
+                    child: children[index],
+                  ),
                 ),
               ),
             ),
@@ -309,6 +322,87 @@ class _KitPageTransitionState extends State<_KitPageTransition>
 /// The breath between a section's lines: the spacing scale's 8dp step
 /// (`space100`).
 const double kitGap = ExpressiveSpacing.s8;
+
+/// Where a camelCase name's next word starts: `cookie4|Sided`.
+final RegExp _kitWordStart = RegExp('(?<=[a-z0-9])(?=[A-Z])');
+
+/// [name] breakable only where its next word starts (a zero-width space
+/// there): `surface|Container|Highest` wraps between its words in a narrow
+/// cell or at large text, never inside one.
+String kitWordBreaks(String name) => name.replaceAll(_kitWordStart, '​');
+
+/// [name]'s words: `cookie4Sided` → `cookie4`, `Sided`.
+List<String> kitWords(String name) => name.split(_kitWordStart);
+
+/// Whether the reader's text is large (1.5× and up): a demo that sets words
+/// side by side in narrow columns stacks them instead.
+bool kitLargeText(BuildContext context) =>
+    MediaQuery.textScalerOf(context).scale(kitBodySize) >= 1.5 * kitBodySize;
+
+/// The body size [kitLargeText] scales.
+const double kitBodySize = 16;
+
+/// A cell [width] wide, or as wide as its longest word needs where that is
+/// more (large text): a label in it breaks between its words, never inside
+/// one. Never wider than its parent allows.
+class KitWordCell extends SingleChildRenderObjectWidget {
+  /// A cell at least [width] wide holding [child].
+  const KitWordCell({required this.width, required super.child, super.key});
+
+  /// The cell's width while its words fit.
+  final double width;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderWordCell(width);
+
+  @override
+  void updateRenderObject(BuildContext context, RenderObject renderObject) =>
+      (renderObject as _RenderWordCell).width = width;
+}
+
+class _RenderWordCell extends RenderProxyBox {
+  _RenderWordCell(this._width);
+
+  double _width;
+  set width(double value) {
+    if (value == _width) return;
+    _width = value;
+    markNeedsLayout();
+  }
+
+  BoxConstraints _inner(BoxConstraints c) {
+    final words = child?.getMinIntrinsicWidth(double.infinity) ?? 0;
+    final w = c.constrainWidth(words > _width ? words : _width);
+    return c.copyWith(minWidth: w, maxWidth: w);
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    final words = child?.getMinIntrinsicWidth(height) ?? 0;
+    return words > _width ? words : _width;
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      computeMinIntrinsicWidth(height);
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) =>
+      child?.getDryLayout(_inner(constraints)) ?? _inner(constraints).smallest;
+
+  @override
+  void performLayout() {
+    final inner = _inner(constraints);
+    final child = this.child;
+    if (child == null) {
+      size = inner.smallest;
+      return;
+    }
+    child.layout(inner, parentUsesSize: true);
+    size = child.size;
+  }
+}
 
 /// One labelled band inside a demo page: its label, then its children
 /// [kitGap] apart.
@@ -477,6 +571,7 @@ Widget kitSpecimenStage({
     brightness: brightness,
     child: MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: kitAppTheme,
       // The stage reads in its page's direction, not its English locale's.
       builder: (context, home) => Directionality(
         textDirection: Directionality.maybeOf(outer) ?? TextDirection.ltr,

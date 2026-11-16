@@ -11,6 +11,7 @@ import 'package:material_expressive_ui/material_expressive_ui.dart';
 
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/main.dart';
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'gallery_support.dart';
 import 'overlay_fixtures.dart';
 import 'shape_support.dart';
@@ -191,5 +192,5 @@ void main() {
           'Build each exported widget on a live page of the example: '
           '${missing.toList()..sort()}',
     );
-  });
+  }, experimentalLeakTesting: longWalkLeakTesting);
 }

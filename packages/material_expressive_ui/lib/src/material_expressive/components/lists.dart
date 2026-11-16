@@ -25,6 +25,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -49,6 +50,7 @@ import '../spacing.dart';
 import '../states.dart';
 import '../strings.dart';
 import '../theme.dart';
+import '../internal/style_layers.dart';
 
 // ---------------------------------------------------------------------------
 // Where an item sits
@@ -460,6 +462,45 @@ class ExpressiveListTile extends StatefulWidget {
 
   @override
   State<ExpressiveListTile> createState() => _ExpressiveListTileState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onTap', onTap))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onLongPress', onLongPress))
+      ..add(ObjectFlagProperty<ValueChanged<bool>?>.has('onChanged', onChanged))
+      ..add(DiagnosticsProperty<bool>('selected', selected))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(FlagProperty('dragged', value: dragged, ifTrue: 'dragged'))
+      ..add(
+        DiagnosticsProperty<bool?>('expanded', expanded, defaultValue: null),
+      )
+      ..add(ColorProperty('tileColor', tileColor, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry?>(
+          'contentPadding',
+          contentPadding,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _ExpressiveListTileState extends State<ExpressiveListTile> {
@@ -525,7 +566,7 @@ class _ExpressiveListTileState extends State<ExpressiveListTile> {
             // dragged fills); a per-widget style can still override it.
             backgroundColor: const WidgetStatePropertyAll(null),
           );
-    final styled = component.merge(widget.style);
+    final styled = component.layeredUnder(widget.style);
     final states = <WidgetState>{
       ...expressiveComponentStates(enabled: enabled, selected: widget.selected),
       if (dragged) WidgetState.dragged,
@@ -1304,6 +1345,27 @@ class ExpressiveListSection extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('header', header, defaultValue: null))
+      ..add(StringProperty('footer', footer, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>('segmented', segmented, defaultValue: true),
+      )
+      ..add(
+        EnumProperty<ExpressiveDividerInset>(
+          'divider',
+          divider,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ColorProperty('containerColor', containerColor, defaultValue: null),
+      );
+  }
 }
 
 /// A section's title (a list subheader): `titleSmall` in `primary`, set in
@@ -1348,6 +1410,12 @@ class ExpressiveSectionHeader extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('label', label));
   }
 }
 
@@ -1402,6 +1470,20 @@ class ExpressiveDivider extends StatelessWidget {
               ),
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<ExpressiveDividerInset>(
+          'inset',
+          inset,
+          defaultValue: ExpressiveDividerInset.none,
+        ),
+      )
+      ..add(FlagProperty('vertical', value: vertical, ifTrue: 'vertical'));
   }
 }
 
@@ -1474,6 +1556,31 @@ class ExpressiveReorderableListView extends StatelessWidget {
       );
     },
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('itemCount', itemCount))
+      ..add(
+        ObjectFlagProperty<IndexedWidgetBuilder>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<void Function(int from, int to)>.has(
+          'onReorder',
+          onReorder,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('segmented', segmented, defaultValue: true),
+      )
+      ..add(
+        ColorProperty('containerColor', containerColor, defaultValue: null),
+      );
+  }
 }
 
 /// The drag handle of an item in an [ExpressiveReorderableListView]: the
@@ -1505,6 +1612,14 @@ class ExpressiveReorderHandle extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('index', index))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1699,6 +1814,28 @@ class ExpressiveSwipeToDismiss extends StatefulWidget {
   @override
   State<ExpressiveSwipeToDismiss> createState() =>
       _ExpressiveSwipeToDismissState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<ValueChanged<ExpressiveSwipeDirection>>.has(
+          'onDismissed',
+          onDismissed,
+        ),
+      )
+      ..add(
+        IterableProperty<ExpressiveSwipeDirection>(
+          'directions',
+          directions,
+          defaultValue: const <ExpressiveSwipeDirection>{
+            ExpressiveSwipeDirection.endToStart,
+          },
+        ),
+      )
+      ..add(StringProperty('dismissLabel', dismissLabel, defaultValue: null));
+  }
 }
 
 class _ExpressiveSwipeToDismissState extends State<ExpressiveSwipeToDismiss>
@@ -1857,6 +1994,33 @@ class ExpressiveSwipeActions extends StatefulWidget {
 
   @override
   State<ExpressiveSwipeActions> createState() => _ExpressiveSwipeActionsState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        IterableProperty<ExpressiveSwipeAction>(
+          'leading',
+          leading,
+          defaultValue: const <ExpressiveSwipeAction>[],
+        ),
+      )
+      ..add(
+        IterableProperty<ExpressiveSwipeAction>(
+          'trailing',
+          trailing,
+          defaultValue: const <ExpressiveSwipeAction>[],
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'allowsFullSwipe',
+          value: allowsFullSwipe,
+          ifTrue: 'allowsFullSwipe',
+        ),
+      );
+  }
 }
 
 class _ExpressiveSwipeActionsState extends State<ExpressiveSwipeActions>
@@ -2028,8 +2192,16 @@ class ExpressiveDisclosure extends StatefulWidget {
     this.enabled = true,
     this.contentPadding,
     this.style,
+    this.focusNode,
+    this.autofocus = false,
     super.key,
   });
+
+  /// The header's focus node; one is made when null.
+  final FocusNode? focusNode;
+
+  /// Whether the header takes focus when first built.
+  final bool autofocus;
 
   /// Stateful visual overrides for the header and expanded panel.
   final ExpressiveComponentThemeData? style;
@@ -2066,6 +2238,51 @@ class ExpressiveDisclosure extends StatefulWidget {
 
   @override
   State<ExpressiveDisclosure> createState() => _ExpressiveDisclosureState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool?>('expanded', expanded, defaultValue: null),
+      )
+      ..add(
+        FlagProperty(
+          'initiallyExpanded',
+          value: initiallyExpanded,
+          ifTrue: 'initiallyExpanded',
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>?>.has(
+          'onExpansionChanged',
+          onExpansionChanged,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry?>(
+          'contentPadding',
+          contentPadding,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _ExpressiveDisclosureState extends State<ExpressiveDisclosure> {
@@ -2120,6 +2337,8 @@ class _ExpressiveDisclosureState extends State<ExpressiveDisclosure> {
             trailing: _ExpandGlyph(expanded: expanded),
             expanded: expanded,
             enabled: widget.enabled,
+            focusNode: widget.focusNode,
+            autofocus: widget.autofocus,
             onTap: _toggle,
           ),
         ),
@@ -2154,10 +2373,13 @@ class _ExpressiveDisclosureState extends State<ExpressiveDisclosure> {
                 style: t.type
                     .of(ListTokens.itemSupportingTextFont)
                     .merge(
-                      t.listTileTheme.merge(widget.style).textStyle?.resolve({
-                        WidgetState.selected,
-                        if (!widget.enabled) WidgetState.disabled,
-                      }),
+                      t.listTileTheme
+                          .layeredUnder(widget.style)
+                          .textStyle
+                          ?.resolve({
+                            WidgetState.selected,
+                            if (!widget.enabled) WidgetState.disabled,
+                          }),
                     ),
                 child: widget.child,
               ),
@@ -2298,6 +2520,50 @@ class ExpressiveGrid extends StatelessWidget {
       itemHeight: itemHeight,
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('itemCount', itemCount))
+      ..add(
+        ObjectFlagProperty<IndexedWidgetBuilder>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(IntProperty('columns', columns, defaultValue: 2))
+      ..add(DoubleProperty('minItemWidth', minItemWidth, defaultValue: null))
+      ..add(
+        DoubleProperty('spacing', spacing, defaultValue: ExpressiveSpacing.s8),
+      )
+      ..add(
+        DoubleProperty('childAspectRatio', childAspectRatio, defaultValue: 1),
+      )
+      ..add(DoubleProperty('itemHeight', itemHeight, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry?>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('shrinkWrap', value: shrinkWrap, ifTrue: 'shrinkWrap'))
+      ..add(
+        DiagnosticsProperty<ScrollPhysics?>(
+          'physics',
+          physics,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// `GridCells.Fixed` / `GridCells.Adaptive`: equal columns, the adaptive

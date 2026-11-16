@@ -838,7 +838,7 @@ void main() {
       await tester.pumpWidget(
         host(
           // Wide enough that the test font keeps the error on one line.
-          (_) => SizedBox(
+          (_) => const SizedBox(
             width: 480,
             child: Held(initial: null, mode: ExpressiveDatePickerMode.input),
           ),

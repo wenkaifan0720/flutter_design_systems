@@ -42,7 +42,7 @@ library;
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show ValueListenable, mapEquals;
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show MaterialLocalizations, Theme;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart' show SchedulerBinding, SchedulerPhase;
@@ -233,6 +233,63 @@ class ExpressiveBottomSheet extends StatefulWidget {
 
   @override
   State<ExpressiveBottomSheet> createState() => _ExpressiveBottomSheetState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveSheetController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveSheetValue>(
+          'initialValue',
+          initialValue,
+          defaultValue: ExpressiveSheetValue.hidden,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'skipPartiallyExpanded',
+          value: skipPartiallyExpanded,
+          ifTrue: 'skipPartiallyExpanded',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'gesturesEnabled',
+          gesturesEnabled,
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback?>.has(
+          'onDismissRequest',
+          onDismissRequest,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<bool Function()?>.has('confirmHide', confirmHide),
+      )
+      ..add(
+        DiagnosticsProperty<ValueListenable<double>?>(
+          'predictiveBackProgress',
+          predictiveBackProgress,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _ExpressiveBottomSheetState extends State<ExpressiveBottomSheet>
@@ -1140,7 +1197,9 @@ class _ModalSheetRoute<T> extends PopupRoute<T> {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(_observer);
-    sheet.removeListener(_onSheet);
+    sheet
+      ..removeListener(_onSheet)
+      ..dispose();
     _scrim.dispose();
     _back.dispose();
     super.dispose();

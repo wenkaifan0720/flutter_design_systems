@@ -1,6 +1,7 @@
 /// The colour picker, painted on ui_core's `DesignColorPicker`.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -51,6 +52,19 @@ class ExpressiveColorPicker extends StatefulWidget {
 
   @override
   State<ExpressiveColorPicker> createState() => _ExpressiveColorPickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<Color>?>.has('onChanged', onChanged),
+      )
+      ..add(FlagProperty('showAlpha', value: showAlpha, ifTrue: 'showAlpha'))
+      ..add(DiagnosticsProperty<bool>('showHex', showHex, defaultValue: true))
+      ..add(DoubleProperty('areaHeight', areaHeight, defaultValue: 180));
+  }
 }
 
 class _ExpressiveColorPickerState extends State<ExpressiveColorPicker> {
@@ -100,7 +114,10 @@ class _ExpressiveColorPickerState extends State<ExpressiveColorPicker> {
           color: fill,
           contentColor: t.colors.onSurface,
           layers: false,
-          side: BorderSide(color: t.colors.surface, width: 2),
+          side: BorderSide(
+            color: t.colors.surface,
+            width: ExpressiveSpacing.s2,
+          ),
           child: DecoratedBox(
             decoration: ShapeDecoration(
               shape: t.shapes.full.copyWith(
@@ -158,18 +175,23 @@ class _ExpressiveColorPickerState extends State<ExpressiveColorPicker> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: <Color>[
-                      const Color(0xFFFFFFFF),
+                      // The HSV model's own ramps, not roles: no saturation
+                      // to the full hue, then no value (black) over it.
+                      const HSVColor.fromAHSV(1, 0, 0, 1).toColor(),
                       HSVColor.fromAHSV(1, area.color.hue, 1, 1).toColor(),
                     ],
                   ),
                 ),
               ),
-              const DecoratedBox(
+              DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: <Color>[Color(0x00000000), Color(0xFF000000)],
+                    colors: <Color>[
+                      const HSVColor.fromAHSV(0, 0, 0, 0).toColor(),
+                      const HSVColor.fromAHSV(1, 0, 0, 0).toColor(),
+                    ],
                   ),
                 ),
               ),

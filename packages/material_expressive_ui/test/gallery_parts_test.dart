@@ -181,11 +181,17 @@ void main() {
             final f = d.flagsCollection;
             // A node that steps up and down is adjustable: that is its role, as a page control's is. A node whose one
             // act is a long press with a tooltip is a tooltip's anchor (Compose's `TooltipBox` `onLongClick`), around
-            // the control it names, which has its own. A node that taps and dismisses is a modal barrier (Flutter's
-            // `ModalBarrier`, Compose's sheet `Scrim`): it closes the route it lies under, neither gives it a role,
-            // and its label says what it does.
+            // the control it names, which has its own; one whose long press says what it does is a context menu's
+            // anchor (Compose's `combinedClickable` `onLongClick` with its `onLongClickLabel`, no role either). A node
+            // that taps and dismisses is a modal barrier (Flutter's `ModalBarrier`, Compose's sheet `Scrim`): it
+            // closes the route it lies under, neither gives it a role, and its label says what it does.
             final anchor =
-                d.tooltip.isNotEmpty &&
+                (d.tooltip.isNotEmpty ||
+                    (d.customSemanticsActionIds ?? const <int>[]).any((id) {
+                      final says = CustomSemanticsAction.getAction(id);
+                      return says?.action == SemanticsAction.longPress &&
+                          (says?.hint ?? '').isNotEmpty;
+                    })) &&
                 _acts.where(d.hasAction).toSet().difference({
                   SemanticsAction.longPress,
                 }).isEmpty;

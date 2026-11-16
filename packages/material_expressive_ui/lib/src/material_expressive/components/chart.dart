@@ -13,7 +13,7 @@ library;
 import 'dart:async' show Timer;
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/widgets.dart';
 
@@ -26,6 +26,9 @@ import '../elevation.dart';
 import '../spacing.dart';
 import '../strings.dart';
 import '../theme.dart';
+import '../internal/tokens/behavior.g.dart';
+import '../internal/tokens/shape_tokens.g.dart';
+import '../internal/style_layers.dart';
 import 'feedback.dart' show ExpressiveSkeleton;
 
 /// One point of a chart: its [label] on the axis and its [value].
@@ -199,7 +202,9 @@ final class ExpressiveChartDomain {
   /// The values' range, padded each side by [padding] of it (a flat series
   /// gets ±1), snapped outward to round steps.
   const ExpressiveChartDomain.data({this.padding = 0.1, this.step})
-    : _kind = _DomainKind.data,
+    : assert(padding >= 0, 'padding is a share of the range, not negative'),
+      assert(step == null || step > 0, 'a step is positive'),
+      _kind = _DomainKind.data,
       min = null,
       max = null;
 
@@ -209,7 +214,9 @@ final class ExpressiveChartDomain {
     double this.min,
     double this.max, {
     this.step,
-  }) : _kind = _DomainKind.fixed,
+  }) : assert(min <= max, 'min must not exceed max'),
+       assert(step == null || step > 0, 'a step is positive'),
+       _kind = _DomainKind.fixed,
        padding = 0;
 
   final _DomainKind _kind;
@@ -714,7 +721,7 @@ class ExpressiveChart extends StatelessWidget {
   Widget _buildDonut(BuildContext context) {
     final theme = context.expressiveTheme;
     final colors = theme.colors;
-    final visual = theme.chartTheme.merge(style);
+    final visual = theme.chartTheme.layeredUnder(style);
     const states = <WidgetState>{};
     final typography = visual.textStyle?.resolve(states);
     final parts = _partColors(theme, points);
@@ -813,7 +820,10 @@ class ExpressiveChart extends StatelessWidget {
     componentStyle: context.expressiveTheme.chartTheme,
     style: style,
     clipBehavior:
-        context.expressiveTheme.chartTheme.merge(style).shape?.resolve({}) !=
+        context.expressiveTheme.chartTheme
+                .layeredUnder(style)
+                .shape
+                ?.resolve({}) !=
             null
         ? Clip.antiAlias
         : Clip.none,
@@ -826,7 +836,7 @@ class ExpressiveChart extends StatelessWidget {
   Widget _buildPlain(BuildContext context) {
     final theme = context.expressiveTheme;
     final colors = theme.colors;
-    final visual = theme.chartTheme.merge(style);
+    final visual = theme.chartTheme.layeredUnder(style);
     const states = <WidgetState>{};
     final ink = visual.foregroundColor?.resolve(states);
     final typography = visual.textStyle?.resolve(states);
@@ -955,7 +965,7 @@ class ExpressiveChart extends StatelessWidget {
   Widget _buildScaled(BuildContext context) {
     final theme = context.expressiveTheme;
     final colors = theme.colors;
-    final visual = theme.chartTheme.merge(style);
+    final visual = theme.chartTheme.layeredUnder(style);
     const states = <WidgetState>{};
     final ink = visual.foregroundColor?.resolve(states);
     final typography = visual.textStyle?.resolve(states);
@@ -1108,6 +1118,80 @@ class ExpressiveChart extends StatelessWidget {
       label: _semantics(axis),
       child: ExcludeSemantics(child: _frame(context, body)),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'))
+      ..add(FlagProperty('tooltip', value: tooltip, ifTrue: 'tooltip'))
+      ..add(StringProperty('centerValue', centerValue, defaultValue: null))
+      ..add(StringProperty('centerLabel', centerLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<ExpressiveChartPoint>('points', points))
+      ..add(IntProperty('highlight', highlight, defaultValue: null))
+      ..add(DoubleProperty('aspectRatio', aspectRatio, defaultValue: 2))
+      ..add(EnumProperty<ExpressiveChartType>('kind', kind))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveChartDomain>(
+          'domain',
+          domain,
+          defaultValue: const ExpressiveChartDomain.zero(),
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveChartLabels>(
+          'labels',
+          labels,
+          defaultValue: ExpressiveChartLabels.all,
+        ),
+      )
+      ..add(DoubleProperty('span', span, defaultValue: null))
+      ..add(
+        IterableProperty<ExpressiveChartTick>(
+          'ticks',
+          ticks,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('emptyLabel', emptyLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveChartSeries?>(
+          'first',
+          first,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveChartSeries?>(
+          'second',
+          second,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveChartBand?>(
+          'band',
+          band,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveChartTarget?>(
+          'target',
+          target,
+          defaultValue: null,
+        ),
+      )
+      ..add(ColorProperty('color', color, defaultValue: null));
   }
 }
 
@@ -1281,7 +1365,12 @@ class _PointTooltipState extends State<_PointTooltip> {
             onPointerMove: (e) => _show(e.localPosition, width),
             onPointerUp: (e) => e.kind == PointerDeviceKind.mouse
                 ? null
-                : _leave(after: const Duration(milliseconds: 1500)),
+                : _leave(
+                    // As a tooltip lingers after a touch lifts.
+                    after: const Duration(
+                      milliseconds: TooltipBehavior.showDuration,
+                    ),
+                  ),
             onPointerCancel: (_) => _leave(),
             child: Stack(
               clipBehavior: Clip.none,
@@ -1552,7 +1641,7 @@ const double _seriesStroke = ExpressiveSpacing.s4;
 
 /// A band's corner: Material's small step, enough to soften the band
 /// without rounding off the range it marks at the plot's ends.
-const double _bandCorner = 8;
+const double _bandCorner = ShapeTokens.cornerValueSmall;
 
 /// A band's fill when it names none: the primary container, half
 /// strength, so the series' own colours stay legible on it.
@@ -1686,16 +1775,33 @@ class _ScaledChartPainter extends CustomPainter {
   final TextScaler textScaler;
   final TextDirection textDirection;
 
-  TextPainter _label(String text, {double? maxWidth, TextStyle? style}) =>
-      TextPainter(
-        text: TextSpan(text: text, style: style ?? labelStyle),
-        textAlign: TextAlign.center,
-        textDirection: textDirection,
-        textScaler: textScaler,
-      )..layout(maxWidth: maxWidth ?? double.infinity);
+  /// The labels one paint laid out, disposed when it is done.
+  final List<TextPainter> _made = <TextPainter>[];
+
+  TextPainter _label(String text, {double? maxWidth, TextStyle? style}) {
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style ?? labelStyle),
+      textAlign: TextAlign.center,
+      textDirection: textDirection,
+      textScaler: textScaler,
+    )..layout(maxWidth: maxWidth ?? double.infinity);
+    _made.add(painter);
+    return painter;
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
+    try {
+      _paint(canvas, size);
+    } finally {
+      for (final painter in _made) {
+        painter.dispose();
+      }
+      _made.clear();
+    }
+  }
+
+  void _paint(Canvas canvas, Size size) {
     final sparkline = labels == ExpressiveChartLabels.none;
     final plain = labels == ExpressiveChartLabels.plain;
     final inset = _pointRadius + _pointGap;
@@ -2190,6 +2296,62 @@ class ExpressiveLineChart extends StatelessWidget {
     style: style,
     loading: loading,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveChartPoint>('points', points))
+      ..add(IntProperty('highlight', highlight, defaultValue: null))
+      ..add(DoubleProperty('aspectRatio', aspectRatio, defaultValue: 2))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveChartDomain>(
+          'domain',
+          domain,
+          defaultValue: const ExpressiveChartDomain.data(),
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveChartLabels>(
+          'labels',
+          labels,
+          defaultValue: ExpressiveChartLabels.sparse,
+        ),
+      )
+      ..add(DoubleProperty('span', span, defaultValue: null))
+      ..add(
+        IterableProperty<ExpressiveChartTick>(
+          'ticks',
+          ticks,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('emptyLabel', emptyLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveChartBand?>(
+          'band',
+          band,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveChartTarget?>(
+          'target',
+          target,
+          defaultValue: null,
+        ),
+      )
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'));
+  }
 }
 
 /// A count over time as a line over a tonal area from zero: a `primary`
@@ -2250,6 +2412,32 @@ class ExpressiveAreaChart extends StatelessWidget {
     loading: loading,
     tooltip: tooltip,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveChartPoint>('points', points))
+      ..add(IntProperty('highlight', highlight, defaultValue: null))
+      ..add(DoubleProperty('aspectRatio', aspectRatio, defaultValue: 2))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveChartTarget?>(
+          'target',
+          target,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'))
+      ..add(FlagProperty('tooltip', value: tooltip, ifTrue: 'tooltip'));
+  }
 }
 
 /// Counts as rounded bars, one per point: `outline` bars, the [highlight]
@@ -2309,6 +2497,32 @@ class ExpressiveBarChart extends StatelessWidget {
     loading: loading,
     tooltip: tooltip,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveChartPoint>('points', points))
+      ..add(IntProperty('highlight', highlight, defaultValue: null))
+      ..add(DoubleProperty('aspectRatio', aspectRatio, defaultValue: 2))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveChartTarget?>(
+          'target',
+          target,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'))
+      ..add(FlagProperty('tooltip', value: tooltip, ifTrue: 'tooltip'));
+  }
 }
 
 /// Parts of a whole as a donut: each part an arc in its own colour
@@ -2364,6 +2578,25 @@ class ExpressivePieChart extends StatelessWidget {
     style: style,
     loading: loading,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveChartPoint>('points', points))
+      ..add(StringProperty('centerValue', centerValue, defaultValue: null))
+      ..add(StringProperty('centerLabel', centerLabel, defaultValue: null))
+      ..add(DoubleProperty('aspectRatio', aspectRatio, defaultValue: 1))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('loading', value: loading, ifTrue: 'loading'));
+  }
 }
 
 /// A trend at a glance, inline: a `primary` line on an axis scaled to its
@@ -2405,4 +2638,20 @@ class ExpressiveSparkline extends StatelessWidget {
     color: color,
     style: style,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveChartPoint>('points', points))
+      ..add(DoubleProperty('aspectRatio', aspectRatio, defaultValue: 88 / 36))
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }

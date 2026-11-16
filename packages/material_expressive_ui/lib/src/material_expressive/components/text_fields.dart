@@ -25,6 +25,7 @@ library;
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show AdaptiveTextSelectionToolbar, Material, MaterialType, TextField;
 import 'package:flutter/rendering.dart';
@@ -34,17 +35,20 @@ import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../icons.dart';
+import '../internal/field_node.dart';
 import '../internal/cap_label.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../internal/tokens/filled_text_field_tokens.g.dart';
 import '../internal/tokens/keys.g.dart';
 import '../internal/tokens/outlined_text_field_tokens.g.dart';
 import '../internal/tokens/small_icon_button_tokens.g.dart';
+import '../internal/word_scope.dart';
 import '../motion.dart';
 import '../spacing.dart';
 import '../states.dart';
 import '../strings.dart';
 import '../theme.dart';
+import '../internal/style_layers.dart';
 
 /// A text field's container: Compose's two text fields.
 enum ExpressiveTextFieldKind {
@@ -276,6 +280,124 @@ class ExpressiveTextField extends StatefulWidget {
 
   @override
   State<ExpressiveTextField> createState() => _ExpressiveTextFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveTextFieldKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveTextFieldKind.filled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('rounded', value: rounded, ifTrue: 'rounded'))
+      ..add(FlagProperty('tonal', value: tonal, ifTrue: 'tonal'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveLabelPosition>(
+          'labelPosition',
+          labelPosition,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'alwaysMinimizeLabel',
+          value: alwaysMinimizeLabel,
+          ifTrue: 'alwaysMinimizeLabel',
+        ),
+      )
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('prefix', prefix, defaultValue: null))
+      ..add(StringProperty('suffix', suffix, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(IntProperty('maxLength', maxLength, defaultValue: null))
+      ..add(
+        FlagProperty('obscureText', value: obscureText, ifTrue: 'obscureText'),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('revealable', revealable, defaultValue: true),
+      )
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<TextInputType?>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputAction?>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextCapitalization>(
+          'textCapitalization',
+          textCapitalization,
+          defaultValue: TextCapitalization.none,
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback?>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(ObjectFlagProperty<GestureTapCallback?>.has('onTap', onTap))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 /// A multi-line text field that grows with its content (Compose's
@@ -435,6 +557,104 @@ class ExpressiveTextArea extends StatelessWidget {
     onTap: onTap,
     semanticLabel: semanticLabel,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveTextFieldKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveTextFieldKind.filled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('rounded', value: rounded, ifTrue: 'rounded'))
+      ..add(FlagProperty('tonal', value: tonal, ifTrue: 'tonal'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveLabelPosition>(
+          'labelPosition',
+          labelPosition,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'alwaysMinimizeLabel',
+          value: alwaysMinimizeLabel,
+          ifTrue: 'alwaysMinimizeLabel',
+        ),
+      )
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(IntProperty('maxLength', maxLength, defaultValue: null))
+      ..add(IntProperty('minLines', minLines, defaultValue: 3))
+      ..add(IntProperty('maxLines', maxLines, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<TextInputAction?>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextCapitalization>(
+          'textCapitalization',
+          textCapitalization,
+          defaultValue: TextCapitalization.sentences,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback?>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(ObjectFlagProperty<GestureTapCallback?>.has('onTap', onTap))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 /// The message under an input that says what is wrong (the error
@@ -477,6 +697,14 @@ class ExpressiveFieldError extends StatelessWidget {
             )
           : text,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(DiagnosticsProperty<bool>('inset', inset, defaultValue: true));
   }
 }
 
@@ -584,6 +812,91 @@ class ExpressiveInputOtp extends StatefulWidget {
 
   @override
   State<ExpressiveInputOtp> createState() => _ExpressiveCodeInputState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('length', length, defaultValue: 6))
+      ..add(
+        DiagnosticsProperty<TextEditingController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveTextFieldKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveTextFieldKind.outlined,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('rounded', value: rounded, ifTrue: 'rounded'))
+      ..add(DiagnosticsProperty<bool>('numeric', numeric, defaultValue: true))
+      ..add(FlagProperty('obscure', value: obscure, ifTrue: 'obscure'))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onCompleted',
+          onCompleted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback?>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: TextInputAction.done,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: const <TextInputFormatter>[],
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: const <String>[AutofillHints.oneTimeCode],
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 // --- Colours -----------------------------------------------------------------
@@ -1151,7 +1464,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
       if (focused) WidgetState.focused,
       if (_hovered) WidgetState.hovered,
     };
-    final styled = theme.textFieldTheme.merge(widget.style);
+    final styled = theme.textFieldTheme.layeredUnder(widget.style);
     final colors = _FieldColors.of(
       theme.copyWith(textFieldTheme: styled),
       widget.kind,
@@ -1311,6 +1624,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
       child: TextField(
         controller: _controller,
         focusNode: _focusNode,
+        contextMenuBuilder: expressiveContextMenu,
         decoration: null,
         style: bodyLarge.copyWith(
           color: shown ? textColour.withValues(alpha: 0) : textColour,
@@ -1370,6 +1684,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
     }
 
     final input = _InputNode(
+      expanded: ExpressiveFieldNodeHost.expandedOf(context),
       label: widget.semanticLabel ?? widget.label ?? widget.hintText,
       invalid: isError,
       textDirection: Directionality.of(context),
@@ -1588,35 +1903,50 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
 /// field is one node over its decorated box (`BasicTextField`'s
 /// `decorationBox`), so assistive technology and touch-target checks read
 /// the container, not the line of text. It carries the field's label and
-/// validity.
+/// validity, and under a select or a combobox whether its menu is open.
 class _InputNode extends SingleChildRenderObjectWidget {
   const _InputNode({
+    required this.expanded,
     required this.label,
     required this.invalid,
     required this.textDirection,
     required super.child,
   });
 
+  final bool? expanded;
   final String? label;
   final bool invalid;
   final TextDirection textDirection;
 
   @override
   _RenderInputNode createRenderObject(BuildContext context) =>
-      _RenderInputNode(label, invalid, textDirection);
+      _RenderInputNode(expanded, label, invalid, textDirection);
 
   @override
   void updateRenderObject(
     BuildContext context,
     _RenderInputNode renderObject,
   ) => renderObject
+    ..expanded = expanded
     ..label = label
     ..invalid = invalid
     ..textDirection = textDirection;
 }
 
 class _RenderInputNode extends RenderProxyBox {
-  _RenderInputNode(this._label, this._invalid, this._textDirection);
+  _RenderInputNode(
+    this._expanded,
+    this._label,
+    this._invalid,
+    this._textDirection,
+  );
+
+  bool? _expanded;
+  set expanded(bool? value) {
+    if (value == _expanded) return;
+    _expanded = value;
+    markNeedsSemanticsUpdate();
+  }
 
   String? _label;
   set label(String? value) {
@@ -1654,9 +1984,11 @@ class _RenderInputNode extends RenderProxyBox {
 
   @override
   void describeSemanticsConfiguration(SemanticsConfiguration config) {
-    // Not a boundary: where a control around the field merges it (a
-    // select's), the field's words stay that control's.
+    // Its own node, over the container: unbounded, the field would join
+    // whatever node is nearest above it (a list row's, its words and all).
     super.describeSemanticsConfiguration(config);
+    config.isSemanticBoundary = true;
+    if (_expanded != null) config.isExpanded = _expanded;
     config.validationResult = _invalid
         ? SemanticsValidationResult.invalid
         : SemanticsValidationResult.none;
@@ -2361,8 +2693,8 @@ class _ExpressiveCodeInputState extends State<ExpressiveInputOtp> {
   Widget build(BuildContext context) {
     final theme = context.expressiveTheme;
     final styled = theme.textFieldTheme
-        .merge(theme.inputOtpTheme)
-        .merge(widget.style);
+        .layeredUnder(theme.inputOtpTheme)
+        .layeredUnder(widget.style);
     final colors = _FieldColors.of(
       theme.copyWith(textFieldTheme: styled),
       widget.kind,
@@ -2478,11 +2810,13 @@ class _ExpressiveCodeInputState extends State<ExpressiveInputOtp> {
           ExpressiveLocalizations.of(context).codeInput(widget.length),
       onChanged: widget.onChanged,
       onCompleted: widget.onCompleted,
-      contextMenuBuilder: (context, anchors, items) =>
-          AdaptiveTextSelectionToolbar.buttonItems(
-            anchors: anchors,
-            buttonItems: items,
-          ),
+      contextMenuBuilder: (context, anchors, items) => withPlatformWords(
+        context,
+        AdaptiveTextSelectionToolbar.buttonItems(
+          anchors: anchors,
+          buttonItems: items,
+        ),
+      ),
       slotBuilder: (context, slot) => cell(slot),
       // A code reads left to right in every language (the field lays its
       // cells out left to right under a right-to-left page too). The cells
@@ -2690,5 +3024,62 @@ class ExpressivePasswordField extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveTextFieldKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveTextFieldKind.filled,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('hideOnBlur', value: hideOnBlur, ifTrue: 'hideOnBlur'))
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: const <String>[AutofillHints.password],
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputAction?>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      );
   }
 }

@@ -10,10 +10,13 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
+  # The gallery is an app on Flutter's Material: its delegates for the 30 locales (the README's line).
+  flutter_localizations:
+    sdk: flutter
   material_expressive_ui:
     path: ../
   # An example imports the foundation itself too (its alignment sheet, say).
-  ui_core: ^0.1.0
+  ui_core: ^0.2.0
 
 
 dev_dependencies:

@@ -48,7 +48,7 @@ List<ExpressiveNavItem> _items(int count, {bool badges = false}) => [
       badge: !badges
           ? null
           : i == 1
-          ? ExpressiveBadge.count(3)
+          ? const ExpressiveBadge.count(3)
           : i == 3
           ? const ExpressiveBadge()
           : null,
@@ -100,19 +100,19 @@ List<ExpressiveTab> _scrolling() => [
   for (final label in _menu) ExpressiveTab(label: label),
 ];
 
-Widget _badges() => Row(
+Widget _badges() => const Row(
   mainAxisSize: MainAxisSize.min,
   // Compose's Row aligns its children to the top.
   crossAxisAlignment: CrossAxisAlignment.start,
   spacing: ExpressiveSpacing.s24,
   children: [
     ExpressiveBadgeAnchor(
-      badge: const OracleTag('badge-dot', child: ExpressiveBadge()),
-      child: const SizedBox.square(dimension: 24),
+      badge: OracleTag('badge-dot', child: ExpressiveBadge()),
+      child: SizedBox.square(dimension: 24),
     ),
     ExpressiveBadgeAnchor(
       badge: OracleTag('badge-count', child: ExpressiveBadge.count(3)),
-      child: const SizedBox.square(dimension: 24),
+      child: SizedBox.square(dimension: 24),
     ),
     OracleTag('badge-max', child: ExpressiveBadge.count(1204)),
   ],

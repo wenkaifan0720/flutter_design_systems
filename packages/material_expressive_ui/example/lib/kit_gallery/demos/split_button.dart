@@ -17,6 +17,12 @@ Widget kitSplitButtonDemo(Brightness brightness) => kitScreen(
 
 void _noop() {}
 
+/// Every Share's menu: no chevron turns with nothing behind it.
+final Widget Function(BuildContext, VoidCallback) _share = _menu(const <String>[
+  'Copy link',
+  'Share to…',
+]);
+
 /// [children] in a row that wraps, 8dp apart.
 Widget _wrap(List<Widget> children) => Wrap(
   spacing: kitGap,
@@ -41,27 +47,16 @@ class _Caption extends StatelessWidget {
   }
 }
 
-/// The demo's stand-in menu until the menus family lands: [items] on a
-/// lifted container, each closing the menu.
+/// The menu behind the chevron: an Expressive menu of [items], each
+/// closing it (one lit row, the pointer's or the keys').
 Widget Function(BuildContext, VoidCallback) _menu(List<String> items) =>
-    (context, close) {
-      final t = context.expressiveTheme;
-      return IntrinsicWidth(
-        child: ExpressiveSurface(
-          shape: t.shapes.large,
-          color: t.colors.surfaceContainer,
-          contentColor: t.colors.onSurface,
-          shadowElevation: ExpressiveElevationLevel.level2,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              for (final item in items) KitAction(item, onTap: close),
-            ],
-          ),
-        ),
-      );
-    };
+    (context, close) => ExpressiveMenuSurface(
+      groups: <ExpressiveMenuGroup>[
+        ExpressiveMenuGroup(<ExpressiveMenuEntry>[
+          for (final item in items) ExpressiveMenuItem(item, onPressed: close),
+        ]),
+      ],
+    );
 
 class _Styles extends StatelessWidget {
   const _Styles();
@@ -119,23 +114,29 @@ class _Sizes extends StatelessWidget {
     // XS stands as tall as S.
     'Sizes · XS and S 40 · M 56',
     children: <Widget>[
-      _wrap(const <Widget>[
+      _wrap(<Widget>[
         ExpressiveSplitButton(
           'Share',
           size: ExpressiveSplitButtonSize.extraSmall,
           kind: ExpressiveSplitButtonKind.tonal,
           onPressed: _noop,
+          menu: _share,
+          menuLabel: 'Share options',
         ),
         ExpressiveSplitButton(
           'Share',
           kind: ExpressiveSplitButtonKind.tonal,
           onPressed: _noop,
+          menu: _share,
+          menuLabel: 'Share options',
         ),
         ExpressiveSplitButton(
           'Share',
           size: ExpressiveSplitButtonSize.medium,
           kind: ExpressiveSplitButtonKind.tonal,
           onPressed: _noop,
+          menu: _share,
+          menuLabel: 'Share options',
         ),
       ]),
     ],
@@ -149,7 +150,7 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) => kitSection(
     'Hero sizes · L 96 · XL 136',
-    children: const <Widget>[
+    children: <Widget>[
       ExpressiveHeroMoment(
         label: 'publish',
         child: Column(
@@ -160,12 +161,16 @@ class _Hero extends StatelessWidget {
               'Post',
               size: ExpressiveSplitButtonSize.large,
               onPressed: _noop,
+              menu: _menu(const <String>['Schedule post', 'Save as draft']),
+              menuLabel: 'Post options',
             ),
-            SizedBox(height: kitGap),
+            const SizedBox(height: kitGap),
             ExpressiveSplitButton(
               'Go',
               size: ExpressiveSplitButtonSize.extraLarge,
               onPressed: _noop,
+              menu: _menu(const <String>['Go later', 'Go with a friend']),
+              menuLabel: 'Go options',
             ),
           ],
         ),

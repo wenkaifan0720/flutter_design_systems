@@ -17,6 +17,7 @@
 /// list section or field.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -30,6 +31,7 @@ import '../internal/tokens/outlined_card_tokens.g.dart';
 import '../motion.dart';
 import '../states.dart';
 import '../theme.dart';
+import '../internal/style_layers.dart';
 
 /// A card's three styles (Compose's `ElevatedCard`, `Card`, `OutlinedCard`).
 enum ExpressiveCardVariant {
@@ -47,7 +49,7 @@ enum ExpressiveCardVariant {
 /// A card's colours (Compose's `CardColors`, plus the outlined card's
 /// stroke from `CardDefaults.outlinedCardBorder`).
 @immutable
-class ExpressiveCardColors {
+class ExpressiveCardColors with Diagnosticable {
   /// A card's colours for its container, content and outline, enabled and disabled.
   const ExpressiveCardColors({
     required this.container,
@@ -151,6 +153,20 @@ class ExpressiveCardColors {
     outline,
     disabledOutline,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('container', container))
+      ..add(ColorProperty('content', content))
+      ..add(ColorProperty('disabledContainer', disabledContainer))
+      ..add(ColorProperty('disabledContent', disabledContent))
+      ..add(ColorProperty('outline', outline, defaultValue: null))
+      ..add(
+        ColorProperty('disabledOutline', disabledOutline, defaultValue: null),
+      );
+  }
 }
 
 /// A variant's shadow elevation by interaction (Compose's
@@ -308,7 +324,7 @@ class ExpressiveCard extends StatelessWidget {
         ? BorderSide.none
         : BorderSide(color: outline, width: OutlinedCardTokens.outlineWidth);
     final elevation = expressiveCardElevation(variant);
-    final resolved = theme.cardTheme.merge(style);
+    final resolved = theme.cardTheme.layeredUnder(style);
     final restingStates = expressiveComponentStates(enabled: active);
     final customShape = resolved.shape?.resolve(restingStates);
     final shownShape = customShape ?? shape;
@@ -413,6 +429,44 @@ class ExpressiveCard extends StatelessWidget {
       ]);
     }
     return true;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveCardVariant>(
+          'variant',
+          variant,
+          defaultValue: ExpressiveCardVariant.filled,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onLongPress', onLongPress))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry?>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(FlagProperty('dragged', value: dragged, ifTrue: 'dragged'))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      );
   }
 }
 

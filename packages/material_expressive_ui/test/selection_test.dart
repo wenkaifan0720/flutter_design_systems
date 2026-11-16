@@ -5,6 +5,9 @@
 /// (foundation_controls_test.dart, foundation_test.dart) to Expressive.
 library;
 
+// Reads the checkbox's private painter, which no public type describes.
+// ignore_for_file: avoid_dynamic_calls
+
 import 'dart:ui' show CheckedState, SemanticsAction, Tristate;
 
 import 'package:material_ui/material_ui.dart'
@@ -73,7 +76,7 @@ Rect _track(WidgetTester tester) => tester.getRect(
       .first,
 );
 
-const _zero = ExpressiveCornerBorder.all(ExpressiveCornerSize.dp(0));
+const _zero = ExpressiveCornerBorder.all(ExpressiveCornerSize.zero);
 
 /// An app's square shape scale: every step 0.
 const _squareShapes = ExpressiveShapes(
@@ -271,7 +274,7 @@ void main() {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              ExpressiveCheckbox(value: false, onChanged: null),
+              const ExpressiveCheckbox(value: false, onChanged: null),
               ExpressiveCheckbox(
                 value: true,
                 isError: true,
@@ -725,11 +728,11 @@ void main() {
       var changes = 0;
       await tester.pumpWidget(
         _app(
-          Column(
+          const Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               ExpressiveSwitch(value: false, onChanged: null),
-              const ExpressiveSwitch(value: true),
+              ExpressiveSwitch(value: true),
             ],
           ),
         ),
@@ -758,18 +761,18 @@ void main() {
     final semantics = tester.ensureSemantics();
     await tester.pumpWidget(
       _app(
-        SizedBox(
+        const SizedBox(
           width: 360,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const ExpressiveCheckbox(value: true, semanticLabel: 'Box'),
-              const ExpressiveRadio(selected: true, semanticLabel: 'Ring'),
-              const ExpressiveSwitch(value: true, semanticLabel: 'Toggle'),
-              const ExpressiveCheckboxRow(label: 'Receipts', value: true),
-              const ExpressiveSwitchRow(label: 'Alerts', value: false),
-              const ExpressiveRadioGroup<String>(
+              ExpressiveCheckbox(value: true, semanticLabel: 'Box'),
+              ExpressiveRadio(selected: true, semanticLabel: 'Ring'),
+              ExpressiveSwitch(value: true, semanticLabel: 'Toggle'),
+              ExpressiveCheckboxRow(label: 'Receipts', value: true),
+              ExpressiveSwitchRow(label: 'Alerts', value: false),
+              ExpressiveRadioGroup<String>(
                 value: 'a',
                 options: <ExpressiveRadioOption<String>>[
                   ExpressiveRadioOption(value: 'a', label: 'Monthly'),

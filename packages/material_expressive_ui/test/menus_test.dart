@@ -693,8 +693,11 @@ void main() {
     final anchor = tester.getRect(find.byType(ExpressiveMenu));
     await tester.tap(find.byType(ExpressiveMenu));
     await tester.pumpAndSettle();
-    final scroller = tester.getRect(
-      find.ancestor(of: menu, matching: find.byType(SingleChildScrollView)),
+    // The menu, its own list scrolling inside it.
+    final scroller = tester.getRect(menu);
+    expect(
+      find.descendant(of: menu, matching: find.byType(SingleChildScrollView)),
+      findsOneWidget,
     );
     expect(scroller.width, anchor.width);
     expect(scroller.left, anchor.left);

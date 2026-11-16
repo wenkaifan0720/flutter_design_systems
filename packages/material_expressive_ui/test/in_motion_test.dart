@@ -1,6 +1,7 @@
 // design6 O: parts looked at mid-move, not only at rest. Each test drives the
 // gesture (a drag held part-way, a pointer resting on a day, an animation
 // pumped to half its duration) and reads what is on screen then.
+import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -211,14 +212,16 @@ void main() {
       tester.view.physicalSize = const Size(390, 844);
       addTearDown(tester.view.reset);
       await tester.pumpWidget(host(const SizedBox.expand()));
-      showExpressiveBottomSheet<void>(
-        page,
-        builder: (context) => Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            for (var i = 1; i <= 4; i++)
-              ExpressiveListTile(title: Text('Sheet row $i')),
-          ],
+      unawaited(
+        showExpressiveBottomSheet<void>(
+          page,
+          builder: (context) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              for (var i = 1; i <= 4; i++)
+                ExpressiveListTile(title: Text('Sheet row $i')),
+            ],
+          ),
         ),
       );
       await through(tester, 'opening');
@@ -243,13 +246,15 @@ void main() {
       tester.view.physicalSize = const Size(390, 844);
       addTearDown(tester.view.reset);
       await tester.pumpWidget(host(const SizedBox.expand()));
-      showExpressiveDialog<void>(
-        context: page,
-        builder: (context) => const Center(
-          child: SizedBox(
-            width: 280,
-            height: 160,
-            child: ColoredBox(color: _slide),
+      unawaited(
+        showExpressiveDialog<void>(
+          context: page,
+          builder: (context) => const Center(
+            child: SizedBox(
+              width: 280,
+              height: 160,
+              child: ColoredBox(color: _slide),
+            ),
           ),
         ),
       );
@@ -258,13 +263,15 @@ void main() {
       Navigator.of(page).pop();
       await through(tester, 'dialog closing');
       await tester.pumpAndSettle();
-      showExpressiveMenu(
-        page,
-        anchor: const Rect.fromLTWH(24, 24, 120, 40),
-        entries: <ExpressiveMenuEntry>[
-          for (final label in const ['Edit', 'Share', 'Delete'])
-            ExpressiveMenuItem(label, onPressed: () {}),
-        ],
+      unawaited(
+        showExpressiveMenu(
+          page,
+          anchor: const Rect.fromLTWH(24, 24, 120, 40),
+          entries: <ExpressiveMenuEntry>[
+            for (final label in const ['Edit', 'Share', 'Delete'])
+              ExpressiveMenuItem(label, onPressed: () {}),
+          ],
+        ),
       );
       await through(tester, 'menu opening');
       await tester.pumpAndSettle();

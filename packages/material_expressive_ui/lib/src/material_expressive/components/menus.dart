@@ -33,9 +33,13 @@
 /// theme when the app is not the root.
 library;
 
+import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show ValueListenable, clampDouble;
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show GestureBinding;
+// Material's words where ui_core has none: a popup menu's name, which an app
+// without Material's localizations goes without.
 import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -65,6 +69,7 @@ import '../internal/state_face.dart';
 import '../theme.dart';
 import 'hero.dart';
 import 'overlays.dart';
+import '../internal/style_layers.dart';
 import 'chips.dart' show ExpressiveChip;
 import 'select.dart' show ExpressiveSelectOption;
 
@@ -332,29 +337,59 @@ class ExpressiveMenuSurface extends StatelessWidget {
       for (final group in groups)
         if (group.entries.isNotEmpty || group.label != null) group,
     ];
-    return ExpressiveTheme(
+    Widget menu = ExpressiveTheme(
       data: context.expressiveTheme.copyWith(
-        menuTheme: context.expressiveTheme.menuTheme.merge(style),
+        menuTheme: context.expressiveTheme.menuTheme.layeredUnder(style),
       ),
       child: IntrinsicWidth(
-        child: SingleChildScrollView(
-          primary: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: SegmentedMenuTokens.segmentedGap,
-            children: <Widget>[
-              for (var i = 0; i < visible.length; i++)
-                _MenuGroup(
-                  group: visible[i],
-                  shapes: _groupShapes(context, i, visible.length),
-                  vibrant: vibrant,
+        // One group scrolls its items inside its own padding, its container
+        // standing still round them; several scroll together.
+        child: visible.length == 1
+            ? _MenuGroup(
+                group: visible.single,
+                shapes: _groupShapes(context, 0, 1),
+                vibrant: vibrant,
+                scrolls: true,
+              )
+            : SingleChildScrollView(
+                primary: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: SegmentedMenuTokens.segmentedGap,
+                  children: <Widget>[
+                    for (var i = 0; i < visible.length; i++)
+                      _MenuGroup(
+                        group: visible[i],
+                        shapes: _groupShapes(context, i, visible.length),
+                        vibrant: vibrant,
+                      ),
+                  ],
                 ),
-            ],
-          ),
-        ),
+              ),
       ),
     );
+    // Laid out on a page: one lit row of its own, the pointer's under the
+    // pointer (it takes no focus from the page), else the keys'.
+    if (_LeadScope.read(context) == null) {
+      menu = _LeadHost(initial: _Lead.keys, followsPointer: false, child: menu);
+    }
+    return menu;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<ExpressiveMenuGroup>('groups', groups))
+      ..add(FlagProperty('vibrant', value: vibrant, ifTrue: 'vibrant'));
   }
 }
 
@@ -425,11 +460,16 @@ class _MenuGroup extends StatefulWidget {
     required this.group,
     required this.shapes,
     required this.vibrant,
+    this.scrolls = false,
   });
 
   final ExpressiveMenuGroup group;
   final ({ExpressiveCornerBorder rest, ExpressiveCornerBorder inactive}) shapes;
   final bool vibrant;
+
+  /// Whether its items scroll inside its padding when its height is bounded
+  /// (a menu of one group).
+  final bool scrolls;
 
   @override
   State<_MenuGroup> createState() => _MenuGroupState();
@@ -471,40 +511,52 @@ class _MenuGroupState extends State<_MenuGroup> {
         builder: (context, shape, _) => ExpressiveSurface(
           componentStyle: t.menuTheme,
           states: {if (_hovered) WidgetState.hovered},
-          padding: const EdgeInsets.symmetric(
-            vertical: MenuBehavior.groupVerticalPadding,
-          ),
           shape: shape,
           color: container,
           shadowElevation: MenuTokens.containerElevation,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              if (label != null)
-                _GroupLabel(
-                  label,
-                  vibrant: widget.vibrant,
-                  states: {if (_hovered) WidgetState.hovered},
-                ),
-              for (final entry in entries)
-                if (entry is ExpressiveMenuDivider)
-                  const _MenuDivider()
-                else if (entry is ExpressiveMenuNote)
-                  _MenuNote(entry, vibrant: widget.vibrant)
-                else
-                  _MenuEntryTile(
-                    entry: entry,
-                    shapes: _itemShapes(context, index++, count),
+          child: _menuInset(
+            scrolls: widget.scrolls,
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                if (label != null)
+                  _GroupLabel(
+                    label,
                     vibrant: widget.vibrant,
+                    states: {if (_hovered) WidgetState.hovered},
                   ),
-            ],
+                for (final entry in entries)
+                  if (entry is ExpressiveMenuDivider)
+                    const _MenuDivider()
+                  else if (entry is ExpressiveMenuNote)
+                    _MenuNote(entry, vibrant: widget.vibrant)
+                  else
+                    _MenuEntryTile(
+                      entry: entry,
+                      shapes: _itemShapes(context, index++, count),
+                      vibrant: widget.vibrant,
+                    ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
+
+/// A menu's list inside its container: 4dp clear of every edge
+/// (`md.comp.menus.group.padding` above and below, the items' own 4dp at the
+/// sides), at every density, so no item's fill or ring touches the container
+/// and the items' corners stay concentric with its corners. Scrolled
+/// ([scrolls]) inside that inset when its height is bounded.
+Widget _menuInset(Widget list, {bool scrolls = false}) => Padding(
+  padding: const EdgeInsets.symmetric(
+    vertical: SegmentedMenuTokens.groupPadding,
+  ),
+  child: scrolls ? SingleChildScrollView(primary: false, child: list) : list,
+);
 
 /// An [ExpressiveMenuNote]: an item's padding and height, its supporting
 /// text's type and ink, nothing to press; a live region.
@@ -786,6 +838,281 @@ _ItemColors _tokenItemColors(
   );
 }
 
+// ---------------------------------------------------------------------------
+// One lit row.
+
+/// What last moved an open menu's highlight: nothing yet, the pointer, or
+/// the keys.
+enum _Lead {
+  /// Nothing yet: a menu ui_core opened at the pointer, whose first row it
+  /// focused unseen (the menu bar's).
+  none,
+
+  /// The pointer, moving over a row.
+  pointer,
+
+  /// A key, or anything else that moved the focus.
+  keys,
+}
+
+/// How a menu's row is lit.
+enum _Light {
+  /// Not lit.
+  off,
+
+  /// The pointer's: the hover layer.
+  plate,
+
+  /// The keys': the focus indicator alone.
+  ring,
+}
+
+/// One menu's highlight: the one row a person reads as current. The pointer
+/// moving over a row lights it on the hover layer (in a popup that holds the
+/// focus, the focus moves there too, so the keys go on from it); the keys
+/// light the focused row with the focus indicator. Either puts the other's
+/// light out, so no frame shows two current rows. A pointer resting where a
+/// menu opened lights nothing until it moves.
+class _MenuLead extends ValueNotifier<_Lead> {
+  _MenuLead(super.value, {required this.followsPointer});
+
+  /// Whether the pointer takes the focus to the row it moves over: a popup
+  /// that holds the focus. A menu laid out on a page, or a list whose field
+  /// keeps the focus for typing, lights the row under the pointer alone,
+  /// and takes the focus there only while one of its rows holds it.
+  final bool followsPointer;
+
+  /// The node round the menu's rows, to tell whether one of them holds the
+  /// focus.
+  FocusNode? rows;
+
+  /// The row the pointer last took the focus to.
+  FocusNode? pointerFocus;
+
+  /// The light of a row [focused] and [hovered] as it is.
+  _Light lightOf({required bool focused, required bool hovered}) =>
+      switch (value) {
+        _Lead.none => _Light.off,
+        _Lead.pointer =>
+          (followsPointer ? focused : hovered) ? _Light.plate : _Light.off,
+        _Lead.keys => focused ? _Light.ring : _Light.off,
+      };
+
+  /// The pointer moved over an enabled row, [focus] its node: the keys go
+  /// on from it whenever they are in the menu.
+  void pointerOver(FocusNode? focus) {
+    value = _Lead.pointer;
+    pointerFocus = focus;
+    if ((followsPointer || (rows?.hasFocus ?? false)) &&
+        focus != null &&
+        focus.canRequestFocus &&
+        !focus.hasPrimaryFocus) {
+      focus.requestFocus();
+    }
+  }
+}
+
+/// The lit row's light where no menu says ([_LeadScope] absent): the
+/// pointer's under the pointer, else the keys'.
+_Light _lightAlone({required bool focused, required bool hovered}) => hovered
+    ? _Light.plate
+    : focused
+    ? _Light.ring
+    : _Light.off;
+
+/// A menu's [_MenuLead] for the rows under it.
+class _LeadScope extends InheritedNotifier<_MenuLead> {
+  const _LeadScope({required _MenuLead lead, required super.child})
+    : super(notifier: lead);
+
+  /// The lead over [context], rebuilding it as the lead moves.
+  static _MenuLead? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_LeadScope>()?.notifier;
+
+  /// The lead over [context], read once.
+  static _MenuLead? read(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<_LeadScope>()?.notifier;
+}
+
+/// The keys that only change another key: they move no highlight.
+final Set<LogicalKeyboardKey> _modifierKeys = <LogicalKeyboardKey>{
+  LogicalKeyboardKey.shift,
+  LogicalKeyboardKey.shiftLeft,
+  LogicalKeyboardKey.shiftRight,
+  LogicalKeyboardKey.control,
+  LogicalKeyboardKey.controlLeft,
+  LogicalKeyboardKey.controlRight,
+  LogicalKeyboardKey.alt,
+  LogicalKeyboardKey.altLeft,
+  LogicalKeyboardKey.altRight,
+  LogicalKeyboardKey.meta,
+  LogicalKeyboardKey.metaLeft,
+  LogicalKeyboardKey.metaRight,
+  LogicalKeyboardKey.capsLock,
+  LogicalKeyboardKey.fn,
+};
+
+/// Holds one menu's [_MenuLead] round [child]: a key pressed in it hands
+/// the light to the keys.
+class _LeadHost extends StatefulWidget {
+  const _LeadHost({
+    required this.initial,
+    required this.followsPointer,
+    required this.child,
+    this.firstKeyLights = false,
+  });
+
+  /// The lead as the menu appears.
+  final _Lead initial;
+
+  /// [_MenuLead.followsPointer].
+  final bool followsPointer;
+
+  /// Whether, before anything moved ([_Lead.none]), Down lights the row
+  /// that already holds the focus unseen and Up goes to the last: the menu
+  /// bar's menus, whose first row ui_core focuses as they open.
+  final bool firstKeyLights;
+
+  final Widget child;
+
+  @override
+  State<_LeadHost> createState() => _LeadHostState();
+}
+
+class _LeadHostState extends State<_LeadHost> {
+  final FocusNode _rows = FocusNode(
+    debugLabel: 'ExpressiveMenu rows',
+    canRequestFocus: false,
+    skipTraversal: true,
+  );
+  late final _MenuLead _lead = _MenuLead(
+    widget.initial,
+    followsPointer: widget.followsPointer,
+  )..rows = _rows;
+
+  @override
+  void initState() {
+    super.initState();
+    // A menu that does not hold the focus itself: the focus coming into it
+    // other than by the pointer (Tab, a key that opened it) is the keys'.
+    if (!widget.followsPointer) _rows.addListener(_focusMoved);
+  }
+
+  void _focusMoved() {
+    if (_rows.hasFocus &&
+        FocusManager.instance.primaryFocus != _lead.pointerFocus) {
+      _lead.value = _Lead.keys;
+    }
+  }
+
+  @override
+  void dispose() {
+    _rows.removeListener(_focusMoved);
+    _lead.dispose();
+    _rows.dispose();
+    super.dispose();
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is KeyUpEvent || _modifierKeys.contains(event.logicalKey)) {
+      return KeyEventResult.ignored;
+    }
+    final was = _lead.value;
+    _lead.value = _Lead.keys;
+    if (!widget.firstKeyLights || was != _Lead.none) {
+      return KeyEventResult.ignored;
+    }
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.arrowDown) return KeyEventResult.handled;
+    if (key == LogicalKeyboardKey.arrowUp) {
+      final rows =
+          (node.nearestScope?.traversalDescendants ?? const <FocusNode>[])
+              .where((row) => row.canRequestFocus && !row.skipTraversal)
+              .toList()
+            ..sort((a, b) => a.rect.top.compareTo(b.rect.top));
+      if (rows.isNotEmpty) rows.last.requestFocus();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  @override
+  Widget build(BuildContext context) => _LeadScope(
+    lead: _lead,
+    child: Focus(
+      focusNode: _rows,
+      includeSemantics: false,
+      onKeyEvent: _onKey,
+      child: widget.child,
+    ),
+  );
+}
+
+/// Whether the last press was a key's rather than a pointer's. ui_core's
+/// menu bar focuses a menu's first row as it opens either way; the row shows
+/// only when a key opened it.
+abstract final class _LastInput {
+  static bool _watching = false;
+
+  /// Whether a key was pressed since the last pointer went down.
+  static bool wasKey = false;
+
+  /// Starts listening, once.
+  static void watch() {
+    if (_watching) return;
+    _watching = true;
+    HardwareKeyboard.instance.addHandler(_onKey);
+    GestureBinding.instance.pointerRouter.addGlobalRoute(_onPointer);
+  }
+
+  static bool _onKey(KeyEvent event) {
+    if (event is KeyDownEvent && !_modifierKeys.contains(event.logicalKey)) {
+      wasKey = true;
+    }
+    return false;
+  }
+
+  static void _onPointer(PointerEvent event) {
+    if (event is PointerDownEvent) wasKey = false;
+  }
+}
+
+/// A row of a menu ui_core lays out (the menu bar's), under ui_core's
+/// pressable: its [states] shown as its menu's one lit row ([_MenuLead]),
+/// the pointer moving over it lighting it.
+class _LeadRow extends StatelessWidget {
+  const _LeadRow({required this.states, required this.builder});
+
+  /// ui_core's states for the row.
+  final Set<WidgetState> states;
+
+  /// The row's face for the states it shows.
+  final Widget Function(Set<WidgetState> shown) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    final lead = _LeadScope.of(context);
+    // Under ui_core's pressable, this is its own focus.
+    final focus = Focus.maybeOf(context);
+    final enabled = !states.contains(WidgetState.disabled);
+    final focused = focus?.hasPrimaryFocus ?? false;
+    final hovered = states.contains(WidgetState.hovered);
+    final light =
+        lead?.lightOf(focused: focused, hovered: hovered) ??
+        _lightAlone(focused: focused, hovered: hovered);
+    final shown = <WidgetState>{
+      for (final state in states)
+        if (state != WidgetState.focused && state != WidgetState.hovered) state,
+      if (enabled && light == _Light.plate) WidgetState.hovered,
+      if (enabled && light == _Light.ring) WidgetState.focused,
+    };
+    return MouseRegion(
+      onHover: enabled && lead != null ? (_) => lead.pointerOver(focus) : null,
+      child: builder(shown),
+    );
+  }
+}
+
 /// One entry laid out as its item, wired to the popup it is in.
 class _MenuEntryTile extends StatefulWidget {
   const _MenuEntryTile({
@@ -834,6 +1161,8 @@ class _MenuEntryTileState extends State<_MenuEntryTile> {
       anchor: null,
       position: ExpressiveMenuPosition.end,
       label: submenu.label,
+      listKeys: true,
+      focusItem: _openKeyHeld(),
       content: (context) => ExpressiveMenuSurface._popup(
         groups: submenu.groups,
         vibrant: widget.vibrant,
@@ -1016,6 +1345,7 @@ class _MenuItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
+    final enabled = onPressed != null;
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: MenuBehavior.itemInset,
@@ -1023,154 +1353,260 @@ class _MenuItemTile extends StatelessWidget {
             ? 0
             : MenuBehavior.itemInsetVerticalWithSupportingText,
       ),
-      child: ExpressivePressable(
-        style: style,
-        componentStyle: t.menuTheme.copyWith(
-          backgroundColor: WidgetStateProperty.resolveWith(
-            (states) => selected && onPressed != null
-                ? t.menuTheme.backgroundColor?.resolve(states)
-                : null,
-          ),
-        ),
-        shapes: shapes,
-        motion: MenuBehavior.itemShapeMotion,
-        colorMotion: MenuBehavior.itemColorMotion,
-        color: colors.container,
-        contentColor: colors.text,
-        selected: selected,
-        role: role,
-        onPressed: onPressed,
-        child: Builder(
-          builder: (context) {
-            final scope = ExpressiveStyleScope.maybeOf(context)!;
-            final scoped = scope.style;
-            final states = scope.states;
-            final hasLeading = icon != null || selectedIcon != null;
-            final iconSize =
-                scoped.iconSize?.resolve(states) ??
-                SegmentedMenuTokens.itemLeadingIconSize;
-            // Under a field's list, the words where the field's value starts
-            // and an icon under the field's leading icon (centred 28dp
-            // before the words); else the item's own padding.
-            double start = MenuBehavior.itemHorizontalPadding;
-            double gap = MenuBehavior.itemIconSpacing;
-            final words = _WordsStart.of(context);
-            if (words != null) {
-              // Density widens or narrows the padding by this much; the
-              // measured field already has it.
-              final density = t.density.horizontal * 2;
-              final iconStart = words - 28 - iconSize / 2;
-              if (!hasLeading) {
-                start = math.max(0.0, words - MenuBehavior.itemInset - density);
-              } else if (iconStart - MenuBehavior.itemInset - density >= 4) {
-                start = iconStart - MenuBehavior.itemInset - density;
-                gap = words - iconStart - iconSize;
-              }
-            }
-            final textStyle = t.type.labelLarge.merge(
-              scoped.textStyle?.resolve(states),
-            );
-            final Widget text = supportingText == null
-                ? expressiveFaceLabel(Text(label, style: textStyle))
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(label, style: textStyle),
-                      Text(
-                        supportingText!,
-                        style: t.type.bodyMedium.merge(
-                          scoped.textStyle?.resolve(states),
-                        ),
-                      ),
-                    ],
-                  );
-            return ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: MenuBehavior.itemMaxWidth,
+      child: _LitItem(
+        enabled: enabled,
+        builder: (focus, states, light) {
+          final hover =
+              t.menuTheme.overlayColor?.resolve(const {WidgetState.hovered}) ??
+              t.states.layerOf(colors.text, const {WidgetState.hovered});
+          // The pointer's light is the container's own colour, springing
+          // from row to row; the hover and focus layers stay off, so a
+          // pointer resting where the menu opened, or a row the keys left,
+          // lights nothing. A press keeps its ripple.
+          Color lit(Color base) => light == _Light.plate && hover != null
+              ? Color.alphaBlend(hover, base)
+              : base;
+          return ExpressivePressable(
+            style: style,
+            componentStyle: t.menuTheme.copyWith(
+              backgroundColor: WidgetStateProperty.resolveWith((states) {
+                final own = selected && enabled
+                    ? t.menuTheme.backgroundColor?.resolve(states)
+                    : null;
+                return own == null ? null : lit(own);
+              }),
+              overlayColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.pressed)
+                    ? t.menuTheme.overlayColor?.resolve(states)
+                    : const Color(0x00000000),
               ),
-              child: ExpressiveStyledContent(
-                center: false,
-                minimumSize: const Size(
-                  MenuBehavior.itemMinWidth,
-                  SegmentedMenuTokens.item,
+            ),
+            focusNode: focus,
+            statesController: states,
+            shapes: shapes,
+            motion: MenuBehavior.itemShapeMotion,
+            colorMotion: MenuBehavior.itemColorMotion,
+            color: lit(colors.container),
+            contentColor: colors.text,
+            selected: selected,
+            role: role,
+            onPressed: onPressed,
+            // The keys' light is the focus indicator alone, inside the item:
+            // the item stands 4dp in from the menu's edges, and a ring 2dp
+            // out would lie under its neighbours.
+            focusInward: true,
+            focusRing: light == _Light.ring,
+            child: _itemContent(context),
+          );
+        },
+      ),
+    );
+  }
+
+  /// The item's icon, words and trailing content, laid out as
+  /// `MenuArrangement` does.
+  Widget _itemContent(BuildContext context) {
+    final t = context.expressiveTheme;
+    return Builder(
+      builder: (context) {
+        final scope = ExpressiveStyleScope.maybeOf(context)!;
+        final scoped = scope.style;
+        final states = scope.states;
+        final hasLeading = icon != null || selectedIcon != null;
+        final iconSize =
+            scoped.iconSize?.resolve(states) ??
+            SegmentedMenuTokens.itemLeadingIconSize;
+        // Under a field's list, the words where the field's value starts
+        // and an icon under the field's leading icon (centred 28dp
+        // before the words); else the item's own padding.
+        double start = MenuBehavior.itemHorizontalPadding;
+        double gap = MenuBehavior.itemIconSpacing;
+        final words = _WordsStart.of(context);
+        if (words != null) {
+          // Density widens or narrows the padding by this much; the
+          // measured field already has it.
+          final density = t.density.horizontal * 2;
+          final iconStart = words - 28 - iconSize / 2;
+          if (!hasLeading) {
+            start = math.max(0.0, words - MenuBehavior.itemInset - density);
+          } else if (iconStart - MenuBehavior.itemInset - density >= 4) {
+            start = iconStart - MenuBehavior.itemInset - density;
+            gap = words - iconStart - iconSize;
+          }
+        }
+        final textStyle = t.type.labelLarge.merge(
+          scoped.textStyle?.resolve(states),
+        );
+        final Widget text = supportingText == null
+            ? expressiveFaceLabel(Text(label, style: textStyle))
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(label, style: textStyle),
+                  Text(
+                    supportingText!,
+                    style: t.type.bodyMedium.merge(
+                      scoped.textStyle?.resolve(states),
+                    ),
+                  ),
+                ],
+              );
+        return ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: MenuBehavior.itemMaxWidth,
+          ),
+          child: ExpressiveStyledContent(
+            center: false,
+            minimumSize: const Size(
+              MenuBehavior.itemMinWidth,
+              SegmentedMenuTokens.item,
+            ),
+            textStyle: textStyle,
+            iconSize: SegmentedMenuTokens.itemLeadingIconSize,
+            padding: EdgeInsetsDirectional.fromSTEB(
+              start,
+              MenuBehavior.itemVerticalPadding,
+              MenuBehavior.itemHorizontalPadding,
+              MenuBehavior.itemVerticalPadding,
+            ),
+            child: Row(
+              children: <Widget>[
+                if (hasLeading) ...<Widget>[
+                  IconTheme.merge(
+                    data: IconThemeData(
+                      color:
+                          scoped.foregroundColor?.resolve(states) ??
+                          colors.leading,
+                      size:
+                          scoped.iconSize?.resolve(states) ??
+                          SegmentedMenuTokens.itemLeadingIconSize,
+                    ),
+                    child: _Leading(
+                      icon: icon,
+                      selectedIcon: selectedIcon,
+                      selected: selected,
+                    ),
+                  ),
+                  SizedBox(width: gap),
+                ],
+                Expanded(
+                  child: DefaultTextStyle.merge(
+                    style: TextStyle(
+                      color:
+                          scoped.foregroundColor?.resolve(states) ??
+                          colors.text,
+                    ),
+                    child: text,
+                  ),
                 ),
-                textStyle: textStyle,
-                iconSize: SegmentedMenuTokens.itemLeadingIconSize,
-                padding: EdgeInsetsDirectional.fromSTEB(
-                  start,
-                  MenuBehavior.itemVerticalPadding,
-                  MenuBehavior.itemHorizontalPadding,
-                  MenuBehavior.itemVerticalPadding,
-                ),
-                child: Row(
-                  children: <Widget>[
-                    if (hasLeading) ...<Widget>[
-                      IconTheme.merge(
-                        data: IconThemeData(
-                          color:
-                              scoped.foregroundColor?.resolve(states) ??
-                              colors.leading,
-                          size:
-                              scoped.iconSize?.resolve(states) ??
-                              SegmentedMenuTokens.itemLeadingIconSize,
-                        ),
-                        child: _Leading(
-                          icon: icon,
-                          selectedIcon: selectedIcon,
-                          selected: selected,
-                        ),
+                if (trailing != null) ...<Widget>[
+                  const SizedBox(width: MenuBehavior.itemIconSpacing),
+                  IconTheme.merge(
+                    data: IconThemeData(
+                      size:
+                          scoped.iconSize?.resolve(states) ??
+                          SegmentedMenuTokens.itemTrailingIconSize,
+                      color:
+                          scoped.foregroundColor?.resolve(states) ??
+                          colors.trailing,
+                    ),
+                    child: DefaultTextStyle.merge(
+                      style: TextStyle(
+                        color:
+                            scoped.foregroundColor?.resolve(states) ??
+                            colors.trailing,
                       ),
-                      SizedBox(width: gap),
-                    ],
-                    Expanded(
-                      child: DefaultTextStyle.merge(
-                        style: TextStyle(
-                          color:
-                              scoped.foregroundColor?.resolve(states) ??
-                              colors.text,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minWidth: SegmentedMenuTokens.itemTrailingIconSize,
                         ),
-                        child: text,
+                        child: Center(
+                          widthFactor: 1,
+                          heightFactor: 1,
+                          child: trailing,
+                        ),
                       ),
                     ),
-                    if (trailing != null) ...<Widget>[
-                      const SizedBox(width: MenuBehavior.itemIconSpacing),
-                      IconTheme.merge(
-                        data: IconThemeData(
-                          size:
-                              scoped.iconSize?.resolve(states) ??
-                              SegmentedMenuTokens.itemTrailingIconSize,
-                          color:
-                              scoped.foregroundColor?.resolve(states) ??
-                              colors.trailing,
-                        ),
-                        child: DefaultTextStyle.merge(
-                          style: TextStyle(
-                            color:
-                                scoped.foregroundColor?.resolve(states) ??
-                                colors.trailing,
-                          ),
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(
-                              minWidth:
-                                  SegmentedMenuTokens.itemTrailingIconSize,
-                            ),
-                            child: Center(
-                              widthFactor: 1,
-                              heightFactor: 1,
-                              child: trailing,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Holds a menu item's focus and states, and lights it as its menu's one
+/// lit row ([_MenuLead]): the pointer moving over it lights it, and in a
+/// popup that holds the focus takes the focus there.
+class _LitItem extends StatefulWidget {
+  const _LitItem({required this.enabled, required this.builder});
+
+  final bool enabled;
+
+  /// The item for its focus, its states and its light.
+  final Widget Function(
+    FocusNode focus,
+    WidgetStatesController states,
+    _Light light,
+  )
+  builder;
+
+  @override
+  State<_LitItem> createState() => _LitItemState();
+}
+
+class _LitItemState extends State<_LitItem> {
+  final FocusNode _focus = FocusNode(debugLabel: 'ExpressiveMenu item');
+  final WidgetStatesController _states = WidgetStatesController();
+  bool _hovered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(_focusChanged);
+    _states.addListener(_statesChanged);
+  }
+
+  void _focusChanged() {
+    if (mounted) setState(() {});
+  }
+
+  // Only the hover matters here; the pressable sets the rest as it builds.
+  void _statesChanged() {
+    final hovered = _states.value.contains(WidgetState.hovered);
+    if (hovered == _hovered) return;
+    _hovered = hovered;
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _focus
+      ..removeListener(_focusChanged)
+      ..dispose();
+    _states
+      ..removeListener(_statesChanged)
+      ..dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final lead = _LeadScope.of(context);
+    final focused = _focus.hasPrimaryFocus;
+    final light = !widget.enabled
+        ? _Light.off
+        : lead?.lightOf(focused: focused, hovered: _hovered) ??
+              _lightAlone(focused: focused, hovered: _hovered);
+    return MouseRegion(
+      onHover: widget.enabled && lead != null
+          ? (_) => lead.pointerOver(_focus)
+          : null,
+      child: widget.builder(_focus, _states, light),
     );
   }
 }
@@ -1281,6 +1717,12 @@ class ExpressiveMenuController extends ChangeNotifier {
   /// field hands the arrow keys over to its menu); nothing when closed.
   void focusFirstItem() => _anchor?._focusFirstItem();
 
+  /// Moves keyboard focus onto the open menu's chosen item (a select's
+  /// choice), or its first when none is chosen: what a list opened from the
+  /// keyboard starts on. Called as the menu opens, it waits for the menu's
+  /// first frame.
+  void focusChosenItem() => _anchor?._focusChosenItem();
+
   void _changed() => notifyListeners();
 }
 
@@ -1358,6 +1800,9 @@ Future<bool?> _showMenuRoute(
   bool matchAnchorWidth = false,
   double? maxHeight,
   FocusScopeNode? focusScope,
+  bool listKeys = false,
+  bool focusItem = false,
+  VoidCallback? onShown,
 }) {
   final navigator = Navigator.of(context, rootNavigator: true);
   final ground = navigator.overlay!.context.findRenderObject()! as RenderBox;
@@ -1382,10 +1827,7 @@ Future<bool?> _showMenuRoute(
       from: context,
       to: navigator.context,
     ),
-    barrierLabel: Localizations.of<MaterialLocalizations>(
-      context,
-      MaterialLocalizations,
-    )?.modalBarrierDismissLabel,
+    barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
     builder: (context) => _MenuPopup(
       anchor: local,
       position: position,
@@ -1395,6 +1837,9 @@ Future<bool?> _showMenuRoute(
       matchAnchorWidth: matchAnchorWidth,
       maxHeight: maxHeight,
       focusScope: focusScope,
+      listKeys: listKeys,
+      focusItem: focusItem,
+      onShown: onShown,
       child: Builder(builder: content),
     ),
   );
@@ -1402,10 +1847,79 @@ Future<bool?> _showMenuRoute(
   return navigator.push<bool>(route);
 }
 
+/// The items of an open menu under [root], top to bottom: each item's own
+/// focus node, those that take focus.
+List<FocusNode> _menuItems(FocusNode root) {
+  final seen = Set<_MenuItemTile>.identity();
+  final items = <FocusNode>[];
+  for (final node in root.descendants) {
+    if (node.context == null || !node.canRequestFocus || node.skipTraversal) {
+      continue;
+    }
+    final tile = _tileOf(node);
+    if (tile == null || !seen.add(tile)) continue;
+    items.add(node);
+  }
+  items.sort((a, b) => a.rect.top.compareTo(b.rect.top));
+  return items;
+}
+
+_MenuItemTile? _tileOf(FocusNode node) =>
+    node.context?.findAncestorWidgetOfExactType<_MenuItemTile>();
+
+/// Whether [node] is the chosen item: a select's choice.
+bool _isChosen(FocusNode node) {
+  final tile = _tileOf(node);
+  return tile != null &&
+      tile.role == ExpressivePressRole.radio &&
+      tile.selected;
+}
+
+/// The item a list opened from the keyboard starts on: the chosen one, else
+/// the first.
+FocusNode? _chosenOrFirst(List<FocusNode> items) => items.isEmpty
+    ? null
+    : items.firstWhere(_isChosen, orElse: () => items.first);
+
+/// Scrolls the open menu's list the least that shows [node]'s item whole:
+/// a long list keeps the keys' item in view.
+void _keepInView(FocusNode node) {
+  final context = node.context;
+  if (context == null || !context.mounted) return;
+  for (final policy in const [
+    ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+    ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+  ]) {
+    Scrollable.ensureVisible(context, alignmentPolicy: policy);
+  }
+}
+
+/// Gives [node]'s item the focus and keeps it in view: the keys' move, so
+/// the menu's light goes to the keys.
+void _focusInView(FocusNode? node) {
+  if (node == null) return;
+  final context = node.context;
+  if (context != null) _LeadScope.read(context)?.value = _Lead.keys;
+  node.requestFocus();
+  _keepInView(node);
+}
+
+/// Whether a key that opens a menu is held: the menu opened from the
+/// keyboard.
+bool _openKeyHeld() => HardwareKeyboard.instance.logicalKeysPressed.any(
+  (key) =>
+      key == LogicalKeyboardKey.enter ||
+      key == LogicalKeyboardKey.numpadEnter ||
+      key == LogicalKeyboardKey.space ||
+      key == LogicalKeyboardKey.select ||
+      key == LogicalKeyboardKey.arrowDown ||
+      key == LogicalKeyboardKey.arrowUp,
+);
+
 /// The popup's page: the surface placed against the anchor, scaling from
 /// [MenuBehavior.closedScale] as the route opens and back as it closes,
 /// scrolling when taller than the window's margins allow, and moving focus
-/// between items with the arrow keys.
+/// between items with the keys ([listKeys]).
 class _MenuPopup extends StatefulWidget {
   const _MenuPopup({
     required this.anchor,
@@ -1418,14 +1932,19 @@ class _MenuPopup extends StatefulWidget {
     this.maxHeight,
     this.focusScope,
     this.closing,
+    this.listKeys = false,
+    this.focusItem = false,
+    this.onShown,
+    this.onEscape,
   });
 
   final Rect anchor;
   final ExpressiveMenuPosition position;
   final String? label;
 
-  /// Whether the popup is exactly as wide as the anchor
-  /// (`exposedDropdownSize(matchAnchorWidth = true)`).
+  /// Whether the popup is a list from a field: as wide as the anchor
+  /// (`exposedDropdownSize(matchAnchorWidth = true)`), wider only as far
+  /// as its widest item needs, never past the window's margins.
   final bool matchAnchorWidth;
 
   /// The tallest the popup grows before it scrolls; the window's margins
@@ -1439,6 +1958,25 @@ class _MenuPopup extends StatefulWidget {
   /// Set when a non-modal popup starts to close: the popup scales back
   /// (a route's popup hears it from the route). Null for a route's popup.
   final ValueListenable<bool>? closing;
+
+  /// Whether the popup is a list of items the keys walk, as a listbox's or
+  /// a menu's are: Down and Up move at once, wrapping at the ends; Home and
+  /// End go to them; a typed letter goes to the next item it starts. A
+  /// route's popup takes the keyboard itself as it opens, so the arrows
+  /// work right after a pointer opened it: from the chosen item (a
+  /// select's choice), else from the ends.
+  final bool listKeys;
+
+  /// Whether a key opened the popup: its chosen item takes focus as it
+  /// appears, else its first.
+  final bool focusItem;
+
+  /// Told after the popup's first frame, its items laid out.
+  final VoidCallback? onShown;
+
+  /// Escape with an item focused, for a non-modal popup (a route's own
+  /// dismiss closes a route's): it closes, and focus goes back to its field.
+  final VoidCallback? onEscape;
 
   /// The scale's spring, read where the menu was opened (its Reduce Motion,
   /// its Standard pin).
@@ -1461,11 +1999,118 @@ class _MenuPopupState extends State<_MenuPopup>
   );
   _MenuRoute? _route;
 
+  /// The popup's own keyboard: an ancestor of every item, focused while no
+  /// item is (a route's popup opened by a pointer).
+  final FocusNode _keys = FocusNode(
+    debugLabel: 'ExpressiveMenu keys',
+    skipTraversal: true,
+  );
+
+  /// The letters typed in a row, for [_typeAhead], and when the last came.
+  String _typed = '';
+  DateTime _typedAt = DateTime.fromMillisecondsSinceEpoch(0);
+
   @override
   void initState() {
     super.initState();
     _scale.springTo(1, widget.spring);
     widget.closing?.addListener(_closingChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _revealChosen();
+      if (widget.focusItem) _focusInView(_chosenOrFirst(_menuItems(_keys)));
+      widget.onShown?.call();
+    });
+  }
+
+  /// A long list opens on its choice: the chosen item in the list's middle,
+  /// as far as the list scrolls (a select's value near its end shows).
+  void _revealChosen() {
+    final chosen = _menuItems(widget.focusScope ?? _keys).where(_isChosen);
+    final context = chosen.isEmpty ? null : chosen.first.context;
+    if (context == null) return;
+    Scrollable.ensureVisible(context, alignment: 0.5);
+  }
+
+  /// The keys of [ExpressiveMenu]'s list ([_MenuPopup.listKeys]), heard
+  /// from the item with focus or from the popup itself.
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is KeyUpEvent) return KeyEventResult.ignored;
+    final primary = FocusManager.instance.primaryFocus;
+    if (primary == null) return KeyEventResult.ignored;
+    final items = _menuItems(_keys);
+    if (items.isEmpty) return KeyEventResult.ignored;
+    final at = items.indexWhere(
+      (item) => item == primary || primary.ancestors.contains(item),
+    );
+    // Focus on something else the popup holds: its own keys.
+    if (at < 0 && primary != _keys) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.escape) {
+      final escape = widget.onEscape;
+      if (escape == null) return KeyEventResult.ignored;
+      escape();
+      return KeyEventResult.handled;
+    }
+    final n = items.length;
+    // Where the keys count from: the item with focus, else the chosen one.
+    final from = at >= 0 ? at : items.indexWhere(_isChosen);
+    final int? to;
+    if (key == LogicalKeyboardKey.arrowDown) {
+      to = from < 0 ? 0 : (from + 1) % n;
+    } else if (key == LogicalKeyboardKey.arrowUp) {
+      to = from < 0 ? n - 1 : (from - 1 + n) % n;
+    } else if (key == LogicalKeyboardKey.home) {
+      to = 0;
+    } else if (key == LogicalKeyboardKey.end) {
+      to = n - 1;
+    } else {
+      to = _typeAhead(event, items, from);
+      if (to == null) return KeyEventResult.ignored;
+    }
+    _focusInView(items[to]);
+    return KeyEventResult.handled;
+  }
+
+  /// The item a typed letter goes to: the next one after [from] its label
+  /// starts with; letters typed in a row (within 700 ms) narrow it, one
+  /// letter pressed again moves on among the items it starts, and a run no
+  /// item starts with starts afresh from its last letter.
+  int? _typeAhead(KeyEvent event, List<FocusNode> items, int from) {
+    final letter = event.character;
+    if (letter == null || letter.length != 1 || letter.trim().isEmpty) {
+      return null;
+    }
+    final keyboard = HardwareKeyboard.instance;
+    if (keyboard.isControlPressed ||
+        keyboard.isMetaPressed ||
+        keyboard.isAltPressed) {
+      return null;
+    }
+    final now = DateTime.now();
+    _typed =
+        (now.difference(_typedAt) > const Duration(milliseconds: 700)
+            ? ''
+            : _typed) +
+        letter.toLowerCase();
+    _typedAt = now;
+    int? find(String query, int start) {
+      for (var i = 0; i < items.length; i++) {
+        final j = (start + i) % items.length;
+        final label = _tileOf(items[j])?.label.toLowerCase() ?? '';
+        if (label.startsWith(query)) return j;
+      }
+      return null;
+    }
+
+    final again = _typed.split('').every((c) => c == _typed[0]);
+    final found = again
+        ? find(_typed[0], from + 1)
+        : find(_typed, math.max(from, 0));
+    if (found != null || _typed.length == 1) return found;
+    // Letters no item starts with: the last one starts afresh.
+    _typed = letter.toLowerCase();
+    return find(_typed, from + 1);
   }
 
   void _closingChanged() => _scale.springTo(
@@ -1489,6 +2134,7 @@ class _MenuPopupState extends State<_MenuPopup>
     _route?._onClosing = null;
     widget.closing?.removeListener(_closingChanged);
     _scale.dispose();
+    _keys.dispose();
     super.dispose();
   }
 
@@ -1496,10 +2142,33 @@ class _MenuPopupState extends State<_MenuPopup>
   Widget build(BuildContext context) {
     Widget child = Directionality(
       textDirection: widget.textDirection,
-      child: SingleChildScrollView(child: widget.child),
+      // A menu's surface scrolls its own list inside its padding, its
+      // container standing still; other content scrolls whole.
+      child: widget.listKeys
+          ? widget.child
+          : SingleChildScrollView(child: widget.child),
     );
+    if (widget.listKeys) {
+      // One lit row: under a route's popup the pointer takes the focus to
+      // the row it moves over; a non-modal popup's field keeps it.
+      child = _LeadHost(
+        initial: _Lead.keys,
+        followsPointer: widget.closing == null,
+        child: child,
+      );
+    }
     final scope = widget.focusScope;
     if (scope != null) child = FocusScope(node: scope, child: child);
+    if (widget.listKeys) {
+      child = Focus(
+        focusNode: _keys,
+        // A route's popup takes the keyboard as it opens; a non-modal one
+        // leaves it on its field.
+        autofocus: widget.closing == null,
+        onKeyEvent: _onKey,
+        child: child,
+      );
+    }
     return _popupFrame(context, child);
   }
 
@@ -1605,10 +2274,18 @@ class _RenderMenuPlacement extends RenderBox
   Animation<double> _scale;
   set scale(Animation<double> value) {
     if (value == _scale) return;
-    if (attached) _scale.removeListener(markNeedsPaint);
+    if (attached) _scale.removeListener(_scaled);
     _scale = value;
-    if (attached) _scale.addListener(markNeedsPaint);
+    if (attached) _scale.addListener(_scaled);
     markNeedsPaint();
+  }
+
+  // The scale moves what a screen reader reads as each item's box as well
+  // as its pixels: without a semantics update the items keep the boxes of
+  // the first frame the semantics read, small and off their rows.
+  void _scaled() {
+    markNeedsPaint();
+    markNeedsSemanticsUpdate();
   }
 
   TextDirection _textDirection;
@@ -1638,12 +2315,12 @@ class _RenderMenuPlacement extends RenderBox
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
-    _scale.addListener(markNeedsPaint);
+    _scale.addListener(_scaled);
   }
 
   @override
   void detach() {
-    _scale.removeListener(markNeedsPaint);
+    _scale.removeListener(_scaled);
     super.detach();
   }
 
@@ -1661,15 +2338,23 @@ class _RenderMenuPlacement extends RenderBox
     const v = MenuBehavior.verticalMargin;
     final a = _anchor;
     final maxWidth = math.max(size.width - h - h, 0.0);
-    final width = _matchAnchorWidth ? math.min(a.width, maxWidth) : null;
+    final maxHeight = math.min(
+      math.max(size.height - v - v, 0.0),
+      _maxHeight ?? double.infinity,
+    );
+    double? width;
+    if (_matchAnchorWidth) {
+      // A list from a field: the field's width, wider only as far as its
+      // widest item needs (an item stops at MenuBehavior.itemMaxWidth),
+      // never past the window's margins; set before the first frame.
+      final least = math.min(a.width, maxWidth);
+      width = clampDouble(_widest(child, maxHeight) ?? least, least, maxWidth);
+    }
     child.layout(
       BoxConstraints(
         minWidth: width ?? 0,
         maxWidth: width ?? maxWidth,
-        maxHeight: math.min(
-          math.max(size.height - v - v, 0.0),
-          _maxHeight ?? double.infinity,
-        ),
+        maxHeight: maxHeight,
       ),
       parentUsesSize: true,
     );
@@ -1722,6 +2407,30 @@ class _RenderMenuPlacement extends RenderBox
       _pivot(a.left, a.right, placed.left, placed.right) * menu.width,
       _pivot(a.top, a.bottom, placed.top, placed.bottom) * menu.height,
     );
+  }
+
+  /// The widest [child]'s items need (its intrinsic width), or null when it
+  /// can't say before it lays out: a lazy list under it (a viewport answers
+  /// its intrinsic width with nothing), or a builder that answers none.
+  static double? _widest(RenderBox child, double height) {
+    var says = true;
+    void visit(RenderObject node) {
+      if (!says) return;
+      if (node is RenderViewportBase) {
+        says = false;
+        return;
+      }
+      node.visitChildren(visit);
+    }
+
+    visit(child);
+    if (!says) return null;
+    try {
+      final widest = child.getMaxIntrinsicWidth(height);
+      return widest.isFinite ? widest : null;
+    } on Object {
+      return null;
+    }
   }
 
   /// `DropdownMenuPositionProvider.positioningLogic` on one axis: the first
@@ -1871,9 +2580,11 @@ class ExpressiveMenu extends StatefulWidget {
   /// Opens and closes the menu from the app.
   final ExpressiveMenuController? controller;
 
-  /// Whether the menu is exactly as wide as its anchor, as an exposed
-  /// dropdown's is (`exposedDropdownSize(matchAnchorWidth = true)`); else
-  /// as wide as its widest item.
+  /// Whether the menu is a list from a field: as wide as its anchor, as an
+  /// exposed dropdown's is (`exposedDropdownSize(matchAnchorWidth = true)`),
+  /// wider only as far as its widest item needs (an item stops at 280dp),
+  /// never past the window's margins, from its first frame; else as wide
+  /// as its widest item.
   final bool matchAnchorWidth;
 
   /// The tallest the menu grows before it scrolls (the window's margins
@@ -1903,6 +2614,66 @@ class ExpressiveMenu extends StatefulWidget {
 
   @override
   State<ExpressiveMenu> createState() => _ExpressiveMenuState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<ExpressiveMenuGroup>(
+          'groups',
+          groups,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<ExpressiveMenuEntry>(
+          'entries',
+          entries,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveMenuTrigger>(
+          'trigger',
+          trigger,
+          defaultValue: ExpressiveMenuTrigger.tap,
+        ),
+      )
+      ..add(FlagProperty('vibrant', value: vibrant, ifTrue: 'vibrant'))
+      ..add(
+        EnumProperty<ExpressiveMenuPosition>(
+          'position',
+          position,
+          defaultValue: ExpressiveMenuPosition.below,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveMenuController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'matchAnchorWidth',
+          value: matchAnchorWidth,
+          ifTrue: 'matchAnchorWidth',
+        ),
+      )
+      ..add(DoubleProperty('maxHeight', maxHeight, defaultValue: null))
+      ..add(DoubleProperty('wordsStart', wordsStart, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('modal', modal, defaultValue: true));
+  }
 }
 
 /// What a menu and a popover share: the anchor that opens and closes the
@@ -1925,7 +2696,12 @@ abstract class _MenuAnchorState<W extends StatefulWidget> extends State<W>
   );
   final ValueNotifier<bool> _closing = ValueNotifier<bool>(false);
   bool _portalOpen = false;
-  late final ExpressiveBackHandle _back = ExpressiveBackHandle(onBack: _close);
+  // A non-modal popup closes on a back, and under a route pushed over its
+  // anchor's (or the focus leaving that route).
+  late final ExpressiveBackHandle _back = ExpressiveBackHandle(
+    onBack: _close,
+    closeWhenCovered: true,
+  );
 
   ExpressiveMenuController? get widgetController;
   ExpressiveMenuTrigger get trigger;
@@ -1977,8 +2753,47 @@ abstract class _MenuAnchorState<W extends StatefulWidget> extends State<W>
     FocusTraversalGroup.of(context).findFirstFocus(_itemsScope)?.requestFocus();
   }
 
+  /// Whether the popup's chosen item (else its first) takes focus when it
+  /// appears: a key opened it, or [ExpressiveMenuController.focusChosenItem]
+  /// came before its first frame.
+  bool _wantsItem = false;
+
+  /// What had focus as the popup opened: a non-modal popup's field, where
+  /// Escape returns it.
+  FocusNode? _opener;
+
+  /// Whether the popup is a list the keys walk ([_MenuPopup.listKeys]).
+  bool get listKeys => false;
+
+  void _focusChosenItem() {
+    final items = _isOpen ? _menuItems(_itemsScope) : const <FocusNode>[];
+    if (items.isEmpty) {
+      // Not open yet, or not laid out: on its first frame.
+      _wantsItem = true;
+      return;
+    }
+    _wantsItem = false;
+    _focusInView(_chosenOrFirst(items));
+  }
+
+  void _shown() {
+    if (_wantsItem) _focusChosenItem();
+  }
+
+  /// Escape in a non-modal popup: it closes, and focus goes back to the
+  /// field that held it.
+  void _escape() {
+    final opener = _opener;
+    _close();
+    if (opener != null && opener.context != null && opener.canRequestFocus) {
+      opener.requestFocus();
+    }
+  }
+
   Future<void> _open() async {
     if (_isOpen || !canOpen || !mounted) return;
+    if (listKeys && _openKeyHeld()) _wantsItem = true;
+    _opener = FocusManager.instance.primaryFocus;
     if (vibrant) {
       assert(
         ExpressiveHeroMoment.debugCheck(context, 'ExpressiveMenu (vibrant)'),
@@ -1988,9 +2803,11 @@ abstract class _MenuAnchorState<W extends StatefulWidget> extends State<W>
       _portalOpen = true;
       _closing.value = false;
       _portal.show();
-      _alpha.springTo(
-        1,
-        ExpressiveMotion.of(context).spring(MenuBehavior.openAlphaMotion),
+      unawaited(
+        _alpha.springTo(
+          1,
+          ExpressiveMotion.of(context).spring(MenuBehavior.openAlphaMotion),
+        ),
       );
       _controller._changed();
       setState(() {});
@@ -2005,6 +2822,8 @@ abstract class _MenuAnchorState<W extends StatefulWidget> extends State<W>
       matchAnchorWidth: matchAnchorWidth,
       maxHeight: maxHeight,
       focusScope: _itemsScope,
+      listKeys: listKeys,
+      onShown: _shown,
       onRoute: (route) => _route = route,
     );
     _controller._changed();
@@ -2017,6 +2836,7 @@ abstract class _MenuAnchorState<W extends StatefulWidget> extends State<W>
   }
 
   void _close({bool chosen = false}) {
+    _wantsItem = false;
     _route?.close(chosen: chosen);
     if (!_portalOpen) return;
     _portalOpen = false;
@@ -2061,6 +2881,9 @@ abstract class _MenuAnchorState<W extends StatefulWidget> extends State<W>
           maxHeight: maxHeight,
           focusScope: _itemsScope,
           closing: _closing,
+          listKeys: listKeys,
+          onShown: _shown,
+          onEscape: _escape,
           child: TapRegion(
             groupId: this,
             onTapOutside: (_) => _close(),
@@ -2090,10 +2913,17 @@ abstract class _MenuAnchorState<W extends StatefulWidget> extends State<W>
     final child = anchorChild!;
     final open = _isOpen;
     if (trigger == ExpressiveMenuTrigger.longPress) {
+      // A context menu: a long press opens it, a tap does not, so it says no
+      // collapsed state (a screen reader would offer a tap that opens
+      // nothing); it says a long press shows a menu.
+      final showMenu = Localizations.of<MaterialLocalizations>(
+        context,
+        MaterialLocalizations,
+      )?.showMenuTooltip;
       return Semantics(
         label: label,
-        expanded: open,
         onLongPress: canOpen ? _open : null,
+        onLongPressHint: canOpen ? showMenu : null,
         child: GestureDetector(
           excludeFromSemantics: true,
           onLongPress: canOpen ? _open : null,
@@ -2111,8 +2941,13 @@ abstract class _MenuAnchorState<W extends StatefulWidget> extends State<W>
       child: FocusableActionDetector(
         enabled: canOpen,
         mouseCursor: canOpen ? SystemMouseCursors.click : MouseCursor.defer,
+        // Enter and Space: a browser maps Enter to a button's press alone
+        // (ButtonActivateIntent), as ui_core's pressable takes it.
         actions: <Type, Action<Intent>>{
           ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) => _open(),
+          ),
+          ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
             onInvoke: (_) => _open(),
           ),
         },
@@ -2149,6 +2984,9 @@ class _ExpressiveMenuState extends _MenuAnchorState<ExpressiveMenu> {
 
   @override
   ExpressiveMenuController? get widgetController => widget.controller;
+
+  @override
+  bool get listKeys => true;
 
   @override
   ExpressiveMenuTrigger get trigger => widget.trigger;
@@ -2265,6 +3103,26 @@ class ExpressivePopoverSurface extends StatelessWidget {
       child: child,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.all(ExpressiveSpacing.s16),
+        ),
+      );
+  }
 }
 
 /// A popover anchored to [child]: [content] on the menu surface
@@ -2325,6 +3183,49 @@ class ExpressivePopover extends StatefulWidget {
 
   @override
   State<ExpressivePopover> createState() => _ExpressivePopoverState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<WidgetBuilder>.has('content', content))
+      ..add(
+        EnumProperty<ExpressiveMenuTrigger>(
+          'trigger',
+          trigger,
+          defaultValue: ExpressiveMenuTrigger.tap,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveMenuPosition>(
+          'position',
+          position,
+          defaultValue: ExpressiveMenuPosition.below,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.all(ExpressiveSpacing.s16),
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveMenuController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// Opens a popover of [builder]'s content against [anchor], a rectangle in
@@ -2391,7 +3292,9 @@ class _ExpressivePopoverState extends _MenuAnchorState<ExpressivePopover> {
 /// Opens a menu of [groups] (or one group of [entries]) against [anchor], a
 /// rectangle in global coordinates, or against [context]'s own box
 /// (Material's `showMenu`, Compose's `DropdownMenu`); resolves when it
-/// closes.
+/// closes. Closed with nothing chosen (Escape, a tap outside, Back), it
+/// gives the focus back to what opened it under [context], even a button
+/// the pointer pressed, so Enter opens it again.
 ///
 /// ```dart
 /// showExpressiveMenu(context, entries: [ExpressiveMenuItem('Rename', onPressed: rename)])
@@ -2416,19 +3319,56 @@ Future<void> showExpressiveMenu(
   }
   final resolved =
       groups ?? <ExpressiveMenuGroup>[ExpressiveMenuGroup(entries!)];
-  await _showMenuRoute(
+  final opener = _openerUnder(context);
+  final chosen = await _showMenuRoute(
     context,
     anchor: anchor,
     position: position,
     label: label,
     matchAnchorWidth: matchAnchorWidth,
     maxHeight: maxHeight,
+    listKeys: true,
+    focusItem: _openKeyHeld(),
     content: (context) => ExpressiveMenuSurface._popup(
       groups: resolved,
       vibrant: vibrant,
       style: style,
     ),
   );
+  if (chosen == true || opener == null || !context.mounted) return;
+  if (!(ModalRoute.isCurrentOf(context) ?? true)) return;
+  if (opener.context?.mounted == true && opener.canRequestFocus) {
+    opener.requestFocus();
+  }
+}
+
+/// What opened a menu from [context]: the focus at or under it, else the
+/// first node under it that takes the focus (the button a pointer pressed,
+/// which a press leaves unfocused).
+FocusNode? _openerUnder(BuildContext context) {
+  bool under(FocusNode node) {
+    final at = node.context;
+    if (at == null) return false;
+    if (identical(at, context)) return true;
+    var found = false;
+    at.visitAncestorElements((element) {
+      found = identical(element, context);
+      return !found;
+    });
+    return found;
+  }
+
+  final primary = FocusManager.instance.primaryFocus;
+  if (primary != null && under(primary)) return primary;
+  final around =
+      Focus.maybeOf(context, createDependency: false) ??
+      FocusManager.instance.rootScope;
+  for (final node in around.descendants) {
+    if (node.canRequestFocus && !node.skipTraversal && under(node)) {
+      return node;
+    }
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -2457,7 +3397,8 @@ Set<WidgetState> _highlightStates(
     ..add(WidgetState.hovered);
 }
 
-/// One option on a menu's panel for ui_core's [states]: a standard menu
+/// One option on a menu's panel for ui_core's [states] (as they are when
+/// [resolved], the menu's one lit row already worked out): a standard menu
 /// item (48dp, `labelLarge`, 4dp in from the panel's sides), the state layer
 /// in its own shape, the selected item rounded out on
 /// `secondaryContainer`, the keyboard's highlight ([WidgetState.focused])
@@ -2472,8 +3413,11 @@ Widget _optionFace(
   Widget? trailing,
   bool selectable = true,
   bool keyboard = true,
+  bool resolved = false,
 }) {
-  final shown = _highlightStates(states, keyboard: keyboard);
+  final shown = resolved
+      ? states
+      : _highlightStates(states, keyboard: keyboard);
   final t = context.expressiveTheme;
   final enabled = !shown.contains(WidgetState.disabled);
   final selected = shown.contains(WidgetState.selected);
@@ -2503,7 +3447,10 @@ Widget _optionFace(
       color: colors.container,
       contentColor: colors.text,
       motion: MenuBehavior.itemShapeMotion,
+      // The keys' place is the focus indicator alone, so it never reads as
+      // the pointer's fill.
       focusInward: true,
+      focusLayer: false,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: ExpressiveSpacing.s48),
         child: Padding(
@@ -2554,13 +3501,16 @@ Widget _optionFace(
 }
 
 /// A menu's panel around [child]: the popover surface (the standard menu
-/// container, the large corner, elevation 2) with the group's 2dp of
-/// padding above and below.
-Widget _panel(Widget child) => ExpressivePopoverSurface(
-  padding: const EdgeInsets.symmetric(
-    vertical: MenuBehavior.groupVerticalPadding + ExpressiveSpacing.s2,
+/// container, the large corner, elevation 2), its list 4dp clear of every
+/// edge at every density ([_menuInset]). Marked as a face
+/// ([DesignKeylineFace]): the kit's surface paints itself, and the checks
+/// read the list's width from the panel, not from the overlay box an
+/// autocomplete lays it out in.
+Widget _panel(Widget child) => DesignKeylineFace(
+  child: ExpressivePopoverSurface(
+    padding: EdgeInsets.zero,
+    child: _menuInset(child),
   ),
-  child: child,
 );
 
 /// A panel springing in from its anchor: opacity and scale from
@@ -2590,7 +3540,8 @@ Widget _entering(Animation<double> presence, Widget child) => AnimatedBuilder(
 /// the outlined text field's container (2dp `primary` while anything in it
 /// has focus), each chosen value an input chip with its remove glyph, the
 /// keyboard's chip ringed, and the matching options on a menu's panel under
-/// it. The arrows, Enter and Escape work the suggestions; Backspace on an
+/// it. The arrows (round past the ends, over a disabled option, which is
+/// offered dimmed), Enter and Escape work the suggestions; Backspace on an
 /// empty field, or Left at its start, steps onto the chips, and Backspace
 /// or Delete removes one. With [onCreate] the typed words make a value of
 /// their own.
@@ -2612,7 +3563,10 @@ class ExpressiveMultiSelect<T extends Object> extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     super.key,
-  });
+  }) : assert(
+         maxValues == null || maxValues > 0,
+         'maxValues allows at least one value',
+       );
 
   /// What can be chosen.
   final List<ExpressiveSelectOption<T>> options;
@@ -2647,6 +3601,32 @@ class ExpressiveMultiSelect<T extends Object> extends StatefulWidget {
   @override
   State<ExpressiveMultiSelect<T>> createState() =>
       _ExpressiveMultiSelectState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveSelectOption<T>>('options', options))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(IterableProperty<T>('values', values))
+      ..add(
+        ObjectFlagProperty<ValueChanged<List<T>>?>.has('onChanged', onChanged),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(IntProperty('maxValues', maxValues, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<T? Function(String text)?>.has('onCreate', onCreate),
+      )
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'));
+  }
 }
 
 class _ExpressiveMultiSelectState<T extends Object>
@@ -2682,6 +3662,15 @@ class _ExpressiveMultiSelectState<T extends Object>
     return value.toString();
   }
 
+  /// Whether [value]'s option can be chosen: a disabled one is offered
+  /// dimmed, as a select offers it, and passed over.
+  bool _enabled(T value) {
+    for (final option in widget.options) {
+      if (option.value == value) return option.enabled;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
@@ -2707,10 +3696,13 @@ class _ExpressiveMultiSelectState<T extends Object>
           values: widget.values,
           onChanged: onChanged ?? (_) {},
           focusNode: _node,
-          options: <T>[
-            for (final option in widget.options)
-              if (option.enabled) option.value,
-          ],
+          options: <T>[for (final option in widget.options) option.value],
+          isOptionEnabled: _enabled,
+          // One place: the pointer moves ui_core's highlight. After a pointer
+          // opens the list, the highlight draws as the hover layer
+          // ([_highlightStates]), so a second, the pointer's own, would read
+          // as two current options.
+          highlightFollowsPointer: true,
           displayStringForOption: _label,
           onCreate: widget.onCreate,
           maxTags: widget.maxValues,
@@ -2729,7 +3721,10 @@ class _ExpressiveMultiSelectState<T extends Object>
                 enabled: enabled,
                 hintText: widget.values.isEmpty ? widget.hintText : null,
                 semanticLabel: widget.label,
-                onSubmitted: (_) => field.submit(),
+                // Enter adds a value and the field keeps the focus for the
+                // next: onEditingComplete, never onSubmitted, whose restart
+                // of the text input a browser types into no more.
+                onEditingComplete: field.submit,
               ),
             ),
           ),
@@ -2851,9 +3846,10 @@ class ExpressiveMenuBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
+    _LastInput.watch();
     return DesignMenuBar(
       menus: <DesignMenuEntry>[for (final menu in menus) menu._design()],
-      semanticLabel: MaterialLocalizations.of(context).menuBarMenuLabel,
+      semanticLabel: DesignLocalizations.of(context).menuBarLabel,
       // The titles stand on a bar of their own: the menus' container tone
       // on the full corner, so the row reads as one control.
       barBuilder: (context, items) => ExpressiveSurface(
@@ -2867,22 +3863,30 @@ class ExpressiveMenuBar extends StatelessWidget {
         ),
       ),
       dividerBuilder: (context) => const _MenuDivider(),
+      // One lit row per menu. ui_core focuses a menu's first row as it opens;
+      // it shows only when a key opened the menu, and the pointer moving
+      // over a row takes the focus (and the light) there.
       surfaceBuilder: (context, info, items) => _entering(
         info.animation,
-        ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: MenuBehavior.itemMinWidth,
-            maxWidth: MenuBehavior.itemMaxWidth,
-            maxHeight: info.maxSize.height,
-          ),
-          child: _panel(
-            SingleChildScrollView(
-              primary: false,
-              child: IntrinsicWidth(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: items,
+        _LeadHost(
+          initial: _LastInput.wasKey ? _Lead.keys : _Lead.none,
+          followsPointer: true,
+          firstKeyLights: true,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: MenuBehavior.itemMinWidth,
+              maxWidth: MenuBehavior.itemMaxWidth,
+              maxHeight: info.maxSize.height,
+            ),
+            child: _panel(
+              SingleChildScrollView(
+                primary: false,
+                child: IntrinsicWidth(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: items,
+                  ),
                 ),
               ),
             ),
@@ -2926,36 +3930,46 @@ class ExpressiveMenuBar extends StatelessWidget {
           );
         }
         final shortcut = entry.shortcut;
-        return _optionFace(
-          context,
-          // A check item's check is its own glyph; an open submenu wears
-          // the selected item's container.
-          states: <WidgetState>{
-            ...states,
-            if (entry.checked ?? false) WidgetState.selected,
-          },
-          label: entry.label,
-          selectable: entry.checked != null || entry.isSubmenu,
-          icon: entry.checked == null
-              ? null
-              : entry.checked!
-              ? ExpressiveSymbols.check
-              : null,
-          trailing: entry.isSubmenu
-              ? Icon(
-                  Directionality.of(context) == TextDirection.ltr
-                      ? ExpressiveSymbols.chevronRight
-                      : ExpressiveSymbols.chevronLeft,
-                  size: ExpressiveSpacing.s20,
-                )
-              : shortcut == null
-              ? null
-              : expressiveFaceLabel(
-                  // Its keys on the row's middle, by their capitals.
-                  Text(shortcut, style: t.type.labelMedium),
-                ),
+        return _LeadRow(
+          states: states,
+          builder: (shown) => _optionFace(
+            context,
+            // A check item's check is its own glyph; an open submenu wears
+            // the selected item's container.
+            states: <WidgetState>{
+              ...shown,
+              if (entry.checked ?? false) WidgetState.selected,
+            },
+            resolved: true,
+            label: entry.label,
+            selectable: entry.checked != null || entry.isSubmenu,
+            icon: entry.checked == null
+                ? null
+                : entry.checked!
+                ? ExpressiveSymbols.check
+                : null,
+            trailing: entry.isSubmenu
+                ? Icon(
+                    Directionality.of(context) == TextDirection.ltr
+                        ? ExpressiveSymbols.chevronRight
+                        : ExpressiveSymbols.chevronLeft,
+                    size: ExpressiveSpacing.s20,
+                  )
+                : shortcut == null
+                ? null
+                : expressiveFaceLabel(
+                    // Its keys on the row's middle, by their capitals.
+                    Text(shortcut, style: t.type.labelMedium),
+                  ),
+          ),
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<ExpressiveMenuBarEntry>('menus', menus));
   }
 }

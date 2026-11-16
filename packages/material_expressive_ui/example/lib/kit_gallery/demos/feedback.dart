@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 
 import '../kit.dart';
+import '../trip_words.dart';
 
 /// The feedback group's demo, in [brightness].
 Widget kitFeedbackDemo(Brightness brightness) => kitScreen(
@@ -44,47 +45,48 @@ class _BannersState extends State<_Banners> {
 
   @override
   Widget build(BuildContext context) {
+    final w = TripWords.of(context);
     final banners = <Widget>[
       if (!_dismissed.contains(0))
         ExpressiveBanner(
           icon: ExpressiveSymbols.wifiOff,
-          title: 'You are offline',
-          message: 'Edits are saved on this phone and sync when you reconnect.',
+          title: w.offlineTitle,
+          message: w.offlineText,
           actions: <ExpressiveBannerAction>[
-            ExpressiveBannerAction('Dismiss', onPressed: () => _dismiss(0)),
-            ExpressiveBannerAction('Retry', onPressed: () {}),
+            ExpressiveBannerAction(w.dismiss, onPressed: () => _dismiss(0)),
+            ExpressiveBannerAction(w.retry, onPressed: () {}),
           ],
         ),
       if (!_dismissed.contains(1))
         ExpressiveBanner(
           icon: ExpressiveSymbols.email,
-          message: 'Confirm your email to share lists with friends.',
+          message: w.confirmEmail,
           tone: ExpressiveTone.primary,
           actions: <ExpressiveBannerAction>[
-            ExpressiveBannerAction('Later', onPressed: () => _dismiss(1)),
-            ExpressiveBannerAction('Send link', onPressed: () => _dismiss(1)),
+            ExpressiveBannerAction(w.later, onPressed: () => _dismiss(1)),
+            ExpressiveBannerAction(w.sendLink, onPressed: () => _dismiss(1)),
           ],
         ),
       if (!_dismissed.contains(2))
         ExpressiveBanner(
           icon: ExpressiveSymbols.error,
-          title: 'Payment declined',
-          message: 'Your plan renews on 1 October. Update the card to keep it.',
+          title: w.paymentDeclined,
+          message: w.paymentText,
           tone: ExpressiveTone.error,
           actions: <ExpressiveBannerAction>[
-            ExpressiveBannerAction('Update card', onPressed: () => _dismiss(2)),
+            ExpressiveBannerAction(w.updateCard, onPressed: () => _dismiss(2)),
           ],
         ),
     ];
     return kitSection(
-      'Banner',
+      w.feedbackBanner,
       children: <Widget>[
         for (final banner in banners) banner,
         if (banners.length < 3)
           Wrap(
             children: <Widget>[
               ExpressiveTextButton(
-                'Show all banners',
+                w.showAllBanners,
                 onPressed: () => setState(_dismissed.clear),
               ),
             ],
@@ -108,6 +110,7 @@ class _SkeletonsState extends State<_Skeletons> {
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
+    final w = TripWords.of(context);
     final header = Row(
       children: <Widget>[
         if (_loaded)
@@ -120,7 +123,7 @@ class _SkeletonsState extends State<_Skeletons> {
               shape: t.shapes.full,
             ),
             child: Text(
-              'JR',
+              w.posterInitials,
               style: t.type.labelLarge.copyWith(
                 color: t.colors.onTertiaryContainer,
               ),
@@ -135,13 +138,13 @@ class _SkeletonsState extends State<_Skeletons> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'June Rivera',
+                      w.posterName,
                       style: t.type.titleSmall.copyWith(
                         color: t.colors.onSurface,
                       ),
                     ),
                     Text(
-                      'Harbour walk · 2 h',
+                      w.posterLine,
                       style: t.type.bodySmall.copyWith(
                         color: t.colors.onSurfaceVariant,
                       ),
@@ -154,8 +157,7 @@ class _SkeletonsState extends State<_Skeletons> {
     );
     final body = _loaded
         ? Text(
-            'Low tide this morning — the whole bay was ours. The café on the '
-            'pier finally reopened too.',
+            w.postText,
             style: t.type.bodyMedium.copyWith(color: t.colors.onSurface),
           )
         : const ExpressiveSkeleton.text(lines: 3);
@@ -175,7 +177,7 @@ class _SkeletonsState extends State<_Skeletons> {
           )
         : const ExpressiveSkeleton(height: kitGap * 20);
     return kitSection(
-      'Skeleton',
+      w.skeleton,
       children: <Widget>[
         header,
         body,
@@ -183,7 +185,7 @@ class _SkeletonsState extends State<_Skeletons> {
         Wrap(
           children: <Widget>[
             ExpressiveFilledButton.tonal(
-              _loaded ? 'Load again' : 'Finish loading',
+              _loaded ? w.loadAgain : w.finishLoading,
               onPressed: () => setState(() => _loaded = !_loaded),
             ),
           ],
@@ -197,60 +199,78 @@ class _Empty extends StatelessWidget {
   const _Empty();
 
   @override
-  Widget build(BuildContext context) => kitSection(
-    'Empty state',
-    children: <Widget>[
-      ExpressiveEmptyState(
-        icon: ExpressiveSymbols.inbox,
-        title: 'No saved walks yet',
-        body: 'Save a route from the map and it will wait for you here.',
-        actionLabel: 'Open the map',
-        onAction: () {},
-      ),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final w = TripWords.of(context);
+    return kitSection(
+      w.emptyState,
+      children: <Widget>[
+        ExpressiveEmptyState(
+          icon: ExpressiveSymbols.inbox,
+          title: w.noSavedWalks,
+          body: w.noSavedWalksText,
+          actionLabel: w.openMap,
+          onAction: () {},
+        ),
+      ],
+    );
+  }
 }
 
 class _Error extends StatelessWidget {
   const _Error();
 
   @override
-  Widget build(BuildContext context) => kitSection(
-    'Error state',
-    children: <Widget>[
-      ExpressiveErrorState(
-        title: 'Could not load your walks',
-        message: 'Check your connection and try again.',
-        onRetry: () {},
-      ),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final w = TripWords.of(context);
+    return kitSection(
+      w.errorState,
+      children: <Widget>[
+        ExpressiveErrorState(
+          title: w.walksFailed,
+          message: w.checkConnection,
+          onRetry: () {},
+        ),
+      ],
+    );
+  }
 }
 
 /// A state's wrapped lines set balanced, so no last word sits alone; and
-/// the error state under a mark the page keeps, its glyph left out.
+/// the error state with its glyph left out, as under a mark the page keeps.
 class _Balanced extends StatelessWidget {
   const _Balanced();
 
   @override
-  Widget build(BuildContext context) => kitSection(
-    'States · balanced lines; an error under a mark, no glyph',
-    children: const <Widget>[
-      ExpressiveEmptyState(
-        icon: ExpressiveSymbols.favorite,
-        title: 'No readings yet this week',
-        body:
-            'Take your first reading and it will show here, with the '
-            'category it falls in.',
-      ),
-      ExpressiveErrorState(
-        title: 'The cuff did not answer',
-        message: 'Check it is on and paired, then try again in a minute.',
-        icon: null,
-        onRetry: _noop,
-      ),
-    ],
-  );
+  Widget build(BuildContext context) {
+    final w = TripWords.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        kitSection(
+          w.longerEmptyCaption,
+          children: <Widget>[
+            ExpressiveEmptyState(
+              icon: ExpressiveSymbols.hiking,
+              title: w.noWalksThisWeek,
+              body: w.noWalksThisWeekText,
+            ),
+          ],
+        ),
+        const SizedBox(height: kitGap * 3),
+        kitSection(
+          w.plainErrorCaption,
+          children: <Widget>[
+            ExpressiveErrorState(
+              title: w.mapFailed,
+              message: w.mapFailedText,
+              icon: null,
+              onRetry: _noop,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 void _noop() {}
@@ -301,10 +321,20 @@ class _Success extends StatelessWidget {
   const _Success();
 
   @override
-  Widget build(BuildContext context) => kitSection(
-    'Success state',
-    children: <Widget>[kitSpecimenSuccessState()],
-  );
+  Widget build(BuildContext context) {
+    final w = TripWords.of(context);
+    return kitSection(
+      w.successState,
+      children: <Widget>[
+        ExpressiveSuccessState(
+          title: w.tableBooked,
+          message: w.tableBookedText,
+          actionLabel: w.done,
+          onAction: () {},
+        ),
+      ],
+    );
+  }
 }
 
 /// The success state a booking ends on, with its next step.
@@ -330,34 +360,40 @@ class _StatusState extends State<_Status> {
   void _to(ExpressiveStatus status) => setState(() => _status = status);
 
   @override
-  Widget build(BuildContext context) => kitSection(
-    'Status view · error, retry to loading, then success',
-    children: <Widget>[
-      // At least 320 so the three states swap in one place; taller as the
-      // text grows.
-      ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 320),
-        child: switch (_status) {
-          ExpressiveStatus.loading => const ExpressiveStatusView.loading(
-            message: 'Loading your walks',
+  Widget build(BuildContext context) {
+    final w = TripWords.of(context);
+    return kitSection(
+      w.statusSection,
+      children: <Widget>[
+        // At least 320 so the three states swap in one place; taller as the
+        // text grows.
+        ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 320),
+          child: switch (_status) {
+            ExpressiveStatus.loading => ExpressiveStatusView.loading(
+              message: w.loadingWalks,
+            ),
+            ExpressiveStatus.error => ExpressiveStatusView.error(
+              title: w.walksFailed,
+              message: w.checkConnection,
+              onRetry: () => _to(ExpressiveStatus.loading),
+            ),
+            ExpressiveStatus.success => ExpressiveStatusView.success(
+              title: w.walksUpToDate,
+              message: w.walksSaved,
+              actionLabel: w.startOver,
+              onAction: () => _to(ExpressiveStatus.error),
+            ),
+          },
+        ),
+        if (_status == ExpressiveStatus.loading)
+          KitAction(
+            w.finishLoading,
+            onTap: () => _to(ExpressiveStatus.success),
           ),
-          ExpressiveStatus.error => ExpressiveStatusView.error(
-            title: 'Could not load your walks',
-            message: 'Check your connection and try again.',
-            onRetry: () => _to(ExpressiveStatus.loading),
-          ),
-          ExpressiveStatus.success => ExpressiveStatusView.success(
-            title: 'Walks are up to date',
-            message: 'Twelve routes, saved on this phone.',
-            actionLabel: 'Start over',
-            onAction: () => _to(ExpressiveStatus.error),
-          ),
-        },
-      ),
-      if (_status == ExpressiveStatus.loading)
-        KitAction('Finish loading', onTap: () => _to(ExpressiveStatus.success)),
-    ],
-  );
+      ],
+    );
+  }
 }
 
 /// A status view in its error state, its retry offered.

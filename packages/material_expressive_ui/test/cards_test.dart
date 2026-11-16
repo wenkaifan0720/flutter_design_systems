@@ -216,7 +216,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        _app(ExpressiveCard.filled(onPressed: null, child: _body)),
+        _app(const ExpressiveCard.filled(onPressed: null, child: _body)),
       );
       await tester.tap(find.byType(ExpressiveCard), warnIfMissed: false);
       await tester.pumpAndSettle();

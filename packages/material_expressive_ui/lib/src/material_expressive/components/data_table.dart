@@ -2,6 +2,7 @@
 /// headers, selectable rows, a page at a time.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -12,6 +13,7 @@ import '../spacing.dart';
 import '../states.dart';
 import '../strings.dart';
 import '../theme.dart';
+import '../internal/tokens/assist_chip_tokens.g.dart';
 import 'lists.dart' show ExpressiveDivider;
 import 'selection.dart' show ExpressiveCheckbox;
 import 'wayfinding.dart' show ExpressivePagination;
@@ -26,8 +28,8 @@ export 'package:ui_core/ui_core.dart'
         DesignTableController,
         DesignTableRow;
 
-/// A sorted header's arrow: Material's small icon.
-const double _arrow = 18;
+/// A sorted header's arrow: Material's small icon (a chip's 18dp).
+const double _arrow = AssistChipTokens.iconSize;
 
 /// The rows a [DesignTableController] holds, a page at a time, under a
 /// header that sorts (shadcn's `DataTable`; Material's data table): rows
@@ -233,7 +235,7 @@ class ExpressiveDataTable<R> extends StatelessWidget {
           child: ExpressiveStateFace(
             states: states,
             shape: t.shapes.full,
-            color: const Color(0x00000000),
+            color: expressiveTransparent,
             contentColor: ink,
             padding: const EdgeInsetsDirectional.symmetric(
               horizontal: ExpressiveSpacing.s8,
@@ -289,7 +291,7 @@ class ExpressiveDataTable<R> extends StatelessWidget {
           shape: t.shapes.of(ListTokens.itemContainerShape),
           color: row.selected
               ? c.role(ListTokens.itemSelectedContainerColor)
-              : const Color(0x00000000),
+              : expressiveTransparent,
           contentColor: content,
           focusInward: true,
           child: DefaultTextStyle.merge(
@@ -315,5 +317,25 @@ class ExpressiveDataTable<R> extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('selectable', selectable, defaultValue: true),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<R>?>.has('onActivate', onActivate))
+      ..add(
+        DiagnosticsProperty<Map<String, int>>(
+          'columnFlex',
+          columnFlex,
+          defaultValue: const <String, int>{},
+        ),
+      );
   }
 }

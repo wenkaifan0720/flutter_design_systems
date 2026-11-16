@@ -636,6 +636,14 @@ class ExpressiveLocalizationsScope extends InheritedWidget {
   @override
   bool updateShouldNotify(ExpressiveLocalizationsScope oldWidget) =>
       !identical(strings, oldWidget.strings);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<ExpressiveLocalizations>('strings', strings),
+    );
+  }
 }
 
 class _ExpressiveLocalizationsDelegate

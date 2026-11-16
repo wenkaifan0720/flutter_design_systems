@@ -116,10 +116,19 @@ class _RoleSection extends StatelessWidget {
                   color: c.onSurfaceVariant,
                 ),
               ),
-              Text('Roboto Flex', style: baseline.copyWith(color: c.onSurface)),
-              Text(
-                'Emphasized',
-                style: emphasized.copyWith(color: c.onSurface),
+              // A specimen is one line: wider than the page (a display size
+              // at large text), it prints smaller rather than breaking a word.
+              _specimenLine(
+                Text(
+                  'Roboto Flex',
+                  style: baseline.copyWith(color: c.onSurface),
+                ),
+              ),
+              _specimenLine(
+                Text(
+                  'Emphasized',
+                  style: emphasized.copyWith(color: c.onSurface),
+                ),
               ),
             ],
           ),
@@ -127,6 +136,13 @@ class _RoleSection extends StatelessWidget {
     );
   }
 }
+
+/// [text] on one line at its own size while it fits, smaller where not.
+Widget _specimenLine(Widget text) => FittedBox(
+  fit: BoxFit.scaleDown,
+  alignment: AlignmentDirectional.centerStart,
+  child: text,
+);
 
 /// `size/line height` in sp, as the tokens state them.
 String _metrics(TextStyle style) {

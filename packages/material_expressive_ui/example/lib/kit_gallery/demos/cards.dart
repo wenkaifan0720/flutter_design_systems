@@ -207,22 +207,34 @@ class _Nested extends StatelessWidget {
                   color: t.colors.onSurfaceVariant,
                 ),
               ),
-              Row(
-                spacing: ExpressiveSpacing.s12,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  for (final (day, plan) in const <(String, String)>[
-                    ('Saturday', 'Harbour walk, oysters, the late ferry'),
-                    ('Sunday', 'Lighthouse, dunes, back by six'),
-                  ])
-                    Expanded(
-                      child: ExpressiveCard.filled(
+              // Side by side; one above the other at large text, where
+              // half a phone's width breaks a word.
+              if (kitLargeText(context))
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: ExpressiveSpacing.s12,
+                  children: <Widget>[
+                    for (final (day, plan) in _days)
+                      ExpressiveCard.filled(
                         onPressed: () {},
                         child: _Copy(day, plan),
                       ),
-                    ),
-                ],
-              ),
+                  ],
+                )
+              else
+                Row(
+                  spacing: ExpressiveSpacing.s12,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    for (final (day, plan) in _days)
+                      Expanded(
+                        child: ExpressiveCard.filled(
+                          onPressed: () {},
+                          child: _Copy(day, plan),
+                        ),
+                      ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -230,6 +242,12 @@ class _Nested extends StatelessWidget {
     );
   }
 }
+
+/// The coast weekend's two days.
+const List<(String, String)> _days = <(String, String)>[
+  ('Saturday', 'Harbour walk, oysters, the late ferry'),
+  ('Sunday', 'Lighthouse, dunes, back by six'),
+];
 
 // Catalog specimens (docs/architecture/component-catalog.md).
 

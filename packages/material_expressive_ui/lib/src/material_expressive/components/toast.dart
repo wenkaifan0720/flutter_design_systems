@@ -39,6 +39,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
@@ -57,6 +58,7 @@ import '../strings.dart';
 import '../theme.dart';
 import 'icon_buttons.dart';
 import 'shell_insets.dart';
+import '../internal/style_layers.dart';
 
 /// How long a snackbar stays up (Compose's `SnackbarDuration`).
 enum ExpressiveSnackBarDuration {
@@ -71,8 +73,8 @@ enum ExpressiveSnackBarDuration {
 
   /// How long it keeps a snackbar up; null for [indefinite].
   Duration? get timeout => switch (this) {
-    short => Duration(milliseconds: SnackbarHostBehavior.shortDuration),
-    long => Duration(milliseconds: SnackbarHostBehavior.longDuration),
+    short => const Duration(milliseconds: SnackbarHostBehavior.shortDuration),
+    long => const Duration(milliseconds: SnackbarHostBehavior.longDuration),
     indefinite => null,
   };
 }
@@ -188,7 +190,7 @@ class ExpressiveSnackBar extends StatelessWidget {
     final theme = context.expressiveTheme;
     final colors = theme.colors;
     const states = <WidgetState>{};
-    final resolved = theme.snackBarTheme.merge(style);
+    final resolved = theme.snackBarTheme.layeredUnder(style);
     final container = ExpressiveComponentThemeData.resolve(
       resolved.backgroundColor,
       states,
@@ -260,6 +262,37 @@ class ExpressiveSnackBar extends StatelessWidget {
     final height = painter.height;
     painter.dispose();
     return height;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('message', message))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onAction', onAction))
+      ..add(
+        FlagProperty(
+          'withDismissAction',
+          value: withDismissAction,
+          ifTrue: 'withDismissAction',
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onDismiss', onDismiss))
+      ..add(
+        FlagProperty(
+          'actionOnNewLine',
+          value: actionOnNewLine,
+          ifTrue: 'actionOnNewLine',
+        ),
+      );
   }
 }
 
@@ -734,7 +767,12 @@ class _ToastQueue {
     }
     final entry = _entry;
     if (entry == null) {
-      overlay.insert(_entry = OverlayEntry(builder: _build));
+      late final OverlayEntry made;
+      made = OverlayEntry(
+        builder: (context) =>
+            _QueueLifetime(onDispose: () => _abandon(made), child: _layer()),
+      );
+      overlay.insert(_entry = made);
     } else {
       entry.markNeedsBuild();
     }
@@ -755,15 +793,20 @@ class _ToastQueue {
     }
   }
 
-  /// The overlay went with the tree the toast stood in (a page, a preview,
-  /// a test torn down): the timeout has nothing left to take down.
-  void _abandon() {
+  /// [entry]'s layer left the tree. Taken down by the queue, it is already
+  /// disposed; otherwise the overlay went with the tree the toast stood in
+  /// (a page, a preview, a test torn down): the timeout has nothing left to
+  /// take down, and the entry goes with the overlay.
+  void _abandon(OverlayEntry entry) {
+    if (!identical(entry, _entry)) return;
     _timer?.cancel();
     _timer = null;
+    _entry = null;
+    if (identical(_queues[overlay], this)) _queues[overlay] = null;
+    entry
+      ..remove()
+      ..dispose();
   }
-
-  Widget _build(BuildContext context) =>
-      _QueueLifetime(onDispose: _abandon, child: _layer());
 
   Widget _layer() => Positioned.fill(
     child: Stack(
@@ -847,6 +890,14 @@ class ExpressiveSnackBarTransition extends StatefulWidget {
   @override
   State<ExpressiveSnackBarTransition> createState() =>
       _ExpressiveSnackBarTransitionState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('visible', visible, defaultValue: true))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onExited', onExited));
+  }
 }
 
 class _ExpressiveSnackBarTransitionState

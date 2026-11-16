@@ -21,6 +21,7 @@
 ///   ([ExpressiveSheetPage]) — and a preview refuses its own pop.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -148,6 +149,60 @@ class ExpressivePreview extends StatefulWidget {
 
   @override
   State<ExpressivePreview> createState() => _ExpressivePreviewState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<PreviewPlatform>(
+          'platform',
+          platform,
+          defaultValue: PreviewPlatform.android,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Brightness>(
+          'brightness',
+          brightness,
+          defaultValue: Brightness.light,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveThemeData?>(
+          'light',
+          light,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveThemeData?>(
+          'dark',
+          dark,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<RoutePresentation>(
+          'presentation',
+          presentation,
+          defaultValue: RoutePresentation.root,
+        ),
+      )
+      ..add(FlagProperty('drawer', value: drawer, ifTrue: 'drawer'))
+      ..add(FlagProperty('device', value: device, ifTrue: 'device'))
+      ..add(
+        DiagnosticsProperty<bool>('systemBars', systemBars, defaultValue: true),
+      )
+      ..add(
+        EnumProperty<ExpressiveNavigationMode>(
+          'navigationMode',
+          navigationMode,
+          defaultValue: ExpressiveNavigationMode.gesture,
+        ),
+      )
+      ..add(DiagnosticsProperty<DateTime?>('clock', clock, defaultValue: null));
+  }
 }
 
 class _ExpressivePreviewState extends State<ExpressivePreview> {
@@ -156,10 +211,21 @@ class _ExpressivePreviewState extends State<ExpressivePreview> {
   /// through here rather than through the app's `home`.
   late final ValueNotifier<Widget> _page = ValueNotifier<Widget>(widget.child);
 
+  /// The preview's navigator, new with each presentation (a new stack).
+  GlobalKey<NavigatorState> _navigator = GlobalKey<NavigatorState>();
+
+  /// The home route's page, read each time the route builds, as an app's
+  /// `home` is.
+  late Widget _home;
+
   @override
   void didUpdateWidget(ExpressivePreview oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!identical(oldWidget.child, widget.child)) _page.value = widget.child;
+    if (oldWidget.presentation != widget.presentation ||
+        oldWidget.drawer != widget.drawer) {
+      _navigator = GlobalKey<NavigatorState>();
+    }
   }
 
   @override
@@ -182,7 +248,7 @@ class _ExpressivePreviewState extends State<ExpressivePreview> {
 
   @override
   Widget build(BuildContext context) {
-    final home = widget.presentation == RoutePresentation.root
+    _home = widget.presentation == RoutePresentation.root
         ? ValueListenableBuilder<Widget>(
             valueListenable: _page,
             builder: (context, page, _) => page,
@@ -197,30 +263,47 @@ class _ExpressivePreviewState extends State<ExpressivePreview> {
     // The preview reads in the direction of the page it stands in: its own
     // app's English localizations would otherwise turn it left to right.
     final direction = Directionality.maybeOf(context);
+    // And in its language: the page's words (its dialog's Cancel, its error
+    // state's Try again), not its own app's English.
+    final page = Localizations.maybeLocaleOf(context) == null ? null : context;
+    // The preview's own navigator, not its app's: on the web an app's
+    // navigator lets Tab leave the browser window at its last control, so
+    // the keyboard would never reach the page around the preview. This one
+    // hands focus on to that page, as any part of it does.
+    final navigator = Navigator(
+      key: _navigator,
+      // Unclipped, as an app's navigator is: the frame clips the screen.
+      clipBehavior: Clip.none,
+      routeTraversalEdgeBehavior: TraversalEdgeBehavior.parentScope,
+      onGenerateRoute: (settings) =>
+          MaterialPageRoute<void>(settings: settings, builder: (_) => _home),
+    );
     final app = MaterialApp(
       // A new presentation is a new stack: raise it afresh.
       key: ValueKey<Object>((widget.presentation, widget.drawer)),
       debugShowCheckedModeBanner: false,
-      builder: (context, app) {
+      builder: (context, _) {
         final host = ExpressiveHost(
           light: widget.light,
           dark: widget.dark,
           brightness: widget.brightness,
           child: insets == null
-              ? app ?? const SizedBox.shrink()
+              ? navigator
               : _AnnotatedBars(
                   platform: widget.platform,
                   mode: widget.navigationMode,
                   insets: insets,
                   clock: widget.clock,
-                  child: app ?? const SizedBox.shrink(),
+                  child: navigator,
                 ),
         );
-        return direction == null
+        final placed = direction == null
             ? host
             : Directionality(textDirection: direction, child: host);
+        return page == null
+            ? placed
+            : Localizations.override(context: page, child: placed);
       },
-      home: home,
     );
     // The preview is a screen of its own to assistive technology: a modal
     // raised in it (a sheet's barrier) blocks the page under it in the

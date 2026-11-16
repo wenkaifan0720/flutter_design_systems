@@ -70,6 +70,67 @@ class ExpressiveComponentThemeData with Diagnosticable {
     this.iconSize,
   });
 
+  /// [layers] in priority order, as one style: each slot is the first
+  /// layer's that resolves to a value for the states at hand, as ui_core's
+  /// `DesignStyle.layered`. How a part lays its own `style:` over its
+  /// component theme. Unlike [merge], which keeps a whole slot, this falls
+  /// through inside a slot, state by state.
+  ///
+  /// ```dart
+  /// final pressedOnly = ExpressiveComponentThemeData(
+  ///   backgroundColor: WidgetStateProperty.resolveWith(
+  ///     (states) => states.contains(WidgetState.pressed)
+  ///         ? const Color(0xff4f378b)
+  ///         : null,
+  ///   ),
+  /// );
+  /// final style = ExpressiveComponentThemeData.layered([
+  ///   pressedOnly,
+  ///   const ExpressiveComponentThemeData(
+  ///     backgroundColor: WidgetStatePropertyAll(Color(0xff6750a4)),
+  ///   ),
+  /// ]);
+  /// ```
+  factory ExpressiveComponentThemeData.layered(
+    List<ExpressiveComponentThemeData?> layers,
+  ) {
+    final source = layers.whereType<ExpressiveComponentThemeData>().toList(
+      growable: false,
+    );
+    if (source.isEmpty) return const ExpressiveComponentThemeData();
+    if (source.length == 1) return source.single;
+    WidgetStateProperty<T?>? combine<T>(
+      WidgetStateProperty<T?>? Function(ExpressiveComponentThemeData) slot,
+    ) {
+      final values = source
+          .map(slot)
+          .whereType<WidgetStateProperty<T?>>()
+          .toList(growable: false);
+      if (values.isEmpty) return null;
+      if (values.length == 1) return values.single;
+      return WidgetStateProperty.resolveWith((states) {
+        for (final property in values) {
+          final value = property.resolve(states);
+          if (value != null) return value;
+        }
+        return null;
+      });
+    }
+
+    return ExpressiveComponentThemeData(
+      backgroundColor: combine((s) => s.backgroundColor),
+      foregroundColor: combine((s) => s.foregroundColor),
+      outline: combine((s) => s.outline),
+      overlayColor: combine((s) => s.overlayColor),
+      side: combine((s) => s.side),
+      shape: combine((s) => s.shape),
+      padding: combine((s) => s.padding),
+      minimumSize: combine((s) => s.minimumSize),
+      textStyle: combine((s) => s.textStyle),
+      iconSize: combine((s) => s.iconSize),
+    );
+  }
+
   /// The container colour, as `ButtonStyle.backgroundColor`.
   final WidgetStateProperty<Color?>? backgroundColor;
 
@@ -146,30 +207,27 @@ class ExpressiveComponentThemeData with Diagnosticable {
     iconSize: iconSize ?? this.iconSize,
   );
 
-  /// [other] has precedence; slots that resolve to null fall through to this style.
+  /// This style, with [other]'s slots where this has none, as
+  /// `ButtonStyle.merge` and ui_core's `DesignStyle.merge` do: a slot is
+  /// kept whole. [ExpressiveComponentThemeData.layered] falls through
+  /// within a slot, state by state.
+  ///
+  /// Before 0.2.0, [other] won: write `other.merge(this)` for that order,
+  /// or `ExpressiveComponentThemeData.layered([other, this])` for its
+  /// state-by-state fall-through.
   ExpressiveComponentThemeData merge(ExpressiveComponentThemeData? other) {
     if (other == null) return this;
-    WidgetStateProperty<T?>? mergeSlot<T>(
-      WidgetStateProperty<T?>? base,
-      WidgetStateProperty<T?>? top,
-    ) => top == null
-        ? base
-        : base == null
-        ? top
-        : WidgetStateProperty.resolveWith(
-            (states) => top.resolve(states) ?? base.resolve(states),
-          );
     return ExpressiveComponentThemeData(
-      backgroundColor: mergeSlot(backgroundColor, other.backgroundColor),
-      foregroundColor: mergeSlot(foregroundColor, other.foregroundColor),
-      outline: mergeSlot(outline, other.outline),
-      overlayColor: mergeSlot(overlayColor, other.overlayColor),
-      side: mergeSlot(side, other.side),
-      shape: mergeSlot(shape, other.shape),
-      padding: mergeSlot(padding, other.padding),
-      minimumSize: mergeSlot(minimumSize, other.minimumSize),
-      textStyle: mergeSlot(textStyle, other.textStyle),
-      iconSize: mergeSlot(iconSize, other.iconSize),
+      backgroundColor: backgroundColor ?? other.backgroundColor,
+      foregroundColor: foregroundColor ?? other.foregroundColor,
+      outline: outline ?? other.outline,
+      overlayColor: overlayColor ?? other.overlayColor,
+      side: side ?? other.side,
+      shape: shape ?? other.shape,
+      padding: padding ?? other.padding,
+      minimumSize: minimumSize ?? other.minimumSize,
+      textStyle: textStyle ?? other.textStyle,
+      iconSize: iconSize ?? other.iconSize,
     );
   }
 

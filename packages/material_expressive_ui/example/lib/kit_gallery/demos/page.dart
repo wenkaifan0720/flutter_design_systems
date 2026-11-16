@@ -1,9 +1,8 @@
 /// The page group's demo: a live route stack of `ExpressivePage`s on a
 /// plain `Navigator` — a journal's root, an entry pushed off it, and a note
 /// pushed off the entry — so the platform's push and back can be felt: on
-/// Android
-/// the fade-forwards push and predictive back, on iOS the Cupertino slide
-/// and its edge swipe.
+/// iOS the Cupertino slide and its edge swipe, everywhere else the
+/// fade-forwards push (and on Android predictive back).
 library;
 
 import 'package:flutter/material.dart';
@@ -47,24 +46,34 @@ Page<void> _page(String location, LocalKey key) {
 
 /// What the push and the back gesture are on [platform].
 ({String push, String back}) _behaviourOf(TargetPlatform platform) =>
-    platform == TargetPlatform.iOS || platform == TargetPlatform.macOS
-    ? (
+    switch (platform) {
+      TargetPlatform.iOS => (
         push:
             'Cupertino slide: the page slides in from the trailing edge, '
             'the page beneath trails a third of the way.',
         back:
             'Edge swipe: drag from the leading edge; the page follows '
             'your finger and settles either way on release.',
-      )
-    : (
-        push:
-            'Fade-forwards: the page travels 96dp and fades in while the '
-            'page beneath travels 96dp the other way.',
+      ),
+      TargetPlatform.android => (
+        push: _fadeForwards,
         back:
             'Predictive back: swipe from either edge; the page shrinks '
             'to 90 %, shifts and rounds its corners, then commits or '
             'springs home.',
-      );
+      ),
+      _ => (
+        push: _fadeForwards,
+        back:
+            'Back: the page’s back button or the browser’s; the page '
+            'fades out as it travels 96dp back, and the page beneath '
+            'travels home.',
+      ),
+    };
+
+const String _fadeForwards =
+    'Fade-forwards: the page travels 96dp and fades in while the page '
+    'beneath travels 96dp the other way.';
 
 class _Journal extends StatelessWidget {
   const _Journal();

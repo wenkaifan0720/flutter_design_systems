@@ -65,7 +65,7 @@ void main() {
 
   test('the shape scale is the one way to an app\'s corners', () {
     final base = ExpressiveThemeData.preset('baseline', Brightness.light);
-    const zero = ExpressiveCornerBorder.all(ExpressiveCornerSize.dp(0));
+    const zero = ExpressiveCornerBorder.all(ExpressiveCornerSize.zero);
     const square = ExpressiveShapes(
       none: zero,
       extraSmall: zero,

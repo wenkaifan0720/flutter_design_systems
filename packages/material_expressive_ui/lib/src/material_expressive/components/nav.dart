@@ -23,6 +23,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -59,6 +60,7 @@ import '../shape.dart';
 import '../states.dart';
 import '../theme.dart';
 import 'badge.dart';
+import '../internal/style_layers.dart';
 import 'overlays.dart' show ExpressivePopupRoute;
 
 // ---------------------------------------------------------------------------
@@ -158,7 +160,10 @@ class ExpressiveNavigationBar extends StatelessWidget {
     this.arrangement = ExpressiveNavigationBarArrangement.equalWeight,
     this.style,
     super.key,
-  });
+  }) : assert(
+         selectedIndex >= 0,
+         'selectedIndex names one of the destinations',
+       );
 
   /// Stateful visual overrides for this navigation frame.
   final ExpressiveComponentThemeData? style;
@@ -179,9 +184,15 @@ class ExpressiveNavigationBar extends StatelessWidget {
   final ExpressiveNavigationBarArrangement arrangement;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FocusTraversalGroup(
+    // Its destinations are one stop in the keyboard's reading order, as a
+    // rail's are.
+    child: Builder(builder: _bar),
+  );
+
+  Widget _bar(BuildContext context) {
     final t = context.expressiveTheme;
-    final visual = t.navigationBarTheme.merge(style);
+    final visual = t.navigationBarTheme.layeredUnder(style);
     final insets = MediaQuery.paddingOf(context);
     final top = itemPosition == ExpressiveNavItemPosition.top;
     var minimumWidth = 0.0;
@@ -191,8 +202,8 @@ class ExpressiveNavigationBar extends StatelessWidget {
         if (!item.enabled) WidgetState.disabled,
       };
       final own = _navigationContentStyle(visual)
-          .merge(t.navigationItemTheme)
-          .merge(item.style);
+          .layeredUnder(t.navigationItemTheme)
+          .layeredUnder(item.style);
       final border = own.shape?.resolve(states);
       final inset =
           border
@@ -266,7 +277,7 @@ class ExpressiveNavigationBar extends StatelessWidget {
                       _NavItem(
                         item: item,
                         componentStyle: _navigationContentStyle(visual)
-                            .merge(t.navigationItemTheme),
+                            .layeredUnder(t.navigationItemTheme),
                         selected: index == selectedIndex,
                         onTap: () => onDestinationSelected(index),
                         geometry: top
@@ -283,6 +294,41 @@ class ExpressiveNavigationBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<ExpressiveNavItem>('destinations', destinations))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveNavItemPosition>(
+          'itemPosition',
+          itemPosition,
+          defaultValue: ExpressiveNavItemPosition.top,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveNavigationBarArrangement>(
+          'arrangement',
+          arrangement,
+          defaultValue: ExpressiveNavigationBarArrangement.equalWeight,
+        ),
+      );
   }
 }
 
@@ -556,9 +602,16 @@ class ExpressiveNavigationRail extends StatelessWidget {
   final Widget? header;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FocusTraversalGroup(
+    // Its destinations are one stop in the keyboard's reading order: on a
+    // wide window Tab walks the rail, then the page, not row by row across
+    // both (11-14).
+    child: Builder(builder: _rail),
+  );
+
+  Widget _rail(BuildContext context) {
     final t = context.expressiveTheme;
-    final visual = t.navigationRailTheme.merge(style);
+    final visual = t.navigationRailTheme.layeredUnder(style);
     final insets = MediaQuery.paddingOf(context);
     final start = Directionality.of(context) == TextDirection.ltr
         ? insets.left
@@ -628,7 +681,7 @@ class ExpressiveNavigationRail extends StatelessWidget {
                               child: _NavItem(
                                 item: item,
                                 componentStyle: _navigationContentStyle(visual)
-                                    .merge(t.navigationItemTheme),
+                                    .layeredUnder(t.navigationItemTheme),
                                 selected: index == selectedIndex,
                                 onTap: () => onDestinationSelected(index),
                                 geometry: _NavItemGeometry.railStart,
@@ -650,7 +703,7 @@ class ExpressiveNavigationRail extends StatelessWidget {
                             child: _NavItem(
                               item: item,
                               componentStyle: _navigationContentStyle(visual)
-                                  .merge(t.navigationItemTheme),
+                                  .layeredUnder(t.navigationItemTheme),
                               selected: index == selectedIndex,
                               onTap: () => onDestinationSelected(index),
                               geometry: _NavItemGeometry.railTop,
@@ -692,6 +745,28 @@ class ExpressiveNavigationRail extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('expanded', value: expanded, ifTrue: 'expanded'))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<ExpressiveNavItem>('destinations', destinations))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      );
   }
 }
 
@@ -871,6 +946,27 @@ class ExpressiveNavigationDrawer extends StatelessWidget {
         header: header,
         style: style,
       );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveNavItem>('destinations', destinations))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1144,7 +1240,7 @@ class _NavItem extends StatelessWidget {
       if (selected) WidgetState.selected,
       if (!enabled) WidgetState.disabled,
     };
-    final visual = componentStyle.merge(item.style);
+    final visual = componentStyle.layeredUnder(item.style);
     final indicatorShape =
         visual.shape?.resolve(states) ??
         t.shapes.of(NavigationBarTokens.itemActiveIndicatorShape);
@@ -1738,7 +1834,7 @@ class ExpressiveTabBar extends StatefulWidget {
     this.edgePadding = TabRowBehavior.scrollableEdgeStartPadding,
     this.style,
     super.key,
-  });
+  }) : assert(selectedIndex >= 0, 'selectedIndex names one of the tabs');
 
   /// Stateful visual overrides for the tab-row frame.
   final ExpressiveComponentThemeData? style;
@@ -1763,6 +1859,37 @@ class ExpressiveTabBar extends StatefulWidget {
 
   @override
   State<ExpressiveTabBar> createState() => _ExpressiveTabBarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<ExpressiveTab>('tabs', tabs))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(
+        EnumProperty<ExpressiveTabBarVariant>(
+          'variant',
+          variant,
+          defaultValue: ExpressiveTabBarVariant.primary,
+        ),
+      )
+      ..add(FlagProperty('scrollable', value: scrollable, ifTrue: 'scrollable'))
+      ..add(
+        DoubleProperty(
+          'edgePadding',
+          edgePadding,
+          defaultValue: TabRowBehavior.scrollableEdgeStartPadding,
+        ),
+      );
+  }
 }
 
 class _ExpressiveTabBarState extends State<ExpressiveTabBar>
@@ -1848,7 +1975,7 @@ class _ExpressiveTabBarState extends State<ExpressiveTabBar>
 
   Widget _buildRow(BuildContext context, BoxConstraints constraints) {
     final t = context.expressiveTheme;
-    final visual = t.tabBarTheme.merge(widget.style);
+    final visual = t.tabBarTheme.layeredUnder(widget.style);
     final scrollable =
         widget.scrollable ||
         constraints.maxWidth < widget.tabs.length * ExpressiveSpacing.s48;
@@ -1883,7 +2010,8 @@ class _ExpressiveTabBarState extends State<ExpressiveTabBar>
       for (final (index, tab) in widget.tabs.indexed)
         _Tab(
           tab: tab,
-          componentStyle: _navigationContentStyle(visual).merge(t.tabTheme),
+          componentStyle: _navigationContentStyle(visual)
+              .layeredUnder(t.tabTheme),
           selected: index == widget.selectedIndex,
           selectedColor: selectedColor,
           unselectedColor: unselectedColor,
@@ -2227,12 +2355,49 @@ class _RenderTabContent extends RenderBox
       computeMaxIntrinsicHeight(width);
 
   @override
-  double computeMaxIntrinsicHeight(double width) => math.max(
-    _specHeight,
-    (_icon?.getMaxIntrinsicHeight(width) ?? 0) +
-        (_text?.getMaxIntrinsicHeight(width) ?? 0) +
-        _iconDistance,
-  );
+  double computeMaxIntrinsicHeight(double width) {
+    final text = _text;
+    final icon = _icon;
+    if (text != null && icon != null) {
+      return _stackedHeight(
+        icon.getMaxIntrinsicHeight(width),
+        text.getMaxIntrinsicHeight(width),
+        text.getMaxIntrinsicHeight(double.infinity),
+      );
+    }
+    return math.max(
+      _specHeight,
+      (icon?.getMaxIntrinsicHeight(width) ?? 0) +
+          (text?.getMaxIntrinsicHeight(width) ?? 0) +
+          _iconDistance,
+    );
+  }
+
+  /// The label's last baseline above the tab's bottom, under an icon.
+  static double _textOffset(int lines) =>
+      (lines == 1
+          ? TabBehavior.singleLineTextBaselineWithIcon
+          : TabBehavior.doubleLineTextBaselineWithIcon) +
+      PrimaryNavigationTabTokens.activeIndicatorHeight;
+
+  static int _lines(double text, double lineHeight) =>
+      math.max(1, (text / lineHeight).round());
+
+  /// The height an icon over a label needs, placed as [performLayout]
+  /// places them: the label's last baseline [_textOffset] above the bottom,
+  /// the icon [_iconDistance] above its first. A label printed smaller to
+  /// keep its word whole is shorter than that distance, so the placement,
+  /// not the label's height, sets the tab's.
+  double _stackedHeight(double icon, double text, double lineHeight) {
+    final lines = _lines(text, lineHeight);
+    return math.max(
+      _specHeight,
+      math.max(
+        icon + text + _iconDistance,
+        icon + _iconDistance + (lines - 1) * lineHeight + _textOffset(lines),
+      ),
+    );
+  }
 
   @override
   Size computeDryLayout(BoxConstraints constraints) => Size(
@@ -2254,10 +2419,16 @@ class _RenderTabContent extends RenderBox
     text?.layout(loose, parentUsesSize: true);
     icon?.layout(loose, parentUsesSize: true);
     final contentWidth = math.max(text?.size.width ?? 0, icon?.size.width ?? 0);
-    final tabHeight = math.max(
-      _specHeight,
-      (icon?.size.height ?? 0) + (text?.size.height ?? 0) + _iconDistance,
-    );
+    final tabHeight = text != null && icon != null
+        ? _stackedHeight(
+            icon.size.height,
+            text.size.height,
+            text.getMaxIntrinsicHeight(double.infinity),
+          )
+        : math.max(
+            _specHeight,
+            (icon?.size.height ?? 0) + (text?.size.height ?? 0) + _iconDistance,
+          );
     // The Tab's column fills the tab (fillMaxWidth) and centres the layout
     // across it and down it. The pressable's stack hands this box loosened
     // constraints, so it takes their bounded maximum.
@@ -2276,13 +2447,9 @@ class _RenderTabContent extends RenderBox
     if (text != null && icon != null) {
       final first = text.getDistanceToBaseline(TextBaseline.alphabetic)!;
       final lineHeight = text.getMaxIntrinsicHeight(double.infinity);
-      final lines = math.max(1, (text.size.height / lineHeight).round());
+      final lines = _lines(text.size.height, lineHeight);
       final last = first + (lines - 1) * lineHeight;
-      final baselineOffset = lines == 1
-          ? TabBehavior.singleLineTextBaselineWithIcon
-          : TabBehavior.doubleLineTextBaselineWithIcon;
-      final textOffset =
-          baselineOffset + PrimaryNavigationTabTokens.activeIndicatorHeight;
+      final textOffset = _textOffset(lines);
       final iconOffset = icon.size.height + _iconDistance - first;
       final textY = tabHeight - last - textOffset;
       place(text, (contentWidth - text.size.width) / 2, textY);

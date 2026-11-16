@@ -21,6 +21,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
@@ -57,7 +58,7 @@ class ExpressiveShellScaffold extends StatefulWidget {
     this.action,
     this.accessory,
     super.key,
-  });
+  }) : assert(selectedIndex >= 0, 'selectedIndex names one of the tabs');
 
   /// One per branch, in branch order.
   final List<NavTab> tabs;
@@ -84,6 +85,26 @@ class ExpressiveShellScaffold extends StatefulWidget {
   @override
   State<ExpressiveShellScaffold> createState() =>
       _ExpressiveShellScaffoldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<NavTab>('tabs', tabs))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('barVisible', barVisible, defaultValue: true),
+      )
+      ..add(
+        DiagnosticsProperty<ShellAction?>('action', action, defaultValue: null),
+      );
+  }
 }
 
 class _ExpressiveShellScaffoldState extends State<ExpressiveShellScaffold> {

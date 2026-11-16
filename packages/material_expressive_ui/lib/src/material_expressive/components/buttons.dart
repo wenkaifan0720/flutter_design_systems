@@ -34,7 +34,7 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -78,6 +78,7 @@ import '../strings.dart';
 import '../theme.dart';
 import 'hero.dart';
 import 'loading.dart';
+import '../internal/style_layers.dart';
 
 /// Material's five common-button styles.
 enum ExpressiveButtonKind {
@@ -152,7 +153,7 @@ enum ExpressiveToggleButtonKind {
 /// `ToggleButtonDefaults.toggleButtonColors(...)`): each one left null
 /// keeps the style's. Disabled colours are always the style's.
 @immutable
-class ExpressiveToggleButtonColors {
+class ExpressiveToggleButtonColors with Diagnosticable {
   /// Colours for a toggle button, each left null keeping the style's own.
   const ExpressiveToggleButtonColors({
     this.container,
@@ -172,6 +173,20 @@ class ExpressiveToggleButtonColors {
 
   /// The label and icon while checked.
   final Color? checkedContent;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('container', container, defaultValue: null))
+      ..add(ColorProperty('content', content, defaultValue: null))
+      ..add(
+        ColorProperty('checkedContainer', checkedContainer, defaultValue: null),
+      )
+      ..add(
+        ColorProperty('checkedContent', checkedContent, defaultValue: null),
+      );
+  }
 }
 
 /// A common button (CONTRACT §4.1 `button`): a label, optionally with a
@@ -337,6 +352,55 @@ abstract class ExpressiveButton extends StatelessWidget {
     // Expanded, it fills a phone's column; from [ExpressiveSelect.wideFrom]
     // it keeps to a control's width at its column's start.
     return expand ? expressiveChoiceWidth(context, button) : button;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<ExpressiveButtonKind>('kind', kind))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveButtonSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveButtonSize.small,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveButtonShape>(
+          'shape',
+          shape,
+          defaultValue: ExpressiveButtonShape.round,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData?>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData?>(
+          'trailingIcon',
+          trailingIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -671,7 +735,7 @@ class ExpressiveToggleButton extends StatelessWidget {
           style: style,
           componentStyle:
               (_inSegments ? theme.segmentedButtonTheme : theme.buttonTheme)
-                  .merge(
+                  .layeredUnder(
                     colors == null || !enabled
                         ? null
                         : ExpressiveComponentThemeData(
@@ -712,6 +776,67 @@ class ExpressiveToggleButton extends StatelessWidget {
     // Expanded, it fills a phone's column; from [ExpressiveSelect.wideFrom]
     // it keeps to a control's width at its column's start.
     return expand ? expressiveChoiceWidth(context, button) : button;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<bool>?>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label))
+      ..add(
+        EnumProperty<ExpressiveToggleButtonKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveToggleButtonKind.filled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveButtonSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveButtonSize.small,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveButtonShape>(
+          'shape',
+          shape,
+          defaultValue: ExpressiveButtonShape.round,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData?>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveToggleButtonColors?>(
+          'colors',
+          colors,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressivePressShapes?>(
+          'shapes',
+          shapes,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -772,6 +897,28 @@ class ExpressiveButtonGroup extends StatefulWidget {
 
   @override
   State<ExpressiveButtonGroup> createState() => _ExpressiveButtonGroupState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<ExpressiveButtonSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveButtonSize.small,
+        ),
+      )
+      ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
+      ..add(IterableProperty<double>('weights', weights, defaultValue: null))
+      ..add(
+        DoubleProperty(
+          'expandedRatio',
+          expandedRatio,
+          defaultValue: ButtonGroupBehavior.expandedRatio,
+        ),
+      );
+  }
 }
 
 class _ExpressiveButtonGroupState extends State<ExpressiveButtonGroup>
@@ -996,6 +1143,37 @@ class ExpressiveSegmentedButton<T> extends StatelessWidget {
       expand: expand,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveButtonSegment<T>>('segments', segments))
+      ..add(DiagnosticsProperty<T?>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
+      ..add(
+        EnumProperty<ExpressiveToggleButtonKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveToggleButtonKind.filled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveButtonSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveButtonSize.small,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('expand', expand, defaultValue: true));
+  }
 }
 
 /// The multi-choice segmented button (CONTRACT §4.1 `segmented-control`,
@@ -1071,6 +1249,46 @@ class ExpressiveMultiChoiceSegmentedButton<T> extends StatelessWidget {
       expand: expand,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveButtonSegment<T>>('segments', segments))
+      ..add(IterableProperty<T>('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<Set<T>>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        FlagProperty(
+          'emptySelectionAllowed',
+          value: emptySelectionAllowed,
+          ifTrue: 'emptySelectionAllowed',
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveToggleButtonKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveToggleButtonKind.filled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveButtonSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveButtonSize.small,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('expand', expand, defaultValue: true));
+  }
 }
 
 /// The connected row both segmented buttons draw.
@@ -1129,9 +1347,10 @@ class _ConnectedSegments<T> extends StatelessWidget {
   }
 }
 
-/// A link in running text (CONTRACT §4.1 `link`): its words in `primary`,
-/// underlined, with the pressable's state layers and ripple. Place it in a
-/// paragraph with [span].
+/// A link (CONTRACT §4.1 `link`): its words in `primary`, underlined, with
+/// the pressable's state layers and ripple. Standing alone it keeps the 48dp
+/// tap target every control does; in a paragraph ([span]) it takes none, as
+/// WCAG 2.5.8 exempts a target inside a sentence (a line box cannot grow).
 ///
 /// Disabled when [onPressed] is null.
 class ExpressiveLink extends StatelessWidget {
@@ -1144,7 +1363,16 @@ class ExpressiveLink extends StatelessWidget {
     super.key,
     this.focusNode,
     this.autofocus = false,
-  });
+  }) : _inline = false;
+
+  const ExpressiveLink._inline(
+    this.text, {
+    required this.onPressed,
+    this.style,
+    this.semanticLabel,
+  }) : focusNode = null,
+       autofocus = false,
+       _inline = true;
 
   /// [text] as a link inside a `Text.rich` paragraph, on its baseline.
   static InlineSpan span(
@@ -1155,7 +1383,7 @@ class ExpressiveLink extends StatelessWidget {
   }) => WidgetSpan(
     alignment: PlaceholderAlignment.baseline,
     baseline: TextBaseline.alphabetic,
-    child: ExpressiveLink(
+    child: ExpressiveLink._inline(
       text,
       onPressed: onPressed,
       style: style,
@@ -1180,6 +1408,9 @@ class ExpressiveLink extends StatelessWidget {
 
   /// Whether it takes focus when first built.
   final bool autofocus;
+
+  /// Whether it stands in a sentence ([span]): no tap target round it.
+  final bool _inline;
 
   @override
   Widget build(BuildContext context) {
@@ -1207,11 +1438,29 @@ class ExpressiveLink extends StatelessWidget {
       color: _transparent,
       contentColor: color,
       role: ExpressivePressRole.link,
-      minimumInteractiveSize: false,
+      minimumInteractiveSize: !_inline,
       onPressed: onPressed,
       semanticLabel: semanticLabel,
       child: Text(text, style: textStyle),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<TextStyle?>('style', style, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -2606,7 +2855,9 @@ class ExpressiveToggleGroup<T> extends StatelessWidget {
       isEnabled: (value) => _segment(value).enabled,
       labelOf: (value) => _segment(value).label,
       semanticLabel: label,
-      minimumSize: const Size(48, 48),
+      minimumSize: const Size.square(
+        HostBehavior.minimumInteractiveComponentSize,
+      ),
       onSelectionChanged: onChanged,
       layoutBuilder: (context, items) => Row(
         mainAxisSize: MainAxisSize.min,
@@ -2667,5 +2918,37 @@ class ExpressiveToggleGroup<T> extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveButtonSegment<T>>('segments', segments))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveToggleButtonKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveToggleButtonKind.filled,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveButtonSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveButtonSize.small,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('showLabels', showLabels, defaultValue: true),
+      )
+      ..add(
+        FlagProperty(
+          'selectFollowsFocus',
+          value: selectFollowsFocus,
+          ifTrue: 'selectFollowsFocus',
+        ),
+      );
   }
 }

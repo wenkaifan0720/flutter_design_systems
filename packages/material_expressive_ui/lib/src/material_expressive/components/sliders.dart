@@ -34,7 +34,7 @@ library;
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -42,8 +42,8 @@ import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../elevation.dart';
-import '../internal/reach.dart';
 import '../internal/focus_ring.dart';
+import '../internal/group_tap_target.dart';
 import '../internal/styled_content.dart';
 import '../icons.dart';
 import '../internal/tokens/behavior.g.dart';
@@ -57,6 +57,7 @@ import '../spacing.dart';
 import '../states.dart';
 import '../strings.dart';
 import '../theme.dart';
+import '../internal/style_layers.dart';
 
 // ---------------------------------------------------------------------------
 // Sizes and colours
@@ -858,7 +859,11 @@ class ExpressiveSlider extends StatelessWidget {
     this.autofocus = false,
     super.key,
   }) : assert(steps >= 0, 'steps should be >= 0'),
-       assert(min <= max, 'min must not exceed max');
+       assert(min <= max, 'min must not exceed max'),
+       assert(
+         value >= min && value <= max,
+         'value must lie between min and max',
+       );
 
   /// The current value, in [min]…[max].
   final double value;
@@ -935,6 +940,62 @@ class ExpressiveSlider extends StatelessWidget {
       topToBottom: true,
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>?>.has(
+          'onChangeStart',
+          onChangeStart,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>?>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(IntProperty('steps', steps, defaultValue: 0))
+      ..add(
+        EnumProperty<ExpressiveSliderSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveSliderSize.extraSmall,
+        ),
+      )
+      ..add(FlagProperty('centered', value: centered, ifTrue: 'centered'))
+      ..add(DiagnosticsProperty<IconData?>('icon', icon, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)?>.has(
+          'valueLabel',
+          valueLabel,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A vertical slider (Compose's `VerticalSlider`): the same slider stood
@@ -965,7 +1026,11 @@ class ExpressiveVerticalSlider extends StatelessWidget {
     this.autofocus = false,
     super.key,
   }) : assert(steps >= 0, 'steps should be >= 0'),
-       assert(min <= max, 'min must not exceed max');
+       assert(min <= max, 'min must not exceed max'),
+       assert(
+         value >= min && value <= max,
+         'value must lie between min and max',
+       );
 
   /// As [ExpressiveSlider.value].
   final double value;
@@ -1038,6 +1103,68 @@ class ExpressiveVerticalSlider extends StatelessWidget {
     vertical: true,
     topToBottom: topToBottom,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>?>.has(
+          'onChangeStart',
+          onChangeStart,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>?>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(IntProperty('steps', steps, defaultValue: 0))
+      ..add(
+        EnumProperty<ExpressiveSliderSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveSliderSize.extraSmall,
+        ),
+      )
+      ..add(FlagProperty('centered', value: centered, ifTrue: 'centered'))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'topToBottom',
+          topToBottom,
+          defaultValue: true,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)?>.has(
+          'valueLabel',
+          valueLabel,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _SingleSlider extends StatefulWidget {
@@ -1218,7 +1345,7 @@ class _SingleSliderState extends State<_SingleSlider> {
       if (_hovered) WidgetState.hovered,
       if (_focused) WidgetState.focused,
     };
-    final resolved = t.sliderTheme.merge(widget.style);
+    final resolved = t.sliderTheme.layeredUnder(widget.style);
     final colors = _SliderColors.of(t, resolved, states);
     final vertical = widget.vertical;
     final size = widget.size;
@@ -1474,7 +1601,12 @@ class ExpressiveRangeSlider extends StatefulWidget {
     this.endSemanticLabel,
     super.key,
   }) : assert(steps >= 0, 'steps should be >= 0'),
-       assert(min <= max, 'min must not exceed max');
+       assert(min <= max, 'min must not exceed max'),
+       assert(start <= end, 'start must not pass end'),
+       assert(
+         start >= min && end <= max,
+         'start and end must lie between min and max',
+       );
 
   /// The lower value.
   final double start;
@@ -1520,6 +1652,63 @@ class ExpressiveRangeSlider extends StatefulWidget {
 
   @override
   State<ExpressiveRangeSlider> createState() => _RangeSliderState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('start', start))
+      ..add(DoubleProperty('end', end))
+      ..add(
+        ObjectFlagProperty<void Function(double start, double end)?>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<void Function(double start, double end)?>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(IntProperty('steps', steps, defaultValue: 0))
+      ..add(
+        EnumProperty<ExpressiveSliderSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveSliderSize.extraSmall,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(double value)?>.has(
+          'valueLabel',
+          valueLabel,
+        ),
+      )
+      ..add(
+        StringProperty(
+          'startSemanticLabel',
+          startSemanticLabel,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        StringProperty(
+          'endSemanticLabel',
+          endSemanticLabel,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _RangeSliderState extends State<ExpressiveRangeSlider> {
@@ -1753,7 +1942,7 @@ class _RangeSliderState extends State<ExpressiveRangeSlider> {
       if (_hovered) WidgetState.hovered,
       if (_startFocused || _endFocused) WidgetState.focused,
     };
-    final resolved = t.sliderTheme.merge(widget.style);
+    final resolved = t.sliderTheme.layeredUnder(widget.style);
     final colors = _SliderColors.of(t, resolved, states);
     final size = widget.size;
     final thickness = t.density.height(size.trackHeight, floor: 8);
@@ -1895,11 +2084,28 @@ class _RangeSliderState extends State<ExpressiveRangeSlider> {
           onPointerDown: _down,
           onPointerUp: (_) => _up(),
           onPointerCancel: (_) => _up(),
-          child: ExpressiveMinimumInteractiveSize(child: slider),
+          child: _RangeTarget(child: slider),
         ),
       ),
     );
   }
+}
+
+/// The range slider's 48dp target: each handle is a slider node of its own,
+/// so the target adds none (a merging one would make the two one).
+class _RangeTarget extends StatelessWidget {
+  const _RangeTarget({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ExpressiveGroupTapTarget(
+    minSize: Size.square(
+      ExpressiveMinimumInteractiveSize.enforcedAt(context)
+          ? HostBehavior.minimumInteractiveComponentSize
+          : 0,
+    ),
+    child: child,
+  );
 }
 
 class _SliderFrame extends StatelessWidget {
@@ -2001,6 +2207,28 @@ class ExpressiveNumberField extends StatefulWidget {
 
   @override
   State<ExpressiveNumberField> createState() => _QuantityStepperState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('value', value))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onChanged', onChanged))
+      ..add(IntProperty('min', min, defaultValue: 0))
+      ..add(IntProperty('max', max, defaultValue: 99))
+      ..add(IntProperty('step', step, defaultValue: 1))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(int value)?>.has('format', format),
+      );
+  }
 }
 
 class _QuantityStepperState extends State<ExpressiveNumberField> {
@@ -2113,6 +2341,10 @@ class _QuantityStepperState extends State<ExpressiveNumberField> {
         color: container,
         contentColor: content,
         onPressed: canStep ? () => _activate(direction) : null,
+        // Each circle on its own end of the stepper, its target inward.
+        tapTargetAlignment: direction < 0
+            ? AlignmentDirectional.centerStart
+            : AlignmentDirectional.centerEnd,
         semanticLabel: (direction < 0
             ? ExpressiveLocalizations.of(context).decrease
             : ExpressiveLocalizations.of(context).increase)(_label(context)),
@@ -2141,7 +2373,7 @@ class _QuantityStepperState extends State<ExpressiveNumberField> {
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
     final text = widget.format?.call(widget.value) ?? '${widget.value}';
-    final resolved = t.numberFieldTheme.merge(widget.style);
+    final resolved = t.numberFieldTheme.layeredUnder(widget.style);
     final states = expressiveComponentStates(enabled: _enabled);
     final onSurface = t.colors.onSurface;
     // The value is set in the labels' type (a button's labelLarge): one
@@ -2192,36 +2424,21 @@ class _QuantityStepperState extends State<ExpressiveNumberField> {
             );
           }
           // The end circles stand on the stepper's own edges (a row's
-          // keyline), their 48dp targets reaching past them.
-          final drawn = t.density.width(
-            SmallIconButtonTokens.containerHeight,
-            floor: 0,
-          );
-          final reach = ExpressiveMinimumInteractiveSize.enforcedAt(context)
-              ? math.max(
-                      0.0,
-                      HostBehavior.minimumInteractiveComponentSize - drawn,
-                    ) /
-                    2
-              : 0.0;
-          return ExpressiveReach(
-            start: reach,
-            end: reach,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                decrease,
-                Flexible(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: ExpressiveSpacing.s48,
-                    ),
-                    child: value,
+          // keyline), their 48dp targets growing inward.
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              decrease,
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: ExpressiveSpacing.s48,
                   ),
+                  child: value,
                 ),
-                increase,
-              ],
-            ),
+              ),
+              increase,
+            ],
           );
         },
       ),

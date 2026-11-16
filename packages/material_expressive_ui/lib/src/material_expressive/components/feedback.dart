@@ -18,6 +18,7 @@
 ///   an icon, text and a tonal button.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../icons.dart';
@@ -31,6 +32,7 @@ import '../strings.dart';
 import '../theme.dart';
 import 'buttons.dart';
 import 'loading.dart';
+import '../internal/style_layers.dart';
 
 // ---------------------------------------------------------------------------
 // Banner
@@ -135,7 +137,7 @@ class ExpressiveBanner extends StatelessWidget {
     final states = <WidgetState>{
       if (tone == ExpressiveTone.error) WidgetState.error,
     };
-    final resolved = t.bannerTheme.merge(style);
+    final resolved = t.bannerTheme.layeredUnder(style);
     final ink = resolved.foregroundColor?.resolve(states) ?? content;
     final textStyle = resolved.textStyle?.resolve(states);
     return Semantics(
@@ -229,6 +231,36 @@ class ExpressiveBanner extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('message', message))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData?>('icon', icon, defaultValue: null))
+      ..add(
+        IterableProperty<ExpressiveBannerAction>(
+          'actions',
+          actions,
+          defaultValue: const <ExpressiveBannerAction>[],
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveTone>(
+          'tone',
+          tone,
+          defaultValue: ExpressiveTone.neutral,
+        ),
+      );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -303,7 +335,7 @@ class ExpressiveSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
-    final visual = t.skeletonTheme.merge(style);
+    final visual = t.skeletonTheme.layeredUnder(style);
     const states = <WidgetState>{};
     final shape =
         visual.shape?.resolve(states) ??
@@ -360,6 +392,37 @@ class ExpressiveSkeleton extends StatelessWidget {
 
   /// How much of the width a paragraph's last line takes.
   static const _lastLine = 0.6;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveCorner>(
+          'corner',
+          corner,
+          defaultValue: ExpressiveCorner.large,
+        ),
+      )
+      ..add(IntProperty('lines', lines, defaultValue: 3))
+      ..add(DiagnosticsProperty<bool>('circle', circle))
+      ..add(
+        DiagnosticsProperty<TextStyle?>(
+          'textStyle',
+          textStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// Fades its child between full and [_dim] opacity and back on the slow
@@ -450,7 +513,7 @@ class _CentredState extends StatelessWidget {
     final t = context.expressiveTheme;
     final text = message;
     final button = action;
-    final visual = t.statusViewTheme.merge(style);
+    final visual = t.statusViewTheme.layeredUnder(style);
     final ink = visual.foregroundColor?.resolve(states);
     final typography = visual.textStyle?.resolve(states);
     return Semantics(
@@ -573,7 +636,7 @@ class ExpressiveLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final visual = context.expressiveTheme.statusViewTheme.merge(style);
+    final visual = context.expressiveTheme.statusViewTheme.layeredUnder(style);
     return _CentredState(
       style: style,
       lead: ExpressiveLoadingIndicator(
@@ -586,6 +649,20 @@ class ExpressiveLoadingState extends StatelessWidget {
       title: message ?? ExpressiveLocalizations.of(context).loading,
       announce: true,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('message', message, defaultValue: null));
   }
 }
 
@@ -641,14 +718,15 @@ class ExpressiveErrorState extends StatelessWidget {
           : ExpressiveIcon(
               glyph,
               size:
-                  t.statusViewTheme.merge(style).iconSize?.resolve(
+                  t.statusViewTheme.layeredUnder(style).iconSize?.resolve(
                     const <WidgetState>{WidgetState.error},
                   ) ??
                   ExpressiveSpacing.s48,
               color:
-                  t.statusViewTheme.merge(style).foregroundColor?.resolve(
-                    const <WidgetState>{WidgetState.error},
-                  ) ??
+                  t.statusViewTheme
+                      .layeredUnder(style)
+                      .foregroundColor
+                      ?.resolve(const <WidgetState>{WidgetState.error}) ??
                   t.colors.error,
             ),
       title: title,
@@ -670,6 +748,30 @@ class ExpressiveErrorState extends StatelessWidget {
               ),
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onRetry', onRetry))
+      ..add(StringProperty('retryLabel', retryLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData?>(
+          'icon',
+          icon,
+          defaultValue: ExpressiveSymbols.error,
+        ),
+      );
   }
 }
 
@@ -727,13 +829,13 @@ class ExpressiveEmptyState extends StatelessWidget {
               icon,
               size:
                   t.statusViewTheme
-                      .merge(style)
+                      .layeredUnder(style)
                       .iconSize
                       ?.resolve(const <WidgetState>{}) ??
                   ExpressiveSpacing.s32,
               color:
                   t.statusViewTheme
-                      .merge(style)
+                      .layeredUnder(style)
                       .foregroundColor
                       ?.resolve(const <WidgetState>{}) ??
                   t.colors.onSurfaceVariant,
@@ -747,6 +849,24 @@ class ExpressiveEmptyState extends StatelessWidget {
           ? null
           : ExpressiveFilledButton.tonal(label, onPressed: onAction),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('body', body, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onAction', onAction));
   }
 }
 
@@ -806,13 +926,13 @@ class ExpressiveSuccessState extends StatelessWidget {
               icon,
               size:
                   t.statusViewTheme
-                      .merge(style)
+                      .layeredUnder(style)
                       .iconSize
                       ?.resolve(const <WidgetState>{}) ??
                   ExpressiveSpacing.s32,
               color:
                   t.statusViewTheme
-                      .merge(style)
+                      .layeredUnder(style)
                       .foregroundColor
                       ?.resolve(const <WidgetState>{}) ??
                   t.colors.onPrimaryContainer,
@@ -827,6 +947,30 @@ class ExpressiveSuccessState extends StatelessWidget {
           ? null
           : ExpressiveFilledButton.tonal(label, onPressed: onAction),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onAction', onAction))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'icon',
+          icon,
+          defaultValue: ExpressiveSymbols.check,
+        ),
+      );
   }
 }
 
@@ -944,4 +1088,31 @@ class ExpressiveStatusView extends StatelessWidget {
       style: style,
     ),
   };
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<ExpressiveStatus>('status', status))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onRetry', onRetry))
+      ..add(StringProperty('retryLabel', retryLabel, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onAction', onAction))
+      ..add(
+        DiagnosticsProperty<IconData?>(
+          'icon',
+          icon,
+          defaultValue: ExpressiveSymbols.error,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }

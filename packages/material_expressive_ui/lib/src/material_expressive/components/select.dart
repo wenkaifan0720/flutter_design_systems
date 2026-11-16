@@ -24,7 +24,8 @@
 ///   `menuAnchor(SecondaryEditable)`: a button toggling the menu without
 ///   focusing the field.
 /// - The menu is as wide as its anchor (`exposedDropdownSize(matchAnchorWidth
-///   = true)`), opens below it and keeps inside the window's margins.
+///   = true)`), wider only as far as its widest option needs, opens below
+///   it and keeps inside the window's margins.
 ///
 /// Deviation: Compose's `ExposedDropdownMenu` draws its items in the
 /// baseline `DropdownMenuContent` surface (`MenuDefaults.shape`,
@@ -36,18 +37,22 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
 import '../icons.dart';
 import '../internal/choice_width.dart';
+import '../internal/field_node.dart';
 import '../internal/tokens/behavior.g.dart';
 import '../states.dart';
 import '../strings.dart';
 import '../theme.dart';
+import '../chrome_metrics.dart';
 import 'menus.dart';
 import 'text_fields.dart';
+import '../internal/style_layers.dart';
 
 /// One choice of an [ExpressiveSelect] or an [ExpressiveCombobox]: the
 /// [value] the app keeps and the [label] the field and the menu show.
@@ -92,6 +97,12 @@ class ExpressiveSelectTrailingIcon extends StatelessWidget {
     angle: expanded ? math.pi : 0,
     child: const Icon(ExpressiveSymbols.arrowDropDown),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<bool>('expanded', expanded));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -185,14 +196,61 @@ class ExpressiveSelect<T> extends StatefulWidget {
   /// null).
   final String? semanticLabel;
 
-  /// The window width from which a select stops taking its column's width.
-  static const double wideFrom = 600;
+  /// The window width from which a select stops taking its column's width:
+  /// Material's medium window class, where the shell's rail stands in.
+  static const double wideFrom = ExpressiveChromeMetrics.railMinWindowWidth;
 
   /// A select's widest in a window [wideFrom] or wider.
   static const double wideMaxWidth = 320;
 
   @override
   State<ExpressiveSelect<T>> createState() => _ExpressiveSelectState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveSelectOption<T>>('options', options))
+      ..add(DiagnosticsProperty<T?>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
+      ..add(
+        EnumProperty<ExpressiveTextFieldKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveTextFieldKind.filled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('rounded', value: rounded, ifTrue: 'rounded'))
+      ..add(FlagProperty('tonal', value: tonal, ifTrue: 'tonal'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveMenuController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('menuMaxHeight', menuMaxHeight, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 class _ExpressiveSelectState<T> extends State<ExpressiveSelect<T>>
@@ -257,12 +315,22 @@ class _ExpressiveSelectState<T> extends State<ExpressiveSelect<T>>
     if (_enabled) _menu.toggle();
   }
 
-  /// `expandable`'s keys: Enter or Space (on key up) toggles the menu.
-  /// Opened from the keyboard, the menu takes it on its first item.
+  /// `expandable`'s keys: Enter or Space (on key up) toggles the menu, and
+  /// Down or Up opens it, as a listbox's field does. Opened from the
+  /// keyboard, the menu takes it on its chosen option, else its first.
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (!_enabled || !_isClickKey(event.logicalKey, space: true)) {
-      return KeyEventResult.ignored;
+    if (!_enabled) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if ((key == LogicalKeyboardKey.arrowDown ||
+            key == LogicalKeyboardKey.arrowUp) &&
+        !_menu.isOpen) {
+      if (event is KeyDownEvent) {
+        _menu.open();
+        _menu.focusChosenItem();
+      }
+      return KeyEventResult.handled;
     }
+    if (!_isClickKey(key, space: true)) return KeyEventResult.ignored;
     // Only a key pressed here: the up of an Enter that chose an item in
     // the menu arrives here once the menu has closed.
     if (event is KeyDownEvent) _pressed = event.logicalKey;
@@ -270,11 +338,7 @@ class _ExpressiveSelectState<T> extends State<ExpressiveSelect<T>>
       _pressed = null;
       final opening = !_menu.isOpen;
       _toggle();
-      if (opening) {
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => _menu.focusFirstItem(),
-        );
-      }
+      if (opening) _menu.focusChosenItem();
     }
     return KeyEventResult.handled;
   }
@@ -310,8 +374,7 @@ class _ExpressiveSelectState<T> extends State<ExpressiveSelect<T>>
                 : null,
           ),
       ],
-      builder: (context, menu) => Semantics(
-        container: true,
+      builder: (context, menu) => ExpressiveFieldNodeHost(
         expanded: open,
         child: Focus(
           canRequestFocus: false,
@@ -325,7 +388,9 @@ class _ExpressiveSelectState<T> extends State<ExpressiveSelect<T>>
               controller: _text,
               focusNode: widget.focusNode,
               kind: widget.kind,
-              style: context.expressiveTheme.selectTheme.merge(widget.style),
+              style: context.expressiveTheme.selectTheme.layeredUnder(
+                widget.style,
+              ),
               rounded: widget.rounded,
               tonal: widget.tonal,
               label: widget.label,
@@ -362,6 +427,12 @@ typedef ExpressiveComboboxFilter<T> = bool Function(
 /// stay in the field. Choosing one puts its label in the field, the caret
 /// at its end, and reports it through [onSelected]. The trailing arrow
 /// opens and closes the menu on its own.
+///
+/// While the field holds an option's label (one chosen, or set by the app),
+/// the menu offers every option, that one marked by the row's fill as a
+/// select's choice is: the field holds a choice, not words to filter by, so
+/// opening it again shows what else there is and which is chosen. Typing
+/// filters again.
 class ExpressiveCombobox<T> extends StatefulWidget {
   /// A combobox of [options] that match the typed text.
   const ExpressiveCombobox({
@@ -402,7 +473,8 @@ class ExpressiveCombobox<T> extends StatefulWidget {
   /// Told the text as the user types.
   final ValueChanged<String>? onChanged;
 
-  /// Told the text when the user submits it.
+  /// Told the text when the user submits it (Enter); the field keeps the
+  /// focus.
   final ValueChanged<String>? onSubmitted;
 
   /// Which options the menu shows for the text typed; a case-insensitive
@@ -482,6 +554,100 @@ class ExpressiveCombobox<T> extends StatefulWidget {
 
   @override
   State<ExpressiveCombobox<T>> createState() => _ExpressiveComboboxState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveSelectOption<T>>('options', options))
+      ..add(
+        ObjectFlagProperty<ValueChanged<ExpressiveSelectOption<T>>?>.has(
+          'onSelected',
+          onSelected,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ExpressiveComboboxFilter<T>?>.has('filter', filter),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveMenuController?>(
+          'menuController',
+          menuController,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveTextFieldKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveTextFieldKind.filled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('rounded', value: rounded, ifTrue: 'rounded'))
+      ..add(FlagProperty('tonal', value: tonal, ifTrue: 'tonal'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<TextInputType?>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputAction?>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextCapitalization>(
+          'textCapitalization',
+          textCapitalization,
+          defaultValue: TextCapitalization.none,
+        ),
+      )
+      ..add(DoubleProperty('menuMaxHeight', menuMaxHeight, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<WidgetBuilder?>.has('emptyBuilder', emptyBuilder),
+      );
+  }
 }
 
 class _ExpressiveComboboxState<T> extends State<ExpressiveCombobox<T>>
@@ -502,7 +668,19 @@ class _ExpressiveComboboxState<T> extends State<ExpressiveCombobox<T>>
   ExpressiveMenuController get _menu =>
       widget.menuController ?? (_ownMenu ??= ExpressiveMenuController());
 
+  /// The option whose label the field holds: the one chosen.
+  ExpressiveSelectOption<T>? get _chosen {
+    final text = _text.text;
+    for (final option in widget.options) {
+      if (option.label == text) return option;
+    }
+    return null;
+  }
+
+  /// What the menu offers: every option while the field holds a choice,
+  /// those [ExpressiveCombobox.filter] keeps for the words typed otherwise.
   List<ExpressiveSelectOption<T>> get _matches {
+    if (_chosen != null) return widget.options;
     final filter = widget.filter ?? ExpressiveCombobox.labelContains<T>;
     final query = _text.text;
     return <ExpressiveSelectOption<T>>[
@@ -599,7 +777,8 @@ class _ExpressiveComboboxState<T> extends State<ExpressiveCombobox<T>>
   }
 
   /// `expandable`'s keys for `PrimaryEditable`: Enter toggles the menu;
-  /// while it is open, Down, Up or Tab hand the keyboard to its items and
+  /// Down or Up opens it; while it is open, Down, Up or Tab hand the
+  /// keyboard to its items, on the chosen option (else the first), and
   /// Escape closes it. While it only says nothing matches, Down and Up stay
   /// in the field and Tab closes it and moves on.
   KeyEventResult _onKey(FocusNode node, KeyEvent event) {
@@ -613,16 +792,25 @@ class _ExpressiveComboboxState<T> extends State<ExpressiveCombobox<T>>
       }
       return KeyEventResult.handled;
     }
-    if (!_menu.isOpen || event is KeyUpEvent) return KeyEventResult.ignored;
-    if (key == LogicalKeyboardKey.arrowDown ||
-        key == LogicalKeyboardKey.arrowUp ||
-        key == LogicalKeyboardKey.tab) {
+    if (event is KeyUpEvent) return KeyEventResult.ignored;
+    final arrow =
+        key == LogicalKeyboardKey.arrowDown ||
+        key == LogicalKeyboardKey.arrowUp;
+    if (!_menu.isOpen) {
+      if (!arrow || !_hasMenu || _matches.isEmpty) {
+        return KeyEventResult.ignored;
+      }
+      _setExpanded(true);
+      _menu.focusChosenItem();
+      return KeyEventResult.handled;
+    }
+    if (arrow || key == LogicalKeyboardKey.tab) {
       if (_matches.isEmpty) {
         if (key != LogicalKeyboardKey.tab) return KeyEventResult.handled;
         _setExpanded(false);
         return KeyEventResult.ignored;
       }
-      _menu.focusFirstItem();
+      _menu.focusChosenItem();
       return KeyEventResult.handled;
     }
     if (key == LogicalKeyboardKey.escape) {
@@ -639,6 +827,7 @@ class _ExpressiveComboboxState<T> extends State<ExpressiveCombobox<T>>
   Widget build(BuildContext context) {
     final open = _menu.isOpen;
     final matches = _matches;
+    final chosen = _chosen;
     measureValueStart();
     // A choice as a select is: from [ExpressiveSelect.wideFrom], at most
     // [ExpressiveSelect.wideMaxWidth] at its column's start.
@@ -653,17 +842,20 @@ class _ExpressiveComboboxState<T> extends State<ExpressiveCombobox<T>>
         label: widget.semanticLabel ?? widget.label,
         entries: <ExpressiveMenuEntry>[
           for (final option in matches)
-            ExpressiveMenuItem(
+            // As a select's: the row's fill marks the choice, no check, so
+            // every option's words start where the field's do.
+            ExpressiveMenuRadioItem(
               option.label,
+              selected: identical(option, chosen),
+              check: false,
               icon: option.icon,
               supportingText: option.supportingText,
-              onPressed: option.enabled ? () => _choose(option) : null,
+              onSelected: option.enabled ? () => _choose(option) : null,
             ),
           if (_saysNoMatch(matches))
             ExpressiveMenuNote(widget.emptyBuilder ?? _noMatch),
         ],
-        builder: (context, menu) => Semantics(
-          container: true,
+        builder: (context, menu) => ExpressiveFieldNodeHost(
           expanded: open,
           child: Focus(
             canRequestFocus: false,
@@ -674,7 +866,9 @@ class _ExpressiveComboboxState<T> extends State<ExpressiveCombobox<T>>
               controller: _text,
               focusNode: _focus,
               kind: widget.kind,
-              style: context.expressiveTheme.selectTheme.merge(widget.style),
+              style: context.expressiveTheme.selectTheme.layeredUnder(
+                widget.style,
+              ),
               rounded: widget.rounded,
               tonal: widget.tonal,
               label: widget.label,
@@ -693,7 +887,10 @@ class _ExpressiveComboboxState<T> extends State<ExpressiveCombobox<T>>
               textInputAction: widget.textInputAction,
               textCapitalization: widget.textCapitalization,
               onChanged: _typed,
-              onSubmitted: widget.onSubmitted,
+              // Enter keeps the focus in the field (its menu stays at hand):
+              // onEditingComplete, never onSubmitted, whose restart of the
+              // text input a browser types into no more.
+              onEditingComplete: () => widget.onSubmitted?.call(_text.text),
               onTap: _toggle,
               semanticLabel: widget.semanticLabel,
             ),

@@ -44,8 +44,10 @@
 ///
 /// Deviations from Compose, recorded for the oracle:
 /// - Words are the kit's English and our own phrasing, not Compose's
-///   localized strings; the weekday letters are the first letter of the
-///   kit's weekday names; the headline is `ExpressiveFormat.date`, not the
+///   localized strings; the month names and weekday letters are the app's
+///   ([DesignLocalizations.formatMonthYear], the first letter of
+///   [DesignLocalizations.formatShortWeekday]); the headline is
+///   `ExpressiveFormat.date`, not the
 ///   locale's `yMMMd`; the week starts on
 ///   [ExpressiveDatePicker.firstDayOfWeek], else the locale's
 ///   ([ExpressiveLocalizations.firstDayOfWeek]: Sunday in English, as
@@ -69,6 +71,7 @@ library;
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialType, TextField;
 import 'package:flutter/rendering.dart';
@@ -93,6 +96,7 @@ import '../internal/tokens/keys.g.dart';
 import '../internal/tokens/outlined_text_field_tokens.g.dart';
 import '../internal/tokens/time_input_tokens.g.dart';
 import '../internal/tokens/time_picker_tokens.g.dart';
+import '../internal/word_scope.dart';
 import '../motion.dart';
 import '../shape.dart';
 import '../spacing.dart';
@@ -104,6 +108,7 @@ import 'icon_buttons.dart';
 import 'menus.dart';
 import 'overlays.dart';
 import 'text_fields.dart';
+import '../internal/style_layers.dart';
 
 // ---------------------------------------------------------------------------
 // The calendar.
@@ -127,14 +132,15 @@ int _leadingCells(int year, int month, int firstDayOfWeek) =>
     (DateTime(year, month).weekday - firstDayOfWeek + DateTime.daysPerWeek) %
     DateTime.daysPerWeek;
 
-/// "March 2031": the year menu button's and the range list's month.
-String _monthYear(DateTime month) =>
-    '${ExpressiveFormat.month(month, short: false)} ${month.year}';
+/// "March 2031": the year menu button's and the range list's month, in the
+/// app's words ([DesignLocalizations.formatMonthYear]).
+String _monthYear(BuildContext context, DateTime month) =>
+    DesignLocalizations.of(context).formatMonthYear(month);
 
-/// "Thursday, 12 March 2031": what a screen reader reads for a day.
-String _spokenDay(DateTime d) =>
-    '${ExpressiveFormat.weekday(d, short: false)}, ${d.day} '
-    '${ExpressiveFormat.month(d, short: false)} ${d.year}';
+/// "Thursday, 12 March 2031": what a screen reader reads for a day, in the
+/// app's words ([DesignLocalizations.formatFullDate]).
+String _spokenDay(BuildContext context, DateTime d) =>
+    DesignLocalizations.of(context).formatFullDate(d);
 
 /// "03/12/2031": a date as the input field holds it.
 String _inputText(DateTime d) =>
@@ -465,6 +471,91 @@ class ExpressiveDatePicker extends StatefulWidget {
 
   @override
   State<ExpressiveDatePicker> createState() => _ExpressiveDatePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'selected',
+          selected,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'lastDate',
+          lastDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<bool Function(DateTime day)?>.has(
+          'selectableDayPredicate',
+          selectableDayPredicate,
+        ),
+      )
+      ..add(IntProperty('firstYear', firstYear, defaultValue: null))
+      ..add(IntProperty('lastYear', lastYear, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'initialMonth',
+          initialMonth,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveDatePickerMode>(
+          'initialMode',
+          initialMode,
+          defaultValue: ExpressiveDatePickerMode.picker,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<ExpressiveDatePickerMode>?>.has(
+          'onModeChanged',
+          onModeChanged,
+        ),
+      )
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('headline', headline, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>('showHeader', showHeader, defaultValue: true),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'showModeToggle',
+          showModeToggle,
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('firstDayOfWeek', firstDayOfWeek, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _ExpressiveDatePickerState extends State<ExpressiveDatePicker> {
@@ -492,7 +583,7 @@ class _ExpressiveDatePickerState extends State<ExpressiveDatePicker> {
   @override
   Widget build(BuildContext context) => ExpressiveTheme(
     data: context.expressiveTheme.copyWith(
-      datePickerTheme: context.expressiveTheme.datePickerTheme.merge(
+      datePickerTheme: context.expressiveTheme.datePickerTheme.layeredUnder(
         widget.style,
       ),
     ),
@@ -520,7 +611,7 @@ class _ExpressiveDatePickerState extends State<ExpressiveDatePicker> {
             : ExpressiveLocalizations.of(context).selectedDate);
     final spoken = selected != null
         ? '${typing ? ExpressiveLocalizations.of(context).enteredDate : ExpressiveLocalizations.of(context).selectedDate}: '
-              '${_spokenDay(selected)}'
+              '${_spokenDay(context, selected)}'
         : headline;
     return _DateEntryContainer(
       colors: colors,
@@ -1026,7 +1117,7 @@ class _CalendarContentState extends State<_CalendarContent> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         _MonthsNavigation(
-          label: _monthYear(month),
+          label: _monthYear(context, month),
           yearsOpen: _years,
           previous: _index > 0 ? () => _step(-1) : null,
           next: _index < selectable.monthCount - 1 ? () => _step(1) : null,
@@ -1250,7 +1341,7 @@ class _YearMenuButton extends StatelessWidget {
             const SizedBox(width: ButtonSmallTokens.iconLabelSpace),
             Transform.rotate(
               angle: expanded ? math.pi : 0,
-              child: Icon(ExpressiveSymbols.arrowDropDown),
+              child: const Icon(ExpressiveSymbols.arrowDropDown),
             ),
           ],
         ),
@@ -1299,14 +1390,18 @@ class _WeekDays extends StatelessWidget {
                       (firstDayOfWeek - DateTime.monday + i) %
                           DateTime.daysPerWeek,
                 );
+                // The letter in the app's words; the name read aloud is
+                // the kit's (the shared words name a weekday only short).
                 final name = ExpressiveFormat.weekday(day, short: false);
+                final letter = DesignLocalizations.of(context)
+                    .formatShortWeekday(day.weekday)
+                    .characters
+                    .first;
                 return Expanded(
                   child: Semantics(
                     label: name,
                     excludeSemantics: true,
-                    child: Center(
-                      child: Text(name.substring(0, 1), style: style),
-                    ),
+                    child: Center(child: Text(letter, style: style)),
                   ),
                 );
               },
@@ -1591,7 +1686,7 @@ class _Day extends StatelessWidget {
       if (range && inRange && !isStart && !isEnd)
         ExpressiveLocalizations.of(context).inRange,
       if (today) ExpressiveLocalizations.of(context).today,
-      _spokenDay(date),
+      _spokenDay(context, date),
     ].join(', ');
     final style = t.type.of(DatePickerModalTokens.dateLabelTextFont);
     return ExpressivePressable(
@@ -2041,6 +2136,79 @@ class ExpressiveDateRangePicker extends StatefulWidget {
   @override
   State<ExpressiveDateRangePicker> createState() =>
       _ExpressiveDateRangePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime?>('start', start, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime?>('end', end, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<void Function(DateTime? start, DateTime? end)?>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'lastDate',
+          lastDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<bool Function(DateTime day)?>.has(
+          'selectableDayPredicate',
+          selectableDayPredicate,
+        ),
+      )
+      ..add(IntProperty('firstYear', firstYear, defaultValue: null))
+      ..add(IntProperty('lastYear', lastYear, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'initialMonth',
+          initialMonth,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveDatePickerMode>(
+          'initialMode',
+          initialMode,
+          defaultValue: ExpressiveDatePickerMode.picker,
+        ),
+      )
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'showModeToggle',
+          showModeToggle,
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('firstDayOfWeek', firstDayOfWeek, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _ExpressiveDateRangePickerState extends State<ExpressiveDateRangePicker> {
@@ -2064,7 +2232,7 @@ class _ExpressiveDateRangePickerState extends State<ExpressiveDateRangePicker> {
   @override
   Widget build(BuildContext context) => ExpressiveTheme(
     data: context.expressiveTheme.copyWith(
-      datePickerTheme: context.expressiveTheme.datePickerTheme.merge(
+      datePickerTheme: context.expressiveTheme.datePickerTheme.layeredUnder(
         widget.style,
       ),
     ),
@@ -2085,8 +2253,8 @@ class _ExpressiveDateRangePickerState extends State<ExpressiveDateRangePicker> {
     final end = widget.end;
     final typing = _mode == ExpressiveDatePickerMode.input;
     final spoken =
-        '${ExpressiveLocalizations.of(context).startDate}: ${start == null ? '-' : _spokenDay(start)}, '
-        '${ExpressiveLocalizations.of(context).endDate}: ${end == null ? '-' : _spokenDay(end)}';
+        '${ExpressiveLocalizations.of(context).startDate}: ${start == null ? '-' : _spokenDay(context, start)}, '
+        '${ExpressiveLocalizations.of(context).endDate}: ${end == null ? '-' : _spokenDay(context, end)}';
     final onChanged = widget.onChanged;
     return _DateEntryContainer(
       colors: colors,
@@ -2276,7 +2444,7 @@ class _RangeCalendarState extends State<_RangeCalendar> {
                 bottom: DateRangePickerBehavior.monthSubheadPaddingBottom,
               ),
               child: Text(
-                _monthYear(month),
+                _monthYear(context, month),
                 style: subhead,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -2397,6 +2565,68 @@ class ExpressiveDockedDatePicker extends StatefulWidget {
   @override
   State<ExpressiveDockedDatePicker> createState() =>
       _ExpressiveDockedDatePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime?>('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(DateTime day)?>.has(
+          'format',
+          format,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>?>.has('onChanged', onChanged),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'lastDate',
+          lastDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<bool Function(DateTime day)?>.has(
+          'selectableDayPredicate',
+          selectableDayPredicate,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('firstDayOfWeek', firstDayOfWeek, defaultValue: null))
+      ..add(
+        StringProperty('supportingText', supportingText, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<ExpressiveTextFieldKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveTextFieldKind.filled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _ExpressiveDockedDatePickerState
@@ -2457,7 +2687,7 @@ class _ExpressiveDockedDatePickerState
 
   @override
   Widget build(BuildContext context) => ExpressiveTextField(
-    style: context.expressiveTheme.datePickerTheme.merge(widget.style),
+    style: context.expressiveTheme.datePickerTheme.layeredUnder(widget.style),
     controller: _text,
     kind: widget.kind,
     label: widget.label ?? ExpressiveLocalizations.of(context).date,
@@ -2555,6 +2785,18 @@ class ExpressiveDatePickerDialog extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<ExpressiveComponentThemeData?>(
+        'style',
+        style,
+        defaultValue: null,
       ),
     );
   }
@@ -2993,6 +3235,40 @@ class ExpressiveTimePicker extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveTimePickerController>(
+          'controller',
+          controller,
+        ),
+      )
+      ..add(FlagProperty('vibrant', value: vibrant, ifTrue: 'vibrant'))
+      ..add(
+        EnumProperty<ExpressiveTimePickerLayout>(
+          'layout',
+          layout,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'autoSwitchToMinute',
+          autoSwitchToMinute,
+          defaultValue: true,
+        ),
+      );
   }
 }
 
@@ -3998,7 +4274,7 @@ class ExpressiveTimeInput extends StatelessWidget {
                 ),
                 if (!controller.is24Hour)
                   Padding(
-                    padding: EdgeInsetsDirectional.only(
+                    padding: const EdgeInsetsDirectional.only(
                       start: TimePickerBehavior.periodTogglePadding,
                     ),
                     child: _PeriodToggle(
@@ -4022,6 +4298,26 @@ class ExpressiveTimeInput extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveTimePickerController>(
+          'controller',
+          controller,
+        ),
+      )
+      ..add(FlagProperty('vibrant', value: vibrant, ifTrue: 'vibrant'));
   }
 }
 
@@ -4279,6 +4575,7 @@ class _TimeFieldState extends State<_TimeField> {
                           child: TextField(
                             controller: _text,
                             focusNode: _focus,
+                            contextMenuBuilder: expressiveContextMenu,
                             decoration: null,
                             textAlign: TextAlign.center,
                             style: _fitPickerFieldStyle(
@@ -4402,6 +4699,8 @@ class ExpressiveScrollField extends StatefulWidget {
     this.width,
     this.height = ScrollFieldBehavior.height,
     this.style,
+    this.focusNode,
+    this.autofocus = false,
     super.key,
   }) : assert(itemCount > 0),
        _looping = true,
@@ -4417,6 +4716,12 @@ class ExpressiveScrollField extends StatefulWidget {
 
   /// Stateful paint, geometry and type overrides.
   final ExpressiveComponentThemeData? style;
+
+  /// The wheel's focus node; one is made when null.
+  final FocusNode? focusNode;
+
+  /// Whether the wheel takes focus when first built.
+  final bool autofocus;
 
   /// How many numbers the wheel holds (0 … itemCount − 1).
   final int itemCount;
@@ -4444,6 +4749,51 @@ class ExpressiveScrollField extends StatefulWidget {
 
   @override
   State<ExpressiveScrollField> createState() => _ExpressiveScrollFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(IntProperty('itemCount', itemCount))
+      ..add(IntProperty('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(int index)?>.has(
+          'itemLabel',
+          itemLabel,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(int index)?>.has(
+          'spokenItem',
+          spokenItem,
+        ),
+      )
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(
+        DoubleProperty(
+          'height',
+          height,
+          defaultValue: ScrollFieldBehavior.height,
+        ),
+      );
+  }
 }
 
 class _ExpressiveScrollFieldState extends State<ExpressiveScrollField> {
@@ -4543,7 +4893,8 @@ class _ExpressiveScrollFieldState extends State<ExpressiveScrollField> {
       if (_hovered) WidgetState.hovered,
       if (_dragged) WidgetState.dragged,
     };
-    final visual = _pickerControlStyle(t.timePickerTheme).merge(widget.style);
+    final visual = _pickerControlStyle(t.timePickerTheme)
+        .layeredUnder(widget.style);
     final shape =
         visual.shape?.resolve(states) ??
         t.shapes.of(ExpressiveShapeKey.cornerLarge);
@@ -4573,6 +4924,8 @@ class _ExpressiveScrollFieldState extends State<ExpressiveScrollField> {
       onDecrease: enabled && canDecrease ? () => _springTo(_page - 1) : null,
       child: ExcludeSemantics(
         child: Focus(
+          focusNode: widget.focusNode,
+          autofocus: widget.autofocus,
           canRequestFocus: enabled,
           onFocusChange: (value) => setState(() => _focused = value),
           onKeyEvent: (node, event) {
@@ -4597,7 +4950,7 @@ class _ExpressiveScrollFieldState extends State<ExpressiveScrollField> {
                   ? _WheelRing(
                       shape: shape,
                       color: c.secondary,
-                      thickness: 3,
+                      thickness: ExpressiveFocusRing.thickness,
                       textDirection: Directionality.maybeOf(context),
                     )
                   : null,
@@ -4867,6 +5220,25 @@ class ExpressiveTimeScroll extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveTimePickerController>(
+          'controller',
+          controller,
+        ),
+      );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -4895,11 +5267,19 @@ class ExpressiveTimePickerModeToggle extends StatelessWidget {
     required this.onChanged,
     this.scroll = false,
     this.style,
+    this.focusNode,
+    this.autofocus = false,
     super.key,
   });
 
   /// The face shown.
   final ExpressiveTimePickerMode mode;
+
+  /// The toggle's focus node; one is made when null.
+  final FocusNode? focusNode;
+
+  /// Whether the toggle takes focus when first built.
+  final bool autofocus;
 
   /// Called with the face to switch to.
   final ValueChanged<ExpressiveTimePickerMode> onChanged;
@@ -4928,9 +5308,40 @@ class ExpressiveTimePickerModeToggle extends StatelessWidget {
       style: style,
       semanticLabel: label,
       tooltip: label,
+      focusNode: focusNode,
+      autofocus: autofocus,
       onPressed: () =>
           onChanged(typing ? other : ExpressiveTimePickerMode.input),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<ExpressiveTimePickerMode>('mode', mode))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        ObjectFlagProperty<ValueChanged<ExpressiveTimePickerMode>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(FlagProperty('scroll', value: scroll, ifTrue: 'scroll'))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -4977,7 +5388,9 @@ class ExpressiveTimePickerDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ExpressiveTheme(
     data: context.expressiveTheme.copyWith(
-      timePickerTheme: context.expressiveTheme.timePickerTheme.merge(style),
+      timePickerTheme: context.expressiveTheme.timePickerTheme.layeredUnder(
+        style,
+      ),
     ),
     child: Builder(builder: _buildDialog),
   );
@@ -5040,6 +5453,21 @@ class ExpressiveTimePickerDialog extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(FlagProperty('vibrant', value: vibrant, ifTrue: 'vibrant'));
   }
 }
 
@@ -5504,7 +5932,7 @@ class _TimePlate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
-    final merged = t.timePickerTheme.merge(style);
+    final merged = t.timePickerTheme.layeredUnder(style);
     return ExpressiveTheme(
       data: t.copyWith(timePickerTheme: merged),
       child: ExpressiveSurface(
@@ -5694,6 +6122,39 @@ class ExpressiveCalendar extends StatefulWidget {
 
   @override
   State<ExpressiveCalendar> createState() => _ExpressiveCalendarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
+      ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
+      ..add(
+        DiagnosticsProperty<DateTime?>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<bool Function(DateTime day)?>.has(
+          'selectableDayPredicate',
+          selectableDayPredicate,
+        ),
+      )
+      ..add(IntProperty('months', months, defaultValue: 1))
+      ..add(IntProperty('firstDayOfWeek', firstDayOfWeek, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime?>('start', start, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime?>('end', end, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _ExpressiveCalendarState extends State<ExpressiveCalendar> {

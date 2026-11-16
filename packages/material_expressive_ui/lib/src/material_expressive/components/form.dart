@@ -4,6 +4,7 @@
 /// with its label, help and error, on `DesignField`).
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show TextInputAction, TextInputType;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -87,6 +88,53 @@ class ExpressiveInputGroup extends StatefulWidget {
 
   @override
   State<ExpressiveInputGroup> createState() => _ExpressiveInputGroupState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController?>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hintText', hintText, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
+      ..add(
+        DiagnosticsProperty<TextInputType?>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputAction?>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      );
+  }
 }
 
 class _ExpressiveInputGroupState extends State<ExpressiveInputGroup> {
@@ -109,9 +157,9 @@ class _ExpressiveInputGroupState extends State<ExpressiveInputGroup> {
 
   @override
   Widget build(BuildContext context) {
-    final divider = SizedBox(
+    final divider = const SizedBox(
       height: ExpressiveSpacing.s24,
-      child: const ExpressiveDivider(vertical: true),
+      child: ExpressiveDivider(vertical: true),
     );
     return DesignInputGroup(
       focusNode: _node,
@@ -283,5 +331,24 @@ class ExpressiveFormField extends StatelessWidget {
       },
       child: child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('help', help, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(FlagProperty('required', value: required, ifTrue: 'required'))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('group', value: group, ifTrue: 'group'));
   }
 }

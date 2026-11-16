@@ -10,6 +10,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
 
@@ -245,7 +246,8 @@ class GalleryCustom {
   final String seed;
 
   /// The reading direction: `ltr` or `rtl`. Every page mirrors, its
-  /// previews and overlays included.
+  /// previews and overlays included; right to left, the trip planner reads
+  /// in Arabic.
   final String direction;
 
   /// The text size in percent of the platform's: `100`, `150` or `200`.
@@ -317,6 +319,16 @@ class GalleryApp extends StatefulWidget {
 
 class _GalleryAppState extends State<GalleryApp> {
   late var _page = _firstPage();
+
+  /// The pages that read in Arabic right to left (the others stay English).
+  static const Set<String> _arabicPages = {
+    galleryOverview,
+    ...TripScreens.all,
+    'everyday-dialog',
+    'everyday-tabs',
+    'everyday-cards',
+    'feedback',
+  };
   var _preset = kitShownPreset;
   late var _brightness = _query['theme'] == 'dark'
       ? Brightness.dark
@@ -381,25 +393,46 @@ class _GalleryAppState extends State<GalleryApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Material Expressive',
-      localizationsDelegates: const [
-        DefaultDesignLocalizations.delegate,
+      // Flutter's MaterialPageRoute reads this theme, not the look's: the
+      // look's push, named here (expressivePageTransitions).
+      theme: ThemeData(
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: expressivePageTransitions,
+        ),
+      ),
+      // Right to left, the overview, the trip planner, the everyday pages
+      // and the feedback states read in Arabic, their components' words too (a
+      // dialog's Cancel, a calendar's months, an error's Try again), so
+      // their mirrored screens are seen with real right-to-left text.
+      localizationsDelegates: [
+        if (_custom.direction == 'rtl' && _arabicPages.contains(_page))
+          ...tripArabicDelegates,
+        DesignLocalizations.delegate,
         ExpressiveLocalizations.delegate,
-        DefaultMaterialLocalizations.delegate,
-        DefaultWidgetsLocalizations.delegate,
+        // Flutter's own Material, Cupertino and Widgets words, in the
+        // reader's language (the look loads its primitives' own itself).
+        ...GlobalMaterialLocalizations.delegates,
       ],
+      // The components speak the reader's language where ui_core does.
+      supportedLocales: DesignLocalizations.supportedLocales,
       // Day to night, a preset or a Customize choice springs from one theme
       // to the next.
       // Direction and text size wrap the navigator, so every page, preview
       // and overlay reads them.
-      builder: (context, child) => Directionality(
-        textDirection: _custom.textDirection,
-        child: MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: _custom.textScaler(MediaQuery.textScalerOf(context)),
-          ),
-          child: AnimatedExpressiveTheme(
-            data: _shownTheme(ExpressiveThemeData.preset(_preset, _brightness)),
-            child: child!,
+      // Tab and Shift+Tab bring the control they reach into view.
+      builder: (context, child) => KitFocusActions(
+        child: Directionality(
+          textDirection: _custom.textDirection,
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: _custom.textScaler(MediaQuery.textScalerOf(context)),
+            ),
+            child: AnimatedExpressiveTheme(
+              data: _shownTheme(
+                ExpressiveThemeData.preset(_preset, _brightness),
+              ),
+              child: child!,
+            ),
           ),
         ),
       ),
@@ -718,6 +751,8 @@ class _Overview extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
     final c = t.colors;
+    // Right to left, the overview reads in Arabic.
+    final w = TripWords.of(context);
     const margin = ExpressiveChromeMetrics.margin;
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -755,16 +790,13 @@ class _Overview extends StatelessWidget {
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 560),
               child: Text(
-                "Material's newest look for Flutter: the components you know, "
-                'with springs, shapes and emphasis, and the parts Material '
-                'added for it. Light and dark, phone to desktop, built for '
-                'screen readers and the keyboard.',
+                w.overviewPitch,
                 style: t.type.bodyLarge.copyWith(color: c.onSurfaceVariant),
               ),
             ),
             const SizedBox(height: ExpressiveSpacing.s24),
             ExpressiveFilledButton(
-              'Open the trip planner',
+              w.openTripPlanner,
               key: const ValueKey('overview/trip'),
               icon: ExpressiveSymbols.hiking,
               size: ExpressiveButtonSize.medium,
@@ -792,30 +824,38 @@ class _Overview extends StatelessWidget {
                   words,
                 ],
               );
-        final live = <(String, String, Widget)>[
+        // Each part's key, its English name; then its words and its demo.
+        final live = <(String, String, String, Widget)>[
           (
             'Button groups',
-            'Press one: it widens and its neighbours make room.',
-            kitSpecimenButtonGroupReply(),
+            w.buttonGroups,
+            w.buttonGroupsText,
+            // Words alone: three buttons with icons need more than a
+            // phone's tile.
+            kitSpecimenButtonGroupReply(icons: false),
           ),
           (
             'Split button',
-            'One act and its options, in one button.',
+            w.splitButton,
+            w.splitButtonText,
             kitSpecimenSplitButtonSend(),
           ),
           (
             'Loading indicator',
-            'Shapes that morph while you wait, open or contained.',
+            w.loadingIndicator,
+            w.loadingIndicatorText,
             kitSpecimenLoadingIndicatorPair(),
           ),
           (
             'Floating toolbar',
-            "A screen's tools in a pill over its content.",
+            w.floatingToolbar,
+            w.floatingToolbarText,
             kitSpecimenFloatingToolbarEditor(),
           ),
           (
             'Wavy progress',
-            'For the one moment a screen celebrates.',
+            w.wavyProgress,
+            w.wavyProgressText,
             ExpressiveHeroMoment(
               child: ExpressiveLinearProgressIndicator(
                 value: .66,
@@ -827,13 +867,14 @@ class _Overview extends StatelessWidget {
                 trackColor: context.expressiveTheme.colors.onSurface.withValues(
                   alpha: .2,
                 ),
-                semanticLabel: 'Two thirds done',
+                semanticLabel: w.twoThirdsDone,
               ),
             ),
           ),
           (
             'Toggle groups',
-            'A choice of a few, the chosen one rounder.',
+            w.toggleGroups,
+            w.toggleGroupsText,
             kitSpecimenToggleGroupAlign(),
           ),
         ];
@@ -845,7 +886,7 @@ class _Overview extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "What Flutter's Material doesn't have",
+              w.materialLacks,
               style: t.type.titleLarge.copyWith(color: c.onSurface),
             ),
             const SizedBox(height: ExpressiveSpacing.s16),
@@ -853,13 +894,13 @@ class _Overview extends StatelessWidget {
               spacing: gap,
               runSpacing: gap,
               children: [
-                for (final (title, about, demo) in live)
+                for (final (name, title, about, demo) in live)
                   SizedBox(
                     width: tile,
                     // Tonal, on the extra-large corner: each part on a
                     // surface of its own, not a hairline box.
                     child: ExpressiveCard.filled(
-                      key: ValueKey('overview/live/$title'),
+                      key: ValueKey('overview/live/$name'),
                       style: ExpressiveComponentThemeData(
                         shape: WidgetStatePropertyAll(t.shapes.extraLarge),
                       ),
@@ -915,7 +956,7 @@ class _Overview extends StatelessWidget {
             ],
             const SizedBox(height: 48),
             Text(
-              'Every component',
+              w.everyComponent,
               style: t.type.titleLarge.copyWith(color: c.onSurface),
             ),
             const SizedBox(height: ExpressiveSpacing.s8),
@@ -1096,6 +1137,7 @@ class _Index extends StatelessWidget {
   Widget build(BuildContext context) {
     final entries = galleryDestinations.indexed.skip(1).toList();
     final per = (entries.length / columns).ceil();
+    final w = TripWords.of(context);
     Widget section(Iterable<(int, GalleryDestination)> part) =>
         ExpressiveListSection(
           children: [
@@ -1103,8 +1145,8 @@ class _Index extends StatelessWidget {
               ExpressiveListTile(
                 key: ValueKey('overview/${d.title}'),
                 leading: Icon(d.icon),
-                title: Text(d.title),
-                subtitle: Text(d.about),
+                title: Text(w.destination(d.title, d.about).title),
+                subtitle: Text(w.destination(d.title, d.about).about),
                 trailing: const Icon(ExpressiveSymbols.chevronRight),
                 onTap: () => onOpen(i),
               ),

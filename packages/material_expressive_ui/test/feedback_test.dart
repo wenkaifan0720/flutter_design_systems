@@ -47,15 +47,15 @@ void main() {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         _app(
-          SingleChildScrollView(
+          const SingleChildScrollView(
             child: Column(
               children: <Widget>[
-                const ExpressiveLoadingState(),
-                const ExpressiveEmptyState(
+                ExpressiveLoadingState(),
+                ExpressiveEmptyState(
                   icon: ExpressiveSymbols.inbox,
                   title: 'Nothing here',
                 ),
-                const ExpressiveErrorState(title: 'Could not load'),
+                ExpressiveErrorState(title: 'Could not load'),
               ],
             ),
           ),

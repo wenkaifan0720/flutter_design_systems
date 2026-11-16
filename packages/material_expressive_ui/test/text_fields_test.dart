@@ -8,6 +8,9 @@
 //     → 'fields fit narrow phones at large text sizes'
 library;
 
+// Reads the field's private layout, which no public type describes.
+// ignore_for_file: avoid_dynamic_calls
+
 import 'dart:ui' show PointerDeviceKind;
 
 import 'package:material_ui/material_ui.dart';

@@ -4,6 +4,7 @@ library;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 
 /// Stands in for a hero widget (an XL button, a shaped image).
@@ -38,14 +39,20 @@ void main() {
     expect('$error', contains('outside an ExpressiveHeroMoment'));
   });
 
-  testWidgets('heroes do not nest', (tester) async {
-    await tester.pumpWidget(
-      const ExpressiveHeroMoment(
-        child: ExpressiveHeroMoment(child: SizedBox()),
-      ),
-    );
-    expect('${tester.takeException()}', contains('inside another'));
-  });
+  // The nested moment's build throws, so the half-built tree is never
+  // unmounted: what it made is not a leak of the look's.
+  testWidgets(
+    'heroes do not nest',
+    experimentalLeakTesting: LeakTesting.settings.withIgnoredAll(),
+    (tester) async {
+      await tester.pumpWidget(
+        const ExpressiveHeroMoment(
+          child: ExpressiveHeroMoment(child: SizedBox()),
+        ),
+      );
+      expect('${tester.takeException()}', contains('inside another'));
+    },
+  );
 
   testWidgets('counts the hero moments on each page', (tester) async {
     final navigator = GlobalKey<NavigatorState>();

@@ -31,6 +31,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -477,18 +478,32 @@ class ExpressiveSplitButtonLayout extends StatelessWidget {
     final touchHeight = ExpressiveMinimumInteractiveSize.enforcedAt(context)
         ? HostBehavior.minimumInteractiveComponentSize
         : 0.0;
-    return ExpressiveMinimumInteractiveSize(
-      child: ExpressiveShrinkTapTargets(
-        child: _SplitPair(
-          spacing: spacing ?? _SplitMetrics.of(size).between,
-          touchHeight: touchHeight,
-          children: [
-            _HalfTarget(touchHeight: touchHeight, child: leading),
-            _HalfTarget(touchHeight: touchHeight, child: trailing),
-          ],
-        ),
+    // Each half is a target of its own (one node each): the pair lays out
+    // the touch band, one target round both would merge them into one.
+    return ExpressiveShrinkTapTargets(
+      child: _SplitPair(
+        spacing: spacing ?? _SplitMetrics.of(size).between,
+        touchHeight: touchHeight,
+        children: [
+          _HalfTarget(touchHeight: touchHeight, child: leading),
+          _HalfTarget(touchHeight: touchHeight, child: trailing),
+        ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<ExpressiveSplitButtonSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveSplitButtonSize.small,
+        ),
+      )
+      ..add(DoubleProperty('spacing', spacing, defaultValue: null));
   }
 }
 
@@ -566,6 +581,11 @@ class _RenderSplitPair extends RenderBox
           _spacing +
           math.max(_touchHeight, lastChild!.getMaxIntrinsicHeight(width));
     }
+    return math.max(_touchHeight, _faceHeight(width));
+  }
+
+  /// Side by side, the halves' height: the taller half's.
+  double _faceHeight(double width) {
     final trailingWidth = lastChild!.getMaxIntrinsicWidth(double.infinity);
     return math.max(
       firstChild!.getMaxIntrinsicHeight(
@@ -608,9 +628,10 @@ class _RenderSplitPair extends RenderBox
       return;
     }
     // Match the native IntrinsicHeight/Row: trailing at its own width,
-    // leading loose in the remainder, both stretched to the taller half.
+    // leading loose in the remainder, both stretched to the taller half,
+    // centred in the touch band.
     final height = constraints.constrainHeight(
-      computeMaxIntrinsicHeight(constraints.maxWidth),
+      _faceHeight(constraints.maxWidth),
     );
     trailing.layout(
       BoxConstraints(
@@ -632,27 +653,57 @@ class _RenderSplitPair extends RenderBox
       parentUsesSize: true,
     );
     size = constraints.constrain(
-      Size(leading.size.width + _spacing + trailing.size.width, height),
+      Size(
+        leading.size.width + _spacing + trailing.size.width,
+        math.max(_touchHeight, height),
+      ),
     );
     final ltr = _direction == TextDirection.ltr;
+    final top = (size.height - height) / 2;
     (leading.parentData! as _SplitPairData).offset = Offset(
       ltr ? 0 : size.width - leading.size.width,
-      0,
+      top,
     );
     (trailing.parentData! as _SplitPairData).offset = Offset(
       ltr
           ? leading.size.width + _spacing
           : size.width - leading.size.width - _spacing - trailing.size.width,
-      0,
+      top,
     );
   }
 
   @override
   void paint(PaintingContext context, Offset offset) =>
       defaultPaint(context, offset);
+  // A tap in a half's touch band, above or below its face, presses the
+  // half on its centre line: the band each half's node spans
+  // (_RenderHalfTarget.semanticBounds).
   @override
-  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
-      defaultHitTestChildren(result, position: position);
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    var child = lastChild;
+    while (child != null) {
+      final data = child.parentData! as _SplitPairData;
+      final face = data.offset & child.size;
+      final grow = math.max(0.0, (_touchHeight - face.height) / 2);
+      final inFace = position.dy >= face.top && position.dy < face.bottom;
+      final inBand =
+          position.dx >= face.left &&
+          position.dx < face.right &&
+          position.dy >= face.top - grow &&
+          position.dy < face.bottom + grow;
+      if (inBand) {
+        final half = child;
+        final hit = result.addWithPaintOffset(
+          offset: data.offset,
+          position: inFace ? position : Offset(position.dx, face.center.dy),
+          hitTest: (result, at) => half.hitTest(result, position: at),
+        );
+        if (hit) return true;
+      }
+      child = data.previousSibling;
+    }
+    return false;
+  }
 }
 
 /// A split button's leading half (`SplitButtonDefaults.LeadingButton` and
@@ -731,6 +782,42 @@ class ExpressiveSplitLeadingButton extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(
+        EnumProperty<ExpressiveSplitButtonKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveSplitButtonKind.filled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveSplitButtonSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveSplitButtonSize.small,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A split button's trailing half (`SplitButtonDefaults.TrailingButton`
@@ -779,6 +866,43 @@ class ExpressiveSplitTrailingButton extends StatefulWidget {
   @override
   State<ExpressiveSplitTrailingButton> createState() =>
       _ExpressiveSplitTrailingButtonState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<bool?>('checked', checked, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveSplitButtonKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveSplitButtonKind.filled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveSplitButtonSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveSplitButtonSize.small,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _ExpressiveSplitTrailingButtonState
@@ -1015,6 +1139,12 @@ class _RenderOpticalCenter extends RenderProxyBox {
 /// menu, Escape, or the system back closes it; while it is open the back
 /// is the menu's, never the page's ([ExpressiveBackHandle]: a
 /// `DropdownMenu`'s focusable popup takes the back in Compose).
+///
+/// The keys walk the open menu as they walk every Expressive menu: opened
+/// from a key, its first row takes the focus; Down and Up move at once and
+/// wrap, from the row the pointer last lit when no row holds the focus yet;
+/// Home and End go to the ends. Escape, or a row that closes it, gives the
+/// focus back to the chevron.
 class ExpressiveSplitButton extends StatefulWidget {
   /// A split button labelled [label] that runs [onPressed].
   const ExpressiveSplitButton(
@@ -1098,14 +1228,78 @@ class ExpressiveSplitButton extends StatefulWidget {
 
   @override
   State<ExpressiveSplitButton> createState() => _ExpressiveSplitButtonState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<IconData?>('icon', icon, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveSplitButtonKind>(
+          'kind',
+          kind,
+          defaultValue: ExpressiveSplitButtonKind.filled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveSplitButtonSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveSplitButtonSize.small,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, VoidCallback close)?
+        >.has('menu', menu),
+      )
+      ..add(
+        DiagnosticsProperty<bool?>('menuOpen', menuOpen, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>?>.has(
+          'onMenuOpenChanged',
+          onMenuOpenChanged,
+        ),
+      )
+      ..add(StringProperty('menuLabel', menuLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'trailingIcon',
+          trailingIcon,
+          defaultValue: ExpressiveSymbols.keyboardArrowDown,
+        ),
+      );
+  }
 }
 
 class _ExpressiveSplitButtonState extends State<ExpressiveSplitButton> {
   final OverlayPortalController _portal = OverlayPortalController();
   final GlobalKey _pairKey = GlobalKey(debugLabel: 'ExpressiveSplitButton');
-  late final ExpressiveBackHandle _back = ExpressiveBackHandle(onBack: _close);
+  // The menu closes on a back, and under a route pushed over the button's
+  // (or the focus leaving that route).
+  late final ExpressiveBackHandle _back = ExpressiveBackHandle(
+    onBack: _close,
+    closeWhenCovered: true,
+  );
   bool _ownOpen = false;
   bool _placeScheduled = false;
+  final FocusNode _trailing = FocusNode(
+    debugLabel: 'ExpressiveSplitButton menu',
+  );
+  final FocusScopeNode _menuScope = FocusScopeNode(
+    debugLabel: 'ExpressiveSplitButton menu rows',
+  );
+  bool _openedByKey = false;
 
   bool get _open => widget.menuOpen ?? _ownOpen;
 
@@ -1120,11 +1314,19 @@ class _ExpressiveSplitButtonState extends State<ExpressiveSplitButton> {
   @override
   void dispose() {
     _back.dispose();
+    _trailing.dispose();
+    _menuScope.dispose();
     super.dispose();
   }
 
   void _set(bool open) {
     if (open == _open) return;
+    if (open) {
+      _openedByKey = _activationKeyHeld();
+    } else if (_menuScope.hasFocus) {
+      // The focus was in the menu: back to the chevron that opened it.
+      _trailing.requestFocus();
+    }
     // Closing lets the back go at once, so a pop right after reaches the
     // page; the rebuild holds it again if a caller keeps the menu open.
     if (!open) _back.release();
@@ -1196,6 +1398,7 @@ class _ExpressiveSplitButtonState extends State<ExpressiveSplitButton> {
         child: leadingContent,
       ),
       trailing: ExpressiveSplitTrailingButton(
+        focusNode: _trailing,
         onPressed: widget.enabled ? () => _set(!open) : null,
         checked: open,
         kind: widget.kind,
@@ -1225,13 +1428,57 @@ class _ExpressiveSplitButtonState extends State<ExpressiveSplitButton> {
         return _MenuLayer(
           anchor: anchor,
           onDismiss: _close,
+          scope: _menuScope,
+          focusFirst: _openedByKey,
           child: menu(context, _close),
         );
       },
-      child: KeyedSubtree(key: _pairKey, child: pair),
+      child: KeyedSubtree(
+        key: _pairKey,
+        // Down and Up on the chevron, the menu open: into the menu.
+        child: Focus(
+          canRequestFocus: false,
+          skipTraversal: true,
+          includeSemantics: false,
+          onKeyEvent: (node, event) {
+            if (!open ||
+                event is KeyUpEvent ||
+                !_trailing.hasPrimaryFocus ||
+                (event.logicalKey != LogicalKeyboardKey.arrowDown &&
+                    event.logicalKey != LogicalKeyboardKey.arrowUp)) {
+              return KeyEventResult.ignored;
+            }
+            final rows = _menuRows(_menuScope);
+            if (rows.isEmpty) return KeyEventResult.ignored;
+            (event.logicalKey == LogicalKeyboardKey.arrowDown
+                    ? rows.first
+                    : rows.last)
+                .requestFocus();
+            return KeyEventResult.handled;
+          },
+          child: pair,
+        ),
+      ),
     );
   }
 }
+
+/// Whether a key that activates a button is down: the chevron was pressed
+/// from the keyboard, not by a pointer.
+bool _activationKeyHeld() => HardwareKeyboard.instance.logicalKeysPressed.any(
+  (key) =>
+      key == LogicalKeyboardKey.enter ||
+      key == LogicalKeyboardKey.numpadEnter ||
+      key == LogicalKeyboardKey.space ||
+      key == LogicalKeyboardKey.select,
+);
+
+/// The rows the keys walk in [scope], top to bottom.
+List<FocusNode> _menuRows(FocusScopeNode scope) =>
+    scope.traversalDescendants
+        .where((node) => node.canRequestFocus && !node.skipTraversal)
+        .toList()
+      ..sort((a, b) => a.rect.top.compareTo(b.rect.top));
 
 /// The open menu: a dismissing barrier over the screen and [child] placed
 /// against the pair as Compose's `DropdownMenuPositionProvider` places a
@@ -1240,17 +1487,102 @@ class _ExpressiveSplitButtonState extends State<ExpressiveSplitButton> {
 /// side; above the pair when it does not fit below. Always inside the
 /// window by `MenuBehavior`'s margins, so a split button at the page's start
 /// never pushes its menu off the edge.
-class _MenuLayer extends StatelessWidget {
+class _MenuLayer extends StatefulWidget {
   const _MenuLayer({
     required this.anchor,
     required this.onDismiss,
+    required this.scope,
+    required this.focusFirst,
     required this.child,
   });
 
   /// The pair, in the overlay's coordinates.
   final Rect anchor;
   final VoidCallback onDismiss;
+
+  /// The menu's own focus scope, its rows the keys walk.
+  final FocusScopeNode scope;
+
+  /// Whether the menu opened from a key: its first row takes the focus.
+  final bool focusFirst;
   final Widget child;
+
+  @override
+  State<_MenuLayer> createState() => _MenuLayerState();
+}
+
+class _MenuLayerState extends State<_MenuLayer> {
+  /// Where the pointer last moved over the menu, globally.
+  Offset? _pointer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final rows = widget.focusFirst
+          ? _menuRows(widget.scope)
+          : const <FocusNode>[];
+      if (rows.isNotEmpty) {
+        _focus(rows.first);
+      } else if (!widget.scope.hasFocus) {
+        // Opened by the pointer (the chevron may hold the focus, which
+        // autofocus leaves alone): the menu takes it with no row lit, so
+        // Escape and the keys reach the menu.
+        widget.scope.requestFocus();
+      }
+    });
+  }
+
+  void _focus(FocusNode row) {
+    row.requestFocus();
+    final context = row.context;
+    if (context != null) {
+      Scrollable.ensureVisible(
+        context,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+      );
+      Scrollable.ensureVisible(
+        context,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+      );
+    }
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is KeyUpEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    if (key == LogicalKeyboardKey.escape) {
+      widget.onDismiss();
+      return KeyEventResult.handled;
+    }
+    if (key != LogicalKeyboardKey.arrowDown &&
+        key != LogicalKeyboardKey.arrowUp &&
+        key != LogicalKeyboardKey.home &&
+        key != LogicalKeyboardKey.end) {
+      return KeyEventResult.ignored;
+    }
+    final rows = _menuRows(widget.scope);
+    if (rows.isEmpty) return KeyEventResult.ignored;
+    final primary = FocusManager.instance.primaryFocus;
+    var at = rows.indexWhere(
+      (row) => row == primary || (primary?.ancestors.contains(row) ?? false),
+    );
+    // No row holds the focus yet: count from the row the pointer lit.
+    final pointer = _pointer;
+    if (at < 0 && pointer != null) {
+      at = rows.indexWhere((row) => row.rect.contains(pointer));
+    }
+    final n = rows.length;
+    final to = switch (key) {
+      LogicalKeyboardKey.arrowDown => at < 0 ? 0 : (at + 1) % n,
+      LogicalKeyboardKey.arrowUp => at < 0 ? n - 1 : (at - 1 + n) % n,
+      LogicalKeyboardKey.home => 0,
+      _ => n - 1,
+    };
+    _focus(rows[to]);
+    return KeyEventResult.handled;
+  }
 
   @override
   Widget build(BuildContext context) => Stack(
@@ -1258,18 +1590,26 @@ class _MenuLayer extends StatelessWidget {
       Positioned.fill(
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap: onDismiss,
+          onTap: widget.onDismiss,
           excludeFromSemantics: true,
         ),
       ),
       Positioned.fill(
         child: CustomSingleChildLayout(
-          delegate: _MenuPlacement(anchor, Directionality.of(context)),
-          child: CallbackShortcuts(
-            bindings: <ShortcutActivator, VoidCallback>{
-              const SingleActivator(LogicalKeyboardKey.escape): onDismiss,
-            },
-            child: FocusScope(autofocus: true, child: child),
+          delegate: _MenuPlacement(widget.anchor, Directionality.of(context)),
+          child: MouseRegion(
+            onHover: (event) => _pointer = event.position,
+            child: Focus(
+              canRequestFocus: false,
+              skipTraversal: true,
+              includeSemantics: false,
+              onKeyEvent: _onKey,
+              child: FocusScope(
+                node: widget.scope,
+                autofocus: true,
+                child: widget.child,
+              ),
+            ),
           ),
         ),
       ),

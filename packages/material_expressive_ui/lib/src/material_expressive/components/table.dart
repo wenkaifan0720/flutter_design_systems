@@ -7,11 +7,14 @@
 /// item has.
 ///
 /// Narrower than [ExpressiveTable.stackBelow] (the medium window class:
-/// every phone held upright) a row stops being a row: it becomes a list
-/// item, its first cell the headline and each other cell a supporting line
-/// under its column's name. Nothing is cut and nothing scrolls sideways.
+/// every phone held upright), or where a column would be too narrow for
+/// its longest word (large text), a row stops being a row: it becomes a
+/// list item, its first cell the headline and each other cell a supporting
+/// line under its column's name. Nothing is cut, no word breaks, and
+/// nothing scrolls sideways.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../internal/cap_label.dart';
@@ -24,6 +27,7 @@ import '../elevation.dart';
 import '../internal/styled_content.dart';
 import '../theme.dart';
 import 'lists.dart';
+import '../internal/style_layers.dart';
 
 /// A column of an [ExpressiveTable].
 @immutable
@@ -76,8 +80,9 @@ class ExpressiveTableRow {
 /// the list's tokens: each row at least a one-line list item tall, a
 /// divider between rows, figures at the column's end in tabular numerals.
 /// A row with `onPressed` takes the list item's press; a selected one wears
-/// the list's selected container. Under [stackBelow] wide each row is a list
-/// item instead, its other cells named lines under its first.
+/// the list's selected container. Under [stackBelow] wide, or where a
+/// column is too narrow for its longest word, each row is a list item
+/// instead, its other cells named lines under its first.
 ///
 /// A screen reader hears each row as one node: every cell under its
 /// column's name.
@@ -120,7 +125,9 @@ class ExpressiveTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget table = LayoutBuilder(
-      builder: (context, box) => box.maxWidth < stackBelow.minWidth
+      builder: (context, box) =>
+          box.maxWidth < stackBelow.minWidth ||
+              !_wordsFit(context, box.maxWidth)
           ? _stacked(context)
           : _ruled(context),
     );
@@ -128,6 +135,45 @@ class ExpressiveTable extends StatelessWidget {
     return label == null
         ? table
         : Semantics(container: true, label: label, child: table);
+  }
+
+  /// Whether every column, ruled at [width], holds the longest word of its
+  /// head and of each of its cells: large text in narrow columns stacks the
+  /// rows rather than breaking a word across lines.
+  bool _wordsFit(BuildContext context, double width) {
+    if (!width.isFinite || columns.isEmpty) return true;
+    final t = context.expressiveTheme;
+    final scaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+    final head = t.type.of(ExpressiveTypeKey.labelLarge);
+    final body = t.type.of(ListTokens.itemLabelTextFont);
+    final room =
+        width -
+        ListTokens.itemLeadingSpace -
+        ListTokens.itemTrailingSpace -
+        (columns.length - 1) * ListTokens.itemBetweenSpace;
+    final flex = columns.fold<int>(0, (sum, c) => sum + c.flex);
+    final painter = TextPainter(textDirection: direction, textScaler: scaler);
+    try {
+      bool fits(String text, TextStyle style, double column) {
+        painter
+          ..text = TextSpan(text: text, style: style)
+          ..layout();
+        return painter.minIntrinsicWidth <= column + 0.5;
+      }
+
+      for (var i = 0; i < columns.length; i++) {
+        final column = room * columns[i].flex / flex;
+        if (!fits(columns[i].label, head, column)) return false;
+        for (final row in rows) {
+          final cell = i < row.cells.length ? row.cells[i] : null;
+          if (cell is String && !fits(cell, body, column)) return false;
+        }
+      }
+      return true;
+    } finally {
+      painter.dispose();
+    }
   }
 
   Widget _stacked(BuildContext context) {
@@ -143,12 +189,17 @@ class ExpressiveTable extends StatelessWidget {
             child: ExpressiveListTile(
               style: _tableRowStyle(
                 ExpressiveComponentThemeData(
-                  backgroundColor: row.selected
-                      ? WidgetStatePropertyAll(
-                          t.colors.role(ListTokens.itemSelectedContainerColor),
-                        )
-                      : null,
-                ).merge(t.tableTheme).merge(style).merge(row.style),
+                      backgroundColor: row.selected
+                          ? WidgetStatePropertyAll(
+                              t.colors.role(
+                                ListTokens.itemSelectedContainerColor,
+                              ),
+                            )
+                          : null,
+                    )
+                    .layeredUnder(t.tableTheme)
+                    .layeredUnder(style)
+                    .layeredUnder(row.style),
                 row.selected,
               ),
               title: _cellText(
@@ -240,7 +291,7 @@ class ExpressiveTable extends StatelessWidget {
             cells: <Object>[for (final c in columns) c.label],
             style: head,
             numericStyle: head,
-            visual: t.tableTheme.merge(style),
+            visual: t.tableTheme.layeredUnder(style),
           ),
         ),
         for (final row in rows) ...<Widget>[
@@ -250,11 +301,34 @@ class ExpressiveTable extends StatelessWidget {
             columns: columns,
             row: row,
             spoken: _spoken(row),
-            style: t.tableTheme.merge(style).merge(row.style),
+            style: t.tableTheme.layeredUnder(style).layeredUnder(row.style),
           ),
         ],
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<ExpressiveTableColumn>('columns', columns))
+      ..add(IterableProperty<ExpressiveTableRow>('rows', rows))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        EnumProperty<ExpressiveWindowSizeClass>(
+          'stackBelow',
+          stackBelow,
+          defaultValue: ExpressiveWindowSizeClass.medium,
+        ),
+      );
   }
 }
 

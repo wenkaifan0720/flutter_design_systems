@@ -15,6 +15,7 @@
 ///   duration.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'motion.dart';
@@ -98,6 +99,20 @@ class ExpressiveIcon extends StatefulWidget {
 
   @override
   State<ExpressiveIcon> createState() => _ExpressiveIconState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(DoubleProperty('size', size, defaultValue: null))
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(DoubleProperty('weight', weight, defaultValue: null))
+      ..add(DoubleProperty('grade', grade, defaultValue: null))
+      ..add(DoubleProperty('opticalSize', opticalSize, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 class _ExpressiveIconState extends State<ExpressiveIcon>

@@ -31,6 +31,7 @@
 /// they assert an [ExpressiveHeroMoment] above them.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../color.dart';
@@ -622,6 +623,55 @@ class ExpressiveIconButton extends StatelessWidget {
     autofocus: autofocus,
     debugName: 'ExpressiveIconButton',
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onLongPress', onLongPress))
+      ..add(EnumProperty<ExpressiveIconButtonKind>('kind', kind))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveIconButtonSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveIconButtonSize.small,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveIconButtonWidth>(
+          'width',
+          width,
+          defaultValue: ExpressiveIconButtonWidth.uniform,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveIconButtonShape>(
+          'shape',
+          shape,
+          defaultValue: ExpressiveIconButtonShape.round,
+        ),
+      )
+      ..add(FlagProperty('vibrant', value: vibrant, ifTrue: 'vibrant'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(StringProperty('tooltip', tooltip, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// An icon toggle button: on or off, in the kind's checked colours, its
@@ -762,6 +812,55 @@ class ExpressiveIconToggleButton extends StatelessWidget {
       autofocus: autofocus,
       debugName: 'ExpressiveIconToggleButton',
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<bool>?>.has('onChanged', onChanged))
+      ..add(EnumProperty<ExpressiveIconButtonKind>('kind', kind))
+      ..add(
+        DiagnosticsProperty<ExpressiveComponentThemeData?>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveIconButtonSize>(
+          'size',
+          size,
+          defaultValue: ExpressiveIconButtonSize.small,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveIconButtonWidth>(
+          'width',
+          width,
+          defaultValue: ExpressiveIconButtonWidth.uniform,
+        ),
+      )
+      ..add(
+        EnumProperty<ExpressiveIconButtonShape>(
+          'shape',
+          shape,
+          defaultValue: ExpressiveIconButtonShape.round,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('vibrant', vibrant, defaultValue: true))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(StringProperty('tooltip', tooltip, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode?>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 

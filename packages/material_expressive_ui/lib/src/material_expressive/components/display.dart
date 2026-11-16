@@ -8,6 +8,7 @@
 /// over `bodyLarge`. Neither takes a press, so neither has a state layer.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../shape.dart';
@@ -51,11 +52,11 @@ class ExpressiveTimelineEntry {
 /// ```
 class ExpressiveTimeline extends StatelessWidget {
   /// A timeline of [entries], oldest first.
-  const ExpressiveTimeline({
-    required this.entries,
-    this.currentStep,
-    super.key,
-  });
+  const ExpressiveTimeline({required this.entries, this.currentStep, super.key})
+    : assert(
+        currentStep == null || currentStep >= 0,
+        'currentStep counts from 0',
+      );
 
   /// What happened, in the order it is read.
   final List<ExpressiveTimelineEntry> entries;
@@ -201,6 +202,14 @@ class ExpressiveTimeline extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveTimelineEntry>('entries', entries))
+      ..add(IntProperty('currentStep', currentStep, defaultValue: null));
+  }
 }
 
 /// One term and its value, in an [ExpressiveDescriptionList].
@@ -287,5 +296,15 @@ class ExpressiveDescriptionList extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<ExpressiveDescriptionItem>('items', items))
+      ..add(
+        DiagnosticsProperty<bool>('dividers', dividers, defaultValue: true),
+      );
   }
 }

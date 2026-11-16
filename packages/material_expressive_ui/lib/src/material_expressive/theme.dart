@@ -43,13 +43,9 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
-    show
-        ColorScheme,
-        DefaultMaterialLocalizations,
-        MaterialLocalizations,
-        TextSelectionTheme,
-        TextSelectionThemeData;
+    show ColorScheme, TextSelectionTheme, TextSelectionThemeData;
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'color.dart';
 import 'component_themes.dart';
@@ -59,8 +55,10 @@ import 'internal/themes/baked_theme.dart';
 import 'internal/themes/registry.g.dart';
 import 'internal/tokens/behavior.g.dart';
 import 'internal/tokens/state_tokens.g.dart';
+import 'internal/word_scope.dart';
 import 'motion.dart';
 import 'shape.dart';
+import 'states.dart';
 import 'type.dart';
 
 export 'internal/density.dart' show ExpressiveDensity;
@@ -83,7 +81,7 @@ enum ExpressiveMotionScheme {
 /// Compose's `StateTokens` as a theme applies them:
 /// `context.expressiveTheme.states`.
 @immutable
-class ExpressiveStateLayers {
+class ExpressiveStateLayers with Diagnosticable {
   /// State layers of the given opacities.
   const ExpressiveStateLayers({
     required this.hoverOpacity,
@@ -150,6 +148,16 @@ class ExpressiveStateLayers {
   @override
   int get hashCode =>
       Object.hash(hoverOpacity, focusOpacity, pressedOpacity, draggedOpacity);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('hoverOpacity', hoverOpacity))
+      ..add(DoubleProperty('focusOpacity', focusOpacity))
+      ..add(DoubleProperty('pressedOpacity', pressedOpacity))
+      ..add(DoubleProperty('draggedOpacity', draggedOpacity));
+  }
 }
 
 /// Material's window size classes by the width a layout is given: compact
@@ -543,25 +551,70 @@ class ExpressiveThemeData with Diagnosticable {
     this._status,
   });
 
-  /// Derives a palette from an app's seed using Material's tonal colour algorithm.
+  /// Derives a palette from an app's seed using Material's tonal colour
+  /// algorithm (`ColorScheme.fromSeed`), at [contrastLevel], Material's
+  /// own: 0 standard (the default, as `fromSeed`'s) or 1 high.
+  /// `ExpressiveHost` wears the high-contrast theme an app hands it when
+  /// the platform asks for high contrast (`MediaQuery.highContrastOf`).
   ///
-  /// High contrast leaves room for Material's interaction state layers as well as
-  /// text and boundary contrast floors.
-  /// Presets retain their pinned Compose palettes; this factory makes a new app palette.
+  /// Words stay at 4.5:1 or more on every surface, under a state layer too.
+  /// Material's other levels break that: a reduced one (below 0) reads
+  /// under the floors, and at the levels between, a light container falls
+  /// to a mid tone where a dragged row's state layer takes its words under
+  /// 4.5:1. Any level but 0 or 1 fails an assert in a debug build and takes
+  /// the nearer of the two in a release build.
+  ///
+  /// Presets keep their pinned Compose palettes; this factory makes a new
+  /// app palette.
   ///
   /// ```dart
   /// final theme = ExpressiveThemeData.from(seed: Color(0xff00695c));
+  /// final high = ExpressiveThemeData.from(
+  ///   seed: Color(0xff00695c),
+  ///   contrastLevel: 1,
+  /// );
   /// ```
   factory ExpressiveThemeData.from({
     required Color seed,
     Brightness brightness = Brightness.light,
+    double contrastLevel = 0,
   }) {
+    assert(_contrastHolds(contrastLevel), _contrastRule(contrastLevel));
+    return ExpressiveThemeData.preset(
+      expressiveDefaultThemeId,
+      brightness,
+    ).copyWith(
+      colors: _seedColors(seed, brightness, _nearestContrast(contrastLevel)),
+    );
+  }
+
+  /// Whether Expressive takes [level]: standard (0) or high (1).
+  static bool _contrastHolds(double level) => level == 0 || level == 1;
+
+  /// The look's rule, for an assert on a [level] it does not take.
+  static String _contrastRule(double level) =>
+      'Expressive takes contrast 0 (standard) or 1 (high); got $level. Its '
+      'words stay at 4.5:1 or more on every surface, under a state layer '
+      'too: a reduced level (below 0) reads under that, and at the levels '
+      'between, a light container falls to a mid tone where a dragged '
+      'row\'s state layer takes its words under 4.5:1.';
+
+  /// The level Expressive takes nearest [level]: 1 from a half up, else 0.
+  static double _nearestContrast(double level) => level >= .5 ? 1 : 0;
+
+  /// [seed]'s tonal scheme in [brightness] at [contrastLevel], as
+  /// Expressive's roles.
+  static ExpressiveColorScheme _seedColors(
+    Color seed,
+    Brightness brightness,
+    double contrastLevel,
+  ) {
     final palette = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: brightness,
-      contrastLevel: 1,
+      contrastLevel: contrastLevel,
     );
-    final colors = ExpressiveColorScheme.fromRoles(
+    return ExpressiveColorScheme.fromRoles(
       (role) => switch (role) {
         ExpressiveColorRole.background => palette.surface,
         ExpressiveColorRole.error => palette.error,
@@ -621,10 +674,6 @@ class ExpressiveThemeData with Diagnosticable {
       },
       shadow: palette.shadow,
     );
-    return ExpressiveThemeData.preset(
-      expressiveDefaultThemeId,
-      brightness,
-    ).copyWith(colors: colors);
   }
 
   /// [spec], an app's baked theme, in [brightness]. Throws an
@@ -707,9 +756,28 @@ class ExpressiveThemeData with Diagnosticable {
   static ExpressiveThemeData of(BuildContext context) =>
       ExpressiveTheme.of(context);
 
-  /// The theme [id] in [brightness], from the generated baked themes.
-  /// Throws an [ArgumentError] for an id no theme has.
-  static ExpressiveThemeData preset(String id, Brightness brightness) {
+  /// The theme [id] in [brightness], from the generated baked themes, at
+  /// [contrastLevel]: 0 standard (the default) or 1 high. `baseline`,
+  /// Compose's own fixed scheme, takes its high level from its seed
+  /// (#6750A4) as [ExpressiveThemeData.from] does. Any other level fails an
+  /// assert in a debug build and takes the nearer of the two in a release
+  /// build: at Material's medium level a light container falls to a mid
+  /// tone, where a dragged row's state layer takes its words under 4.5:1
+  /// (see [ExpressiveThemeData.from]). Throws an [ArgumentError] for an id
+  /// no theme has.
+  ///
+  /// ```dart
+  /// final high = ExpressiveThemeData.preset(
+  ///   'grove',
+  ///   Brightness.dark,
+  ///   contrastLevel: 1,
+  /// );
+  /// ```
+  static ExpressiveThemeData preset(
+    String id,
+    Brightness brightness, {
+    double contrastLevel = 0,
+  }) {
     final baked = expressiveBakedThemes[id];
     if (baked == null) {
       throw ArgumentError.value(
@@ -718,7 +786,14 @@ class ExpressiveThemeData with Diagnosticable {
         'Expressive has no theme "$id"; it has ${presets.join(', ')}',
       );
     }
-    return _fromBaked(baked, brightness);
+    assert(_contrastHolds(contrastLevel), _contrastRule(contrastLevel));
+    final level = _nearestContrast(contrastLevel);
+    final theme = _fromBaked(baked, brightness);
+    if (level == baked.contrast) return theme;
+    final colors = baked.colors.atContrast.isEmpty
+        ? _seedColors(Color(baked.seed), brightness, level)
+        : expressiveResolveColors(baked, brightness, contrast: level);
+    return theme.copyWith(colors: colors);
   }
 
   /// Every theme id, in module.yaml's preset order: the default first.
@@ -1582,12 +1657,16 @@ class ExpressiveTheme extends StatelessWidget {
       context.dependOnInheritedWidgetOfExactType<_ExpressiveThemeMount>()?.data;
 
   /// The nearest mounted theme, else the default preset in the platform's
-  /// brightness: a component outside any [ExpressiveTheme] still draws.
+  /// brightness, at high contrast where the platform asks for it: a
+  /// component outside any [ExpressiveTheme] still draws.
   static ExpressiveThemeData of(BuildContext context) =>
       maybeOf(context) ??
       ExpressiveThemeData.preset(
         ExpressiveThemeData.defaultPreset,
         MediaQuery.maybePlatformBrightnessOf(context) ?? Brightness.light,
+        contrastLevel: (MediaQuery.maybeHighContrastOf(context) ?? false)
+            ? 1
+            : 0,
       );
 
   @override
@@ -1633,59 +1712,20 @@ class ExpressiveTheme extends StatelessWidget {
                 ),
                 selectionHandleColor: data.colors.primary,
               ),
-              child: child,
+              // The floors every control's target stands at, and the tap
+              // checks hold a screen to.
+              child: DesignTapTargetScope(
+                targets: ExpressiveMinimumInteractiveSize.targets,
+                child: child,
+              ),
             ),
           ),
         ),
       ),
     );
-    // The package's primitives use material_ui, whose localization type is
-    // distinct from a Flutter MaterialApp's. A WidgetsApp has none either.
-    // Keep the app's locale, delegates and direction, supplying only the
-    // missing primitive resource; an existing translation always wins.
-    if (Localizations.of<MaterialLocalizations>(
-          context,
-          MaterialLocalizations,
-        ) !=
-        null) {
-      return themed;
-    }
-    final direction = Directionality.maybeOf(context);
-    final localizedChild = direction == null
-        ? themed
-        : Directionality(textDirection: direction, child: themed);
-    final locale = Localizations.maybeLocaleOf(context);
-    if (locale == null) {
-      return Localizations(
-        locale: const Locale('en'),
-        delegates: const [
-          _PrimitiveMaterialLocalizations(),
-          DefaultWidgetsLocalizations.delegate,
-        ],
-        child: localizedChild,
-      );
-    }
-    return Localizations.override(
-      context: context,
-      delegates: const [_PrimitiveMaterialLocalizations()],
-      child: localizedChild,
-    );
+    // The words the primitives read, when the app supplies none.
+    return withPlatformWords(context, themed);
   }
-}
-
-class _PrimitiveMaterialLocalizations
-    extends LocalizationsDelegate<MaterialLocalizations> {
-  const _PrimitiveMaterialLocalizations();
-
-  @override
-  bool isSupported(Locale locale) => true;
-
-  @override
-  Future<MaterialLocalizations> load(Locale locale) =>
-      SynchronousFuture(const DefaultMaterialLocalizations());
-
-  @override
-  bool shouldReload(_PrimitiveMaterialLocalizations old) => false;
 }
 
 /// [ExpressiveTheme], springing to each new [data] on the theme's default
@@ -1754,16 +1794,20 @@ class ExpressiveSystemBarColor {
 }
 
 /// [ExpressiveTheme]'s inherited half: what `maybeOf` finds, and what
-/// a route that captures themes carries over ([wrap] mounts the scope, ink
-/// and all, again).
+/// a route or overlay that captures themes carries over. [wrap] mounts the
+/// theme and the words the primitives read, and no render object of its
+/// own: the scope's ink, selection colours and tap targets are themes
+/// captured on their own.
 class _ExpressiveThemeMount extends InheritedTheme {
   const _ExpressiveThemeMount({required this.data, required super.child});
 
   final ExpressiveThemeData data;
 
   @override
-  Widget wrap(BuildContext context, Widget child) =>
-      ExpressiveTheme(data: data, child: child);
+  Widget wrap(BuildContext context, Widget child) => _ExpressiveThemeMount(
+    data: data,
+    child: withPlatformWords(context, child, overlay: true),
+  );
 
   @override
   bool updateShouldNotify(_ExpressiveThemeMount oldWidget) =>
