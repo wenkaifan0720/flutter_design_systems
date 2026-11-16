@@ -5,8 +5,10 @@
 // whole table. A slab inside a slab is a small part, with no second big shadow. A part on a part is a plain step. A well
 // inside a well is a floor, one engraved edge with no second inset. Pages use `NeumorphicSlab` and `NeumorphicWell`, which take
 // no radius and no colour.
+
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -15,6 +17,8 @@ import 'theme.dart';
 import 'component_themes.dart';
 import 'knobs.dart';
 import 'styled.dart';
+import 'internal/moulded.dart';
+import 'shapes.dart';
 
 /// The levels of the material, named for what they are.
 enum NeumorphicSurfaceLevel {
@@ -95,6 +99,14 @@ class NeumorphicFlatScope extends InheritedWidget {
   @override
   bool updateShouldNotify(NeumorphicFlatScope old) =>
       old.flat != flat || old.relief != relief;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('flat', flat, defaultValue: true))
+      ..add(DoubleProperty('relief', relief, defaultValue: 1));
+  }
 }
 
 Paint _blurred(Color color, double blur) => Paint()
@@ -179,7 +191,9 @@ Path _outside(Path shape, Rect box, Offset by, double pad) => Path()
   ..addRect(box.inflate(pad))
   ..addPath(shape, by);
 
-/// Presses [shape] in: the pressed face, a light inset, a dark inset.
+/// Presses [shape] in: the pressed face, a light inset, a dark inset. The inset keeps out of [contentBounds], cut along a
+/// curve parallel to the outline: each of the room's corners rounds by [outlineRadius] (the outline's corner) less the
+/// room's inset at that corner.
 void neumorphicPaintPressed(
   Canvas canvas,
   Path shape,
@@ -194,6 +208,7 @@ void neumorphicPaintPressed(
   bool flat = false,
   NeumorphicElevation elevation = const NeumorphicElevation(),
   Rect? contentBounds,
+  double outlineRadius = 0,
 }) {
   final box = shape.getBounds();
   canvas.drawPath(shape, _facePaint(c.ground, face));
@@ -210,12 +225,31 @@ void neumorphicPaintPressed(
   canvas.save();
   canvas.clipPath(shape);
   if (contentBounds != null && !contentBounds.isEmpty) {
+    // The room stands the inset's reach in from the outline all round, so the inset has faded where it is cut. Cut
+    // as a plain rectangle, its corners came nearer a round outline than that: a square showed inside a round well
+    // and a box inside a field's round ends.
+    final l = contentBounds.left - box.left, t = contentBounds.top - box.top;
+    final r = box.right - contentBounds.right;
+    final b = box.bottom - contentBounds.bottom;
+    Radius corner(double x, double y) => Radius.elliptical(
+      math.max(0, outlineRadius - x),
+      math.max(0, outlineRadius - y),
+    );
+    final room = RRect.fromRectAndCorners(
+      contentBounds,
+      topLeft: corner(l, t),
+      topRight: corner(r, t),
+      bottomRight: corner(r, b),
+      bottomLeft: corner(l, b),
+    );
+    // The shape less the room, as the outline and the room filled even-odd (the room lies inside the outline): a
+    // browser fills a Path.combine difference with a hole whole, so cut that way the inset ran on across the room on
+    // the web.
     canvas.clipPath(
-      Path.combine(
-        PathOperation.difference,
-        shape,
-        Path()..addRect(contentBounds),
-      ),
+      Path()
+        ..fillType = PathFillType.evenOdd
+        ..addPath(shape, Offset.zero)
+        ..addRRect(room),
     );
   }
   final pad =
@@ -275,6 +309,7 @@ void neumorphicPaintCast(
   Color? tone,
   NeumorphicElevation elevation = const NeumorphicElevation(),
   Rect? contentBounds,
+  double outlineRadius = 0,
 }) {
   switch (draw) {
     case NeumorphicDraw.part:
@@ -333,6 +368,7 @@ void neumorphicPaintCast(
         c,
         tone: tone,
         contentBounds: contentBounds,
+        outlineRadius: outlineRadius,
         light: (const Offset(-3, -3), 7),
         dark: (const Offset(3, 3), 7),
         face: face,
@@ -346,6 +382,7 @@ void neumorphicPaintCast(
         c,
         tone: tone,
         contentBounds: contentBounds,
+        outlineRadius: outlineRadius,
         light: (const Offset(-6, -6), 14),
         dark: (const Offset(6, 6), 14),
         face: face,
@@ -364,6 +401,7 @@ void neumorphicPaintCast(
         flat: flat,
         elevation: elevation,
         contentBounds: contentBounds,
+        outlineRadius: outlineRadius,
       );
   }
 }
@@ -388,7 +426,7 @@ void neumorphicPaintFocusLift(
   canvas.clipPath(_outside(shape, box, Offset.zero, 64 * d + 8));
   final shade = c.shadowDeep;
   canvas.drawPath(
-    shape.shift(Offset(12, 12) * d),
+    shape.shift(const Offset(12, 12) * d),
     _blurred(
       shade.withValues(alpha: math.min(1, shade.a * 2) * amount),
       26 * d,
@@ -397,7 +435,7 @@ void neumorphicPaintFocusLift(
   // Lifted off the wall, the part's foot shades the wall close under it. That near shade, not a line, carries the
   // focus at 3:1 on a light ground, where the warmed light side can't.
   canvas.drawPath(
-    shape.shift(Offset(3, 3) * d),
+    shape.shift(const Offset(3, 3) * d),
     _blurred(
       shade.withValues(alpha: math.min(1, shade.a * 2.2) * amount),
       5 * d,
@@ -409,7 +447,7 @@ void neumorphicPaintFocusLift(
     c.dark ? .7 : .42,
   )!;
   canvas.drawPath(
-    shape.shift(Offset(-8, -8) * d),
+    shape.shift(const Offset(-8, -8) * d),
     _blurred(warm.withValues(alpha: (c.dark ? .9 : 1) * amount), 22 * d),
   );
   canvas.restore();
@@ -496,6 +534,19 @@ class _CastPainter extends CustomPainter {
       math.max(safePadding.bottom, band),
     );
     final safe = protected.deflateRect(box);
+    final outlineRadius = switch (border) {
+      null => round ? size.shortestSide / 2 : radius,
+      NeumorphicRoundedBorder(radius: final r) => math.min(
+        r,
+        size.shortestSide / 2,
+      ),
+      NeumorphicStadiumBorder(maxRadius: final r) => math.min(
+        r,
+        size.shortestSide / 2,
+      ),
+      NeumorphicCircleBorder() => size.shortestSide / 2,
+      _ => 0.0,
+    };
     if (depression == 0 && boundary && draw == NeumorphicDraw.groove) {
       // A control found by its edge, with no line to find it by: a tighter, darker inset, so the well's rim reads
       // as an edge at a glance, day and night.
@@ -519,6 +570,7 @@ class _CastPainter extends CustomPainter {
         flat: flat,
         elevation: elevation,
         contentBounds: safe,
+        outlineRadius: outlineRadius,
       );
     } else if (depression == 0 &&
         focus > 0 &&
@@ -540,6 +592,7 @@ class _CastPainter extends CustomPainter {
         flat: flat,
         elevation: elevation,
         contentBounds: safe,
+        outlineRadius: outlineRadius,
       );
     } else if (depression == 0) {
       neumorphicPaintCast(
@@ -552,6 +605,7 @@ class _CastPainter extends CustomPainter {
         tone: tone,
         elevation: elevation,
         contentBounds: safe,
+        outlineRadius: outlineRadius,
       );
     } else if (depression == 1) {
       neumorphicPaintCast(
@@ -564,6 +618,7 @@ class _CastPainter extends CustomPainter {
         tone: tone,
         elevation: elevation,
         contentBounds: safe,
+        outlineRadius: outlineRadius,
       );
     } else {
       // One depth from raised through flat to pressed: the raised pair shrinks to nothing by the middle, where the
@@ -599,6 +654,7 @@ class _CastPainter extends CustomPainter {
         ),
         flat: flat || pressedDraw == NeumorphicDraw.floor || down == 0,
         contentBounds: safe,
+        outlineRadius: outlineRadius,
       );
     }
     if (live > 0) {
@@ -671,6 +727,12 @@ class NeumorphicSeat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _SurfaceScope(on: on, child: child);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(EnumProperty<NeumorphicDraw>('on', on));
+  }
 }
 
 class _SurfaceScope extends InheritedWidget {
@@ -729,7 +791,8 @@ class NeumorphicSurface extends StatelessWidget {
     this.shape,
     this.states = const {},
     this.child,
-  });
+  }) : assert((radius ?? 0) >= 0),
+       assert(depression >= 0 && depression <= 1);
 
   /// The intended relief level, resolved against the surrounding surface.
   final NeumorphicSurfaceLevel cast;
@@ -825,7 +888,7 @@ class NeumorphicSurface extends StatelessWidget {
     final theme = NeumorphicTheme.of(context);
     final c = theme.colors;
     final draw = resolve(cast, on(context));
-    final look = NeumorphicStyleOf(
+    final look = neumorphicStyleOf(
       [style, themeStyle],
       {...NeumorphicStatesScope.of(context), ...states},
     );
@@ -951,6 +1014,54 @@ class NeumorphicSurface extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<NeumorphicSurfaceLevel>('cast', cast))
+      ..add(DoubleProperty('radius', radius, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('round', round, defaultValue: false))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('live', live, defaultValue: false))
+      ..add(
+        DiagnosticsProperty<bool>('outlined', outlined, defaultValue: false),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('boundary', boundary, defaultValue: false),
+      )
+      ..add(DoubleProperty('depression', depression, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'themeStyle',
+          themeStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(
+        IterableProperty<WidgetState>(
+          'states',
+          states,
+          defaultValue: const <WidgetState>{},
+        ),
+      );
+  }
 }
 
 /// A slab raised out of the wall, holding whatever you give it. For a card with a head use `NeumorphicCard`. It takes no radius
@@ -992,6 +1103,26 @@ class NeumorphicSlab extends StatelessWidget {
       child: child,
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A well pressed in: a chart's bed, a list of times, a stat. Words and marks stand in it, on the same inks as anywhere. It
@@ -1031,4 +1162,25 @@ class NeumorphicWell extends StatelessWidget {
     padding: padding,
     child: child,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.all(14),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('small', small, defaultValue: false));
+  }
 }

@@ -1,0 +1,5 @@
+// Before `dart fix --apply`: 0.1's names (see lib/fix_data.yaml).
+import 'package:neumorphism_ui/neumorphism_ui.dart';
+
+NeumorphicStyle forwarded(NeumorphicStyle? style, NeumorphicStyle? themed) =>
+    NeumorphicStyle.layered([style, themed]);

@@ -87,6 +87,114 @@ void main() {
     expect(words.pageOf(3, 10), '3 sur 10');
     expect(words.cancel, 'Cancel');
   });
+  for (final (locale, direction) in const [
+    (Locale('ar'), TextDirection.rtl),
+    (Locale('de'), TextDirection.ltr),
+  ]) {
+    // The Material machinery under a field needs Material's words; Flutter's own delegate loads only in English,
+    // so under an app in another language a field threw for want of them.
+    testWidgets('a field builds under an app in ${locale.languageCode} with '
+        'no Material words, and says ui_core\'s words in it', (tester) async {
+      late NeumorphicLocalizations words;
+      await tester.pumpWidget(
+        WidgetsApp(
+          color: const Color(0xFF000000),
+          locale: locale,
+          supportedLocales: DesignLocalizations.supportedLocales,
+          localizationsDelegates: const [DesignLocalizations.delegate],
+          builder: (context, _) => Directionality(
+            textDirection: direction,
+            // The app's overlay under the theme, as a Navigator under an app's builder: is.
+            child: NeumorphicTheme(
+              data: NeumorphicThemeData.porcelain(),
+              child: Overlay.wrap(
+                child: Builder(
+                  builder: (context) {
+                    words = NeumorphicLocalizations.of(context);
+                    return const Center(
+                      child: SizedBox(
+                        width: 320,
+                        child: NeumorphicTextField(
+                          label: 'Name',
+                          hint: 'As on your card',
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(find.byType(NeumorphicTextField), findsOneWidget);
+      final shared = DesignLocalizations.forLocale(locale);
+      expect(words.close, shared.closeButtonLabel);
+      expect(words.close, isNot('Close'));
+    });
+    // On iOS the editable reads Cupertino's words as well as Material's (its menu, its magnifier): a test that only
+    // builds a field or types in it never shows them.
+    testWidgets('on iOS a selection in a field opens its menu under an app '
+        'in ${locale.languageCode} with no Material or Cupertino words', (
+      tester,
+    ) async {
+      final text = TextEditingController(text: 'Morgan');
+      addTearDown(text.dispose);
+      await tester.pumpWidget(
+        WidgetsApp(
+          color: const Color(0xFF000000),
+          locale: locale,
+          supportedLocales: DesignLocalizations.supportedLocales,
+          localizationsDelegates: const [DesignLocalizations.delegate],
+          builder: (context, _) => Directionality(
+            textDirection: direction,
+            child: NeumorphicTheme(
+              data: NeumorphicThemeData.porcelain(),
+              child: Overlay.wrap(
+                child: Center(
+                  child: SizedBox(
+                    width: 320,
+                    child: NeumorphicTextField(label: 'Name', controller: text),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final editable = find.byType(EditableText);
+      final word = direction == TextDirection.rtl
+          ? tester.getTopRight(editable) + const Offset(-12, 8)
+          : tester.getTopLeft(editable) + const Offset(12, 8);
+      // A long press shows the magnifier; a double tap selects the word and opens the menu.
+      final press = await tester.startGesture(word);
+      await tester.pump(const Duration(milliseconds: 600));
+      await press.moveBy(const Offset(4, 0));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      await press.up();
+      await tester.pumpAndSettle();
+      await tester.tapAt(word);
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.tapAt(word);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      expect(
+        text.selection.isCollapsed,
+        isFalse,
+        reason: 'the word is selected',
+      );
+      final state = tester.state<EditableTextState>(editable);
+      expect(
+        state.selectionOverlay?.toolbarIsVisible,
+        isTrue,
+        reason: 'its menu is open',
+      );
+    }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+  }
 }
 
 class _SharedFrench extends DefaultDesignLocalizations {

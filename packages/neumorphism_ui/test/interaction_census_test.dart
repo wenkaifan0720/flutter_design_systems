@@ -11,6 +11,15 @@ import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'support.dart';
 
 typedef _Build = Widget Function(VoidCallback? hit);
+
+/// What a part's case made for it (a controller), disposed once the test's tree is gone.
+final List<VoidCallback> _disposers = [];
+
+T _own<T extends ChangeNotifier>(T value) {
+  _disposers.add(value.dispose);
+  return value;
+}
+
 final _parts = <String, _Build>{
   // A cluster with a press opens the people behind it: one button, as a lone avatar with a press is.
   'NeumorphicAvatarGroup': (hit) => NeumorphicAvatarGroup(
@@ -326,36 +335,44 @@ final _parts = <String, _Build>{
     ),
   ),
   'NeumorphicCalendar': (hit) => NeumorphicCalendar(
-    controller: DesignCalendarController(
-      firstDate: DateTime(2026, 6),
-      lastDate: DateTime(2026, 6, 30),
-      currentDate: DateTime(2026, 6, 10),
+    controller: _own(
+      DesignCalendarController(
+        firstDate: DateTime(2026, 6),
+        lastDate: DateTime(2026, 6, 30),
+        currentDate: DateTime(2026, 6, 10),
+      ),
     ),
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicDateRangePicker': (hit) => NeumorphicDateRangePicker(
-    controller: DesignCalendarController(
-      firstDate: DateTime(2026, 6),
-      lastDate: DateTime(2026, 6, 30),
-      mode: DesignCalendarMode.range,
-      currentDate: DateTime(2026, 6, 10),
+    controller: _own(
+      DesignCalendarController(
+        firstDate: DateTime(2026, 6),
+        lastDate: DateTime(2026, 6, 30),
+        mode: DesignCalendarMode.range,
+        currentDate: DateTime(2026, 6, 10),
+      ),
     ),
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicDataTable': (hit) => NeumorphicDataTable<String>(
     label: 'Rooms',
-    controller: DesignTableController<String>(
-      rows: const ['Bedroom'],
-      columns: [DesignTableColumn<String>(id: 'room', label: 'Room')],
+    controller: _own(
+      DesignTableController<String>(
+        rows: const ['Bedroom'],
+        columns: [const DesignTableColumn<String>(id: 'room', label: 'Room')],
+      ),
     ),
     cell: (row, column) => row,
     onActivate: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicTreeView': (hit) => NeumorphicTreeView<String>(
     label: 'Rooms',
-    controller: DesignTreeController<String>(
-      roots: const ['Bedroom'],
-      childrenOf: (_) => const [],
+    controller: _own(
+      DesignTreeController<String>(
+        roots: const ['Bedroom'],
+        childrenOf: (_) => const [],
+      ),
     ),
     labelOf: (node) => node,
     onActivate: hit == null ? null : (_) => hit(),
@@ -470,6 +487,12 @@ Set<String> _interactive() {
 
 void main() {
   setUpAll(loadNeumorphicFonts);
+  tearDown(() {
+    for (final dispose in _disposers) {
+      dispose();
+    }
+    _disposers.clear();
+  });
   test('every callback-bearing part is covered by the interaction table', () {
     expect(_interactive(), _parts.keys.toSet());
   });

@@ -45,11 +45,17 @@ Widget kitSpecimenInputGroup() => const NeumorphicInputGroup(
   hint: 'your-home',
 );
 
-Widget kitSpecimenCombobox() => const NeumorphicCombobox<String>(
-  label: 'Room',
-  hint: 'Type a room',
-  helper: 'Words no room fits say so in the list',
-  options: ['Bedroom', 'Kitchen', 'Study', 'Hall', 'Attic'],
+// It keeps the room taken, so its list opens on it again, pressed in.
+Widget kitSpecimenCombobox() => kitValue<String?>(
+  null,
+  (context, room, change) => NeumorphicCombobox<String>(
+    label: 'Room',
+    hint: 'Type a room',
+    helper: 'Words no room fits say so in the list',
+    options: const ['Bedroom', 'Kitchen', 'Study', 'Hall', 'Attic'],
+    value: room,
+    onSelected: change,
+  ),
 );
 
 Widget kitSpecimenMultiSelect() => kitValue<List<String>>(

@@ -83,7 +83,7 @@ void main() {
     testWidgets('${entry.key} keeps an explicitly supplied shape', (
       tester,
     ) async {
-      const shape = NeumorphicRoundedBorder(radius: 3);
+      const shape = NeumorphicRoundedBorder(radius: 8);
       await mount(
         tester,
         entry.value(

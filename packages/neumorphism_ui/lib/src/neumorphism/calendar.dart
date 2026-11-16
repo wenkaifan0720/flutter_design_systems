@@ -1,8 +1,10 @@
 // The inline calendar and the date range picker on ui_core's DesignCalendar: each day is the date picker's cap, raised
 // out of the wall; a chosen day is pressed in with the pigment's dash under its figure; a range is a groove running
 // between its two pressed ends.
+
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -17,8 +19,10 @@ import 'localizations.dart';
 import 'raised.dart';
 import 'styled.dart';
 import 'theme.dart';
+import 'internal/reach.dart' show neumorphicAtEnd;
 import 'internal/day_face.dart';
 import 'internal/out_of_use.dart';
+import 'internal/moulded.dart';
 
 bool _sameMonth(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month;
@@ -50,10 +54,12 @@ Widget _header(
     label: words.previousMonth,
     onPressed: h.previous,
   );
-  final forward = NeumorphicIconButton(
-    rtl ? NeumorphicGlyphs.chevronLeft : NeumorphicGlyphs.chevronRight,
-    label: words.nextMonth,
-    onPressed: h.next,
+  final forward = neumorphicAtEnd(
+    NeumorphicIconButton(
+      rtl ? NeumorphicGlyphs.chevronLeft : NeumorphicGlyphs.chevronRight,
+      label: words.nextMonth,
+      onPressed: h.next,
+    ),
   );
   // An arrow a month leaves out keeps its room, unseen and out of reach, so the name centres over the month's days.
   Widget room(Widget arrow) => ExcludeFocus(
@@ -95,7 +101,7 @@ Widget _day(
   // makes it one.
   final previewEnd = day.isPreviewEnd && (day.inRange || day.inPreview);
   final end = day.selected || day.isRangeStart || day.isRangeEnd || previewEnd;
-  final look = NeumorphicStyleOf(
+  final look = neumorphicStyleOf(
     [style, t.datePickerTheme],
     {...states, if (end) WidgetState.selected},
   );
@@ -339,10 +345,11 @@ Widget _figure(
 
 /// A month (or [months] side by side) laid open on the page, for picking a day, a range or several days as the
 /// [controller]'s mode says. Arrows move the keyboard's day, Page Up and Down the month, Enter picks; a range shows its
-/// preview under the pointer or the keyboard before its second end is picked.
+/// preview under the pointer or the keyboard before its second end is picked. The [controller] is the caller's, made
+/// once (in a State's initState, as `DesignCalendarController(firstDate: start, lastDate: end)`) and disposed with it.
 ///
 /// ```dart
-/// NeumorphicCalendar(controller: DesignCalendarController(firstDate: start, lastDate: end))
+/// NeumorphicCalendar(controller: dates)
 /// ```
 class NeumorphicCalendar extends StatelessWidget {
   /// A calendar on [controller].
@@ -353,7 +360,8 @@ class NeumorphicCalendar extends StatelessWidget {
     this.onChanged,
     this.firstWeekday,
     this.style,
-  });
+  }) : assert(months >= 1),
+       assert((firstWeekday ?? 1) >= 1 && (firstWeekday ?? 7) <= 7);
 
   /// The days, the mode and the choice.
   final DesignCalendarController controller;
@@ -447,14 +455,37 @@ class NeumorphicCalendar extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+      )
+      ..add(IntProperty('months', months, defaultValue: 1))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(IntProperty('firstWeekday', firstWeekday, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A range of days picked on the calendar, first end then second, with the span written above it ("14 June – 18 June,
 /// 4 nights"). Two months side by side when there is room, one when there is not.
-/// [showNeumorphicDateRangePicker] raises one in a dialog.
+/// [showNeumorphicDateRangePicker] raises one in a dialog. The [controller] is the caller's, made once (in a State's
+/// initState, as `DesignCalendarController(firstDate: start, lastDate: end, mode: DesignCalendarMode.range)`) and
+/// disposed with it.
 ///
 /// ```dart
-/// NeumorphicDateRangePicker(controller: DesignCalendarController(firstDate: start, lastDate: end, mode: DesignCalendarMode.range))
+/// NeumorphicDateRangePicker(controller: stay)
 /// ```
 class NeumorphicDateRangePicker extends StatelessWidget {
   /// A range picker on [controller], which should be in range mode.
@@ -514,6 +545,34 @@ class NeumorphicDateRangePicker extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignDateRange?>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(int nights)>.has(
+          'nightsLabel',
+          nightsLabel,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 

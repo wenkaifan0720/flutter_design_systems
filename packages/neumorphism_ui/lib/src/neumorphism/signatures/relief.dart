@@ -2,9 +2,11 @@
 // cornice, a wall with a course of bays per group, string courses between them, a plinth, the ground. An arched window is a drawing with
 // nothing written in it: a bay's words stand on the wall's raised face, under its window, since a giant radius holding words is
 // exactly what this look must not do.
+
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -901,6 +903,41 @@ class NeumorphicRelief extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(StringProperty('count', count, defaultValue: null))
+      ..add(
+        IterableProperty<NeumorphicCourse>(
+          'courses',
+          courses,
+          defaultValue: const <NeumorphicCourse>[],
+        ),
+      )
+      ..add(
+        IterableProperty<NeumorphicGroundNote>(
+          'ground',
+          ground,
+          defaultValue: const <NeumorphicGroundNote>[],
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('compact', compact, defaultValue: false))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
   }
 }
 

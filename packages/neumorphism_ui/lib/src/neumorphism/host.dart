@@ -1,8 +1,12 @@
 // Neumorphism's part of the app host: what the host app mounts around its router (the theme, the ground, the shell's
 // act and scope, its pages and the preview frame). The package exports it from neumorphism_host.dart, beside the
 // main library, not in it: an app built on the package draws its screens without it.
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/host.dart';
+import 'package:ui_core/ui_core.dart';
+
+import 'chrome_metrics.dart';
 
 import 'localizations.dart';
 import 'overlays.dart';
@@ -10,6 +14,7 @@ import 'theme.dart';
 import 'chrome.dart';
 import 'chrome_items.dart';
 import 'internal/veil.dart';
+import 'internal/page_motion.dart';
 
 /// The app-level act beside the tabs: a small round key in the tab bar's middle on a phone, the pilaster's wide act on a desktop.
 /// A plain moulded key when [accent] is off.
@@ -62,6 +67,18 @@ class NeumorphicChromeScope extends InheritedWidget {
       old.brand != brand ||
       old.nav != nav ||
       old.action != action;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<NeumorphicBrand>('brand', brand))
+      ..add(IterableProperty<NeumorphicNavItem>('nav', nav))
+      ..add(IntProperty('active', active))
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      );
+  }
 }
 
 /// The app's host, mounted once around the router's navigator: Neumorphism's theme, ground and text defaults.
@@ -99,24 +116,54 @@ class NeumorphicHost extends StatelessWidget {
     final theme =
         (wanted == Brightness.dark ? darkData : light) ??
         NeumorphicThemeData.preset(NeumorphicThemeData.presets.first, wanted);
-    return NeumorphicTheme(
-      data: theme,
-      child: Builder(
-        builder: (context) {
-          final t = NeumorphicTheme.of(context);
-          return ColoredBox(
-            color: t.colors.ground,
-            child: DefaultTextStyle(
-              style: t.textTheme.body,
-              child: IconTheme(
-                data: IconThemeData(color: t.colors.ink, size: 22),
-                child: NeumorphicToaster(child: child),
+    // Neumorphism's tap floors: a finger's 48 (Android's), a pointer's 24 (WCAG 2.2). Each control lays out at the
+    // finger's 48 on every platform (NeumorphicChromeMetrics.targetSize), so a row stands the same wherever it runs.
+    return DesignTapTargetScope(
+      targets: const DesignTapTargets(
+        touch: Size.square(NeumorphicChromeMetrics.touchTarget),
+      ),
+      child: NeumorphicTheme(
+        data: theme,
+        child: Builder(
+          builder: (context) {
+            final t = NeumorphicTheme.of(context);
+            return ColoredBox(
+              color: t.colors.ground,
+              child: DefaultTextStyle(
+                style: t.textTheme.body,
+                child: IconTheme(
+                  data: IconThemeData(color: t.colors.ink, size: 22),
+                  child: NeumorphicToaster(child: child),
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicThemeData>(
+          'light',
+          light,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicThemeData>(
+          'darkData',
+          darkData,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
+      );
   }
 }
 
@@ -130,12 +177,10 @@ class NeumorphicPage<T> extends Page<T> {
   @override
   Route<T> createRoute(BuildContext context) {
     final motion = NeumorphicMotion.of(context);
-    final direction = Directionality.of(context) == TextDirection.rtl
-        ? -1.0
-        : 1.0;
-    return PageRouteBuilder<T>(
+    return _NeumorphicPageRoute<T>(
       settings: this,
-      transitionDuration: motion.move,
+      // The look's page change, as a MaterialPageRoute the app pushes under the theme takes it.
+      transitionDuration: motion.travel,
       reverseTransitionDuration: motion.leave,
       pageBuilder: (context, _, _) {
         final settings = ModalRoute.of(context)?.settings;
@@ -144,21 +189,38 @@ class NeumorphicPage<T> extends Page<T> {
           child: settings is NeumorphicPage<T> ? settings.child : child,
         );
       },
-      transitionsBuilder: (context, animation, _, child) {
-        final curve = animation.drive(CurveTween(curve: motion.enter));
-        return FadeTransition(
-          opacity: curve,
-          child: SlideTransition(
-            position: Tween(
-              begin: Offset(.035 * direction, 0),
-              end: Offset.zero,
-            ).animate(curve),
-            child: child,
-          ),
-        );
-      },
+      // On iOS the swipe back from the screen's edge stands round it.
+      transitions: neumorphicPageMotionHere(motion),
     );
   }
+}
+
+// A router page's route: its page on the ground, changing as the look's routes do, with the route itself handed to
+// the change (iOS's swipe back reads it).
+class _NeumorphicPageRoute<T> extends PageRouteBuilder<T> {
+  _NeumorphicPageRoute({
+    required super.settings,
+    required super.transitionDuration,
+    required super.reverseTransitionDuration,
+    required super.pageBuilder,
+    required this.transitions,
+  });
+
+  final PageTransitionsBuilder transitions;
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => transitions.buildTransitions<T>(
+    this,
+    context,
+    animation,
+    secondaryAnimation,
+    child,
+  );
 }
 
 /// The router's page for a sheet, raised on the root navigator over the shell: from a phone's foot, as a slab in the middle of a desktop.
@@ -422,5 +484,59 @@ class NeumorphicPreview extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicThemeData>(
+          'light',
+          light,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicThemeData>(
+          'darkData',
+          darkData,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<NeumorphicPresentation>(
+          'presentation',
+          presentation,
+          defaultValue: NeumorphicPresentation.root,
+        ),
+      )
+      ..add(
+        IterableProperty<NeumorphicTab>(
+          'tabs',
+          tabs,
+          defaultValue: const <NeumorphicTab>[],
+        ),
+      )
+      ..add(IntProperty('activeIndex', activeIndex, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('drawer', drawer, defaultValue: false))
+      ..add(
+        EnumProperty<PreviewPlatform>(
+          'platform',
+          platform,
+          defaultValue: PreviewPlatform.android,
+        ),
+      )
+      ..add(
+        EnumProperty<Brightness>(
+          'brightness',
+          brightness,
+          defaultValue: Brightness.light,
+        ),
+      );
   }
 }

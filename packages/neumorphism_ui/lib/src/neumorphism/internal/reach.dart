@@ -1,30 +1,42 @@
-// A control's reach: the platform's least target round a face the density draws smaller, as Material pads its inputs
+// A face's reach: the platform's least target round a face the density draws shorter, as Material pads its inputs
 // (MaterialTapTargetSize.padded). The face keeps the density's height; the box, a press and the spoken node take the
-// target's.
+// target's. A control that stands at its target across too is laid out on ui_core's DesignTapTarget.
 import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-/// Lays [child], the drawn face, at least [height] tall and centred in it. A press in the margin off the face lands on
-/// the face's middle line at the press's own x, so it reaches what stands there (a cell, a field's line).
+/// Lays [child], the drawn face, at least [height] tall and centred in it. A press in the margin off the face, or on
+/// the face where nothing answers it (its rim), lands on the face's middle line at the press's own x, at least [inset]
+/// in from its sides, so it reaches what stands there (a cell, a field's line, a chip's words or its cross).
 class NeumorphicReach extends SingleChildRenderObjectWidget {
   /// Gives [child] a reach [height] tall.
-  const NeumorphicReach({super.key, required this.height, super.child});
+  const NeumorphicReach({
+    super.key,
+    required this.height,
+    this.inset = 0,
+    super.child,
+  }) : assert(height >= 0 && inset >= 0);
 
   /// The least height of the reach: the platform's target.
   final double height;
 
+  /// How far in from the face's sides a press there is taken: past the face's rim, onto what it holds.
+  final double inset;
+
   @override
-  RenderObject createRenderObject(BuildContext context) => _RenderReach(height);
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderReach(height, inset);
 
   @override
   void updateRenderObject(BuildContext context, RenderObject renderObject) =>
-      (renderObject as _RenderReach).height = height;
+      (renderObject as _RenderReach)
+        ..height = height
+        ..inset = inset;
 }
 
 class _RenderReach extends RenderShiftedBox {
-  _RenderReach(this._height) : super(null);
+  _RenderReach(this._height, this.inset) : super(null);
 
   double _height;
   set height(double value) {
@@ -32,6 +44,8 @@ class _RenderReach extends RenderShiftedBox {
     _height = value;
     markNeedsLayout();
   }
+
+  double inset;
 
   @override
   double computeMinIntrinsicWidth(double height) =>
@@ -93,20 +107,32 @@ class _RenderReach extends RenderShiftedBox {
 
   @override
   bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    if (super.hitTest(result, position: position)) return true;
     final child = this.child;
-    if (child == null || !size.contains(position)) return false;
+    if (child == null || !size.contains(position)) {
+      return super.hitTest(result, position: position);
+    }
     final at = (child.parentData! as BoxParentData).offset;
-    if ((at & child.size).contains(position)) return false;
+    final onFace = (at & child.size).contains(position);
+    // A press on something on the face that answers presses is its own.
+    if (onFace) {
+      final probe = BoxHitTestResult();
+      if (super.hitTest(probe, position: position) &&
+          probe.path.any((e) => e.target is RenderPointerListener)) {
+        return super.hitTest(result, position: position);
+      }
+    }
+    final w = child.size.width;
+    final side = math.min(inset, w / 2);
     final point = Offset(
-      (position.dx - at.dx).clamp(0.0, child.size.width),
+      (position.dx - at.dx).clamp(side, w - side),
       child.size.height / 2,
     );
-    return result.addWithRawTransform(
+    final reached = result.addWithRawTransform(
       transform: MatrixUtils.forceToPoint(point),
       position: point,
       hitTest: (result, _) => child.hitTest(result, position: point),
     );
+    return reached || (onFace && super.hitTest(result, position: position));
   }
 }
 
@@ -175,38 +201,25 @@ class _RenderTallTarget extends RenderProxyBox {
   }
 }
 
-/// The root of a control whose face stands on its box's edge ([NeumorphicFaceEdge], [child]): the control's one spoken
-/// node, merged from what it holds and as wide as its target ([slop] past each side of the face), and its press reach.
-/// Handed a whole width (a stretched column), it keeps the face at its start, as a row's own box does.
-class NeumorphicEdgeTarget extends SingleChildRenderObjectWidget {
-  /// Speaks and hit-tests [child]'s target, [slop] past each side of its face.
-  const NeumorphicEdgeTarget({super.key, required this.slop, super.child});
-
-  /// How far the target reaches past the face on each side.
-  final double slop;
+/// The root of a control that keeps its own size ([child], laid out at its target): its one spoken node, merged from
+/// what it holds and outlined at the control's own box, never the room round it. Handed a whole width (a stretched
+/// column), it keeps the control at its start, as a row's own box does.
+class NeumorphicOwnRoot extends SingleChildRenderObjectWidget {
+  /// Roots [child], a control at its own size.
+  const NeumorphicOwnRoot({super.key, super.child});
 
   @override
-  RenderObject createRenderObject(BuildContext context) => _RenderEdgeTarget(
-    math.max(0, slop),
-    Directionality.maybeOf(context) ?? TextDirection.ltr,
-  );
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderOwnRoot(Directionality.maybeOf(context) ?? TextDirection.ltr);
 
   @override
   void updateRenderObject(BuildContext context, RenderObject renderObject) =>
-      (renderObject as _RenderEdgeTarget)
-        ..slop = math.max(0, slop)
-        ..direction = Directionality.maybeOf(context) ?? TextDirection.ltr;
+      (renderObject as _RenderOwnRoot).direction =
+          Directionality.maybeOf(context) ?? TextDirection.ltr;
 }
 
-class _RenderEdgeTarget extends RenderShiftedBox {
-  _RenderEdgeTarget(this._slop, this._direction) : super(null);
-
-  double _slop;
-  set slop(double value) {
-    if (value == _slop) return;
-    _slop = value;
-    markNeedsLayout();
-  }
+class _RenderOwnRoot extends RenderShiftedBox {
+  _RenderOwnRoot(this._direction) : super(null);
 
   TextDirection _direction;
   set direction(TextDirection value) {
@@ -253,21 +266,12 @@ class _RenderEdgeTarget extends RenderShiftedBox {
     (child.parentData! as BoxParentData).offset = _at(size, child.size);
   }
 
-  /// The target: the face's box, [_slop] past each side, the box's height.
-  Rect get _reach {
+  @override
+  Rect get semanticBounds {
     final child = this.child;
     if (child == null) return Offset.zero & size;
-    final at = (child.parentData! as BoxParentData).offset;
-    return Rect.fromLTWH(
-      at.dx - _slop,
-      0,
-      child.size.width + 2 * _slop,
-      size.height,
-    );
+    return (child.parentData! as BoxParentData).offset & child.size;
   }
-
-  @override
-  Rect get semanticBounds => _reach;
 
   @override
   void describeSemanticsConfiguration(SemanticsConfiguration config) {
@@ -276,175 +280,38 @@ class _RenderEdgeTarget extends RenderShiftedBox {
       ..isSemanticBoundary = true
       ..isMergingSemanticsOfDescendants = true;
   }
-
-  @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    if (!size.contains(position) && !_reach.contains(position)) return false;
-    if (hitTestChildren(result, position: position)) {
-      result.add(BoxHitTestEntry(this, position));
-      return true;
-    }
-    return false;
-  }
 }
 
-/// Lays [child], a face centred in its target, with the target's side margins ([slop] each) outside the box: the box
-/// is the face's width, so the face's first drawn pixel is the box's edge and stands on the column's keyline (design6
-/// P: a minimum target pads outward and is only hit-tested, never shifting the face). The margins are still the
-/// target's: hit-tested here, and spoken by the face's own node, which keeps its whole target. Up and down nothing
-/// changes; a row keeps one centre.
-class NeumorphicFaceEdge extends SingleChildRenderObjectWidget {
-  /// Puts [child]'s face on the box's edges, [slop] of its target past each side.
-  const NeumorphicFaceEdge({super.key, required this.slop, super.child});
+/// Where a control laid out at its target stands its face (DesignTapTarget's alignment): on the start keyline unless
+/// set, since an example starts on the column's edge with its drawn face, never its target (design6 P); a slot at a
+/// row's end ([AlignmentDirectional.centerEnd]: a page head's trailing key, a stepper's last key) or inside a box
+/// ([AlignmentDirectional.center]: a field's own keys) sets its own. The target grows away from the face.
+class NeumorphicFacePlace extends InheritedWidget {
+  /// Stands the faces under [child] by [alignment].
+  const NeumorphicFacePlace({
+    super.key,
+    required this.alignment,
+    required super.child,
+  });
 
-  /// How far the target reaches past the face on each side.
-  final double slop;
+  /// Where a face stands in its target.
+  final AlignmentDirectional alignment;
+
+  /// The nearest place set round [context], or null.
+  static AlignmentDirectional? maybeOf(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<NeumorphicFacePlace>()
+      ?.alignment;
+
+  /// The nearest place set round [context]; the start keyline when none is.
+  static AlignmentDirectional of(BuildContext context) =>
+      maybeOf(context) ?? AlignmentDirectional.centerStart;
 
   @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderFaceEdge(math.max(0, slop));
-
-  @override
-  void updateRenderObject(BuildContext context, RenderObject renderObject) =>
-      (renderObject as _RenderFaceEdge).slop = math.max(0, slop);
+  bool updateShouldNotify(NeumorphicFacePlace oldWidget) =>
+      alignment != oldWidget.alignment;
 }
 
-class _RenderFaceEdge extends RenderShiftedBox {
-  _RenderFaceEdge(this._slop) : super(null);
-
-  double _slop;
-  set slop(double value) {
-    if (value == _slop) return;
-    _slop = value;
-    markNeedsLayout();
-  }
-
-  double get _both => 2 * _slop;
-
-  BoxConstraints _inner(BoxConstraints c) => BoxConstraints(
-    minWidth: c.minWidth + _both,
-    maxWidth: c.maxWidth + _both,
-    minHeight: c.minHeight,
-    maxHeight: c.maxHeight,
-  );
-
-  @override
-  double computeMinIntrinsicWidth(double height) =>
-      math.max(0, (child?.getMinIntrinsicWidth(height) ?? 0) - _both);
-
-  @override
-  double computeMaxIntrinsicWidth(double height) =>
-      math.max(0, (child?.getMaxIntrinsicWidth(height) ?? 0) - _both);
-
-  @override
-  double computeMinIntrinsicHeight(double width) =>
-      child?.getMinIntrinsicHeight(width + _both) ?? 0;
-
-  @override
-  double computeMaxIntrinsicHeight(double width) =>
-      child?.getMaxIntrinsicHeight(width + _both) ?? 0;
-
-  Size _sized(BoxConstraints c, Size target) =>
-      c.constrain(Size(math.max(0, target.width - _both), target.height));
-
-  @override
-  Size computeDryLayout(BoxConstraints constraints) {
-    final child = this.child;
-    if (child == null) return constraints.smallest;
-    return _sized(constraints, child.getDryLayout(_inner(constraints)));
-  }
-
-  @override
-  double? computeDryBaseline(
-    BoxConstraints constraints,
-    TextBaseline baseline,
-  ) => child?.getDryBaseline(_inner(constraints), baseline);
-
-  @override
-  void performLayout() {
-    final child = this.child;
-    if (child == null) {
-      size = constraints.smallest;
-      return;
-    }
-    child.layout(_inner(constraints), parentUsesSize: true);
-    size = _sized(constraints, child.size);
-    (child.parentData! as BoxParentData).offset = Offset(
-      -_slop,
-      (size.height - child.size.height) / 2,
-    );
-  }
-
-  @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    final reach = Rect.fromLTRB(-_slop, 0, size.width + _slop, size.height);
-    if (!reach.contains(position)) return false;
-    if (hitTestChildren(result, position: position)) {
-      result.add(BoxHitTestEntry(this, position));
-      return true;
-    }
-    return false;
-  }
-}
-
-/// A row of keys whose outer faces stand on its ends ([NeumorphicFaceEdge] faces, a number field's): laid out as an
-/// [Align] at the start, one line tall, and a press up to [slop] past either end of the row lands on that end at the
-/// press's own height, so it reaches the key standing there. It speaks as its child.
-class NeumorphicSideReach extends SingleChildRenderObjectWidget {
-  /// Reaches [slop] past each end of [child].
-  const NeumorphicSideReach({super.key, required this.slop, super.child});
-
-  /// How far a press past either end of the row still reaches it.
-  final double slop;
-
-  @override
-  RenderObject createRenderObject(BuildContext context) => _RenderSideReach(
-    math.max(0, slop),
-    Directionality.maybeOf(context) ?? TextDirection.ltr,
-  );
-
-  @override
-  void updateRenderObject(BuildContext context, RenderObject renderObject) =>
-      (renderObject as _RenderSideReach)
-        ..slop = math.max(0, slop)
-        ..textDirection = Directionality.maybeOf(context) ?? TextDirection.ltr;
-}
-
-class _RenderSideReach extends RenderPositionedBox {
-  _RenderSideReach(this.slop, TextDirection direction)
-    : super(
-        alignment: AlignmentDirectional.centerStart,
-        heightFactor: 1,
-        textDirection: direction,
-      );
-
-  double slop;
-
-  @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    final child = this.child;
-    if (child == null || slop == 0) {
-      return super.hitTest(result, position: position);
-    }
-    final at = (child.parentData! as BoxParentData).offset;
-    final row = at & child.size;
-    if (row.contains(position) ||
-        position.dy < row.top ||
-        position.dy >= row.bottom ||
-        position.dx < row.left - slop ||
-        position.dx >= row.right + slop) {
-      return super.hitTest(result, position: position);
-    }
-    final end = Offset(
-      position.dx.clamp(row.left, row.right - .001),
-      position.dy,
-    );
-    final hit = result.addWithPaintOffset(
-      offset: at,
-      position: end,
-      hitTest: (result, local) => child.hitTest(result, position: local),
-    );
-    if (hit) result.add(BoxHitTestEntry(this, position));
-    return hit;
-  }
-}
+/// [key], a round key that ends its row (a sheet's close key, the next month, the next page), with its face on the
+/// row's end keyline.
+Widget neumorphicAtEnd(Widget key) =>
+    NeumorphicFacePlace(alignment: AlignmentDirectional.centerEnd, child: key);

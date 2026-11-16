@@ -180,7 +180,7 @@ void main() {
           );
           expect(tester.getSize(_bankFace.first).height, normal);
         },
-        variant: TargetPlatformVariant({
+        variant: const TargetPlatformVariant({
           TargetPlatform.android,
           TargetPlatform.macOS,
         }),

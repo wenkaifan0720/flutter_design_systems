@@ -175,6 +175,39 @@ class KitFrame {
 
 enum _KitPlace { bottom, top, band, screen }
 
+/// The room a catalog picture keeps round its specimen. A slab's light and shadow reach 34 px past its face (the
+/// shadow's 12 px throw and its blur's visible tail), so a band's specimen stands 36 px off every edge of the picture
+/// and no cast is cut flat by the picture's box, nor turns square behind a round corner (the user's 0.2.0 fault).
+const double kitCastRoom = 36;
+
+/// The room a held part keeps: a dial or a house of rooms is lifted off the wall in the hand, and its shadow reaches
+/// 8 px further than a slab's. Such a specimen stands this far off the picture's sides ([kitHeldCastRoom] less the band's
+/// [kitCastRoom], added by the specimen).
+const double kitHeldCastRoom = 44;
+
+/// [child], a held part, with a held cast's room at a catalog picture's sides ([kitHeldCastRoom]); on a gallery page it
+/// stands on the page's keyline as every part does.
+Widget kitHeldPart(Widget child) => Builder(
+  builder: (context) => Padding(
+    padding: EdgeInsets.symmetric(
+      horizontal: kitStageRoom(context) > 0 ? kitHeldCastRoom - kitCastRoom : 0,
+    ),
+    child: child,
+  ),
+);
+
+/// The room the catalog stage round [context] keeps on each side of its band: [kitCastRoom] on a stage, none on a
+/// gallery page. A specimen that is a screen of its own spans it, since a screen casts nothing.
+double kitStageRoom(BuildContext context) =>
+    context.dependOnInheritedWidgetOfExactType<_KitRoom>()?.room ?? 0;
+
+class _KitRoom extends InheritedWidget {
+  const _KitRoom({required this.room, required super.child});
+  final double room;
+  @override
+  bool updateShouldNotify(_KitRoom old) => old.room != room;
+}
+
 /// The stage a catalog specimen renders on: the host themed by [style] (a
 /// preset resolved at runtime, so one compile draws every preset) in
 /// [brightness], on the page's ground, with [child] placed by [frame]. A
@@ -211,20 +244,29 @@ class _KitStage extends StatelessWidget {
   Widget build(BuildContext context) => ColoredBox(
     color: context.neumorphicTheme.colors.ground,
     child: switch (frame._place) {
+      // A bar on the screen's foot or head: the picture's edge there is the screen's, and its other edge is left to
+      // the bar's cast.
       _KitPlace.bottom => Stack(
         fit: StackFit.expand,
+        clipBehavior: Clip.none,
         children: [Positioned(left: 0, right: 0, bottom: 0, child: child)],
       ),
       _KitPlace.top => Stack(
         fit: StackFit.expand,
+        clipBehavior: Clip.none,
         children: [Positioned(left: 0, right: 0, top: 0, child: child)],
       ),
-      // A band sits in the page's own margins, as it would in a body.
-      _KitPlace.band => Center(
-        child: SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: child,
+      // A band keeps a cast's room at its sides and clips nothing; its height (the specimen's frame in
+      // metadata.yaml) leaves the same room above and below, so its specimen shows whole.
+      _KitPlace.band => _KitRoom(
+        room: kitCastRoom,
+        child: Center(
+          child: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            clipBehavior: Clip.none,
+            padding: const EdgeInsets.symmetric(horizontal: kitCastRoom),
+            child: child,
+          ),
         ),
       ),
       _KitPlace.screen => child,
@@ -232,7 +274,19 @@ class _KitStage extends StatelessWidget {
   );
 }
 
-// The screen already keeps the page's margin, so the list adds none beside it.
-Widget kitLiveInventoryGallery() => const NeumorphicInventoryGallery(
-  padding: EdgeInsets.only(top: 8, bottom: 32),
+/// The inventory in a window of the page, [height] tall. A list clips what it holds at its edges, so its window spans
+/// a cast's room past the page's keyline on each side and the list keeps that room inside: the cards stand on the
+/// page's keyline and their light and shadow show whole at the sides. Only the window's paint reaches past the
+/// section; taps stay inside it. The last card keeps the same room above the window's foot.
+Widget kitLiveInventoryGallery({double height = 640}) => SizedBox(
+  height: height,
+  child: LayoutBuilder(
+    builder: (context, box) => OverflowBox(
+      minWidth: box.maxWidth + 2 * kitCastRoom,
+      maxWidth: box.maxWidth + 2 * kitCastRoom,
+      child: const NeumorphicInventoryGallery(
+        padding: EdgeInsets.fromLTRB(kitCastRoom, 8, kitCastRoom, kitCastRoom),
+      ),
+    ),
+  ),
 );

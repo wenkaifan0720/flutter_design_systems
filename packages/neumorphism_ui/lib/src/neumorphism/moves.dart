@@ -1,8 +1,9 @@
 // Moving between views and along a sequence, using moulded tabs and inset marks.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 import 'dart:ui' show SemanticsRole;
 
-import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:flutter/widgets.dart';
@@ -21,8 +22,10 @@ import 'localizations.dart';
 import 'shapes.dart';
 import 'tell.dart' show NeumorphicLinearProgressIndicator;
 import 'theme.dart';
+import 'internal/reach.dart' show neumorphicAtEnd;
 import 'internal/panel.dart';
 import 'internal/out_of_use.dart';
+import 'internal/moulded.dart';
 
 /// View tabs with one Tab stop, logical arrow navigation and a pressed selection.
 ///
@@ -57,6 +60,23 @@ class NeumorphicTabBar extends StatefulWidget {
   final String? label;
   @override
   State<NeumorphicTabBar> createState() => _NeumorphicTabBarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<String>('tabs', tabs))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 class _NeumorphicTabBarState extends State<NeumorphicTabBar> {
@@ -197,7 +217,7 @@ class _NeumorphicTabBarState extends State<NeumorphicTabBar> {
                     child: NeumorphicCellFace(
                       child: Builder(
                         builder: (context) {
-                          final look = NeumorphicStyleOf(
+                          final look = neumorphicStyleOf(
                             [widget.style, t.segmentedButtonTheme],
                             {
                               ...NeumorphicStatesScope.of(context),
@@ -427,6 +447,23 @@ class NeumorphicPageDots extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'individualTargets',
+          individualTargets,
+          defaultValue: true,
+        ),
+      );
+  }
 }
 
 class _AdjustablePageDots extends StatefulWidget {
@@ -629,6 +666,16 @@ class NeumorphicStepProgress extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('currentStep', currentStep))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('phase', phase, defaultValue: null));
+  }
 }
 
 /// The pages a pagination shows in [slots] places: every page when they fit, otherwise the first, the last and the
@@ -681,31 +728,59 @@ class NeumorphicPagination extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final words = NeumorphicLocalizations.of(context);
-    final face = t.density.height(40);
-    final cell = math.max(face, NeumorphicChromeMetrics.targetSize);
+    // A key's face: the control's height with its corner's content-safe inset round it, as any shaped face is drawn.
+    // Its target is a finger's at least, and never so tight that two faces touch: one gap of 8 at the least. The face
+    // stands in its target a whole number of pixels from each side, so its words are drawn where they are laid out
+    // (a compact face of 39.02 centred in 48 stood 4.49 down, and its digits drew 0.6 px high).
+    final face =
+        t.density.height(40) +
+        t.shapes
+            .corner(NeumorphicRadii.control)
+            .dimensions
+            .resolve(Directionality.of(context))
+            .horizontal;
+    final cell =
+        face +
+        2 *
+            math.max(
+              4,
+              ((NeumorphicChromeMetrics.targetSize - face) / 2).ceil(),
+            );
     void go(int to) {
       if (to != page) onChanged?.call(to);
     }
 
-    // The arrows are keys of the numbers' own shape: round keys beside rounded squares were two shapes in one control.
-    final keys = NeumorphicStyle(
-      shape: WidgetStatePropertyAll(t.shapes.corner(NeumorphicRadii.control)),
-    );
-    // Back points to the start of the line and on to its end, whichever way the words read.
+    // The steps are keys of the pages' own face, size and target: one key in the row, so one size and one gap. Back
+    // points to the start of the line and on to its end, whichever way the words read.
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final back = NeumorphicIconButton(
-      rtl ? NeumorphicGlyphs.chevronRight : NeumorphicGlyphs.chevronLeft,
-      label: words.previousPage,
-      style: keys,
-      onPressed: onChanged == null || page == 0 ? null : () => go(page - 1),
+    Widget step(
+      IconData glyph,
+      String label,
+      VoidCallback? onPressed,
+      AlignmentDirectional stand,
+    ) => _PageKey(
+      label: label,
+      face: face,
+      target: cell,
+      stand: stand,
+      onPressed: onPressed,
+      child: Icon(
+        glyph,
+        size: (face * .46).clamp(18, 28).toDouble(),
+        color: t.colors.ink,
+      ),
     );
-    final on = NeumorphicIconButton(
+    Widget back(AlignmentDirectional stand) => step(
+      rtl ? NeumorphicGlyphs.chevronRight : NeumorphicGlyphs.chevronLeft,
+      words.previousPage,
+      onChanged == null || page == 0 ? null : () => go(page - 1),
+      stand,
+    );
+    Widget on(AlignmentDirectional stand) => step(
       rtl ? NeumorphicGlyphs.chevronLeft : NeumorphicGlyphs.chevronRight,
-      label: words.nextPage,
-      style: keys,
-      onPressed: onChanged == null || page == count - 1
-          ? null
-          : () => go(page + 1),
+      words.nextPage,
+      onChanged == null || page == count - 1 ? null : () => go(page + 1),
+      stand,
     );
     return Semantics(
       container: true,
@@ -713,13 +788,14 @@ class NeumorphicPagination extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, box) {
           final room = box.hasBoundedWidth
-              ? box.maxWidth - 2 * (cell + 8)
+              ? box.maxWidth - 2 * cell
               : double.infinity;
           final slots = room.isInfinite ? 9 : (room / cell).floor();
           if (slots < 5) {
+            // The steps end the row, their faces on its edges, the page between them in words.
             return Row(
               children: [
-                back,
+                back(AlignmentDirectional.centerStart),
                 Expanded(
                   child: Text(
                     words.pageOf(page + 1, count),
@@ -727,16 +803,17 @@ class NeumorphicPagination extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                on,
+                on(AlignmentDirectional.centerEnd),
               ],
             );
           }
           final shown = _pageWindow(page, count, math.min(slots, 9));
+          // Every key a cell of one width, its face in the middle: the same gap between any two faces, steps and pages
+          // alike, at every width.
           return Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              back,
-              const SizedBox(width: 8),
+              back(AlignmentDirectional.center),
               for (final p in shown)
                 if (p == null)
                   SizedBox(
@@ -748,83 +825,130 @@ class NeumorphicPagination extends StatelessWidget {
                     ),
                   )
                 else
-                  _PageCell(
-                    number: p + 1,
+                  _PageKey(
                     label: words.pageOf(p + 1, count),
                     selected: p == page,
+                    group: true,
                     face: face,
                     target: cell,
                     onPressed: onChanged == null ? null : () => go(p),
+                    child: Text(
+                      '${p + 1}',
+                      style: t.textTheme.caption.tabular.copyWith(
+                        color: p == page ? t.colors.ink : t.colors.inkSecondary,
+                        fontWeight: p == page
+                            ? FontWeight.w700
+                            : FontWeight.w600,
+                      ),
+                    ),
                   ),
-              const SizedBox(width: 8),
-              on,
+              on(AlignmentDirectional.center),
             ],
           );
         },
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('page', page))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged));
+  }
 }
 
-class _PageCell extends StatelessWidget {
-  const _PageCell({
-    required this.number,
+/// One key of a [NeumorphicPagination], a page or a step: one face, one size and one target for every key in the row.
+/// The current page is pressed in. A press takes a key down toward the wall, its words a pixel down, but never to
+/// flush (a face with no relief left reads as out of use) nor into a well, and lets it back when it is let go: a key
+/// held under a finger never reads as a second current page. Keyboard focus
+/// lifts the face (a deeper shadow, no line); the pointer over it changes nothing.
+class _PageKey extends StatefulWidget {
+  const _PageKey({
     required this.label,
-    required this.selected,
     required this.face,
     required this.target,
+    required this.child,
+    this.selected = false,
+    this.group = false,
+    this.stand = AlignmentDirectional.center,
     this.onPressed,
   });
-  final int number;
   final String label;
-  final bool selected;
   final double face, target;
+  final Widget child;
+  final bool selected;
+
+  /// A page: one choice of the row's, announced as chosen or not. A step is a plain button.
+  final bool group;
+
+  /// Where the face stands in its target: in the middle, or on the row's edge when the key ends a row.
+  final AlignmentDirectional stand;
   final VoidCallback? onPressed;
+
+  @override
+  State<_PageKey> createState() => _PageKeyState();
+}
+
+class _PageKeyState extends State<_PageKey> {
+  bool _down = false;
+
+  @override
+  void didUpdateWidget(_PageKey old) {
+    super.didUpdateWidget(old);
+    if (widget.onPressed == null) _down = false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
+    final motion = NeumorphicMotion.of(context);
     final shape = t.shapes.corner(NeumorphicRadii.control);
     return NeumorphicTap(
       shape: shape,
-      onPressed: onPressed,
-      label: label,
-      selected: selected,
-      inMutuallyExclusiveGroup: true,
-      focusSize: Size.square(face),
-      child: Builder(
-        builder: (context) {
-          final states = {
-            ...NeumorphicStatesScope.of(context),
-            if (selected) WidgetState.selected,
-          };
-          return SizedBox.square(
-            dimension: target,
-            child: Center(
-              child: NeumorphicSurface(
-                cast: selected || states.contains(WidgetState.pressed)
+      onPressed: widget.onPressed,
+      label: widget.label,
+      selected: widget.group ? widget.selected : null,
+      inMutuallyExclusiveGroup: widget.group,
+      focusSize: Size.square(widget.face),
+      faceAlignment: widget.stand,
+      // The face draws its own press (down toward the wall), so the tap's paired inset never rings it.
+      pressRelief: false,
+      onDown: (down) => setState(() => _down = down),
+      child: SizedBox.square(
+        dimension: widget.target,
+        child: Align(
+          alignment: widget.stand,
+          child: NeumorphicOutOfUse(
+            off: widget.onPressed == null && !widget.selected,
+            child: TweenAnimationBuilder<double>(
+              // .5 is flush; .35 leaves the key a third of its lift, a key still, gone down.
+              tween: Tween(end: _down && !widget.selected ? .35 : 0),
+              duration: motion.press,
+              curve: motion.enter,
+              child: SizedBox.square(
+                dimension: widget.face,
+                child: Center(child: widget.child),
+              ),
+              builder: (context, depression, child) => NeumorphicSurface(
+                cast: widget.selected
                     ? NeumorphicSurfaceLevel.groove
                     : NeumorphicSurfaceLevel.part,
-                shape: shape,
-                states: states,
+                // The corner by its radius, not as a shape: the face is already its whole size, and a shape would
+                // pad it by the corner's inset again, past the lift that keyboard focus draws round it.
+                radius: NeumorphicRadii.control,
+                states: {if (widget.selected) WidgetState.selected},
+                // A press that chooses the page goes on from there into the well: the surface sinks from the deeper
+                // of the two, so the face never pops up between.
+                depression: depression,
                 outlined: true,
-                child: SizedBox.square(
-                  dimension: face,
-                  child: Center(
-                    child: Text(
-                      '$number',
-                      style: t.textTheme.caption.tabular.copyWith(
-                        color: selected ? t.colors.ink : t.colors.inkSecondary,
-                        fontWeight: selected
-                            ? FontWeight.w700
-                            : FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
+                child: child,
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
@@ -903,6 +1027,12 @@ class NeumorphicBreadcrumb extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<NeumorphicCrumb>('crumbs', crumbs));
+  }
 }
 
 /// The carousel's frame: a slide at rest with the room its cast takes all round, in the slab's shape grown by that
@@ -979,7 +1109,8 @@ class NeumorphicCarouselView extends StatefulWidget {
     this.onChanged,
     this.focusNode,
     this.autofocus = false,
-  }) : assert(height > 0);
+  }) : assert(initialPage >= 0),
+       assert(height > 0);
 
   /// The item in view when the strip first shows. The current item stands in the middle, so the first one leaves the
   /// strip's start empty; a middle one shows a neighbour on each side.
@@ -1004,6 +1135,26 @@ class NeumorphicCarouselView extends StatefulWidget {
   final ValueChanged<int>? onChanged;
   @override
   State<NeumorphicCarouselView> createState() => _NeumorphicCarouselState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('initialPage', initialPage, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      )
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('height', height, defaultValue: 220))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged));
+  }
 }
 
 class _NeumorphicCarouselState extends State<NeumorphicCarouselView> {
@@ -1075,12 +1226,14 @@ class _NeumorphicCarouselState extends State<NeumorphicCarouselView> {
                       const SizedBox(width: 8),
                       Expanded(child: strip),
                       const SizedBox(width: 8),
-                      _StepKey(
-                        Directionality.of(context) == TextDirection.rtl
-                            ? NeumorphicGlyphs.chevronLeft
-                            : NeumorphicGlyphs.chevronRight,
-                        label: words.next,
-                        onPressed: controls.next,
+                      neumorphicAtEnd(
+                        _StepKey(
+                          Directionality.of(context) == TextDirection.rtl
+                              ? NeumorphicGlyphs.chevronLeft
+                              : NeumorphicGlyphs.chevronRight,
+                          label: words.next,
+                          onPressed: controls.next,
+                        ),
                       ),
                     ],
                   )

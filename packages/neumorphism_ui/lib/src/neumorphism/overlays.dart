@@ -1,8 +1,10 @@
 // Overlays on ui_core's behaviours: the popover and hover card, the side sheet, the command palette, the menu bar and
 // the toaster. ui_core owns focus, keys, semantics and timing; every pixel here is the look's: the raised panel, the
 // row pressed in, the keyboard's ring.
+
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -16,6 +18,7 @@ import 'localizations.dart';
 import 'ornaments.dart';
 import 'raised.dart';
 import 'theme.dart';
+import 'internal/reach.dart' show neumorphicAtEnd;
 import 'internal/cap_label.dart';
 
 /// Words or a small form on a raised panel beside its trigger, opened and closed by a press on it. Escape, a press
@@ -35,7 +38,7 @@ class NeumorphicPopover extends StatelessWidget {
     this.align = DesignOverlayAlign.start,
     this.width = 288,
     this.style,
-  });
+  }) : assert(width > 0);
 
   /// What a screen reader calls it.
   final String label;
@@ -82,13 +85,47 @@ class NeumorphicPopover extends StatelessWidget {
       child: SingleChildScrollView(child: content),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, VoidCallback toggle)
+        >.has('trigger', trigger),
+      )
+      ..add(
+        EnumProperty<DesignOverlaySide>(
+          'side',
+          side,
+          defaultValue: DesignOverlaySide.below,
+        ),
+      )
+      ..add(
+        EnumProperty<DesignOverlayAlign>(
+          'align',
+          align,
+          defaultValue: DesignOverlayAlign.start,
+        ),
+      )
+      ..add(DoubleProperty('width', width, defaultValue: 288))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A preview on a raised panel while the pointer rests on [child] (or focus reaches it), gone when both leave: a
 /// person's card over their name. Touch has no hover: give the same words a page of their own.
 ///
 /// ```dart
-/// NeumorphicHoverCard(child: NeumorphicLink('Marta', onPressed: openMarta), content: const Text('Host since 2019'))
+/// NeumorphicHoverCard(content: const Text('Host since 2019'), child: NeumorphicLink('Marta', onPressed: openMarta))
 /// ```
 class NeumorphicHoverCard extends StatelessWidget {
   /// A preview, [content], over [child].
@@ -100,7 +137,7 @@ class NeumorphicHoverCard extends StatelessWidget {
     this.width = 300,
     this.openDelay = const Duration(milliseconds: 600),
     this.style,
-  });
+  }) : assert(width > 0);
 
   /// What the pointer rests on.
   final Widget child;
@@ -139,6 +176,28 @@ class NeumorphicHoverCard extends StatelessWidget {
       child: content,
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('width', width, defaultValue: 300))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'openDelay',
+          openDelay,
+          defaultValue: const Duration(milliseconds: 600),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A panel standing on one side of the page for filters, details or a form beside the work: a heading with a close
@@ -146,7 +205,7 @@ class NeumorphicHoverCard extends StatelessWidget {
 /// focus, closes on Escape, a press on the scrim or a drag toward its edge, and gives focus back.
 ///
 /// ```dart
-/// NeumorphicSheet(title: 'Filters', child: filters, actions: [NeumorphicButton.filled('Show 12 rooms', onPressed: apply)])
+/// NeumorphicSheet(title: 'Filters', actions: [NeumorphicButton.filled('Show 12 rooms', onPressed: apply)], child: filters)
 /// ```
 class NeumorphicSheet extends StatelessWidget {
   /// A sheet headed [title].
@@ -210,10 +269,12 @@ class NeumorphicSheet extends StatelessWidget {
                       ),
                     ),
                     if (onClose != null)
-                      NeumorphicIconButton(
-                        NeumorphicGlyphs.close,
-                        label: words.close,
-                        onPressed: onClose,
+                      neumorphicAtEnd(
+                        NeumorphicIconButton(
+                          NeumorphicGlyphs.close,
+                          label: words.close,
+                          onPressed: onClose,
+                        ),
                       ),
                   ],
                 ),
@@ -243,13 +304,35 @@ class NeumorphicSheet extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose))
+      ..add(
+        EnumProperty<DesignSheetEdge>(
+          'edge',
+          edge,
+          defaultValue: DesignSheetEdge.end,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// Opens a [NeumorphicSheet] from [builder] on the page's [edge], [width] wide (never wider than leaves 56 of the page
 /// showing). The builder gets the sheet's close; the future completes with the value it closes with.
 ///
 /// ```dart
-/// showNeumorphicSheet(context, builder: (context, close) => NeumorphicSheet(title: 'Filters', onClose: close, child: filters))
+/// showNeumorphicSheet<void>(context, builder: (context, close) => NeumorphicSheet(title: 'Filters', onClose: close, child: filters))
 /// ```
 Future<T?> showNeumorphicSheet<T>(
   BuildContext context, {
@@ -287,7 +370,7 @@ class NeumorphicCommand extends StatelessWidget {
     this.maxHeight = 360,
     this.autofocus = false,
     this.focusNode,
-  });
+  }) : assert(maxHeight > 0);
 
   /// The search field's keyboard focus; its own when null.
   final FocusNode? focusNode;
@@ -320,6 +403,26 @@ class NeumorphicCommand extends StatelessWidget {
     autofocus: autofocus,
     focusNode: focusNode,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<DesignCommand>('commands', commands))
+      ..add(ObjectFlagProperty<ValueChanged<DesignCommand>>.has('onRun', onRun))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(DoubleProperty('maxHeight', maxHeight, defaultValue: 360))
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 DesignCommandPalette _palette({
@@ -342,7 +445,9 @@ DesignCommandPalette _palette({
       focusNode: field.focusNode,
       hint: hint,
       autofocus: autofocus,
-      onSubmitted: (_) => field.submit(),
+      // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
+      // focus restarts the text input, and in a browser the restarted input takes no typing.
+      onEditingComplete: field.submit,
       leading: Icon(
         NeumorphicGlyphs.search,
         size: 18,
@@ -437,12 +542,17 @@ class NeumorphicMenuBar extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 6),
         child: NeumorphicEngraved(),
       ),
+      // One lit row (the keys' or the pointer's, whichever moved last), and the panel's inset inside the scroll, so
+      // a lit row's lift at the menu's edge casts into it rather than being cut by the scroll's edge.
       surfaceBuilder: (context, info, items) => NeumorphicPanel(
         presence: info.animation,
         side: info.side,
-        width: math.min(260, info.maxSize.width),
+        width: math.min(284, info.maxSize.width),
         maxHeight: info.maxSize.height,
+        padding: EdgeInsets.zero,
+        menu: true,
         child: SingleChildScrollView(
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -495,6 +605,14 @@ class NeumorphicMenuBar extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<DesignMenuEntry>('menus', menus))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// The place transient messages queue in, above the whole app: up to three snack bars stacked at the foot, the newest
@@ -507,11 +625,8 @@ class NeumorphicMenuBar extends StatelessWidget {
 /// ```
 class NeumorphicToaster extends StatelessWidget {
   /// A toaster over [child].
-  const NeumorphicToaster({
-    super.key,
-    required this.child,
-    this.maxVisible = 3,
-  });
+  const NeumorphicToaster({super.key, required this.child, this.maxVisible = 3})
+    : assert(maxVisible >= 1);
 
   /// The app.
   final Widget child;
@@ -582,6 +697,12 @@ class NeumorphicToaster extends StatelessWidget {
       ),
       child: child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('maxVisible', maxVisible, defaultValue: 3));
   }
 }
 

@@ -87,10 +87,10 @@ int _ground(ByteData px, int g, int i) {
 
 /// The choice controls and buttons a form or a settings page puts on a line of its own.
 final Map<String, Widget> _controls = {
-  'select': NeumorphicSelect<String>(
+  'select': const NeumorphicSelect<String>(
     label: 'Density',
     value: 'standard',
-    options: const [
+    options: [
       NeumorphicMenuItem('standard', 'Standard'),
       NeumorphicMenuItem('comfortable', 'Comfortable'),
       NeumorphicMenuItem('compact', 'Compact'),
@@ -101,31 +101,31 @@ final Map<String, Widget> _controls = {
     value: 'Every day',
     onPressed: _tap,
   ),
-  'segmented control': NeumorphicSegmentedButton<int>(
+  'segmented control': const NeumorphicSegmentedButton<int>(
     label: 'Period',
     value: 0,
-    segments: const [
+    segments: [
       NeumorphicButtonSegment(0, 'Day'),
       NeumorphicButtonSegment(1, 'Week'),
       NeumorphicButtonSegment(2, 'Month'),
     ],
     onChanged: _drop,
   ),
-  'toggle group': NeumorphicToggleGroup<String>(
+  'toggle group': const NeumorphicToggleGroup<String>(
     label: 'Text',
-    items: const [
+    items: [
       NeumorphicButtonSegment('b', 'Bold'),
       NeumorphicButtonSegment('i', 'Italic'),
     ],
-    selected: const {'b'},
+    selected: {'b'},
     onChanged: _drop,
   ),
-  'latches': NeumorphicLatchGroup(
-    options: const [NeumorphicLatch('Day'), NeumorphicLatch('Week')],
+  'latches': const NeumorphicLatchGroup(
+    options: [NeumorphicLatch('Day'), NeumorphicLatch('Week')],
     value: 'Day',
     onChanged: _drop,
   ),
-  'button group': NeumorphicButtonGroup(
+  'button group': const NeumorphicButtonGroup(
     label: 'Week',
     items: [
       NeumorphicButtonGroupItem('Previous', onPressed: _tap),
@@ -147,7 +147,7 @@ final Map<String, Widget> _controls = {
     wide: true,
     onPressed: _tap,
   ),
-  'number field': NeumorphicNumberField(
+  'number field': const NeumorphicNumberField(
     value: '2',
     unit: 'people',
     onDecrease: _tap,

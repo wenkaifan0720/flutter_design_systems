@@ -156,8 +156,9 @@ Widget kitSpecimenSlider() =>
 Widget kitSpecimenProgress() =>
     const NeumorphicProgress(value: .21, start: '0:25:12', end: '1:58:00');
 
+// Each check stands at its 48 target, its 28 face at the start: the targets' own air sets the faces 20 apart.
 Widget kitSpecimenCheck() => const Wrap(
-  spacing: 16,
+  spacing: 0,
   children: [NeumorphicRoundCheckbox(), NeumorphicRoundCheckbox(value: true)],
 );
 

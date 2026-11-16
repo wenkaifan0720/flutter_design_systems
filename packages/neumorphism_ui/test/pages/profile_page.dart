@@ -46,9 +46,9 @@ class ProfilePage extends StatelessWidget {
         ],
       ),
     );
-    final about = NeumorphicCard(
+    final about = const NeumorphicCard(
       title: 'About',
-      children: const [
+      children: [
         NeumorphicList(
           children: [
             NeumorphicKvRow('Name', 'A person', isFirst: true),

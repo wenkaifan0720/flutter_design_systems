@@ -102,7 +102,9 @@ void main() {
       );
       final bytes = (await tester.runAsync(() async {
         final image = await boundary.toImage();
-        return image.toByteData();
+        final data = await image.toByteData();
+        image.dispose();
+        return data;
       }))!;
       final width = boundary.size.width.round();
       int at(int x, int y) => bytes.getUint8((y * width + x) * 4);

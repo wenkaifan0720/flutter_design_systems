@@ -10,8 +10,8 @@ import 'internal/geometry.dart';
 import 'localizations.dart';
 import 'controls.dart';
 import 'component_themes.dart';
-import 'styled.dart';
 import 'theme.dart';
+import 'internal/moulded.dart';
 
 /// Whether [platform] edits by touch: handles and a menu over the selection, rather than a pointer's right-click menu.
 bool neumorphicTouchEditing(TargetPlatform platform) => switch (platform) {
@@ -162,7 +162,7 @@ class NeumorphicTextContextMenu extends StatelessWidget {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
     final touch = neumorphicTouchEditing(defaultTargetPlatform);
-    final look = NeumorphicStyleOf([style, t.menuTheme], const {});
+    final look = neumorphicStyleOf([style, t.menuTheme], const {});
     final shape = look.shape;
     final border = (shape ?? t.shapes.corner(NeumorphicRadii.control)).copyWith(
       side:
@@ -274,5 +274,24 @@ class NeumorphicTextContextMenu extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextSelectionToolbarAnchors>('anchors', anchors),
+      )
+      ..add(
+        IterableProperty<ContextMenuButtonItem>('buttonItems', buttonItems),
+      );
   }
 }

@@ -171,7 +171,7 @@ class HomePage extends StatelessWidget {
             )
           : NeumorphicSections(
               children: [
-                NeumorphicColumn(gap: 18, children: const [head, relief]),
+                const NeumorphicColumn(gap: 18, children: [head, relief]),
                 nudge,
                 modes,
                 levels,

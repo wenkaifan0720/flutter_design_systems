@@ -1,5 +1,6 @@
 // Heads and small words: a section's head, a card, a set straight into the wall, the page's head, states and tags. Sentence
 // case throughout, one family, no tracked caps.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'frames.dart';
@@ -18,6 +19,8 @@ import 'rows.dart'
 import 'theme.dart';
 import 'internal/geometry.dart';
 import 'internal/cap_label.dart';
+import 'internal/reach.dart' show NeumorphicFacePlace;
+import 'internal/moulded.dart';
 
 /// Text with `*bold*` spans, for a sentence that leans on one fact: 'Lights on: *5 of 9*'.
 ///
@@ -32,7 +35,7 @@ class NeumorphicText extends StatelessWidget {
     required this.style,
     this.textAlign,
     this.maxLines,
-  });
+  }) : assert((maxLines ?? 1) > 0);
 
   /// The text to display.
   final String text;
@@ -71,6 +74,16 @@ class NeumorphicText extends StatelessWidget {
       maxLines: maxLines,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(DiagnosticsProperty<TextStyle>('style', style))
+      ..add(EnumProperty<TextAlign>('textAlign', textAlign, defaultValue: null))
+      ..add(IntProperty('maxLines', maxLines, defaultValue: null));
+  }
 }
 
 /// A small line over a section: 'Household, all home'. 12/16 in the third ink.
@@ -93,6 +106,16 @@ class NeumorphicEyebrow extends StatelessWidget {
     textAlign: textAlign,
     style: NeumorphicTheme.of(context).textTheme.micro,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(
+        EnumProperty<TextAlign>('textAlign', textAlign, defaultValue: null),
+      );
+  }
 }
 
 /// A section's head: a bold title and its meta on one baseline, the meta dropping under when there's no room.
@@ -125,7 +148,7 @@ class NeumorphicSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final look = NeumorphicStyleOf([style], NeumorphicStatesScope.of(context));
+    final look = neumorphicStyleOf([style], NeumorphicStatesScope.of(context));
     final heading = Text(
       title,
       style: t.textTheme.title
@@ -149,6 +172,21 @@ class NeumorphicSectionHeader extends StatelessWidget {
           ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A slab with its head: the part most screens are built from. Its children stack on an 18 gap, and a `NeumorphicGrow` among
@@ -168,7 +206,7 @@ class NeumorphicCard extends StatelessWidget {
     this.gap = 18,
     this.children = const [],
     this.style,
-  });
+  }) : assert(gap >= 0);
 
   /// The primary heading.
   final String? title;
@@ -200,7 +238,7 @@ class NeumorphicCard extends StatelessWidget {
             title: title!,
             subtitle: subtitle,
             trailing: trailing,
-            style: NeumorphicStyle.cascade([
+            style: NeumorphicStyle.layered([
               style,
               NeumorphicTheme.of(context).cardTheme,
             ]),
@@ -235,6 +273,22 @@ class NeumorphicCard extends StatelessWidget {
     close();
     return out;
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(DoubleProperty('gap', gap, defaultValue: 18))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A heading and its parts set straight into the wall, with no slab behind them: a control you use, not data you read.
@@ -252,7 +306,7 @@ class NeumorphicWallSet extends StatelessWidget {
     this.trailing,
     required this.child,
     this.gap = 14,
-  });
+  }) : assert(gap >= 0);
 
   /// The primary heading.
   final String? title;
@@ -281,6 +335,15 @@ class NeumorphicWallSet extends StatelessWidget {
       child,
     ],
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(DoubleProperty('gap', gap, defaultValue: 14));
+  }
 }
 
 /// A small head inside a card: 'By use, kWh'.
@@ -312,6 +375,14 @@ class NeumorphicSubHead extends StatelessWidget {
         textAlign: TextAlign.end,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null));
   }
 }
 
@@ -368,12 +439,28 @@ class NeumorphicPageHead extends StatelessWidget {
             gap: 16,
             fillShare: .5,
             align: NeumorphicFitAlign.bottom,
-            children: [words, trailing!],
+            // A key at the head's end stands its face on the end keyline.
+            children: [
+              words,
+              NeumorphicFacePlace(
+                alignment: AlignmentDirectional.centerEnd,
+                child: trailing!,
+              ),
+            ],
           ),
         if (chips.isNotEmpty)
           Wrap(spacing: 10, runSpacing: 10, children: chips),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('overline', overline, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null));
   }
 }
 
@@ -391,6 +478,12 @@ class NeumorphicLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Text(text, style: NeumorphicTheme.of(context).textTheme.micro);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('text', text));
+  }
 }
 
 /// Where a thing stands, in words. Live is the pigment's: an LED and pigment words. Any other state is plain ink.
@@ -424,6 +517,15 @@ class NeumorphicStatus extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('words', words))
+      ..add(DiagnosticsProperty<bool>('live', live, defaultValue: false))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null));
+  }
 }
 
 /// A small stamped label: a count, a kind. A small box on the control scale, never a pill.
@@ -445,7 +547,7 @@ class NeumorphicTag extends StatelessWidget {
 
   Widget _build(BuildContext context, BoxConstraints box) {
     final t = NeumorphicTheme.of(context);
-    final look = NeumorphicStyleOf([
+    final look = neumorphicStyleOf([
       style,
       t.chipTheme,
     ], NeumorphicStatesScope.of(context));
@@ -476,5 +578,19 @@ class NeumorphicTag extends StatelessWidget {
         child: neumorphicLabel(Text(text, style: words)),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('text', text));
   }
 }

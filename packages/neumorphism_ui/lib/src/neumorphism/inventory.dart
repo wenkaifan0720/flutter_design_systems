@@ -1,6 +1,7 @@
 // Neumorphism's answer to the shared component inventory (ui_core's DesignInventoryRow.all, 89 rows): for each row the
 // part that answers it, `Neumorphic<Stem>`, as a small live specimen. The live gallery lists it, and a test verifies it
 // (every row answered once, every specimen the row's own class).
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/inventory.dart';
@@ -49,24 +50,27 @@ const _sleep = NeumorphicNavItem(
   icon: NeumorphicGlyphs.moon,
 );
 
-// The specimens' controllers: one gallery shows the inventory at a time, so each specimen keeps one for the app's life.
-final _scroll = ScrollController();
-final _day = DesignCalendarController(
+// The specimens' controllers, each made when its specimen shows and disposed when it goes (_Owns).
+ScrollController _scroll(BuildContext _) => ScrollController();
+DesignCalendarController _day(BuildContext _) => DesignCalendarController(
   firstDate: DateTime(2026, 6),
   lastDate: DateTime(2026, 9, 30),
   selectedDate: DateTime(2026, 6, 14),
   currentDate: DateTime(2026, 6, 10),
 );
-final _stay = DesignCalendarController(
+DesignCalendarController _stay(BuildContext _) => DesignCalendarController(
   firstDate: DateTime(2026, 6),
   lastDate: DateTime(2026, 9, 30),
   mode: DesignCalendarMode.range,
   selectedRange: DesignDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18)),
   currentDate: DateTime(2026, 6, 10),
 );
-// The colour picker starts on the theme's pigment, the first time it is built.
-DesignColorController? _colour;
-final _table = DesignTableController<_Room>(
+// The colour picker starts on the theme's pigment.
+DesignColorController _colour(BuildContext context) =>
+    DesignColorController(NeumorphicTheme.of(context).colors.pigment);
+DesignTableController<_Room> _table(
+  BuildContext _,
+) => DesignTableController<_Room>(
   rows: const [_Room('Bedroom', 19), _Room('Kitchen', 22), _Room('Study', 21)],
   columns: [
     DesignTableColumn<_Room>(id: 'room', label: 'Room', sortKey: (r) => r.name),
@@ -78,11 +82,44 @@ final _table = DesignTableController<_Room>(
     ),
   ],
 );
-final _places = DesignTreeController<String>(
-  roots: const ['Upstairs'],
-  expanded: const ['Upstairs'],
-  childrenOf: (n) => n == 'Upstairs' ? const ['Bedroom', 'Study'] : const [],
-);
+DesignTreeController<String> _places(BuildContext _) =>
+    DesignTreeController<String>(
+      roots: const ['Upstairs'],
+      expanded: const ['Upstairs'],
+      childrenOf: (n) =>
+          n == 'Upstairs' ? const ['Bedroom', 'Study'] : const [],
+    );
+
+/// A specimen's controller, made by [make] when the specimen first shows and disposed when it goes; [builder] shows
+/// the specimen with it. A controller kept for the app's life outlived every specimen that used it.
+class _Owns<T extends ChangeNotifier> extends StatefulWidget {
+  const _Owns(this.make, this.builder);
+
+  final T Function(BuildContext context) make;
+  final Widget Function(BuildContext context, T controller) builder;
+
+  @override
+  State<_Owns<T>> createState() => _OwnsState<T>();
+}
+
+class _OwnsState<T extends ChangeNotifier> extends State<_Owns<T>> {
+  T? _controller;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _controller ??= widget.make(context);
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(context, _controller!);
+}
 
 /// The specimens that fill the height they are given; a gallery frames each in a box of this height.
 const Map<String, double> neumorphicInventoryHeights = {
@@ -136,7 +173,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    DesignInventoryEntry.absent(
+    const DesignInventoryEntry.absent(
       'FloatingActionButton',
       'a button floating over the page would stack one raised part on others; give the page\'s main action its own place instead, at the end of its column, the foot of the screen or the side bar',
     ),
@@ -322,7 +359,10 @@ final DesignInventory neumorphicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'DateRangePicker',
-      (_) => NeumorphicDateRangePicker(controller: _stay),
+      (_) => _Owns(
+        _stay,
+        (context, stay) => NeumorphicDateRangePicker(controller: stay),
+      ),
     ),
     DesignInventoryEntry.present(
       'TimePicker',
@@ -330,7 +370,7 @@ final DesignInventory neumorphicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'Calendar',
-      (_) => NeumorphicCalendar(controller: _day),
+      (_) => _Owns(_day, (context, day) => NeumorphicCalendar(controller: day)),
     ),
     DesignInventoryEntry.present(
       'WheelPicker',
@@ -344,10 +384,9 @@ final DesignInventory neumorphicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'ColorPicker',
-      (context) => NeumorphicColorPicker(
-        controller: _colour ??= DesignColorController(
-          NeumorphicTheme.of(context).colors.pigment,
-        ),
+      (_) => _Owns(
+        _colour,
+        (context, colour) => NeumorphicColorPicker(controller: colour),
       ),
     ),
     DesignInventoryEntry.present(
@@ -519,32 +558,38 @@ final DesignInventory neumorphicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'DataTable',
-      (_) => NeumorphicDataTable<_Room>(
-        label: 'Rooms',
-        controller: _table,
-        cell: (r, column) => column.id == 'room' ? r.name : '${r.heat}',
+      (_) => _Owns(
+        _table,
+        (context, table) => NeumorphicDataTable<_Room>(
+          label: 'Rooms',
+          controller: table,
+          cell: (r, column) => column.id == 'room' ? r.name : '${r.heat}',
+        ),
       ),
     ),
     DesignInventoryEntry.present('Divider', (_) => const NeumorphicDivider()),
     DesignInventoryEntry.present(
       'ScrollArea',
-      (_) => NeumorphicScrollArea(
-        controller: _scroll,
-        label: 'Rooms',
-        child: ListView(
-          controller: _scroll,
-          children: [
-            for (final r in const [
-              'Bedroom',
-              'Study',
-              'Kitchen',
-              'Hall',
-              'Attic',
-              'Cellar',
-              'Porch',
-            ])
-              Padding(padding: const EdgeInsets.all(8), child: Text(r)),
-          ],
+      (_) => _Owns(
+        _scroll,
+        (context, scroll) => NeumorphicScrollArea(
+          controller: scroll,
+          label: 'Rooms',
+          child: ListView(
+            controller: scroll,
+            children: [
+              for (final r in const [
+                'Bedroom',
+                'Study',
+                'Kitchen',
+                'Hall',
+                'Attic',
+                'Cellar',
+                'Porch',
+              ])
+                Padding(padding: const EdgeInsets.all(8), child: Text(r)),
+            ],
+          ),
         ),
       ),
     ),
@@ -594,16 +639,19 @@ final DesignInventory neumorphicInventory = DesignInventory(
         ),
       ),
     ),
-    DesignInventoryEntry.absent(
+    const DesignInventoryEntry.absent(
       'RefreshIndicator',
       'its spinner sat over the list\'s first row; a pull to refresh that opens a gap at the top of the list comes in 0.2.0',
     ),
     DesignInventoryEntry.present(
       'TreeView',
-      (_) => NeumorphicTreeView<String>(
-        label: 'Rooms',
-        controller: _places,
-        labelOf: (n) => n,
+      (_) => _Owns(
+        _places,
+        (context, places) => NeumorphicTreeView<String>(
+          label: 'Rooms',
+          controller: places,
+          labelOf: (n) => n,
+        ),
       ),
     ),
     DesignInventoryEntry.present(
@@ -898,5 +946,25 @@ class NeumorphicInventoryGallery extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        ),
+      );
   }
 }

@@ -10,6 +10,7 @@ import 'package:neumorphism_ui/neumorphism_ui.dart';
 import '../example/lib/main.dart';
 // ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/hearth.dart';
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'gallery_support.dart' show loadBundledFonts, settle;
 import 'support.dart' show loadNeumorphicFonts;
 
@@ -191,29 +192,36 @@ void main() {
     });
   }
 
-  testWidgets('the app moves between its screens with its own navigation', (
-    tester,
-  ) async {
-    for (final (width, nav) in [
-      (390.0, 'hearth-bar'),
-      (768.0, 'hearth-rail'),
-      (1440.0, null),
-    ]) {
-      await _pump(tester, 'home', width);
-      if (nav != null) expect(find.byKey(Key(nav)), findsOneWidget);
-      for (final screen in hearthScreens.reversed) {
-        final item = nav == null
-            ? find.byKey(Key('hearth-nav-${screen.id}'))
-            : find.descendant(
-                of: find.byKey(Key(nav)),
-                matching: find.text(screen.title),
-              );
-        await tester.tap(item.first);
-        await settle(tester);
-        expect(_page(screen.id), findsOneWidget, reason: '${screen.id} $width');
+  testWidgets(
+    'the app moves between its screens with its own navigation',
+    (tester) async {
+      for (final (width, nav) in [
+        (390.0, 'hearth-bar'),
+        (768.0, 'hearth-rail'),
+        (1440.0, null),
+      ]) {
+        await _pump(tester, 'home', width);
+        if (nav != null) expect(find.byKey(Key(nav)), findsOneWidget);
+        for (final screen in hearthScreens.reversed) {
+          final item = nav == null
+              ? find.byKey(Key('hearth-nav-${screen.id}'))
+              : find.descendant(
+                  of: find.byKey(Key(nav)),
+                  matching: find.text(screen.title),
+                );
+          await tester.tap(item.first);
+          await settle(tester);
+          expect(
+            _page(screen.id),
+            findsOneWidget,
+            reason: '${screen.id} $width',
+          );
+        }
       }
-    }
-  });
+    },
+    // A walk of the whole gallery in one go: ui_core's long-walk setting, each part tracked in its own tests.
+    experimentalLeakTesting: longWalkLeakTesting,
+  );
 
   testWidgets('the checkout pays and says when it arrives', (tester) async {
     await _pump(tester, 'checkout', 390);

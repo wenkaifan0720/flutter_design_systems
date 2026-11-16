@@ -1,16 +1,18 @@
 // The small marks: the LED, the pigment's words, shape marks, monograms, icon wells, the engraved rule, the look's mark.
 // Objects keep their round shape here: nothing in this file holds a sentence.
+
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'frames.dart';
 import 'component_themes.dart';
-import 'styled.dart';
 import 'shapes.dart';
 import 'internal/geometry.dart';
 import 'layout.dart';
 import 'theme.dart';
+import 'internal/moulded.dart';
 
 class _Paint extends CustomPainter {
   _Paint(this.fn, this.key);
@@ -42,7 +44,7 @@ Widget neumorphicPaint(
 /// ```
 class NeumorphicLed extends StatelessWidget {
   /// Creates a [NeumorphicLed].
-  const NeumorphicLed({super.key, this.size = 8});
+  const NeumorphicLed({super.key, this.size = 8}) : assert(size > 0);
 
   /// The indicator diameter in logical pixels.
   final double size;
@@ -59,6 +61,12 @@ class NeumorphicLed extends StatelessWidget {
         flat: flat,
       );
     });
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('size', size, defaultValue: 8));
   }
 }
 
@@ -139,6 +147,17 @@ class NeumorphicLiveText extends StatelessWidget {
       children: parts,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('words', words))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('large', large, defaultValue: false))
+      ..add(DiagnosticsProperty<bool>('led', led, defaultValue: false))
+      ..add(DiagnosticsProperty<bool>('lit', lit, defaultValue: false));
+  }
 }
 
 /// Three shapes that tell things apart without a hue, so the pigment stays free for live: a solid dot, a ring, a half.
@@ -161,7 +180,8 @@ enum NeumorphicMarkShape {
 /// ```
 class NeumorphicShapeMark extends StatelessWidget {
   /// Creates a [NeumorphicShapeMark].
-  const NeumorphicShapeMark(this.shape, {super.key, this.size = 10});
+  const NeumorphicShapeMark(this.shape, {super.key, this.size = 10})
+    : assert(size > 0);
 
   /// The geometric mark used to distinguish this category.
   final NeumorphicMarkShape shape;
@@ -198,6 +218,14 @@ class NeumorphicShapeMark extends StatelessWidget {
       }
     });
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<NeumorphicMarkShape>('shape', shape))
+      ..add(DoubleProperty('size', size, defaultValue: 10));
+  }
 }
 
 /// Initials on a raised round cap: a person. [led]: they're here, or it's live.
@@ -213,7 +241,7 @@ class NeumorphicMonogram extends StatelessWidget {
     this.size = 36,
     this.led = false,
     this.style,
-  });
+  }) : assert(size > 0);
 
   /// Cap and initials before the avatar component theme.
   final NeumorphicStyle? style;
@@ -229,7 +257,7 @@ class NeumorphicMonogram extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final look = NeumorphicStyleOf([style, t.avatarTheme], const {});
+    final look = neumorphicStyleOf([style, t.avatarTheme], const {});
     final words = t.textTheme.micro
         .copyWith(fontWeight: FontWeight.w700, color: t.colors.inkSecondary)
         .merge(look.textStyle)
@@ -302,6 +330,22 @@ class NeumorphicMonogram extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('initials', initials))
+      ..add(DoubleProperty('size', size, defaultValue: 36))
+      ..add(DiagnosticsProperty<bool>('led', led, defaultValue: false));
+  }
 }
 
 /// A glyph in a small pressed round well. [live] sets the pigment in it: this thing is on. Off, it's an ink glyph.
@@ -318,7 +362,7 @@ class NeumorphicIconWell extends StatelessWidget {
     this.size = 44,
     this.square = false,
     this.style,
-  });
+  }) : assert(size > 0);
 
   /// Mark face before the icon-button component theme.
   final NeumorphicStyle? style;
@@ -337,7 +381,7 @@ class NeumorphicIconWell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context), c = t.colors;
-    final look = NeumorphicStyleOf(
+    final look = neumorphicStyleOf(
       [style, t.iconButtonTheme],
       {if (live) WidgetState.selected},
     );
@@ -369,6 +413,23 @@ class NeumorphicIconWell extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(DiagnosticsProperty<bool>('live', live, defaultValue: false))
+      ..add(DoubleProperty('size', size, defaultValue: 44))
+      ..add(DiagnosticsProperty<bool>('square', square, defaultValue: false));
+  }
 }
 
 /// The brand's mark: a raised round cap with a pressed material dimple.
@@ -379,7 +440,7 @@ class NeumorphicIconWell extends StatelessWidget {
 /// ```
 class NeumorphicBrandMark extends StatelessWidget {
   /// Creates a [NeumorphicBrandMark].
-  const NeumorphicBrandMark({super.key, this.size = 36});
+  const NeumorphicBrandMark({super.key, this.size = 36}) : assert(size > 0);
 
   /// The square dimple motif size in logical pixels.
   final double size;
@@ -407,6 +468,12 @@ class NeumorphicBrandMark extends StatelessWidget {
       );
     });
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('size', size, defaultValue: 36));
+  }
 }
 
 /// The look's mark with no pigment: a small moat and dome in the plaster. It stands in for a picture and waits with a page.
@@ -416,7 +483,7 @@ class NeumorphicBrandMark extends StatelessWidget {
 /// ```
 class NeumorphicMark extends StatelessWidget {
   /// Creates a [NeumorphicMark].
-  const NeumorphicMark({super.key, this.size = 44});
+  const NeumorphicMark({super.key, this.size = 44}) : assert(size > 0);
 
   /// The square inset mark size in logical pixels.
   final double size;
@@ -433,6 +500,12 @@ class NeumorphicMark extends StatelessWidget {
         flat: flat,
       );
     });
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('size', size, defaultValue: 44));
   }
 }
 

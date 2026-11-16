@@ -21,21 +21,23 @@ Widget kitDialDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-Widget kitSpecimenDial() => NeumorphicDial(
-  value: 72,
-  min: 40,
-  max: 90,
-  now: 68,
-  major: 10,
-  step: 1.25,
-  label: 'Rising to',
-  labelIcon: NeumorphicGlyphs.trendingUp,
-  figure: '72',
-  sub: 'Now 68',
-  caption: '72 by about 20:25',
-  captionDetail: 'Set at 19:45',
-  onDecrease: () {},
-  onIncrease: () {},
+Widget kitSpecimenDial() => kitHeldPart(
+  NeumorphicDial(
+    value: 72,
+    min: 40,
+    max: 90,
+    now: 68,
+    major: 10,
+    step: 1.25,
+    label: 'Rising to',
+    labelIcon: NeumorphicGlyphs.trendingUp,
+    figure: '72',
+    sub: 'Now 68',
+    caption: '72 by about 20:25',
+    captionDetail: 'Set at 19:45',
+    onDecrease: () {},
+    onIncrease: () {},
+  ),
 );
 
 Widget kitSpecimenDialCompact() => NeumorphicDial(

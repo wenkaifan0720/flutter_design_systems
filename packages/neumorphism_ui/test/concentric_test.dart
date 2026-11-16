@@ -275,19 +275,22 @@ final _parts = <String, (Widget Function(), int)>{
     ),
     1,
   ),
-  'button': (() => NeumorphicButton('Save', onPressed: _hit), 1),
-  'act button': (() => NeumorphicButton.filled('Save', onPressed: _hit), 1),
+  'button': (() => const NeumorphicButton('Save', onPressed: _hit), 1),
+  'act button': (
+    () => const NeumorphicButton.filled('Save', onPressed: _hit),
+    1,
+  ),
   'icon button': (
-    () => NeumorphicIconButton(
+    () => const NeumorphicIconButton(
       NeumorphicGlyphs.plus,
       label: 'Add',
       onPressed: _hit,
     ),
     1,
   ),
-  'chip': (() => NeumorphicChip('Quiet', onPressed: _hit), 1),
+  'chip': (() => const NeumorphicChip('Quiet', onPressed: _hit), 1),
   'chip, chosen': (
-    () => NeumorphicChip('Quiet', selected: true, onPressed: _hit),
+    () => const NeumorphicChip('Quiet', selected: true, onPressed: _hit),
     1,
   ),
   'checkbox': (
@@ -346,7 +349,11 @@ final _parts = <String, (Widget Function(), int)>{
     ),
   },
   'stepper': (
-    () => NeumorphicNumberField(value: '2', onDecrease: _hit, onIncrease: _hit),
+    () => const NeumorphicNumberField(
+      value: '2',
+      onDecrease: _hit,
+      onIncrease: _hit,
+    ),
     1,
   ),
   'pagination': (
@@ -366,7 +373,7 @@ final _parts = <String, (Widget Function(), int)>{
     0,
   ),
   'list row, first in a group': (
-    () => NeumorphicListSection(
+    () => const NeumorphicListSection(
       children: [
         NeumorphicListTile(title: 'Profile', isFirst: true, onPressed: _hit),
         NeumorphicListTile(title: 'Security', onPressed: _hit),
@@ -375,7 +382,7 @@ final _parts = <String, (Widget Function(), int)>{
     1,
   ),
   'list row, last in a group': (
-    () => NeumorphicListSection(
+    () => const NeumorphicListSection(
       label: 'Account',
       children: [
         NeumorphicListTile(title: 'Profile', isFirst: true, onPressed: _hit),
@@ -402,21 +409,21 @@ final _parts = <String, (Widget Function(), int)>{
     1,
   ),
   'dialog': (
-    () => NeumorphicDialog(
+    () => const NeumorphicDialog(
       title: 'Save changes?',
       actions: [NeumorphicButton.filled('Save', onPressed: _hit)],
     ),
     1,
   ),
   'sheet': (
-    () => SizedBox(
+    () => const SizedBox(
       height: 320,
       child: NeumorphicBottomSheet(
         title: 'Options',
         inPlace: true,
         onClose: _hit,
         actions: [NeumorphicButton.filled('Apply', onPressed: _hit)],
-        child: const Text('Choose'),
+        child: Text('Choose'),
       ),
     ),
     1,
@@ -492,7 +499,7 @@ typedef _Whole = ({Widget Function() build, int tabs, List<bool>? sides});
 
 final _wholes = <String, _Whole>{
   'list row, plain': (
-    build: () => NeumorphicList(
+    build: () => const NeumorphicList(
       children: [
         NeumorphicListTile(title: 'Profile', isFirst: true, onPressed: _hit),
         NeumorphicListTile(title: 'Security', onPressed: _hit),
@@ -502,7 +509,7 @@ final _wholes = <String, _Whole>{
     sides: null,
   ),
   'list row, alone in a group': (
-    build: () => NeumorphicListSection(
+    build: () => const NeumorphicListSection(
       children: [
         NeumorphicListTile(title: 'Profile', isFirst: true, onPressed: _hit),
       ],
@@ -511,7 +518,7 @@ final _wholes = <String, _Whole>{
     sides: [true, true, true, true],
   ),
   'list row, first in a group': (
-    build: () => NeumorphicListSection(
+    build: () => const NeumorphicListSection(
       children: [
         NeumorphicListTile(title: 'Profile', isFirst: true, onPressed: _hit),
         NeumorphicListTile(title: 'Security', onPressed: _hit),
@@ -521,7 +528,7 @@ final _wholes = <String, _Whole>{
     sides: [true, true, true, false],
   ),
   'list row, middle of a group under its label': (
-    build: () => NeumorphicListSection(
+    build: () => const NeumorphicListSection(
       label: 'Account',
       children: [
         NeumorphicListTile(title: 'Profile', isFirst: true, onPressed: _hit),
@@ -533,7 +540,7 @@ final _wholes = <String, _Whole>{
     sides: [true, false, true, false],
   ),
   'list row, last in a group': (
-    build: () => NeumorphicListSection(
+    build: () => const NeumorphicListSection(
       children: [
         NeumorphicListTile(title: 'Profile', isFirst: true, onPressed: _hit),
         NeumorphicListTile(title: 'Security', onPressed: _hit),

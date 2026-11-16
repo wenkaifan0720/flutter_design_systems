@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' show PointerDeviceKind, Tristate;
 
 import 'package:flutter/foundation.dart';
@@ -189,15 +190,17 @@ void main() {
       );
       await tester.pumpAndSettle();
       late BuildContext raised;
-      showNeumorphicBottomSheet<void>(
-        host,
-        builder: (context) {
-          raised = context;
-          return const NeumorphicBottomSheet(
-            title: 'Nested sheet',
-            child: Text('Contents'),
-          );
-        },
+      unawaited(
+        showNeumorphicBottomSheet<void>(
+          host,
+          builder: (context) {
+            raised = context;
+            return const NeumorphicBottomSheet(
+              title: 'Nested sheet',
+              child: Text('Contents'),
+            );
+          },
+        ),
       );
       await tester.pumpAndSettle();
       expect(NeumorphicTheme.of(raised).colors, nested.colors);
@@ -222,10 +225,12 @@ void main() {
       final semantics = tester.ensureSemantics();
       try {
         final host = await _mount(tester);
-        showNeumorphicMenu<String>(
-          host,
-          anchor: const Rect.fromLTWH(20, 50, 120, 48),
-          items: _items,
+        unawaited(
+          showNeumorphicMenu<String>(
+            host,
+            anchor: const Rect.fromLTWH(20, 50, 120, 48),
+            items: _items,
+          ),
         );
         await tester.pumpAndSettle();
         final disabled = tester
@@ -265,12 +270,14 @@ void main() {
   ) async {
     final host = await _mount(tester);
     late BuildContext dialog;
-    showNeumorphicDialog<void>(
-      host,
-      builder: (context) {
-        dialog = context;
-        return const NeumorphicDialog(title: 'Question');
-      },
+    unawaited(
+      showNeumorphicDialog<void>(
+        host,
+        builder: (context) {
+          dialog = context;
+          return const NeumorphicDialog(title: 'Question');
+        },
+      ),
     );
     await tester.pumpAndSettle();
     final tip = showNeumorphicTooltip(
@@ -301,9 +308,11 @@ void main() {
       duration: const Duration(minutes: 1),
     );
     await tester.pumpAndSettle();
-    showNeumorphicDialog<void>(
-      host,
-      builder: (_) => const NeumorphicDialog(title: 'Question'),
+    unawaited(
+      showNeumorphicDialog<void>(
+        host,
+        builder: (_) => const NeumorphicDialog(title: 'Question'),
+      ),
     );
     await tester.pumpAndSettle();
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
@@ -318,10 +327,12 @@ void main() {
     tester,
   ) async {
     final host = await _mount(tester);
-    showNeumorphicDialog<void>(
-      host,
-      barrierDismissible: false,
-      builder: (_) => const NeumorphicDialog(title: 'Question'),
+    unawaited(
+      showNeumorphicDialog<void>(
+        host,
+        barrierDismissible: false,
+        builder: (_) => const NeumorphicDialog(title: 'Question'),
+      ),
     );
     await tester.pumpAndSettle();
     await tester.tapAt(const Offset(2, 2));
@@ -419,12 +430,12 @@ void main() {
       ),
     );
     final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
-    await mouse.addPointer(location: const Offset(0, 0));
+    await mouse.addPointer(location: Offset.zero);
     await mouse.moveTo(tester.getCenter(find.text('Control')));
     await tester.pump(const Duration(milliseconds: 450));
     await tester.pumpAndSettle();
     expect(find.byType(NeumorphicTooltipFace), findsOneWidget);
-    await mouse.moveTo(const Offset(0, 0));
+    await mouse.moveTo(Offset.zero);
     await tester.pumpAndSettle();
     expect(find.byType(NeumorphicTooltipFace), findsNothing);
     await mouse.removePointer();
@@ -612,34 +623,44 @@ void main() {
               scale: 2,
               reduce: true,
             );
-            showNeumorphicDialog<void>(
-              host,
-              builder: (context) => NeumorphicDialog(
-                title: longLine,
-                message: longLine,
-                actions: [NeumorphicButton.filled('Confirm', onPressed: () {})],
+            unawaited(
+              showNeumorphicDialog<void>(
+                host,
+                builder: (context) => NeumorphicDialog(
+                  title: longLine,
+                  message: longLine,
+                  actions: [
+                    NeumorphicButton.filled('Confirm', onPressed: () {}),
+                  ],
+                ),
               ),
             );
             await tester.pumpAndSettle();
             expect(tester.takeException(), isNull);
             await tester.sendKeyEvent(LogicalKeyboardKey.escape);
             await tester.pumpAndSettle();
-            showNeumorphicBottomSheet<void>(
-              host,
-              builder: (_) => NeumorphicBottomSheet(
-                title: longLine,
-                actions: [NeumorphicButton.filled('Confirm', onPressed: () {})],
-                child: const Text(longLine),
+            unawaited(
+              showNeumorphicBottomSheet<void>(
+                host,
+                builder: (_) => NeumorphicBottomSheet(
+                  title: longLine,
+                  actions: [
+                    NeumorphicButton.filled('Confirm', onPressed: () {}),
+                  ],
+                  child: const Text(longLine),
+                ),
               ),
             );
             await tester.pumpAndSettle();
             expect(tester.takeException(), isNull);
             await tester.sendKeyEvent(LogicalKeyboardKey.escape);
             await tester.pumpAndSettle();
-            showNeumorphicMenu<String>(
-              host,
-              anchor: Rect.fromLTWH(width - 70, 480, 50, 40),
-              items: [const NeumorphicMenuItem('long', longLine), ..._items],
+            unawaited(
+              showNeumorphicMenu<String>(
+                host,
+                anchor: Rect.fromLTWH(width - 70, 480, 50, 40),
+                items: [const NeumorphicMenuItem('long', longLine), ..._items],
+              ),
             );
             await tester.pumpAndSettle();
             final menu = tester.getRect(find.byType(NeumorphicMenu<String>));

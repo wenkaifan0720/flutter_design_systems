@@ -1,8 +1,10 @@
 // The action rows round 4 added (coverage, 11-10): the floating act, a bank of related buttons, a keycap, a bank of
 // toggles and a split button. The banks are the segmented control's bank of cells; the toggle group and the split
 // button stand on ui_core's behaviours (DesignToggleGroup, DesignSplitButton) and paint them in the look's relief.
+
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -23,6 +25,7 @@ import 'shapes.dart';
 import 'theme.dart';
 import 'internal/cap_label.dart';
 import 'internal/out_of_use.dart';
+import 'internal/moulded.dart';
 
 /// One button of a [NeumorphicButtonGroup].
 @immutable
@@ -125,6 +128,21 @@ class NeumorphicButtonGroup extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<NeumorphicButtonGroupItem>('items', items))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A keyboard key, or keys pressed together, as small raised keycaps joined by a +: what a shortcut is. It shows a
@@ -150,7 +168,7 @@ class NeumorphicKbd extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
-    final look = NeumorphicStyleOf([style, t.chipTheme], const {});
+    final look = neumorphicStyleOf([style, t.chipTheme], const {});
     final words = t.textTheme.micro.tabular
         .copyWith(color: c.inkSecondary, fontWeight: FontWeight.w700)
         .merge(look.textStyle)
@@ -211,6 +229,21 @@ class NeumorphicKbd extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('keys', keys))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -316,6 +349,29 @@ class NeumorphicToggleGroup<T> extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<NeumorphicButtonSegment<T>>('items', items))
+      ..add(IterableProperty<T>('selected', selected))
+      ..add(
+        ObjectFlagProperty<ValueChanged<Set<T>>>.has('onChanged', onChanged),
+      )
+      ..add(DiagnosticsProperty<bool>('multiple', multiple, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<bool>('allowEmpty', allowEmpty, defaultValue: true),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// One action in a [NeumorphicSplitButton]'s menu.
@@ -372,7 +428,7 @@ class NeumorphicSplitButton extends StatelessWidget {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
     final words = NeumorphicLocalizations.of(context);
-    final themeStyle = NeumorphicStyle.cascade([
+    final themeStyle = NeumorphicStyle.layered([
       t.filledButtonTheme,
       t.buttonTheme,
     ]);
@@ -380,7 +436,9 @@ class NeumorphicSplitButton extends StatelessWidget {
     // One capsule (or the theme's small frame) cut in two: the main half keeps the start's corners, the key the end's.
     final whole = t.shapes.corner(NeumorphicRadii.control);
     final source = {for (final a in actions) a.label: a};
-    return DesignSplitButton(
+    // The button keeps its own width in a stretching column: its menu takes the button's width as its least, and a
+    // column-wide button opened a column-wide menu for two short acts.
+    final button = DesignSplitButton(
       label: label,
       onPressed: onPressed,
       menuLabel: menuLabel ?? words.moreOptions,
@@ -419,7 +477,7 @@ class NeumorphicSplitButton extends StatelessWidget {
       ),
       buttonBuilder: (context, part, states, open) {
         final isMain = part == DesignSplitPart.main;
-        final look = NeumorphicStyleOf([style, themeStyle], states);
+        final look = neumorphicStyleOf([style, themeStyle], states);
         final enabled = !states.contains(WidgetState.disabled);
         final dir = Directionality.of(context);
         final shape = NeumorphicCellBorder(
@@ -498,12 +556,17 @@ class NeumorphicSplitButton extends StatelessWidget {
           ),
         );
       },
+      // One lit row (the keys' or the pointer's, whichever moved last), and the panel's inset inside the scroll, so
+      // a lit row's lift at the menu's edge casts into it rather than being cut by the scroll's edge.
       surfaceBuilder: (context, info, items) => NeumorphicPanel(
         presence: info.animation,
         side: info.side,
-        width: 240,
+        width: 264,
         maxHeight: info.maxSize.height,
+        padding: EdgeInsets.zero,
+        menu: true,
         child: SingleChildScrollView(
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -517,6 +580,29 @@ class NeumorphicSplitButton extends StatelessWidget {
         states: states,
       ),
     );
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      widthFactor: 1,
+      heightFactor: 1,
+      child: button,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(IterableProperty<NeumorphicSplitAction>('actions', actions))
+      ..add(StringProperty('menuLabel', menuLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -632,7 +718,7 @@ class _BankMetrics {
     final t = NeumorphicTheme.of(context);
     final dir = Directionality.of(context);
     final scaler = MediaQuery.textScalerOf(context);
-    final look = NeumorphicStyleOf([style, t.segmentedButtonTheme], const {});
+    final look = neumorphicStyleOf([style, t.segmentedButtonTheme], const {});
     final padding =
         look.padding(dir) ??
         t.density.padding(
@@ -700,7 +786,7 @@ Widget _cellContent(
 }) {
   final t = NeumorphicTheme.of(context);
   final c = t.colors;
-  final look = NeumorphicStyleOf(
+  final look = neumorphicStyleOf(
     [style, t.segmentedButtonTheme],
     {...states, if (selected) WidgetState.selected},
   );

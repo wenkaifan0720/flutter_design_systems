@@ -17,28 +17,40 @@ Widget kitReliefDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-Widget kitSpecimenRelief() => const NeumorphicRelief(
-  headerArt: NeumorphicGableArt(),
-  title: '12',
-  subtitle: 'North Street',
-  count: '*4 of 6* on',
-  courses: [
-    NeumorphicCourse('Upper', [
-      NeumorphicBay(name: 'Studio', figure: '18', note: 'Free'),
-      NeumorphicBay(
-        name: 'Meeting room',
-        figure: '31',
-        note: 'On, 80%',
-        lit: .8,
-        flag: NeumorphicGlyphs.bell,
-      ),
-      NeumorphicBay(name: 'Office', figure: '7', note: 'Free'),
-    ]),
-    NeumorphicCourse('Lower', [
-      NeumorphicBay(name: 'Hall', figure: '15', note: 'On, 40%', lit: .4),
-      NeumorphicBay(name: 'Main room', figure: '42', note: 'On, 40%', lit: .4),
-      NeumorphicBay(name: 'Front desk', figure: '6', note: 'On, 20%', lit: .2),
-    ]),
-  ],
-  ground: [NeumorphicGroundNote('Outside 7°', icon: NeumorphicGlyphs.trees)],
+Widget kitSpecimenRelief() => kitHeldPart(
+  const NeumorphicRelief(
+    headerArt: NeumorphicGableArt(),
+    title: '12',
+    subtitle: 'North Street',
+    count: '*4 of 6* on',
+    courses: [
+      NeumorphicCourse('Upper', [
+        NeumorphicBay(name: 'Studio', figure: '18', note: 'Free'),
+        NeumorphicBay(
+          name: 'Meeting room',
+          figure: '31',
+          note: 'On, 80%',
+          lit: .8,
+          flag: NeumorphicGlyphs.bell,
+        ),
+        NeumorphicBay(name: 'Office', figure: '7', note: 'Free'),
+      ]),
+      NeumorphicCourse('Lower', [
+        NeumorphicBay(name: 'Hall', figure: '15', note: 'On, 40%', lit: .4),
+        NeumorphicBay(
+          name: 'Main room',
+          figure: '42',
+          note: 'On, 40%',
+          lit: .4,
+        ),
+        NeumorphicBay(
+          name: 'Front desk',
+          figure: '6',
+          note: 'On, 20%',
+          lit: .2,
+        ),
+      ]),
+    ],
+    ground: [NeumorphicGroundNote('Outside 7°', icon: NeumorphicGlyphs.trees)],
+  ),
 );

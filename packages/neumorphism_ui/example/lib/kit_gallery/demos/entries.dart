@@ -74,16 +74,11 @@ Widget kitSpecimenCheckbox() {
           onChanged: (_) {},
         ),
         const NeumorphicCheckRow(label: 'Unavailable', value: false),
-        Row(
-          children: [
-            NeumorphicCheckbox(
-              value: false,
-              label: 'A check with an error',
-              error: true,
-              onChanged: (_) {},
-            ),
-            const Text('Review this choice'),
-          ],
+        NeumorphicCheckRow(
+          label: 'Review this choice',
+          value: false,
+          error: true,
+          onChanged: (_) {},
         ),
       ],
     ),

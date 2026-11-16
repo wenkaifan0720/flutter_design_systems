@@ -100,7 +100,7 @@ void main() {
       ) async {
         await pump(
           tester,
-          Wrap(
+          const Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
@@ -157,7 +157,11 @@ void main() {
       ) async {
         await pump(
           tester,
-          NeumorphicButton('Add', icon: NeumorphicGlyphs.plus, onPressed: _hit),
+          const NeumorphicButton(
+            'Add',
+            icon: NeumorphicGlyphs.plus,
+            onPressed: _hit,
+          ),
         );
         expect(
           (_iconCentre(tester, NeumorphicGlyphs.plus) -
@@ -172,7 +176,7 @@ void main() {
       ) async {
         await pump(
           tester,
-          SizedBox(
+          const SizedBox(
             width: 360,
             child: NeumorphicDialog(
               title: 'Save changes?',
@@ -218,10 +222,10 @@ void main() {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                NeumorphicListTile(
+                const NeumorphicListTile(
                   title: 'Profile',
-                  leading: const Icon(NeumorphicGlyphs.user),
-                  trailing: const Icon(NeumorphicGlyphs.chevronRight),
+                  leading: Icon(NeumorphicGlyphs.user),
+                  trailing: Icon(NeumorphicGlyphs.chevronRight),
                   onPressed: _hit,
                 ),
                 NeumorphicSwitchRow(
@@ -432,7 +436,7 @@ void main() {
           SizedBox(
             width: width - 40,
             height: 120,
-            child: NeumorphicAppBar(
+            child: const NeumorphicAppBar(
               title: 'Kitchen',
               leading: NeumorphicIconButton(
                 NeumorphicGlyphs.back,
@@ -474,8 +478,8 @@ void main() {
                 const SizedBox(height: 16),
                 NeumorphicBreadcrumb(
                   crumbs: [
-                    NeumorphicCrumb('Home', onPressed: _hit),
-                    NeumorphicCrumb('Rooms', onPressed: _hit),
+                    const NeumorphicCrumb('Home', onPressed: _hit),
+                    const NeumorphicCrumb('Rooms', onPressed: _hit),
                     const NeumorphicCrumb('Kitchen'),
                   ],
                 ),

@@ -24,24 +24,27 @@ var _faced = <String>{};
 var _sank = false;
 
 final _parts = <String, Widget Function()>{
-  'NeumorphicButton': () => NeumorphicButton('Save', onPressed: _hit),
+  'NeumorphicButton': () => const NeumorphicButton('Save', onPressed: _hit),
   'NeumorphicButton.filled': () =>
-      NeumorphicButton.filled('Save', onPressed: _hit),
+      const NeumorphicButton.filled('Save', onPressed: _hit),
   'NeumorphicButton.text': () =>
-      NeumorphicButton.text('Later', onPressed: _hit),
-  'NeumorphicButton (destructive)': () =>
-      NeumorphicButton('Delete', isDestructiveAction: true, onPressed: _hit),
-  'NeumorphicIconButton': () => NeumorphicIconButton(
+      const NeumorphicButton.text('Later', onPressed: _hit),
+  'NeumorphicButton (destructive)': () => const NeumorphicButton(
+    'Delete',
+    isDestructiveAction: true,
+    onPressed: _hit,
+  ),
+  'NeumorphicIconButton': () => const NeumorphicIconButton(
     NeumorphicGlyphs.plus,
     label: 'Add',
     onPressed: _hit,
   ),
-  'NeumorphicRoundButton': () => NeumorphicRoundButton(
+  'NeumorphicRoundButton': () => const NeumorphicRoundButton(
     NeumorphicGlyphs.plus,
     label: 'Add',
     onPressed: _hit,
   ),
-  'NeumorphicChip': () => NeumorphicChip('Quiet', onPressed: _hit),
+  'NeumorphicChip': () => const NeumorphicChip('Quiet', onPressed: _hit),
   'NeumorphicCheckbox': () =>
       NeumorphicCheckbox(value: false, label: 'Agree', onChanged: (_) {}),
   'NeumorphicCheckRow': () =>
@@ -83,20 +86,23 @@ final _parts = <String, Widget Function()>{
     onChanged: (_) {},
   ),
   'NeumorphicSelectField': () =>
-      NeumorphicSelectField(value: 'Canada', onPressed: _hit),
+      const NeumorphicSelectField(value: 'Canada', onPressed: _hit),
   'NeumorphicTextField': () => const NeumorphicTextField(label: 'Name'),
   'NeumorphicSearchField': () => const NeumorphicSearchField(hint: 'Search'),
   'NeumorphicTextArea': () => const NeumorphicTextArea(label: 'Notes'),
   'NeumorphicInputOtp': () => const NeumorphicInputOtp(length: 4),
   'NeumorphicListTile': () =>
-      NeumorphicListTile(title: 'Profile', onPressed: _hit),
-  'NeumorphicChoiceBox': () => NeumorphicChoiceBox(
+      const NeumorphicListTile(title: 'Profile', onPressed: _hit),
+  'NeumorphicChoiceBox': () => const NeumorphicChoiceBox(
     selected: false,
     onPressed: _hit,
-    child: const Text('Basic'),
+    child: Text('Basic'),
   ),
-  'NeumorphicNumberField': () =>
-      NeumorphicNumberField(value: '2', onDecrease: _hit, onIncrease: _hit),
+  'NeumorphicNumberField': () => const NeumorphicNumberField(
+    value: '2',
+    onDecrease: _hit,
+    onIncrease: _hit,
+  ),
   'NeumorphicDisclosure': () => NeumorphicDisclosure(
     title: 'Details',
     expanded: false,
@@ -115,13 +121,13 @@ final _parts = <String, Widget Function()>{
       NeumorphicPagination(count: 12, page: 5, onChanged: (_) {}),
   'NeumorphicBreadcrumb': () => NeumorphicBreadcrumb(
     crumbs: [
-      NeumorphicCrumb('Home', onPressed: _hit),
+      const NeumorphicCrumb('Home', onPressed: _hit),
       const NeumorphicCrumb('Kitchen'),
     ],
   ),
   'NeumorphicRating': () =>
       NeumorphicRating(label: 'Rating', value: 3, onChanged: (_) {}),
-  'NeumorphicFileUpload': () => NeumorphicFileUpload(onPressed: _hit),
+  'NeumorphicFileUpload': () => const NeumorphicFileUpload(onPressed: _hit),
   'NeumorphicTimePicker': () => NeumorphicTimePicker(
     value: const NeumorphicTime(9, 0),
     minuteStep: 30,
@@ -489,7 +495,7 @@ void main() {
             child: Center(
               child: RepaintBoundary(
                 key: _shot,
-                child: NeumorphicButton('Save', onPressed: _hit),
+                child: const NeumorphicButton('Save', onPressed: _hit),
               ),
             ),
           ),

@@ -20,7 +20,6 @@ final Map<String, GalleryCustom> settings = {
   'high contrast': const GalleryCustom(highContrast: true),
   'standard': const GalleryCustom(density: GalleryDensity.standard),
   'compact': const GalleryCustom(density: GalleryDensity.compact),
-  'flat relief': const GalleryCustom(depth: 0),
   'shallow relief': const GalleryCustom(depth: .5),
   for (final pair in galleryColours)
     pair.name.toLowerCase(): GalleryCustom(colours: pair),
@@ -33,7 +32,7 @@ final Map<String, GalleryCustom> settings = {
 };
 
 /// Settings represented by a golden of every section.
-const goldenSettings = ['high contrast', 'compact', 'flat relief'];
+const goldenSettings = ['high contrast', 'compact', 'shallow relief'];
 
 /// The goldens are kept beside the catalog and laid here by the package build; a published copy compares nothing.
 final bool _recorded =
@@ -127,7 +126,7 @@ void main() {
     final shape = WidgetStateProperty.resolveWith<OutlinedBorder?>(
       (s) => s.contains(WidgetState.pressed)
           ? const NeumorphicStadiumBorder(maxRadius: 24)
-          : const NeumorphicRoundedBorder(radius: 4),
+          : const NeumorphicRoundedBorder(radius: NeumorphicRadii.least),
     );
     final style = NeumorphicStyle(shape: shape);
     tester.view.devicePixelRatio = 1;

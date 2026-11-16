@@ -5,6 +5,7 @@
 // own (_bareDecoration), so no Material type stands in the look's API.
 import 'dart:math' as math;
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 /// [style] as a field's words and hint both take it: even leading, so a line's box is centred on its glyphs.
@@ -86,19 +87,24 @@ class NeumorphicEntrySeat extends StatelessWidget {
               child: child,
             ),
           );
-    final band = Stack(
-      children: [
-        // Behind the editable, so a press on the text is the text's (its caret, its selection) and only a press off
-        // it lands here.
-        Positioned.fill(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            excludeFromSemantics: true,
-            onTap: enabled ? focusNode.requestFocus : null,
+    final band = _SeatMark(
+      middle: lines == 1,
+      child: Stack(
+        children: [
+          // Behind the editable, so a press on the text is the text's (its caret, its selection) and only a press off
+          // it lands here.
+          Positioned.fill(
+            child: _SeatFill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                excludeFromSemantics: true,
+                onTap: enabled ? focusNode.requestFocus : null,
+              ),
+            ),
           ),
-        ),
-        placed,
-      ],
+          placed,
+        ],
+      ),
     );
     if (!node) return band;
     return Semantics(
@@ -109,3 +115,93 @@ class NeumorphicEntrySeat extends StatelessWidget {
     );
   }
 }
+
+/// A field's box whose every press reaches its words, as Material's TextField takes one anywhere in its decoration. A
+/// press that lands on nothing that answers it (the box's side air, a glyph beside the words, the gap before a key)
+/// goes to the nearest point of the seat inside ([NeumorphicEntrySeat]) at the press's own height, or for one line at
+/// its middle: it focuses the field and the caret lands at the nearest character. A key in the box keeps its own
+/// presses. Before 0.2.0 a press in the box's 14 pt of side air did nothing.
+class NeumorphicEntryReach extends SingleChildRenderObjectWidget {
+  /// Takes every press in [child], a field's box, to its seat.
+  const NeumorphicEntryReach({super.key, super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderEntryReach();
+}
+
+class _RenderEntryReach extends RenderProxyBox {
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (!size.contains(position)) return false;
+    // A press on something that answers presses (the words, a key in the box) is its own. The seat's own ground
+    // only focuses, so a press there goes on to the words too, and its caret lands at the nearest character.
+    final probe = BoxHitTestResult();
+    if (super.hitTest(probe, position: position) &&
+        probe.path.any(
+          (e) =>
+              e.target is RenderPointerListener &&
+              (e.target as RenderObject).parent is! _RenderSeatFill,
+        )) {
+      return super.hitTest(result, position: position);
+    }
+    final seat = _seat(child);
+    final inverse = seat == null
+        ? null
+        : Matrix4.tryInvert(seat.getTransformTo(this));
+    if (seat == null || inverse == null || !seat.hasSize) {
+      return super.hitTest(result, position: position);
+    }
+    final local = MatrixUtils.transformPoint(inverse, position);
+    final s = seat.size;
+    final point = Offset(
+      local.dx.clamp(.5, math.max(.5, s.width - .5)),
+      seat.middle
+          ? s.height / 2
+          : local.dy.clamp(.5, math.max(.5, s.height - .5)),
+    );
+    return result.addWithRawTransform(
+      transform: MatrixUtils.forceToPoint(point),
+      position: point,
+      hitTest: (result, _) => seat.hitTest(result, position: point),
+    );
+  }
+
+  static _RenderSeatMark? _seat(RenderObject? node) {
+    if (node == null) return null;
+    if (node is _RenderSeatMark) return node;
+    _RenderSeatMark? found;
+    node.visitChildren((child) => found ??= _seat(child));
+    return found;
+  }
+}
+
+/// Marks a seat's band for the box's reach round it.
+class _SeatMark extends SingleChildRenderObjectWidget {
+  const _SeatMark({required this.middle, super.child});
+
+  /// Whether a press is taken to the band's middle (one line) rather than its own height.
+  final bool middle;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderSeatMark(middle);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderSeatMark renderObject) =>
+      renderObject.middle = middle;
+}
+
+class _RenderSeatMark extends RenderProxyBox {
+  _RenderSeatMark(this.middle);
+  bool middle;
+}
+
+/// The seat's ground: a press on it, off the words, focuses the field. The box's reach looks past it to the words.
+class _SeatFill extends SingleChildRenderObjectWidget {
+  const _SeatFill({super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderSeatFill();
+}
+
+class _RenderSeatFill extends RenderProxyBox {}

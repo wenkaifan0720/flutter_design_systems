@@ -1,5 +1,5 @@
 /// Everything `neumorphism_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (chart.dart, controls.dart, frames.dart, internal/beside.dart, internal/cap_label.dart, internal/cell_bank.dart, internal/day_face.dart, internal/error_line.dart, internal/geometry.dart, internal/group_rows.dart, internal/out_of_use.dart, internal/panel.dart, internal/reach.dart, internal/text_entry.dart, internal/veil.dart, layout.dart, ornaments.dart, theme.dart).
+/// keeps back (chart.dart, controls.dart, frames.dart, internal/beside.dart, internal/cap_label.dart, internal/cell_bank.dart, internal/day_face.dart, internal/error_line.dart, internal/geometry.dart, internal/group_rows.dart, internal/moulded.dart, internal/out_of_use.dart, internal/page_motion.dart, internal/panel.dart, internal/platform_words.dart, internal/reach.dart, internal/text_entry.dart, internal/veil.dart, internal/whole_words.dart, layout.dart, ornaments.dart, theme.dart).
 ///
 /// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
 /// rest of your app stays on the package:
@@ -9,6 +9,8 @@
 /// import 'package:flutter/widgets.dart';
 /// import 'package:neumorphism_ui/neumorphism_parts.dart';
 /// ```
+///
+/// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
 library;
 
 export 'package:ui_core/ui_core.dart';
@@ -27,11 +29,15 @@ export 'src/neumorphism/internal/day_face.dart';
 export 'src/neumorphism/internal/error_line.dart';
 export 'src/neumorphism/internal/geometry.dart';
 export 'src/neumorphism/internal/group_rows.dart';
+export 'src/neumorphism/internal/moulded.dart';
 export 'src/neumorphism/internal/out_of_use.dart';
+export 'src/neumorphism/internal/page_motion.dart';
 export 'src/neumorphism/internal/panel.dart';
+export 'src/neumorphism/internal/platform_words.dart';
 export 'src/neumorphism/internal/reach.dart';
 export 'src/neumorphism/internal/text_entry.dart';
 export 'src/neumorphism/internal/veil.dart';
+export 'src/neumorphism/internal/whole_words.dart';
 export 'src/neumorphism/layout.dart';
 export 'src/neumorphism/ornaments.dart';
 export 'src/neumorphism/theme.dart';

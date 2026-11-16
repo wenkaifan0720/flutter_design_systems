@@ -1,5 +1,6 @@
 // The chart rows every look names alike: a line, a bar and an area chart, each NeumorphicChart with its kind fixed, so a
 // developer reaches for the class by what it draws.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'chart.dart';
@@ -66,6 +67,41 @@ class NeumorphicLineChart extends StatelessWidget {
     format: format,
     loading: loading,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<NeumorphicChartSeries>('series', series))
+      ..add(
+        IterableProperty<String>(
+          'labels',
+          labels,
+          defaultValue: const <String>[],
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicChartBand>(
+          'band',
+          band,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      )
+      ..add(DiagnosticsProperty<bool>('loading', loading, defaultValue: false));
+  }
 }
 
 /// Values side by side as columns, one ink a series, in the chart's pressed well, with its gridlines, labels, key and
@@ -87,7 +123,8 @@ class NeumorphicBarChart extends StatelessWidget {
     this.height = 180,
     this.format,
     this.loading = false,
-  }) : assert(height >= 60);
+  }) : assert(height > 0),
+       assert(height >= 60);
 
   /// Frame styling before the shared card component theme.
   final NeumorphicStyle? style;
@@ -129,6 +166,41 @@ class NeumorphicBarChart extends StatelessWidget {
     format: format,
     loading: loading,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<NeumorphicChartSeries>('series', series))
+      ..add(
+        IterableProperty<String>(
+          'labels',
+          labels,
+          defaultValue: const <String>[],
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicChartBand>(
+          'band',
+          band,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      )
+      ..add(DiagnosticsProperty<bool>('loading', loading, defaultValue: false));
+  }
 }
 
 /// A line over a faint fill down to zero, for an amount whose size matters more than its turns, in the chart's pressed
@@ -150,7 +222,8 @@ class NeumorphicAreaChart extends StatelessWidget {
     this.height = 180,
     this.format,
     this.loading = false,
-  }) : assert(height >= 60);
+  }) : assert(height > 0),
+       assert(height >= 60);
 
   /// Frame styling before the shared card component theme.
   final NeumorphicStyle? style;
@@ -192,4 +265,39 @@ class NeumorphicAreaChart extends StatelessWidget {
     format: format,
     loading: loading,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<NeumorphicChartSeries>('series', series))
+      ..add(
+        IterableProperty<String>(
+          'labels',
+          labels,
+          defaultValue: const <String>[],
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicChartBand>(
+          'band',
+          band,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      )
+      ..add(DiagnosticsProperty<bool>('loading', loading, defaultValue: false));
+  }
 }

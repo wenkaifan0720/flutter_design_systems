@@ -4,6 +4,7 @@
 // barrel.
 import 'dart:math' as math;
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -12,9 +13,10 @@ import '../frames.dart';
 import '../glyphs.dart';
 import '../knobs.dart';
 import '../shapes.dart';
-import '../styled.dart';
 import '../theme.dart';
 import 'cap_label.dart';
+import 'cell_bank.dart' show NeumorphicChosenBand;
+import 'moulded.dart';
 
 /// The panel's outline: the menu's (the theme's medium shape).
 OutlinedBorder _panelShape(NeumorphicThemeData t) =>
@@ -102,6 +104,7 @@ class NeumorphicPanel extends StatelessWidget {
     this.padding = const EdgeInsets.all(12),
     this.style,
     this.label,
+    this.menu = false,
   });
 
   /// What the panel holds.
@@ -128,6 +131,12 @@ class NeumorphicPanel extends StatelessWidget {
   /// What a screen reader calls it.
   final String? label;
 
+  /// Whether it holds a menu's rows: whichever moved last, the keys or the pointer, has the one lit
+  /// [NeumorphicPanelRow], never a lifted row and a raised one at once. Opened by the keys (a key still down as it
+  /// opens) it lights its focused first row; opened by the pointer it lights nothing, whatever row it focused, until
+  /// the pointer or the keys move.
+  final bool menu;
+
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
@@ -145,7 +154,7 @@ class NeumorphicPanel extends StatelessWidget {
           maxWidth: width ?? double.infinity,
           maxHeight: maxHeight ?? double.infinity,
         ),
-        child: child,
+        child: menu ? _MenuPlace(child: child) : child,
       ),
     );
     if (label != null) {
@@ -178,9 +187,10 @@ class NeumorphicPanel extends StatelessWidget {
   }
 }
 
-/// One row of a menu-like list in a [NeumorphicPanel], for a ui_core item's [states]: pressed in, in the row's exact
-/// outline, while it is the active one (the keyboard's place, the pointer's, its menu open, or [highlighted]); a check
-/// in the pigment when [checked]; out of use, its words in the quiet ink.
+/// One row of a menu-like list in a [NeumorphicPanel], for a ui_core item's [states]. [checked], the chosen row is
+/// pressed in under the pigment's wash, its words bold and its check in the pigment; the keyboard's place lifts (the
+/// look's keyboard focus); the pointer's row, or one whose menu is open ([highlighted]), stands up a little; a row held
+/// under a finger presses in plain while it is held. Out of use, its words are in the quiet ink.
 class NeumorphicPanelRow extends StatelessWidget {
   /// A row named [label].
   const NeumorphicPanelRow({
@@ -244,14 +254,29 @@ class NeumorphicPanelRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
-    final look = NeumorphicStyleOf([style, t.menuTheme], states);
+    final look = neumorphicStyleOf([style, t.menuTheme], states);
     final enabled = !states.contains(WidgetState.disabled);
-    final lit =
+    // Four states, four materials, so none reads as another: the chosen row is pressed in under the pigment's wash
+    // (a chosen cell's well); a row held under a finger presses in plain, only while it is held; the keyboard's place
+    // lifts with its lit side warmed (keyboard focus everywhere in the look); the pointer's row, or one whose menu is
+    // open, stands up a little off the panel. Only the chosen row is ever pressed in at rest.
+    // In a menu's panel ([NeumorphicPanel.menu]) the last to move, the keys or the pointer, has the one lit row: the
+    // keys' place lifts only while the keys moved last, the pointer's row stands up only while the pointer did.
+    final place = context
+        .dependOnInheritedWidgetOfExactType<_MenuPlaceScope>()
+        ?.keys;
+    final focus = place == null || !enabled ? null : Focus.maybeOf(context);
+    final chosen = enabled && checked;
+    final held = enabled && !chosen && states.contains(WidgetState.pressed);
+    final keys =
+        enabled && place != false && states.contains(WidgetState.focused);
+    final raised =
         enabled &&
+        !chosen &&
+        !held &&
+        !keys &&
         (highlighted ||
-            states.contains(WidgetState.focused) ||
-            states.contains(WidgetState.hovered) ||
-            states.contains(WidgetState.pressed) ||
+            (place != true && states.contains(WidgetState.hovered)) ||
             states.contains(WidgetState.selected));
     final border = _panelRowShape(context, inset: panelInset);
     final ink = enabled ? c.ink : c.inkTertiary;
@@ -266,9 +291,19 @@ class NeumorphicPanelRow extends StatelessWidget {
     // A row that destroys says so in its glyph slot when it has no glyph of its own, as a menu's row does: parked at
     // the row's far end the triangle read as an error badge on it.
     final glyph = icon ?? (danger ? NeumorphicGlyphs.triangleAlert : null);
-    return CustomPaint(
-      painter: lit
-          ? NeumorphicPanelRowRelief(c, t.elevation, look.fill, border)
+    final row = CustomPaint(
+      painter: held
+          ? NeumorphicPanelRowRelief(
+              c,
+              t.elevation,
+              look.fill ?? c.ground,
+              border,
+            )
+          : raised
+          ? NeumorphicPanelRowRaise(c, t.elevation, border)
+          : null,
+      foregroundPainter: keys
+          ? neumorphicFocusLift(t, border, reach: .5)
           : null,
       child: Container(
         constraints: const BoxConstraints(minHeight: 48),
@@ -350,10 +385,125 @@ class NeumorphicPanelRow extends StatelessWidget {
         ),
       ),
     );
+    // An app's own fill for the row's states keeps its say over the chosen row's face.
+    final face = chosen && look.fill != null
+        ? CustomPaint(
+            painter: NeumorphicPanelRowRelief(
+              c,
+              t.elevation,
+              look.fill,
+              border,
+            ),
+            child: row,
+          )
+        : NeumorphicChosenBand(chosen: chosen, border: border, child: row);
+    if (focus == null) return face;
+    // The pointer's moves take the keys' place, as in a native menu: the keys go on from the pointer's row. A move,
+    // not a row scrolled under a resting pointer.
+    return MouseRegion(
+      onHover: (_) {
+        if (!focus.hasFocus) focus.requestFocus();
+      },
+      child: face,
+    );
   }
 }
 
-/// The active row's relief: the row pressed in a little, in its exact outline, with a breath of the pigment.
+/// [NeumorphicPanel.menu]'s one place: whether the keys moved last in the menu.
+class _MenuPlace extends StatefulWidget {
+  const _MenuPlace({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_MenuPlace> createState() => _MenuPlaceState();
+}
+
+class _MenuPlaceState extends State<_MenuPlace> {
+  late bool _keys;
+
+  @override
+  void initState() {
+    super.initState();
+    _keys = HardwareKeyboard.instance.logicalKeysPressed.any(
+      (key) =>
+          key == LogicalKeyboardKey.enter ||
+          key == LogicalKeyboardKey.numpadEnter ||
+          key == LogicalKeyboardKey.space ||
+          key == LogicalKeyboardKey.arrowDown ||
+          key == LogicalKeyboardKey.arrowUp ||
+          key == LogicalKeyboardKey.arrowLeft ||
+          key == LogicalKeyboardKey.arrowRight,
+    );
+    HardwareKeyboard.instance.addHandler(_key);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_key);
+    super.dispose();
+  }
+
+  /// Any key down while the menu is open hands the place to the keys. The menu never claims the key.
+  bool _key(KeyEvent event) {
+    if (event is KeyDownEvent && !_keys && mounted) {
+      setState(() => _keys = true);
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) => Listener(
+    onPointerHover: (_) {
+      if (_keys) setState(() => _keys = false);
+    },
+    child: _MenuPlaceScope(keys: _keys, child: widget.child),
+  );
+}
+
+class _MenuPlaceScope extends InheritedWidget {
+  const _MenuPlaceScope({required this.keys, required super.child});
+
+  final bool keys;
+
+  @override
+  bool updateShouldNotify(_MenuPlaceScope old) => old.keys != keys;
+}
+
+/// The pointer's row, or one whose menu is open: it stands up off its panel as a part does (the part's own cast, so it
+/// still reads at night, where the light throw is a breath), in its exact outline, its face the panel's own. Raised,
+/// never pressed in, so it never reads as the chosen row or a second choice.
+class NeumorphicPanelRowRaise extends CustomPainter {
+  /// The raise of a row shaped [border].
+  const NeumorphicPanelRowRaise(this.colors, this.elevation, this.border);
+
+  /// The palette.
+  final NeumorphicColors colors;
+
+  /// The theme's relief.
+  final NeumorphicElevation elevation;
+
+  /// The row's outline.
+  final OutlinedBorder border;
+
+  @override
+  void paint(Canvas canvas, Size size) => neumorphicPaintRaised(
+    canvas,
+    border.getOuterPath(Offset.zero & size),
+    colors,
+    light: (const Offset(-4, -4), 10),
+    dark: (const Offset(5, 5), 12),
+    elevation: elevation,
+  );
+
+  @override
+  bool shouldRepaint(NeumorphicPanelRowRaise old) =>
+      old.colors != colors ||
+      old.elevation != elevation ||
+      old.border != border;
+}
+
+/// A row pressed in a little, in its exact outline, its face [fill] (a breath of the pigment when none is given).
 class NeumorphicPanelRowRelief extends CustomPainter {
   /// The relief of a row shaped [border].
   const NeumorphicPanelRowRelief(

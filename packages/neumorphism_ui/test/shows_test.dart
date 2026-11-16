@@ -32,6 +32,11 @@ void main() {
         expect(tester.takeException(), isNull);
       } finally {
         semantics.dispose();
+        // The failed picture stays live in the image cache until it is cleared.
+        await tester.pumpWidget(const SizedBox());
+        imageCache
+          ..clear()
+          ..clearLiveImages();
       }
     },
   );

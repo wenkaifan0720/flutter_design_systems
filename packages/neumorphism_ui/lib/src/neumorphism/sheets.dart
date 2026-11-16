@@ -1,5 +1,6 @@
 // Sheets that rise over a page: the action sheet (a short list of what can be done to one thing, and Cancel) and the
 // side sheet (a panel from the window's edge, on ui_core's side-sheet route).
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -181,6 +182,27 @@ class NeumorphicActionSheet<T> extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        IterableProperty<NeumorphicActionSheetAction<T>>('actions', actions),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onCancel', onCancel))
+      ..add(StringProperty('cancelLabel', cancelLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 

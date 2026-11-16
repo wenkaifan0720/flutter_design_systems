@@ -59,7 +59,14 @@ void _slidesHeldRound(WidgetTester tester, String when, {bool rest = false}) {
 
 /// The channel's cells in a picker, as global rects: each day the pressed channel runs through paints its own share
 /// (a day chosen alone is its own well, not a channel).
-List<(Rect, dynamic)> _band(WidgetTester tester) => [
+typedef _Run = ({int index, int count, bool deepFirst, bool deepLast});
+
+/// The run a channel cell paints: the painter is the calendar's own, so its field is read by name.
+_Run _runOf(CustomPaint paint) =>
+    // ignore: avoid_dynamic_calls
+    (paint.painter as dynamic).run as _Run;
+
+List<(Rect, _Run)> _band(WidgetTester tester) => [
   for (final e
       in find
           .descendant(
@@ -71,8 +78,8 @@ List<(Rect, dynamic)> _band(WidgetTester tester) => [
             ),
           )
           .evaluate())
-    if (((e.widget as CustomPaint).painter as dynamic).run case final run
-        when !(run.count == 1 && run.deepFirst == true && run.deepLast == true))
+    if (_runOf(e.widget as CustomPaint) case final run
+        when !(run.count == 1 && run.deepFirst && run.deepLast))
       (tester.getRect(find.byWidget(e.widget)), run),
 ];
 

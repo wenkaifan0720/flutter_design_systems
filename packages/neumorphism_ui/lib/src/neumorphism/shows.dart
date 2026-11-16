@@ -1,16 +1,18 @@
 // People on small moulded round caps, with names carried through image failures.
+
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'controls.dart';
 import 'frames.dart';
 import 'component_themes.dart';
-import 'styled.dart';
 import 'shapes.dart';
 import 'layout.dart';
 import 'localizations.dart';
 import 'theme.dart';
+import 'internal/moulded.dart';
 
 String _initials(String value) => value.characters.take(3).toString();
 double _diameter(BuildContext context, String initials, double size) {
@@ -68,7 +70,7 @@ class NeumorphicAvatar extends StatelessWidget {
     final t = NeumorphicTheme.of(context);
     final letters = _initials(initials);
     final states = {if (selected) WidgetState.selected};
-    final look = NeumorphicStyleOf([style, t.avatarTheme], states);
+    final look = neumorphicStyleOf([style, t.avatarTheme], states);
     final words = t.textTheme.micro
         .copyWith(fontWeight: FontWeight.w700, color: t.colors.ink)
         .merge(look.textStyle)
@@ -151,6 +153,28 @@ class NeumorphicAvatar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('initials', initials))
+      ..add(
+        DiagnosticsProperty<ImageProvider>('image', image, defaultValue: null),
+      )
+      ..add(DoubleProperty('size', size, defaultValue: 40))
+      ..add(
+        DiagnosticsProperty<bool>('selected', selected, defaultValue: false),
+      )
+      ..add(StringProperty('name', name, defaultValue: null));
   }
 }
 
@@ -235,7 +259,7 @@ class NeumorphicAvatarGroup extends StatelessWidget {
     if (all == 0) return const SizedBox.shrink();
     final words = NeumorphicLocalizations.of(context);
     final t = NeumorphicTheme.of(context);
-    final look = NeumorphicStyleOf([style, t.avatarTheme], const {});
+    final look = neumorphicStyleOf([style, t.avatarTheme], const {});
     final shown = faces.take(most).toList();
     final rest = all - shown.length;
     final count = '+${words.formatNumber(rest, maximumFractionDigits: 0)}';
@@ -340,6 +364,35 @@ class NeumorphicAvatarGroup extends StatelessWidget {
       );
     }
     return Semantics(container: true, label: label ?? names, child: group);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<NeumorphicFace>('faces', faces))
+      ..add(IntProperty('most', most, defaultValue: 4))
+      ..add(IntProperty('total', total, defaultValue: null))
+      ..add(DoubleProperty('size', size, defaultValue: 36))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
   }
 }
 

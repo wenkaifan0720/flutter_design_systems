@@ -132,14 +132,14 @@ class ControlPage extends StatelessWidget {
         ),
       ],
     );
-    final next = NeumorphicCard(
+    final next = const NeumorphicCard(
       title: 'What it does next',
       subtitle: 'Next at 22:30',
       children: [
         NeumorphicWell(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: NeumorphicList(
-            children: const [
+            children: [
               NeumorphicStepRow(
                 time: '19:45',
                 title: 'Busy, now',

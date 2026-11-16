@@ -613,10 +613,11 @@ void main() {
       // styling contract permits this primitive override; pages still use
       // the preset defaults, checked independently above.
       found.remove('NeumorphicCircularProgressIndicator');
-      // The parts library's cell bank and panel-row painter: internal helpers, each handed its colour by the part
+      // The parts library's cell bank and panel-row painters: internal helpers, each handed its colour by the part
       // that draws it.
       found.remove('NeumorphicCellBank');
       found.remove('NeumorphicPanelRowRelief');
+      found.remove('NeumorphicPanelRowRaise');
       expect(found, isEmpty);
     });
 

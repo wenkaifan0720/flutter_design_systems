@@ -13,6 +13,7 @@ import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/live.dart';
 // ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/hearth.dart' show hearthScreens;
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'gallery_support.dart' show loadBundledFonts, settle;
 import 'support.dart' show loadNeumorphicFonts;
 
@@ -372,36 +373,39 @@ void main() {
     await tapLive(tester, find.text('Clay and blue'));
     expect(panel(tester).colours?.name, 'Clay and blue');
   });
-  testWidgets('the phone moves between pages through its drawer', (
-    tester,
-  ) async {
-    await pumpLive(tester, 'overview');
-    // No page picker: the menu key opens the look's drawer, which names every page.
-    expect(
-      find.byWidgetPredicate(
-        (w) => w is NeumorphicSelect<String> && w.label == 'Page',
-      ),
-      findsNothing,
-    );
-    await tapLive(tester, find.byKey(const Key('gallery-menu')));
-    final drawer = find.byKey(const Key('gallery-drawer'));
-    expect(drawer, findsOneWidget);
-    for (final page in liveGalleryPages) {
+  testWidgets(
+    'the phone moves between pages through its drawer',
+    (tester) async {
+      await pumpLive(tester, 'overview');
+      // No page picker: the menu key opens the look's drawer, which names every page.
       expect(
-        find.descendant(of: drawer, matching: find.text(page.title)),
-        findsOneWidget,
+        find.byWidgetPredicate(
+          (w) => w is NeumorphicSelect<String> && w.label == 'Page',
+        ),
+        findsNothing,
       );
-    }
-    await tapLive(
-      tester,
-      find.descendant(of: drawer, matching: find.text('Navigation')),
-    );
-    expect(drawer, findsNothing);
-    expect(find.text('Project overview'), findsOneWidget);
-    await tapLive(tester, find.text('Files'));
-    await tapLive(tester, find.text('Open files'));
-    expect(_answer('Files opened'), findsOneWidget);
-  });
+      await tapLive(tester, find.byKey(const Key('gallery-menu')));
+      final drawer = find.byKey(const Key('gallery-drawer'));
+      expect(drawer, findsOneWidget);
+      for (final page in liveGalleryPages) {
+        expect(
+          find.descendant(of: drawer, matching: find.text(page.title)),
+          findsOneWidget,
+        );
+      }
+      await tapLive(
+        tester,
+        find.descendant(of: drawer, matching: find.text('Navigation')),
+      );
+      expect(drawer, findsNothing);
+      expect(find.text('Project overview'), findsOneWidget);
+      await tapLive(tester, find.text('Files'));
+      await tapLive(tester, find.text('Open files'));
+      expect(_answer('Files opened'), findsOneWidget);
+    },
+    // A walk of the whole gallery in one go: ui_core's long-walk setting, each part tracked in its own tests.
+    experimentalLeakTesting: longWalkLeakTesting,
+  );
   testWidgets('the drawer closes on its scrim and keeps the page', (
     tester,
   ) async {
@@ -412,33 +416,38 @@ void main() {
     expect(find.byKey(const Key('gallery-drawer')), findsNothing);
     expect(find.byType(NeumorphicChart), findsOneWidget);
   });
-  testWidgets('a wide window moves between pages on the rail', (tester) async {
-    await pumpLive(tester, 'overview', width: 1440);
-    expect(find.byKey(const Key('gallery-menu')), findsNothing);
-    for (final page in liveGalleryPages) {
-      expect(find.byKey(Key('nav-${page.id}')), findsOneWidget);
-    }
-    await tapLive(tester, find.byKey(const Key('nav-charts')));
-    expect(find.byType(NeumorphicChart), findsOneWidget);
-    await tapLive(tester, find.text('Night'));
-    expect(
-      NeumorphicTheme.of(tester.element(find.byType(NeumorphicChart)))
-          .colors
-          .dark,
-      isTrue,
-    );
-    await tapLive(tester, find.byKey(const Key('gallery-customize')));
-    expect(find.byType(CustomizePanel), findsOneWidget);
-    // The app opens from the rail, and keeps the night.
-    await tapLive(tester, find.byKey(const Key('nav-home')));
-    expect(find.byKey(const Key('hearth-home')), findsOneWidget);
-    expect(
-      NeumorphicTheme.of(tester.element(find.byKey(const Key('hearth-home'))))
-          .colors
-          .dark,
-      isTrue,
-    );
-  });
+  testWidgets(
+    'a wide window moves between pages on the rail',
+    (tester) async {
+      await pumpLive(tester, 'overview', width: 1440);
+      expect(find.byKey(const Key('gallery-menu')), findsNothing);
+      for (final page in liveGalleryPages) {
+        expect(find.byKey(Key('nav-${page.id}')), findsOneWidget);
+      }
+      await tapLive(tester, find.byKey(const Key('nav-charts')));
+      expect(find.byType(NeumorphicChart), findsOneWidget);
+      await tapLive(tester, find.text('Night'));
+      expect(
+        NeumorphicTheme.of(tester.element(find.byType(NeumorphicChart)))
+            .colors
+            .dark,
+        isTrue,
+      );
+      await tapLive(tester, find.byKey(const Key('gallery-customize')));
+      expect(find.byType(CustomizePanel), findsOneWidget);
+      // The app opens from the rail, and keeps the night.
+      await tapLive(tester, find.byKey(const Key('nav-home')));
+      expect(find.byKey(const Key('hearth-home')), findsOneWidget);
+      expect(
+        NeumorphicTheme.of(tester.element(find.byKey(const Key('hearth-home'))))
+            .colors
+            .dark,
+        isTrue,
+      );
+    },
+    // A walk of the whole gallery in one go: ui_core's long-walk setting, each part tracked in its own tests.
+    experimentalLeakTesting: longWalkLeakTesting,
+  );
   testWidgets('the Overview tour opens a page', (tester) async {
     await pumpLive(tester, 'overview');
     await tapLive(tester, find.text('Pickers'));
@@ -528,92 +537,97 @@ void main() {
   }
 
   // polish3 §4: a widget the package exports and no live page builds is a widget the user can't find.
-  testWidgets('every exported widget is live on some page', (tester) async {
-    final seen = <String>{};
-    // The gallery's pages and each of Hearth's screens, on a desk and on a phone.
-    for (final width in [1440.0, 390.0]) {
-      for (final id in {
-        for (final page in liveGalleryPages) page.id,
-        for (final screen in hearthScreens) screen.id,
-      }) {
-        await pumpLive(tester, id, width: width);
+  testWidgets(
+    'every exported widget is live on some page',
+    (tester) async {
+      final seen = <String>{};
+      // The gallery's pages and each of Hearth's screens, on a desk and on a phone.
+      for (final width in [1440.0, 390.0]) {
+        for (final id in {
+          for (final page in liveGalleryPages) page.id,
+          for (final screen in hearthScreens) screen.id,
+        }) {
+          await pumpLive(tester, id, width: width);
+          seen.addAll(builtWidgets(tester));
+        }
+      }
+      // What opens on a press is live too: the phone's drawer, the dialog, the sheet, a field's selection menu.
+      await pumpLive(tester, 'dialogs');
+      await tapLive(tester, find.byKey(const Key('gallery-menu')));
+      seen.addAll(builtWidgets(tester));
+      await tester.tapAt(const Offset(380, 400));
+      await settle(tester);
+      await tapLive(tester, find.text('Open dialog'));
+      seen.addAll(builtWidgets(tester));
+      await tapLive(tester, find.text('Cancel'));
+      await tapLive(tester, find.text('Open a sheet'));
+      seen.addAll(builtWidgets(tester));
+      await tapLive(tester, find.text('Got it'));
+      await pumpLive(tester, 'form');
+      await tester.longPress(
+        find.descendant(
+          of: find.byKey(const Key('hearth-first')),
+          matching: find.byType(EditableText),
+        ),
+      );
+      await settle(tester);
+      seen.addAll(builtWidgets(tester));
+      // Saving an email that is not one puts its error under the field.
+      await pumpLive(tester, 'form');
+      await tester.enterText(
+        find.descendant(
+          of: find.byKey(const Key('hearth-email')),
+          matching: find.byType(EditableText),
+        ),
+        'alex.morgan',
+      );
+      await tapLive(tester, find.byKey(const Key('hearth-save')));
+      expect(
+        find.text('Enter an email address, like name@example.com.'),
+        findsOneWidget,
+      );
+      seen.addAll(builtWidgets(tester));
+      // The Feedback page's states, one at a time through its own control.
+      await pumpLive(tester, 'feedback');
+      for (final state in ['Loading', 'Empty', 'Error']) {
+        await tapLive(
+          tester,
+          find.descendant(
+            of: find.byType(NeumorphicSegmentedButton<String>),
+            matching: find.text(state),
+          ),
+        );
         seen.addAll(builtWidgets(tester));
       }
-    }
-    // What opens on a press is live too: the phone's drawer, the dialog, the sheet, a field's selection menu.
-    await pumpLive(tester, 'dialogs');
-    await tapLive(tester, find.byKey(const Key('gallery-menu')));
-    seen.addAll(builtWidgets(tester));
-    await tester.tapAt(const Offset(380, 400));
-    await settle(tester);
-    await tapLive(tester, find.text('Open dialog'));
-    seen.addAll(builtWidgets(tester));
-    await tapLive(tester, find.text('Cancel'));
-    await tapLive(tester, find.text('Open a sheet'));
-    seen.addAll(builtWidgets(tester));
-    await tapLive(tester, find.text('Got it'));
-    await pumpLive(tester, 'form');
-    await tester.longPress(
-      find.descendant(
-        of: find.byKey(const Key('hearth-first')),
-        matching: find.byType(EditableText),
-      ),
-    );
-    await settle(tester);
-    seen.addAll(builtWidgets(tester));
-    // Saving an email that is not one puts its error under the field.
-    await pumpLive(tester, 'form');
-    await tester.enterText(
-      find.descendant(
-        of: find.byKey(const Key('hearth-email')),
-        matching: find.byType(EditableText),
-      ),
-      'alex.morgan',
-    );
-    await tapLive(tester, find.byKey(const Key('hearth-save')));
-    expect(
-      find.text('Enter an email address, like name@example.com.'),
-      findsOneWidget,
-    );
-    seen.addAll(builtWidgets(tester));
-    // The Feedback page's states, one at a time through its own control.
-    await pumpLive(tester, 'feedback');
-    for (final state in ['Loading', 'Empty', 'Error']) {
-      await tapLive(
-        tester,
-        find.descendant(
-          of: find.byType(NeumorphicSegmentedButton<String>),
-          matching: find.text(state),
-        ),
-      );
+      // The Charts page's kinds, each its own class, through its own control.
+      await pumpLive(tester, 'charts');
+      for (final kind in ['Bar', 'Area']) {
+        await tapLive(
+          tester,
+          find.descendant(
+            of: find.byType(NeumorphicSegmentedButton<LiveChartKind>),
+            matching: find.text(kind),
+          ),
+        );
+        seen.addAll(builtWidgets(tester));
+      }
+      // The overlays page's side sheet opens from its button.
+      await pumpLive(tester, 'overlays');
+      await tapLive(tester, find.text('Filters'));
       seen.addAll(builtWidgets(tester));
-    }
-    // The Charts page's kinds, each its own class, through its own control.
-    await pumpLive(tester, 'charts');
-    for (final kind in ['Bar', 'Area']) {
-      await tapLive(
-        tester,
-        find.descendant(
-          of: find.byType(NeumorphicSegmentedButton<LiveChartKind>),
-          matching: find.text(kind),
-        ),
+      await tapLive(tester, find.text('Show 12 rooms'));
+      // Not a part of an app's screen: the catalog's preview frame.
+      final notOnAPage = {'$NeumorphicPreview'};
+      expect(
+        exportedWidgets().difference(seen).difference(notOnAPage),
+        isEmpty,
+        reason: 'each of these needs a live page that builds it',
       );
-      seen.addAll(builtWidgets(tester));
-    }
-    // The overlays page's side sheet opens from its button.
-    await pumpLive(tester, 'overlays');
-    await tapLive(tester, find.text('Filters'));
-    seen.addAll(builtWidgets(tester));
-    await tapLive(tester, find.text('Show 12 rooms'));
-    // Not a part of an app's screen: the catalog's preview frame.
-    final notOnAPage = {'$NeumorphicPreview'};
-    expect(
-      exportedWidgets().difference(seen).difference(notOnAPage),
-      isEmpty,
-      reason: 'each of these needs a live page that builds it',
-    );
-    expect(exportedWidgets(), containsAll(notOnAPage));
-  });
+      expect(exportedWidgets(), containsAll(notOnAPage));
+    },
+    // A walk of the whole gallery in one go: ui_core's long-walk setting, each part tracked in its own tests.
+    experimentalLeakTesting: longWalkLeakTesting,
+  );
 }
 
 /// The page's answer, as drawn: what the last part tried said, in the status under the page.

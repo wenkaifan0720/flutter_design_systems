@@ -242,3 +242,34 @@ Path neumorphicRoundedPath(List<Offset> pts, {bool close = true}) {
   if (close) path.close();
   return path;
 }
+
+/// A clip that cuts only at a box's start and end, or only at its top and bottom: open the other way by the box's
+/// own size, more than any cast the look throws. Where a box clips what slides or scrolls along one axis, the light
+/// and shadow of what it holds still reach past it across the other.
+class NeumorphicOneAxisClipper extends CustomClipper<Rect> {
+  /// Cuts at the box's [axis] ends only: [Axis.horizontal] cuts its start and end, [Axis.vertical] its top and
+  /// bottom.
+  const NeumorphicOneAxisClipper(this.axis);
+
+  /// The axis along which the box clips.
+  final Axis axis;
+
+  @override
+  Rect getClip(Size size) => switch (axis) {
+    Axis.horizontal => Rect.fromLTRB(
+      0,
+      -size.height,
+      size.width,
+      2 * size.height,
+    ),
+    Axis.vertical => Rect.fromLTRB(-size.width, 0, 2 * size.width, size.height),
+  };
+
+  // What a reader of the paint clip (semantics, ui_core's clipped-shadow check) sees: the clip itself, not the box.
+  @override
+  Rect getApproximateClipRect(Size size) => getClip(size);
+
+  @override
+  bool shouldReclip(NeumorphicOneAxisClipper oldClipper) =>
+      oldClipper.axis != axis;
+}

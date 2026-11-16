@@ -13,8 +13,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui/src/neumorphism/chart.dart' show NeumorphicChart;
-import 'package:neumorphism_ui/src/neumorphism/internal/reach.dart'
-    show NeumorphicFaceEdge;
 import 'package:neumorphism_ui/src/neumorphism/ornaments.dart'
     show NeumorphicMark;
 
@@ -226,8 +224,8 @@ const _flows = <String, String>{
   'NeumorphicColorPicker': 'its strips are grooves the width of its column, their colours laid in them',
   'NeumorphicTreeView': 'rows the width of their column, pressed in when lit',
   'NeumorphicEntrySeat': 'a band the width of its field and the control height, its line centred in it',
-  'NeumorphicSearchField': 'a field the width of its column; its clear key keeps a 48 target over a slot the field\'s height',
   'NeumorphicBanner': 'a soft well the width of its column, its mark a fixed glyph beside its words',
+  'NeumorphicEmptyState': 'a column of its mark and words, the mark a fixed bead with its glyph stacked on it',
   'NeumorphicChosenBand':
       'a chosen row\'s pressed band, painted to the row it stands behind',
 };
@@ -458,16 +456,9 @@ void main() {
                   );
                 }
                 final room = width - part.size.width;
-                // A part whose target is wider than its face stands its face on the start and pads its target outward
-                // (design6 P, 11-12: an example starts on the edge with its drawn face, never its target).
-                final edge = find.descendant(
-                  of: finder,
-                  matching: find.byType(NeumorphicFaceEdge),
-                );
-                final slop = edge.evaluate().isEmpty
-                    ? 0.0
-                    : tester.widget<NeumorphicFaceEdge>(edge.first).slop;
-                final x = direction == TextDirection.ltr ? -slop : room + slop;
+                // A part whose target is wider than its face is laid out at its target, the face centred in it
+                // (ui_core's DesignTapTarget, 0.2.0): the target's box starts on the edge.
+                final x = direction == TextDirection.ltr ? 0.0 : room;
                 final place = Offset(x, 0) & part.size;
                 final at = place;
                 if (box.isNotEmpty) {

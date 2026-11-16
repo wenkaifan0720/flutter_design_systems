@@ -1,8 +1,10 @@
 // Groups and records on softly raised slabs, with engraved separators.
+
 import 'dart:math' as math;
 
 import 'component_themes.dart';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'controls.dart';
@@ -54,6 +56,15 @@ class NeumorphicDivider extends StatelessWidget {
         child: const NeumorphicEngraved(),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('space', space, defaultValue: 16))
+      ..add(DoubleProperty('indent', indent, defaultValue: 0))
+      ..add(DoubleProperty('endIndent', endIndent, defaultValue: 0));
   }
 }
 
@@ -117,6 +128,21 @@ class NeumorphicListSection extends StatelessWidget {
       ],
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('footer', footer, defaultValue: null));
+  }
 }
 
 /// A heading that opens in place. The child keeps its state while it is hidden.
@@ -172,6 +198,40 @@ class NeumorphicDisclosure extends StatefulWidget {
 
   @override
   State<NeumorphicDisclosure> createState() => _NeumorphicDisclosureState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'initiallyExpanded',
+          initiallyExpanded,
+          defaultValue: false,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onExpansionChanged',
+          onExpansionChanged,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(DiagnosticsProperty<bool>('isFirst', isFirst, defaultValue: false))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 class _NeumorphicDisclosureState extends State<NeumorphicDisclosure> {
@@ -558,5 +618,22 @@ class NeumorphicTable extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<NeumorphicTableColumn>('columns', columns))
+      ..add(IterableProperty<NeumorphicTableRow>('rows', rows))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('stackBelow', stackBelow, defaultValue: 520));
   }
 }

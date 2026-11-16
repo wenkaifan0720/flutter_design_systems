@@ -109,17 +109,17 @@ class UsagePage extends StatelessWidget {
         ),
       ],
       body: t.desk
-          ? NeumorphicSections(
+          ? const NeumorphicSections(
               children: [
                 head,
                 stats,
                 NeumorphicRow(
-                  spans: const [7, 5],
+                  spans: [7, 5],
                   children: [
                     today,
                     NeumorphicCard(
                       title: 'How it splits',
-                      children: const [
+                      children: [
                         shares,
                         NeumorphicGrow(child: week),
                       ],
@@ -128,16 +128,16 @@ class UsagePage extends StatelessWidget {
                 ),
               ],
             )
-          : NeumorphicSections(
+          : const NeumorphicSections(
               children: [
-                NeumorphicColumn(gap: 14, children: const [head, figure]),
-                const NeumorphicCard(
+                NeumorphicColumn(gap: 14, children: [head, figure]),
+                NeumorphicCard(
                   title: 'By the hour',
                   subtitle: '00:00 to 20:10',
                   children: [bars],
                 ),
                 stats,
-                const NeumorphicCard(
+                NeumorphicCard(
                   title: 'How it splits',
                   children: [shares, week],
                 ),

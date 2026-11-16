@@ -256,7 +256,9 @@ class _LiveExampleState extends State<LiveExample> {
   );
 
   /// A screen for a piece that stands at a screen's edge (a rail, a bar, a drawer): a rounded well, the piece at [at].
-  /// Loose on the page its square ends read as a sharp box (law 8); at a screen's edge they are the screen's.
+  /// Loose on the page its square ends read as a sharp box (law 8); at a screen's edge they are the screen's. The well
+  /// is a screen of its own, with its own overlay: its edge is the display's, which ends a bar's cast or a focused
+  /// item's lift as a phone's does, and what the piece raises opens inside it.
   Widget _onScreen(
     Widget piece, {
     required AlignmentGeometry at,
@@ -270,7 +272,9 @@ class _LiveExampleState extends State<LiveExample> {
       ),
       child: SizedBox(
         height: height,
-        child: Align(alignment: at, child: piece),
+        child: Overlay.wrap(
+          child: Align(alignment: at, child: piece),
+        ),
       ),
     ),
   );
@@ -742,18 +746,27 @@ class _LiveExampleState extends State<LiveExample> {
                   : false,
             ),
           ),
-          // The round check is a bare mark: its row names it, merged into one control.
+          // The round check is a bare mark: its row names it, merged into one control, and the whole row takes the
+          // tap, so a press is wherever a screen reader outlines it.
           MergeSemantics(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                NeumorphicRoundCheckbox(
-                  value: _todo,
-                  onChanged: (v) => setState(() => _todo = v),
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                excludeFromSemantics: true,
+                onTap: () => setState(() => _todo = !_todo),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    NeumorphicRoundCheckbox(
+                      value: _todo,
+                      onChanged: (v) => setState(() => _todo = v),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text('Water the plants'),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                const Text('Water the plants'),
-              ],
+              ),
             ),
           ),
         ],

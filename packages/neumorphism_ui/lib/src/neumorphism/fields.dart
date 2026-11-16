@@ -1,8 +1,9 @@
 // Entry rows whose behaviour is ui_core's and whose every pixel is the look's: the password field, the input group,
 // the combobox, the multi-select, the form row, the range slider and the colour picker.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:material_ui/material_ui.dart'
     show
         HSVColor,
@@ -33,9 +34,9 @@ import 'internal/text_entry.dart';
 import 'knobs.dart';
 import 'localizations.dart';
 import 'shapes.dart';
-import 'styled.dart';
 import 'theme.dart';
 import 'internal/out_of_use.dart';
+import 'internal/moulded.dart';
 
 /// A field's label above it: the words a text field draws, silent because the input speaks them itself.
 class _Label extends StatelessWidget {
@@ -144,6 +145,7 @@ class _BareEditor extends StatelessWidget {
     this.keyboardType,
     this.onChanged,
     this.onSubmitted,
+    this.onEditingComplete,
     this.semanticLabel,
     this.style,
     this.node = true,
@@ -158,13 +160,16 @@ class _BareEditor extends StatelessWidget {
   final TextInputType? keyboardType;
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
+
+  /// Enter in a field that keeps the focus after it (never with [onSubmitted]).
+  final VoidCallback? onEditingComplete;
   final String? semanticLabel;
   final NeumorphicStyle? style;
 
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final look = NeumorphicStyleOf(
+    final look = neumorphicStyleOf(
       [style, t.textFieldTheme],
       {if (!enabled) WidgetState.disabled},
     );
@@ -188,6 +193,7 @@ class _BareEditor extends StatelessWidget {
             enabled: enabled,
             onChanged: onChanged,
             onSubmitted: onSubmitted,
+            onEditingComplete: onEditingComplete,
             keyboardType: keyboardType,
             style: text,
             cursorColor: t.colors.ink,
@@ -292,6 +298,64 @@ class NeumorphicPasswordField extends StatelessWidget {
     ],
     style: style,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      )
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'newPassword',
+          newPassword,
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A text field with add-ons joined to it in one groove: words before or after the value ("https://", ".com", "€"),
@@ -369,6 +433,56 @@ class NeumorphicInputGroup extends StatefulWidget {
 
   @override
   State<NeumorphicInputGroup> createState() => _NeumorphicInputGroupState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('prefix', prefix, defaultValue: null))
+      ..add(StringProperty('suffix', suffix, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _NeumorphicInputGroupState extends State<NeumorphicInputGroup> {
@@ -582,7 +696,7 @@ class _NeumorphicInputGroupState extends State<NeumorphicInputGroup> {
 }
 
 /// A text field that suggests as one types and keeps one of [options]: the look's menu rises under it with the matches,
-/// arrows move the pressed-in row, Enter takes it. With [requireSelection] words that match nothing go back to the last
+/// the arrows and the pointer move one lifted row (one place, as in a native menu), Enter takes it. With [requireSelection] words that match nothing go back to the last
 /// choice when focus leaves.
 ///
 /// ```dart
@@ -598,6 +712,7 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
     this.value,
     this.onSelected,
     this.displayString,
+    this.isOptionEnabled,
     this.requireSelection = false,
     this.error,
     this.helper,
@@ -622,6 +737,9 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
 
   /// An option's words; `toString` by default.
   final String Function(T option)? displayString;
+
+  /// Whether an option can be taken; one that cannot is shown out of use, and the keys pass over it. All by default.
+  final bool Function(T option)? isOptionEnabled;
 
   /// Whether the field must hold one of [options] when focus leaves it.
   final bool requireSelection;
@@ -657,6 +775,10 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
             value: value,
             onSelected: onSelected,
             displayStringForOption: words,
+            isOptionEnabled: isOptionEnabled,
+            // The pointer's row and the keys' place both stand up off the panel, so they are one place, as in a
+            // native menu: the pointer moves the keys' place, and two rows never read as two current options.
+            highlightFollowsPointer: true,
             requireSelection: requireSelection,
             semanticLabel: label,
             fieldBuilder: (context, field) => NeumorphicTextField(
@@ -670,7 +792,9 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
               style: style,
               controller: field.controller,
               focusNode: field.focusNode,
-              onSubmitted: (_) => field.submit(),
+              // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
+              // focus restarts the text input, and in a browser the restarted input takes no typing.
+              onEditingComplete: field.submit,
               trailing: ExcludeSemantics(
                 child: Icon(
                   NeumorphicGlyphs.chevronsUpDown,
@@ -704,6 +828,46 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('options', options))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(
+        ObjectFlagProperty<String Function(T option)>.has(
+          'displayString',
+          displayString,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<bool Function(T option)>.has(
+          'isOptionEnabled',
+          isOptionEnabled,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'requireSelection',
+          requireSelection,
+          defaultValue: false,
+        ),
+      )
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// Several choices in one groove, each a chip with its own ✕: type to find more among [options] (or, with [onCreate], to
@@ -722,12 +886,13 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
     this.label,
     this.hint,
     this.displayString,
+    this.isOptionEnabled,
     this.onCreate,
     this.maxTags,
     this.error,
     this.helper,
     this.style,
-  });
+  }) : assert((maxTags ?? 1) > 0);
 
   /// The chosen values, in order.
   final List<T> values;
@@ -747,6 +912,9 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
   /// A value's words; `toString` by default.
   final String Function(T value)? displayString;
 
+  /// Whether an option can be taken; one that cannot is shown out of use, and the keys pass over it. All by default.
+  final bool Function(T option)? isOptionEnabled;
+
   /// Makes a value from typed words (Enter or a comma); null allows only [options].
   final T? Function(String text)? onCreate;
 
@@ -765,6 +933,46 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
   @override
   State<NeumorphicMultiSelect<T>> createState() =>
       _NeumorphicMultiSelectState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('values', values))
+      ..add(
+        ObjectFlagProperty<ValueChanged<List<T>>>.has('onChanged', onChanged),
+      )
+      ..add(
+        IterableProperty<T>('options', options, defaultValue: const <Never>[]),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(T value)>.has(
+          'displayString',
+          displayString,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<bool Function(T option)>.has(
+          'isOptionEnabled',
+          isOptionEnabled,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<T? Function(String text)>.has('onCreate', onCreate),
+      )
+      ..add(IntProperty('maxTags', maxTags, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _NeumorphicMultiSelectState<T extends Object>
@@ -796,6 +1004,9 @@ class _NeumorphicMultiSelectState<T extends Object>
             onChanged: widget.onChanged,
             options: widget.options,
             displayStringForOption: words,
+            isOptionEnabled: widget.isOptionEnabled,
+            // One place for the pointer and the keys, as the combobox's.
+            highlightFollowsPointer: true,
             onCreate: widget.onCreate,
             maxTags: widget.maxTags,
             semanticLabel: widget.label,
@@ -817,7 +1028,9 @@ class _NeumorphicMultiSelectState<T extends Object>
                   focusNode: field.focusNode,
                   // The hint stays under the chips: without it the words line read as an empty well under them.
                   hint: widget.hint,
-                  onSubmitted: (_) => field.submit(),
+                  // Enter keeps the focus here, so it comes in onEditingComplete with no onSubmitted: a submit that keeps the
+                  // focus restarts the text input, and in a browser the restarted input takes no typing.
+                  onEditingComplete: field.submit,
                   style: widget.style,
                   semanticLabel: widget.label ?? widget.hint,
                 ),
@@ -985,6 +1198,19 @@ class NeumorphicFormField extends StatelessWidget {
       child: child,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('help', help, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>('required', required, defaultValue: false),
+      )
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true));
+  }
 }
 
 /// How far the kit sets a slider's track in from each side: half its thumb's 44 target, so a thumb's centre reaches
@@ -1078,7 +1304,8 @@ class NeumorphicRangeSlider extends StatelessWidget {
     this.minGap = 0,
     this.valueLabel,
     this.style,
-  });
+  }) : assert((divisions ?? 1) > 0),
+       assert(minGap >= 0);
 
   /// The span's two ends.
   final DesignRangeValues values;
@@ -1166,6 +1393,37 @@ class NeumorphicRangeSlider extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(DoubleProperty('minGap', minGap, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has(
+          'valueLabel',
+          valueLabel,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -1430,6 +1688,19 @@ class NeumorphicColorPicker extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignColorController>('controller', controller),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('showAlpha', showAlpha, defaultValue: false),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 

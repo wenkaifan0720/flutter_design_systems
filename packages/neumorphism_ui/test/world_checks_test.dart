@@ -26,26 +26,39 @@ void main() {
     addTearDown(tester.view.reset);
   }
 
-  // The pilaster's keys and a page's own controls stand mirrored when the gallery reads right to left.
+  // The pilaster's keys and a page's own controls stand mirrored when the gallery reads right to left. Right to left
+  // the gallery reads in Arabic (kit_words.dart), whose page names may take more lines than the English in the
+  // pilaster (here more still: a test has no Arabic face, so its letters draw as the test font's wide boxes). The parts
+  // above every such name are mirrored whole; Appearance, below them all, side to side.
   for (final page in const ['buttons', 'fields', 'selection']) {
     testWidgets('$page mirrors right to left', (tester) async {
       desktop(tester, 1440, 900);
+      Widget app(TextDirection direction) => GalleryApp(
+        key: ValueKey(direction),
+        initialPage: page,
+        initialCustom: GalleryCustom(
+          rightToLeft: direction == TextDirection.rtl,
+        ),
+      );
       await expectMirrorsInRtl(
         tester,
-        (direction) => GalleryApp(
-          key: ValueKey(direction),
-          initialPage: page,
-          initialCustom: GalleryCustom(
-            rightToLeft: direction == TextDirection.rtl,
-          ),
-        ),
+        app,
         parts: [
           find.byKey(const Key('gallery-customize')),
-          find.byKey(const Key('gallery-appearance')),
           find.byKey(Key('nav-$page')),
           find.byKey(const Key('nav-overview')),
         ],
       );
+      final width = tester.view.physicalSize.width;
+      final appearance = find.byKey(const Key('gallery-appearance'));
+      await tester.pumpWidget(app(TextDirection.ltr));
+      await settle(tester);
+      final ltr = tester.getRect(appearance);
+      await tester.pumpWidget(app(TextDirection.rtl));
+      await settle(tester);
+      final rtl = tester.getRect(appearance);
+      expect(width - rtl.right, moreOrLessEquals(ltr.left, epsilon: .5));
+      expect(rtl.size, ltr.size);
     });
   }
 

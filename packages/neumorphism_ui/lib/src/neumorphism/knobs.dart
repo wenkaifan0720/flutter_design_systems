@@ -9,7 +9,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
 /// Relief depth and shadow strength, independent of a surface's printed edge.
-/// Zero depth removes the relief while preserving state and boundary cues.
+///
+/// A theme casts its relief within the look's band: [depth] from [leastDepth] to [mostDepth] and [strength] from
+/// [leastStrength] to 1. Shallower or fainter reads as flat print and deeper as a skeuomorphic object, so
+/// `NeumorphicThemeData` clamps a value outside the band to its nearer end ([clamped]).
 ///
 /// ```dart
 /// final theme = NeumorphicThemeData.porcelain().copyWith(
@@ -28,6 +31,24 @@ class NeumorphicElevation with Diagnosticable {
 
   /// Opacity multiplier; never changes the face or its printed boundary.
   final double strength;
+
+  /// The shallowest relief a theme casts: below it a part reads as flat print, not plaster.
+  static const double leastDepth = .5;
+
+  /// The deepest relief a theme casts: past it a part reads as a skeuomorphic object.
+  static const double mostDepth = 1.5;
+
+  /// The faintest shadows a theme casts: fainter, the relief fades into flat print.
+  static const double leastStrength = .5;
+
+  /// This elevation held to the look's band, as a theme casts it.
+  NeumorphicElevation get clamped {
+    final d = depth.clamp(leastDepth, mostDepth).toDouble();
+    final s = strength.clamp(leastStrength, 1).toDouble();
+    return d == depth && s == strength
+        ? this
+        : NeumorphicElevation(depth: d, strength: s);
+  }
 
   /// A copy replacing the supplied multipliers.
   NeumorphicElevation copyWith({double? depth, double? strength}) =>

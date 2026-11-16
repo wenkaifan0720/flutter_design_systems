@@ -6,7 +6,7 @@ A soft UI design system for Flutter. Raised surfaces and pressed grooves share o
 
 ```yaml
 dependencies:
-  neumorphism_ui: ^0.1.0
+  neumorphism_ui: ^0.2.0
 ```
 
 ## Use
@@ -21,6 +21,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await neumorphicLoadFonts();
   runApp(MaterialApp(
+    // The look's page change for the app's own routes (a MaterialPageRoute), on every platform; iOS keeps its
+    // swipe back from the screen's edge round it.
+    theme: ThemeData(
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: neumorphicPageTransitions,
+      ),
+    ),
     builder: (context, child) => NeumorphicTheme(
       data: NeumorphicThemeData.porcelain(
         MediaQuery.platformBrightnessOf(context),
@@ -216,9 +223,9 @@ final custom = NeumorphicThemeData.from(
 );
 ```
 
-The settings are the ones a product team turns: a preset or your own colours, light and dark, `density` (the platform's by default: compact with a pointer, standard on touch), `elevation` (the depth) and `highContrast`. The corners are the look's: radios, avatars, stepper keys and moving thumbs are circles, chips, badges, switches and segmented tracks capsules, fields, cards and raised panels their own frame steps, and nested faces subtract their inset from the enclosing radius, never going under the smallest corner (6). A component theme's `shape` changes one part; shapes are `OutlinedBorder`s.
+The settings are the ones a product team turns: a preset or your own colours, light and dark, `density` (the platform's by default: compact with a pointer, standard on touch), `elevation` (the depth) and `highContrast`. A theme's depth stays between `NeumorphicElevation.leastDepth` and `mostDepth` and its strength at `leastStrength` or more: shallower reads as flat print and deeper as a skeuomorphic object, so the theme clamps a value outside that band to its nearer end. The corners are the look's: radios, avatars, stepper keys and moving thumbs are circles, chips, badges, switches and segmented tracks capsules, fields, cards and raised panels their own frame steps, and nested faces subtract their inset from the enclosing radius, never going under the smallest corner (6). A component theme's or a style's `shape` changes one part within the look's family: a `NeumorphicRoundedBorder` at least 6 round, a `NeumorphicStadiumBorder` or a `NeumorphicCircleBorder`. A sharper corner or another `OutlinedBorder` fails an assert in debug builds, naming the rule: plaster is moulded, with no sharp corner, and its relief is drawn round its own borders only.
 
-Nothing draws a dark outline: the relief alone finds every edge, an empty checkbox, an unselected radio, a switch that is off and an empty field included. High contrast follows the device (`MediaQuery.highContrastOf`) and prints a fine outline on every part; `theme.copyWith(highContrast: true)` forces it on. Selection uses depth and the accent colour. An explicit `style.side` or `style.edge` takes precedence in either mode.
+Nothing draws a dark outline: the relief alone finds every edge, an empty checkbox, an unselected radio, a switch that is off and an empty field included. High contrast follows the device (`MediaQuery.highContrastOf`) and prints a fine outline on every part; `theme.copyWith(highContrast: true)` forces it on. Selection uses depth and the accent colour. `style.side` and `style.edge` print a rim, which is off the look's rule: relief is the only edge, and the fine outline is what high contrast draws. They take precedence in either mode, so keep them for a high-contrast rim of your own; on an ordinary part a printed rim reads as flat outlined UI, not plaster.
 
 Component themes cover buttons, fields, chips, checkbox/radio/switch/slider, segmented buttons, options, steppers, date/time pickers, cards, raised surfaces, badges and avatars. A local `style:` takes priority over its component theme, followed by theme knobs and the component's default drawing.
 
@@ -240,20 +247,14 @@ Style slots are `fill`, `foreground`, `edge`, `overlay`, `side`, `shape`, `paddi
 
 Controls support keyboard activation, focus, disabled states and padded targets of 48 logical pixels on every platform. Editing follows each platform's gestures and Cmd/Ctrl shortcuts. The selection menu and selection handles are drawn by this system. States are said in the relief rather than in lines or fades: a focused field's well deepens, any other part lifts off the wall on keyboard focus with its lit side warmed by the pigment, and a part out of use lies flat, flush with the ground, its words in the quiet ink.
 
-Hover changes nothing on a part's face: no wash, tint or shadow. The pointer says what a part does instead: a hand over what presses, the text beam over fields, grab over a slider, the arrow over what is disabled. A press sinks the part in its own outline, and keyboard focus lifts it. Hover stays only where it tells you something: the active row of an open menu, a tooltip, a chart's readout, a rating's preview, a day of a month (which has no face of its own until it is chosen) and a file drop target with a drag over it. Every part still receives `WidgetState.hovered`, so you can give hover a style of your own through the `overlay` slot (or any other):
+Hover changes nothing on a part's face: no wash, tint or shadow. The pointer says what a part does instead: a hand over what presses, the text beam over fields, grab over a slider, the arrow over what is disabled. A press sinks the part in its own outline, and keyboard focus lifts it. Hover stays only where it tells you something: the active row of an open menu, a tooltip, a chart's readout, a rating's preview, a day of a month (which has no face of its own until it is chosen) and a file drop target with a drag over it. Every part still receives `WidgetState.hovered`, but a wash or a tint on hover breaks the look's state rules (a press sinks, focus lifts, hover says nothing), so the look draws none. To make a part or a region say more or less, use the look's own two means: the pigment, for what is live (`NeumorphicButton.filled` for the one act that matters), and depth. A quieter side panel, for instance, is the same plaster cast shallower:
 
 ```dart
 NeumorphicTheme(
-  data: NeumorphicThemeData.porcelain().copyWith(
-    buttonTheme: NeumorphicStyle(
-      overlay: WidgetStateProperty.resolveWith(
-        (states) => states.contains(WidgetState.hovered)
-            ? const Color(0x14000000)
-            : null,
-      ),
-    ),
+  data: NeumorphicTheme.of(context).copyWith(
+    elevation: const NeumorphicElevation(depth: .75),
   ),
-  child: app,
+  child: sidePanel,
 );
 ```
 
@@ -268,10 +269,10 @@ The parts' built-in words come from `DesignLocalizations`, the words every look 
   Every state (on, chosen, checked, focused, a slider's value) and every part without words reaches 3:1 through its colour, words or mark, by day and by night; high contrast adds a fine outline.
 - **Other scripts.** The bundled Manrope covers Latin. Other scripts fall back to the platform's fonts; on the web, Flutter fetches them.
 
-Known limits in 0.1.0:
+Known limits in 0.2.0:
 
-- The built-in words (Cancel, Today, Close, "3 of 10" and the rest) are English. To translate them, extend `DefaultDesignLocalizations` and add its delegate to your app's `localizationsDelegates`. A few words of the look's own (a stepper's More and Less, a file drop's prompts, a picker's AM and PM) stay English in 0.1.0.
-- Dates and numbers are formatted with `intl` in those words' language, so they are English too. Short weekday names are English, and times show in 24-hour form.
+- The words every look shares (Cancel, Today, Close, "3 of 10" and the rest) come from ui_core's `DesignLocalizations`, which speaks 30 languages once your app adds `DesignLocalizations.delegate` beside Flutter's delegates (ui_core's README shows how). The look's own words (a stepper's More and Less, a file drop's prompts, a picker's AM and PM, Try again and a few more) stay English unless your app subclasses `NeumorphicLocalizations` and adds a delegate that loads it.
+- Dates and numbers are formatted with `intl` in the look's own words' language, so they are English too unless your subclass names another `localeName`. Short weekday names are English, and times show in 24-hour form.
 
 ## Fonts and copying components
 

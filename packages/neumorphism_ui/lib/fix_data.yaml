@@ -1,0 +1,16 @@
+# Data-driven fixes for `dart fix`: what moves callers across a rename. look:package writes this file to the package's
+# lib/fix_data.yaml; package/test_fixes/ holds each fix's before and after (`dart fix --compare-to-golden test_fixes`).
+version: 1
+transforms:
+  # 0.2.0: NeumorphicStyle is ui_core's DesignStyle, whose `layered` is what `cascade` was. The old name cannot stay
+  # beside it as a deprecated alias (a typedef carries no statics of its own), so the fix is the way across.
+  - title: "Rename to 'layered'"
+    date: 2026-11-14
+    element:
+      uris: ['neumorphism_ui.dart']
+      method: 'cascade'
+      inClass: 'NeumorphicStyle'
+      static: true
+    changes:
+      - kind: 'rename'
+        newName: 'layered'

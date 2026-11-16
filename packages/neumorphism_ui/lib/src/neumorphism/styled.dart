@@ -34,6 +34,12 @@ class NeumorphicStatesScope extends InheritedWidget {
   @override
   bool updateShouldNotify(NeumorphicStatesScope oldWidget) =>
       !setEquals(states, oldWidget.states);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<WidgetState>('states', states));
+  }
 }
 
 /// Builds [builder] with [shape], easing to each new shape over the motion's state duration (a cut under Reduce
@@ -73,6 +79,20 @@ class AnimatedNeumorphicShape extends StatelessWidget {
         curve: motion.standard,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, OutlinedBorder? shape)
+        >.has('builder', builder),
+      );
   }
 }
 
@@ -128,64 +148,10 @@ class _ShapeTween extends Tween<ShapeBorder?> {
 /// final look = NeumorphicStyleOf([style, NeumorphicTheme.of(context).chipTheme], states);
 /// final fill = look.fill ?? colors.faceStart;
 /// ```
-@immutable
-class NeumorphicStyleOf {
-  /// The [layers] read at [states].
-  const NeumorphicStyleOf(this.layers, this.states);
-
-  /// The styles, first wins.
-  final List<NeumorphicStyle?> layers;
-
-  /// The part's states.
-  final Set<WidgetState> states;
-
-  T? _first<T>(WidgetStateProperty<T?>? Function(NeumorphicStyle s) slot) =>
-      NeumorphicStyle.first(layers, slot, states);
-
-  /// The face.
-  Color? get fill => _first((s) => s.fill);
-
-  /// The words and icons.
-  Color? get foreground => _first((s) => s.foreground);
-
-  /// The rim's colour.
-  Color? get edge => _first((s) => s.edge);
-
-  /// The whole rim.
-  BorderSide? get side => _first((s) => s.side);
-
-  /// The outline.
-  OutlinedBorder? get shape => _first((s) => s.shape);
-
-  /// The room inside, resolved for [direction].
-  EdgeInsets? padding(TextDirection direction) =>
-      _first((s) => s.padding)?.resolve(direction);
-
-  /// The least size of the face.
-  Size? get minimumSize => _first((s) => s.minimumSize);
-
-  /// The words' style.
-  TextStyle? get textStyle => _first((s) => s.textStyle);
-
-  /// An icon's size.
-  double? get iconSize => _first((s) => s.iconSize);
-
-  /// The same layers at other [states].
-  NeumorphicStyleOf at(Set<WidgetState> states) =>
-      NeumorphicStyleOf(layers, states);
-
-  /// The shape for any states, as the press reads it for its ring and wash; [fallback] when no layer gives one.
-  WidgetStateProperty<OutlinedBorder?> shapes(OutlinedBorder? fallback) =>
-      WidgetStateProperty.resolveWith((states) => at(states).shape ?? fallback);
-
-  /// The overlay for any states, as the press reads it.
-  WidgetStateProperty<Color?>? get overlay =>
-      layers.any((l) => l?.overlay != null)
-      ? WidgetStateProperty.resolveWith(
-          (states) => NeumorphicStyle.first(layers, (s) => s.overlay, states),
-        )
-      : null;
-}
+///
+/// It is ui_core's [DesignStyleOf] under the look's name; [DesignStyleOf.freeze] holds one set of states as a
+/// style.
+typedef NeumorphicStyleOf = DesignStyleOf;
 
 /// An explicit styled rim or the high-contrast outline; otherwise none, and the relief draws the edge.
 ///

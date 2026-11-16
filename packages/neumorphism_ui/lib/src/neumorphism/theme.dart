@@ -11,7 +11,12 @@ import 'package:flutter/foundation.dart';
 import 'component_themes.dart';
 import 'knobs.dart';
 import 'shapes.dart';
+import 'internal/platform_words.dart';
+import 'internal/page_motion.dart';
 
+import 'package:ui_core/ui_core.dart';
+
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:material_ui/material_ui.dart';
 
 /// The meaning of a notice, distinguished by a glyph and its words.
@@ -1109,6 +1114,28 @@ class NeumorphicMotion {
   );
 }
 
+/// The look's page change for every platform, for the `ThemeData` of an app on Flutter's own `MaterialApp`: a page
+/// pushed over another fades up with a 16 px step from the reading end while the page under it holds still, a pop runs
+/// it back, and Reduce Motion keeps it still. Flutter's `MaterialPageRoute` reads only the app's own theme, so without
+/// this a Mac plays the Cupertino slide. iOS keeps its swipe back from the screen's leading edge, round the look's
+/// change (ui_core's `DesignSwipeBackPageTransitionsBuilder`). Widgets-level builders, so the one map serves either
+/// Material.
+///
+/// ```dart
+/// MaterialApp(theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders: neumorphicPageTransitions)), home: home)
+/// ```
+const Map<TargetPlatform, PageTransitionsBuilder> neumorphicPageTransitions = {
+  TargetPlatform.android: NeumorphicPageMotion(),
+  TargetPlatform.fuchsia: NeumorphicPageMotion(),
+  // iOS's swipe back from the screen's edge, round the look's change.
+  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(
+    NeumorphicPageMotion(),
+  ),
+  TargetPlatform.linux: NeumorphicPageMotion(),
+  TargetPlatform.macOS: NeumorphicPageMotion(),
+  TargetPlatform.windows: NeumorphicPageMotion(),
+};
+
 /// What `NeumorphicTheme.of(context)` returns: a preset in one appearance, its type set for a width, and its motion.
 /// Immutable, with [copyWith], [lerp], `==` and `debugFillProperties`, as Flutter's own theme data.
 @immutable
@@ -1120,8 +1147,8 @@ class NeumorphicThemeData with Diagnosticable {
     this._highContrast,
     this._platformHighContrast = false,
     this._density,
-    this.typeface = const NeumorphicTypeface(),
-    this.elevation = const NeumorphicElevation(),
+    this.typeface = NeumorphicTypeface.look,
+    NeumorphicElevation elevation = const NeumorphicElevation(),
     this.buttonTheme = const NeumorphicStyle(),
     this.filledButtonTheme = const NeumorphicStyle(),
     this.textButtonTheme = const NeumorphicStyle(),
@@ -1145,7 +1172,8 @@ class NeumorphicThemeData with Diagnosticable {
     this.stepperTheme = const NeumorphicStyle(),
     this.datePickerTheme = const NeumorphicStyle(),
     this.timePickerTheme = const NeumorphicStyle(),
-  }) : textTheme = NeumorphicTextTheme._(
+  }) : elevation = elevation.clamped,
+       textTheme = NeumorphicTextTheme._(
          colors,
          width >= neumorphicDesktopBreakpoint,
          typeface,
@@ -1184,7 +1212,7 @@ class NeumorphicThemeData with Diagnosticable {
   /// The theme-wide typeface settings.
   final NeumorphicTypeface typeface;
 
-  /// The theme-wide elevation settings.
+  /// The theme-wide elevation settings, held to the look's band ([NeumorphicElevation.clamped]).
   final NeumorphicElevation elevation;
 
   /// State-resolved styling for every button, and the ordinary [NeumorphicButton]'s own.
@@ -1571,6 +1599,21 @@ class NeumorphicThemeData with Diagnosticable {
   /// True from 1024 wide up: the 12-column layout.
   bool get desk => width >= neumorphicDesktopBreakpoint;
 
+  /// The look's page change for each platform, at this theme's [motion]: a page pushed over another fades up with a
+  /// 16 px step from the reading end, the page under it still; a pop runs it back; nothing moves under Reduce Motion.
+  /// On iOS a page keeps the swipe back from the screen's leading edge. The look's own routes (a router's
+  /// [NeumorphicPage], a sheet) change this way already; an app's own routes take
+  /// [neumorphicPageTransitions] in its `ThemeData`, or these where the theme's [motion] is not the default.
+  ///
+  /// ```dart
+  /// MaterialApp(theme: ThemeData(pageTransitionsTheme: PageTransitionsTheme(builders: NeumorphicThemeData.porcelain().pageTransitionBuilders)), home: home)
+  /// ```
+  Map<TargetPlatform, PageTransitionsBuilder> get pageTransitionBuilders =>
+      neumorphicPageTransitionBuilders(
+        travel: motion.travel,
+        leave: motion.leave,
+      );
+
   /// The responsive size class at this width.
   NeumorphicWindow get window => NeumorphicWindow.forWidth(width);
 
@@ -1752,15 +1795,17 @@ class NeumorphicTheme extends InheritedTheme {
   /// The theme in scope below.
   final NeumorphicThemeData data;
 
-  /// The theme in scope at [context], its type set for the window's width. Asserts when there is none.
-  static NeumorphicThemeData of(BuildContext context) {
-    final theme = maybeOf(context);
-    assert(
-      theme != null,
-      'No Neumorphism theme in scope: put NeumorphicTheme(data:, child:) in the app\'s builder:.',
-    );
-    return theme!;
-  }
+  /// The theme in scope at [context], its type set for the window's width. With none in scope it is the default,
+  /// porcelain by day, as `Theme.of` gives Material's fallback: a part shown outside the look's root still draws.
+  static NeumorphicThemeData of(BuildContext context) =>
+      maybeOf(context) ??
+      _fallback._atWindow(
+        MediaQuery.maybeSizeOf(context)?.width ?? _fallback.width,
+        MediaQuery.maybeHighContrastOf(context) ?? false,
+      );
+
+  /// The default [of] gives with no theme in scope, made once.
+  static final NeumorphicThemeData _fallback = NeumorphicThemeData.porcelain();
 
   /// The theme in scope at [context], or null.
   static NeumorphicThemeData? maybeOf(BuildContext context) {
@@ -1779,6 +1824,12 @@ class NeumorphicTheme extends InheritedTheme {
 
   @override
   bool updateShouldNotify(NeumorphicTheme oldWidget) => data != oldWidget.data;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<NeumorphicThemeData>('data', data));
+  }
 }
 
 /// A theme that eases to a new [data] over [duration], as `AnimatedTheme` does.
@@ -1837,7 +1888,13 @@ class _Dressing extends StatelessWidget {
   final NeumorphicThemeData data;
   final Widget child;
 
-  static (NeumorphicColors, TargetPlatform, NeumorphicTypeface, ThemeData)?
+  static (
+    NeumorphicColors,
+    TargetPlatform,
+    NeumorphicTypeface,
+    NeumorphicMotion,
+    ThemeData,
+  )?
   _last;
 
   static ThemeData _bridge(NeumorphicThemeData data) {
@@ -1847,8 +1904,9 @@ class _Dressing extends StatelessWidget {
     if (last != null &&
         last.$1 == c &&
         last.$2 == platform &&
-        last.$3 == data.typeface) {
-      return last.$4;
+        last.$3 == data.typeface &&
+        last.$4 == data.motion) {
+      return last.$5;
     }
     final theme = ThemeData(
       platform: platform,
@@ -1881,26 +1939,46 @@ class _Dressing extends StatelessWidget {
         cursorColor: c.ink,
         selectionColor: c.quiet.withValues(alpha: .45),
       ),
+      // A route pushed under the theme on the same Material (a MaterialPageRoute) changes page in the look's way on
+      // every platform, never the platform's own slide or zoom.
+      pageTransitionsTheme: PageTransitionsTheme(
+        builders: data.pageTransitionBuilders,
+      ),
     );
-    _last = (c, platform, data.typeface, theme);
+    _last = (c, platform, data.typeface, data.motion, theme);
     return theme;
   }
 
   @override
   Widget build(BuildContext context) {
     Widget under = child;
-    if (Localizations.maybeLocaleOf(context) != null &&
+    final material =
         Localizations.of<MaterialLocalizations>(
-              context,
-              MaterialLocalizations,
-            ) ==
-            null) {
+          context,
+          MaterialLocalizations,
+        ) ==
+        null;
+    final cupertino =
+        Localizations.of<CupertinoLocalizations>(
+          context,
+          CupertinoLocalizations,
+        ) ==
+        null;
+    if (Localizations.maybeLocaleOf(context) != null &&
+        (material || cupertino)) {
+      // The Material machinery under the look (the editable, a route) needs Material's words, and on iOS the
+      // editable reads Cupertino's (its menu, its magnifier). Where the app gives none, the look gives its own
+      // (platform_words.dart): under an app in Arabic or German that gave only Flutter's, a field threw for want of
+      // them.
       // A Localizations sets the reading direction from its locale's words: the app's own direction (an RTL app, a
       // gallery set right to left) is put back under it, or every page below reads left to right.
       final direction = Directionality.maybeOf(context);
       under = Localizations.override(
         context: context,
-        delegates: const [DefaultMaterialLocalizations.delegate],
+        delegates: [
+          if (material) neumorphicMaterialWords,
+          if (cupertino) neumorphicCupertinoWords,
+        ],
         child: direction == null
             ? under
             : Directionality(textDirection: direction, child: under),

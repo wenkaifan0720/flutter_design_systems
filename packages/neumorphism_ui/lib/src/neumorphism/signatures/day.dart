@@ -1,8 +1,10 @@
 // A day and a month: the day as a pressed tray with raised tiles, the month in a well, a bank of latching round push buttons, a small note in a well.
+
 import '../component_themes.dart';
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../controls.dart';
@@ -355,7 +357,7 @@ class NeumorphicDayTray extends StatelessWidget {
     this.now,
     this.events = const [],
     this.free = const [],
-  });
+  }) : assert(from >= 0 && from <= to && to <= 24);
 
   /// The first and last hour.
   /// Frame styling before the shared card component theme.
@@ -577,6 +579,36 @@ class NeumorphicDayTray extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('from', from, defaultValue: 8))
+      ..add(IntProperty('to', to, defaultValue: 18))
+      ..add(StringProperty('now', now, defaultValue: null))
+      ..add(
+        IterableProperty<NeumorphicTrayEvent>(
+          'events',
+          events,
+          defaultValue: const <NeumorphicTrayEvent>[],
+        ),
+      )
+      ..add(
+        IterableProperty<NeumorphicTrayFree>(
+          'free',
+          free,
+          defaultValue: const <NeumorphicTrayFree>[],
+        ),
+      );
+  }
 }
 
 class _ReadableDayTray extends StatelessWidget {
@@ -686,7 +718,8 @@ class NeumorphicMonth extends StatelessWidget {
     this.dense = false,
     this.weekdays,
     this.onDay,
-  });
+  }) : assert(month >= 1 && month <= 12),
+       assert((today ?? 1) >= 1 && (today ?? 1) <= 31);
 
   /// Frame styling before the shared card component theme.
   final NeumorphicStyle? style;
@@ -905,6 +938,28 @@ class NeumorphicMonth extends StatelessWidget {
             },
           );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('year', year))
+      ..add(IntProperty('month', month))
+      ..add(IntProperty('today', today, defaultValue: null))
+      ..add(
+        IterableProperty<int>('marked', marked, defaultValue: const <int>{}),
+      )
+      ..add(DiagnosticsProperty<bool>('dense', dense, defaultValue: false))
+      ..add(IterableProperty<String>('weekdays', weekdays, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onDay', onDay));
+  }
 }
 
 /// One button of a [NeumorphicPushGroup].
@@ -1025,13 +1080,16 @@ class NeumorphicPushGroup extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final slot = MediaQuery.textScalerOf(context).scale(80);
-          final columns = math.max(
+          final fit = math.max(
             1,
             math.min(
               math.min(items.length, 4),
               ((constraints.maxWidth + 4) / (slot + 4)).floor(),
             ),
           );
+          // The rows share the keys evenly: four keys where three fit stand two and two, not three and one alone.
+          final lines = (items.length / fit).ceil();
+          final columns = (items.length / lines).ceil();
           final rows = <Widget>[];
           for (var i = 0; i < items.length; i += columns) {
             final line = items.sublist(i, math.min(i + columns, items.length));
@@ -1063,6 +1121,20 @@ class NeumorphicPushGroup extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<NeumorphicPush>('items', items));
   }
 }
 
@@ -1143,5 +1215,23 @@ class NeumorphicNote extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('overline', overline, defaultValue: null))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('well', well, defaultValue: false));
   }
 }

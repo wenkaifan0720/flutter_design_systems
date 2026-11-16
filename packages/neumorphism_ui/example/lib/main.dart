@@ -8,12 +8,14 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter/services.dart' show SystemNavigator;
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui/neumorphism_host.dart';
 
 import 'kit_gallery/hearth.dart';
 import 'kit_gallery/live.dart';
 import 'kit_gallery/kit.dart';
+import 'kit_gallery/kit_words.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -167,6 +169,7 @@ class GalleryApp extends StatefulWidget {
     this.initialBrightness = Brightness.light,
     this.initialCustom = const GalleryCustom(),
     this.initialCustomizing = false,
+    this.initialStart = const HearthStart(),
   });
 
   /// The page it opens on, an id from [liveGalleryPages] or one of the app's [hearthScreens]; an unknown id opens the
@@ -181,6 +184,9 @@ class GalleryApp extends StatefulWidget {
 
   /// Whether it opens with the Customize panel showing.
   final bool initialCustomizing;
+
+  /// Where the app opens past its screen, when [initialPage] is one of the app's.
+  final HearthStart initialStart;
 
   @override
   State<GalleryApp> createState() => _GalleryAppState();
@@ -261,13 +267,13 @@ class _GalleryAppState extends State<GalleryApp> {
             child: NeumorphicNavigationDrawer(
               key: const Key('gallery-drawer'),
               width: math.min(320, MediaQuery.sizeOf(drawerContext).width - 56),
-              label: 'Pages',
+              label: kitSay(drawerContext, 'Pages'),
               header: const NeumorphicBrandRow('Neumorphism'),
               selectedIndex: active,
               items: [
                 for (final page in liveGalleryPages)
                   NeumorphicNavItem(
-                    label: page.title,
+                    label: kitSay(drawerContext, page.title),
                     icon: page.icon,
                     key: Key('drawer-${page.id}'),
                   ),
@@ -304,6 +310,7 @@ class _GalleryAppState extends State<GalleryApp> {
         customizing: _customizing,
         onCustomize: _toggleCustomize,
         panel: _customizing ? _customizePanel() : null,
+        start: widget.initialStart,
       );
     }
     final dark = _brightness == Brightness.dark;
@@ -313,7 +320,7 @@ class _GalleryAppState extends State<GalleryApp> {
       nav: [
         for (final page in liveGalleryPages)
           NeumorphicNavItem(
-            label: page.title,
+            label: kitSay(context, page.title),
             icon: page.icon,
             key: Key('nav-${page.id}'),
             onPressed: () => _open(page.id),
@@ -324,7 +331,7 @@ class _GalleryAppState extends State<GalleryApp> {
         scroll: false,
         fullBleed: true,
         railAct: NeumorphicButton(
-          _customizing ? 'Close Customize' : 'Customize',
+          kitSay(context, _customizing ? 'Close Customize' : 'Customize'),
           key: const Key('gallery-customize'),
           icon: NeumorphicGlyphs.slidersHorizontal,
           wide: true,
@@ -332,14 +339,20 @@ class _GalleryAppState extends State<GalleryApp> {
         ),
         railFoot: [
           _Labelled(
-            'Appearance',
+            kitSay(context, 'Appearance'),
             NeumorphicSegmentedButton<Brightness>(
               key: const Key('gallery-appearance'),
-              label: 'Appearance',
+              label: kitSay(context, 'Appearance'),
               value: _brightness,
-              segments: const [
-                NeumorphicButtonSegment(Brightness.light, 'Day'),
-                NeumorphicButtonSegment(Brightness.dark, 'Night'),
+              segments: [
+                NeumorphicButtonSegment(
+                  Brightness.light,
+                  kitSay(context, 'Day'),
+                ),
+                NeumorphicButtonSegment(
+                  Brightness.dark,
+                  kitSay(context, 'Night'),
+                ),
               ],
               onChanged: (v) => setState(() => _brightness = v),
             ),
@@ -352,7 +365,7 @@ class _GalleryAppState extends State<GalleryApp> {
               builder: (context) => NeumorphicRoundButton(
                 NeumorphicGlyphs.menu,
                 key: const Key('gallery-menu'),
-                label: 'Pages',
+                label: kitSay(context, 'Pages'),
                 onPressed: () => _openDrawer(context),
               ),
             ),
@@ -364,13 +377,16 @@ class _GalleryAppState extends State<GalleryApp> {
           NeumorphicRoundButton(
             dark ? NeumorphicGlyphs.sun : NeumorphicGlyphs.moon,
             key: const Key('gallery-brightness'),
-            label: dark ? 'Day' : 'Night',
+            label: kitSay(context, dark ? 'Day' : 'Night'),
             onPressed: _toggleBrightness,
           ),
           NeumorphicRoundButton(
             NeumorphicGlyphs.slidersHorizontal,
             key: const Key('gallery-customize-key'),
-            label: _customizing ? 'Close Customize' : 'Customize',
+            label: kitSay(
+              context,
+              _customizing ? 'Close Customize' : 'Customize',
+            ),
             selected: _customizing,
             onPressed: _toggleCustomize,
           ),
@@ -397,6 +413,21 @@ class _GalleryAppState extends State<GalleryApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Neumorphism',
+      // The app's own routes (a MaterialPageRoute) change page in the look's way on every platform, as an app lists them.
+      theme: ThemeData(
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: neumorphicPageTransitions,
+        ),
+      ),
+      // ui_core's 30 languages, as an ordinary app lists them: a device in one of them hears the parts' shared words
+      // (Cancel, Close, Today) in it, and right to left the gallery reads Arabic, those words with it. The look gives
+      // the Material and Cupertino words its own parts read, in the same language.
+      locale: custom.rightToLeft ? const Locale('ar') : null,
+      localizationsDelegates: const [
+        DesignLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
+      ],
+      supportedLocales: DesignLocalizations.supportedLocales,
       // The app's root, as an app's own is: the host sets the theme, the ground, the type and the icons; the animated
       // theme inside it eases each knob's change across the page.
       builder: (context, child) => Directionality(
@@ -404,19 +435,23 @@ class _GalleryAppState extends State<GalleryApp> {
         textDirection: custom.rightToLeft
             ? TextDirection.rtl
             : Directionality.of(context),
-        child: MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: custom.textScale == 1
-                ? MediaQuery.textScalerOf(context)
-                : TextScaler.linear(custom.textScale),
-          ),
-          child: NeumorphicHost(
-            light: custom.theme(_preset, Brightness.light),
-            darkData: custom.theme(_preset, Brightness.dark),
-            brightness: _brightness,
-            child: AnimatedNeumorphicTheme(
-              data: custom.theme(_preset, _brightness),
-              child: child!,
+        // Right to left, the gallery reads in Arabic: its direction is checked on real script.
+        child: KitWords(
+          arabic: custom.rightToLeft,
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: custom.textScale == 1
+                  ? MediaQuery.textScalerOf(context)
+                  : TextScaler.linear(custom.textScale),
+            ),
+            child: NeumorphicHost(
+              light: custom.theme(_preset, Brightness.light),
+              darkData: custom.theme(_preset, Brightness.dark),
+              brightness: _brightness,
+              child: AnimatedNeumorphicTheme(
+                data: custom.theme(_preset, _brightness),
+                child: child!,
+              ),
             ),
           ),
         ),

@@ -2,6 +2,7 @@
 // has the brand or a way back at the top and a raised tab bar whose current tab is pressed with the pigment in its glyph.
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
@@ -22,6 +23,7 @@ import 'ornaments.dart';
 import 'theme.dart';
 import 'host.dart';
 import 'internal/cap_label.dart';
+import 'internal/moulded.dart';
 
 class _Badge extends StatelessWidget {
   const _Badge(this.text, {this.size = 18});
@@ -98,6 +100,12 @@ class NeumorphicBrandRow extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('name', name));
   }
 }
 
@@ -178,7 +186,7 @@ class _NavRow extends StatelessWidget {
             ...NeumorphicStatesScope.of(context),
             if (on) WidgetState.selected,
           };
-          final look = NeumorphicStyleOf([
+          final look = neumorphicStyleOf([
             style,
             t.segmentedButtonTheme,
           ], states);
@@ -270,39 +278,45 @@ class _Rail extends StatelessWidget {
         rtl: Directionality.of(context) == TextDirection.rtl,
       ),
       child: LayoutBuilder(
+        // The pilaster scrolls up and down, so it cuts only there: at its sides a focused or hovered place's lift
+        // falls over the page's wall, as the pilaster's own shadow does (cut at its edge 20 pt out, it stopped flat).
         builder: (context, box) => ScrollConfiguration(
           behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-          child: SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: box.hasBoundedHeight ? box.maxHeight : 0,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 32,
+          child: ClipRect(
+            clipper: const NeumorphicOneAxisClipper(Axis.vertical),
+            child: SingleChildScrollView(
+              clipBehavior: Clip.none,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: box.hasBoundedHeight ? box.maxHeight : 0,
                 ),
-                child: NeumorphicColumn(
-                  gap: 28,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6),
-                      child: NeumorphicBrandRow(brand.name, mark: brand.mark),
-                    ),
-                    ?action,
-                    if (nav.isNotEmpty)
-                      NeumorphicColumn(
-                        gap: 6,
-                        children: [
-                          for (var i = 0; i < nav.length; i++)
-                            _NavRow(item: nav[i], on: i == active),
-                        ],
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 32,
+                  ),
+                  child: NeumorphicColumn(
+                    gap: 28,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                        child: NeumorphicBrandRow(brand.name, mark: brand.mark),
                       ),
-                    ...rail,
-                    // The foot stands at the bottom of the wall.
-                    const NeumorphicGrow(child: SizedBox.shrink()),
-                    ...foot,
-                  ],
+                      ?action,
+                      if (nav.isNotEmpty)
+                        NeumorphicColumn(
+                          gap: 6,
+                          children: [
+                            for (var i = 0; i < nav.length; i++)
+                              _NavRow(item: nav[i], on: i == active),
+                          ],
+                        ),
+                      ...rail,
+                      // The foot stands at the bottom of the wall.
+                      const NeumorphicGrow(child: SizedBox.shrink()),
+                      ...foot,
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -326,7 +340,7 @@ class NeumorphicRailSet extends StatelessWidget {
     this.trailing,
     this.gap = 10,
     required this.children,
-  });
+  }) : assert(gap >= 0);
 
   /// The text identifying this item or control.
   final String? label;
@@ -358,6 +372,14 @@ class NeumorphicRailSet extends StatelessWidget {
         ...children,
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('gap', gap, defaultValue: 10));
   }
 }
 
@@ -418,7 +440,7 @@ class NeumorphicRailLink extends StatelessWidget {
       radius: NeumorphicRadii.chip,
       child: Builder(
         builder: (context) {
-          final look = NeumorphicStyleOf(
+          final look = neumorphicStyleOf(
             [style, t.segmentedButtonTheme],
             {
               ...NeumorphicStatesScope.of(context),
@@ -500,6 +522,36 @@ class NeumorphicRailLink extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('figure', figure, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('live', live, defaultValue: false))
+      ..add(
+        DiagnosticsProperty<bool>('selected', selected, defaultValue: false),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 /// Permanent side navigation, using the same softly lit rail as a wide screen.
@@ -519,7 +571,8 @@ class NeumorphicNavigationDrawer extends StatelessWidget {
     this.footer,
     this.label,
     this.width = 280,
-  });
+  }) : assert(selectedIndex >= 0),
+       assert(width > 0);
 
   /// Destination faces and labels, before segmentedButtonTheme.
   final NeumorphicStyle? style;
@@ -616,6 +669,29 @@ class NeumorphicNavigationDrawer extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<NeumorphicNavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('width', width, defaultValue: 280));
+  }
 }
 
 /// Side navigation for a tablet: the drawer's softly lit rail, narrow, each destination a tab of the phone's bar
@@ -637,7 +713,8 @@ class NeumorphicNavigationRail extends StatelessWidget {
     this.label,
     this.width = 88,
     this.style,
-  });
+  }) : assert(selectedIndex >= 0),
+       assert(width > 0);
 
   /// Destination faces and labels, before segmentedButtonTheme.
   final NeumorphicStyle? style;
@@ -731,6 +808,29 @@ class NeumorphicNavigationRail extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<NeumorphicNavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('width', width, defaultValue: 88));
+  }
 }
 
 /// The phone's tab bar: raised, its shoulders on the slab's radius. The current tab is pressed with the pigment in its glyph and heavier
@@ -749,7 +849,7 @@ class NeumorphicNavigationBar extends StatelessWidget {
     this.onDestinationSelected,
     this.action,
     this.header,
-  });
+  }) : assert(selectedIndex >= 0);
 
   /// Destination faces and labels, before segmentedButtonTheme.
   final NeumorphicStyle? style;
@@ -822,6 +922,30 @@ class NeumorphicNavigationBar extends StatelessWidget {
               ],
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<NeumorphicNavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      );
   }
 }
 
@@ -910,7 +1034,7 @@ class _Tab extends StatelessWidget {
             ...NeumorphicStatesScope.of(context),
             if (on) WidgetState.selected,
           };
-          final look = NeumorphicStyleOf([
+          final look = neumorphicStyleOf([
             style,
             t.segmentedButtonTheme,
           ], states);
@@ -1266,8 +1390,31 @@ class NeumorphicScaffold extends StatelessWidget {
                 ),
               ],
             )
-          : page,
+          // On a phone or a tablet the page is a group of its own too, beside the app's tab bar or rail: Tab walks
+          // it to its end, its rows scrolled below the bar's top included, before the bar's places, and never steps
+          // out to the bar between rows.
+          : FocusTraversalGroup(
+              policy: FocusTraversalGroup.maybeOf(context),
+              child: page,
+            ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('scroll', scroll, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<bool>('fullBleed', fullBleed, defaultValue: false),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'scrollController',
+          scrollController,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -1361,7 +1508,8 @@ class _PhoneTop extends StatelessWidget {
 /// ```
 class NeumorphicSections extends StatelessWidget {
   /// Creates a [NeumorphicSections].
-  const NeumorphicSections({super.key, required this.children, this.gap = 28});
+  const NeumorphicSections({super.key, required this.children, this.gap = 28})
+    : assert(gap >= 0);
 
   /// The content widgets, in reading order.
   final List<Widget> children;
@@ -1371,6 +1519,12 @@ class NeumorphicSections extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       NeumorphicColumn(gap: gap, children: children);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('gap', gap, defaultValue: 28));
+  }
 }
 
 /// The way out of a pushed page or a sheet: a round moulded key.
@@ -1401,6 +1555,14 @@ class NeumorphicBackButton extends StatelessWidget {
         : NeumorphicLocalizations.of(context).back,
     onPressed: onPressed ?? () => Navigator.of(context).maybePop(),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('close', close, defaultValue: false))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed));
+  }
 }
 
 /// A page's head: on a root, the page's title; on a pushed page or a sheet, the route's way out and its title, at most two actions at the end.
@@ -1508,6 +1670,14 @@ class NeumorphicAppBar extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null));
+  }
 }
 
 /// A one-line text field the generated stubs draw; [NeumorphicTextField] is the same field with more to say.
@@ -1564,6 +1734,47 @@ class NeumorphicInput extends StatelessWidget {
     onChanged: onChanged,
     onSubmitted: onSubmitted,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('initialValue', initialValue, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 /// A photograph from a declared media slot, on the control radius; until it loads, or if it never does, the plaster one step off the
@@ -1591,7 +1802,8 @@ class NeumorphicMedia extends StatelessWidget {
     this.fit = BoxFit.cover,
     this.alignment = Alignment.center,
     this.width,
-  }) : assert(aspect > 0);
+  }) : assert((width ?? 48) >= 48 && (width ?? 96) <= 96),
+       assert(aspect > 0);
 
   /// A directly supplied picture. The child takes precedence when both are given.
   final ImageProvider? image;
@@ -1674,6 +1886,28 @@ class NeumorphicMedia extends StatelessWidget {
         ? NeumorphicFill(maxWidth: 720, child: picture)
         : neumorphicOwnSize(width: width, child: picture);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ImageProvider>('image', image, defaultValue: null),
+      )
+      ..add(StringProperty('slotId', slotId, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('glyph', glyph, defaultValue: null))
+      ..add(DoubleProperty('aspect', aspect, defaultValue: 4 / 3))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(EnumProperty<BoxFit>('fit', fit, defaultValue: BoxFit.cover))
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'alignment',
+          alignment,
+          defaultValue: Alignment.center,
+        ),
+      )
+      ..add(DoubleProperty('width', width, defaultValue: null));
+  }
 }
 
 /// A picture over its words, on a slab: one piece of a collection, a place, a person. The picture is your media slot, or the piece's
@@ -1701,7 +1935,7 @@ class NeumorphicPictureCard extends StatelessWidget {
     this.trailing,
     this.aspect = 4 / 3,
     this.onPressed,
-  });
+  }) : assert(aspect > 0);
 
   /// A declared media slot.
   /// Frame styling before the shared card component theme.
@@ -1791,6 +2025,36 @@ class NeumorphicPictureCard extends StatelessWidget {
             ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('slotId', slotId, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('glyph', glyph, defaultValue: null))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(StringProperty('figure', figure, defaultValue: null))
+      ..add(DoubleProperty('aspect', aspect, defaultValue: 4 / 3))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 /// A piece drawn by its sign: a raised cap in the well with the glyph printed on it, in ink. A thumbnail keeps only the glyph.
@@ -1843,6 +2107,12 @@ class NeumorphicLoadingState extends StatelessWidget {
       child: Padding(padding: EdgeInsets.all(40), child: NeumorphicMark()),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// When a page's data could not load: what happened, and a way to try again.
@@ -1905,5 +2175,15 @@ class NeumorphicErrorState extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry))
+      ..add(StringProperty('retryLabel', retryLabel, defaultValue: null));
   }
 }

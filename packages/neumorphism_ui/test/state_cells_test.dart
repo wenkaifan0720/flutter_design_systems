@@ -128,7 +128,7 @@ final Map<String, _Stated> _parts = {
     ({enabled = true, error}) => NeumorphicSplitButton(
       'Start',
       onPressed: enabled ? _tap : null,
-      actions: [NeumorphicSplitAction('Later', onPressed: _tap)],
+      actions: [const NeumorphicSplitAction('Later', onPressed: _tap)],
     ),
   ),
   'NeumorphicChip': _stated(
@@ -363,8 +363,8 @@ void main() {
       testWidgets(grouped ? 'in a grouped list' : 'on its own', (tester) async {
         Widget rows(bool chosen) {
           final tiles = [
-            NeumorphicListTile(
-              key: const Key('first'),
+            const NeumorphicListTile(
+              key: Key('first'),
               title: 'Floor lamp',
               subtitle: 'Living room',
               isFirst: true,

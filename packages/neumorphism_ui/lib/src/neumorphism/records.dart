@@ -2,6 +2,7 @@
 // a meter in a groove, and a page's whole status (loading, failed, done) in one widget.
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'controls.dart';
@@ -159,6 +160,14 @@ class NeumorphicTimeline extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<NeumorphicTimelineStop>('stops', stops))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 class _TimelineRail extends CustomPainter {
@@ -289,6 +298,14 @@ class NeumorphicDescriptionList extends StatelessWidget {
       ],
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<NeumorphicDescription>('items', items))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// A measure inside a known range (a battery, a quota, a reading): a groove filled to the value, notches at [low]
@@ -310,7 +327,8 @@ class NeumorphicMeter extends StatelessWidget {
     this.high,
     this.optimum,
     this.valueLabel,
-  }) : assert(max > min);
+  }) : assert((low ?? double.negativeInfinity) <= (high ?? double.infinity)),
+       assert(max > min);
 
   /// What it measures.
   final String label;
@@ -392,6 +410,20 @@ class NeumorphicMeter extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('value', value))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(DoubleProperty('low', low, defaultValue: null))
+      ..add(DoubleProperty('high', high, defaultValue: null))
+      ..add(DoubleProperty('optimum', optimum, defaultValue: null))
+      ..add(StringProperty('valueLabel', valueLabel, defaultValue: null));
   }
 }
 
@@ -623,5 +655,16 @@ class NeumorphicStatusView extends StatelessWidget {
                 ),
         );
     }
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<NeumorphicStatusKind>('status', status))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAction', onAction));
   }
 }

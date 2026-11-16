@@ -15,6 +15,7 @@ import 'rows.dart';
 import 'tell.dart';
 import 'styled.dart';
 import 'theme.dart';
+import 'internal/moulded.dart';
 
 /// A continuous line with gaps, the same line over a filled area, or grouped columns.
 /// The geometry used to display chart samples.
@@ -186,7 +187,7 @@ class NeumorphicChart extends StatelessWidget {
             '${band!.label ?? ''} ${fmt(band!.low)}–${fmt(band!.high)}',
         ].join('; ');
     final direction = Directionality.of(context);
-    final wellLook = NeumorphicStyleOf([
+    final wellLook = neumorphicStyleOf([
       style,
       t.cardTheme,
     ], NeumorphicStatesScope.of(context));
@@ -330,6 +331,48 @@ class NeumorphicChart extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<NeumorphicChartSeries>('series', series))
+      ..add(
+        EnumProperty<NeumorphicChartKind>(
+          'kind',
+          kind,
+          defaultValue: NeumorphicChartKind.line,
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'labels',
+          labels,
+          defaultValue: const <String>[],
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicChartBand>(
+          'band',
+          band,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 180))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      )
+      ..add(DiagnosticsProperty<bool>('loading', loading, defaultValue: false));
   }
 }
 
@@ -952,6 +995,29 @@ class NeumorphicPieChart extends StatefulWidget {
   final NeumorphicStyle? style;
   @override
   State<NeumorphicPieChart> createState() => _NeumorphicDonutState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<NeumorphicPieSlice>('slices', slices))
+      ..add(StringProperty('total', total, defaultValue: null))
+      ..add(StringProperty('caption', caption, defaultValue: null))
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(DoubleProperty('size', size, defaultValue: 168))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      )
+      ..add(DiagnosticsProperty<bool>('loading', loading, defaultValue: false))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _NeumorphicDonutState extends State<NeumorphicPieChart> {
@@ -1331,6 +1397,20 @@ class NeumorphicSparkline extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<double?>('values', values))
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(DoubleProperty('width', width, defaultValue: 96))
+      ..add(DoubleProperty('height', height, defaultValue: 32))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      );
   }
 }
 

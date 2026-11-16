@@ -14,6 +14,7 @@ import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/live.dart';
 // ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/hearth.dart' show hearthScreens;
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'gallery_support.dart' show loadBundledFonts, settle;
 import 'support.dart' show loadNeumorphicFonts;
 
@@ -94,66 +95,69 @@ void main() {
     }
   });
 
-  testWidgets('every glyph on every live page is in a bundled font', (
-    tester,
-  ) async {
-    Set<int>? codepoints(IconData icon) =>
-        fonts[icon.fontPackage == null
-            ? icon.fontFamily
-            : 'packages/${icon.fontPackage}/${icon.fontFamily}'];
+  testWidgets(
+    'every glyph on every live page is in a bundled font',
+    (tester) async {
+      Set<int>? codepoints(IconData icon) =>
+          fonts[icon.fontPackage == null
+              ? icon.fontFamily
+              : 'packages/${icon.fontPackage}/${icon.fontFamily}'];
 
-    final seen = <String, IconData>{};
-    void collect(String where) {
-      for (final icon in tester.widgetList<Icon>(
-        find.byType(Icon, skipOffstage: false),
-      )) {
-        final data = icon.icon;
-        if (data != null) {
-          seen['$where U+${data.codePoint.toRadixString(16)}'] = data;
+      final seen = <String, IconData>{};
+      void collect(String where) {
+        for (final icon in tester.widgetList<Icon>(
+          find.byType(Icon, skipOffstage: false),
+        )) {
+          final data = icon.icon;
+          if (data != null) {
+            seen['$where U+${data.codePoint.toRadixString(16)}'] = data;
+          }
         }
       }
-    }
 
-    for (final width in [390.0, 1440.0]) {
-      // The gallery's pages and each of Hearth's screens.
-      for (final id in {
-        for (final page in liveGalleryPages) page.id,
-        for (final screen in hearthScreens) screen.id,
-      }) {
-        tester.view.physicalSize = Size(width, 900);
-        tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.reset);
-        await tester.pumpWidget(
-          GalleryApp(
-            key: UniqueKey(),
-            initialPage: id,
-            initialCustomizing: true,
-          ),
-        );
-        await settle(tester);
-        collect('$id@$width');
+      for (final width in [390.0, 1440.0]) {
+        // The gallery's pages and each of Hearth's screens.
+        for (final id in {
+          for (final page in liveGalleryPages) page.id,
+          for (final screen in hearthScreens) screen.id,
+        }) {
+          tester.view.physicalSize = Size(width, 900);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          await tester.pumpWidget(
+            GalleryApp(
+              key: UniqueKey(),
+              initialPage: id,
+              initialCustomizing: true,
+            ),
+          );
+          await settle(tester);
+          collect('$id@$width');
+        }
       }
-    }
-    // The drawer is the phone's: open it at a phone's width.
-    tester.view.physicalSize = const Size(390, 900);
-    await tester.pumpWidget(GalleryApp(key: UniqueKey()));
-    await settle(tester);
-    await tester.tap(find.byKey(const Key('gallery-menu')));
-    await settle(tester);
-    collect('drawer');
+      // The drawer is the phone's: open it at a phone's width.
+      tester.view.physicalSize = const Size(390, 900);
+      await tester.pumpWidget(GalleryApp(key: UniqueKey()));
+      await settle(tester);
+      await tester.tap(find.byKey(const Key('gallery-menu')));
+      await settle(tester);
+      collect('drawer');
 
-    expect(seen, isNotEmpty);
-    final missing = <String>[];
-    for (final MapEntry(key: where, value: icon) in seen.entries) {
-      final mapped = codepoints(icon);
-      if (mapped == null) {
-        missing.add(
-          '$where: ${icon.fontPackage ?? ''}/${icon.fontFamily} is not bundled',
-        );
-      } else if (!mapped.contains(icon.codePoint)) {
-        missing.add('$where: ${icon.fontFamily} has no glyph');
+      expect(seen, isNotEmpty);
+      final missing = <String>[];
+      for (final MapEntry(key: where, value: icon) in seen.entries) {
+        final mapped = codepoints(icon);
+        if (mapped == null) {
+          missing.add(
+            '$where: ${icon.fontPackage ?? ''}/${icon.fontFamily} is not bundled',
+          );
+        } else if (!mapped.contains(icon.codePoint)) {
+          missing.add('$where: ${icon.fontFamily} has no glyph');
+        }
       }
-    }
-    expect(missing, isEmpty, reason: missing.join('\n'));
-  });
+      expect(missing, isEmpty, reason: missing.join('\n'));
+    },
+    // A walk of the whole gallery in one go: ui_core's long-walk setting, each part tracked in its own tests.
+    experimentalLeakTesting: longWalkLeakTesting,
+  );
 }

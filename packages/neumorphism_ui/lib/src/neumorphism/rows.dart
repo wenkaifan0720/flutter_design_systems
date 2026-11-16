@@ -4,6 +4,7 @@ import 'component_themes.dart';
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -82,6 +83,12 @@ class NeumorphicRuled extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<bool>('rule', rule, defaultValue: true));
+  }
 }
 
 /// Rows on the column they're given: each row draws its own rule.
@@ -156,6 +163,16 @@ class NeumorphicKvRow extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('value', value))
+      ..add(DiagnosticsProperty<bool>('isFirst', isFirst, defaultValue: false))
+      ..add(DiagnosticsProperty<bool>('live', live, defaultValue: false));
+  }
 }
 
 /// A list's last line: what it adds up to, in the value size.
@@ -185,6 +202,14 @@ class NeumorphicTotalRow extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('value', value));
   }
 }
 
@@ -332,6 +357,23 @@ class NeumorphicStepRow extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('time', time))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        EnumProperty<NeumorphicStepStatus>(
+          'state',
+          state,
+          defaultValue: NeumorphicStepStatus.past,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('isFirst', isFirst, defaultValue: false));
+  }
 }
 
 /// A person: a monogram, a name, a line about them. Their LED says they're here.
@@ -397,6 +439,17 @@ class NeumorphicWhoRow extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('initials', initials))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('led', led, defaultValue: false))
+      ..add(DiagnosticsProperty<bool>('isFirst', isFirst, defaultValue: false));
   }
 }
 
@@ -639,6 +692,32 @@ class NeumorphicListTile extends StatelessWidget {
     );
     return NeumorphicRuled(rule: !isFirst, child: row);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<bool>('selected', selected, defaultValue: false),
+      )
+      ..add(DiagnosticsProperty<bool>('isFirst', isFirst, defaultValue: false))
+      ..add(DiagnosticsProperty<bool>('dense', dense, defaultValue: false))
+      ..add(DiagnosticsProperty<bool>('top', top, defaultValue: false))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 /// A thing to do: a round check and its words. Done: pressed, with an ink tick, its words struck. [live]: the note is due now.
@@ -686,9 +765,10 @@ class NeumorphicTodoRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 11),
           child: Row(
             children: [
-              // The list's one leading slot, so the title stands where every row's does.
+              // The list's one leading slot, so the title stands where every row's does (44 and 14 on): here as wide
+              // as the check's whole target, which it is laid out at.
               SizedBox(
-                width: 44,
+                width: NeumorphicChromeMetrics.touchTarget,
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
                   child: NeumorphicRoundCheckbox(
@@ -697,7 +777,12 @@ class NeumorphicTodoRow extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(
+                width:
+                    _leadingSlot +
+                    _leadingGap -
+                    NeumorphicChromeMetrics.touchTarget,
+              ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -729,6 +814,18 @@ class NeumorphicTodoRow extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('value', value, defaultValue: false))
+      ..add(DiagnosticsProperty<bool>('live', live, defaultValue: false))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(DiagnosticsProperty<bool>('isFirst', isFirst, defaultValue: false));
+  }
 }
 
 /// A thing that's on or off and has a level: a pressed round icon, its name and state, a switch, and while on a slider and its
@@ -752,7 +849,7 @@ class NeumorphicLevelRow extends StatelessWidget {
     this.onChanged,
     this.onLevel,
     this.isFirst = false,
-  });
+  }) : assert((level ?? 0) >= 0 && (level ?? 0) <= 1);
 
   /// The glyph displayed with the content.
   final IconData icon;
@@ -881,6 +978,31 @@ class NeumorphicLevelRow extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('state', state))
+      ..add(DiagnosticsProperty<bool>('value', value, defaultValue: false))
+      ..add(DoubleProperty('level', level, defaultValue: null))
+      ..add(StringProperty('figure', figure, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(ObjectFlagProperty<ValueChanged<double>>.has('onLevel', onLevel))
+      ..add(DiagnosticsProperty<bool>('isFirst', isFirst, defaultValue: false))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 /// One stat of a [NeumorphicStats].
@@ -911,7 +1033,8 @@ class NeumorphicStats extends StatelessWidget {
     this.style,
     this.gap = 10,
     this.side = 14,
-  });
+  }) : assert(gap >= 0),
+       assert(side >= 0);
 
   /// Frame styling before the shared card component theme.
   final NeumorphicStyle? style;
@@ -1008,6 +1131,22 @@ class NeumorphicStats extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<NeumorphicStat>('items', items))
+      ..add(DoubleProperty('gap', gap, defaultValue: 10))
+      ..add(DoubleProperty('side', side, defaultValue: 14));
+  }
 }
 
 /// A card's one hero number: 48 at weight 300, its unit, and what it did. One a card. It stays proportional, not tabular.
@@ -1076,6 +1215,16 @@ class NeumorphicFigure extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('unit', unit, defaultValue: null))
+      ..add(StringProperty('delta', delta, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null));
   }
 }
 
@@ -1166,6 +1315,23 @@ class NeumorphicNudge extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('eyebrow', eyebrow, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null));
+  }
 }
 
 /// A control with its label and help: one line of a form, for a control that draws no label of its own (a segmented
@@ -1206,6 +1372,14 @@ class NeumorphicFormGroup extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('help', help, defaultValue: null));
+  }
 }
 
 /// A section with nothing in it yet: the look's mark in a well, a title, a line. A chart with no data draws this, not an empty axis.
@@ -1220,6 +1394,7 @@ class NeumorphicEmptyState extends StatelessWidget {
     this.style,
     required this.title,
     this.body,
+    this.icon,
   });
 
   /// Frame styling before the shared card component theme.
@@ -1230,9 +1405,13 @@ class NeumorphicEmptyState extends StatelessWidget {
 
   /// Supporting text explaining the empty state.
   final String? body;
+
+  /// A glyph set on the mark's dome that says what is empty (a search's, a list's); null leaves the mark bare.
+  final IconData? icon;
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
+    final glyph = icon;
     return NeumorphicWell(
       style: style,
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
@@ -1241,7 +1420,17 @@ class NeumorphicEmptyState extends StatelessWidget {
         child: NeumorphicColumn(
           gap: 10,
           children: [
-            const Center(child: NeumorphicMark(size: 44)),
+            Center(
+              child: glyph == null
+                  ? const NeumorphicMark(size: 44)
+                  : Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const NeumorphicMark(size: 44),
+                        Icon(glyph, size: 14, color: t.colors.inkSecondary),
+                      ],
+                    ),
+            ),
             Text(title, textAlign: TextAlign.center, style: t.textTheme.title),
             if (body != null)
               Text(
@@ -1254,4 +1443,24 @@ class NeumorphicEmptyState extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('body', body, defaultValue: null))
+      ..add(IconDataProperty('icon', icon, ifNull: 'none'));
+  }
 }
+
+/// A list row's leading slot (a mark of any width) and the gap after it: every row's words start this far in.
+const double _leadingSlot = 44;
+const double _leadingGap = 14;

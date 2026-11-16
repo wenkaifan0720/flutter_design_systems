@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart' show RenderProxyBox;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -19,8 +20,15 @@ import 'shapes.dart';
 import 'glyphs.dart';
 import 'localizations.dart';
 import 'theme.dart';
+import 'internal/reach.dart' show NeumorphicFacePlace, neumorphicAtEnd;
 import 'internal/cap_label.dart';
-import 'internal/panel.dart' show neumorphicFieldListInsets;
+import 'internal/whole_words.dart';
+import 'internal/text_entry.dart' show neumorphicLineHeight;
+import 'chrome_metrics.dart';
+import 'internal/panel.dart';
+import 'internal/cell_bank.dart'
+    show NeumorphicChosenBand, neumorphicWideControlMax;
+import 'internal/moulded.dart';
 
 class _WordsDelegate extends LocalizationsDelegate<NeumorphicLocalizations> {
   const _WordsDelegate(this.words);
@@ -156,10 +164,42 @@ class _RaisedRoute<T> extends PopupRoute<T> with _EscapeCloses<T> {
   final bool dismissible;
   final String closeLabel;
   CurvedAnimation? _curve;
+
+  /// How much of the barrier the sheet covers, so a screen reader outlines the barrier where a tap reaches it: above
+  /// a phone's sheet, as Material's bottom sheet does.
+  final _covered = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
+
   @override
   void dispose() {
     _curve?.dispose();
+    _covered.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget buildModalBarrier() {
+    if (kind != _RaisedKind.sheet) return super.buildModalBarrier();
+    final veil = barrierColor;
+    if (veil == null || veil.a == 0 || offstage) {
+      return ModalBarrier(
+        dismissible: barrierDismissible,
+        semanticsLabel: barrierLabel,
+        barrierSemanticsDismissible: semanticsDismissible,
+        clipDetailsNotifier: _covered,
+      );
+    }
+    return AnimatedModalBarrier(
+      color: animation!.drive(
+        ColorTween(
+          begin: veil.withValues(alpha: 0),
+          end: veil,
+        ).chain(CurveTween(curve: barrierCurve)),
+      ),
+      dismissible: barrierDismissible,
+      semanticsLabel: barrierLabel,
+      barrierSemanticsDismissible: semanticsDismissible,
+      clipDetailsNotifier: _covered,
+    );
   }
 
   @override
@@ -344,13 +384,18 @@ class NeumorphicDialog extends StatelessWidget {
                       Semantics(
                         namesRoute: true,
                         header: true,
-                        child: neumorphicLabel(
-                          Text(
-                            title,
-                            style: t.textTheme.text(
-                              24,
-                              30,
-                              weight: FontWeight.w600,
+                        // Its words whole at the reader's text size (internal/whole_words.dart).
+                        child: LayoutBuilder(
+                          builder: (context, box) => neumorphicLabel(
+                            Text(
+                              title,
+                              style: _titleStyle(t),
+                              textScaler: neumorphicWholeWordScaler(
+                                context,
+                                title,
+                                _titleStyle(t),
+                                box.maxWidth,
+                              ),
                             ),
                           ),
                         ),
@@ -376,6 +421,21 @@ class NeumorphicDialog extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null));
   }
 }
 
@@ -432,7 +492,15 @@ class _SheetHost extends StatelessWidget {
               maxWidth: 560,
               maxHeight: math.min(height, media.size.height * .9),
             ),
-            child: _SheetDrag(route: route, floating: desk, child: child),
+            // A phone's sheet tells its barrier what it covers; a desk's panel floats in the middle of it.
+            child: _SizeReport(
+              onSize: (size) => route._covered.value = desk
+                  ? EdgeInsets.zero
+                  : EdgeInsets.only(
+                      bottom: size.height + media.viewInsets.bottom,
+                    ),
+              child: _SheetDrag(route: route, floating: desk, child: child),
+            ),
           ),
         ),
       ),
@@ -440,11 +508,36 @@ class _SheetHost extends StatelessWidget {
   }
 }
 
+/// Reports its child's size after each layout.
+class _SizeReport extends SingleChildRenderObjectWidget {
+  const _SizeReport({required this.onSize, super.child});
+  final ValueChanged<Size> onSize;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderSizeReport(onSize);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderSizeReport report) =>
+      report.onSize = onSize;
+}
+
+class _RenderSizeReport extends RenderProxyBox {
+  _RenderSizeReport(this.onSize);
+  ValueChanged<Size> onSize;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    onSize(size);
+  }
+}
+
 /// Raises a sheet from a phone's foot, or as a centered panel on a wide window.
 /// Its grip, back, Escape and dismissible scrim close it and return focus.
 ///
 /// ```dart
-/// showNeumorphicBottomSheet(context, builder: (context) => NeumorphicBottomSheet(title: 'Filters', child: filters))
+/// showNeumorphicBottomSheet<void>(context, builder: (context) => NeumorphicBottomSheet(title: 'Filters', child: filters))
 /// ```
 Future<T?> showNeumorphicBottomSheet<T>(
   BuildContext context, {
@@ -470,7 +563,7 @@ Future<T?> showNeumorphicBottomSheet<T>(
 /// A soft panel with a grip, a heading, scrolling content and fixed actions.
 ///
 /// ```dart
-/// NeumorphicBottomSheet(title: 'Filters', child: filters, actions: [NeumorphicButton.filled('Apply', onPressed: apply)])
+/// NeumorphicBottomSheet(title: 'Filters', actions: [NeumorphicButton.filled('Apply', onPressed: apply)], child: filters)
 /// ```
 class NeumorphicBottomSheet extends StatelessWidget {
   /// Creates a [NeumorphicBottomSheet].
@@ -574,24 +667,32 @@ class NeumorphicBottomSheet extends StatelessWidget {
                   child: Semantics(
                     header: true,
                     namesRoute: !inPlace,
-                    child: neumorphicLabel(
-                      Text(
-                        title ?? '',
-                        style: t.textTheme.text(
-                          24,
-                          30,
-                          weight: FontWeight.w600,
+                    // Its words whole at the reader's text size (internal/whole_words.dart).
+                    child: LayoutBuilder(
+                      builder: (context, box) => neumorphicLabel(
+                        Text(
+                          title ?? '',
+                          style: _titleStyle(t),
+                          textScaler: neumorphicWholeWordScaler(
+                            context,
+                            title ?? '',
+                            _titleStyle(t),
+                            box.maxWidth,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
                 if (showClose)
-                  NeumorphicRoundButton(
-                    NeumorphicGlyphs.close,
-                    label:
-                        closeLabel ?? NeumorphicLocalizations.of(context).close,
-                    onPressed: close,
+                  neumorphicAtEnd(
+                    NeumorphicRoundButton(
+                      NeumorphicGlyphs.close,
+                      label:
+                          closeLabel ??
+                          NeumorphicLocalizations.of(context).close,
+                      onPressed: close,
+                    ),
                   ),
               ],
             ),
@@ -664,6 +765,34 @@ class NeumorphicBottomSheet extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(IterableProperty<Widget>('slivers', slivers, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose))
+      ..add(StringProperty('closeLabel', closeLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>('showClose', showClose, defaultValue: true),
+      )
+      ..add(DiagnosticsProperty<bool>('inPlace', inPlace, defaultValue: false));
+  }
 }
 
 /// One menu choice, or a divider between choices.
@@ -732,7 +861,7 @@ class NeumorphicMenu<T> extends StatefulWidget {
     this.autofocus = true,
     this.style,
     this.fieldWords,
-  });
+  }) : assert((width ?? 1) > 0);
 
   /// Face, outline and spacing before the component theme.
   final NeumorphicStyle? style;
@@ -757,6 +886,27 @@ class NeumorphicMenu<T> extends StatefulWidget {
   final bool autofocus;
   @override
   State<NeumorphicMenu<T>> createState() => _NeumorphicMenuState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('fieldWords', fieldWords, defaultValue: null))
+      ..add(IterableProperty<NeumorphicMenuItem<T>>('items', items))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: true),
+      );
+  }
 }
 
 class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
@@ -764,6 +914,9 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
   String _search = '';
   Timer? _resetSearch;
   bool _keyboardFocus = false;
+
+  /// The list's inset round its rows, from the last build: a row the keys reach comes into view with it.
+  double _inset = 12;
   void _resizeNodes() {
     while (_nodes.length > widget.items.length) {
       _nodes.removeLast().dispose();
@@ -855,9 +1008,11 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
     if (target == null) return KeyEventResult.ignored;
     _nodes[target].requestFocus();
     final context = _nodes[target].context;
-    if (context != null) {
-      Scrollable.ensureVisible(
-        context,
+    final row = context?.findRenderObject();
+    if (context != null && row is RenderBox && row.attached) {
+      // The row comes into view with the list's inset round it, so its lift is never cut by the list's edge.
+      row.showOnScreen(
+        rect: (Offset.zero & row.size).inflate(_inset),
         duration: NeumorphicMotion.of(context).move,
       );
     }
@@ -867,7 +1022,7 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final menuLook = NeumorphicStyleOf([widget.style, t.menuTheme], const {});
+    final menuLook = neumorphicStyleOf([widget.style, t.menuTheme], const {});
     final outer = menuLook.shape ?? t.shapes.corner(NeumorphicRadii.slab);
     // A field's list whose options carry no glyph starts their words on the field's value.
     final field =
@@ -883,6 +1038,7 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
                 0,
           );
     final inset = field?.panel ?? 12;
+    _inset = inset;
     final rowBorder = NeumorphicShapes.inset(
       outer,
       inset +
@@ -911,12 +1067,17 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
           themeStyle: t.menuTheme,
           radius: NeumorphicRadii.slab,
           outlined: true,
-          // Leave room around the list so nearby recessed field edges do not
-          // peek through the popup's short cast shadow as a second slab.
-          padding: EdgeInsets.all(inset),
-          child: SizedBox(
+          child: _MenuWidth(
             width: widget.width ?? 280,
+            // A field's list starts at the field's width and widens to fit its widest entry, the chosen one in bold
+            // with its check: an option's words never break onto a second line.
+            least: widget.fieldWords != null && widget.width != null,
+            inset: inset,
             child: SingleChildScrollView(
+              // Room round the list so nearby recessed field edges do not peek through the popup's short cast
+              // shadow as a second slab. It is inside the scroll, so a lit row's lift at the list's edge has the
+              // inset to cast into rather than being cut by the scroll's edge.
+              padding: EdgeInsets.all(inset),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -931,145 +1092,182 @@ class _NeumorphicMenuState<T> extends State<NeumorphicMenu<T>> {
                         ),
                       )
                     else
-                      NeumorphicTap(
-                        label: widget.items[i].label,
-                        shape: rowBorder,
-                        selected: widget.items[i].selected,
-                        onPressed:
-                            !widget.items[i].enabled ||
-                                widget.onSelected == null
-                            ? null
-                            : () => widget.onSelected!(
-                                widget.items[i].value as T,
-                              ),
-                        focusNode: _nodes[i],
-                        // An item lifts a little, and only when the keys moved
-                        // to it: autofocus alone is not keyboard input.
-                        focusReach: .5,
-                        showFocus: _keyboardFocus,
-                        autofocus: widget.autofocus && i == first,
-                        onKeyEvent: (_, event) => _key(i, event),
-                        child: Builder(
-                          builder: (context) {
-                            final states = NeumorphicStatesScope.of(context);
-                            final look = NeumorphicStyleOf([
-                              widget.style,
-                              t.menuTheme,
-                            ], states);
-                            final highlighted =
-                                widget.items[i].selected ||
-                                states.contains(WidgetState.hovered) ||
-                                states.contains(WidgetState.focused) ||
-                                states.contains(WidgetState.pressed);
-                            return CustomPaint(
-                              painter: highlighted
-                                  ? _MenuRowRelief(
-                                      t.colors,
-                                      t.elevation,
-                                      look.fill,
-                                      rowBorder,
-                                    )
-                                  : null,
-                              // Keep the face 48px tall on pointer platforms too;
-                              // a shorter row can expose a field edge below the popup.
-                              child: Container(
-                                constraints: const BoxConstraints(
-                                  minHeight: 48,
+                      // The pointer's moves take the keys' place, as in a native menu: one place in the list, never
+                      // a lifted row and a raised one at once. A move, not a row scrolled under a resting pointer:
+                      // the pointer's row stands up, and the keys go on from it.
+                      MouseRegion(
+                        onHover: (_) {
+                          if (_keyboardFocus) {
+                            setState(() => _keyboardFocus = false);
+                          }
+                          if (widget.items[i].enabled && !_nodes[i].hasFocus) {
+                            _nodes[i].requestFocus();
+                          }
+                        },
+                        child: NeumorphicTap(
+                          label: widget.items[i].label,
+                          shape: rowBorder,
+                          selected: widget.items[i].selected,
+                          onPressed:
+                              !widget.items[i].enabled ||
+                                  widget.onSelected == null
+                              ? null
+                              : () => widget.onSelected!(
+                                  widget.items[i].value as T,
                                 ),
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: field?.row ?? 8,
-                                  vertical: 10,
+                          focusNode: _nodes[i],
+                          // An item lifts a little, and only when the keys moved
+                          // to it: autofocus alone is not keyboard input.
+                          focusReach: .5,
+                          showFocus: _keyboardFocus,
+                          autofocus: widget.autofocus && i == first,
+                          onKeyEvent: (_, event) => _key(i, event),
+                          child: Builder(
+                            builder: (context) {
+                              final states = NeumorphicStatesScope.of(context);
+                              final look = neumorphicStyleOf([
+                                widget.style,
+                                t.menuTheme,
+                              ], states);
+                              // The chosen row alone is pressed in at rest, under the pigment's wash; a row
+                              // held under a finger presses in plain while it is held; the pointer's row stands up a
+                              // little; keyboard focus lifts the row (the tap draws it). None reads as another. The
+                              // pointer's row stands up only while the pointer moved last: once the keys move, theirs is
+                              // the one lit row, wherever the pointer rests.
+                              final chosen = widget.items[i].selected;
+                              final held =
+                                  !chosen &&
+                                  states.contains(WidgetState.pressed);
+                              final over =
+                                  !chosen &&
+                                  !held &&
+                                  !_keyboardFocus &&
+                                  states.contains(WidgetState.hovered);
+                              final row = CustomPaint(
+                                painter: held || (chosen && look.fill != null)
+                                    ? _MenuRowRelief(
+                                        t.colors,
+                                        t.elevation,
+                                        look.fill ?? t.colors.ground,
+                                        rowBorder,
+                                      )
+                                    : over
+                                    ? NeumorphicPanelRowRaise(
+                                        t.colors,
+                                        t.elevation,
+                                        rowBorder,
+                                      )
+                                    : null,
+                                // Keep the face 48px tall on pointer platforms too;
+                                // a shorter row can expose a field edge below the popup.
+                                child: Container(
+                                  constraints: const BoxConstraints(
+                                    minHeight: 48,
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: field?.row ?? 8,
+                                    vertical: 10,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      if (field == null) ...[
+                                        SizedBox(
+                                          width: math.max(
+                                            20,
+                                            look.iconSize ?? 20,
+                                          ),
+                                          child: widget.items[i].selected
+                                              ? Icon(
+                                                  NeumorphicGlyphs.check,
+                                                  color:
+                                                      look.foreground ??
+                                                      t.colors.pigmentInkLit,
+                                                  size: look.iconSize,
+                                                )
+                                              // A row that destroys says so at its start: its own glyph, or the
+                                              // warning mark where it has none (at the row's far end it read as
+                                              // stray, apart from the words it qualifies).
+                                              : widget.items[i].icon == null
+                                              ? (widget.items[i].danger
+                                                    ? Icon(
+                                                        NeumorphicGlyphs
+                                                            .triangleAlert,
+                                                        color: look.foreground,
+                                                        size: look.iconSize,
+                                                      )
+                                                    : null)
+                                              : Icon(
+                                                  widget.items[i].icon,
+                                                  color: look.foreground,
+                                                  size: look.iconSize,
+                                                ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                      ],
+                                      Expanded(
+                                        child: neumorphicLabel(
+                                          Text(
+                                            widget.items[i].label!,
+                                            style: t.textTheme.body
+                                                .copyWith(
+                                                  color: widget.items[i].enabled
+                                                      ? t.colors.ink
+                                                      : t.colors.inkTertiary,
+                                                  fontWeight:
+                                                      widget.items[i].selected
+                                                      ? FontWeight.w700
+                                                      : FontWeight.w500,
+                                                )
+                                                .merge(look.textStyle)
+                                                .copyWith(
+                                                  color: look.foreground,
+                                                ),
+                                          ),
+                                        ),
+                                      ),
+                                      if (widget.items[i].danger &&
+                                          field != null) ...[
+                                        const SizedBox(width: 8),
+                                        const Icon(
+                                          NeumorphicGlyphs.triangleAlert,
+                                          size: 16,
+                                        ),
+                                      ],
+                                      if (widget.items[i].note != null) ...[
+                                        const SizedBox(width: 8),
+                                        Flexible(
+                                          child: Text(
+                                            widget.items[i].note!,
+                                            style: t.textTheme.micro
+                                                .merge(look.textStyle)
+                                                .copyWith(
+                                                  color: look.foreground,
+                                                ),
+                                          ),
+                                        ),
+                                      ],
+                                      if (field != null &&
+                                          widget.items[i].selected) ...[
+                                        const SizedBox(width: 10),
+                                        Icon(
+                                          NeumorphicGlyphs.check,
+                                          color:
+                                              look.foreground ??
+                                              t.colors.pigmentInkLit,
+                                          size: look.iconSize,
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ),
-                                child: Row(
-                                  children: [
-                                    if (field == null) ...[
-                                      SizedBox(
-                                        width: math.max(
-                                          20,
-                                          look.iconSize ?? 20,
-                                        ),
-                                        child: widget.items[i].selected
-                                            ? Icon(
-                                                NeumorphicGlyphs.check,
-                                                color:
-                                                    look.foreground ??
-                                                    t.colors.pigmentInkLit,
-                                                size: look.iconSize,
-                                              )
-                                            // A row that destroys says so at its start: its own glyph, or the
-                                            // warning mark where it has none (at the row's far end it read as
-                                            // stray, apart from the words it qualifies).
-                                            : widget.items[i].icon == null
-                                            ? (widget.items[i].danger
-                                                  ? Icon(
-                                                      NeumorphicGlyphs
-                                                          .triangleAlert,
-                                                      color: look.foreground,
-                                                      size: look.iconSize,
-                                                    )
-                                                  : null)
-                                            : Icon(
-                                                widget.items[i].icon,
-                                                color: look.foreground,
-                                                size: look.iconSize,
-                                              ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                    ],
-                                    Expanded(
-                                      child: neumorphicLabel(
-                                        Text(
-                                          widget.items[i].label!,
-                                          style: t.textTheme.body
-                                              .copyWith(
-                                                color: widget.items[i].enabled
-                                                    ? t.colors.ink
-                                                    : t.colors.inkTertiary,
-                                                fontWeight:
-                                                    widget.items[i].selected
-                                                    ? FontWeight.w700
-                                                    : FontWeight.w500,
-                                              )
-                                              .merge(look.textStyle)
-                                              .copyWith(color: look.foreground),
-                                        ),
-                                      ),
-                                    ),
-                                    if (widget.items[i].danger &&
-                                        field != null) ...[
-                                      const SizedBox(width: 8),
-                                      const Icon(
-                                        NeumorphicGlyphs.triangleAlert,
-                                        size: 16,
-                                      ),
-                                    ],
-                                    if (widget.items[i].note != null) ...[
-                                      const SizedBox(width: 8),
-                                      Flexible(
-                                        child: Text(
-                                          widget.items[i].note!,
-                                          style: t.textTheme.micro
-                                              .merge(look.textStyle)
-                                              .copyWith(color: look.foreground),
-                                        ),
-                                      ),
-                                    ],
-                                    if (field != null &&
-                                        widget.items[i].selected) ...[
-                                      const SizedBox(width: 10),
-                                      Icon(
-                                        NeumorphicGlyphs.check,
-                                        color:
-                                            look.foreground ??
-                                            t.colors.pigmentInkLit,
-                                        size: look.iconSize,
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+                              );
+                              return NeumorphicChosenBand(
+                                chosen: chosen && look.fill == null,
+                                border: rowBorder,
+                                child: row,
+                              );
+                            },
+                          ),
                         ),
                       ),
                 ],
@@ -1120,6 +1318,30 @@ class _MenuRowRelief extends CustomPainter {
       old.border != border;
 }
 
+/// A menu's list width: [width] exactly, or, for a field's list ([least]), the field's width at the least and as wide
+/// as its widest entry needs.
+class _MenuWidth extends StatelessWidget {
+  const _MenuWidth({
+    required this.width,
+    required this.least,
+    required this.inset,
+    required this.child,
+  });
+  final double width;
+  final bool least;
+  final double inset;
+  final Widget child;
+
+  // [child] carries the [inset] round its rows: a field's list is [width] wide at least, a menu [width] plus it.
+  @override
+  Widget build(BuildContext context) => least
+      ? ConstrainedBox(
+          constraints: BoxConstraints(minWidth: math.max(0, width)),
+          child: IntrinsicWidth(child: child),
+        )
+      : SizedBox(width: width + 2 * inset, child: child);
+}
+
 class _AnchorLayout extends SingleChildLayoutDelegate {
   const _AnchorLayout(
     this.anchor,
@@ -1127,19 +1349,28 @@ class _AnchorLayout extends SingleChildLayoutDelegate {
     this.padding, {
     this.width,
     this.tooltip = false,
+    this.widens = false,
   });
   final Rect anchor;
   final TextDirection direction;
   final EdgeInsets padding;
   final double? width;
   final bool tooltip;
+
+  /// A field's list: [width] is its least, and it may widen to a control's most to fit its widest entry.
+  final bool widens;
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
     final available = math.max(
       0.0,
       constraints.maxWidth - padding.horizontal - 16,
     );
-    final w = math.min(width ?? (tooltip ? 280 : 320), available);
+    final w = math.min(
+      widens
+          ? math.max(width ?? 0, neumorphicWideControlMax)
+          : width ?? (tooltip ? 280 : 320),
+      available,
+    );
     return BoxConstraints(
       maxWidth: w,
       minWidth: tooltip ? 0 : math.min(width ?? 180, w),
@@ -1179,7 +1410,8 @@ class _AnchorLayout extends SingleChildLayoutDelegate {
       old.direction != direction ||
       old.padding != padding ||
       old.width != width ||
-      old.tooltip != tooltip;
+      old.tooltip != tooltip ||
+      old.widens != widens;
 }
 
 /// Opens a menu beside a screen-coordinate anchor and returns the selected value.
@@ -1219,6 +1451,7 @@ Future<T?> showNeumorphicMenu<T>(
             carried.direction,
             media.padding + EdgeInsets.only(bottom: media.viewInsets.bottom),
             width: matchWidth ? anchor.width : width,
+            widens: matchWidth && fieldWords != null,
           ),
           child: NeumorphicMenu<T>(
             style: style,
@@ -1364,7 +1597,7 @@ class NeumorphicTooltipFace extends StatelessWidget {
         message,
         style: NeumorphicTheme.of(context).textTheme.caption
             .merge(
-              NeumorphicStyleOf([
+              neumorphicStyleOf([
                 style,
                 NeumorphicTheme.of(context).tooltipTheme,
               ], const {}).textStyle,
@@ -1372,7 +1605,7 @@ class NeumorphicTooltipFace extends StatelessWidget {
             // The tooltip's one message is read, in the ink: in the caption's quiet ink it stood about 3:1 by night.
             .copyWith(
               color:
-                  NeumorphicStyleOf([
+                  neumorphicStyleOf([
                     style,
                     NeumorphicTheme.of(context).tooltipTheme,
                   ], const {}).foreground ??
@@ -1381,6 +1614,20 @@ class NeumorphicTooltipFace extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('message', message));
+  }
 }
 
 /// Centred words as narrow as their line count allows, so a wrapped tooltip ends with no word alone ('A tooltip says
@@ -1520,6 +1767,27 @@ class NeumorphicTooltip extends StatefulWidget {
   final Duration wait;
   @override
   State<NeumorphicTooltip> createState() => _NeumorphicTooltipState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('message', message))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'wait',
+          wait,
+          defaultValue: const Duration(milliseconds: 400),
+        ),
+      );
+  }
 }
 
 class _NeumorphicTooltipState extends State<NeumorphicTooltip> {
@@ -1580,7 +1848,11 @@ class _NeumorphicTooltipState extends State<NeumorphicTooltip> {
           excludeFromSemantics: true,
           onLongPress: _show,
           onLongPressUp: _hide,
-          child: widget.child,
+          // The tip points at the child's middle: a round key under it stands its face there, not at its target's start.
+          child: NeumorphicFacePlace(
+            alignment: AlignmentDirectional.center,
+            child: widget.child,
+          ),
         ),
       ),
     ),
@@ -1636,31 +1908,39 @@ class NeumorphicSnackBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final look = NeumorphicStyleOf([style, t.snackBarTheme], const {});
+    final look = neumorphicStyleOf([style, t.snackBarTheme], const {});
     final icon = switch (tone) {
       NeumorphicTone.info => NeumorphicGlyphs.info,
       NeumorphicTone.success => NeumorphicGlyphs.circleCheck,
       NeumorphicTone.warning => NeumorphicGlyphs.triangleAlert,
       NeumorphicTone.danger => NeumorphicGlyphs.circleAlert,
     };
-    final words = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (title != null)
-          Text(
-            title!,
-            style: t.textTheme.title
-                .merge(look.textStyle)
-                .copyWith(color: look.foreground),
-          ),
-        Text(
-          message,
-          style: t.textTheme.body
-              .merge(look.textStyle)
-              .copyWith(color: look.foreground),
-        ),
-      ],
+    final titleStyle = t.textTheme.title
+        .merge(look.textStyle)
+        .copyWith(color: look.foreground);
+    final messageStyle = t.textTheme.body
+        .merge(look.textStyle)
+        .copyWith(color: look.foreground);
+    // The first line stands on the line of the keys beside it, the middle of their targets: from the top of the row
+    // it sat a line above 'Undo' and the dismiss key. With no key it stays at the top.
+    final firstLine = neumorphicLineHeight(
+      context,
+      title != null ? titleStyle : messageStyle,
+    );
+    final lead = actionLabel != null || onDismiss != null
+        ? math.max(0.0, (NeumorphicChromeMetrics.targetSize - firstLine) / 2)
+        : 0.0;
+    final glyph = look.iconSize ?? 22;
+    final words = Padding(
+      padding: EdgeInsets.only(top: lead),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (title != null) Text(title!, style: titleStyle),
+          Text(message, style: messageStyle),
+        ],
+      ),
     );
     return Semantics(
       liveRegion: live,
@@ -1682,12 +1962,10 @@ class NeumorphicSnackBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(top: 3),
-                    child: Icon(
-                      icon,
-                      size: look.iconSize ?? 22,
-                      color: look.foreground,
+                    padding: EdgeInsets.only(
+                      top: lead + math.max(0.0, (firstLine - glyph) / 2),
                     ),
+                    child: Icon(icon, size: glyph, color: look.foreground),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -1708,12 +1986,14 @@ class NeumorphicSnackBar extends StatelessWidget {
                   ),
                   if (onDismiss != null) ...[
                     const SizedBox(width: 8),
-                    NeumorphicRoundButton(
-                      NeumorphicGlyphs.close,
-                      label:
-                          dismissLabel ??
-                          NeumorphicLocalizations.of(context).dismiss,
-                      onPressed: onDismiss,
+                    neumorphicAtEnd(
+                      NeumorphicRoundButton(
+                        NeumorphicGlyphs.close,
+                        label:
+                            dismissLabel ??
+                            NeumorphicLocalizations.of(context).dismiss,
+                        onPressed: onDismiss,
+                      ),
                     ),
                   ],
                 ],
@@ -1723,6 +2003,33 @@ class NeumorphicSnackBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('live', live, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('message', message))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(StringProperty('dismissLabel', dismissLabel, defaultValue: null))
+      ..add(
+        EnumProperty<NeumorphicTone>(
+          'tone',
+          tone,
+          defaultValue: NeumorphicTone.info,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAction', onAction))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDismiss', onDismiss));
   }
 }
 
@@ -1932,3 +2239,7 @@ class _SnackHostState extends State<_SnackHost> {
     ),
   );
 }
+
+/// A dialog's and a sheet's title.
+TextStyle _titleStyle(NeumorphicThemeData t) =>
+    t.textTheme.text(24, 30, weight: FontWeight.w600);

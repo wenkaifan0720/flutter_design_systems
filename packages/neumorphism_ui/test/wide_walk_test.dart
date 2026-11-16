@@ -12,7 +12,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui/src/neumorphism/internal/reach.dart'
-    show NeumorphicFaceEdge, NeumorphicTallTarget;
+    show NeumorphicTallTarget;
 
 import 'support.dart';
 
@@ -83,11 +83,13 @@ void main() {
       moreOrLessEquals(t.density.height(36), epsilon: 0.5),
       reason: "the removable chip's face is a chip's height, not its cross's target",
     );
-    // The cross is the chip's own face; its spoken target is the platform's, reaching past the band.
-    expect(
-      tester.getSemantics(find.byType(NeumorphicTallTarget)).rect.height,
-      greaterThanOrEqualTo(48),
-    );
+    // The words' part and the cross are each spoken at the platform's target, reaching past the band.
+    for (final part in find.byType(NeumorphicTallTarget).evaluate()) {
+      expect(
+        tester.getSemantics(find.byWidget(part.widget)).rect.height,
+        greaterThanOrEqualTo(48),
+      );
+    }
   });
 
   testWidgets('choice tiles keep to their words from 600 up', (tester) async {
@@ -125,7 +127,7 @@ void main() {
             onSelected: (_) {},
           ),
           const NeumorphicTooltipFace(message: 'A tooltip says one thing'),
-          NeumorphicSnackBar(
+          const NeumorphicSnackBar(
             'The thermostat is back online',
             title: 'Connected',
           ),
@@ -202,47 +204,56 @@ void main() {
     expect(start, moreOrLessEquals(48, epsilon: 1));
   });
 
-  // design6 P, 11-12: an example starts on the column's edge with its drawn face, never its target; a minimum target
-  // pads outward and is only hit-tested. (It overturns the bare checkbox's 10 px margin.)
-  Rect faceOf(WidgetTester tester, Finder control) => tester.getRect(
-    find
-        .descendant(of: control, matching: find.byType(NeumorphicFaceEdge))
-        .first,
+  // design6 P, 11-12: an example starts on the column's edge with its drawn face, never its target. Since 0.2.0 the
+  // target is laid out (ui_core's DesignTapTarget at centerStart): the face on the edge, the target growing toward the
+  // end, so the box, the press and the spoken node are one. (Before, the target's margins past the box were hit-tested
+  // only, and a neighbour or the parent's edge took presses a screen reader said were the control's.)
+  Rect faceIn(WidgetTester tester, Finder control, Type face) => tester.getRect(
+    find.descendant(of: control, matching: find.byType(face)).first,
   );
 
-  testWidgets("a bare checkbox's mark starts on the column's edge", (
-    tester,
-  ) async {
-    await _pump(
-      tester,
-      NeumorphicCheckbox(value: true, label: 'Receipt', onChanged: (_) {}),
-    );
-    final box = find.byType(NeumorphicCheckbox);
-    final face = faceOf(tester, box);
-    expect(face.left, 48);
-    expect(face.width, 28, reason: "the box's edge is the mark's");
-    final target = tester.getRect(
-      find.descendant(of: box, matching: find.byType(NeumorphicTap)),
-    );
-    expect(target.size, const Size(48, 48), reason: 'the target is whole');
-    expect(target.left, 38, reason: 'and reaches out past the column');
-    // A press in the target's margin beside the mark still reaches it. (The margin past the column's own edge takes no
-    // press: Flutter hands a press only to boxes holding it.)
-    var pressed = false;
-    await _pump(
-      tester,
-      NeumorphicCheckbox(
-        value: false,
-        label: 'Receipt',
-        onChanged: (_) => pressed = true,
-      ),
-    );
-    await tester.tapAt(Offset(48 + 28 + 6, target.center.dy));
-    expect(pressed, isTrue);
-  });
+  testWidgets(
+    "a bare checkbox's mark starts on the edge, its target laid out",
+    (tester) async {
+      var pressed = 0;
+      await _pump(
+        tester,
+        NeumorphicCheckbox(
+          value: true,
+          label: 'Receipt',
+          onChanged: (_) => pressed++,
+        ),
+      );
+      final box = find.byType(NeumorphicCheckbox);
+      final target = tester.getRect(
+        find.descendant(of: box, matching: find.byType(NeumorphicTap)),
+      );
+      expect(target.left, 48, reason: "the target's box starts on the edge");
+      expect(target.size, const Size(48, 48));
+      final mark = tester.getRect(
+        find.descendant(of: box, matching: find.byType(CustomPaint)).last,
+      );
+      expect(mark.left, 48, reason: 'and so does the mark');
+      expect(
+        tester.getSemantics(box).rect.size,
+        target.size,
+        reason: 'a screen reader outlines what a press reaches',
+      );
+      // A press anywhere in the target reaches it: its start, its end, its corners.
+      for (final at in [
+        target.centerLeft + const Offset(1, 0),
+        target.centerRight - const Offset(1, 0),
+        target.topLeft + const Offset(1, 1),
+        target.bottomRight - const Offset(1, 1),
+      ]) {
+        await tester.tapAt(at);
+      }
+      expect(pressed, 4);
+    },
+  );
 
   testWidgets(
-    "round keys, a stepper's keys, stars and a month's arrow start on the edge",
+    "round keys, a stepper's keys, stars and a month's arrow start on the edge with their faces",
     (tester) async {
       await _pump(
         tester,
@@ -270,34 +281,54 @@ void main() {
         ),
       );
       final key = find.byType(NeumorphicRoundButton).first;
-      expect(faceOf(tester, key).left, 48);
+      final keyBox = tester.getRect(key);
+      expect(keyBox.left, 48, reason: "the key's target starts on the edge");
+      expect(keyBox.size, const Size(48, 48));
       expect(
-        tester
-            .getSize(
-              find.descendant(of: key, matching: find.byType(NeumorphicTap)),
-            )
-            .width,
+        faceIn(tester, key, NeumorphicSurface).left,
         48,
-        reason: "the key's target stays whole round its face",
+        reason: 'and so does its face',
       );
       final stepper = find.byType(NeumorphicNumberField);
-      expect(faceOf(tester, stepper).left, 48, reason: "the minus key's face");
-      // The number field keeps its keys within 200 of its start (the face the width check finds round them is the
-      // card it stands in: shared_checks_test names that read).
       final keys = find.descendant(
         of: stepper,
-        matching: find.byType(NeumorphicFaceEdge),
+        matching: find.byType(NeumorphicRoundButton),
       );
+      expect(
+        faceIn(tester, keys.first, NeumorphicSurface).left,
+        48,
+        reason: "the minus key's face",
+      );
+      expect(
+        faceIn(tester, keys.last, NeumorphicSurface).right,
+        moreOrLessEquals(tester.getRect(keys.last).right, epsilon: .5),
+        reason: "the plus key's face stands on the row's end",
+      );
+      // The number field keeps its keys within 200 of its start (the face the width check finds round them is the
+      // card it stands in: shared_checks_test names that read).
       expect(tester.getRect(keys.last).right, lessThanOrEqualTo(48 + 200.5));
-      expect(
-        faceOf(tester, find.byType(NeumorphicRating)).left,
-        48,
-        reason: "the first star's face",
+      final stars = find.descendant(
+        of: find.byType(NeumorphicRating),
+        matching: find.byType(NeumorphicTap),
       );
       expect(
-        faceOf(tester, find.byType(NeumorphicDatePicker)).left,
+        tester.getRect(stars.first).left,
         48,
-        reason: "the month's back arrow",
+        reason: "the first star's target",
+      );
+      expect(
+        tester.getRect(stars.at(1)).left,
+        tester.getRect(stars.first).right,
+        reason: 'the stars stand target to target',
+      );
+      final arrows = find.descendant(
+        of: find.byType(NeumorphicDatePicker),
+        matching: find.byType(NeumorphicIconButton),
+      );
+      expect(
+        faceIn(tester, arrows.first, NeumorphicSurface).left,
+        48,
+        reason: "the month's back arrow's face",
       );
     },
   );

@@ -1,12 +1,13 @@
 // Layout: the 12-column grid and a column whose rows take up the slack. Cards in a row share a height and their lists
 // grow, so no card ends in a hole. Neither needs IntrinsicHeight, and neither crashes under a scroll view.
+
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-import 'chrome_metrics.dart';
 import 'theme.dart';
 
 /// A part with its own size keeps it, whatever its parent asks. A stretching Column or Row hands tight constraints, which a
@@ -47,7 +48,9 @@ class NeumorphicFill extends SingleChildRenderObjectWidget {
     this.loneWidth = 240,
     this.alignment = Alignment.topCenter,
     required Widget super.child,
-  });
+  }) : assert(maxWidth >= 0),
+       assert(loneWidth >= 0),
+       assert((aspect ?? 1) > 0);
 
   /// The maximum width allowed for this child.
   final double maxWidth;
@@ -78,6 +81,22 @@ class NeumorphicFill extends SingleChildRenderObjectWidget {
       ..lone = loneWidth
       ..alignment = alignment
       ..textDirection = Directionality.maybeOf(context);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('maxWidth', maxWidth))
+      ..add(DoubleProperty('aspect', aspect, defaultValue: null))
+      ..add(DoubleProperty('loneWidth', loneWidth, defaultValue: 240))
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'alignment',
+          alignment,
+          defaultValue: Alignment.topCenter,
+        ),
+      );
   }
 }
 
@@ -220,7 +239,7 @@ class NeumorphicColumn extends MultiChildRenderObjectWidget {
     this.gap = 0,
     this.spineX,
     this.spineColor,
-  });
+  }) : assert(gap >= 0);
 
   /// Space between children.
   final double gap;
@@ -250,6 +269,15 @@ class NeumorphicColumn extends MultiChildRenderObjectWidget {
       ..spineX = spineX
       ..spineColor = spineColor
       ..dir = Directionality.of(context);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('gap', gap, defaultValue: 0))
+      ..add(DoubleProperty('spineX', spineX, defaultValue: null))
+      ..add(ColorProperty('spineColor', spineColor, defaultValue: null));
   }
 }
 
@@ -401,25 +429,6 @@ class RenderNeumorphicColumn extends RenderBox
   bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
       defaultHitTestChildren(result, position: position);
 
-  /// A press up to half a target past either side still asks the children: a face on the column's keyline keeps its
-  /// target's margin past it ([NeumorphicFaceEdge]), and only a child that reaches there takes the press.
-  @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    if (size.contains(position)) {
-      return super.hitTest(result, position: position);
-    }
-    final reach = NeumorphicChromeMetrics.targetSize / 2;
-    if (position.dy < 0 ||
-        position.dy >= size.height ||
-        position.dx < -reach ||
-        position.dx >= size.width + reach ||
-        !hitTestChildren(result, position: position)) {
-      return false;
-    }
-    result.add(BoxHitTestEntry(this, position));
-    return true;
-  }
-
   @override
   void paint(PaintingContext context, Offset offset) {
     if (_spineX != null && _spineColor != null && firstChild != null) {
@@ -461,7 +470,8 @@ class NeumorphicEqualRow extends MultiChildRenderObjectWidget {
     this.gap = 0,
     this.columns,
     super.children,
-  });
+  }) : assert(gap >= 0),
+       assert((columns ?? 1) >= 1);
 
   /// Relative weights used to share the available row width.
   final List<int> flex;
@@ -484,6 +494,15 @@ class NeumorphicEqualRow extends MultiChildRenderObjectWidget {
       ..gap = gap
       ..columns = columns
       ..dir = Directionality.of(context);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<int>('flex', flex))
+      ..add(DoubleProperty('gap', gap, defaultValue: 0))
+      ..add(IntProperty('columns', columns, defaultValue: null));
   }
 }
 
@@ -634,26 +653,49 @@ class RenderNeumorphicEqualRow extends RenderBox
 
 /// A row on the 12-column grid: `NeumorphicRow(spans: [7, 5], children: [a, b])`. From 1024 wide the sections sit side by side
 /// and share a height, with 28 gutters, the air a soft shadow needs. Below that they stack with 28 between. It is the only
-/// layout decision a page makes. Spans are shares of the row: [6, 6] and [1, 1] are both halves, and the row is always
-/// filled.
+/// layout decision a page makes; a list beside the item it opens brings it down to a tablet with [from]. Spans are
+/// shares of the row: [6, 6] and [1, 1] are both halves, and the row is always filled. Tab walks each section to its end before the next.
 ///
 /// ```dart
 /// NeumorphicRow(spans: [8, 4], children: [Text('Main'), Text('Aside')])
 /// ```
 class NeumorphicRow extends StatelessWidget {
   /// Creates a [NeumorphicRow].
-  const NeumorphicRow({super.key, required this.spans, required this.children});
+  const NeumorphicRow({
+    super.key,
+    required this.spans,
+    required this.children,
+    this.from,
+  });
 
   /// Each child's share of the row, in columns of the 12-column grid when they add up to 12; a child without one takes 1.
   final List<int> spans;
 
   /// The content widgets, in reading order.
   final List<Widget> children;
+
+  /// Below the desk, the narrowest the row itself may be, as a window class of its own width, for its sections to sit
+  /// side by side: [NeumorphicWindow.medium] for a list beside the item it opens, so a tablet's page (600 wide and up,
+  /// past its rail) shows both and a choice never changes a pane below the fold, while a narrower one stacks rather
+  /// than squeeze each section under a phone's column. Null, the default: side by side on the desk only (from
+  /// [neumorphicDesktopBreakpoint], 1024).
+  final NeumorphicWindow? from;
+
   @override
   Widget build(BuildContext context) {
-    if (!NeumorphicTheme.of(context).desk) {
-      return NeumorphicColumn(gap: 28, children: children);
-    }
+    assert(spans.every((s) => s > 0));
+    final from = this.from;
+    if (NeumorphicTheme.of(context).desk) return _apart(context);
+    if (from == null) return NeumorphicColumn(gap: 28, children: children);
+    return LayoutBuilder(
+      builder: (context, box) =>
+          NeumorphicWindow.forWidth(box.maxWidth).index >= from.index
+          ? _apart(context)
+          : NeumorphicColumn(gap: 28, children: children),
+    );
+  }
+
+  Widget _apart(BuildContext context) {
     final shares = [
       for (var i = 0; i < children.length; i++)
         i < spans.length ? math.max(0, spans[i]) : 1,
@@ -663,12 +705,28 @@ class NeumorphicRow extends StatelessWidget {
       gap: 28,
       // A grid of as many columns as the spans add up to, so a span crosses its gutters and the row is filled.
       columns: math.max(1, shares.fold(0, (a, b) => a + b)),
-      // Side by side, each section is a column of its own keylines: a page's halves don't share a row.
+      // Side by side, each section is a column of its own keylines: a page's halves don't share a row. Each is a
+      // column for the keyboard too: Tab walks down one before the next, in the order a screen reader and a browser
+      // read them, never across from a list's row to the pane beside it and back.
       children: [
         for (final child in children)
-          DesignKeylineRegion(label: 'column', child: child),
+          DesignKeylineRegion(
+            label: 'column',
+            child: FocusTraversalGroup(
+              policy: FocusTraversalGroup.maybeOf(context),
+              child: child,
+            ),
+          ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<int>('spans', spans))
+      ..add(EnumProperty<NeumorphicWindow>('from', from, defaultValue: null));
   }
 }
 
@@ -702,7 +760,10 @@ class NeumorphicFitRow extends MultiChildRenderObjectWidget {
     this.fillMin = 0,
     this.fillShare = 0,
     super.children,
-  });
+  }) : assert(fill >= 0),
+       assert(gap >= 0),
+       assert(fillMin >= 0),
+       assert(fillShare >= 0 && fillShare <= 1);
 
   /// The index of the flexible child.
   final int fill;
@@ -733,6 +794,24 @@ class NeumorphicFitRow extends MultiChildRenderObjectWidget {
       .._w = this
       .._dir = Directionality.of(context)
       ..markNeedsLayout();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('fill', fill))
+      ..add(DoubleProperty('gap', gap, defaultValue: 8))
+      ..add(DoubleProperty('fillMin', fillMin, defaultValue: 0))
+      ..add(DoubleProperty('fillShare', fillShare, defaultValue: 0))
+      ..add(
+        EnumProperty<NeumorphicFitAlign>(
+          'align',
+          align,
+          defaultValue: NeumorphicFitAlign.center,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('shrink', shrink, defaultValue: false));
   }
 }
 
@@ -864,7 +943,8 @@ class RenderNeumorphicFitRow extends RenderBox
 /// ```
 class NeumorphicAutoRow extends MultiChildRenderObjectWidget {
   /// Creates a [NeumorphicAutoRow].
-  const NeumorphicAutoRow({super.key, this.gap = 14, super.children});
+  const NeumorphicAutoRow({super.key, this.gap = 14, super.children})
+    : assert(gap >= 0);
 
   /// Space between adjacent children, in logical pixels.
   final double gap;
@@ -880,6 +960,12 @@ class NeumorphicAutoRow extends MultiChildRenderObjectWidget {
       .._gap = gap
       .._dir = Directionality.of(context)
       ..markNeedsLayout();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('gap', gap, defaultValue: 14));
   }
 }
 
@@ -1008,7 +1094,9 @@ class NeumorphicGridOf extends StatelessWidget {
     required this.children,
     this.gap = 8,
     this.runGap,
-  });
+  }) : assert(columns >= 1),
+       assert(gap >= 0),
+       assert((runGap ?? 0) >= 0);
 
   /// The number of columns in the grid.
   final int columns;
@@ -1039,6 +1127,15 @@ class NeumorphicGridOf extends StatelessWidget {
     }
     return NeumorphicColumn(gap: runGap ?? gap, children: rows);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('columns', columns))
+      ..add(DoubleProperty('gap', gap, defaultValue: 8))
+      ..add(DoubleProperty('runGap', runGap, defaultValue: null));
+  }
 }
 
 /// Start and end on one baseline, pushed apart; if they don't fit on a line, end drops under start. CSS flex-wrap with
@@ -1056,7 +1153,9 @@ class NeumorphicSplit extends MultiChildRenderObjectWidget {
     this.gap = 14,
     this.runGap = 0,
     this.bottoms = false,
-  }) : super(children: [start, end]);
+  }) : assert(gap >= 0),
+       assert(runGap >= 0),
+       super(children: [start, end]);
 
   /// Space between adjacent children, in logical pixels.
   final double gap;
@@ -1080,6 +1179,15 @@ class NeumorphicSplit extends MultiChildRenderObjectWidget {
       .._bottoms = bottoms
       .._dir = Directionality.of(context)
       ..markNeedsLayout();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('gap', gap, defaultValue: 14))
+      ..add(DoubleProperty('runGap', runGap, defaultValue: 0))
+      ..add(DiagnosticsProperty<bool>('bottoms', bottoms, defaultValue: false));
   }
 }
 
@@ -1229,6 +1337,21 @@ class NeumorphicBalancedText extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(DiagnosticsProperty<TextStyle>('style', style))
+      ..add(
+        EnumProperty<TextAlign>(
+          'textAlign',
+          textAlign,
+          defaultValue: TextAlign.center,
+        ),
+      );
+  }
 }
 
 /// The width of the widest word of [text] in [style]: below it, Flutter breaks a word in two.
@@ -1269,7 +1392,10 @@ class NeumorphicBeside extends MultiChildRenderObjectWidget {
     this.minWords = 140,
     this.maxObject = .42,
     this.objectAtEnd = false,
-  }) : super(children: [object, child]);
+  }) : assert(gap >= 0),
+       assert(minWords >= 0),
+       assert(maxObject >= 0 && maxObject <= 1),
+       super(children: [object, child]);
 
   /// Space between adjacent children, in logical pixels.
   final double gap;
@@ -1303,6 +1429,22 @@ class NeumorphicBeside extends MultiChildRenderObjectWidget {
       .._atEnd = objectAtEnd
       .._dir = Directionality.of(context)
       ..markNeedsLayout();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('gap', gap, defaultValue: 16))
+      ..add(DoubleProperty('minWords', minWords, defaultValue: 140))
+      ..add(DoubleProperty('maxObject', maxObject, defaultValue: .42))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'objectAtEnd',
+          objectAtEnd,
+          defaultValue: false,
+        ),
+      );
   }
 }
 

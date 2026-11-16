@@ -429,6 +429,19 @@ String? _named(String problem) {
   ).hasMatch(problem)) {
     return "a text entry's field read as its words line";
   }
+  // The same reading against ui_core's widest-list rule (a list no wider than its field or its widest item): the list
+  // is the groove's width and the field read is the words line inside it, narrower by the groove's insets exactly:
+  // 56 for a combobox (14 in, its key's 42 at the end), 28.2 for a multi-select (10 and the groove's own 4.1 a side).
+  final wider = RegExp(
+    r'^#\d+ · a list opened from a button: ([\d.]+) px wide as laid out, \1 as drawn, wider than the field '
+    r'\(([\d.]+)\)',
+  ).firstMatch(problem);
+  if (wider != null) {
+    final over = double.parse(wider[1]!) - double.parse(wider[2]!);
+    if ((over - 56).abs() < .3 || (over - 28.2).abs() < .3) {
+      return "a text entry's field read as its words line";
+    }
+  }
   // A bay of the house stands its window over its words (its figure, name and note at its foot): the bay's face is
   // its whole wall (DesignKeylineFace), and its words are at the foot by design.
   if (RegExp(

@@ -57,7 +57,7 @@ void main() {
   setUpAll(loadNeumorphicFonts);
   for (final mode in Brightness.values) {
     testWidgets(
-      'menu uses a tinted inset and a small keyboard-only lift in ${mode.name}',
+      'menu presses its chosen row in under the wash, with a small keyboard-only lift, in ${mode.name}',
       (tester) async {
         final theme = NeumorphicThemeData.porcelain(mode);
         final stage = GlobalKey();
@@ -99,12 +99,25 @@ void main() {
           () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
         );
         final fill = _pixel(bytes!, image!.width, at.dx.round(), at.dy.round());
+        // The chosen row is a chosen cell's well under the pigment's wash, as a segmented control's chosen cell is: at
+        // a glance in the material, not a breath of tint beside its check.
         final expected = Color.alphaBlend(
-          theme.colors.pigment.withValues(alpha: .08),
+          theme.colors.wash,
           theme.colors.ground,
         );
         expect(_contrast(fill, expected), lessThan(1.03));
-        expect(_contrast(fill, theme.colors.ground), greaterThan(1.01));
+        expect(
+          _contrast(fill, theme.colors.ground),
+          greaterThan(
+            _contrast(
+              Color.alphaBlend(
+                theme.colors.pigment.withValues(alpha: .08),
+                theme.colors.ground,
+              ),
+              theme.colors.ground,
+            ),
+          ),
+        );
         image.dispose();
         await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
         await tester.pumpAndSettle();

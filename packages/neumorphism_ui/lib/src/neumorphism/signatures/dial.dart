@@ -2,6 +2,7 @@
 // object, so each keeps its circle; no sentence ever stands on one. A dome holds a figure and two short lines at most.
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -11,6 +12,8 @@ import '../controls.dart';
 import '../localizations.dart';
 import '../frames.dart';
 import '../internal/geometry.dart';
+import '../internal/reach.dart' show NeumorphicFacePlace;
+import '../chrome_metrics.dart';
 import '../layout.dart';
 import '../theme.dart';
 
@@ -443,19 +446,27 @@ class NeumorphicDial extends StatelessWidget {
           overline: caption == null ? null : label,
           title: caption ?? label ?? figure,
           body: sub,
+          // The pair's faces span its slot: less's on the start (the words' keyline when the pair wraps under them),
+          // more's on the end (the row's end keyline beside them), ten apart as ever.
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              NeumorphicRoundButton(
-                NeumorphicGlyphs.minus,
-                label: NeumorphicLocalizations.of(context).less,
-                onPressed: onDecrease,
+              NeumorphicFacePlace(
+                alignment: AlignmentDirectional.centerStart,
+                child: NeumorphicRoundButton(
+                  NeumorphicGlyphs.minus,
+                  label: NeumorphicLocalizations.of(context).less,
+                  onPressed: onDecrease,
+                ),
               ),
-              const SizedBox(width: 10),
-              NeumorphicRoundButton(
-                NeumorphicGlyphs.plus,
-                label: NeumorphicLocalizations.of(context).more,
-                onPressed: onIncrease,
+              SizedBox(width: _pairGap(context)),
+              NeumorphicFacePlace(
+                alignment: AlignmentDirectional.centerEnd,
+                child: NeumorphicRoundButton(
+                  NeumorphicGlyphs.plus,
+                  label: NeumorphicLocalizations.of(context).more,
+                  onPressed: onIncrease,
+                ),
               ),
             ],
           ),
@@ -648,23 +659,29 @@ class NeumorphicDial extends StatelessWidget {
             Positioned(
               left: 0,
               bottom: 0,
-              child: NeumorphicRoundButton(
-                NeumorphicGlyphs.minus,
-                size: keySize,
-                iconSize: keyIcon,
-                label: NeumorphicLocalizations.of(context).less,
-                onPressed: onDecrease,
+              child: NeumorphicFacePlace(
+                alignment: _left(context),
+                child: NeumorphicRoundButton(
+                  NeumorphicGlyphs.minus,
+                  size: keySize,
+                  iconSize: keyIcon,
+                  label: NeumorphicLocalizations.of(context).less,
+                  onPressed: onDecrease,
+                ),
               ),
             ),
             Positioned(
               right: 0,
               bottom: 0,
-              child: NeumorphicRoundButton(
-                NeumorphicGlyphs.plus,
-                size: keySize,
-                iconSize: keyIcon,
-                label: NeumorphicLocalizations.of(context).more,
-                onPressed: onIncrease,
+              child: NeumorphicFacePlace(
+                alignment: _right(context),
+                child: NeumorphicRoundButton(
+                  NeumorphicGlyphs.plus,
+                  size: keySize,
+                  iconSize: keyIcon,
+                  label: NeumorphicLocalizations.of(context).more,
+                  onPressed: onIncrease,
+                ),
               ),
             ),
           ],
@@ -679,6 +696,33 @@ class NeumorphicDial extends StatelessWidget {
         if (caption != null) _Say(say: caption!, note: captionDetail),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 100))
+      ..add(DoubleProperty('now', now, defaultValue: null))
+      ..add(DoubleProperty('step', step, defaultValue: null))
+      ..add(DoubleProperty('major', major, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'labelIcon',
+          labelIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('figure', figure))
+      ..add(StringProperty('sub', sub, defaultValue: null))
+      ..add(StringProperty('caption', caption, defaultValue: null))
+      ..add(StringProperty('captionDetail', captionDetail, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDecrease', onDecrease))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onIncrease', onIncrease))
+      ..add(DiagnosticsProperty<bool>('compact', compact, defaultValue: false));
   }
 }
 
@@ -950,6 +994,22 @@ class NeumorphicSpanDial extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('start', start))
+      ..add(StringProperty('end', end))
+      ..add(DoubleProperty('elapsed', elapsed))
+      ..add(DoubleProperty('total', total))
+      ..add(StringProperty('tag', tag, defaultValue: null))
+      ..add(StringProperty('figure', figure))
+      ..add(StringProperty('unit', unit, defaultValue: null))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('compact', compact, defaultValue: false));
+  }
 }
 
 class _MiniPainter extends CustomPainter {
@@ -1030,7 +1090,8 @@ class NeumorphicMiniDial extends StatelessWidget {
     required this.figure,
     this.live = false,
     this.size = 104,
-  });
+  }) : assert(min < max),
+       assert(size > 0);
 
   /// The current value on the dial scale.
   final double value;
@@ -1116,6 +1177,19 @@ class NeumorphicMiniDial extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 100))
+      ..add(DoubleProperty('now', now, defaultValue: null))
+      ..add(StringProperty('figure', figure))
+      ..add(DiagnosticsProperty<bool>('live', live, defaultValue: false))
+      ..add(DoubleProperty('size', size, defaultValue: 104));
+  }
 }
 
 /// One reading of a few, on the wall: the small dial, a name and a state under it. Set three in a `NeumorphicGridOf` straight into the wall, no slab.
@@ -1139,7 +1213,7 @@ class NeumorphicGauge extends StatelessWidget {
     this.noteIcon,
     this.live = false,
     this.onPressed,
-  });
+  }) : assert(min < max);
 
   /// The current value on the gauge scale.
   final double value;
@@ -1243,6 +1317,34 @@ class NeumorphicGauge extends StatelessWidget {
             child: tile,
           );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 100))
+      ..add(DoubleProperty('now', now, defaultValue: null))
+      ..add(StringProperty('figure', figure))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>('noteIcon', noteIcon, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<bool>('live', live, defaultValue: false))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 class _KnobPainter extends CustomPainter {
@@ -1298,7 +1400,8 @@ class _KnobPainter extends CustomPainter {
 /// ```
 class NeumorphicKnob extends StatelessWidget {
   /// Creates a [NeumorphicKnob].
-  const NeumorphicKnob({super.key, required this.value});
+  const NeumorphicKnob({super.key, required this.value})
+    : assert(value >= 0 && value <= 1);
 
   /// 0 to 1.
   final double value;
@@ -1320,6 +1423,12 @@ class NeumorphicKnob extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('value', value));
+  }
 }
 
 /// A knob with its name and its figure beside it.
@@ -1334,7 +1443,7 @@ class NeumorphicKnobRow extends StatelessWidget {
     required this.value,
     required this.label,
     required this.figure,
-  });
+  }) : assert(value >= 0 && value <= 1);
 
   /// The normalized knob setting, from zero to one.
   final double value;
@@ -1363,6 +1472,15 @@ class NeumorphicKnobRow extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('figure', figure));
   }
 }
 
@@ -1426,4 +1544,30 @@ class NeumorphicHeroBand extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('overline', overline, defaultValue: null))
+      ..add(StringProperty('body', body, defaultValue: null));
+  }
 }
+
+/// The room between a pair of round keys laid out at their targets, the first's face at its start and the second's
+/// at its end, so the faces stand ten apart: both targets' air between the faces makes up the rest.
+double _pairGap(BuildContext context) {
+  final face = NeumorphicTheme.of(context).density.height(44);
+  return math.max(0, 10 - 2 * (NeumorphicChromeMetrics.targetSize - face));
+}
+
+/// A face on the left, or on the right, whichever way the words read: a dial is not mirrored.
+AlignmentDirectional _left(BuildContext context) =>
+    Directionality.of(context) == TextDirection.rtl
+    ? AlignmentDirectional.centerEnd
+    : AlignmentDirectional.centerStart;
+AlignmentDirectional _right(BuildContext context) =>
+    Directionality.of(context) == TextDirection.rtl
+    ? AlignmentDirectional.centerStart
+    : AlignmentDirectional.centerEnd;

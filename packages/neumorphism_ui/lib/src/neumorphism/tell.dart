@@ -1,7 +1,9 @@
 // Status carved into the same material: the mark and the words carry its meaning.
+
 import 'dart:math' as math;
 import 'dart:ui' show SemanticsRole;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'controls.dart';
@@ -16,6 +18,8 @@ import 'glyphs.dart';
 import 'layout.dart';
 import 'localizations.dart';
 import 'theme.dart';
+import 'internal/reach.dart' show neumorphicAtEnd;
+import 'internal/moulded.dart';
 
 /// A message on a soft well, with its tone's own mark and optional next action.
 ///
@@ -152,15 +156,42 @@ class NeumorphicBanner extends StatelessWidget {
             // The words keep a gap to the close key; at 390 they ran to within 8 px of it.
             if (onDismiss != null) const SizedBox(width: 12),
             if (onDismiss != null)
-              NeumorphicIconButton(
-                NeumorphicGlyphs.close,
-                label: dismissLabel ?? words.dismiss,
-                onPressed: onDismiss,
+              neumorphicAtEnd(
+                NeumorphicIconButton(
+                  NeumorphicGlyphs.close,
+                  label: dismissLabel ?? words.dismiss,
+                  onPressed: onDismiss,
+                ),
               ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('message', message))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('dismissLabel', dismissLabel, defaultValue: null))
+      ..add(
+        EnumProperty<NeumorphicTone>(
+          'tone',
+          tone,
+          defaultValue: NeumorphicTone.info,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDismiss', onDismiss))
+      ..add(DiagnosticsProperty<bool>('live', live, defaultValue: false));
   }
 }
 
@@ -231,7 +262,8 @@ class NeumorphicCircularProgressIndicator extends StatelessWidget {
     this.label,
     this.color,
     this.size = 28,
-  }) : assert(size >= 12);
+  }) : assert((value ?? 0) >= 0 && (value ?? 0) <= 1),
+       assert(size >= 12);
 
   /// The fraction complete, or null for indeterminate motion.
   final double? value;
@@ -279,6 +311,16 @@ class NeumorphicCircularProgressIndicator extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(DoubleProperty('size', size, defaultValue: 28));
   }
 }
 
@@ -367,7 +409,7 @@ class NeumorphicLinearProgressIndicator extends StatelessWidget {
     required this.label,
     this.note,
     this.quiet = false,
-  });
+  }) : assert((value ?? 0) >= 0 && (value ?? 0) <= 1);
 
   /// The fraction complete, or null for indeterminate motion.
   final double? value;
@@ -438,6 +480,16 @@ class NeumorphicLinearProgressIndicator extends StatelessWidget {
               ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('quiet', quiet, defaultValue: false));
   }
 }
 
@@ -630,6 +682,16 @@ class NeumorphicSkeleton extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('lines', lines))
+      ..add(DoubleProperty('aspect', aspect, defaultValue: 16 / 9))
+      ..add(DiagnosticsProperty<bool>('row', row))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 class _SkeletonPainter extends CustomPainter {
@@ -675,8 +737,8 @@ class _SkeletonPainter extends CustomPainter {
       canvas,
       shapes.corner(radius).getOuterPath(start(rect)),
       colors,
-      light: (Offset(-2, -2) * k, 4 * k),
-      dark: (Offset(2, 2) * k, 4 * k),
+      light: (const Offset(-2, -2) * k, 4 * k),
+      dark: (const Offset(2, 2) * k, 4 * k),
       face: well,
       flat: flat,
       elevation: elevation,
@@ -783,6 +845,14 @@ class NeumorphicSuccessState extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null));
+  }
 }
 
 /// How far a badge's bead reaches in over its child's end edge: none. The bead is a bump of the wall, and so is a
@@ -804,7 +874,8 @@ class NeumorphicBadge extends StatelessWidget {
     this.max = 99,
     this.child,
     this.style,
-  }) : assert(max > 0);
+  }) : assert(count >= 0),
+       assert(max > 0);
 
   /// Count plate and type before the badge theme.
   final NeumorphicStyle? style;
@@ -828,7 +899,7 @@ class NeumorphicBadge extends StatelessWidget {
     final number = count > max
         ? '${words.formatNumber(max)}+'
         : words.formatNumber(count);
-    final look = NeumorphicStyleOf([style, t.badgeTheme], const {});
+    final look = neumorphicStyleOf([style, t.badgeTheme], const {});
     var shape = look.shape ?? t.shapes.capsule;
     final text = t.textTheme.micro
         .copyWith(color: t.colors.ink, fontWeight: FontWeight.w700)
@@ -971,6 +1042,22 @@ class NeumorphicBadge extends StatelessWidget {
         PositionedDirectional(top: -plate.height / 2, end: 0, child: badge),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('max', max, defaultValue: 99))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 

@@ -1,4 +1,5 @@
 // A wheel of choices turned in a well: the chosen one stands on a raised lens across the middle.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -29,7 +30,8 @@ class NeumorphicWheelPicker<T> extends StatefulWidget {
     this.looping = false,
     this.width,
     this.style,
-  }) : assert(rows >= 3 && rows % 2 == 1);
+  }) : assert((width ?? 1) > 0),
+       assert(rows >= 3 && rows % 2 == 1);
 
   /// The choices, in order.
   final List<T> items;
@@ -61,6 +63,32 @@ class NeumorphicWheelPicker<T> extends StatefulWidget {
   @override
   State<NeumorphicWheelPicker<T>> createState() =>
       _NeumorphicWheelPickerState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('items', items))
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label))
+      ..add(
+        ObjectFlagProperty<String Function(T value)>.has(
+          'itemLabel',
+          itemLabel,
+        ),
+      )
+      ..add(IntProperty('rows', rows, defaultValue: 5))
+      ..add(DiagnosticsProperty<bool>('looping', looping, defaultValue: false))
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _NeumorphicWheelPickerState<T> extends State<NeumorphicWheelPicker<T>> {

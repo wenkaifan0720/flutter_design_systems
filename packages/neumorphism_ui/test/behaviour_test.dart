@@ -212,7 +212,10 @@ void main() {
           ),
         ),
       );
-      expect(tester.getSize(find.byType(DesignPressable)), Size.square(48));
+      expect(
+        tester.getSize(find.byType(DesignPressable)),
+        const Size.square(48),
+      );
     },
   );
 
@@ -230,7 +233,7 @@ void main() {
       ),
     );
     final box = tester.getRect(find.byType(DesignPressable));
-    expect(box.size, Size.square(48));
+    expect(box.size, const Size.square(48));
     await tester.tapAt(box.centerLeft + const Offset(1, 0));
     await tester.pumpAndSettle();
     expect(presses, 1);

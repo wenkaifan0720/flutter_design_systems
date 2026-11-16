@@ -1,6 +1,8 @@
 // Calendar and clock choices, with the same soft cells and raised sheets.
+
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -13,8 +15,10 @@ import 'internal/cell_bank.dart' show neumorphicWideRoom;
 import 'localizations.dart';
 import 'raised.dart';
 import 'theme.dart';
+import 'internal/reach.dart' show neumorphicAtEnd;
 import 'internal/day_face.dart';
 import 'internal/out_of_use.dart';
+import 'internal/moulded.dart';
 
 DateTime _day(DateTime value) => DateTime(value.year, value.month, value.day);
 bool _sameDay(DateTime? a, DateTime? b) =>
@@ -67,6 +71,26 @@ class NeumorphicDatePicker extends StatefulWidget {
   final ValueChanged<DateTime>? onChanged;
   @override
   State<NeumorphicDatePicker> createState() => _NeumorphicDatePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime>('first', first, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime>('last', last, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      );
+  }
 }
 
 class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
@@ -254,14 +278,16 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
                 ),
               ),
             ),
-            NeumorphicIconButton(
-              rtl
-                  ? NeumorphicGlyphs.chevronLeft
-                  : NeumorphicGlyphs.chevronRight,
-              label: words.nextMonth,
-              onPressed: widget.onChanged == null || !canNext
-                  ? null
-                  : () => _move(_inMonth(_focused, 1), requestFocus: false),
+            neumorphicAtEnd(
+              NeumorphicIconButton(
+                rtl
+                    ? NeumorphicGlyphs.chevronLeft
+                    : NeumorphicGlyphs.chevronRight,
+                label: words.nextMonth,
+                onPressed: widget.onChanged == null || !canNext
+                    ? null
+                    : () => _move(_inMonth(_focused, 1), requestFocus: false),
+              ),
             ),
           ],
         ),
@@ -269,7 +295,7 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
         LayoutBuilder(
           builder: (context, box) {
             final available = box.hasBoundedWidth ? box.maxWidth : 350.0;
-            final look = NeumorphicStyleOf([
+            final look = neumorphicStyleOf([
               widget.style,
               t.datePickerTheme,
             ], const {});
@@ -378,7 +404,7 @@ class _NeumorphicDatePickerState extends State<NeumorphicDatePicker> {
                                           if (selected) WidgetState.selected,
                                           if (!enabled) WidgetState.disabled,
                                         };
-                                        final look = NeumorphicStyleOf([
+                                        final look = neumorphicStyleOf([
                                           widget.style,
                                           t.datePickerTheme,
                                         ], states);
@@ -571,7 +597,7 @@ class NeumorphicTimePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final partStyle = NeumorphicStyle.cascade([style, t.timePickerTheme]);
+    final partStyle = NeumorphicStyle.layered([style, t.timePickerTheme]);
     final words = NeumorphicLocalizations.of(context);
     final time = value ?? const NeumorphicTime(12, 0);
     final fullDay = twentyFour ?? MediaQuery.alwaysUse24HourFormatOf(context);
@@ -658,6 +684,35 @@ class NeumorphicTimePicker extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicTime>('value', value, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<NeumorphicTime>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(IntProperty('minuteStep', minuteStep, defaultValue: 5))
+      ..add(
+        DiagnosticsProperty<bool>('twentyFour', twentyFour, defaultValue: null),
+      )
+      ..add(StringProperty('hourLabel', hourLabel, defaultValue: null))
+      ..add(StringProperty('minuteLabel', minuteLabel, defaultValue: null))
+      ..add(StringProperty('periodLabel', periodLabel, defaultValue: null));
   }
 }
 

@@ -68,12 +68,13 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     child: const Text('Content'),
   ),
   'NeumorphicButton.filled': (context) =>
-      NeumorphicButton.filled('Save', onPressed: hit),
+      const NeumorphicButton.filled('Save', onPressed: hit),
   'NeumorphicAppBar': (context) => const NeumorphicAppBar(title: 'Title'),
   'NeumorphicAutoRow': (context) =>
       const NeumorphicAutoRow(children: [Text('First'), Text('Second')]),
   'NeumorphicAvatar': (context) => const NeumorphicAvatar('NWA'),
-  'NeumorphicBackButton': (context) => NeumorphicBackButton(onPressed: hit),
+  'NeumorphicBackButton': (context) =>
+      const NeumorphicBackButton(onPressed: hit),
   'NeumorphicBadge': (context) => const NeumorphicBadge(123),
   'NeumorphicBalancedText': (context) => const NeumorphicBalancedText(
     'A balanced title',
@@ -83,17 +84,18 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     object: const SizedBox.square(dimension: 48),
     child: const Text('Content'),
   ),
-  'NeumorphicBottomSheet': (context) => SizedBox(
+  'NeumorphicBottomSheet': (context) => const SizedBox(
     height: 300,
     child: NeumorphicBottomSheet(
       title: 'Options',
       onClose: hit,
-      child: const Text('Choose'),
+      child: Text('Choose'),
     ),
   ),
   'NeumorphicBrandMark': (context) => const NeumorphicBrandMark(),
   'NeumorphicBrandRow': (context) => const NeumorphicBrandRow('Workspace'),
-  'NeumorphicButton': (context) => NeumorphicButton('Save', onPressed: hit),
+  'NeumorphicButton': (context) =>
+      const NeumorphicButton('Save', onPressed: hit),
   'NeumorphicCard': (context) =>
       const NeumorphicCard(title: 'Details', children: [Text('Content')]),
   'NeumorphicPieChart': (context) => const NeumorphicPieChart(
@@ -112,8 +114,8 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
       NeumorphicPagination(count: 12, page: 5, onChanged: (_) {}),
   'NeumorphicBreadcrumb': (context) => NeumorphicBreadcrumb(
     crumbs: [
-      NeumorphicCrumb('Home', onPressed: hit),
-      NeumorphicCrumb('Rooms', onPressed: hit),
+      const NeumorphicCrumb('Home', onPressed: hit),
+      const NeumorphicCrumb('Rooms', onPressed: hit),
       const NeumorphicCrumb('Kitchen'),
     ],
   ),
@@ -148,9 +150,9 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
       NeumorphicCheckRow(value: false, label: 'Agree', onChanged: (_) => hit()),
   'NeumorphicCheckbox': (context) =>
       NeumorphicCheckbox(value: false, label: 'Agree', onChanged: (_) => hit()),
-  'NeumorphicChip': (context) => NeumorphicChip('All', onPressed: hit),
+  'NeumorphicChip': (context) => const NeumorphicChip('All', onPressed: hit),
   'NeumorphicChoiceBox': (context) =>
-      NeumorphicChoiceBox(onPressed: hit, child: const Text('One')),
+      const NeumorphicChoiceBox(onPressed: hit, child: Text('One')),
   'NeumorphicChoices': (context) => NeumorphicChoices(
     options: const [NeumorphicChoice('One')],
     onChanged: (_) => hit(),
@@ -173,8 +175,11 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     now: 2,
     forecast: 3,
   ),
-  'NeumorphicButton (destructive)': (context) =>
-      NeumorphicButton('Delete', isDestructiveAction: true, onPressed: hit),
+  'NeumorphicButton (destructive)': (context) => const NeumorphicButton(
+    'Delete',
+    isDestructiveAction: true,
+    onPressed: hit,
+  ),
   'NeumorphicDatePicker': (context) => NeumorphicDatePicker(
     value: DateTime(2026, 11, 6),
     first: DateTime(2026, 11, 6),
@@ -194,7 +199,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     ],
     free: [NeumorphicTrayFree('09:00', '10:00', 'Free')],
   ),
-  'NeumorphicDial': (context) => NeumorphicDial(
+  'NeumorphicDial': (context) => const NeumorphicDial(
     value: 40,
     figure: '40',
     compact: true,
@@ -215,7 +220,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     children: [Text('First'), Text('Second')],
   ),
   'NeumorphicErrorState': (context) =>
-      NeumorphicErrorState(title: 'Failed', onRetry: hit),
+      const NeumorphicErrorState(title: 'Failed', onRetry: hit),
   'NeumorphicEyebrow': (context) => const NeumorphicEyebrow('Details'),
   'NeumorphicAvatarGroup': (context) => const NeumorphicAvatarGroup([
     NeumorphicFace('NW'),
@@ -233,8 +238,12 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   'NeumorphicFormGroup': (context) =>
       const NeumorphicFormGroup(label: 'Personal', child: Text('Content')),
   'NeumorphicGableArt': (context) => const NeumorphicGableArt(),
-  'NeumorphicGauge': (context) =>
-      NeumorphicGauge(value: 40, figure: '40', name: 'Level', onPressed: hit),
+  'NeumorphicGauge': (context) => const NeumorphicGauge(
+    value: 40,
+    figure: '40',
+    name: 'Level',
+    onPressed: hit,
+  ),
   'NeumorphicGridOf': (context) => const NeumorphicGridOf(
     columns: 2,
     children: [Text('First'), Text('Second')],
@@ -253,8 +262,11 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     darkData: NeumorphicTheme.of(context),
     child: const Text('Content'),
   ),
-  'NeumorphicIconButton': (context) =>
-      NeumorphicIconButton(NeumorphicGlyphs.plus, label: 'Add', onPressed: hit),
+  'NeumorphicIconButton': (context) => const NeumorphicIconButton(
+    NeumorphicGlyphs.plus,
+    label: 'Add',
+    onPressed: hit,
+  ),
   'NeumorphicIconWell': (context) =>
       const NeumorphicIconWell(NeumorphicGlyphs.plus),
   'NeumorphicInput': (context) => NeumorphicInput(onChanged: (_) => hit()),
@@ -275,7 +287,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     onChanged: (_) => hit(),
   ),
   'NeumorphicLoadingState': (context) => const NeumorphicLoadingState(),
-  'NeumorphicDialog': (context) => NeumorphicDialog(
+  'NeumorphicDialog': (context) => const NeumorphicDialog(
     title: 'Save changes?',
     message: 'Choose an action',
     actions: [
@@ -288,7 +300,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   'NeumorphicList': (context) =>
       const NeumorphicList(children: [Text('First'), Text('Second')]),
   'NeumorphicListTile': (context) =>
-      NeumorphicListTile(title: 'Open', onPressed: hit),
+      const NeumorphicListTile(title: 'Open', onPressed: hit),
   'NeumorphicLiveText': (context) => const NeumorphicLiveText('Live'),
   'NeumorphicMenu': (context) => NeumorphicMenu<String>(
     autofocus: false,
@@ -312,7 +324,8 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   ),
   'NeumorphicNote': (context) =>
       const NeumorphicNote(title: 'Content', subtitle: 'Note'),
-  'NeumorphicBanner': (context) => NeumorphicBanner('Saved', onDismiss: hit),
+  'NeumorphicBanner': (context) =>
+      const NeumorphicBanner('Saved', onDismiss: hit),
   'NeumorphicNudge': (context) =>
       const NeumorphicNudge(title: 'Content', note: 'Note'),
   'NeumorphicPageDots': (context) => NeumorphicPageDots(
@@ -324,8 +337,11 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   'NeumorphicPageHead': (context) => const NeumorphicPageHead(title: 'Details'),
   'NeumorphicMedia': (context) =>
       const NeumorphicMedia(label: 'A room', glyph: NeumorphicGlyphs.house),
-  'NeumorphicPictureCard': (context) =>
-      NeumorphicPictureCard(glyph: Icons.photo, title: 'Photo', onPressed: hit),
+  'NeumorphicPictureCard': (context) => const NeumorphicPictureCard(
+    glyph: Icons.photo,
+    title: 'Photo',
+    onPressed: hit,
+  ),
   'NeumorphicPreview': (context) => NeumorphicPreview(
     light: NeumorphicTheme.of(context),
     darkData: NeumorphicTheme.of(context),
@@ -349,19 +365,19 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     ],
   ),
   'NeumorphicButton.text': (context) =>
-      NeumorphicButton.text('Later', onPressed: hit),
+      const NeumorphicButton.text('Later', onPressed: hit),
   'NeumorphicRadioGroup': (context) => NeumorphicRadioGroup<String>(
     label: 'Space',
     options: const [NeumorphicRadio('room', 'Room')],
     onChanged: (_) => hit(),
   ),
   'NeumorphicRailLink': (context) =>
-      NeumorphicRailLink(label: 'Home', onPressed: hit),
+      const NeumorphicRailLink(label: 'Home', onPressed: hit),
   'NeumorphicRailSet': (context) =>
       const NeumorphicRailSet(label: 'Settings', children: [Text('Entry')]),
   'NeumorphicRelief': (context) =>
-      NeumorphicRelief(title: 'House', compact: true, onPressed: hit),
-  'NeumorphicRoundButton': (context) => NeumorphicRoundButton(
+      const NeumorphicRelief(title: 'House', compact: true, onPressed: hit),
+  'NeumorphicRoundButton': (context) => const NeumorphicRoundButton(
     NeumorphicGlyphs.plus,
     label: 'Add',
     onPressed: hit,
@@ -392,8 +408,9 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
     onChanged: (_) => hit(),
   ),
   'NeumorphicSelectField': (context) =>
-      NeumorphicSelectField(value: 'Town', onPressed: hit),
-  'NeumorphicSendButton': (context) => NeumorphicSendButton(onPressed: hit),
+      const NeumorphicSelectField(value: 'Town', onPressed: hit),
+  'NeumorphicSendButton': (context) =>
+      const NeumorphicSendButton(onPressed: hit),
   'NeumorphicShapeMark': (context) =>
       const NeumorphicShapeMark(NeumorphicMarkShape.solid),
   'NeumorphicShareBars': (context) =>
@@ -439,7 +456,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   'NeumorphicStepRow': (context) =>
       const NeumorphicStepRow(time: '09:00', title: 'Work'),
   'NeumorphicNumberField': (context) =>
-      NeumorphicNumberField(value: '2', onDecrease: hit, onIncrease: hit),
+      const NeumorphicNumberField(value: '2', onDecrease: hit, onIncrease: hit),
   'NeumorphicSubHead': (context) => const NeumorphicSubHead('Details'),
   'NeumorphicSuccessState': (context) =>
       const NeumorphicSuccessState(title: 'Saved', message: 'Ready'),
@@ -461,7 +478,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   ),
   'NeumorphicTag': (context) => const NeumorphicTag('Content'),
   'NeumorphicTap': (context) =>
-      NeumorphicTap(onPressed: hit, child: const Text('Action')),
+      const NeumorphicTap(onPressed: hit, child: Text('Action')),
   'NeumorphicText': (context) =>
       const NeumorphicText('Content', style: TextStyle(fontSize: 16)),
   'NeumorphicTextArea': (context) =>
@@ -472,7 +489,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   ),
   'NeumorphicTextField': (context) =>
       NeumorphicTextField(onChanged: (_) => hit()),
-  'NeumorphicLink': (context) => NeumorphicLink('Open', onPressed: hit),
+  'NeumorphicLink': (context) => const NeumorphicLink('Open', onPressed: hit),
   'NeumorphicTheme': (context) => NeumorphicTheme(
     data: NeumorphicTheme.of(context),
     child: const Text('Content'),

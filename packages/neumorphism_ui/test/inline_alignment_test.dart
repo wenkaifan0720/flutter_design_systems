@@ -212,7 +212,7 @@ void main() {
         'Composer': (context, controller, hint) => NeumorphicTextField(
           controller: controller,
           hint: hint,
-          trailing: NeumorphicSendButton(onPressed: _tap),
+          trailing: const NeumorphicSendButton(onPressed: _tap),
         ),
         'Search': (context, controller, hint) =>
             NeumorphicSearchField(controller: controller, hint: hint),

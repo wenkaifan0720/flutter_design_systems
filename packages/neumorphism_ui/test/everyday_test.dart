@@ -152,8 +152,8 @@ void main() {
     );
     check(
       'with notes',
-      () => NeumorphicChoices(
-        options: const [
+      () => const NeumorphicChoices(
+        options: [
           NeumorphicChoice('Near Mint', note: 'Minimal sleeve lines'),
           NeumorphicChoice('Light Marks', note: 'Sharp corners'),
           NeumorphicChoice('Play Wear', note: 'Some'),

@@ -3,9 +3,12 @@
 /// door), Account and Settings. Its own navigation: a bar on a phone, a rail on a tablet, the pilaster on a desk.
 library;
 
+import 'package:flutter/material.dart' show MaterialPageRoute;
 import 'package:flutter/widgets.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui/neumorphism_host.dart';
+
+import 'kit_words.dart';
 
 /// One of the app's screens: its route id (the `?design=` query, kept from the gallery's pages), the name the app
 /// gives it and its glyph in the navigation.
@@ -22,6 +25,37 @@ const hearthScreens = <HearthScreen>[
 
 /// Whether [id] is one of the app's screens.
 bool isHearthScreen(String id) => hearthScreens.any((s) => s.id == id);
+
+/// Where the app opens past its screen: a search typed, a device open, a dialog or a sheet showing. A link to a state
+/// opens with one, and so does each of the everyday screens a review walks. It applies once, when the app first
+/// shows its screen.
+@immutable
+class HearthStart {
+  /// The screen as it first stands, or with the named state set.
+  const HearthStart({
+    this.search = '',
+    this.device,
+    this.adding = false,
+    this.email,
+    this.ways = false,
+  });
+
+  /// Typed into Devices' search.
+  final String search;
+
+  /// The device Devices opens, by its id: its own page on a phone, beside the list from a tablet up.
+  final String? device;
+
+  /// Whether Devices opens with Add a device showing.
+  final bool adding;
+
+  /// Account's email as typed and then saved, so one that can't be used shows its error.
+  final String? email;
+
+  /// Whether the gallery's sheet (day and night, Customize, the way back) opens over the screen on a phone or a
+  /// tablet. On a desk those stand at the pilaster's foot already.
+  final bool ways;
+}
 
 /// A light, a fan or a socket in the house.
 class HearthDevice {
@@ -48,6 +82,13 @@ class HearthDevice {
   /// Its state in a few words: 'On · 70%', 'Off'.
   String get state =>
       on ? (dims ? 'On · ${(level * 100).round()}%' : 'On') : 'Off';
+
+  /// [state] in the gallery's language around [context].
+  String stateIn(BuildContext context) => on
+      ? (dims
+            ? kitSayf(context, 'On · {0}%', [(level * 100).round()])
+            : kitSay(context, 'On'))
+      : kitSay(context, 'Off');
 }
 
 /// A room: its name, the warmth it is at and the warmth it is set to.
@@ -76,7 +117,7 @@ class HearthHome extends ChangeNotifier {
       icon: NeumorphicGlyphs.lamp,
       on: true,
       level: .7,
-      kind: 'Warm white bulb, 2700 K',
+      kind: 'Warm white bulb, 2700\u00A0K',
       fitted: '3 March 2026',
       schedule: 'On at sunset, off at 23:30',
       today: '0.3 kWh',
@@ -87,7 +128,7 @@ class HearthHome extends ChangeNotifier {
       room: 'Living room',
       icon: NeumorphicGlyphs.lamp,
       level: .4,
-      kind: 'Warm white bulb, 2700 K',
+      kind: 'Warm white bulb, 2700\u00A0K',
       fitted: '3 March 2026',
       schedule: 'No schedule',
       today: '0.1 kWh',
@@ -109,7 +150,7 @@ class HearthHome extends ChangeNotifier {
       icon: NeumorphicGlyphs.lightbulb,
       on: true,
       level: .55,
-      kind: 'Three warm white bulbs, 2700 K',
+      kind: 'Three warm white bulbs, 2700\u00A0K',
       fitted: '20 June 2025',
       schedule: 'On at 7:00 on weekdays',
       today: '0.4 kWh',
@@ -119,7 +160,7 @@ class HearthHome extends ChangeNotifier {
       name: 'Hall light',
       room: 'Hall',
       icon: NeumorphicGlyphs.lightbulb,
-      kind: 'Warm white bulb, 2700 K',
+      kind: 'Warm white bulb, 2700\u00A0K',
       fitted: '20 June 2025',
       schedule: 'On when the door opens after dark',
       today: '0.1 kWh',
@@ -222,6 +263,7 @@ class HearthApp extends StatefulWidget {
     required this.customizing,
     required this.onCustomize,
     this.panel,
+    this.start = const HearthStart(),
   });
 
   final String route;
@@ -233,12 +275,28 @@ class HearthApp extends StatefulWidget {
   final VoidCallback onCustomize;
   final Widget? panel;
 
+  /// The state the app first opens in.
+  final HearthStart start;
+
   @override
   State<HearthApp> createState() => _HearthAppState();
 }
 
 class _HearthAppState extends State<HearthApp> {
   final _home = HearthHome();
+
+  /// The opening state, until the first frame has shown it: a screen opened later opens plain.
+  late var _start = widget.start;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_start.ways && !NeumorphicTheme.of(context).desk) _showWays(context);
+      _start = const HearthStart();
+    });
+  }
 
   @override
   void dispose() {
@@ -254,7 +312,7 @@ class _HearthAppState extends State<HearthApp> {
   List<NeumorphicNavItem> get _nav => [
     for (final s in hearthScreens)
       NeumorphicNavItem(
-        label: s.title,
+        label: kitSay(context, s.title),
         icon: s.icon,
         key: Key('hearth-nav-${s.id}'),
         onPressed: () => widget.onRoute(s.id),
@@ -266,30 +324,35 @@ class _HearthAppState extends State<HearthApp> {
   Widget _galleryKey(BuildContext context) => NeumorphicRoundButton(
     NeumorphicGlyphs.layoutGrid,
     key: const Key('hearth-gallery'),
-    label: 'Gallery',
-    onPressed: () => showNeumorphicBottomSheet<void>(
-      context,
-      builder: (sheet) => NeumorphicBottomSheet(
-        title: 'Neumorphism gallery',
-        child: _GalleryWays(
-          brightness: widget.brightness,
-          onBrightness: (b) {
-            Navigator.pop(sheet);
-            widget.onBrightness(b);
-          },
-          onCustomize: () {
-            Navigator.pop(sheet);
-            widget.onCustomize();
-          },
-          onGallery: () {
-            Navigator.pop(sheet);
-            widget.onGallery();
-          },
-          customizing: widget.customizing,
-        ),
-      ),
-    ),
+    label: kitSay(context, 'Gallery'),
+    onPressed: () => _showWays(context),
   );
+
+  /// The gallery's ways in a sheet: day and night, Customize, and back to the gallery.
+  Future<void> _showWays(BuildContext context) =>
+      showNeumorphicBottomSheet<void>(
+        context,
+        // The sheet's own context: the key's may be gone by the time the sheet rebuilds.
+        builder: (sheet) => NeumorphicBottomSheet(
+          title: kitSay(sheet, 'Neumorphism gallery'),
+          child: _GalleryWays(
+            brightness: widget.brightness,
+            onBrightness: (b) {
+              Navigator.pop(sheet);
+              widget.onBrightness(b);
+            },
+            onCustomize: () {
+              Navigator.pop(sheet);
+              widget.onCustomize();
+            },
+            onGallery: () {
+              Navigator.pop(sheet);
+              widget.onGallery();
+            },
+            customizing: widget.customizing,
+          ),
+        ),
+      );
 
   Widget _screen(BuildContext context) {
     final t = NeumorphicTheme.of(context);
@@ -297,9 +360,9 @@ class _HearthAppState extends State<HearthApp> {
     final body = ListenableBuilder(
       listenable: _home,
       builder: (context, _) => switch (screen.id) {
-        'list' => _DevicesScreen(home: _home),
+        'list' => _DevicesScreen(home: _home, start: _start),
         'checkout' => _ShopScreen(home: _home),
-        'form' => _AccountScreen(home: _home),
+        'form' => _AccountScreen(home: _home, start: _start),
         'settings' => _SettingsScreen(home: _home),
         _ => _HomeScreen(home: _home),
       },
@@ -347,7 +410,28 @@ class _HearthAppState extends State<HearthApp> {
               selectedIndex: _index,
               onDestinationSelected: (i) => widget.onRoute(hearthScreens[i].id),
             ),
-            Expanded(child: scope),
+            Expanded(
+              child: hearthScreens[_index].id == 'checkout'
+                  // A tablet's checkout keeps its total and Pay in view at the foot, as a phone's does: under both
+                  // sections, stacked, the page's one act stood past the fold.
+                  ? Column(
+                      children: [
+                        Expanded(child: scope),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                          child: NeumorphicCard(
+                            children: [
+                              ListenableBuilder(
+                                listenable: _home,
+                                builder: (context, _) => _PayBar(home: _home),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    )
+                  : scope,
+            ),
           ],
         ),
       );
@@ -392,30 +476,48 @@ class _GalleryWays extends StatelessWidget {
   final VoidCallback onCustomize, onGallery;
   final bool customizing;
 
+  // Day and night, Customize and the way back share one width. Past a phone the look holds a wide key to 320 and the
+  // day-and-night switch to its own narrower width, so in a tablet's sheet the three stood at two widths; held to
+  // 320 together, each takes it.
   @override
-  Widget build(BuildContext context) => NeumorphicColumn(
+  Widget build(BuildContext context) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    heightFactor: 1,
+    child: ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth:
+            NeumorphicWindow.forWidth(MediaQuery.sizeOf(context).width) ==
+                NeumorphicWindow.compact
+            ? double.infinity
+            : 320,
+      ),
+      child: _ways(context),
+    ),
+  );
+
+  Widget _ways(BuildContext context) => NeumorphicColumn(
     gap: 12,
     children: [
       NeumorphicSegmentedButton<Brightness>(
         key: const Key('hearth-appearance'),
-        label: 'Appearance',
+        label: kitSay(context, 'Appearance'),
         value: brightness,
-        segments: const [
-          NeumorphicButtonSegment(Brightness.light, 'Day'),
-          NeumorphicButtonSegment(Brightness.dark, 'Night'),
+        segments: [
+          NeumorphicButtonSegment(Brightness.light, kitSay(context, 'Day')),
+          NeumorphicButtonSegment(Brightness.dark, kitSay(context, 'Night')),
         ],
         onChanged: onBrightness,
       ),
       // Raised keys, as the gallery's own rail's Customize is: flat text keys at the foot read as out of use.
       NeumorphicButton(
-        customizing ? 'Close Customize' : 'Customize',
+        kitSay(context, customizing ? 'Close Customize' : 'Customize'),
         key: const Key('hearth-customize'),
         icon: NeumorphicGlyphs.slidersHorizontal,
         wide: true,
         onPressed: onCustomize,
       ),
       NeumorphicButton(
-        'Back to the gallery',
+        kitSay(context, 'Back to the gallery'),
         key: const Key('hearth-back-to-gallery'),
         icon: NeumorphicGlyphs.layoutGrid,
         wide: true,
@@ -439,13 +541,13 @@ class _HomeScreen extends StatelessWidget {
     final on = lights.where((d) => d.on).length;
     final warming = room.target > room.now;
     final head = NeumorphicPageHead(
-      overline: '14 Harbour Street',
-      title: room.name,
+      overline: kitSay(context, '14 Harbour Street'),
+      title: kitSay(context, room.name),
       subtitle: on == 0
-          ? 'The lights are off.'
+          ? kitSay(context, 'The lights are off.')
           : on == 1
-          ? 'One light is on.'
-          : '$on lights are on.',
+          ? kitSay(context, 'One light is on.')
+          : kitSayf(context, '{0} lights are on.', [on]),
     );
     final dial = NeumorphicDial(
       key: const Key('hearth-dial'),
@@ -453,10 +555,10 @@ class _HomeScreen extends StatelessWidget {
       min: 10,
       max: 30,
       now: room.now,
-      label: warming ? 'Warming to' : 'Holding at',
+      label: kitSay(context, warming ? 'Warming to' : 'Holding at'),
       labelIcon: warming ? NeumorphicGlyphs.flame : null,
       figure: hearthDegrees(room.target),
-      sub: 'Now ${hearthDegrees(room.now)}',
+      sub: kitSayf(context, 'Now {0}', [hearthDegrees(room.now)]),
       onDecrease: room.target <= 10
           ? null
           : () => home.change(() => room.target -= .5),
@@ -465,14 +567,14 @@ class _HomeScreen extends StatelessWidget {
           : () => home.change(() => room.target += .5),
     );
     final lightsSet = NeumorphicListSection(
-      label: 'Lights',
+      label: kitSay(context, 'Lights'),
       children: [
         for (final (i, d) in lights.indexed)
           NeumorphicLevelRow(
             key: Key('hearth-light-${d.id}'),
             icon: d.icon,
-            title: d.name,
-            state: d.state,
+            title: kitSay(context, d.name),
+            state: d.stateIn(context),
             value: d.on,
             level: d.dims ? d.level : null,
             isFirst: i == 0,
@@ -484,43 +586,54 @@ class _HomeScreen extends StatelessWidget {
     final house = NeumorphicRelief(
       key: const Key('hearth-house'),
       title: '14',
-      subtitle: 'Harbour Street',
-      count:
-          '*${home.devices.where((d) => d.on).length} of ${home.devices.length}* on',
+      subtitle: kitSay(context, 'Harbour Street'),
+      count: kitSayf(context, '*{0} of {1}* on', [
+        home.devices.where((d) => d.on).length,
+        home.devices.length,
+      ]),
       courses: [
         for (final floor in ['Upper', 'Ground'])
-          NeumorphicCourse(floor, [
+          NeumorphicCourse(kitSay(context, floor), [
             for (final (i, r) in home.rooms.indexed)
               if (r.floor == floor)
                 NeumorphicBay(
-                  name: r.name,
+                  name: kitSay(context, r.name),
                   figure: hearthDegrees(r.now),
-                  note: i == home.room ? 'Here' : null,
+                  note: i == home.room ? kitSay(context, 'Here') : null,
                   lit: _lit(home.inRoom(r.name)),
                   onPressed: () => home.change(() => home.room = i),
                 ),
           ]),
       ],
-      ground: const [
-        NeumorphicGroundNote('Door locked', icon: NeumorphicGlyphs.lock),
-        NeumorphicGroundNote('Garden', icon: NeumorphicGlyphs.trees),
+      ground: [
+        NeumorphicGroundNote(
+          kitSay(context, 'Door locked'),
+          icon: NeumorphicGlyphs.lock,
+        ),
+        NeumorphicGroundNote(
+          kitSay(context, 'Garden'),
+          icon: NeumorphicGlyphs.trees,
+        ),
       ],
     );
     final rooms = NeumorphicWallSet(
-      title: 'Rooms',
-      subtitle: 'Press one to set it',
+      title: kitSay(context, 'Rooms'),
+      subtitle: kitSay(context, 'Press one to set it'),
       child: house,
     );
     // A phone's house would be a thumbnail too small to press: its rooms are a list, the one you are in chosen.
     final roomList = NeumorphicListSection(
       key: const Key('hearth-rooms'),
-      label: 'Rooms',
+      label: kitSay(context, 'Rooms'),
       children: [
         for (final (i, r) in home.rooms.indexed)
           NeumorphicListTile(
             key: Key('hearth-room-$i'),
-            title: r.name,
-            subtitle: r.floor == 'Upper' ? 'Upstairs' : 'Ground floor',
+            title: kitSay(context, r.name),
+            subtitle: kitSay(
+              context,
+              r.floor == 'Upper' ? 'Upstairs' : 'Ground floor',
+            ),
             trailing: Text(hearthDegrees(r.now)),
             selected: i == home.room,
             isFirst: i == 0,
@@ -534,9 +647,16 @@ class _HomeScreen extends StatelessWidget {
       (a, d) => a + (double.tryParse(d.today.split(' ').first) ?? 0),
     );
     final today = NeumorphicStats(key: const Key('hearth-today'), [
-      const NeumorphicStat('Outside', '9°'),
-      NeumorphicStat('Used today', used.toStringAsFixed(1), 'kWh'),
-      NeumorphicStat('Cost today', '£${(used * .28).toStringAsFixed(2)}'),
+      NeumorphicStat(kitSay(context, 'Outside'), '9°'),
+      NeumorphicStat(
+        kitSay(context, 'Used today'),
+        used.toStringAsFixed(1),
+        'kWh',
+      ),
+      NeumorphicStat(
+        kitSay(context, 'Cost today'),
+        '£${(used * .28).toStringAsFixed(2)}',
+      ),
     ]);
     return switch (hearthSizeOf(context)) {
       HearthSize.desk => NeumorphicSections(
@@ -581,8 +701,9 @@ class _HomeScreen extends StatelessWidget {
 /// Devices: every device in the house, found by name or room; the open one beside the list on a desk, its own page
 /// on a phone. What a person scans for, the name, leads each row.
 class _DevicesScreen extends StatefulWidget {
-  const _DevicesScreen({required this.home});
+  const _DevicesScreen({required this.home, required this.start});
   final HearthHome home;
+  final HearthStart start;
 
   @override
   State<_DevicesScreen> createState() => _DevicesScreenState();
@@ -610,12 +731,18 @@ class _AddDeviceState extends State<_AddDevice> {
 
   @override
   Widget build(BuildContext context) => NeumorphicDialog(
-    title: 'Add a device',
-    message: 'Switch it on and hold its button for three seconds; it joins your home.',
+    title: kitSay(context, 'Add a device'),
+    message: kitSay(
+      context,
+      'Switch it on and hold its button for three seconds; it joins your home.',
+    ),
     actions: [
-      NeumorphicButton.text('Cancel', onPressed: () => Navigator.pop(context)),
+      NeumorphicButton.text(
+        kitSay(context, 'Cancel'),
+        onPressed: () => Navigator.pop(context),
+      ),
       NeumorphicButton.filled(
-        'Add device',
+        kitSay(context, 'Add device'),
         key: const Key('hearth-add-confirm'),
         onPressed: () => Navigator.pop(context, (_name.text.trim(), _room)),
       ),
@@ -626,14 +753,17 @@ class _AddDeviceState extends State<_AddDevice> {
         children: [
           NeumorphicTextField(
             key: const Key('hearth-add-name'),
-            label: 'Name',
-            hint: 'Hall lamp',
+            label: kitSay(context, 'Name'),
+            hint: kitSay(context, 'Hall lamp'),
             controller: _name,
           ),
           NeumorphicSelect<String>(
-            label: 'Room',
+            label: kitSay(context, 'Room'),
             value: _room,
-            options: [for (final r in widget.rooms) NeumorphicMenuItem(r, r)],
+            options: [
+              for (final r in widget.rooms)
+                NeumorphicMenuItem(r, kitSay(context, r)),
+            ],
             onChanged: (v) => setState(() => _room = v),
           ),
         ],
@@ -643,9 +773,35 @@ class _AddDeviceState extends State<_AddDevice> {
 }
 
 class _DevicesScreenState extends State<_DevicesScreen> {
-  var _query = '';
+  late var _query = widget.start.search;
+  late final _search = TextEditingController(text: widget.start.search);
 
   HearthHome get home => widget.home;
+
+  @override
+  void initState() {
+    super.initState();
+    final start = widget.start;
+    if (start.device == null && !start.adding) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final device = home.devices.where((d) => d.id == start.device);
+      if (device.isNotEmpty) {
+        if (hearthSizeOf(context) == HearthSize.phone) {
+          _openOnPhone(device.first);
+        } else {
+          home.change(() => home.open = device.first.id);
+        }
+      }
+      if (start.adding) _add();
+    });
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
 
   Future<void> _add() async {
     final added = await showNeumorphicDialog<(String, String)>(
@@ -660,7 +816,7 @@ class _DevicesScreenState extends State<_DevicesScreen> {
       name: words.isEmpty ? 'New lamp' : words,
       room: room,
       icon: NeumorphicGlyphs.lamp,
-      kind: 'Warm white bulb, 2700 K',
+      kind: 'Warm white bulb, 2700\u00A0K',
       fitted: 'Today',
       schedule: 'No schedule',
       today: '0.0 kWh',
@@ -670,27 +826,32 @@ class _DevicesScreenState extends State<_DevicesScreen> {
       home.open = device.id;
     });
     if (mounted) {
-      showNeumorphicToast(context, message: '${device.name} joined your home.');
+      showNeumorphicToast(
+        context,
+        message: kitSayf(context, '{0} joined your home.', [
+          kitSay(context, device.name),
+        ]),
+      );
     }
   }
 
   void _openOnPhone(HearthDevice device) {
     home.change(() => home.open = device.id);
+    // An app's own route: the gallery's MaterialApp lists the look's page change, so it changes page that way on every
+    // platform.
     Navigator.of(context).push(
-      PageRouteBuilder<void>(
-        pageBuilder: (context, _, _) => ListenableBuilder(
+      MaterialPageRoute<void>(
+        builder: (context) => ListenableBuilder(
           listenable: home,
           builder: (context, _) => NeumorphicScaffold(
             topBar: NeumorphicAppBar(
-              title: device.name,
-              subtitle: device.room,
+              title: kitSay(context, device.name),
+              subtitle: kitSay(context, device.room),
               leading: const NeumorphicBackButton(),
             ),
             body: _DeviceDetail(home: home, device: device, page: true),
           ),
         ),
-        transitionsBuilder: (context, animation, _, child) =>
-            FadeTransition(opacity: animation, child: child),
       ),
     );
   }
@@ -699,48 +860,52 @@ class _DevicesScreenState extends State<_DevicesScreen> {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final size = hearthSizeOf(context);
-    final words = _query.toLowerCase();
     final shown = [
       for (final d in home.devices)
-        if (d.name.toLowerCase().contains(words) ||
-            d.room.toLowerCase().contains(words))
+        if (kitFinds(context, d.name, _query) ||
+            kitFinds(context, d.room, _query))
           d,
     ];
     final on = home.devices.where((d) => d.on).length;
     // Adding is the screen's second job: a key at the head's end, not the act. Beside the search it stood a round key
     // by a field of another height on a desk, where a field keeps its 48 and a key's face is compact.
     final head = NeumorphicPageHead(
-      title: 'Devices',
-      subtitle: '${home.devices.length} in your home, $on on',
+      title: kitSay(context, 'Devices'),
+      subtitle: kitSayf(context, '{0} in your home, {1} on', [
+        home.devices.length,
+        on,
+      ]),
       trailing: NeumorphicRoundButton(
         NeumorphicGlyphs.plus,
         key: const Key('hearth-add'),
-        label: 'Add a device',
+        label: kitSay(context, 'Add a device'),
         onPressed: _add,
       ),
     );
     final find = NeumorphicSearchField(
       key: const Key('hearth-search'),
-      label: 'Search devices',
-      hint: 'Search by name or room',
+      label: kitSay(context, 'Search devices'),
+      hint: kitSay(context, 'Search by name or room'),
+      controller: _search,
       onChanged: (v) => setState(() => _query = v),
     );
     final list = shown.isEmpty
         ? NeumorphicEmptyState(
-            title: 'Nothing called "$_query"',
-            body: 'Try a room: kitchen, hall or study.',
+            icon: NeumorphicGlyphs.search,
+            title: kitSayf(context, 'Nothing called "{0}"', [_query]),
+            body: kitSay(context, 'Try a room: kitchen, hall or study.'),
           )
         : NeumorphicListSection(
             children: [
               for (final (i, d) in shown.indexed)
                 NeumorphicListTile(
                   key: Key('hearth-device-${d.id}'),
-                  title: d.name,
-                  subtitle: d.room,
+                  title: kitSay(context, d.name),
+                  subtitle: kitSay(context, d.room),
                   isFirst: i == 0,
                   leading: Icon(d.icon, size: 22),
                   trailing: Text(
-                    d.state,
+                    d.stateIn(context),
                     style: t.textTheme.caption.copyWith(
                       color: d.on ? t.colors.ink : t.colors.inkTertiary,
                       fontWeight: d.on ? FontWeight.w700 : FontWeight.w500,
@@ -757,19 +922,24 @@ class _DevicesScreenState extends State<_DevicesScreen> {
     if (size == HearthSize.phone) {
       return NeumorphicSections(children: [head, find, list]);
     }
-    // From a tablet up, the list beside the device it opened.
-    final open = home.devices.where((d) => d.id == home.open).firstOrNull;
+    // From a tablet up, the list beside the device it opened, while the search still shows it: a search that hides it
+    // closes the pane, and one that finds nothing leaves the list's own word on why, with nothing beside it.
+    final open = shown.where((d) => d.id == home.open).firstOrNull;
     return NeumorphicSections(
       children: [
         head,
         NeumorphicRow(
           spans: size == HearthSize.desk ? const [5, 7] : const [1, 1],
+          from: NeumorphicWindow.medium,
           children: [
             NeumorphicColumn(gap: 20, children: [find, list]),
-            if (open == null)
-              const NeumorphicEmptyState(
-                title: 'No device open',
-                body: 'Choose one from the list.',
+            if (shown.isEmpty)
+              const SizedBox.shrink()
+            else if (open == null)
+              NeumorphicEmptyState(
+                icon: NeumorphicGlyphs.lamp,
+                title: kitSay(context, 'No device open'),
+                body: kitSay(context, 'Choose one from the list.'),
               )
             else
               _DeviceDetail(home: home, device: open),
@@ -797,15 +967,18 @@ class _DeviceDetail extends StatelessWidget {
     final gone = await showNeumorphicDialog<bool>(
       context,
       builder: (context) => NeumorphicDialog(
-        title: 'Remove ${device.name}?',
-        message: 'It leaves your home and its schedule stops. You can add it again later.',
+        title: kitSayf(context, 'Remove {0}?', [kitSay(context, device.name)]),
+        message: kitSay(
+          context,
+          'It leaves your home and its schedule stops. You can add it again later.',
+        ),
         actions: [
           NeumorphicButton.text(
-            'Keep it',
+            kitSay(context, 'Keep it'),
             onPressed: () => Navigator.pop(context, false),
           ),
           NeumorphicButton(
-            'Remove',
+            kitSay(context, 'Remove'),
             isDestructiveAction: true,
             key: const Key('hearth-remove-confirm'),
             onPressed: () => Navigator.pop(context, true),
@@ -825,17 +998,19 @@ class _DeviceDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     final card = NeumorphicCard(
       key: Key('hearth-detail-${device.id}'),
-      title: page ? null : device.name,
-      subtitle: page ? null : device.room,
+      title: page ? null : kitSay(context, device.name),
+      subtitle: page ? null : kitSay(context, device.room),
       // Ruled rows: the rules space them, so each row's words stand midway between its rules.
       gap: 0,
       children: [
         NeumorphicLevelRow(
           icon: device.icon,
-          title: device.on ? 'On' : 'Off',
+          title: kitSay(context, device.on ? 'On' : 'Off'),
           state: device.dims
-              ? 'Brightness ${(device.level * 100).round()}%'
-              : device.kind,
+              ? kitSayf(context, 'Brightness {0}%', [
+                  (device.level * 100).round(),
+                ])
+              : kitSay(context, device.kind),
           value: device.on,
           level: device.dims ? device.level : null,
           isFirst: true,
@@ -844,10 +1019,16 @@ class _DeviceDetail extends StatelessWidget {
               ? (v) => home.change(() => device.level = v)
               : null,
         ),
-        NeumorphicKvRow('Bulb', device.kind),
-        NeumorphicKvRow('Schedule', device.schedule),
-        NeumorphicKvRow('Used today', device.today),
-        NeumorphicKvRow('Fitted', device.fitted),
+        NeumorphicKvRow(kitSay(context, 'Bulb'), kitSay(context, device.kind)),
+        NeumorphicKvRow(
+          kitSay(context, 'Schedule'),
+          kitSay(context, device.schedule),
+        ),
+        NeumorphicKvRow(kitSay(context, 'Used today'), device.today),
+        NeumorphicKvRow(
+          kitSay(context, 'Fitted'),
+          kitSay(context, device.fitted),
+        ),
       ],
     );
     return NeumorphicColumn(
@@ -857,7 +1038,7 @@ class _DeviceDetail extends StatelessWidget {
         Align(
           alignment: AlignmentDirectional.centerStart,
           child: NeumorphicButton(
-            'Remove from home',
+            kitSay(context, 'Remove from home'),
             isDestructiveAction: true,
             key: const Key('hearth-remove'),
             onPressed: () => _remove(context),
@@ -881,80 +1062,88 @@ class _ShopScreen extends StatelessWidget {
     final delivery = NeumorphicColumn(
       gap: 20,
       children: [
-        const NeumorphicSectionHeader(title: 'Deliver to'),
-        const NeumorphicTextField(
-          key: Key('hearth-street'),
-          label: 'Street',
-          initialValue: '14 Harbour Street',
+        NeumorphicSectionHeader(title: kitSay(context, 'Deliver to')),
+        NeumorphicTextField(
+          key: const Key('hearth-street'),
+          label: kitSay(context, 'Street'),
+          initialValue: kitSay(context, '14 Harbour Street'),
         ),
-        const NeumorphicRow(
-          spans: [7, 5],
+        NeumorphicRow(
+          spans: const [7, 5],
           children: [
-            NeumorphicTextField(label: 'Town', initialValue: 'Bristol'),
-            NeumorphicTextField(label: 'Postcode', initialValue: 'BS1 4DJ'),
+            NeumorphicTextField(
+              label: kitSay(context, 'Town'),
+              initialValue: kitSay(context, 'Bristol'),
+            ),
+            NeumorphicTextField(
+              label: kitSay(context, 'Postcode'),
+              initialValue: 'BS1 4DJ',
+            ),
           ],
         ),
         NeumorphicRadioGroup<bool>(
           key: const Key('hearth-delivery'),
-          label: 'Delivery',
+          label: kitSay(context, 'Delivery'),
           value: home.express,
-          options: const [
+          options: [
             NeumorphicRadio(
               false,
-              'Standard',
-              note: 'Monday 16 November',
-              trailingText: 'Free',
+              kitSay(context, 'Standard'),
+              note: kitSay(context, 'Monday 16 November'),
+              trailingText: kitSay(context, 'Free'),
             ),
             NeumorphicRadio(
               true,
-              'Next day',
-              note: 'Tomorrow by 18:00',
+              kitSay(context, 'Next day'),
+              note: kitSay(context, 'Tomorrow by 18:00'),
               trailingText: '£6.00',
             ),
           ],
           onChanged: (v) => home.change(() => home.express = v),
         ),
         NeumorphicFormGroup(
-          label: 'Pay with',
+          label: kitSay(context, 'Pay with'),
           child: NeumorphicSegmentedButton<String>(
             key: const Key('hearth-pay-with'),
-            label: 'Pay with',
+            label: kitSay(context, 'Pay with'),
             value: home.pay,
-            segments: const [
+            segments: [
               NeumorphicButtonSegment(
                 'card',
-                'Card',
+                kitSay(context, 'Card'),
                 icon: NeumorphicGlyphs.creditCard,
               ),
-              NeumorphicButtonSegment('bank', 'Bank'),
-              NeumorphicButtonSegment('later', 'Later'),
+              NeumorphicButtonSegment('bank', kitSay(context, 'Bank')),
+              NeumorphicButtonSegment('later', kitSay(context, 'Later')),
             ],
             onChanged: (v) => home.change(() => home.pay = v),
           ),
         ),
       ],
     );
-    const head = NeumorphicPageHead(
-      title: 'Checkout',
-      subtitle: 'A desk lamp for the study, and bulbs.',
+    final head = NeumorphicPageHead(
+      title: kitSay(context, 'Checkout'),
+      subtitle: kitSay(context, 'A desk lamp for the study, and bulbs.'),
     );
     final size = hearthSizeOf(context);
     if (size == HearthSize.phone) {
       return NeumorphicSections(children: [head, order, delivery]);
     }
-    // The order beside the form, the act under the order.
+    // The order beside the form, the act under the order: on a tablet too, so its width holds both.
     return NeumorphicSections(
       children: [
         head,
         NeumorphicRow(
           spans: size == HearthSize.desk ? const [7, 5] : const [1, 1],
+          from: NeumorphicWindow.medium,
           children: [
             delivery,
             NeumorphicColumn(
               gap: 20,
               children: [
                 order,
-                _PayButton(home: home),
+                // A tablet's Pay is at its foot (the shell's).
+                if (size == HearthSize.desk) _PayButton(home: home),
               ],
             ),
           ],
@@ -978,20 +1167,22 @@ class _Order extends StatelessWidget {
     );
     return NeumorphicCard(
       key: const Key('hearth-order'),
-      title: 'Your order',
+      title: kitSay(context, 'Your order'),
       gap: 0,
       children: [
         NeumorphicListTile(
           isFirst: true,
           leading: const NeumorphicIconWell(NeumorphicGlyphs.lamp),
-          title: 'Arc desk lamp',
-          subtitle: 'Porcelain, 42 cm',
+          title: kitSay(context, 'Arc desk lamp'),
+          subtitle: kitSay(context, 'Porcelain, 42 cm'),
           trailing: price(home.lampPrice),
         ),
         NeumorphicListTile(
           leading: const NeumorphicIconWell(NeumorphicGlyphs.lightbulb),
-          title: 'Bulbs',
-          subtitle: 'Warm white, ${hearthMoney(home.bulbPrice)} each',
+          title: kitSay(context, 'Bulbs'),
+          subtitle: kitSayf(context, 'Warm white, {0} each', [
+            hearthMoney(home.bulbPrice),
+          ]),
           trailing: price(home.bulbs * home.bulbPrice),
           action: NeumorphicNumberField(
             key: const Key('hearth-bulbs'),
@@ -1005,11 +1196,13 @@ class _Order extends StatelessWidget {
           ),
         ),
         NeumorphicKvRow(
-          'Delivery',
-          home.delivery == 0 ? 'Free' : hearthMoney(home.delivery),
+          kitSay(context, 'Delivery'),
+          home.delivery == 0
+              ? kitSay(context, 'Free')
+              : hearthMoney(home.delivery),
         ),
         NeumorphicTotalRow(
-          'Total',
+          kitSay(context, 'Total'),
           hearthMoney(home.total),
           key: const Key('hearth-total'),
         ),
@@ -1018,24 +1211,31 @@ class _Order extends StatelessWidget {
   }
 }
 
-Future<void> _pay(
-  BuildContext context,
-  HearthHome home,
-) => showNeumorphicDialog<void>(
-  context,
-  builder: (context) => NeumorphicDialog(
-    title: 'Order placed',
-    message:
-        'Your desk lamp and ${home.bulbs} bulbs arrive ${home.express ? 'tomorrow by 18:00' : 'on Monday 16 November'}. We sent the receipt to alex.morgan@hearth.example.',
-    actions: [
-      NeumorphicButton.filled(
-        'Done',
-        key: const Key('hearth-paid'),
-        onPressed: () => Navigator.pop(context),
+Future<void> _pay(BuildContext context, HearthHome home) =>
+    showNeumorphicDialog<void>(
+      context,
+      builder: (context) => NeumorphicDialog(
+        title: kitSay(context, 'Order placed'),
+        message: kitSayf(
+          context,
+          'Your desk lamp and {0} bulbs arrive {1}. We sent the receipt to alex.morgan@hearth.example.',
+          [
+            home.bulbs,
+            kitSay(
+              context,
+              home.express ? 'tomorrow by 18:00' : 'on Monday 16 November',
+            ),
+          ],
+        ),
+        actions: [
+          NeumorphicButton.filled(
+            kitSay(context, 'Done'),
+            key: const Key('hearth-paid'),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
       ),
-    ],
-  ),
-);
+    );
 
 class _PayButton extends StatelessWidget {
   const _PayButton({required this.home, this.sum = true});
@@ -1048,7 +1248,9 @@ class _PayButton extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     width: double.infinity,
     child: NeumorphicButton.filled(
-      sum ? 'Pay ${hearthMoney(home.total)}' : 'Pay',
+      sum
+          ? kitSayf(context, 'Pay {0}', [hearthMoney(home.total)])
+          : kitSay(context, 'Pay'),
       key: const Key('hearth-pay'),
       wide: true,
       onPressed: () => _pay(context, home),
@@ -1056,7 +1258,7 @@ class _PayButton extends StatelessWidget {
   );
 }
 
-/// A phone's foot on the checkout: the total beside the act.
+/// A phone's and a tablet's foot on the checkout: the total beside the act.
 class _PayBar extends StatelessWidget {
   const _PayBar({required this.home});
   final HearthHome home;
@@ -1069,7 +1271,7 @@ class _PayBar extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Total', style: t.textTheme.caption),
+            Text(kitSay(context, 'Total'), style: t.textTheme.caption),
             Text(hearthMoney(home.total), style: t.textTheme.value.tabular),
           ],
         ),
@@ -1084,32 +1286,53 @@ class _PayBar extends StatelessWidget {
 
 /// Account: who you are to the house. Your name leads; saving is the act.
 class _AccountScreen extends StatefulWidget {
-  const _AccountScreen({required this.home});
+  const _AccountScreen({required this.home, required this.start});
   final HearthHome home;
+  final HearthStart start;
 
   @override
   State<_AccountScreen> createState() => _AccountScreenState();
 }
 
 class _AccountScreenState extends State<_AccountScreen> {
-  final _first = TextEditingController(text: 'Alex');
-  final _last = TextEditingController(text: 'Morgan');
-  final _email = TextEditingController(text: 'alex.morgan@hearth.example');
+  // The names in the reader's own script, as a person there would have typed them.
+  late final _first = TextEditingController(text: kitSay(context, 'Alex'));
+  late final _last = TextEditingController(text: kitSay(context, 'Morgan'));
+  late final _email = TextEditingController(
+    text: widget.start.email ?? 'alex.morgan@hearth.example',
+  );
   final _phone = TextEditingController(text: '07700 900 412');
   var _country = 'United Kingdom';
 
   /// Set when Save finds the email unusable; cleared as the person types.
   String? _emailError;
 
+  @override
+  void initState() {
+    super.initState();
+    // An email the app opened with is one the person typed and saved.
+    if (widget.start.email != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _save();
+      });
+    }
+  }
+
   void _save() {
     final email = _email.text.trim();
     if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(email)) {
       setState(
-        () => _emailError = 'Enter an email address, like name@example.com.',
+        () => _emailError = kitSay(
+          context,
+          'Enter an email address, like name@example.com.',
+        ),
       );
       return;
     }
-    showNeumorphicToast(context, message: 'Saved. Your receipts go to $email.');
+    showNeumorphicToast(
+      context,
+      message: kitSayf(context, 'Saved. Your receipts go to {0}.', [email]),
+    );
   }
 
   @override
@@ -1131,19 +1354,21 @@ class _AccountScreenState extends State<_AccountScreen> {
     final form = NeumorphicColumn(
       gap: 20,
       children: [
+        // First and last name side by side wherever the form is a tablet's width.
         NeumorphicRow(
           spans: const [1, 1],
+          from: NeumorphicWindow.medium,
           children: [
             NeumorphicTextField(
               key: const Key('hearth-first'),
-              label: 'First name',
+              label: kitSay(context, 'First name'),
               controller: _first,
               autofillHints: const [AutofillHints.givenName],
               onChanged: (_) => setState(() {}),
             ),
             NeumorphicTextField(
               key: const Key('hearth-last'),
-              label: 'Last name',
+              label: kitSay(context, 'Last name'),
               controller: _last,
               autofillHints: const [AutofillHints.familyName],
               onChanged: (_) => setState(() {}),
@@ -1152,38 +1377,41 @@ class _AccountScreenState extends State<_AccountScreen> {
         ),
         NeumorphicTextField(
           key: const Key('hearth-email'),
-          label: 'Email',
+          label: kitSay(context, 'Email'),
           controller: _email,
           keyboardType: TextInputType.emailAddress,
           autofillHints: const [AutofillHints.email],
-          helper: 'Receipts and the weekly summary go here.',
+          helper: kitSay(context, 'Receipts and the weekly summary go here.'),
           error: _emailError,
           onChanged: (_) {
             if (_emailError != null) setState(() => _emailError = null);
           },
         ),
         NeumorphicTextField(
-          label: 'Phone',
+          label: kitSay(context, 'Phone'),
           controller: _phone,
           keyboardType: TextInputType.phone,
           autofillHints: const [AutofillHints.telephoneNumber],
-          helper: 'For the courier, on delivery days only.',
+          helper: kitSay(context, 'For the courier, on delivery days only.'),
         ),
         NeumorphicSelect<String>(
           key: const Key('hearth-country'),
-          label: 'Country',
+          label: kitSay(context, 'Country'),
           value: _country,
-          options: const [
-            NeumorphicMenuItem('United Kingdom', 'United Kingdom'),
-            NeumorphicMenuItem('Ireland', 'Ireland'),
-            NeumorphicMenuItem('United States', 'United States'),
+          options: [
+            for (final c in const [
+              'United Kingdom',
+              'Ireland',
+              'United States',
+            ])
+              NeumorphicMenuItem(c, kitSay(context, c)),
           ],
           onChanged: (v) => setState(() => _country = v),
         ),
         Align(
           alignment: AlignmentDirectional.centerEnd,
           child: NeumorphicButton.filled(
-            'Save details',
+            kitSay(context, 'Save details'),
             key: const Key('hearth-save'),
             // A phone's act spans the form; with room it stands at the end, on the fields' edge.
             wide: hearthSizeOf(context) == HearthSize.phone,
@@ -1192,7 +1420,7 @@ class _AccountScreenState extends State<_AccountScreen> {
         ),
       ],
     );
-    const head = NeumorphicPageHead(title: 'Account');
+    final head = NeumorphicPageHead(title: kitSay(context, 'Account'));
     // Who it is leads: the face and the name, then what they share.
     final identity = Row(
       children: [
@@ -1203,7 +1431,10 @@ class _AccountScreenState extends State<_AccountScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(name, style: t.textTheme.value),
-              Text('Member since March 2024', style: t.textTheme.caption),
+              Text(
+                kitSay(context, 'Member since March 2024'),
+                style: t.textTheme.caption,
+              ),
             ],
           ),
         ),
@@ -1216,11 +1447,21 @@ class _AccountScreenState extends State<_AccountScreen> {
       children: [
         identity,
         // The rows in their own list, not on the card's gap: each row's words stand midway between its rules.
-        const NeumorphicList(
+        NeumorphicList(
           children: [
-            NeumorphicKvRow('Home', '14 Harbour Street', isFirst: true),
-            NeumorphicKvRow('Shared with', 'Sam and Jordan'),
-            NeumorphicKvRow('Plan', 'Hearth Plus, renews 1\u00a0March'),
+            NeumorphicKvRow(
+              kitSayIn(context, 'Home', 'house'),
+              kitSay(context, '14 Harbour Street'),
+              isFirst: true,
+            ),
+            NeumorphicKvRow(
+              kitSay(context, 'Shared with'),
+              kitSay(context, 'Sam and Jordan'),
+            ),
+            NeumorphicKvRow(
+              kitSay(context, 'Plan'),
+              kitSay(context, 'Hearth Plus, renews 1\u00a0March'),
+            ),
           ],
         ),
       ],
@@ -1256,12 +1497,18 @@ class _SettingsScreen extends StatelessWidget {
   Future<void> _leave(BuildContext context) => showNeumorphicDialog<void>(
     context,
     builder: (context) => NeumorphicDialog(
-      title: 'Leave 14 Harbour Street?',
-      message: 'Its devices and schedules stay with Sam and Jordan. You can be invited back.',
+      title: kitSay(context, 'Leave 14 Harbour Street?'),
+      message: kitSay(
+        context,
+        'Its devices and schedules stay with Sam and Jordan. You can be invited back.',
+      ),
       actions: [
-        NeumorphicButton.text('Stay', onPressed: () => Navigator.pop(context)),
+        NeumorphicButton.text(
+          kitSay(context, 'Stay'),
+          onPressed: () => Navigator.pop(context),
+        ),
         NeumorphicButton(
-          'Leave home',
+          kitSay(context, 'Leave home'),
           isDestructiveAction: true,
           onPressed: () => Navigator.pop(context),
         ),
@@ -1272,26 +1519,26 @@ class _SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final notices = NeumorphicListSection(
-      label: 'Notifications',
+      label: kitSay(context, 'Notifications'),
       children: [
         NeumorphicSwitchRow(
           key: const Key('hearth-email-updates'),
-          label: 'Weekly summary',
-          note: 'What your home used, each Monday by email.',
+          label: kitSay(context, 'Weekly summary'),
+          note: kitSay(context, 'What your home used, each Monday by email.'),
           value: home.emailUpdates,
           onChanged: (v) => home.change(() => home.emailUpdates = v),
         ),
         NeumorphicSwitchRow(
           key: const Key('hearth-push'),
-          label: 'Alerts on this phone',
-          note: 'A door left open, a room too cold.',
+          label: kitSay(context, 'Alerts on this phone'),
+          note: kitSay(context, 'A door left open, a room too cold.'),
           value: home.pushUpdates,
           onChanged: (v) => home.change(() => home.pushUpdates = v),
         ),
       ],
     );
     final sound = NeumorphicListSection(
-      label: 'Sound',
+      label: kitSay(context, 'Sound'),
       children: [
         NeumorphicDial(
           key: const Key('hearth-volume'),
@@ -1300,9 +1547,9 @@ class _SettingsScreen extends StatelessWidget {
           max: 10,
           step: 1,
           compact: true,
-          label: 'Alert volume',
+          label: kitSay(context, 'Alert volume'),
           figure: '${home.volume}',
-          sub: home.volume == 0 ? 'Silent' : 'Out of 10',
+          sub: kitSay(context, home.volume == 0 ? 'Silent' : 'Out of 10'),
           onDecrease: home.volume == 0
               ? null
               : () => home.change(() => home.volume--),
@@ -1313,24 +1560,24 @@ class _SettingsScreen extends StatelessWidget {
       ],
     );
     final away = NeumorphicListSection(
-      label: 'While you are away',
+      label: kitSay(context, 'While you are away'),
       children: [
         NeumorphicSwitchRow(
           key: const Key('hearth-away'),
-          label: 'Lights on at sunset',
-          note: 'So the house looks lived in.',
+          label: kitSay(context, 'Lights on at sunset'),
+          note: kitSay(context, 'So the house looks lived in.'),
           value: home.awayLights,
           onChanged: (v) => home.change(() => home.awayLights = v),
         ),
       ],
     );
     final privacy = NeumorphicListSection(
-      label: 'Privacy',
+      label: kitSay(context, 'Privacy'),
       children: [
         NeumorphicSwitchRow(
           key: const Key('hearth-usage'),
-          label: 'Share usage, without names',
-          note: 'Helps us make the schedules better.',
+          label: kitSay(context, 'Share usage, without names'),
+          note: kitSay(context, 'Helps us make the schedules better.'),
           value: home.usageData,
           onChanged: (v) => home.change(() => home.usageData = v),
         ),
@@ -1339,13 +1586,13 @@ class _SettingsScreen extends StatelessWidget {
     final leave = Align(
       alignment: AlignmentDirectional.centerStart,
       child: NeumorphicButton(
-        'Leave this home',
+        kitSay(context, 'Leave this home'),
         isDestructiveAction: true,
         key: const Key('hearth-leave'),
         onPressed: () => _leave(context),
       ),
     );
-    const head = NeumorphicPageHead(title: 'Settings');
+    final head = NeumorphicPageHead(title: kitSay(context, 'Settings'));
     if (hearthSizeOf(context) == HearthSize.phone) {
       return NeumorphicSections(
         children: [head, notices, sound, away, privacy, leave],

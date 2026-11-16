@@ -1,9 +1,10 @@
 // The charts, in wells. Data is in ink; only what's live takes the pigment: now, today, what's still coming. No chart takes a colour: a
 // chart says which point is now, and the pigment follows. Numbers never stand alone in a well: axes and a key say what they are.
+import 'package:flutter/foundation.dart';
+
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
-import 'package:flutter/foundation.dart' show listEquals, mapEquals;
 
 import '../frames.dart';
 import '../internal/geometry.dart';
@@ -98,6 +99,14 @@ class NeumorphicLegend extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<NeumorphicLegendItem>('items', items))
+      ..add(StringProperty('note', note, defaultValue: null));
   }
 }
 
@@ -212,7 +221,7 @@ class _TwoWayPainter extends CustomPainter {
     );
     if (flat) {
       canvas.drawRect(
-        Rect.fromLTWH(0, _axis + 1, 480, 1),
+        const Rect.fromLTWH(0, _axis + 1, 480, 1),
         neumorphicFillPaint(c.quiet),
       );
     } else {
@@ -312,7 +321,8 @@ class NeumorphicTwoWayBars extends StatelessWidget {
     this.nowLabel,
     this.peak,
     this.keys = const [],
-  });
+  }) : assert(slots >= 0),
+       assert((now ?? 0) >= 0 && (now ?? 0) <= slots);
 
   /// Values drawn above the baseline, one per slot.
   final List<double> above;
@@ -433,6 +443,38 @@ class NeumorphicTwoWayBars extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<double>('above', above))
+      ..add(
+        DiagnosticsProperty<Map<int, double>>(
+          'below',
+          below,
+          defaultValue: const {},
+        ),
+      )
+      ..add(IntProperty('slots', slots, defaultValue: 24))
+      ..add(DoubleProperty('now', now, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Map<int, String>>(
+          'labels',
+          labels,
+          defaultValue: const {},
+        ),
+      )
+      ..add(StringProperty('nowLabel', nowLabel, defaultValue: null))
+      ..add(StringProperty('peak', peak, defaultValue: null))
+      ..add(
+        IterableProperty<NeumorphicLegendItem>(
+          'keys',
+          keys,
+          defaultValue: const <NeumorphicLegendItem>[],
+        ),
+      );
   }
 }
 
@@ -572,7 +614,7 @@ class NeumorphicColumnBars extends StatelessWidget {
     this.nowLabel,
     this.forecastLabel,
     this.format,
-  });
+  }) : assert((now ?? 0) >= 0);
 
   /// The height of each column in data units.
   final List<double> values;
@@ -750,6 +792,27 @@ class NeumorphicColumnBars extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<double>('values', values))
+      ..add(
+        IterableProperty<String>(
+          'labels',
+          labels,
+          defaultValue: const <String>[],
+        ),
+      )
+      ..add(IntProperty('now', now, defaultValue: null))
+      ..add(DoubleProperty('forecast', forecast, defaultValue: null))
+      ..add(StringProperty('nowLabel', nowLabel, defaultValue: null))
+      ..add(StringProperty('forecastLabel', forecastLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      );
+  }
 }
 
 class _StepPainter extends CustomPainter {
@@ -887,7 +950,8 @@ class NeumorphicStepLine extends StatelessWidget {
     this.xLabels = const [],
     this.keys = const [],
     this.note,
-  });
+  }) : assert(xMin <= xMax),
+       assert(yMin <= yMax);
 
   /// Ordered x/y observations drawn as the continuous trace.
   final List<(double, double)> readings;
@@ -1006,6 +1070,48 @@ class NeumorphicStepLine extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<(double, double)>('readings', readings))
+      ..add(
+        IterableProperty<(double, double)>(
+          'steps',
+          steps,
+          defaultValue: const <(double, double)>[],
+        ),
+      )
+      ..add(DoubleProperty('now', now, defaultValue: null))
+      ..add(DoubleProperty('xMin', xMin, defaultValue: 0))
+      ..add(DoubleProperty('xMax', xMax))
+      ..add(DoubleProperty('yMin', yMin))
+      ..add(DoubleProperty('yMax', yMax))
+      ..add(
+        IterableProperty<double>(
+          'yTicks',
+          yTicks,
+          defaultValue: const <double>[],
+        ),
+      )
+      ..add(StringProperty('yLabel', yLabel, defaultValue: ''))
+      ..add(
+        IterableProperty<(double, String)>(
+          'xLabels',
+          xLabels,
+          defaultValue: const <(double, String)>[],
+        ),
+      )
+      ..add(
+        IterableProperty<NeumorphicLegendItem>(
+          'keys',
+          keys,
+          defaultValue: const <NeumorphicLegendItem>[],
+        ),
+      )
+      ..add(StringProperty('note', note, defaultValue: null));
+  }
 }
 
 /// One line of a [NeumorphicShareBars].
@@ -1108,5 +1214,13 @@ class NeumorphicShareBars extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<NeumorphicShare>('rows', rows))
+      ..add(StringProperty('title', title, defaultValue: null));
   }
 }

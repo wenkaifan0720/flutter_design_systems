@@ -1,6 +1,8 @@
 // Typed choices and text entry, using the look's moulded parts and inset shadows.
+
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -10,8 +12,8 @@ import 'controls.dart';
 import 'component_themes.dart';
 import 'styled.dart';
 import 'shapes.dart';
-import 'internal/reach.dart';
 import 'internal/cell_bank.dart';
+import 'internal/reach.dart' show NeumorphicFacePlace, NeumorphicOwnRoot;
 import 'internal/error_line.dart';
 import 'internal/panel.dart' show neumorphicFieldWords;
 import 'editing.dart';
@@ -25,6 +27,8 @@ import 'theme.dart';
 import 'internal/cap_label.dart';
 import 'knobs.dart' show NeumorphicElevation;
 import 'internal/out_of_use.dart';
+import 'internal/moulded.dart';
+import 'internal/group_rows.dart' show NeumorphicGroupRowScope;
 
 /// A search groove with its own clear action, keeping focus when cleared.
 ///
@@ -107,6 +111,89 @@ class NeumorphicSearchField extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   @override
   State<NeumorphicSearchField> createState() => _NeumorphicSearchFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget editable)>.has(
+          'decorate',
+          decorate,
+        ),
+      )
+      ..add(StringProperty('hint', hint))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget line)>.has(
+          'failureLine',
+          failureLine,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('clearLabel', clearLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      )
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      );
+  }
 }
 
 class _NeumorphicSearchFieldState extends State<NeumorphicSearchField> {
@@ -160,30 +247,23 @@ class _NeumorphicSearchFieldState extends State<NeumorphicSearchField> {
     nameOnly: true,
     textInputAction: TextInputAction.search,
     leading: const Icon(NeumorphicGlyphs.search, size: 20),
+    // The key stands at its 48 target in the field's key slot, which lets a target overhang the groove without
+    // growing the field: a 32-tall box round it here stopped taps 8 short of the target above and below.
     trailing: _text.text.isEmpty
         ? null
-        // The key's 48 target overhangs its 32 face without growing the field past the control height.
-        : SizedBox(
-            width: 48,
-            height: 32,
-            child: OverflowBox(
-              maxWidth: 48,
-              maxHeight: 48,
-              child: NeumorphicRoundButton(
-                NeumorphicGlyphs.close,
-                size: 32,
-                label:
-                    widget.clearLabel ??
-                    NeumorphicLocalizations.of(context).clearSearch,
-                onPressed: !widget.enabled
-                    ? null
-                    : () {
-                        _text.clear();
-                        widget.onChanged?.call('');
-                        _node.requestFocus();
-                      },
-              ),
-            ),
+        : NeumorphicRoundButton(
+            NeumorphicGlyphs.close,
+            size: 32,
+            label:
+                widget.clearLabel ??
+                NeumorphicLocalizations.of(context).clearSearch,
+            onPressed: !widget.enabled
+                ? null
+                : () {
+                    _text.clear();
+                    widget.onChanged?.call('');
+                    _node.requestFocus();
+                  },
           ),
   );
 }
@@ -211,7 +291,8 @@ class NeumorphicTextArea extends StatelessWidget {
     this.enabled = true,
     this.maxLength,
     this.style,
-  });
+  }) : assert(lines >= 1),
+       assert((maxLength ?? 1) > 0);
 
   /// Visual slots before the text-field component theme.
   final NeumorphicStyle? style;
@@ -273,6 +354,53 @@ class NeumorphicTextArea extends StatelessWidget {
     maxLength: maxLength,
     keyboardType: TextInputType.multiline,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('initialValue', initialValue, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(IntProperty('lines', lines, defaultValue: 4))
+      ..add(IntProperty('maxLength', maxLength, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 /// One text input behind a row of code cells, supporting paste and one-time-code autofill.
@@ -368,6 +496,103 @@ class NeumorphicInputOtp extends StatefulWidget {
 
   @override
   State<NeumorphicInputOtp> createState() => _NeumorphicCodeFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('length', length, defaultValue: 6))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onCompleted',
+          onCompleted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: TextInputAction.done,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: TextInputType.number,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: const <TextInputFormatter>[],
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: const [AutofillHints.oneTimeCode],
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget editable)>.has(
+          'decorate',
+          decorate,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget failure)>.has(
+          'failureLine',
+          failureLine,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('obscure', obscure, defaultValue: false));
+  }
 }
 
 class _NeumorphicCodeFieldState extends State<NeumorphicInputOtp> {
@@ -401,7 +626,7 @@ class _NeumorphicCodeFieldState extends State<NeumorphicInputOtp> {
       if (!widget.enabled) WidgetState.disabled,
       if (widget.error != null) WidgetState.error,
     };
-    final baseStyle = NeumorphicStyleOf([
+    final baseStyle = neumorphicStyleOf([
       widget.style,
       t.textFieldTheme,
     ], states);
@@ -476,7 +701,7 @@ class _NeumorphicCodeFieldState extends State<NeumorphicInputOtp> {
       // hidden code shows a dot.
       final lit = slot.active && slot.focused;
       final cellStates = {...states, if (lit) WidgetState.focused};
-      final look = NeumorphicStyleOf([
+      final look = neumorphicStyleOf([
         widget.style,
         t.textFieldTheme,
       ], cellStates);
@@ -615,6 +840,36 @@ class NeumorphicSelect<T> extends StatefulWidget {
 
   @override
   State<NeumorphicSelect<T>> createState() => _NeumorphicSelectState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<NeumorphicMenuItem<T>>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('prompt', prompt, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
@@ -686,7 +941,7 @@ class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
         // matches it, so it hugs the options too.
         LayoutBuilder(
           builder: (context, box) {
-            final look = NeumorphicStyleOf([
+            final look = neumorphicStyleOf([
               widget.style,
               t.textFieldTheme,
             ], const {});
@@ -754,13 +1009,26 @@ class _NeumorphicSelectState<T> extends State<NeumorphicSelect<T>> {
     expanded: _open,
     label: [if (widget.label != null) widget.label!, value].join(', '),
     onPressed: widget.onChanged == null ? null : _show,
+    // The arrows open it too, as Enter and Space do: its list opens on the chosen option, or the first, and the
+    // arrows go on moving there.
+    onKeyEvent: widget.onChanged == null
+        ? null
+        : (node, event) {
+            if (event is KeyDownEvent &&
+                (event.logicalKey == LogicalKeyboardKey.arrowDown ||
+                    event.logicalKey == LogicalKeyboardKey.arrowUp)) {
+              _show();
+              return KeyEventResult.handled;
+            }
+            return KeyEventResult.ignored;
+          },
     child: Builder(
       builder: (context) {
         final states = {
           ...NeumorphicStatesScope.of(context),
           if (widget.error != null) WidgetState.error,
         };
-        final look = NeumorphicStyleOf([
+        final look = neumorphicStyleOf([
           widget.style,
           t.textFieldTheme,
         ], states);
@@ -859,12 +1127,14 @@ class NeumorphicCheckbox extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final mark = t.shapes.corner(6);
-    // The mark's edge is the box's: its target's margins reach past it, hit-tested, never laid out. The root keeps the
-    // checkbox's one spoken node, the whole 48 target, and the mark at its start when a column hands it its width.
-    return NeumorphicEdgeTarget(
-      slop: 10,
-      child: NeumorphicFaceEdge(
-        slop: 10,
+    // Laid out at its target (DesignTapTarget), the mark on the start keyline unless its slot says otherwise: the
+    // press, the one spoken node and the box are one. Handed a column's whole width, it stands at the start. Before 0.2.0 the mark stood on the box's edge with
+    // its target's margins past it, and the words or key beside it took presses a screen reader said were its own.
+    final place = NeumorphicFacePlace.of(context);
+    return NeumorphicOwnRoot(
+      child: DesignTapTarget(
+        minSize: const Size.square(NeumorphicChromeMetrics.touchTarget),
+        alignment: place,
         child: NeumorphicTap(
           focusNode: focusNode,
           autofocus: autofocus,
@@ -878,10 +1148,12 @@ class NeumorphicCheckbox extends StatelessWidget {
           button: false,
           round: false,
           focusInset: 10,
+          faceAlignment: place,
           onPressed: onChanged == null ? null : () => onChanged!(_next),
           child: SizedBox.square(
             dimension: 48,
-            child: Center(
+            child: Align(
+              alignment: place,
               child: _CheckMark(
                 value: value,
                 enabled: onChanged != null,
@@ -893,6 +1165,36 @@ class NeumorphicCheckbox extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('value', value, defaultValue: null))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<ValueChanged<bool?>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<bool>('tristate', tristate, defaultValue: false),
+      )
+      ..add(DiagnosticsProperty<bool>('error', error, defaultValue: false))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
   }
 }
 
@@ -915,7 +1217,7 @@ class _CheckMark extends StatelessWidget {
       if (!enabled) WidgetState.disabled,
       if (error) WidgetState.error,
     };
-    final look = NeumorphicStyleOf([style, t.checkboxTheme], states);
+    final look = neumorphicStyleOf([style, t.checkboxTheme], states);
     final diameter = math.max(
       28.0,
       math.max(look.minimumSize?.width ?? 0, look.minimumSize?.height ?? 0),
@@ -1023,6 +1325,9 @@ class NeumorphicCheckRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
+    // In a grouped list the row is a band of its card, a breath inside its rim, as a list tile is: its focus lift goes
+    // round that band and not round its words and its control.
+    final cell = NeumorphicGroupRowScope.cellOf(context);
     return NeumorphicTap(
       autofocus: autofocus,
       style: style,
@@ -1032,6 +1337,9 @@ class NeumorphicCheckRow extends StatelessWidget {
       focusNode: focusNode,
       // A row that holds a control passes its press to the control: the row stays flat and the control moves.
       pressRelief: false,
+      shape: cell?.border,
+      faceOutset: cell?.outset ?? EdgeInsets.zero,
+      focusReach: cell == null ? 1 : .5,
 
       button: false,
       label: [label, ?note].join(', '),
@@ -1048,7 +1356,7 @@ class NeumorphicCheckRow extends StatelessWidget {
             ),
       child: Builder(
         builder: (context) {
-          final look = NeumorphicStyleOf(
+          final look = neumorphicStyleOf(
             [style, t.checkboxTheme],
             {
               ...NeumorphicStatesScope.of(context),
@@ -1099,6 +1407,37 @@ class NeumorphicCheckRow extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<bool?>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<bool>('tristate', tristate, defaultValue: false),
+      )
+      ..add(DiagnosticsProperty<bool>('error', error, defaultValue: false))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
   }
 }
 
@@ -1217,7 +1556,7 @@ class NeumorphicRadioGroup<T> extends StatelessWidget {
                   if (selected) WidgetState.selected,
                   if (!o.enabled || onChanged == null) WidgetState.disabled,
                 };
-                final look = NeumorphicStyleOf([style, t.radioTheme], states);
+                final look = neumorphicStyleOf([style, t.radioTheme], states);
                 final diameter = math.max(
                   24.0,
                   math.max(
@@ -1307,6 +1646,23 @@ class NeumorphicRadioGroup<T> extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<NeumorphicRadio<T>>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged));
   }
 }
 
@@ -1407,7 +1763,7 @@ class NeumorphicSegmentedButton<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final dir = Directionality.of(context);
-    final bankLook = NeumorphicStyleOf([
+    final bankLook = neumorphicStyleOf([
       style,
       t.segmentedButtonTheme,
     ], const {});
@@ -1502,7 +1858,7 @@ class NeumorphicSegmentedButton<T> extends StatelessWidget {
                           if (selected) WidgetState.selected,
                           if (!enabled) WidgetState.disabled,
                         };
-                        final look = NeumorphicStyleOf([
+                        final look = neumorphicStyleOf([
                           style,
                           t.segmentedButtonTheme,
                         ], states);
@@ -1585,6 +1941,23 @@ class NeumorphicSegmentedButton<T> extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<NeumorphicButtonSegment<T>>('segments', segments))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged));
   }
 }
 
@@ -1775,37 +2148,55 @@ class NeumorphicRating extends StatelessWidget {
     }
     final chosen = value.round();
     final target = math.max(size + 16, NeumorphicChromeMetrics.targetSize);
+    final place = NeumorphicFacePlace.of(context);
     return Semantics(
       container: true,
       label: label,
       explicitChildNodes: true,
       child: NeumorphicOutOfUse(
         off: !enabled,
-        // The first star's edge is the row's, the last's its end: the targets' outer margins are hit-tested only.
-        child: NeumorphicFaceEdge(
-          slop: (target - size) / 2,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 0; i < count; i++)
-                NeumorphicTap(
-                  round: true,
-                  shape: t.shapes.circle(),
-                  label: '$label, ${words.ratingOf(i + 1, count)}',
-                  selected: i + 1 == chosen,
-                  inMutuallyExclusiveGroup: true,
-                  focusSize: Size.square(size + 12),
-                  onPressed: enabled ? () => onChanged!(i + 1) : null,
-                  child: SizedBox.square(
-                    dimension: target,
-                    child: Center(child: star(i < chosen ? 1 : 0)),
+        // Each star stands at its target, the targets edge to edge, so a press anywhere on the row is one star's; its
+        // face stands at the target's start (NeumorphicFacePlace), so the first star's face is on the row's edge.
+        // Before 0.2.0 the targets' margins past the row were hit-tested only.
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var i = 0; i < count; i++)
+              NeumorphicTap(
+                round: true,
+                shape: t.shapes.circle(),
+                label: '$label, ${words.ratingOf(i + 1, count)}',
+                selected: i + 1 == chosen,
+                inMutuallyExclusiveGroup: true,
+                // The focus disc stands 6 round the star wherever the star stands in its target.
+                focusInset: (target - size) / 2,
+                faceOutset: const EdgeInsets.all(6),
+                faceAlignment: place,
+                onPressed: enabled ? () => onChanged!(i + 1) : null,
+                child: SizedBox.square(
+                  dimension: target,
+                  child: Align(
+                    alignment: place,
+                    child: star(i < chosen ? 1 : 0),
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('value', value))
+      ..add(IntProperty('count', count, defaultValue: 5))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(DoubleProperty('size', size, defaultValue: 24));
   }
 }
 
@@ -1862,8 +2253,8 @@ class _StarPainter extends CustomPainter {
         canvas,
         star,
         colors,
-        light: (Offset(-1, -1) * d, 2 * d),
-        dark: (Offset(1.2, 1.2) * d, 2.4 * d),
+        light: (const Offset(-1, -1) * d, 2 * d),
+        dark: (const Offset(1.2, 1.2) * d, 2.4 * d),
         face: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -1900,8 +2291,8 @@ class _StarPainter extends CustomPainter {
         canvas,
         star,
         colors,
-        light: (Offset(-1.2, -1.2) * d, 2.4 * d),
-        dark: (Offset(1.4, 1.4) * d, 3 * d),
+        light: (const Offset(-1.2, -1.2) * d, 2.4 * d),
+        dark: (const Offset(1.4, 1.4) * d, 3 * d),
         lightColor: Color.lerp(colors.highlight, colors.pigmentHi, .35),
         face: LinearGradient(
           begin: Alignment.topLeft,
@@ -2042,5 +2433,24 @@ class NeumorphicFileUpload extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('buttonLabel', buttonLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<bool>('active', active, defaultValue: false))
+      ..add(
+        IterableProperty<String>(
+          'files',
+          files,
+          defaultValue: const <String>[],
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onRemove', onRemove));
   }
 }

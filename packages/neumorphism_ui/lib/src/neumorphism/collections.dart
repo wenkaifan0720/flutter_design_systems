@@ -3,6 +3,7 @@
 // pressed into the wall, in its own outline, with a breath of the pigment; the pointer resting on one changes nothing.
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -12,7 +13,7 @@ import 'frames.dart';
 import 'glyphs.dart';
 import 'internal/cell_bank.dart' show neumorphicFadedScroll;
 import 'internal/cap_label.dart';
-import 'internal/geometry.dart' show cssLinear;
+import 'internal/geometry.dart' show cssLinear, NeumorphicOneAxisClipper;
 import 'internal/panel.dart';
 import 'knobs.dart' show NeumorphicElevation;
 import 'localizations.dart';
@@ -288,6 +289,25 @@ class NeumorphicDataTable<R> extends StatelessWidget {
     // The row's own inset and the checkbox's target.
     return least + 8 + (selectable ? 48 : 0);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+      )
+      ..add(
+        ObjectFlagProperty<
+          String Function(R row, DesignTableColumn<R> column)
+        >.has('cell', cell),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('selectable', selectable, defaultValue: true),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<R>>.has('onActivate', onActivate))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// A table at its [least] width, scrolling sideways when its room is narrower.
@@ -388,6 +408,32 @@ class NeumorphicScrollArea extends StatelessWidget {
       child: child,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      )
+      ..add(DiagnosticsProperty<ScrollController>('controller', controller))
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'alwaysShown',
+          alwaysShown,
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 /// Two panels with a groove between them and a raised knob on it, which drags (or, with the keyboard on it, arrows) to
@@ -409,7 +455,7 @@ class NeumorphicResizable extends StatelessWidget {
     this.onChanged,
     this.focusNode,
     this.autofocus = false,
-  });
+  }) : assert(initialFraction >= 0 && initialFraction <= 1);
 
   /// The knob's keyboard focus; its own when null.
   final FocusNode? focusNode;
@@ -494,6 +540,31 @@ class NeumorphicResizable extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      )
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.horizontal))
+      ..add(
+        DoubleProperty('initialFraction', initialFraction, defaultValue: .5),
+      )
+      ..add(DoubleProperty('minFirst', minFirst, defaultValue: 0))
+      ..add(DoubleProperty('minSecond', minSecond, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      );
   }
 }
 
@@ -582,6 +653,29 @@ class NeumorphicReorderableListView<T extends Object> extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('items', items))
+      ..add(
+        ObjectFlagProperty<void Function(int from, int to)>.has(
+          'onReorder',
+          onReorder,
+        ),
+      )
+      ..add(ObjectFlagProperty<String Function(T item)>.has('labelOf', labelOf))
+      ..add(
+        ObjectFlagProperty<Widget Function(BuildContext context, T item)>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('shrinkWrap', shrinkWrap, defaultValue: true),
+      );
+  }
 }
 
 /// A row that slides aside to show what can be done to it (Archive, Delete): drag it, and a full swipe runs the
@@ -629,10 +723,7 @@ class NeumorphicSwipeActions extends StatelessWidget {
         textScaler: MediaQuery.textScalerOf(context),
         maxLines: 1,
       )..layout();
-      extent = math.max(
-        extent,
-        painter.width + 2 * (_bandInset + 12) + _edgeInset - _bandInset,
-      );
+      extent = math.max(extent, painter.width + 2 * (12 + _edgeInset));
       painter.dispose();
     }
     // Held to its own box: slid open, the row's words went on past the card it stands in, over the wall.
@@ -651,12 +742,13 @@ class NeumorphicSwipeActions extends StatelessWidget {
           // row uncovers is square at its ends while it slides, and a face held inside it never shows that.
           final face = t.shapes.corner(NeumorphicRadii.control);
           // The face at the row's edge keeps the row's own inset there, so it ends where the row's words end (the
-          // strip's start is the row's edge).
+          // strip's start is the row's edge). The innermost face stands as far in from the edge the row uncovers: at
+          // half a gap its shadow ran 2 pt under the row and was cut there.
           return Padding(
             padding: EdgeInsetsDirectional.fromSTEB(
               state.index == 0 ? _edgeInset : _bandInset,
               _bandInset,
-              _bandInset,
+              state.index == state.count - 1 ? _edgeInset : _bandInset,
               _bandInset,
             ),
             child: CustomPaint(
@@ -711,18 +803,48 @@ class NeumorphicSwipeActions extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        IterableProperty<DesignSwipeAction>(
+          'startActions',
+          startActions,
+          defaultValue: const <DesignSwipeAction>[],
+        ),
+      )
+      ..add(
+        IterableProperty<DesignSwipeAction>(
+          'endActions',
+          endActions,
+          defaultValue: const <DesignSwipeAction>[],
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'initiallyOpen',
+          initiallyOpen,
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 /// How far an action's face stands in from the strip the row uncovers: half the gap between two faces.
 const double _bandInset = 4;
 
-/// How far the face at the row's edge stands in from it: the row's own inset, so it ends on the words' keyline.
+/// How far the face at the row's edge stands in from it: the row's own inset, so it ends on the words' keyline. The
+/// innermost face stands as far in from the edge the row uncovers, past its relief's reach (6).
 const double _edgeInset = 8;
 
 /// How far a slid row's words take to sink under the edge they pass: a faded scroll's edge.
 const double _sinkFade = 32;
 
-/// The box a swipe row slides in, clipped to it: the edge the row's words sink under.
+/// The box a swipe row slides in, clipped at its sides only: the edges the row's words sink under. Above and below,
+/// nothing slides past it, and an action's light and shadow (and its focus lift) reach past the strip there: clipped
+/// to the box, they were cut flat 4 pt out (0.2.0's clipped-shadow check).
 class _SwipeFrame extends SingleChildRenderObjectWidget {
   const _SwipeFrame({super.child});
 
@@ -731,7 +853,11 @@ class _SwipeFrame extends SingleChildRenderObjectWidget {
 }
 
 class _RenderSwipeFrame extends RenderClipRect {
-  _RenderSwipeFrame() : super(clipBehavior: Clip.hardEdge);
+  _RenderSwipeFrame()
+    : super(
+        clipBehavior: Clip.hardEdge,
+        clipper: const NeumorphicOneAxisClipper(Axis.horizontal),
+      );
 }
 
 /// A swipe row whose words fade out over [_sinkFade] where they pass under its frame's edge. The slide is the row's
@@ -970,5 +1096,20 @@ class NeumorphicTreeView<T extends Object> extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignTreeController<T>>('controller', controller),
+      )
+      ..add(ObjectFlagProperty<String Function(T node)>.has('labelOf', labelOf))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
+      ..add(
+        ObjectFlagProperty<IconData? Function(T node)>.has('iconOf', iconOf),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }

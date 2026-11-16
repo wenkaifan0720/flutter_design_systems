@@ -78,10 +78,10 @@ Future<void> _pump(WidgetTester tester, Widget home) async {
 final _overlays = <String, void Function(BuildContext)>{
   'showNeumorphicDialog': (c) => showNeumorphicDialog<void>(
     c,
-    builder: (_) => NeumorphicDialog(
+    builder: (_) => const NeumorphicDialog(
       title: 'Delete note?',
       message: 'This cannot be undone.',
-      content: const [Text('Notes in it go too.')],
+      content: [Text('Notes in it go too.')],
       actions: [NeumorphicButton('Delete', onPressed: hit)],
     ),
   ),

@@ -3,6 +3,7 @@
 // shadow gone (`NeumorphicFlatScope`). A control that isn't an object takes the control scale: 8 to 12, no pills.
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -29,6 +30,8 @@ import 'theme.dart';
 import 'internal/cap_label.dart';
 import 'tell.dart' show NeumorphicCircularProgressIndicator;
 import 'internal/out_of_use.dart';
+import 'internal/moulded.dart';
+import 'internal/group_rows.dart' show NeumorphicGroupRowScope;
 
 /// Makes a face a control: the design kit's pressable under it, so Tab reaches it, Enter and Space press it, and one
 /// semantics node names it. Keyboard focus lifts the face off the wall and warms its lit side with the pigment; a
@@ -68,6 +71,7 @@ class NeumorphicTap extends StatefulWidget {
     this.round = false,
     this.focusInset = 0,
     this.focusSize,
+    this.faceAlignment = AlignmentDirectional.center,
     this.faceOutset = EdgeInsets.zero,
     this.focusNode,
     this.focusReach = 1,
@@ -157,6 +161,10 @@ class NeumorphicTap extends StatefulWidget {
   /// Optional dimensions of the focus outline within the target.
   final Size? focusSize;
 
+  /// Where the face ([focusSize], or the target moved in by [focusInset]) stands in the target: centred unless a
+  /// control stands its face on a keyline (DesignTapTarget's alignment), so the lift, a wash and the press follow it.
+  final AlignmentGeometry faceAlignment;
+
   /// How far the face runs past the target, side by side, for a part whose face is wider than what it lays out: a
   /// grouped list's row is a band of its card, a breath inside its rim, so its lift and its press are the row's whole
   /// outline and not its words'. The lift, the press and an app's wash follow it; the target stays the child.
@@ -179,6 +187,110 @@ class NeumorphicTap extends StatefulWidget {
   final KeyEventResult Function(FocusNode, KeyEvent)? onKeyEvent;
   @override
   State<NeumorphicTap> createState() => _NeumorphicTapState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<bool>('showFocus', showFocus, defaultValue: true),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'pressRelief',
+          pressRelief,
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MouseCursor>(
+          'mouseCursor',
+          mouseCursor,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'themeStyle',
+          themeStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticValue', semanticValue, defaultValue: null))
+      ..add(StringProperty('semanticHint', semanticHint, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('checked', checked, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('toggled', toggled, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('mixed', mixed, defaultValue: false))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'inMutuallyExclusiveGroup',
+          inMutuallyExclusiveGroup,
+          defaultValue: false,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onDown', onDown))
+      ..add(
+        ObjectFlagProperty<ValueChanged<Set<WidgetState>>>.has(
+          'onStatesChanged',
+          onStatesChanged,
+        ),
+      )
+      ..add(
+        DoubleProperty('radius', radius, defaultValue: NeumorphicRadii.control),
+      )
+      ..add(DiagnosticsProperty<bool>('round', round, defaultValue: false))
+      ..add(DoubleProperty('focusInset', focusInset, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<Size>('focusSize', focusSize, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'faceAlignment',
+          faceAlignment,
+          defaultValue: AlignmentDirectional.center,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'faceOutset',
+          faceOutset,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('focusReach', focusReach, defaultValue: 1))
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      )
+      ..add(DiagnosticsProperty<bool>('button', button, defaultValue: true))
+      ..add(
+        ObjectFlagProperty<KeyEventResult Function(FocusNode, KeyEvent)>.has(
+          'onKeyEvent',
+          onKeyEvent,
+        ),
+      );
+  }
 }
 
 class _NeumorphicTapState extends State<NeumorphicTap> {
@@ -230,6 +342,7 @@ class _NeumorphicTapState extends State<NeumorphicTap> {
         round: widget.round,
         focusInset: widget.focusInset,
         focusSize: widget.focusSize,
+        faceAlignment: widget.faceAlignment,
         faceOutset: widget.faceOutset,
         focusReach: widget.focusReach,
         showFocus: widget.showFocus,
@@ -261,6 +374,7 @@ class NeumorphicTapFace extends StatelessWidget {
     this.round = false,
     this.focusInset = 0,
     this.focusSize,
+    this.faceAlignment = AlignmentDirectional.center,
     this.faceOutset = EdgeInsets.zero,
     this.focusReach = 1,
     this.showFocus = true,
@@ -294,6 +408,9 @@ class NeumorphicTapFace extends StatelessWidget {
   /// See [NeumorphicTap.focusSize].
   final Size? focusSize;
 
+  /// See [NeumorphicTap.faceAlignment].
+  final AlignmentGeometry faceAlignment;
+
   /// See [NeumorphicTap.faceOutset].
   final EdgeInsetsGeometry faceOutset;
 
@@ -309,9 +426,10 @@ class NeumorphicTapFace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final faceOutset = this.faceOutset.resolve(Directionality.of(context));
+    final place = faceAlignment.resolve(Directionality.of(context));
     final theme = NeumorphicTheme.of(context);
     final motion = NeumorphicMotion.of(context);
-    final look = NeumorphicStyleOf([style, themeStyle], states);
+    final look = neumorphicStyleOf([style, themeStyle], states);
     return AnimatedNeumorphicShape(
       shape:
           look.shape ??
@@ -358,6 +476,7 @@ class NeumorphicTapFace extends StatelessWidget {
                     faceSize,
                     border,
                     faceOutset,
+                    place: place,
                   ),
             child: child,
           ),
@@ -377,6 +496,7 @@ class NeumorphicTapFace extends StatelessWidget {
                   faceSize,
                   border,
                   faceOutset,
+                  place: place,
                 ),
           child: face,
         );
@@ -402,6 +522,7 @@ class NeumorphicTapFace extends StatelessWidget {
                     faceSize,
                     border,
                     faceOutset,
+                    place: place,
                   ),
             child: child,
           ),
@@ -418,6 +539,63 @@ class NeumorphicTapFace extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<WidgetState>('states', states))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'themeStyle',
+          themeStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(
+        DoubleProperty('radius', radius, defaultValue: NeumorphicRadii.control),
+      )
+      ..add(DiagnosticsProperty<bool>('round', round, defaultValue: false))
+      ..add(DoubleProperty('focusInset', focusInset, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<Size>('focusSize', focusSize, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'faceAlignment',
+          faceAlignment,
+          defaultValue: AlignmentDirectional.center,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'faceOutset',
+          faceOutset,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(DoubleProperty('focusReach', focusReach, defaultValue: 1))
+      ..add(
+        DiagnosticsProperty<bool>('showFocus', showFocus, defaultValue: true),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'pressRelief',
+          pressRelief,
+          defaultValue: true,
+        ),
+      );
+  }
 }
 
 /// Keyboard focus on the face: it lifts off the wall, its lit side warmed by the pigment ([neumorphicPaintFocusLift]).
@@ -432,10 +610,12 @@ class _FocusLift extends CustomPainter {
     this.inset,
     this.faceSize,
     this.border,
-    this.outset,
-  );
+    this.outset, {
+    this.place = Alignment.center,
+  });
   final NeumorphicColors c;
   final NeumorphicElevation elevation;
+  final Alignment place;
   final double amount, reach;
   final Size? faceSize;
   final OutlinedBorder? border;
@@ -444,7 +624,7 @@ class _FocusLift extends CustomPainter {
   final EdgeInsets outset;
   @override
   void paint(Canvas canvas, Size size) {
-    final face = _faceBox(size, inset, faceSize, outset);
+    final face = _faceBox(size, inset, faceSize, outset, place);
     neumorphicPaintFocusLift(
       canvas,
       border?.getOuterPath(face) ??
@@ -472,18 +652,27 @@ class _FocusLift extends CustomPainter {
       o.inset != inset ||
       o.faceSize != faceSize ||
       o.border != border ||
-      o.outset != outset;
+      o.outset != outset ||
+      o.place != place;
 }
 
-/// The face's box in a target of [size]: the target moved in by [inset] and out by [outset], or [faceSize] centred.
-Rect _faceBox(Size size, double inset, Size? faceSize, EdgeInsets outset) =>
-    faceSize == null
-    ? outset.inflateRect((Offset.zero & size).deflate(inset))
-    : Rect.fromCenter(
-        center: size.center(Offset.zero),
-        width: faceSize.width,
-        height: faceSize.height,
-      );
+/// The face's box in a target of [size]: the target moved in by [inset] and out by [outset], or [faceSize], standing
+/// where [place] says (centred unless a control stands its face on a keyline).
+Rect _faceBox(
+  Size size,
+  double inset,
+  Size? faceSize,
+  EdgeInsets outset, [
+  Alignment place = Alignment.center,
+]) {
+  final whole = Offset.zero & size;
+  if (faceSize != null) return place.inscribe(faceSize, whole);
+  final face = Size(
+    math.max(0.0, size.width - 2 * inset),
+    math.max(0.0, size.height - 2 * inset),
+  );
+  return outset.inflateRect(place.inscribe(face, whole));
+}
 
 /// The face's outline for a highlight or a pressed inset: the part's own border, else its fallback radius.
 Path _faceOutline(
@@ -493,9 +682,10 @@ Path _faceOutline(
   double inset,
   Size? faceSize,
   OutlinedBorder? border,
-  EdgeInsets outset,
-) {
-  final box = _faceBox(size, inset, faceSize, outset);
+  EdgeInsets outset, [
+  Alignment place = Alignment.center,
+]) {
+  final box = _faceBox(size, inset, faceSize, outset, place);
   return border?.getOuterPath(box) ??
       (Path()..addRRect(
         RRect.fromRectAndRadius(
@@ -514,9 +704,11 @@ class _Overlay extends CustomPainter {
     this.inset,
     this.faceSize,
     this.border,
-    this.outset,
-  );
+    this.outset, {
+    this.place = Alignment.center,
+  });
   final Color color;
+  final Alignment place;
   final double radius, inset;
   final bool round;
   final Size? faceSize;
@@ -524,7 +716,7 @@ class _Overlay extends CustomPainter {
   final EdgeInsets outset;
   @override
   void paint(Canvas canvas, Size size) => canvas.drawPath(
-    _faceOutline(size, radius, round, inset, faceSize, border, outset),
+    _faceOutline(size, radius, round, inset, faceSize, border, outset, place),
     Paint()..color = color,
   );
 
@@ -536,7 +728,8 @@ class _Overlay extends CustomPainter {
       old.inset != inset ||
       old.faceSize != faceSize ||
       old.border != border ||
-      old.outset != outset;
+      old.outset != outset ||
+      old.place != place;
 }
 
 /// A press in the look's own idiom: the groove's paired inset, light above and dark below, inside the face's exact
@@ -551,10 +744,12 @@ class _PressRelief extends CustomPainter {
     this.inset,
     this.faceSize,
     this.border,
-    this.outset,
-  );
+    this.outset, {
+    this.place = Alignment.center,
+  });
   final NeumorphicColors c;
   final NeumorphicElevation elevation;
+  final Alignment place;
   final double depth, radius, inset;
   final bool round;
   final Size? faceSize;
@@ -571,6 +766,7 @@ class _PressRelief extends CustomPainter {
       faceSize,
       border,
       outset,
+      place,
     );
     final box = shape.getBounds();
     Paint blurred(Color color) => Paint()
@@ -598,7 +794,8 @@ class _PressRelief extends CustomPainter {
       old.inset != inset ||
       old.faceSize != faceSize ||
       old.border != border ||
-      old.outset != outset;
+      old.outset != outset ||
+      old.place != place;
 }
 
 /// A raised part that goes in under a finger.
@@ -672,7 +869,7 @@ class _MouldedState extends State<_Moulded> {
       child: Builder(
         builder: (context) => widget.builder.call(
           context,
-          NeumorphicStyleOf([
+          neumorphicStyleOf([
             widget.style,
             widget.themeStyle,
           ], NeumorphicStatesScope.of(context)),
@@ -935,11 +1132,11 @@ class _ActButtonState extends State<_ActButton> {
     final states = {..._states}..remove(WidgetState.disabled);
     if (disabled) states.add(WidgetState.disabled);
     if (widget.busy || disabled) states.remove(WidgetState.pressed);
-    final themeStyle = NeumorphicStyle.cascade([
+    final themeStyle = NeumorphicStyle.layered([
       t.filledButtonTheme,
       t.buttonTheme,
     ]);
-    final look = NeumorphicStyleOf([widget.style, themeStyle], states);
+    final look = neumorphicStyleOf([widget.style, themeStyle], states);
     final height = math.max(
       t.density.height(_buttonHeight(widget.size)),
       look.minimumSize?.height ?? 0,
@@ -977,6 +1174,7 @@ class _ActButtonState extends State<_ActButton> {
       shape = shape.fit(Size.square(diameter));
     }
     final onPressed = widget.busy ? null : widget.onPressed;
+    final place = NeumorphicFacePlace.of(context);
     Widget tap(Widget face, {bool round = false}) => NeumorphicTap(
       autofocus: widget.autofocus,
       // The face draws its own depression.
@@ -993,6 +1191,7 @@ class _ActButtonState extends State<_ActButton> {
           : null,
       round: round,
       focusInset: round ? (_targetSize(diameter) - diameter) / 2 : 0,
+      faceAlignment: round ? place : AlignmentDirectional.center,
       onStatesChanged: (states) => setState(() => _states = Set.of(states)),
       child: NeumorphicOutOfUse(off: disabled, child: face),
     );
@@ -1045,13 +1244,15 @@ class _ActButtonState extends State<_ActButton> {
           ),
         );
     if (widget.round) {
-      return _onEdge(
+      return _padded(
         diameter,
+        alignment: place,
         neumorphicOwnSize(
           width: _targetSize(diameter),
           height: _targetSize(diameter),
           child: tap(
-            Center(
+            Align(
+              alignment: place,
               child: SizedBox.square(
                 dimension: diameter,
                 child: paint(
@@ -1213,7 +1414,7 @@ class _LineButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final height = t.density.height(_buttonHeight(size));
-    final themeStyle = NeumorphicStyle.cascade([t.buttonTheme]);
+    final themeStyle = NeumorphicStyle.layered([t.buttonTheme]);
     final shape = size == NeumorphicButtonSize.small && !wide
         ? t.shapes.capsule
         : null;
@@ -1229,7 +1430,7 @@ class _LineButton extends StatelessWidget {
         final limit = box.hasBoundedWidth
             ? box.maxWidth
             : (t.desk ? 280.0 : 168.0);
-        final look = NeumorphicStyleOf(
+        final look = neumorphicStyleOf(
           [style, themeStyle],
           {if (onPressed == null && !busy) WidgetState.disabled},
         );
@@ -1385,7 +1586,7 @@ class _QuietButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final themeStyle = NeumorphicStyle.cascade([
+    final themeStyle = NeumorphicStyle.layered([
       t.textButtonTheme,
       t.buttonTheme,
     ]);
@@ -1405,7 +1606,7 @@ class _QuietButton extends StatelessWidget {
           : null,
       child: Builder(
         builder: (context) {
-          final look = NeumorphicStyleOf([
+          final look = neumorphicStyleOf([
             style,
             themeStyle,
           ], NeumorphicStatesScope.of(context));
@@ -1666,6 +1867,56 @@ class NeumorphicButton extends StatelessWidget {
       ),
     };
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<bool>('wide', wide, defaultValue: false))
+      ..add(DiagnosticsProperty<bool>('busy', busy, defaultValue: false))
+      ..add(DiagnosticsProperty<bool>('showBusy', showBusy, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'alignment',
+          alignment,
+          defaultValue: AlignmentDirectional.centerStart,
+        ),
+      )
+      ..add(
+        EnumProperty<NeumorphicButtonSize>(
+          'size',
+          size,
+          defaultValue: NeumorphicButtonSize.medium,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'isDestructiveAction',
+          isDestructiveAction,
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 /// Words that go somewhere: ink with a printed underline, so the underline stays when shadows wash out.
@@ -1720,14 +1971,14 @@ class NeumorphicLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final themeStyle = NeumorphicStyle.cascade([
+    final themeStyle = NeumorphicStyle.layered([
       t.textButtonTheme,
       t.buttonTheme,
     ]);
     // Bare words have no face to sink: the press shows in the underline, keyboard focus lifts the words' small
     // corner off the wall, and a dead link lies flat as a dead button does. A style that gives the link a face gets a
     // button's press and lift back.
-    final idle = NeumorphicStyleOf([style, themeStyle], <WidgetState>{});
+    final idle = neumorphicStyleOf([style, themeStyle], <WidgetState>{});
     final faced =
         idle.fill != null ||
         idle.side != null ||
@@ -1754,7 +2005,7 @@ class NeumorphicLink extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, box) {
             final states = NeumorphicStatesScope.of(context);
-            final look = NeumorphicStyleOf([style, themeStyle], states);
+            final look = neumorphicStyleOf([style, themeStyle], states);
             // A link is live: its words in the pigment's ink (law 5), its underline quiet until pressed.
             final ink = look.foreground ?? t.colors.pigmentInk;
             final words = t.textTheme.caption
@@ -1864,6 +2115,40 @@ class NeumorphicLink extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'alignment',
+          alignment,
+          defaultValue: AlignmentDirectional.centerStart,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('busy', busy, defaultValue: false))
+      ..add(DiagnosticsProperty<bool>('showBusy', showBusy, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 /// A round moulded key: a stepper's, a transport's, a way back. An object, so it stays round. [selected] latches it: pressed, with
@@ -1887,7 +2172,9 @@ class NeumorphicRoundButton extends StatelessWidget {
     this.selected = false,
     this.onPressed,
     this.style,
-  }) : _filled = false;
+  }) : assert(size > 0),
+       assert((iconSize ?? 1) > 0),
+       _filled = false;
 
   /// The act as a round key: the pigment-filled cap with [icon] alone, for a phone's top or a row with no room for the
   /// word; [label] is read out, never drawn. [size] is the face's diameter: 36, 48 or 56.
@@ -1904,7 +2191,8 @@ class NeumorphicRoundButton extends StatelessWidget {
     this.size = 48,
     this.onPressed,
     this.style,
-  }) : badge = null,
+  }) : assert(size > 0),
+       badge = null,
        badgeLabel = null,
        iconSize = null,
        selected = false,
@@ -1965,7 +2253,7 @@ class NeumorphicRoundButton extends StatelessWidget {
     }
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
-    final rest = NeumorphicStyleOf(
+    final rest = neumorphicStyleOf(
       [style, t.iconButtonTheme],
       {
         if (selected) WidgetState.selected,
@@ -1984,10 +2272,12 @@ class NeumorphicRoundButton extends StatelessWidget {
     );
     // The tap is the button's own size wherever it stands: a row that hands it its whole width still gets the lift
     // round the face, not round the room. The merge keeps the button's one spoken node at its own root.
-    // The face on the box's edge, its target's margins past it (outside the tap, which keeps its whole target and its
-    // spoken node).
-    return _onEdge(
+    // Laid out at its target: the press, the spoken node and the box are one. The face stands on the start keyline
+    // unless its slot says otherwise (NeumorphicFacePlace).
+    final place = NeumorphicFacePlace.of(context);
+    return _padded(
       faceMinimum(rest),
+      alignment: place,
       MergeSemantics(
         child: Align(
           alignment: AlignmentDirectional.topStart,
@@ -2005,6 +2295,7 @@ class NeumorphicRoundButton extends StatelessWidget {
             label: label,
             semanticValue: badgeLabel ?? badge,
             focusSize: Size.square(faceMinimum(rest)),
+            faceAlignment: place,
             selected: selected ? true : null,
             round: true,
             child: Builder(
@@ -2013,7 +2304,7 @@ class NeumorphicRoundButton extends StatelessWidget {
                   ...NeumorphicStatesScope.of(context),
                   if (selected) WidgetState.selected,
                 };
-                final look = NeumorphicStyleOf([
+                final look = neumorphicStyleOf([
                   style,
                   t.iconButtonTheme,
                 ], states);
@@ -2065,11 +2356,14 @@ class NeumorphicRoundButton extends StatelessWidget {
                     ),
                   ),
                 );
+                // The bead keeps its place on the face wherever the face stands in its target.
+                final beadEnd =
+                    -6 - place.start * (_targetSize(faceSize) - faceSize) / 2;
                 return neumorphicOwnSize(
                   width: _targetSize(faceSize),
                   height: _targetSize(faceSize),
                   child: badge == null
-                      ? Center(child: body)
+                      ? Align(alignment: place, child: body)
                       : Stack(
                           clipBehavior: Clip.none,
                           fit: StackFit.expand,
@@ -2081,7 +2375,7 @@ class NeumorphicRoundButton extends StatelessWidget {
                             // for.
                             PositionedDirectional(
                               top: -4,
-                              end: -6,
+                              end: beadEnd,
                               child: MediaQuery.withClampedTextScaling(
                                 maxScaleFactor: 1.4,
                                 child: CustomPaint(
@@ -2127,11 +2421,11 @@ class NeumorphicRoundButton extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Center(child: body),
+                            Align(alignment: place, child: body),
                             // Its face over the key's, its figure in the ink.
                             PositionedDirectional(
                               top: -4,
-                              end: -6,
+                              end: beadEnd,
                               child: MediaQuery.withClampedTextScaling(
                                 maxScaleFactor: 1.4,
                                 child: CustomPaint(
@@ -2181,6 +2475,39 @@ class NeumorphicRoundButton extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(DoubleProperty('size', size, defaultValue: 44))
+      ..add(DoubleProperty('iconSize', iconSize, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>('selected', selected, defaultValue: false),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(StringProperty('badge', badge, defaultValue: null))
+      ..add(StringProperty('badgeLabel', badgeLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
   }
 }
 
@@ -2254,7 +2581,8 @@ class NeumorphicIconButton extends StatelessWidget {
     this.badgeLabel,
     this.selected = false,
     this.style,
-  });
+  }) : assert(size > 0),
+       assert((iconSize ?? 1) > 0);
 
   /// State-resolved visual overrides before the component theme.
   final NeumorphicStyle? style;
@@ -2303,6 +2631,39 @@ class NeumorphicIconButton extends StatelessWidget {
     badgeLabel: badgeLabel,
     selected: selected,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(DoubleProperty('size', size, defaultValue: 44))
+      ..add(DoubleProperty('iconSize', iconSize, defaultValue: null))
+      ..add(StringProperty('badge', badge, defaultValue: null))
+      ..add(StringProperty('badgeLabel', badgeLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>('selected', selected, defaultValue: false),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 /// A short raised chip: a fact, a filter, a quick reply. Height 36, radius 10. [selected]: pressed, in heavier ink, its icon in
@@ -2386,7 +2747,7 @@ class NeumorphicChip extends StatelessWidget {
       0,
     ).resolve(Directionality.of(context));
     final padding = t.density.padding(pad);
-    final rest = NeumorphicStyleOf(
+    final rest = neumorphicStyleOf(
       [style, t.chipTheme],
       {if (selected) WidgetState.selected, if (!enabled) WidgetState.disabled},
     );
@@ -2469,7 +2830,7 @@ class NeumorphicChip extends StatelessWidget {
 
     Widget inner(BuildContext context) => content(
       context,
-      NeumorphicStyleOf(
+      neumorphicStyleOf(
         [style, t.chipTheme],
         {...NeumorphicStatesScope.of(context), ...states},
       ),
@@ -2514,76 +2875,83 @@ class NeumorphicChip extends StatelessWidget {
         ),
       );
       words.dispose();
-      face = Semantics(
-        container: true,
-        button: onPressed != null,
-        enabled: enabled,
-        selected: selected,
-        label: label,
-        onTap: enabled ? onPressed : null,
-        child: NeumorphicReach(
-          height: NeumorphicChromeMetrics.targetSize,
-          child: NeumorphicSurface(
-            cast: selected
-                ? NeumorphicSurfaceLevel.groove
-                : NeumorphicSurfaceLevel.part,
-            style: style,
-            themeStyle: t.chipTheme,
-            shape: shape,
-            states: states,
-            outlined: true,
-            radius: NeumorphicRadii.chip,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: band),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: ExcludeSemantics(
-                      child: NeumorphicTap(
-                        focusNode: focusNode,
-                        autofocus: autofocus,
-                        onPressed: enabled ? onPressed : null,
-                        style: style,
-                        themeStyle: t.chipTheme,
-                        shape: shape,
-                        label: label,
-                        selected: selected,
-                        radius: NeumorphicRadii.chip,
-                        child: Padding(
-                          padding: padding,
-                          child: Builder(builder: inner),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // The cross is the chip's own face at its end, sinking where it is pressed as the words' part does: a
-                  // raised key on the raised chip stood one bump on another (law 4). Its target is the platform's,
-                  // reaching past the band up and down.
-                  NeumorphicTallTarget(
+      // The chip is laid out at its target's height, and a press anywhere in it (above or below the face, or on its
+      // rim) lands on the face's middle line at its own x: on the words' part or the cross, each a 48 target in the
+      // band. Each speaks for its own part: the words' node outlined the cross too, which a press there never reached.
+      face = NeumorphicReach(
+        height: NeumorphicChromeMetrics.targetSize,
+        inset: math.max(dims.left, dims.right) + .5,
+        child: NeumorphicSurface(
+          cast: selected
+              ? NeumorphicSurfaceLevel.groove
+              : NeumorphicSurfaceLevel.part,
+          style: style,
+          themeStyle: t.chipTheme,
+          shape: shape,
+          states: states,
+          outlined: true,
+          radius: NeumorphicRadii.chip,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: band),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: NeumorphicTallTarget(
                     height: NeumorphicChromeMetrics.targetSize,
-                    child: NeumorphicTap(
-                      onPressed: enabled ? onDeleted : null,
-                      label:
-                          deleteLabel ??
-                          '${NeumorphicLocalizations.of(context).delete} $label',
-                      style: style,
-                      themeStyle: t.chipTheme,
-                      shape: shape,
-                      radius: NeumorphicRadii.chip,
-                      child: SizedBox(
-                        width: 48,
-                        height: band,
-                        child: Icon(
-                          NeumorphicGlyphs.close,
-                          size: 16,
-                          color: enabled ? c.inkSecondary : c.inkTertiary,
+                    child: Semantics(
+                      container: true,
+                      button: onPressed != null,
+                      enabled: enabled,
+                      selected: selected,
+                      label: label,
+                      onTap: enabled ? onPressed : null,
+                      child: ExcludeSemantics(
+                        child: NeumorphicTap(
+                          focusNode: focusNode,
+                          autofocus: autofocus,
+                          onPressed: enabled ? onPressed : null,
+                          style: style,
+                          themeStyle: t.chipTheme,
+                          shape: shape,
+                          label: label,
+                          selected: selected,
+                          radius: NeumorphicRadii.chip,
+                          child: Padding(
+                            padding: padding,
+                            child: Builder(builder: inner),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+                // The cross is the chip's own face at its end, sinking where it is pressed as the words' part does: a
+                // raised key on the raised chip stood one bump on another (law 4). Its target is the platform's,
+                // reaching past the band up and down.
+                NeumorphicTallTarget(
+                  height: NeumorphicChromeMetrics.targetSize,
+                  child: NeumorphicTap(
+                    onPressed: enabled ? onDeleted : null,
+                    label:
+                        deleteLabel ??
+                        '${NeumorphicLocalizations.of(context).delete} $label',
+                    style: style,
+                    themeStyle: t.chipTheme,
+                    shape: shape,
+                    radius: NeumorphicRadii.chip,
+                    child: SizedBox(
+                      width: 48,
+                      height: band,
+                      child: Icon(
+                        NeumorphicGlyphs.close,
+                        size: 16,
+                        color: enabled ? c.inkSecondary : c.inkTertiary,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -2610,6 +2978,47 @@ class NeumorphicChip extends StatelessWidget {
       heightFactor: 1,
       child: NeumorphicOutOfUse(off: !enabled, child: face),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'trailingIcon',
+          trailingIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDeleted', onDeleted))
+      ..add(StringProperty('deleteLabel', deleteLabel, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<bool>('selected', selected, defaultValue: false),
+      )
+      ..add(DiagnosticsProperty<bool>('live', live, defaultValue: false))
+      ..add(DiagnosticsProperty<bool>('dense', dense, defaultValue: false))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
   }
 }
 
@@ -2660,7 +3069,7 @@ class NeumorphicLatchGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context), c = t.colors;
     if (options.isEmpty) return const SizedBox.shrink();
-    final bank = NeumorphicStyleOf([style, t.segmentedButtonTheme], const {});
+    final bank = neumorphicStyleOf([style, t.segmentedButtonTheme], const {});
     final padding =
         bank.padding(Directionality.of(context)) ??
         t.density.padding(const EdgeInsets.symmetric(horizontal: 6));
@@ -2699,7 +3108,7 @@ class NeumorphicLatchGroup extends StatelessWidget {
                     if (on) WidgetState.selected,
                     if (onChanged == null) WidgetState.disabled,
                   };
-                  final look = NeumorphicStyleOf([
+                  final look = neumorphicStyleOf([
                     style,
                     t.segmentedButtonTheme,
                   ], states);
@@ -2797,6 +3206,24 @@ class NeumorphicLatchGroup extends StatelessWidget {
       children: [for (final o in options) cap(o)],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<NeumorphicLatch>('options', options))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// A field's shell: a pressed groove with a 12-pixel radius.
@@ -2816,7 +3243,7 @@ class NeumorphicFieldBox extends StatelessWidget {
     this.states = const {},
     this.multiline = false,
     this.shape,
-  });
+  }) : assert(minHeight >= 0);
 
   /// The content placed inside this component.
   final Widget child;
@@ -2842,30 +3269,67 @@ class NeumorphicFieldBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final padding = this.padding.resolve(Directionality.of(context));
     final t = NeumorphicTheme.of(context);
-    return NeumorphicSurface(
-      cast: NeumorphicSurfaceLevel.groove,
-      outlined: true,
-      boundary: true,
-      style: style,
-      themeStyle: t.textFieldTheme,
-      states: states,
-      shape: shape,
-      padding: t.density.padding(padding),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          // The density's control height, as a button's beside it: no floor of its own.
-          minHeight: t.density.height(minHeight),
-        ),
-        // Several lines start at the top; the first stands where one line does.
-        child: Align(
-          alignment: multiline
-              ? AlignmentDirectional.topStart
-              : Alignment.center,
-          heightFactor: 1,
-          child: child,
+    // A press anywhere in the box reaches the words it holds (its side air included), as a TextField's decoration does.
+    return NeumorphicEntryReach(
+      child: NeumorphicSurface(
+        cast: NeumorphicSurfaceLevel.groove,
+        outlined: true,
+        boundary: true,
+        style: style,
+        themeStyle: t.textFieldTheme,
+        states: states,
+        shape: shape,
+        padding: t.density.padding(padding),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            // The density's control height, as a button's beside it: no floor of its own.
+            minHeight: t.density.height(minHeight),
+          ),
+          // Several lines start at the top; the first stands where one line does.
+          child: Align(
+            alignment: multiline
+                ? AlignmentDirectional.topStart
+                : Alignment.center,
+            heightFactor: 1,
+            child: child,
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('minHeight', minHeight, defaultValue: 48))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.symmetric(horizontal: 14),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<WidgetState>(
+          'states',
+          states,
+          defaultValue: const <WidgetState>{},
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('multiline', multiline, defaultValue: false),
+      )
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      );
   }
 }
 
@@ -3001,6 +3465,121 @@ class NeumorphicTextField extends StatefulWidget {
   final bool nameOnly;
   @override
   State<NeumorphicTextField> createState() => _NeumorphicTextFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('initialValue', initialValue, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('counter', counter, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(IntProperty('lines', lines, defaultValue: 1))
+      ..add(IntProperty('maxLength', maxLength, defaultValue: null))
+      ..add(DoubleProperty('minHeight', minHeight, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      )
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
+      ..add(
+        DiagnosticsProperty<bool>('readOnly', readOnly, defaultValue: false),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'obscureText',
+          obscureText,
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget editable)>.has(
+          'decorate',
+          decorate,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget failure)>.has(
+          'failureLine',
+          failureLine,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<(String show, String hide)>(
+          'revealLabels',
+          revealLabels,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('nameOnly', nameOnly, defaultValue: false),
+      );
+  }
 }
 
 class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
@@ -3043,7 +3622,7 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
       if (!widget.enabled) WidgetState.disabled,
       if (widget.error != null) WidgetState.error,
     };
-    final look = NeumorphicStyleOf([widget.style, t.textFieldTheme], states);
+    final look = neumorphicStyleOf([widget.style, t.textFieldTheme], states);
     final shape = look.shape;
     final text = neumorphicEntryStyle(
       t.textTheme.body.merge(look.textStyle).copyWith(color: look.foreground),
@@ -3154,6 +3733,13 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
     // ran into the groove's curved end. At 12 its relief stays on the groove's floor.
     final keySize = (control - 24).clamp(24.0, 28.0);
     final keyFloor = (control - keySize) / 2;
+    // The key stands at its target (DesignTapTarget), its face centred: the target's own air round the face stands in
+    // for as much of the box's end padding and the gap before the key, so the face keeps its place.
+    final keyAir = reveal != null
+        ? (_targetSize(keySize) - keySize) / 2
+        : widget.trailing is NeumorphicSendButton
+        ? (_targetSize(t.density.height(34)) - t.density.height(34)) / 2
+        : 0.0;
     final trailing = reveal != null
         ? NeumorphicRoundButton(
             reveal.obscured ? NeumorphicGlyphs.eye : NeumorphicGlyphs.eyeOff,
@@ -3162,6 +3748,20 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
             onPressed: widget.enabled ? reveal.toggle : null,
           )
         : widget.trailing;
+    // A field that fails carries the warning mark at its end, in the ink, as the line under it does: the field itself
+    // says which one failed, with no colour of its own (the look's one pigment is for what is live). A key of its own
+    // there (the eye, a send key) keeps its place, and the line under the field still says why.
+    final end =
+        trailing ??
+        (widget.error == null
+            ? null
+            : ExcludeSemantics(
+                child: Icon(
+                  NeumorphicGlyphs.triangleAlert,
+                  size: 18,
+                  color: t.colors.ink,
+                ),
+              ));
     final field = NeumorphicFieldBox(
       style: widget.style,
       states: states,
@@ -3175,10 +3775,19 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
       padding: EdgeInsetsDirectional.only(
         start: 14,
         end: reveal != null && !multi
-            ? math.max(keyFloor, 8) - math.min(0.0, t.density.paddingDelta)
+            ? math.max(
+                0,
+                math.max(keyFloor, 8) -
+                    math.min(0.0, t.density.paddingDelta) -
+                    keyAir,
+              )
             : widget.trailing is NeumorphicSendButton && !multi
-            ? (control - t.density.height(34)) / 2 -
-                  math.min(0.0, t.density.paddingDelta)
+            ? math.max(
+                0,
+                (control - t.density.height(34)) / 2 -
+                    math.min(0.0, t.density.paddingDelta) -
+                    keyAir,
+              )
             : 14,
       ),
       child: Row(
@@ -3188,10 +3797,19 @@ class _NeumorphicTextFieldState extends State<NeumorphicTextField> {
         children: [
           if (widget.leading != null) ...[
             band(widget.leading!),
-            const SizedBox(width: 10),
+            const SizedBox(width: _keyGap),
           ],
           Expanded(child: input),
-          if (trailing != null) ...[const SizedBox(width: 10), band(trailing)],
+          if (end != null) ...[
+            SizedBox(width: math.max(0, _keyGap - keyAir)),
+            // Centred in its target, inside the box: the box's end padding was cut for the target's air.
+            band(
+              NeumorphicFacePlace(
+                alignment: AlignmentDirectional.center,
+                child: end,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -3299,7 +3917,7 @@ class NeumorphicSendButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final rest = NeumorphicStyleOf(
+    final rest = neumorphicStyleOf(
       [style, t.iconButtonTheme],
       {if (onPressed == null) WidgetState.disabled},
     );
@@ -3309,8 +3927,12 @@ class NeumorphicSendButton extends StatelessWidget {
     );
     var shape = rest.shape;
     if (shape is NeumorphicBorder) shape = shape.fit(Size.square(diameter));
-    return _onEdge(
+    // A send key ends its line: its face stands on the end keyline unless its slot says otherwise.
+    final place =
+        NeumorphicFacePlace.maybeOf(context) ?? AlignmentDirectional.centerEnd;
+    return _padded(
       diameter,
+      alignment: place,
       neumorphicOwnSize(
         width: _targetSize(diameter),
         height: _targetSize(diameter),
@@ -3326,10 +3948,11 @@ class NeumorphicSendButton extends StatelessWidget {
           shape: shape,
           round: true,
           focusSize: Size.square(diameter),
+          faceAlignment: place,
           child: Builder(
             builder: (context) {
               final states = NeumorphicStatesScope.of(context);
-              final look = NeumorphicStyleOf([
+              final look = neumorphicStyleOf([
                 style,
                 t.iconButtonTheme,
               ], states);
@@ -3337,7 +3960,8 @@ class NeumorphicSendButton extends StatelessWidget {
               if (border is NeumorphicBorder) {
                 border = border.fit(Size.square(diameter));
               }
-              return Center(
+              return Align(
+                alignment: place,
                 child: SizedBox.square(
                   dimension: diameter,
                   child: AnimatedNeumorphicShape(
@@ -3393,6 +4017,30 @@ class NeumorphicSendButton extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
   }
 }
 
@@ -3465,7 +4113,7 @@ class NeumorphicSelectField extends StatelessWidget {
       label: value,
       child: Builder(
         builder: (context) {
-          final look = NeumorphicStyleOf([
+          final look = neumorphicStyleOf([
             style,
             t.textFieldTheme,
           ], NeumorphicStatesScope.of(context));
@@ -3509,9 +4157,39 @@ class NeumorphicSelectField extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
-/// The shared box of every option: raised in ink; selected, pressed with an LED in its corner, so it reads with no shadow.
+/// The tallest a choice box of one line stands: below it the chosen LED sits at the line's end, above it in the corner.
+const double _choiceBoxOneLine = 64;
+
+/// The shared box of every option: raised in ink; selected, pressed with an LED at its end (a row) or in its corner (a
+/// taller cell), so it reads with no shadow.
 ///
 /// ```dart
 /// NeumorphicChoiceBox(selected: true, onPressed: () {}, child: Text('Morning'))
@@ -3605,19 +4283,72 @@ class NeumorphicChoiceBox extends StatelessWidget {
               padding: padding,
               child: child,
             ),
-            // Chosen carries the pigment as an LED, so it reads with no shadow visible. It is concentric with the corner,
-            // its centre on the curve's centre (a control's 12), so it sits as far from the curve as from both edges:
-            // at 11 in it stood off the curve's middle, and read as jammed towards the corner.
+            // Chosen carries the pigment as an LED, so it reads with no shadow visible. In a box of one line it stands
+            // on the line's middle at its end, where a radio's mark stands: in the corner of a row it read as a badge.
+            // A taller box (a grid's cell) keeps it in its corner, concentric with the curve (its centre on the
+            // curve's centre, a control's 12), as far from the curve as from both edges.
             if (selected)
-              const PositionedDirectional(
-                top: NeumorphicRadii.control - 4,
-                end: NeumorphicRadii.control - 4,
-                child: NeumorphicLed(),
+              Positioned.fill(
+                child: LayoutBuilder(
+                  builder: (context, box) {
+                    final oneLine = box.maxHeight < _choiceBoxOneLine;
+                    return Align(
+                      alignment: oneLine
+                          ? AlignmentDirectional.centerEnd
+                          : AlignmentDirectional.topEnd,
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.only(
+                          top: oneLine ? 0 : NeumorphicRadii.control - 4,
+                          end: NeumorphicRadii.control - 4,
+                        ),
+                        child: const NeumorphicLed(),
+                      ),
+                    );
+                  },
+                ),
               ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('selected', selected, defaultValue: false),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.all(12),
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('many', many, defaultValue: false))
+      ..add(DiagnosticsProperty<bool>('inGroup', inGroup, defaultValue: false))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
   }
 }
 
@@ -3738,7 +4469,7 @@ class NeumorphicChoices extends StatelessWidget {
                 onPressed: onChanged == null ? null : () => onChanged!(o.value),
                 child: Builder(
                   builder: (context) {
-                    final look = NeumorphicStyleOf(
+                    final look = neumorphicStyleOf(
                       [style, t.optionTheme],
                       {
                         ...NeumorphicStatesScope.of(context),
@@ -3797,6 +4528,24 @@ class NeumorphicChoices extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<NeumorphicChoice>('options', options))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      );
+  }
 }
 
 /// A count you change: two round keys and a figure between them, the figure in the title's tabular figures so it
@@ -3837,8 +4586,8 @@ class NeumorphicNumberField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final layers = NeumorphicStyle.cascade([style, t.stepperTheme]);
-    final look = NeumorphicStyleOf([layers], const {});
+    final layers = NeumorphicStyle.layered([style, t.stepperTheme]);
+    final look = neumorphicStyleOf([layers], const {});
     final scaler = MediaQuery.textScalerOf(context);
     // As wide as its keys and its widest word: at a floor of 200 a one-figure count stood 160 px between keys that no
     // longer read as one stepper.
@@ -3861,9 +4610,10 @@ class NeumorphicNumberField extends StatelessWidget {
     return NeumorphicColumn(
       gap: 6,
       children: [
-        // The keys' faces stand on the row's ends, their targets past them: a press there still reaches them.
-        NeumorphicSideReach(
-          slop: (NeumorphicChromeMetrics.targetSize - t.density.height(44)) / 2,
+        // The keys stand at their targets at the row's ends, their faces centred in them.
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          heightFactor: 1,
           child: SizedBox(
             width: width.toDouble(),
             child: Row(
@@ -3898,11 +4648,15 @@ class NeumorphicNumberField extends StatelessWidget {
                     ),
                   ),
                 ),
-                NeumorphicRoundButton(
-                  NeumorphicGlyphs.plus,
-                  style: layers,
-                  label: NeumorphicLocalizations.of(context).more,
-                  onPressed: onIncrease,
+                // The last key's face stands on the row's end, as the first's on its start.
+                NeumorphicFacePlace(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: NeumorphicRoundButton(
+                    NeumorphicGlyphs.plus,
+                    style: layers,
+                    label: NeumorphicLocalizations.of(context).more,
+                    onPressed: onIncrease,
+                  ),
                 ),
               ],
             ),
@@ -3911,6 +4665,24 @@ class NeumorphicNumberField extends StatelessWidget {
         if (note != null) Text(note!, style: t.textTheme.caption),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('unit', unit, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDecrease', onDecrease))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onIncrease', onIncrease));
   }
 }
 
@@ -4082,7 +4854,7 @@ class NeumorphicSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
-    final initial = NeumorphicStyleOf(
+    final initial = neumorphicStyleOf(
       [style, t.switchTheme],
       {
         if (value) WidgetState.selected,
@@ -4116,7 +4888,7 @@ class NeumorphicSwitch extends StatelessWidget {
               ...NeumorphicStatesScope.of(context),
               if (value) WidgetState.selected,
             };
-            final look = NeumorphicStyleOf([style, t.switchTheme], states);
+            final look = neumorphicStyleOf([style, t.switchTheme], states);
             // The track is the switch's face, whichever end its thumb stands at: marked for ui_core's checks, which
             // would read an off switch's ground-coloured track by its thumb alone.
             final paint = DesignKeylineFace(
@@ -4170,6 +4942,32 @@ class NeumorphicSwitch extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 /// A line of words and its switch: a setting. The words say on or off; the switch doesn't have to say it alone.
@@ -4218,6 +5016,9 @@ class NeumorphicSwitchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
+    // In a grouped list the row is a band of its card, a breath inside its rim, as a list tile is: its focus lift goes
+    // round that band and not round its words and its control.
+    final cell = NeumorphicGroupRowScope.cellOf(context);
     return NeumorphicTap(
       autofocus: autofocus,
       style: style,
@@ -4228,11 +5029,14 @@ class NeumorphicSwitchRow extends StatelessWidget {
       button: false,
       // A row that holds a control passes its press to the control: the row stays flat and the control moves.
       pressRelief: false,
+      shape: cell?.border,
+      faceOutset: cell?.outset ?? EdgeInsets.zero,
+      focusReach: cell == null ? 1 : .5,
       focusNode: focusNode,
       onPressed: onChanged == null ? null : () => onChanged!(!value),
       child: Builder(
         builder: (context) {
-          final look = NeumorphicStyleOf(
+          final look = neumorphicStyleOf(
             [style, t.switchTheme],
             {
               ...NeumorphicStatesScope.of(context),
@@ -4283,6 +5087,33 @@ class NeumorphicSwitchRow extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
   }
 }
 
@@ -4502,6 +5333,49 @@ class NeumorphicSlider extends StatefulWidget {
 
   @override
   State<NeumorphicSlider> createState() => _NeumorphicSliderState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('value', value))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has(
+          'valueLabel',
+          valueLabel,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 class _NeumorphicSliderState extends State<NeumorphicSlider> {
@@ -4648,7 +5522,7 @@ class _NeumorphicSliderState extends State<NeumorphicSlider> {
                           ...NeumorphicStatesScope.of(context),
                           if (_dragging) WidgetState.dragged,
                         };
-                        final look = NeumorphicStyleOf([
+                        final look = neumorphicStyleOf([
                           widget.style,
                           t.sliderTheme,
                         ], states);
@@ -4718,7 +5592,7 @@ class NeumorphicProgress extends StatelessWidget {
     required this.value,
     this.start,
     this.end,
-  });
+  }) : assert(value >= 0 && value <= 1);
 
   /// The fraction complete, from zero to one.
   final double value;
@@ -4756,6 +5630,15 @@ class NeumorphicProgress extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(StringProperty('start', start, defaultValue: null))
+      ..add(StringProperty('end', end, defaultValue: null));
   }
 }
 
@@ -4795,8 +5678,10 @@ class NeumorphicRoundCheckbox extends StatelessWidget {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
     final flat = NeumorphicFlatScope.of(context);
-    return _onEdge(
+    final place = NeumorphicFacePlace.of(context);
+    return _padded(
       28,
+      alignment: place,
       neumorphicOwnSize(
         width: _targetSize(28),
         height: _targetSize(28),
@@ -4811,13 +5696,14 @@ class NeumorphicRoundCheckbox extends StatelessWidget {
           onPressed: onChanged == null ? null : () => onChanged!(!value),
           round: true,
           focusInset: (_targetSize(28) - 28) / 2,
+          faceAlignment: place,
           child: Builder(
             builder: (context) {
               final states = {
                 ...NeumorphicStatesScope.of(context),
                 if (value) WidgetState.selected,
               };
-              final look = NeumorphicStyleOf([style, t.checkboxTheme], states);
+              final look = neumorphicStyleOf([style, t.checkboxTheme], states);
               var border = look.shape ?? t.shapes.circle(28);
               if (border is NeumorphicBorder) {
                 border = border.fit(const Size.square(28));
@@ -4825,7 +5711,8 @@ class NeumorphicRoundCheckbox extends StatelessWidget {
               final shapeBorder = border;
               // A face of the ground's colour shows only by its shading: marked as the check's face for ui_core's
               // checks, which would place its edge by the shading's first dark pixel.
-              return Center(
+              return Align(
+                alignment: place,
                 child: DesignKeylineFace(
                   child: SizedBox.square(
                     dimension: 28,
@@ -4935,6 +5822,31 @@ class NeumorphicRoundCheckbox extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<NeumorphicStyle>(
+          'style',
+          style,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('value', value, defaultValue: false))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>('autofocus', autofocus, defaultValue: false),
+      );
+  }
 }
 
 class _TapTarget extends SingleChildRenderObjectWidget {
@@ -5036,12 +5948,24 @@ class _RenderTapTarget extends RenderShiftedBox {
   }
 }
 
-/// [child], a face [face] wide centred in its target, with its first drawn pixel on the box's edge: the target's side
-/// margins reach past the box, hit-tested and spoken, never laid out (NeumorphicFaceEdge).
-Widget _onEdge(double face, Widget child) {
-  final slop = (_targetSize(face) - face) / 2;
-  return slop <= 0 ? child : NeumorphicFaceEdge(slop: slop, child: child);
-}
+/// [child], a control whose face is [face] across, laid out at its target (the platform's least however small the
+/// density draws the face, the same on every platform): its box, the area a press reaches and the box a screen reader
+/// outlines are one, as Material's padded tap target lays out (ui_core's DesignTapTarget). The face stands where
+/// [alignment] says, the control's [NeumorphicFacePlace]: on the start keyline unless its slot sets another.
+/// Before 0.2.0 the face stood on the box's edge and its target's margins reached past the box, hit-tested only: a
+/// neighbour within them, or the parent's edge, took the presses a screen reader said were the control's.
+Widget _padded(
+  double face,
+  Widget child, {
+  AlignmentDirectional alignment = AlignmentDirectional.center,
+}) => DesignTapTarget(
+  minSize: Size.square(_targetSize(face)),
+  alignment: alignment,
+  child: child,
+);
+
+/// The room between a field's words and a glyph or key beside them.
+const double _keyGap = 10;
 
 double _targetSize(double face) =>
     math.max(NeumorphicChromeMetrics.targetSize, face);
