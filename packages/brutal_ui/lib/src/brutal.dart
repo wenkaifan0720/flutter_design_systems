@@ -1,0 +1,28 @@
+/// Brutal: the web with its make-up off. Heavy black rules, square corners, a hard offset shadow under what you press, cells on shared rules, one flat colour block a screen. See guidance.md.
+library;
+
+export 'brutal/actions.dart';
+export 'brutal/app.dart';
+export 'brutal/block.dart';
+export 'brutal/button.dart';
+export 'brutal/charts.dart';
+export 'brutal/chrome_metrics.dart';
+export 'brutal/choices.dart';
+export 'brutal/collections.dart';
+export 'brutal/display.dart';
+export 'brutal/entry.dart';
+export 'brutal/feedback.dart';
+export 'brutal/format.dart';
+export 'brutal/fonts.dart';
+export 'brutal/lists.dart';
+export 'brutal/menu.dart';
+export 'brutal/navigation.dart';
+export 'brutal/overlays.dart';
+export 'brutal/pickers.dart';
+export 'brutal/popovers.dart';
+export 'brutal/select.dart';
+export 'brutal/selection.dart';
+export 'brutal/surface.dart';
+export 'brutal/text_field.dart';
+export 'brutal/theme.dart';
+export 'brutal/wayfinding.dart';
