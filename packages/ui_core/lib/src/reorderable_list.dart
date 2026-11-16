@@ -5,6 +5,7 @@
 /// in (focus stays in it), and each move announced.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -110,6 +111,70 @@ class DesignReorderableList<T extends Object> extends StatefulWidget {
   @override
   State<DesignReorderableList<T>> createState() =>
       _DesignReorderableListState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('items', items))
+      ..add(
+        ObjectFlagProperty<void Function(int from, int to)>.has(
+          'onReorder',
+          onReorder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(
+            BuildContext context,
+            T item,
+            DesignReorderItem reorder,
+          )
+        >.has('itemBuilder', itemBuilder),
+      )
+      ..add(ObjectFlagProperty<String Function(T item)>.has('labelOf', labelOf))
+      ..add(ObjectFlagProperty<Object Function(T item)>.has('keyOf', keyOf))
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(Widget child, int index, Animation<double> animation)
+        >.has('proxyDecorator', proxyDecorator),
+      )
+      ..add(
+        FlagProperty(
+          'longPressToDrag',
+          value: longPressToDrag,
+          ifFalse: 'longPressToDrag: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'shrinkWrap',
+          value: shrinkWrap,
+          ifTrue: 'shrinkWrap',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          String Function(String label, int position, int count)
+        >.has('movedMessage', movedMessage),
+      );
+  }
 }
 
 class _MoveIntent extends Intent {

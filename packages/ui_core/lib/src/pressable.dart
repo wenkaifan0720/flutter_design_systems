@@ -9,8 +9,13 @@
 /// [WidgetStateProperty] does.
 library;
 
+import 'dart:async';
+
+import 'package:flutter/gestures.dart'
+    show PointerDeviceKind, kPressTimeout, kPrimaryMouseButton, kTouchSlop;
 import 'package:flutter/semantics.dart'
     show SemanticsRole, SemanticsValidationResult;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// Builds a pressable's face for its current [states] (hovered, focused,
@@ -35,6 +40,14 @@ typedef DesignPressableBuilder = Widget Function(
 /// [WidgetState.focused] is in the states only while the focus should show
 /// (the keyboard moved it, not a tap), so a look draws its ring from it
 /// directly.
+///
+/// [WidgetState.pressed] comes from the pointer itself, as soon as a finger
+/// or a button goes down (after [kPressTimeout] inside a scroll view, so a
+/// scroll that starts on it does not light it), and stays at least
+/// [minimumPressDuration], so a quick tap, shorter than a frame's worth of
+/// the press animation, still shows its press. A drag past [kTouchSlop]
+/// lets it go at once: a scroll took the pointer. A long press holds it
+/// until the finger lifts.
 ///
 /// ```dart
 /// DesignPressable(onPressed: () {}, semanticLabel: 'Save', builder: (context, states, child) => Opacity(opacity: states.contains(WidgetState.pressed) ? 0.6 : 1, child: const Text('Save')))
@@ -103,11 +116,18 @@ class DesignPressable extends StatefulWidget {
   /// disposes it.
   final WidgetStatesController? statesController;
 
-  /// Its focus node, when the caller moves focus itself. The caller's, who
-  /// disposes it; null: the pressable's [Focus] makes its own.
+  /// Its focus node, when the caller moves focus itself.
+  ///
+  /// {@template design.focusNode}
+  /// A focus node given is the caller's, who disposes it: the part never
+  /// does. Given none, the part makes its own and disposes it.
+  /// {@endtemplate}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@template design.autofocus}
+  /// Whether it takes focus when it first appears, as [Focus.autofocus]
+  /// does: one part on a route asks for it.
+  /// {@endtemplate}
   final bool autofocus;
 
   /// The pointer over it. Null: a click where it presses, else the one
@@ -179,8 +199,157 @@ class DesignPressable extends StatefulWidget {
   /// Whether a tap plays the platform's tap feedback.
   final bool enableFeedback;
 
+  /// The least time [WidgetState.pressed] stays in the states once a
+  /// press shows, however quick the tap: long enough for a look's press
+  /// animation to be seen.
+  static const Duration minimumPressDuration = kPressTimeout;
+
   @override
   State<DesignPressable> createState() => DesignPressableState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<DesignPressableBuilder>.has('builder', builder))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onLongPress', onLongPress))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'selected',
+          value: selected,
+          ifTrue: 'selected',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'isError',
+          value: isError,
+          ifTrue: 'isError',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<WidgetStatesController>(
+          'statesController',
+          statesController,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MouseCursor>(
+          'mouseCursor',
+          mouseCursor,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Size>(
+          'minimumSize',
+          minimumSize,
+          defaultValue: Size.zero,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Map<ShortcutActivator, Intent>>(
+          'shortcuts',
+          shortcuts,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Map<Type, Action<Intent>>>(
+          'actions',
+          actions,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          KeyEventResult Function(FocusNode node, KeyEvent event)
+        >.has('onKeyEvent', onKeyEvent),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<Set<WidgetState>>>.has(
+          'onStatesChanged',
+          onStatesChanged,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(StringProperty('semanticValue', semanticValue, defaultValue: null))
+      ..add(StringProperty('semanticHint', semanticHint, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'button',
+          value: button,
+          ifFalse: 'button: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        FlagProperty('link', value: link, ifTrue: 'link', defaultValue: false),
+      )
+      ..add(FlagProperty('tab', value: tab, ifTrue: 'tab', defaultValue: false))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'semanticSelected',
+          semanticSelected,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('checked', checked, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'mixed',
+          value: mixed,
+          ifTrue: 'mixed',
+          defaultValue: false,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('toggled', toggled, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'inMutuallyExclusiveGroup',
+          value: inMutuallyExclusiveGroup,
+          ifTrue: 'inMutuallyExclusiveGroup',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'excludeSemantics',
+          value: excludeSemantics,
+          ifTrue: 'excludeSemantics',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'enableFeedback',
+          value: enableFeedback,
+          ifFalse: 'enableFeedback: false',
+          defaultValue: true,
+        ),
+      );
+  }
 }
 
 /// The state of a [DesignPressable]: [states] is what its builder was last
@@ -199,6 +368,18 @@ class DesignPressableState extends State<DesignPressable> {
       (widget.onPressed != null || widget.onLongPress != null);
 
   bool get _presses => widget.onPressed != null || widget.onLongPress != null;
+
+  // The pointer pressing it, from its down to its up or cancel.
+  int? _pointer;
+  Offset? _downAt;
+  // Shows the press once a finger has held still in a scroll view.
+  Timer? _pressDelay;
+  // Lets the press go once it has shown for minimumPressDuration.
+  Timer? _hold;
+  // Whether the press has shown long enough to be let go.
+  bool _heldLongEnough = false;
+  // Whether the pointer lifted while the press still had to show.
+  bool _lifted = false;
 
   @override
   void initState() {
@@ -223,6 +404,8 @@ class DesignPressableState extends State<DesignPressable> {
 
   @override
   void dispose() {
+    _pressDelay?.cancel();
+    _hold?.cancel();
     _controller.removeListener(_changed);
     _own?.dispose();
     super.dispose();
@@ -242,10 +425,11 @@ class DesignPressableState extends State<DesignPressable> {
     v.removeAll(<WidgetState>{
       if (_enabled) WidgetState.disabled,
       if (!_enabled) ...{WidgetState.hovered, WidgetState.focused},
-      if (!_presses) WidgetState.pressed,
+      if (!_presses || !_enabled) WidgetState.pressed,
       if (!widget.selected) WidgetState.selected,
       if (!widget.isError) WidgetState.error,
     });
+    if (!_presses || !_enabled) _forget();
     v.addAll(<WidgetState>{
       if (!_enabled) WidgetState.disabled,
       if (widget.selected) WidgetState.selected,
@@ -256,6 +440,71 @@ class DesignPressableState extends State<DesignPressable> {
   void _set(WidgetState state, bool on) {
     if (_controller.value.contains(state) != on) {
       _controller.update(state, on);
+    }
+  }
+
+  // The pointer's press, from the pointer itself rather than the tap
+  // recognizer, whose tap down comes with its tap up when the tap is quicker
+  // than kPressTimeout and anything else wants the pointer (a scroll view,
+  // a long press): the face would never be built pressed.
+  void _down(PointerDownEvent event) {
+    if (_pointer != null || !_presses || !_enabled) return;
+    if (event.kind == PointerDeviceKind.mouse &&
+        event.buttons != kPrimaryMouseButton) {
+      return;
+    }
+    _pointer = event.pointer;
+    _downAt = event.position;
+    _lifted = false;
+    if (context.findAncestorStateOfType<ScrollableState>() != null) {
+      _pressDelay = Timer(kPressTimeout, _show);
+    } else {
+      _show();
+    }
+  }
+
+  void _show() {
+    _pressDelay?.cancel();
+    _pressDelay = null;
+    if (!mounted || _pointer == null) return;
+    _heldLongEnough = false;
+    _hold?.cancel();
+    _hold = Timer(DesignPressable.minimumPressDuration, () {
+      _heldLongEnough = true;
+      if (_lifted) _forget();
+    });
+    _set(WidgetState.pressed, true);
+  }
+
+  void _move(PointerMoveEvent event) {
+    if (event.pointer != _pointer) return;
+    if ((event.position - _downAt!).distance > kTouchSlop) _forget();
+  }
+
+  void _up(PointerUpEvent event) {
+    if (event.pointer != _pointer) return;
+    _lifted = true;
+    // A quick tap in a scroll view lifts before its press showed: show it
+    // now, for its least time.
+    if (_pressDelay != null) _show();
+    if (_heldLongEnough) _forget();
+  }
+
+  void _cancel(PointerCancelEvent event) {
+    if (event.pointer == _pointer) _forget();
+  }
+
+  // Lets the press go, and the pointer.
+  void _forget() {
+    _pressDelay?.cancel();
+    _pressDelay = null;
+    _hold?.cancel();
+    _hold = null;
+    _pointer = null;
+    _downAt = null;
+    _lifted = false;
+    if (mounted && _controller.value.contains(WidgetState.pressed)) {
+      _controller.update(WidgetState.pressed, false);
     }
   }
 
@@ -281,9 +530,7 @@ class DesignPressableState extends State<DesignPressable> {
     final current = states;
     final cursor =
         widget.mouseCursor ??
-        (widget.onPressed != null
-            ? SystemMouseCursors.click
-            : MouseCursor.defer);
+        (presses && enabled ? SystemMouseCursors.click : MouseCursor.defer);
     Widget face = widget.builder(context, current, widget.child);
     if (widget.minimumSize != Size.zero) {
       face = ConstrainedBox(
@@ -297,18 +544,20 @@ class DesignPressableState extends State<DesignPressable> {
     Widget node = GestureDetector(
       behavior: HitTestBehavior.opaque,
       excludeFromSemantics: true,
-      onTapDown: widget.onPressed == null
-          ? null
-          : (_) => _set(WidgetState.pressed, true),
-      onTapUp: widget.onPressed == null
-          ? null
-          : (_) => _set(WidgetState.pressed, false),
-      onTapCancel: widget.onPressed == null
-          ? null
-          : () => _set(WidgetState.pressed, false),
       onTap: widget.onPressed == null ? null : _press,
       onLongPress: widget.onLongPress,
       child: widget.excludeSemantics ? ExcludeSemantics(child: face) : face,
+    );
+    // The press from the pointer, beside the recognizers rather than in
+    // their arena (as forui's FTappable does), so a tap quicker than
+    // kPressTimeout still shows it.
+    node = Listener(
+      behavior: HitTestBehavior.opaque,
+      onPointerDown: presses && enabled ? _down : null,
+      onPointerMove: _move,
+      onPointerUp: _up,
+      onPointerCancel: _cancel,
+      child: node,
     );
     // Hover from the pointer itself, as InkWell does: FocusableActionDetector
     // shows a hover only in the traditional highlight mode, so a mouse on a

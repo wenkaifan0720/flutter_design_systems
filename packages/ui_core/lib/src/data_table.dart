@@ -5,6 +5,7 @@
 /// with A selects the page, Enter opens a row) and whose headers sort on a press.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -414,6 +415,59 @@ class DesignDataTable<R> extends StatefulWidget {
 
   @override
   State<DesignDataTable<R>> createState() => _DesignDataTableState<R>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+      )
+      ..add(
+        ObjectFlagProperty<DesignTableHeaderBuilder<R>>.has(
+          'headerBuilder',
+          headerBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(
+            BuildContext context,
+            R row,
+            DesignTableColumn<R> column,
+          )
+        >.has('cellBuilder', cellBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(
+            BuildContext context,
+            DesignTableRow<R> row,
+            List<Widget> cells,
+          )
+        >.has('rowBuilder', rowBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, List<Widget> cells)
+        >.has('headerRowBuilder', headerRowBuilder),
+      )
+      ..add(
+        FlagProperty(
+          'selectable',
+          value: selectable,
+          ifFalse: 'selectable: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<R>>.has('onActivate', onActivate))
+      ..add(
+        ObjectFlagProperty<String Function(DesignSortDirection direction)>.has(
+          'sortedHint',
+          sortedHint,
+        ),
+      );
+  }
 }
 
 class _SelectPageIntent extends Intent {

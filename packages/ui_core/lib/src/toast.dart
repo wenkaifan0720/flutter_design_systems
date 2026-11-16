@@ -195,7 +195,8 @@ class DesignToaster extends StatefulWidget {
     this.stiffness = 700,
     this.regionLabel,
     this.tick = const Duration(milliseconds: 100),
-  }) : assert(maxVisible > 0);
+  }) : assert(dampingRatio > 0 && stiffness > 0),
+       assert(maxVisible > 0);
 
   /// The app the toasts float over.
   final Widget child;
@@ -258,6 +259,86 @@ class DesignToaster extends StatefulWidget {
 
   @override
   State<DesignToaster> createState() => DesignToasterState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<DesignToastBuilder>.has(
+          'toastBuilder',
+          toastBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<DesignToastStackBuilder>.has(
+          'stackBuilder',
+          stackBuilder,
+        ),
+      )
+      ..add(IntProperty('maxVisible', maxVisible, defaultValue: 3))
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'alignment',
+          alignment,
+          defaultValue: AlignmentDirectional.bottomCenter,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.all(16),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<BoxConstraints>(
+          'constraints',
+          constraints,
+          defaultValue: const BoxConstraints(maxWidth: 560),
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'pauseOnHover',
+          value: pauseOnHover,
+          ifFalse: 'pauseOnHover: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'pauseOnFocus',
+          value: pauseOnFocus,
+          ifFalse: 'pauseOnFocus: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DismissDirection>(
+          'swipeDirection',
+          swipeDirection,
+          defaultValue: DismissDirection.horizontal,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ShortcutActivator>(
+          'focusShortcut',
+          focusShortcut,
+          defaultValue: const SingleActivator(LogicalKeyboardKey.f6),
+        ),
+      )
+      ..add(DoubleProperty('dampingRatio', dampingRatio, defaultValue: 1))
+      ..add(DoubleProperty('stiffness', stiffness, defaultValue: 700))
+      ..add(StringProperty('regionLabel', regionLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'tick',
+          tick,
+          defaultValue: const Duration(milliseconds: 100),
+        ),
+      );
+  }
 }
 
 class _ToastRecord {

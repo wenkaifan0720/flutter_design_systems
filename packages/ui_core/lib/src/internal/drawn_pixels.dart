@@ -526,6 +526,29 @@ class DrawnPixels {
       0.7152 * _linear[(c >> 16) & 0xFF] +
       0.0722 * _linear[(c >> 8) & 0xFF];
 
+  /// Whether [rect] (logical, from the boundary's top left) is drawn mostly
+  /// lighter than [over]: a face's highlight (a groove's lit side, too faint
+  /// to stand off), not a shadow cast from it, which is darker. False when
+  /// it is all [over].
+  bool lit(Rect rect, {required int over}) {
+    final (left, top, right, bottom) = _span(rect);
+    final ground = _luminance(over);
+    var lighter = 0;
+    var darker = 0;
+    for (var y = top; y < bottom; y++) {
+      for (var x = left; x < right; x++) {
+        final c = _at(x, y);
+        if (_distance(c, over) < 3) continue;
+        if (_luminance(c) > ground) {
+          lighter++;
+        } else {
+          darker++;
+        }
+      }
+    }
+    return lighter > 2 * darker;
+  }
+
   /// How much of [rect] (logical, from the boundary's top left) is drawn in
   /// something other than [over]: 0 to 1.
   double inkShare(Rect rect, {required int over}) {

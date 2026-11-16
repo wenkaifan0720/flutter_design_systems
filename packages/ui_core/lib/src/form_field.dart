@@ -10,6 +10,7 @@
 /// field that is wrong, and tells a screen reader how many need attention.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 
@@ -140,6 +141,48 @@ class DesignField extends StatefulWidget {
 
   @override
   State<DesignField> createState() => _DesignFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<DesignFieldBuilder>.has('builder', builder))
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('helperText', helperText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'required',
+          value: required,
+          ifTrue: 'required',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'mergeSemantics',
+          value: mergeSemantics,
+          ifFalse: 'mergeSemantics: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(StringProperty('requiredHint', requiredHint, defaultValue: null));
+  }
 }
 
 class _DesignFieldState extends State<DesignField> {
@@ -342,6 +385,19 @@ class DesignForm extends StatefulWidget {
 
   @override
   State<DesignForm> createState() => DesignFormState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback>.has('onSubmit', onSubmit))
+      ..add(
+        ObjectFlagProperty<String Function(int count)>.has(
+          'problemsMessage',
+          problemsMessage,
+        ),
+      );
+  }
 }
 
 /// The state of a [DesignForm]: submit and reset it.

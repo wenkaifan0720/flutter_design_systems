@@ -2,6 +2,7 @@
 /// cannot cross. A drag or a press on the track moves the nearer thumb.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'localizations.dart';
@@ -11,7 +12,8 @@ import 'value_handle.dart';
 @immutable
 class DesignRangeValues {
   /// The range from [start] to [end].
-  const DesignRangeValues(this.start, this.end);
+  const DesignRangeValues(this.start, this.end)
+    : assert(start <= end, 'start $start is at most end $end');
 
   /// Its lower end.
   final double start;
@@ -76,12 +78,18 @@ class DesignRangeSlider extends StatefulWidget {
     this.startLabel,
     this.endLabel,
     this.thumbSize = const Size(44, 44),
-  });
+  }) : assert(min <= max, 'min is at most max'),
+       assert(divisions == null || divisions > 0),
+       assert(minGap >= 0),
+       assert(step == null || step > 0),
+       assert(pageStep == null || pageStep > 0);
 
   /// The range.
   final DesignRangeValues values;
 
-  /// A drag's, a key's or a screen reader's new range; null disables it.
+  /// A drag's, a key's or a screen reader's new range.
+  ///
+  /// {@macro design.nullDisables}
   final ValueChanged<DesignRangeValues>? onChanged;
 
   /// Paints the track (full width, centred under the thumbs).
@@ -137,6 +145,66 @@ class DesignRangeSlider extends StatefulWidget {
 
   @override
   State<DesignRangeSlider> createState() => _DesignRangeSliderState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, DesignRangeTrack track)
+        >.has('trackBuilder', trackBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(
+            BuildContext context,
+            int index,
+            Set<WidgetState> states,
+          )
+        >.has('thumbBuilder', thumbBuilder),
+      )
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(DoubleProperty('minGap', minGap, defaultValue: 0))
+      ..add(DoubleProperty('step', step, defaultValue: null))
+      ..add(DoubleProperty('pageStep', pageStep, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+          'onChangeStart',
+          onChangeStart,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has(
+          'semanticFormatterCallback',
+          semanticFormatterCallback,
+        ),
+      )
+      ..add(StringProperty('startLabel', startLabel, defaultValue: null))
+      ..add(StringProperty('endLabel', endLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Size>(
+          'thumbSize',
+          thumbSize,
+          defaultValue: const Size(44, 44),
+        ),
+      );
+  }
 }
 
 class _DesignRangeSliderState extends State<DesignRangeSlider> {
@@ -198,6 +266,11 @@ class _DesignRangeSliderState extends State<DesignRangeSlider> {
 
   @override
   Widget build(BuildContext context) {
+    assert(
+      widget.values.start >= widget.min && widget.values.end <= widget.max,
+      'values ${widget.values} are between min ${widget.min} and max '
+      '${widget.max}',
+    );
     final enabled = widget.onChanged != null;
     final r = widget.values;
     final rtl = Directionality.of(context) == TextDirection.rtl;

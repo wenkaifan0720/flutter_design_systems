@@ -11,10 +11,14 @@
 library;
 
 import 'dart:async';
+import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'internal/back.dart';
 import 'motion.dart';
 
 /// Which side of the anchor a surface sits on. [start] and [end] follow the
@@ -83,7 +87,8 @@ class DesignOverlayPlacement {
     this.flip = true,
     this.preferredExtent = 200,
     this.matchAnchorWidth = true,
-  });
+    this.maxWidth = 320,
+  }) : assert(maxWidth > 0);
 
   /// The side it prefers.
   final DesignOverlaySide side;
@@ -105,13 +110,54 @@ class DesignOverlayPlacement {
   /// has less than this and the opposite side has more.
   final double preferredExtent;
 
-  /// Whether, above or below the anchor, it is at least as wide as the
-  /// anchor: a list opened from a field (a select's, a combobox's, a menu
-  /// from a form field) is, and with [align] at [DesignOverlayAlign.start]
-  /// it starts on the anchor's leading edge. On by default; a popover that
-  /// keeps its own width under a wide anchor (a calendar under a date
-  /// field) turns it off. Beside the anchor it has no effect.
+  /// Whether, above or below the anchor, it is a list opened from a field
+  /// (a select's, a combobox's, a menu from a form field): as wide as the
+  /// anchor, wider only as far as its widest item needs, up to [maxWidth],
+  /// never to the screen; with [align] at [DesignOverlayAlign.start] it
+  /// starts on the anchor's leading edge. Its width is set before its first
+  /// frame, so a reveal inside it (an `Align` or a `SizeTransition` growing
+  /// its height) stays under the field from the start. On by default; a
+  /// popover that keeps its own width (a calendar under a date field, a
+  /// picker) turns it off and sizes itself, its reveals sized to their
+  /// child (`widthFactor: 1`) so they never spread to the overlay's width.
+  /// Beside the anchor it has no effect.
+  ///
+  /// The widest item is read from the surface's intrinsic width, as
+  /// `IntrinsicWidth` reads it: rows in a `Column` (in a
+  /// `SingleChildScrollView` when they may scroll) say their width. A lazy
+  /// list (a `ListView`) can't say it before it lays out, so it keeps the
+  /// anchor's width.
   final bool matchAnchorWidth;
+
+  /// With [matchAnchorWidth], the widest the surface grows past its anchor
+  /// to fit its widest item, in logical pixels; an anchor wider than this
+  /// keeps its own width. A long item past it wraps or fades, as the look
+  /// draws it.
+  final double maxWidth;
+
+  @override
+  bool operator ==(Object other) =>
+      other is DesignOverlayPlacement &&
+      other.side == side &&
+      other.align == align &&
+      other.gap == gap &&
+      other.margin == margin &&
+      other.flip == flip &&
+      other.preferredExtent == preferredExtent &&
+      other.matchAnchorWidth == matchAnchorWidth &&
+      other.maxWidth == maxWidth;
+
+  @override
+  int get hashCode => Object.hash(
+    side,
+    align,
+    gap,
+    margin,
+    flip,
+    preferredExtent,
+    matchAnchorWidth,
+    maxWidth,
+  );
 }
 
 /// The anchor, as [DesignAnchoredOverlay.anchorBuilder] gets it.
@@ -274,6 +320,76 @@ Offset _placeOverlay({
   return Offset(x, y);
 }
 
+/// Its child as wide as the child's widest line (its intrinsic width) within
+/// the width it is given: a list from a field, the field's width at least
+/// and its cap at most, from its first frame. A child that can't say its
+/// width ahead (a viewport: a lazy `ListView`, a `CustomScrollView`; a
+/// `LayoutBuilder`) takes the least.
+class _ListWidth extends SingleChildRenderObjectWidget {
+  const _ListWidth({required Widget super.child});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderListWidth();
+}
+
+class _RenderListWidth extends RenderProxyBox {
+  // The width within [constraints] for [child]: its widest line, else the
+  // least.
+  static double _widthFor(RenderBox child, BoxConstraints constraints) {
+    if (constraints.hasTightWidth) return constraints.minWidth;
+    double? natural;
+    if (_saysItsWidth(child)) {
+      try {
+        natural = child.getMaxIntrinsicWidth(constraints.maxHeight);
+      } on Object {
+        natural = null;
+      }
+    }
+    return constraints.constrainWidth(
+      natural == null || !natural.isFinite ? constraints.minWidth : natural,
+    );
+  }
+
+  // Whether nothing under [node] is a viewport, which answers its intrinsic
+  // width with 0 (and asserts in a debug build) rather than its items'.
+  static bool _saysItsWidth(RenderObject node) {
+    var says = true;
+    void visit(RenderObject child) {
+      if (!says) return;
+      if (child is RenderViewportBase) {
+        says = false;
+        return;
+      }
+      child.visitChildren(visit);
+    }
+
+    node.visitChildren(visit);
+    return says && node is! RenderViewportBase;
+  }
+
+  @override
+  void performLayout() {
+    final child = this.child;
+    if (child == null) {
+      size = constraints.smallest;
+      return;
+    }
+    final width = _widthFor(child, constraints);
+    child.layout(constraints.tighten(width: width), parentUsesSize: true);
+    size = constraints.constrain(child.size);
+  }
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) {
+    final child = this.child;
+    if (child == null) return constraints.smallest;
+    final width = _widthFor(child, constraints);
+    return constraints.constrain(
+      child.getDryLayout(constraints.tighten(width: width)),
+    );
+  }
+}
+
 class _PlacementDelegate extends SingleChildLayoutDelegate {
   _PlacementDelegate({
     required this.anchor,
@@ -293,12 +409,18 @@ class _PlacementDelegate extends SingleChildLayoutDelegate {
 
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
-    final minWidth = placement.matchAnchorWidth && side.isVertical
-        ? anchor.width.clamp(0.0, maxSize.width)
-        : 0.0;
+    if (!(placement.matchAnchorWidth && side.isVertical)) {
+      return BoxConstraints(maxWidth: maxSize.width, maxHeight: maxSize.height);
+    }
+    // A list from a field: the field's width, wider only to its cap
+    // (_ListWidth picks within), never past the room on screen.
+    final least = anchor.width.clamp(0.0, maxSize.width);
+    final most = math
+        .max(anchor.width, placement.maxWidth)
+        .clamp(least, maxSize.width);
     return BoxConstraints(
-      minWidth: minWidth,
-      maxWidth: maxSize.width,
+      minWidth: least,
+      maxWidth: most,
       maxHeight: maxSize.height,
     );
   }
@@ -438,7 +560,7 @@ class DesignAnchoredOverlay extends StatefulWidget {
     this.useRootOverlay = false,
     this.dampingRatio = 1,
     this.stiffness = 1400,
-  });
+  }) : assert(dampingRatio > 0 && stiffness > 0);
 
   /// Paints the anchor; a press trigger calls [DesignOverlayAnchor.toggle].
   final DesignOverlayAnchorBuilder anchorBuilder;
@@ -491,6 +613,100 @@ class DesignAnchoredOverlay extends StatefulWidget {
 
   @override
   State<DesignAnchoredOverlay> createState() => _DesignAnchoredOverlayState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<DesignOverlayAnchorBuilder>.has(
+          'anchorBuilder',
+          anchorBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<DesignOverlaySurfaceBuilder>.has(
+          'overlayBuilder',
+          overlayBuilder,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MenuController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<DesignOverlayTrigger>(
+          'trigger',
+          trigger,
+          defaultValue: DesignOverlayTrigger.press,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DesignOverlayPlacement>(
+          'placement',
+          placement,
+          defaultValue: const DesignOverlayPlacement(),
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'focusOnOpen',
+          value: focusOnOpen,
+          ifFalse: 'focusOnOpen: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'arrowKeyNavigation',
+          value: arrowKeyNavigation,
+          ifTrue: 'arrowKeyNavigation',
+          defaultValue: false,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onOpenChanged',
+          onOpenChanged,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'hoverOpenDelay',
+          hoverOpenDelay,
+          defaultValue: const Duration(milliseconds: 700),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'hoverCloseDelay',
+          hoverCloseDelay,
+          defaultValue: const Duration(milliseconds: 300),
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'consumeOutsideTaps',
+          value: consumeOutsideTaps,
+          ifTrue: 'consumeOutsideTaps',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'useRootOverlay',
+          value: useRootOverlay,
+          ifTrue: 'useRootOverlay',
+          defaultValue: false,
+        ),
+      )
+      ..add(DoubleProperty('dampingRatio', dampingRatio, defaultValue: 1))
+      ..add(DoubleProperty('stiffness', stiffness, defaultValue: 1400));
+  }
 }
 
 class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
@@ -506,6 +722,16 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
   FocusNode? _returnTo;
   bool _open = false;
 
+  // While the surface is open, the anchor's route holds [_back]: a system
+  // back (Android's button or gesture) closes it, innermost first, and the
+  // page stays; the next back pops the page.
+  late final DesignBackHold _back = DesignBackHold(() {
+    if (mounted && _controller.isOpen) _controller.close();
+  });
+  ModalRoute<Object?>? _route;
+
+  void _holdBack(bool on) => on ? _back.hold(_route) : _back.release();
+
   MenuController get _controller =>
       widget.controller ?? (_own ??= MenuController());
 
@@ -513,6 +739,80 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
   void initState() {
     super.initState();
     _syncIntent();
+  }
+
+  // Whether the anchor's route is its navigator's top one; a route pushed
+  // over it (an alert, a dialog, a sheet) closes the surface.
+  bool _routeCurrent = true;
+  // The anchor's route's focus scope, watched while the surface is open: a
+  // route pushed on another navigator (an alert on the root navigator, over
+  // a page in a nested one) leaves the anchor's route current in its own,
+  // but takes the focus out of it.
+  FocusNode? _routeScope;
+  // Closing because a route covers the anchor: focus is the new route's,
+  // never sent back to the anchor under it.
+  bool _covered = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _route = ModalRoute.of(context);
+    if (_back.isHeld) _holdBack(true);
+    final current = ModalRoute.isCurrentOf(context) ?? true;
+    final pushedOver = _routeCurrent && !current;
+    _routeCurrent = current;
+    if (pushedOver) _closeCovered();
+  }
+
+  // The scope a route puts round its page, which holds the anchor and the
+  // surface (an overlay portal's child is focused where its portal is): of
+  // the focus nodes round the anchor, the one its navigator holds.
+  FocusNode? _scopeOfRoute() {
+    final navigator = Navigator.maybeOf(context)?.focusNode;
+    final here = Focus.maybeOf(context, scopeOk: true, createDependency: false);
+    if (navigator == null || here == null) return null;
+    for (final node in [here, ...here.ancestors]) {
+      if (identical(node.parent, navigator)) return node;
+    }
+    return null;
+  }
+
+  bool get _focusLeftRoute {
+    final scope = _routeScope;
+    final primary = FocusManager.instance.primaryFocus;
+    // The app sent to the background parks focus on the root scope.
+    if (scope == null ||
+        primary == null ||
+        primary == FocusManager.instance.rootScope) {
+      return false;
+    }
+    return primary != scope && !primary.ancestors.contains(scope);
+  }
+
+  void _focusMoved() {
+    if (_controller.isOpen && _focusLeftRoute) _closeCovered();
+  }
+
+  void _watchFocus(bool on) {
+    FocusManager.instance.removeListener(_focusMoved);
+    _routeScope = on ? _scopeOfRoute() : null;
+    if (on && _routeScope != null) {
+      FocusManager.instance.addListener(_focusMoved);
+    }
+  }
+
+  // Left open, the surface stays drawn in its own route, under the new
+  // one, and keeps the focus. Closed once this frame is built.
+  void _closeCovered() {
+    if (!_controller.isOpen) return;
+    WidgetsBinding.instance
+      ..addPostFrameCallback((_) {
+        if (!mounted || !_controller.isOpen) return;
+        if (_routeCurrent && !_focusLeftRoute) return;
+        _covered = true;
+        _controller.close();
+      })
+      ..ensureVisualUpdate();
   }
 
   @override
@@ -548,6 +848,8 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
 
   @override
   void dispose() {
+    _watchFocus(false);
+    _holdBack(false);
     _intent?.removeListener(_hoverChanged);
     _intent?.dispose();
     _presence.dispose();
@@ -563,6 +865,7 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
     if (current != null && !_scope.hasFocus && !_scope.hasPrimaryFocus) {
       _returnTo = current;
     }
+    _holdBack(true);
     showOverlay();
     _presence.springTo(1, _spring);
   }
@@ -572,6 +875,8 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
       _open = true;
       widget.onOpenChanged?.call(true);
     }
+    _watchFocus(true);
+    _holdBack(true);
     if (widget.focusOnOpen) {
       // The surface mounts in this frame; focus it once it has.
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -585,6 +890,8 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
     // A menu that opens asks all its group's menus to close, itself among
     // them, before it shows: that request is not a close.
     if (!_controller.isOpen) return;
+    // A back while it closes is the page's.
+    _holdBack(false);
     _restoreFocus();
     _intent?.closeNow();
     if (!_presence.isAnimating && _presence.value <= 0) {
@@ -597,6 +904,8 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
   }
 
   void _onClose() {
+    _watchFocus(false);
+    _holdBack(false);
     _presence.value = 0;
     if (_open) {
       _open = false;
@@ -609,6 +918,12 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
     _returnTo = null;
     final primary = FocusManager.instance.primaryFocus;
     final inside = _scope.hasFocus || primary == null;
+    if (_covered) {
+      // A route over the anchor's has focus, or takes it as it builds.
+      _covered = false;
+      if (_scope.hasFocus) _scope.unfocus();
+      return;
+    }
     if (!inside) return;
     if (target != null && target.context != null && target.canRequestFocus) {
       target.requestFocus();
@@ -722,8 +1037,11 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
           maxSize: maxSize,
         ),
         // Its own layer: a surface over the page repaints on its own, and
-        // the alignment checks read its pixels.
-        child: RepaintBoundary(child: surface),
+        // the alignment checks read its pixels. A list from a field is as
+        // wide as its widest item within the delegate's least and most.
+        child: widget.placement.matchAnchorWidth && side.isVertical
+            ? _ListWidth(child: RepaintBoundary(child: surface))
+            : RepaintBoundary(child: surface),
       ),
     );
   }

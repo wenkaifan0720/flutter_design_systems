@@ -14,6 +14,7 @@ library;
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// Where a slot's picture comes from.
@@ -88,6 +89,21 @@ class MediaSlotImage extends StatefulWidget {
 
   @override
   State<MediaSlotImage> createState() => _MediaSlotImageState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('slotId', slotId))
+      ..add(EnumProperty<BoxFit>('fit', fit, defaultValue: BoxFit.cover))
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'alignment',
+          alignment,
+          defaultValue: Alignment.center,
+        ),
+      );
+  }
 }
 
 class _MediaSlotImageState extends State<MediaSlotImage> {

@@ -3,14 +3,17 @@
 ///
 /// The bar is one tab stop: Left and Right move along it (mirrored right to
 /// left), Down, Up, Enter and Space open a menu at its first item. In a
-/// menu, Up and Down move (and wrap), Home and End go to the ends, Right
-/// opens a submenu (Left closes it) or else moves to the next menu, Left
-/// the previous one, and Escape closes it, focus back on the bar. While a
-/// menu is open, a pointer over another top item opens that one.
+/// menu, Up and Down move (and wrap), Home and End go to the ends, a typed
+/// letter goes to the next item its label starts with (letters typed in a
+/// run spell the start), Right opens a submenu (Left closes it) or else
+/// moves to the next menu, Left the previous one, and Escape closes it,
+/// focus back on the bar. While a menu is open, a pointer over another top
+/// item opens that one.
 library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -137,6 +140,37 @@ class DesignMenuBar extends StatefulWidget {
 
   @override
   State<DesignMenuBar> createState() => _DesignMenuBarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<DesignMenuEntry>('menus', menus))
+      ..add(
+        ObjectFlagProperty<DesignMenuItemBuilder>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(
+            BuildContext context,
+            DesignOverlayInfo info,
+            List<Widget> items,
+          )
+        >.has('surfaceBuilder', surfaceBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<WidgetBuilder>.has('dividerBuilder', dividerBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, List<Widget> items)
+        >.has('barBuilder', barBuilder),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 class _DesignMenuBarState extends State<DesignMenuBar> {
@@ -276,10 +310,13 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
                 widget.itemBuilder(context, entry, DesignMenuLevel.bar, states),
           ),
         ),
-        overlayBuilder: (context, info) => widget.surfaceBuilder(
-          context,
-          info,
-          _items(context, entry.children ?? const [], _menus[i]),
+        overlayBuilder: (context, info) => _TypeAhead(
+          entries: entry.children ?? const [],
+          builder: (context, nodes) => widget.surfaceBuilder(
+            context,
+            info,
+            _items(context, entry.children ?? const [], _menus[i], nodes),
+          ),
         ),
       ),
     );
@@ -289,17 +326,19 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
     BuildContext context,
     List<DesignMenuEntry> entries,
     MenuController root,
+    List<FocusNode> nodes,
   ) => [
-    for (final e in entries)
+    for (final (i, e) in entries.indexed)
       if (e.divider)
         ExcludeSemantics(
           child:
               widget.dividerBuilder?.call(context) ?? const SizedBox(height: 1),
         )
       else if (e.isSubmenu)
-        _Submenu(entry: e, menubar: this, root: root)
+        _Submenu(entry: e, menubar: this, root: root, focusNode: nodes[i])
       else
         DesignPressable(
+          focusNode: nodes[i],
           onPressed: e.enabled
               ? () {
                   root.close();
@@ -324,11 +363,15 @@ class _Submenu extends StatefulWidget {
     required this.entry,
     required this.menubar,
     required this.root,
+    required this.focusNode,
   });
 
   final DesignMenuEntry entry;
   final _DesignMenuBarState menubar;
   final MenuController root;
+
+  // Its item's focus, its menu's (for the typed letters).
+  final FocusNode focusNode;
 
   @override
   State<_Submenu> createState() => _SubmenuState();
@@ -336,13 +379,8 @@ class _Submenu extends StatefulWidget {
 
 class _SubmenuState extends State<_Submenu> {
   final MenuController _menu = MenuController();
-  final FocusNode _node = FocusNode(debugLabel: 'DesignMenuBar submenu');
 
-  @override
-  void dispose() {
-    _node.dispose();
-    super.dispose();
-  }
+  FocusNode get _node => widget.focusNode;
 
   KeyEventResult _key(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
@@ -410,12 +448,102 @@ class _SubmenuState extends State<_Submenu> {
             ),
           ),
         ),
-        overlayBuilder: (context, info) => bar.widget.surfaceBuilder(
-          context,
-          info,
-          bar._items(context, e.children ?? const [], widget.root),
+        overlayBuilder: (context, info) => _TypeAhead(
+          entries: e.children ?? const [],
+          builder: (context, nodes) => bar.widget.surfaceBuilder(
+            context,
+            info,
+            bar._items(context, e.children ?? const [], widget.root, nodes),
+          ),
         ),
       ),
+    );
+  }
+}
+
+// A menu's items' focus, and its typed letters: a letter goes to the next
+// item its label starts with, round past the end, so the same letter steps
+// through the items it starts; letters typed in a run (each within
+// [_run] of the last) spell the start, the item on it kept while it fits.
+class _TypeAhead extends StatefulWidget {
+  const _TypeAhead({required this.entries, required this.builder});
+
+  final List<DesignMenuEntry> entries;
+  final Widget Function(BuildContext context, List<FocusNode> nodes) builder;
+
+  @override
+  State<_TypeAhead> createState() => _TypeAheadState();
+}
+
+class _TypeAheadState extends State<_TypeAhead> {
+  final List<FocusNode> _nodes = [];
+  String _typed = '';
+  Timer? _pause;
+
+  static const Duration _run = Duration(milliseconds: 700);
+
+  @override
+  void dispose() {
+    _pause?.cancel();
+    for (final n in _nodes) {
+      n.dispose();
+    }
+    super.dispose();
+  }
+
+  void _sync() {
+    while (_nodes.length < widget.entries.length) {
+      _nodes.add(FocusNode(debugLabel: 'DesignMenuBar item ${_nodes.length}'));
+    }
+    while (_nodes.length > widget.entries.length) {
+      _nodes.removeLast().dispose();
+    }
+  }
+
+  // The letter a key types, lower case; null for a key that types none (a
+  // space presses the item) or one held with Ctrl, Alt or Cmd.
+  static String? _letter(KeyEvent event) {
+    final c = event.character;
+    if (c == null || c.trim().isEmpty || c.codeUnitAt(0) < 0x20) return null;
+    final keys = HardwareKeyboard.instance;
+    if (keys.isControlPressed || keys.isAltPressed || keys.isMetaPressed) {
+      return null;
+    }
+    return c.toLowerCase();
+  }
+
+  KeyEventResult _key(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final letter = _letter(event);
+    if (letter == null) return KeyEventResult.ignored;
+    _typed += letter;
+    _pause?.cancel();
+    _pause = Timer(_run, () => _typed = '');
+    final entries = widget.entries;
+    final from = _nodes.indexWhere((n) => n.hasPrimaryFocus);
+    final start = from < 0 ? 0 : from + (_typed.length == 1 ? 1 : 0);
+    for (var k = 0; k < entries.length; k++) {
+      final i = (start + k) % entries.length;
+      final e = entries[i];
+      if (!e.divider && e.enabled && e.label.toLowerCase().startsWith(_typed)) {
+        _nodes[i].requestFocus();
+        break;
+      }
+    }
+    return KeyEventResult.handled;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _sync();
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      includeSemantics: false,
+      onKeyEvent: _key,
+      child: widget.builder(context, _nodes),
     );
   }
 }

@@ -85,8 +85,11 @@ void main() {
     expect(seen, contains(WidgetState.pressed));
     await gesture.up();
     await tester.pump();
-    expect(seen, isNot(contains(WidgetState.pressed)));
     expect(n, 1);
+    // The press stays its least time, then goes.
+    expect(seen, contains(WidgetState.pressed));
+    await tester.pump(DesignPressable.minimumPressDuration);
+    expect(seen, isNot(contains(WidgetState.pressed)));
     node.requestFocus();
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
@@ -281,5 +284,160 @@ void main() {
     await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
     expect(next, 1);
+  });
+
+  group('a quick tap shows its press', () {
+    // Every frame's states, as the face was built for them.
+    late List<Set<WidgetState>> frames;
+    Widget recording(BuildContext _, Set<WidgetState> states, Widget? _) {
+      frames.add({...states});
+      return const SizedBox(width: 200, height: 48);
+    }
+
+    bool pressedIn(List<Set<WidgetState>> built) =>
+        built.any((s) => s.contains(WidgetState.pressed));
+
+    setUp(() => frames = []);
+
+    // A tap 40 ms long: shorter than kPressTimeout (100 ms), as a finger's
+    // quick tap is.
+    Future<void> quickTap(WidgetTester tester, Finder target) async {
+      final finger = await tester.startGesture(tester.getCenter(target));
+      await tester.pump(const Duration(milliseconds: 40));
+      await finger.up();
+      await tester.pump();
+    }
+
+    testWidgets('in a list: the press is drawn, then let go', (tester) async {
+      var taps = 0;
+      await tester.pumpWidget(
+        _app(
+          SizedBox(
+            height: 300,
+            child: ListView(
+              children: [
+                DesignPressable(onPressed: () => taps++, builder: recording),
+                const SizedBox(height: 600),
+              ],
+            ),
+          ),
+        ),
+      );
+      frames.clear();
+      await quickTap(tester, find.byType(DesignPressable));
+      expect(taps, 1);
+      expect(
+        pressedIn(frames),
+        isTrue,
+        reason: 'a 40 ms tap in a list builds a pressed face',
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(frames.last, isNot(contains(WidgetState.pressed)));
+    });
+
+    testWidgets('with onLongPress: the press is drawn, then let go', (
+      tester,
+    ) async {
+      var taps = 0;
+      await tester.pumpWidget(
+        _app(
+          DesignPressable(
+            onPressed: () => taps++,
+            onLongPress: () {},
+            builder: recording,
+          ),
+        ),
+      );
+      frames.clear();
+      await quickTap(tester, find.byType(DesignPressable));
+      expect(taps, 1);
+      expect(
+        pressedIn(frames),
+        isTrue,
+        reason: 'a 40 ms tap on a long-pressable builds a pressed face',
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(frames.last, isNot(contains(WidgetState.pressed)));
+    });
+
+    testWidgets('a long press stays pressed until the finger lifts', (
+      tester,
+    ) async {
+      var longs = 0;
+      await tester.pumpWidget(
+        _app(DesignPressable(onLongPress: () => longs++, builder: recording)),
+      );
+      final finger = await tester.startGesture(
+        tester.getCenter(find.byType(DesignPressable)),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(frames.last, contains(WidgetState.pressed));
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(longs, 1);
+      expect(frames.last, contains(WidgetState.pressed));
+      await finger.up();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(frames.last, isNot(contains(WidgetState.pressed)));
+    });
+
+    testWidgets('a drag that scrolls the list leaves no press behind', (
+      tester,
+    ) async {
+      var taps = 0;
+      await tester.pumpWidget(
+        _app(
+          SizedBox(
+            height: 300,
+            child: ListView(
+              children: [
+                DesignPressable(onPressed: () => taps++, builder: recording),
+                const SizedBox(height: 600),
+              ],
+            ),
+          ),
+        ),
+      );
+      final finger = await tester.startGesture(
+        tester.getCenter(find.byType(DesignPressable)),
+      );
+      await tester.pump(const Duration(milliseconds: 150));
+      expect(
+        frames.last,
+        contains(WidgetState.pressed),
+        reason: 'a finger held still in a list presses after kPressTimeout',
+      );
+      await finger.moveBy(const Offset(0, -60));
+      await tester.pump();
+      expect(frames.last, isNot(contains(WidgetState.pressed)));
+      frames.clear();
+      await finger.up();
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(taps, 0);
+      expect(pressedIn(frames), isFalse);
+    });
+
+    testWidgets('a fling in a list never shows a press', (tester) async {
+      await tester.pumpWidget(
+        _app(
+          SizedBox(
+            height: 300,
+            child: ListView(
+              children: [
+                DesignPressable(onPressed: () {}, builder: recording),
+                const SizedBox(height: 600),
+              ],
+            ),
+          ),
+        ),
+      );
+      frames.clear();
+      await tester.fling(
+        find.byType(DesignPressable),
+        const Offset(0, -200),
+        1000,
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(pressedIn(frames), isFalse);
+    });
   });
 }

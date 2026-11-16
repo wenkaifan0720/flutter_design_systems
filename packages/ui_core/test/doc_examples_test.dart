@@ -18,6 +18,7 @@ import 'package:ui_core/host.dart';
 import 'package:ui_core/inventory.dart';
 
 import 'behaviour_harness.dart';
+import 'doc_examples.dart';
 
 /// What the caller made for an example, disposed once its tree is gone.
 final List<VoidCallback> _disposers = [];
@@ -27,9 +28,7 @@ T _own<T extends ChangeNotifier>(T value) {
   return value;
 }
 
-typedef _Example = Object? Function(BuildContext context);
-
-final Map<String, _Example> _examples = {
+final Map<String, DocExample> _examples = {
   'DesignControlBox': (context) =>
       const DesignControlBox(minHeight: 40, child: Text('Save')),
   'DesignTextEntryBox': (context) {
@@ -218,6 +217,13 @@ final Map<String, _Example> _examples = {
   ),
   'DesignPasswordController': (context) =>
       _own(DesignPasswordController(obscured: false)),
+  'designSwipeBack': (context) => designSwipeBack({
+    TargetPlatform.iOS: const FadeUpwardsPageTransitionsBuilder(),
+  }),
+  'DesignSwipeBackPageTransitionsBuilder': (context) =>
+      const DesignSwipeBackPageTransitionsBuilder(
+        FadeUpwardsPageTransitionsBuilder(),
+      ),
   'DesignPressable': (context) => DesignPressable(
     onPressed: () {},
     semanticLabel: 'Save',
@@ -226,6 +232,71 @@ final Map<String, _Example> _examples = {
       child: const Text('Save'),
     ),
   ),
+  'DesignSpacing': (context) {
+    const app = Text('App');
+    return const DesignSpacingScope(
+      spacing: DesignSpacing(grid: 2),
+      child: app,
+    );
+  },
+  'DesignTapTargetScope': (context) {
+    const app = Text('App');
+    return const DesignTapTargetScope(
+      targets: DesignTapTargets(touch: Size.square(48)),
+      child: app,
+    );
+  },
+  'DesignTapTarget, on its start edge': (context) {
+    void onPressed() {}
+    Widget face(BuildContext context, Set<WidgetState> states, Widget? child) =>
+        const Text('Add');
+    return DesignTapTarget(
+      alignment: AlignmentDirectional.centerStart,
+      child: DesignPressable(onPressed: onPressed, builder: face),
+    );
+  },
+  'DesignTapTarget': (context) {
+    void onPressed() {}
+    Widget face(BuildContext context, Set<WidgetState> states, Widget? child) =>
+        const Text('Add');
+    return DesignTapTarget(
+      child: DesignPressable(onPressed: onPressed, builder: face),
+    );
+  },
+  'DesignStyle': (context) {
+    final style = DesignStyle(
+      fill: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.pressed)
+            ? const Color(0xFF1D4ED8)
+            : const Color(0xFF2563EB),
+      ),
+      padding: const WidgetStatePropertyAll(
+        EdgeInsets.symmetric(horizontal: 20),
+      ),
+    );
+    const themed = DesignStyle();
+    const states = <WidgetState>{};
+    final forwarded = DesignStyle.layered([style, themed]);
+    final fill =
+        DesignStyle.first([style, themed], (s) => s.fill, states) ??
+        const Color(0xFFFFFFFF);
+    return ColoredBox(
+      color: fill,
+      child: SizedBox(height: forwarded.isEmpty ? 0 : 40),
+    );
+  },
+  'DesignStyleOf': (context) {
+    const style = DesignStyle();
+    const themed = DesignStyle();
+    const states = <WidgetState>{};
+    final look = const DesignStyleOf([style, themed], states);
+    final fill = look.fill ?? const Color(0xFFFFFFFF);
+    return ColoredBox(color: fill);
+  },
+  'DesignDensity': (context) {
+    final height = DesignDensity.compact.height(44); // 36
+    return SizedBox(height: height, child: const Text('Row'));
+  },
   'DesignPullToRefresh': (context) => DesignPullToRefresh(
     onRefresh: () async {},
     indicatorBuilder: (context, details) => const SizedBox(height: 40),
@@ -355,10 +426,10 @@ final Map<String, _Example> _examples = {
       DesignMotionPolicy.of(context).spatial(dampingRatio: 0.6, stiffness: 800),
     );
   },
-  'PreviewFrame': (context) => PreviewFrame(
+  'PreviewFrame': (context) => const PreviewFrame(
     platform: PreviewPlatform.ios,
     brightness: Brightness.dark,
-    child: const Text('App'),
+    child: Text('App'),
   ),
   'PreviewStage': (context) => PreviewStage(
     route: (context, page) => PageRouteBuilder<void>(
@@ -366,10 +437,10 @@ final Map<String, _Example> _examples = {
     ),
     child: const Text('Details'),
   ),
-  'DesignKeylineRegion': (context) => DesignKeylineRegion(
+  'DesignKeylineRegion': (context) => const DesignKeylineRegion(
     label: 'Settings',
-    indents: const [40],
-    child: const Text('Settings'),
+    indents: [40],
+    child: Text('Settings'),
   ),
   'DesignKeylineFace': (context) =>
       const DesignKeylineFace(child: SizedBox(width: 120, height: 40)),
@@ -452,6 +523,55 @@ void _fitChecks(WidgetTester tester) {
       .verify();
 }
 
+/// [DesignCursorCheck]'s, [DesignTapTargetCheck]'s, [DesignSpacingCheck]'s
+/// and [DesignShadowClipCheck]'s examples, run by their own tests' shapes
+/// (cursor_check_test.dart and its neighbours).
+Future<void> _screenChecks(WidgetTester tester) async {
+  const DesignCursorCheck(look: 'Comic')
+      .check(tester.element(find.byType(SettingsScreen)))
+      .verify();
+  const DesignTapTargetCheck(look: 'Comic')
+      .check(tester.element(find.byType(SettingsScreen)))
+      .verify();
+  const DesignTapTargetCheck(
+    look: 'Comic',
+    input: DesignInput.pointer,
+  ).check(tester.element(find.byType(SettingsScreen))).verify();
+  await _spacingCheck(tester);
+  final report = await const DesignShadowClipCheck(look: 'Comic').check(
+    tester.element(find.byType(SettingsScreen)),
+    runAsync: tester.runAsync,
+  );
+  report.verify();
+}
+
+/// [DesignSpacingCheck]'s example.
+Future<void> _spacingCheck(WidgetTester tester) async {
+  final report = await const DesignSpacingCheck(look: 'Comic').check(
+    tester.element(find.byType(SettingsScreen)),
+    runAsync: tester.runAsync,
+  );
+  report.verify();
+}
+
+/// [DesignSpacingCheck.literals]' example: a look's sources read from its
+/// lib folder.
+void _spacingLiterals() {
+  final lib = Directory('lib');
+  final sources = {
+    for (final f in lib.listSync(recursive: true).whereType<File>())
+      if (f.path.endsWith('.dart')) f.path: f.readAsStringSync(),
+  };
+  const DesignSpacingCheck(look: 'Comic').literals(sources).verify();
+}
+
+/// [DesignSpacingCheck.literals]' example on the look's own grid.
+void _spacingLiteralsOnGrid(WidgetTester tester, Map<String, String> sources) {
+  const DesignSpacingCheck(look: 'Retro')
+      .literals(sources, context: tester.element(find.byType(SettingsScreen)))
+      .verify();
+}
+
 /// [DesignLabelCheck.checkDensities]'s example, run by
 /// label_check_test.dart.
 Future<void> _labelDensities(
@@ -479,10 +599,6 @@ Future<void> _settleImages(WidgetTester tester) async {
   await tester.pump();
 }
 
-/// Code with its layout gone: no whitespace, no trailing comma.
-String _bare(String code) =>
-    code.replaceAll(RegExp(r'\s+'), '').replaceAll(RegExp(r',(?=[)\]}])'), '');
-
 /// The host app's own layer (its router, its app chrome and its
 /// manifest's annotations), which the package leaves out with its examples.
 const Set<String> _hostAppOnly = {
@@ -490,64 +606,6 @@ const Set<String> _hostAppOnly = {
   'chrome.dart',
   'annotations.dart',
 };
-
-/// Each example in lib: a `/// Example:` line, or a fenced dart block.
-List<String> _libExamples() {
-  final out = <String>[];
-  final files = Directory('lib').listSync(recursive: true).whereType<File>();
-  for (final file in files) {
-    if (!file.path.endsWith('.dart')) continue;
-    if (_hostAppOnly.contains(file.uri.pathSegments.last)) continue;
-    final lines = file.readAsLinesSync().map((l) => l.trim()).toList();
-    for (var i = 0; i < lines.length; i++) {
-      if (lines[i].startsWith('/// Example: ')) {
-        out.add(lines[i].substring('/// Example: '.length));
-      } else if (lines[i] == '/// ```dart') {
-        final code = <String>[];
-        while (lines[++i] != '/// ```') {
-          code.add(lines[i].replaceFirst(RegExp(r'^///'), ''));
-        }
-        out.add(code.join('\n'));
-      }
-    }
-  }
-  return out;
-}
-
-/// Runs [example] once, in the tree, and shows it when it is a widget.
-class _Once extends StatefulWidget {
-  const _Once(this.example);
-
-  final _Example example;
-
-  @override
-  State<_Once> createState() => _OnceState();
-}
-
-class _OnceState extends State<_Once> {
-  Object? _made;
-  bool _ran = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_ran) return;
-    _ran = true;
-    _made = widget.example(context);
-    final made = _made;
-    if (made is Route<void>) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) Navigator.of(context).push(made).ignore();
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final made = _made;
-    return made is Widget ? made : const SizedBox();
-  }
-}
 
 void main() {
   tearDown(() {
@@ -557,7 +615,7 @@ void main() {
     _disposers.clear();
   });
 
-  test('every example in lib is compiled here', () {
+  test('the checks the examples call are compiled here', () {
     expect(_alignmentCheck, isNotNull);
     expect(_keylineCheck, isNotNull);
     expect(_labelCheck, isNotNull);
@@ -566,31 +624,15 @@ void main() {
     expect(_rowCheck, isNotNull);
     expect(_widthCheck, isNotNull);
     expect(_fitChecks, isNotNull);
-    final here = _bare(File('test/doc_examples_test.dart').readAsStringSync());
-    final examples = _libExamples();
-    expect(examples, isNotEmpty);
-    expect(
-      [
-        for (final example in examples)
-          if (!here.contains(_bare(example))) example,
-      ],
-      isEmpty,
-      reason: 'each example in lib is written out in this file',
-    );
+    expect(_screenChecks, isNotNull);
+    expect(_spacingLiterals, isNotNull);
+    expect(_spacingLiteralsOnGrid, isNotNull);
   });
 
-  for (final MapEntry(key: name, value: example) in _examples.entries) {
-    testWidgets('$name\'s example runs', (tester) async {
-      await tester.pumpWidget(
-        harness(
-          Center(
-            child: SizedBox(width: 480, height: 480, child: _Once(example)),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-    });
-  }
+  testDocExamples(
+    self: 'test/doc_examples_test.dart',
+    examples: _examples,
+    wrap: harness,
+    skip: _hostAppOnly,
+  );
 }

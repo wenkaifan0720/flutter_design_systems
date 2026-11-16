@@ -2,6 +2,7 @@
 /// checks in `alignment.dart` cannot read from its pixels.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// Marks [child] as a card or a section whose contents share keylines: a
@@ -63,6 +64,36 @@ class DesignKeylineRegion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => child;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        IterableProperty<double>(
+          'indents',
+          indents,
+          defaultValue: const <double>[],
+        ),
+      )
+      ..add(
+        IterableProperty<double>(
+          'trailingIndents',
+          trailingIndents,
+          defaultValue: const <double>[],
+        ),
+      )
+      ..add(StringProperty('mixedHeights', mixedHeights, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'startAligned',
+          value: startAligned,
+          ifTrue: 'startAligned',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 /// Marks [child] as one face for the checks in `alignment.dart`: a

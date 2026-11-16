@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -265,9 +267,11 @@ void main() {
       expect(page, findsOneWidget);
 
       // A route raised over the page still closes.
-      showDialog<void>(
-        context: tester.element(page),
-        builder: (_) => const Text('Dialog'),
+      unawaited(
+        showDialog<void>(
+          context: tester.element(page),
+          builder: (_) => const Text('Dialog'),
+        ),
       );
       await tester.pumpAndSettle();
       expect(find.text('Dialog'), findsOneWidget);

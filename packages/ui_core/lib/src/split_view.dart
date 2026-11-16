@@ -4,6 +4,7 @@
 /// in another for three or more panes.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -43,7 +44,11 @@ class DesignSplitView extends StatefulWidget {
     this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
-  });
+  }) : assert(fraction == null || (fraction >= 0 && fraction <= 1)),
+       assert(initialFraction >= 0 && initialFraction <= 1),
+       assert(minFirst >= 0 && minSecond >= 0),
+       assert(dividerThickness >= 0 && hitExtent >= 0),
+       assert(step > 0);
 
   /// The first pane (the start side, or the top).
   final Widget first;
@@ -86,7 +91,9 @@ class DesignSplitView extends StatefulWidget {
   /// [DesignLocalizations.splitViewHandleLabel].
   final String? semanticLabel;
 
-  /// The divider's focus. The caller's, who disposes it; null: its own.
+  /// The divider's focus.
+  ///
+  /// {@macro design.focusNode}
   final FocusNode? focusNode;
 
   /// Whether the divider takes focus when it first appears.
@@ -94,6 +101,49 @@ class DesignSplitView extends StatefulWidget {
 
   @override
   State<DesignSplitView> createState() => _DesignSplitViewState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<DesignDividerBuilder>.has(
+          'dividerBuilder',
+          dividerBuilder,
+        ),
+      )
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.horizontal))
+      ..add(DoubleProperty('fraction', fraction, defaultValue: null))
+      ..add(
+        DoubleProperty('initialFraction', initialFraction, defaultValue: 0.5),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
+      ..add(DoubleProperty('minFirst', minFirst, defaultValue: 0))
+      ..add(DoubleProperty('minSecond', minSecond, defaultValue: 0))
+      ..add(
+        DoubleProperty('dividerThickness', dividerThickness, defaultValue: 1),
+      )
+      ..add(DoubleProperty('hitExtent', hitExtent, defaultValue: 12))
+      ..add(DoubleProperty('step', step, defaultValue: 0.02))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _DesignSplitViewState extends State<DesignSplitView> {

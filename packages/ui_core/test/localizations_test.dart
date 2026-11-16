@@ -121,6 +121,9 @@ void main() {
         en.selectedLabel,
         en.loadingLabel,
         en.noResultsLabel,
+        en.retryButtonLabel,
+        en.doneButtonLabel,
+        en.confirmButtonLabel,
       ],
       [
         'Cancel',
@@ -145,6 +148,9 @@ void main() {
         'Selected',
         'Loading',
         'No results',
+        'Try again',
+        'Done',
+        'Confirm',
       ],
     );
     expect([0, 1, 3].map(en.selectedRowCountTitle), [

@@ -14,6 +14,7 @@ Widget _app({
   DesignSheetEdge edge = DesignSheetEdge.end,
   TextDirection direction = TextDirection.ltr,
   bool reduceMotion = false,
+  DesignBarrierBuilder? barrierBuilder,
 }) => harness(
   Builder(
     builder: (context) => Center(
@@ -22,6 +23,7 @@ Widget _app({
         onPressed: () => Navigator.of(context).push(
           DesignSideSheetRoute<void>(
             edge: edge,
+            barrierBuilder: barrierBuilder,
             semanticLabel: 'Filters',
             builder: (context, sheet) => Container(
               key: _panel,
@@ -166,6 +168,57 @@ void main() {
     await tester.tapAt(const Offset(20, 300));
     await tester.pumpAndSettle();
     expect(find.byKey(_panel), findsNothing);
+  });
+
+  testWidgets('a barrier builder paints the barrier in place of its colour; '
+      'the barrier still takes the tap and says its label', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final seen = <double>[];
+    await tester.pumpWidget(
+      _app(
+        barrierBuilder: (context, animation) {
+          seen.add(animation.value);
+          return AnimatedBuilder(
+            animation: animation,
+            builder: (context, _) => Container(
+              key: const ValueKey('dots'),
+              color: Color.fromRGBO(0, 0, 255, animation.value / 2),
+              child: const Text('dots'),
+            ),
+          );
+        },
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('dots')), findsOneWidget);
+    final route =
+        ModalRoute.of(tester.element(find.byKey(_panel)))!
+            as DesignSideSheetRoute<void>;
+    expect(route.barrierColor, isNull, reason: 'the builder paints it');
+    expect(route.animation!.value, 1);
+    // The painting is only seen: the barrier says its label, not the dots.
+    expect(find.bySemanticsLabel('Close sheet'), findsOneWidget);
+    expect(find.bySemanticsLabel('dots'), findsNothing);
+    await tester.tapAt(
+      tester.getCenter(find.byKey(const ValueKey('dots'))) -
+          const Offset(300, 0),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(_panel), findsNothing);
+    expect(find.byKey(const ValueKey('dots')), findsNothing);
+    expect(seen, isNotEmpty);
+    semantics.dispose();
+  });
+
+  testWidgets('without a builder the barrier is its colour', (tester) async {
+    await tester.pumpWidget(_app());
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    final route =
+        ModalRoute.of(tester.element(find.byKey(_panel)))!
+            as DesignSideSheetRoute<void>;
+    expect(route.barrierColor, const Color(0x66000000));
   });
 
   testWidgets('a drag toward its edge closes it; a short one does not', (

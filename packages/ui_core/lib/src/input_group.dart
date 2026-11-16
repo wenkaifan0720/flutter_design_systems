@@ -9,6 +9,7 @@
 /// label and state, keeping the field's focus and caret as it flips.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'localizations.dart';
@@ -62,6 +63,37 @@ class DesignInputGroup extends StatefulWidget {
 
   @override
   State<DesignInputGroup> createState() => _DesignInputGroupState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<FocusNode>('focusNode', focusNode))
+      ..add(ObjectFlagProperty<DesignInputGroupBuilder>.has('builder', builder))
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'isError',
+          value: isError,
+          ifTrue: 'isError',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MouseCursor>(
+          'mouseCursor',
+          mouseCursor,
+          defaultValue: SystemMouseCursors.text,
+        ),
+      );
+  }
 }
 
 class _DesignInputGroupState extends State<DesignInputGroup> {
@@ -196,6 +228,41 @@ class DesignPasswordReveal extends StatefulWidget {
 
   @override
   State<DesignPasswordReveal> createState() => _DesignPasswordRevealState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, DesignPasswordDetails password)
+        >.has('builder', builder),
+      )
+      ..add(
+        DiagnosticsProperty<DesignPasswordController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'hideOnBlur',
+          value: hideOnBlur,
+          ifTrue: 'hideOnBlur',
+          defaultValue: false,
+        ),
+      )
+      ..add(StringProperty('showLabel', showLabel, defaultValue: null))
+      ..add(StringProperty('hideLabel', hideLabel, defaultValue: null));
+  }
 }
 
 class _DesignPasswordRevealState extends State<DesignPasswordReveal> {

@@ -177,6 +177,38 @@ void main() {
     expect(_lit('File'), isFalse, reason: 'Tab leaves the bar');
   });
 
+  testWidgets('in a menu, a typed letter goes to the next item it starts; '
+      'letters typed in a run spell the start', (tester) async {
+    _keyboard();
+    await tester.pumpWidget(_bar());
+    await _key(tester, LogicalKeyboardKey.tab);
+    await _key(tester, LogicalKeyboardKey.arrowDown);
+    expect(_lit('New'), isTrue);
+    Future<void> pause() => tester.pump(const Duration(seconds: 1));
+    await _key(tester, LogicalKeyboardKey.keyQ);
+    expect(_lit('Quit'), isTrue);
+    await pause();
+    await _key(tester, LogicalKeyboardKey.keyN);
+    expect(_lit('New'), isTrue, reason: 'round past the end');
+    await pause();
+    await _key(tester, LogicalKeyboardKey.keyO);
+    expect(_lit('Open recent'), isTrue);
+    await _key(tester, LogicalKeyboardKey.keyP);
+    expect(_lit('Open recent'), isTrue, reason: '"op" still fits it');
+    await pause();
+    await _key(tester, LogicalKeyboardKey.keyO);
+    expect(_lit('Open recent'), isTrue, reason: 'the only item O starts');
+    await pause();
+    await _key(tester, LogicalKeyboardKey.keyZ);
+    expect(_lit('Open recent'), isTrue, reason: 'no item: it stays');
+    await pause();
+    await _key(tester, LogicalKeyboardKey.arrowRight);
+    expect(_lit('a.txt'), isTrue);
+    await _key(tester, LogicalKeyboardKey.keyB);
+    expect(_lit('b.txt'), isTrue, reason: 'a submenu types for itself');
+    expect(find.text('New'), findsOneWidget);
+  });
+
   testWidgets('Right opens a submenu, Left closes it; Right on a command '
       'goes to the next menu; Enter runs an item and closes all', (
     tester,

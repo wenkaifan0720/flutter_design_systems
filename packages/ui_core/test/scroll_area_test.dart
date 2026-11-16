@@ -139,6 +139,54 @@ void main() {
     expect(_last!.visible, isFalse);
   });
 
+  testWidgets('a fixed thumb keeps its length over a lazy list whose rows '
+      'build as it scrolls; a proportional one does not', (tester) async {
+    // Rows that grow down the list, built as they come into view: the
+    // list's length is an estimate from the rows built so far, and it grows
+    // as the list scrolls.
+    Future<Set<double>> lengths(double? thumbLength) async {
+      final c = ScrollController();
+      addTearDown(c.dispose);
+      final seen = <double>{};
+      await tester.pumpWidget(
+        harness(
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 300,
+              height: 400,
+              child: DesignScrollArea(
+                controller: c,
+                thumbLength: thumbLength,
+                visibility: DesignScrollbarVisibility.always,
+                thumbBuilder: (context, thumb) {
+                  seen.add(thumb.thumbExtent);
+                  return const ColoredBox(color: Color(0xFF808080));
+                },
+                child: ListView.builder(
+                  controller: c,
+                  itemCount: 40,
+                  itemBuilder: (context, i) =>
+                      SizedBox(height: 20.0 + i * 6, child: Text('$i')),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      for (var i = 0; i < 12; i++) {
+        c.jumpTo(c.position.pixels + 400);
+        await tester.pump();
+      }
+      return seen;
+    }
+
+    expect(await lengths(null), hasLength(greaterThan(1)));
+    expect(await lengths(36), {36});
+    expect(await lengths(900), {400}, reason: 'no longer than the track');
+  });
+
   testWidgets('dragging the thumb scrolls in proportion; a press on the '
       'track pages toward it', (tester) async {
     final c = ScrollController();

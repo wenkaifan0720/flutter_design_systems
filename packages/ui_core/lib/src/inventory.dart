@@ -12,6 +12,7 @@
 /// `Deliberately absent: <reason>` rather than going missing.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// One row of the inventory: a component every look either carries or
@@ -1143,5 +1144,46 @@ class DesignInventoryGallery extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DesignInventory>('inventory', inventory))
+      ..add(
+        ObjectFlagProperty<DesignInventoryGroupBuilder>.has(
+          'groupBuilder',
+          groupBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<DesignInventoryRowBuilder>.has(
+          'rowBuilder',
+          rowBuilder,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.all(16),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'behaviourOnly',
+          value: behaviourOnly,
+          ifTrue: 'behaviourOnly',
+          defaultValue: false,
+        ),
+      );
   }
 }

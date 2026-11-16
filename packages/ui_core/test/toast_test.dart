@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -142,7 +144,7 @@ void main() {
     final handle = _toaster.show(const DesignToast(message: 'hover'));
     await tester.pumpAndSettle(const Duration(milliseconds: 100));
     var closed = false;
-    handle.closed.then((_) => closed = true);
+    unawaited(handle.closed.then((_) => closed = true));
 
     final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
     addTearDown(mouse.removePointer);

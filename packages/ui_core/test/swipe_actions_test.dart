@@ -1,6 +1,7 @@
 import 'dart:ui' show Tristate;
 
-import 'package:flutter/semantics.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -174,6 +175,22 @@ void main() {
     expect(_rowLeft(tester), 0);
   });
 
+  testWidgets('the open row shows the click cursor: a click there closes '
+      'it', (tester) async {
+    await tester.pumpWidget(_row(initiallyOpen: true));
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(mouse.removePointer);
+    await mouse.addPointer(location: const Offset(60, 30));
+    await tester.pump();
+    expect(
+      RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1),
+      SystemMouseCursors.click,
+    );
+    await tester.tapAt(const Offset(60, 30));
+    await tester.pumpAndSettle();
+    expect(_rowLeft(tester), 0);
+  });
+
   testWidgets('a full swipe arms the edge action and runs it; a destructive '
       'one slides the row away first', (tester) async {
     await tester.pumpWidget(_row());
@@ -240,6 +257,25 @@ void main() {
     await gesture.up();
     await tester.pumpAndSettle();
     expect(_ran, isEmpty);
+  });
+
+  testWidgets('the uncovered strip clips at its start and end only, so an '
+      'action\'s shadow reaches past the row; a reader of the paint clip '
+      'sees the clip itself', (tester) async {
+    await tester.pumpWidget(_row(initiallyOpen: true));
+    final clip = tester.renderObject<RenderClipRect>(
+      find
+          .ancestor(of: find.text('Delete'), matching: find.byType(ClipRect))
+          .first,
+    );
+    final size = clip.size;
+    final cut = clip.clipper!.getClip(size);
+    expect(cut.left, 0);
+    expect(cut.right, size.width);
+    expect(cut.top, lessThan(-6), reason: 'open above, past a shadow');
+    expect(cut.bottom, greaterThan(size.height + 6), reason: 'and below');
+    expect(clip.clipper!.getApproximateClipRect(size), cut);
+    expect(clip.describeApproximatePaintClip(clip.child!), cut);
   });
 
   testWidgets('an underlap runs the strip on under the row: the innermost '

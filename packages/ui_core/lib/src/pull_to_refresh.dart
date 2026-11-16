@@ -7,6 +7,7 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 
@@ -68,7 +69,7 @@ class DesignPullToRefresh extends StatefulWidget {
     this.refreshLabel,
     this.refreshingMessage,
     this.doneMessage,
-  });
+  }) : assert(triggerDistance > 0 && restExtent >= 0);
 
   /// Refreshes; the indicator stays until it completes.
   final Future<void> Function() onRefresh;
@@ -100,6 +101,33 @@ class DesignPullToRefresh extends StatefulWidget {
 
   @override
   State<DesignPullToRefresh> createState() => DesignPullToRefreshState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<Future<void> Function()>.has('onRefresh', onRefresh),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, DesignRefreshDetails details)
+        >.has('indicatorBuilder', indicatorBuilder),
+      )
+      ..add(
+        DoubleProperty('triggerDistance', triggerDistance, defaultValue: 80),
+      )
+      ..add(DoubleProperty('restExtent', restExtent, defaultValue: 56))
+      ..add(StringProperty('refreshLabel', refreshLabel, defaultValue: null))
+      ..add(
+        StringProperty(
+          'refreshingMessage',
+          refreshingMessage,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('doneMessage', doneMessage, defaultValue: null));
+  }
 }
 
 /// The refresher's state: [refresh] runs one (a keyboard shortcut, a

@@ -94,7 +94,9 @@ class DesignCarousel extends StatefulWidget {
     this.slideLabel,
     this.duration = const Duration(milliseconds: 350),
     this.clipBehavior = Clip.hardEdge,
-  });
+  }) : assert(itemCount >= 0),
+       assert(initialPage >= 0),
+       assert(viewportFraction > 0);
 
   /// How many slides there are.
   final int itemCount;
@@ -130,8 +132,9 @@ class DesignCarousel extends StatefulWidget {
   /// Whether the slides are a tab stop the arrows turn.
   final bool focusable;
 
-  /// The slides' focus. The caller's, who disposes it; null: the carousel
-  /// makes its own and disposes it.
+  /// The slides' focus.
+  ///
+  /// {@macro design.focusNode}
   final FocusNode? focusNode;
 
   /// Whether the slides take focus when they first appear (with
@@ -157,6 +160,92 @@ class DesignCarousel extends StatefulWidget {
 
   @override
   State<DesignCarousel> createState() => _DesignCarouselState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('itemCount', itemCount))
+      ..add(
+        ObjectFlagProperty<IndexedWidgetBuilder>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(
+            BuildContext context,
+            Widget viewport,
+            DesignCarouselControls controls,
+          )
+        >.has('layoutBuilder', layoutBuilder),
+      )
+      ..add(IntProperty('initialPage', initialPage, defaultValue: 0))
+      ..add(
+        DoubleProperty('viewportFraction', viewportFraction, defaultValue: 1),
+      )
+      ..add(
+        FlagProperty('loop', value: loop, ifTrue: 'loop', defaultValue: false),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'autoplayInterval',
+          autoplayInterval,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onPageChanged',
+          onPageChanged,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'focusable',
+          value: focusable,
+          ifFalse: 'focusable: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(int index, int count)>.has(
+          'slideLabel',
+          slideLabel,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'duration',
+          duration,
+          defaultValue: const Duration(milliseconds: 350),
+        ),
+      )
+      ..add(
+        EnumProperty<Clip>(
+          'clipBehavior',
+          clipBehavior,
+          defaultValue: Clip.hardEdge,
+        ),
+      );
+  }
 }
 
 class _DesignCarouselState extends State<DesignCarousel> {

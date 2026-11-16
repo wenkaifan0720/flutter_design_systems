@@ -6,6 +6,7 @@
 /// reader gets every action as a custom action on the row.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -104,7 +105,7 @@ class DesignSwipeActions extends StatefulWidget {
     this.onOpenChanged,
     this.initiallyOpen = false,
     this.underlap = 0,
-  });
+  }) : assert(actionExtent > 0 && underlap >= 0);
 
   /// The row.
   final Widget child;
@@ -143,6 +144,63 @@ class DesignSwipeActions extends StatefulWidget {
 
   @override
   State<DesignSwipeActions> createState() => _DesignSwipeActionsState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<DesignSwipeActionBuilder>.has(
+          'actionBuilder',
+          actionBuilder,
+        ),
+      )
+      ..add(
+        IterableProperty<DesignSwipeAction>(
+          'startActions',
+          startActions,
+          defaultValue: const <DesignSwipeAction>[],
+        ),
+      )
+      ..add(
+        IterableProperty<DesignSwipeAction>(
+          'endActions',
+          endActions,
+          defaultValue: const <DesignSwipeAction>[],
+        ),
+      )
+      ..add(DoubleProperty('actionExtent', actionExtent, defaultValue: 80))
+      ..add(
+        FlagProperty(
+          'fullSwipe',
+          value: fullSwipe,
+          ifFalse: 'fullSwipe: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DoubleProperty(
+          'fullSwipeFraction',
+          fullSwipeFraction,
+          defaultValue: 0.6,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onOpenChanged',
+          onOpenChanged,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'initiallyOpen',
+          value: initiallyOpen,
+          ifTrue: 'initiallyOpen',
+          defaultValue: false,
+        ),
+      )
+      ..add(DoubleProperty('underlap', underlap, defaultValue: 0));
+  }
 }
 
 class _DesignSwipeActionsState extends State<DesignSwipeActions>
@@ -444,7 +502,13 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
                         left: dx > 0 ? 0 : null,
                         right: dx < 0 ? 0 : null,
                         width: x.abs() + widget.underlap,
-                        child: ClipRect(child: _actions(x > 0, x)),
+                        // Cut where the row uncovers them, at the strip's
+                        // start and end only: an action's shadow still
+                        // reaches past the row's top and bottom.
+                        child: ClipRect(
+                          clipper: const _AlongTheSwipe(),
+                          child: _actions(x > 0, x),
+                        ),
                       );
                 // The row covers the whole area, so its visible strip
                 // takes the tap that closes it.
@@ -454,11 +518,19 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
                     ?behind,
                     Transform.translate(
                       offset: Offset(dx, 0),
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        excludeFromSemantics: true,
-                        onTap: x != 0 ? close : null,
-                        child: AbsorbPointer(absorbing: x != 0, child: child),
+                      // While open, the row is one target that closes it,
+                      // and the pointer says so.
+                      child: MouseRegion(
+                        cursor: x != 0
+                            ? SystemMouseCursors.click
+                            : MouseCursor.defer,
+                        opaque: x != 0,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          excludeFromSemantics: true,
+                          onTap: x != 0 ? close : null,
+                          child: AbsorbPointer(absorbing: x != 0, child: child),
+                        ),
                       ),
                     ),
                   ],
@@ -471,4 +543,22 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
       ),
     );
   }
+}
+
+// The uncovered strip's clip: at its start and end only, open above and
+// below by its own height, more than any shadow an action casts. Its
+// approximate rect is the clip itself, so a reader of the paint clip (the
+// clipped-shadow check) sees where it cuts.
+class _AlongTheSwipe extends CustomClipper<Rect> {
+  const _AlongTheSwipe();
+
+  @override
+  Rect getClip(Size size) =>
+      Rect.fromLTRB(0, -size.height, size.width, 2 * size.height);
+
+  @override
+  Rect getApproximateClipRect(Size size) => getClip(size);
+
+  @override
+  bool shouldReclip(_AlongTheSwipe oldClipper) => false;
 }

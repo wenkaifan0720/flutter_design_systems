@@ -10,6 +10,7 @@
 library;
 
 import 'package:flutter/semantics.dart' show SemanticsValidationResult;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -236,8 +237,9 @@ class DesignOtpField extends StatefulWidget {
   /// the field makes its own and disposes it.
   final DesignOtpController? controller;
 
-  /// The input's focus. The caller's, who disposes it; null: the field
-  /// makes its own and disposes it.
+  /// The input's focus.
+  ///
+  /// {@macro design.focusNode}
   final FocusNode? focusNode;
 
   /// Lays out the boxes; null puts them in a row.
@@ -249,7 +251,7 @@ class DesignOtpField extends StatefulWidget {
   /// Called once each time the code becomes whole.
   final ValueChanged<String>? onCompleted;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro design.autofocus}
   final bool autofocus;
 
   /// Whether it takes input.
@@ -300,6 +302,140 @@ class DesignOtpField extends StatefulWidget {
 
   @override
   State<DesignOtpField> createState() => _DesignOtpFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        ObjectFlagProperty<DesignOtpSlotBuilder>.has(
+          'slotBuilder',
+          slotBuilder,
+        ),
+      )
+      ..add(IntProperty('length', length, defaultValue: 6))
+      ..add(
+        DiagnosticsProperty<DesignOtpController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<DesignOtpLayoutBuilder>.has(
+          'layoutBuilder',
+          layoutBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onCompleted',
+          onCompleted,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'enabled',
+          value: enabled,
+          ifFalse: 'enabled: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'isError',
+          value: isError,
+          ifTrue: 'isError',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'obscureText',
+          value: obscureText,
+          ifTrue: 'obscureText',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: TextInputType.number,
+        ),
+      )
+      ..add(
+        EnumProperty<TextDirection>(
+          'textDirection',
+          textDirection,
+          defaultValue: TextDirection.ltr,
+        ),
+      )
+      ..add(
+        StringProperty(
+          'semanticLabel',
+          semanticLabel,
+          defaultValue: 'One-time code',
+        ),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<DesignOtpContextMenuBuilder>.has(
+          'contextMenuBuilder',
+          contextMenuBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: const <TextInputFormatter>[],
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: const [AutofillHints.oneTimeCode],
+        ),
+      );
+  }
 }
 
 class _DesignOtpFieldState extends State<DesignOtpField> {

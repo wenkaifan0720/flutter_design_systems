@@ -349,6 +349,52 @@ void main() {
     expect(await _problems(tester, _card(examples())), isEmpty);
   });
 
+  for (final direction in TextDirection.values) {
+    testWidgets('a bare checkbox in its tap target starts on the keyline by '
+        'its face when the target grows from its start ($direction)', (
+      tester,
+    ) async {
+      List<Widget> examples(AlignmentGeometry alignment) => [
+        _text('Paid'),
+        Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: DesignTapTarget(
+            alignment: alignment,
+            child: _faced('Paid', width: 24, height: 24),
+          ),
+        ),
+      ];
+      expect(
+        await _problems(
+          tester,
+          _card(
+            examples(AlignmentDirectional.center),
+            label: 'Section',
+            startAligned: true,
+          ),
+          direction: direction,
+        ),
+        [
+          'Section: a button "Paid" starts 26 px in; the leading keyline is '
+              '16 px in',
+        ],
+        reason: 'centred, its face stands 10 px in',
+      );
+      expect(
+        await _problems(
+          tester,
+          _card(
+            examples(AlignmentDirectional.centerStart),
+            label: 'Section',
+            startAligned: true,
+          ),
+          direction: direction,
+        ),
+        isEmpty,
+      );
+    });
+  }
+
   testWidgets("a wrap's runs and a group of choices end ragged; a row of "
       'buttons across the card does not', (tester) async {
     // Chips 70 wide, 8 apart: four take 304 of the card's 308, ending 4
@@ -896,7 +942,11 @@ void main() {
 
       testWidgets('4 ($d): a wrapped or a short text is judged only at the '
           'side it is aligned to, not at its ragged end', (tester) async {
-        final saved = Text('Saved', style: _words, textAlign: TextAlign.end);
+        final saved = const Text(
+          'Saved',
+          style: _words,
+          textAlign: TextAlign.end,
+        );
         Widget card({double end = 0}) => _card([
           _text('Lights'),
           _text('Lights dimmed slowly before the house sleeps'),

@@ -3,6 +3,7 @@
 /// group, arrows between its items.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -56,7 +57,9 @@ class DesignToggleGroup<T> extends StatefulWidget {
   /// The chosen ones.
   final Set<T> selected;
 
-  /// A press's new choice; null disables the group.
+  /// A press's new choice.
+  ///
+  /// {@macro design.nullDisables}
   final ValueChanged<Set<T>>? onSelectionChanged;
 
   /// Paints an item.
@@ -94,6 +97,76 @@ class DesignToggleGroup<T> extends StatefulWidget {
 
   @override
   State<DesignToggleGroup<T>> createState() => _DesignToggleGroupState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('options', options))
+      ..add(IterableProperty<T>('selected', selected))
+      ..add(
+        ObjectFlagProperty<ValueChanged<Set<T>>>.has(
+          'onSelectionChanged',
+          onSelectionChanged,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<DesignToggleItemBuilder<T>>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'multiSelectionEnabled',
+          value: multiSelectionEnabled,
+          ifTrue: 'multiSelectionEnabled',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'emptySelectionAllowed',
+          value: emptySelectionAllowed,
+          ifTrue: 'emptySelectionAllowed',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'selectFollowsFocus',
+          value: selectFollowsFocus,
+          ifTrue: 'selectFollowsFocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<bool Function(T value)>.has('isEnabled', isEnabled),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(T value)>.has('labelOf', labelOf),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        EnumProperty<Axis>(
+          'direction',
+          direction,
+          defaultValue: Axis.horizontal,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, List<Widget> items)
+        >.has('layoutBuilder', layoutBuilder),
+      )
+      ..add(
+        DiagnosticsProperty<Size>(
+          'minimumSize',
+          minimumSize,
+          defaultValue: const Size(44, 44),
+        ),
+      );
+  }
 }
 
 class _DesignToggleGroupState<T> extends State<DesignToggleGroup<T>> {

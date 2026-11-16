@@ -3,6 +3,7 @@
 library;
 
 export 'src/anchored_overlay.dart';
+export 'src/barrier.dart';
 export 'src/calendar.dart';
 export 'src/cap_center.dart';
 export 'src/carousel.dart';
@@ -18,16 +19,20 @@ export 'src/localizations.dart';
 export 'src/menubar.dart';
 export 'src/motion.dart';
 export 'src/otp.dart';
+export 'src/page_transitions.dart';
 export 'src/pressable.dart';
 export 'src/pull_to_refresh.dart';
 export 'src/range_slider.dart';
 export 'src/reorderable_list.dart';
 export 'src/scroll_area.dart';
 export 'src/side_sheet.dart';
+export 'src/spacing.dart';
 export 'src/split_button.dart';
 export 'src/split_view.dart';
+export 'src/style.dart';
 export 'src/swipe_actions.dart';
 export 'src/tag_input.dart';
+export 'src/tap_target.dart';
 export 'src/toast.dart';
 export 'src/toggle_group.dart';
 export 'src/tree.dart';

@@ -218,13 +218,21 @@ class _PortalSelectState extends State<_PortalSelect> {
 // A combobox: a text entry and, beside it, the toggle that opens its list,
 // in one ringed face 40 high, the entry's words 12 in.
 class _Combobox extends StatefulWidget {
-  const _Combobox({this.itemPad = 12, this.chips = const []});
+  const _Combobox({
+    this.itemPad = 12,
+    this.chips = const [],
+    this.tagWords = false,
+  });
 
   final double itemPad;
 
   // Chosen values, each a chip with a way to remove it, before the entry
   // (a multi-select).
   final List<String> chips;
+
+  // Each chip drawn as its words beside a remove button that shows none (an
+  // x), not as a button holding its words (Ledger's tags).
+  final bool tagWords;
 
   @override
   State<_Combobox> createState() => _ComboboxState();
@@ -256,32 +264,60 @@ class _ComboboxState extends State<_Combobox> {
         child: Row(
           children: [
             for (final c in widget.chips)
-              Padding(
-                padding: const EdgeInsets.only(left: 6),
-                child: Semantics(
-                  button: true,
-                  label: 'Remove $c',
-                  child: GestureDetector(
-                    onTap: () {},
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFDDE4F5),
-                        borderRadius: BorderRadius.circular(14),
+              if (widget.tagWords)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _words(c),
+                      Semantics(
+                        button: true,
+                        label: 'Remove $c',
+                        child: GestureDetector(
+                          onTap: () {},
+                          child: const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: Center(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(color: _line),
+                                child: SizedBox(width: 8, height: 8),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      child: SizedBox(
-                        height: 28,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Center(widthFactor: 1, child: _words(c)),
+                    ],
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 6),
+                  child: Semantics(
+                    button: true,
+                    label: 'Remove $c',
+                    child: GestureDetector(
+                      onTap: () {},
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFDDE4F5),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: SizedBox(
+                          height: 28,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Center(widthFactor: 1, child: _words(c)),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(left: 12),
+                padding: const EdgeInsetsDirectional.only(start: 12),
                 // As a field's entry announces itself.
                 child: Semantics(
                   textField: true,
@@ -326,6 +362,181 @@ class _ComboboxState extends State<_Combobox> {
         ),
       ),
     ),
+  );
+}
+
+// A text field that lists choices as you type, with no toggle (a
+// RawAutocomplete's field view): a label over a ringed face 48 high, its
+// entry 18 in on a fill of its own (a Material decorator's), a helper under
+// it. [controller] opens its list, as words typed in do.
+class _TypedField extends StatefulWidget {
+  const _TypedField({required this.controller});
+
+  final MenuController controller;
+
+  @override
+  State<_TypedField> createState() => _TypedFieldState();
+}
+
+class _TypedFieldState extends State<_TypedField> {
+  final _text = TextEditingController(text: 'a');
+  final _focus = FocusNode();
+
+  @override
+  void dispose() {
+    _text.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => DesignAnchoredOverlay(
+    controller: widget.controller,
+    focusOnOpen: false,
+    anchorBuilder: (context, anchor) => Column(
+      key: _fieldKey,
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _words('City'),
+        const SizedBox(height: 8),
+        DecoratedBox(
+          decoration: BoxDecoration(
+            color: _white,
+            border: Border.all(color: _line, width: 2),
+          ),
+          child: SizedBox(
+            height: 48,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                // As a field's entry announces itself.
+                child: Semantics(
+                  textField: true,
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(color: Color(0xFFF2F2F2)),
+                    child: EditableText(
+                      controller: _text,
+                      focusNode: _focus,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 14,
+                        color: _ink,
+                      ),
+                      cursorColor: _ink,
+                      backgroundCursorColor: _line,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        _words('A city not on the list says so.'),
+      ],
+    ),
+    overlayBuilder: (context, info) => _listSurface(
+      ownSurface: false,
+      child: _options(const ['Amsterdam', 'Athens'], info.close, itemPad: 18),
+    ),
+  );
+}
+
+// A surface whose render box paints its ringed face [inset] in from its
+// edges (room for a shadow round it).
+class _InsetSurface extends SingleChildRenderObjectWidget {
+  const _InsetSurface({required this.inset, super.child});
+
+  final double inset;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderInsetSurface(inset);
+}
+
+class _RenderInsetSurface extends RenderProxyBox {
+  _RenderInsetSurface(this.inset);
+
+  final double inset;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final face = RRect.fromRectAndRadius(
+      (offset & size).deflate(inset),
+      const Radius.circular(8),
+    );
+    context.canvas
+      ..drawRRect(face, Paint()..color = _white)
+      ..drawRRect(
+        face.deflate(0.5),
+        Paint()
+          ..color = _line
+          ..style = PaintingStyle.stroke,
+      );
+    super.paint(context, offset);
+  }
+}
+
+// Neumorphism's ground: a face the colour of what it stands on, told by its
+// light and shade alone.
+const _plaster = Color(0xFFE4E8EE);
+
+// A recessed face lit from the top left: 3 of shade along its top and left
+// edges, 3 of a faint highlight along its bottom and right, which runs to
+// its corners (the shade fades before them).
+class _Groove extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final shade = Paint()..color = const Color(0xFFA3ACBE);
+    final light = Paint()..color = const Color(0xFFF3F5F8);
+    canvas
+      ..drawRect(Offset.zero & size, Paint()..color = _plaster)
+      ..drawRect(Rect.fromLTWH(0, 0, size.width - 3, 3), shade)
+      ..drawRect(Rect.fromLTWH(0, 0, 3, size.height - 3), shade)
+      ..drawRect(Rect.fromLTWH(0, size.height - 3, size.width, 3), light)
+      ..drawRect(Rect.fromLTWH(size.width - 3, 0, 3, size.height), light);
+  }
+
+  @override
+  bool shouldRepaint(_Groove oldDelegate) => false;
+}
+
+// [child], with a button of a dialog's to the right of its column, its top
+// 2 under the child's bottom (a field 40 high where _pump puts it), drawn
+// in the overlay.
+class _Beside extends StatefulWidget {
+  const _Beside({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_Beside> createState() => _BesideState();
+}
+
+class _BesideState extends State<_Beside> {
+  final _portal = OverlayPortalController()..show();
+
+  @override
+  Widget build(BuildContext context) => OverlayPortal(
+    controller: _portal,
+    overlayChildBuilder: (context) => Positioned(
+      left: 24 + 240 + 16,
+      top: 24 + 40 + 2,
+      child: Semantics(
+        button: true,
+        label: 'Add device',
+        child: GestureDetector(
+          onTap: () {},
+          child: const DecoratedBox(
+            decoration: BoxDecoration(color: _line),
+            child: SizedBox(width: 272, height: 40),
+          ),
+        ),
+      ),
+    ),
+    child: widget.child,
   );
 }
 
@@ -505,6 +716,7 @@ Future<void> _pump(
   Widget body, {
   double width = 1200,
   TextDirection direction = TextDirection.ltr,
+  TransitionBuilder? wrap,
 }) async {
   tester.view.physicalSize = Size(width, 800);
   tester.view.devicePixelRatio = 1;
@@ -522,6 +734,7 @@ Future<void> _pump(
         ),
       ),
       textDirection: direction,
+      wrap: wrap,
     ),
   );
 }
@@ -1613,6 +1826,48 @@ void main() {
       expect(await _list(tester), ['no list open from a select "Apple"']);
     });
 
+    // A navigation frame: its navigator's page holds the field, 24 in; its
+    // side bar, drawn after that page in the frame's own route, has a row's
+    // 18 px glyph 4 under the field's foot (Ledger's, 11-15).
+    Widget framed() => SizedBox(
+      height: 400,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Navigator(
+              onGenerateRoute: (_) => PageRouteBuilder<void>(
+                pageBuilder: (_, _, _) =>
+                    Padding(padding: const EdgeInsets.all(24), child: field()),
+              ),
+            ),
+          ),
+          const SizedBox(
+            width: 200,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 68),
+                DecoratedBox(
+                  decoration: BoxDecoration(color: _line),
+                  child: SizedBox(width: 18, height: 18),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    testWidgets("a side bar drawn after the field's page, in a layer that "
+        'holds it, is not the list', (tester) async {
+      await _pump(tester, framed());
+      await tester.pumpAndSettle();
+      expect(await _list(tester), ['no list open from a select "Apple"']);
+      await _open(tester);
+      expect(await _list(tester), isEmpty);
+    });
+
     Widget portal({
       List<String> options = const ['Apple', 'Banana', 'Cherry'],
       double listWidth = 240,
@@ -1638,6 +1893,49 @@ void main() {
         'a list opened from a button "Apple": 200 px wide as laid out, '
             'narrower than the field (240, 240 as drawn)',
       ]);
+    });
+
+    testWidgets('a list wider than the field and its widest item is named, '
+        'with both widths', (tester) async {
+      // Apple, Banana and Cherry in 900: as a list that stretches to the
+      // overlay would be.
+      await _pump(tester, portal(listWidth: 900));
+      await _open(tester);
+      final problems = await _list(tester);
+      expect(
+        problems,
+        _one(
+          r'a list opened from a button "Apple": 900 px wide as laid out, '
+          r'wider than the field \(240\) and its widest item with its '
+          r'padding \([0-9.]+\): a list is the field.s width, or as wide as '
+          r'its widest item past it, never wider',
+        ),
+      );
+    });
+
+    testWidgets('a list from a DesignAnchoredOverlay stays inside the rule '
+        'whatever its rows do', (tester) async {
+      // Rows that stretch and no IntrinsicWidth of the look's own: the
+      // overlay holds the list to the field, wider only for its widest row.
+      await _pump(
+        tester,
+        _hugging(
+          SizedBox(
+            width: 240,
+            child: DesignAnchoredOverlay(
+              focusOnOpen: false,
+              anchorBuilder: (context, anchor) =>
+                  _selectFace('Apple', anchor.toggle),
+              overlayBuilder: (context, info) => _listSurface(
+                ownSurface: false,
+                child: _options(const ['Apple', 'Banana'], info.close),
+              ),
+            ),
+          ),
+        ),
+      );
+      await _open(tester);
+      expect(await _list(tester), isEmpty);
     });
 
     testWidgets('an open list holding no choices, only a note, is still the '
@@ -1679,12 +1977,230 @@ void main() {
       ]);
     });
 
+    testWidgets("right to left, a combobox's words are its entry's text, its "
+        "caret's margin aside", (tester) async {
+      // An entry keeps 2.5 px clear at its right edge for its caret (a 1 px
+      // gap, the caret 1.5 wide): where a right-to-left entry's words start.
+      await _pump(
+        tester,
+        _hugging(const SizedBox(width: 240, child: _Combobox())),
+        direction: TextDirection.rtl,
+      );
+      await tester.tap(find.byIcon(_chevron));
+      await tester.pumpAndSettle();
+      expect(await _list(tester), isEmpty);
+    });
+
+    for (final direction in TextDirection.values) {
+      testWidgets("a text field's face round its entry is its field, with no "
+          'toggle beside it (${direction.name})', (tester) async {
+        final controller = MenuController();
+        await _pump(
+          tester,
+          _hugging(
+            SizedBox(width: 320, child: _TypedField(controller: controller)),
+          ),
+          direction: direction,
+        );
+        controller.open();
+        await tester.pumpAndSettle();
+        expect(await _list(tester), isEmpty);
+      });
+    }
+
+    testWidgets("right to left, a list's Latin words start at their row's "
+        'right end, not at their first letter', (tester) async {
+      await _pump(
+        tester,
+        _hugging(
+          SizedBox(
+            width: 240,
+            child: _select('Fig', options: const ['Banana', 'Cherry']),
+          ),
+        ),
+        direction: TextDirection.rtl,
+      );
+      await _open(tester);
+      expect(await _list(tester), isEmpty);
+    });
+
+    testWidgets('a list laid out with room round its face is held to its '
+        'face as drawn', (tester) async {
+      // The anchor keeps 2 round the select's face (a focus ring's room); the
+      // list, the anchor's width, paints its face 2 in from its box. The app
+      // is drawn in a layer of its own, so the list is read as drawn.
+      await _pump(
+        tester,
+        _hugging(
+          SizedBox(
+            width: 244,
+            child: DesignAnchoredOverlay(
+              focusOnOpen: false,
+              anchorBuilder: (context, anchor) => Padding(
+                padding: const EdgeInsets.all(2),
+                child: _selectFace('Apple', anchor.toggle),
+              ),
+              overlayBuilder: (context, info) => _InsetSurface(
+                inset: 2,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: _options(const ['Apple', 'Banana'], info.close),
+                ),
+              ),
+            ),
+          ),
+        ),
+        wrap: (context, navigator) => RepaintBoundary(child: navigator),
+      );
+      await _open(tester);
+      expect(await _list(tester), isEmpty);
+    });
+
+    testWidgets("a list that shares its field's rule, laid over the field's "
+        'edge by it, is read by its face, not by the rows inside the rule', (
+      tester,
+    ) async {
+      // Brutal's select: the list's top rule lies on the field's bottom one
+      // (a gap of minus the rule), the rule is drawn over the list, and its
+      // rows stand inside it, their words 12 in as the field's are.
+      await _pump(
+        tester,
+        _stretched(
+          DesignAnchoredOverlay(
+            placement: const DesignOverlayPlacement(gap: -2),
+            focusOnOpen: false,
+            anchorBuilder: (context, anchor) =>
+                _selectFace('Apple', anchor.toggle),
+            overlayBuilder: (context, info) => DecoratedBox(
+              decoration: const BoxDecoration(color: _white),
+              child: DecoratedBox(
+                position: DecorationPosition.foreground,
+                decoration: BoxDecoration(
+                  border: Border.all(color: _line, width: 2),
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(2),
+                  child: _options(
+                    const ['Apple', 'Banana'],
+                    info.close,
+                    itemPad: 10,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        width: 390,
+      );
+      await _open(tester);
+      expect(await _list(tester), isEmpty);
+    });
+
+    testWidgets("a button beside the field's column, nearer than its list, "
+        'is no list of the field', (tester) async {
+      // Neumorphism's add device at 1440: the dialog's own button stands to
+      // the right of the Room select, its top 2 under the field's bottom;
+      // the select's list opens 8 under it.
+      await _pump(
+        tester,
+        _hugging(
+          SizedBox(
+            width: 240,
+            child: _Beside(
+              child: _select(
+                'Apple',
+                placement: const DesignOverlayPlacement(gap: 8),
+              ),
+            ),
+          ),
+        ),
+      );
+      await _open(tester);
+      expect(await _list(tester), isEmpty);
+    });
+
+    for (final direction in TextDirection.values) {
+      testWidgets('a groove lit from the top left is read to its box on its '
+          'lit sides (${direction.name})', (tester) async {
+        // Neumorphism's select: a recessed field the colour of its ground,
+        // its top and left in shade, its bottom and right in a highlight
+        // too faint to stand off. Right to left, its leading edge is the lit
+        // one: the list, on the field's edges, is on them as drawn too.
+        await _pump(
+          tester,
+          ColoredBox(
+            color: _plaster,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: _hugging(
+                SizedBox(
+                  width: 240,
+                  child: DesignAnchoredOverlay(
+                    focusOnOpen: false,
+                    anchorBuilder: (context, anchor) => Semantics(
+                      button: true,
+                      label: 'Apple',
+                      child: GestureDetector(
+                        key: _fieldKey,
+                        onTap: anchor.toggle,
+                        child: CustomPaint(
+                          painter: _Groove(),
+                          child: SizedBox(
+                            height: 40,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              child: Align(
+                                alignment: AlignmentDirectional.centerStart,
+                                child: _words('Apple'),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    overlayBuilder: (context, info) => DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: _white,
+                        border: Border.all(color: _line),
+                      ),
+                      child: _options(const ['Apple', 'Banana'], info.close),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          direction: direction,
+        );
+        await _open(tester);
+        expect(await _list(tester), isEmpty);
+      });
+    }
+
     testWidgets("a multi-select's groove holding its chosen chips before its "
         'entry is its field', (tester) async {
       await _pump(
         tester,
         _hugging(
           const SizedBox(width: 280, child: _Combobox(chips: ['Porto'])),
+        ),
+      );
+      await tester.tap(find.byIcon(_chevron));
+      await tester.pumpAndSettle();
+      expect(await _list(tester), isEmpty);
+    });
+
+    testWidgets("a tag drawn as its words beside a remove button that shows "
+        'none is a chip before the entry', (tester) async {
+      await _pump(
+        tester,
+        _hugging(
+          const SizedBox(
+            width: 280,
+            child: _Combobox(chips: ['Porto'], tagWords: true),
+          ),
         ),
       );
       await tester.tap(find.byIcon(_chevron));

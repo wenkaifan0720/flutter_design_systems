@@ -13,6 +13,7 @@
 /// repeats a day.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -450,7 +451,12 @@ class DesignCalendar extends StatefulWidget {
     this.weekdayLabel,
     this.showOutsideDays = true,
     this.minDayWidth = 0,
-  });
+  }) : assert(months > 0),
+       assert(
+         firstWeekday == null || (firstWeekday >= 1 && firstWeekday <= 7),
+         'firstWeekday is DateTime.monday … DateTime.sunday',
+       ),
+       assert(minDayWidth >= 0);
 
   /// The model: the shown month, the keyboard's day and the selection.
   /// The caller makes it, keeps it across
@@ -486,8 +492,9 @@ class DesignCalendar extends StatefulWidget {
   /// day added or taken away).
   final ValueChanged<DateTime>? onChanged;
 
-  /// The grid's one focus. The caller's, who disposes it; null: the
-  /// calendar makes its own and disposes it.
+  /// The grid's one focus.
+  ///
+  /// {@macro design.focusNode}
   final FocusNode? focusNode;
 
   /// Whether the grid takes focus when it first appears.
@@ -517,6 +524,83 @@ class DesignCalendar extends StatefulWidget {
 
   @override
   State<DesignCalendar> createState() => _DesignCalendarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+      )
+      ..add(
+        ObjectFlagProperty<DesignCalendarDayBuilder>.has(
+          'dayBuilder',
+          dayBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, DesignCalendarHeader header)
+        >.has('headerBuilder', headerBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, int weekday, String label)
+        >.has('weekdayBuilder', weekdayBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, List<Widget> months)
+        >.has('monthsBuilder', monthsBuilder),
+      )
+      ..add(IntProperty('months', months, defaultValue: 1))
+      ..add(IntProperty('firstWeekday', firstWeekday, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(DateTime day)>.has(
+          'dayLabel',
+          dayLabel,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(DateTime month)>.has(
+          'monthLabel',
+          monthLabel,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(int weekday)>.has(
+          'weekdayLabel',
+          weekdayLabel,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'showOutsideDays',
+          value: showOutsideDays,
+          ifFalse: 'showOutsideDays: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(DoubleProperty('minDayWidth', minDayWidth, defaultValue: 0));
+  }
 }
 
 class _DesignCalendarState extends State<DesignCalendar> {

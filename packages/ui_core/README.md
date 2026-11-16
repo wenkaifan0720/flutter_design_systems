@@ -121,16 +121,171 @@ Every behaviour has a contract test, run on each change, that checks:
 - that nothing overflows at twice the text size, and every tap target is at least 44 by 44;
 - that under Reduce Motion it settles within a second and nothing runs on.
 
+## Motion
+
+Motion is springs only: a look's motion tokens are (damping ratio, stiffness) pairs, run through `designSpring`,
+`DesignMotionPolicy` and `springTo`, and nothing takes a duration or an easing curve. Under Reduce Motion
+(`MediaQuery.disableAnimationsOf`), `DesignMotionPolicy.of(context)` critically damps every spatial spring (one
+that moves, resizes or reshapes something) at its own stiffness, so nothing overshoots or bounces, and turns every
+effects spring (opacity, colour) into a short fade: critically damped at a stiffness of at least 3800
+(`DesignMotionPolicy.reducedEffectsStiffness`), settled within 150 ms, so nothing lingers. Neither is cut to an
+instant change, which reads as a flash.
+
+### A look's page transitions
+
+An app's `MaterialPageRoute` plays the push its own Material theme names. A look's library stands on material_ui, so a
+`PageTransitionsTheme` it installs in the Material theme it builds is material_ui's. An app on Flutter's own
+`MaterialApp`, as most apps that take a look are, and every look's example, pushes Flutter's `MaterialPageRoute`,
+which never reads it: on a Mac it plays the Cupertino slide. So a look exposes its push as a map of widgets-level
+`PageTransitionsBuilder`s, which fits both Materials' `PageTransitionsTheme`:
+
+```dart
+const Map<TargetPlatform, PageTransitionsBuilder> comicPageTransitions = {
+  TargetPlatform.android: ComicPageTransitionsBuilder(),
+  // iOS's swipe back from the screen's edge, round the look's push.
+  TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(ComicPageTransitionsBuilder()),
+  TargetPlatform.macOS: ComicPageTransitionsBuilder(),
+  // ...
+};
+```
+
+On iOS a page pops with a swipe from the screen's leading edge, and the swipe lives in Cupertino's page transition,
+which a look's own push replaces. `DesignSwipeBackPageTransitionsBuilder` keeps it round any builder: while a finger
+drives the swipe, the page follows it and the page under it shows, as on every iOS screen; otherwise the look's push
+and pop play. `designSwipeBack(map)` wraps a map's iOS entry the same way, for a map built at run time.
+
+Its example and its README put it in the app's `ThemeData`, Flutter's or material_ui's, whichever the app is on:
+
+```dart
+MaterialApp(
+  theme: ThemeData(
+    pageTransitionsTheme: const PageTransitionsTheme(builders: comicPageTransitions),
+  ),
+  home: const ComicHome(),
+);
+```
+
+`example/test/page_transitions_test.dart` holds it: under that theme, Flutter's `MaterialPageRoute` plays the look's
+push on every platform, and without it a Mac's plays the Cupertino slide; on iOS, a swipe from the left edge past half
+way pops the page, and one let go short of it settles back. A look's example copies the test with its own map.
+
+## Styling a part
+
+A look's parts take a `style:` of one shape, `DesignStyle`, as Material's buttons take a `ButtonStyle`: ten slots
+(fill, foreground, edge, overlay, side, shape, padding, minimumSize, textStyle, iconSize), each a
+`WidgetStateProperty` that resolves for the part's states. A part reads each slot from its `style:`, then its
+component theme, then the look's theme-wide knobs, then the look's default; `DesignStyleOf` reads the first two
+for a part's states. Each look names it as its own (`ComicStyle`, `FrostedStyle`), so a style is written and read
+the same way in every look.
+
 ## Words
 
 The words a behaviour says on its own ("Close sheet", "Slide 2 of 5", a sorted column's hint) come from
 `DesignLocalizations`, each also a parameter on its behaviour. So do the general words a look shows or says by
 itself (Cancel, Close, Today, Next month, "2 of 5", "3 items selected"), under `MaterialLocalizations`' names where
 Flutter has the word: a look reads them from `DesignLocalizations.of(context)` rather than writing English. English
-is the default, with nothing to set up under `MaterialApp`, `CupertinoApp` or `WidgetsApp`. For another
-language, extend `DefaultDesignLocalizations`, override the words you translate, and add a delegate for your
-subclass to `localizationsDelegates`; a word added in a later minor version then stays English until you translate
-it. It also says the day a week starts on (`firstDayOfWeek`), which a calendar follows unless told otherwise.
+is the default, with nothing to set up under `MaterialApp`, `CupertinoApp` or `WidgetsApp`.
+
+ui_core speaks 30 languages (`DesignLocalizations.supportedLocales`): its dates, plurals and digits come from
+Unicode CLDR, as Flutter's do, and its words are Material's own translations where Material has the word. Opt in
+with its delegate beside Flutter's, from `flutter_localizations` (add `flutter_localizations: sdk: flutter` to your
+pubspec, as a look's gallery does):
+
+```dart
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+MaterialApp(
+  localizationsDelegates: const [
+    DesignLocalizations.delegate,
+    ...GlobalMaterialLocalizations.delegates,
+  ],
+  supportedLocales: DesignLocalizations.supportedLocales,
+  // ...
+)
+```
+
+`GlobalMaterialLocalizations.delegates` holds the Material, Cupertino and Widgets delegates for your app's own
+Flutter widgets: without the Material one, a Material `TextField` under a language other than English asserts, and
+the Widgets one gives Arabic, Hebrew, Persian and Urdu their direction. A look supplies its own Material and
+Cupertino words in the app's language: it is drawn with `material_ui` and `cupertino_ui`, whose words are types of
+their own, and loads them itself. A locale ui_core does not speak gets English. For a language of your own, or
+words of your own, extend `DefaultDesignLocalizations`, override the words you translate, and add a delegate for
+your subclass to `localizationsDelegates`; a word added in a later minor version then stays English until you
+translate it. `DesignLocalizations` also says the day a week starts on (`firstDayOfWeek`), which a calendar follows unless told
+otherwise.
+
+Seventeen words are Material's own translations. The other 38 messages are ui_core's own, translated for 0.2.0, and
+in every language but English they await a native speaker's check; a correction is a patch version. They are
+`clearButtonTooltip`, `showMoreLabel`, `showLessLabel`, `selectedLabel`, `loadingLabel`, `noResultsLabel`,
+`retryButtonLabel`, `doneButtonLabel`, `confirmButtonLabel`, `positionLabel`, `carouselLabel`, `carouselSlideLabel`,
+`colorAreaLabel`, the four `colorChannel` names, `commandPaletteLabel`, `commandPaletteBarrierLabel`,
+`commandPaletteResultsMessage`, `sortedAscendingHint`, `sortedDescendingHint`, `requiredHint`, `formProblemsMessage`,
+`showPasswordLabel`, `hidePasswordLabel`, `menuBarLabel`, `refreshingMessage`, `refreshedMessage`,
+`rangeSliderStartLabel`, `rangeSliderEndLabel`, `reorderableListMovedMessage`, `sideSheetBarrierLabel`,
+`splitButtonMenuLabel`, `splitViewHandleLabel`, `tagInputDeleteLabel`, `toasterRegionLabel` and `treeLevelHint`.
+
+## Tap targets, density and spacing
+
+A look declares the floors its controls stand at once, as a theme does: `DesignTapTargetScope` holds
+`DesignTapTargets` (44 by 44 for a finger, 24 by 24 for a pointer, unless the look says otherwise), and
+`DesignTapTarget` lays a control out at the floor, as Material's padded tap target size does: its face keeps its
+size, aligned where you say (centred by default), and the room round it takes the taps and is what a screen reader
+outlines and Flutter's tap-target guideline measures, so the hit area, the semantics and the layout agree. Whether a finger or a pointer
+reaches the controls is `DesignInput`, by platform unless the look decides. `DesignDensity` tightens a control's
+face in steps (-4 to 4), never its target: a compact face stands in the same target, with more room round it.
+
+`DesignSpacingScope` declares the grid a look's spacing stands on (`DesignSpacing`, 4 pt by default; a look whose values
+sit on 2 pt declares 2), read by `DesignSpacing.of` and by the spacing check below.
+
+## The checks a look is held to
+
+Beside the alignment checks, four read any screen, each from its root (a gallery page, an app screen), and say what
+they find in words:
+- `DesignTapTargetCheck`: every control's tap target reaches the look's floor for the input (a phone's screen is
+  read for a finger, a desk's for a pointer), and its target is where it is drawn; a text field's own keys (a clear
+  or reveal key whose node lies in the field's) are part of the field's reach.
+- `DesignCursorCheck`: a pointer over a live control shows the click cursor over its whole hit area, or one that
+  says more (a text field's text cursor, a handle's grab, a divider's resize), and over an off control nothing of
+  its own.
+- `DesignShadowClipCheck`: no shadow, glow or rim is cut flat by a clip round it, and none shows square behind a
+  round face. A scroll view's edge along its scroll, with more content past it, is scrolling, not a cut; at the end
+  of its content, and across its scroll, the cut counts. Given `near:` (a control's rect), it reads only the casts
+  that reach it, as a test of one control's press, hover or focus needs.
+- `DesignSpacingCheck`: a page's margin, the insets of shapes set in shapes (concentric corners), and gaps on the
+  grid; `literals` reads a look's sources for spacing off the grid its `DesignSpacingScope` declares.
+
+`test/moving_states.dart` (beside ui_core's other tests; copy it into your package's `test/`) holds the moments
+between a look's states still, so a test can capture and check them: a press held halfway, a hover, a keyboard
+focus, a sheet halfway open, a carousel halfway through a swipe. A press that flashes a square ink before its round
+face fills, or a focus ring cut by its row, shows only there.
+
+## Templates for a look's package
+
+ui_core holds itself to these; a look's package copies them:
+- **Analysis options.** ui_core's `analysis_options.yaml`: the strict modes and Flutter's lints, with
+  `public_member_api_docs`, `avoid_dynamic_calls`, `unawaited_futures`, `prefer_const_constructors`,
+  `use_named_constants` and `missing_code_block_language_in_doc_comment`. pana and pub.dev read a package's own
+  options, never a workspace root's, so each package carries them.
+- **Leak tracking.** `test/flutter_test_config.dart` turns on Flutter's leak tracking for every test (with
+  `leak_tracker_flutter_testing` among the dev dependencies): what a test or the package makes and never disposes
+  fails the test that made it.
+- **Compiled doc examples.** `test/doc_examples.dart` holds `testDocExamples`: every example in your lib's docs,
+  written out as an entry in your `doc_examples_test.dart`, so an example that stops compiling fails analysis, one
+  missing from the file fails a test, and each one is built and run.
+- **Renames.** A rename keeps the old name for one minor version, as
+  `@Deprecated('Use minimumSize instead. This feature was deprecated after v0.2.0.')`, with a data-driven fix in
+  `lib/fix_data.yaml` so `dart fix --apply` moves your callers, and a `test_fixes/` pair (`button.dart` with the old
+  name, `button.dart.expect` with the new; `dart fix --compare-to-golden test_fixes`). Its CHANGELOG entry is tagged
+  **Breaking**.
+- **A theme's `.of`.** A theme's `of(context)` gives the look's default when none is above, as `Theme.of` does, and
+  `maybeOf` gives null; only a part's own state (`DesignForm.of`, `DesignToaster.of`) asserts that it is there.
+  ui_core's `DesignSpacing.of`, `DesignTapTargets.of` and `DesignLocalizations.of` fall back so.
+- **Package-only code.** A file under the look module's `package/lib_overrides/` replaces the exported file at the
+  same path under the package's `lib/`: code drip's own apps do not take (a look loading `material_ui`'s and
+  `cupertino_ui`'s own words, say). An override whose in-repo file was renamed or removed fails the export.
+- **Repeated docs.** A rule many parameters share is written once, in a `{@template}`, and named by `{@macro}` where
+  it repeats: ui_core's `design.focusNode` (a focus node given is the caller's), `design.autofocus` and
+  `design.nullDisables`.
 
 ## Lining controls up
 
@@ -249,7 +404,7 @@ parameter's documentation says what the behaviour does given none (most make the
 
 ## Libraries
 
-- `package:ui_core/ui_core.dart`: the behaviours, motion, the words, `DesignCapCenter`, which centres a label
+- `package:ui_core/ui_core.dart`: the behaviours, motion, the words, a part's style (`DesignStyle`), `DesignCapCenter`, which centres a label
   by its capitals, `DesignKeylineRegion`, which marks a card for the keyline check, and `DesignKeylineFace`,
   which marks a face its pixels cannot show.
 - `package:ui_core/host.dart`: the scaffold contract the look packages share. It is not meant for apps and leaves
@@ -263,12 +418,19 @@ parameter's documentation says what the behaviour does given none (most make the
   keylines, `DesignLabelCheck`, which checks that every control's label sits on the middle of its face, and
   `DesignRowCheck`, which checks that controls sharing a row line up as drawn, `DesignWidthCheck`, which
   checks that controls keep to their content's width on a wide screen and that a list opened from a field matches
-  it, `DesignWordBreakCheck`, which checks that no word breaks across lines, and `DesignClipCheck`, which checks
-  that nothing is cut. Tests and review pages use it; an app does not.
+  it, `DesignWordBreakCheck`, which checks that no word breaks across lines, `DesignClipCheck`, which checks
+  that nothing is cut, and the four checks above (`DesignTapTargetCheck`, `DesignCursorCheck`,
+  `DesignShadowClipCheck`, `DesignSpacingCheck`). Tests and review pages use it; an app does not.
 
 ## Requirements and versions
 
 ui_core needs Flutter 3.47 or later (Dart 3.13), and depends on Flutter alone.
 
 Before 1.0, a minor version (0.1 to 0.2) may change the API, and the CHANGELOG says what changed and how to move; a
-patch version (0.1.0 to 0.1.1) never does.
+patch version (0.1.0 to 0.1.1) never does. A rename keeps its old name, deprecated, for one minor version, with a
+`dart fix`.
+
+`host.dart`, `inventory.dart` and `alignment.dart`, and a look's `<look>_parts.dart` and `<look>_host.dart`, are
+outside semver: they are tooling for looks, not an app's API, and may change in any version, a patch included (each
+says so in its library doc, and the CHANGELOG says how to move). Before 1.0 the review and test tooling (the checks,
+the inventory, the preview) is meant to leave `lib/` for a package of its own, so an app never compiles it.

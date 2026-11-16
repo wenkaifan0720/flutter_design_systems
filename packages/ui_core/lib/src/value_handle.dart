@@ -7,6 +7,7 @@
 /// track.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -49,12 +50,24 @@ class DesignValueHandle extends StatefulWidget {
     this.mouseCursor,
     this.minimumSize = const Size(44, 44),
     this.onKeyEvent,
-  });
+  }) : assert(min <= max, 'min is at most max'),
+       assert(
+         value >= min && value <= max,
+         'value $value is between min $min and max $max',
+       ),
+       assert(divisions == null || divisions > 0),
+       assert(step == null || step > 0),
+       assert(pageStep == null || pageStep > 0);
 
   /// The value.
   final double value;
 
-  /// A key's or a screen reader's new value; null disables the handle.
+  /// A key's or a screen reader's new value.
+  ///
+  /// {@template design.nullDisables}
+  /// Null disables it, with no second switch, as Flutter's controls do: it
+  /// leaves the focus order and a screen reader reads it as disabled.
+  /// {@endtemplate}
   final ValueChanged<double>? onChanged;
 
   /// Paints the handle.
@@ -98,8 +111,9 @@ class DesignValueHandle extends StatefulWidget {
   /// range.
   final String Function(double value)? semanticFormatterCallback;
 
-  /// Its focus node. The caller's, who disposes it; null: the handle's
-  /// [Focus] makes its own.
+  /// Its focus node.
+  ///
+  /// {@macro design.focusNode}
   final FocusNode? focusNode;
 
   /// Whether it takes focus when it first shows.
@@ -116,6 +130,91 @@ class DesignValueHandle extends StatefulWidget {
 
   @override
   State<DesignValueHandle> createState() => _DesignValueHandleState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
+      ..add(ObjectFlagProperty<DesignHandleBuilder>.has('builder', builder))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(DoubleProperty('step', step, defaultValue: null))
+      ..add(DoubleProperty('pageStep', pageStep, defaultValue: null))
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.horizontal))
+      ..add(
+        EnumProperty<VerticalDirection>(
+          'growsToward',
+          growsToward,
+          defaultValue: VerticalDirection.up,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has(
+          'onChangeStart',
+          onChangeStart,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'dragging',
+          value: dragging,
+          ifTrue: 'dragging',
+          defaultValue: false,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has(
+          'semanticFormatterCallback',
+          semanticFormatterCallback,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MouseCursor>(
+          'mouseCursor',
+          mouseCursor,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Size>(
+          'minimumSize',
+          minimumSize,
+          defaultValue: const Size(44, 44),
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          KeyEventResult Function(FocusNode node, KeyEvent event)
+        >.has('onKeyEvent', onKeyEvent),
+      );
+  }
 }
 
 class _DesignValueHandleState extends State<DesignValueHandle> {

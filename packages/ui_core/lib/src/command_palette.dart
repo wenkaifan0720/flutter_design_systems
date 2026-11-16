@@ -5,12 +5,15 @@
 /// [DesignCommandShortcut] opens it on Ctrl+K or Cmd+K.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'barrier.dart';
 import 'combobox.dart';
 import 'internal/announce.dart';
 import 'internal/option_list.dart';
+import 'internal/painted_barrier.dart';
 import 'localizations.dart';
 import 'pressable.dart';
 
@@ -110,7 +113,7 @@ class DesignCommandPalette extends StatefulWidget {
     this.controller,
     this.focusNode,
     this.autofocus = true,
-  });
+  }) : assert(maxHeight > 0);
 
   /// The commands, in the order they list with no query.
   final List<DesignCommand> commands;
@@ -158,8 +161,9 @@ class DesignCommandPalette extends StatefulWidget {
   /// makes its own and disposes it.
   final TextEditingController? controller;
 
-  /// The field's focus. The caller's, who disposes it; null: the palette
-  /// makes its own and disposes it.
+  /// The field's focus.
+  ///
+  /// {@macro design.focusNode}
   final FocusNode? focusNode;
 
   /// Whether the field takes focus once it is built: true for a palette opened over the page, false for one that
@@ -168,6 +172,82 @@ class DesignCommandPalette extends StatefulWidget {
 
   @override
   State<DesignCommandPalette> createState() => _DesignCommandPaletteState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<DesignCommand>('commands', commands))
+      ..add(
+        ObjectFlagProperty<DesignComboboxFieldBuilder>.has(
+          'fieldBuilder',
+          fieldBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(
+            BuildContext context,
+            DesignCommand command,
+            Set<WidgetState> states,
+          )
+        >.has('itemBuilder', itemBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignCommand>>.has(
+          'onSelected',
+          onSelected,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, String group)
+        >.has('groupBuilder', groupBuilder),
+      )
+      ..add(ObjectFlagProperty<WidgetBuilder>.has('emptyBuilder', emptyBuilder))
+      ..add(
+        ObjectFlagProperty<DesignPaletteLayoutBuilder>.has(
+          'layoutBuilder',
+          layoutBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<int? Function(String text, String query)>.has(
+          'score',
+          score,
+        ),
+      )
+      ..add(DoubleProperty('maxHeight', maxHeight, defaultValue: 360))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(int count)>.has(
+          'resultsMessage',
+          resultsMessage,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifFalse: 'autofocus: false',
+          defaultValue: true,
+        ),
+      );
+  }
 }
 
 class _MoveIntent extends Intent {
@@ -184,6 +264,9 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
   TextEditingController? _ownText;
   FocusNode? _ownFocus;
   int _highlight = 0;
+  final DesignRowReveal _reveal = DesignRowReveal();
+  // The list row last brought into view for the highlight.
+  int _shownRow = -1;
   String _query = '';
   late List<DesignCommand> _shown = _filter('');
   int? _announcedCount;
@@ -222,6 +305,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
     _text.removeListener(_changed);
     _ownText?.dispose();
     _ownFocus?.dispose();
+    _reveal.dispose();
     super.dispose();
   }
 
@@ -267,6 +351,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
       _query = _text.text;
       _shown = _filter(_query);
       _highlight = _firstEnabled(0, 1) ?? 0;
+      _reveal.forget();
     });
     final n = _shown.length;
     if (n != _announcedCount) {
@@ -338,6 +423,7 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
       ),
     );
     final items = <Widget>[];
+    var litRow = -1;
     String? group;
     for (var i = 0; i < _shown.length; i++) {
       final c = _shown[i];
@@ -352,10 +438,11 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
       }
       group = heading;
       final lit = i == _highlight;
+      if (lit) litRow = items.length;
       items.add(
-        DesignHighlightVisible(
-          highlighted: lit,
-          child: MouseRegion(
+        _reveal.row(
+          items.length,
+          MouseRegion(
             onHover: (_) {
               if (_highlight != i && c.enabled) setState(() => _highlight = i);
             },
@@ -371,12 +458,18 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
         ),
       );
     }
+    // Every move of the highlight keeps its row in view.
+    if (litRow != _shownRow) {
+      _shownRow = litRow;
+      _reveal.reveal(litRow);
+    }
     final Widget results = items.isEmpty
         ? (widget.emptyBuilder?.call(context) ?? const SizedBox.shrink())
         : ConstrainedBox(
             constraints: BoxConstraints(maxHeight: widget.maxHeight),
             child: ExcludeFocus(
               child: ListView(
+                controller: _reveal.controller,
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,
                 children: items,
@@ -406,46 +499,75 @@ class _DesignCommandPaletteState extends State<DesignCommandPalette> {
 /// Opens [palette] in a modal route over a barrier; [surfaceBuilder]
 /// paints the panel around it. A command runs after the route has closed
 /// and focus is back where it was.
+///
+/// The barrier is [barrierColor], or [barrierBuilder]'s painting (a look's
+/// own screen, as its other modals wear) when given.
 Future<void> showDesignCommandPalette({
   required BuildContext context,
   required DesignCommandPalette Function(ValueChanged<DesignCommand> run)
   palette,
   Widget Function(BuildContext context, Widget palette)? surfaceBuilder,
   Color barrierColor = const Color(0x66000000),
+  DesignBarrierBuilder? barrierBuilder,
   String? barrierLabel,
   AlignmentGeometry alignment = const Alignment(0, -0.6),
 }) async {
-  final chosen = await showGeneralDialog<DesignCommand>(
-    context: context,
-    barrierDismissible: true,
-    barrierLabel:
-        barrierLabel ??
-        DesignLocalizations.of(context).commandPaletteBarrierLabel,
-    barrierColor: barrierColor,
-    transitionDuration: MediaQuery.disableAnimationsOf(context)
-        ? Duration.zero
-        : const Duration(milliseconds: 150),
-    transitionBuilder: (context, animation, _, child) =>
-        FadeTransition(opacity: animation, child: child),
-    pageBuilder: (context, _, _) {
-      final body = palette((c) => Navigator.of(context).pop(c));
-      return SafeArea(
-        child: Align(
-          alignment: alignment,
-          child: Semantics(
-            scopesRoute: true,
-            namesRoute: true,
-            explicitChildNodes: true,
-            label:
-                body.semanticLabel ??
-                DesignLocalizations.of(context).commandPaletteLabel,
-            child: surfaceBuilder?.call(context, body) ?? body,
+  final chosen = await Navigator.of(context, rootNavigator: true).push(
+    _PaletteRoute<DesignCommand>(
+      barrierBuilder: barrierBuilder,
+      barrierDismissible: true,
+      barrierLabel:
+          barrierLabel ??
+          DesignLocalizations.of(context).commandPaletteBarrierLabel,
+      barrierColor: barrierBuilder == null ? barrierColor : null,
+      transitionDuration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 150),
+      transitionBuilder: (context, animation, _, child) =>
+          FadeTransition(opacity: animation, child: child),
+      pageBuilder: (context, _, _) {
+        final body = palette((c) => Navigator.of(context).pop(c));
+        return SafeArea(
+          child: Align(
+            alignment: alignment,
+            child: Semantics(
+              scopesRoute: true,
+              namesRoute: true,
+              explicitChildNodes: true,
+              label:
+                  body.semanticLabel ??
+                  DesignLocalizations.of(context).commandPaletteLabel,
+              child: surfaceBuilder?.call(context, body) ?? body,
+            ),
           ),
-        ),
-      );
-    },
+        );
+      },
+    ),
   );
   chosen?.onPressed?.call();
+}
+
+// showGeneralDialog's route, its barrier painted by a look when it gives a
+// builder.
+class _PaletteRoute<T> extends RawDialogRoute<T> {
+  _PaletteRoute({
+    required this.barrierBuilder,
+    required super.pageBuilder,
+    super.barrierDismissible,
+    super.barrierColor,
+    super.barrierLabel,
+    super.transitionDuration,
+    super.transitionBuilder,
+  });
+
+  final DesignBarrierBuilder? barrierBuilder;
+
+  @override
+  Widget buildModalBarrier() {
+    final barrier = super.buildModalBarrier();
+    final paint = barrierBuilder;
+    return paint == null ? barrier : paintedBarrier(paint, animation!, barrier);
+  }
 }
 
 /// Opens a palette from anywhere under it on [activators] (Ctrl+K and
@@ -480,4 +602,21 @@ class DesignCommandShortcut extends StatelessWidget {
     bindings: {for (final a in activators) a: onOpen},
     child: child,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback>.has('onOpen', onOpen))
+      ..add(
+        IterableProperty<ShortcutActivator>(
+          'activators',
+          activators,
+          defaultValue: const <ShortcutActivator>[
+            SingleActivator(LogicalKeyboardKey.keyK, control: true),
+            SingleActivator(LogicalKeyboardKey.keyK, meta: true),
+          ],
+        ),
+      );
+  }
 }

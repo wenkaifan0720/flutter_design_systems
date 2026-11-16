@@ -31,8 +31,11 @@ SpringDescription designSpring({
 /// spring — one that moves, resizes or reshapes something — is critically
 /// damped: ζ = 1 at the token's stiffness, so nothing overshoots or
 /// bounces and it still arrives on the token's timescale. EFFECTS springs
-/// (opacity, colour) run unchanged; Material's are critically damped
-/// already.
+/// (opacity, colour) become a short fade: critically damped at no less than
+/// [reducedEffectsStiffness], so a fade or a colour change settles within
+/// 150 ms and nothing lingers, without being cut to an instant change (an
+/// instant change reads as a flash). A token already faster keeps its
+/// stiffness.
 ///
 /// ```dart
 /// controller.springTo(1, DesignMotionPolicy.of(context).spatial(dampingRatio: 0.6, stiffness: 800))
@@ -61,12 +64,25 @@ class DesignMotionPolicy {
     stiffness: stiffness,
   );
 
-  /// The spring an effects token (ζ, k) runs: the token's own, under any
-  /// policy.
+  /// The least stiffness an effects spring runs at under Reduce Motion:
+  /// critically damped at k = 3800 (Material's fastest effects token), a
+  /// spring settles within [designSpringTolerance] in 150 ms.
+  static const double reducedEffectsStiffness = 3800;
+
+  /// The spring an effects token (ζ, k) runs under this policy: the token's
+  /// own, or under Reduce Motion a short fade, critically damped (ζ = 1) at
+  /// k or [reducedEffectsStiffness], whichever is stiffer.
   SpringDescription effects({
     required double dampingRatio,
     required double stiffness,
-  }) => designSpring(dampingRatio: dampingRatio, stiffness: stiffness);
+  }) => reduceMotion
+      ? designSpring(
+          dampingRatio: 1,
+          stiffness: stiffness > reducedEffectsStiffness
+              ? stiffness
+              : reducedEffectsStiffness,
+        )
+      : designSpring(dampingRatio: dampingRatio, stiffness: stiffness);
 
   @override
   bool operator ==(Object other) =>

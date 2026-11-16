@@ -567,39 +567,35 @@ void main() {
               DefaultWidgetsLocalizations.delegate,
               DefaultMaterialLocalizations.delegate,
             ],
-            child: Overlay(
-              initialEntries: [
-                OverlayEntry(
-                  builder: (_) => Material(
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: SizedBox(
-                        width: 200,
-                        height: height,
-                        child: DesignCapCenter(
-                          capHeightFactor: _roboto,
-                          child: Align(
-                            alignment: AlignmentDirectional.centerStart,
-                            child: TextField(
-                              controller: controller,
-                              style: style,
-                              decoration: const InputDecoration(
-                                isCollapsed: true,
-                                isDense: false,
-                                contentPadding: EdgeInsets.zero,
-                                hintText: 'HINT',
-                                hintStyle: style,
-                                border: InputBorder.none,
-                                constraints: BoxConstraints(),
-                              ),
-                            ),
+            child: Overlay.wrap(
+              child: Material(
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: SizedBox(
+                    width: 200,
+                    height: height,
+                    child: DesignCapCenter(
+                      capHeightFactor: _roboto,
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: TextField(
+                          controller: controller,
+                          style: style,
+                          decoration: const InputDecoration(
+                            isCollapsed: true,
+                            isDense: false,
+                            contentPadding: EdgeInsets.zero,
+                            hintText: 'HINT',
+                            hintStyle: style,
+                            border: InputBorder.none,
+                            constraints: BoxConstraints(),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ),

@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import 'color_picker.dart' show DesignColorChannel;
 import 'data_table.dart' show DesignSortDirection;
+import 'internal/localizations_data.dart';
 
 /// The words a design system says on its own. The behaviours' words: the
 /// names a screen reader hears for a part with no text of its own (a
@@ -16,12 +17,22 @@ import 'data_table.dart' show DesignSortDirection;
 ///
 /// [of] reads the nearest [Localizations]' instance, and English
 /// ([DefaultDesignLocalizations]) when there is none, so nothing needs
-/// setting up. An app in another language extends
-/// [DefaultDesignLocalizations], overriding the words it translates, and
-/// adds a delegate for its subclass to `localizationsDelegates`, as it does
-/// for `WidgetsLocalizations`. Extending it, rather than implementing this
-/// class, keeps a word added in a later minor version in English until the
-/// app translates it.
+/// setting up.
+///
+/// ui_core speaks 30 languages ([supportedLocales]): an app adds [delegate]
+/// to its `localizationsDelegates`, beside `GlobalMaterialLocalizations`'
+/// or its own, and its parts speak the app's language, with its dates, its
+/// digits and its plurals. The words ui_core shares with
+/// `MaterialLocalizations` (Cancel, Today, Next month, …) are Flutter's own
+/// translations; the rest are ui_core's, awaiting review by native speakers
+/// (the package's README lists them). A locale it does not speak gets
+/// English.
+///
+/// An app that words a message its own way extends
+/// [DefaultDesignLocalizations], overriding the words it changes, and adds a
+/// delegate for its subclass, as it does for `WidgetsLocalizations`.
+/// Extending it, rather than implementing this class, keeps a word added in
+/// a later minor version in English until the app words it.
 ///
 /// ```dart
 /// Localizations(locale: const Locale('en'), delegates: const [DefaultDesignLocalizations.delegate, DefaultWidgetsLocalizations.delegate], child: Builder(builder: (context) => Text(DesignLocalizations.of(context).carouselLabel)))
@@ -35,6 +46,71 @@ abstract class DesignLocalizations {
   static DesignLocalizations of(BuildContext context) =>
       Localizations.of<DesignLocalizations>(context, DesignLocalizations) ??
       const DefaultDesignLocalizations();
+
+  /// The words for [locale]: its language's (Traditional Chinese for `zh`
+  /// written in Hant, or in Taiwan, Hong Kong or Macau), else English.
+  static DesignLocalizations forLocale(Locale locale) {
+    final data = designLocaleData[_key(locale)];
+    if (data == null || locale.languageCode == 'en') {
+      return const DefaultDesignLocalizations();
+    }
+    return _TranslatedDesignLocalizations(data);
+  }
+
+  /// The locales ui_core speaks: English, and 29 more.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('ar'),
+    Locale('bn'),
+    Locale('cs'),
+    Locale('de'),
+    Locale('el'),
+    Locale('es'),
+    Locale('fa'),
+    Locale('fil'),
+    Locale('fr'),
+    Locale('he'),
+    Locale('hi'),
+    Locale('id'),
+    Locale('it'),
+    Locale('ja'),
+    Locale('ko'),
+    Locale('ms'),
+    Locale('nl'),
+    Locale('pl'),
+    Locale('pt'),
+    Locale('ro'),
+    Locale('ru'),
+    Locale('sv'),
+    Locale('th'),
+    Locale('tr'),
+    Locale('uk'),
+    Locale('ur'),
+    Locale('vi'),
+    Locale('zh'),
+    Locale('zh', 'TW'),
+  ];
+
+  /// Loads the words for an app's locale ([forLocale]), for its
+  /// `localizationsDelegates`.
+  ///
+  /// It takes every locale: one ui_core does not speak loads English, so a
+  /// look's parts are never left without words, and Flutter warns of no
+  /// missing delegate (the words fall back as `WidgetsLocalizations`' do).
+  static const LocalizationsDelegate<DesignLocalizations> delegate =
+      _DesignLocalizationsDelegate();
+
+  static String _key(Locale locale) => switch (locale.languageCode) {
+    'zh'
+        when locale.scriptCode == 'Hant' ||
+            const ['TW', 'HK', 'MO'].contains(locale.countryCode) =>
+      'zh_TW',
+    // Older codes for Hebrew, Indonesian and Filipino.
+    'iw' => 'he',
+    'in' => 'id',
+    'tl' => 'fil',
+    final language => language,
+  };
 
   // The general words: what a look shows or says on its own, under
   // MaterialLocalizations' names where Flutter has the word.
@@ -108,6 +184,18 @@ abstract class DesignLocalizations {
 
   /// What a search or a filter shows when nothing matches ("No results").
   String get noResultsLabel;
+
+  /// A button that tries again what failed, in an error state ("Try
+  /// again").
+  String get retryButtonLabel;
+
+  /// A button that commits a picker's or a sheet's choice and closes it
+  /// ("Done").
+  String get doneButtonLabel;
+
+  /// A dialog's yes, when the caller names no action of its own
+  /// ("Confirm").
+  String get confirmButtonLabel;
 
   /// How many items are chosen ("3 items selected").
   String selectedRowCountTitle(int count);
@@ -341,6 +429,15 @@ class DefaultDesignLocalizations implements DesignLocalizations {
   String get noResultsLabel => 'No results';
 
   @override
+  String get retryButtonLabel => 'Try again';
+
+  @override
+  String get doneButtonLabel => 'Done';
+
+  @override
+  String get confirmButtonLabel => 'Confirm';
+
+  @override
   String selectedRowCountTitle(int count) => switch (count) {
     0 => 'No items selected',
     1 => '1 item selected',
@@ -456,6 +553,412 @@ class DefaultDesignLocalizations implements DesignLocalizations {
   @override
   String treeLevelHint(int level, int position, int count) =>
       'level $level, $position of $count';
+}
+
+class _DesignLocalizationsDelegate
+    extends LocalizationsDelegate<DesignLocalizations> {
+  const _DesignLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => true;
+
+  @override
+  Future<DesignLocalizations> load(Locale locale) =>
+      SynchronousFuture<DesignLocalizations>(
+        DesignLocalizations.forLocale(locale),
+      );
+
+  @override
+  bool shouldReload(_DesignLocalizationsDelegate old) => false;
+
+  @override
+  String toString() => 'DesignLocalizations.delegate(30 locales)';
+}
+
+// One locale's words from its table (designLocaleData), English for a word
+// the table lacks.
+class _TranslatedDesignLocalizations extends DefaultDesignLocalizations {
+  const _TranslatedDesignLocalizations(this._data);
+
+  final DesignLocaleData _data;
+
+  String _word(String key, String english) => _data.words[key] ?? english;
+
+  // [template] with each {name} replaced: a number in the locale's digits.
+  String _fill(String template, Map<String, Object> values) =>
+      template.replaceAllMapped(RegExp(r'\{(\w+)\}'), (m) {
+        final value = values[m[1]];
+        return switch (value) {
+          final int n => _digits(n),
+          null => m[0]!,
+          _ => '$value',
+        };
+      });
+
+  String _message(String key, String english, Map<String, Object> values) {
+    final template = _data.words[key];
+    return template == null ? english : _fill(template, values);
+  }
+
+  // A counted message: the form for exactly [count], else its plural
+  // category's, else the other form.
+  String _plural(String key, int count, String english) {
+    final forms = _data.plurals[key];
+    if (forms == null) return english;
+    final form =
+        forms['=$count'] ??
+        forms[_pluralCategory(_data.plural, count)] ??
+        forms['other']!;
+    return _fill(form, {'count': count});
+  }
+
+  String _digits(int n) {
+    final zero = _data.zeroDigit;
+    if (zero == null) return '$n';
+    final base = zero.codeUnitAt(0);
+    return String.fromCharCodes(
+      '$n'.codeUnits.map((c) => c >= 0x30 && c <= 0x39 ? base + c - 0x30 : c),
+    );
+  }
+
+  String _padded(int n) => n < 10 ? _digits(0) + _digits(n) : _digits(n);
+
+  // [date] in a CLDR [pattern]: the fields the locales' full-date and
+  // month-and-year patterns use (y, M, L, d, E, c, G), quoted text as is.
+  String _formatDate(String pattern, DateTime date) {
+    final out = StringBuffer();
+    var i = 0;
+    while (i < pattern.length) {
+      final c = pattern[i];
+      if (c == "'") {
+        if (i + 1 < pattern.length && pattern[i + 1] == "'") {
+          out.write("'");
+          i += 2;
+          continue;
+        }
+        final end = pattern.indexOf("'", i + 1);
+        out.write(pattern.substring(i + 1, end < 0 ? pattern.length : end));
+        i = end < 0 ? pattern.length : end + 1;
+        continue;
+      }
+      var j = i;
+      while (j < pattern.length && pattern[j] == c) {
+        j++;
+      }
+      final n = j - i;
+      final month = date.month - 1;
+      final day = date.weekday % 7;
+      out.write(switch (c) {
+        'y' => n == 2 ? _padded(date.year % 100) : _digits(date.year),
+        'M' when n >= 4 => _data.months[month],
+        'M' when n == 3 => _data.shortMonths[month],
+        'L' when n >= 4 => _data.standaloneMonths[month],
+        'L' when n == 3 => _data.standaloneShortMonths[month],
+        'M' || 'L' => n == 2 ? _padded(date.month) : _digits(date.month),
+        'd' => n == 2 ? _padded(date.day) : _digits(date.day),
+        'E' => n >= 4 ? _data.weekdays[day] : _data.shortWeekdays[day],
+        'c' =>
+          n >= 4
+              ? _data.standaloneWeekdays[day]
+              : _data.standaloneShortWeekdays[day],
+        'G' => _data.eras[date.year > 0 ? 1 : 0],
+        _ => pattern.substring(i, j),
+      });
+      i = j;
+    }
+    return out.toString();
+  }
+
+  @override
+  String get cancelButtonLabel =>
+      _word('cancelButtonLabel', super.cancelButtonLabel);
+
+  @override
+  String get okButtonLabel => _word('okButtonLabel', super.okButtonLabel);
+
+  @override
+  String get closeButtonLabel =>
+      _word('closeButtonLabel', super.closeButtonLabel);
+
+  @override
+  String get clearButtonTooltip =>
+      _word('clearButtonTooltip', super.clearButtonTooltip);
+
+  @override
+  String get backButtonTooltip =>
+      _word('backButtonTooltip', super.backButtonTooltip);
+
+  @override
+  String get deleteButtonTooltip =>
+      _word('deleteButtonTooltip', super.deleteButtonTooltip);
+
+  @override
+  String get moreButtonTooltip =>
+      _word('moreButtonTooltip', super.moreButtonTooltip);
+
+  @override
+  String get showMenuTooltip => _word('showMenuTooltip', super.showMenuTooltip);
+
+  @override
+  String get searchFieldLabel =>
+      _word('searchFieldLabel', super.searchFieldLabel);
+
+  @override
+  String get modalBarrierDismissLabel =>
+      _word('modalBarrierDismissLabel', super.modalBarrierDismissLabel);
+
+  @override
+  String get currentDateLabel =>
+      _word('currentDateLabel', super.currentDateLabel);
+
+  @override
+  String get previousMonthTooltip =>
+      _word('previousMonthTooltip', super.previousMonthTooltip);
+
+  @override
+  String get nextMonthTooltip =>
+      _word('nextMonthTooltip', super.nextMonthTooltip);
+
+  @override
+  String get previousPageTooltip =>
+      _word('previousPageTooltip', super.previousPageTooltip);
+
+  @override
+  String get nextPageTooltip => _word('nextPageTooltip', super.nextPageTooltip);
+
+  @override
+  String get collapsedIconTapHint =>
+      _word('collapsedIconTapHint', super.collapsedIconTapHint);
+
+  @override
+  String get expandedIconTapHint =>
+      _word('expandedIconTapHint', super.expandedIconTapHint);
+
+  @override
+  String get showMoreLabel => _word('showMoreLabel', super.showMoreLabel);
+
+  @override
+  String get showLessLabel => _word('showLessLabel', super.showLessLabel);
+
+  @override
+  String get selectedLabel => _word('selectedLabel', super.selectedLabel);
+
+  @override
+  String get loadingLabel => _word('loadingLabel', super.loadingLabel);
+
+  @override
+  String get noResultsLabel => _word('noResultsLabel', super.noResultsLabel);
+
+  @override
+  String get retryButtonLabel =>
+      _word('retryButtonLabel', super.retryButtonLabel);
+
+  @override
+  String get doneButtonLabel => _word('doneButtonLabel', super.doneButtonLabel);
+
+  @override
+  String get confirmButtonLabel =>
+      _word('confirmButtonLabel', super.confirmButtonLabel);
+
+  @override
+  String selectedRowCountTitle(int count) => _plural(
+    'selectedRowCountTitle',
+    count,
+    super.selectedRowCountTitle(count),
+  );
+
+  @override
+  String positionLabel(int position, int count) => _message(
+    'positionLabel',
+    super.positionLabel(position, count),
+    {'position': position, 'count': count},
+  );
+
+  @override
+  String get carouselLabel => _word('carouselLabel', super.carouselLabel);
+
+  @override
+  String carouselSlideLabel(int index, int count) => _message(
+    'carouselSlideLabel',
+    super.carouselSlideLabel(index, count),
+    {'slide': index + 1, 'count': count},
+  );
+
+  @override
+  String get colorAreaLabel => _word('colorAreaLabel', super.colorAreaLabel);
+
+  @override
+  String colorChannelLabel(DesignColorChannel channel) =>
+      _word(switch (channel) {
+        DesignColorChannel.hue => 'colorChannelHue',
+        DesignColorChannel.saturation => 'colorChannelSaturation',
+        DesignColorChannel.brightness => 'colorChannelBrightness',
+        DesignColorChannel.alpha => 'colorChannelAlpha',
+      }, super.colorChannelLabel(channel));
+
+  @override
+  String get commandPaletteLabel =>
+      _word('commandPaletteLabel', super.commandPaletteLabel);
+
+  @override
+  String get commandPaletteBarrierLabel =>
+      _word('commandPaletteBarrierLabel', super.commandPaletteBarrierLabel);
+
+  @override
+  String commandPaletteResultsMessage(int count) => _plural(
+    'commandPaletteResultsMessage',
+    count,
+    super.commandPaletteResultsMessage(count),
+  );
+
+  @override
+  String dataTableSortedHint(DesignSortDirection direction) => _word(
+    direction == DesignSortDirection.ascending
+        ? 'sortedAscendingHint'
+        : 'sortedDescendingHint',
+    super.dataTableSortedHint(direction),
+  );
+
+  @override
+  String formatFullDate(DateTime date) => _formatDate(_data.fullDate, date);
+
+  @override
+  String formatMonthYear(DateTime date) => _formatDate(_data.monthYear, date);
+
+  @override
+  String formatShortWeekday(int weekday) => _data.calendarWeekdays[weekday % 7];
+
+  @override
+  int get firstDayOfWeek => _data.firstDayOfWeek;
+
+  @override
+  String get requiredHint => _word('requiredHint', super.requiredHint);
+
+  @override
+  String formProblemsMessage(int count) =>
+      _plural('formProblemsMessage', count, super.formProblemsMessage(count));
+
+  @override
+  String get showPasswordLabel =>
+      _word('showPasswordLabel', super.showPasswordLabel);
+
+  @override
+  String get hidePasswordLabel =>
+      _word('hidePasswordLabel', super.hidePasswordLabel);
+
+  @override
+  String get menuBarLabel => _word('menuBarLabel', super.menuBarLabel);
+
+  @override
+  String get refreshLabel => _word('refreshLabel', super.refreshLabel);
+
+  @override
+  String get refreshingMessage =>
+      _word('refreshingMessage', super.refreshingMessage);
+
+  @override
+  String get refreshedMessage =>
+      _word('refreshedMessage', super.refreshedMessage);
+
+  @override
+  String get rangeSliderStartLabel =>
+      _word('rangeSliderStartLabel', super.rangeSliderStartLabel);
+
+  @override
+  String get rangeSliderEndLabel =>
+      _word('rangeSliderEndLabel', super.rangeSliderEndLabel);
+
+  @override
+  String reorderableListMovedMessage(String label, int position, int count) =>
+      _message(
+        'reorderableListMovedMessage',
+        super.reorderableListMovedMessage(label, position, count),
+        {'label': label, 'position': position, 'count': count},
+      );
+
+  @override
+  String get sideSheetBarrierLabel =>
+      _word('sideSheetBarrierLabel', super.sideSheetBarrierLabel);
+
+  @override
+  String get splitButtonMenuLabel =>
+      _word('splitButtonMenuLabel', super.splitButtonMenuLabel);
+
+  @override
+  String get splitViewHandleLabel =>
+      _word('splitViewHandleLabel', super.splitViewHandleLabel);
+
+  @override
+  String get tagInputDeleteLabel =>
+      _word('tagInputDeleteLabel', super.tagInputDeleteLabel);
+
+  @override
+  String get toasterRegionLabel =>
+      _word('toasterRegionLabel', super.toasterRegionLabel);
+
+  @override
+  String treeLevelHint(int level, int position, int count) => _message(
+    'treeLevelHint',
+    super.treeLevelHint(level, position, count),
+    {'level': level, 'position': position, 'count': count},
+  );
+}
+
+// The plural category of the whole number [n] under [rule] (CLDR's rules,
+// for counts).
+String _pluralCategory(String rule, int n) {
+  final i = n.abs();
+  final i10 = i % 10;
+  final i100 = i % 100;
+  final fewSlavic = i10 >= 2 && i10 <= 4 && (i100 < 12 || i100 > 14);
+  return switch (rule) {
+    'one' => i == 1 ? 'one' : 'other',
+    'zeroOne' => i <= 1 ? 'one' : 'other',
+    'eastSlavic' =>
+      i10 == 1 && i100 != 11
+          ? 'one'
+          : fewSlavic
+          ? 'few'
+          : 'many',
+    'polish' =>
+      i == 1
+          ? 'one'
+          : fewSlavic
+          ? 'few'
+          : 'many',
+    'czech' =>
+      i == 1
+          ? 'one'
+          : i >= 2 && i <= 4
+          ? 'few'
+          : 'other',
+    'arabic' =>
+      i == 0
+          ? 'zero'
+          : i == 1
+          ? 'one'
+          : i == 2
+          ? 'two'
+          : i100 >= 3 && i100 <= 10
+          ? 'few'
+          : i100 >= 11
+          ? 'many'
+          : 'other',
+    'hebrew' =>
+      i == 1
+          ? 'one'
+          : i == 2
+          ? 'two'
+          : 'other',
+    'romanian' =>
+      i == 1
+          ? 'one'
+          : i == 0 || (i100 >= 1 && i100 <= 19)
+          ? 'few'
+          : 'other',
+    'filipino' => i10 != 4 && i10 != 6 && i10 != 9 ? 'one' : 'other',
+    _ => 'other',
+  };
 }
 
 class _DefaultDesignLocalizationsDelegate

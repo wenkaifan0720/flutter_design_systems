@@ -9,6 +9,7 @@
 /// it without taking a router.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 /// One tab of the shell's navigation: a branch's root, with the glyph and
@@ -69,8 +70,8 @@ class ShellAction {
   /// The glyph the act wears.
   final IconData icon;
 
-  /// The act: the declared step's write and the route it lands on, run with
-  /// a context under the router.
+  /// The act: the declared step's write and the route it lands
+  /// on, run with a context under the router.
   final void Function(BuildContext context) onPressed;
 
   /// What the act does, announced for an icon-only control; a system may
@@ -160,6 +161,14 @@ class RoutePresentationScope extends InheritedWidget {
   @override
   bool updateShouldNotify(RoutePresentationScope oldWidget) =>
       presentation != oldWidget.presentation;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      EnumProperty<RoutePresentation>('presentation', presentation),
+    );
+  }
 }
 
 /// The ground a page stands on, which is what its chrome is drawn against:
@@ -209,6 +218,12 @@ class ChromeGroundScope extends InheritedWidget {
   @override
   bool updateShouldNotify(ChromeGroundScope oldWidget) =>
       ground != oldWidget.ground;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(EnumProperty<ChromeGround>('ground', ground));
+  }
 }
 
 /// The bottom inset the shell's bar asks every branch root to keep clear:
@@ -243,4 +258,10 @@ class ShellInsets extends InheritedWidget {
   @override
   bool updateShouldNotify(ShellInsets oldWidget) =>
       bottomInset != oldWidget.bottomInset;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('bottomInset', bottomInset));
+  }
 }

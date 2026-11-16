@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' show Tristate;
 
 import 'package:flutter/gestures.dart';
@@ -321,6 +322,142 @@ void main() {
     expect(beside.width, 80);
   });
 
+  group('a list from a field', () {
+    const listKey = ValueKey('list');
+    // A field of [width] opening a list of [items], each row stretched to
+    // the list, the list revealed by an Align growing its height with no
+    // widthFactor (inside loose constraints it would spread to the overlay).
+    Widget field(
+      double width,
+      List<String> items, {
+      DesignOverlayPlacement placement = const DesignOverlayPlacement(),
+      TextDirection direction = TextDirection.ltr,
+      bool lazy = false,
+    }) => _at(
+      Alignment.topCenter,
+      Padding(
+        padding: const EdgeInsets.only(top: 40),
+        child: DesignAnchoredOverlay(
+          placement: placement,
+          focusOnOpen: false,
+          anchorBuilder: (context, anchor) => GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: anchor.toggle,
+            child: SizedBox(key: _anchorKey, width: width, height: 44),
+          ),
+          overlayBuilder: (context, info) => AnimatedBuilder(
+            animation: info.animation,
+            builder: (context, child) => Align(
+              alignment: AlignmentDirectional.topStart,
+              heightFactor: info.animation.value.clamp(0.0, 1.0),
+              child: child,
+            ),
+            child: KeyedSubtree(
+              key: listKey,
+              child: lazy
+                  ? SizedBox(
+                      height: 120,
+                      child: ListView(
+                        children: [for (final i in items) Text(i)],
+                      ),
+                    )
+                  : SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (final i in items)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              child: Text(i, maxLines: 1, softWrap: false),
+                            ),
+                        ],
+                      ),
+                    ),
+            ),
+          ),
+        ),
+      ),
+      direction: direction,
+    );
+    Rect list(WidgetTester tester) => tester.getRect(find.byKey(listKey));
+    Rect anchorOf(WidgetTester tester) =>
+        tester.getRect(find.byKey(_anchorKey));
+
+    // The harness's test font draws a letter as wide as its size (14).
+    testWidgets('short items under a 600 px field: 600 wide, on its edge, '
+        'from the first frame', (tester) async {
+      await tester.pumpWidget(field(600, ['Day', 'Week']));
+      await tester.tap(find.byKey(_anchorKey));
+      await tester.pump();
+      final first = list(tester);
+      expect(first.width, 600, reason: 'the first frame, mid-reveal');
+      expect(first.left, anchorOf(tester).left);
+      await tester.pumpAndSettle();
+      expect(list(tester).width, 600);
+      expect(list(tester).left, anchorOf(tester).left);
+    });
+
+    testWidgets('a long item under a 120 px field: as wide as it needs, up '
+        'to the cap', (tester) async {
+      // 'Fortnightly' is 11 letters: 154 with its 24 of padding, 178.
+      await tester.pumpWidget(field(120, ['Day', 'Fortnightly']));
+      await tester.tap(find.byKey(_anchorKey));
+      await tester.pump();
+      expect(list(tester).width, 178, reason: 'the first frame');
+      expect(list(tester).left, anchorOf(tester).left);
+      await tester.pumpAndSettle();
+      expect(list(tester).width, 178);
+      await tester.tapAt(const Offset(5, 500));
+      await tester.pumpAndSettle();
+
+      // 40 letters, 584 with padding: the default cap, 320, stops it.
+      await tester.pumpWidget(field(120, ['Day', 'A' * 40]));
+      await tester.tap(find.byKey(_anchorKey));
+      await tester.pump();
+      expect(list(tester).width, 320);
+      await tester.tapAt(const Offset(5, 500));
+      await tester.pumpAndSettle();
+
+      // A look's own cap.
+      await tester.pumpWidget(
+        field(120, [
+          'Day',
+          'A' * 40,
+        ], placement: const DesignOverlayPlacement(maxWidth: 240)),
+      );
+      await tester.tap(find.byKey(_anchorKey));
+      await tester.pump();
+      expect(list(tester).width, 240);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('right to left: on the field\'s leading (right) edge from '
+        'the first frame', (tester) async {
+      await tester.pumpWidget(
+        field(120, ['Day', 'Fortnightly'], direction: TextDirection.rtl),
+      );
+      await tester.tap(find.byKey(_anchorKey));
+      await tester.pump();
+      expect(list(tester).right, anchorOf(tester).right);
+      expect(list(tester).width, 178);
+      await tester.pumpAndSettle();
+      expect(list(tester).right, anchorOf(tester).right);
+    });
+
+    testWidgets('a lazy list, which can\'t say its width ahead, keeps the '
+        'field\'s', (tester) async {
+      await tester.pumpWidget(field(200, ['Day', 'A' * 40], lazy: true));
+      await tester.tap(find.byKey(_anchorKey));
+      await tester.pump();
+      expect(list(tester).width, 200);
+      await tester.pumpAndSettle();
+      expect(list(tester).width, 200);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
   testWidgets('a hover card opens after the pointer rests, survives the trip '
       'into it, and closes after the pointer leaves', (tester) async {
     await tester.pumpWidget(
@@ -445,5 +582,215 @@ void main() {
     final surface = tester.getRect(find.byKey(_surfaceKey));
     expect(surface.bottom, lessThanOrEqualTo(height - 8));
     expect(tester.takeException(), isNull);
+  });
+
+  group('a route pushed over its anchor', () {
+    // A dialog over the anchor's page, its one button taking focus.
+    Route<void> dialog() => PageRouteBuilder<void>(
+      opaque: false,
+      pageBuilder: (context, _, _) => Center(
+        child: DesignPressable(
+          autofocus: true,
+          onPressed: () => Navigator.of(context).pop(),
+          builder: (context, states, _) => plainFace('OK'),
+        ),
+      ),
+    );
+
+    for (final focusOnOpen in [true, false]) {
+      testWidgets('closes the surface; focus is the new route\'s '
+          '(focus ${focusOnOpen ? 'in' : 'on the anchor'})', (tester) async {
+        final nodes = _nodes(2);
+        await tester.pumpWidget(
+          _at(
+            Alignment.topCenter,
+            _overlay(itemNodes: nodes, focusOnOpen: focusOnOpen),
+          ),
+        );
+        await tester.tap(find.byKey(_anchorKey));
+        await tester.pumpAndSettle();
+        expect(find.byKey(_surfaceKey), findsOneWidget);
+        final page = ModalRoute.of(tester.element(find.byKey(_anchorKey)))!;
+        final pushed = dialog();
+        unawaited(page.navigator!.push(pushed));
+        await tester.pumpAndSettle();
+        expect(find.byKey(_surfaceKey), findsNothing, reason: 'closed');
+        final primary = FocusManager.instance.primaryFocus;
+        expect(primary?.context, isNotNull);
+        expect(
+          ModalRoute.of(primary!.context!),
+          same(pushed),
+          reason: 'focus is in the route pushed over it',
+        );
+        // Popped: the page is as the anchor left it, closed.
+        page.navigator!.pop();
+        await tester.pumpAndSettle();
+        expect(find.byKey(_surfaceKey), findsNothing);
+      });
+
+      testWidgets('closes the surface under an alert on the root navigator, '
+          'over a page in a nested one '
+          '(focus ${focusOnOpen ? 'in' : 'on the anchor'})', (tester) async {
+        final nodes = _nodes(2);
+        await tester.pumpWidget(
+          harness(
+            Navigator(
+              onGenerateRoute: (settings) => PageRouteBuilder<void>(
+                settings: settings,
+                pageBuilder: (_, _, _) => Align(
+                  alignment: Alignment.topCenter,
+                  child: _overlay(itemNodes: nodes, focusOnOpen: focusOnOpen),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.byKey(_anchorKey));
+        await tester.pumpAndSettle();
+        expect(find.byKey(_surfaceKey), findsOneWidget);
+        final anchor = tester.element(find.byKey(_anchorKey));
+        final root = Navigator.of(anchor, rootNavigator: true);
+        expect(ModalRoute.of(anchor)!.navigator, isNot(same(root)));
+        final pushed = dialog();
+        unawaited(root.push(pushed));
+        await tester.pumpAndSettle();
+        expect(find.byKey(_surfaceKey), findsNothing, reason: 'closed');
+        final primary = FocusManager.instance.primaryFocus;
+        expect(ModalRoute.of(primary!.context!), same(pushed));
+        root.pop();
+        await tester.pumpAndSettle();
+        expect(find.byKey(_surfaceKey), findsNothing);
+      });
+    }
+
+    testWidgets('stays open while the app is in the background, '
+        'and as focus moves on its page', (tester) async {
+      final nodes = _nodes(2);
+      final other = FocusNode(debugLabel: 'other');
+      addTearDown(other.dispose);
+      await tester.pumpWidget(
+        _at(
+          Alignment.topCenter,
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _overlay(itemNodes: nodes, focusOnOpen: false),
+              Focus(
+                focusNode: other,
+                child: const SizedBox(width: 10, height: 10),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.tap(find.byKey(_anchorKey));
+      await tester.pumpAndSettle();
+      expect(find.byKey(_surfaceKey), findsOneWidget);
+      // On a desktop, focus is parked on the root scope meanwhile.
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      await tester.pumpAndSettle();
+      expect(
+        FocusManager.instance.primaryFocus,
+        same(FocusManager.instance.rootScope),
+      );
+      expect(find.byKey(_surfaceKey), findsOneWidget, reason: 'background');
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      other.requestFocus();
+      await tester.pumpAndSettle();
+      expect(find.byKey(_surfaceKey), findsOneWidget, reason: 'its page');
+    }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
+  });
+
+  group("Android's back", () {
+    // [page] pushed over a home page, as a page an app opens.
+    Future<void> pushed(WidgetTester tester, Widget page) async {
+      await tester.pumpWidget(harness(const Text('Home')));
+      final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+      unawaited(
+        navigator.push(PageRouteBuilder<void>(pageBuilder: (_, _, _) => page)),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Home'), findsNothing);
+    }
+
+    // The system's back: Android's button or gesture.
+    Future<void> back(WidgetTester tester) async {
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets(
+      'closes an open surface and returns focus to its anchor, the page '
+      'staying; the next back pops the page',
+      (tester) async {
+        final anchor = FocusNode(debugLabel: 'anchor');
+        addTearDown(anchor.dispose);
+        await pushed(
+          tester,
+          Align(
+            alignment: Alignment.topCenter,
+            child: _overlay(itemNodes: _nodes(2), anchorNode: anchor),
+          ),
+        );
+        anchor.requestFocus();
+        await tester.pump();
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        expect(find.byKey(_surfaceKey), findsOneWidget);
+        expect(anchor.hasPrimaryFocus, isFalse, reason: 'focus moved in');
+        await back(tester);
+        expect(find.byKey(_surfaceKey), findsNothing, reason: 'closed');
+        expect(find.byKey(_anchorKey), findsOneWidget, reason: 'page stays');
+        expect(anchor.hasPrimaryFocus, isTrue);
+        await back(tester);
+        expect(find.byKey(_anchorKey), findsNothing);
+        expect(find.text('Home'), findsOneWidget);
+      },
+      variant: TargetPlatformVariant.only(TargetPlatform.android),
+    );
+
+    testWidgets('closes nested surfaces innermost first, then pops the page', (
+      tester,
+    ) async {
+      Widget face(String label) => plainFace(label, key: ValueKey(label));
+      await pushed(
+        tester,
+        Align(
+          alignment: Alignment.topLeft,
+          child: DesignAnchoredOverlay(
+            focusOnOpen: false,
+            anchorBuilder: (context, anchor) => DesignPressable(
+              onPressed: anchor.toggle,
+              builder: (context, states, _) => face('Menu'),
+            ),
+            overlayBuilder: (context, info) => DesignAnchoredOverlay(
+              focusOnOpen: false,
+              placement: const DesignOverlayPlacement(
+                side: DesignOverlaySide.end,
+              ),
+              anchorBuilder: (context, anchor) => DesignPressable(
+                onPressed: anchor.toggle,
+                builder: (context, states, _) => face('More'),
+              ),
+              overlayBuilder: (context, info) => face('Submenu'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byKey(const ValueKey('Menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('More')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('Submenu')), findsOneWidget);
+      await back(tester);
+      expect(find.byKey(const ValueKey('Submenu')), findsNothing);
+      expect(find.byKey(const ValueKey('More')), findsOneWidget);
+      await back(tester);
+      expect(find.byKey(const ValueKey('More')), findsNothing);
+      expect(find.byKey(const ValueKey('Menu')), findsOneWidget);
+      await back(tester);
+      expect(find.text('Home'), findsOneWidget);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.android));
   });
 }

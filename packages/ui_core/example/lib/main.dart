@@ -79,81 +79,96 @@ class _ReportPageState extends State<ReportPage> {
     child: SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'New report',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 24),
-            DesignField(
-              labelText: 'Name',
-              helperText: 'Shown at the top of the report',
-              errorText: _nameError,
-              required: true,
-              focusNode: _nameFocus,
-              builder: (context, parts) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ?parts.label,
-                  const SizedBox(height: 6),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: parts.hasError ? _wrong : _line,
-                        width: parts.hasError ? 2 : 1,
+        // A form keeps a reading width on a wide screen, at the page's start.
+        child: Align(
+          alignment: AlignmentDirectional.topStart,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'New report',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 24),
+                DesignField(
+                  labelText: 'Name',
+                  helperText: 'Shown at the top of the report',
+                  errorText: _nameError,
+                  required: true,
+                  focusNode: _nameFocus,
+                  builder: (context, parts) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ?parts.label,
+                      const SizedBox(height: 6),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          // Wrong outranks focused, which outranks at rest.
+                          border: Border.all(
+                            color: parts.hasError
+                                ? _wrong
+                                : (parts.focused ? _accent : _line),
+                            width: parts.hasError || parts.focused ? 2 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: parts.control,
+                        ),
                       ),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: parts.control,
-                    ),
+                      const SizedBox(height: 4),
+                      DefaultTextStyle.merge(
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: parts.hasError
+                              ? _wrong
+                              : const Color(0xFF59636E),
+                        ),
+                        child: parts.error ?? parts.helper ?? const SizedBox(),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  DefaultTextStyle.merge(
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: parts.hasError ? _wrong : const Color(0xFF59636E),
-                    ),
-                    child: parts.error ?? parts.helper ?? const SizedBox(),
+                  child: EditableText(
+                    controller: _name,
+                    focusNode: _nameFocus,
+                    style: const TextStyle(fontSize: 16, color: _ink),
+                    cursorColor: _accent,
+                    backgroundCursorColor: _line,
                   ),
-                ],
-              ),
-              child: EditableText(
-                controller: _name,
-                focusNode: _nameFocus,
-                style: const TextStyle(fontSize: 16, color: _ink),
-                cursorColor: _accent,
-                backgroundCursorColor: _line,
-              ),
+                ),
+                const SizedBox(height: 24),
+                const Text('Period'),
+                const SizedBox(height: 6),
+                DesignToggleGroup<String>(
+                  options: const ['Day', 'Week', 'Month'],
+                  selected: _period,
+                  onSelectionChanged: (next) => setState(() => _period = next),
+                  semanticLabel: 'Period',
+                  // One frame round the three, with a hairline between: the
+                  // segments share their outline rather than butt three boxes.
+                  layoutBuilder: (context, items) => _Segments(items: items),
+                  itemBuilder: (context, value, states) => _Segment(
+                    selected: states.contains(WidgetState.selected),
+                    focused: states.contains(WidgetState.focused),
+                    child: Text(value),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                DesignPressable(
+                  onPressed: _save,
+                  semanticLabel: 'Save',
+                  builder: (context, states, child) => _Box(
+                    selected: !states.contains(WidgetState.pressed),
+                    focused: states.contains(WidgetState.focused),
+                    child: const Text('Save'),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            const Text('Period'),
-            const SizedBox(height: 6),
-            DesignToggleGroup<String>(
-              options: const ['Day', 'Week', 'Month'],
-              selected: _period,
-              onSelectionChanged: (next) => setState(() => _period = next),
-              semanticLabel: 'Period',
-              itemBuilder: (context, value, states) => _Box(
-                selected: states.contains(WidgetState.selected),
-                focused: states.contains(WidgetState.focused),
-                child: Text(value),
-              ),
-            ),
-            const SizedBox(height: 32),
-            DesignPressable(
-              onPressed: _save,
-              semanticLabel: 'Save',
-              builder: (context, states, child) => _Box(
-                selected: !states.contains(WidgetState.pressed),
-                focused: states.contains(WidgetState.focused),
-                child: const Text('Save'),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     ),
@@ -186,6 +201,70 @@ class _Box extends StatelessWidget {
       ),
       borderRadius: BorderRadius.circular(6),
     ),
+    child: DefaultTextStyle.merge(
+      style: TextStyle(color: selected ? _paper : _ink),
+      child: child,
+    ),
+  );
+}
+
+/// The toggle group's items in one frame: rounded outside, a hairline
+/// between neighbours.
+class _Segments extends StatelessWidget {
+  const _Segments({required this.items});
+
+  final List<Widget> items;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    position: DecorationPosition.foreground,
+    decoration: BoxDecoration(
+      border: Border.all(color: _line),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(6),
+      child: IntrinsicHeight(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final (i, item) in items.indexed) ...[
+              if (i > 0)
+                const SizedBox(width: 1, child: ColoredBox(color: _line)),
+              item,
+            ],
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// One segment: filled when [selected], ringed inside when [focused].
+class _Segment extends StatelessWidget {
+  const _Segment({
+    required this.selected,
+    required this.focused,
+    required this.child,
+  });
+
+  final bool selected;
+  final bool focused;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    alignment: Alignment.center,
+    color: selected ? _accent : _paper,
+    foregroundDecoration: focused
+        ? BoxDecoration(
+            border: Border.all(color: _ink, width: 2),
+            borderRadius: BorderRadius.circular(4),
+          )
+        : null,
     child: DefaultTextStyle.merge(
       style: TextStyle(color: selected ? _paper : _ink),
       child: child,

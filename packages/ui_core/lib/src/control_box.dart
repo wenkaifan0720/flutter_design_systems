@@ -64,6 +64,20 @@ class DesignControlBox extends StatelessWidget {
       child: _evenLeading(context, child),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('minHeight', minHeight))
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'alignment',
+          alignment,
+          defaultValue: Alignment.center,
+        ),
+      );
+  }
 }
 
 /// A text entry's box: at least [minHeight] tall, holding [child], an
@@ -144,6 +158,21 @@ class DesignTextEntryBox extends StatelessWidget {
       valueListenable: controller!,
       builder: (context, value, _) => layout(showHint: value.text.isEmpty),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('minHeight', minHeight))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('maxLines', maxLines, defaultValue: 1));
   }
 }
 

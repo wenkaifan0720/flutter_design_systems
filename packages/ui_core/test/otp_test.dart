@@ -316,7 +316,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       harness(
-        Center(child: DesignOtpField(length: 4, slotBuilder: _slot)),
+        const Center(child: DesignOtpField(length: 4, slotBuilder: _slot)),
         textDirection: TextDirection.rtl,
       ),
     );

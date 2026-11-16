@@ -5,6 +5,7 @@
 /// to the half that opened it.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -70,7 +71,8 @@ class DesignSplitButton extends StatelessWidget {
   /// The main action's name.
   final String label;
 
-  /// The main action; null disables the main half.
+  /// The main action. Null disables the main half, which leaves the focus
+  /// order and reads as disabled; the menu half stays.
   final VoidCallback? onPressed;
 
   /// The menu's actions.
@@ -182,5 +184,62 @@ class DesignSplitButton extends StatelessWidget {
           ),
       ]),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(IterableProperty<DesignSplitAction>('actions', actions))
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(
+            BuildContext context,
+            DesignSplitPart part,
+            Set<WidgetState> states,
+            bool open,
+          )
+        >.has('buttonBuilder', buttonBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(
+            BuildContext context,
+            DesignSplitAction action,
+            Set<WidgetState> states,
+          )
+        >.has('itemBuilder', itemBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(
+            BuildContext context,
+            DesignOverlayInfo info,
+            List<Widget> items,
+          )
+        >.has('surfaceBuilder', surfaceBuilder),
+      )
+      ..add(StringProperty('menuLabel', menuLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, Widget main, Widget toggle)
+        >.has('layoutBuilder', layoutBuilder),
+      )
+      ..add(
+        DiagnosticsProperty<Size>(
+          'minimumSize',
+          minimumSize,
+          defaultValue: const Size(44, 44),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MenuController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      );
   }
 }

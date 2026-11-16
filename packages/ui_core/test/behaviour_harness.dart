@@ -81,3 +81,19 @@ Widget plainField({
 /// the one view's.
 SemanticsOwner semanticsOwner() =>
     WidgetsBinding.instance.renderViews.first.owner!.semanticsOwner!;
+
+/// The first node in the semantics tree that is a text field.
+SemanticsNode textFieldNode() {
+  SemanticsNode? found;
+  bool visit(SemanticsNode node) {
+    if (node.flagsCollection.isTextField) {
+      found = node;
+      return false;
+    }
+    node.visitChildren(visit);
+    return found == null;
+  }
+
+  semanticsOwner().rootSemanticsNode!.visitChildren(visit);
+  return found!;
+}

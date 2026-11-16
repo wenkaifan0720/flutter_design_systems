@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -89,8 +90,7 @@ void main() {
       }
     });
 
-    test('critically damps spatial springs under Reduce Motion, and leaves '
-        'effects springs alone', () {
+    test('critically damps spatial springs under Reduce Motion', () {
       const policy = DesignMotionPolicy(reduceMotion: true);
       for (final (ratio, stiffness) in _tokens) {
         final spatial = policy.spatial(
@@ -100,11 +100,35 @@ void main() {
         expect(spatial.mass, 1);
         expect(spatial.stiffness, stiffness);
         expect(spatial.damping, 2 * math.sqrt(stiffness), reason: 'ζ = 1');
+      }
+    });
+
+    test('under Reduce Motion an effects spring is a short fade: no '
+        'overshoot, settled within 150 ms', () {
+      const policy = DesignMotionPolicy(reduceMotion: true);
+      for (final (ratio, stiffness) in [
+        ..._tokens,
+        // A slow fade a look might write, and a bouncy colour change.
+        (1.0, 200.0),
+        (0.5, 300.0),
+      ]) {
         final effects = policy.effects(
           dampingRatio: ratio,
           stiffness: stiffness,
         );
-        expect(effects.damping, ratio * 2 * math.sqrt(stiffness));
+        final k = math.max(
+          stiffness,
+          DesignMotionPolicy.reducedEffectsStiffness,
+        );
+        expect(effects.stiffness, k, reason: '$ratio/$stiffness');
+        expect(effects.damping, 2 * math.sqrt(k), reason: 'ζ = 1');
+        final fade = designSpringSimulation(effects, from: 0, to: 1);
+        for (var t = 0.0; t < .15; t += .005) {
+          expect(fade.x(t), lessThanOrEqualTo(1), reason: 'no overshoot');
+        }
+        expect(fade.isDone(.15), isTrue, reason: '$ratio/$stiffness at 150 ms');
+        // Not cut to an instant: one 120 Hz frame in, it is not half way.
+        expect(fade.x(1 / 120), lessThan(.5), reason: 'a fade, not a cut');
       }
     });
 
@@ -163,7 +187,9 @@ void main() {
       addTearDown(controller.dispose);
       var peak = 0.0;
       controller.addListener(() => peak = math.max(peak, controller.value));
-      controller.springTo(1, designSpring(dampingRatio: 0.6, stiffness: 800));
+      unawaited(
+        controller.springTo(1, designSpring(dampingRatio: 0.6, stiffness: 800)),
+      );
       // Frame by frame: e^(−ζπ/√(1−ζ²)) ≈ 9.5 % peak overshoot at ζ = 0.6.
       await _runFrames(tester, controller);
       expect(peak, greaterThan(1.08), reason: 'ζ = 0.6 overshoots');
@@ -178,10 +204,12 @@ void main() {
       addTearDown(controller.dispose);
       var peak = 0.0;
       controller.addListener(() => peak = math.max(peak, controller.value));
-      controller.springTo(
-        1,
-        const DesignMotionPolicy(reduceMotion: true)
-            .spatial(dampingRatio: 0.6, stiffness: 800),
+      unawaited(
+        controller.springTo(
+          1,
+          const DesignMotionPolicy(reduceMotion: true)
+              .spatial(dampingRatio: 0.6, stiffness: 800),
+        ),
       );
       await _runFrames(tester, controller);
       expect(peak, lessThanOrEqualTo(1.0));
@@ -194,13 +222,13 @@ void main() {
       final controller = AnimationController.unbounded(vsync: tester);
       addTearDown(controller.dispose);
       final spring = designSpring(dampingRatio: 0.8, stiffness: 380);
-      controller.springTo(1, spring);
+      unawaited(controller.springTo(1, spring));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 48));
       final atTurn = controller.value;
       expect(controller.velocity, greaterThan(0));
 
-      controller.springTo(0, spring);
+      unawaited(controller.springTo(0, spring));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 16));
       expect(

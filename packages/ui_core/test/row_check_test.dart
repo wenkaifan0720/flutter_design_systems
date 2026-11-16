@@ -1737,7 +1737,10 @@ void main() {
   testWidgets("text in the test's own font fails the check once", (
     tester,
   ) async {
-    final box = Text('Cancel', style: TextStyle(color: Color(0xFF101010)));
+    final box = const Text(
+      'Cancel',
+      style: TextStyle(color: Color(0xFF101010)),
+    );
     expect(
       await _check(
         tester,
@@ -1774,6 +1777,8 @@ void main() {
         color: Color(0xFF101010),
       );
       final key = GlobalKey();
+      final controller = TextEditingController(text: typed ? 'TEXT' : '');
+      addTearDown(controller.dispose);
       await tester.pumpWidget(
         MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -1810,9 +1815,7 @@ void main() {
                                   child: DesignCapCenter(
                                     capHeightFactor: _roboto,
                                     child: TextField(
-                                      controller: TextEditingController(
-                                        text: typed ? 'TEXT' : '',
-                                      ),
+                                      controller: controller,
                                       style: style,
                                       decoration: const InputDecoration(
                                         isCollapsed: true,
@@ -1984,11 +1987,11 @@ void main() {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (labelOver)
-                SizedBox(
+                const SizedBox(
                   height: 16,
                   child: Text(
                     'Preset',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Roboto',
                       fontSize: 11,
                       color: _dark,

@@ -11,7 +11,7 @@
 /// `debugDefaultTargetPlatformOverride`.
 library;
 
-import 'package:flutter/foundation.dart' show defaultTargetPlatform;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'chrome_data.dart';
@@ -177,6 +177,34 @@ class PreviewFrame extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<PreviewPlatform>(
+          'platform',
+          platform,
+          defaultValue: PreviewPlatform.android,
+        ),
+      )
+      ..add(
+        EnumProperty<Brightness>(
+          'brightness',
+          brightness,
+          defaultValue: Brightness.light,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'device',
+          value: device,
+          ifTrue: 'device',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _PreviewScope extends InheritedWidget {
@@ -229,6 +257,16 @@ class PreviewStage extends StatefulWidget {
 
   @override
   State<PreviewStage> createState() => _PreviewStageState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<
+        Route<void> Function(BuildContext context, Widget page)
+      >.has('route', route),
+    );
+  }
 }
 
 class _PreviewStageState extends State<PreviewStage> {

@@ -6,6 +6,8 @@ library;
 
 import 'package:flutter/widgets.dart';
 
+import 'barrier.dart';
+import 'internal/painted_barrier.dart';
 import 'localizations.dart';
 
 /// Which edge a [DesignSideSheetRoute] comes from.
@@ -61,6 +63,7 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
     this.width = 360,
     this.minGap = 56,
     Color barrierColor = const Color(0x66000000),
+    this.barrierBuilder,
     String? barrierLabel,
     bool barrierDismissible = true,
     this.dragToClose = true,
@@ -90,6 +93,10 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
   /// What a screen reader calls it.
   final String? semanticLabel;
 
+  /// Paints the barrier in place of the barrier colour (a look's own
+  /// screen); null: the colour.
+  final DesignBarrierBuilder? barrierBuilder;
+
   final Color _scrim;
   final bool _dismissOnBarrier;
   final Duration _transition;
@@ -113,8 +120,16 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
             : DesignLocalizations.of(context).sideSheetBarrierLabel);
   }
 
+  /// The barrier's colour; null while [barrierBuilder] paints it.
   @override
-  Color? get barrierColor => _scrim;
+  Color? get barrierColor => barrierBuilder == null ? _scrim : null;
+
+  @override
+  Widget buildModalBarrier() {
+    final barrier = super.buildModalBarrier();
+    final paint = barrierBuilder;
+    return paint == null ? barrier : paintedBarrier(paint, animation!, barrier);
+  }
 
   @override
   bool get barrierDismissible => _dismissOnBarrier;

@@ -5,6 +5,7 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -76,6 +77,7 @@ class DesignScrollArea extends StatefulWidget {
     this.axis = Axis.vertical,
     this.thickness = 12,
     this.minThumbLength = 24,
+    this.thumbLength,
     this.visibility = DesignScrollbarVisibility.auto,
     this.timeToFade = const Duration(milliseconds: 1200),
     this.focusable = true,
@@ -84,7 +86,10 @@ class DesignScrollArea extends StatefulWidget {
     this.step = 48,
     this.semanticLabel,
     this.frameBuilder,
-  });
+  }) : assert(thickness > 0),
+       assert(minThumbLength >= 0),
+       assert(step > 0),
+       assert(thumbLength == null || thumbLength >= 0);
 
   /// The controller [child] scrolls on: give [child] the same one. The
   /// caller makes it, keeps it across rebuilds and disposes it.
@@ -108,6 +113,16 @@ class DesignScrollArea extends StatefulWidget {
   /// The thumb's least length.
   final double minThumbLength;
 
+  /// The thumb's length, whatever the content's (no longer than the track);
+  /// null: in proportion to the view's share of the content, at least
+  /// [minThumbLength].
+  ///
+  /// A fixed thumb (a box that slides, as a desktop of the nineties drew
+  /// it) keeps its size over a lazy list, whose content's length is an
+  /// estimate that changes as rows build: a proportional thumb grows and
+  /// shrinks as the list scrolls.
+  final double? thumbLength;
+
   /// When the scrollbar shows.
   final DesignScrollbarVisibility visibility;
 
@@ -118,7 +133,9 @@ class DesignScrollArea extends StatefulWidget {
   /// region with nothing focusable in it).
   final bool focusable;
 
-  /// The area's focus. The caller's, who disposes it; null: the area's own.
+  /// The area's focus.
+  ///
+  /// {@macro design.focusNode}
   final FocusNode? focusNode;
 
   /// Whether the area takes focus when it first appears (with [focusable]).
@@ -137,6 +154,73 @@ class DesignScrollArea extends StatefulWidget {
 
   @override
   State<DesignScrollArea> createState() => _DesignScrollAreaState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ScrollController>('controller', controller))
+      ..add(
+        ObjectFlagProperty<DesignScrollbarBuilder>.has(
+          'thumbBuilder',
+          thumbBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<DesignScrollbarBuilder>.has(
+          'trackBuilder',
+          trackBuilder,
+        ),
+      )
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical))
+      ..add(DoubleProperty('thickness', thickness, defaultValue: 12))
+      ..add(DoubleProperty('minThumbLength', minThumbLength, defaultValue: 24))
+      ..add(DoubleProperty('thumbLength', thumbLength, defaultValue: null))
+      ..add(
+        EnumProperty<DesignScrollbarVisibility>(
+          'visibility',
+          visibility,
+          defaultValue: DesignScrollbarVisibility.auto,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'timeToFade',
+          timeToFade,
+          defaultValue: const Duration(milliseconds: 1200),
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'focusable',
+          value: focusable,
+          ifFalse: 'focusable: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      )
+      ..add(DoubleProperty('step', step, defaultValue: 48))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, bool focused, Widget area)
+        >.has('frameBuilder', frameBuilder),
+      );
+  }
 }
 
 class _DesignScrollAreaState extends State<DesignScrollArea> {
@@ -226,10 +310,13 @@ class _DesignScrollAreaState extends State<DesignScrollArea> {
       return const SizedBox.shrink();
     }
     final content = p.maxScrollExtent - p.minScrollExtent + p.viewportDimension;
-    final thumb = (track * p.viewportDimension / content).clamp(
-      widget.minThumbLength.clamp(0.0, track),
-      track,
-    );
+    final thumb = switch (widget.thumbLength) {
+      final fixed? => fixed.clamp(0.0, track),
+      null => (track * p.viewportDimension / content).clamp(
+        widget.minThumbLength.clamp(0.0, track),
+        track,
+      ),
+    };
     final range = p.maxScrollExtent - p.minScrollExtent;
     final along = ((p.pixels - p.minScrollExtent) / range).clamp(0.0, 1.0);
     final offset = (track - thumb) * along;

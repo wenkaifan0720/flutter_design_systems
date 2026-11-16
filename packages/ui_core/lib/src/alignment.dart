@@ -33,10 +33,12 @@
 library;
 
 import 'dart:math' as math;
-import 'dart:ui' show SemanticsInputType;
+import 'dart:ui' as ui;
+import 'dart:ui' show CheckedState, SemanticsInputType, Tristate;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'anchored_overlay.dart' show DesignAnchoredOverlay;
@@ -44,6 +46,17 @@ import 'cap_center.dart';
 import 'internal/drawn_pixels.dart';
 import 'internal/label_line.dart';
 import 'keyline_region.dart';
+import 'spacing.dart';
+import 'tap_target.dart';
+
+export 'spacing.dart' show DesignSpacing, DesignSpacingScope;
+export 'tap_target.dart'
+    show DesignInput, DesignTapTargetScope, DesignTapTargets;
+
+part 'checks/cursor_check.dart';
+part 'checks/shadow_clip_check.dart';
+part 'checks/spacing_check.dart';
+part 'checks/tap_target_check.dart';
 
 /// A kind of control that shares a line with others.
 enum DesignInlineControl {
@@ -1077,11 +1090,16 @@ String _roundingNote(double rounding, double drawn) {
       '${rounding > 0 ? 'lower' : 'higher'}, $at)';
 }
 
-/// What [DesignAlignmentMatrix.check] found: one line per problem.
+/// What a check found: one line per problem, and the advisories a check
+/// reports without failing (a rule still learning its cases).
 @immutable
 class DesignAlignmentReport {
-  /// A report on [look] listing [problems].
-  const DesignAlignmentReport(this.look, this.problems);
+  /// A report on [look] listing [problems], and [advisories] beside them.
+  const DesignAlignmentReport(
+    this.look,
+    this.problems, {
+    this.advisories = const [],
+  });
 
   /// The look checked.
   final String look;
@@ -1090,10 +1108,15 @@ class DesignAlignmentReport {
   /// and the control.
   final List<String> problems;
 
+  /// One line per advisory: reported for a person to look at, never failing
+  /// [verify].
+  final List<String> advisories;
+
   /// Whether nothing is out of line.
   bool get isAligned => problems.isEmpty;
 
   /// Throws a [DesignAlignmentError] listing the problems, if there are any.
+  /// [advisories] never throw.
   void verify() {
     if (problems.isNotEmpty) throw DesignAlignmentError(look, problems);
   }
@@ -1126,7 +1149,7 @@ class DesignAlignmentSheet extends StatelessWidget {
     required this.matrix,
     this.theme,
     this.zoom = 4,
-  });
+  }) : assert(zoom > 0);
 
   /// The look's matrix.
   final DesignAlignmentMatrix matrix;
@@ -1167,6 +1190,15 @@ class DesignAlignmentSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DesignAlignmentMatrix>('matrix', matrix))
+      ..add(StringProperty('theme', theme, defaultValue: null))
+      ..add(DoubleProperty('zoom', zoom, defaultValue: 4));
   }
 }
 
@@ -1639,6 +1671,18 @@ class DesignKeylineSheet extends StatefulWidget {
 
   @override
   State<DesignKeylineSheet> createState() => _DesignKeylineSheetState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<DesignKeylineCheck>(
+        'check',
+        check,
+        defaultValue: const DesignKeylineCheck(look: ''),
+      ),
+    );
+  }
 }
 
 class _DesignKeylineSheetState extends State<DesignKeylineSheet> {
@@ -2359,8 +2403,9 @@ class DesignWidthLimit {
 ///
 /// [checkList] holds a list opened from a field (a select, a combobox, a
 /// menu from a form field), with the list open, at any width: at least as
-/// wide as the field, starting on its leading edge, its words on the field's
-/// words or [listWordsIndent] in from them.
+/// wide as the field and no wider than the larger of the field and its
+/// widest item, starting on its leading edge, its words on the field's words
+/// or [listWordsIndent] in from them.
 ///
 /// Before the check, a test loads the look's fonts and lets the screen's
 /// images decode, as [DesignLabelCheck] shows. A test pumps each gallery
@@ -2614,7 +2659,11 @@ class DesignWidthCheck {
 
   /// Checks the list opened from [field] (a select, a combobox, a menu from
   /// a form field: the widget the test pressed to open it), with the list
-  /// open: at least as wide as the field, starting on its leading edge, and
+  /// open: at least as wide as the field and no wider than the larger of
+  /// the field and its widest item with the list's padding (`a list opened
+  /// from a select "Period": 1180 px wide as laid out, wider than the field
+  /// (343) and its widest item with its padding (126)`), starting on its
+  /// leading edge, and
   /// its first item's words on the field's words, or [listWordsIndent] in
   /// from them, each as laid out and as drawn. The list is the face nearest
   /// the field, above or below it, that holds two or more controls one over
@@ -2669,19 +2718,37 @@ class DesignWidthCheck {
 
     final fieldReader = await readerFor(control);
     if (fieldReader == null) return DesignAlignmentReport(look, const []);
+    // A text field with no toggle (an autocomplete's field view): its face is
+    // drawn round its entry, not in it (a label over it, a helper under it).
+    final entryOnly =
+        controls.length == 1 &&
+        !identical(control, box) &&
+        _semanticsOf(control).entry;
     final fieldFace = controls.length > 1
         ? fieldReader._face(box)
-        : fieldReader._face(control) ?? fieldReader._well(control, root);
-    final fieldLaid = fieldFace?.rect ?? _global(whole);
-    final fieldDrawn = fieldFace == null
-        ? fieldLaid
+        : (entryOnly ? fieldReader._face(box) : null) ??
+              fieldReader._face(control) ??
+              fieldReader._well(control, root);
+    // A face read from its own ink stops short on its lit sides as its
+    // outline does (_litTo): read to its box there.
+    final fieldLaid = fieldFace == null
+        ? _global(whole)
+        : fieldFace.read
+        ? fieldReader._litTo(_global(fieldFace.box), fieldFace.rect)
+        : fieldFace.rect;
+    // A side lit from a corner reads short as drawn (a groove's highlight,
+    // too faint to stand off): read to its box there (_litTo).
+    final fieldOutline = fieldFace == null
+        ? null
         : fieldReader._outline(
-                fieldLaid,
-                whole,
-                fieldFace.read ? null : fieldFace.box,
-                null,
-              ) ??
-              fieldLaid;
+            fieldLaid,
+            whole,
+            fieldFace.read ? null : fieldFace.box,
+            null,
+          );
+    final fieldDrawn = fieldOutline == null
+        ? fieldLaid
+        : fieldReader._litTo(fieldLaid, fieldOutline);
     var top = field as Element;
     field.visitAncestorElements((e) {
       top = e;
@@ -2711,12 +2778,18 @@ class DesignWidthCheck {
     // overlay) is read as laid out.
     final listReader = await readerFor(list);
     final listLaid = _global(list);
-    final listRead = listReader?._outline(listLaid, list, list, null);
+    final listOutline = listReader?._outline(listLaid, list, list, null);
+    final listRead = listOutline == null
+        ? null
+        : listReader!._litTo(listLaid, listOutline);
     final listDrawn = listRead ?? listLaid;
     String drawnAs(String v) => listReader == null ? '' : ', $v as drawn';
+    // The field as the list is held to it: as drawn when the list is read
+    // as drawn, else as laid out, the one measure on both.
+    final fieldSeen = listRead == null ? fieldLaid : fieldDrawn;
     final who = 'a list opened from $name';
     final found = <String>[];
-    if (listDrawn.width < fieldDrawn.width - tolerance) {
+    if (listDrawn.width < fieldSeen.width - tolerance) {
       found.add(
         '$who: ${_px(listLaid.width)} px wide as laid out'
         '${drawnAs(_px(listDrawn.width))}, narrower than the field '
@@ -2725,8 +2798,36 @@ class DesignWidthCheck {
     }
     // Toward the trailing edge, positive.
     double lead(Rect r) => rtl ? -r.right : r.left;
+    final items = finder._controlsUnder(list)
+      ..sort((a, b) => _global(a).top.compareTo(_global(b).top));
+    // No wider than it needs, as drawn (a list laid out with room round its
+    // face for its shadow is as wide as its face): the larger of the field
+    // and its widest item's content, with the list's own padding round it
+    // (as far in from its trailing edge as from its leading one).
+    double? needs;
+    for (final item in items) {
+      final content = _contentWidth(item, item.size.height);
+      if (content == null) {
+        needs = null;
+        break;
+      }
+      final inset = math.max(0.0, lead(_global(item)) - lead(listLaid));
+      needs = math.max(needs ?? 0, content + 2 * inset);
+    }
+    if (needs != null &&
+        listDrawn.width >
+            math.max(math.max(fieldLaid.width, fieldDrawn.width), needs) +
+                tolerance) {
+      found.add(
+        '$who: ${_px(listLaid.width)} px wide as laid out'
+        '${drawnAs(_px(listDrawn.width))}, wider than the field '
+        '(${_px(fieldLaid.width)}) and its widest item with its padding '
+        '(${_px(needs)}): a list is the field\'s width, or as wide as its '
+        'widest item past it, never wider',
+      );
+    }
     final laidIn = lead(listLaid) - lead(fieldLaid);
-    final drawnIn = lead(listDrawn) - lead(fieldDrawn);
+    final drawnIn = lead(listDrawn) - lead(fieldSeen);
     if (drawnIn.abs() > tolerance) {
       found.add(
         "$who: its leading edge is ${_inFrom(laidIn)} the field's as laid "
@@ -2735,17 +2836,25 @@ class DesignWidthCheck {
     }
     // Chosen values shown before the entry (a multi-select's chips in its
     // groove): the field's words move with what is chosen, so the list's
-    // are not held to them.
-    final entryLead = lead(_global(control));
-    final chipsFirst = controls.any(
-      (c) =>
-          !identical(c, control) &&
-          _wordsOf(c).isNotEmpty &&
-          lead(_global(c)) < entryLead - tolerance,
-    );
+    // are not held to them. A chip is a control holding its words, or a
+    // tag's words beside a remove button that shows none (an x), on the
+    // entry's row.
+    final entry = _global(control);
+    final entryLead = lead(entry);
+    bool before(Rect r) => lead(r) < entryLead - tolerance;
+    bool onEntryRow(Rect r) => r.top < entry.bottom && r.bottom > entry.top;
+    final inControls = {for (final c in controls) ..._wordsOf(c)};
+    final tagWords = _wordsOf(whole).any((w) {
+      final r = _global(w);
+      return !inControls.contains(w) && before(r) && onEntryRow(r);
+    });
+    final chipsFirst = controls.any((c) {
+      if (identical(c, control)) return false;
+      final r = _global(c);
+      return before(r) &&
+          (_wordsOf(c).isNotEmpty || (tagWords && onEntryRow(r)));
+    });
     final fieldWords = chipsFirst ? null : _wordsStart(control, rtl);
-    final items = finder._controlsUnder(list)
-      ..sort((a, b) => _global(a).top.compareTo(_global(b).top));
     final listWords = items.isEmpty ? null : _wordsStart(items.first, rtl);
     if (fieldWords != null && listWords != null) {
       final words = (rtl ? -1 : 1) * (listWords - fieldWords);
@@ -3295,18 +3404,34 @@ class DesignWidthCheck {
         p,
   ];
 
-  // Where [control]'s words start, global x of their leading edge: its
-  // line's first character, or an empty entry's caret.
+  // Where [control]'s words start, global x of their leading edge: the
+  // leading end of its line's first row, or an empty entry's caret. Not
+  // its first character's: words in the other direction (Latin words in a
+  // right-to-left layout) start theirs at the row's far end.
   static double? _wordsStart(RenderBox control, bool rtl) {
     final line = labelLine(control);
     if (line == null) return null;
     final boxes = lineBoxes(
       line,
-      const TextSelection(baseOffset: 0, extentOffset: 1),
+      TextSelection(
+        baseOffset: 0,
+        extentOffset: math.max(1, lineText(line).length),
+      ),
     );
     double x;
     if (boxes.isNotEmpty) {
-      x = rtl ? boxes.first.right : boxes.first.left;
+      final first = boxes.first;
+      final row = [
+        for (final b in boxes)
+          if (b.top < first.bottom && b.bottom > first.top) b,
+      ];
+      x = rtl
+          ? row.map((b) => b.right).reduce(math.max)
+          : row.map((b) => b.left).reduce(math.min);
+      // An entry keeps its caret's margin (a 1 px gap and the caret's width)
+      // clear at its right edge, which is where a right-to-left entry's words
+      // start: measured from the text's own box, as no look sets it.
+      if (rtl && line is RenderEditable) x += 1 + line.cursorWidth;
     } else if (line is RenderEditable) {
       x = line.getLocalRectForCaret(const TextPosition(offset: 0)).left;
     } else {
@@ -3342,11 +3467,20 @@ class DesignWidthCheck {
       return null;
     }
 
+    bool inside(RenderObject n, RenderObject outer) {
+      for (var up = n.parent; up != null; up = up.parent) {
+        if (identical(up, outer)) return true;
+      }
+      return false;
+    }
+
     final fieldLayer = layerOf(box);
     var pastField = false;
     // Whether [n] is a popup: drawn straight into the overlay, with no
     // repaint boundary above it (nothing on a route's page is); or in a
-    // layer drawn after, over, the field's page.
+    // layer drawn after, over, the field's page. A layer that holds the
+    // field's page (a navigation frame's own route, its side bar drawn after
+    // its navigator) is not over it: what stands in it is the page's chrome.
     bool overlaid(RenderObject n) {
       var bare = true;
       for (RenderObject? up = n; up != null && bare; up = up.parent) {
@@ -3355,7 +3489,9 @@ class DesignWidthCheck {
       if (bare) return true;
       if (!pastField || fieldLayer == null) return false;
       final layer = layerOf(n);
-      return layer != null && !identical(layer, fieldLayer);
+      return layer != null &&
+          !identical(layer, fieldLayer) &&
+          !inside(box, layer);
     }
 
     // In paint order, so a box comes before the boxes inside it; each with
@@ -3370,9 +3506,17 @@ class DesignWidthCheck {
       }
       if (n is RenderBox && n.hasSize && !_isControl(n)) {
         final r = _global(n);
+        // Up to 32 from the field, or over its edge by a rule's width (a
+        // list that shares the field's rule, laid out with a negative gap),
+        // and across from it: a button beside the field's column (a
+        // dialog's) is no list of the field's.
         final near =
-            (r.top >= field.bottom - 1 && r.top - field.bottom <= 32) ||
-            (r.bottom <= field.top + 1 && field.top - r.bottom <= 32);
+            r.left < field.right - 1 &&
+            r.right > field.left + 1 &&
+            ((r.top >= field.bottom - _sharedRule &&
+                    r.top - field.bottom <= 32) ||
+                (r.bottom <= field.top + _sharedRule &&
+                    field.top - r.bottom <= 32));
         if (near && overlaid(n)) {
           held.add(n);
           popup[n] = true;
@@ -3396,13 +3540,6 @@ class DesignWidthCheck {
     }
 
     visit(root);
-    bool inside(RenderObject n, RenderObject outer) {
-      for (var up = n.parent; up != null; up = up.parent) {
-        if (identical(up, outer)) return true;
-      }
-      return false;
-    }
-
     final found = <RenderBox>[];
     // A face that paints one or that a look marked first; then a box whose
     // pixels stand off, round no face found (a wrapper laying a list out
@@ -4698,6 +4835,10 @@ bool _isControl(RenderObject n) {
   }
   return false;
 }
+
+// How far a list opened from a field may lie over the field's edge and
+// still be the list: the width of a rule they share.
+const double _sharedRule = 6;
 
 bool _paintsFace(RenderObject n) => switch (n) {
   RenderDecoratedBox(:final decoration) => _shows(decoration),
@@ -6245,6 +6386,43 @@ class _RowReader extends _DrawnReader {
     return o == null
         ? null
         : MatrixUtils.transformRect(b.getTransformTo(null), o);
+  }
+
+  // [drawn], the outline read inside [face] (both global), out to [face]'s
+  // edge on each side it stops short of over a lit band: a face lit from
+  // one corner (a groove under a light from the top left) shows its far
+  // sides in a highlight too faint to stand off, lighter than its ground.
+  // A darker band (a shadow cast inside the box) stays out.
+  Rect _litTo(Rect face, Rect drawn) {
+    final p = pixels;
+    if (p == null || boundary == null) return drawn;
+    final over = p.groundAround(_toBoundary(face), 2);
+    bool lit(Rect band) => p.lit(_toBoundary(band), over: over);
+    var (left, top, right, bottom) = (
+      drawn.left,
+      drawn.top,
+      drawn.right,
+      drawn.bottom,
+    );
+    if (drawn.left - face.left > 0.5 &&
+        lit(Rect.fromLTRB(face.left, drawn.top, drawn.left, drawn.bottom))) {
+      left = face.left;
+    }
+    if (face.right - drawn.right > 0.5 &&
+        lit(Rect.fromLTRB(drawn.right, drawn.top, face.right, drawn.bottom))) {
+      right = face.right;
+    }
+    if (drawn.top - face.top > 0.5 &&
+        lit(Rect.fromLTRB(drawn.left, face.top, drawn.right, drawn.top))) {
+      top = face.top;
+    }
+    if (face.bottom - drawn.bottom > 0.5 &&
+        lit(
+          Rect.fromLTRB(drawn.left, drawn.bottom, drawn.right, face.bottom),
+        )) {
+      bottom = face.bottom;
+    }
+    return Rect.fromLTRB(left, top, right, bottom);
   }
 
   // The shape [face] paints in, in its own coordinates: its decoration's,

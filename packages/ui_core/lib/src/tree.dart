@@ -6,6 +6,7 @@
 /// whether it is open.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -238,6 +239,28 @@ class DesignTree<T extends Object> extends StatefulWidget {
 
   @override
   State<DesignTree<T>> createState() => _DesignTreeState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignTreeController<T>>('controller', controller),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, DesignTreeItem<T> item)
+        >.has('rowBuilder', rowBuilder),
+      )
+      ..add(ObjectFlagProperty<String Function(T node)>.has('labelOf', labelOf))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
+      ..add(
+        ObjectFlagProperty<
+          String Function(int level, int position, int count)
+        >.has('levelHint', levelHint),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 class _DesignTreeState<T extends Object> extends State<DesignTree<T>> {

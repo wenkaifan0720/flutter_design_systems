@@ -169,6 +169,58 @@ void main() {
     expect(_ran, ['zoom']);
   });
 
+  testWidgets('in a long list, every move keeps the highlighted row in view, '
+      'round the ends too', (tester) async {
+    final many = [
+      for (var i = 0; i < 30; i++)
+        DesignCommand(label: 'Command $i', onPressed: () {}),
+    ];
+    await tester.pumpWidget(
+      harness(
+        DesignCommandPalette(
+          commands: many,
+          maxHeight: 200,
+          fieldBuilder: (context, field) => plainField(
+            key: _fieldKey,
+            controller: field.controller,
+            focusNode: field.focusNode,
+            onSubmitted: field.submit,
+          ),
+          itemBuilder: (context, command, states) {
+            _items[command.label] = states;
+            return SizedBox(
+              key: ValueKey(command.label),
+              height: command.label.endsWith('9') ? 64 : 44,
+              child: Text(command.label),
+            );
+          },
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    void inView(String label) {
+      final row = find.text(label);
+      expect(row, findsOneWidget, reason: '$label is built');
+      final list = tester.getRect(find.byType(ListView));
+      final rect = tester.getRect(find.byKey(ValueKey(label)));
+      expect(
+        rect.top >= list.top - 0.5 && rect.bottom <= list.bottom + 0.5,
+        isTrue,
+        reason: '$label ($rect) lies wholly in the list ($list)',
+      );
+    }
+
+    expect(_lit('Command 0'), isTrue);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+    await tester.pumpAndSettle();
+    expect(_lit('Command 29'), isTrue);
+    inView('Command 29');
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pumpAndSettle();
+    expect(_lit('Command 0'), isTrue);
+    inView('Command 0');
+  });
+
   testWidgets('inline (autofocus false) it waits to be reached: no focus '
       'taken on build, Tab reaches its field', (tester) async {
     await tester.pumpWidget(harness(_palette(autofocus: false)));
@@ -227,6 +279,55 @@ void main() {
     expect(find.text('# File'), findsNothing);
     await tester.testTextInput.receiveAction(TextInputAction.done);
     expect(_ran, ['theme']);
+  });
+
+  testWidgets('modal: a barrier builder paints the barrier in place of its '
+      'colour, which still closes it on a tap and says its label', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    late BuildContext app;
+    Widget dots(BuildContext context, Animation<double> animation) =>
+        FadeTransition(
+          opacity: animation,
+          child: const ColoredBox(
+            key: ValueKey('dots'),
+            color: Color(0x330000FF),
+            child: Text('dots'),
+          ),
+        );
+    final DesignBarrierBuilder builder = dots;
+    await tester.pumpWidget(
+      harness(
+        Builder(
+          builder: (context) {
+            app = context;
+            return const SizedBox.expand();
+          },
+        ),
+      ),
+    );
+    unawaited(
+      showDesignCommandPalette(
+        context: app,
+        palette: (run) => _palette(onSelected: run),
+        barrierBuilder: builder,
+        surfaceBuilder: (context, palette) =>
+            SizedBox(width: 400, child: palette),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('New file'), findsOneWidget);
+    expect(find.byKey(const ValueKey('dots')), findsOneWidget);
+    final route = ModalRoute.of(tester.element(find.text('New file')))!;
+    expect(route.barrierColor, isNull, reason: 'the builder paints it');
+    expect(find.bySemanticsLabel('Close commands'), findsOneWidget);
+    expect(find.bySemanticsLabel('dots'), findsNothing);
+    await tester.tapAt(const Offset(20, 580));
+    await tester.pumpAndSettle();
+    expect(find.text('New file'), findsNothing);
+    expect(find.byKey(const ValueKey('dots')), findsNothing);
+    semantics.dispose();
   });
 
   testWidgets('modal: Ctrl+K opens it, Escape closes it and focus returns; '

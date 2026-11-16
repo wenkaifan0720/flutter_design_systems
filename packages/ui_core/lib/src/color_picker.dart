@@ -6,6 +6,7 @@
 /// [DesignColorController.hex] and [DesignColorController.setHex].
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -144,7 +145,7 @@ class DesignColorArea extends StatefulWidget {
     this.thumbSize = const Size(44, 44),
     this.focusNode,
     this.autofocus = false,
-  });
+  }) : assert(step > 0);
 
   /// The colour. The caller makes it, keeps it across rebuilds
   /// and disposes it.
@@ -168,14 +169,59 @@ class DesignColorArea extends StatefulWidget {
   /// The thumb's target.
   final Size thumbSize;
 
-  /// Its focus. The caller's, who disposes it; null: its own.
+  /// Its focus.
+  ///
+  /// {@macro design.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro design.autofocus}
   final bool autofocus;
 
   @override
   State<DesignColorArea> createState() => _DesignColorAreaState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignColorController>('controller', controller),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, DesignColorAreaDetails area)
+        >.has('builder', builder),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, DesignColorAreaDetails area)
+        >.has('thumbBuilder', thumbBuilder),
+      )
+      ..add(DoubleProperty('step', step, defaultValue: 0.01))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Size>(
+          'thumbSize',
+          thumbSize,
+          defaultValue: const Size(44, 44),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _DesignColorAreaState extends State<DesignColorArea> {
@@ -338,14 +384,64 @@ class DesignColorSlider extends StatefulWidget {
   /// The thumb's target.
   final Size thumbSize;
 
-  /// Its focus. The caller's, who disposes it; null: its own.
+  /// Its focus.
+  ///
+  /// {@macro design.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro design.autofocus}
   final bool autofocus;
 
   @override
   State<DesignColorSlider> createState() => _DesignColorSliderState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignColorController>('controller', controller),
+      )
+      ..add(EnumProperty<DesignColorChannel>('channel', channel))
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(
+            BuildContext context,
+            DesignColorChannel channel,
+            HSVColor color,
+          )
+        >.has('trackBuilder', trackBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<DesignHandleBuilder>.has(
+          'thumbBuilder',
+          thumbBuilder,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Size>(
+          'thumbSize',
+          thumbSize,
+          defaultValue: const Size(44, 44),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'autofocus',
+          value: autofocus,
+          ifTrue: 'autofocus',
+          defaultValue: false,
+        ),
+      );
+  }
 }
 
 class _DesignColorSliderState extends State<DesignColorSlider> {
@@ -449,7 +545,7 @@ class DesignColorPicker extends StatelessWidget {
     this.showAlpha = false,
     this.areaHeight = 180,
     this.layoutBuilder,
-  });
+  }) : assert(areaHeight > 0);
 
   /// The colour. The caller makes it, keeps it across rebuilds
   /// and disposes it.
@@ -516,5 +612,53 @@ class DesignColorPicker extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: parts,
         );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignColorController>('controller', controller),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, DesignColorAreaDetails area)
+        >.has('areaBuilder', areaBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, DesignColorAreaDetails area)
+        >.has('areaThumbBuilder', areaThumbBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(
+            BuildContext context,
+            DesignColorChannel channel,
+            HSVColor color,
+          )
+        >.has('trackBuilder', trackBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<DesignHandleBuilder>.has(
+          'thumbBuilder',
+          thumbBuilder,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'showAlpha',
+          value: showAlpha,
+          ifTrue: 'showAlpha',
+          defaultValue: false,
+        ),
+      )
+      ..add(DoubleProperty('areaHeight', areaHeight, defaultValue: 180))
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, List<Widget> parts)
+        >.has('layoutBuilder', layoutBuilder),
+      );
   }
 }

@@ -1,10 +1,12 @@
 /// A multi-select tag input, headless: chosen values as tags beside a text
-/// field that suggests more as you type (the combobox's keys: arrows, Enter,
-/// Escape), free text made into a tag on Enter or a separator (a pasted
+/// field that suggests more as you type (the combobox's keys: arrows that
+/// wrap, pass over a disabled suggestion and open a closed list without
+/// moving, Enter, Escape), free text made into a tag on Enter or a separator (a pasted
 /// "a, b, c" makes three), Backspace on an empty field and Left at its start
 /// to step onto the tags, Backspace or Delete on a tag to remove it.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -70,6 +72,8 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
     required this.tagBuilder,
     this.options = const [],
     this.search,
+    this.isOptionEnabled,
+    this.highlightFollowsPointer = false,
     this.displayStringForOption = _string,
     this.onCreate,
     this.layoutBuilder,
@@ -81,7 +85,8 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
     this.optionsMaxHeight = 300,
     this.semanticLabel,
     this.deleteLabel,
-  });
+  }) : assert(maxTags == null || maxTags > 0),
+       assert(optionsMaxHeight > 0);
 
   /// The chosen values, in order.
   final List<T> values;
@@ -104,6 +109,16 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
 
   /// Finds suggestions for a query, in place of filtering [options].
   final DesignOptionSearch<T>? search;
+
+  /// Whether a suggestion can be taken; null: all can. A disabled one shows
+  /// [WidgetState.disabled]; the highlight passes over it, and neither a tap
+  /// nor Enter takes it.
+  final bool Function(T option)? isOptionEnabled;
+
+  /// Whether the pointer moves the suggestions' highlight, as
+  /// [DesignCombobox.highlightFollowsPointer]; off: two places, the
+  /// pointer's [WidgetState.hovered] and the keys' [WidgetState.focused].
+  final bool highlightFollowsPointer;
 
   /// A value's text.
   final String Function(T value) displayStringForOption;
@@ -145,6 +160,97 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
 
   @override
   State<DesignTagInput<T>> createState() => _DesignTagInputState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('values', values))
+      ..add(
+        ObjectFlagProperty<ValueChanged<List<T>>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<DesignComboboxFieldBuilder>.has(
+          'fieldBuilder',
+          fieldBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<DesignOptionBuilder<T>>.has(
+          'optionBuilder',
+          optionBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<DesignTagBuilder<T>>.has('tagBuilder', tagBuilder),
+      )
+      ..add(
+        IterableProperty<T>('options', options, defaultValue: const <Never>[]),
+      )
+      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(
+        ObjectFlagProperty<bool Function(T option)>.has(
+          'isOptionEnabled',
+          isOptionEnabled,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'highlightFollowsPointer',
+          value: highlightFollowsPointer,
+          ifTrue: 'highlightFollowsPointer',
+          defaultValue: false,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(T value)>.has(
+          'displayStringForOption',
+          displayStringForOption,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<T? Function(String text)>.has('onCreate', onCreate),
+      )
+      ..add(
+        ObjectFlagProperty<DesignTagLayoutBuilder>.has(
+          'layoutBuilder',
+          layoutBuilder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<DesignListSurfaceBuilder>.has(
+          'surfaceBuilder',
+          surfaceBuilder,
+        ),
+      )
+      ..add(IntProperty('maxTags', maxTags, defaultValue: null))
+      ..add(
+        IterableProperty<String>(
+          'separators',
+          separators,
+          defaultValue: const [','],
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DoubleProperty('optionsMaxHeight', optionsMaxHeight, defaultValue: 300),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(StringProperty('deleteLabel', deleteLabel, defaultValue: null));
+  }
 }
 
 String _string(Object value) => value.toString();
@@ -153,6 +259,7 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
   TextEditingController? _ownController;
   FocusNode? _ownFocus;
   final List<FocusNode> _tagNodes = [];
+  final DesignListKeys _keys = DesignListKeys();
   int? _focusedTag;
   bool _picked = false;
 
@@ -231,17 +338,22 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
     }
   }
 
-  /// A value of [text]: a suggestion it names exactly, else [onCreate]'s.
+  /// A value of [text]: a suggestion it names exactly, else [onCreate]'s;
+  /// null for a disabled suggestion, named or made, so neither a separator,
+  /// a paste nor Enter adds one.
   T? _valueOf(String text) {
     final t = text.trim();
     if (t.isEmpty) return null;
     for (final option in widget.options) {
       if (widget.displayStringForOption(option).toLowerCase() ==
           t.toLowerCase()) {
-        return option;
+        return _enabled(option) ? option : null;
       }
     }
-    return widget.onCreate?.call(t);
+    final made = widget.onCreate?.call(t);
+    return made != null && widget.options.contains(made) && !_enabled(made)
+        ? null
+        : made;
   }
 
   void _textChanged() {
@@ -276,7 +388,7 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
 
   void _submit(VoidCallback pick) {
     _picked = false;
-    pick();
+    if (!_keys.submit()) pick();
     if (_picked) return;
     final value = _valueOf(_controller.text);
     if (value != null && !_has(value) && !_full) {
@@ -399,14 +511,20 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
     return found.where((o) => !_has(o));
   }
 
+  bool _enabled(T option) => widget.isOptionEnabled?.call(option) ?? true;
+
   @override
   Widget build(BuildContext context) {
-    final field = RawAutocomplete<T>(
+    final field = RawAutocomplete<Object>(
       textEditingController: _controller,
       focusNode: _field,
       optionsBuilder: _find,
-      displayStringForOption: widget.displayStringForOption,
-      onSelected: (option) {
+      displayStringForOption: (option) => widget.displayStringForOption(
+        (option is DesignPick ? option.option : option) as T,
+      ),
+      onSelected: (picked) {
+        final option = (picked is DesignPick ? picked.option : picked) as T;
+        if (!_enabled(option)) return;
         _picked = true;
         _add(option);
         // After the autocomplete has set the text to the option's: clear it,
@@ -423,36 +541,56 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
           skipTraversal: true,
           includeSemantics: false,
           onKeyEvent: _fieldKey,
-          child: widget.fieldBuilder(
-            context,
-            DesignComboboxField(
-              controller: controller,
-              focusNode: focusNode,
-              submit: () => _submit(onSubmitted),
+          // ui_core's keys over the autocomplete's, as DesignCombobox's.
+          child: _keys.field(
+            widget.fieldBuilder(
+              context,
+              DesignComboboxField(
+                controller: controller,
+                focusNode: focusNode,
+                submit: () => _submit(onSubmitted),
+              ),
             ),
           ),
         );
         final tags = [
           for (var i = 0; i < widget.values.length; i++) _tag(context, i),
         ];
-        return widget.layoutBuilder?.call(context, tags, field) ??
-            Wrap(
-              spacing: 4,
-              runSpacing: 4,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [...tags, field],
-            );
+        // Explicit child nodes, as DesignCombobox's: the OverlayPortal's
+        // annotation would otherwise stretch the field's node over the tags.
+        return Semantics(
+          explicitChildNodes: true,
+          child:
+              widget.layoutBuilder?.call(context, tags, field) ??
+              Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [...tags, field],
+              ),
+        );
       },
-      optionsViewBuilder: (context, onSelected, options) => DesignOptionList<T>(
-        options: options.toList(),
-        onSelected: onSelected,
-        value: null,
-        displayStringForOption: widget.displayStringForOption,
-        optionBuilder: widget.optionBuilder,
-        surfaceBuilder: widget.surfaceBuilder,
-        maxHeight: widget.optionsMaxHeight,
-        semanticLabel: widget.semanticLabel,
-      ),
+      optionsViewBuilder: (context, onSelected, options) {
+        final shown = options.cast<T>().toList();
+        return DesignOptionList<T>(
+          keys: _keys,
+          options: shown,
+          start: shown.indexWhere(_enabled),
+          onSelected: (option) {
+            if (!_enabled(option)) return;
+            _keys.closed();
+            onSelected(DesignPick(option));
+          },
+          value: null,
+          isOptionEnabled: widget.isOptionEnabled,
+          highlightFollowsPointer: widget.highlightFollowsPointer,
+          displayStringForOption: widget.displayStringForOption,
+          optionBuilder: widget.optionBuilder,
+          surfaceBuilder: widget.surfaceBuilder,
+          maxHeight: widget.optionsMaxHeight,
+          semanticLabel: widget.semanticLabel,
+        );
+      },
     );
     return field;
   }
