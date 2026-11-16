@@ -1,0 +1,38 @@
+## 0.1.0
+
+- First release. Civic, the plain look of public services, on ui_core: the theme by day and by night, Atkinson
+  Hyperlegible Next and Mono (with Noto Sans Arabic for right-to-left pages), and the parts a service is built from:
+  buttons that say what happens next, links and the back link, breadcrumbs, text fields sized for their answers, the
+  password field, the date input, the file upload, radios with hints, checkboxes, the select, the combobox and the
+  switch under a fieldset's question, the search field, the error summary, the answers summary and its card, list
+  rows and tags, the table, the timeline, pagination, the inset rule, the warning, the details reveal, the
+  confirmation panel and the banner, the empty, loading and error states, the top bar, the navigation bar, the side
+  navigation and the tabs, the page with its skip link, the dialog and the toast.
+- An app below 1024 wide, the service's site from it (`CivicLayout.isApp`). In an app: the top bar's way back and the
+  page's place (`CivicTopBar.backButton`), lists as rows on cards (`CivicListGroup`, `CivicListRow` with its
+  chevron, its `endIcon` and its `selected` mark), radios, checkboxes and the answers summary on cards by themselves,
+  the page's one act kept at its foot while the page scrolls and above the keyboard (`CivicPageBody(action:)`), the
+  places along a phone's foot and in a rail on a tablet, a tablet's page on a centred measure. On the site: the
+  masthead, the side navigation and one measured column.
+- White cards on a cool ground (`CivicThemeData.ground`), no strokes round them, corners of 4 on a control and 8 on a
+  card; the strong ink edge is a field's alone, a secondary button the action's tint, and only an open list and a
+  dialog cast a soft shadow.
+- An app's frame: `CivicHost` round the app, `CivicShellFrame` for its places (along a phone's foot, in a rail from
+  600 wide, down the start under the service's name from 1024) and its one main action, `CivicScreen` for a page,
+  and `CivicPage` and `CivicSheetPage` for a router's pushed pages and raised tasks.
+- `CivicPageRoute`, Civic's page change in any app, and `CivicPageTransitions`, the same for a Material theme on every
+  platform, which `CivicHost` puts in place, and `civicPageTransitions`, the same as a map an app on Flutter's own
+  `MaterialApp` puts in its `ThemeData`: nothing travels. The page's ground covers the page left, then the new
+  page's words fade in; going back is the same the other way. On iOS a page also pops with a swipe from the screen's
+  leading edge (ui_core's `DesignSwipeBackPageTransitionsBuilder` round Civic's change); Android's back pops a page
+  and closes an open list or dialog first.
+- A wide window keeps a service's pages in one centred frame: the top bar's words stand still from page to page,
+  `CivicScaffold`'s side navigation starts its places under them (`CivicLayout.navigationOffset`), and every page ends
+  where the frame ends. The side navigation is words alone; the navigation bar keeps its glyphs.
+- The combobox's box keeps the focus after Enter takes an answer, and typing goes on in it, in a browser too (it
+  takes Enter in `onEditingComplete`, with no `onSubmitted`); a search field and a submitting text field give the
+  focus up.
+- `CivicFormat` writes dates, times and counts in plain words ("3 November 2026", "5:30pm", "today").
+- Make it yours: your brand's colour (held to 7:1 against the page, by day and by night) and face through
+  `CivicThemeData.from`, each part's slot in the theme, or one part's `style:`. The yellow focus over its ink bar, the
+  fields' 2 pt edges and the 48 and 24 tap targets stay the look's.

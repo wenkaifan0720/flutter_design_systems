@@ -1,0 +1,58 @@
+name: civic_ui
+description: >-
+  A Flutter design system for public services: one thing per page, large type, a heavy yellow focus, errors said in words, answers checked before they are sent.
+version: 0.1.0
+homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/civic_ui
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/civic_ui
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.2.0
+  material_ui: ^1.9.0
+  cupertino_ui: ^1.0.0
+  lucide_icons_flutter: ">=3.1.25 <5.0.0"
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  leak_tracker_flutter_testing: any
+
+flutter:
+  fonts:
+
+
+
+    - family: AtkinsonNext
+      fonts:
+        - asset: assets/fonts/AtkinsonNext-400.ttf
+          weight: 400
+        - asset: assets/fonts/AtkinsonNext-400Italic.ttf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/AtkinsonNext-700.ttf
+          weight: 700
+    - family: AtkinsonMono
+      fonts:
+        - asset: assets/fonts/AtkinsonMono-400.ttf
+          weight: 400
+        - asset: assets/fonts/AtkinsonMono-700.ttf
+          weight: 700
+    - family: NotoSansArabic
+      fonts:
+        - asset: assets/fonts/NotoSansArabic-400.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSansArabic-700.ttf
+          weight: 700
