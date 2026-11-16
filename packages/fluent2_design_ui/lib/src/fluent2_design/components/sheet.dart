@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialLocalizations, MaterialType, ModalBottomSheetRoute;
 import 'package:flutter/widgets.dart';
@@ -65,6 +66,12 @@ class Fluent2SheetHead extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('title', title));
   }
 }
 
@@ -211,6 +218,17 @@ class Fluent2SheetShell extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(FlagProperty('close', value: close, ifFalse: 'close: false'))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onClose', onClose))
+      ..add(DiagnosticsProperty<Key>('closeKey', closeKey, defaultValue: null))
+      ..add(FlagProperty('safe', value: safe, ifTrue: 'safe'));
+  }
 }
 
 /// Where a [Fluent2SheetCard] stands.
@@ -226,22 +244,29 @@ enum _SheetPlace { bottom, dialog, side }
 /// places one.
 class Fluent2SheetCard extends StatelessWidget {
   /// A bottom sheet's card on a phone, a dialog's on the desktop.
-  const Fluent2SheetCard({required this.child, super.key}) : _place = null;
+  const Fluent2SheetCard({required this.child, this.style, super.key})
+    : _place = null;
 
   /// A bottom sheet's card: its top corners rounded, shadow28.
-  const Fluent2SheetCard.bottom({required this.child, super.key})
+  const Fluent2SheetCard.bottom({required this.child, this.style, super.key})
     : _place = _SheetPlace.bottom;
 
   /// A centred dialog's card: all four corners rounded, shadow64.
-  const Fluent2SheetCard.dialog({required this.child, super.key})
+  const Fluent2SheetCard.dialog({required this.child, this.style, super.key})
     : _place = _SheetPlace.dialog;
 
   /// A side drawer's card at the reading end, square against the window.
-  const Fluent2SheetCard.side({required this.child, super.key})
+  const Fluent2SheetCard.side({required this.child, this.style, super.key})
     : _place = _SheetPlace.side;
 
   /// What stands on the card.
   final Widget child;
+
+  /// This sheet's own look, slot by slot, over its component theme
+  /// ([Fluent2ThemeData.bottomSheetTheme] on a phone,
+  /// [Fluent2ThemeData.dialogTheme] where it stands as a dialog): the
+  /// slots its doc names.
+  final Fluent2Style? style;
 
   final _SheetPlace? _place;
 
@@ -256,8 +281,10 @@ class Fluent2SheetCard extends StatelessWidget {
     // The theme's sheet or dialog style lends its corner to the sheet's free corners; the corners at
     // the window's edge stay square.
     final look = Fluent2StyleOf([
+      style,
       at == _SheetPlace.dialog ? t.dialogTheme : t.bottomSheetTheme,
     ], const {});
+
     final r = Radius.circular(
       fluent2CornerOf(
         look.shape,
@@ -292,6 +319,14 @@ class Fluent2SheetCard extends StatelessWidget {
           child: _OnCard(child: child),
         ),
       ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
     );
   }
 }
@@ -388,10 +423,7 @@ class Fluent2Sheet extends StatelessWidget {
           reverseDuration: Fluent2Motion.normal,
           reverseCurve: Fluent2Motion.accelerateMid,
         )
-      : const AnimationStyle(
-          duration: Duration.zero,
-          reverseDuration: Duration.zero,
-        );
+      : AnimationStyle.noAnimation;
 
   /// The tallest a sheet stands: 90% of a phone's screen, the window less
   /// 48 at each edge on the desktop.
@@ -461,7 +493,12 @@ class Fluent2Sheet extends StatelessWidget {
         elevation: 0,
         isScrollControlled: true,
         sheetAnimationStyle: motion,
-        constraints: BoxConstraints(maxHeight: most),
+        // A tablet's sheet stands no wider than the desktop's dialog, as
+        // showFluent2BottomSheet's, centred over the window's foot.
+        constraints: BoxConstraints(
+          maxHeight: most,
+          maxWidth: Fluent2ChromeMetrics.dialogWidth,
+        ),
         builder: (sheetContext) => Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
@@ -502,17 +539,16 @@ class Fluent2Sheet extends StatelessWidget {
           transitionBuilder: (context, animation, _, child) => SlideTransition(
             position:
                 Tween<Offset>(
-                  begin: Offset(
-                    Directionality.of(context) == TextDirection.rtl ? -1 : 1,
-                    0,
-                  ),
-                  end: Offset.zero,
-                ).animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Fluent2Motion.decelerateMid,
-                  ),
-                ),
+                      begin: Offset(
+                        Directionality.of(context) == TextDirection.rtl
+                            ? -1
+                            : 1,
+                        0,
+                      ),
+                      end: Offset.zero,
+                    )
+                    .chain(CurveTween(curve: Fluent2Motion.decelerateMid))
+                    .animate(animation),
             child: child,
           ),
           pageBuilder: (sheetContext, _, _) => Align(
@@ -549,7 +585,10 @@ class Fluent2Sheet extends StatelessWidget {
       elevation: 0,
       isScrollControlled: true,
       sheetAnimationStyle: motion,
-      constraints: BoxConstraints(maxHeight: most),
+      constraints: BoxConstraints(
+        maxHeight: most,
+        maxWidth: Fluent2ChromeMetrics.dialogWidth,
+      ),
       builder: (sheetContext) {
         final keyboard = MediaQuery.viewInsetsOf(sheetContext).bottom;
         return Padding(
@@ -563,6 +602,14 @@ class Fluent2Sheet extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onClose', onClose));
   }
 }
 

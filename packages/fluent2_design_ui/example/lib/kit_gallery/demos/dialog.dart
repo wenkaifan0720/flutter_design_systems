@@ -18,23 +18,23 @@ Widget kitDialogDemo(Brightness brightness) => kitScreen(
         Builder(
           builder: (context) => kitRow([
             Fluent2Button(
-              'Delete file',
+              kitW('Delete file'),
               icon: Fluent2Icons.delete,
               onPressed: () => Fluent2Dialog.confirm(
                 context,
-                title: 'Delete Launch plan.docx?',
-                message: 'It moves to the recycle bin for 30 days.',
-                confirmLabel: 'Delete',
+                title: kitW('Delete Launch plan.docx?'),
+                message: kitW('It moves to the recycle bin for 30 days.'),
+                confirmLabel: kitW('Delete'),
               ),
             ),
             Fluent2Button(
-              'Leave meeting',
+              kitW('Leave meeting'),
               icon: Fluent2Icons.arrowExit,
               onPressed: () => Fluent2Dialog.confirm(
                 context,
-                title: 'Leave Design review?',
-                message: 'The meeting goes on without you.',
-                confirmLabel: 'Leave',
+                title: kitW('Leave Design review?'),
+                message: kitW('The meeting goes on without you.'),
+                confirmLabel: kitW('Leave'),
               ),
             ),
           ]),
@@ -53,12 +53,12 @@ Widget kitDialogDemo(Brightness brightness) => kitScreen(
 
 /// Delete a file: Cancel beside Delete in the brand.
 Widget kitSpecimenDialogConfirm() => Fluent2Dialog(
-  title: 'Delete Launch plan.docx?',
-  content: const Text('It moves to the recycle bin for 30 days.'),
+  title: kitW('Delete Launch plan.docx?'),
+  content: Text(kitW('It moves to the recycle bin for 30 days.')),
   actions: [
-    Fluent2Button('Cancel', onPressed: () {}),
+    Fluent2Button(kitW('Cancel'), onPressed: () {}),
     Fluent2Button(
-      'Delete',
+      kitW('Delete'),
       appearance: Fluent2ButtonAppearance.primary,
       onPressed: () {},
     ),
@@ -68,13 +68,13 @@ Widget kitSpecimenDialogConfirm() => Fluent2Dialog(
 /// Unsaved changes: three acts, the primary last, its other answer beside
 /// it and Cancel furthest (last in a phone's stack).
 Widget kitSpecimenDialogChoice() => Fluent2Dialog(
-  title: 'Save changes to Q4 notes?',
-  content: const Text('Your edits since 14:20 are not saved yet.'),
+  title: kitW('Save changes to Q4 notes?'),
+  content: Text(kitW('Your edits since 14:20 are not saved yet.')),
   actions: [
-    Fluent2Button('Cancel', onPressed: () {}),
-    Fluent2Button("Don't save", onPressed: () {}),
+    Fluent2Button(kitW('Cancel'), onPressed: () {}),
+    Fluent2Button(kitW("Don't save"), onPressed: () {}),
     Fluent2Button(
-      'Save',
+      kitW('Save'),
       appearance: Fluent2ButtonAppearance.primary,
       onPressed: () {},
     ),
@@ -83,11 +83,11 @@ Widget kitSpecimenDialogChoice() => Fluent2Dialog(
 
 /// One act and nothing to decide.
 Widget kitSpecimenDialogAck() => Fluent2Dialog(
-  title: 'Invite sent',
-  content: const Text('Priya Raman can join Northwind from her email.'),
+  title: kitW('Invite sent'),
+  content: Text(kitW('Priya Raman can join Northwind from her email.')),
   actions: [
     Fluent2Button(
-      'Done',
+      kitW('Done'),
       appearance: Fluent2ButtonAppearance.primary,
       onPressed: () {},
     ),

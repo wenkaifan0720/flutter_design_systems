@@ -1,7 +1,7 @@
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../theme.dart';
@@ -12,7 +12,9 @@ import '../theme.dart';
 /// the page behind blurred, a luminosity layer and a tint over it, and a
 /// fine noise. One `BackdropFilter` under its fills, cheap enough for a bar
 /// over a long list; [solid] stands its opaque fallback in for the blur (on
-/// a media ground, under a test, where a page says nothing should blur).
+/// a media ground, under a test, where a page says nothing should blur), as
+/// every acrylic does under a theme with
+/// [Fluent2ThemeData.solidAcrylic].
 ///
 /// ```dart
 /// Fluent2Acrylic(child: Row(children: commands))
@@ -39,7 +41,7 @@ class Fluent2Acrylic extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final a = t.acrylic;
-    if (solid) {
+    if (solid || t.solidAcrylic) {
       return ClipRRect(
         borderRadius: radius,
         child: ColoredBox(color: a.fallback, child: child),
@@ -60,6 +62,20 @@ class Fluent2Acrylic extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<BorderRadiusGeometry>(
+          'radius',
+          radius,
+          defaultValue: BorderRadius.zero,
+        ),
+      )
+      ..add(FlagProperty('solid', value: solid, ifTrue: 'solid'));
   }
 }
 

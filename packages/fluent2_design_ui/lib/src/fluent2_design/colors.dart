@@ -3,7 +3,8 @@
 // (looks/fluent/tools, gen_dart.ts over data/presets.json); never edit by hand.
 // The classes: one field per Fluent colour token, named as Fluent names it without its `color`.
 
-import 'package:flutter/painting.dart' show Color;
+import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart' show Color, ColorProperty;
 
 /// Every Fluent 2 alias colour of one preset in one appearance: the neutral
 /// layers (`neutralBackground1` to `8`, the subtle and transparent
@@ -1107,7 +1108,11 @@ final class Fluent2Colors {
     'statusDangerBackground3Pressed': statusDangerBackground3Pressed,
   };
 
-  /// The colours [map] names, every field required.
+  /// The colours [map] names, every field required: an expert's escape that
+  /// sets Fluent's alias tokens raw. It holds no contrast (an ink may fall
+  /// below 4.5:1 on its ground, a stroke below 3:1) and keeps no brand ramp
+  /// in step; `Fluent2ThemeData.from(brand:)` builds a brand's colours with
+  /// contrast held, and is the way to rebrand.
   factory Fluent2Colors.fromMap(Map<String, Color> map) => Fluent2Colors(
     neutralForeground1: map['neutralForeground1']!,
     neutralForeground1Hover: map['neutralForeground1Hover']!,
@@ -1344,7 +1349,7 @@ final class Fluent2Colors {
 /// borders, as `@fluentui/tokens` names them without `color`
 /// (`colorPaletteRedBackground2` is [paletteRedBackground2]). The avatars'
 /// colours, the badges' and the tags' read them; the same in every preset.
-final class Fluent2SharedColors {
+final class Fluent2SharedColors with Diagnosticable {
   /// A set of Fluent's shared palette colours, one per token.
   const Fluent2SharedColors({
     required this.paletteRedBackground1,
@@ -1948,4 +1953,387 @@ final class Fluent2SharedColors {
 
   /// `colorPaletteAnchorBorderActive`.
   final Color paletteAnchorBorderActive;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('paletteRedBackground1', paletteRedBackground1))
+      ..add(ColorProperty('paletteRedBackground2', paletteRedBackground2))
+      ..add(ColorProperty('paletteRedBackground3', paletteRedBackground3))
+      ..add(ColorProperty('paletteRedForeground1', paletteRedForeground1))
+      ..add(ColorProperty('paletteRedForeground2', paletteRedForeground2))
+      ..add(ColorProperty('paletteRedForeground3', paletteRedForeground3))
+      ..add(ColorProperty('paletteRedBorderActive', paletteRedBorderActive))
+      ..add(ColorProperty('paletteRedBorder1', paletteRedBorder1))
+      ..add(ColorProperty('paletteRedBorder2', paletteRedBorder2))
+      ..add(ColorProperty('paletteGreenBackground1', paletteGreenBackground1))
+      ..add(ColorProperty('paletteGreenBackground2', paletteGreenBackground2))
+      ..add(ColorProperty('paletteGreenBackground3', paletteGreenBackground3))
+      ..add(ColorProperty('paletteGreenForeground1', paletteGreenForeground1))
+      ..add(ColorProperty('paletteGreenForeground2', paletteGreenForeground2))
+      ..add(ColorProperty('paletteGreenForeground3', paletteGreenForeground3))
+      ..add(ColorProperty('paletteGreenBorderActive', paletteGreenBorderActive))
+      ..add(ColorProperty('paletteGreenBorder1', paletteGreenBorder1))
+      ..add(ColorProperty('paletteGreenBorder2', paletteGreenBorder2))
+      ..add(
+        ColorProperty(
+          'paletteDarkOrangeBackground1',
+          paletteDarkOrangeBackground1,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteDarkOrangeBackground2',
+          paletteDarkOrangeBackground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteDarkOrangeBackground3',
+          paletteDarkOrangeBackground3,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteDarkOrangeForeground1',
+          paletteDarkOrangeForeground1,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteDarkOrangeForeground2',
+          paletteDarkOrangeForeground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteDarkOrangeForeground3',
+          paletteDarkOrangeForeground3,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteDarkOrangeBorderActive',
+          paletteDarkOrangeBorderActive,
+        ),
+      )
+      ..add(ColorProperty('paletteDarkOrangeBorder1', paletteDarkOrangeBorder1))
+      ..add(ColorProperty('paletteDarkOrangeBorder2', paletteDarkOrangeBorder2))
+      ..add(ColorProperty('paletteYellowBackground1', paletteYellowBackground1))
+      ..add(ColorProperty('paletteYellowBackground2', paletteYellowBackground2))
+      ..add(ColorProperty('paletteYellowBackground3', paletteYellowBackground3))
+      ..add(ColorProperty('paletteYellowForeground1', paletteYellowForeground1))
+      ..add(ColorProperty('paletteYellowForeground2', paletteYellowForeground2))
+      ..add(ColorProperty('paletteYellowForeground3', paletteYellowForeground3))
+      ..add(
+        ColorProperty('paletteYellowBorderActive', paletteYellowBorderActive),
+      )
+      ..add(ColorProperty('paletteYellowBorder1', paletteYellowBorder1))
+      ..add(ColorProperty('paletteYellowBorder2', paletteYellowBorder2))
+      ..add(ColorProperty('paletteBerryBackground1', paletteBerryBackground1))
+      ..add(ColorProperty('paletteBerryBackground2', paletteBerryBackground2))
+      ..add(ColorProperty('paletteBerryBackground3', paletteBerryBackground3))
+      ..add(ColorProperty('paletteBerryForeground1', paletteBerryForeground1))
+      ..add(ColorProperty('paletteBerryForeground2', paletteBerryForeground2))
+      ..add(ColorProperty('paletteBerryForeground3', paletteBerryForeground3))
+      ..add(ColorProperty('paletteBerryBorderActive', paletteBerryBorderActive))
+      ..add(ColorProperty('paletteBerryBorder1', paletteBerryBorder1))
+      ..add(ColorProperty('paletteBerryBorder2', paletteBerryBorder2))
+      ..add(
+        ColorProperty(
+          'paletteLightGreenBackground1',
+          paletteLightGreenBackground1,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteLightGreenBackground2',
+          paletteLightGreenBackground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteLightGreenBackground3',
+          paletteLightGreenBackground3,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteLightGreenForeground1',
+          paletteLightGreenForeground1,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteLightGreenForeground2',
+          paletteLightGreenForeground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteLightGreenForeground3',
+          paletteLightGreenForeground3,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteLightGreenBorderActive',
+          paletteLightGreenBorderActive,
+        ),
+      )
+      ..add(ColorProperty('paletteLightGreenBorder1', paletteLightGreenBorder1))
+      ..add(ColorProperty('paletteLightGreenBorder2', paletteLightGreenBorder2))
+      ..add(
+        ColorProperty('paletteMarigoldBackground1', paletteMarigoldBackground1),
+      )
+      ..add(
+        ColorProperty('paletteMarigoldBackground2', paletteMarigoldBackground2),
+      )
+      ..add(
+        ColorProperty('paletteMarigoldBackground3', paletteMarigoldBackground3),
+      )
+      ..add(
+        ColorProperty('paletteMarigoldForeground1', paletteMarigoldForeground1),
+      )
+      ..add(
+        ColorProperty('paletteMarigoldForeground2', paletteMarigoldForeground2),
+      )
+      ..add(
+        ColorProperty('paletteMarigoldForeground3', paletteMarigoldForeground3),
+      )
+      ..add(
+        ColorProperty(
+          'paletteMarigoldBorderActive',
+          paletteMarigoldBorderActive,
+        ),
+      )
+      ..add(ColorProperty('paletteMarigoldBorder1', paletteMarigoldBorder1))
+      ..add(ColorProperty('paletteMarigoldBorder2', paletteMarigoldBorder2))
+      ..add(
+        ColorProperty(
+          'paletteRedForegroundInverted',
+          paletteRedForegroundInverted,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteGreenForegroundInverted',
+          paletteGreenForegroundInverted,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteYellowForegroundInverted',
+          paletteYellowForegroundInverted,
+        ),
+      )
+      ..add(
+        ColorProperty('paletteDarkRedBackground2', paletteDarkRedBackground2),
+      )
+      ..add(
+        ColorProperty('paletteDarkRedForeground2', paletteDarkRedForeground2),
+      )
+      ..add(
+        ColorProperty('paletteDarkRedBorderActive', paletteDarkRedBorderActive),
+      )
+      ..add(
+        ColorProperty(
+          'paletteCranberryBackground2',
+          paletteCranberryBackground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteCranberryForeground2',
+          paletteCranberryForeground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteCranberryBorderActive',
+          paletteCranberryBorderActive,
+        ),
+      )
+      ..add(
+        ColorProperty('palettePumpkinBackground2', palettePumpkinBackground2),
+      )
+      ..add(
+        ColorProperty('palettePumpkinForeground2', palettePumpkinForeground2),
+      )
+      ..add(
+        ColorProperty('palettePumpkinBorderActive', palettePumpkinBorderActive),
+      )
+      ..add(ColorProperty('palettePeachBackground2', palettePeachBackground2))
+      ..add(ColorProperty('palettePeachForeground2', palettePeachForeground2))
+      ..add(ColorProperty('palettePeachBorderActive', palettePeachBorderActive))
+      ..add(ColorProperty('paletteGoldBackground2', paletteGoldBackground2))
+      ..add(ColorProperty('paletteGoldForeground2', paletteGoldForeground2))
+      ..add(ColorProperty('paletteGoldBorderActive', paletteGoldBorderActive))
+      ..add(ColorProperty('paletteBrassBackground2', paletteBrassBackground2))
+      ..add(ColorProperty('paletteBrassForeground2', paletteBrassForeground2))
+      ..add(ColorProperty('paletteBrassBorderActive', paletteBrassBorderActive))
+      ..add(ColorProperty('paletteBrownBackground2', paletteBrownBackground2))
+      ..add(ColorProperty('paletteBrownForeground2', paletteBrownForeground2))
+      ..add(ColorProperty('paletteBrownBorderActive', paletteBrownBorderActive))
+      ..add(ColorProperty('paletteForestBackground2', paletteForestBackground2))
+      ..add(ColorProperty('paletteForestForeground2', paletteForestForeground2))
+      ..add(
+        ColorProperty('paletteForestBorderActive', paletteForestBorderActive),
+      )
+      ..add(
+        ColorProperty('paletteSeafoamBackground2', paletteSeafoamBackground2),
+      )
+      ..add(
+        ColorProperty('paletteSeafoamForeground2', paletteSeafoamForeground2),
+      )
+      ..add(
+        ColorProperty('paletteSeafoamBorderActive', paletteSeafoamBorderActive),
+      )
+      ..add(
+        ColorProperty(
+          'paletteDarkGreenBackground2',
+          paletteDarkGreenBackground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteDarkGreenForeground2',
+          paletteDarkGreenForeground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteDarkGreenBorderActive',
+          paletteDarkGreenBorderActive,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteLightTealBackground2',
+          paletteLightTealBackground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteLightTealForeground2',
+          paletteLightTealForeground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteLightTealBorderActive',
+          paletteLightTealBorderActive,
+        ),
+      )
+      ..add(ColorProperty('paletteTealBackground2', paletteTealBackground2))
+      ..add(ColorProperty('paletteTealForeground2', paletteTealForeground2))
+      ..add(ColorProperty('paletteTealBorderActive', paletteTealBorderActive))
+      ..add(ColorProperty('paletteSteelBackground2', paletteSteelBackground2))
+      ..add(ColorProperty('paletteSteelForeground2', paletteSteelForeground2))
+      ..add(ColorProperty('paletteSteelBorderActive', paletteSteelBorderActive))
+      ..add(ColorProperty('paletteBlueBackground2', paletteBlueBackground2))
+      ..add(ColorProperty('paletteBlueForeground2', paletteBlueForeground2))
+      ..add(ColorProperty('paletteBlueBorderActive', paletteBlueBorderActive))
+      ..add(
+        ColorProperty(
+          'paletteRoyalBlueBackground2',
+          paletteRoyalBlueBackground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteRoyalBlueForeground2',
+          paletteRoyalBlueForeground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteRoyalBlueBorderActive',
+          paletteRoyalBlueBorderActive,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteCornflowerBackground2',
+          paletteCornflowerBackground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteCornflowerForeground2',
+          paletteCornflowerForeground2,
+        ),
+      )
+      ..add(
+        ColorProperty(
+          'paletteCornflowerBorderActive',
+          paletteCornflowerBorderActive,
+        ),
+      )
+      ..add(ColorProperty('paletteNavyBackground2', paletteNavyBackground2))
+      ..add(ColorProperty('paletteNavyForeground2', paletteNavyForeground2))
+      ..add(ColorProperty('paletteNavyBorderActive', paletteNavyBorderActive))
+      ..add(
+        ColorProperty('paletteLavenderBackground2', paletteLavenderBackground2),
+      )
+      ..add(
+        ColorProperty('paletteLavenderForeground2', paletteLavenderForeground2),
+      )
+      ..add(
+        ColorProperty(
+          'paletteLavenderBorderActive',
+          paletteLavenderBorderActive,
+        ),
+      )
+      ..add(ColorProperty('palettePurpleBackground2', palettePurpleBackground2))
+      ..add(ColorProperty('palettePurpleForeground2', palettePurpleForeground2))
+      ..add(
+        ColorProperty('palettePurpleBorderActive', palettePurpleBorderActive),
+      )
+      ..add(ColorProperty('paletteGrapeBackground2', paletteGrapeBackground2))
+      ..add(ColorProperty('paletteGrapeForeground2', paletteGrapeForeground2))
+      ..add(ColorProperty('paletteGrapeBorderActive', paletteGrapeBorderActive))
+      ..add(ColorProperty('paletteLilacBackground2', paletteLilacBackground2))
+      ..add(ColorProperty('paletteLilacForeground2', paletteLilacForeground2))
+      ..add(ColorProperty('paletteLilacBorderActive', paletteLilacBorderActive))
+      ..add(ColorProperty('palettePinkBackground2', palettePinkBackground2))
+      ..add(ColorProperty('palettePinkForeground2', palettePinkForeground2))
+      ..add(ColorProperty('palettePinkBorderActive', palettePinkBorderActive))
+      ..add(
+        ColorProperty('paletteMagentaBackground2', paletteMagentaBackground2),
+      )
+      ..add(
+        ColorProperty('paletteMagentaForeground2', paletteMagentaForeground2),
+      )
+      ..add(
+        ColorProperty('paletteMagentaBorderActive', paletteMagentaBorderActive),
+      )
+      ..add(ColorProperty('palettePlumBackground2', palettePlumBackground2))
+      ..add(ColorProperty('palettePlumForeground2', palettePlumForeground2))
+      ..add(ColorProperty('palettePlumBorderActive', palettePlumBorderActive))
+      ..add(ColorProperty('paletteBeigeBackground2', paletteBeigeBackground2))
+      ..add(ColorProperty('paletteBeigeForeground2', paletteBeigeForeground2))
+      ..add(ColorProperty('paletteBeigeBorderActive', paletteBeigeBorderActive))
+      ..add(ColorProperty('paletteMinkBackground2', paletteMinkBackground2))
+      ..add(ColorProperty('paletteMinkForeground2', paletteMinkForeground2))
+      ..add(ColorProperty('paletteMinkBorderActive', paletteMinkBorderActive))
+      ..add(
+        ColorProperty('palettePlatinumBackground2', palettePlatinumBackground2),
+      )
+      ..add(
+        ColorProperty('palettePlatinumForeground2', palettePlatinumForeground2),
+      )
+      ..add(
+        ColorProperty(
+          'palettePlatinumBorderActive',
+          palettePlatinumBorderActive,
+        ),
+      )
+      ..add(ColorProperty('paletteAnchorBackground2', paletteAnchorBackground2))
+      ..add(ColorProperty('paletteAnchorForeground2', paletteAnchorForeground2))
+      ..add(
+        ColorProperty('paletteAnchorBorderActive', paletteAnchorBorderActive),
+      );
+  }
 }

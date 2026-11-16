@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialApp, MaterialType;
 import 'package:flutter/widgets.dart';
@@ -167,6 +168,64 @@ class Fluent2Preview extends StatelessWidget {
       },
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2ThemeData>(
+          'light',
+          light,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Fluent2ThemeData>(
+          'darkData',
+          darkData,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2Presentation>(
+          'presentation',
+          presentation,
+          defaultValue: Fluent2Presentation.root,
+        ),
+      )
+      ..add(
+        IterableProperty<Fluent2NavItem>(
+          'tabs',
+          tabs,
+          defaultValue: const <Fluent2NavItem>[],
+        ),
+      )
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(FlagProperty('drawer', value: drawer, ifTrue: 'drawer'))
+      ..add(FlagProperty('fullScreen', value: fullScreen, ifTrue: 'fullScreen'))
+      ..add(FlagProperty('back', value: back, ifTrue: 'back'))
+      ..add(
+        DiagnosticsProperty<PreviewPlatform>(
+          'platform',
+          platform,
+          defaultValue: PreviewPlatform.android,
+        ),
+      )
+      ..add(
+        EnumProperty<Brightness>(
+          'brightness',
+          brightness,
+          defaultValue: Brightness.light,
+        ),
+      )
+      ..add(FlagProperty('device', value: device, ifTrue: 'device'))
+      ..add(StringProperty('location', location, defaultValue: null));
+  }
 }
 
 class _Root extends StatelessWidget {

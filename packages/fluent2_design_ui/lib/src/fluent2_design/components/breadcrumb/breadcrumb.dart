@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
-import '../../internal/hit_slop.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
 import '../button/button.dart';
@@ -240,6 +241,24 @@ class Fluent2Breadcrumb extends StatelessWidget {
       },
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2BreadcrumbItem>('items', items))
+      ..add(
+        EnumProperty<Fluent2BreadcrumbSize>(
+          'size',
+          size,
+          defaultValue: Fluent2BreadcrumbSize.medium,
+        ),
+      )
+      ..add(
+        IntProperty('maxDisplayedItems', maxDisplayedItems, defaultValue: null),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 class _Crumb extends StatelessWidget {
@@ -304,7 +323,8 @@ class _Crumb extends StatelessWidget {
         child: face(t.textSecondary, t.colors.transparentBackground),
       );
     }
-    return Fluent2HitSlop(
+    return DesignTapTarget(
+      minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         onPressed: item.onPressed,
         label: item.label,

@@ -3,6 +3,7 @@
 // crosshair with a value card under the pointer.
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../localizations.dart';
@@ -376,9 +377,21 @@ class _PlotPainter extends CustomPainter {
     maxLines: 1,
   )..layout();
 
+  /// What [read] takes from [words]' painter, the painter disposed.
+  double _measure(
+    String words,
+    TextStyle style,
+    double Function(TextPainter painter) read,
+  ) {
+    final p = _text(words, style);
+    final value = read(p);
+    p.dispose();
+    return value;
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
-    final axis = _text('0', tick).height;
+    final axis = _measure('0', tick, (p) => p.height);
     // The run's names stand below the base line by at least half a label, so
     // the lowest value label, centred on that line, never meets the first.
     final drop = math.max(Fluent2Spacing.s, axis / 2);
@@ -414,7 +427,9 @@ class _PlotPainter extends CustomPainter {
     }
     // As many axis labels as fit, always the first and last.
     if (n > 0) {
-      final widest = labels.map((l) => _text(l, tick).width).reduce(math.max);
+      final widest = labels
+          .map((l) => _measure(l, tick, (p) => p.width))
+          .reduce(math.max);
       final fits = n <= 1 ? 1 : (w / (widest + Fluent2Spacing.m)).floor();
       final every = math.max(1, ((n - 1) / math.max(1, fits - 1)).ceil());
       final last = n - 1;
@@ -563,6 +578,23 @@ class Fluent2LineChart extends StatelessWidget {
     valueLabel: valueLabel,
     ground: ground,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2ChartSeries>('series', series))
+      ..add(IterableProperty<String>('labels', labels))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 200))
+      ..add(
+        ObjectFlagProperty<String Function(double value)?>.has(
+          'valueLabel',
+          valueLabel,
+        ),
+      )
+      ..add(ColorProperty('ground', ground, defaultValue: null));
+  }
 }
 
 /// [Fluent2LineChart] with each line washed down to the baseline at 16% of its
@@ -611,6 +643,23 @@ class Fluent2AreaChart extends StatelessWidget {
     valueLabel: valueLabel,
     ground: ground,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2ChartSeries>('series', series))
+      ..add(IterableProperty<String>('labels', labels))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 200))
+      ..add(
+        ObjectFlagProperty<String Function(double value)?>.has(
+          'valueLabel',
+          valueLabel,
+        ),
+      )
+      ..add(ColorProperty('ground', ground, defaultValue: null));
+  }
 }
 
 /// One part of a [Fluent2PieChart].
@@ -621,7 +670,8 @@ class Fluent2AreaChart extends StatelessWidget {
 @immutable
 class Fluent2PieSlice {
   /// A part called [label], worth [value].
-  const Fluent2PieSlice(this.label, this.value, {this.valueText, this.hue});
+  const Fluent2PieSlice(this.label, this.value, {this.valueText, this.hue})
+    : assert(value >= 0, 'a slice is never negative');
 
   /// What it is.
   final String label;
@@ -676,6 +726,17 @@ class Fluent2PieChart extends StatefulWidget {
 
   @override
   State<Fluent2PieChart> createState() => _Fluent2PieChartState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2PieSlice>('slices', slices))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('size', size, defaultValue: 160))
+      ..add(DoubleProperty('thickness', thickness, defaultValue: 24))
+      ..add(ColorProperty('ground', ground, defaultValue: null));
+  }
 }
 
 class _Fluent2PieChartState extends State<Fluent2PieChart> {

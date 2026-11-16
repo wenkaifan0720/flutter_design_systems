@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 
@@ -74,6 +75,27 @@ class Fluent2Skeleton extends StatefulWidget {
 
   @override
   State<Fluent2Skeleton> createState() => _Fluent2SkeletonState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<Fluent2SkeletonAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2SkeletonAppearance.opaque,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2SkeletonAnimation>(
+          'animation',
+          animation,
+          defaultValue: Fluent2SkeletonAnimation.wave,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 class _Fluent2SkeletonState extends State<Fluent2Skeleton>
@@ -161,7 +183,8 @@ class Fluent2SkeletonItem extends StatelessWidget {
     this.size = 16,
     this.width,
     super.key,
-  });
+  }) : assert(size > 0, 'a placeholder of some size'),
+       assert(width == null || width >= 0, 'a width is never negative');
 
   /// Fluent's `shape`: rectangle, circle or square.
   final Fluent2SkeletonShape shape;
@@ -207,6 +230,21 @@ class Fluent2SkeletonItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<Fluent2SkeletonShape>(
+          'shape',
+          shape,
+          defaultValue: Fluent2SkeletonShape.rectangle,
+        ),
+      )
+      ..add(DoubleProperty('size', size, defaultValue: 16))
+      ..add(DoubleProperty('width', width, defaultValue: null));
   }
 }
 

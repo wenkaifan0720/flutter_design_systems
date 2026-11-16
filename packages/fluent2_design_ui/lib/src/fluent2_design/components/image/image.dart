@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
@@ -165,6 +166,36 @@ class Fluent2Image extends StatelessWidget {
     return label == null
         ? ExcludeSemantics(child: sized)
         : Semantics(image: true, label: label, child: sized);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ImageProvider>('image', image, defaultValue: null),
+      )
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(DoubleProperty('aspectRatio', aspectRatio, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2ImageFit>(
+          'fit',
+          fit,
+          defaultValue: Fluent2ImageFit.cover,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ImageShape>(
+          'shape',
+          shape,
+          defaultValue: Fluent2ImageShape.square,
+        ),
+      )
+      ..add(FlagProperty('bordered', value: bordered, ifTrue: 'bordered'))
+      ..add(FlagProperty('shadow', value: shadow, ifTrue: 'shadow'))
+      ..add(FlagProperty('block', value: block, ifTrue: 'block'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }
 

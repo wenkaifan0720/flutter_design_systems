@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
@@ -115,7 +116,7 @@ enum Fluent2BadgeShape {
 /// Fluent2BadgeFace.of(context.fluent2Theme, Fluent2BadgeAppearance.tint, Fluent2BadgeColor.success)
 /// ```
 @immutable
-final class Fluent2BadgeFace {
+final class Fluent2BadgeFace with Diagnosticable {
   /// A face of [fill], [ink] and [stroke].
   const Fluent2BadgeFace({
     required this.fill,
@@ -284,6 +285,15 @@ final class Fluent2BadgeFace {
       Fluent2BadgeColor.warning => t.tone(Fluent2Tone.warning).ink,
     };
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('fill', fill))
+      ..add(ColorProperty('ink', ink))
+      ..add(ColorProperty('stroke', stroke));
+  }
 }
 
 /// Fluent 2's Badge: a short status or category word ([label]) with an
@@ -307,8 +317,13 @@ class Fluent2LabelBadge extends StatelessWidget {
     this.size = Fluent2BadgeSize.medium,
     this.shape = Fluent2BadgeShape.circular,
     this.semanticLabel,
+    this.style,
     super.key,
   });
+
+  /// This badge's own look, slot by slot, over its component theme
+  /// ([Fluent2ThemeData.badgeTheme]): the slots its doc names.
+  final Fluent2Style? style;
 
   /// The words; null draws the glyph alone (or the dot).
   final String? label;
@@ -319,7 +334,9 @@ class Fluent2LabelBadge extends StatelessWidget {
   /// Which side of the words [icon] stands on.
   final Fluent2IconPosition iconPosition;
 
+  /// {@template fluent2.appearance}
   /// Fluent's `appearance`: which of its faces it wears.
+  /// {@endtemplate}
   final Fluent2BadgeAppearance appearance;
 
   /// Fluent's `color`.
@@ -352,7 +369,7 @@ class Fluent2LabelBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final own = Fluent2BadgeFace.of(t, appearance, color);
-    final look = Fluent2StyleOf([t.badgeTheme], const {});
+    final look = Fluent2StyleOf([style, t.badgeTheme], const {});
     final face = Fluent2BadgeFace(
       fill: look.fill ?? own.fill,
       ink: look.foreground ?? own.ink,
@@ -429,6 +446,53 @@ class Fluent2LabelBadge extends StatelessWidget {
           : badge,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2IconPosition>(
+          'iconPosition',
+          iconPosition,
+          defaultValue: Fluent2IconPosition.before,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2BadgeAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2BadgeAppearance.filled,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2BadgeColor>(
+          'color',
+          color,
+          defaultValue: Fluent2BadgeColor.brand,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2BadgeSize>(
+          'size',
+          size,
+          defaultValue: Fluent2BadgeSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2BadgeShape>(
+          'shape',
+          shape,
+          defaultValue: Fluent2BadgeShape.circular,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 /// A counter badge's colours, Fluent's `CounterBadge` `color`: [brand] (the
@@ -471,7 +535,9 @@ class Fluent2Badge extends StatelessWidget {
     this.appearance = Fluent2BadgeAppearance.filled,
     this.size = Fluent2BadgeSize.medium,
     this.shape = Fluent2BadgeShape.circular,
-  }) : _dot = false;
+  }) : assert(count >= 0, 'a count is never negative'),
+       assert(overflowCount > 0, 'a positive overflow count'),
+       _dot = false;
 
   /// The 6 dot that says only that something is new ("New").
   const Fluent2Badge.dot({
@@ -565,6 +631,44 @@ class Fluent2Badge extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('overflowCount', overflowCount, defaultValue: 99))
+      ..add(FlagProperty('showZero', value: showZero, ifTrue: 'showZero'))
+      ..add(
+        EnumProperty<Fluent2BadgeCountColor>(
+          'color',
+          color,
+          defaultValue: Fluent2BadgeCountColor.brand,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2BadgeAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2BadgeAppearance.filled,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2BadgeSize>(
+          'size',
+          size,
+          defaultValue: Fluent2BadgeSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2BadgeShape>(
+          'shape',
+          shape,
+          defaultValue: Fluent2BadgeShape.circular,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -712,5 +816,21 @@ class Fluent2StatusGlyph extends StatelessWidget {
               ],
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<Fluent2TaskStatus>('status', status))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2StatusGlyphSize>(
+          'size',
+          size,
+          defaultValue: Fluent2StatusGlyphSize.medium,
+        ),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
   }
 }

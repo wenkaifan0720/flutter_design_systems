@@ -1,10 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../internal/cap_label.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/icon_fill.dart';
 import '../../internal/well.dart';
 import '../../styled.dart';
@@ -105,6 +106,7 @@ class Fluent2TabList extends StatefulWidget {
     this.size = Fluent2TabSize.medium,
     this.vertical = false,
     this.label,
+    this.style,
   }) : items = null;
 
   /// A tab per [Fluent2Tab] in [items]: words with a glyph, or a tab out
@@ -118,7 +120,12 @@ class Fluent2TabList extends StatefulWidget {
     this.size = Fluent2TabSize.medium,
     this.vertical = false,
     this.label,
+    this.style,
   }) : tabs = null;
+
+  /// This tab list's own look, slot by slot, over its component theme
+  /// ([Fluent2ThemeData.tabListTheme]): the slots its doc names.
+  final Fluent2Style? style;
 
   /// The tabs' words (the default constructor).
   final List<String>? tabs;
@@ -152,6 +159,35 @@ class Fluent2TabList extends StatefulWidget {
 
   @override
   State<Fluent2TabList> createState() => _Fluent2TabListState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(IterableProperty<String>('tabs', tabs, defaultValue: null))
+      ..add(IterableProperty<Fluent2Tab>('items', items, defaultValue: null))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onChanged', onChanged))
+      ..add(
+        EnumProperty<Fluent2TabAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2TabAppearance.transparent,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2TabSize>(
+          'size',
+          size,
+          defaultValue: Fluent2TabSize.medium,
+        ),
+      )
+      ..add(FlagProperty('vertical', value: vertical, ifTrue: 'vertical'))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 class _Fluent2TabListState extends State<Fluent2TabList>
@@ -260,6 +296,7 @@ class _Fluent2TabListState extends State<Fluent2TabList>
             slide: i == selected ? _slide : null,
             from: _from,
             scale: _scale,
+            style: widget.style,
             onTap: change == null || !tab.enabled
                 ? null
                 : () {
@@ -303,7 +340,8 @@ class _Fluent2TabListState extends State<Fluent2TabList>
         : side + (widget._all.first.icon == null ? 2 : 0);
     // A row of tabs keeps every name whole: as the reader's text grows the
     // names grow only while the row fits its room (never under their own
-    // size), and a row longer than that scrolls.
+    // size); a row too long for its room at its own size scrolls, at the
+    // reader's size.
     final strip = LayoutBuilder(
       builder: (context, box) {
         // The room the hang already widened.
@@ -325,16 +363,19 @@ class _Fluent2TabListState extends State<Fluent2TabList>
             // Capped to fit, the row stands in its room: a face's own
             // rounding past the measure is drawn smaller whole, never cut
             // at the edge.
-            child: capped
-                ? SizedBox(
-                    width: box.maxWidth,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: AlignmentDirectional.centerStart,
-                      child: bar,
-                    ),
-                  )
-                : bar,
+            child: _OutlineFromKeyline(
+              by: hang,
+              child: capped
+                  ? SizedBox(
+                      width: box.maxWidth,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: AlignmentDirectional.centerStart,
+                        child: bar,
+                      ),
+                    )
+                  : bar,
+            ),
           ),
         );
       },
@@ -375,7 +416,10 @@ class _Fluent2TabListState extends State<Fluent2TabList>
     // A hundredth under the exact fit, so layout's rounding never leaves a
     // hair to scroll.
     final fits = ((room - fixed) / words * 100).floorToDouble() / 100;
-    return math.max(1.0, math.min(reader, fits));
+    // A row too long for its room at its own size scrolls whatever the
+    // size, so it takes the reader's.
+    if (fits < 1) return reader;
+    return math.min(reader, fits);
   }
 }
 
@@ -383,6 +427,55 @@ class _Fluent2TabListState extends State<Fluent2TabList>
 /// toward the start, so its first words start on the room's start while its
 /// end keeps the room's end. Paint and hits move together (the hung part
 /// answers as far as the room round the strip reaches).
+/// Clips what a screen reader outlines to start [by] in from the row's
+/// start: the first tab's inset hangs over the page's margin, where a tap
+/// may not reach, so its node starts on the keyline with the words, as far
+/// as a tap always reaches. Paint and hits are untouched.
+class _OutlineFromKeyline extends SingleChildRenderObjectWidget {
+  const _OutlineFromKeyline({required this.by, required super.child});
+
+  final double by;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderOutlineFromKeyline(by, Directionality.of(context));
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderOutlineFromKeyline renderObject,
+  ) {
+    renderObject
+      ..by = by
+      ..direction = Directionality.of(context);
+  }
+}
+
+class _RenderOutlineFromKeyline extends RenderProxyBox {
+  _RenderOutlineFromKeyline(this._by, this._direction);
+
+  double _by;
+  set by(double value) {
+    if (value == _by) return;
+    _by = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  TextDirection _direction;
+  set direction(TextDirection value) {
+    if (value == _direction) return;
+    _direction = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  @override
+  Rect? describeSemanticsClip(RenderObject? child) => _by == 0
+      ? null
+      : _direction == TextDirection.rtl
+      ? Rect.fromLTRB(0, 0, math.max(0, size.width - _by), size.height)
+      : Rect.fromLTRB(math.min(_by, size.width), 0, size.width, size.height);
+}
+
 class _HangStart extends SingleChildRenderObjectWidget {
   const _HangStart({required this.by, required super.child});
 
@@ -486,6 +579,7 @@ class _Tab extends StatelessWidget {
     required this.slide,
     required this.from,
     required this.scale,
+    required this.style,
     required this.onTap,
   });
 
@@ -497,6 +591,7 @@ class _Tab extends StatelessWidget {
   final Animation<double>? slide;
   final double from;
   final double scale;
+  final Fluent2Style? style;
   final VoidCallback? onTap;
 
   bool get _circular =>
@@ -510,7 +605,9 @@ class _Tab extends StatelessWidget {
     // useTabStyles: the button's padding by size and axis; a circular tab
     // gives a pixel of its block padding to its 1 stroke.
     final EdgeInsets padding = switch ((size, vertical)) {
-      (Fluent2TabSize.small, false) => const EdgeInsets.all(6),
+      (Fluent2TabSize.small, false) => const EdgeInsets.all(
+        Fluent2Spacing.sNudge,
+      ),
       (Fluent2TabSize.small, true) => const EdgeInsets.symmetric(
         horizontal: 6,
         vertical: 2,
@@ -551,7 +648,8 @@ class _Tab extends StatelessWidget {
     // The role alone, merged with the press's own node: the press brings the
     // selected state, the enabled flag and the tap (the press's node is a
     // container, so a role around it would stand on a node of its own).
-    return Fluent2HitSlop(
+    return DesignTapTarget(
+      minSize: Fluent2Layout.tapFloorOf(context),
       child: MergeSemantics(
         child: Semantics(
           role: SemanticsRole.tab,
@@ -567,7 +665,7 @@ class _Tab extends StatelessWidget {
               // The tab bar theme's colours over Fluent's, in the tab's
               // states: `fill`, `foreground` (words and glyph), `edge` (the
               // selected indicator, or a circular tab's rim).
-              final look = Fluent2StyleOf([t.tabListTheme], states);
+              final look = Fluent2StyleOf([style, t.tabListTheme], states);
               final ink = look.foreground ?? f.ink;
               final fill = look.fill ?? f.fill;
               return fluent2EasedInks(
@@ -587,7 +685,9 @@ class _Tab extends StatelessWidget {
                   // a tab never moves its neighbours; the rest cut stands in the
                   // middle of it (Fluent's `contentReservedSpace`).
                   final words = Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Fluent2Spacing.xxs,
+                    ),
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
@@ -733,8 +833,8 @@ class _Tab extends StatelessWidget {
             : subtle
             ? press.pick(
                 c.subtleBackground,
-                c.subtleBackgroundHover,
-                c.subtleBackgroundPressed,
+                fluent2Step(t, c.subtleBackgroundHover),
+                fluent2Step(t, c.subtleBackgroundPressed),
               )
             : press.pick(
                 c.transparentBackground,
@@ -816,8 +916,8 @@ class _Tab extends StatelessWidget {
         return _TabFace(
           press.pick(
             c.subtleBackground,
-            c.subtleBackgroundHover,
-            c.subtleBackgroundPressed,
+            fluent2Step(t, c.subtleBackgroundHover),
+            fluent2Step(t, c.subtleBackgroundPressed),
           ),
           press.pick(
             c.transparentStroke,

@@ -48,11 +48,11 @@ Widget kitMessageBarDemo(Brightness brightness) => kitScreen(
 );
 
 /// The four intents, each with a title.
-Widget kitSpecimenMessageBarIntents() => Column(
+Widget kitSpecimenMessageBarIntents() => const Column(
   mainAxisSize: MainAxisSize.min,
   crossAxisAlignment: CrossAxisAlignment.stretch,
   spacing: Fluent2Spacing.s,
-  children: const [
+  children: [
     Fluent2MessageBar(
       title: 'Sync paused',
       body: 'Files will sync again when you reconnect.',

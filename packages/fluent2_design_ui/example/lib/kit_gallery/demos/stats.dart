@@ -24,10 +24,10 @@ Widget kitStatsDemo(Brightness brightness) => kitScreen(
 );
 
 /// Two tiles side by side, one with a trend.
-Widget kitSpecimenStatTiles() => Row(
+Widget kitSpecimenStatTiles() => const Row(
   crossAxisAlignment: CrossAxisAlignment.start,
   spacing: Fluent2Spacing.m,
-  children: const [
+  children: [
     Expanded(
       child: Fluent2Stat(
         label: 'Files shared',

@@ -1,9 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
-import '../../internal/hit_slop.dart';
 import '../../theme.dart';
 
 /// What a [Fluent2Pressable] is to assistive technology.
@@ -296,13 +296,112 @@ class Fluent2Pressable extends StatelessWidget {
                 ],
               );
         if (!padded || !Fluent2Layout.padded(context)) return ringed;
-        return Fluent2TapTarget(
-          minSize: const Size.square(Fluent2Layout.touchHitTarget),
+        // Centred, or a joined face against its partner (a split button's
+        // halves, a tag's two parts): the target grows away from the join.
+        return DesignTapTarget(
+          minSize: Fluent2Layout.tapFloorOf(context),
           alignment: faceAlignment,
           child: ringed,
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, Set<WidgetState> states)?
+        >.has('builder', builder),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2PressRole>(
+          'role',
+          role,
+          defaultValue: Fluent2PressRole.button,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('toggled', toggled, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('checked', checked, defaultValue: null))
+      ..add(FlagProperty('mixed', value: mixed, ifTrue: 'mixed'))
+      ..add(FlagProperty('inGroup', value: inGroup, ifTrue: 'inGroup'))
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
+      ..add(DoubleProperty('radius', radius, defaultValue: 4))
+      ..add(
+        DiagnosticsProperty<WidgetStateProperty<OutlinedBorder?>>(
+          'shape',
+          shape,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'ringInsets',
+          ringInsets,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(FlagProperty('ring', value: ring, ifFalse: 'ring: false'))
+      ..add(
+        FlagProperty(
+          'excludeChild',
+          value: excludeChild,
+          ifFalse: 'excludeChild: false',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'semantics',
+          value: semantics,
+          ifFalse: 'semantics: false',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onLongPress', onLongPress))
+      ..add(
+        DiagnosticsProperty<Map<LogicalKeyboardKey, VoidCallback>>(
+          'keys',
+          keys,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MouseCursor>(
+          'mouseCursor',
+          mouseCursor,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<WidgetStatesController>(
+          'statesController',
+          statesController,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('padded', value: padded, ifFalse: 'padded: false'))
+      ..add(
+        DiagnosticsProperty<AlignmentGeometry>(
+          'faceAlignment',
+          faceAlignment,
+          defaultValue: AlignmentDirectional.center,
+        ),
+      );
   }
 }
 
@@ -375,5 +474,15 @@ class Fluent2FocusRing extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('radius', radius, defaultValue: 4))
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      );
   }
 }

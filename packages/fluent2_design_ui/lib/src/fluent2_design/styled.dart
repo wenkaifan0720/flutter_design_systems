@@ -1,6 +1,7 @@
 // How a styled part reads its style and draws its shape: the layers in
 // order, a shape that animates to each new one, and the ease every part's
 // face rides from one state to the next.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'theme.dart';
@@ -42,6 +43,20 @@ class AnimatedFluent2Shape extends StatelessWidget {
       builder: (context, now, _) =>
           builder(context, now is OutlinedBorder ? now : shape),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, OutlinedBorder? shape)
+        >.has('builder', builder),
+      );
   }
 }
 
@@ -91,6 +106,37 @@ class Fluent2Eased<T> extends StatefulWidget {
 
   @override
   State<Fluent2Eased<T>> createState() => _Fluent2EasedState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(
+        ObjectFlagProperty<T Function(T a, T b, double t)>.has('lerp', lerp),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(BuildContext context, T value)>.has(
+          'builder',
+          builder,
+        ),
+      )
+      ..add(ObjectFlagProperty<bool Function(T a, T b)?>.has('same', same))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'duration',
+          duration,
+          defaultValue: Fluent2Motion.faster,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Curve>(
+          'curve',
+          curve,
+          defaultValue: Fluent2Motion.easyEase,
+        ),
+      );
+  }
 }
 
 class _Fluent2EasedState<T> extends State<Fluent2Eased<T>>
@@ -168,69 +214,13 @@ class _ShapeTween extends Tween<ShapeBorder?> {
 }
 
 /// A styled part's layers for its states: its own `style:`, then its component theme. Each getter is the first layer's
-/// value for the states, or null, so the part goes on to its own Fluent default.
+/// value for the states, or null, so the part goes on to its own Fluent default. It is ui_core's [DesignStyleOf].
 ///
 /// ```dart
 /// final look = Fluent2StyleOf([style, Fluent2Theme.of(context).tagTheme], states);
 /// final fill = look.fill ?? surface;
 /// ```
-@immutable
-class Fluent2StyleOf {
-  /// The [layers] read at [states].
-  const Fluent2StyleOf(this.layers, this.states);
-
-  /// The styles, first wins.
-  final List<Fluent2Style?> layers;
-
-  /// The part's states.
-  final Set<WidgetState> states;
-
-  T? _first<T>(WidgetStateProperty<T?>? Function(Fluent2Style s) slot) =>
-      Fluent2Style.first(layers, slot, states);
-
-  /// The face.
-  Color? get fill => _first((s) => s.fill);
-
-  /// The words and icons.
-  Color? get foreground => _first((s) => s.foreground);
-
-  /// The rim's colour.
-  Color? get edge => _first((s) => s.edge);
-
-  /// The whole rim.
-  BorderSide? get side => _first((s) => s.side);
-
-  /// The outline.
-  OutlinedBorder? get shape => _first((s) => s.shape);
-
-  /// The room inside, resolved for [direction].
-  EdgeInsets? padding(TextDirection direction) =>
-      _first((s) => s.padding)?.resolve(direction);
-
-  /// The least size of the face.
-  Size? get minimumSize => _first((s) => s.minimumSize);
-
-  /// The words' style.
-  TextStyle? get textStyle => _first((s) => s.textStyle);
-
-  /// An icon's size.
-  double? get iconSize => _first((s) => s.iconSize);
-
-  /// The same layers at other [states].
-  Fluent2StyleOf at(Set<WidgetState> states) => Fluent2StyleOf(layers, states);
-
-  /// The shape for any states, as the press reads it for its ring and wash; [fallback] when no layer gives one.
-  WidgetStateProperty<OutlinedBorder?> shapes(OutlinedBorder? fallback) =>
-      WidgetStateProperty.resolveWith((states) => at(states).shape ?? fallback);
-
-  /// The overlay for any states, as the press reads it.
-  WidgetStateProperty<Color?>? get overlay =>
-      layers.any((l) => l?.overlay != null)
-      ? WidgetStateProperty.resolveWith(
-          (states) => Fluent2Style.first(layers, (s) => s.overlay, states),
-        )
-      : null;
-}
+typedef Fluent2StyleOf = DesignStyleOf;
 
 /// A styled surface: [fill] inside [side] at Fluent's [radius], or along
 /// [shape] when one is styled, in [shadows], [child] inside [padding] and
@@ -320,6 +310,33 @@ class Fluent2Plate extends StatelessWidget {
       ),
       child: inner,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('fill', fill))
+      ..add(
+        DiagnosticsProperty<BorderSide>(
+          'side',
+          side,
+          defaultValue: BorderSide.none,
+        ),
+      )
+      ..add(DiagnosticsProperty<BorderRadiusGeometry>('radius', radius))
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(IterableProperty<BoxShadow>('shadows', shadows, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(FlagProperty('clip', value: clip, ifTrue: 'clip'));
   }
 }
 

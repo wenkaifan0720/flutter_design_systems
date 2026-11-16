@@ -1,8 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../internal/cap_label.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/measure.dart';
 import '../../internal/well.dart';
 import '../../styled.dart';
@@ -324,8 +324,29 @@ class Fluent2SegmentedButton<T> extends StatelessWidget {
           const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
               _move(rtl ? 1 : -1),
         },
-        child: FocusTraversalGroup(child: Fluent2HitSlop(child: sized)),
+        child: FocusTraversalGroup(child: sized),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2ButtonSegment<T>>('segments', segments))
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label))
+      ..add(
+        EnumProperty<Fluent2SegmentedButtonSize>(
+          'size',
+          size,
+          defaultValue: Fluent2SegmentedButtonSize.medium,
+        ),
+      )
+      ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      );
   }
 }

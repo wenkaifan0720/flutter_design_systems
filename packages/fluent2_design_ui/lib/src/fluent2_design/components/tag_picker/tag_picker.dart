@@ -1,16 +1,20 @@
-import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/well.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
 import '../dropdown/dropdown.dart';
 import '../input/field_core.dart';
 import '../pressable/pressable.dart';
+
+/// A chosen tag's room at its start, and after its dismiss glyph: Fluent's
+/// TagPicker tag (5), so its words and glyph sit on the field's own
+/// 6-in keyline with the tag's 1 px stroke; off the 4-pt grid on purpose.
+const double _tagStart = 5;
 
 /// A tag picker's size: 32 tall empty, 34 with its tags (20), or 40 and
 /// 42 (its tags 24).
@@ -28,8 +32,9 @@ enum Fluent2MultiSelectSize {
 /// the second ink, a 12 dismiss glyph that turns brand under the
 /// pointer; a press on a tag takes it away), then a text input that
 /// filters the options not yet chosen into a listbox under the field (the
-/// list closes when nothing matches). Enter or a press adds the active
-/// option; a comma adds what was typed when it names an option; Backspace
+/// list closes when nothing matches); the arrows move the active option
+/// round the list, past an option out of use. Enter or a press adds the
+/// active option; a comma adds what was typed when it names an option; Backspace
 /// or Left in an empty input moves to the last tag, where Backspace or
 /// Delete takes it away and the arrows walk the tags; Escape closes the
 /// list. Null [onChanged] draws it disabled. Read as a text field named
@@ -53,8 +58,14 @@ class Fluent2MultiSelect<T> extends StatefulWidget {
     this.invalid = false,
     this.focusNode,
     this.autofocus = false,
+    this.style,
     super.key,
   });
+
+  /// This field's own look, slot by slot, over the text field theme
+  /// ([Fluent2ThemeData.textFieldTheme]): the slots [Fluent2FieldFrame]
+  /// names.
+  final Fluent2Style? style;
 
   /// The options, in order.
   final List<Fluent2Option<T>> options;
@@ -72,23 +83,62 @@ class Fluent2MultiSelect<T> extends StatefulWidget {
   /// The input's empty words; null is "Add people" in the app's language.
   final String? hint;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2InputAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
   final Fluent2MultiSelectSize size;
 
-  /// Whether it shows Fluent's invalid state, its edge in the danger colour.
+  /// {@macro fluent2.invalid}
   final bool invalid;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
   State<Fluent2MultiSelect<T>> createState() => _Fluent2MultiSelectState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+    );
+    properties
+      ..add(IterableProperty<Fluent2Option<T>>('options', options))
+      ..add(IterableProperty<T>('selected', selected))
+      ..add(
+        ObjectFlagProperty<ValueChanged<List<T>>?>.has('onChanged', onChanged),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2InputAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2InputAppearance.outline,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2MultiSelectSize>(
+          'size',
+          size,
+          defaultValue: Fluent2MultiSelectSize.medium,
+        ),
+      )
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
@@ -118,7 +168,9 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
       ),
   ];
 
-  // The kit hands back the tags it now holds: keep a disabled option out.
+  // The kit hands back the tags it now holds. Its list and Enter pass over an
+  // option out of use; a comma takes the option the words name without
+  // asking: keep a disabled one out.
   void _change(List<Fluent2Option<T>> next) {
     final change = widget.onChanged;
     if (change == null) return;
@@ -146,6 +198,11 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
       values: _chosen,
       options: widget.options,
       onChanged: _change,
+      isOptionEnabled: (o) => o.enabled,
+      // Fluent paints the pointer's row (a neutral fill) and the keys' (the
+      // focus ring) apart, and neither looks like the chosen option, so each
+      // keeps its own.
+      highlightFollowsPointer: false,
       displayStringForOption: (o) => o.label,
       controller: _text,
       focusNode: _focus,
@@ -158,10 +215,10 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
           controller: field.controller,
           focusNode: field.focusNode,
           enabled: live,
-          onSubmitted: (_) {
-            field.submit();
-            field.focusNode.requestFocus();
-          },
+          // Enter adds the active option and the field keeps the focus and
+          // its text input, for the next name (no onSubmitted: see
+          // onEditingComplete).
+          onEditingComplete: field.submit,
           style: type.c(
             live ? c.neutralForeground1 : c.neutralForegroundDisabled,
           ),
@@ -181,7 +238,7 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
         secondary: o.secondary,
         selected: false,
         highlighted: states.contains(WidgetState.focused),
-        states: o.enabled ? states : {...states, WidgetState.disabled},
+        states: states,
       ),
       surfaceBuilder: (context, list) => Padding(
         padding: const EdgeInsets.only(top: Fluent2Spacing.xs),
@@ -202,84 +259,85 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
         skipTraversal: true,
         includeSemantics: false,
         onFocusChange: (inside) => setState(() => _within = inside),
-        child: Fluent2HitSlop(
-          child: Fluent2FieldFrame(
-            appearance: widget.appearance,
-            focused: _within,
-            enabled: live,
-            invalid: widget.invalid || (scope?.invalid ?? false),
-            textNode: true,
-            minHeight: large ? 40 : 32,
-            cursor: SystemMouseCursors.text,
-            padding: const EdgeInsetsDirectional.only(
-              start: Fluent2Spacing.m,
-              end: Fluent2Spacing.s,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, box) {
-                      final room = box.maxWidth;
-                      // Fluent's TagPickerGroup: 6 (8 large) over and under its
-                      // tags inside the stroke, so the field stands 34 (42)
-                      // tall with a row of tags. The input stays the Wrap's
-                      // last child, so it keeps its place (and its focus) as
-                      // tags come and go.
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          vertical: tags.isEmpty ? 0 : vertical,
-                        ),
-                        child: Wrap(
-                          spacing: gap,
-                          runSpacing: gap,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            ...tags,
-                            SizedBox(
-                              width: tags.isEmpty
-                                  ? room
-                                  : (room < 120 ? room : 120),
-                              // Beside tags the words are their own node:
-                              // under a finger as tall as the tags' 48
-                              // targets, so the line grows no taller.
-                              height: tags.isEmpty
-                                  ? null
-                                  : Fluent2Layout.padded(context)
-                                  ? Fluent2Layout.touchHitTarget
-                                  : (large ? 24 : 20),
-                              child: field,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: Fluent2Spacing.xxs),
-                // The pointer's way to the list: the field holds the keyboard
-                // and speaks for it, so the chevron is no tab stop or node.
-                ExcludeFocus(
-                  child: ExcludeSemantics(
-                    child: Fluent2Pressable(
-                      semantics: false,
-                      onPressed: live
-                          ? () => _focus.hasFocus
-                                ? _focus.unfocus()
-                                : _focus.requestFocus()
-                          : null,
-                      child: Icon(
-                        Fluent2Icons.chevronDown,
-                        size: 20,
-                        color: live
-                            ? c.neutralStrokeAccessible
-                            : c.neutralForegroundDisabled,
+        child: Fluent2FieldFrame(
+          appearance: widget.appearance,
+          style: widget.style,
+          focused: _within,
+          enabled: live,
+          invalid: widget.invalid || (scope?.invalid ?? false),
+          textNode: true,
+          minHeight: large ? 40 : 32,
+          cursor: SystemMouseCursors.text,
+          padding: const EdgeInsetsDirectional.only(
+            start: Fluent2Spacing.m,
+            end: Fluent2Spacing.s,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, box) {
+                    final room = box.maxWidth;
+                    // Fluent's TagPickerGroup: 6 (8 large) over and under its
+                    // tags inside the stroke, so the field stands 34 (42)
+                    // tall with a row of tags. The input stays the Wrap's
+                    // last child, so it keeps its place (and its focus) as
+                    // tags come and go.
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: tags.isEmpty ? 0 : vertical,
                       ),
+                      child: Wrap(
+                        spacing: gap,
+                        runSpacing: gap,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          ...tags,
+                          SizedBox(
+                            width: tags.isEmpty
+                                ? room
+                                : (room < 120 ? room : 120),
+                            // Beside tags the words are their own node:
+                            // under a finger as tall as the tags' 48
+                            // targets, so the line grows no taller.
+                            height: tags.isEmpty
+                                ? null
+                                : Fluent2Layout.padded(context)
+                                ? Fluent2Layout.touchHitTarget
+                                : (large ? 24 : 20),
+                            // The whole box is the words' target, not
+                            // only their line.
+                            child: Fluent2EditorTaps(child: field),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: Fluent2Spacing.xxs),
+              // The pointer's way to the list: the field holds the keyboard
+              // and speaks for it, so the chevron is no tab stop or node.
+              ExcludeFocus(
+                child: ExcludeSemantics(
+                  child: Fluent2Pressable(
+                    semantics: false,
+                    onPressed: live
+                        ? () => _focus.hasFocus
+                              ? _focus.unfocus()
+                              : _focus.requestFocus()
+                        : null,
+                    child: Icon(
+                      Fluent2Icons.chevronDown,
+                      size: 20,
+                      color: live
+                          ? c.neutralStrokeAccessible
+                          : c.neutralForegroundDisabled,
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -341,7 +399,7 @@ class _Tag extends StatelessWidget {
             // Fluent's 24 (20), and taller with a large text size, so the
             // words are never sliced.
             constraints: BoxConstraints(minHeight: large ? 24 : 20),
-            padding: const EdgeInsetsDirectional.only(start: 5),
+            padding: const EdgeInsetsDirectional.only(start: _tagStart),
             decoration: BoxDecoration(
               color: live ? fluent2Well(t) : fluent2WellDisabled(t),
               borderRadius: BorderRadius.circular(Fluent2Radius.medium),
@@ -376,7 +434,10 @@ class _Tag extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 2, end: 5),
+                  padding: const EdgeInsetsDirectional.only(
+                    start: Fluent2Spacing.xxs,
+                    end: _tagStart,
+                  ),
                   child: Icon(
                     large ? Fluent2Icons.dismiss16 : Fluent2Icons.dismiss12,
                     size: large ? 16 : 12,

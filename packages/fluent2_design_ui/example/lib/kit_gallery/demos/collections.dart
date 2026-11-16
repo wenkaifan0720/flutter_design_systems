@@ -30,66 +30,72 @@ class _File {
   final int pages;
 }
 
-final _files = DesignTableController<_File>(
-  rows: const [
-    _File('Budget', 'Ana Ruiz', 12),
-    _File('Roadmap', 'Kai Ito', 8),
-    _File('Handbook', 'Sam Lee', 40),
-    _File('Launch plan', 'Ana Ruiz', 21),
-  ],
-  columns: [
-    DesignTableColumn<_File>(id: 'name', label: 'Name', sortKey: (f) => f.name),
-    DesignTableColumn<_File>(
-      id: 'owner',
-      label: 'Owner',
-      sortKey: (f) => f.owner,
-    ),
-    DesignTableColumn<_File>(
-      id: 'pages',
-      label: 'Pages',
-      numeric: true,
-      sortKey: (f) => f.pages,
-    ),
-  ],
+Widget kitSpecimenDataTable() => KitOwned(
+  () => DesignTableController<_File>(
+    rows: const [
+      _File('Budget', 'Ana Ruiz', 12),
+      _File('Roadmap', 'Kai Ito', 8),
+      _File('Handbook', 'Sam Lee', 40),
+      _File('Launch plan', 'Ana Ruiz', 21),
+    ],
+    columns: [
+      DesignTableColumn<_File>(
+        id: 'name',
+        label: 'Name',
+        sortKey: (f) => f.name,
+      ),
+      DesignTableColumn<_File>(
+        id: 'owner',
+        label: 'Owner',
+        sortKey: (f) => f.owner,
+      ),
+      DesignTableColumn<_File>(
+        id: 'pages',
+        label: 'Pages',
+        numeric: true,
+        sortKey: (f) => f.pages,
+      ),
+    ],
+  ),
+  (context, files) => Fluent2DataGrid<_File>(
+    label: 'Files',
+    controller: files,
+    selectable: true,
+    cell: (row, column) => switch (column.id) {
+      'name' => row.name,
+      'owner' => row.owner,
+      _ => '${row.pages}',
+    },
+  ),
 );
 
-Widget kitSpecimenDataTable() => Fluent2DataGrid<_File>(
-  label: 'Files',
-  controller: _files,
-  selectable: true,
-  cell: (row, column) => switch (column.id) {
-    'name' => row.name,
-    'owner' => row.owner,
-    _ => '${row.pages}',
-  },
-);
-
-final _scroll = ScrollController();
-
-Widget kitLiveScrollArea() => SizedBox(
-  height: 180,
-  child: Fluent2ScrollArea(
-    controller: _scroll,
-    semanticLabel: 'Recent files',
-    thumbVisibility: true,
-    child: ListView(
-      controller: _scroll,
-      children: [
-        for (final (name, edited) in const [
-          ('Budget', 'Edited today'),
-          ('Roadmap', 'Edited yesterday'),
-          ('Handbook', 'Edited Monday'),
-          ('Launch plan', 'Edited last week'),
-          ('Hiring', 'Edited last week'),
-          ('Retro notes', 'Edited in May'),
-        ])
-          Fluent2ListItem(
-            leading: const Icon(Fluent2Icons.document),
-            title: name,
-            subtitle: edited,
-            onTap: () {},
-          ),
-      ],
+Widget kitLiveScrollArea() => KitOwned(
+  ScrollController.new,
+  (context, scroll) => SizedBox(
+    height: 180,
+    child: Fluent2ScrollArea(
+      controller: scroll,
+      semanticLabel: 'Recent files',
+      thumbVisibility: true,
+      child: ListView(
+        controller: scroll,
+        children: [
+          for (final (name, edited) in const [
+            ('Budget', 'Edited today'),
+            ('Roadmap', 'Edited yesterday'),
+            ('Handbook', 'Edited Monday'),
+            ('Launch plan', 'Edited last week'),
+            ('Hiring', 'Edited last week'),
+            ('Retro notes', 'Edited in May'),
+          ])
+            Fluent2ListItem(
+              leading: const Icon(Fluent2Icons.document),
+              title: name,
+              subtitle: edited,
+              onTap: () {},
+            ),
+        ],
+      ),
     ),
   ),
 );

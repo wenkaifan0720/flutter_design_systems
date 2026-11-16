@@ -1,10 +1,12 @@
+import '../../internal/well.dart';
+
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/measure.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
@@ -40,11 +42,17 @@ class Fluent2SpinButton extends StatefulWidget {
     this.width = 120,
     this.focusNode,
     this.autofocus = false,
+    this.style,
     super.key,
   }) : assert(
          size != Fluent2InputSize.large,
          "Fluent's SpinButton is small or medium",
        );
+
+  /// This field's own look, slot by slot, over the text field theme
+  /// ([Fluent2ThemeData.textFieldTheme]): the slots [Fluent2FieldFrame]
+  /// names.
+  final Fluent2Style? style;
 
   /// The number shown.
   final num value;
@@ -71,10 +79,10 @@ class Fluent2SpinButton extends StatefulWidget {
   /// Fluent's `size`: how large it is drawn.
   final Fluent2InputSize size;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2InputAppearance appearance;
 
-  /// Whether it shows Fluent's invalid state, its edge in the danger colour.
+  /// {@macro fluent2.invalid}
   final bool invalid;
 
   /// The field's width at the default text size, growing with the reader's
@@ -82,14 +90,56 @@ class Fluent2SpinButton extends StatefulWidget {
   /// parent's.
   final double width;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
   State<Fluent2SpinButton> createState() => _Fluent2SpinButtonState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+    );
+    properties
+      ..add(DiagnosticsProperty<num>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<num>?>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DiagnosticsProperty<num>('min', min, defaultValue: null))
+      ..add(DiagnosticsProperty<num>('max', max, defaultValue: null))
+      ..add(DiagnosticsProperty<num>('step', step, defaultValue: 1))
+      ..add(
+        ObjectFlagProperty<String Function(num value)?>.has('format', format),
+      )
+      ..add(
+        EnumProperty<Fluent2InputSize>(
+          'size',
+          size,
+          defaultValue: Fluent2InputSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2InputAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2InputAppearance.outline,
+        ),
+      )
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(DoubleProperty('width', width, defaultValue: 120))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _Fluent2SpinButtonState extends State<Fluent2SpinButton> {
@@ -233,42 +283,40 @@ class _Fluent2SpinButtonState extends State<Fluent2SpinButton> {
         : MediaQuery.textScalerOf(context).scale(widget.width);
     return SizedBox(
       width: touch ? width + 2 * target - 24 : width,
-      child: Fluent2HitSlop(
-        child: Fluent2FieldFrame(
-          appearance: widget.appearance,
-          focused: _focus.hasFocus,
-          enabled: live,
-          invalid: widget.invalid || (scope?.invalid ?? false),
-          textNode: true,
-          minHeight: h,
-          padding: EdgeInsetsDirectional.only(
-            start:
-                (small ? Fluent2Spacing.s : Fluent2Spacing.mNudge) -
-                strokes.left,
-          ),
-          child: SizedBox(
-            height: touch ? target : math.max(h - strokes.vertical, 0),
-            child: Row(
-              spacing: Fluent2Spacing.xs,
-              children: touch
-                  ? [
-                      Expanded(child: editor),
-                      SizedBox(width: target, child: down),
-                      SizedBox(width: target, child: up),
-                    ]
-                  : [
-                      Expanded(child: editor),
-                      SizedBox(
-                        width: 24,
-                        child: Column(
-                          children: [
-                            Expanded(child: up),
-                            Expanded(child: down),
-                          ],
-                        ),
+      child: Fluent2FieldFrame(
+        appearance: widget.appearance,
+        style: widget.style,
+        focused: _focus.hasFocus,
+        enabled: live,
+        invalid: widget.invalid || (scope?.invalid ?? false),
+        textNode: true,
+        minHeight: h,
+        padding: EdgeInsetsDirectional.only(
+          start:
+              (small ? Fluent2Spacing.s : Fluent2Spacing.mNudge) - strokes.left,
+        ),
+        child: SizedBox(
+          height: touch ? target : math.max(h - strokes.vertical, 0),
+          child: Row(
+            spacing: Fluent2Spacing.xs,
+            children: touch
+                ? [
+                    Expanded(child: editor),
+                    SizedBox(width: target, child: down),
+                    SizedBox(width: target, child: up),
+                  ]
+                : [
+                    Expanded(child: editor),
+                    SizedBox(
+                      width: 24,
+                      child: Column(
+                        children: [
+                          Expanded(child: up),
+                          Expanded(child: down),
+                        ],
                       ),
-                    ],
-            ),
+                    ),
+                  ],
           ),
         ),
       ),
@@ -312,7 +360,7 @@ class _Stepper extends StatelessWidget {
         c.neutralBackground1Hover,
         c.neutralBackground1Pressed,
       ),
-      _ => (c.subtleBackgroundHover, c.subtleBackgroundPressed),
+      _ => (c.subtleBackgroundHover, fluent2Step(t, c.subtleBackgroundPressed)),
     };
     return Fluent2Pressable(
       onPressed: onTap,

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../internal/presets.g.dart' show sharedDark, sharedLight;
@@ -174,6 +175,25 @@ class Fluent2Sparkline extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<double>('values', values))
+      ..add(
+        EnumProperty<Fluent2ChartHue>(
+          'hue',
+          hue,
+          defaultValue: Fluent2ChartHue.brand,
+        ),
+      )
+      ..add(FlagProperty('area', value: area, ifTrue: 'area'))
+      ..add(DoubleProperty('height', height, defaultValue: 32))
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(ColorProperty('ground', ground, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -411,5 +431,25 @@ class Fluent2BarChart extends StatelessWidget {
               child: row,
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2Bar>('bars', bars))
+      ..add(IntProperty('highlight', highlight, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>?>.has('onHighlight', onHighlight),
+      )
+      ..add(
+        EnumProperty<Fluent2ChartHue>(
+          'hue',
+          hue,
+          defaultValue: Fluent2ChartHue.brand,
+        ),
+      )
+      ..add(DoubleProperty('height', height, defaultValue: 160))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }

@@ -1,12 +1,12 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
-import '../internal/bar_gutter.dart';
 import '../internal/footer_band.dart';
 import '../internal/layer.dart';
 import '../internal/report_height.dart';
@@ -99,6 +99,20 @@ class Fluent2Scaffold extends StatefulWidget {
 
   @override
   State<Fluent2Scaffold> createState() => _Fluent2ScreenState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('scroll', value: scroll, ifFalse: 'scroll: false'))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _Fluent2ScreenState extends State<Fluent2Scaffold> {
@@ -170,15 +184,23 @@ class _Fluent2ScreenState extends State<Fluent2Scaffold> {
         child: content,
       );
       if (!wide) return inner;
-      return Align(
-        alignment: AlignmentDirectional.topStart,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth:
-                Fluent2ChromeMetrics.pageMaxWidth + room.left + room.right,
-          ),
-          child: inner,
-        ),
+      final cap = Fluent2ChromeMetrics.pageMaxWidth + room.left + room.right;
+      final gutter = Fluent2Layout.gutter(context);
+      return LayoutBuilder(
+        builder: (context, box) {
+          // The column stops at 1120 only where that leaves the layer's end
+          // clear by a gutter or more: stopped a few pixels short of the
+          // gutter the head ends on, it reads as a missed edge, so it fills
+          // the layer to that gutter instead. Inset at its end, the body
+          // still fills its column.
+          if (!box.hasBoundedWidth || box.maxWidth - cap < gutter) {
+            return inner;
+          }
+          return Padding(
+            padding: EdgeInsetsDirectional.only(end: box.maxWidth - cap),
+            child: inner,
+          );
+        },
       );
     }
 
@@ -396,5 +418,51 @@ class Fluent2BarBand extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('top', top));
+  }
+}
+
+/// The page's gutter at a phone's pinned top bar: the screen hands it to
+/// the bar instead of padding the bar itself, and the bar stands each end
+/// that far in less the room its end part keeps round what it shows, so
+/// the back arrow, the avatar's face and the last glyph meet the keylines
+/// the page's words use while every target stays whole.
+/// Plumbing of the screen and the bar, as [Fluent2BarBand] is; pages never
+/// place one.
+class Fluent2BarGutter extends InheritedWidget {
+  /// Hands [child]'s bar the page gutter at its [start] and [end].
+  const Fluent2BarGutter({
+    required this.start,
+    required this.end,
+    required super.child,
+    super.key,
+  });
+
+  /// The gutter at the bar's start and at its end.
+  final double start;
+
+  /// The gutter at the bar's end.
+  final double end;
+
+  /// The gutter round [context]'s bar; null outside a screen's pinned bar
+  /// (a bar placed on its own keeps to the room it is given).
+  static Fluent2BarGutter? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<Fluent2BarGutter>();
+
+  @override
+  bool updateShouldNotify(Fluent2BarGutter oldWidget) =>
+      start != oldWidget.start || end != oldWidget.end;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('start', start))
+      ..add(DoubleProperty('end', end));
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -7,6 +8,10 @@ import '../../localizations.dart';
 import '../../theme.dart';
 import '../input/field_core.dart';
 import '../pressable/pressable.dart';
+import '../radio/radio.dart';
+import '../segmented/segmented.dart';
+import '../tag/tag.dart';
+import '../toolbar/toolbar.dart';
 
 /// What a field's validation says, Fluent's `validationState`: [error]
 /// the red diamond and red words (and the control's red stroke),
@@ -115,6 +120,29 @@ class Fluent2Label extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(FlagProperty('required', value: required, ifTrue: 'required'))
+      ..add(
+        EnumProperty<Fluent2InputSize>(
+          'size',
+          size,
+          defaultValue: Fluent2InputSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2LabelWeight>(
+          'weight',
+          weight,
+          defaultValue: Fluent2LabelWeight.regular,
+        ),
+      )
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'));
+  }
 }
 
 /// Fluent 2's InfoLabel: a [Fluent2Label] with the info button after it
@@ -155,6 +183,23 @@ class Fluent2InfoLabel extends StatefulWidget {
 
   @override
   State<Fluent2InfoLabel> createState() => _Fluent2InfoLabelState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(StringProperty('info', info))
+      ..add(FlagProperty('required', value: required, ifTrue: 'required'))
+      ..add(
+        EnumProperty<Fluent2InputSize>(
+          'size',
+          size,
+          defaultValue: Fluent2InputSize.medium,
+        ),
+      )
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'));
+  }
 }
 
 class _Fluent2InfoLabelState extends State<Fluent2InfoLabel> {
@@ -322,6 +367,10 @@ class _Validation extends StatelessWidget {
 /// caption1 in the third ink, 2 apart. The control takes the field's label
 /// as its spoken name and, for an error, its red stroke.
 /// [Fluent2FieldOrientation.horizontal] stands the label in the start third.
+/// A group of choices (a radio group, a segmented control, toolbar toggles,
+/// tags) is named by the label as a group, each choice keeping its own
+/// node a screen reader reaches; a single control takes the label, hint
+/// and validity into its own node.
 ///
 /// ```dart
 /// Fluent2FormField(label: 'Email', required: true, helper: 'We send the invite here.', child: Fluent2TextField(value: email, onChanged: (v) => setState(() => email = v)))
@@ -405,6 +454,7 @@ class Fluent2FormField extends StatelessWidget {
     // control invalid.
     final help = [if (message != null && !error) message, ?helper];
     return DesignField(
+      mergeSemantics: !_isGroup(child),
       labelText: words,
       helperText: help.isEmpty ? null : help.join(' '),
       errorText: error ? message : null,
@@ -423,12 +473,33 @@ class Fluent2FormField extends StatelessWidget {
     );
   }
 
+  /// Whether [w] is a group of choices, through the boxes that place it.
+  static bool _isGroup(Widget w) => switch (w) {
+    Fluent2RadioGroup() ||
+    Fluent2SegmentedButton() ||
+    Fluent2ToolbarToggleGroup() ||
+    Fluent2ToolbarGroup() ||
+    Fluent2TagGroup() => true,
+    Align(:final child?) ||
+    Padding(:final child?) ||
+    SizedBox(:final child?) ||
+    ConstrainedBox(:final child?) => _isGroup(child),
+    _ => false,
+  };
+
   Widget _layout(
     BuildContext context, {
     required Widget? head,
     required Widget control,
     required List<Widget> under,
   }) {
+    // From where a select keeps its own width, the control stands at its
+    // own width at the start, so the node a screen reader outlines (the
+    // field's, which the control joins) is the box a tap reaches, not the
+    // column's.
+    final placed = fluent2Roomy(context)
+        ? Align(alignment: AlignmentDirectional.centerStart, child: control)
+        : control;
     Widget vertical() => Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -438,7 +509,10 @@ class Fluent2FormField extends StatelessWidget {
             // Fluent: 2 over and under the label and 2 after it (large: 1
             // and 4).
             padding: size == Fluent2InputSize.large
-                ? const EdgeInsets.only(top: 1, bottom: 1 + Fluent2Spacing.xs)
+                ? const EdgeInsets.only(
+                    top: Fluent2Stroke.thin,
+                    bottom: Fluent2Stroke.thin + Fluent2Spacing.xs,
+                  )
                 : const EdgeInsets.only(
                     top: Fluent2Spacing.xxs,
                     bottom: Fluent2Spacing.xxs * 2,
@@ -448,7 +522,7 @@ class Fluent2FormField extends StatelessWidget {
               child: head,
             ),
           ),
-        control,
+        placed,
         ...under,
       ],
     );
@@ -483,13 +557,51 @@ class Fluent2FormField extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [control, ...under],
+                children: [placed, ...under],
               ),
             ),
           ],
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('required', value: required, ifTrue: 'required'))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(
+        StringProperty(
+          'validationMessage',
+          validationMessage,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ValidationState>(
+          'validationState',
+          validationState,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('info', info, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2FieldOrientation>(
+          'orientation',
+          orientation,
+          defaultValue: Fluent2FieldOrientation.vertical,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2InputSize>(
+          'size',
+          size,
+          defaultValue: Fluent2InputSize.medium,
+        ),
+      );
   }
 }
 
@@ -582,5 +694,14 @@ class Fluent2FormSection extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('description', description, defaultValue: null))
+      ..add(StringProperty('footnote', footnote, defaultValue: null));
   }
 }

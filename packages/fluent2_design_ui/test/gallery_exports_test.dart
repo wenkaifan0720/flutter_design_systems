@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
 import 'gallery_support.dart';
 
@@ -61,40 +62,51 @@ void main() {
     expect(exportedWidgets().length, greaterThan(100));
   });
 
-  testWidgets('every exported widget is built by a gallery page', (t) async {
-    final built = <String>{};
-    for (final width in const [390.0, 1440.0]) {
-      for (final page in galleryPages) {
-        t.view.devicePixelRatio = 1;
-        t.view.physicalSize = Size(width, 1000);
-        addTearDown(t.view.reset);
-        await t.pumpWidget(
-          KeyedSubtree(
-            key: ValueKey('${page.id}/$width'),
-            child: page.build(Brightness.light),
-          ),
-        );
-        await settle(t);
-        expect(t.takeException(), isNull, reason: '${page.id} at $width');
-        for (final e
-            in find
-                .byWidgetPredicate((_) => true, skipOffstage: false)
-                .evaluate()) {
-          built.add(e.widget.runtimeType.toString().split('<').first);
+  // Out of the package's leak tracking (flutter_test_config.dart): this one test builds every page twice, and the
+  // tracker keeps a record of every object each build makes until the test ends, more than the Linux run's 8 GB
+  // holds beside its other tests (11-15). Each part's own tests, and every page's guideline tests, hold the leaks.
+  testWidgets(
+    'every exported widget is built by a gallery page',
+    experimentalLeakTesting: LeakTesting.settings.withIgnoredAll(),
+    (t) async {
+      final built = <String>{};
+      for (final width in const [390.0, 1440.0]) {
+        for (final page in galleryPages) {
+          t.view.devicePixelRatio = 1;
+          t.view.physicalSize = Size(width, 1000);
+          addTearDown(t.view.reset);
+          await t.pumpWidget(
+            KeyedSubtree(
+              key: ValueKey('${page.id}/$width'),
+              child: page.build(Brightness.light),
+            ),
+          );
+          await settle(t);
+          expect(t.takeException(), isNull, reason: '${page.id} at $width');
+          for (final e
+              in find
+                  .byWidgetPredicate((_) => true, skipOffstage: false)
+                  .evaluate()) {
+            built.add(e.widget.runtimeType.toString().split('<').first);
+          }
+          await t.pumpWidget(const SizedBox());
+          await t.pump(const Duration(seconds: 2));
         }
-        await t.pumpWidget(const SizedBox());
-        await t.pump(const Duration(seconds: 2));
       }
-    }
-    final missing = exportedWidgets()
-        .difference(built)
-        .difference(onDemand.keys.toSet());
-    expect(
-      missing,
-      isEmpty,
-      reason:
-          'built by no gallery page: ${missing.toList()..sort()}; add each to a '
-          'page, or to onDemand with the page whose button raises it',
-    );
-  });
+      // The cache lets go of an image's handle after the next frame, so the
+      // frame runs here, inside the test, rather than never.
+      releaseImages();
+      await t.pump();
+      final missing = exportedWidgets()
+          .difference(built)
+          .difference(onDemand.keys.toSet());
+      expect(
+        missing,
+        isEmpty,
+        reason:
+            'built by no gallery page: ${missing.toList()..sort()}; add each to a '
+            'page, or to onDemand with the page whose button raises it',
+      );
+    },
+  );
 }

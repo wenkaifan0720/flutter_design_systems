@@ -20,13 +20,14 @@ void main() {
     for (final (preset, b) in presetsAndModes) {
       testWidgets(
         '${page.id} in $preset ${b.name} meets the target guidelines',
+        experimentalLeakTesting: leakTestingIn(preset),
         (tester) async {
           final semantics = tester.ensureSemantics();
           try {
             await pumpGalleryPage(tester, page, preset, b);
             final failed = <String>[];
             for (final (name, guideline) in [
-              ('Android 48 px targets', androidTapTargetGuideline),
+              ('Android 48 px targets', androidTargetGuideline),
               ('iOS 44 px targets', iOSTapTargetGuideline),
               ('labelled targets', labeledTapTargetGuideline),
             ]) {
@@ -42,6 +43,7 @@ void main() {
 
       testWidgets(
         '${page.id} in $preset ${b.name} meets the text contrast guideline',
+        experimentalLeakTesting: leakTestingIn(preset),
         (tester) async {
           final semantics = tester.ensureSemantics();
           try {

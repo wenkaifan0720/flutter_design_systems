@@ -50,6 +50,40 @@ Widget _screen(RoutePresentation presentation, TextDirection direction) {
 }
 
 void main() {
+  // On the desktop the head ends on the layer's gutter and the column stops
+  // at 1120; where 1120 would leave the column a few pixels short of that
+  // gutter (1440 beside the nav pane: 12), the column fills to it.
+  for (final (layer, width) in const [
+    (1180.0, 1180.0 - 48),
+    (1920.0, 1120.0),
+  ]) {
+    testWidgets('desktop $layer: the column ends on the head\'s gutter or '
+        'stops at 1120', (t) async {
+      addTearDown(t.view.reset);
+      t.view.physicalSize = Size(layer, 900);
+      t.view.devicePixelRatio = 1;
+      debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
+      try {
+        await t.pumpWidget(
+          MaterialApp(
+            debugShowCheckedModeBanner: false,
+            builder: (context, route) => Fluent2Host(child: route!),
+            home: const Fluent2Scaffold(
+              topBar: Fluent2AppBar(title: 'Home'),
+              body: SizedBox(key: ValueKey('column'), height: 40),
+            ),
+          ),
+        );
+        await t.pumpAndSettle();
+        final column = t.getRect(find.byKey(const ValueKey('column')));
+        expect(column.left, moreOrLessEquals(24, epsilon: 0.5));
+        expect(column.width, moreOrLessEquals(width, epsilon: 0.5));
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
+    });
+  }
+
   for (final platform in [TargetPlatform.android, TargetPlatform.macOS]) {
     for (final presentation in [
       RoutePresentation.root,

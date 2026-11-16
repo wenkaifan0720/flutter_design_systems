@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 
@@ -106,7 +107,11 @@ class Fluent2ProgressBar extends StatefulWidget {
     this.hint,
     this.semanticLabel,
     super.key,
-  });
+  }) : assert(max > 0, 'progress toward a positive max'),
+       assert(
+         value == null || (value >= 0 && value <= max),
+         'progress between none and max',
+       );
 
   /// How far along, of [max]; null is indeterminate.
   final double? value;
@@ -134,6 +139,38 @@ class Fluent2ProgressBar extends StatefulWidget {
 
   @override
   State<Fluent2ProgressBar> createState() => _Fluent2ProgressBarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(
+        EnumProperty<Fluent2ProgressThickness>(
+          'thickness',
+          thickness,
+          defaultValue: Fluent2ProgressThickness.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ProgressShape>(
+          'shape',
+          shape,
+          defaultValue: Fluent2ProgressShape.rounded,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ProgressColor>(
+          'color',
+          color,
+          defaultValue: Fluent2ProgressColor.brand,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 }
 
 class _Fluent2ProgressBarState extends State<Fluent2ProgressBar>
@@ -339,7 +376,7 @@ class Fluent2SegmentBarPart {
     this.value, {
     this.valueText,
     this.hue,
-  });
+  }) : assert(value >= 0, 'a segment is never negative');
 
   /// The part's name, in the legend.
   final String label;
@@ -376,7 +413,8 @@ class Fluent2SegmentBar extends StatelessWidget {
     this.legend = true,
     this.label,
     super.key,
-  });
+  }) : assert(total == null || total > 0, 'a positive total'),
+       assert(thickness > 0, 'a bar of some thickness');
 
   /// The parts, in order.
   final List<Fluent2SegmentBarPart> segments;
@@ -484,6 +522,17 @@ class Fluent2SegmentBar extends StatelessWidget {
               ],
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2SegmentBarPart>('segments', segments))
+      ..add(DoubleProperty('total', total, defaultValue: null))
+      ..add(DoubleProperty('thickness', thickness, defaultValue: 8))
+      ..add(FlagProperty('legend', value: legend, ifFalse: 'legend: false'))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 

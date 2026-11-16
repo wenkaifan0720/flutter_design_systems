@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
@@ -120,6 +121,49 @@ class Fluent2Accordion extends StatefulWidget {
 
   @override
   State<Fluent2Accordion> createState() => _Fluent2AccordionState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2AccordionItem>('items', items))
+      ..add(FlagProperty('multiple', value: multiple, ifTrue: 'multiple'))
+      ..add(
+        FlagProperty(
+          'collapsible',
+          value: collapsible,
+          ifFalse: 'collapsible: false',
+        ),
+      )
+      ..add(IterableProperty<Object>('expanded', expanded, defaultValue: null))
+      ..add(
+        IterableProperty<Object>(
+          'initiallyExpanded',
+          initiallyExpanded,
+          defaultValue: const <Object>{},
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<void Function(Object value, bool open)?>.has(
+          'onExpansionChanged',
+          onExpansionChanged,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2AccordionSize>(
+          'size',
+          size,
+          defaultValue: Fluent2AccordionSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ExpandIconPosition>(
+          'expandIconPosition',
+          expandIconPosition,
+          defaultValue: Fluent2ExpandIconPosition.start,
+        ),
+      );
+  }
 }
 
 class _Fluent2AccordionState extends State<Fluent2Accordion> {

@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/host.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../theme.dart';
 
@@ -18,7 +20,7 @@ import '../theme.dart';
 /// frame it follows the frame's register.
 ///
 /// ```dart
-/// MaterialApp.router(builder: (context, child) => Fluent2Host(child: child!))
+/// MaterialApp.router(routerConfig: router, builder: (context, child) => Fluent2Host(child: child!))
 /// ```
 class Fluent2Host extends StatelessWidget {
   /// Mounts Fluent 2 over [child].
@@ -106,15 +108,49 @@ class Fluent2Host extends StatelessWidget {
         curve: Fluent2Motion.easyEase,
         child: AnnotatedRegion<SystemUiOverlayStyle>(
           value: systemBarsOf(t),
-          child: Builder(
-            builder: (context) => ColoredBox(
-              color: context.fluent2Theme.background,
-              child: _HostMark(child: child),
+          // Fluent's tap targets: 48 where a finger reaches the controls
+          // (Fluent2Layout.touchHitTarget), WCAG's 24 for a pointer; each
+          // control lays out at least that big (DesignTapTarget).
+          child: DesignTapTargetScope(
+            targets: DesignTapTargets(
+              touch: const Size.square(Fluent2Layout.touchHitTarget),
+              input: Fluent2Layout.padded(context)
+                  ? DesignInput.touch
+                  : DesignInput.pointer,
+            ),
+            child: Builder(
+              builder: (context) => ColoredBox(
+                color: context.fluent2Theme.background,
+                child: _HostMark(child: child),
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2ThemeData>(
+          'light',
+          light,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Fluent2ThemeData>(
+          'darkData',
+          darkData,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
+      );
   }
 }
 

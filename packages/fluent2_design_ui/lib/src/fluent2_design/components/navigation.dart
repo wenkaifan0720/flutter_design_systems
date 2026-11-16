@@ -1,10 +1,10 @@
 // Ways round an app the inventory adds: the rail, the pager, the step heading and the page dots.
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../icons.dart';
-import '../internal/hit_slop.dart';
 import '../internal/well.dart';
 import '../localizations.dart';
 import '../theme.dart';
@@ -109,6 +109,21 @@ class Fluent2NavigationRail extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2NavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>?>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// A pager of subtle buttons: a chevron each way, the page numbers with gaps
@@ -191,14 +206,14 @@ class Fluent2Pagination extends StatelessWidget {
               borderRadius: BorderRadius.circular(Fluent2Radius.medium),
               color: current
                   ? press.pick(
-                      t.colors.subtleBackgroundSelected,
-                      t.colors.subtleBackgroundHover,
-                      t.colors.subtleBackgroundPressed,
+                      fluent2Step(t, t.colors.subtleBackgroundSelected),
+                      fluent2Step(t, t.colors.subtleBackgroundHover),
+                      fluent2Step(t, t.colors.subtleBackgroundPressed),
                     )
                   : press.pick(
                       t.colors.subtleBackground,
-                      t.colors.subtleBackgroundHover,
-                      t.colors.subtleBackgroundPressed,
+                      fluent2Step(t, t.colors.subtleBackgroundHover),
+                      fluent2Step(t, t.colors.subtleBackgroundPressed),
                     ),
             ),
             child: Text(
@@ -232,49 +247,57 @@ class Fluent2Pagination extends StatelessWidget {
                     (shown.length + 1) * Fluent2Spacing.xxs
               : (shown.length + 2) * 44.0;
           final fits = !box.hasBoundedWidth || box.maxWidth >= need;
-          return Fluent2HitSlop(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: Fluent2Spacing.xxs,
-              children: [
-                chevron(true),
-                if (fits)
-                  for (final p in shown)
-                    if (p == null)
-                      SizedBox(
-                        width: 32,
-                        child: ExcludeSemantics(
-                          child: Text(
-                            '…',
-                            textAlign: TextAlign.center,
-                            style: t.body1.c(t.textTertiary),
-                          ),
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            spacing: Fluent2Spacing.xxs,
+            children: [
+              chevron(true),
+              if (fits)
+                for (final p in shown)
+                  if (p == null)
+                    SizedBox(
+                      width: 32,
+                      child: ExcludeSemantics(
+                        child: Text(
+                          '…',
+                          textAlign: TextAlign.center,
+                          style: t.body1.c(t.textTertiary),
                         ),
-                      )
-                    else
-                      number(p)
-                else
-                  Flexible(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: Fluent2Spacing.s,
                       ),
-                      child: Text(
-                        words.pageOf(page, pages),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: t.body1.tabular,
-                      ),
+                    )
+                  else
+                    number(p)
+              else
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Fluent2Spacing.s,
+                    ),
+                    child: Text(
+                      words.pageOf(page, pages),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: t.body1.tabular,
                     ),
                   ),
-                chevron(false),
-              ],
-            ),
+                ),
+              chevron(false),
+            ],
           );
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('page', page))
+      ..add(IntProperty('pages', pages))
+      ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -353,6 +376,16 @@ class Fluent2StepProgress extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('currentStep', currentStep))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('phase', phase, defaultValue: null));
+  }
 }
 
 /// Fluent's carousel nav: a dot for each page, 8 round in the accessible
@@ -371,7 +404,11 @@ class Fluent2PageDots extends StatelessWidget {
     required this.label,
     this.onChanged,
     this.position,
-  });
+  }) : assert(count > 0, 'dots for at least one page'),
+       assert(
+         selectedIndex >= 0 && selectedIndex < count,
+         'the selected page is one of the dots',
+       );
 
   /// How many pages.
   final int count;
@@ -480,5 +517,16 @@ class Fluent2PageDots extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onChanged', onChanged))
+      ..add(DoubleProperty('position', position, defaultValue: null));
   }
 }

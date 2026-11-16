@@ -1,0 +1,8 @@
+# The fix tests' own options. The package's analysis leaves test_fixes/ out, so `dart fix --compare-to-golden
+# test_fixes` reads these. A deprecated member used inside its own package raises no diagnostic unless this lint is
+# on, and without a diagnostic dart fix applies none of lib/fix_data.yaml's fixes.
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    deprecated_member_use_from_same_package: true

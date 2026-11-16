@@ -96,7 +96,7 @@ class _LayerEdge extends CustomPainter {
       path
         ..moveTo(h, size.height)
         ..lineTo(h, r)
-        ..arcToPoint(Offset(r, h), radius: const Radius.circular(r - h))
+        ..arcToPoint(const Offset(r, h), radius: const Radius.circular(r - h))
         ..lineTo(size.width, h);
     }
     canvas.drawPath(

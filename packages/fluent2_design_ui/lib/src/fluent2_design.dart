@@ -42,6 +42,7 @@ export 'fluent2_design/components/message_bar/message_bar.dart';
 export 'fluent2_design/components/nav_bar.dart';
 export 'fluent2_design/components/nav_pane.dart';
 export 'fluent2_design/components/navigation.dart';
+export 'fluent2_design/components/page_motion.dart';
 export 'fluent2_design/components/popover/popover.dart';
 export 'fluent2_design/components/pressable/pressable.dart'
     show
@@ -85,8 +86,8 @@ export 'fluent2_design/theme.dart';
 
 // The shared kit's values the look's parts take and hand back: a range, a
 // date range and its calendar, a colour, a table's rows and columns, a code,
-// a menu bar's entries, a command, where a flyout opens, a toast's handle and
-// the inventory.
+// a menu bar's entries, a command, where a flyout opens, a toast's handle,
+// the inventory, and iOS's swipe back round a page's push.
 export 'package:ui_core/ui_core.dart'
     show DesignOverlaySide, DesignOverlayAlign;
 export 'package:ui_core/ui_core.dart'
@@ -96,6 +97,8 @@ export 'package:ui_core/ui_core.dart'
     show DesignTableController, DesignTableColumn, DesignSortDirection;
 export 'package:ui_core/inventory.dart'
     show DesignInventory, DesignInventoryEntry, DesignInventoryRow;
+export 'package:ui_core/ui_core.dart'
+    show DesignSwipeBackPageTransitionsBuilder, designSwipeBack;
 export 'package:ui_core/ui_core.dart' show DesignRangeValues;
 export 'package:ui_core/ui_core.dart' show DesignSheetEdge;
 export 'package:ui_core/ui_core.dart' show DesignToastHandle;

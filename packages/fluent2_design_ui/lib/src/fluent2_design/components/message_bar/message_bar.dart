@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
@@ -185,10 +188,32 @@ class Fluent2MessageBar extends StatelessWidget {
           );
           final Widget content;
           if (multi) {
+            // The glyph, the first line of words and the dismiss share one
+            // band, each centred in it: the line with its 10 above and
+            // below, or the dismiss's face when that is taller (32, the
+            // whole 48 under a finger), however many lines follow and
+            // however large the words.
+            final ambient = DefaultTextStyle.of(context);
+            final probe = TextPainter(
+              text: TextSpan(text: ' ', style: ambient.style),
+              textDirection: Directionality.of(context),
+              textScaler: MediaQuery.textScalerOf(context),
+              textHeightBehavior: ambient.textHeightBehavior,
+            )..layout();
+            final line = probe.height;
+            probe.dispose();
+            final face = dismiss == null
+                ? 0.0
+                : Fluent2Layout.padded(context)
+                ? Fluent2Layout.touchHitTarget
+                : 32.0;
+            final band = math.max(line + 2 * Fluent2Spacing.mNudge, face);
+            final wordsTop = (band - line) / 2;
+            final glyphTop = (band - 20) / 2;
+            final dismissTop = (band - face) / 2;
             content = Padding(
               padding: const EdgeInsetsDirectional.only(
                 start: Fluent2Spacing.m,
-                top: Fluent2Spacing.mNudge,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -197,11 +222,15 @@ class Fluent2MessageBar extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      glyph,
+                      Padding(
+                        padding: EdgeInsets.only(top: glyphTop),
+                        child: glyph,
+                      ),
                       const SizedBox(width: Fluent2Spacing.s),
                       Expanded(
                         child: Padding(
                           padding: EdgeInsetsDirectional.only(
+                            top: wordsTop,
                             end: Fluent2Spacing.m,
                             bottom: actions.isEmpty ? Fluent2Spacing.mNudge : 0,
                           ),
@@ -210,7 +239,8 @@ class Fluent2MessageBar extends StatelessWidget {
                       ),
                       if (dismiss != null)
                         Padding(
-                          padding: const EdgeInsetsDirectional.only(
+                          padding: EdgeInsetsDirectional.only(
+                            top: dismissTop,
                             end: Fluent2Spacing.m,
                           ),
                           child: dismiss,
@@ -287,5 +317,31 @@ class Fluent2MessageBar extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('body', body))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2MessageIntent>(
+          'intent',
+          intent,
+          defaultValue: Fluent2MessageIntent.info,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onDismiss', onDismiss))
+      ..add(
+        EnumProperty<Fluent2MessageLayout>(
+          'layout',
+          layout,
+          defaultValue: Fluent2MessageLayout.auto,
+        ),
+      )
+      ..add(FlagProperty('square', value: square, ifTrue: 'square'))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('dismissLabel', dismissLabel, defaultValue: null));
   }
 }

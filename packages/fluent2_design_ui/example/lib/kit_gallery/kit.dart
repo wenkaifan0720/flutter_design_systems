@@ -13,14 +13,18 @@
 /// Fluent 2 depends on.
 library;
 
+import 'package:flutter/cupertino.dart'
+    show CupertinoLocalizations, DefaultCupertinoLocalizations;
 import 'package:flutter/material.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
 import 'theme.dart';
+import 'words.dart';
 
 export 'northwind.dart' show KitNorthwind, KitNorthwindRoot;
 export 'photo.dart' show kitPhoto;
+export 'words.dart' show kitArabic, kitW;
 
 /// A demo screen: a scrolling nav root titled [title], with labelled
 /// sections, one per variant or state. [footer] pins a widget under the
@@ -36,7 +40,7 @@ Widget kitScreen({
   return _kitApp(
     brightness: brightness,
     home: Fluent2Scaffold(
-      topBar: Fluent2AppBar(title: title),
+      topBar: Fluent2AppBar(title: kitW(title)),
       footer: footer,
       body:
           body ??
@@ -70,6 +74,56 @@ Fluent2ThemeData Function(Brightness brightness)? kitShownTheme;
 /// app's band (or a test) picks right to left.
 TextDirection kitShownDirection = TextDirection.ltr;
 
+/// The gallery's language: Arabic while it reads right to left, else
+/// English.
+Locale get kitLocale => kitShownDirection == TextDirection.rtl
+    ? const Locale('ar')
+    : const Locale('en');
+
+/// Flutter's own words (Material's, Cupertino's, the widgets') for the
+/// gallery's apps: English in any locale here, which the machinery under the
+/// look never shows. The example's main gives flutter_localizations'
+/// `GlobalMaterialLocalizations.delegates` instead, as an ordinary app does.
+List<LocalizationsDelegate<Object?>> kitFlutterLocalizations = const [
+  KitAnyLocaleEnglish<MaterialLocalizations>(
+    DefaultMaterialLocalizations.delegate,
+  ),
+  KitAnyLocaleEnglish<CupertinoLocalizations>(
+    DefaultCupertinoLocalizations.delegate,
+  ),
+];
+
+/// The words the gallery's apps load: ui_core's in the app's language, one of
+/// 30 ([DesignLocalizations.supportedLocales]), Fluent 2's own (English where
+/// the gallery gives none) and Flutter's ([kitFlutterLocalizations]).
+List<LocalizationsDelegate<Object?>> get kitLocalizations => [
+  DesignLocalizations.delegate,
+  Fluent2Localizations.delegate,
+  ...kitFlutterLocalizations,
+];
+
+/// Flutter's English words of type [T] in any locale (see
+/// [kitFlutterLocalizations]).
+class KitAnyLocaleEnglish<T> extends LocalizationsDelegate<T> {
+  /// [english]'s words, loaded for any locale.
+  const KitAnyLocaleEnglish(this.english);
+
+  /// The English delegate.
+  final LocalizationsDelegate<T> english;
+
+  @override
+  bool isSupported(Locale locale) => true;
+
+  @override
+  Future<T> load(Locale locale) => english.load(const Locale('en'));
+
+  @override
+  bool shouldReload(KitAnyLocaleEnglish<T> old) => false;
+
+  @override
+  Type get type => T;
+}
+
 /// The text scale the gallery shows: the platform's unless the example app's
 /// link asks for one (`text=200`).
 double? kitShownTextScale;
@@ -80,21 +134,38 @@ Fluent2ThemeData kitTheme(Brightness brightness) =>
     kitShownTheme?.call(brightness) ??
     Fluent2ThemeData.preset(kitShownPreset, brightness);
 
+/// The theme of the demos' own app widget: Fluent 2's page motion, so a
+/// route a demo pushes on its app's navigator (a `MaterialPageRoute`) moves
+/// as the look's own do, whichever Material library the app stands on.
+/// Made afresh each time, so it reads the platform the app runs on now.
+ThemeData get kitAppTheme => ThemeData(
+  pageTransitionsTheme: const PageTransitionsTheme(
+    builders: fluent2PageTransitions,
+  ),
+);
+
 Widget _kitApp({required Brightness brightness, required Widget home}) =>
     MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: kitAppTheme,
+      locale: kitLocale,
+      localizationsDelegates: kitLocalizations,
+      supportedLocales: DesignLocalizations.supportedLocales,
       title: 'Northwind',
-      builder: (context, child) => Directionality(
-        textDirection: kitShownDirection,
-        child: _kitTextScale(
-          context,
-          Fluent2Host(
-            light: kitTheme(Brightness.light),
-            darkData: kitTheme(Brightness.dark),
-            brightness: brightness,
-            child: Fluent2AccountScope(
-              account: kitInes,
-              child: child ?? const SizedBox.shrink(),
+      builder: (context, child) => kitWordsScope(
+        context,
+        Directionality(
+          textDirection: kitShownDirection,
+          child: _kitTextScale(
+            context,
+            Fluent2Host(
+              light: kitTheme(Brightness.light),
+              darkData: kitTheme(Brightness.dark),
+              brightness: brightness,
+              child: Fluent2AccountScope(
+                account: _kitOwner,
+                child: child ?? const SizedBox.shrink(),
+              ),
             ),
           ),
         ),
@@ -112,6 +183,50 @@ String kitSay(Enum value) {
   return words[0].toUpperCase() + words.substring(1);
 }
 
+/// [child] at the width it stands at once shown on a desktop ([width]: a
+/// sheet's dialog, a toast), from its start; a phone's column as it is.
+Widget kitAsShown(double width, Widget child) => Builder(
+  builder: (context) => !Fluent2Layout.isWide(context)
+      ? child
+      : Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: width),
+            child: child,
+          ),
+        ),
+);
+
+/// A specimen that owns a controller while it stands, as an app's page
+/// does: [make] makes it the first time the specimen builds, and it is
+/// disposed with the specimen.
+class KitOwned<T extends ChangeNotifier> extends StatefulWidget {
+  /// A specimen built by [builder] round the controller [make] makes.
+  const KitOwned(this.make, this.builder, {super.key});
+
+  /// Makes the controller, once.
+  final T Function() make;
+
+  /// Builds the specimen round the controller.
+  final Widget Function(BuildContext context, T controller) builder;
+
+  @override
+  State<KitOwned<T>> createState() => _KitOwnedState<T>();
+}
+
+class _KitOwnedState<T extends ChangeNotifier> extends State<KitOwned<T>> {
+  late final T _controller = widget.make();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(context, _controller);
+}
+
 /// One labelled variant band inside a demo screen. Its repaint boundary,
 /// keyed `kit-section/<label>`, is what a section's golden captures.
 Widget kitSection(String label, {required List<Widget> children}) =>
@@ -123,7 +238,7 @@ Widget kitSection(String label, {required List<Widget> children}) =>
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(label, style: t.caption1Strong.c(t.textSecondary)),
+              Text(kitW(label), style: t.caption1Strong.c(t.textSecondary)),
               const Fluent2Gap(Fluent2Spacing.m),
               for (final child in children) ...[
                 child,
@@ -150,19 +265,26 @@ Widget kitRouterApp({
   required RouterConfig<Object> router,
 }) => MaterialApp.router(
   debugShowCheckedModeBanner: false,
+  theme: kitAppTheme,
+  locale: kitLocale,
+  localizationsDelegates: kitLocalizations,
+  supportedLocales: DesignLocalizations.supportedLocales,
   title: 'Northwind',
   routerConfig: router,
-  builder: (context, child) => Directionality(
-    textDirection: kitShownDirection,
-    child: _kitTextScale(
-      context,
-      Fluent2Host(
-        light: kitTheme(Brightness.light),
-        darkData: kitTheme(Brightness.dark),
-        brightness: brightness,
-        child: Fluent2AccountScope(
-          account: kitInes,
-          child: child ?? const SizedBox.shrink(),
+  builder: (context, child) => kitWordsScope(
+    context,
+    Directionality(
+      textDirection: kitShownDirection,
+      child: _kitTextScale(
+        context,
+        Fluent2Host(
+          light: kitTheme(Brightness.light),
+          darkData: kitTheme(Brightness.dark),
+          brightness: brightness,
+          child: Fluent2AccountScope(
+            account: _kitOwner,
+            child: child ?? const SizedBox.shrink(),
+          ),
         ),
       ),
     ),
@@ -202,6 +324,19 @@ const kitInes = Fluent2Account(
 
 void _openNothing(BuildContext context) {}
 
+/// The owner in the gallery's words: [kitInes], her name in Arabic when the
+/// gallery reads right to left.
+Fluent2Account get _kitOwner => kitArabic
+    ? Fluent2Account(
+        name: kitW(kitInes.name),
+        initials: 'إد',
+        meta: kitInes.meta,
+        unread: kitInes.unread,
+        onProfile: _openNothing,
+        onNotifications: _openNothing,
+      )
+    : kitInes;
+
 /// The people the demos name.
 const List<Fluent2AvatarPerson> kitPeople = [
   Fluent2AvatarPerson('Ines Duarte'),
@@ -240,6 +375,10 @@ Widget kitSpecimenStage({
   required Widget child,
 }) => MaterialApp(
   debugShowCheckedModeBanner: false,
+  theme: kitAppTheme,
+  locale: kitLocale,
+  localizationsDelegates: kitLocalizations,
+  supportedLocales: DesignLocalizations.supportedLocales,
   title: 'Northwind',
   builder: (context, home) => Directionality(
     textDirection: kitShownDirection,

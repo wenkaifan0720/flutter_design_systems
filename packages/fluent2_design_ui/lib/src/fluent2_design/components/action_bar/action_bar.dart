@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../internal/footer_band.dart';
@@ -152,5 +153,36 @@ class Fluent2BottomActionBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('primaryLabel', primaryLabel))
+      ..add(
+        ObjectFlagProperty<VoidCallback?>.has(
+          'onPrimaryPressed',
+          onPrimaryPressed,
+        ),
+      )
+      ..add(
+        StringProperty('secondaryLabel', secondaryLabel, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback?>.has(
+          'onSecondaryPressed',
+          onSecondaryPressed,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'primaryIcon',
+          primaryIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(StringProperty('detail', detail, defaultValue: null));
   }
 }

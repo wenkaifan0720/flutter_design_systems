@@ -19,6 +19,7 @@ Widget kitProgressDemo(Brightness brightness) => kitScreen(
       children: [kitSpecimenProgressBarColours()],
     ),
     kitSection('Indeterminate', children: [kitSpecimenProgressBarBusy()]),
+    kitSection('Progress ring', children: [_progressRings()]),
     kitSection('Segment bar', children: [kitSpecimenSegmentBar()]),
     kitSection('Skeleton', children: [kitSpecimenSkeletonList()]),
     kitSection(
@@ -28,12 +29,24 @@ Widget kitProgressDemo(Brightness brightness) => kitScreen(
   ],
 );
 
+/// A determinate ring toward a goal (a meter): the storage used and the
+/// week's goal.
+Widget _progressRings() => kitRow(const [
+  Fluent2Spinner(label: 'Storage used', value: .62, below: false),
+  Fluent2Spinner(
+    label: 'Goal this week',
+    value: .3,
+    size: Fluent2SpinnerSize.extraLarge,
+    below: false,
+  ),
+]);
+
 /// An upload under way and the team's storage, each with its field.
-Widget kitSpecimenProgressBars() => Column(
+Widget kitSpecimenProgressBars() => const Column(
   mainAxisSize: MainAxisSize.min,
   crossAxisAlignment: CrossAxisAlignment.stretch,
   spacing: Fluent2Spacing.l,
-  children: const [
+  children: [
     Fluent2ProgressBar(
       value: 0.62,
       label: 'Uploading Launch plan.docx',

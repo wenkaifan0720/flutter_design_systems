@@ -3,6 +3,8 @@
 /// preview frame and platform) and Fluent 2's own part of it. An app that draws its screens from
 /// `package:fluent2_design_ui/fluent2_design_ui.dart` does not need this library; the look's own chrome, gallery and tests import it
 /// beside that one.
+///
+/// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
 library;
 
 export 'package:ui_core/host.dart';

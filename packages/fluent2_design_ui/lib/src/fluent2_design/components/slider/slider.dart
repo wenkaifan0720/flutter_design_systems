@@ -1,10 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
-import '../../internal/hit_slop.dart';
 import '../../internal/key_focus.dart';
 import '../../internal/well.dart';
 import '../../styled.dart';
@@ -49,8 +50,14 @@ class Fluent2Slider extends StatefulWidget {
     this.onChangeEnd,
     this.focusNode,
     this.autofocus = false,
+    this.style,
     super.key,
-  }) : assert(max > min, 'a slider spans a range');
+  }) : assert(step == null || step > 0, 'a positive step'),
+       assert(max > min, 'a slider spans a range');
+
+  /// This slider's own look, slot by slot, over its component theme
+  /// ([Fluent2ThemeData.sliderTheme]): the slots its doc names.
+  final Fluent2Style? style;
 
   /// The value the thumb stands at.
   final double value;
@@ -76,10 +83,10 @@ class Fluent2Slider extends StatefulWidget {
   /// Fluent's `size`: the track's and thumb's size.
   final Fluent2SliderSize size;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   /// The spoken value; null says the number.
@@ -87,6 +94,50 @@ class Fluent2Slider extends StatefulWidget {
 
   @override
   State<Fluent2Slider> createState() => _Fluent2SliderState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(DoubleProperty('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>?>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 100))
+      ..add(DoubleProperty('step', step, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2SliderSize>(
+          'size',
+          size,
+          defaultValue: Fluent2SliderSize.medium,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        ObjectFlagProperty<String Function(double value)?>.has(
+          'valueLabel',
+          valueLabel,
+        ),
+      );
+  }
 }
 
 class _Fluent2SliderState extends State<Fluent2Slider> {
@@ -154,27 +205,34 @@ class _Fluent2SliderState extends State<Fluent2Slider> {
     final step = widget.step;
     final marks = step == null || step <= 0 ? 0 : (span / step).round();
     final look = Fluent2StyleOf([
+      widget.style,
       t.sliderTheme,
     ], fluent2States(enabled: live, hovered: _over, pressed: _down));
-    return Semantics(
-      container: true,
-      slider: true,
-      enabled: live,
-      focusable: live,
-      label: widget.label,
-      value: _say(widget.value),
-      increasedValue: live ? _say(up) : null,
-      decreasedValue: live ? _say(down) : null,
-      onIncrease: live ? () => _set(up) : null,
-      onDecrease: live ? () => _set(down) : null,
-      child: Fluent2HitSlop(
+    // The target stands outside the slider's node, so the node is the
+    // target's size and the rail's taps and drags are the slider's own.
+    return DesignTapTarget(
+      minSize: Fluent2Layout.tapFloorOf(context),
+      child: Semantics(
+        container: true,
+        slider: true,
+        enabled: live,
+        focusable: live,
+        label: widget.label,
+        value: _say(widget.value),
+        increasedValue: live ? _say(up) : null,
+        decreasedValue: live ? _say(down) : null,
+        onIncrease: live ? () => _set(up) : null,
+        onDecrease: live ? () => _set(down) : null,
         child: Fluent2KeyFocus(
           focusNode: widget.focusNode,
           autofocus: widget.autofocus,
           enabled: live,
           keys: live ? keys : const {},
           radius: Fluent2Radius.medium,
-          ringInsets: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          ringInsets: const EdgeInsets.symmetric(
+            horizontal: Fluent2Spacing.xs,
+            vertical: Fluent2Spacing.xxs,
+          ),
           child: MouseRegion(
             cursor: live ? SystemMouseCursors.click : MouseCursor.defer,
             onEnter: live ? (_) => setState(() => _over = true) : null,
@@ -296,7 +354,7 @@ class _SliderPainter extends CustomPainter {
     final width = math.max(0.0, size.width - thumb);
     final cy = size.height / 2;
     final railRect = Rect.fromLTWH(left, cy - rail / 2, width, rail);
-    final r = Radius.circular(Fluent2Radius.xLarge);
+    const r = Radius.circular(Fluent2Radius.xLarge);
     final at = progress * width;
     canvas.drawRRect(
       RRect.fromRectAndRadius(railRect, r),

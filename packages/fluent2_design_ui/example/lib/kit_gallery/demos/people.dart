@@ -85,7 +85,7 @@ Widget kitSpecimenPresence() => kitRow([
     ),
 ]);
 
-Widget kitSpecimenAvatarGroup() => Column(
+Widget kitSpecimenAvatarGroup() => const Column(
   crossAxisAlignment: CrossAxisAlignment.start,
   spacing: Fluent2Spacing.l,
   children: [

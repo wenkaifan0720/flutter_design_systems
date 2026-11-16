@@ -1,10 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
-import '../../internal/hit_slop.dart';
 import '../../styled.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
@@ -159,8 +160,13 @@ class Fluent2Avatar extends StatelessWidget {
     this.icon,
     this.focusNode,
     this.autofocus = false,
+    this.style,
     super.key,
   });
+
+  /// This avatar's own look, slot by slot, over its component theme
+  /// ([Fluent2ThemeData.avatarTheme]): the slots its doc names.
+  final Fluent2Style? style;
 
   /// The person's (or the group's) name: spoken, and the initials' source.
   final String? name;
@@ -197,10 +203,14 @@ class Fluent2Avatar extends StatelessWidget {
   /// person (or the people, for a square group).
   final IconData? icon;
 
+  /// {@template fluent2.focusNode}
   /// The control's focus node; null makes and disposes its own.
+  /// {@endtemplate}
   final FocusNode? focusNode;
 
+  /// {@template fluent2.autofocus}
   /// Whether the control takes focus when it first builds.
+  /// {@endtemplate}
   final bool autofocus;
 
   /// The initials' type at [size], Fluent's: caption2Strong to 24,
@@ -263,7 +273,7 @@ class Fluent2Avatar extends StatelessWidget {
       Fluent2AvatarColor.colorful => fluent2AvatarHue(t, who),
     };
     // The avatar theme's outline, else a circle, draws a circular avatar; a square one keeps Fluent's corner for its size.
-    final look = Fluent2StyleOf([t.avatarTheme], const {});
+    final look = Fluent2StyleOf([style, t.avatarTheme], const {});
     final outline = shape == Fluent2AvatarShape.circular ? look.shape : null;
     final radius = shape == Fluent2AvatarShape.circular
         ? BorderRadius.circular(size / 2)
@@ -340,7 +350,8 @@ class Fluent2Avatar extends StatelessWidget {
         child: face,
       );
     }
-    return Fluent2HitSlop(
+    return DesignTapTarget(
+      minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         focusNode: focusNode,
         autofocus: autofocus,
@@ -375,6 +386,50 @@ class Fluent2Avatar extends StatelessWidget {
                 ),
         ),
       );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(StringProperty('name', name, defaultValue: null))
+      ..add(StringProperty('initials', initials, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ImageProvider>('image', image, defaultValue: null),
+      )
+      ..add(DoubleProperty('size', size, defaultValue: 32))
+      ..add(
+        EnumProperty<Fluent2AvatarShape>(
+          'shape',
+          shape,
+          defaultValue: Fluent2AvatarShape.circular,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2AvatarColor>(
+          'color',
+          color,
+          defaultValue: Fluent2AvatarColor.neutral,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2Presence>('presence', presence, defaultValue: null),
+      )
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// Fluent 2's PresenceBadge: the person's [presence] as a disc of [size]
@@ -433,6 +488,14 @@ class Fluent2PresenceBadge extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<Fluent2Presence>('presence', presence))
+      ..add(DoubleProperty('size', size, defaultValue: 12));
   }
 }
 
@@ -578,7 +641,8 @@ class Fluent2AvatarGroup extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     super.key,
-  });
+  }) : assert(max >= 1, 'a group shows at least one face'),
+       assert(size > 0, 'faces of some size');
 
   /// The people, in order.
   final List<Fluent2AvatarPerson> people;
@@ -597,10 +661,10 @@ class Fluent2AvatarGroup extends StatelessWidget {
   /// image.
   final VoidCallback? onPressed;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   /// The overlap of a stacked group at [size], Fluent's: 2 to 20, 4 to
@@ -712,6 +776,31 @@ class Fluent2AvatarGroup extends StatelessWidget {
       child: group,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2AvatarPerson>('people', people))
+      ..add(IntProperty('max', max, defaultValue: 4))
+      ..add(DoubleProperty('size', size, defaultValue: 32))
+      ..add(
+        EnumProperty<Fluent2AvatarGroupLayout>(
+          'layout',
+          layout,
+          defaultValue: Fluent2AvatarGroupLayout.stack,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// Fluent 2's Persona: an avatar of [size] with its [presence], beside the
@@ -815,5 +904,28 @@ class Fluent2Persona extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('secondary', secondary, defaultValue: null))
+      ..add(StringProperty('tertiary', tertiary, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ImageProvider>('image', image, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<Fluent2Presence>('presence', presence, defaultValue: null),
+      )
+      ..add(DoubleProperty('size', size, defaultValue: 40))
+      ..add(
+        EnumProperty<Fluent2AvatarColor>(
+          'color',
+          color,
+          defaultValue: Fluent2AvatarColor.colorful,
+        ),
+      );
   }
 }

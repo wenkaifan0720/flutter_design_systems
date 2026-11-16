@@ -27,7 +27,9 @@ bool fluent2Roomy(BuildContext context) =>
 /// as wide as its [content] (its widest words with its room, chevron and
 /// strokes), at least 250 (Fluent's Dropdown) and at most
 /// [fluent2ControlMax], never wider than its cell, at the cell's start. Its
-/// list, anchored to [child], matches it.
+/// list, anchored to [child], matches it. Given room to choose, its box is
+/// that width alone, so a form field's merged node (and the box a screen
+/// reader outlines) is the trigger a tap reaches, not the column.
 Widget fluent2KeepsOwnWidth(
   BuildContext context, {
   required Widget child,
@@ -41,6 +43,7 @@ Widget fluent2KeepsOwnWidth(
   }
   return Align(
     alignment: AlignmentDirectional.centerStart,
+    widthFactor: 1,
     child: ConstrainedBox(
       constraints: BoxConstraints(
         maxWidth: content.clamp(250.0, fluent2ControlMax),

@@ -1,9 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/in_row.dart';
 import '../../internal/well.dart';
 import '../../styled.dart';
@@ -100,10 +100,10 @@ class Fluent2ListItem extends StatelessWidget {
   /// subtitle.
   final String? semanticLabel;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   /// The least height of a row at [context]: 40 on the desktop, a target
@@ -130,6 +130,9 @@ class Fluent2ListItem extends StatelessWidget {
         : onTap;
     final side = wide ? Fluent2Spacing.m : Fluent2Spacing.l;
     final layers = [style, t.listItemTheme];
+    // A row that presses speaks its own label and value, so its words stay
+    // out of the reading: merged in too, each was heard twice.
+    final speaks = press != null || onTap != null || check != null;
 
     Widget face(Fluent2Press state) {
       final inert = !enabled || (check != null && change == null);
@@ -192,8 +195,8 @@ class Fluent2ListItem extends StatelessWidget {
           ? fluent2Step(t, t.colors.subtleBackgroundSelected)
           : state.pick(
               t.colors.subtleBackground,
-              t.colors.subtleBackgroundHover,
-              t.colors.subtleBackgroundPressed,
+              fluent2Step(t, t.colors.subtleBackgroundHover),
+              fluent2Step(t, t.colors.subtleBackgroundPressed),
             );
       final fill = look.fill ?? own;
       return fluent2EasedInks([fill], (context, inks) {
@@ -237,19 +240,22 @@ class Fluent2ListItem extends StatelessWidget {
                         top: room.top,
                         bottom: room.bottom,
                       ),
-                      child: words,
+                      child: ExcludeSemantics(excluding: speaks, child: words),
                     ),
                   ),
                   if (value != null)
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 160),
-                      child: fluent2CapCentred(
-                        Text(
-                          value,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.end,
-                          style: t.body1.c(quiet),
+                      child: ExcludeSemantics(
+                        excluding: speaks,
+                        child: fluent2CapCentred(
+                          Text(
+                            value,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.end,
+                            style: t.body1.c(quiet),
+                          ),
                         ),
                       ),
                     ),
@@ -269,16 +275,17 @@ class Fluent2ListItem extends StatelessWidget {
     }
 
     final spoken = semanticLabel ?? [title, ?subtitle].join(', ');
-    if (press == null && onTap == null && check == null) {
+    if (!speaks) {
       return Semantics(
         container: true,
         selected: selected ? true : null,
         child: face(enabled ? Fluent2Press.rest : Fluent2Press.disabled),
       );
     }
+    // The state goes on the node that speaks, as a check box's does: on a
+    // container round it, a reader heard an empty "checked" and then the row.
     return Semantics(
       container: true,
-      checked: check,
       child: Fluent2Pressable(
         focusNode: focusNode,
         autofocus: autofocus,
@@ -286,12 +293,42 @@ class Fluent2ListItem extends StatelessWidget {
         onLongPress: onLongPress,
         label: spoken,
         value: value,
+        checked: check,
         selected: check == null && selected ? true : null,
         excludeChild: false,
         radius: 0,
         builder: (context, states) => face(states.press),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(FlagProperty('chevron', value: chevron, ifTrue: 'chevron'))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onTap', onTap))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onLongPress', onLongPress))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(DiagnosticsProperty<bool>('checked', checked, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<bool>?>.has('onChanged', onChanged))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -397,6 +434,19 @@ class Fluent2ListGroup extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('aside', aside, defaultValue: null))
+      ..add(StringProperty('footer', footer, defaultValue: null))
+      ..add(FlagProperty('asCard', value: asCard, ifFalse: 'asCard: false'))
+      ..add(
+        FlagProperty('dividers', value: dividers, ifFalse: 'dividers: false'),
+      );
+  }
 }
 
 /// A section's title as Fluent 2 sets one: [title] in subtitle2 with a
@@ -445,8 +495,10 @@ class Fluent2SectionHeader extends StatelessWidget {
                     children: [
                       TextSpan(text: title),
                       if (aside != null)
+                        // The aside breaks from the title as a whole, never
+                        // inside itself ("3 meetings" runs on together).
                         TextSpan(
-                          text: '  $aside',
+                          text: '  ${aside.replaceAll(' ', '\u00a0')}',
                           style: t.body1.c(t.textTertiary),
                         ),
                     ],
@@ -463,6 +515,14 @@ class Fluent2SectionHeader extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('aside', aside, defaultValue: null));
+  }
 }
 
 class _HeaderLink extends StatelessWidget {
@@ -474,7 +534,8 @@ class _HeaderLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
-    return Fluent2HitSlop(
+    return DesignTapTarget(
+      minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         onPressed: onTap,
         label: label,

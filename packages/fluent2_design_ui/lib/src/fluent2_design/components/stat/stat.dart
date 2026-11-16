@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
@@ -106,10 +107,10 @@ class Fluent2Stat extends StatelessWidget {
   /// What a press on the card does; null is a still tile.
   final VoidCallback? onPressed;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -237,6 +238,42 @@ class Fluent2Stat extends StatelessWidget {
       radius: Fluent2Radius.medium,
       builder: (context, states) => card(states.press),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('unit', unit, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Fluent2StatDelta>(
+          'delta',
+          delta,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('caption', caption, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(IterableProperty<double>('trend', trend, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2StatSize>(
+          'size',
+          size,
+          defaultValue: Fluent2StatSize.medium,
+        ),
+      )
+      ..add(FlagProperty('framed', value: framed, ifFalse: 'framed: false'))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -398,6 +435,20 @@ class Fluent2MetaLine extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2MetaItem>('items', items))
+      ..add(
+        EnumProperty<Fluent2MetaSeparator>(
+          'separator',
+          separator,
+          defaultValue: Fluent2MetaSeparator.dot,
+        ),
+      );
+  }
 }
 
 /// A figure that counts its way to [value] (a total updating, a tile
@@ -477,6 +528,28 @@ class Fluent2Counter extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(DoubleProperty('from', from, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)?>.has(
+          'format',
+          format,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2CounterStyle>(
+          'style',
+          style,
+          defaultValue: Fluent2CounterStyle.title1,
+        ),
+      )
+      ..add(ColorProperty('color', color, defaultValue: null));
   }
 }
 

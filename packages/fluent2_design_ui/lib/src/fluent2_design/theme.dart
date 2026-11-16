@@ -1,13 +1,17 @@
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:ui_core/host.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'colors.dart';
 import 'component_themes.dart';
+import 'components/page_motion.dart' show fluent2PageTransitions;
 import 'fonts.dart';
+import 'internal/platform_words.dart';
 import 'internal/presets.g.dart';
 import 'knobs.dart';
 
@@ -275,6 +279,12 @@ class Fluent2Gap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(width: size, height: size);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('size', size));
+  }
 }
 
 /// Responsive layout invariants shared by Fluent 2 apps.
@@ -285,8 +295,11 @@ abstract final class Fluent2Layout {
   /// pushed page's bar becomes a breadcrumb over its title.
   static const double wide = 1024;
 
-  /// The width from which a phone layout gets the medium margins (Fluent's
-  /// `medium` breakpoint, 640).
+  /// Fluent's `medium` breakpoint, 640: for an app's own layout between a
+  /// phone and the desktop (two form columns, a wider sheet), where the
+  /// shell's nav pane stands folded to its rail instead of the tab bar. The
+  /// page gutter stays 16 below [wide], so a tablet's screens keep a phone's
+  /// one margin.
   static const double medium = 640;
 
   /// The touch-target floor (Fluent 2 mobile's 44).
@@ -297,10 +310,19 @@ abstract final class Fluent2Layout {
   static const double touchHitTarget = 48;
 
   /// The least target at [context]: [touchHitTarget] on a touch platform,
-  /// [minHitTarget] elsewhere. A control's face keeps its own size; the
-  /// room round it takes the touch.
+  /// [minHitTarget] elsewhere: the height of a row a finger or a pointer
+  /// picks. A control's own target is ui_core's `DesignTapTarget`, at the
+  /// floors `Fluent2Host` declares.
   static double hitTargetOf(BuildContext context) =>
       padded(context) ? touchHitTarget : minHitTarget;
+
+  /// The least size of a control's tap target at [context]: the floor
+  /// the nearest `DesignTapTargetScope` declares (Fluent2Host's: 48 for a
+  /// finger, 24 for a pointer) for what [padded] says reaches it here, so
+  /// the target and the face read the same platform.
+  static Size tapFloorOf(BuildContext context) =>
+      DesignTapTargets.of(context)
+          .floorFor(padded(context) ? DesignInput.touch : DesignInput.pointer);
 
   /// Whether a touch reaches the controls at [context] (Android, iOS and
   /// Fuchsia, where Material pads its tap targets): there a press stands at
@@ -321,13 +343,15 @@ abstract final class Fluent2Layout {
       MediaQuery.sizeOf(context).width >= wide;
 
   /// Whether a select, a date field or a menu opens as a list anchored to
-  /// its face (a popover) at [context]: on the desktop, and wherever a
+  /// its face (a popover) at [context]: from a tablet's width up ([medium],
+  /// as Fluent's iPad and desktop apps open their pickers), and wherever a
   /// pointer reaches it (Fluent's web dropdown, at any window width), the
   /// list starting on the field's leading edge at least as wide as it.
-  /// Under a finger below the desktop it opens as a sheet (Fluent's mobile
-  /// pickers).
+  /// Under a finger on a phone it opens as a sheet (Fluent's mobile
+  /// pickers). Either way its rows stand as tall as the hand needs: a
+  /// finger's under a finger ([padded]), a pointer's under a pointer.
   static bool popsOver(BuildContext context) =>
-      isWide(context) || !padded(context);
+      MediaQuery.sizeOf(context).width >= medium || !padded(context);
 
   /// The page gutter at [context]: 16 on a phone, 24 on the desktop.
   static double gutter(BuildContext context) =>
@@ -548,6 +572,18 @@ final class Fluent2Shadows with Diagnosticable {
 
   @override
   int get hashCode => Object.hashAll([for (final l in _all) ...l]);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<BoxShadow>('shadow2', shadow2))
+      ..add(IterableProperty<BoxShadow>('shadow4', shadow4))
+      ..add(IterableProperty<BoxShadow>('shadow8', shadow8))
+      ..add(IterableProperty<BoxShadow>('shadow16', shadow16))
+      ..add(IterableProperty<BoxShadow>('shadow28', shadow28))
+      ..add(IterableProperty<BoxShadow>('shadow64', shadow64));
+  }
 }
 
 /// A CSS `box-shadow` as Flutter draws one: CSS blurs a shadow to a
@@ -593,7 +629,7 @@ enum Fluent2Tone {
 /// on the page's surfaces), the solid fill ([solid]) with the ink set on it
 /// ([onSolid]), the subtle tint ([tint]) and its border ([border]).
 @immutable
-final class Fluent2ToneColors {
+final class Fluent2ToneColors with Diagnosticable {
   /// A tone's five colours.
   const Fluent2ToneColors({
     required this.ink,
@@ -618,6 +654,17 @@ final class Fluent2ToneColors {
 
   /// The edge round [tint].
   final Color border;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('ink', ink))
+      ..add(ColorProperty('solid', solid))
+      ..add(ColorProperty('onSolid', onSolid))
+      ..add(ColorProperty('tint', tint))
+      ..add(ColorProperty('border', border));
+  }
 }
 
 /// Fluent 2's theme: one preset in one appearance, as Material's `ThemeData`
@@ -625,9 +672,10 @@ final class Fluent2ToneColors {
 /// roles below are named views of them), the page's ground ([background]),
 /// the acrylic ([acrylic]), the elevations ([shadows],
 /// [brandShadows]), the type ramp ([caption2] to [display], Fluent's own
-/// names), the component themes ([components]), and the [density] and
-/// [typeface] settings. Corners and strokes are Fluent's tokens
-/// ([Fluent2Radius], [Fluent2Stroke]); a component theme sets one part's
+/// names), the component themes ([components]), and the [density],
+/// [typeface] and [solidAcrylic] settings. Corners and strokes are Fluent's
+/// tokens ([Fluent2Radius], [Fluent2Stroke]), and the acrylic's recipe and
+/// the elevations are Fluent's too; a component theme sets one part's
 /// shape.
 ///
 /// Built from a preset ([preset], or a named factory such as
@@ -654,6 +702,7 @@ final class Fluent2ThemeData with Diagnosticable {
     this.components = const Fluent2ComponentThemes(),
     this.density = Fluent2Density.standard,
     this.typeface = Fluent2Typeface.look,
+    this.solidAcrylic = false,
   });
 
   /// The `lapis` preset: Fluent's own web light and dark, the familiar web blue (#0F6CBD).
@@ -731,6 +780,13 @@ final class Fluent2ThemeData with Diagnosticable {
   /// The face and size scale of the type ramp; Selawik at Fluent's sizes
   /// unless set.
   final Fluent2Typeface typeface;
+
+  /// Whether what floats (the tab bar, a pinned top bar, the nav pane, a
+  /// menu) stands on its acrylic's opaque fallback instead of blurring the
+  /// page behind: Fluent's own reduce-transparency fallback, for a device
+  /// that should not pay for the blur or a reader who needs a steady ground
+  /// under the words. False unless set; the recipe itself stays Fluent's.
+  final bool solidAcrylic;
 
   /// Fluent's `caption2`, 10/14 regular.
   late final TextStyle caption2 = _ramp(10, 14, 400);
@@ -1335,20 +1391,40 @@ final class Fluent2ThemeData with Diagnosticable {
   // --- ThemeData's shape -------------------------------------------------------
 
   /// This with the named parts changed: the colours ([colors],
-  /// [sharedColors], [brandVariants], [background]), the acrylic and the
-  /// elevations, the settings ([density], [typeface]), and the component
-  /// themes whole ([components]) or one by one. The type ramp follows the
-  /// first ink of [colors] and [typeface].
+  /// [sharedColors], [brandVariants], [background]), the settings
+  /// ([density], [typeface], [solidAcrylic]), and the component themes whole
+  /// ([components]) or one by one. The type ramp follows the first ink of
+  /// [colors] and [typeface].
+  ///
+  /// The acrylic's recipe and the elevations stay Fluent's: `acrylic`,
+  /// `shadows` and `brandShadows` are deprecated (a brand-tinted acrylic
+  /// spends the brand on what floats, and a flat or hard shadow loses the
+  /// layers' depth). [solidAcrylic] gives the acrylic's opaque fallback.
   Fluent2ThemeData copyWith({
     Fluent2Colors? colors,
     Fluent2SharedColors? sharedColors,
     List<Color>? brandVariants,
     Color? background,
+    @Deprecated(
+      "Use solidAcrylic instead: Fluent's acrylic keeps its recipe, and "
+      'solidAcrylic stands its opaque fallback in for the blur. '
+      'This feature was deprecated after v0.2.0.',
+    )
     Fluent2AcrylicRecipe? acrylic,
+    @Deprecated(
+      "Fluent's elevations stay Fluent's (shadow2 to shadow64): leave them "
+      'to the preset. This feature was deprecated after v0.2.0.',
+    )
     Fluent2Shadows? shadows,
+    @Deprecated(
+      "Fluent's brand elevations stay Fluent's (shadow2Brand to "
+      'shadow64Brand): leave them to the preset. '
+      'This feature was deprecated after v0.2.0.',
+    )
     Fluent2Shadows? brandShadows,
     Fluent2Density? density,
     Fluent2Typeface? typeface,
+    bool? solidAcrylic,
     Fluent2ComponentThemes? components,
     Fluent2Style? primaryButtonTheme,
     Fluent2Style? secondaryButtonTheme,
@@ -1388,6 +1464,7 @@ final class Fluent2ThemeData with Diagnosticable {
       acrylic: acrylic ?? this.acrylic,
       shadows: shadows ?? this.shadows,
       brandShadows: brandShadows ?? this.brandShadows,
+      solidAcrylic: solidAcrylic ?? this.solidAcrylic,
       components: (components ?? this.components).copyWith(
         primaryButton: primaryButtonTheme,
         secondaryButton: secondaryButtonTheme,
@@ -1420,8 +1497,8 @@ final class Fluent2ThemeData with Diagnosticable {
 
   /// Between this and [other], as `ThemeData.lerp`: the colours, the ramp,
   /// the material, the elevations, the component themes and
-  /// the density blend; the preset id, the appearance and the shared palette
-  /// change at the middle. [AnimatedFluent2Theme] animates with it.
+  /// the density blend; the preset id, the appearance, the shared palette
+  /// and [solidAcrylic] change at the middle. [AnimatedFluent2Theme] animates with it.
   Fluent2ThemeData lerp(Fluent2ThemeData? other, double t) {
     if (other == null || identical(this, other)) return this;
     final near = t < .5 ? this : other;
@@ -1441,6 +1518,7 @@ final class Fluent2ThemeData with Diagnosticable {
       components: Fluent2ComponentThemes.lerp(components, other.components, t),
       density: Fluent2Density.lerp(density, other.density, t),
       typeface: Fluent2Typeface.lerp(typeface, other.typeface, t),
+      solidAcrylic: near.solidAcrylic,
     );
   }
 
@@ -1471,7 +1549,8 @@ final class Fluent2ThemeData with Diagnosticable {
           other.brandShadows == brandShadows &&
           other.components == components &&
           other.density == density &&
-          other.typeface == typeface;
+          other.typeface == typeface &&
+          other.solidAcrylic == solidAcrylic;
 
   @override
   int get hashCode => Object.hash(
@@ -1487,6 +1566,7 @@ final class Fluent2ThemeData with Diagnosticable {
     components,
     density,
     typeface,
+    solidAcrylic,
   );
 
   @override
@@ -1498,6 +1578,13 @@ final class Fluent2ThemeData with Diagnosticable {
     properties.add(ColorProperty('background', background));
     properties.add(
       DiagnosticsProperty<Fluent2AcrylicRecipe>('acrylic', acrylic),
+    );
+    properties.add(
+      FlagProperty(
+        'solidAcrylic',
+        value: solidAcrylic,
+        ifTrue: 'solid acrylic',
+      ),
     );
     properties.add(
       DiagnosticsProperty<Fluent2ComponentThemes>(
@@ -1519,6 +1606,15 @@ final class Fluent2ThemeData with Diagnosticable {
         typeface,
         defaultValue: Fluent2Typeface.look,
       ),
+    );
+    properties.add(DiagnosticsProperty<Fluent2Colors>('colors', colors));
+    properties.add(
+      DiagnosticsProperty<Fluent2SharedColors>('sharedColors', sharedColors),
+    );
+    properties.add(IterableProperty<Color>('brandVariants', brandVariants));
+    properties.add(DiagnosticsProperty<Fluent2Shadows>('shadows', shadows));
+    properties.add(
+      DiagnosticsProperty<Fluent2Shadows>('brandShadows', brandShadows),
     );
   }
 
@@ -1596,35 +1692,40 @@ class Fluent2Theme extends StatelessWidget {
   /// What it styles.
   final Widget child;
 
-  /// The theme in scope at [context]: the nearest [Fluent2Theme]. Throws when
-  /// there is none. `context.fluent2Theme` is the same.
-  static Fluent2ThemeData of(BuildContext context) => _of(context).data;
+  /// The theme in scope at [context]: the nearest [Fluent2Theme], else the
+  /// default preset's light theme, as `Theme.of` falls back to Material's.
+  /// What builds above the app's theme (a text selection's handles and menu
+  /// in the root overlay, when the theme stands under `home:` rather than in
+  /// the app's builder) so still draws. `context.fluent2Theme` is the same.
+  static Fluent2ThemeData of(BuildContext context) =>
+      maybeOf(context) ?? _fallback.light;
 
   /// The theme in scope at [context], or null.
   static Fluent2ThemeData? maybeOf(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<_Fluent2Scope>()?.data;
 
   /// The dark theme of the preset in scope at [context]: what a media
-  /// ground draws its chrome in.
-  static Fluent2ThemeData darkOf(BuildContext context) => _of(context).dark;
+  /// ground draws its chrome in. With no theme above, the default preset's.
+  static Fluent2ThemeData darkOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_Fluent2Scope>()?.dark ??
+      _fallback.dark;
 
   /// [Fluent2ThemeData.preset]: an app's theme file names its preset here.
   static Fluent2ThemeData preset(String id, Brightness brightness) =>
       Fluent2ThemeData.preset(id, brightness);
 
-  static _Fluent2Scope _of(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<_Fluent2Scope>();
-    if (scope == null) {
-      throw FlutterError.fromParts([
-        ErrorSummary('No Fluent2Theme above this widget.'),
-        ErrorHint(
-          "Put a Fluent2Theme (or a Fluent2Host) in the app's builder, above "
-          'the navigator.',
-        ),
-      ]);
-    }
-    return scope;
-  }
+  /// The default preset's themes, made once: what [of] and [darkOf] give
+  /// with no theme above.
+  static final ({Fluent2ThemeData light, Fluent2ThemeData dark}) _fallback = (
+    light: Fluent2ThemeData.preset(
+      Fluent2ThemeData.presets.first,
+      Brightness.light,
+    ),
+    dark: Fluent2ThemeData.preset(
+      Fluent2ThemeData.presets.first,
+      Brightness.dark,
+    ),
+  );
 
   static Fluent2ThemeData _darkFor(Fluent2ThemeData data) {
     if (data.isDark) return data;
@@ -1637,19 +1738,35 @@ class Fluent2Theme extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget under = child;
-    // Flutter's text field under a CupertinoApp or a WidgetsApp still asks
-    // for Material's words. The override brings its locale's direction with
-    // it; the app's own stands, so a right-to-left app stays right to left.
+    // The machinery under the look (a field's editable and its selection, a
+    // calendar's dates, a sheet's route) needs Material's and Cupertino's
+    // words, which an app may not give: under a CupertinoApp or a
+    // WidgetsApp, or in a language it gives none for (flutter_localizations'
+    // are another library's when the look runs on material_ui). It gets
+    // them from the look (platform_words.dart) rather than a throw. The
+    // override brings its locale's direction with it; the app's own stands,
+    // so a right-to-left app stays right to left.
     final direction = Directionality.maybeOf(context);
-    if (Localizations.maybeLocaleOf(context) != null &&
-        Localizations.of<MaterialLocalizations>(
-              context,
-              MaterialLocalizations,
-            ) ==
-            null) {
+    final missing = Localizations.maybeLocaleOf(context) == null
+        ? const <LocalizationsDelegate<Object?>>[]
+        : [
+            if (Localizations.of<MaterialLocalizations>(
+                  context,
+                  MaterialLocalizations,
+                ) ==
+                null)
+              fluent2MaterialWords,
+            if (Localizations.of<CupertinoLocalizations>(
+                  context,
+                  CupertinoLocalizations,
+                ) ==
+                null)
+              fluent2CupertinoWords,
+          ];
+    if (missing.isNotEmpty) {
       under = Localizations.override(
         context: context,
-        delegates: const [DefaultMaterialLocalizations.delegate],
+        delegates: missing,
         child: direction == null
             ? under
             : Directionality(textDirection: direction, child: under),
@@ -1676,6 +1793,13 @@ class Fluent2Theme extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties.add(DiagnosticsProperty<Fluent2ThemeData>('data', data));
+    properties.add(
+      DiagnosticsProperty<Fluent2ThemeData>(
+        'darkData',
+        darkData,
+        defaultValue: null,
+      ),
+    );
   }
 }
 
@@ -1761,16 +1885,26 @@ final Map<TargetPlatform, Expando<ThemeData>> _materialThemes = {
 ThemeData _materialThemeFor(Fluent2ThemeData t, TargetPlatform platform) =>
     _materialThemes[platform]![t] ??= _fluent2MaterialTheme(t, platform);
 
+/// Every platform's page motion under a [Fluent2Theme], so none falls back to
+/// Material's zoom or a slide a window wide: Fluent 2's own
+/// ([Fluent2PageTransitionsBuilder]) everywhere, on iOS with ui_core's swipe
+/// back from the screen's leading edge round it.
+const _fluent2PageTransitions = PageTransitionsTheme(
+  builders: fluent2PageTransitions,
+);
+
 /// The thin Material `ThemeData` the platform primitives under a
 /// [Fluent2Theme] still read: a `Scaffold`'s ground, a `TextField`'s
-/// selection tint and cursor, a sheet's route. No token lives here; Fluent 2
-/// components read [Fluent2ThemeData] through `context.fluent2Theme`.
-/// Private: an app never sees a Material type in Fluent 2's API.
+/// selection tint and cursor, a sheet's route, every page route's motion. No
+/// token lives here; Fluent 2 components read [Fluent2ThemeData] through
+/// `context.fluent2Theme`. Private: an app never sees a Material type in
+/// Fluent 2's API.
 ThemeData _fluent2MaterialTheme(Fluent2ThemeData t, TargetPlatform platform) =>
     ThemeData(
       useMaterial3: true,
       brightness: t.brightness,
       platform: platform,
+      pageTransitionsTheme: _fluent2PageTransitions,
       // Material's own density (compact on a desktop) would move a
       // decorated field's words; Fluent 2's density is its own setting.
       visualDensity: VisualDensity.standard,

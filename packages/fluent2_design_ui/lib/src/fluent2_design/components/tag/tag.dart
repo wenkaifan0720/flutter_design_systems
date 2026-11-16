@@ -1,10 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/well.dart';
 import '../../localizations.dart';
 import '../../styled.dart';
@@ -87,7 +88,7 @@ enum Fluent2TagShape {
 /// Fluent2TagFace.of(context.fluent2Theme, Fluent2TagAppearance.brand, Fluent2Press.hover)
 /// ```
 @immutable
-final class Fluent2TagFace {
+final class Fluent2TagFace with Diagnosticable {
   /// A face of [fill], [stroke], [ink] and [glyph].
   const Fluent2TagFace({
     required this.fill,
@@ -192,8 +193,8 @@ final class Fluent2TagFace {
         return Fluent2TagFace(
           fill: press.pick(
             c.subtleBackground,
-            c.subtleBackgroundHover,
-            c.subtleBackgroundPressed,
+            fluent2Step(t, c.subtleBackgroundHover),
+            fluent2Step(t, c.subtleBackgroundPressed),
           ),
           stroke: c.neutralStroke1,
           ink: press.pick(
@@ -243,6 +244,17 @@ final class Fluent2TagFace {
     return press == Fluent2Press.hover
         ? t.colors.compoundBrandForeground1Hover
         : t.colors.compoundBrandForeground1Pressed;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('fill', fill))
+      ..add(ColorProperty('stroke', stroke))
+      ..add(ColorProperty('ink', ink))
+      ..add(ColorProperty('glyph', glyph))
+      ..add(ColorProperty('divider', divider));
   }
 }
 
@@ -315,7 +327,10 @@ class _TagContent extends StatelessWidget {
     final who = avatar;
     final Widget? lead = who != null
         ? Padding(
-            padding: EdgeInsetsDirectional.only(start: 1, end: size.mediaGap),
+            padding: EdgeInsetsDirectional.only(
+              start: Fluent2Stroke.thin,
+              end: size.mediaGap,
+            ),
             child: Fluent2Avatar(
               name: who,
               size: size.avatar,
@@ -401,7 +416,7 @@ class Fluent2Tag extends StatelessWidget {
   /// rounded tag); wins over [icon].
   final String? avatar;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2TagAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
@@ -420,10 +435,10 @@ class Fluent2Tag extends StatelessWidget {
   /// remove".
   final String? deleteLabel;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -496,7 +511,8 @@ class Fluent2Tag extends StatelessWidget {
         child: face(enabled ? Fluent2Press.rest : Fluent2Press.disabled),
       );
     }
-    return Fluent2HitSlop(
+    return DesignTapTarget(
+      minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         focusNode: focusNode,
         autofocus: autofocus,
@@ -506,6 +522,51 @@ class Fluent2Tag extends StatelessWidget {
         builder: (context, states) => face(states.press),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('secondary', secondary, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('avatar', avatar, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2TagAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2TagAppearance.filled,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2TagSize>(
+          'size',
+          size,
+          defaultValue: Fluent2TagSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2TagShape>(
+          'shape',
+          shape,
+          defaultValue: Fluent2TagShape.rounded,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onDeleted', onDeleted))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(StringProperty('deleteLabel', deleteLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -607,7 +668,7 @@ class Fluent2InteractionTag extends StatelessWidget {
   /// A person's name: their avatar before the words.
   final String? avatar;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2TagAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
@@ -620,10 +681,10 @@ class Fluent2InteractionTag extends StatelessWidget {
   /// [label]".
   final String? deleteLabel;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -726,7 +787,14 @@ class Fluent2InteractionTag extends StatelessWidget {
       heightFactor: 1,
       child: tag,
     );
-    if (dismiss == null) return own(Fluent2HitSlop(child: primary));
+    if (dismiss == null) {
+      return own(
+        DesignTapTarget(
+          minSize: Fluent2Layout.tapFloorOf(context),
+          child: primary,
+        ),
+      );
+    }
     final secondaryPart = Fluent2Pressable(
       onPressed: dismiss,
       label: deleteLabel ?? Fluent2Localizations.of(context).remove(label),
@@ -798,17 +866,73 @@ class Fluent2InteractionTag extends StatelessWidget {
         );
       },
     );
+    // A target per part, one control each: each face against the other,
+    // its target growing away from the join.
     return own(
-      Fluent2HitSlop(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(child: primary),
-            secondaryPart,
-          ],
-        ),
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: DesignTapTarget(
+              minSize: Fluent2Layout.tapFloorOf(context),
+              alignment: AlignmentDirectional.centerEnd,
+              child: primary,
+            ),
+          ),
+          DesignTapTarget(
+            minSize: Fluent2Layout.tapFloorOf(context),
+            alignment: AlignmentDirectional.centerStart,
+            child: secondaryPart,
+          ),
+        ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onDeleted', onDeleted))
+      ..add(StringProperty('secondary', secondary, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('avatar', avatar, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2TagAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2TagAppearance.filled,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2TagSize>(
+          'size',
+          size,
+          defaultValue: Fluent2TagSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2TagShape>(
+          'shape',
+          shape,
+          defaultValue: Fluent2TagShape.rounded,
+        ),
+      )
+      ..add(StringProperty('deleteLabel', deleteLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -896,7 +1020,7 @@ class Fluent2TagGroup<T> extends StatelessWidget {
   /// Told which tag to remove; null draws no dismiss marks.
   final ValueChanged<T>? onDeleted;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2TagAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
@@ -969,5 +1093,43 @@ class Fluent2TagGroup<T> extends StatelessWidget {
         children: tags,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2TagItem<T>>('items', items))
+      ..add(IterableProperty<T>('selected', selected, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<Set<T>>?>.has(
+          'onSelectionChanged',
+          onSelectionChanged,
+        ),
+      )
+      ..add(FlagProperty('multiple', value: multiple, ifTrue: 'multiple'))
+      ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onDeleted', onDeleted))
+      ..add(
+        EnumProperty<Fluent2TagAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2TagAppearance.filled,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2TagSize>(
+          'size',
+          size,
+          defaultValue: Fluent2TagSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2TagShape>(
+          'shape',
+          shape,
+          defaultValue: Fluent2TagShape.rounded,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }

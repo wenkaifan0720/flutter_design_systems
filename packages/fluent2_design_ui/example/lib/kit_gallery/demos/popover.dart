@@ -44,6 +44,7 @@ Widget kitPopoverDemo(Brightness brightness) => kitScreen(
     kitSection('Tooltip bubbles', children: [_tooltipBubbles()]),
     kitSection('Popover surfaces', children: [_flyouts()]),
     kitSection('Opened from a control', children: [const _OpenFlyout()]),
+    kitSection('Hover card', children: [_hoverCard()]),
     kitSection(
       'Teaching popover',
       children: [
@@ -53,6 +54,30 @@ Widget kitPopoverDemo(Brightness brightness) => kitScreen(
     ),
     kitSection('A tour step', children: [const _OpenTour()]),
   ],
+);
+
+/// A person's card, opened by a pointer resting on their name (or the
+/// keyboard's focus, or a long press).
+Widget _hoverCard() => Builder(
+  builder: (context) {
+    final t = context.fluent2Theme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('Reviewed by ', style: t.body1.c(t.textPrimary)),
+        Fluent2Popover(
+          label: 'Mara Okafor',
+          openOnHover: true,
+          trigger: (_, toggle) =>
+              Fluent2Link('Mara Okafor', onPressed: toggle, inline: true),
+          content: const Fluent2Persona(
+            name: 'Mara Okafor',
+            secondary: 'Design lead · Seattle',
+          ),
+        ),
+      ],
+    );
+  },
 );
 
 /// The tooltip's bubble, normal and inverted, the arrow on one.

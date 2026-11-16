@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart' show ShellInsets;
@@ -145,29 +146,37 @@ Fluent2Raised showFluent2Toast(
     ),
   );
   final entry = OverlayEntry(
-    builder: (_) => PositionedDirectional(
-      bottom: bottom,
-      start: wide ? null : Fluent2ChromeMetrics.gutter,
-      end: wide ? Fluent2ChromeMetrics.toastGap : Fluent2ChromeMetrics.gutter,
-      width: wide ? Fluent2ChromeMetrics.toastWidth : null,
-      child: themes.wrap(
-        IgnorePointer(
-          ignoring: actionLabel == null,
-          child: !moves
-              ? card
-              : TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: 1),
-                  duration: Fluent2Motion.normal,
-                  curve: Fluent2Motion.decelerateMid,
-                  builder: (_, v, child) => Opacity(
-                    opacity: v,
-                    child: Transform.translate(
-                      offset: Offset(0, (1 - v) * 16),
-                      child: child,
+    // Torn down with its overlay (the app gone while it is up), it goes
+    // too, so its time never runs on past the app.
+    builder: (_) => _Standing(
+      onGone: () {
+        timer.cancel();
+        scheduleMicrotask(handle.dismiss);
+      },
+      child: PositionedDirectional(
+        bottom: bottom,
+        start: wide ? null : Fluent2ChromeMetrics.gutter,
+        end: wide ? Fluent2ChromeMetrics.toastGap : Fluent2ChromeMetrics.gutter,
+        width: wide ? Fluent2ChromeMetrics.toastWidth : null,
+        child: themes.wrap(
+          IgnorePointer(
+            ignoring: actionLabel == null,
+            child: !moves
+                ? card
+                : TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: 1),
+                    duration: Fluent2Motion.normal,
+                    curve: Fluent2Motion.decelerateMid,
+                    builder: (_, v, child) => Opacity(
+                      opacity: v,
+                      child: Transform.translate(
+                        offset: Offset(0, (1 - v) * 16),
+                        child: child,
+                      ),
                     ),
+                    child: card,
                   ),
-                  child: card,
-                ),
+          ),
         ),
       ),
     ),
@@ -182,6 +191,28 @@ Fluent2Raised showFluent2Toast(
   return handle;
 }
 
+/// A standalone toast in its overlay: [onGone] once it leaves the tree.
+class _Standing extends StatefulWidget {
+  const _Standing({required this.onGone, required this.child});
+
+  final VoidCallback onGone;
+  final Widget child;
+
+  @override
+  State<_Standing> createState() => _StandingState();
+}
+
+class _StandingState extends State<_Standing> {
+  @override
+  void dispose() {
+    widget.onGone();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 /// Where snack bars queue, over the whole app: up to [maxVisible] at its
 /// foot, the newest nearest; the pointer resting on one, or the focus in
 /// it, holds its time, and F6 reaches them from anywhere. Put it once
@@ -189,7 +220,7 @@ Fluent2Raised showFluent2Toast(
 /// anywhere below.
 ///
 /// ```dart
-/// MaterialApp(builder: (context, child) => Fluent2Theme(data: theme, child: Fluent2Toaster(child: child!)))
+/// MaterialApp(home: home, builder: (context, child) => Fluent2Theme(data: theme, child: Fluent2Toaster(child: child!)))
 /// ```
 class Fluent2Toaster extends StatelessWidget {
   /// A queue of snack bars over [child].
@@ -241,6 +272,12 @@ class Fluent2Toaster extends StatelessWidget {
       child: child,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('maxVisible', maxVisible, defaultValue: 3));
+  }
 }
 
 /// A snack bar's face, drawn in place: the [tone]'s glyph (16) in its ink,
@@ -257,12 +294,17 @@ class Fluent2Toast extends StatelessWidget {
   /// A snack bar saying [message].
   const Fluent2Toast(
     this.message, {
+    this.style,
     super.key,
     this.title,
     this.tone = Fluent2ToastIntent.success,
     this.actionLabel,
     this.onAction,
   });
+
+  /// This toast's own look, slot by slot, over its component theme
+  /// ([Fluent2ThemeData.toastTheme]): the slots its doc names.
+  final Fluent2Style? style;
 
   /// What it says.
   final String message;
@@ -302,7 +344,7 @@ class Fluent2Toast extends StatelessWidget {
     };
     final head = title;
     final label = actionLabel;
-    final look = Fluent2StyleOf([t.toastTheme], const {});
+    final look = Fluent2StyleOf([style, t.toastTheme], const {});
     return Material(
       type: MaterialType.transparency,
       child: Fluent2Plate(
@@ -325,7 +367,7 @@ class Fluent2Toast extends StatelessWidget {
             spacing: Fluent2Spacing.s,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 2),
+                padding: const EdgeInsets.only(top: Fluent2Spacing.xxs),
                 child: Icon(
                   glyph,
                   size: Fluent2ChromeMetrics.toastGlyph,
@@ -367,5 +409,25 @@ class Fluent2Toast extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(StringProperty('message', message))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2ToastIntent>(
+          'tone',
+          tone,
+          defaultValue: Fluent2ToastIntent.success,
+        ),
+      )
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onAction', onAction));
   }
 }

@@ -1,11 +1,17 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../internal/arrow.dart';
 import '../../styled.dart';
 import '../../theme.dart';
 import 'arrow_placement.dart';
+
+/// A tooltip's room round its words: Fluent's padding (4 11 6 11) inside
+/// its 1 px stroke, deeper under the words so the caption's capitals stand
+/// on the bubble's middle; off the 4-pt grid on purpose.
+const EdgeInsets _bubbleInsets = EdgeInsets.fromLTRB(12, 5, 12, 7);
 
 /// A tooltip's face, Fluent's `appearance`: [normal] the surface (the
 /// default), [inverted] the dark static plane.
@@ -46,8 +52,13 @@ class Fluent2TooltipBubble extends StatelessWidget {
     required this.message,
     this.appearance = Fluent2TooltipAppearance.normal,
     this.placement,
+    this.style,
     super.key,
   });
+
+  /// This tooltip's own look, slot by slot, over its component theme
+  /// ([Fluent2ThemeData.tooltipTheme]): the slots its doc names.
+  final Fluent2Style? style;
 
   /// The tip's words.
   final String message;
@@ -66,7 +77,7 @@ class Fluent2TooltipBubble extends StatelessWidget {
     final t = context.fluent2Theme;
     final inverted = appearance == Fluent2TooltipAppearance.inverted;
     final look = Fluent2StyleOf(
-      [t.tooltipTheme],
+      [style, t.tooltipTheme],
       {if (inverted) WidgetState.selected},
     );
     final fill =
@@ -88,9 +99,7 @@ class Fluent2TooltipBubble extends StatelessWidget {
         radius: BorderRadius.circular(Fluent2Radius.medium),
         shape: look.shape,
         shadows: t.shadows.shadow8,
-        padding:
-            look.padding(Directionality.of(context)) ??
-            const EdgeInsets.fromLTRB(12, 5, 12, 7),
+        padding: look.padding(Directionality.of(context)) ?? _bubbleInsets,
         child: Text(message, style: t.caption1.merge(look.textStyle).c(ink)),
       ),
     );
@@ -102,6 +111,30 @@ class Fluent2TooltipBubble extends StatelessWidget {
         child: bubble,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(StringProperty('message', message))
+      ..add(
+        EnumProperty<Fluent2TooltipAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2TooltipAppearance.normal,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Fluent2ArrowPlacement>(
+          'placement',
+          placement,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -153,8 +186,13 @@ class Fluent2Tooltip extends StatefulWidget {
     this.appearance = Fluent2TooltipAppearance.normal,
     this.position = Fluent2TooltipPosition.above,
     this.withArrow = false,
+    this.style,
     super.key,
   });
+
+  /// This tooltip's own look, slot by slot, over its component theme
+  /// ([Fluent2ThemeData.tooltipTheme]): the slots its doc names.
+  final Fluent2Style? style;
 
   /// The tip's words.
   final String message;
@@ -173,6 +211,31 @@ class Fluent2Tooltip extends StatefulWidget {
 
   @override
   State<Fluent2Tooltip> createState() => _Fluent2TooltipState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(StringProperty('message', message))
+      ..add(
+        EnumProperty<Fluent2TooltipAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2TooltipAppearance.normal,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2TooltipPosition>(
+          'position',
+          position,
+          defaultValue: Fluent2TooltipPosition.above,
+        ),
+      )
+      ..add(FlagProperty('withArrow', value: withArrow, ifTrue: 'withArrow'));
+  }
 }
 
 class _Fluent2TooltipState extends State<Fluent2Tooltip> {
@@ -256,6 +319,7 @@ class _Fluent2TooltipState extends State<Fluent2Tooltip> {
           child: Fluent2TooltipBubble(
             message: widget.message,
             appearance: widget.appearance,
+            style: widget.style,
             placement:
                 widget.withArrow &&
                     widget.position != Fluent2TooltipPosition.after

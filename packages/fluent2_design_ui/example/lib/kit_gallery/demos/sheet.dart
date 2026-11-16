@@ -7,6 +7,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
+import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 import '../kit.dart';
 
@@ -32,12 +33,12 @@ class _RaiseState extends State<_Raise> {
         children: [
           kitRow([
             Fluent2Button(
-              'Move to · $_folder',
+              '${kitW('Move to')} · ${kitW(_folder)}',
               icon: Fluent2Icons.folder,
               onPressed: () async {
                 final picked = await Fluent2Sheet.show<String>(
                   context,
-                  title: 'Move to',
+                  title: kitW('Move to'),
                   builder: (sheet) => _options(
                     sheet,
                     _folder,
@@ -48,19 +49,19 @@ class _RaiseState extends State<_Raise> {
               },
             ),
             Fluent2Button(
-              'Share',
+              kitW('Share'),
               icon: Fluent2Icons.share,
               onPressed: () => Fluent2Sheet.show<void>(
                 context,
-                title: 'Share Launch plan',
+                title: kitW('Share Launch plan'),
                 builder: (sheet) => const [_ShareBody()],
                 foot: (sheet) => [
                   Fluent2Button(
-                    'Cancel',
+                    kitW('Cancel'),
                     onPressed: () => Navigator.of(sheet).pop(),
                   ),
                   Fluent2Button(
-                    'Send',
+                    kitW('Send'),
                     appearance: Fluent2ButtonAppearance.primary,
                     onPressed: () => Navigator.of(sheet).pop(),
                   ),
@@ -70,8 +71,18 @@ class _RaiseState extends State<_Raise> {
           ]),
         ],
       ),
-      kitSection('In place', children: [kitSpecimenSheetMove()]),
-      kitSection('With its acts', children: [kitSpecimenSheetShare()]),
+      kitSection(
+        'In place',
+        children: [
+          kitAsShown(Fluent2ChromeMetrics.dialogWidth, kitSpecimenSheetMove()),
+        ],
+      ),
+      kitSection(
+        'With its acts',
+        children: [
+          kitAsShown(Fluent2ChromeMetrics.dialogWidth, kitSpecimenSheetShare()),
+        ],
+      ),
     ],
   );
 }
@@ -86,7 +97,7 @@ List<Widget> _options(
     for (final name in _folders)
       Fluent2Pressable(
         onPressed: () => onPick(name),
-        label: name,
+        label: kitW(name),
         selected: name == current,
         radius: Fluent2Radius.medium,
         builder: (context, states) => ConstrainedBox(
@@ -112,7 +123,7 @@ List<Widget> _options(
                     size: Fluent2IconSize.i20,
                     color: t.textSecondary,
                   ),
-                  Expanded(child: Text(name, style: t.body1)),
+                  Expanded(child: Text(kitW(name), style: t.body1)),
                   if (name == current)
                     Icon(
                       Fluent2Icons.checkmark,
@@ -139,11 +150,15 @@ class _ShareBody extends StatelessWidget {
       spacing: Fluent2Spacing.m,
       children: [
         Text(
-          'People in Northwind with the link can view.',
+          kitW('People in Northwind with the link can view.'),
           style: t.body1.c(t.textSecondary),
         ),
         for (final person in kitPeople.skip(1).take(3))
-          Fluent2Persona(name: person.name, secondary: 'Can edit', size: 32),
+          Fluent2Persona(
+            name: kitW(person.name),
+            secondary: kitW('Can edit'),
+            size: 32,
+          ),
       ],
     );
   }
@@ -156,7 +171,7 @@ class _ShareBody extends StatelessWidget {
 /// Move to, the four folders with Launch chosen, drawn in place.
 Widget kitSpecimenSheetMove() => Builder(
   builder: (context) => Fluent2SheetShell(
-    title: 'Move to',
+    title: kitW('Move to'),
     onClose: () {},
     children: _options(context, 'Launch', (_) {}),
   ),
@@ -164,12 +179,12 @@ Widget kitSpecimenSheetMove() => Builder(
 
 /// Share, its people and Cancel beside Send in the brand at the foot.
 Widget kitSpecimenSheetShare() => Fluent2SheetShell(
-  title: 'Share Launch plan',
+  title: kitW('Share Launch plan'),
   onClose: () {},
   foot: [
-    Fluent2Button('Cancel', onPressed: () {}),
+    Fluent2Button(kitW('Cancel'), onPressed: () {}),
     Fluent2Button(
-      'Send',
+      kitW('Send'),
       appearance: Fluent2ButtonAppearance.primary,
       onPressed: () {},
     ),

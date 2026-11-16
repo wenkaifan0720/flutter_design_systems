@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../internal/well.dart';
@@ -231,6 +232,18 @@ class Fluent2IconTile extends StatelessWidget {
       child: tile,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(
+        EnumProperty<Fluent2Hue>('hue', hue, defaultValue: Fluent2Hue.brand),
+      )
+      ..add(DoubleProperty('size', size, defaultValue: 40))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// A day set as a block, the date an agenda's rows and event cards lead
@@ -335,5 +348,14 @@ class Fluent2DateBlock extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('date', date))
+      ..add(FlagProperty('emphasis', value: emphasis, ifTrue: 'emphasis'))
+      ..add(FlagProperty('compact', value: compact, ifTrue: 'compact'));
   }
 }

@@ -11,6 +11,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
 // The gallery is the example app; a test reads its pages from there.
 // ignore_for_file: avoid_relative_lib_imports
@@ -22,6 +23,38 @@ export '../example/lib/gallery_pages.dart';
 
 /// The gallery's phone width.
 const galleryWidth = 390.0;
+
+/// Empties the image cache, so a page's photographs leave with the test that showed them rather than staying cached
+/// past it (where leak tracking would count them).
+void releaseImages() {
+  imageCache
+    ..clear()
+    ..clearLiveImages();
+}
+
+/// Android's 48 px targets as Flutter's guideline reads them, but for a calendar's day where seven 48s do not fit
+/// the calendar's room (a calendar in a card on a phone): there each day takes its seventh, never less than iOS's 44,
+/// so that no day reaches into its neighbour's taps (DECISIONS Z5). A day is known by its name, a full date.
+const androidTargetGuideline = _AndroidTargets();
+
+class _AndroidTargets extends MinimumTapTargetGuideline {
+  const _AndroidTargets()
+    : super(
+        size: const Size(48, 48),
+        link: 'https://support.google.com/accessibility/android/answer/7101858?hl=en',
+      );
+
+  static final _day = RegExp(r'^(\w+, )?\w+ \d{1,2}, \d{4}');
+
+  @override
+  bool shouldSkipNode(SemanticsNode node) {
+    if (super.shouldSkipNode(node)) return true;
+    final size = node.rect.size;
+    return _day.hasMatch(node.getSemanticsData().label) &&
+        size.width >= 44 &&
+        size.height >= 44;
+  }
+}
 
 /// Loads the faces the pubspec bundles (Selawik and the two glyph sets) and every family in the FontManifest, so
 /// words are measured and inked as they would be on a device.
@@ -68,6 +101,7 @@ Future<void> pumpGalleryPage(
 }) async {
   kitShownPreset = preset;
   addTearDown(() => kitShownPreset = kitPreset);
+  addTearDown(releaseImages);
   tester.view.devicePixelRatio = devicePixelRatio;
   tester.view.physicalSize = const Size(galleryWidth, 844) * devicePixelRatio;
   addTearDown(tester.view.reset);
@@ -116,6 +150,7 @@ Future<void> pumpWhole(
   kitShownTheme = (b) =>
       Fluent2ThemeData.preset(kitShownPreset, b).copyWith(density: density);
   addTearDown(() => kitShownTheme = null);
+  addTearDown(releaseImages);
   t.view.devicePixelRatio = 1;
   t.view.physicalSize = Size(width, 900);
   addTearDown(t.view.reset);
@@ -172,6 +207,17 @@ Future<void> settle(WidgetTester tester) async {
     await tester.pump(const Duration(milliseconds: 34));
   }
 }
+
+/// The leak tracking a gallery page's test runs under in [preset]: the package's own (flutter_test_config.dart) in
+/// the first preset, light and dark, where each page's disposal is held; none in the other presets and settings, which
+/// change only colours and measures, so the same widgets are made and disposed in each. Tracked in every cell, the
+/// tracker kept a record of each object a page made, about 8 GB a file (11-16, natively: gallery_guidelines_test 7.8 GB
+/// tracked against 2.0 untracked, gallery_custom_test 8.4 against 1.8), more than Linux CI's runner holds beside a
+/// second file: the run ran out of memory and every later test did not complete.
+LeakTesting? leakTestingIn(String preset) =>
+    preset == Fluent2ThemeData.presets.first
+    ? null
+    : LeakTesting.settings.withIgnoredAll();
 
 /// Every preset, light and dark.
 Iterable<(String, Brightness)> get presetsAndModes sync* {
@@ -273,12 +319,14 @@ Future<List<String>> inkedContrastFailures(WidgetTester tester) async {
   return failures;
 }
 
-/// Whether [p] belongs to a control that announces itself disabled: the nearest semantics node over it is not enabled.
+/// Whether [p] belongs to a control that announces itself disabled: the nearest semantics node over it that a screen
+/// reader hears is not enabled. A node merged into its parent (a control's padded tap target inside its press's merged
+/// node) is heard as that parent.
 bool _inactive(RenderParagraph p) {
   RenderObject? node = p;
   while (node != null) {
     final owned = node.debugSemantics;
-    if (owned != null) {
+    if (owned != null && !owned.isMergedIntoParent) {
       return owned.getSemanticsData().flagsCollection.isEnabled ==
           ui.Tristate.isFalse;
     }

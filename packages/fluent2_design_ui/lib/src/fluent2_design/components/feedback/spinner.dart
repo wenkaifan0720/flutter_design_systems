@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../theme.dart';
@@ -49,6 +50,11 @@ enum Fluent2SpinnerSize {
 /// body1. While Reduce Motion is on it stands still at a
 /// quarter. Read as "[label]" (Loading by default), a live region.
 ///
+/// With a [value] it is a determinate ring, as WinUI's ProgressRing: the
+/// arc stands at that share from the top and eases to each new value (a
+/// meter: storage used, a goal's progress), read as [label] with the share
+/// as its value.
+///
 /// ```dart
 /// Fluent2Spinner(label: 'Loading files')
 /// ```
@@ -61,7 +67,10 @@ class Fluent2Spinner extends StatefulWidget {
     this.inverted = false,
     this.value,
     super.key,
-  });
+  }) : assert(
+         value == null || (value >= 0 && value <= 1),
+         'a spinner\'s progress between 0 and 1',
+       );
 
   /// Fluent's `size`: how large it turns.
   final Fluent2SpinnerSize size;
@@ -82,6 +91,23 @@ class Fluent2Spinner extends StatefulWidget {
 
   @override
   State<Fluent2Spinner> createState() => _Fluent2SpinnerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<Fluent2SpinnerSize>(
+          'size',
+          size,
+          defaultValue: Fluent2SpinnerSize.medium,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('below', value: below, ifFalse: 'below: false'))
+      ..add(FlagProperty('inverted', value: inverted, ifTrue: 'inverted'))
+      ..add(DoubleProperty('value', value, defaultValue: null));
+  }
 }
 
 class _Fluent2SpinnerState extends State<Fluent2Spinner>
@@ -127,20 +153,38 @@ class _Fluent2SpinnerState extends State<Fluent2Spinner>
         ? t.colors.neutralStrokeOnBrand2
         : t.colors.brandStroke1;
     final s = widget.size;
+    final value = widget.value?.clamp(0.0, 1.0);
     final ring = SizedBox.square(
       dimension: s.side,
-      child: AnimatedBuilder(
-        animation: _turn,
-        builder: (context, _) => CustomPaint(
-          painter: _RingPainter(
-            phase: Fluent2Motion.on(context) ? _turn.value : 0.25,
-            track: track,
-            arc: arc,
-            stroke: s.stroke,
-            fraction: widget.value?.clamp(0.0, 1.0),
-          ),
-        ),
-      ),
+      child: value != null
+          // A determinate ring eases to each new value.
+          ? TweenAnimationBuilder<double>(
+              tween: Tween<double>(end: value),
+              duration: Fluent2Motion.on(context)
+                  ? Fluent2Motion.normal
+                  : Duration.zero,
+              curve: Fluent2Motion.decelerateMid,
+              builder: (context, shown, _) => CustomPaint(
+                painter: _RingPainter(
+                  phase: 0.25,
+                  track: track,
+                  arc: arc,
+                  stroke: s.stroke,
+                  fraction: shown,
+                ),
+              ),
+            )
+          : AnimatedBuilder(
+              animation: _turn,
+              builder: (context, _) => CustomPaint(
+                painter: _RingPainter(
+                  phase: Fluent2Motion.on(context) ? _turn.value : 0.25,
+                  track: track,
+                  arc: arc,
+                  stroke: s.stroke,
+                ),
+              ),
+            ),
     );
     final label = widget.label;
     final words = label == null
@@ -155,8 +199,11 @@ class _Fluent2SpinnerState extends State<Fluent2Spinner>
             ),
           );
     return Semantics(
-      liveRegion: true,
+      // Work under way is announced as it starts; a meter is read when
+      // reached, its share as its value.
+      liveRegion: value == null,
       label: label ?? DesignLocalizations.of(context).loadingLabel,
+      value: value == null ? null : '${(value * 100).round()}%',
       excludeSemantics: true,
       child: words == null
           ? ring

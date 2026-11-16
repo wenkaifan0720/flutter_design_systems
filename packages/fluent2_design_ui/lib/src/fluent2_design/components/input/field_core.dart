@@ -6,6 +6,7 @@
 // the inputs; never exported from the barrel, never placed by a page.
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show
         InputBorder,
@@ -20,6 +21,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
 import '../../internal/cap_label.dart';
+import '../../internal/chosen.dart';
 import '../../internal/well.dart';
 import '../../icons.dart';
 import '../../styled.dart';
@@ -173,6 +175,15 @@ class Fluent2FieldScope extends InheritedWidget {
       label != oldWidget.label ||
       required != oldWidget.required ||
       invalid != oldWidget.invalid;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('required', required))
+      ..add(DiagnosticsProperty<bool>('invalid', invalid));
+  }
 }
 
 /// The geometry of a field size, Fluent's Input: [height] (24, 32, 40),
@@ -252,6 +263,7 @@ class Fluent2FieldEditor extends StatelessWidget {
     required this.enabled,
     this.hint,
     this.hintStyle,
+    this.hintMaxLines,
     this.groupId,
     this.readOnly = false,
     this.obscureText = false,
@@ -259,13 +271,18 @@ class Fluent2FieldEditor extends StatelessWidget {
     this.onTap,
     this.onChanged,
     this.onSubmitted,
+    this.onEditingComplete,
     this.keyboardType,
     this.textInputAction,
     this.inputFormatters,
     this.minLines,
     this.maxLines = 1,
     super.key,
-  });
+  }) : assert(
+         onSubmitted == null || onEditingComplete == null,
+         'An editor takes Enter in onSubmitted (it gives up the focus) or in '
+         'onEditingComplete (it keeps it), never both.',
+       );
 
   /// The controller that holds the words.
   final TextEditingController controller;
@@ -286,6 +303,11 @@ class Fluent2FieldEditor extends StatelessWidget {
   /// The type and ink of [hint].
   final TextStyle? hintStyle;
 
+  /// The most lines [hint] runs to before it ends in an ellipsis; null lets
+  /// it wrap as the words do. The hint is laid out even under words, so a
+  /// field whose height decides a layout gives it the lines it starts with.
+  final int? hintMaxLines;
+
   /// The tap region the field shares with its popover; null is the text
   /// field's own.
   final Object? groupId;
@@ -305,9 +327,20 @@ class Fluent2FieldEditor extends StatelessWidget {
   /// Called with the words each time the user changes them.
   final ValueChanged<String>? onChanged;
 
+  /// {@template fluent2.onSubmitted}
   /// Called with the words when the user submits them (the keyboard's done or
   /// Enter).
+  /// {@endtemplate}
   final ValueChanged<String>? onSubmitted;
+
+  /// Called in place of the platform's own end of editing when the user
+  /// submits (the keyboard's done or Enter): the editor keeps the focus.
+  ///
+  /// A field that stays focused after Enter (a combobox's, a tag picker's)
+  /// takes Enter here and has no [onSubmitted]: Flutter restarts the text
+  /// input of a field told of a submit that keeps its focus, and in a browser
+  /// the restarted input takes no typing.
+  final VoidCallback? onEditingComplete;
 
   /// The keyboard the platform shows for it; null is the text keyboard.
   final TextInputType? keyboardType;
@@ -340,6 +373,7 @@ class Fluent2FieldEditor extends StatelessWidget {
         onTap: onTap,
         onChanged: onChanged,
         onSubmitted: onSubmitted,
+        onEditingComplete: onEditingComplete,
         keyboardType: keyboardType,
         // An address reads left to right in any page: a right-to-left
         // paragraph would carry its scheme and dots to the far end.
@@ -357,7 +391,11 @@ class Fluent2FieldEditor extends StatelessWidget {
         cursorColor: t.textPrimary,
         cursorWidth: 1,
         contextMenuBuilder: Fluent2FieldContextMenu.editable,
-        decoration: _bareDecoration(hint: hint, hintStyle: hintStyle),
+        decoration: _bareDecoration(
+          hint: hint,
+          hintStyle: hintStyle,
+          hintMaxLines: hintMaxLines,
+        ),
       ),
     );
     // One line: its capitals on the line's middle, the hint's too, the
@@ -366,6 +404,72 @@ class Fluent2FieldEditor extends StatelessWidget {
     return maxLines == 1
         ? fluent2CapCentred(field)
         : Fluent2WebBaseline(style: style, child: field);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>('controller', controller),
+      )
+      ..add(DiagnosticsProperty<FocusNode>('focusNode', focusNode))
+      ..add(DiagnosticsProperty<TextStyle>('style', style))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextStyle>(
+          'hintStyle',
+          hintStyle,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('hintMaxLines', hintMaxLines, defaultValue: null))
+      ..add(DiagnosticsProperty<Object>('groupId', groupId, defaultValue: null))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
+      ..add(
+        FlagProperty('obscureText', value: obscureText, ifTrue: 'obscureText'),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onTap', onTap))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback?>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('minLines', minLines, defaultValue: null))
+      ..add(IntProperty('maxLines', maxLines, defaultValue: 1));
   }
 }
 
@@ -378,23 +482,27 @@ class Fluent2FieldEditor extends StatelessWidget {
 /// and Linux, so in every desktop browser) put a centred line 4 below its
 /// own box. The look's frame draws the box, the fill, the borders and the
 /// ring, and its row the icons.
-InputDecoration _bareDecoration({String? hint, TextStyle? hintStyle}) =>
-    InputDecoration(
-      hintText: hint,
-      hintStyle: hintStyle,
-      isCollapsed: true,
-      isDense: false,
-      contentPadding: EdgeInsets.zero,
-      visualDensity: VisualDensity.standard,
-      constraints: const BoxConstraints(),
-      filled: false,
-      border: InputBorder.none,
-      enabledBorder: InputBorder.none,
-      focusedBorder: InputBorder.none,
-      disabledBorder: InputBorder.none,
-      errorBorder: InputBorder.none,
-      focusedErrorBorder: InputBorder.none,
-    );
+InputDecoration _bareDecoration({
+  String? hint,
+  TextStyle? hintStyle,
+  int? hintMaxLines,
+}) => InputDecoration(
+  hintText: hint,
+  hintStyle: hintStyle,
+  hintMaxLines: hintMaxLines,
+  isCollapsed: true,
+  isDense: false,
+  contentPadding: EdgeInsets.zero,
+  visualDensity: VisualDensity.standard,
+  constraints: const BoxConstraints(),
+  filled: false,
+  border: InputBorder.none,
+  enabledBorder: InputBorder.none,
+  focusedBorder: InputBorder.none,
+  disabledBorder: InputBorder.none,
+  errorBorder: InputBorder.none,
+  focusedErrorBorder: InputBorder.none,
+);
 
 /// How far below a browser's baseline Flutter sets words in [style] in
 /// their line box, in logical pixels (negative: above it). Both lead a line
@@ -476,6 +584,12 @@ class Fluent2WebBaseline extends StatelessWidget {
     final drop = fluent2WebBaselineDrop(style);
     if (drop == 0) return child;
     return Transform.translate(offset: Offset(0, -drop), child: child);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<TextStyle>('style', style));
   }
 }
 
@@ -595,6 +709,7 @@ class Fluent2FieldFrame extends StatefulWidget {
     this.radius,
     this.style,
     this.textNode = false,
+    this.editable = false,
     this.touchTarget = true,
     super.key,
   });
@@ -628,6 +743,13 @@ class Fluent2FieldFrame extends StatefulWidget {
   /// (unless a `Fluent2FormField` round it is that node already).
   final bool textNode;
 
+  /// Whether the frame holds a text editor (a [textNode] frame always
+  /// does): a tap anywhere in it focuses the editor and sets the caret
+  /// nearest the tap, as a TextField takes a tap anywhere on its
+  /// decorator, so the area a tap reaches is the frame a screen reader
+  /// outlines, not the 20-tall line of words inside it.
+  final bool editable;
+
   /// The room round [child] inside the strokes.
   final EdgeInsetsGeometry padding;
 
@@ -656,6 +778,45 @@ class Fluent2FieldFrame extends StatefulWidget {
 
   @override
   State<Fluent2FieldFrame> createState() => _Fluent2FieldFrameState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<Fluent2InputAppearance>('appearance', appearance))
+      ..add(DiagnosticsProperty<bool>('focused', focused))
+      ..add(DiagnosticsProperty<bool>('enabled', enabled))
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(FlagProperty('pressed', value: pressed, ifTrue: 'pressed'))
+      ..add(DoubleProperty('minHeight', minHeight, defaultValue: 32))
+      ..add(
+        FlagProperty(
+          'touchTarget',
+          value: touchTarget,
+          ifFalse: 'touchTarget: false',
+        ),
+      )
+      ..add(FlagProperty('textNode', value: textNode, ifTrue: 'textNode'))
+      ..add(FlagProperty('editable', value: editable, ifTrue: 'editable'))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<MouseCursor>(
+          'cursor',
+          cursor,
+          defaultValue: SystemMouseCursors.text,
+        ),
+      )
+      ..add(DoubleProperty('radius', radius, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _Fluent2FieldFrameState extends State<Fluent2FieldFrame> {
@@ -763,13 +924,15 @@ class _Fluent2FieldFrameState extends State<Fluent2FieldFrame> {
           ),
         ),
       );
+      final takesTaps = enabled && (widget.textNode || widget.editable);
+      final tappable = takesTaps ? Fluent2EditorTaps(child: frame) : frame;
       // A text field's words, flags and actions gather in one node the
       // frame's size (Material's field is its decorator's), not the line's;
       // under a Fluent2FormField the field's own node is already the frame.
       if (!widget.textNode || Fluent2FieldScope.maybeOf(context) != null) {
-        return frame;
+        return tappable;
       }
-      return Semantics(container: true, child: frame);
+      return Semantics(container: true, child: tappable);
     });
   }
 }
@@ -925,7 +1088,7 @@ class Fluent2FieldButton extends StatefulWidget {
   /// nothing.
   final bool? expanded;
 
-  /// The focus node it takes focus with; null makes its own.
+  /// {@macro fluent2.fieldFocusNode}
   final FocusNode? focusNode;
 
   /// Whether it takes focus when it first builds.
@@ -933,6 +1096,25 @@ class Fluent2FieldButton extends StatefulWidget {
 
   @override
   State<Fluent2FieldButton> createState() => _Fluent2FieldButtonState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onOpen', onOpen))
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _Fluent2FieldButtonState extends State<Fluent2FieldButton> {
@@ -995,7 +1177,11 @@ class _Fluent2FieldButtonState extends State<Fluent2FieldButton> {
 /// least [minWidth]) or [width], at most [maxHeight] tall and never past
 /// the window's edge less 8; a tap outside both, or Escape, calls
 /// [onDismiss]. Shown and hidden through [controller]. The popover
-/// follows its anchor as the page scrolls.
+/// follows its anchor as the page scrolls. The system back (Android's)
+/// closes it through [onDismiss] before it pops the page under it. A route pushed over the
+/// anchor's (an alert, a dialog, a sheet), on its navigator or another,
+/// closes it through [onDismiss] too, focus left to the new route: it is
+/// never left open under the route, nor found open once the route is gone.
 class Fluent2FieldPopover extends StatefulWidget {
   /// Anchors the popover [popover] builds to [child], shown while [controller]
   /// shows it.
@@ -1025,7 +1211,9 @@ class Fluent2FieldPopover extends StatefulWidget {
   /// The anchor: the field the popover opens from.
   final Widget child;
 
-  /// Called when a tap outside or Escape closes the popover.
+  /// Called when a tap outside, Escape, the system back or a route pushed
+  /// over the anchor's closes the popover; null hides it through
+  /// [controller].
   final VoidCallback? onDismiss;
 
   /// The popover's width; null is the anchor's, at least [minWidth].
@@ -1039,23 +1227,124 @@ class Fluent2FieldPopover extends StatefulWidget {
 
   @override
   State<Fluent2FieldPopover> createState() => _Fluent2PopoverState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<OverlayPortalController>('controller', controller),
+      )
+      ..add(DiagnosticsProperty<Object>('groupId', groupId, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<Widget Function(BuildContext context)>.has(
+          'popover',
+          popover,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onDismiss', onDismiss))
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(DoubleProperty('minWidth', minWidth, defaultValue: 160))
+      ..add(DoubleProperty('maxHeight', maxHeight, defaultValue: 360));
+  }
 }
 
 class _Fluent2PopoverState extends State<Fluent2FieldPopover> {
   final _link = LayerLink();
   final _anchor = GlobalKey();
+  // Whether the anchor's route is its navigator's top one.
+  bool _routeCurrent = true;
 
   Object get _group => widget.groupId ?? this;
 
   @override
-  Widget build(BuildContext context) => TapRegion(
-    groupId: _group,
-    child: CompositedTransformTarget(
-      link: _link,
-      child: OverlayPortal(
-        controller: widget.controller,
-        overlayChildBuilder: _overlay,
-        child: KeyedSubtree(key: _anchor, child: widget.child),
+  void initState() {
+    super.initState();
+    FocusManager.instance.addListener(_focusMoved);
+  }
+
+  @override
+  void dispose() {
+    FocusManager.instance.removeListener(_focusMoved);
+    super.dispose();
+  }
+
+  // A route pushed over the anchor's on its own navigator.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final current = ModalRoute.isCurrentOf(context) ?? true;
+    final pushedOver = _routeCurrent && !current;
+    _routeCurrent = current;
+    if (pushedOver) _closeCovered();
+  }
+
+  // A route pushed on another navigator (an alert on the root navigator over
+  // a page in a nested one) leaves the anchor's route current in its own,
+  // but takes the focus out of the scope the anchor's navigator holds round
+  // its page. Focus parked on the root scope (the app in the background)
+  // and focus moving about the page leave it open.
+  void _focusMoved() {
+    if (widget.controller.isShowing && _focusLeftRoute) _closeCovered();
+  }
+
+  bool get _focusLeftRoute {
+    final primary = FocusManager.instance.primaryFocus;
+    if (primary == null || primary == FocusManager.instance.rootScope) {
+      return false;
+    }
+    final navigator = Navigator.maybeOf(context)?.focusNode;
+    final here = Focus.maybeOf(context, scopeOk: true, createDependency: false);
+    if (navigator == null || here == null) return false;
+    FocusNode? scope;
+    for (final node in [here, ...here.ancestors]) {
+      if (identical(node.parent, navigator)) {
+        scope = node;
+        break;
+      }
+    }
+    if (scope == null) return false;
+    return primary != scope && !primary.ancestors.contains(scope);
+  }
+
+  // Closed once this frame is built, through the owner's own dismissal.
+  void _closeCovered() {
+    if (!widget.controller.isShowing) return;
+    WidgetsBinding.instance
+      ..addPostFrameCallback((_) {
+        if (!mounted || !widget.controller.isShowing) return;
+        if (_routeCurrent && !_focusLeftRoute) return;
+        _dismiss();
+      })
+      ..ensureVisualUpdate();
+  }
+
+  void _dismiss() {
+    final dismiss = widget.onDismiss;
+    if (dismiss != null) {
+      dismiss();
+    } else {
+      widget.controller.hide();
+    }
+  }
+
+  // The owners show and hide the popover inside setState, so this builds
+  // again each time it opens or closes, and the back follows it.
+  @override
+  Widget build(BuildContext context) => PopScope<Object?>(
+    canPop: !widget.controller.isShowing,
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop && widget.controller.isShowing) _dismiss();
+    },
+    child: TapRegion(
+      groupId: _group,
+      child: CompositedTransformTarget(
+        link: _link,
+        child: OverlayPortal(
+          controller: widget.controller,
+          overlayChildBuilder: _overlay,
+          child: KeyedSubtree(key: _anchor, child: widget.child),
+        ),
       ),
     ),
   );
@@ -1111,13 +1400,18 @@ class _Fluent2PopoverState extends State<Fluent2FieldPopover> {
               const SingleActivator(LogicalKeyboardKey.escape): () =>
                   widget.onDismiss?.call(),
             },
-            child: SizedBox(
-              width: width,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: math.min(widget.maxHeight, room),
+            // Painted on a layer of its own, as the field's page is: it
+            // repaints alone as its rows light, and its pixels are read on
+            // the same grid as the field's.
+            child: RepaintBoundary(
+              child: SizedBox(
+                width: width,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: math.min(widget.maxHeight, room),
+                  ),
+                  child: widget.popover(context),
                 ),
-                child: widget.popover(context),
               ),
             ),
           ),
@@ -1136,8 +1430,13 @@ class Fluent2PopoverSurface extends StatelessWidget {
   const Fluent2PopoverSurface({
     required this.child,
     this.padding = const EdgeInsets.all(Fluent2Spacing.xs),
+    this.style,
     super.key,
   });
+
+  /// This menu or list surface's own look, slot by slot, over its component theme
+  /// ([Fluent2ThemeData.menuTheme]): the slots its doc names.
+  final Fluent2Style? style;
 
   /// What the surface holds.
   final Widget child;
@@ -1148,7 +1447,7 @@ class Fluent2PopoverSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
-    final look = Fluent2StyleOf([t.menuTheme], const {});
+    final look = Fluent2StyleOf([style, t.menuTheme], const {});
     return Fluent2Plate(
       fill: look.fill ?? t.colors.neutralBackground1,
       side: fluent2Rim(
@@ -1164,14 +1463,33 @@ class Fluent2PopoverSurface extends StatelessWidget {
       child: child,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.all(Fluent2Spacing.xs),
+        ),
+      );
+  }
 }
 
 /// One option row of Fluent's listbox (`Option`): 6 over and under and 8
 /// at the sides, its corners 4, the check (16) before its words while
 /// [selected] (a 16 box with the brand fill when [multiselect]), a glyph,
 /// the words in body1 and a [secondary] line in caption1; the hover and
-/// pressed neutral fills; [active] draws the 2 `strokeFocus2` ring the
-/// keyboard's active option wears. 32 tall on the desktop, 44 on a phone.
+/// pressed neutral fills; [highlighted] draws the 2 `strokeFocus2` ring the
+/// keyboard's active option wears. A [selected] row stands out at a glance
+/// as Fluent's selected list item does: the subtle brand fill, the brand
+/// pill at its leading edge and the check in the brand. 32 tall on the
+/// desktop, 44 on a phone.
 class Fluent2OptionRow extends StatelessWidget {
   /// A pressable listbox row for [label].
   const Fluent2OptionRow({
@@ -1229,11 +1547,36 @@ class Fluent2OptionRow extends StatelessWidget {
       highlighted: highlighted,
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<bool>('selected', selected))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('secondary', secondary, defaultValue: null))
+      ..add(
+        FlagProperty('multiselect', value: multiselect, ifTrue: 'multiselect'),
+      )
+      ..add(
+        FlagProperty('highlighted', value: highlighted, ifTrue: 'highlighted'),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 /// The face of a listbox option for its [states]: the check, the glyph, the
 /// words and the second word, the subtle fill under the pointer, the ring
-/// while it is [highlighted]. Plumbing of the listboxes.
+/// while it is [highlighted]; while [selected], the brand fill and pill.
+/// Plumbing of the listboxes.
 class Fluent2OptionFace extends StatelessWidget {
   /// The face of a listbox row for [label] in [states].
   const Fluent2OptionFace({
@@ -1273,7 +1616,9 @@ class Fluent2OptionFace extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final c = t.colors;
-    final wide = Fluent2Layout.popsOver(context);
+    // A finger's row under a finger (a phone's sheet, a tablet's popover),
+    // a pointer's under a pointer.
+    final touch = Fluent2Layout.padded(context);
     final press = states.press;
     final ink = press.pick(
       c.neutralForeground1,
@@ -1315,15 +1660,19 @@ class Fluent2OptionFace extends StatelessWidget {
       check = SizedBox(
         width: 16,
         child: selected
-            ? Icon(Fluent2Icons.checkmark16Filled, size: 16, color: ink)
+            ? Icon(
+                Fluent2Icons.checkmark16Filled,
+                size: 16,
+                color: fluent2ChosenInk(c, press),
+              )
             : null,
       );
     }
-    return Container(
+    final row = Container(
       constraints: BoxConstraints(
-        minHeight: wide
-            ? Fluent2ChromeMetrics.menuItem
-            : Fluent2ChromeMetrics.menuItemTouch,
+        minHeight: touch
+            ? Fluent2ChromeMetrics.menuItemTouch
+            : Fluent2ChromeMetrics.menuItem,
       ),
       // The check stands 2 into the start room and 2 + 4 before the
       // words (Fluent's negative margin and column gap).
@@ -1334,11 +1683,11 @@ class Fluent2OptionFace extends StatelessWidget {
         Fluent2Spacing.sNudge,
       ),
       decoration: BoxDecoration(
-        color: press.pick(
-          c.transparentBackground,
-          c.neutralBackground1Hover,
-          c.neutralBackground1Pressed,
-          c.transparentBackground,
+        color: fluent2RowFill(
+          c,
+          press,
+          chosen: selected,
+          resting: c.transparentBackground,
         ),
         borderRadius: BorderRadius.circular(Fluent2Radius.medium),
       ),
@@ -1363,32 +1712,65 @@ class Fluent2OptionFace extends StatelessWidget {
             Icon(icon, size: 20, color: ink),
             const SizedBox(width: Fluent2Spacing.xs),
           ],
+          // The second word at the row's end, as Fluent's secondary
+          // content stands; each takes at most half the room when both run
+          // long.
           Expanded(
-            child: Text(
-              label,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: t.body1.c(ink),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: t.body1.c(ink),
+                  ),
+                ),
+                if (secondary != null) ...[
+                  const SizedBox(width: Fluent2Spacing.s),
+                  Flexible(
+                    child: Text(
+                      secondary!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: t.caption1.c(
+                        press == Fluent2Press.disabled
+                            ? c.neutralForegroundDisabled
+                            : c.neutralForeground3,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
-          if (secondary != null) ...[
-            const SizedBox(width: Fluent2Spacing.s),
-            Flexible(
-              child: Text(
-                secondary!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: t.caption1.c(
-                  press == Fluent2Press.disabled
-                      ? c.neutralForegroundDisabled
-                      : c.neutralForeground3,
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );
+    return fluent2ChosenRow(
+      row: row,
+      chosen: selected,
+      colors: c,
+      press: press,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<bool>('selected', selected))
+      ..add(IterableProperty<WidgetState>('states', states))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('secondary', secondary, defaultValue: null))
+      ..add(
+        FlagProperty('multiselect', value: multiselect, ifTrue: 'multiselect'),
+      )
+      ..add(
+        FlagProperty('highlighted', value: highlighted, ifTrue: 'highlighted'),
+      );
   }
 }
 
@@ -1438,4 +1820,66 @@ class Fluent2ListboxColumn extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('empty', empty, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      );
+  }
+}
+
+/// Takes a tap anywhere over [child] for the text editor inside it: the
+/// editor takes focus and the caret goes where the tap is nearest the
+/// words, as Flutter's TextField takes one anywhere on its decorator. A
+/// field's frame (its padding, its strokes, the room a touch target adds)
+/// and a tag picker's input beside its tags stand round one. A tap on the
+/// words, or on a control in the row (clear, reveal, a stepper), is that
+/// one's: it stands deeper, so it wins the tap.
+class Fluent2EditorTaps extends StatelessWidget {
+  /// Forwards a tap over [child] to the editor inside it.
+  const Fluent2EditorTaps({required this.child, super.key});
+
+  /// What holds the editor.
+  final Widget child;
+
+  void _tap(BuildContext context, TapUpDetails details) {
+    EditableTextState? editor;
+    void visit(Element e) {
+      if (editor != null) return;
+      if (e is StatefulElement && e.state is EditableTextState) {
+        editor = e.state as EditableTextState;
+        return;
+      }
+      e.visitChildElements(visit);
+    }
+
+    (context as Element).visitChildElements(visit);
+    final found = editor;
+    if (found == null ||
+        !found.mounted ||
+        !found.widget.focusNode.canRequestFocus) {
+      return;
+    }
+    found.requestKeyboard();
+    found.renderEditable.selectPositionAt(
+      from: details.globalPosition,
+      cause: SelectionChangedCause.tap,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    excludeFromSemantics: true,
+    onTapUp: (details) => _tap(context, details),
+    child: child,
+  );
 }

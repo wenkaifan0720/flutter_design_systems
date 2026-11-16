@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -114,10 +115,10 @@ class Fluent2Card extends StatelessWidget {
   /// What a screen reader says; null reads the card's own words.
   final String? label;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   /// The room round and between the parts at [size] (8, 12, 16).
@@ -234,14 +235,16 @@ class Fluent2Card extends StatelessWidget {
         child: face(const {}),
       );
     }
+    // The chosen state goes on the node that speaks: on a container round
+    // it, a reader heard an empty "checked" and then the card.
     return Semantics(
       container: true,
-      checked: selectable ? selected : null,
       child: Fluent2Pressable(
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: press,
         label: label,
+        checked: selectable ? selected : null,
         radius: radius,
         shape: WidgetStateProperty.resolveWith(outline),
         builder: (context, states) => face(states),
@@ -361,16 +364,60 @@ class Fluent2Card extends StatelessWidget {
       ),
       Fluent2CardAppearance.subtle => _CardFace(
         on
-            ? c.subtleBackgroundSelected
+            ? fluent2Step(t, c.subtleBackgroundSelected)
             : press.pick(
                 c.subtleBackground,
-                c.subtleBackgroundHover,
-                c.subtleBackgroundPressed,
+                fluent2Step(t, c.subtleBackgroundHover),
+                fluent2Step(t, c.subtleBackgroundPressed),
               ),
         edge ?? c.transparentStroke,
         const [],
       ),
     };
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<Fluent2CardAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2CardAppearance.filled,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2CardSize>(
+          'size',
+          size,
+          defaultValue: Fluent2CardSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2CardOrientation>(
+          'orientation',
+          orientation,
+          defaultValue: Fluent2CardOrientation.vertical,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>?>.has('onSelected', onSelected),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -466,6 +513,14 @@ class Fluent2CardHeader extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('header', header))
+      ..add(StringProperty('description', description, defaultValue: null));
+  }
 }
 
 /// Fluent 2's CardPreview: a picture reaching the card's edges (a file's
@@ -526,6 +581,15 @@ class Fluent2CardPreview extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('aspectRatio', aspectRatio, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(DoubleProperty('width', width, defaultValue: null));
   }
 }
 

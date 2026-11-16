@@ -45,7 +45,7 @@ Widget kitAccordionDemo(Brightness brightness) => kitScreen(
     kitSection(
       'Tree, small',
       children: [
-        Fluent2Tree<String>(
+        const Fluent2Tree<String>(
           size: Fluent2TreeSize.small,
           label: 'Folders',
           items: _folders,

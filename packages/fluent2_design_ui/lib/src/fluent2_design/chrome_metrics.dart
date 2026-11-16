@@ -231,7 +231,8 @@ abstract final class Fluent2ChromeMetrics {
   /// A menu item's least height under a finger.
   static const double menuItemTouch = 44;
 
-  /// The room round a menu item's parts.
+  /// The room round a menu item's parts: Fluent's spacingHorizontalSNudge
+  /// (6), one of its nudges between the 4-pt steps.
   static const double menuItemPadding = 6;
 
   /// The room between a menu item's parts.

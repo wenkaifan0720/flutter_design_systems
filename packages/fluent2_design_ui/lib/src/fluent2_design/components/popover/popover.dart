@@ -1,11 +1,12 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
 import '../../internal/arrow.dart';
-import '../../internal/hit_slop.dart';
 import '../../localizations.dart';
+import '../../styled.dart';
 import '../../theme.dart';
 import '../button/button.dart';
 import '../host.dart';
@@ -13,6 +14,10 @@ import '../pressable/pressable.dart';
 import '../tooltip/arrow_placement.dart';
 
 import 'package:ui_core/ui_core.dart';
+
+/// A teaching tip's act's room at its sides: Fluent's button (12) less its
+/// 1 px stroke, as the button draws it; off the 4-pt grid on purpose.
+const double _tipActionSide = 11;
 
 /// A flyout's face, Fluent's Popover `appearance`: [neutral] the surface (the
 /// default), [brand] the brand fill, [inverted] the dark static plane.
@@ -50,15 +55,18 @@ enum Fluent2FlyoutSize {
 }
 
 /// The fill and the ink of a flyout's [appearance] in [t], and its edge
-/// (a hairline on the dark neutral surface, as the menu draws one).
+/// (a hairline on the dark neutral surface, as the menu draws one). A
+/// neutral flyout is the menu's surface, so it takes its `fill`,
+/// `foreground` and `edge` (or `side`'s colour) from the menu theme
+/// ([Fluent2ThemeData.menuTheme]) where that sets them; the brand and
+/// inverted appearances keep Fluent's own.
 (Color, Color, Color) fluent2FlyoutFace(
   Fluent2ThemeData t,
   Fluent2FlyoutAppearance appearance,
 ) => switch (appearance) {
-  Fluent2FlyoutAppearance.neutral => (
-    t.colors.neutralBackground1,
-    t.colors.neutralForeground1,
-    t.isDark ? t.colors.neutralStroke2 : t.colors.transparentStroke,
+  Fluent2FlyoutAppearance.neutral => _neutralFace(
+    t,
+    Fluent2StyleOf([t.menuTheme], const {}),
   ),
   Fluent2FlyoutAppearance.brand => (
     t.colors.brandBackground,
@@ -71,6 +79,16 @@ enum Fluent2FlyoutSize {
     t.colors.transparentStroke,
   ),
 };
+
+(Color, Color, Color) _neutralFace(Fluent2ThemeData t, Fluent2StyleOf look) => (
+  look.fill ?? t.colors.neutralBackground1,
+  look.foreground ?? t.colors.neutralForeground1,
+  fluent2Rim(
+    t,
+    look,
+    t.isDark ? t.colors.neutralStroke2 : t.colors.transparentStroke,
+  ).color,
+);
 
 /// Fluent 2's Popover surface (the Flyout of Fluent's desktop libraries,
 /// so named beside the fields' anchored listbox holder), drawn in place: [child] in body1 on
@@ -244,6 +262,33 @@ class Fluent2Flyout extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        EnumProperty<Fluent2FlyoutAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2FlyoutAppearance.neutral,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2FlyoutSize>(
+          'size',
+          size,
+          defaultValue: Fluent2FlyoutSize.medium,
+        ),
+      )
+      ..add(DoubleProperty('arrowAt', arrowAt, defaultValue: null))
+      ..add(FlagProperty('arrowUp', value: arrowUp, ifFalse: 'arrowUp: false'))
+      ..add(DoubleProperty('minWidth', minWidth, defaultValue: 0))
+      ..add(DoubleProperty('maxWidth', maxWidth, defaultValue: 360))
+      ..add(
+        DoubleProperty('radius', radius, defaultValue: Fluent2Radius.medium),
+      );
+  }
 }
 
 class _PopoverArrowPainter extends CustomPainter {
@@ -330,10 +375,9 @@ class _PopoverRoute<T> extends PopupRoute<T> {
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) => FadeTransition(
-    opacity: CurvedAnimation(
-      parent: animation,
-      curve: Fluent2Motion.decelerateMid,
-    ),
+    // A tween's drive, not a CurvedAnimation: nothing to dispose when the
+    // route goes.
+    opacity: animation.drive(CurveTween(curve: Fluent2Motion.decelerateMid)),
     child: CustomSingleChildLayout(
       delegate: _Beside(anchor, placement, gap, preferBelow),
       child: builder(context),
@@ -403,7 +447,8 @@ class _TeachButton extends StatelessWidget {
     final t = context.fluent2Theme;
     final c = t.colors;
     final radius = BorderRadius.circular(Fluent2Radius.medium);
-    return Fluent2HitSlop(
+    return DesignTapTarget(
+      minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         onPressed: onTap,
         label: label,
@@ -452,7 +497,7 @@ class _TeachButton extends StatelessWidget {
             radius: radius,
             height: 32,
             minWidth: 96,
-            padding: const EdgeInsets.symmetric(horizontal: 11),
+            padding: const EdgeInsets.symmetric(horizontal: _tipActionSide),
             child: Text(
               label,
               maxLines: 1,
@@ -624,7 +669,10 @@ class Fluent2TeachingPopover extends StatelessWidget {
     final quiet = brand ? ink : t.textSecondary;
     final dismiss = onDismiss;
     final words = Fluent2Localizations.of(context);
-    final count = step != null && steps != null ? '$step of $steps' : null;
+    // "2 of 3" in the app's words, so a right-to-left language orders it.
+    final count = step != null && steps != null
+        ? DesignLocalizations.of(context).positionLabel(step!, steps!)
+        : null;
     final content = Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -732,6 +780,43 @@ class Fluent2TeachingPopover extends StatelessWidget {
         },
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('body', body))
+      ..add(StringProperty('primaryLabel', primaryLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<VoidCallback?>.has(
+          'onPrimaryPressed',
+          onPrimaryPressed,
+        ),
+      )
+      ..add(
+        StringProperty('secondaryLabel', secondaryLabel, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback?>.has(
+          'onSecondaryPressed',
+          onSecondaryPressed,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onDismiss', onDismiss))
+      ..add(IntProperty('step', step, defaultValue: null))
+      ..add(IntProperty('steps', steps, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2FlyoutAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2FlyoutAppearance.brand,
+        ),
+      )
+      ..add(DoubleProperty('arrowAt', arrowAt, defaultValue: null))
+      ..add(FlagProperty('arrowUp', value: arrowUp, ifFalse: 'arrowUp: false'))
+      ..add(StringProperty('dismissLabel', dismissLabel, defaultValue: null));
   }
 }
 

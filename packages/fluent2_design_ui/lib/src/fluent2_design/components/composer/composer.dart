@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -23,7 +25,9 @@ enum Fluent2ComposerAppearance {
 /// ships none of its own): an outline field (the brand underline while it
 /// holds focus) whose text grows from one line to [maxLines] and then
 /// scrolls, the attach and emoji commands ([onAttach], [onEmoji]; hidden
-/// when null) and [actions] at its end, then the send command, its glyph
+/// when null) and [actions] at its end (under the words, the send at the
+/// row's end, once a draft runs past one line beside them, as Teams moves
+/// them), then the send command, its glyph
 /// filled in the brand ink once there is a draft and disabled while
 /// there is none. [Fluent2ComposerAppearance.assistant] is an assistant's prompt
 /// box: 8 rounded, two lines at least, the commands on a row under the
@@ -55,7 +59,9 @@ class Fluent2Composer extends StatefulWidget {
   /// Told the draft (trimmed) on a send; null disables the composer.
   final ValueChanged<String>? onSend;
 
+  /// {@template fluent2.textController}
   /// The controller that holds the words; null makes its own.
+  /// {@endtemplate}
   final TextEditingController? controller;
 
   /// The empty words; null is "Type a message" in the app's language.
@@ -82,7 +88,9 @@ class Fluent2Composer extends StatefulWidget {
   /// Called with the words each time the user changes them.
   final ValueChanged<String>? onChanged;
 
+  /// {@template fluent2.fieldFocusNode}
   /// The focus node it takes focus with; null makes its own.
+  /// {@endtemplate}
   final FocusNode? focusNode;
 
   /// Whether it takes focus when it first appears.
@@ -90,6 +98,43 @@ class Fluent2Composer extends StatefulWidget {
 
   @override
   State<Fluent2Composer> createState() => _Fluent2ComposerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<ValueChanged<String>?>.has('onSend', onSend))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onAttach', onAttach))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onEmoji', onEmoji))
+      ..add(
+        EnumProperty<Fluent2ComposerAppearance>(
+          'style',
+          style,
+          defaultValue: Fluent2ComposerAppearance.messages,
+        ),
+      )
+      ..add(IntProperty('maxLines', maxLines, defaultValue: 6))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _Fluent2ComposerState extends State<Fluent2Composer> {
@@ -175,6 +220,10 @@ class _Fluent2ComposerState extends State<Fluent2Composer> {
         hintStyle: type.c(
           live ? c.neutralForeground4 : c.neutralForegroundDisabled,
         ),
+        // The hint keeps to the lines the field starts with: a long one
+        // ends in an ellipsis rather than growing an empty composer, or
+        // moving its commands under the words.
+        hintMaxLines: assistant ? 2 : 1,
       ),
     );
     final field = !wide
@@ -293,23 +342,225 @@ class _Fluent2ComposerState extends State<Fluent2Composer> {
         start: Fluent2Spacing.m,
         end: Fluent2Spacing.xs,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: _ComposerRow(
+        // Past one line by half a line of text: the words run to a second.
+        fold: line + MediaQuery.textScalerOf(context).scale(lineHeight) / 2,
+        gap: Fluent2Spacing.xs,
+        textDirection: Directionality.of(context),
         children: [
-          Expanded(
-            child: level(
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: lead),
-                child: field,
-              ),
-              AlignmentDirectional.centerStart,
+          level(
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: lead),
+              child: field,
             ),
+            AlignmentDirectional.centerStart,
           ),
-          const SizedBox(width: Fluent2Spacing.xs),
-          for (final command in commands) level(command, Alignment.center),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final command in commands) level(command, Alignment.center),
+            ],
+          ),
           level(send, Alignment.center),
         ],
       ),
     );
   }
+}
+
+/// A message composer's row: the words, the commands and the send, side by
+/// side while the words stand on one line beside them; once they grow past
+/// [fold] there, the words take the whole width and the commands and the
+/// send stand on a row under them, the commands at its start and the send
+/// at its end. Decided by the words' height beside the commands, so a draft
+/// that would fit one line under them never flips back.
+class _ComposerRow extends MultiChildRenderObjectWidget {
+  const _ComposerRow({
+    required this.fold,
+    required this.gap,
+    required this.textDirection,
+    required super.children,
+  });
+
+  final double fold;
+  final double gap;
+  final TextDirection textDirection;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderComposerRow(fold, gap, textDirection);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderComposerRow renderObject,
+  ) {
+    renderObject
+      ..fold = fold
+      ..gap = gap
+      ..textDirection = textDirection;
+  }
+}
+
+class _ComposerRowParentData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderComposerRow extends RenderBox
+    with
+        ContainerRenderObjectMixin<
+          RenderBox,
+          ContainerBoxParentData<RenderBox>
+        >,
+        RenderBoxContainerDefaultsMixin<
+          RenderBox,
+          ContainerBoxParentData<RenderBox>
+        > {
+  _RenderComposerRow(this._fold, this._gap, this._textDirection);
+
+  double _fold;
+  set fold(double value) {
+    if (value == _fold) return;
+    _fold = value;
+    markNeedsLayout();
+  }
+
+  double _gap;
+  set gap(double value) {
+    if (value == _gap) return;
+    _gap = value;
+    markNeedsLayout();
+  }
+
+  TextDirection _textDirection;
+  set textDirection(TextDirection value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsLayout();
+  }
+
+  /// Whether the last layout stood the commands under the words.
+  bool stacked = false;
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! ContainerBoxParentData<RenderBox>) {
+      child.parentData = _ComposerRowParentData();
+    }
+  }
+
+  (RenderBox, RenderBox, RenderBox) get _parts {
+    final words = firstChild!;
+    final commands = childAfter(words)!;
+    return (words, commands, childAfter(commands)!);
+  }
+
+  /// The width the words keep beside the commands and the send.
+  double _beside(double width, double commands, double send) =>
+      math.max(0, width - _gap - commands - send);
+
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    final (words, commands, send) = _parts;
+    return words.getMinIntrinsicWidth(height) +
+        _gap +
+        commands.getMinIntrinsicWidth(height) +
+        send.getMinIntrinsicWidth(height);
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    final (words, commands, send) = _parts;
+    return words.getMaxIntrinsicWidth(height) +
+        _gap +
+        commands.getMaxIntrinsicWidth(height) +
+        send.getMaxIntrinsicWidth(height);
+  }
+
+  double _height(double width, double Function(RenderBox, double) of) {
+    final (words, commands, send) = _parts;
+    final cw = commands.getMaxIntrinsicWidth(double.infinity);
+    final sw = send.getMaxIntrinsicWidth(double.infinity);
+    final foot = math.max(of(commands, cw), of(send, sw));
+    final beside = of(words, _beside(width, cw, sw));
+    if (beside <= _fold) return math.max(beside, foot);
+    return of(words, width) + foot;
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _height(width, (c, w) => c.getMinIntrinsicHeight(w));
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      _height(width, (c, w) => c.getMaxIntrinsicHeight(w));
+
+  @override
+  double? computeDistanceToActualBaseline(TextBaseline baseline) =>
+      defaultComputeDistanceToFirstActualBaseline(baseline);
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    final (words, commands, send) = _parts;
+    final loose = BoxConstraints(maxHeight: constraints.maxHeight);
+    final c = commands.getDryLayout(loose);
+    final s = send.getDryLayout(loose);
+    final width = constraints.maxWidth;
+    final beside = words.getDryLayout(
+      BoxConstraints(maxWidth: _beside(width, c.width, s.width)),
+    );
+    final foot = math.max(c.height, s.height);
+    if (beside.height <= _fold) {
+      return constraints.constrain(Size(width, math.max(beside.height, foot)));
+    }
+    final whole = words.getDryLayout(BoxConstraints(maxWidth: width));
+    return constraints.constrain(Size(width, whole.height + foot));
+  }
+
+  @override
+  void performLayout() {
+    final (words, commands, send) = _parts;
+    final width = constraints.maxWidth;
+    final loose = BoxConstraints(maxHeight: constraints.maxHeight);
+    commands.layout(loose, parentUsesSize: true);
+    send.layout(loose, parentUsesSize: true);
+    final c = commands.size;
+    final s = send.size;
+    final foot = math.max(c.height, s.height);
+    final besideWidth = _beside(width, c.width, s.width);
+    words.layout(
+      BoxConstraints(minWidth: besideWidth, maxWidth: besideWidth),
+      parentUsesSize: true,
+    );
+    final rtl = _textDirection == TextDirection.rtl;
+    // From the start edge, [w] wide, as an x from the left.
+    double at(double start, double w) => rtl ? width - start - w : start;
+    void place(RenderBox child, double start, double top) =>
+        (child.parentData! as ContainerBoxParentData<RenderBox>).offset =
+            Offset(at(start, child.size.width), top);
+    stacked = words.size.height > _fold;
+    if (!stacked) {
+      final height = math.max(words.size.height, foot);
+      place(words, 0, height - words.size.height);
+      place(commands, besideWidth + _gap, height - c.height);
+      place(send, width - s.width, height - s.height);
+      size = constraints.constrain(Size(width, height));
+      return;
+    }
+    words.layout(
+      BoxConstraints(minWidth: width, maxWidth: width),
+      parentUsesSize: true,
+    );
+    final top = words.size.height;
+    place(words, 0, 0);
+    place(commands, 0, top + foot - c.height);
+    place(send, width - s.width, top + foot - s.height);
+    size = constraints.constrain(Size(width, top + foot));
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }

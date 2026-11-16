@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -96,21 +97,57 @@ class Fluent2SwipeActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // The row slides inside its own bounds: the face moved aside is cut at
-    // the row's edges, never carried past the page's margin.
-    return ClipRect(
-      child: DesignSwipeActions(
-        startActions: _kit(leading),
-        endActions: _kit(trailing),
-        actionExtent: paneWidth,
-        fullSwipe: fullSwipe,
-        initiallyOpen: initiallyOpen,
-        actionBuilder: (context, action, state) => _Pane(
-          action: action.data! as Fluent2SwipeAction,
-          states: state.states,
+    // the row's start and end, never carried past the page's margin, and
+    // only there, so a ring or shadow above and below stays whole. The whole row
+    // shows the click cursor: it drags, and while it stands open a tap on
+    // its strip shuts it (the row's own parts, absorbed while it is open,
+    // show theirs when it is shut).
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: ClipRect(
+        clipper: const _AlongTheRow(),
+        child: DesignSwipeActions(
+          startActions: _kit(leading),
+          endActions: _kit(trailing),
+          actionExtent: paneWidth,
+          fullSwipe: fullSwipe,
+          initiallyOpen: initiallyOpen,
+          actionBuilder: (context, action, state) => _Pane(
+            action: action.data! as Fluent2SwipeAction,
+            states: state.states,
+          ),
+          child: child,
         ),
-        child: child,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        IterableProperty<Fluent2SwipeAction>(
+          'leading',
+          leading,
+          defaultValue: const [],
+        ),
+      )
+      ..add(
+        IterableProperty<Fluent2SwipeAction>(
+          'trailing',
+          trailing,
+          defaultValue: const [],
+        ),
+      )
+      ..add(FlagProperty('fullSwipe', value: fullSwipe, ifTrue: 'fullSwipe'))
+      ..add(
+        FlagProperty(
+          'initiallyOpen',
+          value: initiallyOpen,
+          ifTrue: 'initiallyOpen',
+        ),
+      );
   }
 }
 
@@ -167,4 +204,21 @@ class _Pane extends StatelessWidget {
       ],
     );
   }
+}
+
+// The row's clip: at its start and end only, open above and below by its own
+// height. Its approximate rect is the clip itself, so a reader of the paint
+// clip sees where it cuts.
+class _AlongTheRow extends CustomClipper<Rect> {
+  const _AlongTheRow();
+
+  @override
+  Rect getClip(Size size) =>
+      Rect.fromLTRB(0, -size.height, size.width, 2 * size.height);
+
+  @override
+  Rect getApproximateClipRect(Size size) => getClip(size);
+
+  @override
+  bool shouldReclip(_AlongTheRow oldClipper) => false;
 }

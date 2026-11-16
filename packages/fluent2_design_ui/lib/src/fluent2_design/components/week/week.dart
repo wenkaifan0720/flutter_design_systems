@@ -1,3 +1,6 @@
+import '../../internal/well.dart';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../theme.dart';
@@ -95,8 +98,8 @@ class Fluent2WeekStrip extends StatelessWidget {
                 )
               : press.pick(
                   t.colors.subtleBackground,
-                  t.colors.subtleBackgroundHover,
-                  t.colors.subtleBackgroundPressed,
+                  fluent2Step(t, t.colors.subtleBackgroundHover),
+                  fluent2Step(t, t.colors.subtleBackgroundPressed),
                 );
           final number = picked
               ? t.body1Strong.tabular.c(t.colors.neutralForegroundOnBrand)
@@ -168,4 +171,28 @@ class Fluent2WeekStrip extends StatelessWidget {
 
   // The most the strip's words grow with the reader's text size.
   static const double _most = 1.5;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>?>.has('onChanged', onChanged),
+      )
+      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<bool Function(DateTime day)?>.has(
+          'hasEvents',
+          hasEvents,
+        ),
+      )
+      ..add(
+        IntProperty(
+          'firstDayOfWeek',
+          firstDayOfWeek,
+          defaultValue: DateTime.monday,
+        ),
+      );
+  }
 }

@@ -1,6 +1,7 @@
 // Collections the inventory adds: the timeline (paint), and on ui_core's behaviours the data table
 // (DesignDataTable), the scroll area (DesignScrollArea), resizable panes (DesignSplitView), the carousel (DesignCarousel),
 // the reorderable list (DesignReorderableList) and pull to refresh (DesignPullToRefresh).
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -15,6 +16,17 @@ import 'checkbox/checkbox.dart';
 import 'feedback/spinner.dart';
 import 'navigation.dart';
 import 'pressable/pressable.dart';
+
+/// A scroll thumb's room inside its track: Fluent's ScrollBar thumb stands
+/// 3 in from the track's sides, finer than the 4-pt grid.
+const double _thumbInset = 3;
+
+/// The scroll area's bar: the strip it is drawn and pressed in.
+const double _barThickness = 12;
+
+/// A reorder grip's dots and the room between them: Fluent's six-dot
+/// ReOrderDotsVertical glyph, 3 by 3 and 3 apart.
+const double _gripDot = 3;
 
 /// A sortable, selectable table on Fluent's DataGrid faces: a 32 header row in
 /// caption1 strong under its hairline, sort arrows in the brand, rows of 44
@@ -126,8 +138,8 @@ class Fluent2DataGrid<R> extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: press.pick(
                           c.subtleBackground,
-                          c.subtleBackgroundHover,
-                          c.subtleBackgroundPressed,
+                          fluent2Step(t, c.subtleBackgroundHover),
+                          fluent2Step(t, c.subtleBackgroundPressed),
                         ),
                         borderRadius: BorderRadius.circular(
                           Fluent2Radius.medium,
@@ -185,14 +197,14 @@ class Fluent2DataGrid<R> extends StatelessWidget {
                 final press = row.states.press;
                 final fill = row.selected
                     ? press.pick(
-                        c.subtleBackgroundSelected,
-                        c.subtleBackgroundHover,
-                        c.subtleBackgroundPressed,
+                        fluent2Step(t, c.subtleBackgroundSelected),
+                        fluent2Step(t, c.subtleBackgroundHover),
+                        fluent2Step(t, c.subtleBackgroundPressed),
                       )
                     : press.pick(
                         c.subtleBackground,
-                        c.subtleBackgroundHover,
-                        c.subtleBackgroundPressed,
+                        fluent2Step(t, c.subtleBackgroundHover),
+                        fluent2Step(t, c.subtleBackgroundPressed),
                       );
                 return Stack(
                   fit: StackFit.passthrough,
@@ -247,6 +259,29 @@ class Fluent2DataGrid<R> extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+      )
+      ..add(
+        ObjectFlagProperty<
+          String Function(R row, DesignTableColumn<R> column)
+        >.has('cell', cell),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'selectable',
+          value: selectable,
+          ifFalse: 'selectable: false',
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<R>?>.has('onActivate', onActivate));
+  }
 }
 
 /// A scrolling region with Fluent's thin bar: 6 wide while it rests, in the
@@ -281,13 +316,15 @@ class Fluent2ScrollArea extends StatelessWidget {
   /// The region's name.
   final String? semanticLabel;
 
-  /// Whether the bar always shows.
+  /// Whether the bar always shows. A bar that always shows stands in a
+  /// gutter of its own beside [child], so no tap meant for the content lands
+  /// on it; one that fades lies over the content's edge.
   final bool thumbVisibility;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -300,7 +337,7 @@ class Fluent2ScrollArea extends StatelessWidget {
       autofocus: autofocus,
       controller: controller,
       axis: axis,
-      thickness: 12,
+      thickness: _barThickness,
       semanticLabel: semanticLabel,
       visibility: thumbVisibility
           ? DesignScrollbarVisibility.always
@@ -309,7 +346,7 @@ class Fluent2ScrollArea extends StatelessWidget {
         opacity: thumb.visible ? 1 : 0,
         duration: moves,
         child: Padding(
-          padding: const EdgeInsets.all(3),
+          padding: const EdgeInsets.all(_thumbInset),
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: thumb.states.pressed
@@ -334,8 +371,39 @@ class Fluent2ScrollArea extends StatelessWidget {
             ),
         ],
       ),
-      child: child,
+      child: thumbVisibility
+          ? Padding(
+              padding: axis == Axis.vertical
+                  ? const EdgeInsetsDirectional.only(end: _barThickness)
+                  : const EdgeInsets.only(bottom: _barThickness),
+              child: child,
+            )
+          : child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<ScrollController>('controller', controller))
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'thumbVisibility',
+          value: thumbVisibility,
+          ifTrue: 'thumbVisibility',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -382,10 +450,10 @@ class Fluent2Resizable extends StatelessWidget {
   /// Told the first pane's share as it moves.
   final ValueChanged<double>? onChanged;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -446,6 +514,29 @@ class Fluent2Resizable extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.horizontal))
+      ..add(
+        DoubleProperty('initialFraction', initialFraction, defaultValue: .5),
+      )
+      ..add(DoubleProperty('minFirst', minFirst, defaultValue: 0))
+      ..add(DoubleProperty('minSecond', minSecond, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// Slides one at a time, Fluent's Carousel: the viewport with its corners 4,
@@ -492,10 +583,10 @@ class Fluent2CarouselView extends StatelessWidget {
   /// The viewport's width over its height.
   final double aspect;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -531,7 +622,7 @@ class Fluent2CarouselView extends StatelessWidget {
                 ),
               ),
               if (controls.focused)
-                Positioned.fill(
+                const Positioned.fill(
                   child: IgnorePointer(
                     child: Fluent2FocusRing(radius: Fluent2Radius.medium),
                   ),
@@ -581,6 +672,28 @@ class Fluent2CarouselView extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(IntProperty('initialItem', initialItem, defaultValue: 0))
+      ..add(FlagProperty('looping', value: looping, ifTrue: 'looping'))
+      ..add(
+        DiagnosticsProperty<Duration>('autoplay', autoplay, defaultValue: null),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onChanged', onChanged))
+      ..add(DoubleProperty('aspect', aspect, defaultValue: 16 / 9))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -660,6 +773,29 @@ class Fluent2ReorderableListView<T extends Object> extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('items', items))
+      ..add(
+        ObjectFlagProperty<void Function(int from, int to)>.has(
+          'onReorder',
+          onReorder,
+        ),
+      )
+      ..add(ObjectFlagProperty<String Function(T item)>.has('labelOf', labelOf))
+      ..add(
+        ObjectFlagProperty<Widget Function(BuildContext context, T item)>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(
+        FlagProperty('shrinkWrap', value: shrinkWrap, ifTrue: 'shrinkWrap'),
+      );
+  }
 }
 
 class _Grip extends StatelessWidget {
@@ -669,8 +805,8 @@ class _Grip extends StatelessWidget {
   Widget build(BuildContext context) {
     final ink = context.fluent2Theme.colors.neutralForeground3;
     Widget dot() => Container(
-      width: 3,
-      height: 3,
+      width: _gripDot,
+      height: _gripDot,
       decoration: BoxDecoration(shape: BoxShape.circle, color: ink),
     );
     final side = Fluent2Layout.hitTargetOf(context);
@@ -680,12 +816,12 @@ class _Grip extends StatelessWidget {
       child: Center(
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          spacing: 3,
+          spacing: _gripDot,
           children: [
             for (var c = 0; c < 2; c++)
               Column(
                 mainAxisSize: MainAxisSize.min,
-                spacing: 3,
+                spacing: _gripDot,
                 children: [for (var r = 0; r < 3; r++) dot()],
               ),
           ],
@@ -750,6 +886,14 @@ class Fluent2RefreshIndicator extends StatelessWidget {
         ),
       ),
       child: child,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<Future<void> Function()>.has('onRefresh', onRefresh),
     );
   }
 }
@@ -889,4 +1033,10 @@ class Fluent2Timeline extends StatelessWidget {
     Fluent2Tone.informative => Fluent2Icons.info,
     _ => Fluent2Icons.history,
   };
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<Fluent2TimelineEntry>('entries', entries));
+  }
 }

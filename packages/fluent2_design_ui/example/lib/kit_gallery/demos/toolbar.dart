@@ -1,7 +1,9 @@
 /// Fluent 2's toolbar: a file's commands with a divider and toggles,
-/// labelled commands, its three sizes, the overflow menu when the row
-/// runs out, and standing vertical; and the divider in its appearances,
-/// with a label at its three alignments and standing vertical.
+/// labelled commands, its groups (commands that belong together, toggles
+/// of one choice and of any number), its three sizes, the overflow menu
+/// when the row runs out, and standing vertical; and the divider in its
+/// appearances, with a label at its three alignments and standing
+/// vertical.
 library;
 
 import 'package:flutter/material.dart';
@@ -35,6 +37,15 @@ Widget kitToolbarDemo(Brightness brightness) => kitScreen(
   sections: [
     kitSection('A file\'s commands', children: [kitSpecimenToolbarFile()]),
     kitSection('Labelled', children: [kitSpecimenToolbarLabelled()]),
+    kitSection('A group of commands', children: [kitSpecimenToolbarGroup()]),
+    kitSection(
+      'One choice of several',
+      children: [kitSpecimenToolbarRadioGroup()],
+    ),
+    kitSection(
+      'Toggles of any number',
+      children: [kitSpecimenToolbarToggleGroup()],
+    ),
     for (final size in Fluent2ToolbarSize.values)
       kitSection(
         'Size ${kitSay(size).toLowerCase()}',
@@ -63,11 +74,11 @@ Widget kitToolbarDemo(Brightness brightness) => kitScreen(
     kitSection(
       'Vertical divider',
       children: [
-        SizedBox(
+        const SizedBox(
           height: 40,
           child: Row(
             spacing: Fluent2Spacing.m,
-            children: const [
+            children: [
               Text('Files'),
               Fluent2Divider(vertical: true),
               Text('Chat'),
@@ -177,6 +188,95 @@ Widget kitSpecimenToolbarLabelled() => _Live<_Marks>(
   ),
 );
 
+Widget kitSpecimenToolbarGroup() => Wrap(
+  spacing: Fluent2Spacing.m,
+  runSpacing: Fluent2Spacing.s,
+  crossAxisAlignment: WrapCrossAlignment.center,
+  children: [
+    Fluent2ToolbarGroup(
+      label: 'Share',
+      items: [
+        Fluent2ToolbarItem.button(
+          icon: Fluent2Icons.link,
+          label: 'Copy link',
+          onPressed: () {},
+        ),
+        Fluent2ToolbarItem.button(
+          icon: Fluent2Icons.mail,
+          label: 'Email',
+          onPressed: () {},
+        ),
+        Fluent2ToolbarItem.button(
+          icon: Fluent2Icons.chat,
+          label: 'Send in chat',
+          onPressed: () {},
+        ),
+      ],
+    ),
+    Fluent2ToolbarGroup(
+      label: 'Arrange',
+      items: [
+        Fluent2ToolbarItem.button(
+          icon: Fluent2Icons.arrowSort,
+          label: 'Sort',
+          showLabel: true,
+          onPressed: () {},
+        ),
+        Fluent2ToolbarItem.button(
+          icon: Fluent2Icons.filter,
+          label: 'Filter',
+          showLabel: true,
+          onPressed: () {},
+        ),
+      ],
+    ),
+  ],
+);
+
+Widget kitSpecimenToolbarRadioGroup() => _Live<Set<String>>(
+  const {'list'},
+  (layout, set) => Fluent2ToolbarToggleGroup<String>(
+    label: 'Layout',
+    toggles: const [
+      Fluent2ToolbarToggle('list', icon: Fluent2Icons.list, label: 'List'),
+      Fluent2ToolbarToggle('grid', icon: Fluent2Icons.grid, label: 'Tiles'),
+      Fluent2ToolbarToggle('board', icon: Fluent2Icons.board, label: 'Board'),
+    ],
+    selected: layout,
+    onSelectionChanged: set,
+  ),
+);
+
+Widget kitSpecimenToolbarToggleGroup() => _Live<Set<String>>(
+  const {'flagged'},
+  (shown, set) => Fluent2ToolbarToggleGroup<String>(
+    label: 'Show',
+    multiSelectionEnabled: true,
+    toggles: const [
+      Fluent2ToolbarToggle(
+        'flagged',
+        icon: Fluent2Icons.flag,
+        label: 'Flagged',
+        showLabel: true,
+      ),
+      Fluent2ToolbarToggle(
+        'mentions',
+        icon: Fluent2Icons.mail,
+        label: 'Mentions',
+        showLabel: true,
+      ),
+      Fluent2ToolbarToggle(
+        'files',
+        icon: Fluent2Icons.attach,
+        label: 'With files',
+        showLabel: true,
+      ),
+    ],
+    selected: shown,
+    onSelectionChanged: set,
+  ),
+);
+
 Widget kitSpecimenDividers() => Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   spacing: Fluent2Spacing.l,
@@ -186,13 +286,13 @@ Widget kitSpecimenDividers() => Column(
   ],
 );
 
-Widget kitSpecimenDividerLabels() => Column(
+Widget kitSpecimenDividerLabels() => const Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   spacing: Fluent2Spacing.l,
   children: [
-    const Fluent2Divider(label: 'Today', align: Fluent2DividerAlign.start),
-    const Fluent2Divider(label: 'Yesterday'),
-    const Fluent2Divider(label: 'Last week', align: Fluent2DividerAlign.end),
-    const Fluent2Divider(inset: true),
+    Fluent2Divider(label: 'Today', align: Fluent2DividerAlign.start),
+    Fluent2Divider(label: 'Yesterday'),
+    Fluent2Divider(label: 'Last week', align: Fluent2DividerAlign.end),
+    Fluent2Divider(inset: true),
   ],
 );

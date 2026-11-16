@@ -34,7 +34,7 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
       'Messages, live',
       children: [
         _Live<List<String>>(
-          const ['Kai: the launch deck is in Files.'],
+          [kitW('Kai: the launch deck is in Files.')],
           (sent, set) => Builder(
             builder: (context) {
               final t = context.fluent2Theme;
@@ -45,10 +45,13 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
                   for (final line in sent)
                     Text(line, style: t.body1.c(t.textPrimary)),
                   Fluent2Composer(
-                    hint: 'Message Design',
+                    hint: kitW('Message Design'),
                     onAttach: () {},
                     onEmoji: () {},
-                    onSend: (text) => set([...sent, 'Ines: $text']),
+                    onSend: (text) => set([
+                      ...sent,
+                      kitArabic ? 'إينيس: $text' : 'Ines: $text',
+                    ]),
                   ),
                 ],
               );
@@ -62,8 +65,8 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
     kitSection(
       'Messages, disabled',
       children: [
-        const Fluent2Composer(
-          hint: 'You can\'t reply in this channel',
+        Fluent2Composer(
+          hint: kitW("You can't reply in this channel"),
           onSend: null,
         ),
       ],
@@ -73,33 +76,37 @@ Widget kitComposerDemo(Brightness brightness) => kitScreen(
 );
 
 Widget kitSpecimenComposer() => Fluent2Composer(
-  hint: 'Message Design',
+  hint: kitW('Message Design'),
   onAttach: () {},
   onEmoji: () {},
   onSend: (_) {},
 );
 
-Widget kitSpecimenComposerDraft() => Fluent2Composer(
-  controller: TextEditingController(
-    text:
-        'Mara, can you check the press notes before Thursday? The launch '
-        'deck is final.',
+Widget kitSpecimenComposerDraft() => KitOwned(
+  () => TextEditingController(
+    text: kitW(
+      'Mara, can you check the press notes before Thursday? The launch '
+      'deck is final.',
+    ),
   ),
-  hint: 'Message Design',
-  onAttach: () {},
-  onEmoji: () {},
-  onSend: (_) {},
+  (context, draft) => Fluent2Composer(
+    controller: draft,
+    hint: kitW('Message Design'),
+    onAttach: () {},
+    onEmoji: () {},
+    onSend: (_) {},
+  ),
 );
 
 Widget kitSpecimenComposerAssistant() => Fluent2Composer(
   style: Fluent2ComposerAppearance.assistant,
-  label: 'Ask the assistant',
-  hint: 'Ask about your files, chats and meetings',
+  label: kitW('Ask the assistant'),
+  hint: kitW('Ask about your files, chats and meetings'),
   onAttach: () {},
   actions: [
     Fluent2IconButton(
       Fluent2Icons.sparkle,
-      label: 'Prompts',
+      label: kitW('Prompts'),
       size: Fluent2ButtonSize.small,
       onPressed: () {},
     ),

@@ -14,15 +14,7 @@ Widget _app(Widget child, {Brightness brightness = Brightness.light}) =>
     );
 
 /// The rows Fluent 2 leaves out (DECISIONS K53): each says why and what stands in.
-const _absent = {
-  'ButtonGroup',
-  'ToggleGroup',
-  'InputOtp',
-  'MenuBar',
-  'Command',
-  'HoverCard',
-  'Meter',
-};
+const _absent = {'InputOtp', 'MenuBar', 'Command'};
 
 void main() {
   setUp(
@@ -75,15 +67,53 @@ void main() {
       'Banner': 'MessageBar',
       'LinearProgressIndicator': 'ProgressBar',
       'CircularProgressIndicator': 'Spinner',
+      'ButtonGroup': 'ToolbarGroup',
+      'ToggleGroup': 'ToolbarToggleGroup',
+      // Fluent's hover card is its Popover opened on hover; its meter is
+      // WinUI's ring with a value.
+      'HoverCard': 'Popover',
+      'Meter': 'Spinner',
     };
+    // A specimen that owns its controller stands in a holder, as an app's
+    // page would hold it; its class is the first of Fluent's it builds.
+    final held = <String, Widget>{};
     for (final entry in fluent2Inventory.entries) {
       if (entry.builder == null) continue;
       final specimen = entry.builder!(host);
+      final name = specimen.runtimeType.toString().split('<').first;
+      if (name == '_Owning') {
+        held[entry.row] = specimen;
+        continue;
+      }
       expect(
-        specimen.runtimeType.toString().split('<').first,
+        name,
         'Fluent2${fluentNames[entry.row] ?? entry.row}',
         reason: entry.row,
       );
+    }
+    expect(held.keys, {
+      'DateRangePicker',
+      'ColorPicker',
+      'DataTable',
+      'ScrollArea',
+    });
+    for (final MapEntry(key: row, value: specimen) in held.entries) {
+      await tester.pumpWidget(
+        _app(KeyedSubtree(key: const Key('held'), child: specimen)),
+      );
+      String? first;
+      void visit(Element e) {
+        if (first != null) return;
+        final name = e.widget.runtimeType.toString().split('<').first;
+        if (name.startsWith('Fluent2')) {
+          first = name;
+        } else {
+          e.visitChildElements(visit);
+        }
+      }
+
+      tester.element(find.byKey(const Key('held'))).visitChildElements(visit);
+      expect(first, 'Fluent2${fluentNames[row] ?? row}', reason: row);
     }
   });
 

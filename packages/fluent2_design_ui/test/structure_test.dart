@@ -214,6 +214,34 @@ void main() {
       expect(t.takeException(), isNull);
       expect(find.byType(Scrollable), findsWidgets);
     });
+
+    testWidgets('a row that scrolls at its own size grows with the reader\'s '
+        'text; one that fits grows only while it fits', (t) async {
+      _window(t, const Size(390, 844));
+      double drawn(String label) {
+        final box = t.renderObject<RenderBox>(find.text(label).first);
+        final m = box.getTransformTo(null).getMaxScaleOnAxis();
+        return t.getSize(find.text(label).first).height * m;
+      }
+
+      Widget row(List<String> tabs) =>
+          Fluent2TabList(selectedIndex: 0, onChanged: (_) {}, tabs: tabs);
+      final nine = [for (var i = 0; i < 9; i++) 'Section $i'];
+      await t.pumpWidget(_host(row(nine)));
+      final own = drawn('Section 0');
+      await t.pumpWidget(_host(row(nine), scale: 2));
+      await t.pumpAndSettle();
+      expect(drawn('Section 0'), moreOrLessEquals(2 * own, epsilon: 1));
+      // Two short tabs fit at the reader's size: they take it whole.
+      await t.pumpWidget(_host(row(['Day', 'Week']), scale: 2));
+      await t.pumpAndSettle();
+      expect(drawn('Day'), moreOrLessEquals(2 * own, epsilon: 1));
+      // Two that fit only smaller grow as far as they fit, and never scroll.
+      await t.pumpWidget(_host(row(['Section 0', 'Recent']), scale: 2));
+      await t.pumpAndSettle();
+      expect(drawn('Section 0'), greaterThan(own + 1));
+      expect(drawn('Section 0'), lessThan(2 * own - 1));
+    });
   });
 
   group('Fluent2Breadcrumb', () {

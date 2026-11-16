@@ -1,9 +1,12 @@
 // The menu a field shows over a selection, in Fluent 2's menu rows, in place of Material's or Cupertino's toolbar. The
 // field itself is Flutter's, and so are its gestures, autofill and semantics.
-import 'package:material_ui/material_ui.dart' show Material, MaterialType;
+import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart'
+    show Material, MaterialLocalizations, MaterialType;
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
+import '../../internal/menu_lead.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
 import '../menu/menu.dart';
@@ -38,10 +41,31 @@ class Fluent2FieldContextMenu extends StatelessWidget {
         items: state.contextMenuButtonItems,
       );
 
-  /// The words for [item]: its own label, else the word for its kind.
+  /// The words for [item]: its own label, else the word for its kind:
+  /// Fluent 2's in English or where the app gives Fluent 2 words of its own,
+  /// else Material's in the app's language (the published package carries
+  /// Material's translations), so an app in German reads "Kopieren".
   static String labelOf(BuildContext context, ContextMenuButtonItem item) {
     if (item.label != null) return item.label!;
     final w = Fluent2Localizations.of(context);
+    final language = Localizations.maybeLocaleOf(context)?.languageCode;
+    if (w.runtimeType == Fluent2LocalizationsEn &&
+        language != null &&
+        language != 'en') {
+      final m = MaterialLocalizations.of(context);
+      return switch (item.type) {
+        ContextMenuButtonType.cut => m.cutButtonLabel,
+        ContextMenuButtonType.copy => m.copyButtonLabel,
+        ContextMenuButtonType.paste => m.pasteButtonLabel,
+        ContextMenuButtonType.selectAll => m.selectAllButtonLabel,
+        ContextMenuButtonType.delete => m.deleteButtonTooltip,
+        ContextMenuButtonType.lookUp => m.lookUpButtonLabel,
+        ContextMenuButtonType.searchWeb => m.searchWebButtonLabel,
+        ContextMenuButtonType.share => m.shareButtonLabel,
+        ContextMenuButtonType.liveTextInput => m.scanTextButtonLabel,
+        _ => '',
+      };
+    }
     return switch (item.type) {
       ContextMenuButtonType.cut => w.cut,
       ContextMenuButtonType.copy => w.copy,
@@ -93,21 +117,28 @@ class Fluent2FieldContextMenu extends StatelessWidget {
                   ),
                   boxShadow: t.shadows.shadow16,
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (final item in items)
-                      Fluent2Pressable(
-                        onPressed: item.onPressed,
-                        label: labelOf(context, item),
-                        radius: Fluent2Radius.medium,
-                        builder: (context, states) => Fluent2MenuRowFace(
+                // A pointer opens it, the focus left in the field: no row
+                // lights until the pointer moves ([Fluent2MenuLead]).
+                child: Fluent2MenuLead(
+                  keys: false,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      for (final item in items)
+                        Fluent2Pressable(
+                          onPressed: item.onPressed,
                           label: labelOf(context, item),
-                          states: states,
+                          radius: Fluent2Radius.medium,
+                          ring: false,
+                          builder: (context, states) => Fluent2MenuRowFace(
+                            label: labelOf(context, item),
+                            states: states,
+                            ring: true,
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -115,5 +146,15 @@ class Fluent2FieldContextMenu extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextSelectionToolbarAnchors>('anchors', anchors),
+      )
+      ..add(IterableProperty<ContextMenuButtonItem>('items', items));
   }
 }

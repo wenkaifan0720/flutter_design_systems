@@ -4,6 +4,7 @@
 // the wheel.
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -119,6 +120,68 @@ class Fluent2PasswordField extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        StringProperty(
+          'validationMessage',
+          validationMessage,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(
+        EnumProperty<Fluent2InputAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2InputAppearance.outline,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2InputSize>(
+          'size',
+          size,
+          defaultValue: Fluent2InputSize.medium,
+        ),
+      );
+  }
 }
 
 /// A field with fixed words or glyphs at its ends (`https://`, `.com`): the
@@ -186,14 +249,57 @@ class Fluent2InputGroup extends StatefulWidget {
   /// Fluent's `appearance`.
   final Fluent2InputAppearance appearance;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
   State<Fluent2InputGroup> createState() => _Fluent2InputGroupState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('prefix', prefix, defaultValue: null))
+      ..add(StringProperty('suffix', suffix, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(
+        EnumProperty<Fluent2InputAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2InputAppearance.outline,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _Fluent2InputGroupState extends State<Fluent2InputGroup> {
@@ -403,6 +509,36 @@ class Fluent2RangeSlider extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>?>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>?>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 100))
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(DoubleProperty('minGap', minGap, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<String Function(double value)?>.has(
+          'valueLabel',
+          valueLabel,
+        ),
+      );
+  }
 }
 
 class _RailPainter extends CustomPainter {
@@ -484,10 +620,10 @@ class Fluent2FileUpload extends StatelessWidget {
   /// The last file was refused: the danger stroke.
   final bool invalid;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -571,15 +707,36 @@ class Fluent2FileUpload extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('browseLabel', browseLabel, defaultValue: null))
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// A span of days on Fluent's calendar: two months side by side where there's
 /// room and one where there's not, the ends on the brand disc and the days
-/// between on its tint. Holds its range in [controller], which should be in
-/// range mode. [showFluent2DateRangePicker] raises one in a dialog.
+/// between on its tint. Holds its range in [controller], the caller's own
+/// (made in range mode, `DesignCalendarController(firstDate: start,
+/// lastDate: end, mode: DesignCalendarMode.range)`, and disposed by the
+/// caller). [showFluent2DateRangePicker] raises one in a dialog.
 ///
 /// ```dart
-/// Fluent2DateRangePicker(controller: DesignCalendarController(firstDate: start, lastDate: end, mode: DesignCalendarMode.range))
+/// Fluent2DateRangePicker(controller: stay)
 /// ```
 class Fluent2DateRangePicker extends StatelessWidget {
   /// A range picker over [controller].
@@ -610,10 +767,7 @@ class Fluent2DateRangePicker extends StatelessWidget {
     final t = context.fluent2Theme;
     final c = t.colors;
     final words = Fluent2Localizations.of(context);
-    // A day is 32 square, a whole target (48) under a finger.
-    final cell = Fluent2Layout.padded(context)
-        ? Fluent2Layout.touchHitTarget
-        : 32.0;
+    final touch = Fluent2Layout.padded(context);
     // The month buttons come before the grid, as they stand over it.
     Widget first(Widget button) =>
         FocusTraversalOrder(order: const NumericFocusOrder(0), child: button);
@@ -621,6 +775,20 @@ class Fluent2DateRangePicker extends StatelessWidget {
       builder: (context, box) {
         final room = box.hasBoundedWidth ? box.maxWidth : 640.0;
         final count = months ?? (room >= 640 ? 2 : 1);
+        // A day is 32 square; under a finger a whole target, 48 where the
+        // months fit and down to iOS's 44 before the grid scrolls, so a day
+        // never reaches into its neighbour's; a whole even number of
+        // pixels, so its disc and number sit on whole pixels in it.
+        final seventh =
+            (((room - Fluent2Spacing.xxl * (count - 1)) / (7 * count)) / 2)
+                .floorToDouble() *
+            2;
+        final cell = touch
+            ? math.max(
+                Fluent2Layout.minHitTarget,
+                math.min(Fluent2Layout.touchHitTarget, seventh),
+              )
+            : 32.0;
         final least = 7 * cell * count + Fluent2Spacing.xxl * (count - 1);
         final grid = DesignCalendar(
           controller: controller,
@@ -710,6 +878,23 @@ class Fluent2DateRangePicker extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignCalendarController>('controller', controller),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignDateRange?>?>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(IntProperty('months', months, defaultValue: null))
+      ..add(IntProperty('firstDayOfWeek', firstDayOfWeek, defaultValue: null));
+  }
 }
 
 class _RangeDay extends StatelessWidget {
@@ -790,8 +975,8 @@ class _RangeDay extends StatelessWidget {
                 : live
                 ? press.pick(
                     c.transparentBackground,
-                    c.subtleBackgroundHover,
-                    c.subtleBackgroundPressed,
+                    fluent2Step(t, c.subtleBackgroundHover),
+                    fluent2Step(t, c.subtleBackgroundPressed),
                   )
                 : null,
             border: day.isToday && !end
@@ -1002,6 +1187,41 @@ class Fluent2TimePicker extends StatelessWidget {
       invalid: invalid,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Time>('value', value, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<Fluent2Time>?>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(IntProperty('minuteStep', minuteStep, defaultValue: 30))
+      ..add(
+        DiagnosticsProperty<bool>('use24Hour', use24Hour, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<Fluent2InputAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2InputAppearance.outline,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2InputSize>(
+          'size',
+          size,
+          defaultValue: Fluent2InputSize.medium,
+        ),
+      )
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'));
+  }
 }
 
 /// Asks for a time with an hour wheel and a minute wheel in Fluent's dialog;
@@ -1109,6 +1329,24 @@ class Fluent2WheelPicker<T> extends StatefulWidget {
 
   @override
   State<Fluent2WheelPicker<T>> createState() => _Fluent2WheelPickerState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('items', items))
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label))
+      ..add(
+        ObjectFlagProperty<String Function(T item)?>.has(
+          'itemLabel',
+          itemLabel,
+        ),
+      )
+      ..add(IntProperty('rows', rows, defaultValue: 5))
+      ..add(FlagProperty('looping', value: looping, ifTrue: 'looping'));
+  }
 }
 
 class _Fluent2WheelPickerState<T> extends State<Fluent2WheelPicker<T>> {
@@ -1238,10 +1476,12 @@ class _Fluent2WheelPickerState<T> extends State<Fluent2WheelPicker<T>> {
 
 /// Fluent's colour picker: the saturation and brightness area, the hue strip
 /// and with [showAlpha] the opacity strip, each thumb a white ring round its
-/// colour, then a swatch and the hex field.
+/// colour, then a swatch and the hex field. Holds its colour in
+/// [controller], the caller's own (`DesignColorController(const
+/// Color(0xFF0F6CBD))`, disposed by the caller).
 ///
 /// ```dart
-/// Fluent2ColorPicker(controller: DesignColorController(const Color(0xFF0F6CBD)))
+/// Fluent2ColorPicker(controller: brand)
 /// ```
 class Fluent2ColorPicker extends StatelessWidget {
   /// A picker over [controller].
@@ -1370,6 +1610,16 @@ class Fluent2ColorPicker extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignColorController>('controller', controller),
+      )
+      ..add(FlagProperty('showAlpha', value: showAlpha, ifTrue: 'showAlpha'));
   }
 }
 

@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../internal/cap_label.dart';
 import '../../internal/hit_slop.dart';
@@ -130,7 +132,11 @@ class Fluent2Radio<T> extends StatelessWidget {
           };
     // The press's node stands at the radio's root, its one node.
     return MergeSemantics(
-      child: Fluent2HitSlop(
+      child: DesignTapTarget(
+        minSize: Fluent2Layout.tapFloorOf(context),
+        // On the start keyline by its drawn face, the target growing
+        // toward the end.
+        alignment: AlignmentDirectional.centerStart,
         child: Fluent2Pressable(
           onPressed: tap,
           radius: Fluent2Radius.medium,
@@ -204,18 +210,23 @@ class Fluent2Radio<T> extends StatelessWidget {
                           color: fill,
                           shape: outline.copyWith(side: ring),
                         ),
-                  child: chosen
-                      ? Container(
-                          width: inner,
-                          height: inner,
-                          decoration: outline == null
-                              ? BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: mark,
-                                )
-                              : ShapeDecoration(color: mark, shape: outline),
-                        )
-                      : null,
+                  // The dot grows from the middle as the radio is chosen
+                  // and shrinks away as another is (durationNormal,
+                  // decelerating; at once under Reduce Motion).
+                  child: AnimatedScale(
+                    scale: chosen ? 1 : 0,
+                    duration: Fluent2Motion.on(context)
+                        ? Fluent2Motion.normal
+                        : Duration.zero,
+                    curve: Fluent2Motion.decelerateMid,
+                    child: Container(
+                      width: inner,
+                      height: inner,
+                      decoration: outline == null
+                          ? BoxDecoration(shape: BoxShape.circle, color: mark)
+                          : ShapeDecoration(color: mark, shape: outline),
+                    ),
+                  ),
                 ),
               );
               final type = t.body1.merge(look.textStyle);
@@ -269,6 +280,18 @@ class Fluent2Radio<T> extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(StringProperty('label', label))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// Fluent 2's RadioGroup: one choice among its [items] ([Fluent2Radio]s),
@@ -308,6 +331,23 @@ class Fluent2RadioGroup<T> extends StatefulWidget {
 
   @override
   State<Fluent2RadioGroup<T>> createState() => _Fluent2RadioGroupState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2Radio<T>>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2RadioLayout>(
+          'layout',
+          layout,
+          defaultValue: Fluent2RadioLayout.vertical,
+        ),
+      );
+  }
 }
 
 class _Fluent2RadioGroupState<T> extends State<Fluent2RadioGroup<T>> {

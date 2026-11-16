@@ -1,3 +1,6 @@
+import '../internal/well.dart';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 
@@ -25,7 +28,8 @@ import 'pressable/pressable.dart';
 /// current while the profile is shown ([profileCurrent]). On the media
 /// ground ([solid]) it stands on the dark surface.
 ///
-/// The shell mounts it from 1024 wide; a page never composes navigation.
+/// The shell mounts it from 1024 wide, and folded to its rail from 640 (a
+/// tablet, a narrow window); a page never composes navigation.
 ///
 /// ```dart
 /// Fluent2NavigationDrawer(items: tabs, selectedIndex: 0, onDestinationSelected: select, brand: 'Northwind')
@@ -172,12 +176,17 @@ class Fluent2NavigationDrawer extends StatelessWidget {
     final side = collapsed && Fluent2Layout.padded(context)
         ? 0.0
         : Fluent2ChromeMetrics.paneInset;
+    // The pane stands at the window's start: it keeps clear of a notch or
+    // a system bar on that side (the left, or the right in a right-to-left
+    // app), and the page beside it keeps the end.
+    final rtl = Directionality.of(context) == TextDirection.rtl;
     return SizedBox(
       width: widthOf(collapsed: collapsed),
       child: ColoredBox(
         color: solid ? t.colors.neutralBackground2 : t.background,
         child: SafeArea(
-          right: false,
+          left: !rtl,
+          right: rtl,
           child: Padding(
             padding: EdgeInsets.fromLTRB(
               side,
@@ -194,6 +203,37 @@ class Fluent2NavigationDrawer extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2NavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(FlagProperty('collapsed', value: collapsed, ifTrue: 'collapsed'))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onToggle', onToggle))
+      ..add(
+        FlagProperty(
+          'profileCurrent',
+          value: profileCurrent,
+          ifTrue: 'profileCurrent',
+        ),
+      )
+      ..add(
+        FlagProperty('noneCurrent', value: noneCurrent, ifTrue: 'noneCurrent'),
+      )
+      ..add(FlagProperty('solid', value: solid, ifTrue: 'solid'));
   }
 }
 
@@ -243,10 +283,10 @@ class Fluent2NavigationDrawerItem extends StatelessWidget {
   /// What stands at the item's end (a count).
   final Widget? trailing;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -263,14 +303,14 @@ class Fluent2NavigationDrawerItem extends StatelessWidget {
         final press = states.press;
         final fill = selected
             ? press.pick(
-                t.colors.subtleBackgroundSelected,
-                t.colors.subtleBackgroundHover,
-                t.colors.subtleBackgroundPressed,
+                fluent2Step(t, t.colors.subtleBackgroundSelected),
+                fluent2Step(t, t.colors.subtleBackgroundHover),
+                fluent2Step(t, t.colors.subtleBackgroundPressed),
               )
             : press.pick(
                 t.colors.subtleBackground,
-                t.colors.subtleBackgroundHover,
-                t.colors.subtleBackgroundPressed,
+                fluent2Step(t, t.colors.subtleBackgroundHover),
+                fluent2Step(t, t.colors.subtleBackgroundPressed),
               );
         // Disabled, the glyph and the words take the disabled ink.
         final off = press == Fluent2Press.disabled;
@@ -371,6 +411,32 @@ class Fluent2NavigationDrawerItem extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'selectedIcon',
+          selectedIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<bool>('selected', selected))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(FlagProperty('collapsed', value: collapsed, ifTrue: 'collapsed'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _AccountFoot extends StatelessWidget {
@@ -400,11 +466,11 @@ class _AccountFoot extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: current
-              ? t.colors.subtleBackgroundSelected
+              ? fluent2Step(t, t.colors.subtleBackgroundSelected)
               : states.press.pick(
                   t.colors.subtleBackground,
-                  t.colors.subtleBackgroundHover,
-                  t.colors.subtleBackgroundPressed,
+                  fluent2Step(t, t.colors.subtleBackgroundHover),
+                  fluent2Step(t, t.colors.subtleBackgroundPressed),
                   t.colors.subtleBackground,
                 ),
           borderRadius: BorderRadius.circular(Fluent2Radius.medium),

@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/well.dart';
+import '../../styled.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 
@@ -104,6 +106,30 @@ class Fluent2Tree<T> extends StatefulWidget {
 
   @override
   State<Fluent2Tree<T>> createState() => _Fluent2TreeState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2TreeItem<T>>('items', items))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>?>.has('onChanged', onChanged))
+      ..add(
+        IterableProperty<T>(
+          'initiallyExpanded',
+          initiallyExpanded,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2TreeSize>(
+          'size',
+          size,
+          defaultValue: Fluent2TreeSize.medium,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 // The tree's behaviour is the design kit's DesignTree: the arrows walk and open
@@ -251,69 +277,78 @@ class _TreeRow<T> extends StatelessWidget {
         ? t.colors.subtleBackground
         : press.pick(
             t.colors.subtleBackground,
-            t.colors.subtleBackgroundHover,
-            t.colors.subtleBackgroundPressed,
+            fluent2Step(t, t.colors.subtleBackgroundHover),
+            fluent2Step(t, t.colors.subtleBackgroundPressed),
           );
     final glyph = open ? (item.openIcon ?? item.icon) : item.icon;
-    final face = Container(
-      constraints: BoxConstraints(minHeight: height),
-      padding: EdgeInsetsDirectional.only(start: indent),
-      decoration: BoxDecoration(
-        color: fill,
-        borderRadius: BorderRadius.circular(Fluent2Radius.medium),
-      ),
-      child: Row(
-        children: [
-          if (item.isBranch)
-            SizedBox(
-              width: Fluent2Spacing.xxl,
-              child: AnimatedRotation(
-                // The mirrored glyph turns the other way right to left, so
-                // an open branch points down either way.
-                turns: open
-                    ? (Directionality.of(context) == TextDirection.rtl
-                          ? -0.25
-                          : 0.25)
-                    : 0,
-                duration: duration,
-                curve: Fluent2Motion.easyEaseMax,
-                child: Icon(
-                  Fluent2Icons.chevronRight12,
-                  size: Fluent2IconSize.i12,
-                  color: chevronInk,
+    // The row's fill and inks ease between states, as every Fluent 2
+    // surface's do.
+    final face = fluent2EasedInks([fill, ink, chevronInk], (context, inks) {
+      final [fill, ink, chevronInk] = inks;
+      return Container(
+        constraints: BoxConstraints(minHeight: height),
+        padding: EdgeInsetsDirectional.only(start: indent),
+        decoration: BoxDecoration(
+          color: fill,
+          borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+        ),
+        child: Row(
+          children: [
+            if (item.isBranch)
+              SizedBox(
+                width: Fluent2Spacing.xxl,
+                child: AnimatedRotation(
+                  // The mirrored glyph turns the other way right to left, so
+                  // an open branch points down either way.
+                  turns: open
+                      ? (Directionality.of(context) == TextDirection.rtl
+                            ? -0.25
+                            : 0.25)
+                      : 0,
+                  duration: duration,
+                  curve: Fluent2Motion.easyEaseMax,
+                  child: Icon(
+                    Fluent2Icons.chevronRight12,
+                    size: Fluent2IconSize.i12,
+                    color: chevronInk,
+                  ),
+                ),
+              ),
+            if (glyph != null)
+              Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  end: Fluent2Spacing.xs,
+                ),
+                child: Icon(glyph, size: Fluent2IconSize.i20, color: ink),
+              ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Fluent2Spacing.xxs,
+                ),
+                child: Text(
+                  item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: (selected ? type.strong : type).c(ink),
                 ),
               ),
             ),
-          if (glyph != null)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(end: Fluent2Spacing.xs),
-              child: Icon(glyph, size: Fluent2IconSize.i20, color: ink),
-            ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Fluent2Spacing.xxs,
+            if (aside != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: Fluent2Spacing.m,
+                ),
+                child: Text(
+                  aside,
+                  maxLines: 1,
+                  style: t.caption1.c(t.textTertiary),
+                ),
               ),
-              child: Text(
-                item.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: (selected ? type.strong : type).c(ink),
-              ),
-            ),
-          ),
-          if (aside != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Fluent2Spacing.m),
-              child: Text(
-                aside,
-                maxLines: 1,
-                style: t.caption1.c(t.textTertiary),
-              ),
-            ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
     if (!states.focused) return face;
     return Stack(
       fit: StackFit.passthrough,

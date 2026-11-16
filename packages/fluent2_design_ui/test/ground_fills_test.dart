@@ -6,7 +6,8 @@
 // at least 1.1:1. Fluent's own `neutralBackground3` (#F5F5F5) stood 1.01:1
 // on the tinted page, so the segmented control's track vanished and its
 // unchosen words read loose. Fluent's other greys (disabled fills and
-// strokes, rules, a chosen row) are laid as steps and the brand tint steps
+// strokes, rules, a chosen row, a subtle part's hover and press) are laid
+// as steps and the brand tint steps
 // a shade deeper where the page would swallow it.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -110,6 +111,30 @@ void main() {
         );
       }
       holds(t, 'chosen row', fluent2Step(t, c.subtleBackgroundSelected), 1.1);
+      // A subtle part (a tab, a nav item, a tree row, a list row) under the
+      // pointer and pressed: by day Fluent's #F5F5F5 and #E0E0E0 laid as
+      // steps, so the hover shows on the tinted page (it stood no darker than
+      // it) and a press stands darker than a hover on every ground. By night
+      // Fluent's own greys, a press darker than the hover as Fluent draws it.
+      final light = t.brightness == Brightness.light;
+      holds(t, 'subtle hover', fluent2Step(t, c.subtleBackgroundHover), 1.05);
+      holds(
+        t,
+        'subtle press',
+        fluent2Step(t, c.subtleBackgroundPressed),
+        light ? 1.1 : 1.05,
+      );
+      if (light) {
+        for (final g in grounds(t).values) {
+          double over(Color f) =>
+              Fluent2ThemeData.contrast(Color.alphaBlend(f, g), g);
+          expect(
+            over(fluent2Step(t, c.subtleBackgroundPressed)),
+            greaterThan(over(fluent2Step(t, c.subtleBackgroundHover))),
+            reason: '$name: a subtle press no darker than its hover',
+          );
+        }
+      }
       for (final g in grounds(t).values) {
         double over(Color f) =>
             Fluent2ThemeData.contrast(Color.alphaBlend(f, g), g);

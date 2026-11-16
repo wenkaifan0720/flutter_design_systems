@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 
@@ -201,6 +202,24 @@ class Fluent2NavigationBar extends StatelessWidget {
     // accessory, so they stand on the bar's dark surface, not on nothing.
     return solid ? ColoredBox(color: t.acrylic.fallback, child: stack) : stack;
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2NavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      )
+      ..add(FlagProperty('solid', value: solid, ifTrue: 'solid'));
+  }
 }
 
 class _Tab extends StatelessWidget {
@@ -333,10 +352,10 @@ class Fluent2FloatingActionButton extends StatelessWidget {
   /// What a screen reader says; null says [label].
   final String? semanticLabel;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -414,6 +433,24 @@ class Fluent2FloatingActionButton extends StatelessWidget {
       heightFactor: 1,
       child: fab,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 

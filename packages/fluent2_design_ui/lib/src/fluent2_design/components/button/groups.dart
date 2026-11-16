@@ -1,4 +1,5 @@
 // A shortcut written out, as Fluent's menus and tooltips write one.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../theme.dart';
@@ -29,5 +30,11 @@ class Fluent2Kbd extends StatelessWidget {
         style: t.caption1.c(t.colors.neutralForeground3),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<String>('keys', keys));
   }
 }

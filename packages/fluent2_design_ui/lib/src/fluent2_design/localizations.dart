@@ -7,8 +7,8 @@ import 'package:flutter/widgets.dart';
 /// The words only Fluent 2's parts say when the caller gives none; the words
 /// every look shares (Cancel, Close, Today) are `DesignLocalizations`'.
 /// English ships ([Fluent2LocalizationsEn]); another language is a subclass
-/// and a delegate that loads it. With no delegate installed, the parts speak
-/// English.
+/// and a delegate that loads it, listed before [delegate] (the first delegate
+/// for a locale wins). With no delegate installed, the parts speak English.
 ///
 /// ```dart
 /// MaterialApp(localizationsDelegates: const [Fluent2Localizations.delegate], home: home)
@@ -22,7 +22,9 @@ abstract class Fluent2Localizations {
       Localizations.of<Fluent2Localizations>(context, Fluent2Localizations) ??
       const Fluent2LocalizationsEn();
 
-  /// Loads Fluent 2's English words for an English locale.
+  /// Loads Fluent 2's English words in any locale, so an app in another
+  /// language installs it without a warning and its parts speak English
+  /// until it gives them words of its own.
   static const LocalizationsDelegate<Fluent2Localizations> delegate =
       _Fluent2LocalizationsDelegate();
 
@@ -487,7 +489,7 @@ class _Fluent2LocalizationsDelegate
   const _Fluent2LocalizationsDelegate();
 
   @override
-  bool isSupported(Locale locale) => locale.languageCode == 'en';
+  bool isSupported(Locale locale) => true;
 
   @override
   Future<Fluent2Localizations> load(Locale locale) =>

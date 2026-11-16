@@ -1,18 +1,20 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 
 import '../chrome_metrics.dart';
 import '../icons.dart';
-import '../internal/bar_gutter.dart';
 import '../internal/measure.dart';
 import '../localizations.dart';
 import '../theme.dart';
 import 'avatar/avatar.dart';
 import 'button/button.dart';
+import 'menu/menu.dart';
 import 'pressable/pressable.dart';
 import 'account.dart';
+import 'screen.dart';
 import 'sheet.dart';
 import 'sheet_page.dart';
 
@@ -48,10 +50,10 @@ class Fluent2Back extends StatelessWidget {
   /// Draws the close rather than the way back.
   final bool close;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -90,7 +92,7 @@ class Fluent2Back extends StatelessWidget {
           t.colors.neutralForeground2BrandPressed,
         );
         return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
+          padding: const EdgeInsets.symmetric(vertical: Fluent2Spacing.xxs),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             spacing: Fluent2ChromeMetrics.crumbGap,
@@ -113,6 +115,23 @@ class Fluent2Back extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('close', value: close, ifTrue: 'close'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -316,7 +335,7 @@ class Fluent2AppBar extends StatelessWidget {
     }
 
     final Widget? start = root ? avatar() : lead;
-    final ends = [...actions, if (root) bell()].nonNulls;
+    final ends = [..._folded(this, context, t), if (root) bell()].nonNulls;
     // A page's name on a phone stays whole: it grows with the reader's text
     // only while it fits on one line (iOS keeps a bar's title at its size),
     // a name too long for one line at its own size runs on to a second, and
@@ -356,7 +375,15 @@ class Fluent2AppBar extends StatelessWidget {
       spacing: Fluent2Spacing.m,
       children: [
         ?start,
-        Expanded(child: words),
+        // Room above and below the name: within the 56 bar at the reader's
+        // usual size, the bar's own edge room once a large text size runs
+        // it to a second line.
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: Fluent2Spacing.s),
+            child: words,
+          ),
+        ),
         ?end(ends.toList()),
       ],
     );
@@ -384,6 +411,82 @@ class Fluent2AppBar extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('caption', caption, defaultValue: null))
+      ..add(StringProperty('backLabel', backLabel, defaultValue: null))
+      ..add(DiagnosticsProperty<Key>('bellKey', bellKey, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Key>('avatarKey', avatarKey, defaultValue: null),
+      );
+  }
+}
+
+/// [bar]'s actions on a phone: as given while the page's name
+/// stands whole on one line at the reader's size beside them; else two
+/// or more glyph commands fold into one More menu first, so the name
+/// keeps its line before it runs on or shrinks.
+List<Widget> _folded(
+  Fluent2AppBar bar,
+  BuildContext context,
+  Fluent2ThemeData t,
+) {
+  final words = bar.title;
+  final glyphs = [
+    for (final a in bar.actions)
+      if (a is Fluent2IconButton) a,
+  ];
+  if (words == null || glyphs.length < 2) return bar.actions;
+  // Each part at a bar's end takes a target's width, a gutter at either
+  // side, and the avatar or back before the name.
+  final target = Fluent2Layout.hitTargetOf(context);
+  final parts = bar.actions.length + 2;
+  final room =
+      MediaQuery.sizeOf(context).width -
+      2 * Fluent2ChromeMetrics.gutter -
+      parts * target -
+      (parts - 1) * Fluent2Spacing.m;
+  if (fluent2WordsWidth(context, [words], t.subtitle1) <= room) {
+    return bar.actions;
+  }
+  return [
+    for (final a in bar.actions)
+      if (a is! Fluent2IconButton) a,
+    _MoreCommands(glyphs),
+  ];
+}
+
+/// The commands a phone's top bar folded: one More button opening them as
+/// a menu, each with its glyph and words.
+class _MoreCommands extends StatelessWidget {
+  const _MoreCommands(this.glyphs);
+
+  final List<Fluent2IconButton> glyphs;
+
+  @override
+  Widget build(BuildContext context) => Fluent2IconButton(
+    Fluent2Icons.moreHorizontal,
+    label: DesignLocalizations.of(context).moreButtonTooltip,
+    onPressed: () async {
+      final picked = await Fluent2Menu.show<int>(
+        context,
+        items: [
+          for (final (i, b) in glyphs.indexed)
+            Fluent2MenuItem(
+              i,
+              b.label,
+              icon: b.icon,
+              enabled: b.onPressed != null,
+            ),
+        ],
+      );
+      if (picked != null) glyphs[picked].onPressed?.call();
+    },
+  );
 }
 
 /// The room [part] keeps round what it shows at a bar's end: a glyph-only
@@ -408,7 +511,7 @@ double _roomOf(BuildContext context, Widget? part) {
 
   return switch (shown) {
     final Fluent2IconButton b => glyph(b),
-    Fluent2Bell() || Fluent2Back() => glyph(),
+    Fluent2Bell() || Fluent2Back() || _MoreCommands() => glyph(),
     final Fluent2Avatar a when touch && a.onPressed != null =>
       (Fluent2Layout.touchHitTarget - a.size) / 2,
     _ => 0,

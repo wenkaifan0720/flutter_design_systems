@@ -1,13 +1,18 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
+import '../../internal/cap_label.dart';
+import '../../internal/icon_fill.dart';
 import '../../internal/well.dart';
 import '../../localizations.dart';
+import '../../styled.dart';
 import '../../theme.dart';
 import '../button/button.dart';
 import '../menu/menu.dart';
+import '../pressable/pressable.dart';
 
 import 'package:ui_core/ui_core.dart';
 
@@ -132,7 +137,7 @@ class Fluent2Toolbar extends StatelessWidget {
   /// language.
   final String? label;
 
-  Fluent2ButtonSize get _buttonSize => Fluent2ButtonSize.medium;
+  Fluent2ButtonSize get _buttonSize => _toolbarButtonSize;
 
   EdgeInsets _padding(bool wide, bool touch) {
     final side = switch (size) {
@@ -180,52 +185,8 @@ class Fluent2Toolbar extends StatelessWidget {
     return w;
   }
 
-  Widget _part(Fluent2ToolbarItem item) {
-    if (item._isDivider) {
-      return vertical
-          ? const _ToolbarDivider(vertical: false)
-          : const _ToolbarDivider(vertical: true);
-    }
-    final label = item.label!;
-    final icon = item.icon!;
-    if (item._kind == _ToolbarKind.toggle) {
-      final change = item.onChanged;
-      if (item.showLabel) {
-        return Fluent2ToggleButton(
-          label,
-          value: item.checked,
-          appearance: Fluent2ButtonAppearance.subtle,
-          size: _buttonSize,
-          icon: icon,
-          checkedIcon: item.checkedIcon,
-          onChanged: change,
-        );
-      }
-      return Fluent2IconButton(
-        icon,
-        label: label,
-        size: _buttonSize,
-        selected: item.checked,
-        filled: item.checkedIcon,
-        onPressed: change == null ? null : () => change(!item.checked),
-      );
-    }
-    if (item.showLabel) {
-      return Fluent2Button(
-        label,
-        icon: icon,
-        appearance: Fluent2ButtonAppearance.subtle,
-        size: _buttonSize,
-        onPressed: item.onPressed,
-      );
-    }
-    return Fluent2IconButton(
-      icon,
-      label: label,
-      size: _buttonSize,
-      onPressed: item.onPressed,
-    );
-  }
+  Widget _part(Fluent2ToolbarItem item) =>
+      _toolbarPart(item, vertical: vertical);
 
   @override
   Widget build(BuildContext context) {
@@ -293,6 +254,369 @@ class Fluent2Toolbar extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2ToolbarItem>('items', items))
+      ..add(
+        EnumProperty<Fluent2ToolbarSize>(
+          'size',
+          size,
+          defaultValue: Fluent2ToolbarSize.medium,
+        ),
+      )
+      ..add(FlagProperty('vertical', value: vertical, ifTrue: 'vertical'))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
+}
+
+// Fluent's ToolbarButton is a medium button at every toolbar size.
+const _toolbarButtonSize = Fluent2ButtonSize.medium;
+
+/// One part of a toolbar or a toolbar group: a subtle command, a toggle or
+/// a divider.
+Widget _toolbarPart(Fluent2ToolbarItem item, {required bool vertical}) {
+  if (item._isDivider) {
+    return vertical
+        ? const _ToolbarDivider(vertical: false)
+        : const _ToolbarDivider(vertical: true);
+  }
+  final label = item.label!;
+  final icon = item.icon!;
+  if (item._kind == _ToolbarKind.toggle) {
+    final change = item.onChanged;
+    if (item.showLabel) {
+      return Fluent2ToggleButton(
+        label,
+        value: item.checked,
+        appearance: Fluent2ButtonAppearance.subtle,
+        size: _toolbarButtonSize,
+        icon: icon,
+        checkedIcon: item.checkedIcon,
+        onChanged: change,
+      );
+    }
+    return Fluent2IconButton(
+      icon,
+      label: label,
+      size: _toolbarButtonSize,
+      selected: item.checked,
+      filled: item.checkedIcon,
+      onPressed: change == null ? null : () => change(!item.checked),
+    );
+  }
+  if (item.showLabel) {
+    return Fluent2Button(
+      label,
+      icon: icon,
+      appearance: Fluent2ButtonAppearance.subtle,
+      size: _toolbarButtonSize,
+      onPressed: item.onPressed,
+    );
+  }
+  return Fluent2IconButton(
+    icon,
+    label: label,
+    size: _toolbarButtonSize,
+    onPressed: item.onPressed,
+  );
+}
+
+/// Fluent 2's ToolbarGroup: commands that belong together (a document's
+/// text formatting, a file's sharing) standing side by side as a
+/// toolbar's subtle buttons, toggles and dividers, read as a group named
+/// [label]. It has no room of its own: it stands in a row or a
+/// [Fluent2Toolbar]'s place, and unlike a toolbar it never folds its
+/// commands into a more button: where they don't fit on one line (large
+/// text on a phone) they run on to the next. It keeps to its commands'
+/// width. Fluent joins no buttons in one frame: related acts share a
+/// toolbar's group, not a border.
+///
+/// ```dart
+/// Fluent2ToolbarGroup(label: 'Share', items: [Fluent2ToolbarItem.button(icon: Fluent2Icons.link, label: 'Copy link', onPressed: copy), Fluent2ToolbarItem.button(icon: Fluent2Icons.mail, label: 'Email', onPressed: email)])
+/// ```
+class Fluent2ToolbarGroup extends StatelessWidget {
+  /// A group of [items], read as [label].
+  const Fluent2ToolbarGroup({
+    required this.items,
+    required this.label,
+    this.vertical = false,
+    super.key,
+  });
+
+  /// The group's commands, toggles and dividers, in order.
+  final List<Fluent2ToolbarItem> items;
+
+  /// What a screen reader calls the group.
+  final String label;
+
+  /// Whether the items stand one under another.
+  final bool vertical;
+
+  @override
+  Widget build(BuildContext context) => _OwnWidth(
+    child: Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: label,
+      child: Wrap(
+        direction: vertical ? Axis.vertical : Axis.horizontal,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          for (final item in items) _toolbarPart(item, vertical: vertical),
+        ],
+      ),
+    ),
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2ToolbarItem>('items', items))
+      ..add(StringProperty('label', label))
+      ..add(FlagProperty('vertical', value: vertical, ifTrue: 'vertical'));
+  }
+}
+
+/// One toggle of a [Fluent2ToolbarToggleGroup]: Fluent's
+/// ToolbarRadioButton in a one-choice group, its ToolbarToggleButton in a
+/// group of any number. Its [icon] alone (named by [label] for a screen
+/// reader) or, with [showLabel], its glyph and its words; while chosen it
+/// wears [checkedIcon], else [icon]'s filled twin.
+///
+/// ```dart
+/// Fluent2ToolbarToggle('flagged', icon: Fluent2Icons.flag, label: 'Flagged')
+/// ```
+@immutable
+class Fluent2ToolbarToggle<T> {
+  /// A toggle that stands for [value].
+  const Fluent2ToolbarToggle(
+    this.value, {
+    required this.icon,
+    required this.label,
+    this.checkedIcon,
+    this.showLabel = false,
+    this.enabled = true,
+  });
+
+  /// What the toggle stands for in the group's selection.
+  final T value;
+
+  /// The toggle's glyph.
+  final IconData icon;
+
+  /// The toggle's words, shown with [showLabel] or read as its name.
+  final String label;
+
+  /// The glyph it wears while chosen; null wears [icon]'s filled twin.
+  final IconData? checkedIcon;
+
+  /// Draws the words after the glyph.
+  final bool showLabel;
+
+  /// False puts this toggle out of use.
+  final bool enabled;
+}
+
+/// Fluent 2's toolbar toggles that belong together, on the toolbar's
+/// subtle faces: a ToolbarRadioGroup (one choice of several: a list's
+/// layout) or, with [multiSelectionEnabled], ToolbarToggleButtons that
+/// share a name (any number: a mail list's flagged, unread, with files). A chosen toggle
+/// stays on the subtle selected face with its glyph filled. Tab reaches
+/// the group once, the arrows move along it (mirrored right to left),
+/// Space and Enter press. Read as a radio group or a group of toggles
+/// named [label]. It keeps to its toggles' width, and where they don't
+/// fit on one line (large text on a phone) they run on to the next. One
+/// choice of a view's few modes with a sliding thumb is the segmented
+/// control ([Fluent2SegmentedButton]) instead.
+///
+/// ```dart
+/// Fluent2ToolbarToggleGroup<String>(label: 'Show', multiSelectionEnabled: true, toggles: const [Fluent2ToolbarToggle('flagged', icon: Fluent2Icons.flag, label: 'Flagged'), Fluent2ToolbarToggle('attached', icon: Fluent2Icons.attach, label: 'With files')], selected: shown, onSelectionChanged: (next) => setState(() => shown = next))
+/// ```
+class Fluent2ToolbarToggleGroup<T> extends StatelessWidget {
+  /// A group of [toggles], [selected] chosen.
+  const Fluent2ToolbarToggleGroup({
+    required this.toggles,
+    required this.selected,
+    required this.onSelectionChanged,
+    required this.label,
+    this.multiSelectionEnabled = false,
+    this.emptySelectionAllowed = false,
+    this.vertical = false,
+    super.key,
+  });
+
+  /// The toggles, in order.
+  final List<Fluent2ToolbarToggle<T>> toggles;
+
+  /// The values of the chosen toggles.
+  final Set<T> selected;
+
+  /// Called with the new selection when the user changes it; null puts the
+  /// group out of use.
+  final ValueChanged<Set<T>>? onSelectionChanged;
+
+  /// What a screen reader calls the group.
+  final String label;
+
+  /// Whether any number may be chosen (ToolbarToggleButtons); false is one
+  /// choice (a ToolbarRadioGroup).
+  final bool multiSelectionEnabled;
+
+  /// Whether a one-choice group may be left with none chosen.
+  final bool emptySelectionAllowed;
+
+  /// Whether the toggles stand one under another.
+  final bool vertical;
+
+  @override
+  Widget build(BuildContext context) {
+    final touch = Fluent2Layout.padded(context);
+    final byValue = {for (final g in toggles) g.value: g};
+    return _OwnWidth(
+      child: DesignToggleGroup<T>(
+        options: [for (final g in toggles) g.value],
+        selected: selected,
+        onSelectionChanged: onSelectionChanged,
+        multiSelectionEnabled: multiSelectionEnabled,
+        emptySelectionAllowed: emptySelectionAllowed,
+        isEnabled: (v) => byValue[v]!.enabled,
+        labelOf: (v) => byValue[v]!.label,
+        semanticLabel: label,
+        direction: vertical ? Axis.vertical : Axis.horizontal,
+        // The face holds the target itself: 48 under a finger, as the
+        // toolbar's own commands.
+        minimumSize: Size.zero,
+        layoutBuilder: (context, items) => Wrap(
+          direction: vertical ? Axis.vertical : Axis.horizontal,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: items,
+        ),
+        itemBuilder: (context, v, states) =>
+            _ToggleFace(toggle: byValue[v]!, states: states, touch: touch),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2ToolbarToggle<T>>('toggles', toggles))
+      ..add(IterableProperty<T>('selected', selected))
+      ..add(
+        ObjectFlagProperty<ValueChanged<Set<T>>?>.has(
+          'onSelectionChanged',
+          onSelectionChanged,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(
+        FlagProperty(
+          'multiSelectionEnabled',
+          value: multiSelectionEnabled,
+          ifTrue: 'multiSelectionEnabled',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'emptySelectionAllowed',
+          value: emptySelectionAllowed,
+          ifTrue: 'emptySelectionAllowed',
+        ),
+      )
+      ..add(FlagProperty('vertical', value: vertical, ifTrue: 'vertical'));
+  }
+}
+
+/// A toolbar toggle's face in its states: an icon button's, or a toggle
+/// button's with its words, on the subtle appearance, ringed while the
+/// keyboard holds it.
+class _ToggleFace<T> extends StatelessWidget {
+  const _ToggleFace({
+    required this.toggle,
+    required this.states,
+    required this.touch,
+  });
+
+  final Fluent2ToolbarToggle<T> toggle;
+  final Set<WidgetState> states;
+  final bool touch;
+
+  @override
+  Widget build(BuildContext context) {
+    final on = states.contains(WidgetState.selected);
+    final look = Fluent2ButtonLook(
+      context.fluent2Theme,
+      appearance: Fluent2ButtonAppearance.subtle,
+      size: _toolbarButtonSize,
+      icon: !toggle.showLabel,
+      touch: touch,
+    );
+    final face = Fluent2Eased<Fluent2ButtonFace>(
+      value: look.face(states, checked: on),
+      lerp: Fluent2ButtonFace.lerp,
+      builder: (context, face) {
+        final glyph = Icon(
+          on
+              ? (toggle.checkedIcon ?? fluent2Filled(toggle.icon))
+              : fluent2FillOn(toggle.icon, states),
+          size: look.glyph(states),
+          color: face.glyph,
+        );
+        if (!toggle.showLabel) {
+          return look.box(
+            states,
+            face: face,
+            width: look.minWidth(states, look.height),
+            child: glyph,
+          );
+        }
+        return look.box(
+          states,
+          face: face,
+          minWidth: look.metrics.minWidth,
+          padding: EdgeInsets.symmetric(horizontal: look.sideRoom),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: look.metrics.gap,
+            children: [
+              glyph,
+              Flexible(
+                child: fluent2CapCentred(
+                  Text(
+                    toggle.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: look.type(states, face.ink),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (!states.contains(WidgetState.focused)) return face;
+    return Stack(
+      fit: StackFit.passthrough,
+      clipBehavior: Clip.none,
+      children: [
+        face,
+        Positioned.fill(
+          child: IgnorePointer(
+            child: Fluent2FocusRing(
+              radius: look.radius,
+              shape: look.outline(states),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -365,4 +689,20 @@ class _ToolbarDivider extends StatelessWidget {
             child: SizedBox(width: 20, height: 1, child: line),
           );
   }
+}
+
+/// A group at its own parts' width, at the start of a row or column that
+/// would stretch it, so neither its node nor its focus reaches past them.
+class _OwnWidth extends StatelessWidget {
+  const _OwnWidth({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: AlignmentDirectional.topStart,
+    widthFactor: 1,
+    heightFactor: 1,
+    child: child,
+  );
 }

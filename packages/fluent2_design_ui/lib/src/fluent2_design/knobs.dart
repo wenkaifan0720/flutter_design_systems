@@ -153,7 +153,9 @@ class Fluent2Typeface with Diagnosticable {
   final String? package;
 
   /// A ramp step in this face: [size] on a [line] px line at [weight], in
-  /// [color], with even leading so a line centres in its box.
+  /// [color], with even leading so a line centres in its box and no tracking
+  /// (Fluent's type tokens carry none), so no ambient letter spacing, such as
+  /// Material's, reaches Fluent's words.
   TextStyle style(double size, double line, int weight, Color color) =>
       TextStyle(
         fontFamily: family,
@@ -161,6 +163,7 @@ class Fluent2Typeface with Diagnosticable {
         fontSize: size,
         height: line / size,
         fontWeight: FontWeight(weight),
+        letterSpacing: 0,
         leadingDistribution: TextLeadingDistribution.even,
         color: color,
       );

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -85,5 +86,18 @@ class Fluent2ListSection extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('aside', aside, defaultValue: null))
+      ..add(StringProperty('footer', footer, defaultValue: null))
+      ..add(FlagProperty('asCard', value: asCard, ifFalse: 'asCard: false'))
+      ..add(
+        FlagProperty('dividers', value: dividers, ifFalse: 'dividers: false'),
+      );
   }
 }

@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
@@ -233,10 +235,10 @@ class Fluent2Checkbox extends StatelessWidget {
   /// This box's own look, slot by slot, over the checkbox theme.
   final Fluent2Style? style;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -251,7 +253,11 @@ class Fluent2Checkbox extends StatelessWidget {
     final before = labelPosition == Fluent2LabelPosition.before;
     // The press's node stands at the control's root, its one node.
     return MergeSemantics(
-      child: Fluent2HitSlop(
+      child: DesignTapTarget(
+        minSize: Fluent2Layout.tapFloorOf(context),
+        // On the start keyline by its drawn face, the target growing
+        // toward the end.
+        alignment: AlignmentDirectional.centerStart,
         child: Fluent2Pressable(
           focusNode: focusNode,
           autofocus: autofocus,
@@ -316,6 +322,48 @@ class Fluent2Checkbox extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<bool>?>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2CheckboxShape>(
+          'shape',
+          shape,
+          defaultValue: Fluent2CheckboxShape.square,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2CheckboxSize>(
+          'size',
+          size,
+          defaultValue: Fluent2CheckboxSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2LabelPosition>(
+          'labelPosition',
+          labelPosition,
+          defaultValue: Fluent2LabelPosition.after,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// A task's done mark drawn as Fluent's circular checkbox at its large
@@ -354,10 +402,10 @@ class Fluent2CompletionCheck extends StatelessWidget {
   /// [EditableText.readOnly] shows its text.
   final bool readOnly;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -396,7 +444,11 @@ class Fluent2CompletionCheck extends StatelessWidget {
       );
     }
     return MergeSemantics(
-      child: Fluent2HitSlop(
+      child: DesignTapTarget(
+        minSize: Fluent2Layout.tapFloorOf(context),
+        // On the start keyline by its drawn face, the target growing
+        // toward the end.
+        alignment: AlignmentDirectional.centerStart,
         child: Fluent2Pressable(
           focusNode: focusNode,
           autofocus: autofocus,
@@ -408,5 +460,23 @@ class Fluent2CompletionCheck extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<ValueChanged<bool>?>.has('onChanged', onChanged))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }

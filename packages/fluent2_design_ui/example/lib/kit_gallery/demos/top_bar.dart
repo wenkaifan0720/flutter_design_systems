@@ -48,17 +48,17 @@ class _Row extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  title,
+                  kitW(title),
                   style: t.body1,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                Text(meta, style: t.caption1.c(t.textSecondary)),
+                Text(kitW(meta), style: t.caption1.c(t.textSecondary)),
               ],
             ),
           ),
           if (trailing case final trailing?)
-            Text(trailing, style: t.caption1.c(t.textTertiary)),
+            Text(kitW(trailing), style: t.caption1.c(t.textTertiary)),
         ],
       ),
     );
@@ -76,12 +76,12 @@ Widget kitSpecimenScreenHome() => Stack(
   children: [
     Fluent2Scaffold(
       topBar: Fluent2AppBar(
-        title: 'Files',
-        caption: 'Northwind',
+        title: kitW('Files'),
+        caption: kitW('Northwind'),
         actions: [
           Fluent2IconButton(
             Fluent2Icons.search,
-            label: 'Search',
+            label: kitW('Search'),
             onPressed: () {},
           ),
         ],
@@ -93,7 +93,7 @@ Widget kitSpecimenScreenHome() => Stack(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Fluent2Gap(Fluent2Spacing.s),
-              Text('Recent', style: t.subtitle2),
+              Text(kitW('Recent'), style: t.subtitle2),
               const Fluent2Gap(Fluent2Spacing.xs),
               const _Row(
                 Fluent2Icons.documentText,
@@ -120,7 +120,7 @@ Widget kitSpecimenScreenHome() => Stack(
                 trailing: 'Oct 27',
               ),
               const Fluent2Gap(Fluent2Spacing.l),
-              Text('Folders', style: t.subtitle2),
+              Text(kitW('Folders'), style: t.subtitle2),
               const Fluent2Gap(Fluent2Spacing.xs),
               const _Row(Fluent2Icons.folder, 'Launch', '14 files'),
               const _Row(Fluent2Icons.folder, 'Research', '32 files'),
@@ -149,12 +149,12 @@ Widget kitSpecimenScreenFooter() => kitInRegister(
   RoutePresentation.pushed,
   Fluent2Scaffold(
     topBar: Fluent2AppBar(
-      title: 'Design review',
-      backLabel: 'Calendar',
+      title: kitW('Design review'),
+      backLabel: kitW('Calendar'),
       actions: [
         Fluent2IconButton(
           Fluent2Icons.moreHorizontal,
-          label: 'More',
+          label: kitW('More'),
           onPressed: () {},
         ),
       ],
@@ -162,9 +162,9 @@ Widget kitSpecimenScreenFooter() => kitInRegister(
     // The acts as a sheet's foot lays them: sharing the phone's width, at
     // their own widths at the end from the desktop's.
     footer: Fluent2SheetShell.footOf([
-      Fluent2Button('Decline', onPressed: () {}),
+      Fluent2Button(kitW('Decline'), onPressed: () {}),
       Fluent2Button(
-        'Join',
+        kitW('Join'),
         appearance: Fluent2ButtonAppearance.primary,
         icon: Fluent2Icons.video,
         onPressed: () {},
@@ -177,15 +177,17 @@ Widget kitSpecimenScreenFooter() => kitInRegister(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Fluent2Gap(Fluent2Spacing.m),
-            Text('Today, 15:00 – 15:45', style: t.subtitle1),
+            Text(kitW('Today, 15:00–\u206015:45'), style: t.subtitle1),
             const Fluent2Gap(Fluent2Spacing.xs),
-            Text('Video call · Organizer Mara Okafor', style: t.body1),
+            Text(kitW('Video call · Organizer Mara Okafor'), style: t.body1),
             const Fluent2Gap(Fluent2Spacing.l),
-            Fluent2AvatarGroup(people: kitPeople, max: 5),
+            const Fluent2AvatarGroup(people: kitPeople, max: 5),
             const Fluent2Gap(Fluent2Spacing.l),
             Text(
-              'Walk through the launch screens and agree the last copy '
-              'changes before Friday.',
+              kitW(
+                'Walk through the launch screens and agree the last copy '
+                'changes before Friday.',
+              ),
               style: t.body1.c(t.textSecondary),
             ),
           ],
@@ -195,36 +197,38 @@ Widget kitSpecimenScreenFooter() => kitInRegister(
   ),
 );
 
-/// A bar on the page's gutter over the ground, as a screen's room holds it.
+/// A bar as a screen pins it: in its band (the acrylic, a hairline under
+/// it), handed the page's gutter as the screen hands it, so its back arrow,
+/// avatar and last glyph stand on the keylines they keep in a screen, as in
+/// the pushed page below.
 Widget _onGutter(Widget bar) => Builder(
   builder: (context) {
-    final t = context.fluent2Theme;
-    return ColoredBox(
-      color: t.background,
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: Fluent2Layout.gutter(context),
-        ),
-        child: bar,
-      ),
+    final gutter = Fluent2Layout.gutter(context);
+    return Fluent2BarBand(
+      top: 0,
+      child: Fluent2BarGutter(start: gutter, end: gutter, child: bar),
     );
   },
 );
 
 Widget kitSpecimenTopBarRoot() =>
-    _onGutter(const Fluent2AppBar(title: 'Chat', caption: 'Northwind'));
+    _onGutter(Fluent2AppBar(title: kitW('Chat'), caption: kitW('Northwind')));
 
 Widget kitSpecimenTopBarCommands() => _onGutter(
   Fluent2AppBar(
-    title: 'Calendar',
-    caption: 'November 2026',
+    title: kitW('Calendar'),
+    caption: kitW('November 2026'),
     actions: [
       Fluent2IconButton(
         Fluent2Icons.calendarAdd,
-        label: 'New event',
+        label: kitW('New event'),
         onPressed: () {},
       ),
-      Fluent2IconButton(Fluent2Icons.filter, label: 'Filter', onPressed: () {}),
+      Fluent2IconButton(
+        Fluent2Icons.filter,
+        label: kitW('Filter'),
+        onPressed: () {},
+      ),
     ],
   ),
 );
@@ -233,10 +237,14 @@ Widget kitSpecimenTopBarPushed() => kitInRegister(
   RoutePresentation.pushed,
   _onGutter(
     Fluent2AppBar(
-      title: 'Launch plan.docx',
-      backLabel: 'Files',
+      title: kitW('Launch plan.docx'),
+      backLabel: kitW('Files'),
       actions: [
-        Fluent2IconButton(Fluent2Icons.share, label: 'Share', onPressed: () {}),
+        Fluent2IconButton(
+          Fluent2Icons.share,
+          label: kitW('Share'),
+          onPressed: () {},
+        ),
       ],
     ),
   ),
@@ -255,7 +263,7 @@ Widget kitSpecimenTopBarSheet() => kitInRegister(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (!Fluent2Layout.isWide(context)) const Fluent2SheetHandle(),
-            const Fluent2AppBar(title: 'Share Launch plan'),
+            Fluent2AppBar(title: kitW('Share Launch plan')),
           ],
         ),
       ),

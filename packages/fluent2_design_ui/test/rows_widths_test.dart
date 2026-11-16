@@ -9,7 +9,9 @@
 //   its content and padding, at most 320;
 // - checkList on every select at 390 and 1440, with a pointer: its open
 //   list at least the field's width, on its leading edge, its words on the
-//   field's (less the check column Fluent's listbox sets before them).
+//   field's less the check column Fluent's listbox sets before them, as the
+//   look declares it (ui_core_checks.dart); a select whose options carry
+//   glyphs keeps their column in its face too.
 // Each prints what it names as ROWS, WIDTHS or LIST lines into the log.
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
@@ -21,6 +23,7 @@ import 'package:fluent2_design_ui/src/fluent2_design/components/input/field_core
 import 'package:ui_core/alignment.dart';
 
 import 'gallery_support.dart';
+import 'ui_core_checks.dart';
 
 void _say(String kind, String name, Iterable<String> found) {
   for (final line in found) {
@@ -44,12 +47,6 @@ void _unread(String name, String what) {
 /// phone's and the desktop's.
 List<double> _widthsOf(GalleryPage page) =>
     page.id.startsWith('app-') ? const [390.0, 1440.0] : const [galleryWidth];
-
-/// Where Fluent's listbox sets an option's words past the select face's:
-/// after its check column (16 and its gap), and in a list with icons after
-/// the icon and its gap too (the face shows the words alone).
-double _listIndent(Fluent2Select<Object?> select) =>
-    select.options.any((o) => o.icon != null) ? 44 : 20;
 
 /// What the row check names that is not the look's: each a pattern and
 /// why, reported to ui_core's owner.
@@ -130,6 +127,15 @@ final _widthMisreads = <(RegExp, String)>[
     'a tree\'s one-line row is read as a button '
         '(its rows with a shortcut, two lines of words, are not): rows of a '
         'list span it',
+  ),
+  (
+    RegExp(
+      r'a segmented control "List": \d+ px wide as laid out, \d+ as drawn; '
+      r'its content and padding take [\d.]+ ',
+    ),
+    'a toolbar\'s radio group has no face of its own (Fluent\'s toolbar '
+        'toggles stand apart), so the inventory card round it is read as its '
+        'face; the group itself keeps to its toggles (64 px)',
   ),
   (
     RegExp(r'a segmented control "Mon": '),
@@ -280,18 +286,10 @@ void main() {
             await t.tap(face);
             await t.pump();
             await t.pump(const Duration(milliseconds: 400));
-            final select = t.widget<Fluent2Select<Object?>>(
-              find
-                  .ancestor(
-                    of: face,
-                    matching: find.byWidgetPredicate((w) => w is Fluent2Select),
-                  )
-                  .first,
-            );
             try {
               final report = await DesignWidthCheck(
                 look: 'Fluent 2',
-                listWordsIndent: _listIndent(select),
+                listWordsIndent: uiCoreChecks.listWordsIndent.$1,
               ).checkList(t.element(face), runAsync: t.runAsync);
               found.addAll([for (final p in report.problems) '"$name" · $p']);
             } on StateError {

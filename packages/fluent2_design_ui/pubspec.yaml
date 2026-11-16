@@ -1,7 +1,7 @@
 name: fluent2_design_ui
 description: >-
   Unofficial Fluent 2 widgets for Flutter: Fluent's tokens, type ramp and components, seven brand presets in light and dark, accessible controls.
-version: 0.1.0
+version: 0.2.0
 homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/fluent2_design_ui
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/fluent2_design_ui
 topics:
@@ -32,14 +32,16 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.1.0
+  ui_core: ^0.2.0
   material_ui: ^1.9.0
+  cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
 
 dev_dependencies:
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
+  leak_tracker_flutter_testing: any
 
 flutter:
   fonts:

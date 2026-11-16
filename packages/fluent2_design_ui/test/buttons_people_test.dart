@@ -91,11 +91,11 @@ void main() {
               ),
             ),
           ),
-          Fluent2Button(
+          const Fluent2Button(
             'Send',
-            key: const ValueKey('b'),
+            key: ValueKey('b'),
             onPressed: _nothing,
-            style: const Fluent2Style(
+            style: Fluent2Style(
               fill: WidgetStatePropertyAll(red),
               shape: WidgetStatePropertyAll(StadiumBorder()),
             ),
@@ -113,9 +113,9 @@ void main() {
         await t.pumpWidget(
           themed(
             _light.copyWith(density: Fluent2Density.compact),
-            Fluent2Button(
+            const Fluent2Button(
               'Save',
-              key: const ValueKey('b'),
+              key: ValueKey('b'),
               onPressed: _nothing,
             ),
           ),
@@ -152,7 +152,7 @@ void main() {
           defaultTargetPlatform == TargetPlatform.android ? 48 : 24,
         );
       },
-      variant: TargetPlatformVariant(const {
+      variant: const TargetPlatformVariant({
         TargetPlatform.android,
         TargetPlatform.macOS,
       }),
@@ -167,20 +167,16 @@ void main() {
               fill: WidgetStatePropertyAll(ink),
             ),
           ),
-          Column(
+          const Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Fluent2Button(
                 'Go',
-                key: const ValueKey('p'),
+                key: ValueKey('p'),
                 appearance: Fluent2ButtonAppearance.primary,
                 onPressed: _nothing,
               ),
-              Fluent2Button(
-                'Back',
-                key: const ValueKey('s'),
-                onPressed: _nothing,
-              ),
+              Fluent2Button('Back', key: ValueKey('s'), onPressed: _nothing),
             ],
           ),
         ),
@@ -216,13 +212,13 @@ void main() {
           defaultTargetPlatform == TargetPlatform.android ? 48 : 24,
         );
       },
-      variant: TargetPlatformVariant(const {
+      variant: const TargetPlatformVariant({
         TargetPlatform.windows,
         TargetPlatform.android,
       }),
     );
 
-    testWidgets('density never moves the target: 48 on touch, 44 on a desk', (
+    testWidgets('density never moves the target: 48 on touch, 24 on a desk', (
       t,
     ) async {
       Future<int> pressesAt(TargetPlatform platform) async {
@@ -240,7 +236,7 @@ void main() {
             ),
           ),
         );
-        // 23 off the centre: inside a 48 target, outside a 44 one.
+        // 23 off the centre: inside a 48 target, outside a 24 one.
         await t.tapAt(
           t.getCenter(find.byKey(const ValueKey('i'))) + const Offset(23, 0),
         );
@@ -257,7 +253,7 @@ void main() {
     testWidgets('the default theme draws Fluent\'s own corners', (t) async {
       await t.pumpWidget(
         _host(
-          Fluent2Button('Save', key: const ValueKey('b'), onPressed: _nothing),
+          const Fluent2Button('Save', key: ValueKey('b'), onPressed: _nothing),
         ),
       );
       final face = _face(t, find.byKey(const ValueKey('b')));
@@ -285,7 +281,7 @@ void main() {
           );
         }
       },
-      variant: TargetPlatformVariant(const {
+      variant: const TargetPlatformVariant({
         TargetPlatform.android,
         TargetPlatform.macOS,
       }),
@@ -327,17 +323,36 @@ void main() {
       final face = _face(t, find.byType(Fluent2Button));
       // Fluent's disabled grey, laid as a step from the ground under it.
       expect(face.color, fluent2WellDisabled(_light));
+      // What a screen reader hears: the target's node with the button merged
+      // into it.
       final node = t.getSemantics(find.bySemanticsLabel('Send'));
-      expect(node.flagsCollection.isEnabled, Tristate.isFalse);
-      expect(node.flagsCollection.isButton, isTrue);
+      final heard = node.getSemanticsData().flagsCollection;
+      expect(heard.isEnabled, Tristate.isFalse);
+      expect(heard.isButton, isTrue);
     });
 
-    testWidgets('a 32 button answers a tap just outside its edge', (t) async {
+    testWidgets('on a desk a control stands in a 24 target: a 32 button takes '
+        'clicks on its face alone, a 20 link round its words', (t) async {
       var taps = 0;
-      await t.pumpWidget(_host(Fluent2Button('Save', onPressed: () => taps++)));
+      await t.pumpWidget(
+        _host(
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Fluent2Button('Save', onPressed: () => taps++),
+              const SizedBox(height: 24),
+              Fluent2Link('Open', onPressed: () => taps += 10),
+            ],
+          ),
+        ),
+      );
       final box = t.getRect(find.byType(Fluent2ButtonBox));
       await t.tapAt(Offset(box.center.dx, box.top - 5));
-      expect(taps, 1);
+      expect(taps, 0, reason: 'nothing reaches past a 32 face on a desk');
+      final words = t.getRect(find.text('Open'));
+      expect(t.getSize(find.byType(Fluent2Link)).height, 24);
+      await t.tapAt(Offset(words.center.dx, words.top - 1));
+      expect(taps, 10, reason: 'the link stands in its 24 target');
     }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
 
     testWidgets('the keyboard reaches it and Enter presses it', (t) async {
@@ -391,7 +406,7 @@ void main() {
         expect(t.getSize(find.byType(Fluent2ButtonBox)), Size(side, side));
         expect(find.bySemanticsLabel('More options'), findsOneWidget);
       },
-      variant: TargetPlatformVariant(const {
+      variant: const TargetPlatformVariant({
         TargetPlatform.android,
         TargetPlatform.macOS,
       }),
@@ -411,7 +426,10 @@ void main() {
       );
       expect(find.byIcon(Fluent2Icons.starFilled), findsOneWidget);
       final node = t.getSemantics(find.bySemanticsLabel('Favourite'));
-      expect(node.flagsCollection.isToggled, Tristate.isTrue);
+      expect(
+        node.getSemanticsData().flagsCollection.isToggled,
+        Tristate.isTrue,
+      );
     });
 
     testWidgets('a toggle button asks for the other state', (t) async {

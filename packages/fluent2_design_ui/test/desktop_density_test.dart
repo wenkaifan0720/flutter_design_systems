@@ -124,11 +124,11 @@ final _entries = <_Entry>[
   ),
   _Entry(
     'multi select',
-    (_) => Fluent2MultiSelect<String>(
+    (_) => const Fluent2MultiSelect<String>(
       label: 'Sizes',
       hint: 'Add sizes',
       options: _sizes,
-      selected: const [],
+      selected: [],
       onChanged: _drop,
     ),
     hint: 'Add sizes',
@@ -137,7 +137,8 @@ final _entries = <_Entry>[
   ),
   _Entry(
     'composer',
-    (_) => Fluent2Composer(label: 'Message', hint: 'Message', onSend: _drop),
+    (_) =>
+        const Fluent2Composer(label: 'Message', hint: 'Message', onSend: _drop),
     hint: 'Message',
     words: 'On my way',
   ),

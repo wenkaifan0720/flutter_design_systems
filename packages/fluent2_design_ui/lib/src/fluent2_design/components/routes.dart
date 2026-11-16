@@ -2,11 +2,14 @@ import 'package:material_ui/material_ui.dart' show MaterialRouteTransitionMixin;
 import 'package:flutter/widgets.dart';
 
 import '../internal/layer.dart';
+import '../theme.dart';
 
 /// The go_router [Page] for a route pushed off a root: on Material's page
-/// transitions, so the push runs the platform's own transition (the host
-/// never pins a platform), standing on the ground (on the desktop, the content
-/// layer the shell stands its pages on).
+/// route, so the push runs the page motion the [Fluent2Theme] sets for the
+/// platform (`Fluent2PageTransitionsBuilder`: Fluent 2's own, everywhere,
+/// on iOS with the swipe back from the screen's leading edge), standing on
+/// the ground (on the desktop, the content layer the shell stands its pages
+/// on).
 ///
 /// Its chrome is derived, never authored: a [Fluent2Scaffold] inside reads
 /// the route's register and draws the way back. Build one through

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
@@ -101,5 +102,19 @@ class Fluent2CheckIndicator extends StatelessWidget {
         ),
       );
     });
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('checked', checked, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2Press>(
+          'press',
+          press,
+          defaultValue: Fluent2Press.rest,
+        ),
+      );
   }
 }

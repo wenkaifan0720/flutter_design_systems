@@ -1,11 +1,13 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
 import '../../internal/well.dart';
 import '../../localizations.dart';
+import '../../styled.dart';
 import '../../theme.dart';
 import '../list/check_indicator.dart';
 import '../pressable/pressable.dart';
@@ -371,6 +373,45 @@ class Fluent2Table extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2TableColumn>('columns', columns))
+      ..add(IterableProperty<Fluent2TableRow>('rows', rows))
+      ..add(IntProperty('sortColumn', sortColumn, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2SortDirection>(
+          'sortDirection',
+          sortDirection,
+          defaultValue: Fluent2SortDirection.ascending,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<int>?>.has('onSort', onSort))
+      ..add(IterableProperty<int>('selected', selected, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<Set<int>>?>.has(
+          'onSelectionChanged',
+          onSelectionChanged,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2TableSize>(
+          'size',
+          size,
+          defaultValue: Fluent2TableSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2TableSelectionAppearance>(
+          'selectionAppearance',
+          selectionAppearance,
+          defaultValue: Fluent2TableSelectionAppearance.neutral,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 class _HeaderCell extends StatelessWidget {
@@ -454,8 +495,8 @@ class _HeaderCell extends StatelessWidget {
         ),
         states.press.pick(
           t.colors.subtleBackground,
-          t.colors.subtleBackgroundHover,
-          t.colors.subtleBackgroundPressed,
+          fluent2Step(t, t.colors.subtleBackgroundHover),
+          fluent2Step(t, t.colors.subtleBackgroundPressed),
         ),
       ),
     );
@@ -474,13 +515,14 @@ class _SelectCell extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
+  // The state goes on the node that speaks, as a check box's does.
   Widget build(BuildContext context) => Semantics(
     container: true,
-    checked: checked ?? false,
-    mixed: checked == null ? true : null,
     child: Fluent2Pressable(
       onPressed: onTap,
       label: label,
+      checked: checked ?? false,
+      mixed: checked == null,
       radius: Fluent2Radius.medium,
       builder: (context, states) => Center(
         child: Fluent2CheckIndicator(checked: checked, press: states.press),
@@ -534,37 +576,42 @@ class _TableRowView extends StatelessWidget {
           ? t.colors.subtleBackground
           : state.pick(
               t.colors.subtleBackground,
-              t.colors.subtleBackgroundHover,
-              t.colors.subtleBackgroundPressed,
+              fluent2Step(t, t.colors.subtleBackgroundHover),
+              fluent2Step(t, t.colors.subtleBackgroundPressed),
             );
-      return Container(
-        constraints: BoxConstraints(minHeight: height),
-        decoration: BoxDecoration(
-          color: fill,
-          border: small
-              ? null
-              : Border(
-                  bottom: BorderSide(
-                    color: fluent2Step(t, t.colors.neutralStroke2),
+      // The row's fill eases between states, as every Fluent 2 surface's
+      // does.
+      return fluent2EasedInks(
+        [fill],
+        (context, inks) => Container(
+          constraints: BoxConstraints(minHeight: height),
+          decoration: BoxDecoration(
+            color: inks.first,
+            border: small
+                ? null
+                : Border(
+                    bottom: BorderSide(
+                      color: fluent2Step(t, t.colors.neutralStroke2),
+                    ),
+                  ),
+          ),
+          child: Row(
+            children: [
+              if (picked != null)
+                SizedBox(width: Fluent2Table.selectionWidthOf(context)),
+              for (final (i, column) in table.columns.indexed)
+                SizedBox(
+                  width: widths[i],
+                  child: _CellView(
+                    cell: i < row.cells.length
+                        ? row.cells[i]
+                        : const Fluent2TableCell(''),
+                    numeric: column.numeric,
+                    small: small,
                   ),
                 ),
-        ),
-        child: Row(
-          children: [
-            if (picked != null)
-              SizedBox(width: Fluent2Table.selectionWidthOf(context)),
-            for (final (i, column) in table.columns.indexed)
-              SizedBox(
-                width: widths[i],
-                child: _CellView(
-                  cell: i < row.cells.length
-                      ? row.cells[i]
-                      : const Fluent2TableCell(''),
-                  numeric: column.numeric,
-                  small: small,
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
       );
     }

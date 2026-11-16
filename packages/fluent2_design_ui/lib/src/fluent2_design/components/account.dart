@@ -1,6 +1,7 @@
 // The host app's account, as the chrome shows it (the avatar, the bell and
 // its count). Host vocabulary: the package exports it from its host library,
 // beside ui_core's host.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../icons.dart';
@@ -116,6 +117,12 @@ class Fluent2AccountScope extends InheritedWidget {
   @override
   bool updateShouldNotify(Fluent2AccountScope oldWidget) =>
       account != oldWidget.account;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Fluent2Account>('account', account));
+  }
 }
 
 /// Fluent 2's CounterBadge as the bell wears it: the count (99+ past 99)
@@ -132,7 +139,7 @@ class _BellCount extends StatelessWidget {
     return Container(
       constraints: const BoxConstraints(minWidth: 16),
       height: 16,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: Fluent2Spacing.xs),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: t.colors.statusDangerBackground3,
@@ -169,5 +176,11 @@ class Fluent2Bell extends StatelessWidget {
       onPressed: open == null ? null : () => open(context),
       badge: n > 0 ? _BellCount(n) : null,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Fluent2Account>('account', account));
   }
 }

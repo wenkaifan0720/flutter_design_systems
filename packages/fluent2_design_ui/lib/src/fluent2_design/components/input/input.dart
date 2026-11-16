@@ -1,8 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/measure.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
@@ -125,8 +125,14 @@ class Fluent2TextField extends StatefulWidget {
     this.autofocus = false,
     this.obscureText = false,
     this.validationMessage,
+    this.style,
     super.key,
   });
+
+  /// This field's own look, slot by slot, over the text field theme
+  /// ([Fluent2ThemeData.textFieldTheme]): the slots [Fluent2FieldFrame]
+  /// names.
+  final Fluent2Style? style;
 
   /// The spoken name; null takes the enclosing field's label.
   final String? label;
@@ -134,24 +140,22 @@ class Fluent2TextField extends StatefulWidget {
   /// The text, when the page owns it.
   final String? value;
 
-  /// Called with the new value when the user changes it; null puts it out of
-  /// use.
+  /// {@macro fluent2.onChanged}
   final ValueChanged<String>? onChanged;
 
-  /// Called with the words when the user submits them (the keyboard's done or
-  /// Enter).
+  /// {@macro fluent2.onSubmitted}
   final ValueChanged<String>? onSubmitted;
 
-  /// The controller that holds the words; null makes its own.
+  /// {@macro fluent2.textController}
   final TextEditingController? controller;
 
-  /// The focus node it takes focus with; null makes its own.
+  /// {@macro fluent2.fieldFocusNode}
   final FocusNode? focusNode;
 
   /// What the empty field says, in the fourth ink.
   final String? hint;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2InputAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
@@ -197,6 +201,104 @@ class Fluent2TextField extends StatefulWidget {
 
   @override
   State<Fluent2TextField> createState() => _Fluent2TextFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+    );
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2InputAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2InputAppearance.outline,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2InputSize>(
+          'size',
+          size,
+          defaultValue: Fluent2InputSize.medium,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'prefixIcon',
+          prefixIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'suffixIcon',
+          suffixIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('password', value: password, ifTrue: 'password'))
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        FlagProperty('obscureText', value: obscureText, ifTrue: 'obscureText'),
+      )
+      ..add(
+        StringProperty(
+          'validationMessage',
+          validationMessage,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _Fluent2TextFieldState extends State<Fluent2TextField>
@@ -248,55 +350,54 @@ class _Fluent2TextFieldState extends State<Fluent2TextField>
         ),
     ];
     final validationMessage = scope == null ? widget.validationMessage : null;
-    final input = Fluent2HitSlop(
-      child: Fluent2FieldFrame(
-        appearance: widget.appearance,
-        focused: fieldFocus.hasFocus,
-        enabled: enabled,
-        invalid:
-            widget.invalid ||
-            validationMessage != null ||
-            (scope?.invalid ?? false),
-        textNode: true,
-        minHeight: m.height,
-        padding: EdgeInsetsDirectional.only(
-          start: before != null ? m.root : 0,
-          end: after.isNotEmpty ? m.root : 0,
-        ),
-        child: Row(
-          spacing: m.gap,
-          children: [
-            if (before != null) Icon(before, size: m.glyph, color: slot),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsetsDirectional.only(
-                  start: before != null ? m.inner : m.combined,
-                  end: after.isNotEmpty ? m.inner : m.combined,
-                ),
-                child: _Editor(
-                  appearance: widget.appearance,
-                  controller: fieldController,
-                  focusNode: fieldFocus,
-                  style: Fluent2FieldMetrics.typeOf(t, widget.size),
-                  enabled: enabled,
-                  label: widget.label ?? scope?.label,
-                  placeholder: widget.hint,
-                  onChanged: widget.onChanged,
-                  onSubmitted: widget.onSubmitted,
-                  readOnly: widget.readOnly,
-                  obscureText: hidden && !(password && _revealed),
-                  keyboardType: hidden
-                      ? TextInputType.visiblePassword
-                      : widget.keyboardType,
-                  textInputAction: widget.textInputAction,
-                  inputFormatters: widget.inputFormatters,
-                  autofocus: widget.autofocus,
-                ),
+    final input = Fluent2FieldFrame(
+      appearance: widget.appearance,
+      style: widget.style,
+      focused: fieldFocus.hasFocus,
+      enabled: enabled,
+      invalid:
+          widget.invalid ||
+          validationMessage != null ||
+          (scope?.invalid ?? false),
+      textNode: true,
+      minHeight: m.height,
+      padding: EdgeInsetsDirectional.only(
+        start: before != null ? m.root : 0,
+        end: after.isNotEmpty ? m.root : 0,
+      ),
+      child: Row(
+        spacing: m.gap,
+        children: [
+          if (before != null) Icon(before, size: m.glyph, color: slot),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsetsDirectional.only(
+                start: before != null ? m.inner : m.combined,
+                end: after.isNotEmpty ? m.inner : m.combined,
+              ),
+              child: _Editor(
+                appearance: widget.appearance,
+                controller: fieldController,
+                focusNode: fieldFocus,
+                style: Fluent2FieldMetrics.typeOf(t, widget.size),
+                enabled: enabled,
+                label: widget.label ?? scope?.label,
+                placeholder: widget.hint,
+                onChanged: widget.onChanged,
+                onSubmitted: widget.onSubmitted,
+                readOnly: widget.readOnly,
+                obscureText: hidden && !(password && _revealed),
+                keyboardType: hidden
+                    ? TextInputType.visiblePassword
+                    : widget.keyboardType,
+                textInputAction: widget.textInputAction,
+                inputFormatters: widget.inputFormatters,
+                autofocus: widget.autofocus,
               ),
             ),
-            ...after,
-          ],
-        ),
+          ),
+          ...after,
+        ],
       ),
     );
     if (validationMessage == null) return input;
@@ -328,11 +429,17 @@ class Fluent2TextArea extends StatefulWidget {
     this.size = Fluent2InputSize.medium,
     this.invalid = false,
     this.readOnly = false,
+    this.style,
     super.key,
   }) : assert(
          appearance != Fluent2InputAppearance.underline,
          "Fluent's Textarea has no underline face",
        );
+
+  /// This field's own look, slot by slot, over the text field theme
+  /// ([Fluent2ThemeData.textFieldTheme]): the slots [Fluent2FieldFrame]
+  /// names.
+  final Fluent2Style? style;
 
   /// What a screen reader calls the field; null reads the surrounding form
   /// field's label.
@@ -341,14 +448,13 @@ class Fluent2TextArea extends StatefulWidget {
   /// The words it starts with; null starts empty.
   final String? value;
 
-  /// Called with the new value when the user changes it; null puts it out of
-  /// use.
+  /// {@macro fluent2.onChanged}
   final ValueChanged<String>? onChanged;
 
-  /// The controller that holds the words; null makes its own.
+  /// {@macro fluent2.textController}
   final TextEditingController? controller;
 
-  /// The focus node it takes focus with; null makes its own.
+  /// {@macro fluent2.fieldFocusNode}
   final FocusNode? focusNode;
 
   /// Whether it takes focus when it first builds.
@@ -357,13 +463,13 @@ class Fluent2TextArea extends StatefulWidget {
   /// The words shown while it is empty.
   final String? hint;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2InputAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
   final Fluent2InputSize size;
 
-  /// Whether it shows Fluent's invalid state, its edge in the danger colour.
+  /// {@macro fluent2.invalid}
   final bool invalid;
 
   /// Whether its value can be read and selected but not changed.
@@ -371,6 +477,52 @@ class Fluent2TextArea extends StatefulWidget {
 
   @override
   State<Fluent2TextArea> createState() => _Fluent2TextareaState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+    );
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2InputAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2InputAppearance.outline,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2InputSize>(
+          'size',
+          size,
+          defaultValue: Fluent2InputSize.medium,
+        ),
+      )
+      ..add(FlagProperty('invalid', value: invalid, ifTrue: 'invalid'))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'));
+  }
 }
 
 class _Fluent2TextareaState extends State<Fluent2TextArea>
@@ -401,6 +553,7 @@ class _Fluent2TextareaState extends State<Fluent2TextArea>
       constraints: BoxConstraints(maxHeight: max + 2 + Fluent2Stroke.thick),
       child: Fluent2FieldFrame(
         appearance: widget.appearance,
+        style: widget.style,
         focused: fieldFocus.hasFocus,
         enabled: enabled,
         invalid: widget.invalid || (scope?.invalid ?? false),
@@ -449,27 +602,31 @@ class Fluent2SearchBox extends StatefulWidget {
     this.appearance = Fluent2InputAppearance.outline,
     this.size = Fluent2InputSize.medium,
     this.autofocus = false,
+    this.style,
     super.key,
   });
+
+  /// This field's own look, slot by slot, over the text field theme
+  /// ([Fluent2ThemeData.textFieldTheme]): the slots [Fluent2FieldFrame]
+  /// names.
+  final Fluent2Style? style;
 
   /// The words it starts with; null starts empty.
   final String? value;
 
-  /// Called with the new value when the user changes it; null puts it out of
-  /// use.
+  /// {@macro fluent2.onChanged}
   final ValueChanged<String>? onChanged;
 
-  /// Called with the words when the user submits them (the keyboard's done or
-  /// Enter).
+  /// {@macro fluent2.onSubmitted}
   final ValueChanged<String>? onSubmitted;
 
   /// Called when the clear button empties it.
   final VoidCallback? onClear;
 
-  /// The controller that holds the words; null makes its own.
+  /// {@macro fluent2.textController}
   final TextEditingController? controller;
 
-  /// The focus node it takes focus with; null makes its own.
+  /// {@macro fluent2.fieldFocusNode}
   final FocusNode? focusNode;
 
   /// The empty words; null is "Search" in the app's language.
@@ -478,7 +635,7 @@ class Fluent2SearchBox extends StatefulWidget {
   /// The spoken name; null says [placeholder].
   final String? label;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2InputAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
@@ -489,6 +646,57 @@ class Fluent2SearchBox extends StatefulWidget {
 
   @override
   State<Fluent2SearchBox> createState() => _Fluent2SearchBoxState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+    );
+    properties
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>?>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onClear', onClear))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2InputAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2InputAppearance.outline,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2InputSize>(
+          'size',
+          size,
+          defaultValue: Fluent2InputSize.medium,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _Fluent2SearchBoxState extends State<Fluent2SearchBox>
@@ -527,61 +735,60 @@ class _Fluent2SearchBoxState extends State<Fluent2SearchBox>
     final filled = fieldController.text.isNotEmpty;
     final hint =
         widget.hint ?? DesignLocalizations.of(context).searchFieldLabel;
-    return Fluent2HitSlop(
-      child: Fluent2FieldFrame(
-        appearance: widget.appearance,
-        focused: fieldFocus.hasFocus,
-        enabled: enabled,
-        textNode: true,
-        minHeight: m.height,
-        padding: EdgeInsets.symmetric(horizontal: side),
-        child: Row(
-          children: [
-            Icon(Fluent2Icons.search, size: m.glyph, color: slot),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsetsDirectional.only(
-                  start: Fluent2Spacing.sNudge,
-                  end: filled ? 0 : side,
-                ),
-                child: _Editor(
-                  appearance: widget.appearance,
-                  controller: fieldController,
-                  focusNode: fieldFocus,
-                  style: Fluent2FieldMetrics.typeOf(t, widget.size),
-                  enabled: enabled,
-                  label: widget.label ?? hint,
-                  placeholder: hint,
-                  onChanged: widget.onChanged,
-                  onSubmitted: widget.onSubmitted,
-                  textInputAction: TextInputAction.search,
-                  autofocus: widget.autofocus,
-                ),
+    return Fluent2FieldFrame(
+      appearance: widget.appearance,
+      style: widget.style,
+      focused: fieldFocus.hasFocus,
+      enabled: enabled,
+      textNode: true,
+      minHeight: m.height,
+      padding: EdgeInsets.symmetric(horizontal: side),
+      child: Row(
+        children: [
+          Icon(Fluent2Icons.search, size: m.glyph, color: slot),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsetsDirectional.only(
+                start: Fluent2Spacing.sNudge,
+                end: filled ? 0 : side,
+              ),
+              child: _Editor(
+                appearance: widget.appearance,
+                controller: fieldController,
+                focusNode: fieldFocus,
+                style: Fluent2FieldMetrics.typeOf(t, widget.size),
+                enabled: enabled,
+                label: widget.label ?? hint,
+                placeholder: hint,
+                onChanged: widget.onChanged,
+                onSubmitted: widget.onSubmitted,
+                textInputAction: TextInputAction.search,
+                autofocus: widget.autofocus,
               ),
             ),
-            if (filled)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(
-                  start: Fluent2Spacing.m,
-                ),
-                child: Fluent2Pressable(
-                  onPressed: enabled ? _clear : null,
-                  label: DesignLocalizations.of(context).clearButtonTooltip,
-                  radius: Fluent2Radius.small,
-                  builder: (context, states) => Icon(
-                    Fluent2Icons.dismiss,
-                    size: m.glyph,
-                    color: states.press.pick(
-                      t.colors.neutralForeground3,
-                      t.colors.neutralForeground3Hover,
-                      t.colors.neutralForeground3Pressed,
-                      t.colors.neutralForegroundDisabled,
-                    ),
+          ),
+          if (filled)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(
+                start: Fluent2Spacing.m,
+              ),
+              child: Fluent2Pressable(
+                onPressed: enabled ? _clear : null,
+                label: DesignLocalizations.of(context).clearButtonTooltip,
+                radius: Fluent2Radius.small,
+                builder: (context, states) => Icon(
+                  Fluent2Icons.dismiss,
+                  size: m.glyph,
+                  color: states.press.pick(
+                    t.colors.neutralForeground3,
+                    t.colors.neutralForeground3Hover,
+                    t.colors.neutralForeground3Pressed,
+                    t.colors.neutralForegroundDisabled,
                   ),
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
@@ -620,7 +827,7 @@ class Fluent2SearchEntry extends StatelessWidget {
   /// Opens the filters; null draws no filter button.
   final VoidCallback? onFilter;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2InputAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
@@ -639,7 +846,8 @@ class Fluent2SearchEntry extends StatelessWidget {
     final words = query;
     final own = Fluent2Localizations.of(context);
     final hint = this.hint ?? DesignLocalizations.of(context).searchFieldLabel;
-    final entry = Fluent2HitSlop(
+    final entry = DesignTapTarget(
+      minSize: Fluent2Layout.tapFloorOf(context),
       child: Fluent2Pressable(
         onPressed: onPressed,
         label: words ?? hint,
@@ -720,5 +928,29 @@ class Fluent2SearchEntry extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('query', query, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onFilter', onFilter))
+      ..add(
+        EnumProperty<Fluent2InputAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2InputAppearance.outline,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2InputSize>(
+          'size',
+          size,
+          defaultValue: Fluent2InputSize.medium,
+        ),
+      );
   }
 }

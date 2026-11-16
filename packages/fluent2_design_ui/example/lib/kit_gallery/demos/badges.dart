@@ -136,11 +136,11 @@ Widget kitSpecimenCounterBadges() => kitRow([
 ]);
 
 /// A plan's tasks in each of their states.
-Widget kitSpecimenStatusGlyphs() => Column(
+Widget kitSpecimenStatusGlyphs() => const Column(
   mainAxisSize: MainAxisSize.min,
   crossAxisAlignment: CrossAxisAlignment.start,
   spacing: Fluent2Spacing.s,
-  children: const [
+  children: [
     Fluent2StatusGlyph(Fluent2TaskStatus.notStarted, label: 'Draft the brief'),
     Fluent2StatusGlyph(Fluent2TaskStatus.inProgress, label: 'Review the deck'),
     Fluent2StatusGlyph(Fluent2TaskStatus.done, label: 'Book the room'),

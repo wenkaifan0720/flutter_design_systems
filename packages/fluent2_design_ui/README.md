@@ -48,6 +48,10 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
+    // The routes you push (a MaterialPageRoute) move as the look's own do.
+    theme: ThemeData(
+      pageTransitionsTheme: const PageTransitionsTheme(builders: fluent2PageTransitions),
+    ),
     builder: (context, child) => Fluent2Theme(
       data: Fluent2ThemeData.lapis(),
       darkData: Fluent2ThemeData.lapis(Brightness.dark),
@@ -57,6 +61,12 @@ class App extends StatelessWidget {
   );
 }
 ```
+
+The look's own routes (its sheets, dialogs and `Fluent2Page`) take Fluent 2's page motion from `Fluent2Theme`; the
+`theme:` gives it to the `MaterialPageRoute`s the app pushes itself, which read the app widget's theme. On iOS the map
+stands ui_core's `DesignSwipeBackPageTransitionsBuilder` round Fluent's push, so a swipe from the screen's leading
+edge still pops the page, the page following the finger; a map of your own wraps its iOS entry the same way
+(`designSwipeBack(map)`).
 
 Under a `CupertinoApp`:
 
@@ -198,7 +208,8 @@ use.
 A `Fluent2ThemeData` holds Fluent's alias tokens by their spec names (`colors.neutralBackground1`,
 `colors.brandForeground1`), the shared palette (`sharedColors`), the brand ramp (`brandVariants`), the type ramp
 (`body1`, `subtitle2`, `title3`, ...), the acrylic recipe and the shadows. Restyle part of the tree with a nested
-`Fluent2Theme`, and animate between themes with `AnimatedFluent2Theme`.
+`Fluent2Theme`, and animate between themes with `AnimatedFluent2Theme`. `Fluent2Colors.fromMap` sets the alias tokens
+raw, an expert's escape that holds no contrast; `Fluent2ThemeData.from(brand:)` rebrands with contrast held.
 
 Component themes (`primaryButtonTheme`, `secondaryButtonTheme`, `outlineButtonTheme`, `subtleButtonTheme`,
 `transparentButtonTheme`, `iconButtonTheme`, `checkboxTheme`, `radioTheme`, `switchTheme`, `textFieldTheme`,
@@ -238,7 +249,11 @@ when you add one of your own, build it the same way.
 5. **States step one shade at a time.** Hover and press darken (or, in dark, lighten) the fill a step each. A glyph fills
    in under the pointer and while chosen. Focus is the two-tone ring.
 6. **Motion is short and has a job.** Things take 100 to 300 ms and enter from where they come from (a drawer from its
-   edge, a menu from its anchor), easing out, and they leave faster. Every change of state (hover, press, focus, chosen,
+   edge, a menu from its anchor), easing out, and they leave faster. A page pushed in fades in over the page it leaves,
+   which holds still, travelling 20 px from the reading end, and a pop runs it back; a move between a shell's roots
+   (its nav pane, tab bar or rail) is a cut. The theme sets this for every page route on every platform, on iOS with
+   the swipe back from the screen's edge round it; `Fluent2PageTransition` gives a route of your own the same. Every
+   change of state (hover, press, focus, chosen,
    disabled, error, day to night) eases the whole face from where it stands to where it is going, over Fluent's 100 ms
    easy-ease, and a change mid-way turns without a jump: `Fluent2Eased` is how, for a part of your own. Nothing
    bounces or overshoots; Reduce Motion cuts.
@@ -256,8 +271,10 @@ when you add one of your own, build it the same way.
   `Fluent2Density.adaptivePlatformDensity` is compact on macOS, Windows and Linux, for an app that wants it.
 - **Your own face**: `copyWith(typeface: const Fluent2Typeface.app(family: 'Inter'))` sets Fluent's type ramp in a
   family from your app's assets.
-- **One component**: the buttons, the check box, radio, switch, tags, the segmented button, cards and list items take
-  `style:`, a `Fluent2Style` with the slots of Material's `ButtonStyle`: `fill`, `foreground`, `edge`, `overlay`,
+- **Solid acrylic**: `copyWith(solidAcrylic: true)` stands the acrylic's opaque fallback in for the blur everywhere,
+  Fluent's own reduce-transparency fallback.
+- **One component**: the buttons, the check box, radio, switch, tags, the segmented button, cards, list items, every
+  field, the slider, tab list, dialog, bottom sheet, menu, toast, tooltip, label badge and avatar take `style:`, a `Fluent2Style` with the slots of Material's `ButtonStyle`: `fill`, `foreground`, `edge`, `overlay`,
   `side`, `shape`, `padding`, `minimumSize`, `textStyle` and `iconSize`, each a `WidgetStateProperty`. A value comes
   from the widget's `style`, then its component theme, then Fluent's own; each part's docs say which slots it reads.
 
@@ -314,7 +331,8 @@ drawn at their design sizes, the directional ones mirrored right to left.
 - **Right to left.** Under a right-to-left `Directionality` every part mirrors: rows, a field's glyphs, tabs,
   segments, sliders, progress and swipe actions run from the reading start, and the glyphs that point flip. Parameters
   say start and end and take the directional geometry types. The gallery has a direction switch.
-- **Motion.** Reduce Motion (`MediaQuery.disableAnimations`) turns every change of state into a cut.
+- **Motion.** Reduce Motion (`MediaQuery.disableAnimations`) turns every change of state, and every push and pop,
+  into a cut.
 - **Other scripts.** Selawik draws the Latin alphabet. Arabic, Hebrew, Chinese, Japanese, Hindi, Thai and other
   scripts fall back to the platform's fonts (on the web, to the Noto fonts Flutter fetches).
 - **Words the parts say.** No part writes a word in English by itself. The words every look shares (Cancel, OK,

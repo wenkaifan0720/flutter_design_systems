@@ -1,0 +1,25 @@
+# Data-driven fixes for `dart fix`: what moves callers off what 0.2.0 deprecates. look:package writes this file to the
+# package's lib/fix_data.yaml; package/test_fixes/ holds each fix's before and after
+# (`dart fix --compare-to-golden test_fixes`).
+version: 1
+transforms:
+  # 0.2.0: Fluent's elevations stay Fluent's. A theme's shadows are the preset's, so the fix drops the argument and the
+  # theme keeps them. (copyWith(acrylic:) has no mechanical fix: its replacement, solidAcrylic, is a choice.)
+  - title: "Remove 'shadows'"
+    date: 2026-11-14
+    element:
+      uris: ['fluent2_design_ui.dart']
+      method: 'copyWith'
+      inClass: 'Fluent2ThemeData'
+    changes:
+      - kind: 'removeParameter'
+        name: 'shadows'
+  - title: "Remove 'brandShadows'"
+    date: 2026-11-14
+    element:
+      uris: ['fluent2_design_ui.dart']
+      method: 'copyWith'
+      inClass: 'Fluent2ThemeData'
+    changes:
+      - kind: 'removeParameter'
+        name: 'brandShadows'

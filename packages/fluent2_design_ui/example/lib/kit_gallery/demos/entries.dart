@@ -103,16 +103,19 @@ void _choose() {}
 
 void _typed(String _) {}
 
-final _stay = DesignCalendarController(
-  firstDate: DateTime(2026, 6),
-  lastDate: DateTime(2026, 9, 30),
-  mode: DesignCalendarMode.range,
-  selectedRange: DesignDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18)),
-  currentDate: DateTime(2026, 6, 10),
+Widget kitSpecimenDateRangePicker() => KitOwned(
+  () => DesignCalendarController(
+    firstDate: DateTime(2026, 6),
+    lastDate: DateTime(2026, 9, 30),
+    mode: DesignCalendarMode.range,
+    selectedRange: DesignDateRange(
+      DateTime(2026, 6, 14),
+      DateTime(2026, 6, 18),
+    ),
+    currentDate: DateTime(2026, 6, 10),
+  ),
+  (context, stay) => Fluent2DateRangePicker(controller: stay),
 );
-
-Widget kitSpecimenDateRangePicker() =>
-    Fluent2DateRangePicker(controller: _stay);
 
 Widget kitSpecimenTimePicker() {
   Fluent2Time? start = const Fluent2Time(9, 30);

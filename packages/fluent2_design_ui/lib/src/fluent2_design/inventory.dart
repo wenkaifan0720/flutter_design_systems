@@ -1,6 +1,7 @@
 // Fluent 2's answer to the shared component inventory (ui_core's DesignInventoryRow.all, 89 rows): for each row the part
 // that answers it, `Fluent2<Stem>`, as a small live specimen. The live gallery lists it, and a test verifies it (every
 // row answered once, every specimen the row's own class).
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/inventory.dart';
 
@@ -19,36 +20,38 @@ const _sizes = [
   Fluent2Option('large', 'Large'),
 ];
 
-// The specimens' controllers: one gallery shows the inventory at a time, so each specimen keeps one for the app's life.
-final _scroll = ScrollController();
-final _stay = DesignCalendarController(
-  firstDate: DateTime(2026, 6),
-  lastDate: DateTime(2026, 9, 30),
-  mode: DesignCalendarMode.range,
-  selectedRange: DesignDateRange(DateTime(2026, 6, 14), DateTime(2026, 6, 18)),
-  currentDate: DateTime(2026, 6, 10),
-);
-// The colour picker's starts on the theme's brand, the first time it is built.
-DesignColorController? _colour;
+/// A specimen that owns a controller while it stands, as an app's page
+/// would: [make] makes it the first time the specimen builds, and it is
+/// disposed with the specimen.
+class _Owning<T extends ChangeNotifier> extends StatefulWidget {
+  const _Owning(this.make, this.builder);
+
+  final T Function(BuildContext context) make;
+  final Widget Function(BuildContext context, T controller) builder;
+
+  @override
+  State<_Owning<T>> createState() => _OwningState<T>();
+}
+
+class _OwningState<T extends ChangeNotifier> extends State<_Owning<T>> {
+  T? _controller;
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      widget.builder(context, _controller ??= widget.make(context));
+}
 
 class _File {
   const _File(this.name, this.pages);
   final String name;
   final int pages;
 }
-
-final _rows = DesignTableController<_File>(
-  rows: const [_File('Budget', 12), _File('Roadmap', 8), _File('Handbook', 40)],
-  columns: [
-    DesignTableColumn<_File>(id: 'name', label: 'Name', sortKey: (f) => f.name),
-    DesignTableColumn<_File>(
-      id: 'pages',
-      label: 'Pages',
-      numeric: true,
-      sortKey: (f) => f.pages,
-    ),
-  ],
-);
 
 /// The specimens that fill the height they are given; a gallery frames each in
 /// a box of this height.
@@ -89,16 +92,35 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onPressed: _none,
       ),
     ),
-    DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'ButtonGroup',
-      'Fluent 2 joins no buttons in one frame: related acts stand in its '
-          'Toolbar (Fluent2Toolbar)',
+      (_) => const Fluent2ToolbarGroup(
+        label: 'Share',
+        items: [
+          Fluent2ToolbarItem.button(
+            icon: Fluent2Icons.link,
+            label: 'Copy link',
+            onPressed: _none,
+          ),
+          Fluent2ToolbarItem.button(
+            icon: Fluent2Icons.mail,
+            label: 'Email',
+            onPressed: _none,
+          ),
+        ],
+      ),
     ),
-    DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'ToggleGroup',
-      'Fluent 2 joins no toggles in one frame: toggles stand in its Toolbar '
-          '(Fluent2Toolbar), and one choice of several is its segmented '
-          'control (Fluent2SegmentedButton)',
+      (_) => const Fluent2ToolbarToggleGroup<String>(
+        label: 'Layout',
+        toggles: [
+          Fluent2ToolbarToggle('list', icon: Fluent2Icons.list, label: 'List'),
+          Fluent2ToolbarToggle('grid', icon: Fluent2Icons.grid, label: 'Tiles'),
+        ],
+        selected: {'list'},
+        onSelectionChanged: _drop,
+      ),
     ),
     DesignInventoryEntry.present(
       'SplitButton',
@@ -142,10 +164,10 @@ final DesignInventory fluent2Inventory = DesignInventory(
         suffix: '.com',
       ),
     ),
-    DesignInventoryEntry.absent(
+    const DesignInventoryEntry.absent(
       'InputOtp',
-      "Fluent 2 has no code boxes: Microsoft's sign-in asks for a code in one "
-          'Input (Fluent2TextField with the number keyboard)',
+      'No Fluent 2 platform has code boxes: Microsoft\'s sign-in asks for '
+          'a code in one Input (Fluent2TextField with the number keyboard)',
     ),
     DesignInventoryEntry.present(
       'NumberField',
@@ -255,7 +277,19 @@ final DesignInventory fluent2Inventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'DateRangePicker',
-      (_) => Fluent2DateRangePicker(controller: _stay),
+      (_) => _Owning(
+        (_) => DesignCalendarController(
+          firstDate: DateTime(2026, 6),
+          lastDate: DateTime(2026, 9, 30),
+          mode: DesignCalendarMode.range,
+          selectedRange: DesignDateRange(
+            DateTime(2026, 6, 14),
+            DateTime(2026, 6, 18),
+          ),
+          currentDate: DateTime(2026, 6, 10),
+        ),
+        (_, stay) => Fluent2DateRangePicker(controller: stay),
+      ),
     ),
     DesignInventoryEntry.present(
       'TimePicker',
@@ -285,10 +319,12 @@ final DesignInventory fluent2Inventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'ColorPicker',
-      (context) => Fluent2ColorPicker(
-        controller: _colour ??= DesignColorController(
+      // It starts on the theme's brand.
+      (_) => _Owning(
+        (context) => DesignColorController(
           context.fluent2Theme.colors.compoundBrandForeground1,
         ),
+        (_, colour) => Fluent2ColorPicker(controller: colour),
       ),
     ),
     DesignInventoryEntry.present(
@@ -370,14 +406,17 @@ final DesignInventory fluent2Inventory = DesignInventory(
         onChanged: _drop,
       ),
     ),
-    DesignInventoryEntry.absent(
+    const DesignInventoryEntry.absent(
       'MenuBar',
-      "Fluent 2 has no menu bar: a window's commands are its Toolbar and "
-          'its menu buttons (Fluent2Toolbar, Fluent2MenuButton)',
+      "Fluent 2's web, iOS and Android kits have no menu bar; its Windows "
+          "kit has one (WinUI's MenuBar), planned here. Until then a window's "
+          'commands are its Toolbar and menu buttons (Fluent2Toolbar, '
+          'Fluent2MenuButton)',
     ),
-    DesignInventoryEntry.absent(
+    const DesignInventoryEntry.absent(
       'Command',
-      'Fluent 2 has no command palette: a search is its SearchBox '
+      'No Fluent 2 platform has a command palette (WinUI\'s CommandBar is '
+          'a toolbar: Fluent2Toolbar); a search is its SearchBox '
           '(Fluent2SearchBox)',
     ),
     DesignInventoryEntry.present(
@@ -453,24 +492,50 @@ final DesignInventory fluent2Inventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'DataTable',
-      (_) => Fluent2DataGrid<_File>(
-        label: 'Files',
-        controller: _rows,
-        cell: (row, column) => column.id == 'name' ? row.name : '${row.pages}',
+      (_) => _Owning(
+        (_) => DesignTableController<_File>(
+          rows: const [
+            _File('Budget', 12),
+            _File('Roadmap', 8),
+            _File('Handbook', 40),
+          ],
+          columns: [
+            DesignTableColumn<_File>(
+              id: 'name',
+              label: 'Name',
+              sortKey: (f) => f.name,
+            ),
+            DesignTableColumn<_File>(
+              id: 'pages',
+              label: 'Pages',
+              numeric: true,
+              sortKey: (f) => f.pages,
+            ),
+          ],
+        ),
+        (_, rows) => Fluent2DataGrid<_File>(
+          label: 'Files',
+          controller: rows,
+          cell: (row, column) =>
+              column.id == 'name' ? row.name : '${row.pages}',
+        ),
       ),
     ),
     DesignInventoryEntry.present('Divider', (_) => const Fluent2Divider()),
     DesignInventoryEntry.present(
       'ScrollArea',
-      (_) => Fluent2ScrollArea(
-        controller: _scroll,
-        semanticLabel: 'Files',
-        child: ListView(
-          controller: _scroll,
-          children: [
-            for (var i = 1; i <= 12; i++)
-              Fluent2ListItem(title: 'File $i', onTap: _none),
-          ],
+      (_) => _Owning(
+        (_) => ScrollController(),
+        (_, scroll) => Fluent2ScrollArea(
+          controller: scroll,
+          semanticLabel: 'Files',
+          child: ListView(
+            controller: scroll,
+            children: [
+              for (var i = 1; i <= 12; i++)
+                Fluent2ListItem(title: 'File $i', onTap: _none),
+            ],
+          ),
         ),
       ),
     ),
@@ -621,10 +686,14 @@ final DesignInventory fluent2Inventory = DesignInventory(
         content: const Text('Only shared files'),
       ),
     ),
-    DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'HoverCard',
-      'Fluent 2 has no hover card: more about a person is its Popover '
-          '(Fluent2Popover)',
+      (_) => Fluent2Popover(
+        label: 'Mara Okafor',
+        openOnHover: true,
+        trigger: (_, toggle) => Fluent2Link('Mara Okafor', onPressed: toggle),
+        content: const Text('Design lead · Seattle'),
+      ),
     ),
     DesignInventoryEntry.present(
       'Tooltip',
@@ -671,10 +740,10 @@ final DesignInventory fluent2Inventory = DesignInventory(
         message: 'Sam will get an email.',
       ),
     ),
-    DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'Meter',
-      "Fluent has no determinate ring: progress toward a goal is its "
-          'ProgressBar (Fluent2ProgressBar)',
+      (_) =>
+          const Fluent2Spinner(label: 'Storage used', value: .62, below: false),
     ),
     // Charts
     DesignInventoryEntry.present(
@@ -743,13 +812,17 @@ class Fluent2InventoryGallery extends StatelessWidget {
   const Fluent2InventoryGallery({
     super.key,
     this.controller,
-    this.padding = const EdgeInsets.fromLTRB(20, 8, 20, 32),
+    this.padding = const EdgeInsets.only(
+      top: Fluent2Spacing.s,
+      bottom: Fluent2Spacing.xxxl,
+    ),
   });
 
   /// The list's scroll controller.
   final ScrollController? controller;
 
-  /// Space around the list.
+  /// Space above and below the list. It has none at its sides: the screen
+  /// round it (a Fluent2Scaffold) stands it on the page's margin.
   final EdgeInsetsGeometry padding;
 
   @override
@@ -795,5 +868,28 @@ class Fluent2InventoryGallery extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.only(
+            top: Fluent2Spacing.s,
+            bottom: Fluent2Spacing.xxxl,
+          ),
+        ),
+      );
   }
 }

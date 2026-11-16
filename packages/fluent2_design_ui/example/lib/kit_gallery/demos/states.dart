@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
+import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 import '../kit.dart';
 
@@ -26,30 +27,33 @@ Widget kitStatesDemo(Brightness brightness) => kitScreen(
           builder: (context) => kitRow([
             for (final intent in Fluent2ToastIntent.values)
               Fluent2Button(
-                kitSay(intent),
+                kitW(kitSay(intent)),
                 onPressed: () => showFluent2Toast(
                   context,
-                  _toastWords[intent]!.$2,
-                  title: _toastWords[intent]!.$1,
+                  kitW(_toastWords[intent]!.$2),
+                  title: kitW(_toastWords[intent]!.$1),
                   tone: intent,
                   actionLabel: intent == Fluent2ToastIntent.success
-                      ? 'Undo'
+                      ? kitW('Undo')
                       : null,
                   onAction: intent == Fluent2ToastIntent.success ? () {} : null,
                 ),
               ),
           ]),
         ),
-        kitSpecimenToastSuccess(),
+        kitAsShown(Fluent2ChromeMetrics.toastWidth, kitSpecimenToastSuccess()),
         for (final intent in const [
           Fluent2ToastIntent.info,
           Fluent2ToastIntent.warning,
           Fluent2ToastIntent.error,
         ])
-          Fluent2Toast(
-            _toastWords[intent]!.$2,
-            title: _toastWords[intent]!.$1,
-            tone: intent,
+          kitAsShown(
+            Fluent2ChromeMetrics.toastWidth,
+            Fluent2Toast(
+              kitW(_toastWords[intent]!.$2),
+              title: kitW(_toastWords[intent]!.$1),
+              tone: intent,
+            ),
           ),
       ],
     ),
@@ -87,9 +91,9 @@ class _Sizes extends StatelessWidget {
             color: t.accent,
             borderRadius: BorderRadius.circular(Fluent2Radius.large),
           ),
-          child: const Fluent2Spinner(
+          child: Fluent2Spinner(
             inverted: true,
-            label: 'Uploading the cover',
+            label: kitW('Uploading the cover'),
           ),
         ),
       ],
@@ -102,45 +106,45 @@ class _Sizes extends StatelessWidget {
 // styles them; a builder never names a style.
 
 Widget kitSpecimenStateLoading() =>
-    const Fluent2LoadingState(message: 'Loading files');
+    Fluent2LoadingState(message: kitW('Loading files'));
 
 Widget kitSpecimenStateEmpty() => Fluent2EmptyState(
-  title: 'No files yet',
-  body: 'Files you create or upload to Northwind show up here.',
+  title: kitW('No files yet'),
+  body: kitW('Files you create or upload to Northwind show up here.'),
   icon: Fluent2Icons.folder,
-  actionLabel: 'Upload',
+  actionLabel: kitW('Upload'),
   actionIcon: Fluent2Icons.arrowUpload,
   onAction: () {},
 );
 
 Widget kitSpecimenStateError() => Fluent2ErrorState(
-  title: "Couldn't load your chats",
-  message: 'Check your connection and try again.',
+  title: kitW("Couldn't load your chats"),
+  message: kitW('Check your connection and try again.'),
   onRetry: () {},
 );
 
 /// The medium spinner with its words under it, and the small one with its
 /// words after it.
-Widget kitSpecimenSpinner() => kitRow(const [
-  Fluent2Spinner(label: 'Loading files'),
+Widget kitSpecimenSpinner() => kitRow([
+  Fluent2Spinner(label: kitW('Loading files')),
   Fluent2Spinner(
     size: Fluent2SpinnerSize.small,
     below: false,
-    label: 'Syncing',
+    label: kitW('Syncing'),
   ),
 ]);
 
 /// An invitation sent: the success status with what comes next.
 Widget kitSpecimenStatusView() => Fluent2StatusView.success(
-  title: 'Invitation sent',
-  message: 'Ana Ruiz will get an email with a link to Budget.',
-  actionLabel: 'Invite someone else',
+  title: kitW('Invitation sent'),
+  message: kitW('Ana Ruiz will get an email with a link to Budget.'),
+  actionLabel: kitW('Invite someone else'),
   onAction: () {},
 );
 
 Widget kitSpecimenToastSuccess() => Fluent2Toast(
-  _toastWords[Fluent2ToastIntent.success]!.$2,
-  title: _toastWords[Fluent2ToastIntent.success]!.$1,
-  actionLabel: 'Undo',
+  kitW(_toastWords[Fluent2ToastIntent.success]!.$2),
+  title: kitW(_toastWords[Fluent2ToastIntent.success]!.$1),
+  actionLabel: kitW('Undo'),
   onAction: () {},
 );

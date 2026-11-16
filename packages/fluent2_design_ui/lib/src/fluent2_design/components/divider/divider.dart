@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../internal/well.dart';
@@ -209,5 +210,28 @@ class Fluent2Divider extends StatelessWidget {
         child: body,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('vertical', value: vertical, ifTrue: 'vertical'))
+      ..add(
+        EnumProperty<Fluent2DividerAlign>(
+          'align',
+          align,
+          defaultValue: Fluent2DividerAlign.center,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2DividerAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2DividerAppearance.standard,
+        ),
+      )
+      ..add(FlagProperty('inset', value: inset, ifTrue: 'inset'));
   }
 }

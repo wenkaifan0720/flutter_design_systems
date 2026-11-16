@@ -6,6 +6,7 @@
 // A link opens a page in a given theme, direction and text size, the scheme every look's gallery reads:
 // /#/<page>?theme=dark&dir=rtl&text=200 (and preset=<id>).
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
 import 'gallery_pages.dart';
@@ -16,6 +17,9 @@ Future<void> main() async {
   // The faces before the first frame: on the web the words never flash in a
   // fallback face and the glyphs never draw as empty boxes.
   await fluent2LoadFonts();
+  // Flutter's own words in the app's language, as an ordinary app gives them;
+  // Fluent 2 brings its own Material and Cupertino words.
+  kitFlutterLocalizations = GlobalMaterialLocalizations.delegates;
   runApp(GalleryApp(link: GalleryLink.of(Uri.base)));
 }
 
@@ -152,6 +156,14 @@ class _GalleryAppState extends State<GalleryApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Fluent 2',
+      // A route the app pushes itself moves as the look's own do.
+      theme: kitAppTheme,
+      // ui_core's 30 languages beside Flutter's own words, as the README's
+      // app gives them: right to left the gallery reads Arabic, the parts'
+      // shared words with it.
+      locale: kitLocale,
+      localizationsDelegates: kitLocalizations,
+      supportedLocales: DesignLocalizations.supportedLocales,
       // The link was read before the first frame; the app opens at its root.
       initialRoute: Navigator.defaultRouteName,
       // The snack bars queue in the toaster round the app, inside the theme.

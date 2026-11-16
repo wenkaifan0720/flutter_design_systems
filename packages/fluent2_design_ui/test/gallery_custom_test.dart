@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
 // The panel is the example app's; a test reads its settings from there.
 // ignore_for_file: avoid_relative_lib_imports
@@ -50,49 +51,57 @@ void main() {
     }
   });
 
+  // Out of the package's leak tracking, as every preset but the first is (leakTestingIn): a setting changes colours
+  // and measures, not which widgets a page makes; gallery_guidelines_test holds each page's disposal.
+  final untracked = LeakTesting.settings.withIgnoredAll();
   for (final MapEntry(key: name, value: custom) in settings.entries) {
     for (final page in galleryPages) {
       for (final b in Brightness.values) {
-        testWidgets('${page.id} ${b.name}, $name: the target guidelines hold', (
-          tester,
-        ) async {
-          customize(custom);
-          final semantics = tester.ensureSemantics();
-          try {
-            await pumpGalleryPage(tester, page, 'lapis', b);
-            final failed = <String>[];
-            for (final (what, guideline) in [
-              ('Android 48 px targets', androidTapTargetGuideline),
-              ('iOS 44 px targets', iOSTapTargetGuideline),
-              ('labelled targets', labeledTapTargetGuideline),
-            ]) {
-              final result = await guideline.evaluate(tester);
-              if (!result.passed) failed.add('$what: ${result.reason}');
+        testWidgets(
+          '${page.id} ${b.name}, $name: the target guidelines hold',
+          experimentalLeakTesting: untracked,
+          (tester) async {
+            customize(custom);
+            final semantics = tester.ensureSemantics();
+            try {
+              await pumpGalleryPage(tester, page, 'lapis', b);
+              final failed = <String>[];
+              for (final (what, guideline) in [
+                ('Android 48 px targets', androidTargetGuideline),
+                ('iOS 44 px targets', iOSTapTargetGuideline),
+                ('labelled targets', labeledTapTargetGuideline),
+              ]) {
+                final result = await guideline.evaluate(tester);
+                if (!result.passed) failed.add('$what: ${result.reason}');
+              }
+              expect(failed, isEmpty, reason: failed.join('\n'));
+            } finally {
+              semantics.dispose();
             }
-            expect(failed, isEmpty, reason: failed.join('\n'));
-          } finally {
-            semantics.dispose();
-          }
-        });
+          },
+        );
 
         // Contrast reads drawn pixels (the rasterizer's, as a golden's).
-        testWidgets('${page.id} ${b.name}, $name: text contrast holds', (
-          tester,
-        ) async {
-          customize(custom);
-          final semantics = tester.ensureSemantics();
-          try {
-            await pumpGalleryPage(tester, page, 'lapis', b);
-            final inked = await inkedContrastFailures(tester);
-            expect(
-              inked,
-              isEmpty,
-              reason: 'text contrast: ${inked.join('; ')}',
-            );
-          } finally {
-            semantics.dispose();
-          }
-        }, tags: const ['goldens']);
+        testWidgets(
+          '${page.id} ${b.name}, $name: text contrast holds',
+          experimentalLeakTesting: untracked,
+          (tester) async {
+            customize(custom);
+            final semantics = tester.ensureSemantics();
+            try {
+              await pumpGalleryPage(tester, page, 'lapis', b);
+              final inked = await inkedContrastFailures(tester);
+              expect(
+                inked,
+                isEmpty,
+                reason: 'text contrast: ${inked.join('; ')}',
+              );
+            } finally {
+              semantics.dispose();
+            }
+          },
+          tags: const ['goldens'],
+        );
       }
     }
   }

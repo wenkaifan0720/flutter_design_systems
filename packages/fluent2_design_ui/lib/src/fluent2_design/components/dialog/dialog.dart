@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 
@@ -23,12 +24,17 @@ import 'package:ui_core/ui_core.dart';
 class Fluent2Dialog extends StatelessWidget {
   /// A dialog titled [title].
   const Fluent2Dialog({
+    this.style,
     super.key,
     required this.title,
     this.message,
     this.content,
     this.actions = const [],
   });
+
+  /// This dialog's own look, slot by slot, over its component theme
+  /// ([Fluent2ThemeData.dialogTheme]): the slots its doc names.
+  final Fluent2Style? style;
 
   /// The dialog's title.
   final String title;
@@ -59,17 +65,18 @@ class Fluent2Dialog extends StatelessWidget {
         transitionDuration: Fluent2Motion.on(context)
             ? Fluent2Motion.gentle
             : Duration.zero,
+        // Tweens' drives, not CurvedAnimations: nothing to dispose when
+        // the route goes.
         transitionBuilder: (context, animation, _, child) => FadeTransition(
-          opacity: CurvedAnimation(
-            parent: animation,
-            curve: Fluent2Motion.decelerateMid,
+          opacity: animation.drive(
+            CurveTween(curve: Fluent2Motion.decelerateMid),
           ),
           child: ScaleTransition(
-            scale: Tween<double>(begin: 0.95, end: 1).animate(
-              CurvedAnimation(
-                parent: animation,
-                curve: Fluent2Motion.decelerateMid,
-              ),
+            scale: animation.drive(
+              Tween<double>(
+                begin: 0.95,
+                end: 1,
+              ).chain(CurveTween(curve: Fluent2Motion.decelerateMid)),
             ),
             child: child,
           ),
@@ -113,7 +120,7 @@ class Fluent2Dialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
-    final look = Fluent2StyleOf([t.dialogTheme], const {});
+    final look = Fluent2StyleOf([style, t.dialogTheme], const {});
     final narrow = MediaQuery.sizeOf(context).width < 480;
     return Center(
       child: Padding(
@@ -199,5 +206,16 @@ class Fluent2Dialog extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null));
   }
 }

@@ -203,6 +203,8 @@ void main() {
         Fluent2Density.comfortable,
       );
       expect(
+        // A density built equal to compact, not compact itself.
+        // ignore: use_named_constants
         const Fluent2Density(horizontal: -2, vertical: -2).hashCode,
         c.hashCode,
       );

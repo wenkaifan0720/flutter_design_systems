@@ -21,12 +21,17 @@ final _c = _t.colors;
 
 void main() {
   group('a date range, after the first press', () {
-    DesignCalendarController range() => DesignCalendarController(
-      firstDate: DateTime(2026, 3, 1),
-      lastDate: DateTime(2026, 3, 31),
-      currentDate: DateTime(2026, 3, 1),
-      mode: DesignCalendarMode.range,
-    );
+    /// A range calendar's controller, disposed when the test ends.
+    DesignCalendarController range() {
+      final controller = DesignCalendarController(
+        firstDate: DateTime(2026, 3, 1),
+        lastDate: DateTime(2026, 3, 31),
+        currentDate: DateTime(2026, 3, 1),
+        mode: DesignCalendarMode.range,
+      );
+      addTearDown(controller.dispose);
+      return controller;
+    }
 
     /// The band's pieces (the brand tint), each a rect on screen.
     List<Rect> band(WidgetTester t) => [

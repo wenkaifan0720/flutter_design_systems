@@ -2,6 +2,7 @@
 // the popover (on ui_core's DesignAnchoredOverlay and DesignSideSheetRoute), and the menu's opener.
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show ModalBottomSheetRoute;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -82,10 +83,16 @@ class Fluent2BottomSheet extends StatelessWidget {
     this.title,
     this.actions = const [],
     this.onClose,
+    this.style,
   });
 
   /// What it holds.
   final Widget child;
+
+  /// This sheet's own look, slot by slot, over the bottom sheet theme
+  /// ([Fluent2ThemeData.bottomSheetTheme]): the slots [Fluent2SheetCard]
+  /// names.
+  final Fluent2Style? style;
 
   /// Its head; null draws only the handle.
   final String? title;
@@ -104,6 +111,7 @@ class Fluent2BottomSheet extends StatelessWidget {
       context,
       Fluent2ChromeMetrics.dialogWidth,
       Fluent2SheetCard.bottom(
+        style: style,
         child: SafeArea(
           top: false,
           child: Padding(
@@ -143,6 +151,17 @@ class Fluent2BottomSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onClose', onClose))
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -378,6 +397,18 @@ class Fluent2ActionSheet<T> extends StatelessWidget {
     );
     return _sheetWidth(context, fluent2ControlMax, sheet);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Fluent2ActionSheetAction<T>>('actions', actions))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onCancel', onCancel))
+      ..add(StringProperty('cancelLabel', cancelLabel, defaultValue: null));
+  }
 }
 
 /// Raises a [Fluent2ActionSheet] of [actions] off the bottom edge; answers the
@@ -433,6 +464,15 @@ Widget _rise(DesignOverlayInfo info, Widget child) => AnimatedBuilder(
 /// focus goes back to the trigger. [Fluent2Flyout.show] raises a flyout from
 /// code with no trigger of its own.
 ///
+/// With [openOnHover] it is Fluent's hover card (v9's `openOnHover`): it
+/// opens while the pointer rests on the trigger, while the keyboard focuses
+/// it or on a long press, leaves focus on the trigger, and closes
+/// [mouseLeaveDelay] after the pointer leaves both, so the pointer can
+/// travel into it (more about a person over their name).
+///
+/// A neutral popover is the menu's surface: its fill, ink and stroke follow
+/// the menu theme ([Fluent2ThemeData.menuTheme]) where that sets them.
+///
 /// ```dart
 /// Fluent2Popover(label: 'Sharing', trigger: (context, toggle) => Fluent2Button('Share', onPressed: toggle), content: const Text('Shared with 4 people'))
 /// ```
@@ -448,7 +488,12 @@ class Fluent2Popover extends StatelessWidget {
     this.width = 288,
     this.appearance = Fluent2FlyoutAppearance.neutral,
     this.size = Fluent2FlyoutSize.medium,
+    this.openOnHover = false,
+    this.mouseLeaveDelay = const Duration(milliseconds: 500),
   });
+
+  /// Fluent's tooltip delay, which a hover card waits before it opens.
+  static const Duration hoverOpenDelay = Duration(milliseconds: 250);
 
   /// The popover's name, read as it opens.
   final String label;
@@ -474,9 +519,24 @@ class Fluent2Popover extends StatelessWidget {
   /// Its padding, Fluent's `size`.
   final Fluent2FlyoutSize size;
 
+  /// Whether a resting pointer, keyboard focus or a long press on the
+  /// trigger opens it (a hover card), rather than a press.
+  final bool openOnHover;
+
+  /// How long a hover card stays once the pointer leaves the trigger and
+  /// the card, Fluent's `mouseLeaveDelay`.
+  final Duration mouseLeaveDelay;
+
   @override
   Widget build(BuildContext context) => DesignAnchoredOverlay(
     semanticLabel: label,
+    trigger: openOnHover
+        ? DesignOverlayTrigger.hover
+        : DesignOverlayTrigger.press,
+    // A hover card leaves focus where it was.
+    focusOnOpen: !openOnHover,
+    hoverOpenDelay: hoverOpenDelay,
+    hoverCloseDelay: mouseLeaveDelay,
     // Fluent's popover keeps its own width under a wide trigger.
     placement: DesignOverlayPlacement(
       side: side,
@@ -505,6 +565,57 @@ class Fluent2Popover extends StatelessWidget {
       );
     },
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(
+        ObjectFlagProperty<
+          Widget Function(BuildContext context, VoidCallback toggle)
+        >.has('trigger', trigger),
+      )
+      ..add(
+        DiagnosticsProperty<DesignOverlaySide>(
+          'side',
+          side,
+          defaultValue: DesignOverlaySide.below,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DesignOverlayAlign>(
+          'align',
+          align,
+          defaultValue: DesignOverlayAlign.start,
+        ),
+      )
+      ..add(DoubleProperty('width', width, defaultValue: 288))
+      ..add(
+        EnumProperty<Fluent2FlyoutAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2FlyoutAppearance.neutral,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2FlyoutSize>(
+          'size',
+          size,
+          defaultValue: Fluent2FlyoutSize.medium,
+        ),
+      )
+      ..add(
+        FlagProperty('openOnHover', value: openOnHover, ifTrue: 'openOnHover'),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'mouseLeaveDelay',
+          mouseLeaveDelay,
+          defaultValue: const Duration(milliseconds: 500),
+        ),
+      );
+  }
 }
 
 /// Opens a [Fluent2Menu] of [items] under the control [context] belongs to (a

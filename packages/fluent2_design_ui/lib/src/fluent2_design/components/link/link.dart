@@ -1,7 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
-import '../../internal/hit_slop.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 
@@ -62,10 +63,10 @@ class Fluent2Link extends StatelessWidget {
   /// What a screen reader says in place of [text].
   final String? semanticLabel;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -125,6 +126,38 @@ class Fluent2Link extends StatelessWidget {
       },
     );
     // A disabled link takes no taps, so it lends no slop over a neighbour.
-    return inline || !live ? link : Fluent2HitSlop(child: link);
+    return inline || !live
+        ? link
+        : DesignTapTarget(
+            minSize: Fluent2Layout.tapFloorOf(context),
+            child: link,
+          );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(
+        EnumProperty<Fluent2LinkAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2LinkAppearance.brand,
+        ),
+      )
+      ..add(FlagProperty('inline', value: inline, ifTrue: 'inline'))
+      ..add(DiagnosticsProperty<TextStyle>('style', style, defaultValue: null))
+      ..add(IntProperty('maxLines', maxLines, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }

@@ -9,14 +9,19 @@ import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
 import '../kit.dart';
 
-const List<Fluent2MenuItem<String>> _fileCommands = [
-  Fluent2MenuItem('open', 'Open', icon: Fluent2Icons.open),
-  Fluent2MenuItem('rename', 'Rename', icon: Fluent2Icons.edit, secondary: 'F2'),
-  Fluent2MenuItem('copy', 'Copy link', icon: Fluent2Icons.link),
-  Fluent2MenuItem('move', 'Move to', icon: Fluent2Icons.folder),
+List<Fluent2MenuItem<String>> get _fileCommands => [
+  Fluent2MenuItem('open', kitW('Open'), icon: Fluent2Icons.open),
+  Fluent2MenuItem(
+    'rename',
+    kitW('Rename'),
+    icon: Fluent2Icons.edit,
+    secondary: 'F2',
+  ),
+  Fluent2MenuItem('copy', kitW('Copy link'), icon: Fluent2Icons.link),
+  Fluent2MenuItem('move', kitW('Move to'), icon: Fluent2Icons.folder),
   Fluent2MenuItem(
     'delete',
-    'Delete',
+    kitW('Delete'),
     icon: Fluent2Icons.delete,
     danger: true,
     divider: true,
@@ -29,8 +34,20 @@ List<Fluent2MenuItem<String>> _sortBy(String current) => [
     ('modified', 'Modified'),
     ('size', 'File size'),
   ])
-    Fluent2MenuItem(id, label, checked: id == current),
+    Fluent2MenuItem(id, kitW(label), checked: id == current),
 ];
+
+/// The words each command and order shows, by its id.
+const Map<String, String> _said = {
+  'open': 'Open',
+  'rename': 'Rename',
+  'copy': 'Copy link',
+  'move': 'Move to',
+  'delete': 'Delete',
+  'name': 'Name',
+  'modified': 'Modified',
+  'size': 'File size',
+};
 
 Widget kitMenuDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
@@ -64,7 +81,7 @@ class _OpenState extends State<_Open> {
           Builder(
             builder: (anchor) => Fluent2IconButton(
               Fluent2Icons.moreHorizontal,
-              label: 'More options',
+              label: kitW('More options'),
               onPressed: () async {
                 final picked = await Fluent2Menu.show<String>(
                   anchor,
@@ -76,12 +93,12 @@ class _OpenState extends State<_Open> {
           ),
           Builder(
             builder: (anchor) => Fluent2MenuButton(
-              'Sort',
+              kitW('Sort'),
               icon: Fluent2Icons.arrowSort,
               onPressed: () async {
                 final picked = await Fluent2Menu.show<String>(
                   anchor,
-                  title: 'Sort by',
+                  title: kitW('Sort by'),
                   items: _sortBy(_sort),
                 );
                 if (picked != null) setState(() => _sort = picked);
@@ -90,7 +107,10 @@ class _OpenState extends State<_Open> {
           ),
         ]),
         Text(
-          'Sorted by $_sort${_last == null ? '' : ' · last: $_last'}',
+          kitArabic
+              ? 'الفرز حسب ${kitW(_said[_sort]!)}'
+                    '${_last == null ? '' : ' · آخر أمر: ${kitW(_said[_last]!)}'}'
+              : 'Sorted by $_sort${_last == null ? '' : ' · last: $_last'}',
           style: t.caption1.c(t.textSecondary),
         ),
       ],
@@ -113,7 +133,7 @@ Widget kitSpecimenMenuFile() => Align(
 Widget kitSpecimenMenuSort() => Align(
   alignment: AlignmentDirectional.centerStart,
   child: Fluent2Menu<String>(
-    title: 'Sort by',
+    title: kitW('Sort by'),
     items: _sortBy('modified'),
     onSelected: (_) {},
   ),

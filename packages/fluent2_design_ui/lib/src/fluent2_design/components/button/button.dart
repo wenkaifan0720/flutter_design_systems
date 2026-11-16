@@ -1,14 +1,15 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/icon_fill.dart';
 import '../../internal/measure.dart';
+import '../../internal/menu_lead.dart';
 import '../../internal/menu_surface.dart';
 import '../../internal/well.dart';
 import '../../localizations.dart';
@@ -16,6 +17,11 @@ import '../../styled.dart';
 import '../../theme.dart';
 import '../menu/menu.dart';
 import '../pressable/pressable.dart';
+
+/// Fluent's medium CompoundButton's room (14 12 16 12): deeper under the
+/// words than over them, so the title and its secondary line sit on the
+/// 40 glyph's middle; off the 4-pt grid on purpose.
+const EdgeInsets _compoundInsets = EdgeInsets.fromLTRB(12, 14, 12, 16);
 
 /// Which side of the words a part's glyph stands on, Fluent's
 /// `iconPosition`: [before] (the default) or [after] (a "Next" that points
@@ -79,7 +85,7 @@ enum Fluent2ButtonShape {
 /// The faces a button wears in each state: Fluent's button styles, read
 /// from `useButtonStyles` per appearance. Plumbing of the buttons.
 @immutable
-final class Fluent2ButtonFace {
+final class Fluent2ButtonFace with Diagnosticable {
   /// A face of [fill], [stroke], [ink] and [glyph].
   const Fluent2ButtonFace({
     required this.fill,
@@ -219,11 +225,11 @@ final class Fluent2ButtonFace {
       case Fluent2ButtonAppearance.subtle:
         return Fluent2ButtonFace(
           fill: checked
-              ? c.subtleBackgroundSelected
+              ? fluent2Step(t, c.subtleBackgroundSelected)
               : press.pick(
                   c.subtleBackground,
-                  c.subtleBackgroundHover,
-                  c.subtleBackgroundPressed,
+                  fluent2Step(t, c.subtleBackgroundHover),
+                  fluent2Step(t, c.subtleBackgroundPressed),
                 ),
           stroke: c.transparentStroke,
           ink: checked
@@ -256,6 +262,16 @@ final class Fluent2ButtonFace {
           glyph: ink,
         );
     }
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('fill', fill))
+      ..add(ColorProperty('stroke', stroke))
+      ..add(ColorProperty('ink', ink))
+      ..add(ColorProperty('glyph', glyph));
   }
 }
 
@@ -410,6 +426,31 @@ class Fluent2ButtonBox extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<Fluent2ButtonFace>('face', face))
+      ..add(DiagnosticsProperty<BorderRadiusGeometry>('radius', radius))
+      ..add(DoubleProperty('height', height))
+      ..add(DoubleProperty('minWidth', minWidth, defaultValue: 0))
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<BoxBorder>('border', border, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<BorderSide>('side', side, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      );
   }
 }
 
@@ -626,8 +667,8 @@ class _OwnWidth extends Align {
       );
 }
 
-/// The button's hit slop reaches past its face (the 44 or 48 target), so a
-/// hit is offered to it even outside this box.
+/// Offers a hit to the button even outside this box, where a tap target
+/// round it reaches past its face.
 class _RenderOwnWidth extends RenderPositionedBox {
   _RenderOwnWidth({
     super.alignment,
@@ -682,10 +723,12 @@ class Fluent2Button extends StatelessWidget {
   /// The words on its face.
   final String label;
 
+  /// {@template fluent2.onPressed}
   /// Called when it is pressed; null puts it out of use.
+  /// {@endtemplate}
   final VoidCallback? onPressed;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2ButtonAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
@@ -710,10 +753,10 @@ class Fluent2Button extends StatelessWidget {
   /// This button's own look, slot by slot, over its theme's.
   final Fluent2Style? style;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -729,7 +772,8 @@ class Fluent2Button extends StatelessWidget {
     final m = look.metrics;
     return fluent2OwnWidth(
       context,
-      Fluent2HitSlop(
+      DesignTapTarget(
+        minSize: Fluent2Layout.tapFloorOf(context),
         child: Fluent2Pressable(
           focusNode: focusNode,
           autofocus: autofocus,
@@ -787,6 +831,52 @@ class Fluent2Button extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(
+        EnumProperty<Fluent2ButtonAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2ButtonAppearance.secondary,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ButtonSize>(
+          'size',
+          size,
+          defaultValue: Fluent2ButtonSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ButtonShape>('shape', shape, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2IconPosition>(
+          'iconPosition',
+          iconPosition,
+          defaultValue: Fluent2IconPosition.before,
+        ),
+      )
+      ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// Fluent 2's icon-only Button: one glyph in a square of the size's height
@@ -825,10 +915,10 @@ class Fluent2IconButton extends StatelessWidget {
   /// What a screen reader says.
   final String label;
 
-  /// Called when it is pressed; null puts it out of use.
+  /// {@macro fluent2.onPressed}
   final VoidCallback? onPressed;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2ButtonAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
@@ -853,10 +943,10 @@ class Fluent2IconButton extends StatelessWidget {
   /// What rides the button's top end corner (a counter badge).
   final Widget? badge;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -873,7 +963,8 @@ class Fluent2IconButton extends StatelessWidget {
     final on = selected ?? false;
     return fluent2OwnWidth(
       context,
-      Fluent2HitSlop(
+      DesignTapTarget(
+        minSize: Fluent2Layout.tapFloorOf(context),
         child: Fluent2Pressable(
           focusNode: focusNode,
           autofocus: autofocus,
@@ -927,6 +1018,46 @@ class Fluent2IconButton extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(
+        EnumProperty<Fluent2ButtonAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2ButtonAppearance.subtle,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ButtonSize>(
+          'size',
+          size,
+          defaultValue: Fluent2ButtonSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ButtonShape>('shape', shape, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('filled', filled, defaultValue: null))
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// Fluent 2's ToggleButton: a [Fluent2Button] that stays pressed while
@@ -960,11 +1091,13 @@ class Fluent2ToggleButton extends StatelessWidget {
   /// Whether it is on (drawn in the brand fill).
   final bool value;
 
+  /// {@template fluent2.onChanged}
   /// Called with the new value when the user changes it; null puts it out of
   /// use.
+  /// {@endtemplate}
   final ValueChanged<bool>? onChanged;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2ButtonAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
@@ -984,10 +1117,10 @@ class Fluent2ToggleButton extends StatelessWidget {
   /// [WidgetState.selected] while [value].
   final Fluent2Style? style;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -1004,7 +1137,8 @@ class Fluent2ToggleButton extends StatelessWidget {
     final change = onChanged;
     return fluent2OwnWidth(
       context,
-      Fluent2HitSlop(
+      DesignTapTarget(
+        minSize: Fluent2Layout.tapFloorOf(context),
         child: Fluent2Pressable(
           focusNode: focusNode,
           autofocus: autofocus,
@@ -1057,6 +1191,51 @@ class Fluent2ToggleButton extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<bool>?>.has('onChanged', onChanged))
+      ..add(
+        EnumProperty<Fluent2ButtonAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2ButtonAppearance.secondary,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ButtonSize>(
+          'size',
+          size,
+          defaultValue: Fluent2ButtonSize.medium,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ButtonShape>('shape', shape, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'checkedIcon',
+          checkedIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// Fluent 2's CompoundButton: a 40 glyph before two lines, the [label] in
@@ -1089,13 +1268,13 @@ class Fluent2CompoundButton extends StatelessWidget {
   /// The quieter line under [label].
   final String secondary;
 
-  /// Called when it is pressed; null puts it out of use.
+  /// {@macro fluent2.onPressed}
   final VoidCallback? onPressed;
 
   /// The glyph before the words; null shows none.
   final IconData? icon;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2ButtonAppearance appearance;
 
   /// Whether it fills its row's width.
@@ -1104,10 +1283,10 @@ class Fluent2CompoundButton extends StatelessWidget {
   /// This button's own look, slot by slot, over its theme's.
   final Fluent2Style? style;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -1123,7 +1302,7 @@ class Fluent2CompoundButton extends StatelessWidget {
     // Fluent's medium CompoundButton: 14 12 16 12 inside its 1 stroke, a 40
     // glyph 12 before the words.
     final room =
-        t.density.padding(const EdgeInsets.fromLTRB(12, 14, 12, 16)) +
+        t.density.padding(_compoundInsets) +
         const EdgeInsets.all(Fluent2Stroke.thin);
     return fluent2OwnWidth(
       context,
@@ -1190,6 +1369,35 @@ class Fluent2CompoundButton extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('secondary', secondary))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2ButtonAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2ButtonAppearance.secondary,
+        ),
+      )
+      ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// Fluent 2's MenuButton: a [Fluent2Button] whose words end in the down
@@ -1215,10 +1423,10 @@ class Fluent2MenuButton extends StatelessWidget {
   /// The words on its face.
   final String label;
 
-  /// Called when it is pressed; null puts it out of use.
+  /// {@macro fluent2.onPressed}
   final VoidCallback? onPressed;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2ButtonAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
@@ -1230,10 +1438,10 @@ class Fluent2MenuButton extends StatelessWidget {
   /// This button's own look, slot by slot, over its appearance's theme.
   final Fluent2Style? style;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
@@ -1248,7 +1456,8 @@ class Fluent2MenuButton extends StatelessWidget {
     final m = look.metrics;
     return fluent2OwnWidth(
       context,
-      Fluent2HitSlop(
+      DesignTapTarget(
+        minSize: Fluent2Layout.tapFloorOf(context),
         child: Fluent2Pressable(
           focusNode: focusNode,
           autofocus: autofocus,
@@ -1305,6 +1514,40 @@ class Fluent2MenuButton extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(
+        EnumProperty<Fluent2ButtonAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2ButtonAppearance.secondary,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ButtonSize>(
+          'size',
+          size,
+          defaultValue: Fluent2ButtonSize.medium,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// One of a [Fluent2SplitButton]'s other choices: its [label] (and [icon])
@@ -1334,7 +1577,9 @@ class Fluent2SplitAction {
 /// ([actions]) under its end. Two tap targets, two buttons to a screen
 /// reader ("[label]", "More options for [label]", which says whether its
 /// menu is open); Down on either half opens the menu, the arrows walk it,
-/// Escape closes it and gives focus back. The behaviour is the design kit's
+/// Escape closes it and gives focus back. One row of the open menu is
+/// current: opened by a key, its first in the focus ring; by a pointer,
+/// none until the pointer or a key moves. The behaviour is the design kit's
 /// DesignSplitButton; Fluent 2 paints both halves and the menu.
 ///
 /// ```dart
@@ -1367,7 +1612,7 @@ class Fluent2SplitButton extends StatelessWidget {
   /// [Fluent2Localizations.moreOptionsFor] the label.
   final String? menuLabel;
 
-  /// Fluent's `appearance`: which of its faces it wears.
+  /// {@macro fluent2.appearance}
   final Fluent2ButtonAppearance appearance;
 
   /// Fluent's `size`: how large it is drawn.
@@ -1383,6 +1628,9 @@ class Fluent2SplitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Its menu opens a frame after the key or click that opens it: which
+    // hand moved last says whether its first row lights.
+    fluent2WatchInput();
     final t = context.fluent2Theme;
     final look = Fluent2ButtonLook(
       t,
@@ -1521,49 +1769,69 @@ class Fluent2SplitButton extends StatelessWidget {
 
     return fluent2OwnWidth(
       context,
-      Fluent2HitSlop(
-        child: DesignSplitButton(
-          label: label,
-          onPressed: onPressed,
-          menuLabel: menuLabel ?? words.moreOptionsFor(label),
-          minimumSize: Size(0, least),
-          actions: [
-            for (final a in actions)
-              DesignSplitAction(
-                label: a.label,
-                onPressed: a.onPressed,
-                data: a,
-              ),
+      DesignSplitButton(
+        label: label,
+        onPressed: onPressed,
+        menuLabel: menuLabel ?? words.moreOptionsFor(label),
+        minimumSize: Size(0, least),
+        actions: [
+          for (final a in actions)
+            DesignSplitAction(label: a.label, onPressed: a.onPressed, data: a),
+        ],
+        buttonBuilder: (context, part, states, open) =>
+            part == DesignSplitPart.main ? main(states) : toggle(states, open),
+        layoutBuilder: (context, main, toggle) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            main,
+            SizedBox(
+              width: Fluent2Stroke.thin,
+              height: h,
+              child: ColoredBox(color: divider),
+            ),
+            toggle,
           ],
-          buttonBuilder: (context, part, states, open) =>
-              part == DesignSplitPart.main
-              ? main(states)
-              : toggle(states, open),
-          layoutBuilder: (context, main, toggle) => Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              main,
-              SizedBox(
-                width: Fluent2Stroke.thin,
-                height: h,
-                child: ColoredBox(color: divider),
-              ),
-              toggle,
-            ],
-          ),
-          itemBuilder: (context, action, states) => Fluent2MenuRowFace(
-            label: action.label,
-            icon: (action.data as Fluent2SplitAction?)?.icon,
-            states: {
-              ...states,
-              if (action.onPressed == null) WidgetState.disabled,
-            },
-            ring: true,
-          ),
-          surfaceBuilder: (context, info, items) =>
-              Fluent2MenuSurface(info: info, items: items),
         ),
+        itemBuilder: (context, action, states) => Fluent2MenuRowFace(
+          label: action.label,
+          icon: (action.data as Fluent2SplitAction?)?.icon,
+          states: {
+            ...states,
+            if (action.onPressed == null) WidgetState.disabled,
+          },
+          ring: true,
+        ),
+        surfaceBuilder: (context, info, items) =>
+            Fluent2MenuSurface(info: info, items: items),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onPressed', onPressed))
+      ..add(IterableProperty<Fluent2SplitAction>('actions', actions))
+      ..add(StringProperty('menuLabel', menuLabel, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2ButtonAppearance>(
+          'appearance',
+          appearance,
+          defaultValue: Fluent2ButtonAppearance.secondary,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2ButtonSize>(
+          'size',
+          size,
+          defaultValue: Fluent2ButtonSize.medium,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Fluent2Style>('style', style, defaultValue: null),
+      );
   }
 }

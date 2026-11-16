@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
@@ -33,6 +34,12 @@ class Fluent2LoadingState extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('message', message, defaultValue: null));
+  }
 }
 
 /// The parts of a state, centred: the glyph (48, filled) on its tint's
@@ -161,6 +168,16 @@ class Fluent2ErrorState extends StatelessWidget {
             ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onRetry', onRetry))
+      ..add(StringProperty('retryLabel', retryLabel, defaultValue: null));
+  }
 }
 
 /// How a [Fluent2StatusView] stands.
@@ -262,6 +279,17 @@ class Fluent2StatusView extends StatelessWidget {
         );
     }
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<Fluent2StatusKind>('kind', kind))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onAction', onAction));
+  }
 }
 
 /// What a page shows when it has nothing to show yet: the glyph of what it
@@ -327,6 +355,33 @@ class Fluent2EmptyState extends StatelessWidget {
               onPressed: onAction,
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('body', body, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'icon',
+          icon,
+          defaultValue: Fluent2Icons.documentText,
+        ),
+      )
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'actionIcon',
+          actionIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback?>.has('onAction', onAction))
+      ..add(
+        DiagnosticsProperty<Key>('actionKey', actionKey, defaultValue: null),
+      );
   }
 }
 

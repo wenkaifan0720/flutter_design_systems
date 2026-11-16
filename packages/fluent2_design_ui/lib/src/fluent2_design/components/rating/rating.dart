@@ -1,9 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/key_focus.dart';
 import '../../internal/well.dart';
 import '../../theme.dart';
@@ -170,7 +171,8 @@ class Fluent2Rating extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     super.key,
-  });
+  }) : assert(max > 0, 'a rating out of at least one star'),
+       assert(value >= 0 && value <= max, 'a rating between none and max');
 
   /// The score, 0 (none chosen) to [max].
   final double value;
@@ -193,14 +195,49 @@ class Fluent2Rating extends StatefulWidget {
   /// Fluent's `size`: how large it is drawn.
   final Fluent2RatingSize size;
 
-  /// The control's focus node; null makes and disposes its own.
+  /// {@macro fluent2.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the control takes focus when it first builds.
+  /// {@macro fluent2.autofocus}
   final bool autofocus;
 
   @override
   State<Fluent2Rating> createState() => _Fluent2RatingState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>?>.has('onChanged', onChanged),
+      )
+      ..add(StringProperty('label', label))
+      ..add(IntProperty('max', max, defaultValue: 5))
+      ..add(FlagProperty('allowHalf', value: allowHalf, ifTrue: 'allowHalf'))
+      ..add(
+        EnumProperty<Fluent2RatingColor>(
+          'color',
+          color,
+          defaultValue: Fluent2RatingColor.neutral,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2RatingSize>(
+          'size',
+          size,
+          defaultValue: Fluent2RatingSize.extraLarge,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _Fluent2RatingState extends State<Fluent2Rating> {
@@ -263,7 +300,11 @@ class _Fluent2RatingState extends State<Fluent2Rating> {
       onIncrease: live && value < widget.max ? () => _set(value + step) : null,
       onDecrease: live && value > step ? () => _set(value - step) : null,
       child: ExcludeSemantics(
-        child: Fluent2HitSlop(
+        child: DesignTapTarget(
+          minSize: Fluent2Layout.tapFloorOf(context),
+          // On the start keyline by its drawn face, the target growing
+          // toward the end.
+          alignment: AlignmentDirectional.centerStart,
           child: Fluent2KeyFocus(
             focusNode: widget.focusNode,
             autofocus: widget.autofocus,
@@ -332,7 +373,12 @@ class Fluent2RatingDisplay extends StatelessWidget {
     this.compact = false,
     this.showValue = true,
     super.key,
-  });
+  }) : assert(max > 0, 'a rating out of at least one star'),
+       assert(value >= 0 && value <= max, 'a rating between none and max'),
+       assert(
+         count == null || count >= 0,
+         'a count of ratings is never negative',
+       );
 
   /// The rating shown.
   final double value;
@@ -421,5 +467,36 @@ class Fluent2RatingDisplay extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(IntProperty('count', count, defaultValue: null))
+      ..add(IntProperty('max', max, defaultValue: 5))
+      ..add(
+        EnumProperty<Fluent2RatingColor>(
+          'color',
+          color,
+          defaultValue: Fluent2RatingColor.neutral,
+        ),
+      )
+      ..add(
+        EnumProperty<Fluent2RatingSize>(
+          'size',
+          size,
+          defaultValue: Fluent2RatingSize.medium,
+        ),
+      )
+      ..add(FlagProperty('compact', value: compact, ifTrue: 'compact'))
+      ..add(
+        FlagProperty(
+          'showValue',
+          value: showValue,
+          ifFalse: 'showValue: false',
+        ),
+      );
   }
 }

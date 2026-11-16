@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../icons.dart';
@@ -127,6 +128,25 @@ class Fluent2DescriptionList extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        IterableProperty<Fluent2DescriptionItem>('properties', this.properties),
+      )
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(
+        EnumProperty<Fluent2DescriptionListLayout>(
+          'layout',
+          layout,
+          defaultValue: Fluent2DescriptionListLayout.auto,
+        ),
+      )
+      ..add(FlagProperty('dividers', value: dividers, ifTrue: 'dividers'))
+      ..add(DoubleProperty('labelWidth', labelWidth, defaultValue: 128));
+  }
 }
 
 class _Pair extends StatelessWidget {
@@ -174,7 +194,7 @@ class _Pair extends StatelessWidget {
         children: [
           if (p.icon != null)
             Padding(
-              padding: const EdgeInsets.only(top: 2),
+              padding: const EdgeInsets.only(top: Fluent2Spacing.xxs),
               child: Icon(
                 p.icon,
                 size: Fluent2IconSize.i16,
@@ -184,7 +204,7 @@ class _Pair extends StatelessWidget {
           Expanded(child: shown),
           if (p.onPressed != null)
             Padding(
-              padding: const EdgeInsets.only(top: 2),
+              padding: const EdgeInsets.only(top: Fluent2Spacing.xxs),
               child: Icon(
                 Fluent2Icons.chevronRight16,
                 size: Fluent2IconSize.i16,
@@ -221,8 +241,8 @@ class _Pair extends StatelessWidget {
               ? null
               : press.pick(
                   t.colors.subtleBackground,
-                  t.colors.subtleBackgroundHover,
-                  t.colors.subtleBackgroundPressed,
+                  fluent2Step(t, t.colors.subtleBackgroundHover),
+                  fluent2Step(t, t.colors.subtleBackgroundPressed),
                 ),
           borderRadius: BorderRadius.circular(Fluent2Radius.medium),
         ),
