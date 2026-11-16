@@ -1,0 +1,850 @@
+/// Fields beyond the text field: a password with its `[show]`, a one-time
+/// code in bracketed cells, a number with its `[-]` and `[+]`, a field that
+/// suggests as you type, and one that gathers tags.
+library;
+
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
+
+import '../grid.dart';
+import '../internal/list_open.dart';
+import '../primitives/box.dart';
+import '../primitives/control.dart';
+import '../primitives/menu.dart';
+import '../primitives/spring.dart';
+import '../style.dart';
+import '../theme.dart';
+import 'button.dart';
+import 'chips.dart';
+import 'pane.dart';
+import 'text_field.dart';
+
+/// A password field: the words typed written `*`, a `[show]` at the end of
+/// the line that writes them out until pressed again, the field keeping
+/// its caret as it flips.
+///
+/// ```dart
+/// TermPasswordField(labelText: 'token', controller: token)
+/// ```
+class TermPasswordField extends StatelessWidget {
+  /// A password field.
+  const TermPasswordField({
+    super.key,
+    this.controller,
+    this.focusNode,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.errorText,
+    this.onSubmitted,
+    this.enabled = true,
+    this.autofocus = false,
+    this.style,
+  });
+
+  /// Overrides for the field, over the theme's
+  /// [TermThemeData.textFieldStyle], as a [TermTextField] reads them.
+  final TermStyle? style;
+
+  /// The text; one given is the caller's to dispose.
+  final TextEditingController? controller;
+
+  /// {@macro term.focusNode}
+  final FocusNode? focusNode;
+
+  /// What the field is.
+  final String? labelText;
+
+  /// The dim words while it is empty.
+  final String? hintText;
+
+  /// Help, under the words.
+  final String? helperText;
+
+  /// What is wrong, in place of the help.
+  final String? errorText;
+
+  /// Called on Return.
+  final ValueChanged<String>? onSubmitted;
+
+  /// Whether it takes input.
+  final bool enabled;
+
+  /// {@macro term.autofocus}
+  final bool autofocus;
+
+  @override
+  Widget build(BuildContext context) => DesignPasswordReveal(
+    focusNode: focusNode,
+    builder: (context, password) => TermTextField(
+      controller: controller,
+      focusNode: focusNode,
+      labelText: labelText,
+      hintText: hintText,
+      helperText: helperText,
+      errorText: errorText,
+      onSubmitted: onSubmitted,
+      enabled: enabled,
+      autofocus: autofocus,
+      autocorrect: false,
+      obscureText: password.obscured,
+      keyboardType: TextInputType.visiblePassword,
+      style: style,
+      autofillHints: const [AutofillHints.password],
+      suffix: Semantics(
+        label: password.toggleLabel,
+        toggled: !password.obscured,
+        excludeSemantics: true,
+        child: TermButton(
+          label: password.obscured ? 'show' : 'hide',
+          onPressed: enabled ? password.toggle : null,
+        ),
+      ),
+    ),
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('labelText', labelText, defaultValue: null))
+      ..add(StringProperty('errorText', errorText, defaultValue: null));
+  }
+}
+
+/// A one-time code: [length] cells, each in its own brackets, `[4][8][ ]`,
+/// the next one's caret a block in the accent; a dim `-` halves an even
+/// code. Paste fills it; a phone offers the code from its messages.
+///
+/// ```dart
+/// TermOtpField(onCompleted: (code) => verify(code))
+/// ```
+class TermOtpField extends StatelessWidget {
+  /// A code of [length] characters.
+  const TermOtpField({
+    super.key,
+    this.length = 6,
+    this.controller,
+    this.focusNode,
+    this.onChanged,
+    this.onCompleted,
+    this.autofocus = false,
+    this.enabled = true,
+    this.isError = false,
+    this.obscureText = false,
+    this.semanticLabel = 'one-time code',
+    this.style,
+  });
+
+  /// Overrides, over the theme's [TermThemeData.otpFieldStyle]:
+  /// `foreground` (the characters) and `edge` (the brackets).
+  final TermStyle? style;
+
+  /// How many characters.
+  final int length;
+
+  /// The code; one given is the caller's to dispose.
+  final DesignOtpController? controller;
+
+  /// {@macro term.focusNode}
+  final FocusNode? focusNode;
+
+  /// Called on every edit.
+  final ValueChanged<String>? onChanged;
+
+  /// Called when the last cell fills.
+  final ValueChanged<String>? onCompleted;
+
+  /// {@macro term.autofocus}
+  final bool autofocus;
+
+  /// Whether it takes input.
+  final bool enabled;
+
+  /// Whether the code is wrong: every bracket in the danger ink.
+  final bool isError;
+
+  /// Whether each character is written `*`.
+  final bool obscureText;
+
+  /// What a screen reader calls it.
+  final String semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = TermTheme.of(context);
+    final grid = context.termGrid;
+    final stroke = termStroke(theme, grid);
+    // The code is one line; what a tap reaches is the floor's height (two
+    // lines under a finger), the cells in its middle.
+    return TermTapTarget(
+      alignment: AlignmentDirectional.centerStart,
+      child: DesignOtpField(
+        length: length,
+        controller: controller,
+        focusNode: focusNode,
+        onChanged: onChanged,
+        onCompleted: onCompleted,
+        autofocus: autofocus,
+        enabled: enabled,
+        isError: isError,
+        obscureText: obscureText,
+        semanticLabel: semanticLabel,
+        slotBuilder: (context, slot) {
+          final focus = slot.active && slot.focused ? 1.0 : 0.0;
+          final own = TermStyleOf(
+            [style, theme.otpFieldStyle],
+            {
+              if (slot.active && slot.focused) WidgetState.focused,
+              if (!slot.enabled) WidgetState.disabled,
+              if (slot.isError) WidgetState.error,
+            },
+          );
+          final edge = !slot.enabled
+              ? theme.rule.withValues(alpha: 0.6)
+              : slot.isError
+              ? theme.danger
+              : Color.lerp(own.edge ?? theme.rule, theme.accent, focus)!;
+          final shown = slot.filled
+              ? (slot.obscured ? '*' : slot.character)
+              : '';
+          return CustomPaint(
+            painter: TermBracketPainter(
+              grid: grid,
+              color: edge,
+              stroke: stroke,
+              doubled: focus,
+            ),
+            child: SizedBox(
+              width: grid.cols(3),
+              height: grid.lineHeight,
+              child: Center(
+                child: slot.active && slot.focused && !slot.filled
+                    ? ColoredBox(
+                        color: theme.accent,
+                        child: SizedBox(
+                          width: grid.cellWidth,
+                          height: grid.fontSize * 1.25,
+                        ),
+                      )
+                    : Text(
+                        shown,
+                        style: theme.boldStyle.copyWith(
+                          color: slot.enabled
+                              ? own.foreground ?? theme.foreground
+                              : theme.rule,
+                        ),
+                      ),
+              ),
+            ),
+          );
+        },
+        layoutBuilder: (context, slots) {
+          final half = length.isEven && length >= 6 ? length ~/ 2 : -1;
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final (i, slot) in slots.indexed) ...[
+                if (i == half)
+                  SizedBox(
+                    width: grid.cols(3),
+                    height: grid.lineHeight,
+                    child: Center(
+                      child: ExcludeSemantics(
+                        child: Text('-', style: theme.dimStyle),
+                      ),
+                    ),
+                  ),
+                slot,
+              ],
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('length', length))
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'error'));
+  }
+}
+
+/// A number and the two buttons that step it: `[-]  3  [+]`, the number as
+/// wide as its widest value so nothing shifts as it counts. A screen
+/// reader hears it as a value it can raise and lower.
+///
+/// ```dart
+/// TermNumberField(
+///   semanticLabel: 'replicas',
+///   value: replicas,
+///   min: 1,
+///   max: 9,
+///   onChanged: (v) => setState(() => replicas = v),
+/// )
+/// ```
+class TermNumberField extends StatelessWidget {
+  /// A number stepped by [step] between [min] and [max].
+  const TermNumberField({
+    super.key,
+    required this.value,
+    required this.onChanged,
+    required this.semanticLabel,
+    this.min = 0,
+    this.max = 99,
+    this.step = 1,
+    this.unit,
+    this.style,
+  });
+
+  /// Overrides for the two steppers, over the theme's
+  /// [TermThemeData.iconButtonStyle], as a [TermIconButton] reads them.
+  final TermStyle? style;
+
+  /// The number.
+  final int value;
+
+  /// Called with the stepped number; null disables it.
+  final ValueChanged<int>? onChanged;
+
+  /// What the number is.
+  final String semanticLabel;
+
+  /// The least it goes to.
+  final int min;
+
+  /// The most it goes to.
+  final int max;
+
+  /// How far a press steps it.
+  final int step;
+
+  /// Dim words after the number: `GB`, `min`.
+  final String? unit;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = TermTheme.of(context);
+    final grid = context.termGrid;
+    final change = onChanged;
+    final down = change != null && value > min
+        ? () => change(math.max(min, value - step))
+        : null;
+    final up = change != null && value < max
+        ? () => change(math.min(max, value + step))
+        : null;
+    final digits = math.max('$min'.length, '$max'.length);
+    final said = unit == null ? '$value' : '$value $unit';
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TermIconButton(
+          glyph: '-',
+          semanticLabel: 'less $semanticLabel',
+          onPressed: down,
+          style: style,
+        ),
+        Semantics(
+          label: semanticLabel,
+          value: said,
+          increasedValue: up == null ? null : '${value + step}',
+          decreasedValue: down == null ? null : '${value - step}',
+          onIncrease: up,
+          onDecrease: down,
+          excludeSemantics: true,
+          child: SizedBox(
+            width: grid.cols(digits + 2),
+            child: Text(
+              '$value',
+              textAlign: TextAlign.center,
+              style: theme.boldStyle.copyWith(
+                color: change == null ? theme.rule : theme.foreground,
+              ),
+            ),
+          ),
+        ),
+        TermIconButton(
+          glyph: '+',
+          semanticLabel: 'more $semanticLabel',
+          onPressed: up,
+          style: style,
+        ),
+        if (unit != null) ...[
+          SizedBox(width: grid.cellWidth),
+          ExcludeSemantics(child: Text(unit!, style: theme.dimStyle)),
+        ],
+      ],
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('value', value))
+      ..add(IntProperty('min', min))
+      ..add(IntProperty('max', max));
+  }
+}
+
+/// A field that suggests as you type: the matches listed in a pane right
+/// under the frame, the one the arrows are on in inverse video, Return
+/// taking it.
+///
+/// ```dart
+/// TermCombobox<String>(
+///   labelText: 'branch',
+///   options: branches,
+///   onSelected: (b) => setState(() => branch = b),
+/// )
+/// ```
+class TermCombobox<T extends Object> extends StatelessWidget {
+  /// A combobox over [options].
+  const TermCombobox({
+    super.key,
+    required this.options,
+    this.displayStringForOption,
+    this.onSelected,
+    this.value,
+    this.isOptionEnabled,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.prompt,
+    this.emptyText = 'no match',
+    this.controller,
+    this.focusNode,
+    this.style,
+  });
+
+  /// Overrides for the field, over the theme's
+  /// [TermThemeData.textFieldStyle]; the list's rows read
+  /// [TermThemeData.menuStyle].
+  final TermStyle? style;
+
+  /// The options it filters.
+  final List<T> options;
+
+  /// The words for an option; null: its `toString`.
+  final String Function(T option)? displayStringForOption;
+
+  /// Called with the option taken.
+  final ValueChanged<T>? onSelected;
+
+  /// The option taken, if any.
+  final T? value;
+
+  /// Whether an option can be taken; null: every one. One that can't is
+  /// drawn dim, passed over by the arrows and taken by neither a tap nor
+  /// Return.
+  final bool Function(T option)? isOptionEnabled;
+
+  /// What the field is.
+  final String? labelText;
+
+  /// The dim words while it is empty.
+  final String? hintText;
+
+  /// Help under the words.
+  final String? helperText;
+
+  /// A glyph before the words.
+  final String? prompt;
+
+  /// What the list says when nothing matches.
+  final String emptyText;
+
+  /// The words typed; one given is the caller's to dispose.
+  final TextEditingController? controller;
+
+  /// {@macro term.focusNode}
+  final FocusNode? focusNode;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = TermTheme.of(context);
+    final grid = context.termGrid;
+    final show = displayStringForOption ?? (T option) => '$option';
+    // While its list is up, the field stands on the list's ground.
+    return TermListUp(
+      builder: (context, up, mark) =>
+          TermListOpen(open: up, child: _combobox(theme, grid, show, mark)),
+    );
+  }
+
+  Widget _combobox(
+    TermThemeData theme,
+    TermGrid grid,
+    String Function(T) show,
+    Widget Function(Widget list) mark,
+  ) => DesignCombobox<T>(
+    options: options,
+    displayStringForOption: show,
+    onSelected: onSelected,
+    value: value,
+    isOptionEnabled: isOptionEnabled,
+    // Two marks, apart: the pointer's row takes the accent, the keys' adds
+    // a block at its start; the pointer leaves the keys' row where it is.
+    highlightFollowsPointer: false,
+    controller: controller,
+    focusNode: focusNode,
+    semanticLabel: labelText,
+    optionsMaxHeight: grid.lines(8),
+    fieldBuilder: (context, field) => TermTextField(
+      controller: field.controller,
+      focusNode: field.focusNode,
+      labelText: labelText,
+      hintText: hintText,
+      helperText: helperText,
+      prompt: prompt,
+      autocorrect: false,
+      style: style,
+      // Return takes the lit option and keeps the focus: no onSubmitted,
+      // whose restarted input would take no more typing in a browser.
+      onEditingComplete: field.submit,
+    ),
+    optionBuilder: (context, option, states) =>
+        TermMenuRow(label: show(option), states: states),
+    // As wide as its field: the field's width is the list's most, and a
+    // pane left to itself takes whole cells, short of the field's edge.
+    surfaceBuilder: (context, list) => mark(
+      SizedBox(
+        width: double.infinity,
+        child: TermPane(
+          raised: true,
+          focused: true,
+          // A cell inside the frame each side, as a menu's: the keys' block
+          // stands as far from the frame's sides as from its top and bottom.
+          padding: const TermInset(),
+          child: list,
+        ),
+      ),
+    ),
+    emptyBuilder: (context) => Padding(
+      padding: EdgeInsetsDirectional.symmetric(horizontal: grid.cellWidth),
+      child: Text(emptyText, style: theme.dimStyle),
+    ),
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('options', options.length))
+      ..add(
+        ObjectFlagProperty<bool Function(T)>.has(
+          'isOptionEnabled',
+          isOptionEnabled,
+        ),
+      )
+      ..add(StringProperty('labelText', labelText, defaultValue: null));
+  }
+}
+
+/// A field that gathers tags: each value chosen a [TermTag] with its `×`
+/// on the line over the frame, the field suggesting from [options] as you
+/// type, a comma or Return making the tag, Backspace in an empty field
+/// taking the last one back.
+///
+/// ```dart
+/// TermTagInput<String>(
+///   labelText: 'regions',
+///   values: regions,
+///   options: allRegions,
+///   onChanged: (v) => setState(() => regions = v),
+/// )
+/// ```
+class TermTagInput<T extends Object> extends StatelessWidget {
+  /// A tag input over [values].
+  const TermTagInput({
+    super.key,
+    required this.values,
+    required this.onChanged,
+    this.options = const [],
+    this.displayStringForOption,
+    this.isOptionEnabled,
+    this.onCreate,
+    this.labelText,
+    this.hintText,
+    this.helperText,
+    this.maxTags,
+    this.style,
+  });
+
+  /// Overrides for the field, over the theme's
+  /// [TermThemeData.textFieldStyle]; the tags read
+  /// [TermThemeData.tagStyle], the suggestions [TermThemeData.menuStyle].
+  final TermStyle? style;
+
+  /// The tags.
+  final List<T> values;
+
+  /// Called with the new tags.
+  final ValueChanged<List<T>> onChanged;
+
+  /// What it suggests.
+  final List<T> options;
+
+  /// The words for a value; null: its `toString`.
+  final String Function(T value)? displayStringForOption;
+
+  /// Whether an option can be taken; null: every one. One that can't is
+  /// drawn dim, passed over by the arrows and taken by neither a tap nor
+  /// Return.
+  final bool Function(T option)? isOptionEnabled;
+
+  /// Makes a value from words typed that match no option; null: only
+  /// options become tags.
+  final T? Function(String text)? onCreate;
+
+  /// What the field is.
+  final String? labelText;
+
+  /// The dim words while it is empty.
+  final String? hintText;
+
+  /// Help under the words.
+  final String? helperText;
+
+  /// The most tags it takes.
+  final int? maxTags;
+
+  @override
+  Widget build(BuildContext context) {
+    final grid = context.termGrid;
+    final show = displayStringForOption ?? (T value) => '$value';
+    // While its list is up, the frame stands on the list's ground.
+    return TermListUp(
+      builder: (context, up, mark) =>
+          TermListOpen(open: up, child: _tagInput(grid, show, mark)),
+    );
+  }
+
+  Widget _tagInput(
+    TermGrid grid,
+    String Function(T) show,
+    Widget Function(Widget list) mark,
+  ) => DesignTagInput<T>(
+    values: values,
+    onChanged: onChanged,
+    options: options,
+    displayStringForOption: show,
+    isOptionEnabled: isOptionEnabled,
+    // Two marks, apart: the pointer's row takes the accent, the keys' adds
+    // a block at its start; the pointer leaves the keys' row where it is.
+    highlightFollowsPointer: false,
+    onCreate: onCreate,
+    maxTags: maxTags,
+    semanticLabel: labelText,
+    optionsMaxHeight: grid.lines(8),
+    fieldBuilder: (context, field) => TermTextField(
+      controller: field.controller,
+      focusNode: field.focusNode,
+      labelText: labelText,
+      hintText: hintText,
+      autocorrect: false,
+      style: style,
+      framed: false,
+      // Return adds a tag and keeps the focus for the next: no onSubmitted,
+      // whose restarted input would take no more typing in a browser.
+      onEditingComplete: field.submit,
+    ),
+    optionBuilder: (context, option, states) =>
+        TermMenuRow(label: show(option), states: states),
+    tagBuilder: (context, value, tag) => TermTag(
+      label: show(value),
+      focused: tag.focused,
+      onDeleted: tag.onDeleted,
+    ),
+    // On whole cells, as its frame is: the frame round the tags and the
+    // words is the field the list hangs from.
+    surfaceBuilder: (context, list) => mark(
+      TermPane(
+        raised: true,
+        focused: true,
+        // A cell inside the frame each side, as a menu's.
+        padding: const TermInset(),
+        child: list,
+      ),
+    ),
+    // One frame round the tags and the words typed after them, the label
+    // cut into its top line and the help into its bottom, as a field's;
+    // doubled while the words have the keyboard.
+    layoutBuilder: (context, tags, field) => _TagFrame(
+      label: labelText,
+      helper: helperText,
+      edge: TermStyleOf([
+        style,
+        TermTheme.of(context).textFieldStyle,
+      ], const {}).edge,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (tags.isNotEmpty)
+            Wrap(
+              spacing: grid.cellWidth,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: tags,
+            ),
+          field,
+        ],
+      ),
+    ),
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('values', values.length))
+      ..add(StringProperty('labelText', labelText, defaultValue: null));
+  }
+}
+
+/// A tag input's frame: a field's three-line frame grown round its tags and
+/// its words, the label cut into the top line and the help into the bottom
+/// (under the frame when it does not fit there), the line doubling in the
+/// accent while anything in it has the keyboard.
+class _TagFrame extends StatefulWidget {
+  const _TagFrame({
+    required this.label,
+    required this.helper,
+    required this.edge,
+    required this.child,
+  });
+
+  final String? label;
+  final String? helper;
+  final Color? edge;
+  final Widget child;
+
+  @override
+  State<_TagFrame> createState() => _TagFrameState();
+}
+
+class _TagFrameState extends State<_TagFrame> {
+  bool _focused = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = TermTheme.of(context);
+    final grid = context.termGrid;
+    final cw = grid.cellWidth;
+    final lh = grid.lineHeight;
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      onFocusChange: (focused) => setState(() => _focused = focused),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth.isFinite
+              ? grid.cols(grid.colsIn(constraints.maxWidth))
+              : grid.cols(40);
+          final room = math.max(0.0, width - cw * 4);
+          final label = widget.label == null
+              ? null
+              : grid.fit(widget.label!, room);
+          final helper = widget.helper;
+          // The help in the bottom line, where it fits there.
+          final inLine = helper != null && grid.widthOf(helper) <= room
+              ? helper
+              : null;
+          TermGap gap(String text) => (
+            start: cw * 1.5,
+            end: math.min(
+              cw * 2 + grid.widthOf(text) + cw / 2,
+              width - cw * 1.5,
+            ),
+          );
+          Widget words(String text, TextStyle style) => SizedBox(
+            height: lh,
+            child: ExcludeSemantics(
+              child: Text(
+                text,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.clip,
+                style: style,
+              ),
+            ),
+          );
+          final frame = TermSpring(
+            target: _focused ? 1 : 0,
+            token: TermMotion.move,
+            spatial: true,
+            builder: (context, t, child) => CustomPaint(
+              painter: TermFramePainter(
+                grid: grid,
+                color:
+                    widget.edge ??
+                    Color.lerp(theme.rule, theme.accent, t.clamp(0, 1))!,
+                stroke: termStroke(theme, grid),
+                doubled: t,
+                fill: TermListOpen.of(context) ? theme.surface : null,
+                topGaps: [if (label != null) gap(label)],
+                bottomGaps: [if (inLine != null) gap(inLine)],
+                textDirection: Directionality.of(context),
+              ),
+              child: child,
+            ),
+            child: SizedBox(
+              width: width,
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: cw * 2,
+                      vertical: lh,
+                    ),
+                    child: widget.child,
+                  ),
+                  if (label != null)
+                    PositionedDirectional(
+                      top: 0,
+                      start: cw * 2,
+                      end: cw * 2,
+                      child: words(label, theme.textStyle),
+                    ),
+                  if (inLine != null)
+                    PositionedDirectional(
+                      bottom: 0,
+                      start: cw * 2,
+                      end: cw * 2,
+                      child: words(inLine, theme.dimStyle),
+                    ),
+                ],
+              ),
+            ),
+          );
+          return Align(
+            alignment: AlignmentDirectional.topStart,
+            heightFactor: 1,
+            child: helper == null || inLine != null
+                ? frame
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      frame,
+                      Padding(
+                        padding: EdgeInsetsDirectional.symmetric(
+                          horizontal: cw * 2,
+                        ),
+                        child: Text(helper, style: theme.dimStyle),
+                      ),
+                    ],
+                  ),
+          );
+        },
+      ),
+    );
+  }
+}

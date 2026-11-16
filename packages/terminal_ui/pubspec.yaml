@@ -1,0 +1,58 @@
+name: terminal_ui
+description: >-
+  Terminal widgets for Flutter: an app drawn on a character grid, with box-drawn panes, bracketed buttons, inverse selection and keys beside every action.
+version: 0.1.0
+homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/terminal_ui
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/terminal_ui
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+screenshots:
+  - description: "Home at a desk, night preset: what runs now, what needs a look, recent runs and the projects, each a pane."
+    path: screenshots/home-1440-night.png
+  - description: "The runs, the failing run and its log tiled at a desk, paper preset; [ and ] move between the panes."
+    path: screenshots/runs-1440-paper.png
+  - description: "The command palette over the runs, night preset: type a few letters, then return."
+    path: screenshots/palette-1440-night.png
+  - description: "A run's change as a side-by-side diff, paper preset."
+    path: screenshots/diff-1440-paper.png
+  - description: "One failing run on a phone, night preset: its summary, its steps and the buttons in brackets."
+    path: screenshots/run-390-night.png
+  - description: "A new deploy on a phone, paper preset: fields framed in lines, choices and switches on the grid."
+    path: screenshots/deploy-390-paper.png
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.2.0
+  material_ui: ^1.9.0
+
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  leak_tracker_flutter_testing: any
+
+flutter:
+  fonts:
+    - family: JetBrainsMono
+      fonts:
+        - asset: assets/fonts/JetBrainsMonoNL-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/JetBrainsMonoNL-Bold.ttf
+          weight: 700
+    - family: LiberationMono
+      fonts:
+        - asset: assets/fonts/LiberationMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/LiberationMono-Bold.ttf
+          weight: 700
