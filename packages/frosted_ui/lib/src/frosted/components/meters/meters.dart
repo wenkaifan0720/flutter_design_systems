@@ -7,6 +7,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
@@ -276,6 +277,22 @@ class FrostedSegmentLabel extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('amount', amount))
+      ..add(
+        EnumProperty<FrostedSegmentAlign>(
+          'align',
+          align,
+          defaultValue: FrostedSegmentAlign.start,
+        ),
+      )
+      ..add(ColorProperty('ink', ink, defaultValue: null));
+  }
 }
 
 /// The pace tick across a track or a tube (`.pace`, `.tube-tick`): a 1.5
@@ -311,6 +328,12 @@ class FrostedPaceTick extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('height', height, defaultValue: null));
   }
 }
 
@@ -381,6 +404,14 @@ class FrostedScale extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('paceAt', paceAt, defaultValue: null))
+      ..add(StringProperty('paceLabel', paceLabel, defaultValue: null));
   }
 }
 
@@ -700,6 +731,30 @@ class FrostedTrack extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedBand>('bands', bands))
+      ..add(
+        EnumProperty<FrostedTrackSize>(
+          'size',
+          size,
+          defaultValue: FrostedTrackSize.large,
+        ),
+      )
+      ..add(DoubleProperty('pace', pace, defaultValue: null))
+      ..add(StringProperty('paceLabel', paceLabel, defaultValue: null))
+      ..add(
+        DoubleProperty(
+          'scaleGap',
+          scaleGap,
+          defaultValue: FrostedChromeMetrics.frostedScaleGap,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// One band's box: its fill by its style, its corners at the track's ends,
@@ -987,6 +1042,18 @@ class FrostedLegendEntry extends StatelessWidget {
     }
     return Semantics(label: _words, excludeSemantics: true, child: entry);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(DiagnosticsProperty<num>('amount', amount, defaultValue: null))
+      ..add(IntProperty('share', share, defaultValue: null))
+      ..add(FlagProperty('part', value: part, ifTrue: 'part'))
+      ..add(FlagProperty('current', value: current, ifTrue: 'current'));
+  }
 }
 
 /// The legend under a [FrostedTrack] (`.legend`, `.parts`): what each band
@@ -1108,6 +1175,20 @@ class FrostedLegend extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedLegendEntry>('children', children))
+      ..add(
+        EnumProperty<FrostedLegendVariant>(
+          'variant',
+          variant,
+          defaultValue: FrostedLegendVariant.columns,
+        ),
+      );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1159,7 +1240,7 @@ class FrostedBar extends StatelessWidget {
     this.dimmed = false,
     this.label,
     super.key,
-  });
+  }) : assert(fraction >= 0, 'A bar\'s fill is not negative.');
 
   /// The share filled, 0 to 1.
   final double fraction;
@@ -1190,7 +1271,7 @@ class FrostedBar extends StatelessWidget {
     final t = context.frostedTheme;
     final f = fraction.clamp(0.0, 1.0);
     final height = variant._height;
-    final reach =
+    const reach =
         (FrostedChromeMetrics.tubeTickHeight - FrostedChromeMetrics.tubeLarge) /
         2;
     final full = BorderRadius.circular(FrostedCorners.rFull);
@@ -1291,6 +1372,26 @@ class FrostedBar extends StatelessWidget {
       child: bar,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('fraction', fraction))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(
+        EnumProperty<FrostedBarVariant>(
+          'variant',
+          variant,
+          defaultValue: FrostedBarVariant.tube,
+        ),
+      )
+      ..add(DoubleProperty('tick', tick, defaultValue: null))
+      ..add(StringProperty('scaleStart', scaleStart, defaultValue: null))
+      ..add(StringProperty('scaleEnd', scaleEnd, defaultValue: null))
+      ..add(FlagProperty('dimmed', value: dimmed, ifTrue: 'dimmed'))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// How tall a [FrostedMeter] stands.
@@ -1318,7 +1419,7 @@ class FrostedMeter extends StatelessWidget {
     this.size = FrostedMeterSize.regular,
     this.label,
     super.key,
-  });
+  }) : assert(fraction >= 0, 'A meter\'s fill is not negative.');
 
   /// The share filled, 0 to 1: spent over budget, or over its budget the
   /// budget over what was spent.
@@ -1410,6 +1511,23 @@ class FrostedMeter extends StatelessWidget {
       excludeSemantics: true,
       child: meter,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('fraction', fraction))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(FlagProperty('over', value: over, ifTrue: 'over'))
+      ..add(
+        EnumProperty<FrostedMeterSize>(
+          'size',
+          size,
+          defaultValue: FrostedMeterSize.regular,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -1582,6 +1700,26 @@ class FrostedBudgetBar extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<num>('spent', spent))
+      ..add(DiagnosticsProperty<num>('budget', budget))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(
+        EnumProperty<FrostedBudgetBarSize>(
+          'size',
+          size,
+          defaultValue: FrostedBudgetBarSize.regular,
+        ),
+      )
+      ..add(ColorProperty('ink', ink, defaultValue: null))
+      ..add(StringProperty('scaleStart', scaleStart, defaultValue: null))
+      ..add(StringProperty('scaleEnd', scaleEnd, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1652,6 +1790,17 @@ class FrostedCompareRow extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(DoubleProperty('fraction', fraction))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(DoubleProperty('tick', tick, defaultValue: null));
+  }
 }
 
 /// A month against the month before (`.cmp`): each a [FrostedCompareRow] on
@@ -1673,6 +1822,12 @@ class FrostedCompareBars extends StatelessWidget {
     spacing: _compareGap,
     children: children,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<FrostedCompareRow>('children', children));
+  }
 }
 
 /// One merchant of a [FrostedMerchantBars] (`.merch`): its monogram, name
@@ -1714,10 +1869,10 @@ class FrostedMerchant extends StatelessWidget {
   /// Opens the merchant's transactions; null makes the row inert.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   @override
@@ -1823,6 +1978,26 @@ class FrostedMerchant extends StatelessWidget {
       child: body,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('subtitle', subtitle))
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(DoubleProperty('fraction', fraction))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// A category's merchants as bars (`.merchants`): each a [FrostedMerchant]
@@ -1873,6 +2048,12 @@ class FrostedMerchantBars extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<FrostedMerchant>('children', children));
   }
 }
 
@@ -2041,6 +2222,28 @@ class FrostedInOut extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<num>('moneyIn', moneyIn))
+      ..add(DiagnosticsProperty<num>('spent', spent))
+      ..add(IterableProperty<FrostedBand>('bands', bands))
+      ..add(StringProperty('inCaption', inCaption, defaultValue: null))
+      ..add(StringProperty('outCaption', outCaption, defaultValue: null))
+      ..add(FlagProperty('outSigned', value: outSigned, ifTrue: 'outSigned'))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('keptWord', keptWord, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DoubleProperty(
+          'scaleGap',
+          scaleGap,
+          defaultValue: FrostedChromeMetrics.flowScaleGap,
+        ),
+      );
+  }
 }
 
 /// One share of a [FrostedSplitBar]: whose and how much.
@@ -2106,6 +2309,15 @@ class FrostedSplitBar extends StatelessWidget {
         ),
     ],
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(IterableProperty<FrostedShare>('shares', shares))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -2332,6 +2544,19 @@ class FrostedStatementTimeline extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('paid', paid))
+      ..add(DiagnosticsProperty<DateTime>('closed', closed))
+      ..add(DiagnosticsProperty<DateTime>('due', due))
+      ..add(DiagnosticsProperty<num>('paidAmount', paidAmount))
+      ..add(DiagnosticsProperty<num>('closedAmount', closedAmount))
+      ..add(StringProperty('dueLabel', dueLabel, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// A merchant's visits across a month (`.strip`): a rule with a tick for
@@ -2543,6 +2768,20 @@ class FrostedVisitStrip extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('month', month))
+      ..add(IterableProperty<DateTime>('visits', visits))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(
+        DiagnosticsProperty<DateTime>('current', current, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<DateTime>('now', now, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// The month between two due days on a pane's floor (`.due-line`): a rule
@@ -2646,6 +2885,16 @@ class FrostedDueLine extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(StringProperty('start', start))
+      ..add(StringProperty('end', end))
+      ..add(ColorProperty('ink', ink, defaultValue: null));
   }
 }
 
@@ -2773,6 +3022,17 @@ class FrostedBalanceChange extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(DiagnosticsProperty<num>('before', before))
+      ..add(DiagnosticsProperty<num>('after', after));
+  }
 }
 
 /// The accounts a move touches, each a [FrostedBalanceChange], a hairline
@@ -2817,6 +3077,14 @@ class FrostedBalanceChanges extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      IterableProperty<FrostedBalanceChange>('children', children),
     );
   }
 }
@@ -2929,6 +3197,26 @@ class FrostedRoute extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('fromName', fromName))
+      ..add(DiagnosticsProperty<IconData>('fromIcon', fromIcon))
+      ..add(DiagnosticsProperty<FrostedHue>('fromHue', fromHue))
+      ..add(StringProperty('toName', toName))
+      ..add(DiagnosticsProperty<IconData>('toIcon', toIcon))
+      ..add(DiagnosticsProperty<FrostedHue>('toHue', toHue))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'glyph',
+          glyph,
+          defaultValue: FrostedGlyphs.arrowRight,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// The mark at the head of a finished flow's page (`.done-art`): four rings
@@ -2963,7 +3251,7 @@ class FrostedDoneMark extends StatelessWidget {
         FrostedChromeMetrics.doneArtPullBottom;
     // The art stands 200 tall but takes 16 less in the column: its top 12
     // above the box and its foot 4 below.
-    final alignY =
+    const alignY =
         (-FrostedChromeMetrics.doneArtPullTop * 2) / (art - pull - art) - 1;
     return Semantics(
       label: label,
@@ -2972,7 +3260,7 @@ class FrostedDoneMark extends StatelessWidget {
       child: SizedBox(
         height: art - pull,
         child: OverflowBox(
-          alignment: Alignment(0, alignY),
+          alignment: const Alignment(0, alignY),
           minHeight: art,
           maxHeight: art,
           minWidth: art,
@@ -3017,6 +3305,20 @@ class FrostedDoneMark extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'glyph',
+          glyph,
+          defaultValue: FrostedGlyphs.check,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// The done mark's rings (`.done-rings`): the SVG's glow and its four
@@ -3038,9 +3340,9 @@ class _DoneRings extends CustomPainter {
         ).createShader(Rect.fromCircle(center: centre, radius: half)),
     );
     final shader =
-        LinearGradient(
+        const LinearGradient(
           colors: _doneRingStops,
-          stops: const [0, 0.5, 1],
+          stops: [0, 0.5, 1],
         ).createShader(
           Rect.fromLTWH(20 * scale, 20 * scale, 200 * scale, 200 * scale),
         );

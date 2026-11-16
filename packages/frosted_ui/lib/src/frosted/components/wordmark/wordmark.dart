@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../glyphs.dart';
@@ -104,6 +105,27 @@ class FrostedWordmark extends StatelessWidget {
     };
     return Semantics(label: name, excludeSemantics: true, child: mark);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(
+        EnumProperty<FrostedWordmarkForm>(
+          'form',
+          form,
+          defaultValue: FrostedWordmarkForm.mark,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'glyph',
+          glyph,
+          defaultValue: FrostedGlyphs.triangle,
+        ),
+      );
+  }
 }
 
 /// The ink mark (`.mark`): a tile 28 across with its corners at 9 on the
@@ -154,5 +176,25 @@ class FrostedMark extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'glyph',
+          glyph,
+          defaultValue: FrostedGlyphs.triangle,
+        ),
+      )
+      ..add(
+        DoubleProperty(
+          'size',
+          size,
+          defaultValue: FrostedChromeMetrics.inkMark,
+        ),
+      );
   }
 }

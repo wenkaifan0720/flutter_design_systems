@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -45,6 +46,10 @@ class FrostedSlider extends StatelessWidget {
        assert(
          divisions == null || divisions > 0,
          'A stepped slider has steps.',
+       ),
+       assert(
+         value >= min && value <= max,
+         'A slider\'s value lies between its min and max.',
        );
 
   /// Where the knob stands, from [min] to [max].
@@ -53,10 +58,10 @@ class FrostedSlider extends StatelessWidget {
   /// What the slider reports as it moves; null makes it inert.
   final ValueChanged<double>? onChanged;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// The value as a drag, press or key step begins.
@@ -316,5 +321,48 @@ class FrostedSlider extends StatelessWidget {
       excludeSemantics: true,
       child: slider,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has(
+          'onChangeStart',
+          onChangeStart,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has(
+          'semanticFormatterCallback',
+          semanticFormatterCallback,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
   }
 }

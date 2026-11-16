@@ -11,6 +11,7 @@ import '../kit.dart';
 
 Widget kitSwipeDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Swipe actions',
   sections: [
     kitSection(

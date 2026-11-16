@@ -12,28 +12,29 @@ import '../kit.dart';
 
 Widget kitStatesDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
-  title: 'States & toast',
+  measured: true,
+  title: kitSay('States & toast'),
   sections: [
     kitSection(
-      'Toast, raised',
+      kitSay('Toast, raised'),
       children: [
         Builder(
           builder: (context) => kitRow([
             FrostedButton.glass(
-              'Move to Groceries',
+              kitSay('Move to Groceries'),
               onPressed: () => FrostedToast.show(
                 context,
-                'Moved to Groceries',
-                actionLabel: 'Undo',
+                kitSay('Moved to Groceries'),
+                actionLabel: kitSay('Undo'),
                 onAction: () {},
               ),
             ),
             FrostedButton.glass(
-              'Copy card number',
+              kitSay('Copy card number'),
               icon: LucideIcons.copy,
               onPressed: () => FrostedToast.show(
                 context,
-                'Card number copied',
+                kitSay('Card number copied'),
                 icon: LucideIcons.copy,
               ),
             ),
@@ -42,7 +43,7 @@ Widget kitStatesDemo(Brightness brightness) => kitScreen(
       ],
     ),
     kitSection(
-      'Toast, in place',
+      kitSay('Toast, in place'),
       children: [
         kitSpecimenToastMoved(),
         kitSpecimenToastCopied(),
@@ -59,38 +60,41 @@ Widget kitStatesDemo(Brightness brightness) => kitScreen(
 // One builder per specimen in metadata.yaml. The stage (kitSpecimenStage)
 // styles them; a builder never names a style.
 
-Widget kitSpecimenToastMoved() =>
-    FrostedSnackBar('Moved to Groceries', actionLabel: 'Undo', onAction: () {});
+Widget kitSpecimenToastMoved() => FrostedSnackBar(
+  kitSay('Moved to Groceries'),
+  actionLabel: kitSay('Undo'),
+  onAction: () {},
+);
 
 Widget kitSpecimenToastCopied() =>
-    const FrostedSnackBar('Card number copied', icon: LucideIcons.copy);
+    FrostedSnackBar(kitSay('Card number copied'), icon: LucideIcons.copy);
 
 Widget kitSpecimenToastSent() =>
-    const FrostedSnackBar('Request sent to Jonah', icon: LucideIcons.send);
+    FrostedSnackBar(kitSay('Request sent to Jonah'), icon: FrostedGlyphs.send);
 
 Widget kitSpecimenLoadingState() =>
-    const FrostedLoadingState(message: 'Loading your accounts');
+    FrostedLoadingState(message: kitSay('Loading your accounts'));
 
 Widget kitSpecimenErrorState() => FrostedErrorState(
-  title: "Couldn't load your accounts",
-  message: 'Check your connection, then try again.',
+  title: kitSay("Couldn't load your accounts"),
+  message: kitSay('Check your connection, then try again.'),
   onRetry: () {},
 );
 
 /// No results, as the source's search draws it: the prism over its beam
 /// on a glass tile with the spectrum rim, and Clear filters.
 Widget kitSpecimenEmptyState() => FrostedEmptyState(
-  title: 'No results for “sushi”',
-  body:
-      'Nothing in October matches with the Money in filter on. Clear '
-      'filters to search every transaction.',
-  actionLabel: 'Clear filters',
+  title: kitSay('No results for “sushi”'),
+  body: kitSay(
+    'Nothing in October matches the Money in filter. Clear filters to search every transaction.',
+  ),
+  actionLabel: kitSay('Clear filters'),
   actionIcon: LucideIcons.x,
   onAction: () {},
 );
 
 /// A transfer sent.
-Widget kitSpecimenStatusView() => const FrostedStatusView.success(
-  title: 'Transfer sent',
-  message: r'$500.00 to Jonah Reyes arrives Thursday.',
+Widget kitSpecimenStatusView() => FrostedStatusView.success(
+  title: kitSay('Transfer sent'),
+  message: kitSay(r'$500.00 to Jonah Reyes arrives Thursday.'),
 );

@@ -379,11 +379,8 @@ void main() {
             print('CHECK rows harbor $device $look ${problems.length}');
             expect(problems, isEmpty, reason: problems.join('\n'));
           },
-          // The check reads drawn pixels (the goldens tag); on a desktop by
-          // night it misreads on macOS, skipped until 0.2.0 ("design-sweep
-          // reads": row tops).
+          // The check reads drawn pixels (the goldens tag).
           tags: const ['goldens'],
-          skip: wide && look == 'night',
         );
       }
       if (look == 'day' && wide) {
@@ -494,11 +491,8 @@ void main() {
             }
             expect(problems, isEmpty, reason: problems.join('\n'));
           },
-          // The check reads drawn pixels (the goldens tag); on a desktop it
-          // misreads on macOS, skipped until 0.2.0 ("design-sweep reads":
-          // label middles, ui_core's cap-factor read).
+          // The check reads drawn pixels (the goldens tag).
           tags: const ['goldens'],
-          skip: wide,
         );
       }
       testWidgets('keylines on a $device by $look', (tester) async {

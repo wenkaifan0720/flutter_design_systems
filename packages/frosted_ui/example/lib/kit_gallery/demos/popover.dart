@@ -10,6 +10,7 @@ import '../kit.dart';
 
 Widget kitPopoverDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Popover',
   sections: [
     kitSection(

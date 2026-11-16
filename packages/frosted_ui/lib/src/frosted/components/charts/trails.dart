@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
@@ -115,7 +116,7 @@ class FrostedTrailChart extends StatelessWidget {
   /// The values in order, the latest last; dollars.
   final List<num> values;
 
-  /// What a screen reader calls the chart.
+  /// {@macro frosted.chartLabel}
   final String label;
 
   /// The months' short names under a year's columns; none for a bare
@@ -363,6 +364,23 @@ class FrostedTrailChart extends StatelessWidget {
         );
     }
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<num>('values', values))
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<String>('months', months))
+      ..add(IntProperty('current', current))
+      ..add(DiagnosticsProperty<bool>('bare', bare))
+      ..add(IntProperty('daysInMonth', daysInMonth))
+      ..add(DiagnosticsProperty<num>('start', start))
+      ..add(IterableProperty<FrostedChartNote>('notes', notes))
+      ..add(IterableProperty<FrostedAxisMark>('marks', marks))
+      ..add(IntProperty('lines', lines))
+      ..add(DoubleProperty('height', height, defaultValue: null));
+  }
 }
 
 class _Trail {
@@ -446,7 +464,7 @@ class FrostedSpendChart extends StatelessWidget {
   /// How many days the month has.
   final int daysInMonth;
 
-  /// What a screen reader calls the chart.
+  /// {@macro frosted.chartLabel}
   final String label;
 
   /// A note beside the first day's point ("Rent").
@@ -567,6 +585,25 @@ class FrostedSpendChart extends StatelessWidget {
       gridYs: [for (final g in grid) y(g)],
       grid: [for (final g in grid.reversed) ('\$${g ~/ 1000}k', y(g))],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<num>('spent', spent))
+      ..add(DiagnosticsProperty<num>('budget', budget))
+      ..add(IntProperty('daysInMonth', daysInMonth))
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('firstNote', firstNote, defaultValue: null))
+      ..add(
+        IterableProperty<FrostedAxisMark>(
+          'marks',
+          marks,
+          defaultValue: const <FrostedAxisMark>[],
+        ),
+      )
+      ..add(DoubleProperty('height', height, defaultValue: null));
   }
 }
 
@@ -693,7 +730,7 @@ class FrostedGoalChart extends StatelessWidget {
   /// The goal's hue, for the projection.
   final FrostedHue hue;
 
-  /// What a screen reader calls the chart.
+  /// {@macro frosted.chartLabel}
   final String label;
 
   /// The words under the columns (saved months, then projected).
@@ -850,6 +887,35 @@ class FrostedGoalChart extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<num>('saved', saved))
+      ..add(
+        IterableProperty<num>(
+          'projection',
+          projection,
+          defaultValue: const <num>[],
+        ),
+      )
+      ..add(DiagnosticsProperty<num>('target', target))
+      ..add(
+        DiagnosticsProperty<DateTime>('endDate', endDate, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(StringProperty('label', label))
+      ..add(
+        IterableProperty<FrostedAxisMark>(
+          'marks',
+          marks,
+          defaultValue: const <FrostedAxisMark>[],
+        ),
+      )
+      ..add(IntProperty('lines', lines, defaultValue: 3))
+      ..add(DoubleProperty('height', height, defaultValue: null));
+  }
 }
 
 class _Goal {
@@ -1002,6 +1068,16 @@ class FrostedKey extends StatelessWidget {
       child: key,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<FrostedKeySwatch>('swatch', swatch))
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('figure', figure, defaultValue: null))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue, defaultValue: null));
+  }
 }
 
 class _SwatchPainter extends CustomPainter {
@@ -1078,5 +1154,13 @@ class FrostedChartKey extends StatelessWidget {
       crossAxisAlignment: WrapCrossAlignment.center,
       children: keys,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedKey>('keys', keys))
+      ..add(FlagProperty('inHead', value: inHead, ifTrue: 'inHead'));
   }
 }

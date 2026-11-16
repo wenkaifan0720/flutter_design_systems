@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../internal/face.dart';
@@ -49,6 +50,30 @@ class FrostedSurface extends StatelessWidget {
     clipChild: true,
     child: child,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<FrostedMaterial>('material', material))
+      ..add(
+        DiagnosticsProperty<BorderRadiusGeometry>(
+          'borderRadius',
+          borderRadius,
+          defaultValue: BorderRadius.zero,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: EdgeInsets.zero,
+        ),
+      );
+  }
 }
 
 /// Paints [backdrop] (the theme's when null) over the box it is given. It is
@@ -92,6 +117,18 @@ class FrostedBackdropView extends StatelessWidget {
     return IgnorePointer(
       child: ExcludeSemantics(
         child: RepaintBoundary(child: SizedBox.expand(child: painted)),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      DiagnosticsProperty<FrostedBackdrop>(
+        'backdrop',
+        backdrop,
+        defaultValue: null,
       ),
     );
   }

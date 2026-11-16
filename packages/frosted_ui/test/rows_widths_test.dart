@@ -21,6 +21,7 @@ import 'package:frosted_ui/frosted_ui.dart';
 import 'package:ui_core/alignment.dart';
 
 import 'gallery_support.dart';
+import 'ui_core_checks.dart';
 
 // The gallery is the example app; a test sets the theme it shows.
 // ignore_for_file: avoid_relative_lib_imports, avoid_print
@@ -36,14 +37,19 @@ const _screen = ValueKey('rows-widths');
 
 const _rows = DesignRowCheck(look: 'Frosted');
 // Frosted's lists set a check column (16, then 10) before their words, as
-// its menus do: the list's words stand that far in from the field's.
-const _widths = DesignWidthCheck(look: 'Frosted', listWordsIndent: 28);
+// its menus do: the list's words stand that far in from the field's, as
+// ui_core_checks.dart declares for ui_core's sweep.
+final _widths = DesignWidthCheck(
+  look: 'Frosted',
+  listWordsIndent: uiCoreChecks.listWordsIndent.$1,
+);
 
 // The row, width and list checks read drawn pixels, which depend on the
-// rasterizer as a golden does: they carry the goldens tag. Where they misread
-// on macOS they are skipped until 0.2.0 ("design-sweep reads").
+// rasterizer as a golden does: they carry the goldens tag. Where they still
+// misread on macOS on ui_core 0.2.0 they are skipped: the rows and widths
+// below, which ui_core's own sweep of the gallery does not report, and the
+// lists, which wait on ui_core's lists series.
 const _misreadRows = {
-  'actions': 'ui_core misread, 0.2.0 design-sweep reads: row tops',
   'controls': 'ui_core misread, 0.2.0 design-sweep reads: row tops',
   'inputs': 'ui_core misread, 0.2.0 design-sweep reads: row tops',
   'inventory': 'ui_core misread, 0.2.0 design-sweep reads: row tops',

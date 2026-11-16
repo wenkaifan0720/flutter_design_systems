@@ -10,6 +10,7 @@ import '../kit.dart';
 
 Widget kitProgressDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Progress',
   sections: [
     kitSection(

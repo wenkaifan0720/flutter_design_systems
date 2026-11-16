@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
@@ -11,10 +14,8 @@ import '../../internal/chosen_plate.dart';
 import '../../internal/dim.dart';
 import '../../internal/bleed.dart';
 
-// metric: how far past a scrolling strip's line its viewport stands: the
-// chosen plate's lift (4 down, 12 blur, -4 spread) fades out about 15 under
-// the plate, a tab's focus ring stands 4 out.
-const double _stripReach = 16;
+// How far past a scrolling strip's line its viewport stands.
+const double _stripReach = FrostedChromeMetrics.stripReach;
 
 /// In-page tabs: peer section labels as a row of pills 40 tall, the current
 /// one on the sidebar's lit pill (white at 80% under the rim and the
@@ -38,7 +39,10 @@ class FrostedTabBar extends StatelessWidget {
     this.expand = false,
     this.style,
     super.key,
-  });
+  }) : assert(
+         selectedIndex >= 0,
+         'A tab bar\'s selected index is not negative.',
+       );
 
   /// The labels, in order.
   final List<String> tabs;
@@ -137,17 +141,28 @@ class FrostedTabBar extends StatelessWidget {
         );
       }
 
-      return FrostedPressable(
-        onPressed: onChanged == null ? null : () => onChanged!(i),
-        label: tabs[i],
-        role: FrostedPressRole.tab,
-        selected: on,
-        radius: corner,
-        shape: cut,
-        builder: (context, states, _) => draw(states),
+      // The face is 40 tall; the tab stands in a row a target tall (48
+      // under a finger, 44 under a pointer), so its tap reaches the box a
+      // screen reader outlines rather than being cut at the face's 40.
+      return SizedBox(
+        height: math.max(height, FrostedBreakpoints.hitTargetOf(context)),
+        child: Center(
+          child: FrostedPressable(
+            onPressed: onChanged == null ? null : () => onChanged!(i),
+            label: tabs[i],
+            role: FrostedPressRole.tab,
+            selected: on,
+            radius: corner,
+            shape: cut,
+            builder: (context, states, _) => draw(states),
+          ),
+        ),
       );
     }
 
+    final across = FrostedBreakpoints.isWide(context)
+        ? _stripReach
+        : math.max(_stripReach, FrostedBreakpoints.gutter(context));
     final row = expand
         ? Row(
             children: [
@@ -158,11 +173,19 @@ class FrostedTabBar extends StatelessWidget {
         // and rim and a tab's focus ring reach past the line: its viewport
         // stands that far out on every side, so it clips only what scrolls
         // away, never the plate (cut flat at the strip's start and foot).
+        // On a phone the strip runs on under the page's gutters to the
+        // screen's edges, the gutter its own padding: the first tab stands
+        // on the keyline at rest, and one scrolled under a gutter is drawn,
+        // tapped and outlined there.
         : FrostedBleed(
             reach: _stripReach,
+            across: across,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.all(_stripReach),
+              padding: EdgeInsets.symmetric(
+                horizontal: across,
+                vertical: _stripReach,
+              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [for (var i = 0; i < tabs.length; i++) tab(i)],
@@ -175,5 +198,19 @@ class FrostedTabBar extends StatelessWidget {
       explicitChildNodes: true,
       child: row,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('tabs', tabs))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
   }
 }

@@ -10,36 +10,37 @@ import '../kit.dart';
 
 Widget kitDialogDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
-  title: 'Dialog',
+  measured: true,
+  title: kitSay('Dialog'),
   sections: [
     kitSection(
-      'Raised over the app',
+      kitSay('Raised over the app'),
       children: [
         Builder(
           builder: (context) => FrostedButton(
-            'Freeze card',
+            kitSay('Freeze card'),
             expand: true,
             onPressed: () => FrostedDialog.show(
               context,
-              title: 'Freeze this card?',
-              message:
-                  'Payments stop until you unfreeze it. Subscriptions '
-                  'on it will fail.',
-              confirmLabel: 'Freeze',
-              cancelLabel: 'Cancel',
+              title: kitSay('Freeze this card?'),
+              message: kitSay(
+                'Payments stop until you unfreeze it. Subscriptions on it will fail.',
+              ),
+              confirmLabel: kitSay('Freeze'),
+              cancelLabel: kitSay('Cancel'),
             ),
           ),
         ),
         Builder(
           builder: (context) => FrostedButton.glass(
-            'Delete goal',
+            kitSay('Delete goal'),
             expand: true,
             onPressed: () => FrostedDialog.show(
               context,
-              title: 'Delete Lisbon in May?',
-              message: 'Its \$2,840.00 moves back to Everyday.',
-              confirmLabel: 'Delete',
-              cancelLabel: 'Keep',
+              title: kitSay('Delete Lisbon in May?'),
+              message: kitSay('Its \$2,840.00 moves back to Everyday.'),
+              confirmLabel: kitSay('Delete'),
+              cancelLabel: kitSay('Keep'),
               destructive: true,
             ),
           ),
@@ -55,10 +56,10 @@ Widget kitDialogDemo(Brightness brightness) => kitScreen(
 /// The Freeze sheet: Cancel on the glass beside Freeze in the ink.
 Widget kitSpecimenDialogConfirm() => Center(
   child: FrostedDialog(
-    title: 'Freeze this card?',
-    message: 'Payments stop until you unfreeze it.',
-    confirmLabel: 'Freeze',
-    cancelLabel: 'Cancel',
+    title: kitSay('Freeze this card?'),
+    message: kitSay('Payments stop until you unfreeze it.'),
+    confirmLabel: kitSay('Freeze'),
+    cancelLabel: kitSay('Cancel'),
     onConfirm: () {},
     onCancel: () {},
   ),
@@ -67,10 +68,10 @@ Widget kitSpecimenDialogConfirm() => Center(
 /// A loss: Delete in the danger fill beside Keep.
 Widget kitSpecimenDialogDanger() => Center(
   child: FrostedDialog(
-    title: 'Delete Lisbon in May?',
-    message: 'Its \$2,840.00 moves back to Everyday.',
-    confirmLabel: 'Delete',
-    cancelLabel: 'Keep',
+    title: kitSay('Delete Lisbon in May?'),
+    message: kitSay('Its \$2,840.00 moves back to Everyday.'),
+    confirmLabel: kitSay('Delete'),
+    cancelLabel: kitSay('Keep'),
     destructive: true,
     onConfirm: () {},
     onCancel: () {},
@@ -80,9 +81,9 @@ Widget kitSpecimenDialogDanger() => Center(
 /// One act and nothing to decide.
 Widget kitSpecimenDialogAck() => Center(
   child: FrostedDialog(
-    title: 'Transfer sent',
-    message: '\$500.00 reaches Jonah Reyes on Thursday.',
-    confirmLabel: 'Done',
+    title: kitSay('Transfer sent'),
+    message: kitSay('\$500.00 reaches Jonah Reyes on Thursday.'),
+    confirmLabel: kitSay('Done'),
     onConfirm: () {},
   ),
 );

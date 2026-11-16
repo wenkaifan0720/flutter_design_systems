@@ -9,6 +9,7 @@ import '../kit.dart';
 
 Widget kitPickersDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Select & pickers',
   sections: [
     kitSection(

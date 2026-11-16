@@ -81,8 +81,8 @@ final List<NestedPart> nestedParts = [
     _n(
       'Button · ${glass ? 'glass' : 'ink'}',
       () => glass
-          ? FrostedButton.glass('Book', onPressed: _noop)
-          : FrostedButton('Book', onPressed: _noop),
+          ? const FrostedButton.glass('Book', onPressed: _noop)
+          : const FrostedButton('Book', onPressed: _noop),
     ),
   _n(
     'Icon button',

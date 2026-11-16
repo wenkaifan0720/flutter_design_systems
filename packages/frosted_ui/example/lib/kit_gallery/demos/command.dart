@@ -74,6 +74,7 @@ const _commands = [
 
 Widget kitCommandDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Command',
   sections: [
     kitSection(

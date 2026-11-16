@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
@@ -5,8 +8,10 @@ import '../components/pressable/pressable.dart';
 import '../glyphs.dart';
 import '../theme.dart';
 import 'face.dart';
-import 'styled.dart';
+import 'chosen_plate.dart';
 import 'dim.dart';
+import 'menu_wake.dart';
+import 'styled.dart';
 
 /// The look's floating panel, as a menu stands (`.menu`): the menu fill,
 /// its hairline ring and soft drop, corners at [FrostedCorners.medium],
@@ -71,25 +76,78 @@ class FrostedPanel extends StatelessWidget {
       child: sized,
       // Glass is never faded from above: under an Opacity its blur reads an
       // empty layer and draws a grey plate until the fade ends. It grows in
-      // frosted from its first frame instead; closed (0) it is not drawn.
+      // frosted from its first frame instead; closed (0) it is not drawn,
+      // but its rows stay in the tree, so a menu or a popover opened by a
+      // key can give its first row the focus on the frame it opens.
       builder: (context, child) {
         final v = grow.value;
-        if (v <= 0) return const SizedBox.shrink();
-        return Transform.scale(
-          scale: .96 + .04 * v.clamp(0.0, 1.2),
-          child: child,
+        return _Drawn(
+          drawn: v > 0,
+          child: Transform.scale(
+            scale: .96 + .04 * v.clamp(0.0, 1.2),
+            child: child,
+          ),
         );
       },
     );
   }
 }
 
+/// [child] laid out and kept (its focus too), but drawn, hit and read out
+/// only while [drawn].
+class _Drawn extends SingleChildRenderObjectWidget {
+  const _Drawn({required this.drawn, required super.child});
+
+  final bool drawn;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderDrawn(drawn);
+
+  @override
+  void updateRenderObject(BuildContext context, RenderObject renderObject) =>
+      (renderObject as _RenderDrawn).drawn = drawn;
+}
+
+class _RenderDrawn extends RenderProxyBox {
+  _RenderDrawn(this._drawn);
+
+  bool _drawn;
+  set drawn(bool value) {
+    if (value == _drawn) return;
+    _drawn = value;
+    markNeedsPaint();
+    markNeedsSemanticsUpdate();
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    if (_drawn) super.paint(context, offset);
+  }
+
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) =>
+      _drawn && super.hitTest(result, position: position);
+
+  @override
+  void visitChildrenForSemantics(RenderObjectVisitor visitor) {
+    if (_drawn) super.visitChildrenForSemantics(visitor);
+  }
+}
+
 /// A row of a [FrostedPanel] painted for its [states] (`.menu-i`): 40 tall,
-/// 10 in, corners 10; the check's column 16 wide when [checkable], then the
-/// [label] in the link type, then [trailing]. The keyboard's highlight
-/// (`focused`), a hover and a press lay the wash under it; the chosen row
-/// (`selected`) takes the check and the ink, semibold. A disabled row
-/// fades. Plumbing of the components.
+/// and at least a finger's target (48, on every platform, as Material's
+/// menu rows are), so the row a tap reaches is the row a screen reader
+/// outlines and no neighbour's; 10 in, corners 10; the check's column 16 wide when [checkable], then the
+/// [label] in the link type, then [trailing]. The chosen row (`selected`)
+/// stands on the chosen plate, the brighter glass every chosen chip, segment
+/// and link stands on (law 6), with the check and its words in the ink,
+/// semibold; the list's one held row (`focused`: the keys', or the
+/// pointer's where the list moves its highlight with the pointer) and a
+/// press lay the quieter wash under a row that is not chosen, so neither
+/// reads as a second choice and a resting pointer never lights a second
+/// row. With [followsPointer] a pointer moving over the row gives it the
+/// focus, for the lists whose highlight is the focus (a menu bar's or a
+/// split button's menu). A disabled row fades. Plumbing of the components.
 class FrostedPanelRow extends StatelessWidget {
   /// A row saying [label] in [states].
   const FrostedPanelRow({
@@ -99,8 +157,13 @@ class FrostedPanelRow extends StatelessWidget {
     this.trailing,
     this.checkable = true,
     this.height = FrostedChromeMetrics.menuItem,
+    this.followsPointer = false,
     super.key,
   });
+
+  /// Whether a pointer moving over the row gives it the focus (the row's
+  /// own [Focus], above it), so the list's one lit row follows the pointer.
+  final bool followsPointer;
 
   /// The row's words.
   final String label;
@@ -117,65 +180,87 @@ class FrostedPanelRow extends StatelessWidget {
   /// Whether the row keeps the check's column.
   final bool checkable;
 
-  /// The row's height.
+  /// The row's height, at least a finger's target
+  /// ([FrostedBreakpoints.touchHitTarget]).
   final double height;
 
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final chosen = states.contains(WidgetState.selected);
-    final lit =
-        states.contains(WidgetState.focused) ||
-        states.contains(WidgetState.hovered) ||
-        states.contains(WidgetState.pressed);
+    // In a menu ui_core raises, the row with the focus, once a key or the
+    // pointer moved (FrostedMenuWake: not the row it gives the focus as a
+    // pointer opens it), whatever the focus highlight mode (the web's is
+    // touch's until a key is pressed, so `focused` would wait for a key);
+    // in a list, the row ui_core holds (`focused`).
+    final awake = FrostedMenuWake.of(context);
+    final held = awake == null
+        ? states.contains(WidgetState.focused)
+        : awake && (Focus.maybeOf(context)?.hasPrimaryFocus ?? false);
+    final lit = states.contains(WidgetState.pressed) || held;
     final off = states.contains(WidgetState.disabled);
-    final row = SizedBox(
-      height: height,
-      child: FrostedFace(
-        material: FrostedMaterial.paint,
-        radius: BorderRadius.circular(FrostedChromeMetrics.menuItemRadius),
-        color: lit || chosen ? t.glass.wash : null,
-        padding: const EdgeInsets.symmetric(
-          horizontal: FrostedChromeMetrics.menuItemInset,
-        ),
-        child: Row(
-          spacing: FrostedChromeMetrics.menuItemGap,
-          children: [
-            if (checkable || leading != null)
-              SizedBox(
-                width: FrostedChromeMetrics.menuItemGlyph,
-                child: chosen && checkable
-                    ? Icon(
-                        FrostedGlyphs.check,
-                        size: FrostedChromeMetrics.menuItemGlyph,
-                        color: t.colorScheme.textPrimary,
-                      )
-                    : leading,
-              ),
-            Expanded(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: chosen
-                    ? t.textTheme.link.semibold.c(t.colorScheme.textPrimary)
-                    : t.textTheme.link.c(
-                        lit
-                            ? t.colorScheme.textPrimary
-                            : t.colorScheme.textSecondary,
-                      ),
-              ),
-            ),
-            if (trailing case final trailing?)
-              DefaultTextStyle.merge(
-                style: t.textTheme.labelMedium.c(t.colorScheme.textTertiary),
-                child: trailing,
-              ),
-          ],
-        ),
-      ),
+    final corner = BorderRadius.circular(FrostedChromeMetrics.menuItemRadius);
+    const inset = EdgeInsets.symmetric(
+      horizontal: FrostedChromeMetrics.menuItemInset,
     );
-    return FrostedDim(off: off, child: row);
+    final content = Row(
+      spacing: FrostedChromeMetrics.menuItemGap,
+      children: [
+        if (checkable || leading != null)
+          SizedBox(
+            width: FrostedChromeMetrics.menuItemGlyph,
+            child: chosen && checkable
+                ? Icon(
+                    FrostedGlyphs.check,
+                    size: FrostedChromeMetrics.menuItemGlyph,
+                    color: t.colorScheme.textPrimary,
+                  )
+                : leading,
+          ),
+        Expanded(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: chosen
+                ? t.textTheme.link.semibold.c(t.colorScheme.textPrimary)
+                : t.textTheme.link.c(
+                    lit
+                        ? t.colorScheme.textPrimary
+                        : t.colorScheme.textSecondary,
+                  ),
+          ),
+        ),
+        if (trailing case final trailing?)
+          DefaultTextStyle.merge(
+            style: t.textTheme.labelMedium.c(t.colorScheme.textTertiary),
+            child: trailing,
+          ),
+      ],
+    );
+    final row = SizedBox(
+      height: math.max(height, FrostedBreakpoints.touchHitTarget),
+      child: chosen
+          ? FrostedChosenPlate(radius: corner, padding: inset, child: content)
+          : FrostedFace(
+              material: FrostedMaterial.paint,
+              radius: corner,
+              color: lit ? t.glass.wash : null,
+              padding: inset,
+              child: content,
+            ),
+    );
+    final dimmed = FrostedDim(off: off, child: row);
+    if (!followsPointer || off) return dimmed;
+    return MouseRegion(
+      onHover: (_) {
+        final node = Focus.maybeOf(context);
+        if (node != null && node.canRequestFocus && !node.hasPrimaryFocus) {
+          node.requestFocus();
+        }
+      },
+      child: dimmed,
+    );
   }
 }
 

@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../format.dart';
@@ -90,7 +91,11 @@ class FrostedFan extends StatelessWidget {
     // fan(): phone 228 tall, the destinations at 96, the bars 8 and 6
     // wide; desktop 280 tall, at 236, the bars 10 and 8. The rows start 12
     // (16) past the destination bars.
-    final h = height ?? (wide ? 280.0 : 228.0);
+    // Each row's slot is at least a target tall (48 under a finger, 44
+    // under a pointer), so a row's tap reaches its whole outline and no
+    // neighbour's; the drawing grows to hold them.
+    final target = FrostedBreakpoints.hitTargetOf(context);
+    final h = math.max(height ?? (wide ? 280.0 : 228.0), flows.length * target);
     final dstX = wide ? 236.0 : 96.0;
     final srcW = wide ? 10.0 : 8.0;
     final dstW = wide ? 8.0 : 6.0;
@@ -100,7 +105,7 @@ class FrostedFan extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, box) {
         final w = box.maxWidth.isFinite ? box.maxWidth : _unboundedWidth;
-        final g = _fan(w, h, dstX, srcW, dstW);
+        final g = _fan(w, h, dstX, srcW, dstW, target);
         return SizedBox(
           height: h,
           child: Stack(
@@ -140,8 +145,14 @@ class FrostedFan extends StatelessWidget {
     );
   }
 
-  _Fan _fan(double w, double h, double dstX, double srcW, double dstW) {
-    const slotMin = 44.0;
+  _Fan _fan(
+    double w,
+    double h,
+    double dstX,
+    double srcW,
+    double dstW,
+    double slotMin,
+  ) {
     const pad = 10.0;
     final total = flows.fold<double>(0, (sum, f) => sum + f.amount);
     final n = flows.length;
@@ -222,6 +233,16 @@ class FrostedFan extends StatelessWidget {
           : null,
       centres: centres,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedFanEnd>('flows', flows))
+      ..add(DiagnosticsProperty<FrostedHue>('source', source))
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('height', height, defaultValue: null));
   }
 }
 

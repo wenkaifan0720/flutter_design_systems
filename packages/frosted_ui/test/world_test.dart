@@ -26,13 +26,13 @@ Widget _screen(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: 12,
       children: [
-        FrostedTabBar(tabs: const ['Spending', 'Income'], onChanged: _drop),
+        const FrostedTabBar(tabs: ['Spending', 'Income'], onChanged: _drop),
         FrostedButton('Pay', icon: FrostedGlyphs.creditCard, onPressed: () {}),
-        FrostedSegmentedButton<int>(
+        const FrostedSegmentedButton<int>(
           label: 'Period',
           value: 0,
           onChanged: _drop,
-          segments: const [
+          segments: [
             FrostedButtonSegment(0, 'Week'),
             FrostedButtonSegment(1, 'Month'),
           ],
@@ -41,19 +41,19 @@ Widget _screen(
           alignment: AlignmentDirectional.centerStart,
           child: FrostedChip('Vegan', onPressed: () {}),
         ),
-        FrostedTextField(label: 'Email', onChanged: _drop),
-        FrostedSwitchRow(
+        const FrostedTextField(label: 'Email', onChanged: _drop),
+        const FrostedSwitchRow(
           label: 'Weekly summary',
           value: true,
           onChanged: _drop,
         ),
-        FrostedCheckRow(label: 'Agree', value: true, onChanged: _drop),
+        const FrostedCheckRow(label: 'Agree', value: true, onChanged: _drop),
         FrostedListTile(
           title: 'Rent',
           leading: const Icon(FrostedGlyphs.house),
           onPressed: () {},
         ),
-        FrostedSlider(label: 'Volume', value: .4, onChanged: _drop),
+        const FrostedSlider(label: 'Volume', value: .4, onChanged: _drop),
       ],
     ),
   ),

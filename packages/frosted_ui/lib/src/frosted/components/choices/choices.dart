@@ -1,13 +1,14 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
 import '../../internal/face.dart';
-import '../../internal/well.dart';
 import '../../internal/hit_slop.dart';
+import '../../internal/well.dart';
 import '../../internal/key_focus.dart';
 import '../../internal/styled.dart';
 import '../../localizations.dart';
@@ -162,6 +163,19 @@ class FrostedRadio<T> extends StatelessWidget {
       builder: (context, states, _) => draw(states),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _RadioScope<T> extends InheritedWidget {
@@ -258,6 +272,17 @@ class FrostedRadioGroup<T> extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedRadio<T>>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('error', error, defaultValue: null));
+  }
 }
 
 /// A chip: a short choice, filter, act or entry on the 32 glass capsule in
@@ -297,10 +322,10 @@ class FrostedChip extends StatelessWidget {
   /// What a press does; null for a chip that only states.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// Whether it stands chosen; null for a chip that is not a choice.
@@ -363,7 +388,7 @@ class FrostedChip extends StatelessWidget {
       final fill = s.fill;
       final side = s.side;
       final (edge, edges) = side == null
-          ? (s.edge, EdgeInsets.all(FrostedStrokes.regular))
+          ? (s.edge, const EdgeInsets.all(FrostedStrokes.regular))
           : s.edgeOf(null, FrostedStrokes.regular);
       final inset = t.density.padding(
         EdgeInsetsDirectional.only(
@@ -412,8 +437,10 @@ class FrostedChip extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Its node spans the lane the chip stands in, as its tap
+                // does.
                 if (close != null)
-                  FrostedHitSlop(
+                  FrostedLaneKey(
                     child: FrostedPressable(
                       onPressed: isEnabled ? close : null,
                       label: deleteLabel ?? '${words.remove} $label',
@@ -439,7 +466,7 @@ class FrostedChip extends StatelessWidget {
     }
 
     if (onPressed == null) {
-      return Semantics(
+      final chip = Semantics(
         label: label,
         selected: selected,
         explicitChildNodes: close != null,
@@ -449,21 +476,56 @@ class FrostedChip extends StatelessWidget {
           if (on) WidgetState.selected,
         }),
       );
+      // Its remove key answers over the touch target's height. A chip turned
+      // off (a choice that cannot be made now, as in a group that takes no
+      // change) stands in the target a live one does, so turning it off
+      // moves nothing round it; a tag that was never a control keeps its
+      // own size.
+      if (close != null) return FrostedTargetLane(child: chip);
+      return isEnabled ? chip : FrostedHitSlop(child: chip);
     }
     final cut = layers.cut(FrostedCorners.full);
-    return FrostedHitSlop(
-      child: FrostedPressable(
-        focusNode: focusNode,
-        autofocus: autofocus,
-        onPressed: isEnabled ? onPressed : null,
-        label: label,
-        selected: selected,
-        excludeChild: close == null,
-        radius: FrostedStyleLayers.radiusOf(cut, h, h / 2),
-        shape: cut,
-        builder: (context, states, _) => draw(states),
-      ),
+    return FrostedPressable(
+      focusNode: focusNode,
+      autofocus: autofocus,
+      onPressed: isEnabled ? onPressed : null,
+      label: label,
+      selected: selected,
+      excludeChild: close == null,
+      radius: FrostedStyleLayers.radiusOf(cut, h, h / 2),
+      shape: cut,
+      builder: (context, states, _) => draw(states),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onDeleted', onDeleted))
+      ..add(StringProperty('deleteLabel', deleteLabel, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'isEnabled',
+          value: isEnabled,
+          ifFalse: 'isEnabled: false',
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -503,10 +565,10 @@ class FrostedRating extends StatelessWidget {
   /// Called with the score set; null leaves it stating.
   final ValueChanged<double>? onChanged;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// How many stars.
@@ -616,6 +678,28 @@ class FrostedRating extends StatelessWidget {
       excludeSemantics: true,
       child: stars,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(StringProperty('label', label))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(IntProperty('max', max, defaultValue: 5))
+      ..add(FlagProperty('allowHalf', value: allowHalf, ifTrue: 'allowHalf'))
+      ..add(DoubleProperty('size', size, defaultValue: 28));
   }
 }
 
@@ -846,6 +930,30 @@ class FrostedFileUpload extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        IterableProperty<FrostedUploadFile>(
+          'files',
+          files,
+          defaultValue: const [],
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<FrostedUploadFile>>.has(
+          'onRemoved',
+          onRemoved,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(FlagProperty('dragging', value: dragging, ifTrue: 'dragging'))
+      ..add(StringProperty('error', error, defaultValue: null));
+  }
 }
 
 class _FileRow extends StatelessWidget {
@@ -901,18 +1009,16 @@ class _FileRow extends StatelessWidget {
             ),
           ),
           if (onRemoved case final remove?)
-            FrostedHitSlop(
-              child: FrostedPressable(
-                onPressed: remove,
-                label: '${words.remove} ${file.name}',
-                radius: 14,
-                child: SizedBox.square(
-                  dimension: 28,
-                  child: Icon(
-                    FrostedGlyphs.close,
-                    size: 16,
-                    color: t.colorScheme.textSecondary,
-                  ),
+            FrostedPressable(
+              onPressed: remove,
+              label: '${words.remove} ${file.name}',
+              radius: 14,
+              child: SizedBox.square(
+                dimension: 28,
+                child: Icon(
+                  FrostedGlyphs.close,
+                  size: 16,
+                  color: t.colorScheme.textSecondary,
                 ),
               ),
             ),
@@ -961,10 +1067,10 @@ class FrostedCheckRow extends StatelessWidget {
   /// Hands over the next state; null leaves the row inert.
   final ValueChanged<bool?>? onChanged;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// Whether a row that can change may change now: false paints it disabled.
@@ -995,7 +1101,7 @@ class FrostedCheckRow extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 2,
+                spacing: FrostedSpacing.s2,
                 children: [
                   Text(label, style: t.textTheme.titleMedium),
                   if (words != null) Text(words, style: t.textTheme.bodyMedium),
@@ -1031,6 +1137,26 @@ class FrostedCheckRow extends StatelessWidget {
       radius: FrostedCorners.r10,
       child: row,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<bool?>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('tristate', value: tristate, ifTrue: 'tristate'));
   }
 }
 
@@ -1088,5 +1214,15 @@ class FrostedChoices<T> extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedSelectOption<T>>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }

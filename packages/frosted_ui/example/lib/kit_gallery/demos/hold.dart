@@ -9,6 +9,7 @@ import '../kit.dart';
 
 Widget kitHoldDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Disclosure, table & timeline',
   sections: [
     kitSection(

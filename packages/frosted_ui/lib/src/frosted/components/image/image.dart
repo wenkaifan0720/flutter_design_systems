@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
@@ -121,6 +122,20 @@ class FrostedMedia extends StatelessWidget {
     return ratio == null
         ? framed
         : AspectRatio(aspectRatio: ratio, child: framed);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ImageProvider>('image', image, defaultValue: null),
+      )
+      ..add(StringProperty('seed', seed, defaultValue: ''))
+      ..add(DoubleProperty('aspect', aspect, defaultValue: null))
+      ..add(DoubleProperty('radius', radius, defaultValue: null))
+      ..add(EnumProperty<BoxFit>('fit', fit, defaultValue: BoxFit.cover))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 

@@ -1,14 +1,17 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
+import '../../internal/soft_routes.dart';
 import '../../internal/bare_field.dart';
 import '../../internal/face.dart';
 import '../../internal/hit_slop.dart';
 import '../../internal/keys.dart';
+import '../../internal/menu_wake.dart';
 import '../../internal/panel.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
@@ -44,6 +47,8 @@ class FrostedMenuBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Its menus tell a key's opening from a pointer's (FrostedMenuWake).
+    FrostedLastInput.watch();
     final t = context.frostedTheme;
     // The bar is drawn at its 32 high items and the inset round them; each
     // item's target (48 under a finger) overhangs it, centred.
@@ -53,33 +58,30 @@ class FrostedMenuBar extends StatelessWidget {
     return DesignMenuBar(
       menus: menus,
       semanticLabel: label ?? DesignLocalizations.of(context).menuBarLabel,
-      barBuilder: (context, items) => FrostedOverhang(
-        height: item + 2 * inset,
-        child: SizedBox(
-          height: reach,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Positioned.fill(
-                top: (reach - item) / 2 - inset,
-                bottom: (reach - item) / 2 - inset,
-                child: FrostedFace(
-                  material: FrostedMaterial.paint,
-                  radius: BorderRadius.circular(FrostedCorners.r12),
-                  color: t.glass.fill,
-                  ring: frostedLitEdge(t, t.colorScheme.border),
-                ),
+      barBuilder: (context, items) => SizedBox(
+        height: reach,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned.fill(
+              top: (reach - item) / 2 - inset,
+              bottom: (reach - item) / 2 - inset,
+              child: FrostedFace(
+                material: FrostedMaterial.paint,
+                radius: BorderRadius.circular(FrostedCorners.r12),
+                color: t.glass.fill,
+                ring: frostedLitEdge(t, t.colorScheme.border),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: inset),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: FrostedSpacing.s2,
-                  children: items,
-                ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: inset),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: FrostedSpacing.s2,
+                children: items,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       itemBuilder: (context, entry, level, states) {
@@ -126,6 +128,7 @@ class FrostedMenuBar extends StatelessWidget {
           width: 240 - 2 * FrostedChromeMetrics.menuInset,
           child: FrostedPanelRow(
             label: entry.label,
+            followsPointer: true,
             states: {
               ...states,
               if (entry.checked ?? false) WidgetState.selected,
@@ -155,16 +158,26 @@ class FrostedMenuBar extends StatelessWidget {
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: info.maxSize.height),
           child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: FrostedChromeMetrics.menuItemsGap,
-              children: items,
+            child: FrostedMenuWake(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: FrostedChromeMetrics.menuItemsGap,
+                children: items,
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<DesignMenuEntry>('menus', menus))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -225,7 +238,12 @@ class FrostedCommand extends StatelessWidget {
     final themes = InheritedTheme.capture(from: context, to: navigator.context);
     return showDesignCommandPalette(
       context: navigator.context,
-      barrierColor: t.colorScheme.overlay,
+      // The page under the palette dims and softens, as under every raised
+      // slab.
+      barrierBuilder: frostedSoftBarrier(
+        color: t.colorScheme.overlay,
+        soften: t.materials.soften,
+      ),
       barrierLabel: DesignLocalizations.of(context).closeButtonLabel,
       palette: (run) => _palette(
         context,
@@ -266,24 +284,29 @@ class FrostedCommand extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
             horizontal: FrostedChromeMetrics.fieldInset,
           ),
-          child: Row(
-            spacing: FrostedSpacing.s10,
-            children: [
-              Icon(
-                FrostedGlyphs.search,
-                size: FrostedIconSize.i18,
-                color: t.colorScheme.textTertiary,
-              ),
-              Expanded(
-                child: FrostedBareField(
-                  controller: field.controller,
-                  focusNode: field.focusNode,
-                  hint: hint ?? words.searchCommands,
-                  label: label ?? words.searchCommands,
-                  onSubmitted: (_) => field.submit(),
+          // The line answers taps from the field's top to its bottom.
+          child: FrostedFieldRoom(
+            child: Row(
+              spacing: FrostedSpacing.s10,
+              children: [
+                Icon(
+                  FrostedGlyphs.search,
+                  size: FrostedIconSize.i18,
+                  color: t.colorScheme.textTertiary,
                 ),
-              ),
-            ],
+                Expanded(
+                  child: FrostedBareField(
+                    controller: field.controller,
+                    focusNode: field.focusNode,
+                    hint: hint ?? words.searchCommands,
+                    label: label ?? words.searchCommands,
+                    // Return runs the command and the search keeps the
+                    // focus, as the combobox's.
+                    onEditingComplete: field.submit,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -344,4 +367,21 @@ class FrostedCommand extends StatelessWidget {
       label: label,
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<DesignCommand>('commands', commands))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignCommand>>.has(
+          'onSelected',
+          onSelected,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(DoubleProperty('width', width, defaultValue: 520))
+      ..add(DoubleProperty('maxHeight', maxHeight, defaultValue: 360))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
@@ -223,7 +224,9 @@ class FrostedDayBars extends StatelessWidget {
   /// The bars' hue; each band's own on a stacked chart.
   final FrostedHue? hue;
 
+  /// {@template frosted.chartLabel}
   /// What a screen reader calls the chart.
+  /// {@endtemplate}
   final String label;
 
   /// The words under a day face's plot.
@@ -495,6 +498,24 @@ class FrostedDayBars extends StatelessWidget {
               : Offset((n - 0.5) * slot + bw / 2, y(totals.last)),
         );
     }
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<num>('values', values))
+      ..add(IterableProperty<FrostedBarSeries>('series', series))
+      ..add(IntProperty('daysInMonth', daysInMonth))
+      ..add(IterableProperty<String>('months', months))
+      ..add(IntProperty('current', current))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<FrostedAxisMark>('marks', marks))
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(DiagnosticsProperty<bool>('cents', cents))
+      ..add(IntProperty('lines', lines, defaultValue: 3))
+      ..add(DoubleProperty('height', height, defaultValue: null));
   }
 }
 

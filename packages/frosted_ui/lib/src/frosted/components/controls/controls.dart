@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -8,6 +9,7 @@ import '../../glyphs.dart';
 
 import '../../chrome_metrics.dart';
 import '../../format.dart';
+import '../../internal/bleed.dart';
 import '../../internal/css_shadow.dart';
 import '../../internal/face.dart';
 import '../../internal/hit_slop.dart';
@@ -163,7 +165,13 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final label = this.label ?? FrostedLocalizations.of(context).filters;
     final t = context.frostedTheme;
-    const height = FrostedChromeMetrics.filterChip;
+    // The chips' words grow with the reader's text, the pill by their extra
+    // line, so they never fill it to the rim.
+    final height = frostedGrownHeight(
+      context,
+      FrostedChromeMetrics.filterChip,
+      t.textTheme.labelSmall,
+    );
     Widget chip(FrostedFilterOption<T> item) {
       final on = item.value == value;
       // .fchip { height: 32px; padding: 0 10px; border-radius: 999px;
@@ -180,8 +188,14 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
       // stands (the thicker, brighter glass, raised off the row: no
       // outline) while the chip left fades back to its faint glass.
       final round = BorderRadius.circular(height / 2);
-      final face = SizedBox(
+      // A chip is at least its touch target wide (48 under a finger), its
+      // words centred: a short one ("All") in a wider target stood 6 past
+      // the line's keyline, and its neighbours 12 further off.
+      final face = Container(
         height: height,
+        constraints: BoxConstraints(
+          minWidth: FrostedBreakpoints.hitTargetOf(context),
+        ),
         child: Stack(
           fit: StackFit.passthrough,
           children: [
@@ -223,7 +237,6 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
                       item.label,
                       maxLines: 1,
                       softWrap: false,
-                      textScaler: TextScaler.noScaling,
                       style: words,
                     ),
                   ),
@@ -248,31 +261,45 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
       spacing: FrostedChromeMetrics.filterChipGap,
       children: [for (final item in options) chip(item)],
     );
+    // The row scrolls within its line, but a chip's glow, the chosen chip's
+    // lift and a focus ring reach past it: its viewport stands
+    // [FrostedChromeMetrics.stripReach] out above and below (and at its ends
+    // on a desk), so it clips only what scrolls away, never a chip's shadow.
+    const reach = FrostedChromeMetrics.stripReach;
     final Widget row;
     if (FrostedBreakpoints.isWide(context)) {
       row = LayoutBuilder(
         builder: (context, box) => box.hasBoundedWidth
-            ? SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: chips,
+            ? FrostedBleed(
+                reach: reach,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.all(reach),
+                  child: chips,
+                ),
               )
             : chips,
       );
     } else {
       final gutter = FrostedBreakpoints.gutter(context);
-      row = LayoutBuilder(
-        builder: (context, box) => SizedBox(
-          height: height,
-          width: box.maxWidth,
-          // The row runs on under the gutters, as the source's does.
-          child: OverflowBox(
-            maxWidth: box.maxWidth + 2 * gutter,
-            minWidth: box.maxWidth + 2 * gutter,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: gutter),
-              child: chips,
-            ),
+      // The line stands as tall as a chip's touch target (48 under a
+      // finger), the 32 chips centred in it; the viewport reaches past the
+      // line only as far as the shadows reach past the targets.
+      final lane = math.max(height, FrostedBreakpoints.hitTargetOf(context));
+      final past = math.max(0.0, reach - (lane - height) / 2);
+      // The row runs on under the page's gutters to the screen's edges, as
+      // the source's does, the gutter its own padding: the first chip stands
+      // on the keyline at rest, and one scrolled under a gutter is drawn,
+      // tapped and outlined there.
+      row = FrostedBleed(
+        reach: past,
+        across: gutter,
+        child: SizedBox(
+          height: lane + 2 * past,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: gutter, vertical: past),
+            child: chips,
           ),
         ),
       );
@@ -283,6 +310,16 @@ class FrostedFilterChipGroup<T> extends StatelessWidget {
       explicitChildNodes: true,
       child: FrostedDim(off: onChanged == null, child: row),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedFilterOption<T>>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -387,10 +424,19 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
     // from 600 up (design6 P) every strip keeps to its segments, a filled
     // one still at the field's height.
     final share = fill && MediaQuery.sizeOf(context).width < frostedMeasureFrom;
-    final height = t.density.height(
-      fill
-          ? FrostedChromeMetrics.segmentFillHeight
-          : FrostedChromeMetrics.segmentHeight,
+    final base = fill
+        ? t.textTheme.labelSmall.at(_segmentFillWord)
+        : t.textTheme.labelSmall;
+    // The words grow with the reader's text, each segment by their extra
+    // line.
+    final height = frostedGrownHeight(
+      context,
+      t.density.height(
+        fill
+            ? FrostedChromeMetrics.segmentFillHeight
+            : FrostedChromeMetrics.segmentHeight,
+      ),
+      base,
     );
     final layers = FrostedStyleLayers(style, t.components.segmentedButton);
     final cut = layers.cut(FrostedCorners.full);
@@ -404,9 +450,7 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
         // .seg-ctl .on { background: #fff; color: var(--ink); font-weight: 600;
         //   box-shadow: var(--edge), 0 2px 6px -2px rgba(42,36,100,.18) }
         // .field .seg-ctl span { flex: 1 1 auto; height: 36px; font-size: 14px }
-        var words = fill
-            ? t.textTheme.labelSmall.at(_segmentFillWord)
-            : t.textTheme.labelSmall;
+        var words = base;
         if (on) words = words.semibold.c(t.colorScheme.textPrimary);
         final word = Center(
           widthFactor: share ? null : 1,
@@ -418,7 +462,8 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
                 item.label,
                 maxLines: 1,
                 softWrap: false,
-                textScaler: TextScaler.noScaling,
+                // Large words in a shared strip narrowed past them.
+                overflow: TextOverflow.ellipsis,
                 style: drawn,
               ),
             ),
@@ -472,37 +517,41 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
     // A strip of recessed glass, the chosen word on a brighter pill that
     // slides to the next choice.
     final chosen = segments.indexWhere((item) => item.value == value);
-    final pill = FrostedFace(
-      material: FrostedMaterial.well,
-      radius: BorderRadius.circular(
-        plateRadius + FrostedChromeMetrics.segmentsInset,
+    // Each segment stands in its touch target (48 under a finger) round its
+    // face, as Material pads a segmented button's: the strip is drawn as a
+    // band behind the faces at their height and the inset round them, and
+    // the targets reach past it above and below.
+    const inset = FrostedChromeMetrics.segmentsInset;
+    final reach =
+        math.max(0.0, FrostedBreakpoints.hitTargetOf(context) - height) / 2;
+    final pill = _Band(
+      reach: reach,
+      inset: inset,
+      band: FrostedFace(
+        material: FrostedMaterial.well,
+        radius: BorderRadius.circular(plateRadius + inset),
+        shape: FrostedStyleLayers.around(cut, inset),
       ),
-      shape: FrostedStyleLayers.around(cut, FrostedChromeMetrics.segmentsInset),
-      padding: const EdgeInsets.all(FrostedChromeMetrics.segmentsInset),
       child: FrostedSlidingPill(
         count: segments.length,
         selected: chosen < 0 ? null : chosen,
+        inset: EdgeInsets.symmetric(vertical: reach),
         // The chosen word's pill: the thickest, brightest glass on the
         // strip, raised off its well.
         pill: FrostedChosenPlate(
           radius: BorderRadius.circular(plateRadius),
           shape: cut,
         ),
-        builder: (context, keys) => share
-            ? _SegmentShares(
-                children: [
-                  for (final (i, item) in segments.indexed)
-                    KeyedSubtree(key: keys[i], child: segment(item)),
-                ],
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                spacing: FrostedChromeMetrics.segmentsGap,
-                children: [
-                  for (final (i, item) in segments.indexed)
-                    KeyedSubtree(key: keys[i], child: segment(item)),
-                ],
-              ),
+        // A strip keeps to its segments; past its room (long words at large
+        // text) they narrow in proportion, each word ending in an ellipsis,
+        // rather than overflow.
+        builder: (context, keys) => _SegmentShares(
+          fill: share,
+          children: [
+            for (final (i, item) in segments.indexed)
+              KeyedSubtree(key: keys[i], child: segment(item)),
+          ],
+        ),
       ),
     );
     // A strip keeps its own height in a taller row and stands at the row's
@@ -524,24 +573,44 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
     );
     return labelled ? _Labelled(label, child: group) : group;
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedButtonSegment<T>>('segments', segments))
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label))
+      ..add(FlagProperty('fill', value: fill, ifTrue: 'fill'))
+      ..add(FlagProperty('labelled', value: labelled, ifTrue: 'labelled'))
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
-/// A filled pill's segments across its width, 2 apart, as `.field .seg-ctl
-/// span { flex: 1 1 auto }` sets them: each the width of its own word, the
-/// slack shared equally; when even their own widths do not fit, all narrow
-/// in proportion. Unbounded, each keeps its own width.
+/// A pill's segments, 2 apart. [fill]ed, across its width, as `.field
+/// .seg-ctl span { flex: 1 1 auto }` sets them: each the width of its own
+/// word, the slack shared equally. Else each keeps its own width and the
+/// strip its segments'. Either way, when even their own widths do not fit,
+/// all narrow in proportion. Unbounded, each keeps its own width.
 class _SegmentShares extends MultiChildRenderObjectWidget {
-  const _SegmentShares({required super.children});
+  const _SegmentShares({required this.fill, required super.children});
+
+  final bool fill;
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      _RenderSegmentShares(Directionality.of(context));
+      _RenderSegmentShares(Directionality.of(context), fill);
 
   @override
   void updateRenderObject(
     BuildContext context,
     _RenderSegmentShares renderObject,
-  ) => renderObject.direction = Directionality.of(context);
+  ) => renderObject
+    ..direction = Directionality.of(context)
+    ..fill = fill;
 }
 
 class _SharesData extends ContainerBoxParentData<RenderBox> {}
@@ -550,9 +619,16 @@ class _RenderSegmentShares extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, _SharesData>,
         RenderBoxContainerDefaultsMixin<RenderBox, _SharesData> {
-  _RenderSegmentShares(this._direction);
+  _RenderSegmentShares(this._direction, this._fill);
 
   static const double _gap = FrostedChromeMetrics.segmentsGap;
+
+  bool _fill;
+  set fill(bool value) {
+    if (value == _fill) return;
+    _fill = value;
+    markNeedsLayout();
+  }
 
   TextDirection _direction;
   set direction(TextDirection value) {
@@ -581,11 +657,13 @@ class _RenderSegmentShares extends RenderBox
         for (final w in own) total == 0 ? room / kids.length : room * w / total,
       ];
     }
+    if (!_fill) return own;
     final share = (room - total) / kids.length;
     return [for (final w in own) w + share];
   }
 
-  double _extent(BoxConstraints c, List<double> widths) => c.hasBoundedWidth
+  double _extent(BoxConstraints c, List<double> widths) =>
+      _fill && c.hasBoundedWidth
       ? c.maxWidth
       : widths.fold(0.0, (a, b) => a + b) + _gaps(widths.length);
 
@@ -705,10 +783,10 @@ class FrostedSwitch extends StatelessWidget {
   /// Called with the new state; null leaves it inert.
   final ValueChanged<bool>? onChanged;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// What a screen reader calls the switch.
@@ -759,7 +837,7 @@ class FrostedSwitch extends StatelessWidget {
     final fill = s.fill;
     final side = s.side;
     final (edge, edges) = side == null
-        ? (s.edge, EdgeInsets.all(FrostedStrokes.regular))
+        ? (s.edge, const EdgeInsets.all(FrostedStrokes.regular))
         : s.edgeOf(null, FrostedStrokes.regular);
     // A token theme by night draws a dark knob, to stand on the light ink
     // of the track when on; off, on the dark quiet track, it would vanish,
@@ -769,6 +847,11 @@ class FrostedSwitch extends StatelessWidget {
         (value || t.colorScheme.toggleKnob.computeLuminance() > .5
             ? t.colorScheme.toggleKnob
             : t.colorScheme.textPrimary);
+    // By night the on track is the light ink, and a knob of glass over it
+    // came out a mid grey that read as off or disabled (self-review round
+    // 3): on, it is paint in the ink's words' colour, as the act's words
+    // stand on the act.
+    final nightOn = value && t.isDark && s.foreground == null;
     // .tgl { width: 44px; height: 26px; border-radius: 999px;
     //   background: rgba(21,21,45,.13);
     //   box-shadow: inset 0 0 0 1px rgba(21,21,45,.03) }
@@ -790,7 +873,7 @@ class FrostedSwitch extends StatelessWidget {
         child: SizedBox.square(
           dimension: FrostedChromeMetrics.toggleKnob,
           child: FrostedFace(
-            material: FrostedMaterial.pane,
+            material: nightOn ? FrostedMaterial.paint : FrostedMaterial.pane,
             radius: BorderRadius.circular(FrostedChromeMetrics.toggleKnob / 2),
             shape: cut == null
                 ? null
@@ -798,7 +881,9 @@ class FrostedSwitch extends StatelessWidget {
                     cut,
                     -FrostedChromeMetrics.toggleInset,
                   ),
-            color: knob.withValues(alpha: knob.a * .62),
+            color: nightOn
+                ? t.colorScheme.onAccent
+                : knob.withValues(alpha: knob.a * .62),
             ring: value || s.foreground != null ? null : t.controlEdge,
             shadows: t.shadows.toggleKnob,
           ),
@@ -863,40 +948,42 @@ class FrostedSwitch extends StatelessWidget {
       child: track,
     );
     control = FrostedDim(off: !shown, child: control);
-    // The node, the press and the pointer span the target round the track;
-    // the focus ring hugs the track. One that takes no press reaches no
-    // further than itself.
+    // The track stands in the target, laid out round it (as Material pads
+    // a switch): the node, the press and the pointer span it; the focus ring
+    // hugs the track. One that takes no press stands in the same target, so
+    // turning it off moves nothing round it.
     return FrostedOwnSize(
-      child: FrostedHitSlop(
-        target: live ? null : 0,
-        child: Semantics(
-          label: label,
-          toggled: value,
-          enabled: shown,
-          readOnly: readOnly,
-          focusable: live,
+      child: Semantics(
+        container: true,
+        label: label,
+        toggled: value,
+        enabled: shown,
+        readOnly: readOnly,
+        focusable: live,
+        onTap: live ? flip : null,
+        excludeSemantics: true,
+        child: GestureDetector(
           onTap: live ? flip : null,
-          excludeSemantics: true,
-          child: GestureDetector(
-            onTap: live ? flip : null,
-            child: FrostedPressArea(
-              enabled: live,
-              child: MouseRegion(
-                cursor: live ? SystemMouseCursors.click : MouseCursor.defer,
-                child: FrostedSlopFace(
-                  child: FrostedKeyFocus(
-                    focusNode: focusNode,
-                    autofocus: autofocus,
-                    enabled: live,
-                    radius: radius,
-                    keys: {
-                      if (live) ...{
-                        LogicalKeyboardKey.enter: flip,
-                        LogicalKeyboardKey.space: flip,
-                      },
+          child: FrostedPressArea(
+            enabled: live,
+            child: MouseRegion(
+              cursor: live ? SystemMouseCursors.click : MouseCursor.defer,
+              child: FrostedHitSlop(
+                // A bare one starts on its column's keyline.
+                alignment: AlignmentDirectional.centerStart,
+
+                child: FrostedKeyFocus(
+                  focusNode: focusNode,
+                  autofocus: autofocus,
+                  enabled: live,
+                  radius: radius,
+                  keys: {
+                    if (live) ...{
+                      LogicalKeyboardKey.enter: flip,
+                      LogicalKeyboardKey.space: flip,
                     },
-                    child: FrostedPressedFace(child: control),
-                  ),
+                  },
+                  child: FrostedPressedFace(child: control),
                 ),
               ),
             ),
@@ -904,6 +991,27 @@ class FrostedSwitch extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('label', label))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -967,52 +1075,24 @@ class FrostedMonthSwitch extends StatelessWidget {
     // the line's start, as the desktop's does; below 600 it runs the line.
     final wide = MediaQuery.sizeOf(context).width >= frostedMeasureFrom;
     const arrow = FrostedChromeMetrics.monthArrow;
-    Widget step(IconData icon, VoidCallback? onTap, String name) {
-      // .switch .arr { width: 32px; height: 32px; background: #fff;
-      //   box-shadow: var(--edge), 0 2px 6px -2px rgba(42,36,100,.18) }
-      // .switch .arr.off { color: var(--ink-3); background: none;
-      //   box-shadow: none; opacity: .6 }
-      if (onTap == null) {
-        return ExcludeSemantics(
-          child: Opacity(
-            opacity: _monthArrowOffOpacity,
-            child: SizedBox.square(
-              dimension: arrow,
-              child: Center(
-                child: Icon(
-                  icon,
-                  size: FrostedChromeMetrics.monthArrowGlyph,
-                  color: t.colorScheme.textTertiary,
-                ),
-              ),
-            ),
-          ),
-        );
-      }
-      return FrostedHitSlop(
-        child: FrostedPressable(
-          onPressed: onTap,
-          label: name,
-          radius: arrow / 2,
-          child: SizedBox.square(
-            dimension: arrow,
-            child: FrostedFace(
-              material: FrostedMaterial.paint,
-              radius: BorderRadius.circular(arrow / 2),
-              color: t.glass.plane,
-              shadows: [_edge(t), ...t.shadows.raised],
-              child: Center(
-                child: Icon(
-                  icon,
-                  size: FrostedChromeMetrics.monthArrowGlyph,
-                  color: t.colorScheme.textPrimary,
-                ),
-              ),
-            ),
-          ),
+    final target = FrostedBreakpoints.hitTargetOf(context);
+    // An arrow keeps its target's room when it goes off at an end, its face
+    // on [side], so the month never shifts.
+    Widget step(
+      IconData icon,
+      VoidCallback? onTap,
+      String name,
+      AlignmentDirectional side,
+    ) => SizedBox(
+      width: target,
+      child: Align(
+        alignment: side,
+        child: FrostedTargetSide(
+          alignment: side,
+          child: _monthStep(t, arrow, icon, onTap, name),
         ),
-      );
-    }
+      ),
+    );
 
     Widget pill(BuildContext anchor) {
       // .switch .cur-m { flex: 1; gap: 4px; height: 32px;
@@ -1061,21 +1141,36 @@ class FrostedMonthSwitch extends StatelessWidget {
       //   background: var(--wash) }
       // .switch .prev { font: 500 12px/1 var(--font-t);
       //   color: var(--ink-2); padding-left: 4px }
-      final face = FrostedFace(
-        material: FrostedMaterial.paint,
-        radius: BorderRadius.circular(
-          arrow / 2 + FrostedChromeMetrics.monthSwitchInset,
+      // The arrows and the month stand in their touch targets (48 under a
+      // finger) round their 32 faces; the switch is drawn as a band behind
+      // them at their height and the inset round them.
+      final face = _Band(
+        reach:
+            math.max(
+              0.0,
+              FrostedBreakpoints.hitTargetOf(context) -
+                  FrostedChromeMetrics.monthHeight,
+            ) /
+            2,
+        inset: FrostedChromeMetrics.monthSwitchInset,
+        band: FrostedFace(
+          material: FrostedMaterial.paint,
+          radius: BorderRadius.circular(
+            arrow / 2 + FrostedChromeMetrics.monthSwitchInset,
+          ),
+          color: t.glass.wash,
         ),
-        color: t.glass.wash,
-        padding: const EdgeInsets.all(FrostedChromeMetrics.monthSwitchInset),
         child: Row(
           mainAxisSize: wide ? MainAxisSize.min : MainAxisSize.max,
           spacing: FrostedChromeMetrics.monthSwitchGap,
           children: [
+            // The arrows keep to the band's ends, their targets growing
+            // inward.
             step(
               FrostedGlyphs.chevronLeft,
               onEarlier,
               DesignLocalizations.of(context).previousMonthTooltip,
+              AlignmentDirectional.centerStart,
             ),
             if (previous case final previous?)
               Padding(
@@ -1099,6 +1194,7 @@ class FrostedMonthSwitch extends StatelessWidget {
               FrostedGlyphs.forward,
               onLater,
               DesignLocalizations.of(context).nextMonthTooltip,
+              AlignmentDirectional.centerEnd,
             ),
           ],
         ),
@@ -1124,6 +1220,77 @@ class FrostedMonthSwitch extends StatelessWidget {
           )
         : group;
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('month', month))
+      ..add(StringProperty('previous', previous, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<void Function(BuildContext anchor)>.has(
+          'onOpen',
+          onOpen,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onEarlier', onEarlier))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onLater', onLater))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(DiagnosticsProperty<Key>('openKey', openKey, defaultValue: null));
+  }
+}
+
+// One of the month switch's arrows: a raised 32 round wearing its glyph, or,
+// with nowhere to go, the glyph alone, faded and unspoken.
+Widget _monthStep(
+  FrostedThemeData t,
+  double arrow,
+  IconData icon,
+  VoidCallback? onTap,
+  String name,
+) {
+  // .switch .arr { width: 32px; height: 32px; background: #fff;
+  //   box-shadow: var(--edge), 0 2px 6px -2px rgba(42,36,100,.18) }
+  // .switch .arr.off { color: var(--ink-3); background: none;
+  //   box-shadow: none; opacity: .6 }
+  if (onTap == null) {
+    return ExcludeSemantics(
+      child: Opacity(
+        opacity: _monthArrowOffOpacity,
+        child: SizedBox.square(
+          dimension: arrow,
+          child: Center(
+            child: Icon(
+              icon,
+              size: FrostedChromeMetrics.monthArrowGlyph,
+              color: t.colorScheme.textTertiary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+  return FrostedPressable(
+    onPressed: onTap,
+    label: name,
+    radius: arrow / 2,
+    child: SizedBox.square(
+      dimension: arrow,
+      child: FrostedFace(
+        material: FrostedMaterial.paint,
+        radius: BorderRadius.circular(arrow / 2),
+        color: t.glass.plane,
+        shadows: [_edge(t), ...t.shadows.raised],
+        child: Center(
+          child: Icon(
+            icon,
+            size: FrostedChromeMetrics.monthArrowGlyph,
+            color: t.colorScheme.textPrimary,
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -1250,6 +1417,14 @@ class FrostedQuickActions extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedQuickAction>('actions', actions))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -1450,6 +1625,14 @@ class FrostedActionTiles extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedActionTile>('tiles', tiles))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1584,6 +1767,16 @@ class FrostedQuickAmounts extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedQuickAmount>('options', options))
+      ..add(DiagnosticsProperty<num>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<num>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1695,53 +1888,320 @@ class FrostedIconPicker extends StatelessWidget {
           columns: FrostedChromeMetrics.iconWellsPerRow,
           gap: FrostedChromeMetrics.iconWellGap,
           least: _iconWellWide,
+          drawn: FrostedChromeMetrics.iconWell,
           children: [for (final choice in icons) well(choice)],
         ),
       ),
     );
     return labelled ? _Labelled(label, child: group) : group;
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedIconChoice>('icons', icons))
+      ..add(StringProperty('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('labelled', value: labelled, ifTrue: 'labelled'));
+  }
+}
+
+/// A strip whose controls stand in touch targets taller than their faces
+/// (a segmented strip, the month switch): [child], the controls, [inset]
+/// from the strip's sides, and [band], the strip as drawn, behind them at
+/// their faces' height and [inset] round them, centred. A control's target
+/// reaches [reach] past its face above and below; where that is more than
+/// [inset] the targets stand past the band, else the band holds them.
+class _Band extends StatelessWidget {
+  const _Band({
+    required this.reach,
+    required this.inset,
+    required this.band,
+    required this.child,
+  });
+
+  final double reach;
+  final double inset;
+  final Widget band;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final past = math.max(0.0, reach - inset);
+    return Stack(
+      children: [
+        Positioned.fill(top: past, bottom: past, child: band),
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: inset,
+            vertical: math.max(0.0, inset - reach),
+          ),
+          child: child,
+        ),
+      ],
+    );
+  }
 }
 
 /// A grid of equal columns, [gap] apart each way, as CSS's
 /// `grid-template-columns: repeat(n, minmax(0, 1fr))` lays one out: the
 /// last row's empty cells keep their width. Asked its own width (under
-/// [_ownWidth]) each cell is the widest cell's, at least [least].
+/// [_ownWidth]) each cell is the widest cell's, at least [least]. Cells
+/// drawn [drawn] tall stand in taller touch targets: the rows close up by
+/// the difference, so the drawn cells stay [gap] apart. A cell is never
+/// narrower than the touch target while the row can help it: the gaps close
+/// first (to 4 at the least: six icon wells in a card's 326 stay 48 wide),
+/// then a column moves to the next row.
 class _Grid extends StatelessWidget {
   const _Grid({
     required this.columns,
     required this.gap,
     required this.children,
     this.least = 0,
+    this.drawn,
   });
 
   final int columns;
   final double gap;
   final List<Widget> children;
   final double least;
+  final double? drawn;
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    spacing: gap,
-    children: [
-      for (var row = 0; row < children.length; row += columns)
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: gap,
-          children: [
-            for (var i = row; i < row + columns; i++)
-              Expanded(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(minWidth: least),
-                  child: i < children.length
-                      ? children[i]
-                      : const SizedBox.shrink(),
-                ),
-              ),
-          ],
-        ),
-    ],
+  Widget build(BuildContext context) {
+    final target = FrostedBreakpoints.hitTargetOf(context);
+    return _Cells(
+      columns: columns,
+      gap: gap,
+      rowGap: switch (drawn) {
+        final drawn? => math.max(0.0, gap - math.max(0.0, target - drawn)),
+        null => gap,
+      },
+      least: least,
+      floor: target,
+      textDirection: Directionality.of(context),
+      children: [
+        ...children,
+        // The last row's empty cells, which keep their width.
+        for (var i = children.length; i % columns != 0; i++)
+          const SizedBox.shrink(),
+      ],
+    );
+  }
+}
+
+/// [_Grid]'s layout: [columns] cells to a row (fewer where a cell would
+/// stand under [floor] even with the gaps closed to 4), [gap] apart across
+/// (less, to keep a cell at [floor]), [rowGap] apart down, each row as tall
+/// as its tallest cell, the cells at its top.
+class _Cells extends MultiChildRenderObjectWidget {
+  const _Cells({
+    required this.columns,
+    required this.gap,
+    required this.rowGap,
+    required this.least,
+    required this.floor,
+    required this.textDirection,
+    required super.children,
+  });
+
+  final int columns;
+  final double gap;
+  final double rowGap;
+  final double least;
+  final double floor;
+  final TextDirection textDirection;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderCells(columns, gap, rowGap, least, floor, textDirection);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderCells renderObject) {
+    renderObject
+      ..columns = columns
+      ..gap = gap
+      ..rowGap = rowGap
+      ..least = least
+      ..floor = floor
+      ..textDirection = textDirection;
+  }
+}
+
+class _CellData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderCells extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _CellData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _CellData> {
+  _RenderCells(
+    this._columns,
+    this._gap,
+    this._rowGap,
+    this._least,
+    this._floor,
+    this._textDirection,
   );
+
+  int get columns => _columns;
+  int _columns;
+  set columns(int value) {
+    if (value == _columns) return;
+    _columns = value;
+    markNeedsLayout();
+  }
+
+  double get gap => _gap;
+  double _gap;
+  set gap(double value) {
+    if (value == _gap) return;
+    _gap = value;
+    markNeedsLayout();
+  }
+
+  double get rowGap => _rowGap;
+  double _rowGap;
+  set rowGap(double value) {
+    if (value == _rowGap) return;
+    _rowGap = value;
+    markNeedsLayout();
+  }
+
+  double get least => _least;
+  double _least;
+  set least(double value) {
+    if (value == _least) return;
+    _least = value;
+    markNeedsLayout();
+  }
+
+  double get floor => _floor;
+  double _floor;
+  set floor(double value) {
+    if (value == _floor) return;
+    _floor = value;
+    markNeedsLayout();
+  }
+
+  TextDirection get textDirection => _textDirection;
+  TextDirection _textDirection;
+  set textDirection(TextDirection value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _CellData) child.parentData = _CellData();
+  }
+
+  /// The columns, the gap across and a cell's width in [width].
+  (int, double, double) _fit(double width) {
+    final closest = math.min(_gap, FrostedSpacing.s4);
+    var n = math.max(1, _columns);
+    while (n > 1 && n * _floor + (n - 1) * closest > width) {
+      n--;
+    }
+    final g = n < 2
+        ? 0.0
+        : math.min(_gap, math.max(closest, (width - n * _floor) / (n - 1)));
+    return (n, g, math.max(0.0, (width - (n - 1) * g) / n));
+  }
+
+  List<RenderBox> get _cells => [
+    for (var c = firstChild; c != null; c = childAfter(c)) c,
+  ];
+
+  double _across(double Function(RenderBox child) widthOf) {
+    var widest = _least;
+    for (final c in _cells) {
+      widest = math.max(widest, widthOf(c));
+    }
+    return widest * _columns + _gap * (_columns - 1);
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) =>
+      _across((c) => c.getMinIntrinsicWidth(double.infinity));
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      _across((c) => c.getMaxIntrinsicWidth(double.infinity));
+
+  double _down(double width, double Function(RenderBox, double) heightOf) {
+    final (n, _, cell) = _fit(width);
+    final cells = _cells;
+    var total = 0.0;
+    for (var row = 0; row < cells.length; row += n) {
+      var tallest = 0.0;
+      for (var i = row; i < math.min(row + n, cells.length); i++) {
+        tallest = math.max(tallest, heightOf(cells[i], cell));
+      }
+      total += tallest + (row == 0 ? 0 : _rowGap);
+    }
+    return total;
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _down(width, (c, w) => c.getMinIntrinsicHeight(w));
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      _down(width, (c, w) => c.getMaxIntrinsicHeight(w));
+
+  double _widthIn(BoxConstraints constraints) => constraints.hasBoundedWidth
+      ? constraints.maxWidth
+      : constraints.constrainWidth(computeMaxIntrinsicWidth(double.infinity));
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) {
+    final width = _widthIn(constraints);
+    return constraints.constrain(
+      Size(
+        width,
+        _down(
+          width,
+          (c, w) => c.getDryLayout(BoxConstraints.tightFor(width: w)).height,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void performLayout() {
+    final width = _widthIn(constraints);
+    final (n, g, cell) = _fit(width);
+    final cells = _cells;
+    var y = 0.0;
+    for (var row = 0; row < cells.length; row += n) {
+      if (row > 0) y += _rowGap;
+      var tallest = 0.0;
+      for (var i = row; i < math.min(row + n, cells.length); i++) {
+        final child = cells[i]
+          ..layout(BoxConstraints.tightFor(width: cell), parentUsesSize: true);
+        tallest = math.max(tallest, child.size.height);
+        final column = i - row;
+        final x = _textDirection == TextDirection.rtl
+            ? width - cell - column * (cell + g)
+            : column * (cell + g);
+        (child.parentData! as _CellData).offset = Offset(x, y);
+      }
+      y += tallest;
+    }
+    size = constraints.constrain(Size(width, y));
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
 }

@@ -4,6 +4,7 @@
 // by a desktop's pointer). The field itself is Flutter's, and so are its
 // gestures, autofill, IME and semantics.
 import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -134,22 +135,24 @@ class FrostedTextContextMenu extends StatelessWidget {
         buttonItems: state.contextMenuButtonItems,
       );
 
-  /// The words for [item]: its own label, else the part's word for its kind.
+  /// The words for [item]: its own label, else its kind's word in the
+  /// app's language: Material's (Cut, Copy, Paste, Select all, Look up,
+  /// Search the web, Share, Scan text), ui_core's for Delete.
   static String labelOf(BuildContext context, ContextMenuButtonItem item) {
     if (item.label != null) return item.label!;
-    final w = FrostedLocalizations.of(context);
+    final w = MaterialLocalizations.of(context);
     return switch (item.type) {
-      ContextMenuButtonType.cut => w.cut,
-      ContextMenuButtonType.copy => w.copy,
-      ContextMenuButtonType.paste => w.paste,
-      ContextMenuButtonType.selectAll => w.selectAll,
+      ContextMenuButtonType.cut => w.cutButtonLabel,
+      ContextMenuButtonType.copy => w.copyButtonLabel,
+      ContextMenuButtonType.paste => w.pasteButtonLabel,
+      ContextMenuButtonType.selectAll => w.selectAllButtonLabel,
       ContextMenuButtonType.delete => DesignLocalizations.of(
         context,
       ).deleteButtonTooltip,
-      ContextMenuButtonType.lookUp => w.lookUp,
-      ContextMenuButtonType.searchWeb => w.searchWeb,
-      ContextMenuButtonType.share => w.share,
-      ContextMenuButtonType.liveTextInput => w.scanText,
+      ContextMenuButtonType.lookUp => w.lookUpButtonLabel,
+      ContextMenuButtonType.searchWeb => w.searchWebButtonLabel,
+      ContextMenuButtonType.share => w.shareButtonLabel,
+      ContextMenuButtonType.liveTextInput => w.scanTextButtonLabel,
       _ => '',
     };
   }
@@ -168,7 +171,9 @@ class FrostedTextContextMenu extends StatelessWidget {
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(
+                horizontal: FrostedSpacing.s14,
+              ),
               child: Align(
                 alignment: touch
                     ? Alignment.center
@@ -237,5 +242,17 @@ class FrostedTextContextMenu extends StatelessWidget {
         child: pane,
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextSelectionToolbarAnchors>('anchors', anchors),
+      )
+      ..add(
+        IterableProperty<ContextMenuButtonItem>('buttonItems', buttonItems),
+      );
   }
 }

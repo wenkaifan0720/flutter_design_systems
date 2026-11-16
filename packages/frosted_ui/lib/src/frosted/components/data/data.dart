@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -75,8 +76,11 @@ class FrostedDataTable<R> extends StatelessWidget {
     final t = context.frostedTheme;
     final words = FrostedLocalizations.of(context);
     final columns = controller.columns;
-    // The header row is at least the touch target tall: its heads sort.
+    // The header row is at least the touch target tall: its heads sort. The
+    // checks' column is at least the target wide, so a check stands in its
+    // whole target (48 under a finger).
     final head0 = math.max(_head, FrostedBreakpoints.hitTargetOf(context));
+    final check = math.max(_check, FrostedBreakpoints.hitTargetOf(context));
     Widget celled(DesignTableColumn<R> column, Widget child) => Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: FrostedSpacing.s12),
@@ -118,7 +122,7 @@ class FrostedDataTable<R> extends StatelessWidget {
                   children: [
                     if (selectable)
                       SizedBox(
-                        width: _check,
+                        width: check,
                         child: Center(
                           child: FrostedCheckbox(
                             value: switch (controller.pageSelection) {
@@ -228,7 +232,7 @@ class FrostedDataTable<R> extends StatelessWidget {
                     children: [
                       if (selectable)
                         SizedBox(
-                          width: _check,
+                          width: check,
                           child: Center(
                             child: FrostedCheckbox(
                               value: row.selected,
@@ -269,6 +273,24 @@ class FrostedDataTable<R> extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignTableController<R>>('controller', controller),
+      )
+      ..add(
+        FlagProperty(
+          'selectable',
+          value: selectable,
+          ifFalse: 'selectable: false',
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<R>>.has('onActivate', onActivate))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -403,5 +425,23 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<DesignTreeController<T>>('controller', controller),
+      )
+      ..add(ObjectFlagProperty<String Function(T node)>.has('labelOf', labelOf))
+      ..add(
+        ObjectFlagProperty<Widget? Function(T node)>.has(
+          'leadingOf',
+          leadingOf,
+        ),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }

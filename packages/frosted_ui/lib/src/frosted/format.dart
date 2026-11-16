@@ -14,7 +14,7 @@
 /// to whole cents once, then printed from those.
 ///
 /// ```dart
-/// Text(FrostedFormat.money(-1326.44), style: t.amount)
+/// Text(FrostedFormat.money(-1326.44), style: t.textTheme.amount)
 /// ```
 abstract final class FrostedFormat {
   /// The true minus (U+2212) every negative amount carries.

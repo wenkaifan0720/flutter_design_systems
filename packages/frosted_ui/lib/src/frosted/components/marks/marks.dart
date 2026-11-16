@@ -1,5 +1,6 @@
 import 'dart:ui' show SemanticsValidationResult;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -147,6 +148,22 @@ class FrostedMonogram extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue, defaultValue: null))
+      ..add(
+        EnumProperty<FrostedMarkSize>(
+          'size',
+          size,
+          defaultValue: FrostedMarkSize.regular,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// A glyph on a tinted squircle (icon-tile): an account's, a goal's or a
@@ -204,6 +221,23 @@ class FrostedIconMark extends StatelessWidget {
       image: true,
       child: ExcludeSemantics(child: token),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue, defaultValue: null))
+      ..add(
+        EnumProperty<FrostedMarkSize>(
+          'size',
+          size,
+          defaultValue: FrostedMarkSize.regular,
+        ),
+      )
+      ..add(FlagProperty('quiet', value: quiet, ifTrue: 'quiet'))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -281,6 +315,15 @@ class FrostedDateBlock extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('date', date))
+      ..add(FlagProperty('soon', value: soon, ifTrue: 'soon'))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue, defaultValue: null));
   }
 }
 
@@ -363,6 +406,21 @@ class FrostedTransactionMark extends StatelessWidget {
         label: FrostedLocalizations.of(context).cardPayment,
       ),
     };
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(
+        EnumProperty<FrostedMarkSize>(
+          'size',
+          size,
+          defaultValue: FrostedMarkSize.regular,
+        ),
+      );
   }
 }
 
@@ -474,6 +532,30 @@ class FrostedTag extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(
+        EnumProperty<FrostedTone>(
+          'tone',
+          tone,
+          defaultValue: FrostedTone.quiet,
+        ),
+      )
+      ..add(
+        EnumProperty<FrostedTagVariant>(
+          'variant',
+          variant,
+          defaultValue: FrostedTagVariant.wash,
+        ),
+      )
+      ..add(StringProperty('figure', figure, defaultValue: null))
+      ..add(StringProperty('lead', lead, defaultValue: null));
+  }
 }
 
 /// A swatch of a hue: an 8 round of its two stops at 135 degrees (`.sw`),
@@ -515,6 +597,17 @@ class FrostedSwatch extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(
+        DoubleProperty('size', size, defaultValue: FrostedChromeMetrics.swatch),
+      )
+      ..add(FlagProperty('part', value: part, ifTrue: 'part'));
+  }
 }
 
 /// A person to send to or split with (avatar): their initials on the 52
@@ -615,6 +708,17 @@ class FrostedPerson extends StatelessWidget {
       child: person,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(FlagProperty('dimmed', value: dimmed, ifTrue: 'dimmed'))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged));
+  }
 }
 
 /// A row of [FrostedPerson]s across the width, 8 apart, each given an equal
@@ -636,6 +740,12 @@ class FrostedPeople extends StatelessWidget {
     spacing: FrostedChromeMetrics.peopleGap,
     children: [for (final person in children) Expanded(child: person)],
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<FrostedPerson>('children', children));
+  }
 }
 
 /// A completion check: the 24 round an option wears (`.opt-c`), a ring of
@@ -673,10 +783,10 @@ class FrostedCheckbox extends StatelessWidget {
   /// round false, true, null.
   final ValueChanged<bool?>? onChanged;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// What the thing is, for a screen reader.
@@ -773,53 +883,55 @@ class FrostedCheckbox extends StatelessWidget {
         ),
       ),
     );
-    // The slop is the outermost box: a parent's bounds would stop a tap
-    // outside the 24 disc before it reached the slop. The node, the press
-    // and the pointer span the target; the focus ring hugs the disc. A mark
-    // that takes no press reaches no further than itself, so it never takes
-    // a press meant for the control beside it.
+    // The disc stands in the target, laid out round it (as Material pads a
+    // checkbox): the node, the press and the pointer span the target; the
+    // focus ring hugs the disc. A mark that takes no press stands in the
+    // same target, so turning it off moves nothing round it.
     return FrostedOwnSize(
-      child: FrostedHitSlop(
-        target: live ? null : 0,
-        child: Semantics(
-          label: label,
-          checked: value ?? false,
-          mixed: value == null,
-          enabled: live,
-          focusable: live,
+      // Its own node, wherever it stands: a check in a labelled region (a
+      // table's select-all) never lends that region its check and its tap.
+      child: Semantics(
+        container: true,
+        label: label,
+        checked: value ?? false,
+        mixed: value == null,
+        enabled: live,
+        focusable: live,
+        onTap: live ? flip : null,
+        validationResult: error
+            ? SemanticsValidationResult.invalid
+            : SemanticsValidationResult.none,
+        excludeSemantics: true,
+        child: GestureDetector(
           onTap: live ? flip : null,
-          validationResult: error
-              ? SemanticsValidationResult.invalid
-              : SemanticsValidationResult.none,
-          excludeSemantics: true,
-          child: GestureDetector(
-            onTap: live ? flip : null,
-            child: FrostedPressArea(
-              enabled: live,
-              child: MouseRegion(
-                cursor: live ? SystemMouseCursors.click : MouseCursor.defer,
-                child: FrostedSlopFace(
-                  child: FrostedKeyFocus(
-                    focusNode: focusNode,
-                    autofocus: autofocus,
-                    enabled: live,
-                    radius: FrostedStyleLayers.radiusOf(
-                      cut,
-                      FrostedChromeMetrics.check,
-                      FrostedChromeMetrics.check / 2,
-                    ),
-                    keys: {
-                      if (live) ...{
-                        LogicalKeyboardKey.enter: flip,
-                        LogicalKeyboardKey.space: flip,
-                      },
+          child: FrostedPressArea(
+            enabled: live,
+            child: MouseRegion(
+              cursor: live ? SystemMouseCursors.click : MouseCursor.defer,
+              child: FrostedHitSlop(
+                // A bare one starts on its column's keyline.
+                alignment: AlignmentDirectional.centerStart,
+
+                child: FrostedKeyFocus(
+                  focusNode: focusNode,
+                  autofocus: autofocus,
+                  enabled: live,
+                  radius: FrostedStyleLayers.radiusOf(
+                    cut,
+                    FrostedChromeMetrics.check,
+                    FrostedChromeMetrics.check / 2,
+                  ),
+                  keys: {
+                    if (live) ...{
+                      LogicalKeyboardKey.enter: flip,
+                      LogicalKeyboardKey.space: flip,
                     },
-                    child: FrostedPressedFace(
-                      child: Builder(
-                        builder: (context) => FrostedDim(
-                          off: !live,
-                          child: disc(FrostedPressArea.isDown(context)),
-                        ),
+                  },
+                  child: FrostedPressedFace(
+                    child: Builder(
+                      builder: (context) => FrostedDim(
+                        off: !live,
+                        child: disc(FrostedPressArea.isDown(context)),
                       ),
                     ),
                   ),
@@ -830,5 +942,27 @@ class FrostedCheckbox extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<bool?>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('label', label))
+      ..add(FlagProperty('error', value: error, ifTrue: 'error'))
+      ..add(FlagProperty('tristate', value: tristate, ifTrue: 'tristate'))
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
   }
 }

@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
@@ -5,7 +8,6 @@ import 'package:ui_core/ui_core.dart';
 import '../glyphs.dart';
 
 import '../chrome_metrics.dart';
-import '../internal/hit_slop.dart';
 import '../theme.dart';
 import 'icon-button/round_button.dart';
 import 'pressable/pressable.dart';
@@ -13,6 +15,7 @@ import 'account.dart';
 import 'sheet.dart';
 import 'sheet_page.dart';
 import '../internal/cap.dart';
+import '../internal/hit_slop.dart';
 
 /// The way back off a pushed page, or the close of a cover or a sheet, as
 /// the route's bar draws it. On a phone it is the round glass button with
@@ -38,10 +41,10 @@ class FrostedBack extends StatelessWidget {
   /// What a press does: pop the route.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// Where back goes.
@@ -107,16 +110,31 @@ class FrostedBack extends StatelessWidget {
         ],
       ),
     );
-    return FrostedHitSlop(
-      child: FrostedPressable(
-        focusNode: focusNode,
-        autofocus: autofocus,
-        onPressed: onPressed,
-        label: spoken,
-        role: FrostedPressRole.link,
-        child: crumb,
-      ),
+    return FrostedPressable(
+      focusNode: focusNode,
+      autofocus: autofocus,
+      onPressed: onPressed,
+      label: spoken,
+      role: FrostedPressRole.link,
+      child: crumb,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('close', value: close, ifTrue: 'close'));
   }
 }
 
@@ -291,12 +309,24 @@ class FrostedAppBar extends StatelessWidget {
       ),
     );
 
+    // The last act's face stands on the trailing keyline, its target growing
+    // inward (a 36 face in a 44 target stood 4 inside the line); the
+    // account's marks place their own.
     Widget? end(List<Widget> parts) => parts.isEmpty
         ? null
         : Row(
             mainAxisSize: MainAxisSize.min,
             spacing: FrostedChromeMetrics.barEndGap,
-            children: parts,
+            children: [
+              ...parts.take(parts.length - 1),
+              if (parts.last is FrostedAccountMarks)
+                parts.last
+              else
+                FrostedTargetSide(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: parts.last,
+                ),
+            ],
           );
 
     if (register == RoutePresentation.root) {
@@ -398,15 +428,29 @@ class FrostedAppBar extends StatelessWidget {
     // (`.top--detail`: 40, the title, 40); the page's actions take that
     // space when it has any.
     final trailing = end(actions);
+    // The back's column, and the balancing one, are at least its touch
+    // target wide (48 under a finger), so the back stands in its whole
+    // target.
+    final column = math.max(
+      FrostedChromeMetrics.detailColumn,
+      FrostedBreakpoints.hitTargetOf(context),
+    );
     return _BackLabel(
       label: backLabel,
       child: frame(
         Row(
           spacing: FrostedChromeMetrics.barGap,
           children: [
+            // The back's face stands on the leading keyline, its target
+            // growing toward the title.
             SizedBox(
-              width: FrostedChromeMetrics.detailColumn,
-              child: lead == null ? null : Center(child: lead),
+              width: column,
+              child: lead == null
+                  ? null
+                  : FrostedTargetSide(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Center(child: lead),
+                    ),
             ),
             Expanded(
               child: title == null
@@ -425,7 +469,7 @@ class FrostedAppBar extends StatelessWidget {
                     ),
             ),
             if (trailing == null)
-              const SizedBox(width: FrostedChromeMetrics.detailColumn)
+              SizedBox(width: column)
             else
               ConstrainedBox(
                 constraints: const BoxConstraints(
@@ -437,5 +481,18 @@ class FrostedAppBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('caption', caption))
+      ..add(StringProperty('backLabel', backLabel))
+      ..add(DiagnosticsProperty<Key>('bellKey', bellKey, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Key>('avatarKey', avatarKey, defaultValue: null),
+      );
   }
 }

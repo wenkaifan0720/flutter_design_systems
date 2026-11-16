@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -76,13 +77,44 @@ class FrostedPopover extends StatelessWidget {
       overlayBuilder: (context, info) => FrostedPanel(
         width: width,
         presence: info.animation,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(FrostedSpacing.s16),
         child: DefaultTextStyle.merge(
           style: t.textTheme.titleMedium.c(t.colorScheme.textPrimary),
           child: content,
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('width', width, defaultValue: 288))
+      ..add(
+        DiagnosticsProperty<DesignOverlayPlacement>(
+          'placement',
+          placement,
+          defaultValue: const DesignOverlayPlacement(
+            gap: 8,
+            matchAnchorWidth: false,
+          ),
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MenuController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onOpenChanged',
+          onOpenChanged,
+        ),
+      );
   }
 }
 
@@ -139,12 +171,30 @@ class FrostedHoverCard extends StatelessWidget {
       overlayBuilder: (context, info) => FrostedPanel(
         width: width,
         presence: info.animation,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(FrostedSpacing.s16),
         child: DefaultTextStyle.merge(
           style: t.textTheme.titleMedium.c(t.colorScheme.textPrimary),
           child: content,
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('width', width, defaultValue: 300))
+      ..add(
+        DiagnosticsProperty<DesignOverlayPlacement>(
+          'placement',
+          placement,
+          defaultValue: const DesignOverlayPlacement(
+            gap: 8,
+            matchAnchorWidth: false,
+          ),
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }

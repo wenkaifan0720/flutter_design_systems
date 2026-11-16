@@ -11,6 +11,7 @@ import '../kit.dart';
 
 Widget kitRaiseDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Raised surfaces',
   sections: [
     kitSection(

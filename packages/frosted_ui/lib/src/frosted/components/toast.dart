@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
@@ -243,7 +244,7 @@ class FrostedSnackBar extends StatelessWidget {
                     : Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 2,
+                        spacing: FrostedSpacing.s2,
                         children: [
                           Text(
                             head,
@@ -306,5 +307,26 @@ class FrostedSnackBar extends StatelessWidget {
         child: SizedBox(width: double.infinity, child: bar),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(
+        EnumProperty<FrostedTone>(
+          'tone',
+          tone,
+          defaultValue: FrostedTone.success,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAction', onAction))
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
   }
 }

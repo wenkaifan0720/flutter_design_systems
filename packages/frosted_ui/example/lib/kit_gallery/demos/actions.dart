@@ -4,12 +4,12 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../kit.dart';
 
 Widget kitActionsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Button group & keys',
   sections: [
     kitSection(
@@ -21,13 +21,13 @@ Widget kitActionsDemo(Brightness brightness) => kitScreen(
             items: [
               FrostedButtonGroupItem(
                 label: 'Undo',
-                icon: LucideIcons.undo2,
+                icon: FrostedGlyphs.undo,
                 showLabel: false,
                 onPressed: () {},
               ),
               FrostedButtonGroupItem(
                 label: 'Redo',
-                icon: LucideIcons.redo2,
+                icon: FrostedGlyphs.redo,
                 showLabel: false,
                 onPressed: () {},
               ),
@@ -70,13 +70,13 @@ Widget kitSpecimenButtonGroup() => Center(
     items: [
       FrostedButtonGroupItem(
         label: 'Undo',
-        icon: LucideIcons.undo2,
+        icon: FrostedGlyphs.undo,
         showLabel: false,
         onPressed: () {},
       ),
       FrostedButtonGroupItem(
         label: 'Redo',
-        icon: LucideIcons.redo2,
+        icon: FrostedGlyphs.redo,
         showLabel: false,
         onPressed: () {},
       ),

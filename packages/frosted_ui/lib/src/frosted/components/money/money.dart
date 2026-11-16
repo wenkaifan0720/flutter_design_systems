@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
@@ -167,6 +168,33 @@ class FrostedMoney extends StatelessWidget {
       excludeSemantics: true,
       child: figure,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(
+        EnumProperty<FrostedMoneyFlow>(
+          'flow',
+          flow,
+          defaultValue: FrostedMoneyFlow.balance,
+        ),
+      )
+      ..add(
+        EnumProperty<FrostedMoneySize>(
+          'size',
+          size,
+          defaultValue: FrostedMoneySize.large,
+        ),
+      )
+      ..add(FlagProperty('sign', value: sign, ifTrue: 'sign'))
+      ..add(FlagProperty('cents', value: cents, ifFalse: 'cents: false'))
+      ..add(FlagProperty('fit', value: fit, ifFalse: 'fit: false'))
+      ..add(ColorProperty('ink', ink, defaultValue: null))
+      ..add(FlagProperty('unsigned', value: unsigned, ifTrue: 'unsigned'))
+      ..add(FlagProperty('tabular', value: tabular, ifTrue: 'tabular'));
   }
 }
 
@@ -393,6 +421,25 @@ class FrostedAmount extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(FlagProperty('signed', value: signed, ifFalse: 'signed: false'))
+      ..add(
+        EnumProperty<FrostedAmountSize>(
+          'size',
+          size,
+          defaultValue: FrostedAmountSize.regular,
+        ),
+      )
+      ..add(FlagProperty('cents', value: cents, ifFalse: 'cents: false'))
+      ..add(ColorProperty('ink', ink, defaultValue: null))
+      ..add(EnumProperty<TextAlign>('textAlign', textAlign, defaultValue: null))
+      ..add(DiagnosticsProperty<TextStyle>('style', style, defaultValue: null));
+  }
 }
 
 /// Figures inside a line of words, as the source's `.num`: the display face
@@ -425,6 +472,14 @@ class FrostedNumberText extends StatelessWidget {
       textDirection: TextDirection.ltr,
       textAlign: _figureAlign(context, null),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(DiagnosticsProperty<TextStyle>('style', style, defaultValue: null));
   }
 }
 
@@ -543,6 +598,21 @@ class FrostedPercent extends StatelessWidget {
     }
     return Semantics(label: '$percent%', excludeSemantics: true, child: figure);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('percent', percent))
+      ..add(
+        EnumProperty<FrostedPercentSize>(
+          'size',
+          size,
+          defaultValue: FrostedPercentSize.regular,
+        ),
+      )
+      ..add(ColorProperty('ink', ink, defaultValue: null));
+  }
 }
 
 /// How a set of [FrostedFigure]s is laid out in a [FrostedStats].
@@ -643,6 +713,24 @@ class FrostedFigure extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(StringProperty('caption', caption))
+      ..add(FlagProperty('signed', value: signed, ifTrue: 'signed'))
+      ..add(FlagProperty('cents', value: cents, ifFalse: 'cents: false'))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(
+        EnumProperty<FrostedMoneyFlow>(
+          'flow',
+          flow,
+          defaultValue: FrostedMoneyFlow.balance,
+        ),
+      );
   }
 }
 
@@ -888,6 +976,20 @@ class FrostedStats extends StatelessWidget {
         );
     }
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedFigure>('children', children))
+      ..add(
+        EnumProperty<FrostedStatVariant>(
+          'variant',
+          variant,
+          defaultValue: FrostedStatVariant.lines,
+        ),
+      );
+  }
 }
 
 /// A figure that rolls to its new value (animated-number): a [FrostedMoney]
@@ -944,4 +1046,29 @@ class FrostedCounter extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(
+        EnumProperty<FrostedMoneyFlow>(
+          'flow',
+          flow,
+          defaultValue: FrostedMoneyFlow.balance,
+        ),
+      )
+      ..add(
+        EnumProperty<FrostedMoneySize>(
+          'size',
+          size,
+          defaultValue: FrostedMoneySize.large,
+        ),
+      )
+      ..add(FlagProperty('sign', value: sign, ifTrue: 'sign'))
+      ..add(
+        DiagnosticsProperty<Duration>('duration', duration, defaultValue: null),
+      );
+  }
 }

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -62,6 +63,32 @@ class FrostedCalendar extends StatefulWidget {
 
   @override
   State<FrostedCalendar> createState() => _FrostedCalendarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
+      ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
+      ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('months', months, defaultValue: 1))
+      ..add(
+        ObjectFlagProperty<bool Function(DateTime day)>.has(
+          'selectableDayPredicate',
+          selectableDayPredicate,
+        ),
+      );
+  }
 }
 
 class _FrostedCalendarState extends State<FrostedCalendar> {
@@ -157,6 +184,35 @@ class FrostedDateRangePicker extends StatefulWidget {
 
   @override
   State<FrostedDateRangePicker> createState() => _FrostedDateRangePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('firstDate', firstDate))
+      ..add(DiagnosticsProperty<DateTime>('lastDate', lastDate))
+      ..add(
+        DiagnosticsProperty<DesignDateRange>(
+          'value',
+          value,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignDateRange>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('months', months, defaultValue: 2));
+  }
 }
 
 class _FrostedDateRangePickerState extends State<FrostedDateRangePicker> {
@@ -237,25 +293,35 @@ class _FrostedMonths extends StatelessWidget {
     // do not fit, a day overhangs its seventh, centred.
     final target = FrostedBreakpoints.hitTargetOf(context);
     final row = math.max(44.0, target);
-    Widget step(IconData glyph, String label, VoidCallback? go) =>
-        FrostedHitSlop(
-          child: FrostedPressable(
-            onPressed: go,
-            label: label,
-            radius: 18,
-            child: SizedBox.square(
-              dimension: 36,
-              child: FrostedDim(
-                off: go == null,
-                child: Icon(
-                  glyph,
-                  size: FrostedChromeMetrics.pickerGlyph + 2,
-                  color: t.colorScheme.textPrimary,
-                ),
-              ),
+    // An arrow's 36 face stands in its touch target on the header's end,
+    // the target growing inward.
+    Widget step(
+      IconData glyph,
+      String label,
+      VoidCallback? go,
+      AlignmentDirectional side,
+    ) => FrostedTargetSide(
+      alignment: side,
+      child: FrostedPressable(
+        onPressed: go,
+        label: label,
+        radius: 18,
+        child: SizedBox.square(
+          dimension: 36,
+          child: FrostedDim(
+            off: go == null,
+            child: Icon(
+              glyph,
+              size: FrostedChromeMetrics.pickerGlyph + 2,
+              color: t.colorScheme.textPrimary,
             ),
           ),
-        );
+        ),
+      ),
+    );
+    // The header stands as tall as the arrows' targets; the 8 under the
+    // arrows' faces keeps.
+    final head = math.max(36.0, target);
     // A month stands at most 400 wide, at the start of a wider field: on a
     // desktop column its days keep together rather than spread 100 apart.
     const monthMax = 400.0;
@@ -276,30 +342,34 @@ class _FrostedMonths extends StatelessWidget {
         spacing: FrostedSpacing.s24,
         children: [for (final g in grids) Expanded(child: g)],
       ),
-      headerBuilder: (context, head) => Padding(
-        padding: const EdgeInsets.only(bottom: FrostedSpacing.s8),
+      headerBuilder: (context, header) => Padding(
+        padding: EdgeInsets.only(
+          bottom: math.max(0.0, FrostedSpacing.s8 - (head - 36) / 2),
+        ),
         child: SizedBox(
-          height: 36,
+          height: head,
           child: Row(
             children: [
-              if (head.previous != null || months == 1)
+              if (header.previous != null || months == 1)
                 step(
                   FrostedGlyphs.chevronLeft,
                   DesignLocalizations.of(context).previousMonthTooltip,
-                  head.previous,
+                  header.previous,
+                  AlignmentDirectional.centerStart,
                 ),
               Expanded(
                 child: Text(
-                  head.label,
+                  header.label,
                   textAlign: TextAlign.center,
                   style: t.textTheme.labelLarge.c(t.colorScheme.textPrimary),
                 ),
               ),
-              if (head.next != null || months == 1)
+              if (header.next != null || months == 1)
                 step(
                   FrostedGlyphs.forward,
                   DesignLocalizations.of(context).nextMonthTooltip,
-                  head.next,
+                  header.next,
+                  AlignmentDirectional.centerEnd,
                 ),
             ],
           ),
@@ -423,7 +493,7 @@ class _FrostedMonths extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: band,
                                   borderRadius:
-                                      BorderRadiusDirectional.horizontal(
+                                      const BorderRadiusDirectional.horizontal(
                                         end: Radius.circular(cell / 2),
                                       ).resolve(Directionality.of(context)),
                                 ),

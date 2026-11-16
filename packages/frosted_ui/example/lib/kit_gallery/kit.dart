@@ -17,6 +17,9 @@ import 'package:frosted_ui/frosted_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'theme.dart';
+import 'arabic.dart';
+
+export 'arabic.dart' show kitArabic, kitSay, kitTransactions;
 
 /// A demo screen: a scrolling nav root titled [title], with labelled
 /// sections, one per variant or state. [footer] pins a widget under the
@@ -28,8 +31,18 @@ Widget kitScreen({
   List<Widget> sections = const [],
   Widget? body,
   Widget? footer,
+  bool measured = false,
 }) {
   assert(body == null || sections.isEmpty, 'sections or body, not both');
+  final column = Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      for (final section in sections) ...[
+        section,
+        const FrostedGap(FrostedSpacing.s24),
+      ],
+    ],
+  );
   return _kitApp(
     brightness: brightness,
     home: FrostedScaffold(
@@ -37,18 +50,29 @@ Widget kitScreen({
       footer: footer,
       body:
           body ??
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final section in sections) ...[
-                section,
-                const FrostedGap(FrostedSpacing.s24),
-              ],
-            ],
-          ),
+          (measured
+              ? Builder(
+                  builder: (context) => FrostedBreakpoints.isWide(context)
+                      ? Align(
+                          alignment: AlignmentDirectional.topStart,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              maxWidth: kitMeasure,
+                            ),
+                            child: column,
+                          ),
+                        )
+                      : column,
+                )
+              : column),
     ),
   );
 }
+
+/// The column a form-like page ([kitScreen]'s `measured`) keeps on the
+/// desktop: its rows and fields stand as a desktop app's settings do, not
+/// across the window (the form-factors check, coordinator msg_5e8ccd896566).
+const double kitMeasure = 720;
 
 /// A demo that is its own whole surface (a route stack): the themed app
 /// around exactly the widget the demo builds.
@@ -83,21 +107,43 @@ FrostedThemeData kitTheme(Brightness brightness) =>
     kitShownTheme?.call(brightness) ??
     FrostedThemeData.preset(kitShownPreset, brightness);
 
+/// The gallery's app theme: Flutter's own, but for its page routes, which
+/// move as Frosted's do: an app on Flutter's own Material puts
+/// [frostedPageTransitions] in its ThemeData the same way.
+final ThemeData kitAppTheme = ThemeData(
+  pageTransitionsTheme: const PageTransitionsTheme(
+    builders: frostedPageTransitions,
+  ),
+);
+
 Widget _kitApp({required Brightness brightness, required Widget home}) =>
     MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Frosted',
+      // Its pushes (Top bar's page) move as Frosted's pages do, whichever
+      // Material the app is on.
+      theme: kitAppTheme,
+      // Frosted's own words and the ones every design system shares (ui_core
+      // speaks 30 languages): an app in another language installs them for
+      // it, beside GlobalMaterialLocalizations.
+      localizationsDelegates: const [
+        FrostedLocalizations.delegate,
+        DesignLocalizations.delegate,
+      ],
       navigatorObservers:
           kitNavigatorObservers?.call() ?? const <NavigatorObserver>[],
-      builder: (context, child) => Directionality(
-        textDirection: kitShownDirection,
-        child: FrostedHost(
-          light: kitTheme(Brightness.light),
-          dark: kitTheme(Brightness.dark),
-          brightness: brightness,
-          child: FrostedAccountScope(
-            account: kitMaren,
-            child: child ?? const SizedBox.shrink(),
+      builder: (context, child) => kitWords(
+        context,
+        Directionality(
+          textDirection: kitShownDirection,
+          child: FrostedHost(
+            light: kitTheme(Brightness.light),
+            dark: kitTheme(Brightness.dark),
+            brightness: brightness,
+            child: FrostedAccountScope(
+              account: kitMaren,
+              child: child ?? const SizedBox.shrink(),
+            ),
           ),
         ),
       ),
@@ -143,15 +189,18 @@ Widget kitRouterApp({
   debugShowCheckedModeBanner: false,
   title: 'Frosted',
   routerConfig: router,
-  builder: (context, child) => Directionality(
-    textDirection: kitShownDirection,
-    child: FrostedHost(
-      light: kitTheme(Brightness.light),
-      dark: kitTheme(Brightness.dark),
-      brightness: brightness,
-      child: FrostedAccountScope(
-        account: kitMaren,
-        child: child ?? const SizedBox.shrink(),
+  builder: (context, child) => kitWords(
+    context,
+    Directionality(
+      textDirection: kitShownDirection,
+      child: FrostedHost(
+        light: kitTheme(Brightness.light),
+        dark: kitTheme(Brightness.dark),
+        brightness: brightness,
+        child: FrostedAccountScope(
+          account: kitMaren,
+          child: child ?? const SizedBox.shrink(),
+        ),
       ),
     ),
   ),
@@ -220,15 +269,19 @@ Widget kitSpecimenStage({
 }) => MaterialApp(
   debugShowCheckedModeBanner: false,
   title: 'Frosted',
-  builder: (context, home) => Directionality(
-    textDirection: kitShownDirection,
-    child: FrostedHost(
-      light: FrostedThemeData.preset(style, Brightness.light),
-      dark: FrostedThemeData.preset(style, Brightness.dark),
-      brightness: brightness,
-      child: FrostedAccountScope(
-        account: kitMaren,
-        child: home ?? const SizedBox.shrink(),
+  theme: kitAppTheme,
+  builder: (context, home) => kitWords(
+    context,
+    Directionality(
+      textDirection: kitShownDirection,
+      child: FrostedHost(
+        light: FrostedThemeData.preset(style, Brightness.light),
+        dark: FrostedThemeData.preset(style, Brightness.dark),
+        brightness: brightness,
+        child: FrostedAccountScope(
+          account: kitMaren,
+          child: home ?? const SizedBox.shrink(),
+        ),
       ),
     ),
   ),

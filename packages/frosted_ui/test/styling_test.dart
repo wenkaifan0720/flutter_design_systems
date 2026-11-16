@@ -13,6 +13,7 @@ Future<void> _pump(
   WidgetTester t,
   Widget child, {
   FrostedThemeData? theme,
+  bool clean = true,
 }) async {
   t.view.physicalSize = const Size(390, 844);
   t.view.devicePixelRatio = 1;
@@ -32,7 +33,7 @@ Future<void> _pump(
       ),
     ),
   );
-  expect(t.takeException(), isNull);
+  if (clean) expect(t.takeException(), isNull);
 }
 
 /// The outermost face drawn under [of].
@@ -77,21 +78,33 @@ void main() {
     testWidgets('sets the fill, the shape and the words', (t) async {
       await _pump(
         t,
-        FrostedButton(
-          'Save',
-          onPressed: () {},
-          style: const FrostedStyle(
-            fill: WidgetStatePropertyAll(_blue),
-            shape: WidgetStatePropertyAll(_square),
-            textStyle: WidgetStatePropertyAll(TextStyle(letterSpacing: 2)),
-          ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FrostedButton(
+              'Save',
+              onPressed: () {},
+              style: const FrostedStyle(
+                fill: WidgetStatePropertyAll(_blue),
+                textStyle: WidgetStatePropertyAll(TextStyle(letterSpacing: 2)),
+              ),
+            ),
+            FrostedButton.glass(
+              'Share',
+              onPressed: () {},
+              style: const FrostedStyle(shape: WidgetStatePropertyAll(_square)),
+            ),
+          ],
         ),
       );
-      final face = _face(t, find.byType(FrostedButton));
+      final face = _face(t, find.widgetWithText(FrostedButton, 'Save'));
       expect(face.color, _blue);
       expect(face.gradients, isEmpty);
-      expect(face.shape, _square);
       expect(t.widget<Text>(find.text('Save')).style?.letterSpacing, 2);
+      expect(
+        _face(t, find.widgetWithText(FrostedButton, 'Share')).shape,
+        _square,
+      );
     });
 
     testWidgets('resolves per state: a pressed fill while a finger is down', (
@@ -115,7 +128,9 @@ void main() {
       await t.pump();
       expect(_face(t, find.byType(FrostedButton)).color, _red);
       await gesture.up();
-      await t.pump();
+      // ui_core's pressable holds a press it showed for 100 ms (Flutter's
+      // kPressTimeout), so a quick tap still reads.
+      await t.pump(const Duration(milliseconds: 100));
       expect(_face(t, find.byType(FrostedButton)).color, isNull);
     });
 
@@ -190,6 +205,70 @@ void main() {
     });
   });
 
+  group('the ink act keeps its pill (law 6)', () {
+    testWidgets('a shape of its own that squares its ends asserts', (t) async {
+      // Bounded, so the error's own widget stands in the button's room.
+      await _pump(
+        t,
+        SizedBox(
+          width: 200,
+          height: 48,
+          child: FrostedButton(
+            'Save',
+            onPressed: () {},
+            style: const FrostedStyle(shape: WidgetStatePropertyAll(_square)),
+          ),
+        ),
+        clean: false,
+      );
+      final error = t.takeException();
+      expect(error, isA<AssertionError>());
+      expect('$error', contains('law 6, the ink pill'));
+    });
+
+    testWidgets('a rounder shape of its own is still a pill', (t) async {
+      const round = RoundedSuperellipseBorder(
+        borderRadius: BorderRadius.all(Radius.circular(40)),
+      );
+      await _pump(
+        t,
+        FrostedButton(
+          'Save',
+          onPressed: () {},
+          style: const FrostedStyle(shape: WidgetStatePropertyAll(round)),
+        ),
+      );
+      expect(_face(t, find.byType(FrostedButton)).shape, round);
+    });
+
+    testWidgets('the theme\'s button shape squares the glass, not the act', (
+      t,
+    ) async {
+      await _pump(
+        t,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FrostedButton('Save', onPressed: () {}),
+            FrostedButton.glass('Share', onPressed: () {}),
+          ],
+        ),
+        theme: FrostedThemeData.opal().copyWith(
+          components: const FrostedComponentThemes(
+            button: FrostedStyle(shape: WidgetStatePropertyAll(_square)),
+          ),
+        ),
+      );
+      final act = _face(t, find.widgetWithText(FrostedButton, 'Save'));
+      expect(act.shape, isNull);
+      expect(act.radius, BorderRadius.circular(22));
+      expect(
+        _face(t, find.widgetWithText(FrostedButton, 'Share')).shape,
+        _square,
+      );
+    });
+  });
+
   group('the knobs', () {
     testWidgets('compact density stands a button 8 shorter, its target kept', (
       t,
@@ -258,8 +337,8 @@ void main() {
             .ancestor(of: find.text('Day'), matching: find.byType(FrostedFace))
             .first,
       );
-      const inset = 3.0;
-      expect(strip.height, 36 + inset * 2);
+      const inset = 2.0;
+      expect(strip.height, 38 + inset * 2);
       expect(plate.top - strip.top, inset);
       expect(strip.bottom - plate.bottom, inset);
       final row = t.getRect(find.byType(Expanded));

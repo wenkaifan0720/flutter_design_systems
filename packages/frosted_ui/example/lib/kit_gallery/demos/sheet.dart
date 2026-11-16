@@ -12,20 +12,25 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../kit.dart';
 
-/// The source's eight categories, in its order (their hues follow it).
-const _categories = [
-  'Rent & home',
-  'Groceries',
-  'Dining out',
-  'Shopping',
-  'Fun',
-  'Transport',
-  'Health',
-  'Subscriptions',
+/// The source's eight categories, in its order (their hues follow it), in
+/// the shown language.
+List<String> get _categories => [
+  kitSay('Rent & home'),
+  kitSay('Groceries'),
+  kitSay('Dining out'),
+  kitSay('Shopping'),
+  kitSay('Fun'),
+  kitSay('Transport'),
+  kitSay('Health'),
+  kitSay('Subscriptions'),
 ];
 
-Widget kitSheetDemo(Brightness brightness) =>
-    kitScreen(brightness: brightness, title: 'Sheet', sections: [_Raise()]);
+Widget kitSheetDemo(Brightness brightness) => kitScreen(
+  brightness: brightness,
+  measured: true,
+  title: kitSay('Sheet'),
+  sections: [_Raise()],
+);
 
 class _Raise extends StatefulWidget {
   @override
@@ -33,22 +38,22 @@ class _Raise extends StatefulWidget {
 }
 
 class _RaiseState extends State<_Raise> {
-  String _category = 'Dining out';
+  String _category = kitSay('Dining out');
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       kitSection(
-        'Raised',
+        kitSay('Raised'),
         children: [
           kitRow([
             FrostedButton.glass(
-              'Category · $_category',
+              '${kitSay('Category')} · ${kitSay(_category)}',
               onPressed: () async {
                 final picked = await FrostedSheet.show<String>(
                   context,
-                  title: 'Category',
+                  title: kitSay('Category'),
                   builder: (sheet) => _options(
                     sheet,
                     _category,
@@ -59,20 +64,20 @@ class _RaiseState extends State<_Raise> {
               },
             ),
             FrostedButton.glass(
-              'Freeze card',
+              kitSay('Freeze card'),
               icon: LucideIcons.snowflake,
               onPressed: () => FrostedSheet.show<void>(
                 context,
-                title: 'Freeze your card?',
+                title: kitSay('Freeze your card?'),
                 close: false,
                 builder: (sheet) => const [_FreezePoints()],
                 foot: (sheet) => [
                   FrostedButton.glass(
-                    'Cancel',
+                    kitSay('Cancel'),
                     onPressed: () => Navigator.of(sheet).pop(),
                   ),
                   FrostedButton(
-                    'Freeze',
+                    kitSay('Freeze'),
                     icon: LucideIcons.snowflake,
                     onPressed: () => Navigator.of(sheet).pop(),
                   ),
@@ -83,28 +88,28 @@ class _RaiseState extends State<_Raise> {
         ],
       ),
       kitSection(
-        'Side sheet',
+        kitSay('Side sheet'),
         children: [
           kitRow([
             FrostedButton.glass(
-              'Filters',
+              kitSay('Filters'),
               onPressed: () => FrostedSheet.showSide<void>(
                 context,
-                title: 'Filters',
+                title: kitSay('Filters'),
                 builder: (sheet) => [
                   KitHeld<bool>(
                     true,
                     (on, set) => FrostedSwitchRow(
-                      label: 'Only unread',
+                      label: kitSay('Only unread'),
                       value: on,
                       onChanged: set,
                     ),
                   ),
-                  const FrostedTextField(label: 'From'),
+                  FrostedTextField(label: kitSay('From')),
                 ],
                 foot: (sheet) => [
                   FrostedButton(
-                    'Apply',
+                    kitSay('Apply'),
                     onPressed: () => Navigator.of(sheet).pop(),
                   ),
                 ],
@@ -126,10 +131,12 @@ class _RaiseState extends State<_Raise> {
                     child: SizedBox(
                       width: 300,
                       child: FrostedSheet(
-                        title: 'Filters',
+                        title: kitSay('Filters'),
                         onClose: () {},
-                        foot: [FrostedButton('Apply', onPressed: () {})],
-                        children: const [FrostedTextField(label: 'From')],
+                        foot: [
+                          FrostedButton(kitSay('Apply'), onPressed: () {}),
+                        ],
+                        children: [FrostedTextField(label: kitSay('From'))],
                       ),
                     ),
                   ),
@@ -141,7 +148,7 @@ class _RaiseState extends State<_Raise> {
       ),
       kitSection('In place', children: [kitSpecimenSheetCategory()]),
       kitSection(
-        'A dialog closed by its own acts',
+        kitSay('A dialog closed by its own acts'),
         children: [kitSpecimenSheetFreeze()],
       ),
     ],
@@ -171,10 +178,16 @@ List<Widget> _options(
 class _FreezePoints extends StatelessWidget {
   const _FreezePoints();
 
-  static const _points = [
-    (LucideIcons.ban, 'New purchases and cash withdrawals are declined.'),
-    (LucideIcons.repeat, 'Autopay, refunds and payments still go through.'),
-    (LucideIcons.sun, 'Unfreeze any time; it takes effect at once.'),
+  static List<(IconData, String)> get _points => [
+    (
+      LucideIcons.ban,
+      kitSay('New purchases and cash withdrawals are declined.'),
+    ),
+    (
+      LucideIcons.repeat,
+      kitSay('Autopay, refunds and payments still go through.'),
+    ),
+    (LucideIcons.sun, kitSay('Unfreeze any time; it takes effect at once.')),
   ];
 
   @override
@@ -220,22 +233,26 @@ class _FreezePoints extends StatelessWidget {
 
 Widget kitSpecimenSheetCategory() => Builder(
   builder: (context) => FrostedSheetShell(
-    title: 'Category',
+    title: kitSay('Category'),
     children: [
       Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: _options(context, 'Dining out', (_) {}),
+        children: _options(context, kitSay('Dining out'), (_) {}),
       ),
     ],
   ),
 );
 
 Widget kitSpecimenSheetFreeze() => FrostedSheetShell(
-  title: 'Freeze your card?',
+  title: kitSay('Freeze your card?'),
   close: false,
   foot: [
-    FrostedButton.glass('Cancel', onPressed: () {}),
-    FrostedButton('Freeze', icon: LucideIcons.snowflake, onPressed: () {}),
+    FrostedButton.glass(kitSay('Cancel'), onPressed: () {}),
+    FrostedButton(
+      kitSay('Freeze'),
+      icon: LucideIcons.snowflake,
+      onPressed: () {},
+    ),
   ],
   children: const [_FreezePoints()],
 );

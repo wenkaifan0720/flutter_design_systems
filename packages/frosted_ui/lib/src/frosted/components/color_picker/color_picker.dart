@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -42,6 +43,16 @@ class FrostedColorPicker extends StatefulWidget {
 
   @override
   State<FrostedColorPicker> createState() => _FrostedColorPickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ColorProperty('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<Color>>.has('onChanged', onChanged))
+      ..add(FlagProperty('showAlpha', value: showAlpha, ifTrue: 'showAlpha'))
+      ..add(FlagProperty('showHex', value: showHex, ifFalse: 'showHex: false'));
+  }
 }
 
 class _FrostedColorPickerState extends State<FrostedColorPicker> {
@@ -94,7 +105,7 @@ class _FrostedColorPickerState extends State<FrostedColorPicker> {
                   ? t.colorScheme.toggleKnob
                   : t.colorScheme.textPrimary),
           edge: t.glass.plane,
-          edges: const EdgeInsets.all(3),
+          edges: const EdgeInsets.all(FrostedChromeMetrics.colorKnobRim),
           shadows: t.shadows.toggleKnob,
         ),
       );

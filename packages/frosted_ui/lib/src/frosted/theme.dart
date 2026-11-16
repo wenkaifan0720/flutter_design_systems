@@ -1,16 +1,20 @@
 import 'dart:math' as math;
 import 'dart:ui' show PointerDeviceKind, lerpDouble;
 
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart'
     show GestureVelocityTrackerBuilder, MultitouchDragStrategy;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/host.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'component_themes.dart';
+import 'components/page_motion.dart';
 import 'fonts.dart';
 
+import 'internal/platform_words.dart';
 import 'internal/rest_ring.dart';
 import 'internal/themes/atrium.g.dart';
 import 'internal/themes/frost.g.dart';
@@ -379,9 +383,8 @@ abstract final class FrostedInsets {
 /// A fixed spacer of one [FrostedSpacing] step, as wide as it is tall.
 ///
 /// ```dart
-/// Column(children: [title, const FrostedGap(FrostedSpacing.s12),
+/// Column(children: [title, const FrostedGap(FrostedSpacing.s12), body])
 /// ```
-/// body])
 class FrostedGap extends StatelessWidget {
   /// A spacer [size] across and [size] tall.
   const FrostedGap(this.size, {super.key});
@@ -391,6 +394,12 @@ class FrostedGap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(width: size, height: size);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('size', size));
+  }
 }
 
 /// Responsive layout invariants shared by Frosted apps.
@@ -402,6 +411,12 @@ abstract final class FrostedBreakpoints {
   /// detail's bar a crumb over a large title.
   static const double wide = 1024;
 
+  /// The width from which the window is no longer a phone's: a tablet's,
+  /// where Material's medium window class starts. From here the app keeps
+  /// its tab bar, hugging its tabs in the middle of the foot, and a sheet
+  /// stands as the centred card it is on the desktop.
+  static const double medium = 600;
+
   /// The touch-target floor under a pointer: a mouse or a trackpad.
   static const double minHitTarget = 44;
 
@@ -409,15 +424,22 @@ abstract final class FrostedBreakpoints {
   /// a phone.
   static const double touchHitTarget = 48;
 
-  /// The floor a target answers on [context]'s platform: [touchHitTarget]
-  /// on Android, iOS and Fuchsia, [minHitTarget] on the desktop.
+  /// Frosted's floors, which its theme declares round the app (a
+  /// `DesignTapTargetScope`): [touchHitTarget] for a finger,
+  /// [minHitTarget] for a pointer, both above ui_core's 44 and 24.
+  static const DesignTapTargets targets = DesignTapTargets(
+    touch: Size.square(touchHitTarget),
+    pointer: Size.square(minHitTarget),
+  );
+
+  /// The floor a target answers on [context]'s platform, from the floors in
+  /// force there (an app's own `DesignTapTargetScope`, else [targets]):
+  /// [touchHitTarget] on Android, iOS and Fuchsia, [minHitTarget] on the
+  /// desktop.
   static double hitTargetOf(BuildContext context) =>
-      switch (Theme.of(context).platform) {
-        TargetPlatform.android ||
-        TargetPlatform.iOS ||
-        TargetPlatform.fuchsia => touchHitTarget,
-        _ => minHitTarget,
-      };
+      (DesignTapTargets.maybeOf(context) ?? targets)
+          .floorOn(Theme.of(context).platform)
+          .shortestSide;
 
   /// The sidebar's width on the desktop.
   static const double sidebar = 240;
@@ -428,6 +450,10 @@ abstract final class FrostedBreakpoints {
   /// Whether the window is the desktop one.
   static bool isWide(BuildContext context) =>
       MediaQuery.sizeOf(context).width >= wide;
+
+  /// Whether the window is a phone's: narrower than [medium].
+  static bool isCompact(BuildContext context) =>
+      MediaQuery.sizeOf(context).width < medium;
 
   /// The page gutter at [context]: 16 on a phone, 32 on the desktop.
   static double gutter(BuildContext context) =>
@@ -3852,6 +3878,12 @@ class FrostedThemeData with Diagnosticable {
   /// `ThemeData.copyWith`. A new [typeface] sets every style of [textTheme]
   /// in its faces and at its scale, unless a [textTheme] is given too.
   ///
+  /// [shadows], [glass], [pearl] and [sheens] are deprecated: a free shadow
+  /// can make Frosted's soft lift a hard one (depth is thickness), and an
+  /// opaque or dark tint turns glass into paint. A preset keeps them in the
+  /// look; [opaqueMaterials] is the sanctioned solid form, for high
+  /// contrast.
+  ///
   /// ```dart
   /// final theme = FrostedThemeData.opal().copyWith(
   ///   colorScheme: FrostedThemeData.opal().colorScheme.copyWith(accent: const Color(0xFF3A5BD9)),
@@ -3863,13 +3895,33 @@ class FrostedThemeData with Diagnosticable {
     Brightness? brightness,
     FrostedColorScheme? colorScheme,
     FrostedTextTheme? textTheme,
+    @Deprecated(
+      'Use a preset\'s shadows (FrostedThemeData.preset) or opaqueMaterials '
+      'instead: a free shadow can make Frosted\'s soft lift a hard one. '
+      'This feature was deprecated after v0.2.0.',
+    )
     FrostedShadows? shadows,
+    @Deprecated(
+      'Use opaqueMaterials instead, the sanctioned solid form for high '
+      'contrast: a free glass tint can turn Frosted\'s glass into paint. '
+      'This feature was deprecated after v0.2.0.',
+    )
     FrostedGlassColors? glass,
+    @Deprecated(
+      'Use opaqueMaterials instead, the sanctioned solid form for high '
+      'contrast: a free pearl tint can turn Frosted\'s glass into paint. '
+      'This feature was deprecated after v0.2.0.',
+    )
     FrostedPearlColors? pearl,
     FrostedToastColors? toast,
     FrostedHues? hues,
     FrostedLights? lights,
     FrostedChartInks? charts,
+    @Deprecated(
+      'Use opaqueMaterials instead, the sanctioned solid form for high '
+      'contrast: a free sheen tint can turn Frosted\'s glass into paint. '
+      'This feature was deprecated after v0.2.0.',
+    )
     FrostedSheens? sheens,
     FrostedDensity? density,
     FrostedTypeface? typeface,
@@ -5523,6 +5575,7 @@ class FrostedToastColors with Diagnosticable {
 ///     data: FrostedThemeData.opal(),
 ///     child: child!,
 ///   ),
+///   home: home,
 /// )
 /// ```
 class FrostedTheme extends StatelessWidget {
@@ -5543,21 +5596,16 @@ class FrostedTheme extends StatelessWidget {
   /// What it styles.
   final Widget child;
 
-  /// The theme in scope at [context]. Throws when there is none:
-  /// `context.frostedTheme` is the same.
-  static FrostedThemeData of(BuildContext context) {
-    final found = maybeOf(context);
-    if (found == null) {
-      throw FlutterError.fromParts([
-        ErrorSummary('No FrostedTheme in scope.'),
-        ErrorHint(
-          'Put a FrostedTheme (or a FrostedHost) in the app\'s builder, '
-          'above the navigator, or above this widget.',
-        ),
-      ]);
-    }
-    return found;
-  }
+  /// The theme in scope at [context]; with none, the default preset's, by
+  /// day or by night as the platform is (as `Theme.of` gives Material's
+  /// default). `context.frostedTheme` is the same; [maybeOf] is null where
+  /// there is none.
+  static FrostedThemeData of(BuildContext context) =>
+      maybeOf(context) ??
+      FrostedThemeData.preset(
+        FrostedThemeData.presets.first,
+        MediaQuery.maybePlatformBrightnessOf(context) ?? Brightness.light,
+      );
 
   /// The theme in scope at [context], or null.
   static FrostedThemeData? maybeOf(BuildContext context) =>
@@ -5583,7 +5631,13 @@ class FrostedTheme extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<FrostedThemeData>('data', data))
-      ..add(DiagnosticsProperty<FrostedThemeData>('dark', darkData));
+      ..add(
+        DiagnosticsProperty<FrostedThemeData>(
+          'darkData',
+          darkData,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -5613,21 +5667,53 @@ class _FrostedInstall extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var under = child;
-    if (Localizations.maybeLocaleOf(context) != null &&
-        Localizations.of<MaterialLocalizations>(
+    // The Material and Cupertino words the machinery under the look needs
+    // (a field's editable and its menu, a route's barrier), in the app's
+    // language where the package has it, when the app gives none of the
+    // libraries' the look is built on: an app on Flutter's own Material
+    // (flutter_localizations or not) gives Flutter's types, so under German
+    // or Arabic a field once threw for want of them.
+    if (Localizations.maybeLocaleOf(context) != null) {
+      final missing = [
+        if (Localizations.of<MaterialLocalizations>(
               context,
               MaterialLocalizations,
             ) ==
-            null) {
-      // A Localizations sets its locale's direction (left to right for
-      // English) under it: the page keeps the direction it stands in.
-      final direction = Directionality.maybeOf(context);
-      under = Localizations.override(
-        context: context,
-        delegates: const [DefaultMaterialLocalizations.delegate],
-        child: direction == null
-            ? under
-            : Directionality(textDirection: direction, child: under),
+            null)
+          frostedMaterialWords,
+        if (Localizations.of<CupertinoLocalizations>(
+              context,
+              CupertinoLocalizations,
+            ) ==
+            null)
+          frostedCupertinoWords,
+      ];
+      if (missing.isNotEmpty) {
+        // A Localizations sets its locale's direction (left to right for
+        // English) under it: the page keeps the direction it stands in.
+        final direction = Directionality.maybeOf(context);
+        under = Localizations.override(
+          context: context,
+          delegates: missing,
+          child: direction == null
+              ? under
+              : Directionality(textDirection: direction, child: under),
+        );
+      }
+    }
+    // Frosted's floors, unless the app declared its own.
+    if (DesignTapTargets.maybeOf(context) == null) {
+      under = DesignTapTargetScope(
+        targets: FrostedBreakpoints.targets,
+        child: under,
+      );
+    }
+    // Frosted's 2-pt grid (iOS's values are 2-pt steps), unless the app
+    // declared its own: ui_core's spacing check reads it.
+    if (DesignSpacing.maybeOf(context) == null) {
+      under = DesignSpacingScope(
+        spacing: const DesignSpacing(grid: 2),
+        child: under,
       );
     }
     return Theme(
@@ -5656,8 +5742,8 @@ final Map<TargetPlatform, Expando<ThemeData>> _materialThemes = {
 };
 
 /// What Flutter's own widgets under Frosted read (a text field's caret,
-/// selection and handles, a route's ground), in Frosted's colours, with no
-/// ink, splash, highlight or hover wash. Not in the package's barrel: an app
+/// selection and handles, a route's ground and its page motion), in
+/// Frosted's colours, with no ink, splash, highlight or hover wash. Not in the package's barrel: an app
 /// never meets a Material type in Frosted's API.
 ThemeData _materialUnder(FrostedThemeData t, TargetPlatform platform) =>
     _materialThemes[platform]![t] ??= ThemeData(
@@ -5679,6 +5765,12 @@ ThemeData _materialUnder(FrostedThemeData t, TargetPlatform platform) =>
       hoverColor: const Color(0x00000000),
       focusColor: const Color(0x00000000),
       materialTapTargetSize: MaterialTapTargetSize.padded,
+      // Frosted's own page motion on every platform, so an app's own page
+      // routes under the theme move as Frosted's do: a pane settling in a
+      // small way, never the platform's flight.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: frostedPageTransitions,
+      ),
       colorScheme: ColorScheme(
         brightness: t.brightness,
         primary: t.colorScheme.accent,
@@ -5885,7 +5977,7 @@ extension FrostedTextStyle on TextStyle {
   /// The same style in the text face (DM Sans).
   TextStyle get text => _faced(FrostedThemeData.textFace);
 
-  /// Set on a line [px] tall: `t.caption.line(20)`.
+  /// Set on a line [px] tall: `t.textTheme.bodySmall.line(20)`.
   TextStyle line(double px) => copyWith(height: px / fontSize!);
 
   /// Tracked [em] of its size: `t.textTheme.overline.tracked(0.1)`.

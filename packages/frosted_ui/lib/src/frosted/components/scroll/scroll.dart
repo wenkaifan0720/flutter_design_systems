@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -40,10 +41,10 @@ class FrostedScrollArea extends StatelessWidget {
     super.key,
   });
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// The controller [child] scrolls on.
@@ -88,7 +89,7 @@ class FrostedScrollArea extends StatelessWidget {
             : 0,
         duration: motion.fast,
         child: Padding(
-          padding: const EdgeInsets.all(2),
+          padding: const EdgeInsets.all(FrostedSpacing.s2),
           child: FrostedFace(
             material: FrostedMaterial.paint,
             radius: BorderRadius.circular(4),
@@ -127,6 +128,33 @@ class FrostedScrollArea extends StatelessWidget {
       child: child,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(DiagnosticsProperty<ScrollController>('controller', controller))
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.vertical))
+      ..add(
+        FlagProperty('alwaysShown', value: alwaysShown, ifTrue: 'alwaysShown'),
+      )
+      ..add(
+        FlagProperty(
+          'focusable',
+          value: focusable,
+          ifFalse: 'focusable: false',
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -157,7 +185,18 @@ class FrostedResizable extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     super.key,
-  });
+  }) : assert(
+         initialFraction >= 0 && initialFraction <= 1,
+         'The first pane\'s share is a fraction.',
+       ),
+       assert(
+         fraction == null || (fraction >= 0 && fraction <= 1),
+         'The first pane\'s share is a fraction.',
+       ),
+       assert(
+         minFirst >= 0 && minSecond >= 0,
+         'A pane\'s least extent is not negative.',
+       );
 
   /// The node that holds the divider's keyboard focus; null keeps one of its
   /// own.
@@ -243,6 +282,30 @@ class FrostedResizable extends StatelessWidget {
       },
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.horizontal))
+      ..add(DoubleProperty('fraction', fraction, defaultValue: null))
+      ..add(
+        DoubleProperty('initialFraction', initialFraction, defaultValue: .5),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
+      ..add(DoubleProperty('minFirst', minFirst, defaultValue: 0))
+      ..add(DoubleProperty('minSecond', minSecond, defaultValue: 0));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -321,10 +384,10 @@ class FrostedCarouselView extends StatelessWidget {
   /// `DesignLocalizations.carouselLabel` ("Carousel" in English).
   final String? label;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   @override
@@ -353,7 +416,9 @@ class FrostedCarouselView extends StatelessWidget {
       // in was cut at both ends into an almond (self-review round 2).
       itemBuilder: (context, i) => viewportFraction < 1
           ? Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(
+                horizontal: FrostedSpacing.s4,
+              ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(FrostedCorners.r18),
                 child: slide(context, i),
@@ -389,7 +454,7 @@ class FrostedCarouselView extends StatelessWidget {
         return Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: 12,
+          spacing: FrostedSpacing.s12,
           children: [
             Stack(
               alignment: Alignment.center,
@@ -411,34 +476,75 @@ class FrostedCarouselView extends StatelessWidget {
                   ),
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 8,
-              children: [
-                FrostedPageDots(
-                  count: controls.count,
-                  selectedIndex: controls.page,
-                  position: controls.position,
-                  // The dots say where the slides stand ("Slide 1 of 5"; its
-                  // index counts from 0), the carousel its [label].
-                  label: shared.carouselSlideLabel(
-                    controls.page,
-                    controls.count,
+            // No slides, no dots.
+            if (controls.count > 0)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: FrostedSpacing.s8,
+                children: [
+                  FrostedPageDots(
+                    count: controls.count,
+                    selectedIndex: controls.page,
+                    position: controls.position,
+                    // The dots say where the slides stand ("Slide 1 of 5"; its
+                    // index counts from 0), the carousel its [label].
+                    label: shared.carouselSlideLabel(
+                      controls.page,
+                      controls.count,
+                    ),
+                    onChanged: controls.goToPage,
                   ),
-                  onChanged: controls.goToPage,
-                ),
-                if (controls.togglePlay case final toggle?)
-                  step(
-                    controls.playing ? FrostedGlyphs.pause : FrostedGlyphs.play,
-                    controls.playing ? words.pause : words.play,
-                    toggle,
-                  ),
-              ],
-            ),
+                  if (controls.togglePlay case final toggle?)
+                    step(
+                      controls.playing
+                          ? FrostedGlyphs.pause
+                          : FrostedGlyphs.play,
+                      controls.playing ? words.pause : words.play,
+                      toggle,
+                    ),
+                ],
+              ),
           ],
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<Widget>('children', children))
+      ..add(IntProperty('itemCount', itemCount))
+      ..add(
+        ObjectFlagProperty<IndexedWidgetBuilder>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(DoubleProperty('height', height, defaultValue: 200))
+      ..add(
+        DoubleProperty('viewportFraction', viewportFraction, defaultValue: 1),
+      )
+      ..add(FlagProperty('loop', value: loop, ifTrue: 'loop'))
+      ..add(
+        DiagnosticsProperty<Duration>('autoplay', autoplay, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onPageChanged',
+          onPageChanged,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
   }
 }
 
@@ -524,13 +630,13 @@ class FrostedReorderableListView<T extends Object> extends StatelessWidget {
         ),
       ),
       itemBuilder: (context, item, reorder) => Padding(
-        padding: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.only(bottom: FrostedSpacing.s6),
         child: _LiftedFace(
           material: (lifted) =>
               lifted ? FrostedMaterial.slab : FrostedMaterial.pane,
           radius: BorderRadius.circular(FrostedCorners.r12),
           ring: t.glass.edge,
-          padding: const EdgeInsetsDirectional.only(start: 14)
+          padding: const EdgeInsetsDirectional.only(start: FrostedSpacing.s14)
               .resolve(Directionality.of(context)),
           child: SizedBox(
             height: 52,
@@ -566,6 +672,42 @@ class FrostedReorderableListView<T extends Object> extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<T>('items', items))
+      ..add(
+        ObjectFlagProperty<void Function(int from, int to)>.has(
+          'onReorder',
+          onReorder,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<Widget Function(BuildContext context, T item)>.has(
+          'itemBuilder',
+          itemBuilder,
+        ),
+      )
+      ..add(ObjectFlagProperty<String Function(T item)>.has('labelOf', labelOf))
+      ..add(ObjectFlagProperty<Object Function(T item)>.has('keyOf', keyOf))
+      ..add(FlagProperty('shrinkWrap', value: shrinkWrap, ifTrue: 'shrinkWrap'))
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -669,6 +811,14 @@ class FrostedRefreshIndicator extends StatelessWidget {
         );
       },
       child: child,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      ObjectFlagProperty<Future<void> Function()>.has('onRefresh', onRefresh),
     );
   }
 }

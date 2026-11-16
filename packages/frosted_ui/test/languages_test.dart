@@ -68,24 +68,24 @@ void main() {
           leading: const Icon(FrostedGlyphs.house),
           onPressed: () {},
         ),
-        FrostedSwitchRow(
+        const FrostedSwitchRow(
           label: long,
           note: german,
           value: true,
           onChanged: _drop,
         ),
-        FrostedCheckRow(label: long, value: false, onChanged: _drop),
-        FrostedTextField(label: long, hint: german, onChanged: _drop),
-        FrostedSegmentedButton<int>(
+        const FrostedCheckRow(label: long, value: false, onChanged: _drop),
+        const FrostedTextField(label: long, hint: german, onChanged: _drop),
+        const FrostedSegmentedButton<int>(
           label: german,
           value: 0,
           onChanged: _drop,
-          segments: const [
+          segments: [
             FrostedButtonSegment(0, 'Kontoauszüge'),
             FrostedButtonSegment(1, 'Überweisungen'),
           ],
         ),
-        FrostedTabBar(tabs: const ['Ausgaben', 'Einnahmen'], onChanged: _drop),
+        const FrostedTabBar(tabs: ['Ausgaben', 'Einnahmen'], onChanged: _drop),
       ]),
     );
   });

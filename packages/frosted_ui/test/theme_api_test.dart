@@ -237,7 +237,7 @@ void main() {
         const Duration(milliseconds: 100),
       );
       expect(
-        const FrostedTypeface().copyWith(display: 'Fraunces'),
+        FrostedTypeface.look.copyWith(display: 'Fraunces'),
         const FrostedTypeface(display: 'Fraunces'),
       );
     });
@@ -394,22 +394,21 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('of throws a helpful error with no theme; maybeOf is null', (
+    testWidgets('of gives the default preset with no theme; maybeOf is null', (
       tester,
     ) async {
       late BuildContext seen;
       await tester.pumpWidget(probe((c) => seen = c));
       expect(FrostedTheme.maybeOf(seen), isNull);
-      expect(
-        () => FrostedTheme.of(seen),
-        throwsA(
-          isA<FlutterError>().having(
-            (e) => e.toString(),
-            'message',
-            contains('No FrostedTheme in scope'),
-          ),
-        ),
+      final fallback = FrostedTheme.of(seen);
+      expect(fallback.id, FrostedThemeData.presets.first);
+      expect(fallback.brightness, Brightness.light);
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+      addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+      await tester.pumpWidget(
+        MediaQuery.fromView(view: tester.view, child: probe((c) => seen = c)),
       );
+      expect(FrostedTheme.of(seen).brightness, Brightness.dark);
     });
 
     testWidgets('InheritedTheme.capture carries it into a route', (

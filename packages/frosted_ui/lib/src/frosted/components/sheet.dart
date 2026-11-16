@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialLocalizations, MaterialType, ModalBottomSheetRoute;
 import 'package:flutter/widgets.dart';
@@ -78,11 +79,18 @@ class FrostedSheetHead extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('title', title));
+  }
 }
 
 /// A modal sheet's card, drawn in place (`.sheet`): on a phone it rises
 /// off the bottom edge, its top corners at 22 and no edge along its foot,
-/// the grabber over the head; at desktop width it stands centred, 440 wide,
+/// the grabber over the head; on a tablet or the desktop (from
+/// [FrostedBreakpoints.medium]) it stands centred, 440 wide,
 /// every corner at 20 and no grabber. Its face is the source's: white
 /// shading to the palest lilac at its foot, a rim of light along its top,
 /// its hairline edge and a soft shadow rising over the scrim. The head
@@ -90,8 +98,8 @@ class FrostedSheetHead extends StatelessWidget {
 /// [children] 12 under it (a run of [FrostedOption]s with a hairline between
 /// each two, as the source's group of choices), then the [foot] 16 under
 /// that: one button takes the whole width, two share it. The card scrolls
-/// once its parts outgrow 88% of the screen (the window less 64 at desktop
-/// width). For a sheet composed in place; [FrostedSheet.show] presents this
+/// once its parts outgrow 88% of the screen (the window less 64 on a
+/// tablet or the desktop). For a sheet composed in place; [FrostedSheet.show] presents this
 /// same widget, so the two never drift apart.
 ///
 /// ```dart
@@ -137,9 +145,10 @@ class FrostedSheetShell extends StatelessWidget {
       context.getInheritedWidgetOfExactType<_OnCard>() != null;
 
   /// The room inside a card: 8 above, 16 at the sides and 24 under on a
-  /// phone; 20 above, 24 at the sides and under at desktop width.
+  /// phone; 20 above, 24 at the sides and under on a tablet or the
+  /// desktop.
   static EdgeInsets padding(BuildContext context) =>
-      FrostedBreakpoints.isWide(context)
+      !FrostedBreakpoints.isCompact(context)
       ? const EdgeInsets.fromLTRB(
           FrostedChromeMetrics.sheetWideSide,
           FrostedChromeMetrics.sheetWideTop,
@@ -179,7 +188,7 @@ class FrostedSheetShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final wide = FrostedBreakpoints.isWide(context);
+    final wide = !FrostedBreakpoints.isCompact(context);
     final inset = safe && !wide ? MediaQuery.paddingOf(context).bottom : 0.0;
     final pad = padding(context);
     return FrostedSheetCard(
@@ -216,10 +225,21 @@ class FrostedSheetShell extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(FlagProperty('close', value: close, ifFalse: 'close: false'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose))
+      ..add(DiagnosticsProperty<Key>('closeKey', closeKey, defaultValue: null))
+      ..add(FlagProperty('safe', value: safe, ifTrue: 'safe'));
+  }
 }
 
 /// The card a sheet stands on, as the source draws it: the sheet's face (on
-/// a phone open at its foot, at desktop width a whole dialog with its own
+/// a phone open at its foot, on a tablet or the desktop a whole dialog with its own
 /// shadow), its content clipped to its corners and marked as on a card
 /// ([FrostedSheetShell.around]). Plumbing of the sheets; a page never places
 /// one.
@@ -237,9 +257,9 @@ class FrostedSheetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
-    final wide = FrostedBreakpoints.isWide(context);
+    final wide = !FrostedBreakpoints.isCompact(context);
     // The theme's sheet style: a phone's sheet is open at its foot, so only
-    // the dialog a sheet becomes on the desktop takes its shape.
+    // the dialog a sheet becomes on a tablet or the desktop takes its shape.
     final s = FrostedStyleLayers(null, t.components.sheet);
     final (cut, corner) = wide
         ? s.surface(
@@ -314,8 +334,8 @@ class _OnCard extends InheritedWidget {
 /// system back or Escape close it, focus returning to the control).
 ///
 /// [show] raises a transient sheet from a control (a category, an amount, a
-/// confirm) off the bottom edge on a phone and centred as a dialog at
-/// desktop width; [pageRoute] is the route a declared sheet PAGE rides,
+/// confirm) off the bottom edge on a phone and centred as a dialog on a
+/// tablet or the desktop; [pageRoute] is the route a declared sheet PAGE rides,
 /// created on the root navigator by the route code ([FrostedSheetPage]):
 /// that page is a plain `FrostedScaffold`, whose bar becomes the sheet's
 /// head with its close. A tap on the scrim, the system back or the close
@@ -400,7 +420,7 @@ class FrostedSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final s = FrostedStyleLayers(null, t.components.sheet);
-    final inner = Radius.circular(FrostedCorners.r22);
+    const inner = Radius.circular(FrostedCorners.r22);
     final ltr = Directionality.of(context) == TextDirection.ltr;
     final atLeft = (edge == DesignSheetEdge.start) == ltr;
     final radius = BorderRadius.horizontal(
@@ -484,16 +504,13 @@ class FrostedSheet extends StatelessWidget {
           reverseDuration: FrostedChromeMetrics.sheetOut,
           reverseCurve: Curves.easeInCubic,
         )
-      : const AnimationStyle(
-          duration: Duration.zero,
-          reverseDuration: Duration.zero,
-        );
+      : AnimationStyle.noAnimation;
 
   /// The tallest a sheet stands on [screen]: 88% of it on a phone, the
-  /// window less 64 at desktop width.
+  /// window less 64 on a tablet or the desktop.
   static double maxHeight(BuildContext context) {
     final screen = MediaQuery.sizeOf(context).height;
-    return FrostedBreakpoints.isWide(context)
+    return !FrostedBreakpoints.isCompact(context)
         ? screen - FrostedChromeMetrics.sheetWideMargin
         : screen * FrostedChromeMetrics.sheetMaxFraction;
   }
@@ -524,7 +541,7 @@ class FrostedSheet extends StatelessWidget {
 
   /// Raises [builder]'s card over the whole app (the app's root navigator,
   /// [FrostedHost.navigatorOf]) as a sheet raises one: off the bottom edge
-  /// over the scrim on a phone, centred as a dialog at desktop width, the
+  /// over the scrim on a phone, centred as a dialog on a tablet or the desktop, the
   /// keyboard riding outside the card. Completes with the value the route
   /// pops with: null when dismissed. [FrostedSheet.show] and
   /// [showFrostedBottomSheet] raise through it.
@@ -539,7 +556,7 @@ class FrostedSheet extends StatelessWidget {
       presentation: RoutePresentation.sheet,
       child: builder(sheetContext),
     );
-    if (FrostedBreakpoints.isWide(context)) {
+    if (!FrostedBreakpoints.isCompact(context)) {
       return navigator.push(
         FrostedSoftDialogRoute<T>(
           soften: soften,
@@ -588,7 +605,7 @@ class FrostedSheet extends StatelessWidget {
   /// The modal route a declared sheet page rides: the page stands on the
   /// sheet's card at the tallest a sheet stands, or with [drawer] as tall
   /// as its content (a short task that leaves the page it came from in
-  /// view). At desktop width it is the centred dialog.
+  /// view). On a tablet or the desktop it is the centred dialog.
   static Route<T> pageRoute<T>({
     required BuildContext context,
     required WidgetBuilder builder,
@@ -603,7 +620,7 @@ class FrostedSheet extends StatelessWidget {
       presentation: RoutePresentation.sheet,
       child: _PageSheetCard(child: builder(sheetContext)),
     );
-    if (FrostedBreakpoints.isWide(context)) {
+    if (!FrostedBreakpoints.isCompact(context)) {
       return FrostedSoftDialogRoute<T>(
         soften: soften,
         settings: settings,
@@ -642,6 +659,21 @@ class FrostedSheet extends StatelessWidget {
         );
       },
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(
+        EnumProperty<DesignSheetEdge>(
+          'edge',
+          edge,
+          defaultValue: DesignSheetEdge.end,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose));
   }
 }
 
@@ -693,7 +725,7 @@ class _Ruled extends StatelessWidget {
 /// A sheet over the page for a short task: the sheet's card (its head with
 /// [title] and the close, then [child], then the [actions] at its foot: one
 /// takes the whole width, two share it), rising off the bottom edge on a
-/// phone and centred as a dialog at desktop width. This is the card;
+/// phone and centred as a dialog on a tablet or the desktop. This is the card;
 /// [showFrostedBottomSheet] raises it. [onClose] runs on the close; null
 /// dismisses the sheet's route.
 ///
@@ -730,11 +762,19 @@ class FrostedBottomSheet extends StatelessWidget {
     foot: actions,
     children: [child],
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose));
+  }
 }
 
 /// Raises [builder]'s [FrostedBottomSheet] over the whole app, as
 /// `showModalBottomSheet` does: off the bottom edge over the scrim on a
-/// phone, centred as a dialog at desktop width; a tap on the scrim, the
+/// phone, centred as a dialog on a tablet or the desktop; a tap on the scrim, the
 /// system back, Escape or a drag down dismisses it, and focus returns to
 /// what opened it. Completes with the value the sheet pops with: null when
 /// dismissed. Rises in [FrostedSheet.motionOf]'s time (a cut under Reduce

@@ -101,7 +101,7 @@ class FrostedWell extends StatelessWidget {
       if (error) WidgetState.error,
       if (!enabled) WidgetState.disabled,
     });
-    final knob = FrostedCorners.small;
+    const knob = FrostedCorners.small;
     final cut =
         s.shape ??
         (radius != null || knob is RoundedRectangleBorder ? null : knob);
@@ -137,13 +137,7 @@ class FrostedWell extends StatelessWidget {
       ring: side != null
           ? null
           : error
-          ? (day
-                ? Color.lerp(
-                    FrostedChromeMetrics.litEdge,
-                    t.colorScheme.over,
-                    .55,
-                  )
-                : t.colorScheme.over)
+          ? frostedErrorEdge(t)
           : s.edge ??
                 // Holding focus the edge takes the ring's ink by day (a lit
                 // edge brightening on a pale backdrop read as no change)
@@ -171,4 +165,16 @@ class FrostedWell extends StatelessWidget {
     );
     return FrostedFade(opacity: enabled ? 1 : .5, child: s.least(well));
   }
+}
+
+/// A wrong field's edge, a well's or a code box's: the over hue itself, not
+/// the words' ink. Words hold 4.5:1 and by night that pushed the over ink
+/// to a pale pink that read as focus, not as wrong (self-review round 3);
+/// an edge needs 3:1, which the hue keeps on the dark well. By day it is
+/// the hue warmed a fifth of the way into the light, never a dark line.
+Color frostedErrorEdge(FrostedThemeData t) {
+  final hue = t.colorScheme.overTint.withValues(alpha: 1);
+  return t.isDark
+      ? hue
+      : Color.lerp(FrostedChromeMetrics.litEdge, t.colorScheme.over, .8)!;
 }

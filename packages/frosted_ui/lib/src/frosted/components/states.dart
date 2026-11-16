@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../glyphs.dart';
@@ -42,6 +43,12 @@ class FrostedLoadingState extends StatelessWidget {
         style: t.textTheme.titleMedium.c(t.colorScheme.textSecondary),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('message', message, defaultValue: null));
   }
 }
 
@@ -104,6 +111,15 @@ class FrostedErrorState extends StatelessWidget {
               onPressed: onRetry,
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry));
   }
 }
 
@@ -220,6 +236,16 @@ class FrostedStatusView extends StatelessWidget {
           action: action,
         );
     }
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<FrostedStatus>('status', status))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onRetry', onRetry));
   }
 }
 
@@ -369,6 +395,26 @@ class FrostedEmptyState extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('body', body, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'actionIcon',
+          actionIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAction', onAction))
+      ..add(
+        DiagnosticsProperty<Key>('actionKey', actionKey, defaultValue: null),
+      );
+  }
 }
 
 /// The empty state's art, as the source draws it (`.empty-art`): a beam
@@ -418,6 +464,12 @@ class FrostedSpectrumArt extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<bool>('wide', wide, defaultValue: null));
+  }
 }
 
 /// The source's drawing, in its 220 by 120 box.
@@ -449,10 +501,11 @@ class _FrostedPainter extends CustomPainter {
     final rose = spectrum[2];
     final peach = spectrum[3];
     final mint = spectrum[4];
-    // The beam: the ink from nothing at the left to a fifth at the prism.
+    // The beam: the ink from nothing at the left to a fifth at the prism,
+    // ending on its face (it ran on into the glass: self-review round 3).
     canvas.drawLine(
       const Offset(0, 66),
-      const Offset(96, 62),
+      const Offset(88, 62.3),
       Paint()
         ..shader = LinearGradient(
           colors: [ink.withValues(alpha: 0), ink.withValues(alpha: 0.22)],
@@ -494,6 +547,10 @@ class _FrostedPainter extends CustomPainter {
         ..lineTo(128, 92)
         ..close(),
       Paint()
+        // Feathered on every side: its start at full strength stood as a
+        // pale box with a hard top corner off the prism's face
+        // (self-review round 3).
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6)
         ..shader = LinearGradient(
           // Gone before the art's edge, and past the rays' end: by night
           // the wash (the surface, lighter than the night glass) ran out on

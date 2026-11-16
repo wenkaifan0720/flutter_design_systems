@@ -118,7 +118,11 @@ Widget _goalsTrack() => Builder(
             FrostedBand(20860, hue: t.hues.azure, name: 'Emergency fund'),
             FrostedBand(2840, hue: t.hues.sunset, name: 'Lisbon in May'),
             FrostedBand(640, hue: t.hues.lime, name: 'New bike'),
-            FrostedBand(5460, variant: FrostedBandVariant.left, name: 'to go'),
+            const FrostedBand(
+              5460,
+              variant: FrostedBandVariant.left,
+              name: 'to go',
+            ),
           ],
         ),
         FrostedLegend(
@@ -565,7 +569,7 @@ void main() {
           scaleStart: const Text('\$0'),
         ),
       );
-      final tickX = (_w - 1) * 0.9 + 1;
+      const tickX = (_w - 1) * 0.9 + 1;
       final tick = t.getRect(find.byType(FrostedPaceTick));
       expect(tick.center.dx, moreOrLessEquals(20 + tickX, epsilon: 0.01));
       final label = t.getRect(find.text('Budget \$250'));

@@ -1,7 +1,8 @@
 // A scrolling tab strip leaves its chosen plate whole (round 10: the strip's viewport clipped at its own line, so the
 // first tab's plate lost its start cap's edge and its lift under it, cut flat). With the first tab chosen at the
 // strip's start, the plate's glass edge shows a pixel before the strip, and its lift a few pixels under it, by day
-// and by night; the strip still stands 40 tall with its first tab at its start.
+// and by night; the strip stands as tall as its tabs' touch target (48 under a finger, never under its 40) with its
+// first tab at its start.
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
@@ -85,7 +86,15 @@ void main() {
 
       final strip = tester.getRect(find.byType(FrostedTabBar));
       expect(strip.topLeft, const Offset(40, 40));
-      expect(strip.height, FrostedChromeMetrics.tabHeight);
+      expect(
+        strip.height,
+        math.max(
+          FrostedChromeMetrics.tabHeight,
+          FrostedBreakpoints.hitTargetOf(
+            tester.element(find.byType(FrostedTabBar)),
+          ),
+        ),
+      );
       // Four tabs run past 300: the strip scrolls.
       expect(find.byType(SingleChildScrollView), findsOneWidget);
       final first = tester.getRect(find.text('Spending'));
@@ -100,20 +109,18 @@ void main() {
       final midY = strip.center.dy.floor();
       final midX = first.center.dx.floor();
       final edge = _apart(read(strip.left.floor() - 1, midY), ground);
+      // The plate stands its 40 tall in the middle of the strip's target.
+      final plateBottom = strip.center.dy + FrostedChromeMetrics.tabHeight / 2;
       final lift = [
         for (var dy = 1; dy <= 4; dy++)
-          _apart(read(midX, strip.bottom.floor() - 1 + dy), ground),
+          _apart(read(midX, plateBottom.floor() - 1 + dy), ground),
       ].reduce(math.max);
       expect(
         edge,
         greaterThan(2 / 255),
         reason: "the plate's edge a pixel before the strip",
       );
-      expect(
-        lift,
-        greaterThan(2 / 255),
-        reason: "the plate's lift under the strip",
-      );
+      expect(lift, greaterThan(2 / 255), reason: "the plate's lift under it");
     }, tags: const ['goldens']);
   }
 }

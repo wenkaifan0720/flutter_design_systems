@@ -108,12 +108,12 @@ void main() {
   testWidgets('the range slider, the colour sliders, the nav act, the reorder '
       'grip and a swipe row show their cursors', (t) async {
     await _pump(t, [
-      FrostedRangeSlider(
-        values: const DesignRangeValues(.2, .7),
+      const FrostedRangeSlider(
+        values: DesignRangeValues(.2, .7),
         onChanged: _drop,
       ),
-      FrostedColorPicker(value: const Color(0xFF3366FF), onChanged: _drop),
-      FrostedNavAction(
+      const FrostedColorPicker(value: Color(0xFF3366FF), onChanged: _drop),
+      const FrostedNavAction(
         icon: FrostedGlyphs.arrowRightLeft,
         label: 'Move',
         onPressed: _none,
@@ -127,7 +127,7 @@ void main() {
           itemBuilder: (context, s) => Text(s),
         ),
       ),
-      FrostedSwipeActions(
+      const FrostedSwipeActions(
         trailing: [
           FrostedSwipeAction(
             label: 'Delete',
@@ -135,10 +135,10 @@ void main() {
             onPressed: _none,
           ),
         ],
-        child: const SizedBox(height: 48, child: Text('A row')),
+        child: SizedBox(height: 48, child: Text('A row')),
       ),
-      FrostedSwipeActions(
-        key: const ValueKey('open'),
+      const FrostedSwipeActions(
+        key: ValueKey('open'),
         initiallyOpen: true,
         trailing: [
           FrostedSwipeAction(
@@ -147,7 +147,7 @@ void main() {
             onPressed: _none,
           ),
         ],
-        child: const SizedBox(height: 48, child: Text('An open row')),
+        child: SizedBox(height: 48, child: Text('An open row')),
       ),
     ]);
     final mouse = await _mouse(t);
@@ -186,8 +186,8 @@ void main() {
       SystemMouseCursors.grab,
       reason: 'a row with acts to show',
     );
-    // Open, the row's strip still shows the open hand (a press closes it, a
-    // drag moves it); its act shows click.
+    // Open, a click on the row's strip closes it, so it shows click (ui_core's
+    // close layer), as its act does.
     final open = t.getRect(find.byKey(const ValueKey('open')));
     expect(
       await _cursorAt(
@@ -195,7 +195,7 @@ void main() {
         t,
         Offset(open.left + open.width * .3, open.center.dy),
       ),
-      SystemMouseCursors.grab,
+      SystemMouseCursors.click,
       reason: 'an open row\'s strip',
     );
     expect(
@@ -208,8 +208,8 @@ void main() {
   testWidgets('on a phone the tab bar\'s tabs show click, a sheet\'s grabber '
       'the open hand', (t) async {
     await _pump(width: 390, t, [
-      FrostedNavigationBar(
-        items: const [
+      const FrostedNavigationBar(
+        items: [
           FrostedNavItem(FrostedGlyphs.house, 'Home'),
           FrostedNavItem(FrostedGlyphs.person, 'You'),
         ],

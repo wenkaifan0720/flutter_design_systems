@@ -418,10 +418,10 @@ void main() {
                     Center(
                       child: FrostedButton('Freeze card', onPressed: () {}),
                     ),
-                    Positioned.fill(
+                    const Positioned.fill(
                       child: FrostedSurface(
                         material: FrostedMaterial.slab,
-                        child: const SizedBox.expand(),
+                        child: SizedBox.expand(),
                       ),
                     ),
                   ],

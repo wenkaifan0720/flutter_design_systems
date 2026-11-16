@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/host.dart';
@@ -21,7 +22,7 @@ import 'toast.dart';
 /// follows the frame's register.
 ///
 /// ```dart
-/// MaterialApp.router(builder: (context, child) => FrostedHost(child: child!))
+/// MaterialApp.router(routerConfig: router, builder: (context, child) => FrostedHost(child: child!))
 /// ```
 class FrostedHost extends StatelessWidget {
   /// Creates a [FrostedHost].
@@ -136,6 +137,25 @@ class FrostedHost extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FrostedThemeData>(
+          'light',
+          light,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FrostedThemeData>('dark', dark, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<Brightness>('brightness', brightness, defaultValue: null),
+      );
   }
 }
 

@@ -17,6 +17,7 @@ import '../kit.dart';
 
 Widget kitControlsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Controls',
   sections: [
     // Each where an app stands it, its caption saying where: a button off

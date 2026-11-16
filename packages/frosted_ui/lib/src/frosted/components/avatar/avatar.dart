@@ -1,10 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
 import '../../format.dart';
 import '../../internal/cut.dart';
 import '../../internal/face.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/styled.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
@@ -79,10 +79,15 @@ class FrostedAvatar extends StatelessWidget {
   /// Makes the avatar a link.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@template frosted.focusNode}
+  /// The node that holds this part's keyboard focus; null keeps one of its
+  /// own. A node given is the caller's: it disposes of it.
+  /// {@endtemplate}
   final FocusNode? focusNode;
 
+  /// {@template frosted.autofocus}
   /// Whether this part takes keyboard focus when first shown.
+  /// {@endtemplate}
   final bool autofocus;
 
   /// A ring of white and ink round it: the person chosen.
@@ -188,18 +193,48 @@ class FrostedAvatar extends StatelessWidget {
         child: ExcludeSemantics(child: disc),
       );
     }
-    return FrostedHitSlop(
-      child: FrostedPressable(
-        focusNode: focusNode,
-        autofocus: autofocus,
-        onPressed: onPressed,
-        label: name ?? initials,
-        role: FrostedPressRole.link,
-        radius: FrostedStyleLayers.radiusOf(cut, d, d / 2),
-        shape: cut,
-        child: disc,
-      ),
+    return FrostedPressable(
+      focusNode: focusNode,
+      autofocus: autofocus,
+      onPressed: onPressed,
+      label: name ?? initials,
+      role: FrostedPressRole.link,
+      radius: FrostedStyleLayers.radiusOf(cut, d, d / 2),
+      shape: cut,
+      child: disc,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('initials', initials))
+      ..add(
+        DiagnosticsProperty<ImageProvider>('image', image, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<FrostedAvatarSize>(
+          'size',
+          size,
+          defaultValue: FrostedAvatarSize.regular,
+        ),
+      )
+      ..add(StringProperty('name', name, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(FlagProperty('dimmed', value: dimmed, ifTrue: 'dimmed'))
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -342,6 +377,29 @@ class FrostedProfileHero extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('initials', initials))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('meta', meta, defaultValue: null))
+      ..add(
+        IterableProperty<String>(
+          'contact',
+          contact,
+          defaultValue: const <String>[],
+        ),
+      )
+      ..add(
+        IterableProperty<FrostedProfileCount>(
+          'counts',
+          counts,
+          defaultValue: const <FrostedProfileCount>[],
+        ),
+      );
+  }
 }
 
 /// Overlapping avatars for the people of a group: each person's initials on
@@ -363,7 +421,7 @@ class FrostedAvatarGroup extends StatelessWidget {
     this.max = 4,
     this.total,
     super.key,
-  });
+  }) : assert(max > 0, 'A group shows at least one avatar.');
 
   /// The people shown, in order.
   final List<String> names;
@@ -474,5 +532,21 @@ class FrostedAvatarGroup extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('names', names))
+      ..add(
+        DoubleProperty(
+          'size',
+          size,
+          defaultValue: FrostedChromeMetrics.avatarStack,
+        ),
+      )
+      ..add(IntProperty('max', max, defaultValue: 4))
+      ..add(IntProperty('total', total, defaultValue: null));
   }
 }

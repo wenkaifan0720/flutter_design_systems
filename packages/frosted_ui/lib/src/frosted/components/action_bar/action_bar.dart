@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
@@ -130,7 +131,7 @@ class FrostedActionBar extends StatelessWidget {
             FrostedChromeMetrics.tabBarSide,
             0,
             FrostedChromeMetrics.tabBarSide,
-            math.max(FrostedChromeMetrics.tabBarSide, inset),
+            math.max(FrostedChromeMetrics.tabBarBottom, inset),
           ),
           child: FrostedFace(
             material: FrostedMaterial.bar,
@@ -163,6 +164,18 @@ class FrostedActionBar extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(StringProperty('detail', detail, defaultValue: null))
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
+      ..add(FlagProperty('floating', value: floating, ifTrue: 'floating'));
   }
 }
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../glyphs.dart';
@@ -51,10 +52,10 @@ class FrostedSignInButton extends StatelessWidget {
   /// What signing in does; null draws the button disabled.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// The words; null says "Continue with" and the provider's name.
@@ -180,6 +181,25 @@ class FrostedSignInButton extends StatelessWidget {
 
   static const Color _white = Color(0xFFFFFFFF);
   static const Color _black = Color(0xFF000000);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('provider', provider))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('emphasis', value: emphasis, ifTrue: 'emphasis'))
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'));
+  }
 }
 
 /// Every way in a welcome offers, stacked the width of the column 12 apart
@@ -227,5 +247,22 @@ class FrostedSignInStack extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('providers', providers))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onPressed', onPressed),
+      )
+      ..add(
+        FlagProperty(
+          'leadWithFirst',
+          value: leadWithFirst,
+          ifTrue: 'leadWithFirst',
+        ),
+      );
   }
 }

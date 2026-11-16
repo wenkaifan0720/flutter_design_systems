@@ -10,6 +10,7 @@ import '../kit.dart';
 
 Widget kitSignInDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Sign-in',
   sections: [
     kitSection(

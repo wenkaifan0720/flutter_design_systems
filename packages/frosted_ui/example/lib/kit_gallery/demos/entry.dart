@@ -11,35 +11,36 @@ import '../kit.dart';
 
 Widget kitEntryDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
-  title: 'Entry',
+  measured: true,
+  title: kitSay('Entry'),
   sections: [
     kitSection(
-      'Password',
+      kitSay('Password'),
       children: [
-        const FrostedPasswordField(label: 'Password', value: 'correct horse'),
-        const FrostedPasswordField(
-          label: 'New password',
+        FrostedPasswordField(label: kitSay('Password'), value: 'correct horse'),
+        FrostedPasswordField(
+          label: kitSay('New password'),
           newPassword: true,
-          helper: 'At least 12 characters',
+          helper: kitSay('At least 12 characters'),
         ),
-        const FrostedPasswordField(
-          label: 'Password',
+        FrostedPasswordField(
+          label: kitSay('Password'),
           value: 'short',
-          error: 'Too short',
+          error: kitSay('Too short'),
         ),
       ],
     ),
     kitSection(
-      'Input group',
+      kitSay('Input group'),
       children: [
-        const FrostedInputGroup(
-          label: 'Website',
+        FrostedInputGroup(
+          label: kitSay('Website'),
           prefix: Text('https://'),
           suffix: Text('.com'),
           value: 'example',
         ),
-        const FrostedInputGroup(
-          label: 'Weight',
+        FrostedInputGroup(
+          label: kitSay('Weight'),
           suffix: Text('kg'),
           value: '72',
           keyboardType: TextInputType.number,
@@ -47,29 +48,33 @@ Widget kitEntryDemo(Brightness brightness) => kitScreen(
       ],
     ),
     kitSection(
-      'One-time code',
+      kitSay('One-time code'),
       children: [
-        const FrostedInputOtp(label: 'Code from your text'),
-        const FrostedInputOtp(label: 'PIN', length: 4, obscure: true),
-        const FrostedInputOtp(
-          label: 'Code from your text',
-          error: "That code didn't match",
+        FrostedInputOtp(label: kitSay('Code from your text')),
+        FrostedInputOtp(label: kitSay('PIN'), length: 4, obscure: true),
+        FrostedInputOtp(
+          label: kitSay('Code from your text'),
+          error: kitSay("That code didn't match"),
         ),
       ],
     ),
     kitSection(
-      'Form field',
+      kitSay('Form field'),
       children: [
         KitHeld<Set<String>>(
-          const {'Email'},
+          {kitSay('Email')},
           (chosen, set) => FrostedFormField(
-            label: 'Notify me by',
-            helper: 'Pick at least one',
-            error: chosen.isEmpty ? 'Pick at least one' : null,
+            label: kitSay('Notify me by'),
+            helper: kitSay('Pick at least one'),
+            error: chosen.isEmpty ? kitSay('Pick at least one') : null,
             required: true,
             mergeSemantics: false,
             child: kitRow([
-              for (final way in const ['Email', 'Text', 'Push'])
+              for (final way in [
+                kitSay('Email'),
+                kitSay('Text'),
+                kitSay('Push'),
+              ])
                 FrostedChip(
                   way,
                   selected: chosen.contains(way),
@@ -89,8 +94,8 @@ Widget kitEntryDemo(Brightness brightness) => kitScreen(
 
 /// A labelled group of chips with its help line.
 Widget kitSpecimenFormField() => FrostedFormField(
-  label: 'Notify me',
-  helper: 'Pick at least one',
+  label: kitSay('Notify me'),
+  helper: kitSay('Pick at least one'),
   mergeSemantics: false,
   child: Row(
     spacing: 8,
@@ -103,7 +108,7 @@ Widget kitSpecimenFormField() => FrostedFormField(
 
 /// A website between its prefix and suffix.
 Widget kitSpecimenInputGroup() => FrostedInputGroup(
-  label: 'Website',
+  label: kitSay('Website'),
   prefix: const Text('https://'),
   suffix: const Text('.com'),
   value: 'harbor',
@@ -112,11 +117,11 @@ Widget kitSpecimenInputGroup() => FrostedInputGroup(
 
 /// The code from a text, its cells empty.
 Widget kitSpecimenInputOtp() =>
-    FrostedInputOtp(label: 'Code from your text', onCompleted: (_) {});
+    FrostedInputOtp(label: kitSay('Code from your text'), onCompleted: (_) {});
 
 /// A password, hidden, with its reveal.
 Widget kitSpecimenPasswordField() => FrostedPasswordField(
-  label: 'Password',
+  label: kitSay('Password'),
   value: 'harbor-2026',
   onChanged: (_) {},
 );

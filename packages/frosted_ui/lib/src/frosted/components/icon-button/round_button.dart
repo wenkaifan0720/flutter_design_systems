@@ -1,9 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
 import '../../internal/cut.dart';
 import '../../internal/face.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/styled.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
@@ -71,10 +71,10 @@ class FrostedIconButton extends StatelessWidget {
   /// What a press does; null draws the button inert.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// Whether a toggle is on; null for a plain act.
@@ -175,18 +175,45 @@ class FrostedIconButton extends StatelessWidget {
     }
 
     final cut = layers.cut(FrostedCorners.full);
-    return FrostedHitSlop(
-      child: FrostedPressable(
-        focusNode: focusNode,
-        autofocus: autofocus,
-        onPressed: onPressed,
-        label: label,
-        toggled: selected,
-        radius: FrostedStyleLayers.radiusOf(cut, d, d / 2),
-        shape: cut,
-        builder: (context, states, _) => draw(states),
-      ),
+    return FrostedPressable(
+      focusNode: focusNode,
+      autofocus: autofocus,
+      onPressed: onPressed,
+      label: label,
+      toggled: selected,
+      radius: FrostedStyleLayers.radiusOf(cut, d, d / 2),
+      shape: cut,
+      builder: (context, states, _) => draw(states),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(
+        EnumProperty<FrostedIconButtonSize>(
+          'size',
+          size,
+          defaultValue: FrostedIconButtonSize.regular,
+        ),
+      )
+      ..add(FlagProperty('badge', value: badge, ifTrue: 'badge'))
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
   }
 }
 

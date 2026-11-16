@@ -1,11 +1,13 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
+import '../internal/bleed.dart';
 import '../internal/face.dart';
 import '../internal/footer_band.dart';
 import '../internal/grabber.dart';
@@ -102,6 +104,21 @@ class FrostedScaffold extends StatefulWidget {
 
   @override
   State<FrostedScaffold> createState() => _FrostedScaffoldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('scroll', value: scroll, ifFalse: 'scroll: false'))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('lights', value: lights, ifFalse: 'lights: false'));
+  }
 }
 
 class _FrostedScaffoldState extends State<FrostedScaffold> {
@@ -153,11 +170,15 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
         (wide ? FrostedInsets.screenWide : FrostedInsets.screen);
     // A phone's bar is pinned over the page; the desktop's stands in it.
     final pinned = !wide && bar != null;
+    // Until the bar is measured (a page's first frame), its room is the
+    // standard bar's, its foot's hairline included, so a fresh page stands
+    // where it settles rather than a pixel off for one frame.
     final barRoom = pinned
         ? (_bar ??
               top +
                   FrostedChromeMetrics.barInset * 2 +
-                  FrostedChromeMetrics.barControl)
+                  FrostedChromeMetrics.barControl +
+                  FrostedStrokes.regular)
         : top;
     // `.main`'s gap between the bar and the first tile: under the pinned
     // bar's room on a phone, after the bar in the column on the desktop.
@@ -207,18 +228,22 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
                 clipBehavior: Clip.none,
                 children: [
                   page(
-                    // The page's content holds its cards to the page's
-                    // margins (design6 P); the shared check reads it.
-                    DesignKeylineRegion(
-                      label: 'screen',
-                      child: Padding(
-                        padding: room.copyWith(
-                          top: room.top + barRoom + (pinned ? barGap : 0),
-                          bottom: room.bottom + reserve,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [...head, widget.body],
+                    // A strip run on under the gutters (the chips, the
+                    // tabs) takes a tap there.
+                    FrostedBleedRoom(
+                      // The page's content holds its cards to the page's
+                      // margins (design6 P); the shared check reads it.
+                      child: DesignKeylineRegion(
+                        label: 'screen',
+                        child: Padding(
+                          padding: room.copyWith(
+                            top: room.top + barRoom + (pinned ? barGap : 0),
+                            bottom: room.bottom + reserve,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [...head, widget.body],
+                          ),
                         ),
                       ),
                     ),
@@ -235,24 +260,26 @@ class _FrostedScaffoldState extends State<FrostedScaffold> {
         children: [
           Positioned.fill(
             child: page(
-              DesignKeylineRegion(
-                label: 'screen',
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    top: barRoom + room.top + (pinned ? barGap : 0),
-                    left: room.left,
-                    right: room.right,
-                  ),
-                  child: MediaQuery(
-                    data: mq.copyWith(
-                      padding: mq.padding.copyWith(top: 0, bottom: reserve),
+              FrostedBleedRoom(
+                child: DesignKeylineRegion(
+                  label: 'screen',
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      top: barRoom + room.top + (pinned ? barGap : 0),
+                      left: room.left,
+                      right: room.right,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        ...head,
-                        Expanded(child: widget.body),
-                      ],
+                    child: MediaQuery(
+                      data: mq.copyWith(
+                        padding: mq.padding.copyWith(top: 0, bottom: reserve),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ...head,
+                          Expanded(child: widget.body),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -397,7 +424,7 @@ class _FrostBar extends StatelessWidget {
       material: FrostedMaterial.bar,
       radius: BorderRadius.zero,
       edge: frostedLitEdge(t, t.colorScheme.border),
-      edges: EdgeInsets.only(bottom: FrostedStrokes.regular),
+      edges: const EdgeInsets.only(bottom: FrostedStrokes.regular),
       ring: const Color(0x00000000),
       sheen: const Color(0x00000000),
       padding: EdgeInsets.only(top: top),

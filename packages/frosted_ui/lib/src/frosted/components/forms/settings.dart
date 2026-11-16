@@ -1,3 +1,7 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../glyphs.dart';
@@ -11,6 +15,7 @@ import '../structure/structure.dart';
 import 'forms.dart';
 import '../../internal/dim.dart';
 import '../../internal/flush_end.dart';
+import '../../internal/hit_slop.dart';
 import '../../internal/cap.dart';
 
 /// A tile's head as `.tile-h` sets it (the title in `.t20`, at least 24
@@ -123,7 +128,13 @@ class _SetRow extends StatelessWidget {
             Expanded(
               child: excludeWords ? ExcludeSemantics(child: words) : words,
             ),
-            ...end,
+            // Its controls' faces keep to the row's end keyline, their
+            // targets growing inward.
+            for (final e in end)
+              FrostedTargetSide(
+                alignment: AlignmentDirectional.centerEnd,
+                child: e,
+              ),
           ],
         ),
       ),
@@ -167,10 +178,10 @@ class FrostedSwitchRow extends StatelessWidget {
   /// Called with the new state; null leaves it inert.
   final ValueChanged<bool>? onChanged;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// Reports the setting without taking input; see [FrostedSwitch.readOnly].
@@ -214,6 +225,25 @@ class FrostedSwitchRow extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'));
+  }
 }
 
 /// A setting that opens a page (`.set-row` with a `.set-v` and a chevron):
@@ -252,10 +282,10 @@ class FrostedValueRow extends StatelessWidget {
   /// What a press does; null leaves it still.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// Whether the row takes taps; false dims it to `.set-row--off`'s .45.
@@ -297,6 +327,25 @@ class FrostedValueRow extends StatelessWidget {
       child: row,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'));
+  }
 }
 
 /// Settings rows in a tile (`.set-tile`): the title in the tile's head 4
@@ -333,6 +382,12 @@ class FrostedSettingsGroup extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('title', title, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -383,10 +438,10 @@ class FrostedFormRow extends StatelessWidget {
   /// Makes the row one link.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   @override
@@ -395,6 +450,16 @@ class FrostedFormRow extends StatelessWidget {
     // .set-row { gap: 12px; min-height: 52px; padding: 8px 0 }
     // .set-t { font: 500 16px/1.25 }  .set-s { font: 400 12px/1.3; ink-3 }
     // .set-v { font: 400 14px/1.3; ink-2 }  .set-row .i-chevron-right { 16px }
+    final words = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: FrostedChromeMetrics.settingLineGap,
+      children: [
+        frostedCapCentred(Text(label, style: t.textTheme.titleMedium)),
+        if (detail case final detail?)
+          Text(detail, style: t.textTheme.bodySmall.line(15.6)),
+      ],
+    );
     final row = ConstrainedBox(
       constraints: const BoxConstraints(
         minHeight: FrostedChromeMetrics.formRow,
@@ -414,18 +479,16 @@ class FrostedFormRow extends StatelessWidget {
                   size: FrostedMarkSize.small,
                 ),
               Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: FrostedChromeMetrics.settingLineGap,
-                  children: [
-                    frostedCapCentred(
-                      Text(label, style: t.textTheme.titleMedium),
-                    ),
-                    if (detail case final detail?)
-                      Text(detail, style: t.textTheme.bodySmall.line(15.6)),
-                  ],
-                ),
+                child: trailing == null
+                    ? words
+                    // The control stands beside the words, or under them
+                    // where large text leaves it no room beside their
+                    // longest word.
+                    : _BesideOrUnder(
+                        gap: FrostedChromeMetrics.formRowGap,
+                        under: FrostedChromeMetrics.formRowUnder,
+                        children: [words, trailing!],
+                      ),
               ),
               // The value keeps its own width (nowrap); the words take the
               // rest.
@@ -439,7 +502,6 @@ class FrostedFormRow extends StatelessWidget {
                     style: t.textTheme.bodyMedium.line(18.2),
                   ),
                 ),
-              ?trailing,
               if (onPressed != null && trailing == null) const _Chevron(),
             ],
           ),
@@ -461,13 +523,34 @@ class FrostedFormRow extends StatelessWidget {
     // A row that holds no control of its own reads as one line.
     return trailing == null ? MergeSemantics(child: row) : row;
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('detail', detail, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>('leading', leading, defaultValue: null),
+      )
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// Two fields sharing a line (`.form-2`): each half the width, 12 apart
 /// (a goal's Target beside its Date).
 ///
 /// ```dart
-/// FrostedFieldPair(FrostedAmountField(label: 'Target', small: true, value: target, onChanged: setTarget), FrostedTextField(label: 'Date', hint: 'Month and year', value: date, onChanged: setDate))
+/// FrostedFieldPair(FrostedAmountField(label: 'Target', size: FrostedAmountFieldSize.small, value: target, onChanged: setTarget), FrostedTextField(label: 'Date', hint: 'Month and year', value: date, onChanged: setDate))
 /// ```
 class FrostedFieldPair extends StatelessWidget {
   /// Creates a [FrostedFieldPair].
@@ -536,6 +619,14 @@ class FrostedFormSection extends StatelessWidget {
     );
     return bare ? column : FrostedCard(child: column);
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(FlagProperty('bare', value: bare, ifTrue: 'bare'));
+  }
 }
 
 /// A row's chevron with its ink on the group's trailing keyline (design6 P:
@@ -564,4 +655,173 @@ class _Chevron extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A row's words and its control: the control at the end beside the words,
+/// both on the row's middle, while the words keep room for their longest
+/// word beside it; else the control under the words at the start, [under]
+/// below them (a segmented strip at 200% text). Right to left, mirrored.
+class _BesideOrUnder extends MultiChildRenderObjectWidget {
+  const _BesideOrUnder({
+    required this.gap,
+    required this.under,
+    required super.children,
+  });
+
+  final double gap;
+  final double under;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderBesideOrUnder(gap, under, Directionality.of(context));
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderBesideOrUnder renderObject,
+  ) => renderObject
+    ..gap = gap
+    ..under = under
+    ..direction = Directionality.of(context);
+}
+
+class _BesideOrUnderData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderBesideOrUnder extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _BesideOrUnderData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _BesideOrUnderData> {
+  _RenderBesideOrUnder(this._gap, this._under, this._direction);
+
+  double _gap;
+  set gap(double value) {
+    if (value == _gap) return;
+    _gap = value;
+    markNeedsLayout();
+  }
+
+  double _under;
+  set under(double value) {
+    if (value == _under) return;
+    _under = value;
+    markNeedsLayout();
+  }
+
+  TextDirection _direction;
+  set direction(TextDirection value) {
+    if (value == _direction) return;
+    _direction = value;
+    markNeedsLayout();
+  }
+
+  // A layout's rounding: a control that fits by a hair still fits.
+  static const double _slack = .01;
+
+  RenderBox get _words => firstChild!;
+  RenderBox get _end => lastChild!;
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _BesideOrUnderData) {
+      child.parentData = _BesideOrUnderData();
+    }
+  }
+
+  // Whether a control [end] wide stands beside the words in [width].
+  bool _beside(double width, double end) =>
+      !width.isFinite ||
+      end + _gap + _words.getMinIntrinsicWidth(double.infinity) <=
+          width + _slack;
+
+  ({Size size, Offset words, Offset end}) _arrange(
+    BoxConstraints constraints,
+    Size Function(RenderBox child, BoxConstraints constraints) lay,
+  ) {
+    final width = constraints.maxWidth;
+    final end = lay(_end, BoxConstraints(maxWidth: width));
+    final rtl = _direction == TextDirection.rtl;
+    if (_beside(width, end.width)) {
+      final room = width.isFinite
+          ? math.max(0.0, width - end.width - _gap)
+          : double.infinity;
+      final words = lay(_words, BoxConstraints(maxWidth: room));
+      final w = width.isFinite ? width : words.width + _gap + end.width;
+      final h = math.max(words.height, end.height);
+      final size = constraints.constrain(Size(w, h));
+      return (
+        size: size,
+        words: Offset(
+          rtl ? size.width - words.width : 0,
+          (size.height - words.height) / 2,
+        ),
+        end: Offset(
+          rtl ? 0 : size.width - end.width,
+          (size.height - end.height) / 2,
+        ),
+      );
+    }
+    final words = lay(_words, BoxConstraints(maxWidth: width));
+    final size = constraints.constrain(
+      Size(width, words.height + _under + end.height),
+    );
+    return (
+      size: size,
+      words: Offset(rtl ? size.width - words.width : 0, 0),
+      end: Offset(rtl ? size.width - end.width : 0, words.height + _under),
+    );
+  }
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) =>
+      _arrange(constraints, (child, c) => child.getDryLayout(c)).size;
+
+  @override
+  void performLayout() {
+    final laid = _arrange(constraints, (child, c) {
+      child.layout(c, parentUsesSize: true);
+      return child.size;
+    });
+    size = laid.size;
+    (_words.parentData! as _BesideOrUnderData).offset = laid.words;
+    (_end.parentData! as _BesideOrUnderData).offset = laid.end;
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) => math.max(
+    _words.getMinIntrinsicWidth(double.infinity),
+    _end.getMinIntrinsicWidth(double.infinity),
+  );
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      _words.getMaxIntrinsicWidth(double.infinity) +
+      _gap +
+      _end.getMaxIntrinsicWidth(double.infinity);
+
+  double _height(double width, double Function(RenderBox, double) of) {
+    final end = _end.getMaxIntrinsicWidth(double.infinity);
+    if (_beside(width, end)) {
+      final room = width.isFinite
+          ? math.max(0.0, width - end - _gap)
+          : double.infinity;
+      return math.max(of(_words, room), of(_end, end));
+    }
+    return of(_words, width) + _under + of(_end, width);
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _height(width, (child, w) => child.getMinIntrinsicHeight(w));
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      _height(width, (child, w) => child.getMaxIntrinsicHeight(w));
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
 }

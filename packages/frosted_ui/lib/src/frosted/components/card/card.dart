@@ -6,6 +6,7 @@ library;
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../glyphs.dart';
@@ -201,10 +202,10 @@ class FrostedCreditCard extends StatelessWidget {
   /// Opens the card's page; null makes the card inert.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// What a screen reader says; the card, its balance and limit when null.
@@ -331,6 +332,38 @@ class FrostedCreditCard extends StatelessWidget {
       heightFactor: 1,
       child: shown,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<num>('balance', balance))
+      ..add(DiagnosticsProperty<num>('limit', limit))
+      ..add(StringProperty('mask', mask))
+      ..add(StringProperty('brand', brand))
+      ..add(StringProperty('kind', kind, defaultValue: null))
+      ..add(StringProperty('balanceLabel', balanceLabel, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'noteIcon',
+          noteIcon,
+          defaultValue: FrostedGlyphs.zap,
+        ),
+      )
+      ..add(FlagProperty('frozen', value: frozen, ifTrue: 'frozen'))
+      ..add(FlagProperty('stage', value: stage, ifTrue: 'stage'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -601,7 +634,7 @@ class _OrbitsPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final scale = size.shortestSide / _orbitsBox;
     final centre = size.center(Offset.zero);
-    final shader = LinearGradient(colors: _orbitStops, stops: const [0, 0.5, 1])
+    final shader = const LinearGradient(colors: _orbitStops, stops: [0, 0.5, 1])
         .createShader(
           Rect.fromLTRB(
             _orbitLineFrom * scale,
@@ -750,6 +783,27 @@ class FrostedFrost extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DoubleProperty(
+          'radius',
+          radius,
+          defaultValue: FrostedChromeMetrics.cardRadius,
+        ),
+      )
+      ..add(StringProperty('word', word, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'glyph',
+          glyph,
+          defaultValue: FrostedGlyphs.snowflake,
+        ),
+      );
+  }
 }
 
 class _FrostPainter extends CustomPainter {
@@ -769,7 +823,7 @@ class _FrostPainter extends CustomPainter {
         ..shader = LinearGradient(
           colors: sheens.frostWash,
           stops: _frostWashStops,
-          transform: FrostedCssAngle(_frostWashAngle),
+          transform: const FrostedCssAngle(_frostWashAngle),
         ).createShader(rect),
     );
     canvas.drawRRect(
@@ -784,11 +838,11 @@ class _FrostPainter extends CustomPainter {
           end: 1,
         ).createShader(rect),
     );
-    final a = _specularAngle * math.pi / 180;
+    const a = _specularAngle * math.pi / 180;
     final along = Offset(math.sin(a), -math.cos(a)) * _frostStreakPeriod;
     final centre = rect.center;
     const clear = Color(0x00FFFFFF);
-    final cut = (_frostStreakPeriod - _frostStreakWidth) / _frostStreakPeriod;
+    const cut = (_frostStreakPeriod - _frostStreakWidth) / _frostStreakPeriod;
     canvas.drawRRect(
       rrect,
       Paint()
@@ -951,6 +1005,15 @@ class FrostedDebitCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('mask', mask))
+      ..add(StringProperty('kind', kind, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -1152,6 +1215,20 @@ class FrostedCardNumber extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('number', number))
+      ..add(StringProperty('expires', expires))
+      ..add(StringProperty('cvc', cvc))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('numberLabel', numberLabel, defaultValue: null))
+      ..add(StringProperty('expiresLabel', expiresLabel, defaultValue: null))
+      ..add(StringProperty('cvcLabel', cvcLabel, defaultValue: null))
+      ..add(StringProperty('nameLabel', nameLabel, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1236,10 +1313,10 @@ class FrostedGoalCard extends StatelessWidget {
   /// Opens the goal; null makes the card inert.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   @override
@@ -1290,7 +1367,9 @@ class FrostedGoalCard extends StatelessWidget {
       children: [
         Flexible(child: FrostedMoney(saved, size: FrostedMoneySize.small)),
         Padding(
-          padding: const EdgeInsets.only(bottom: 1),
+          padding: const EdgeInsets.only(
+            bottom: FrostedChromeMetrics.goalCardFigureNudge,
+          ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1362,6 +1441,34 @@ class FrostedGoalCard extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('subtitle', subtitle))
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(DiagnosticsProperty<num>('saved', saved))
+      ..add(DiagnosticsProperty<num>('target', target))
+      ..add(
+        EnumProperty<FrostedGoalStatus>(
+          'status',
+          status,
+          defaultValue: FrostedGoalStatus.onTrack,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// A goal in Home's list (`.goal`): its token, name and "saved of target ·
@@ -1415,10 +1522,10 @@ class FrostedGoalRow extends StatelessWidget {
   /// Opens the goal; null makes the row inert.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   @override
@@ -1512,6 +1619,35 @@ class FrostedGoalRow extends StatelessWidget {
       child: body,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(DiagnosticsProperty<num>('saved', saved))
+      ..add(DiagnosticsProperty<num>('target', target))
+      ..add(StringProperty('by', by, defaultValue: null))
+      ..add(
+        EnumProperty<FrostedGoalStatus>(
+          'status',
+          status,
+          defaultValue: FrostedGoalStatus.onTrack,
+        ),
+      )
+      ..add(FlagProperty('first', value: first, ifTrue: 'first'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// The card that starts a goal (`.new-goal`): the plus on the ink act, the
@@ -1535,10 +1671,10 @@ class FrostedNewGoal extends StatelessWidget {
   /// Starts a goal; null makes the card inert.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// The card's title.
@@ -1644,6 +1780,23 @@ class FrostedNewGoal extends StatelessWidget {
       child: face,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1736,10 +1889,10 @@ class FrostedPane extends StatelessWidget {
   /// Opens the category; null makes the pane inert.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// The rent's ticket, beside its figure.
@@ -2014,6 +2167,30 @@ class FrostedPane extends StatelessWidget {
       child: face,
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue))
+      ..add(DiagnosticsProperty<num>('spent', spent))
+      ..add(DiagnosticsProperty<num>('budget', budget))
+      ..add(EnumProperty<FrostedPaneVariant>('variant', variant))
+      ..add(StringProperty('meta', meta))
+      ..add(StringProperty('alert', alert))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('paid', paid))
+      ..add(StringProperty('nextDue', nextDue));
+  }
 }
 
 enum _RentPart { head, money, ticket, floor }
@@ -2270,6 +2447,14 @@ class FrostedMosaic extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedPane>('panes', panes))
+      ..add(StringProperty('title', title, defaultValue: null));
   }
 }
 

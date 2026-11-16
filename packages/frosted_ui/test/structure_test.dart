@@ -171,7 +171,7 @@ Widget _insight({VoidCallback? onTap = _open}) => Builder(
 );
 
 Widget _note({VoidCallback? onTap = _open, bool unread = false}) => FrostedNote(
-  lead: FrostedTransactionMark.income('Northwind Studio'),
+  lead: const FrostedTransactionMark.income('Northwind Studio'),
   title: 'Paycheck landed',
   body: r'+$3,412.50 from Northwind Studio.',
   when: 'Fri, Oct 23 · 6:31 AM',
@@ -333,7 +333,7 @@ void main() {
         for (final brightness in Brightness.values) {
           await _pumpAll(
             t,
-            [Builder(builder: _everything)],
+            [const Builder(builder: _everything)],
             preset: preset,
             brightness: brightness,
           );
@@ -343,7 +343,7 @@ void main() {
     });
 
     _test('everything builds on the desktop', (t) async {
-      await _pumpAll(t, [Builder(builder: _everything)], size: _desktop);
+      await _pumpAll(t, [const Builder(builder: _everything)], size: _desktop);
       expect(find.byType(FrostedCard), findsWidgets);
     });
 
@@ -578,12 +578,13 @@ void main() {
         t,
         FrostedRowGroup(hairlines: true, children: [_note(), _note(), _note()]),
       );
+      // Each a rule of one point over its row, not a box round it.
       expect(
         find.byWidgetPredicate(
           (w) =>
-              w is DecoratedBox &&
-              w.decoration is BoxDecoration &&
-              (w.decoration as BoxDecoration).border != null,
+              w is PositionedDirectional &&
+              w.height == 1 &&
+              w.child is ColoredBox,
         ),
         findsNWidgets(2),
       );
@@ -718,11 +719,11 @@ void main() {
         // row's floor.
         await _pump(
           t,
-          FrostedDescriptionList(
+          const FrostedDescriptionList(
             grid: true,
             children: [
-              const FrostedKeyValue(label: 'Target', value: r'$24,000'),
-              const FrostedKeyValue(
+              FrostedKeyValue(label: 'Target', value: r'$24,000'),
+              FrostedKeyValue(
                 label: 'Date',
                 value: 'None set',
                 subtitle: 'Reaches May 2027',
@@ -998,7 +999,7 @@ void main() {
     ) async {
       await _pump(
         t,
-        FrostedNudge(
+        const FrostedNudge(
           r'Add $110 to stay on track.',
           action: FrostedButton(
             r'Add $110',

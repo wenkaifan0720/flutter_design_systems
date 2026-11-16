@@ -50,6 +50,10 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
+    // Pushed pages move as Frosted's do (see Motion below).
+    theme: ThemeData(
+      pageTransitionsTheme: const PageTransitionsTheme(builders: frostedPageTransitions),
+    ),
     builder: (context, child) => FrostedTheme(
       data: FrostedThemeData.opal(),
       darkData: FrostedThemeData.opal(Brightness.dark),
@@ -180,7 +184,10 @@ tree with a nested `FrostedTheme`, and animate between themes with `AnimatedFros
 - **Your own colours**: `FrostedThemeData.from(accent: plum, brightness: Brightness.dark)` builds the whole palette from
   one colour, moving what it derives until words read 4.5:1 on every ground they stand on.
 - **Groups**: `colorScheme` (the page, its words, the accent, the tones), `textTheme` (`displayLarge` to `labelSmall`,
-  and the look's figures), `shadows`, `glass`, `pearl`, `toast`, `hues` (the spectrum), each with `copyWith`.
+  and the look's figures), `shadows`, `glass`, `pearl`, `toast`, `hues` (the spectrum), each with `copyWith`. The
+  theme's `copyWith` takes the shadows and the glass, pearl and sheen tints from its preset: setting them is
+  deprecated, since a free shadow can make the soft lift a hard one and an opaque tint turns glass into paint.
+  `opaqueMaterials: true` is the solid form, for high contrast.
 - **Density**: `FrostedDensity.standard`, `.comfortable` or `.compact`. Unset, it follows the platform
   (`FrostedDensity.adaptivePlatformDensity`: compact on macOS, Windows and Linux, standard on touch); the 44 and 48 px
   targets never shrink.
@@ -205,7 +212,8 @@ own. `style:` takes a `FrostedStyle` with the slots of Material's `ButtonStyle` 
 `overlay`, `side`, `shape`, `padding`, `minimumSize`, `textStyle`, `iconSize`), each a `WidgetStateProperty` resolved
 per state (pressed, hovered, focused, selected, disabled, error). A `shape` takes any `OutlinedBorder`: a rounded border
 is drawn at its radius; a superellipse, a bevel or any other is cut to its outline, fill, edge, glass and focus light
-alike.
+alike. The ink act (`FrostedButton`) keeps its pill: a shape of its own that squares its ends fails a debug assert, and
+the theme's button shape, which shapes the glass buttons, passes it by.
 
 ```dart
 FrostedButton(
@@ -215,7 +223,13 @@ FrostedButton(
     fill: WidgetStateProperty.resolveWith(
       (states) => states.contains(WidgetState.pressed) ? const Color(0xFF1D4ED8) : const Color(0xFF2563EB),
     ),
-    shape: const WidgetStatePropertyAll(
+  ),
+);
+FrostedButton.glass(
+  'Share',
+  onPressed: share,
+  style: const FrostedStyle(
+    shape: WidgetStatePropertyAll(
       RoundedSuperellipseBorder(borderRadius: BorderRadius.all(Radius.circular(14))),
     ),
   ),
@@ -223,7 +237,7 @@ FrostedButton(
 ```
 
 What stays Frosted's whatever you set: the canvas's washes of light, the glass's rim of light along its top, the
-spectrum, the press read as the face dimming, the 44 and 48 px targets and the motion.
+spectrum, the ink act's pill, the press read as the face dimming, the 44 and 48 px targets and the motion.
 
 ## How Frosted is built
 
@@ -255,7 +269,14 @@ costs no blur at all. The canvas's washes are painted once and cached.
 - **Contrast.** Words hold 4.5:1 on their glass (3:1 when large), by day and by night, over any backdrop. Known limit: by
   day a field's rim and the focus light are white light on pale glass, under 3:1 against the page (about 1.1 to 1.3:1);
   a field is found by its well and its label, and focus also changes the well itself.
-- **Motion.** Every change of state eases from where it is; Reduce Motion makes each one a cut.
+- **Motion.** Every change of state eases from where it is; Reduce Motion makes each one a cut. A page pushed over
+  another clears in as it settles 24 px toward the end, the page under it standing still, and pops back the way it
+  came, on every platform. A `FrostedPage` moves so wherever it is pushed, and `FrostedTheme` hands the motion to the
+  page routes of an app on `material_ui`, the Material Frosted is built on. Flutter's own `MaterialApp` keeps its theme
+  above `FrostedTheme`, out of its reach: give that theme `frostedPageTransitions`, as the set-up above does, and
+  its `MaterialPageRoute`s and go_router's pages match (a `CupertinoPageRoute` keeps iOS's own slide). On iOS a drag
+  from the leading edge still takes a page back: the map's iOS entry stands Frosted's motion inside ui_core's
+  `DesignSwipeBackPageTransitionsBuilder`. Tabs and sidebar destinations change the page in place.
 - **Large text.** Pages lay out up to 200% text (the host caps a larger size there); controls grow taller rather than
   cut their words.
 - **Right to left.** Under a right-to-left `Directionality` every part mirrors: the glyphs that point a way turn round,

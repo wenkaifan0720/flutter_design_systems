@@ -36,22 +36,27 @@ class _TogglesState extends State<_Toggles> {
 
 Widget kitFormsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
-  title: 'Forms',
+  measured: true,
+  title: kitSay('Forms'),
   sections: [
     kitSection(
-      'A switch row on and one with no callback; a way in and a row off',
+      kitSay(
+        'A switch row on and one with no callback; a way in and a row off',
+      ),
       children: [kitSpecimenSwitchRow(), kitSpecimenValueRow()],
     ),
     kitSection(
-      'Settings: switches in rows, flipped by their words',
+      kitSay('Settings: switches in rows, flipped by their words'),
       children: [kitSpecimenSwitchRows()],
     ),
     kitSection(
-      'Settings: a switch, a way in, and a limit the frozen card cannot change',
+      kitSay(
+        'Settings: a switch, a way in, and a limit the frozen card cannot change',
+      ),
       children: [kitSpecimenValueRows()],
     ),
     kitSection(
-      'Form rows: a value, a control, a way in, each with its glyph',
+      kitSay('Form rows: a value, a control, a way in, each with its glyph'),
       children: [
         kitSpecimenFormRowValue(),
         kitSpecimenFormRowControl(),
@@ -59,7 +64,7 @@ Widget kitFormsDemo(Brightness brightness) => kitScreen(
       ],
     ),
     kitSection(
-      'A form in its tile: a field, a pair, the icons',
+      kitSay('A form in its tile: a field, a pair, the icons'),
       children: [kitSpecimenFormSection()],
     ),
     kitSection(
@@ -74,28 +79,28 @@ Widget kitFormsDemo(Brightness brightness) => kitScreen(
 Widget kitSpecimenSwitchRows() => _Toggles(
   initial: const [true, true, true, false],
   builder: (values, flip) => FrostedSettingsGroup(
-    title: 'Notifications',
+    title: kitSay('Notifications'),
     children: [
       FrostedSwitchRow(
-        label: 'Bills',
-        note: 'A few days before each is due',
+        label: kitSay('Bills'),
+        note: kitSay('A few days before each is due'),
         value: values[0],
         onChanged: (v) => flip(0, v),
       ),
       FrostedSwitchRow(
-        label: 'Budgets',
-        note: 'When a category goes over',
+        label: kitSay('Budgets'),
+        note: kitSay('When a category goes over'),
         value: values[1],
         onChanged: (v) => flip(1, v),
       ),
       FrostedSwitchRow(
-        label: r'Large purchases over $200',
+        label: kitSay(r'Large purchases over $200'),
         value: values[2],
         onChanged: (v) => flip(2, v),
       ),
       FrostedSwitchRow(
-        label: 'Weekly summary',
-        note: 'Every Sunday evening',
+        label: kitSay('Weekly summary'),
+        note: kitSay('Every Sunday evening'),
         value: values[3],
         onChanged: (v) => flip(3, v),
       ),
@@ -107,14 +112,14 @@ Widget kitSpecimenSwitchRow() => Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   children: [
     FrostedSwitchRow(
-      label: 'Bills',
-      note: 'A few days before each is due',
+      label: kitSay('Bills'),
+      note: kitSay('A few days before each is due'),
       value: true,
       onChanged: (_) {},
     ),
-    const FrostedSwitchRow(
-      label: 'Weekly summary',
-      note: 'Every Sunday evening',
+    FrostedSwitchRow(
+      label: kitSay('Weekly summary'),
+      note: kitSay('Every Sunday evening'),
       value: false,
       onChanged: null,
     ),
@@ -124,10 +129,10 @@ Widget kitSpecimenSwitchRow() => Column(
 Widget kitSpecimenValueRow() => Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   children: [
-    FrostedValueRow(title: 'Change passcode', onPressed: () {}),
+    FrostedValueRow(title: kitSay('Change passcode'), onPressed: () {}),
     FrostedValueRow(
-      title: 'Monthly spending limit',
-      subtitle: r'$1,259.82 spent in October',
+      title: kitSay('Monthly spending limit'),
+      subtitle: kitSay(r'$1,259.82 spent in October'),
       value: r'$2,000',
       enabled: false,
       onPressed: () {},
@@ -136,18 +141,18 @@ Widget kitSpecimenValueRow() => Column(
 );
 
 Widget kitSpecimenValueRows() => FrostedSettingsGroup(
-  title: 'Security',
+  title: kitSay('Security'),
   children: [
     FrostedSwitchRow(
       label: 'Face ID',
-      note: 'To open the app and approve payments',
+      note: kitSay('To open the app and approve payments'),
       value: true,
       onChanged: (_) {},
     ),
-    FrostedValueRow(title: 'Change passcode', onPressed: () {}),
+    FrostedValueRow(title: kitSay('Change passcode'), onPressed: () {}),
     FrostedValueRow(
-      title: 'Monthly spending limit',
-      subtitle: r'$1,259.82 spent in October',
+      title: kitSay('Monthly spending limit'),
+      subtitle: kitSay(r'$1,259.82 spent in October'),
       value: r'$2,000',
       enabled: false,
       onPressed: () {},
@@ -156,58 +161,58 @@ Widget kitSpecimenValueRows() => FrostedSettingsGroup(
 );
 
 Widget kitSpecimenFormRowValue() => FrostedSettingsGroup(
-  title: 'Account',
+  title: kitSay('Account'),
   children: [
     FrostedFormRow(
-      label: 'Currency',
+      label: kitSay('Currency'),
       leading: LucideIcons.coins,
-      value: 'USD',
+      value: kitSay('USD'),
       onPressed: () {},
     ),
-    const FrostedFormRow(
-      label: 'Member since',
+    FrostedFormRow(
+      label: kitSay('Member since'),
       leading: LucideIcons.calendar,
       // The profile's own year (controls.dart): one person, one date (round 11).
-      value: 'October 2023',
+      value: kitSay('October 2023'),
     ),
   ],
 );
 
 Widget kitSpecimenFormRowControl() => FrostedSettingsGroup(
-  title: 'Harbor Card',
+  title: kitSay('Harbor Card'),
   children: [
     FrostedFormRow(
-      label: 'Round-ups',
-      detail: 'Save the change from Harbor Card',
+      label: kitSay('Round-ups'),
+      detail: kitSay('Save the change from Harbor Card'),
       leading: LucideIcons.piggyBank,
       trailing: FrostedSwitch(
         value: true,
         onChanged: (_) {},
-        label: 'Round-ups',
+        label: kitSay('Round-ups'),
       ),
     ),
     FrostedFormRow(
-      label: 'Card freeze',
+      label: kitSay('Card freeze'),
       leading: LucideIcons.snowflake,
       trailing: FrostedSwitch(
         value: false,
         onChanged: (_) {},
-        label: 'Card freeze',
+        label: kitSay('Card freeze'),
       ),
     ),
   ],
 );
 
 Widget kitSpecimenFormRowChevron() => FrostedSettingsGroup(
-  title: 'Data',
+  title: kitSay('Data'),
   children: [
     FrostedFormRow(
-      label: 'Linked accounts',
+      label: kitSay('Linked accounts'),
       leading: LucideIcons.link,
       onPressed: () {},
     ),
     FrostedFormRow(
-      label: 'Export statements',
+      label: kitSay('Export statements'),
       leading: LucideIcons.download,
       onPressed: () {},
     ),
@@ -215,31 +220,31 @@ Widget kitSpecimenFormRowChevron() => FrostedSettingsGroup(
 );
 
 Widget kitSpecimenFormSection() => FrostedFormSection(
-  title: 'New goal',
+  title: kitSay('New goal'),
   children: [
-    const FrostedTextField(
-      label: 'Name',
-      hint: 'What are you saving for?',
-      value: 'Lisbon',
+    FrostedTextField(
+      label: kitSay('Name'),
+      hint: kitSay('What are you saving for?'),
+      value: kitSay('Lisbon'),
     ),
-    const FrostedFieldPair(
+    FrostedFieldPair(
       FrostedAmountField(
-        label: 'Target',
+        label: kitSay('Target'),
         value: '4200',
         size: FrostedAmountFieldSize.small,
       ),
-      FrostedTextField(label: 'Date', value: 'May 2027'),
+      FrostedTextField(label: kitSay('Date'), value: kitSay('May 2027')),
     ),
     FrostedIconPicker(
-      icons: const [
-        FrostedIconChoice(LucideIcons.plane, 'Plane'),
-        FrostedIconChoice(LucideIcons.shield, 'Shield'),
-        FrostedIconChoice(LucideIcons.bike, 'Bike'),
-        FrostedIconChoice(LucideIcons.house, 'Home'),
-        FrostedIconChoice(LucideIcons.car, 'Car'),
-        FrostedIconChoice(LucideIcons.gift, 'Gift'),
+      icons: [
+        FrostedIconChoice(LucideIcons.plane, kitSay('Plane')),
+        FrostedIconChoice(LucideIcons.shield, kitSay('Shield')),
+        FrostedIconChoice(LucideIcons.bike, kitSay('Bike')),
+        FrostedIconChoice(LucideIcons.house, kitSay('Home')),
+        FrostedIconChoice(LucideIcons.car, kitSay('Car')),
+        FrostedIconChoice(LucideIcons.gift, kitSay('Gift')),
       ],
-      value: 'Plane',
+      value: kitSay('Plane'),
       onChanged: (_) {},
       labelled: true,
     ),
@@ -249,17 +254,17 @@ Widget kitSpecimenFormSection() => FrostedFormSection(
 Widget kitSpecimenFormBare() => FrostedFormSection(
   bare: true,
   children: [
-    const FrostedAmountField(label: 'Amount', value: '500.00'),
-    const FrostedTextField(label: 'Note', value: 'November top-up'),
+    FrostedAmountField(label: kitSay('Amount'), value: '500.00'),
+    FrostedTextField(label: kitSay('Note'), value: kitSay('November top-up')),
     FrostedSegmentedButton(
-      segments: const [
-        FrostedButtonSegment('today', 'Today'),
-        FrostedButtonSegment('tomorrow', 'Tomorrow'),
-        FrostedButtonSegment('date', 'Choose a date'),
+      segments: [
+        FrostedButtonSegment('today', kitSay('Today')),
+        FrostedButtonSegment('tomorrow', kitSay('Tomorrow')),
+        FrostedButtonSegment('date', kitSay('Choose a date')),
       ],
       value: 'today',
       onChanged: (_) {},
-      label: 'When',
+      label: kitSay('When'),
       fill: true,
       labelled: true,
     ),

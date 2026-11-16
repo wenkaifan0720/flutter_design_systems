@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
@@ -60,7 +61,7 @@ class FrostedStepsChart extends StatelessWidget {
   /// How many days the month has.
   final int daysInMonth;
 
-  /// What a screen reader calls the chart.
+  /// {@macro frosted.chartLabel}
   final String label;
 
   /// How many of the largest steps are named.
@@ -200,6 +201,25 @@ class FrostedStepsChart extends StatelessWidget {
       ],
       named: largest.take(named).toList(),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedStep>('steps', steps))
+      ..add(IntProperty('daysInMonth', daysInMonth))
+      ..add(StringProperty('label', label))
+      ..add(IntProperty('named', named, defaultValue: 2))
+      ..add(
+        IterableProperty<FrostedAxisMark>(
+          'marks',
+          marks,
+          defaultValue: const <FrostedAxisMark>[],
+        ),
+      )
+      ..add(IntProperty('lines', lines, defaultValue: 3))
+      ..add(DoubleProperty('height', height, defaultValue: null));
   }
 }
 

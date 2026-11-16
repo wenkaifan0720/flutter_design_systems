@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -7,7 +8,7 @@ import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
 import '../../internal/css_shadow.dart';
 import '../../internal/face.dart';
-import '../../internal/hit_slop.dart';
+import '../../internal/menu_wake.dart';
 import '../../internal/panel.dart';
 import '../../theme.dart';
 import '../controls/controls.dart';
@@ -81,28 +82,25 @@ class FrostedToggleGroup<T> extends StatelessWidget {
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,
       heightFactor: 1,
-      child: FrostedOverhang(
-        height: strip,
-        child: SizedBox(
-          height: reach,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Positioned.fill(
-                top: (reach - strip) / 2,
-                bottom: (reach - strip) / 2,
-                child: FrostedFace(
-                  material: FrostedMaterial.paint,
-                  radius: BorderRadius.circular(height / 2 + inset),
-                  color: t.glass.wash,
-                ),
+      child: SizedBox(
+        height: reach,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned.fill(
+              top: (reach - strip) / 2,
+              bottom: (reach - strip) / 2,
+              child: FrostedFace(
+                material: FrostedMaterial.paint,
+                radius: BorderRadius.circular(height / 2 + inset),
+                color: t.glass.wash,
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: inset),
-                child: _group(context, t, height, reach, target, labels),
-              ),
-            ],
-          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: inset),
+              child: _group(context, t, height, reach, target, labels),
+            ),
+          ],
         ),
       ),
     );
@@ -185,6 +183,20 @@ class FrostedToggleGroup<T> extends StatelessWidget {
       );
     },
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedButtonSegment<T>>('segments', segments))
+      ..add(IterableProperty<T>('selected', selected))
+      ..add(
+        ObjectFlagProperty<ValueChanged<Set<T>>>.has('onChanged', onChanged),
+      )
+      ..add(FlagProperty('multiple', value: multiple, ifTrue: 'multiple'))
+      ..add(FlagProperty('allowEmpty', value: allowEmpty, ifTrue: 'allowEmpty'))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -226,6 +238,8 @@ class FrostedSplitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Its menu tells a key's opening from a pointer's (FrostedMenuWake).
+    FrostedLastInput.watch();
     final t = context.frostedTheme;
     final height = frostedGrownHeight(
       context,
@@ -247,24 +261,21 @@ class FrostedSplitButton extends StatelessWidget {
         for (final a in actions)
           DesignSplitAction(label: a.label, onPressed: a.onPressed),
       ],
-      layoutBuilder: (context, main, toggle) => FrostedOverhang(
-        height: height,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            main,
-            SizedBox(
-              width: FrostedStrokes.hairline,
-              height: height,
-              child: ColoredBox(
-                color: glass
-                    ? t.colorScheme.border
-                    : t.colorScheme.onButton.withValues(alpha: .24),
-              ),
+      layoutBuilder: (context, main, toggle) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          main,
+          SizedBox(
+            width: FrostedStrokes.hairline,
+            height: height,
+            child: ColoredBox(
+              color: glass
+                  ? t.colorScheme.border
+                  : t.colorScheme.onButton.withValues(alpha: .24),
             ),
-            toggle,
-          ],
-        ),
+          ),
+          toggle,
+        ],
       ),
       buttonBuilder: (context, part, states, open) {
         final main = part == DesignSplitPart.main;
@@ -341,18 +352,31 @@ class FrostedSplitButton extends StatelessWidget {
           label: action.label,
           states: states,
           checkable: false,
+          followsPointer: true,
         ),
       ),
       surfaceBuilder: (context, info, items) => FrostedPanel(
         presence: info.animation,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: FrostedChromeMetrics.menuItemsGap,
-          children: items,
+        child: FrostedMenuWake(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: FrostedChromeMetrics.menuItemsGap,
+            children: items,
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(IterableProperty<FrostedSplitAction>('actions', actions))
+      ..add(FlagProperty('glass', value: glass, ifTrue: 'glass'));
   }
 }
 

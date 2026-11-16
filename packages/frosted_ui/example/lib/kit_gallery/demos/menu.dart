@@ -37,7 +37,7 @@ List<FrostedMenuItem<String>> _items(String checked) => [
   for (final (month, spent) in _months)
     FrostedMenuItem(
       month,
-      month,
+      kitSay(month),
       trailing: _quietAmount(spent),
       checked: month == checked,
     ),
@@ -45,12 +45,13 @@ List<FrostedMenuItem<String>> _items(String checked) => [
 
 Widget kitMenuDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
-  title: 'Menu',
+  measured: true,
+  title: kitSay('Menu'),
   sections: [
-    kitSection('Anchored to its control', children: [const _Month()]),
-    kitSection('In place', children: [kitSpecimenMenuMonths()]),
+    kitSection(kitSay('Anchored to its control'), children: [const _Month()]),
+    kitSection(kitSay('In place'), children: [kitSpecimenMenuMonths()]),
     kitSection(
-      'Options',
+      kitSay('Options'),
       children: [
         Builder(
           builder: (context) {
@@ -59,20 +60,20 @@ Widget kitMenuDemo(Brightness brightness) => kitScreen(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 FrostedOption(
-                  label: 'Groceries',
+                  label: kitSay('Groceries'),
                   hue: t.hue(1).a,
                   trailing: _quietAmount(412.36),
                   onPressed: () {},
                 ),
                 FrostedOption(
-                  label: 'Dining out',
+                  label: kitSay('Dining out'),
                   hue: t.hue(2).a,
                   trailing: _quietAmount(286.40),
                   selected: true,
                   onPressed: () {},
                 ),
                 FrostedOption(
-                  label: 'Everyday',
+                  label: kitSay('Everyday'),
                   lead: FrostedHueDot(t.colorScheme.moneyIn),
                   onPressed: null,
                 ),
@@ -110,8 +111,8 @@ class _MonthState extends State<_Month> {
           onPressed: () async {
             final picked = await FrostedMenu.show<String>(
               anchor,
-              title: 'Spent by month',
-              label: 'Months',
+              title: kitSay('Spent by month'),
+              label: kitSay('Months'),
               items: _items(month),
             );
             if (picked != null) {
@@ -131,8 +132,8 @@ class _MonthState extends State<_Month> {
 Widget kitSpecimenMenuMonths() => Align(
   alignment: AlignmentDirectional.centerEnd,
   child: FrostedMenu<String>(
-    title: 'Spent by month',
-    label: 'Months',
+    title: kitSay('Spent by month'),
+    label: kitSay('Months'),
     items: _items('October 2026'),
     onSelected: (_) {},
   ),

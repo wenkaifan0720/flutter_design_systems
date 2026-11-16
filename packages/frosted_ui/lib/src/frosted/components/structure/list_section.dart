@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../internal/flush_end.dart';
@@ -121,5 +122,17 @@ class FrostedListSection extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('aside', aside, defaultValue: null))
+      ..add(FlagProperty('tile', value: tile, ifFalse: 'tile: false'))
+      ..add(FlagProperty('timeline', value: timeline, ifTrue: 'timeline'))
+      ..add(FlagProperty('hairlines', value: hairlines, ifTrue: 'hairlines'))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }

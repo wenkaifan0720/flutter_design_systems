@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -5,7 +8,6 @@ import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
 import '../../internal/face.dart';
 import '../../internal/styled.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/key_focus.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
@@ -147,6 +149,18 @@ class FrostedWheelPicker<T> extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedSelectOption<T>>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(FlagProperty('looping', value: looping, ifTrue: 'looping'))
+      ..add(DoubleProperty('width', width, defaultValue: null));
   }
 }
 
@@ -495,6 +509,22 @@ class FrostedTimePicker extends StatelessWidget {
     );
     return picker;
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FrostedTime>('value', value, defaultValue: null),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<FrostedTime>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(IntProperty('minuteInterval', minuteInterval, defaultValue: 1));
+  }
 }
 
 /// Raises a [FrostedTimePicker] in a card over the whole app, standing on
@@ -578,6 +608,25 @@ class FrostedDatePicker extends StatefulWidget {
 
   @override
   State<FrostedDatePicker> createState() => _FrostedDatePickerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(DiagnosticsProperty<DateTime>('first', first, defaultValue: null))
+      ..add(DiagnosticsProperty<DateTime>('last', last, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'currentDate',
+          currentDate,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _FrostedDatePickerState extends State<FrostedDatePicker> {
@@ -620,20 +669,18 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
     final title = '${words.monthName(_month.month)} ${_month.year}';
 
     Widget step(IconData glyph, String label, VoidCallback? go) =>
-        FrostedHitSlop(
-          child: FrostedPressable(
-            onPressed: go,
-            label: label,
-            radius: 18,
-            child: SizedBox.square(
-              dimension: 36,
-              child: FrostedDim(
-                off: go == null,
-                child: Icon(
-                  glyph,
-                  size: FrostedChromeMetrics.pickerGlyph + 2,
-                  color: t.colorScheme.textPrimary,
-                ),
+        FrostedPressable(
+          onPressed: go,
+          label: label,
+          radius: 18,
+          child: SizedBox.square(
+            dimension: 36,
+            child: FrostedDim(
+              off: go == null,
+              child: Icon(
+                glyph,
+                size: FrostedChromeMetrics.pickerGlyph + 2,
+                color: t.colorScheme.textPrimary,
               ),
             ),
           ),
@@ -752,11 +799,22 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
       );
     }
 
+    // A day's row is the touch target tall (48 under a finger, 44 under a
+    // pointer, never under the source's 44); the rows close up by what the
+    // target adds, so the days keep their pitch and the card its height.
+    final row = math.max(
+      FrostedChromeMetrics.pickerDayRow,
+      FrostedBreakpoints.hitTargetOf(context),
+    );
+    final rowGap = math.max(
+      0.0,
+      FrostedSpacing.s4 - (row - FrostedChromeMetrics.pickerDayRow),
+    );
     final rows = <Widget>[];
     for (var start = 1 - lead; start <= days; start += 7) {
       rows.add(
         SizedBox(
-          height: 44,
+          height: row,
           child: Row(
             children: [
               for (var n = start; n < start + 7; n++)
@@ -768,7 +826,7 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
     }
     // Six rows always, so the card keeps its height month to month.
     while (rows.length < 6) {
-      rows.add(const SizedBox(height: 44));
+      rows.add(SizedBox(height: row));
     }
 
     // A month stands at most 400 wide, at the start of a wider field, as
@@ -790,7 +848,12 @@ class _FrostedDatePickerState extends State<FrostedDatePicker> {
                 head,
                 const SizedBox(height: FrostedSpacing.s4),
                 weekdays,
-                ...rows,
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: rowGap,
+                  children: rows,
+                ),
               ],
             ),
           ),

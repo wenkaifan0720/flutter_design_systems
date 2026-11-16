@@ -1,12 +1,12 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
 import '../../internal/act_row.dart';
 import '../../internal/face.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/measure.dart';
 import '../../internal/own_size.dart';
 import '../../internal/styled.dart';
@@ -18,6 +18,27 @@ import '../../internal/cap.dart';
 
 // The two faces a [FrostedButton] wears, one per constructor.
 enum _Face { ink, glass }
+
+/// Whether [cut] draws a pill [height] tall: round ends, each corner at
+/// least half the height (the ink act's own outline; null is the look's).
+bool _isPill(OutlinedBorder? cut, double height) {
+  bool round(BorderRadiusGeometry radius) {
+    final r = radius.resolve(TextDirection.ltr);
+    return [
+      r.topLeft,
+      r.topRight,
+      r.bottomLeft,
+      r.bottomRight,
+    ].every((c) => math.min(c.x, c.y) >= height / 2 - 0.5);
+  }
+
+  return switch (cut) {
+    null || StadiumBorder() => true,
+    RoundedRectangleBorder(:final borderRadius) ||
+    RoundedSuperellipseBorder(:final borderRadius) => round(borderRadius),
+    _ => false,
+  };
+}
 
 /// How large a [FrostedButton] stands.
 enum FrostedButtonSize {
@@ -86,10 +107,10 @@ class FrostedButton extends StatelessWidget {
   /// What a press does; null draws the button disabled.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   final _Face _face;
@@ -113,8 +134,12 @@ class FrostedButton extends StatelessWidget {
   /// edge or side, overlay, shape, padding, minimum size, text style and
   /// icon size, each per state.
   ///
+  /// The ink act keeps its pill (law 6): a shape of its own that squares
+  /// its ends fails a debug assert, and the theme's button shape passes it
+  /// by. A glass button takes any shape.
+  ///
   /// ```dart
-  /// FrostedButton(
+  /// FrostedButton.glass(
   ///   'Save',
   ///   onPressed: save,
   ///   style: FrostedStyle(
@@ -168,9 +193,26 @@ class FrostedButton extends StatelessWidget {
     // step with the page's ink, not raised white: a white step vanished on a
     // light sheet and left only the word to read as the button.
     final shaded = FrostedOnGlass.of(context) && !frostedOpaqueAt(context);
+    // The ink act keeps its pill (law 6). A shape of its own `style:` that
+    // squares its ends fails a debug assert; the theme's button shape, which
+    // shapes the glass buttons too, passes the act by. Either way the act is
+    // drawn a pill.
+    OutlinedBorder? cutOf(FrostedStyleLayers s) {
+      final cut = s.cut(FrostedCorners.full);
+      if (_face == _Face.glass || _isPill(cut, height)) return cut;
+      final own = style?.shape?.resolve(s.states);
+      assert(
+        own == null || _isPill(own is StadiumBorder ? null : own, height),
+        "Frosted's ink act keeps its pill (law 6, the ink pill): "
+        '${own.runtimeType} squares its ends at $height tall. Shape a glass '
+        'button (FrostedButton.glass) instead, or leave the act its own.',
+      );
+      return null;
+    }
+
     Widget draw(Set<WidgetState> states) {
       final s = layers.at(states);
-      final cut = s.cut(FrostedCorners.full);
+      final cut = cutOf(s);
       final round = FrostedStyleLayers.radiusOf(cut, height, height / 2);
       final radius = BorderRadius.circular(round);
       final ink =
@@ -292,7 +334,7 @@ class FrostedButton extends StatelessWidget {
       return face;
     }
 
-    final cut = layers.cut(FrostedCorners.full);
+    final cut = cutOf(layers);
     final Widget face = FrostedPressable(
       focusNode: focusNode,
       autofocus: autofocus,
@@ -302,10 +344,9 @@ class FrostedButton extends StatelessWidget {
       shape: cut,
       builder: (context, states, _) => draw(states),
     );
-    // A small or a compact button keeps the whole target round its face.
-    final button = small || height < FrostedChromeMetrics.buttonHeight
-        ? FrostedHitSlop(child: face)
-        : face;
+    // A small or a compact button stands in the whole target round its face
+    // (its pressable lays it out there).
+    final button = face;
     // From 600 wide a wide button keeps to a control's measure (320): its
     // column's start, or the middle of its share in a row of acts. Taking a
     // desktop column's whole width, it read as a banner, not a button.
@@ -317,6 +358,35 @@ class FrostedButton extends StatelessWidget {
       );
     }
     return button;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        EnumProperty<FrostedButtonSize>(
+          'size',
+          size,
+          defaultValue: FrostedButtonSize.regular,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -487,6 +557,12 @@ class FrostedButtonRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       _ButtonRow(columns: columns, children: FrostedActRow.wrap(children));
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('columns', columns, defaultValue: null));
+  }
 }
 
 class _ButtonRow extends MultiChildRenderObjectWidget {
@@ -729,10 +805,10 @@ class FrostedLink extends StatelessWidget {
   /// Where the link leads; null leaves it inert.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// A key for the link, where a tap lands: an app's walk names it by it.
@@ -797,6 +873,31 @@ class FrostedLink extends StatelessWidget {
       textAlign: textAlign,
       style: style,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(StringProperty('link', link))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(DiagnosticsProperty<Key>('linkKey', linkKey, defaultValue: null))
+      ..add(
+        EnumProperty<TextAlign>(
+          'textAlign',
+          textAlign,
+          defaultValue: TextAlign.start,
+        ),
+      );
   }
 }
 

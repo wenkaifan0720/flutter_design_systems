@@ -260,8 +260,8 @@ void main() {
         expect(line(step.$1), closeTo(step.$3, 0.001), reason: '$name line');
       });
       // Money is the medium cut, tightly tracked; the heads are semibold.
-      expect(t.textTheme.displayMedium.fontWeight, const FontWeight(500));
-      expect(t.textTheme.headlineSmall.fontWeight, const FontWeight(600));
+      expect(t.textTheme.displayMedium.fontWeight, FontWeight.w500);
+      expect(t.textTheme.headlineSmall.fontWeight, FontWeight.w600);
       expect(
         t.textTheme.displayMedium.letterSpacing,
         closeTo(64 * -0.035, 0.001),

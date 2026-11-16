@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show MaterialLocalizations, RawDialogRoute;
 import 'package:flutter/services.dart';
@@ -256,7 +257,12 @@ class FrostedActionSheet<T> extends StatelessWidget {
                     children: [
                       if (head.isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                          padding: const EdgeInsets.fromLTRB(
+                            FrostedSpacing.s16,
+                            FrostedSpacing.s14,
+                            FrostedSpacing.s16,
+                            FrostedSpacing.s14,
+                          ),
                           child: Column(
                             spacing: FrostedSpacing.s4,
                             children: head,
@@ -298,6 +304,16 @@ class FrostedActionSheet<T> extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(IterableProperty<FrostedActionSheetAction<T>>('actions', actions))
+      ..add(StringProperty('cancelLabel', cancelLabel, defaultValue: null));
+  }
 }
 
 /// Raises [builder]'s [FrostedActionSheet] over the whole app, as
@@ -326,14 +342,10 @@ Future<T?> showFrostedActionSheet<T>(
       transitionDuration: style.duration ?? Duration.zero,
       transitionBuilder: (context, animation, _, child) {
         if (wide) return FadeTransition(opacity: animation, child: child);
-        return SlideTransition(
-          position: Tween(begin: const Offset(0, 1), end: Offset.zero).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: style.curve ?? Curves.easeOutCubic,
-              reverseCurve: style.reverseCurve ?? Curves.easeInCubic,
-            ),
-          ),
+        return _RiseFromBelow(
+          animation: animation,
+          curve: style.curve ?? Curves.easeOutCubic,
+          reverseCurve: style.reverseCurve ?? Curves.easeInCubic,
           child: child,
         );
       },
@@ -400,6 +412,30 @@ class FrostedTooltip extends StatefulWidget {
 
   @override
   State<FrostedTooltip> createState() => _FrostedTooltipState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'waitDuration',
+          waitDuration,
+          defaultValue: const Duration(milliseconds: 500),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'showDuration',
+          showDuration,
+          defaultValue: const Duration(milliseconds: 1500),
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _FrostedTooltipState extends State<FrostedTooltip> {
@@ -575,7 +611,10 @@ class _TooltipBubble extends StatelessWidget {
                   child: Padding(
                     padding:
                         padding ??
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        const EdgeInsets.symmetric(
+                          horizontal: FrostedSpacing.s10,
+                          vertical: FrostedSpacing.s6,
+                        ),
                     child: Text(message, style: style),
                   ),
                 ),
@@ -586,4 +625,55 @@ class _TooltipBubble extends StatelessWidget {
       ),
     );
   }
+}
+
+// A sheet rising from the screen's foot along its curves; it owns its curved
+// animation, and disposes of it with the route.
+class _RiseFromBelow extends StatefulWidget {
+  const _RiseFromBelow({
+    required this.animation,
+    required this.curve,
+    required this.reverseCurve,
+    required this.child,
+  });
+
+  final Animation<double> animation;
+  final Curve curve;
+  final Curve reverseCurve;
+  final Widget child;
+
+  @override
+  State<_RiseFromBelow> createState() => _RiseFromBelowState();
+}
+
+class _RiseFromBelowState extends State<_RiseFromBelow> {
+  static final _rise = Tween(begin: const Offset(0, 1), end: Offset.zero);
+  late CurvedAnimation _curved = _curve();
+
+  CurvedAnimation _curve() => CurvedAnimation(
+    parent: widget.animation,
+    curve: widget.curve,
+    reverseCurve: widget.reverseCurve,
+  );
+
+  @override
+  void didUpdateWidget(_RiseFromBelow old) {
+    super.didUpdateWidget(old);
+    if (old.animation != widget.animation ||
+        old.curve != widget.curve ||
+        old.reverseCurve != widget.reverseCurve) {
+      _curved.dispose();
+      _curved = _curve();
+    }
+  }
+
+  @override
+  void dispose() {
+    _curved.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      SlideTransition(position: _rise.animate(_curved), child: widget.child);
 }

@@ -30,15 +30,43 @@ void main() {
     );
     frostedInventory.verify();
     expect(frostedInventory.look, 'Frosted');
+    final owned = <DesignInventoryRow>[];
     for (final row in DesignInventoryRow.all) {
       final specimen = frostedInventory
           .entryFor(row.id)
           ?.builder
           ?.call(context);
       if (specimen == null) continue;
+      final kind = specimen.runtimeType.toString().split('<').first;
+      // A specimen holding a controller stands in the State that owns and
+      // disposes of it, as an app's page would; the part is what it builds.
+      if (kind == '_Owned') {
+        owned.add(row);
+        continue;
+      }
+      expect(kind, 'Frosted${row.id}', reason: "${row.id}'s specimen");
+    }
+    expect(owned.map((r) => r.id), ['DataTable', 'ScrollArea', 'TreeView']);
+    for (final row in owned) {
+      await t.pumpWidget(
+        _app(
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 640),
+              child: Builder(
+                builder: frostedInventory.entryFor(row.id)!.builder!,
+              ),
+            ),
+          ),
+        ),
+      );
       expect(
-        specimen.runtimeType.toString().split('<').first,
-        'Frosted${row.id}',
+        find.byWidgetPredicate(
+          (w) =>
+              w.runtimeType.toString().split('<').first == 'Frosted${row.id}',
+        ),
+        findsOneWidget,
         reason: "${row.id}'s specimen",
       );
     }

@@ -9,6 +9,7 @@ import '../kit.dart';
 
 Widget kitToggleDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Toggle',
   sections: [
     kitSection(

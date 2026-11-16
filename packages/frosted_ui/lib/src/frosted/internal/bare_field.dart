@@ -28,6 +28,7 @@ class FrostedBareField extends StatelessWidget {
     this.label,
     this.onChanged,
     this.onSubmitted,
+    this.onEditingComplete,
     this.obscureText = false,
     this.enabled = true,
     this.autofocus = false,
@@ -54,8 +55,15 @@ class FrostedBareField extends StatelessWidget {
   /// Called as the text changes.
   final ValueChanged<String>? onChanged;
 
-  /// Called on Return.
+  /// Called on Return; the field then lets the focus go.
   final ValueChanged<String>? onSubmitted;
+
+  /// Takes Return in place of [onSubmitted] and keeps the focus: a field
+  /// that stays focused after Return (a tag input's, a palette's search)
+  /// must not also have [onSubmitted], or in a browser typing after Return
+  /// goes nowhere (Flutter restarts the text input of a submitted field that
+  /// still holds the focus).
+  final VoidCallback? onEditingComplete;
 
   /// Whether the text is hidden.
   final bool obscureText;
@@ -108,6 +116,7 @@ class FrostedBareField extends StatelessWidget {
             textAlign: textAlign,
             onChanged: onChanged,
             onSubmitted: onSubmitted,
+            onEditingComplete: onEditingComplete,
             style: style,
             cursorColor: t.colorScheme.textPrimary,
             decoration: _bareDecoration(

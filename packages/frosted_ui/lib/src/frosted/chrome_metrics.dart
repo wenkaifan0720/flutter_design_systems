@@ -139,14 +139,24 @@ abstract final class FrostedChromeMetrics {
 
   // --- the phone tab bar ----------------------------------------------------
 
-  /// The tab bar (`.tabbar`): the slab 12 in from the sides and 12 over the
-  /// foot (or the system's inset where that is more: DERIVED, the source
-  /// draws no inset), the page fading into the canvas over the 104 above
-  /// the foot (nothing at its top, 88% at 48%, the canvas at 80%).
-  static const double tabBarSide = 12;
+  /// The tab bar (`.tabbar`): the slab on the page's gutter, 16 in from the
+  /// sides (the source's 12 left it 4 outside the content above it), and 12
+  /// over the foot (or the system's inset where that is more: DERIVED, the
+  /// source draws no inset), the page fading into the canvas over the 104
+  /// above the foot (nothing at its top, 88% at 48%, the canvas at 80%).
+  /// A floating action bar stands on the same gutter.
+  static const double tabBarSide = gutter;
 
   /// See [tabBarSide].
   static const double tabBarBottom = 12;
+
+  /// A tab's share of the slab from a tablet's width
+  /// ([FrostedBreakpoints.medium]), where the slab hugs its tabs in the
+  /// middle of the foot.
+  static const double tabBarTabMedium = 120;
+
+  /// The narrowest the slab stands there under an accessory.
+  static const double tabBarAccessoryMedium = 480;
 
   /// See [tabBarSide].
   static const double tabBarFade = 104;
@@ -160,19 +170,23 @@ abstract final class FrostedChromeMetrics {
   /// See [tabBarSide].
   static const double tabBarFadeMidAlpha = 0.88;
 
-  /// The slab (`.tabbar-in`): 64 tall, corners 22, 4 inside at its ends,
-  /// frosted (a blur of 24, saturated 1.4).
+  /// The slab (`.tabbar-in`): 64 tall, corners 22, frosted (a blur of 24,
+  /// saturated 1.4).
   static const double slabHeight = 64;
 
   /// How long the selection's pill takes to slide to a new choice (a tab, a
   /// segment).
   static const Duration selectionSlide = Duration(milliseconds: 280);
 
-  /// How far inside its tab's cell the selection's pill stands.
+  /// How far inside the slab's edge the chosen tab's plate stands, the same
+  /// on every side, so its corners run concentric with the slab's (22 less
+  /// the edge's 1 and these 4: 17).
   static const double selectionInset = 4;
 
-  /// See [slabHeight].
-  static const double slabInset = 4;
+  /// The slab's own room at its ends: none, so a plate at either end
+  /// stands [selectionInset] from the slab's side as from its top (the
+  /// source's 4 here set it 8 in at the sides and 4 at the top).
+  static const double slabInset = 0;
 
   /// See [slabHeight].
   static const double slabRadius = 22;
@@ -189,19 +203,19 @@ abstract final class FrostedChromeMetrics {
   /// See [tabGlyph].
   static const double tabGap = 4;
 
-  /// The Move pill in the slab's middle (`.move-btn`): 40 tall, 11 in at
-  /// its start and 13 at its end, its glyph 16 and 5 from its word, 6 of
+  /// The Move pill in the slab's middle (`.move-btn`): 40 tall, 12 in at
+  /// either end, its glyph 16 and 4 from its word, 6 of
   /// room either side; shown, a white ring of 2 and an ink ring 1.5 past it.
   static const double movePill = 40;
 
   /// See [movePill].
-  static const double movePillInsetStart = 11;
+  static const double movePillInsetStart = 12;
 
   /// See [movePill].
-  static const double movePillInsetEnd = 13;
+  static const double movePillInsetEnd = 12;
 
   /// See [movePill].
-  static const double movePillGap = 5;
+  static const double movePillGap = 4;
 
   /// See [movePill].
   static const double movePillGlyph = 16;
@@ -314,7 +328,7 @@ abstract final class FrostedChromeMetrics {
   static const double footGap = 12;
 
   /// See [footInsetStart].
-  static const double footLineGap = 3;
+  static const double footLineGap = 4;
 
   // --- buttons ------------------------------------------------------------------
 
@@ -691,7 +705,7 @@ abstract final class FrostedChromeMetrics {
   static const double dateBlockRadius = 11;
 
   /// See [dateBlock].
-  static const double dateGap = 3;
+  static const double dateGap = 4;
 
   /// A chip (`.chip`): 24 tall, 10 in, its glyph 14 and 4 from its word.
   static const double chipHeight = 24;
@@ -718,16 +732,17 @@ abstract final class FrostedChromeMetrics {
   /// See [glassPillHeight].
   static const double glassPillBlur = 8;
 
-  /// The segmented control (`.seg-ctl`): 3 inside, its segments 2 apart,
-  /// each 26 tall, at least 36 wide and 10 in; filling a field's line, 36
-  /// tall with a 14 word.
-  static const double segmentsInset = 3;
+  /// The segmented control (`.seg-ctl`): 2 inside, its segments 2 apart,
+  /// each 28 tall, at least 36 wide and 10 in; filling a field's line, 38
+  /// tall with a 14 word. (The source's 3 round 26, on the 2-pt grid: the
+  /// strip keeps its 32, as iOS's does.)
+  static const double segmentsInset = 2;
 
   /// See [segmentsInset].
   static const double segmentsGap = 2;
 
   /// See [segmentsInset].
-  static const double segmentHeight = 26;
+  static const double segmentHeight = 28;
 
   /// See [segmentsInset].
   static const double segmentMinWidth = 36;
@@ -736,7 +751,7 @@ abstract final class FrostedChromeMetrics {
   static const double segmentInset = 10;
 
   /// See [segmentsInset].
-  static const double segmentFillHeight = 36;
+  static const double segmentFillHeight = 38;
 
   /// A swatch (`.sw`): 8 across; a visit's dot 10.
   static const double swatch = 8;
@@ -797,13 +812,13 @@ abstract final class FrostedChromeMetrics {
   static const double rowLineGap = 1;
 
   /// See [row].
-  static const double rowEndGap = 3;
+  static const double rowEndGap = 4;
 
   /// See [row].
   static const double rowPendingGlyph = 12;
 
   /// See [row].
-  static const double rowPendingGap = 3;
+  static const double rowPendingGap = 4;
 
   /// On the desktop a list's account column is 148 wide, its glyph 16 and
   /// 8 from its word, and a row's amount at least 96 wide.
@@ -1069,7 +1084,7 @@ abstract final class FrostedChromeMetrics {
   static const double frostedLabelInsetEnd = 16;
 
   /// See [frostedTrack].
-  static const double frostedLabelGap = 3;
+  static const double frostedLabelGap = 4;
 
   /// A bar (`.bar`): 6 tall, 4 thin; a tube (`.tube`): 8 tall, 12 large,
   /// its tick 1.5 wide and 20 tall (16 in a comparison); an over bar
@@ -1643,10 +1658,11 @@ abstract final class FrostedChromeMetrics {
   /// See [browseRadius].
   static const double browseCardsGap = 8;
 
-  /// The month switch (`.switch`): 3 inside, its parts 4 apart, its arrows
+  /// The month switch (`.switch`): 2 inside (the source's 3, on the 2-pt
+  /// grid), its parts 4 apart, its arrows
   /// 32 round with a 16 glyph, its month 32 tall with a 14 chevron 4 from
   /// its word, 8 in on the desktop; the earlier month's word 4 in.
-  static const double monthSwitchInset = 3;
+  static const double monthSwitchInset = 2;
 
   /// See [monthSwitchInset].
   static const double monthSwitchGap = 4;
@@ -1766,7 +1782,7 @@ abstract final class FrostedChromeMetrics {
   static const double chartNoteInset = 6;
 
   /// See [chartTop].
-  static const double chartNoteGap = 5;
+  static const double chartNoteGap = 4;
 
   /// See [chartTop].
   static const double chartNoteEndGap = 10;
@@ -1801,7 +1817,7 @@ abstract final class FrostedChromeMetrics {
   static const double stripDotBottom = 9;
 
   /// See [strip].
-  static const double stripDotGap = 3;
+  static const double stripDotGap = 4;
 
   /// See [strip].
   static const double stripLabels = 14;
@@ -1865,7 +1881,7 @@ abstract final class FrostedChromeMetrics {
   static const double changeHeadGap = 12;
 
   /// See [changeGap].
-  static const double changeValueGap = 3;
+  static const double changeValueGap = 4;
 
   // --- controls ----------------------------------------------------------------------
 
@@ -1900,6 +1916,34 @@ abstract final class FrostedChromeMetrics {
 
   /// See [filterChip].
   static const double filterChipGap = 4;
+
+  /// A goal card's "of" words stand 1 over the figure's foot: their 16.8
+  /// line sits a pixel lower than the figure's, so the lift sets the two on
+  /// one baseline. Optical.
+  static const double goalCardFigureNudge = 1;
+
+  /// A timeline's dot stands 7 down its entry: its middle on the middle of
+  /// the entry's first line (a 20 line less a dot of 6, halved).
+  static const double timelineDotTop = 7;
+
+  /// A count badge's words stand 4 in from its ends: "9+" in an 18-tall
+  /// badge keeps a round-ended pill with its words centred. Optical.
+  static const double badgeInset = 4;
+
+  /// The colour picker's knob wears a 3-wide rim of the glass's plane, as
+  /// the source's swatch ring does.
+  static const double colorKnobRim = 3;
+
+  /// A month's row in the date picker: 44 tall, so six rows (a month that
+  /// spans them) and a short month keep one card height.
+  static const double pickerDayRow = 44;
+
+  /// How far past a scrolling row's line its viewport stands (a tab strip,
+  /// the filter chips, a page's own list): the chosen plate's lift (4 down,
+  /// a blur of 12, spread -4) fades out about 15 under the plate, and a focus
+  /// ring stands 4 out, so a row scrolled within its line clips only what
+  /// scrolls away, never a shadow, a glow or a ring.
+  static const double stripReach = 16;
 
   /// A field (`.field`): its label 8 over the well; the well (`.inp`) 48
   /// tall, 14 in, corners 12; two fields in a line 12 apart; a form's
@@ -2165,6 +2209,10 @@ abstract final class FrostedChromeMetrics {
 
   /// See [formRow].
   static const double formRowGap = 12;
+
+  /// A form row's control under its words, when large text leaves it no
+  /// room beside them: as far below them as a field stands below its label.
+  static const double formRowUnder = 8;
 
   /// See [formRow].
   static const double formLeading = 32;

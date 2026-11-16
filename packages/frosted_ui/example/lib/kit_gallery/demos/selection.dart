@@ -66,6 +66,7 @@ const _goalIcons = [
 
 Widget kitSelectionDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Selection',
   sections: [
     kitSection(

@@ -8,12 +8,15 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart' show timeDilation;
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
 
 import 'gallery_pages.dart';
 import 'kit_gallery/harbor.dart';
 import 'kit_gallery/kit.dart';
+import 'kit_gallery/arabic.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -99,8 +102,13 @@ class GalleryCustom {
 /// The gallery: its list of pages, the page it shows, the preset, the
 /// appearance and the Customize panel.
 class GalleryApp extends StatefulWidget {
-  /// The gallery, opening on its list of pages in opal by day.
-  const GalleryApp({super.key});
+  /// The gallery, opening on its list of pages in opal by day, or where
+  /// [link] says.
+  const GalleryApp({super.key, this.link});
+
+  /// What to open, in the gallery's link scheme (`/forms?theme=dark`, or
+  /// `/harbor?screen=settings`); null reads the page's own address.
+  final String? link;
 
   @override
   State<GalleryApp> createState() => _GalleryAppState();
@@ -121,17 +129,22 @@ class _GalleryAppState extends State<GalleryApp> {
   /// Whether a link asked for Harbor: it opens over the list once.
   var _harborLink = false;
 
+  /// Where a link opens Harbor (`screen=transaction|settings`).
+  var _harborOpening = HarborOpening.activity;
+
   @override
   void initState() {
     super.initState();
     kitNavigatorObservers = () => [_RaisedWatch(_raised)];
-    _follow(Uri.tryParse(Uri.base.fragment));
+    _follow(Uri.tryParse(widget.link ?? Uri.base.fragment));
   }
 
   /// Opens what a link names, in the scheme every look's gallery shares:
   /// `/#/<page>?theme=dark&dir=rtl&text=200`, `<page>` a page's id (or
-  /// `harbor`), `text` a percentage; `backdrop=night|plain` and
-  /// `preset=<name>` besides.
+  /// `harbor`, with `screen=transaction|settings`), `text` a percentage;
+  /// `backdrop=night|plain` and `preset=<name>` besides, and `slow=10`,
+  /// which plays every motion ten times slower, to read a transition frame
+  /// by frame.
   void _follow(Uri? link) {
     if (link == null) return;
     final id = link.pathSegments.where((s) => s.isNotEmpty).firstOrNull;
@@ -139,7 +152,14 @@ class _GalleryAppState extends State<GalleryApp> {
     if (at >= 0) _page = at;
     _harborLink = id == 'harbor';
     final q = link.queryParameters;
+    _harborOpening = switch (q['screen']) {
+      'transaction' => HarborOpening.transaction,
+      'settings' => HarborOpening.settings,
+      _ => HarborOpening.activity,
+    };
     if (q['theme'] == 'dark') _brightness = Brightness.dark;
+    final slow = double.tryParse(q['slow'] ?? '');
+    if (slow != null && slow >= 1) timeDilation = slow;
     final preset = q['preset'];
     if (FrostedThemeData.presets.contains(preset)) _preset = preset!;
     final text = double.tryParse(q['text'] ?? '');
@@ -165,9 +185,12 @@ class _GalleryAppState extends State<GalleryApp> {
   /// appearance the gallery carries, its close comes back here.
   void _openHarbor(BuildContext context) {
     final navigator = Navigator.of(context);
+    final opening = _harborOpening;
+    _harborOpening = HarborOpening.activity;
     navigator.push(
       MaterialPageRoute<void>(
         builder: (_) => HarborApp(
+          opening: opening,
           host: HarborHost(
             onBackdrop: (kind) =>
                 setState(() => _custom = _custom.copyWith(backdrop: kind)),
@@ -191,24 +214,40 @@ class _GalleryAppState extends State<GalleryApp> {
     kitShownDirection = custom.direction;
     return MaterialApp(
       title: 'Frosted gallery',
+      // Its pushes (Harbor over the gallery) move as Frosted's pages do: an
+      // app on Flutter's own Material hands Frosted's page motion to its theme.
+      theme: kitAppTheme,
+      // An ordinary app's locales: Frosted's own words, the ones every design
+      // system shares (ui_core speaks 30 languages, so a device in one of
+      // them hears Cancel, Close and Today in it) and Flutter's own. The
+      // right-to-left mode puts the first two in Arabic.
+      localizationsDelegates: const [
+        FrostedLocalizations.delegate,
+        DesignLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
+      ],
+      supportedLocales: DesignLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,
       // A link's page and modes are read above; the navigator starts at home.
       initialRoute: Navigator.defaultRouteName,
       // The panel's direction and text size reach every page, Harbor's too.
-      builder: (context, child) => Directionality(
-        textDirection: custom.direction,
-        child: MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: switch (custom.textScale) {
-              final scale? => TextScaler.linear(scale),
-              null => MediaQuery.textScalerOf(context),
-            },
-          ),
-          child: FrostedHost(
-            light: custom.theme(_preset, Brightness.light),
-            dark: custom.theme(_preset, Brightness.dark),
-            brightness: _brightness,
-            child: child!,
+      builder: (context, child) => kitWords(
+        context,
+        Directionality(
+          textDirection: custom.direction,
+          child: MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: switch (custom.textScale) {
+                final scale? => TextScaler.linear(scale),
+                null => MediaQuery.textScalerOf(context),
+              },
+            ),
+            child: FrostedHost(
+              light: custom.theme(_preset, Brightness.light),
+              dark: custom.theme(_preset, Brightness.dark),
+              brightness: _brightness,
+              child: child!,
+            ),
           ),
         ),
       ),

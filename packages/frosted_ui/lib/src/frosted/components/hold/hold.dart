@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
@@ -105,6 +106,18 @@ class FrostedDivider extends StatelessWidget {
             ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<Axis>('axis', axis))
+      ..add(DoubleProperty('height', height))
+      ..add(DoubleProperty('thickness', thickness, defaultValue: null))
+      ..add(DoubleProperty('indent', indent, defaultValue: 0))
+      ..add(DoubleProperty('endIndent', endIndent, defaultValue: 0))
+      ..add(ColorProperty('color', color, defaultValue: null));
+  }
 }
 
 /// A count, or a dot, on the top end corner of [child] (a glyph, an
@@ -136,7 +149,8 @@ class FrostedBadge extends StatelessWidget {
     this.isLabelVisible = true,
     this.style,
     super.key,
-  });
+  }) : assert(count >= 0, 'A badge counts from zero.'),
+       assert(max > 0, 'A badge shows counts up to a positive max.');
 
   /// The dot alone on [child]: something new, uncounted.
   const FrostedBadge.dot({
@@ -203,8 +217,12 @@ class FrostedBadge extends StatelessWidget {
       );
     } else {
       final words = count > max ? '$max+' : '$count';
-      final padding = (s.padding ?? const EdgeInsets.symmetric(horizontal: 5))
-          .resolve(direction);
+      final padding =
+          (s.padding ??
+                  const EdgeInsets.symmetric(
+                    horizontal: FrostedChromeMetrics.badgeInset,
+                  ))
+              .resolve(direction);
       // Words that read 4.5:1 on the fill the badge wears (the danger's own
       // words were chosen for the danger fill; white on the unread dot's
       // salmon read 3.1:1).
@@ -290,6 +308,25 @@ class FrostedBadge extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('max', max))
+      ..add(
+        FlagProperty(
+          'isLabelVisible',
+          value: isLabelVisible,
+          ifFalse: 'isLabelVisible: false',
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// A heading that opens to show what it holds: the [title] (and a quiet
@@ -343,14 +380,44 @@ class FrostedDisclosure extends StatefulWidget {
   /// Told the new state on each press.
   final ValueChanged<bool>? onExpansionChanged;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   @override
   State<FrostedDisclosure> createState() => _FrostedDisclosureState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('meta', meta, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'initiallyExpanded',
+          value: initiallyExpanded,
+          ifTrue: 'initiallyExpanded',
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onExpansionChanged',
+          onExpansionChanged,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _FrostedDisclosureState extends State<FrostedDisclosure> {
@@ -509,7 +576,7 @@ class FrostedTimeline extends StatelessWidget {
                         width: FrostedStrokes.hairline,
                         above: i > 0,
                         below: i < entries.length - 1,
-                        dotTop: 7 + dot / 2,
+                        dotTop: FrostedChromeMetrics.timelineDotTop + dot / 2,
                         // The rail stops 2 short of the dot (and of the
                         // current one's ring): a gap, not a painted ring.
                         clear: dot / 2 + (e.current ? 3 : 0) + 2,
@@ -517,7 +584,9 @@ class FrostedTimeline extends StatelessWidget {
                       child: Align(
                         alignment: Alignment.topCenter,
                         child: Padding(
-                          padding: const EdgeInsets.only(top: 7),
+                          padding: const EdgeInsets.only(
+                            top: FrostedChromeMetrics.timelineDotTop,
+                          ),
                           child: SizedBox.square(
                             dimension: dot,
                             child: DecoratedBox(
@@ -569,6 +638,12 @@ class FrostedTimeline extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<FrostedTimelineEntry>('entries', entries));
   }
 }
 
@@ -791,5 +866,17 @@ class FrostedTable extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedTableColumn>('columns', columns))
+      ..add(IterableProperty<List<Object>>('rows', rows))
+      ..add(DoubleProperty('minColumnWidth', minColumnWidth, defaultValue: 96))
+      ..add(
+        StringProperty('semanticsLabel', semanticsLabel, defaultValue: null),
+      );
   }
 }

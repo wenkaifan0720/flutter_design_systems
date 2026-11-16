@@ -2,6 +2,8 @@
 // Frosted's own widgets: what a page hands in comes back through its
 // callback, and what the reader hears is Frosted's words. ui_core's own
 // tests prove the behaviour in full.
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -149,10 +151,12 @@ void main() {
         },
       ),
     );
-    FrostedSheet.showSide<void>(
-      context,
-      title: 'Filters',
-      builder: (_) => [const Text('Only unread')],
+    unawaited(
+      FrostedSheet.showSide<void>(
+        context,
+        title: 'Filters',
+        builder: (_) => [const Text('Only unread')],
+      ),
     );
     await t.pumpAndSettle();
     expect(find.text('Only unread'), findsOneWidget);

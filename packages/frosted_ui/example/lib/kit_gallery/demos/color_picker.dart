@@ -9,6 +9,7 @@ import '../kit.dart';
 
 Widget kitColorPickerDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Color picker',
   sections: [
     kitSection(

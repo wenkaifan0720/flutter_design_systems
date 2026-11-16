@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -8,6 +9,7 @@ import '../../glyphs.dart';
 import '../../internal/bare_field.dart';
 import '../../internal/face.dart';
 import '../../internal/field_owner.dart';
+import '../../internal/hit_slop.dart';
 import '../../internal/well.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
@@ -67,10 +69,10 @@ class FrostedPasswordField extends StatelessWidget {
   /// The placeholder.
   final String? hint;
 
-  /// The help line under the well.
+  /// {@macro frosted.helper}
   final String? helper;
 
-  /// What is wrong, in place of the help line.
+  /// {@macro frosted.error}
   final String? error;
 
   /// Whether it takes input.
@@ -113,6 +115,45 @@ class FrostedPasswordField extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        FlagProperty('newPassword', value: newPassword, ifTrue: 'newPassword'),
+      );
   }
 }
 
@@ -167,7 +208,7 @@ class FrostedInputGroup extends StatefulWidget {
   /// Called as the text changes.
   final ValueChanged<String>? onChanged;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// Called on Return.
@@ -182,10 +223,10 @@ class FrostedInputGroup extends StatefulWidget {
   /// The placeholder.
   final String? hint;
 
-  /// The help line under the well.
+  /// {@macro frosted.helper}
   final String? helper;
 
-  /// What is wrong, in place of the help line.
+  /// {@macro frosted.error}
   final String? error;
 
   /// Whether it takes input.
@@ -199,6 +240,56 @@ class FrostedInputGroup extends StatefulWidget {
 
   @override
   State<FrostedInputGroup> createState() => _FrostedInputGroupState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      );
+  }
 }
 
 class _FrostedInputGroupState extends State<FrostedInputGroup>
@@ -281,37 +372,40 @@ class _FrostedInputGroupState extends State<FrostedInputGroup>
             // read "com. | example | //:https" (self-review round 3).
             child: Directionality(
               textDirection: TextDirection.ltr,
+              // The line answers taps from the well's top to its bottom.
               child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (widget.prefix case final prefix?)
-                      _addOn(context, prefix, start: true),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: FrostedChromeMetrics.fieldInset,
-                        ),
-                        child: Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: FrostedBareField(
-                            autofocus: widget.autofocus,
-                            controller: fieldController,
-                            focusNode: fieldFocus,
-                            label: widget.label,
-                            hint: widget.hint,
-                            enabled: widget.enabled,
-                            onChanged: widget.onChanged,
-                            onSubmitted: widget.onSubmitted,
-                            keyboardType: widget.keyboardType,
-                            inputFormatters: widget.inputFormatters,
+                child: FrostedFieldRoom(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (widget.prefix case final prefix?)
+                        _addOn(context, prefix, start: true),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: FrostedChromeMetrics.fieldInset,
+                          ),
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: FrostedBareField(
+                              autofocus: widget.autofocus,
+                              controller: fieldController,
+                              focusNode: fieldFocus,
+                              label: widget.label,
+                              hint: widget.hint,
+                              enabled: widget.enabled,
+                              onChanged: widget.onChanged,
+                              onSubmitted: widget.onSubmitted,
+                              keyboardType: widget.keyboardType,
+                              inputFormatters: widget.inputFormatters,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    if (widget.suffix case final suffix?)
-                      _addOn(context, suffix, start: false),
-                  ],
+                      if (widget.suffix case final suffix?)
+                        _addOn(context, suffix, start: false),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -360,7 +454,7 @@ class FrostedInputOtp extends StatelessWidget {
     this.inputFormatters = const [],
     this.autofillHints = const [AutofillHints.oneTimeCode],
     super.key,
-  });
+  }) : assert(length > 0, 'A code has at least one digit.');
 
   /// How many figures the code has.
   final int length;
@@ -480,7 +574,7 @@ class FrostedInputOtp extends StatelessWidget {
                     ? null
                     : frostedLitEdge(t, t.controlEdge),
                 edge: slot.isError
-                    ? (t.isDark ? t.colorScheme.over : _warmLight(t))
+                    ? frostedErrorEdge(t)
                     : lit
                     ? (t.isDark
                           ? t.colorScheme.accent
@@ -491,7 +585,7 @@ class FrostedInputOtp extends StatelessWidget {
                         BoxShadow(color: Color(0xF2FFFFFF), blurRadius: 10),
                       ]
                     : const <BoxShadow>[],
-                edges: EdgeInsets.all(FrostedStrokes.heavy),
+                edges: const EdgeInsets.all(FrostedStrokes.heavy),
                 child: Center(
                   child: slot.character.isEmpty
                       ? (lit
@@ -519,6 +613,69 @@ class FrostedInputOtp extends StatelessWidget {
           FrostedFieldHint(helper),
       ],
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('length', length, defaultValue: 6))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onCompleted',
+          onCompleted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: const [],
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: const [AutofillHints.oneTimeCode],
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DesignOtpController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(FlagProperty('obscure', value: obscure, ifTrue: 'obscure'))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: TextInputType.number,
+        ),
+      );
   }
 }
 
@@ -567,7 +724,7 @@ class FrostedFormField extends StatelessWidget {
   /// The help line under it.
   final String? helper;
 
-  /// What is wrong, in place of the help line.
+  /// {@macro frosted.error}
   final String? error;
 
   /// Whether the control must be filled: a mark after the label.
@@ -631,9 +788,29 @@ class FrostedFormField extends StatelessWidget {
       child: child,
     );
   }
-}
 
-// A wrong box's rim by day: the over hue warmed into the light, not a dark
-// line.
-Color _warmLight(FrostedThemeData t) =>
-    Color.lerp(const Color(0xFFFFFFFF), t.colorScheme.over, .55)!;
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        FlagProperty(
+          'mergeSemantics',
+          value: mergeSemantics,
+          ifFalse: 'mergeSemantics: false',
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(FlagProperty('required', value: required, ifTrue: 'required'))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      );
+  }
+}

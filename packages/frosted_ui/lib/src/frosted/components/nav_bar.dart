@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
@@ -80,15 +81,20 @@ class FrostedNavItem {
 
 /// The phone tab bar, as the source draws it (`.tabbar`): a frosted slab
 /// of glass 64 tall with its corners at 22, a rim of light along its top,
-/// its hairline edge and a soft shadow under it, standing 12 in from the
-/// screen's sides over a fade into the canvas (12 under it, or the system's
-/// inset where that is more). The tabs share its width evenly, each its
+/// its hairline edge and a soft shadow under it, standing on the page's
+/// gutter (16 in from the screen's sides) over a fade into the canvas (12
+/// under it, or the system's inset where that is more). The chosen tab's
+/// plate stands 4 inside the slab on every side, its corners concentric
+/// with the slab's. The tabs share its width evenly, each its
 /// glyph 4 over its word in the faint ink, the selected one in the ink with
 /// its word semibold. The middle of five tabs, or the shell's [action], is
 /// the ink pill: the app's main act printing its glyph and its word on the
 /// ink, ringed while its page is shown. An [accessory] stands 8 over the
 /// slab. On the media ground ([solid]) the band is the solid ground and
-/// nothing blurs.
+/// nothing blurs. From a tablet's width ([FrostedBreakpoints.medium]) the
+/// slab hugs its tabs ([FrostedChromeMetrics.tabBarTabMedium] each) in the
+/// middle of the foot rather than spanning the window, as wide as an
+/// [accessory] needs at least.
 ///
 /// The shell mounts the one bar at the foot of every root; a page never
 /// composes navigation.
@@ -107,7 +113,10 @@ class FrostedNavigationBar extends StatelessWidget {
     this.solid = false,
     this.style,
     super.key,
-  });
+  }) : assert(
+         selectedIndex >= 0,
+         'A navigation bar\'s selected index is not negative.',
+       );
 
   /// The destinations, three to five.
   final List<FrostedNavItem> items;
@@ -226,19 +235,21 @@ class FrostedNavigationBar extends StatelessWidget {
     }
     final s = FrostedStyleLayers(style, t.components.navigationBar);
     final (edge, edges) = s.edgeOf(t.glass.edge, FrostedStrokes.regular);
+    // How far the chosen plate stands inside the slab's outline, on every
+    // side: its own inset past the slab's edge.
+    final plateInset = FrostedChromeMetrics.selectionInset + edges.top;
+    final radius = FrostedStyleLayers.radiusOf(
+      s.shape,
+      FrostedChromeMetrics.slabHeight,
+      FrostedChromeMetrics.slabRadius,
+    );
     final slab = SizedBox(
       height: FrostedChromeMetrics.slabHeight,
       // The bar's glass: the page passes under it, blurred, with nothing
       // fading it out above.
       child: FrostedFace(
         material: solid ? FrostedMaterial.paint : FrostedMaterial.bar,
-        radius: BorderRadius.circular(
-          FrostedStyleLayers.radiusOf(
-            s.shape,
-            FrostedChromeMetrics.slabHeight,
-            FrostedChromeMetrics.slabRadius,
-          ),
-        ),
+        radius: BorderRadius.circular(radius),
         shape: s.shape,
         color: s.fill ?? (solid ? t.colorScheme.surface : null),
         edge: edge,
@@ -247,14 +258,17 @@ class FrostedNavigationBar extends StatelessWidget {
         shadows: t.shadows.bar,
         padding:
             s.padding?.resolve(Directionality.of(context)) ??
-            const EdgeInsets.symmetric(
-              horizontal: FrostedChromeMetrics.slabInset,
-            ),
+            // FrostedChromeMetrics.slabInset: none.
+            EdgeInsets.zero,
         child: _SlidingSelection(
           selected: selectedIndex,
           act: actTab,
           tabs: cellTabs,
           solid: solid,
+          // The plate follows the slab's outline, set in by its inset and
+          // the slab's edge (which takes room inside the face).
+          radius: math.max(0, radius - plateInset),
+          shape: FrostedStyleLayers.around(s.shape, -plateInset),
           children: cells,
         ),
       ),
@@ -274,8 +288,50 @@ class FrostedNavigationBar extends StatelessWidget {
         children: [?accessory, slab],
       ),
     );
-    if (solid) return ColoredBox(color: t.colorScheme.background, child: box);
-    return box;
+    final hugged = FrostedBreakpoints.isCompact(context)
+        ? box
+        : Align(
+            alignment: Alignment.bottomCenter,
+            heightFactor: 1,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth:
+                    2 * FrostedChromeMetrics.tabBarSide +
+                    math.max(
+                      cells.length * FrostedChromeMetrics.tabBarTabMedium,
+                      accessory == null
+                          ? 0.0
+                          : FrostedChromeMetrics.tabBarAccessoryMedium,
+                    ),
+              ),
+              child: box,
+            ),
+          );
+    if (solid) {
+      return ColoredBox(color: t.colorScheme.background, child: hugged);
+    }
+    return hugged;
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedNavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      )
+      ..add(FlagProperty('solid', value: solid, ifTrue: 'solid'))
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
   }
 }
 
@@ -289,12 +345,20 @@ class _SlidingSelection extends StatelessWidget {
     required this.act,
     required this.tabs,
     required this.solid,
+    required this.radius,
+    required this.shape,
     required this.children,
   });
 
   /// On the media ground: the pill is painted, blurring nothing, as the
   /// band under it is.
   final bool solid;
+
+  /// The plate's corner: the slab's, less the plate's inset.
+  final double radius;
+
+  /// The plate's outline when a style cuts the slab to one.
+  final OutlinedBorder? shape;
 
   final int selected;
   final int? act;
@@ -314,7 +378,8 @@ class _SlidingSelection extends StatelessWidget {
       // The chosen tab stands on the thickest, brightest glass in the bar,
       // raised off it; on the media ground it is painted, as the band is.
       pill: FrostedChosenPlate(
-        radius: BorderRadius.circular(FrostedCorners.r10 + 4),
+        radius: BorderRadius.circular(radius),
+        shape: shape,
         painted: solid,
       ),
       builder: (context, keys) => Row(
@@ -373,7 +438,7 @@ class _Tab extends StatelessWidget {
       child: FrostedKeyFocus(
         enabled: tap != null,
         radius: FrostedCorners.r10,
-        ringInsets: EdgeInsets.all(
+        ringInsets: const EdgeInsets.all(
           FrostedChromeMetrics.focusRingGap + FrostedStrokes.heavy,
         ),
         keys: {
@@ -399,7 +464,8 @@ class _Tab extends StatelessWidget {
                     : t.textTheme.tab.c(ink),
               ),
               lerp: FrostedEase.inkAndWords,
-              builder: (context, shown) => _tabFace(t, shown.$1, shown.$2),
+              builder: (context, shown) =>
+                  _tabFace(t, FrostedMotion.of(context), shown.$1, shown.$2),
             ),
           ),
         ),
@@ -407,26 +473,42 @@ class _Tab extends StatelessWidget {
     );
   }
 
-  Widget _tabFace(FrostedThemeData t, Color ink, TextStyle words) => Center(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      spacing: FrostedChromeMetrics.tabGap,
-      children: [
-        Icon(
-          selected ? (item.selectedIcon ?? item.icon) : item.icon,
-          size: FrostedChromeMetrics.tabGlyph,
-          color: ink,
-        ),
-        Text(
-          item.label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          textAlign: TextAlign.center,
-          style: words,
-        ),
-      ],
-    ),
-  );
+  Widget _tabFace(
+    FrostedThemeData t,
+    FrostedMotion motion,
+    Color ink,
+    TextStyle words,
+  ) {
+    final glyph = selected ? (item.selectedIcon ?? item.icon) : item.icon;
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        spacing: FrostedChromeMetrics.tabGap,
+        children: [
+          // The chosen glyph (a filled one) fades in over the plain one as
+          // the tab is chosen, and back as it is left, rather than cutting.
+          AnimatedSwitcher(
+            duration: motion.base,
+            switchInCurve: motion.curve,
+            switchOutCurve: motion.curve,
+            child: Icon(
+              glyph,
+              key: ValueKey(glyph),
+              size: FrostedChromeMetrics.tabGlyph,
+              color: ink,
+            ),
+          ),
+          Text(
+            item.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: words,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// The ink pill in the tab bar's middle (`.move-btn`): the app's main act,
@@ -461,10 +543,10 @@ class FrostedNavAction extends StatelessWidget {
   /// What a press does.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// Whether the pill's page is the one shown.
@@ -576,4 +658,23 @@ class FrostedNavAction extends StatelessWidget {
             child: words,
           ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(FlagProperty('lit', value: lit, ifFalse: 'lit: false'));
+  }
 }

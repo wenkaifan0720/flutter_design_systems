@@ -3,9 +3,12 @@ import 'package:flutter/widgets.dart';
 
 import '../theme.dart';
 
-/// The [Page] for a route pushed off a root: it runs the platform's own
-/// push transition (the host never pins a platform) and stands [child] on
-/// the theme's ground.
+/// The [Page] for a route pushed off a root: it stands [child] on the
+/// theme's ground and moves as every page under [FrostedTheme] does, the
+/// same on every platform: it settles in as a pane laid on the page under
+/// it (24 px toward the end as it clears in, 300 ms; that page stands still)
+/// and lifts off the way it came. On iOS a drag from the start edge takes
+/// it back; under Reduce Motion it is a cut.
 ///
 /// Its chrome is derived, never authored: an [FrostedScaffold] inside reads the
 /// route's register and draws the glass back button. A router's page builder

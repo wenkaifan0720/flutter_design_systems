@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 
@@ -175,6 +176,35 @@ class FrostedNavigationDrawer extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedNavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'profileCurrent',
+          value: profileCurrent,
+          ifTrue: 'profileCurrent',
+        ),
+      )
+      ..add(
+        FlagProperty('noneCurrent', value: noneCurrent, ifTrue: 'noneCurrent'),
+      )
+      ..add(FlagProperty('solid', value: solid, ifTrue: 'solid'));
+  }
 }
 
 /// The sidebar's main act (`.btn-move`): the ink button 40 tall across the
@@ -205,10 +235,10 @@ class FrostedSidebarAction extends StatelessWidget {
   /// What a press does.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// Whether the act's page is the one shown.
@@ -268,6 +298,24 @@ class FrostedSidebarAction extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'));
   }
 }
 

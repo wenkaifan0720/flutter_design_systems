@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialApp, MaterialType;
 import 'package:flutter/widgets.dart';
@@ -176,6 +177,60 @@ class FrostedPreview extends StatelessWidget {
       },
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<FrostedThemeData>(
+          'light',
+          light,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FrostedThemeData>('dark', dark, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<FrostedPresentation>(
+          'presentation',
+          presentation,
+          defaultValue: FrostedPresentation.root,
+        ),
+      )
+      ..add(
+        IterableProperty<FrostedNavItem>(
+          'tabs',
+          tabs,
+          defaultValue: const <FrostedNavItem>[],
+        ),
+      )
+      ..add(IntProperty('activeIndex', activeIndex, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(FlagProperty('drawer', value: drawer, ifTrue: 'drawer'))
+      ..add(FlagProperty('fullScreen', value: fullScreen, ifTrue: 'fullScreen'))
+      ..add(FlagProperty('back', value: back, ifTrue: 'back'))
+      ..add(
+        EnumProperty<PreviewPlatform>(
+          'platform',
+          platform,
+          defaultValue: PreviewPlatform.android,
+        ),
+      )
+      ..add(
+        EnumProperty<Brightness>(
+          'brightness',
+          brightness,
+          defaultValue: Brightness.light,
+        ),
+      )
+      ..add(FlagProperty('device', value: device, ifTrue: 'device'))
+      ..add(StringProperty('location', location, defaultValue: null));
+  }
 }
 
 /// A nav root as the shell stands it: over the tab bar on a phone, the page

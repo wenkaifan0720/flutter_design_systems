@@ -11,6 +11,8 @@ import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'arabic.dart';
+
 /// What Harbor asks of the app around it: the backdrop and the appearance
 /// to set, and the way back.
 class HarborHost {
@@ -31,13 +33,33 @@ class HarborHost {
   final VoidCallback onExit;
 }
 
+/// Where Harbor opens.
+enum HarborOpening {
+  /// Activity, its list of transactions.
+  activity,
+
+  /// Activity with its first transaction open: in a sheet on a phone, in
+  /// the detail pane from 1024.
+  transaction,
+
+  /// Settings.
+  settings,
+}
+
 /// Harbor's app: its shell and its two screens.
 class HarborApp extends StatefulWidget {
-  /// Harbor, reaching the app around it through [host].
-  const HarborApp({required this.host, super.key});
+  /// Harbor, reaching the app around it through [host], open at [opening].
+  const HarborApp({
+    required this.host,
+    this.opening = HarborOpening.activity,
+    super.key,
+  });
 
   /// The app around Harbor.
   final HarborHost host;
+
+  /// Where Harbor opens.
+  final HarborOpening opening;
 
   @override
   State<HarborApp> createState() => _HarborAppState();
@@ -53,7 +75,7 @@ class _HarborAppState extends State<HarborApp> {
     child: Navigator(
       onGenerateRoute: (settings) => PageRouteBuilder<void>(
         settings: settings,
-        pageBuilder: (_, _, _) => const _HarborShell(),
+        pageBuilder: (_, _, _) => _HarborShell(widget.opening),
       ),
     ),
   );
@@ -61,19 +83,22 @@ class _HarborAppState extends State<HarborApp> {
 
 /// Harbor's navigation and its two screens.
 class _HarborShell extends StatefulWidget {
-  const _HarborShell();
+  const _HarborShell(this.opening);
+
+  final HarborOpening opening;
 
   @override
   State<_HarborShell> createState() => _HarborShellState();
 }
 
 class _HarborShellState extends State<_HarborShell> {
-  static const _tabs = [
-    FrostedNavItem(LucideIcons.receipt, 'Activity'),
-    FrostedNavItem(LucideIcons.settings, 'Settings'),
+  // In the shown language, so built each time.
+  static List<FrostedNavItem> get _tabs => [
+    FrostedNavItem(LucideIcons.receipt, kitSay('Activity')),
+    FrostedNavItem(LucideIcons.settings, kitSay('Settings')),
   ];
 
-  int _tab = 0;
+  late int _tab = widget.opening == HarborOpening.settings ? 1 : 0;
 
   void _select(int i) => setState(() => _tab = i);
 
@@ -82,7 +107,10 @@ class _HarborShellState extends State<_HarborShell> {
     // Each screen keeps its scroll and its state while the other shows.
     final screens = IndexedStack(
       index: _tab,
-      children: const [HarborActivity(), HarborSettings()],
+      children: [
+        HarborActivity(opensFirst: widget.opening == HarborOpening.transaction),
+        const HarborSettings(),
+      ],
     );
     final Widget shell;
     if (FrostedBreakpoints.isWide(context)) {
@@ -107,7 +135,7 @@ class _HarborShellState extends State<_HarborShell> {
               items: _tabs,
               selectedIndex: _tab,
               onDestinationSelected: _select,
-              brand: 'Harbor',
+              brand: kitSay('Harbor'),
             ),
           ),
         ],
@@ -159,13 +187,13 @@ List<Widget> _barActs(BuildContext context) {
   return [
     FrostedIconButton(
       t.isDark ? LucideIcons.sun : LucideIcons.moon,
-      label: t.isDark ? 'Light appearance' : 'Dark appearance',
+      label: t.isDark ? kitSay('Light appearance') : kitSay('Dark appearance'),
       onPressed: () =>
           host.onBrightness(t.isDark ? Brightness.light : Brightness.dark),
     ),
     FrostedIconButton(
       FrostedGlyphs.close,
-      label: 'Back to the gallery',
+      label: kitSay('Back to the gallery'),
       onPressed: host.onExit,
     ),
   ];
@@ -383,11 +411,16 @@ enum _Show { all, spending, income, pending }
 
 /// Harbor's Activity: the search, the filter row, and October's days, each
 /// a section of glass holding its rows. On a phone a row opens its
-/// transaction in a sheet; from 1024 the chosen one stands in a detail pane
+/// transaction in a sheet; from a tablet's width
+/// ([FrostedBreakpoints.medium]) the chosen one stands in a detail pane
 /// beside the list.
 class HarborActivity extends StatefulWidget {
-  /// Creates a [HarborActivity].
-  const HarborActivity({super.key});
+  /// Creates a [HarborActivity]; [opensFirst] opens its first transaction's
+  /// sheet on a phone once it shows.
+  const HarborActivity({this.opensFirst = false, super.key});
+
+  /// Whether a phone opens the first transaction's sheet as it shows.
+  final bool opensFirst;
 
   @override
   State<HarborActivity> createState() => _HarborActivityState();
@@ -396,6 +429,16 @@ class HarborActivity extends StatefulWidget {
 class _HarborActivityState extends State<HarborActivity> {
   var _show = _Show.all;
   HarborTransaction? _chosen = harborDays.first.rows.first;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.opensFirst) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !FrostedBreakpoints.isCompact(context)) return;
+      _openSheet(context, harborDays.first.rows.first);
+    });
+  }
 
   bool _keeps(HarborTransaction tx) => switch (_show) {
     _Show.all => true,
@@ -416,79 +459,86 @@ class _HarborActivityState extends State<HarborActivity> {
     _ => t.hues.coral,
   };
 
-  Widget _row(BuildContext context, HarborTransaction tx, bool wide) {
+  Widget _row(BuildContext context, HarborTransaction tx, bool panes) {
     final t = context.frostedTheme;
     return FrostedTransactionRow(
       mark: tx.isIncome
-          ? FrostedTransactionMark.income(tx.title)
-          : FrostedTransactionMark.purchase(tx.title, hue: _hue(t, tx.hue)),
-      title: tx.title,
-      subtitle: '${tx.category} · ${tx.time}',
+          ? FrostedTransactionMark.income(kitSay(tx.title))
+          : FrostedTransactionMark.purchase(
+              kitSay(tx.title),
+              hue: _hue(t, tx.hue),
+            ),
+      title: kitSay(tx.title),
+      subtitle: '${kitSay(tx.category)} · ${kitSay(tx.time)}',
       amount: tx.amount,
       pending: tx.pending,
-      account: tx.account,
+      account: kitSay(tx.account),
       accountIcon: tx.account == 'Harbor Card'
           ? LucideIcons.creditCard
           : LucideIcons.wallet,
       onPressed: () =>
-          wide ? setState(() => _chosen = tx) : _openSheet(context, tx),
+          panes ? setState(() => _chosen = tx) : _openSheet(context, tx),
     );
   }
 
   void _openSheet(BuildContext context, HarborTransaction tx) {
     FrostedSheet.show<void>(
       context,
-      title: tx.title,
+      title: kitSay(tx.title),
       builder: (context) => [HarborTransactionDetail(tx)],
       foot: (context) => [
         FrostedButton.glass(
-          'Split',
+          kitSay('Split'),
           icon: FrostedGlyphs.split,
           onPressed: () {},
         ),
-        FrostedButton('Done', onPressed: () => Navigator.of(context).pop()),
+        FrostedButton(
+          kitSay('Done'),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // From a tablet's width the list and the chosen transaction stand side
+    // by side; on a phone a row opens its sheet.
+    final panes = !FrostedBreakpoints.isCompact(context);
     final wide = FrostedBreakpoints.isWide(context);
     final days = [
       for (final day in harborDays)
         (label: day.label, rows: day.rows.where(_keeps).toList()),
     ].where((day) => day.rows.isNotEmpty);
     final list = <Widget>[
-      const FrostedSearchField(hint: 'Search activity'),
+      FrostedSearchField(hint: kitSay('Search activity')),
       const SizedBox(height: 12),
       FrostedFilterChipGroup<_Show>(
-        label: 'Show',
+        label: kitSay('Show'),
         value: _show,
         onChanged: (v) => setState(() => _show = v),
-        options: const [
-          FrostedFilterOption(_Show.all, 'All'),
-          FrostedFilterOption(_Show.spending, 'Spending'),
-          FrostedFilterOption(_Show.income, 'Income'),
-          FrostedFilterOption(_Show.pending, 'Pending'),
+        options: [
+          FrostedFilterOption(_Show.all, kitSay('All')),
+          FrostedFilterOption(_Show.spending, kitSay('Spending')),
+          FrostedFilterOption(_Show.income, kitSay('Income')),
+          FrostedFilterOption(_Show.pending, kitSay('Pending')),
         ],
       ),
       for (final day in days) ...[
         const SizedBox(height: 20),
         FrostedListSection(
-          title: day.label,
-          aside:
-              '${day.rows.length} '
-              '${day.rows.length == 1 ? 'transaction' : 'transactions'}',
-          rows: [for (final tx in day.rows) _row(context, tx, wide)],
+          title: kitSay(day.label),
+          aside: kitTransactions(day.rows.length),
+          rows: [for (final tx in day.rows) _row(context, tx, panes)],
         ),
       ],
     ];
     final bar = FrostedAppBar(
-      title: 'Activity',
-      caption: 'October 2026',
+      title: kitSay('Activity'),
+      caption: kitSay('October 2026'),
       actions: _barActs(context),
     );
-    if (!wide) {
+    if (!panes) {
       return FrostedScaffold(
         topBar: bar,
         body: Column(
@@ -505,14 +555,34 @@ class _HarborActivityState extends State<HarborActivity> {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 24,
         children: [
+          // The list scrolls within its column, but the chips' glow, the
+          // search field's focus glow and the cards' shadows reach past the
+          // column's sides and top: its viewport stands a strip's reach out
+          // into the gutter, the gap and the room under the bar, so it clips
+          // only what scrolls away.
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(bottom: 40),
-              children: list,
+            child: LayoutBuilder(
+              builder: (context, box) => OverflowBox(
+                alignment: Alignment.bottomCenter,
+                minWidth: box.maxWidth + 2 * FrostedChromeMetrics.stripReach,
+                maxWidth: box.maxWidth + 2 * FrostedChromeMetrics.stripReach,
+                minHeight: box.maxHeight + FrostedChromeMetrics.stripReach,
+                maxHeight: box.maxHeight + FrostedChromeMetrics.stripReach,
+                child: ListView(
+                  // Under a tablet's tab bar, the band it stands in too.
+                  padding: EdgeInsets.fromLTRB(
+                    FrostedChromeMetrics.stripReach,
+                    FrostedChromeMetrics.stripReach,
+                    FrostedChromeMetrics.stripReach,
+                    40 + ShellInsets.of(context),
+                  ),
+                  children: list,
+                ),
+              ),
             ),
           ),
           SizedBox(
-            width: 380,
+            width: wide ? 380 : 300,
             child: chosen == null
                 ? const SizedBox.shrink()
                 : FrostedCard(
@@ -521,14 +591,14 @@ class _HarborActivityState extends State<HarborActivity> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       spacing: 16,
                       children: [
-                        FrostedCardHeader(chosen.title),
+                        FrostedCardHeader(kitSay(chosen.title)),
                         HarborTransactionDetail(chosen),
                         Row(
                           spacing: 12,
                           children: [
                             Expanded(
                               child: FrostedButton.glass(
-                                'Split',
+                                kitSay('Split'),
                                 icon: FrostedGlyphs.split,
                                 expand: true,
                                 onPressed: () {},
@@ -536,7 +606,7 @@ class _HarborActivityState extends State<HarborActivity> {
                             ),
                             Expanded(
                               child: FrostedButton.glass(
-                                'Get help',
+                                kitSay('Get help'),
                                 expand: true,
                                 onPressed: () {},
                               ),
@@ -552,6 +622,12 @@ class _HarborActivityState extends State<HarborActivity> {
     );
   }
 }
+
+/// The day [tx] is listed under, as its header reads ("Today", "Fri, Oct
+/// 23"): the detail's When says its day, not only its month.
+String _dayOf(HarborTransaction tx) => harborDays
+    .firstWhere((day) => day.rows.contains(tx), orElse: () => harborDays.first)
+    .label;
 
 /// One transaction at length: its figure, then what, where and when.
 class HarborTransactionDetail extends StatelessWidget {
@@ -570,17 +646,20 @@ class HarborTransactionDetail extends StatelessWidget {
       children: [
         FrostedFigure(
           tx.amount.abs(),
-          caption: tx.isIncome ? 'Received' : 'Spent',
+          caption: tx.isIncome ? kitSay('Received') : kitSay('Spent'),
           flow: tx.isIncome
               ? FrostedMoneyFlow.inflow
               : FrostedMoneyFlow.balance,
         ),
-        FrostedKeyValue(label: 'Category', value: tx.category),
-        FrostedKeyValue(label: 'Account', value: tx.account),
-        FrostedKeyValue(label: 'When', value: 'October · ${tx.time}'),
+        FrostedKeyValue(label: kitSay('Category'), value: kitSay(tx.category)),
+        FrostedKeyValue(label: kitSay('Account'), value: kitSay(tx.account)),
         FrostedKeyValue(
-          label: 'Status',
-          value: tx.pending ? 'Pending' : 'Settled',
+          label: kitSay('When'),
+          value: '${kitSay(_dayOf(tx))} · ${kitSay(tx.time)}',
+        ),
+        FrostedKeyValue(
+          label: kitSay('Status'),
+          value: tx.pending ? kitSay('Pending') : kitSay('Settled'),
         ),
       ],
     );
@@ -611,7 +690,10 @@ class _HarborSettingsState extends State<HarborSettings> {
     final t = context.frostedTheme;
     final host = _HarborScope.of(context);
     return FrostedScaffold(
-      topBar: FrostedAppBar(title: 'Settings', actions: _barActs(context)),
+      topBar: FrostedAppBar(
+        title: kitSay('Settings'),
+        actions: _barActs(context),
+      ),
       // The form stands on the title's keyline at its own most width: one
       // leading edge down the page (design6 P).
       body: Align(
@@ -623,80 +705,83 @@ class _HarborSettingsState extends State<HarborSettings> {
             spacing: 16,
             children: [
               FrostedSettingsGroup(
-                title: 'Notifications',
+                title: kitSay('Notifications'),
                 children: [
                   FrostedSwitchRow(
-                    label: 'Money in and out',
-                    note: 'The moment it moves',
+                    label: kitSay('Money in and out'),
+                    note: kitSay('The moment it moves'),
                     value: _moves,
                     onChanged: (v) => setState(() => _moves = v),
                   ),
                   FrostedSwitchRow(
-                    label: 'Bills before they are due',
-                    note: 'Three days ahead',
+                    label: kitSay('Bills before they are due'),
+                    note: kitSay('Three days ahead'),
                     value: _bills,
                     onChanged: (v) => setState(() => _bills = v),
                   ),
                   FrostedSwitchRow(
-                    label: 'Weekly summary',
-                    note: 'Sunday evenings',
+                    label: kitSay('Weekly summary'),
+                    note: kitSay('Sunday evenings'),
                     value: _weekly,
                     onChanged: (v) => setState(() => _weekly = v),
                   ),
                 ],
               ),
               FrostedSettingsGroup(
-                title: 'Security',
+                title: kitSay('Security'),
                 children: [
                   FrostedSwitchRow(
-                    label: 'Unlock with Face ID',
+                    label: kitSay('Unlock with Face ID'),
                     value: _faceId,
                     onChanged: (v) => setState(() => _faceId = v),
                   ),
                   FrostedValueRow(
-                    title: 'Passcode',
-                    subtitle: 'Changed in August',
+                    title: kitSay('Passcode'),
+                    subtitle: kitSay('Changed in August'),
                     onPressed: () {},
                   ),
                   FrostedValueRow(
-                    title: 'Signed-in devices',
+                    title: kitSay('Signed-in devices'),
                     value: '2',
                     onPressed: () {},
                   ),
                 ],
               ),
               FrostedSettingsGroup(
-                title: 'Appearance',
+                title: kitSay('Appearance'),
                 children: [
                   FrostedFormRow(
-                    label: 'Theme',
+                    label: kitSay('Theme'),
                     trailing: FrostedSegmentedButton<Brightness>(
-                      label: 'Theme',
+                      label: kitSay('Theme'),
                       value: t.brightness,
                       onChanged: host.onBrightness,
-                      segments: const [
-                        FrostedButtonSegment(Brightness.light, 'Light'),
-                        FrostedButtonSegment(Brightness.dark, 'Dark'),
+                      segments: [
+                        FrostedButtonSegment(Brightness.light, kitSay('Light')),
+                        FrostedButtonSegment(Brightness.dark, kitSay('Dark')),
                       ],
                     ),
                   ),
                   // What the glass shows: the same control as the theme's,
                   // so the row keeps the group's height and trailing edge.
                   FrostedFormRow(
-                    label: 'Backdrop',
+                    label: kitSay('Backdrop'),
                     trailing: FrostedSegmentedButton<FrostedBackdropKind>(
-                      label: 'Backdrop',
+                      label: kitSay('Backdrop'),
                       value: t.backdrop.kind,
                       onChanged: host.onBackdrop,
-                      segments: const [
-                        FrostedButtonSegment(FrostedBackdropKind.dawn, 'Dawn'),
+                      segments: [
+                        FrostedButtonSegment(
+                          FrostedBackdropKind.dawn,
+                          kitSay('Dawn'),
+                        ),
                         FrostedButtonSegment(
                           FrostedBackdropKind.night,
-                          'Night sky',
+                          kitSay('Night sky'),
                         ),
                         FrostedButtonSegment(
                           FrostedBackdropKind.plain,
-                          'Plain',
+                          kitSay('Plain'),
                         ),
                       ],
                     ),
@@ -704,10 +789,10 @@ class _HarborSettingsState extends State<HarborSettings> {
                 ],
               ),
               FrostedSettingsGroup(
-                title: 'Limits',
+                title: kitSay('Limits'),
                 children: [
                   FrostedValueRow(
-                    title: 'Monthly spending limit',
+                    title: kitSay('Monthly spending limit'),
                     value: r'$2,500',
                     onPressed: () {},
                   ),
@@ -716,18 +801,18 @@ class _HarborSettingsState extends State<HarborSettings> {
               Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: FrostedButton.glass(
-                  'Close account',
+                  kitSay('Close account'),
                   style: FrostedStyle(
                     foreground: WidgetStatePropertyAll(t.colorScheme.danger),
                   ),
                   onPressed: () => FrostedDialog.show(
                     context,
-                    title: 'Close your account?',
-                    message:
-                        'Your balance moves to the account you choose, and '
-                        'your cards stop working today.',
-                    confirmLabel: 'Close account',
-                    cancelLabel: 'Keep it',
+                    title: kitSay('Close your account?'),
+                    message: kitSay(
+                      'Your balance moves to the account you choose, and your cards stop working today.',
+                    ),
+                    confirmLabel: kitSay('Close account'),
+                    cancelLabel: kitSay('Keep it'),
                     destructive: true,
                   ),
                 ),

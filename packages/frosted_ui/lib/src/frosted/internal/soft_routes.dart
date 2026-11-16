@@ -3,6 +3,37 @@ import 'dart:ui' as ui;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+/// A modal barrier, as ui_core's parts paint one (`barrierBuilder`), that
+/// softens the page below as it dims it: the page blurred by [soften] under
+/// [color], both growing with the route's animation (the blur drawn whole
+/// from the first frame it is, never faded under an Opacity), clipped to the
+/// route's own box.
+DesignBarrierBuilder frostedSoftBarrier({
+  required Color color,
+  required double soften,
+}) =>
+    (context, animation) => IgnorePointer(
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (context, _) {
+          final v = animation.value.clamp(0.0, 1.0);
+          if (v <= .01) return const SizedBox.shrink();
+          return ClipRect(
+            child: BackdropFilter(
+              filter: ui.ImageFilter.blur(
+                sigmaX: v * soften,
+                sigmaY: v * soften,
+              ),
+              child: ColoredBox(
+                color: color.withValues(alpha: color.a * v),
+                child: const SizedBox.expand(),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
 /// A modal route whose barrier softens the page below it as it dims it: the
 /// page blurred by [soften] (growing with the route's animation; the blur is
 /// drawn whole from the first frame it is, never faded under an Opacity)

@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialLocalizations, MaterialType;
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../glyphs.dart';
@@ -9,6 +11,7 @@ import '../../glyphs.dart';
 import '../../chrome_metrics.dart';
 import '../../internal/face.dart';
 import '../../internal/styled.dart';
+import '../../internal/chosen_plate.dart';
 import '../../theme.dart';
 import '../host.dart';
 import '../pressable/pressable.dart';
@@ -48,10 +51,10 @@ class FrostedOption extends StatelessWidget {
   /// What choosing it does.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// The light of the swatch before the name.
@@ -175,6 +178,27 @@ class FrostedOption extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(ColorProperty('hue', hue, defaultValue: null))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// A category's light as a swatch (`.sw`): 8 across in its [color].
@@ -198,6 +222,12 @@ class FrostedHueDot extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ColorProperty('color', color));
+  }
 }
 
 /// One choice of a [FrostedMenu]: its [value], its [label], an optional
@@ -261,7 +291,26 @@ class FrostedMenu<T> extends StatelessWidget {
     this.label,
     this.width,
     super.key,
+  }) : _rows = null,
+       _place = null;
+
+  // A menu [show] raises: its rows take these focus nodes, which its keys
+  // move between (_MenuKeys).
+  const FrostedMenu._keyed(
+    this._rows,
+    this._place, {
+    required this.items,
+    required this.onSelected,
+    this.title,
+    this.label,
+    this.width,
   });
+
+  final List<FocusNode>? _rows;
+
+  // The one row a menu [show] raises lights: where the keys or the pointer
+  // last went (_MenuKeys).
+  final _MenuPlace? _place;
 
   /// The items, in order.
   final List<FrostedMenuItem<T>> items;
@@ -285,6 +334,14 @@ class FrostedMenu<T> extends StatelessWidget {
   /// row, as the source hangs the month menu from the whole month switch.
   /// With [fitAnchor] the menu is at least as wide as that box and stands
   /// on its leading edge, as a select's list stands under its field.
+  ///
+  /// The keyboard walks it as every list ui_core opens: opened by a key
+  /// (Enter, Space or an arrow on its control) the chosen item takes the
+  /// focus, or the first when none is chosen; opened by a pointer the menu
+  /// holds it, and the first arrow moves on from the chosen item. The arrows
+  /// go round the ends, Home and End go to them, a typed letter jumps to the
+  /// next item it starts, Enter or Space chooses and closes, and Escape
+  /// closes; the control opened by a key has the focus back.
   static Future<T?> show<T>(
     BuildContext context, {
     required List<FrostedMenuItem<T>> items,
@@ -307,7 +364,13 @@ class FrostedMenu<T> extends StatelessWidget {
     );
     final themes = InheritedTheme.capture(from: context, to: navigator.context);
     final wide = FrostedBreakpoints.isWide(context);
-    return navigator.push(
+    // A key held as the control fires opened it; a pointer's press holds
+    // none.
+    final keyed = HardwareKeyboard.instance.logicalKeysPressed.any(
+      _openingKeys.contains,
+    );
+    final opener = keyed ? FocusManager.instance.primaryFocus : null;
+    final picked = navigator.push(
       _MenuRoute<T>(
         duration: FrostedMotion.of(context).fast,
         anchor: rect,
@@ -315,10 +378,11 @@ class FrostedMenu<T> extends StatelessWidget {
         start: fitAnchor,
         label: MaterialLocalizations.of(context).modalBarrierDismissLabel,
         builder: (menuContext) => themes.wrap(
-          FrostedMenu<T>(
+          _MenuKeys<T>(
             items: items,
             title: title,
             label: label,
+            keyed: keyed,
             width: fitAnchor
                 ? math.max(FrostedChromeMetrics.menuWidth, rect.width)
                 : null,
@@ -327,7 +391,22 @@ class FrostedMenu<T> extends StatelessWidget {
         ),
       ),
     );
+    if (opener == null) return picked;
+    return picked.whenComplete(() {
+      if (opener.context != null && opener.canRequestFocus) {
+        opener.requestFocus();
+      }
+    });
   }
+
+  static final _openingKeys = <LogicalKeyboardKey>{
+    LogicalKeyboardKey.enter,
+    LogicalKeyboardKey.numpadEnter,
+    LogicalKeyboardKey.space,
+    LogicalKeyboardKey.select,
+    LogicalKeyboardKey.arrowDown,
+    LogicalKeyboardKey.arrowUp,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -389,9 +468,12 @@ class FrostedMenu<T> extends StatelessWidget {
                       style: t.textTheme.labelMedium.line(15.6),
                     ),
                   ),
-                for (final item in items)
+                for (final (i, item) in items.indexed)
                   _MenuRow(
                     key: item.key,
+                    index: i,
+                    place: _place,
+                    focusNode: _rows?[i],
                     label: item.label,
                     hue: item.hue,
                     end: item.trailing,
@@ -405,21 +487,42 @@ class FrostedMenu<T> extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedMenuItem<T>>('items', items))
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// A menu's row (`.menu-i`): 40 tall, 10 in, corners 10; the check's
 /// column 16 wide, then the label in the link type, then the end note; the
-/// chosen one on the wash, its label in the ink and semibold.
+/// chosen one on the chosen plate, its label in the ink and semibold. The
+/// row the keys or a moving pointer last went to lights with the quieter
+/// wash (law 7: the row a press would pick), never the plate, so it never
+/// reads as a second choice; one row at a time. The keyboard's ring stands
+/// inside the row, concentric with the menu, never against its edge.
 class _MenuRow extends StatelessWidget {
   const _MenuRow({
     required this.label,
     required this.onTap,
     required this.checked,
+    this.index = 0,
+    this.place,
     this.hue,
     this.end,
+    this.focusNode,
     super.key,
   });
 
+  final int index;
+  final _MenuPlace? place;
+  final FocusNode? focusNode;
   final String label;
   final VoidCallback? onTap;
   final bool checked;
@@ -430,67 +533,340 @@ class _MenuRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final swatch = hue;
-    return FrostedPressable(
-      onPressed: onTap,
-      label: label,
-      selected: checked,
-      radius: FrostedChromeMetrics.menuItemRadius,
-      child: FrostedDim(
-        off: onTap == null,
-        child: SizedBox(
-          height: FrostedChromeMetrics.menuItem,
-          child: FrostedFace(
-            material: FrostedMaterial.paint,
-            radius: BorderRadius.circular(FrostedChromeMetrics.menuItemRadius),
-            color: checked ? t.glass.wash : null,
-            padding: const EdgeInsets.symmetric(
-              horizontal: FrostedChromeMetrics.menuItemInset,
-            ),
-            child: Row(
-              spacing: FrostedChromeMetrics.menuItemGap,
-              children: [
-                SizedBox(
-                  width: FrostedChromeMetrics.menuItemGlyph,
-                  child: checked
-                      ? Icon(
-                          FrostedGlyphs.check,
-                          size: FrostedChromeMetrics.menuItemGlyph,
-                          color: t.colorScheme.textPrimary,
-                        )
-                      : swatch == null
-                      ? null
-                      : Center(child: FrostedHueDot(swatch)),
-                ),
-                Expanded(
-                  child: frostedCapCentred(
-                    Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: checked
-                          ? t.textTheme.link.semibold.c(
-                              t.colorScheme.textPrimary,
-                            )
-                          : t.textTheme.link.c(t.colorScheme.textSecondary),
+    final corner = BorderRadius.circular(FrostedChromeMetrics.menuItemRadius);
+    const inset = EdgeInsets.symmetric(
+      horizontal: FrostedChromeMetrics.menuItemInset,
+    );
+    // Lit: under a pointer or held by the keyboard (law 7), its words in the
+    // ink as a panel row's are.
+    Widget row(bool lit) => Row(
+      spacing: FrostedChromeMetrics.menuItemGap,
+      children: [
+        SizedBox(
+          width: FrostedChromeMetrics.menuItemGlyph,
+          child: checked
+              ? Icon(
+                  FrostedGlyphs.check,
+                  size: FrostedChromeMetrics.menuItemGlyph,
+                  color: t.colorScheme.textPrimary,
+                )
+              : swatch == null
+              ? null
+              : Center(child: FrostedHueDot(swatch)),
+        ),
+        Expanded(
+          child: frostedCapCentred(
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: checked
+                  ? t.textTheme.link.semibold.c(t.colorScheme.textPrimary)
+                  : t.textTheme.link.c(
+                      lit
+                          ? t.colorScheme.textPrimary
+                          : t.colorScheme.textSecondary,
                     ),
-                  ),
-                ),
-                if (end != null)
-                  DefaultTextStyle.merge(
-                    style: t.textTheme.amountSmall.c(t.colorScheme.textPrimary),
-                    child: end!,
-                  ),
-              ],
             ),
           ),
         ),
+        if (end != null)
+          DefaultTextStyle.merge(
+            style: t.textTheme.amountSmall.c(t.colorScheme.textPrimary),
+            child: end!,
+          ),
+      ],
+    );
+    // The ring's band and line stand inside the row, so its outer line is
+    // the row's edge: the menu's inset clear all round it, its corner
+    // concentric with the menu's.
+    const ring =
+        FrostedChromeMetrics.focusRingGap + FrostedChromeMetrics.focusRingWidth;
+    Widget pressable() => FrostedPressable(
+      onPressed: onTap,
+      focusNode: focusNode,
+      label: label,
+      selected: checked,
+      radius: FrostedChromeMetrics.menuItemRadius - ring,
+      ringInsets: const EdgeInsets.all(ring),
+      builder: (context, states, _) {
+        final at = place;
+        // In a menu [FrostedMenu.show] raises, the one place the keys or
+        // the pointer last went; a menu standing in a page, the pointer's
+        // row or the keyboard's.
+        final lit =
+            states.contains(WidgetState.pressed) ||
+            (at == null
+                ? states.contains(WidgetState.hovered) ||
+                      states.contains(WidgetState.focused)
+                : at.current.value == index);
+        return FrostedDim(
+          off: onTap == null,
+          // At least a finger's target tall, as a panel row is.
+          child: SizedBox(
+            height: math.max(
+              FrostedChromeMetrics.menuItem,
+              FrostedBreakpoints.touchHitTarget,
+            ),
+            // Chosen is the brighter glass (law 6), the plate every chosen
+            // chip, segment and link stands on, not a quieter wash under it
+            // (self-review round 3: the darker plate read as the opposite).
+            child: checked
+                ? FrostedChosenPlate(
+                    radius: corner,
+                    padding: inset,
+                    child: row(lit),
+                  )
+                : FrostedFace(
+                    material: FrostedMaterial.paint,
+                    radius: corner,
+                    color: lit ? t.glass.wash : null,
+                    padding: inset,
+                    child: row(lit),
+                  ),
+          ),
+        );
+      },
+    );
+    final at = place;
+    if (at == null) return pressable();
+    return MouseRegion(
+      // A pointer moving over a row moves the place there (not one resting
+      // under a menu as it opens).
+      onHover: (_) => at.point(index),
+      child: ValueListenableBuilder<int?>(
+        valueListenable: at.current,
+        builder: (context, _, _) => pressable(),
       ),
     );
   }
 }
 
-/// The route a menu rides: no scrim, dismissed by a tap outside, laid out
-/// under its anchor.
+/// The one row a raised menu lights, and the pointer's way to move it.
+class _MenuPlace {
+  _MenuPlace(this.point);
+
+  final ValueNotifier<int?> current = ValueNotifier(null);
+  final void Function(int index) point;
+}
+
+/// The keys of a menu [FrostedMenu.show] raises, round it: as it opens the
+/// chosen row takes the focus when a key opened it ([keyed]; the first row
+/// when none is chosen), the menu itself when a pointer did. A key goes up
+/// from the focus, so they are read here, above every row and the menu's
+/// own node, before the app's shortcuts (a web app's arrows scroll).
+class _MenuKeys<T> extends StatefulWidget {
+  const _MenuKeys({
+    required this.items,
+    required this.onSelected,
+    required this.keyed,
+    this.title,
+    this.label,
+    this.width,
+  });
+
+  final List<FrostedMenuItem<T>> items;
+  final ValueChanged<T> onSelected;
+  final bool keyed;
+  final String? title;
+  final String? label;
+  final double? width;
+
+  @override
+  State<_MenuKeys<T>> createState() => _MenuKeysState<T>();
+}
+
+class _MenuKeysState<T> extends State<_MenuKeys<T>> {
+  final _menu = FocusNode(debugLabel: 'FrostedMenu', skipTraversal: true);
+  late List<FocusNode> _rows = _nodes();
+  late final _place = _MenuPlace(_point);
+
+  // What was typed for the type-ahead, and when its last letter came.
+  String _typed = '';
+  DateTime? _typedAt;
+
+  // Each row's node; the row the keys move to becomes the place.
+  List<FocusNode> _nodes() => [
+    for (final (i, item) in widget.items.indexed)
+      FocusNode(debugLabel: item.label)..addListener(() => _focused(i)),
+  ];
+
+  void _focused(int i) {
+    if (i < _rows.length && _rows[i].hasPrimaryFocus) {
+      _place.current.value = i;
+    }
+  }
+
+  // A pointer moving over a row that can be chosen makes it the place, and
+  // the menu takes the focus back from a row the keys held, so one row is
+  // lit and the keys go on from it.
+  void _point(int i) {
+    if (!_on(i) || _place.current.value == i) return;
+    _place.current.value = i;
+    _menu.requestFocus();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // The rows mount in this frame; focus one once they have.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final start = widget.keyed ? (_chosen ?? _step(-1, 1)) : null;
+      (start == null ? _menu : _rows[start]).requestFocus();
+    });
+  }
+
+  @override
+  void didUpdateWidget(_MenuKeys<T> old) {
+    super.didUpdateWidget(old);
+    if (old.items.length != widget.items.length) {
+      for (final node in _rows) {
+        node.dispose();
+      }
+      _rows = _nodes();
+    }
+  }
+
+  @override
+  void dispose() {
+    _menu.dispose();
+    for (final node in _rows) {
+      node.dispose();
+    }
+    _place.current.dispose();
+    super.dispose();
+  }
+
+  bool _on(int i) => widget.items[i].enabled;
+
+  int? get _chosen {
+    final i = widget.items.indexWhere((item) => item.checked && item.enabled);
+    return i < 0 ? null : i;
+  }
+
+  int? get _held {
+    final i = _rows.indexWhere((node) => node.hasPrimaryFocus);
+    return i < 0 ? null : i;
+  }
+
+  /// The next row that can be chosen from [from], [by] at a time, round the
+  /// ends; null when none can.
+  int? _step(int from, int by) {
+    final n = widget.items.length;
+    for (var k = 1; k <= n; k++) {
+      final i = ((from + by * k) % n + n) % n;
+      if (_on(i)) return i;
+    }
+    return null;
+  }
+
+  void _hold(int? i) {
+    if (i != null) _rows[i].requestFocus();
+  }
+
+  KeyEventResult _key(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final n = widget.items.length;
+    final from = _held ?? _place.current.value ?? _chosen;
+    final key = event.logicalKey;
+    // The pointer's row, with the focus on the menu: Return or Space takes
+    // it, as on a row the keys hold.
+    final at = _place.current.value;
+    if (_held == null && at != null && _choosingKeys.contains(key)) {
+      if (_on(at)) widget.onSelected(widget.items[at].value);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.arrowDown) {
+      _hold(_step(from ?? -1, 1));
+    } else if (key == LogicalKeyboardKey.arrowUp) {
+      _hold(_step(from ?? n, -1));
+    } else if (key == LogicalKeyboardKey.home) {
+      _hold(_step(-1, 1));
+    } else if (key == LogicalKeyboardKey.end) {
+      _hold(_step(n, -1));
+    } else if (_letter(event) case final letter?) {
+      _jump(letter, from ?? -1);
+    } else {
+      return KeyEventResult.ignored;
+    }
+    return KeyEventResult.handled;
+  }
+
+  static final _choosingKeys = <LogicalKeyboardKey>{
+    LogicalKeyboardKey.enter,
+    LogicalKeyboardKey.numpadEnter,
+    LogicalKeyboardKey.space,
+    LogicalKeyboardKey.select,
+  };
+
+  // A printable letter or digit typed with no command key; Space chooses.
+  static String? _letter(KeyEvent event) {
+    final c = event.character;
+    if (c == null || c.trim().isEmpty || c.runes.length != 1) return null;
+    // Escape, Backspace and their kind say a control character: no letter.
+    final rune = c.runes.first;
+    if (rune < 0x20 || rune == 0x7f) return null;
+    final keys = HardwareKeyboard.instance;
+    if (keys.isControlPressed || keys.isMetaPressed || keys.isAltPressed) {
+      return null;
+    }
+    return c.toLowerCase();
+  }
+
+  /// The type-ahead: letters typed within a moment of each other spell the
+  /// start of an item's words, from the row held; a letter alone jumps to
+  /// the next row it starts.
+  void _jump(String letter, int from) {
+    final now = DateTime.now();
+    final last = _typedAt;
+    final more =
+        last != null && now.difference(last) < const Duration(seconds: 1);
+    _typedAt = now;
+    int? find(String typed, int start) {
+      final n = widget.items.length;
+      for (var k = 0; k < n; k++) {
+        final i = ((start + k) % n + n) % n;
+        if (_on(i) && widget.items[i].label.toLowerCase().startsWith(typed)) {
+          return i;
+        }
+      }
+      return null;
+    }
+
+    if (more) {
+      final spelt = find('$_typed$letter', math.max(from, 0));
+      if (spelt != null) {
+        _typed = '$_typed$letter';
+        _hold(spelt);
+        return;
+      }
+    }
+    _typed = letter;
+    _hold(find(letter, from + 1));
+  }
+
+  @override
+  Widget build(BuildContext context) => Focus(
+    focusNode: _menu,
+    includeSemantics: false,
+    onKeyEvent: _key,
+    child: FrostedMenu<T>._keyed(
+      _rows,
+      _place,
+      items: widget.items,
+      title: widget.title,
+      label: widget.label,
+      width: widget.width,
+      onSelected: widget.onSelected,
+    ),
+  );
+}
+
+/// The route a menu rides: no scrim, dismissed by a tap outside or Escape,
+/// laid out under its anchor.
 class _MenuRoute<T> extends PopupRoute<T> {
   _MenuRoute({
     required this.duration,

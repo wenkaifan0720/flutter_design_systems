@@ -90,8 +90,8 @@ void main() {
   );
   _mirrors(
     'a segmented button',
-    FrostedSegmentedButton<int>(
-      segments: const [
+    const FrostedSegmentedButton<int>(
+      segments: [
         FrostedButtonSegment(0, 'Light'),
         FrostedButtonSegment(1, 'Dark'),
       ],
@@ -103,8 +103,8 @@ void main() {
   );
   _mirrors(
     'filter chips',
-    FrostedFilterChipGroup<int>(
-      options: const [
+    const FrostedFilterChipGroup<int>(
+      options: [
         FrostedFilterOption(0, 'All'),
         FrostedFilterOption(1, 'Income'),
       ],
@@ -115,33 +115,34 @@ void main() {
   );
   _mirrors(
     'a switch row',
-    FrostedSwitchRow(label: 'Weekly summary', value: true, onChanged: _drop),
+    const FrostedSwitchRow(
+      label: 'Weekly summary',
+      value: true,
+      onChanged: _drop,
+    ),
     find.text('Weekly summary'),
   );
   _mirrors(
     'a check row',
-    FrostedCheckRow(label: 'Agree', value: true, onChanged: _drop),
+    const FrostedCheckRow(label: 'Agree', value: true, onChanged: _drop),
     find.text('Agree'),
   );
   _mirrors(
     'a radio group',
-    FrostedRadioGroup<String>(
+    const FrostedRadioGroup<String>(
       label: 'Plan',
       value: 'free',
       onChanged: _drop,
-      options: const [
-        FrostedRadio('free', 'Free'),
-        FrostedRadio('plus', 'Plus'),
-      ],
+      options: [FrostedRadio('free', 'Free'), FrostedRadio('plus', 'Plus')],
     ),
     find.text('Free'),
   );
   _mirrors(
     'a field with a leading glyph',
-    FrostedTextField(
+    const FrostedTextField(
       label: 'Email',
       onChanged: _drop,
-      leading: const Icon(FrostedGlyphs.email),
+      leading: Icon(FrostedGlyphs.email),
     ),
     find.byIcon(FrostedGlyphs.email),
   );
@@ -156,15 +157,15 @@ void main() {
   );
   _mirrors(
     'a tab bar',
-    FrostedTabBar(
-      tabs: const ['Spending', 'Income', 'Transfers'],
+    const FrostedTabBar(
+      tabs: ['Spending', 'Income', 'Transfers'],
       onChanged: _drop,
     ),
     find.text('Spending'),
   );
   _mirrors(
     'a navigation bar',
-    FrostedNavigationBar(items: tabs, onDestinationSelected: _drop),
+    const FrostedNavigationBar(items: tabs, onDestinationSelected: _drop),
     find.text('Home'),
   );
   _mirrors(
@@ -224,8 +225,8 @@ void main() {
     await _probe(
       t,
       TextDirection.rtl,
-      Center(
-        child: FrostedKbd.combo(const ['⌘', 'K'], semanticsLabel: 'Command K'),
+      const Center(
+        child: FrostedKbd.combo(['⌘', 'K'], semanticsLabel: 'Command K'),
       ),
       // ⌘ is drawn as a glyph; the + between the caps stands before K.
       find.text('+'),
@@ -242,7 +243,11 @@ void main() {
     await _probe(
       t,
       TextDirection.rtl,
-      FrostedAmountField(label: 'Amount', value: '500.00', onChanged: _drop),
+      const FrostedAmountField(
+        label: 'Amount',
+        value: '500.00',
+        onChanged: _drop,
+      ),
       find.text('\$'),
     );
     expect(
@@ -277,11 +282,11 @@ void main() {
     await _probe(
       t,
       TextDirection.rtl,
-      Column(
+      const Column(
         children: [
-          const Center(child: FrostedBadge(120)),
+          Center(child: FrostedBadge(120)),
           FrostedTimePicker(
-            value: const FrostedTime(hour: 9, minute: 30),
+            value: FrostedTime(hour: 9, minute: 30),
             onChanged: _drop,
           ),
         ],
@@ -299,7 +304,7 @@ void main() {
     await _probe(
       t,
       TextDirection.rtl,
-      FrostedPagination(pageCount: 3, selectedIndex: 1, onChanged: _drop),
+      const FrostedPagination(pageCount: 3, selectedIndex: 1, onChanged: _drop),
       find.byIcon(FrostedGlyphs.chevronLeft),
     );
     expect(find.byIcon(FrostedGlyphs.chevronLeft), findsOneWidget);

@@ -2,15 +2,18 @@
 // themes that carry one per part. Every slot is a WidgetStateProperty and
 // null means "the look's own", so a theme that sets none draws Frosted as
 // it was designed.
-import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
+
+export 'package:ui_core/ui_core.dart' show DesignStyle, DesignStyleOf;
 
 /// How one part is drawn, slot by slot, as Material's `ButtonStyle` does:
-/// each slot a [WidgetStateProperty] resolved against the part's states
-/// (hovered, focused, pressed, selected, disabled, error), and each null
-/// slot the look's own. Set one theme-wide in [FrostedComponentThemes]
+/// ui_core's [DesignStyle], every look's one style. Each slot is a
+/// [WidgetStateProperty] resolved against the part's states (hovered,
+/// focused, pressed, selected, disabled, error), and each null slot the
+/// look's own. Set one theme-wide in [FrostedComponentThemes]
 /// (`FrostedThemeData.components`) or on one widget through its `style:`;
 /// the widget's wins, then the theme's, then the theme's knobs, then the
 /// look.
@@ -25,251 +28,11 @@ import 'package:flutter/widgets.dart';
 ///   ),
 /// )
 /// ```
-@immutable
-class FrostedStyle with Diagnosticable {
-  /// A style from its slots; every slot is optional.
-  const FrostedStyle({
-    this.fill,
-    this.foreground,
-    this.edge,
-    this.overlay,
-    this.side,
-    this.shape,
-    this.padding,
-    this.minimumSize,
-    this.textStyle,
-    this.iconSize,
-  });
+typedef FrostedStyle = DesignStyle;
 
-  /// The first non-null value of each slot across [layers], in order.
-  factory FrostedStyle.layered(List<FrostedStyle?> layers) {
-    final source = List<FrostedStyle>.unmodifiable(
-      layers.whereType<FrostedStyle>(),
-    );
-    WidgetStateProperty<T?>? combine<T>(
-      WidgetStateProperty<T?>? Function(FrostedStyle) slot,
-    ) {
-      final values = source
-          .map(slot)
-          .whereType<WidgetStateProperty<T?>>()
-          .toList(growable: false);
-      if (values.isEmpty) return null;
-      if (values.length == 1) return values.single;
-      return WidgetStateProperty.resolveWith((states) {
-        for (final property in values) {
-          final value = property.resolve(states);
-          if (value != null) return value;
-        }
-        return null;
-      });
-    }
-
-    return FrostedStyle(
-      fill: combine((s) => s.fill),
-      foreground: combine((s) => s.foreground),
-      edge: combine((s) => s.edge),
-      overlay: combine((s) => s.overlay),
-      side: combine((s) => s.side),
-      shape: combine((s) => s.shape),
-      padding: combine((s) => s.padding),
-      minimumSize: combine((s) => s.minimumSize),
-      textStyle: combine((s) => s.textStyle),
-      iconSize: combine((s) => s.iconSize),
-    );
-  }
-
-  /// The part's face: the glass, the act or the chosen thumb.
-  final WidgetStateProperty<Color?>? fill;
-
-  /// The part's words and glyphs, or its mark (a tick, a dot, a knob).
-  final WidgetStateProperty<Color?>? foreground;
-
-  /// The colour of the part's edge, at the look's stroke width.
-  final WidgetStateProperty<Color?>? edge;
-
-  /// A wash laid over the face in a state; null lays none (the look shows
-  /// a press by its face, and nothing on hover).
-  final WidgetStateProperty<Color?>? overlay;
-
-  /// The whole edge, colour and width; wins over [edge].
-  final WidgetStateProperty<BorderSide?>? side;
-
-  /// The part's outline; nested parts (a thumb, a ring) follow it.
-  final WidgetStateProperty<OutlinedBorder?>? shape;
-
-  /// The room inside the face round its content.
-  final WidgetStateProperty<EdgeInsetsGeometry?>? padding;
-
-  /// The face's least size; the touch target stays 44, or 48 on touch.
-  final WidgetStateProperty<Size?>? minimumSize;
-
-  /// The words' style.
-  final WidgetStateProperty<TextStyle?>? textStyle;
-
-  /// The glyphs' size.
-  final WidgetStateProperty<double?>? iconSize;
-
-  /// True when every slot is null.
-  bool get isEmpty =>
-      fill == null &&
-      foreground == null &&
-      edge == null &&
-      overlay == null &&
-      side == null &&
-      shape == null &&
-      padding == null &&
-      minimumSize == null &&
-      textStyle == null &&
-      iconSize == null;
-
-  /// The first value of [slot] across [layers] at [states], or null.
-  static T? first<T>(
-    Iterable<FrostedStyle?> layers,
-    WidgetStateProperty<T?>? Function(FrostedStyle style) slot,
-    Set<WidgetState> states,
-  ) {
-    for (final layer in layers) {
-      if (layer == null) continue;
-      final value = slot(layer)?.resolve(states);
-      if (value != null) return value;
-    }
-    return null;
-  }
-
-  /// This with the named slots replaced.
-  FrostedStyle copyWith({
-    WidgetStateProperty<Color?>? fill,
-    WidgetStateProperty<Color?>? foreground,
-    WidgetStateProperty<Color?>? edge,
-    WidgetStateProperty<Color?>? overlay,
-    WidgetStateProperty<BorderSide?>? side,
-    WidgetStateProperty<OutlinedBorder?>? shape,
-    WidgetStateProperty<EdgeInsetsGeometry?>? padding,
-    WidgetStateProperty<Size?>? minimumSize,
-    WidgetStateProperty<TextStyle?>? textStyle,
-    WidgetStateProperty<double?>? iconSize,
-  }) => FrostedStyle(
-    fill: fill ?? this.fill,
-    foreground: foreground ?? this.foreground,
-    edge: edge ?? this.edge,
-    overlay: overlay ?? this.overlay,
-    side: side ?? this.side,
-    shape: shape ?? this.shape,
-    padding: padding ?? this.padding,
-    minimumSize: minimumSize ?? this.minimumSize,
-    textStyle: textStyle ?? this.textStyle,
-    iconSize: iconSize ?? this.iconSize,
-  );
-
-  /// This, with [other]'s slots where this has none.
-  FrostedStyle merge(FrostedStyle? other) {
-    if (other == null) return this;
-    return copyWith(
-      fill: fill ?? other.fill,
-      foreground: foreground ?? other.foreground,
-      edge: edge ?? other.edge,
-      overlay: overlay ?? other.overlay,
-      side: side ?? other.side,
-      shape: shape ?? other.shape,
-      padding: padding ?? other.padding,
-      minimumSize: minimumSize ?? other.minimumSize,
-      textStyle: textStyle ?? other.textStyle,
-      iconSize: iconSize ?? other.iconSize,
-    );
-  }
-
-  /// Between [a] and [b], slot by slot.
-  static FrostedStyle? lerp(FrostedStyle? a, FrostedStyle? b, double t) {
-    if (identical(a, b) || t == 0) return a;
-    if (t == 1) return b;
-    T? either<T>(T? x, T? y, T Function(T, T) f) =>
-        x == null || y == null ? (t < .5 ? x : y) : f(x, y);
-    WidgetStateProperty<T?>? l<T>(
-      WidgetStateProperty<T?>? x,
-      WidgetStateProperty<T?>? y,
-      T Function(T, T) f,
-    ) => WidgetStateProperty.lerp<T?>(x, y, t, (p, q, t) => either<T>(p, q, f));
-    return FrostedStyle(
-      fill: l<Color>(a?.fill, b?.fill, (x, y) => Color.lerp(x, y, t)!),
-      foreground: l<Color>(
-        a?.foreground,
-        b?.foreground,
-        (x, y) => Color.lerp(x, y, t)!,
-      ),
-      edge: l<Color>(a?.edge, b?.edge, (x, y) => Color.lerp(x, y, t)!),
-      overlay: l<Color>(a?.overlay, b?.overlay, (x, y) => Color.lerp(x, y, t)!),
-      side: l<BorderSide>(a?.side, b?.side, (x, y) => BorderSide.lerp(x, y, t)),
-      shape: l<OutlinedBorder>(
-        a?.shape,
-        b?.shape,
-        (x, y) => OutlinedBorder.lerp(x, y, t)!,
-      ),
-      padding: l<EdgeInsetsGeometry>(
-        a?.padding,
-        b?.padding,
-        (x, y) => EdgeInsetsGeometry.lerp(x, y, t)!,
-      ),
-      minimumSize: l<Size>(
-        a?.minimumSize,
-        b?.minimumSize,
-        (x, y) => Size.lerp(x, y, t)!,
-      ),
-      textStyle: l<TextStyle>(
-        a?.textStyle,
-        b?.textStyle,
-        (x, y) => TextStyle.lerp(x, y, t)!,
-      ),
-      iconSize: l<double>(
-        a?.iconSize,
-        b?.iconSize,
-        (x, y) => lerpDouble(x, y, t)!,
-      ),
-    );
-  }
-
-  List<Object?> get _slots => [
-    fill,
-    foreground,
-    edge,
-    overlay,
-    side,
-    shape,
-    padding,
-    minimumSize,
-    textStyle,
-    iconSize,
-  ];
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is FrostedStyle && listEquals(other._slots, _slots);
-
-  @override
-  int get hashCode => Object.hashAll(_slots);
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    void add<T>(String name, WidgetStateProperty<T?>? value) => properties.add(
-      DiagnosticsProperty<WidgetStateProperty<T?>>(
-        name,
-        value,
-        defaultValue: null,
-      ),
-    );
-    add('fill', fill);
-    add('foreground', foreground);
-    add('edge', edge);
-    add('overlay', overlay);
-    add('side', side);
-    add('shape', shape);
-    add('padding', padding);
-    add('minimumSize', minimumSize);
-    add('textStyle', textStyle);
-    add('iconSize', iconSize);
-  }
-}
+/// A part's style layers (its own `style:`, then its component theme's)
+/// read at its states: ui_core's [DesignStyleOf].
+typedef FrostedStyleOf = DesignStyleOf;
 
 /// One [FrostedStyle] per part, theme-wide, as Material's component themes
 /// are: `FrostedThemeData.components`. A widget's own `style:` wins over its
@@ -312,7 +75,8 @@ class FrostedComponentThemes with Diagnosticable {
     this.timePicker = const FrostedStyle(),
   });
 
-  /// Buttons: every variant's face, its words and glyph.
+  /// Buttons: every variant's face, its words and glyph. Its shape shapes
+  /// the glass buttons; the ink act keeps its pill (law 6).
   final FrostedStyle button;
 
   /// Icon buttons: the round of glass and its glyph.

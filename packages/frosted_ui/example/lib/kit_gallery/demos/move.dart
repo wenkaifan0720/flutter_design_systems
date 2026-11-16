@@ -9,6 +9,7 @@ import '../kit.dart';
 
 Widget kitMoveDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Rail, breadcrumb & pages',
   sections: [
     kitSection(

@@ -2,28 +2,32 @@ import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../theme.dart';
 
-/// Takes taps over at least a [target] square centred on its child while
-/// laying out at the child's own size: a 32 point disc keeps the place the
-/// source gives it in a band and still answers the touch target round it
-/// (48 under a finger, 44 under a pointer: `FrostedBreakpoints.hitTargetOf`).
+/// Lays [child] out at least a [target] square, as Material pads its
+/// targets (ui_core's [DesignTapTarget]): a 32 point disc stands in a 48
+/// square under a finger (44 under a pointer:
+/// `FrostedBreakpoints.hitTargetOf`). Placed inside the control's node and
+/// its gesture (a `FrostedPressable` places its own round its face), the
+/// control's layout, the area a tap reaches and the box a screen reader
+/// outlines are one, and a neighbour stands past the target rather than
+/// inside it. The square is laid out: what stands round it makes room.
 ///
-/// Where the child marks its face with a [FrostedSlopFace] (a
-/// `FrostedPressable` marks its own), the control itself spans the target,
-/// as Material pads its targets: its node, the box a screen reader outlines
-/// and Flutter's tap-target guidelines measure, is the whole square, with
-/// the face drawn at its own size in the middle. The slop still lays out at
-/// the face's size, so nothing round it moves; the square overhangs it.
-/// Without a marked face only the hit test reaches round it.
-///
-/// Hit testing reaches a child only through its parent's bounds, so the
-/// slop reaches as far as the room round the child does. Plumbing of the
-/// components; pages never place one.
-class FrostedHitSlop extends StatefulWidget {
+/// The face stands where the nearest [FrostedTargetSide] says, else at
+/// [alignment], else centred: on a keyline (a bare check at a column's
+/// start, a field's trailing key at its end) the face stays on the line
+/// and the target grows away from it, mirrored right to left. Plumbing of
+/// the components; pages never place one.
+class FrostedHitSlop extends StatelessWidget {
   /// Creates a [FrostedHitSlop].
-  const FrostedHitSlop({required this.child, this.target, super.key});
+  const FrostedHitSlop({
+    required this.child,
+    this.target,
+    this.alignment,
+    super.key,
+  });
 
   /// The control the target stands round.
   final Widget child;
@@ -31,404 +35,356 @@ class FrostedHitSlop extends StatefulWidget {
   /// The touch target's least side; null for the platform's floor.
   final double? target;
 
-  @override
-  State<FrostedHitSlop> createState() => _FrostedHitSlopState();
-}
-
-class _FrostedHitSlopState extends State<FrostedHitSlop> {
-  final _SlopLink _link = _SlopLink();
+  /// Where the face stands in the target when no [FrostedTargetSide] says;
+  /// null centres it.
+  final AlignmentDirectional? alignment;
 
   @override
-  Widget build(BuildContext context) => _SlopScope(
-    link: _link,
-    child: _SlopBox(
-      link: _link,
-      target: widget.target ?? FrostedBreakpoints.hitTargetOf(context),
-      child: widget.child,
-    ),
+  Widget build(BuildContext context) => DesignTapTarget(
+    minSize: Size.square(target ?? FrostedBreakpoints.hitTargetOf(context)),
+    alignment:
+        FrostedTargetSide.maybeOf(context) ??
+        alignment ??
+        AlignmentDirectional.center,
+    child: child,
   );
 }
 
-/// The face of the control a [FrostedHitSlop] stands round: under a slop,
-/// the box that spans the target with [child] centred in it at the size the
-/// slop's own room gives it; anywhere else, [child] as it is. A face inside
-/// it marks nothing more.
-class FrostedSlopFace extends StatelessWidget {
-  /// Creates a [FrostedSlopFace].
-  const FrostedSlopFace({required this.child, super.key});
+/// Where the faces of the controls under it stand in their touch targets
+/// ([FrostedHitSlop]): [AlignmentDirectional.centerStart] keeps a face on
+/// the start keyline and grows its target toward the end,
+/// [AlignmentDirectional.centerEnd] the reverse (a field's trailing key, a
+/// settings row's switch). It reaches every control under it, so it
+/// stands round the one control at the keyline. Plumbing of the
+/// components.
+class FrostedTargetSide extends InheritedWidget {
+  /// Stands the faces under [child] at [alignment].
+  const FrostedTargetSide({
+    required this.alignment,
+    required super.child,
+    super.key,
+  });
 
-  /// The face as drawn.
-  final Widget child;
+  /// Where a face stands in its target.
+  final AlignmentDirectional alignment;
+
+  /// The nearest side's alignment, or null.
+  static AlignmentDirectional? maybeOf(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<FrostedTargetSide>()?.alignment;
 
   @override
-  Widget build(BuildContext context) {
-    final link = context.dependOnInheritedWidgetOfExactType<_SlopScope>()?.link;
-    if (link == null) return child;
-    return _SlopFaceBox(
-      link: link,
-      child: _SlopScope(link: null, child: child),
-    );
-  }
+  bool updateShouldNotify(FrostedTargetSide oldWidget) =>
+      alignment != oldWidget.alignment;
 }
 
-/// A text field's one node, named [label], spread over the touch target
-/// round [child] (the field's line): the editable's words, flags and
-/// actions gather in a node as tall as the target, centred on the line, as
-/// Material's padded field gives one. Nothing round it moves. Plumbing of
+/// A text field's line, spread over the height of its well (the nearest
+/// [FrostedFieldRoom] round it): a tap anywhere from the well's top to its
+/// bottom, over the line's width, reaches the editable (at the nearest
+/// point of its line, as Material's padded field takes it), and the
+/// field's one node, named [label], spans the same box, so the box a
+/// screen reader outlines is the box a tap reaches. The editable's words,
+/// flags and actions gather in that node. Nothing lays out differently.
+/// Without a room round it the line answers over its own box. Plumbing of
 /// the components.
-class FrostedFieldTarget extends StatelessWidget {
+class FrostedFieldTarget extends SingleChildRenderObjectWidget {
   /// Creates a [FrostedFieldTarget].
-  const FrostedFieldTarget({required this.child, this.label, super.key});
-
-  /// The field's line, its editable inside.
-  final Widget child;
+  const FrostedFieldTarget({required Widget child, this.label, super.key})
+    : super(child: child);
 
   /// The field's name.
   final String? label;
 
   @override
-  Widget build(BuildContext context) => FrostedHitSlop(
-    child: Semantics(
-      container: true,
-      label: label,
-      child: FrostedSlopFace(child: child),
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderFieldLine(label, Directionality.maybeOf(context));
+
+  @override
+  void updateRenderObject(BuildContext context, RenderObject renderObject) {
+    (renderObject as _RenderFieldLine)
+      ..label = label
+      ..textDirection = Directionality.maybeOf(context);
+  }
+}
+
+/// The box a text field's line spans ([FrostedFieldTarget]): the row inside
+/// the field's well, from its top to its bottom. A tap in it that reaches
+/// nothing else (over or under a line that stands centred in a shorter
+/// cell, which hit testing would not enter) goes to the line, at its
+/// middle, so no box between the room and the line need stand as tall as
+/// the room. Plumbing of the components.
+class FrostedFieldRoom extends SingleChildRenderObjectWidget {
+  /// Creates a [FrostedFieldRoom].
+  const FrostedFieldRoom({required Widget child, super.key})
+    : super(child: child);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderFieldRoom();
+}
+
+class _RenderFieldRoom extends RenderProxyBox {
+  // The line in this room: the first one under it, not in a room of its own.
+  _RenderFieldLine? _line() {
+    _RenderFieldLine? found;
+    void visit(RenderObject child) {
+      if (found != null || child is _RenderFieldRoom) return;
+      if (child is _RenderFieldLine) {
+        found = child;
+        return;
+      }
+      child.visitChildren(visit);
+    }
+
+    visitChildren(visit);
+    return found;
+  }
+
+  @override
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (super.hitTest(result, position: position)) return true;
+    if (!size.contains(position)) return false;
+    final line = _line();
+    if (line == null || !line.hasSize || !line.attached) return false;
+    final toLine = line.getTransformTo(this);
+    if (toLine.invert() == 0) return false;
+    final at = MatrixUtils.transformPoint(toLine, position);
+    final onLine = Offset(
+      at.dx.clamp(0.0, math.max(0.0, line.size.width - 0.5)),
+      line.size.height / 2,
+    );
+    return result.addWithRawTransform(
+      transform: toLine,
+      position: position,
+      hitTest: (result, _) => line.hitTest(result, position: onLine),
+    );
+  }
+}
+
+/// Stands [child] in a lane at least [height] tall (the touch target: 48
+/// under a finger, 44 under a pointer), the child centred in it, and
+/// answers a tap in the lane above or below the child as one at the child's
+/// middle row, as Material redirects a padded chip's margin: a remove key
+/// in a 28 tag answers over the lane's whole height, its node spanning it
+/// too ([FrostedLaneKey]). The lane is laid out: what stands round it makes
+/// room. Plumbing of the components (a tag, an input chip).
+class FrostedTargetLane extends StatelessWidget {
+  /// Stands [child] in its lane.
+  const FrostedTargetLane({required this.child, this.height, super.key});
+
+  /// What stands in the lane.
+  final Widget child;
+
+  /// The lane's least height; the platform's touch target when null.
+  final double? height;
+
+  @override
+  Widget build(BuildContext context) => _Lane(
+    child: ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: height ?? FrostedBreakpoints.hitTargetOf(context),
+      ),
+      child: Center(widthFactor: 1, heightFactor: 1, child: child),
     ),
   );
 }
 
-/// What a slop and the face it stands round tell each other in layout.
-class _SlopLink {
-  _RenderSlopBox? slop;
-  _RenderSlopFace? _face;
+class _Lane extends SingleChildRenderObjectWidget {
+  const _Lane({required super.child});
 
-  /// The slop's own constraints, which the face lays out under.
-  BoxConstraints? faceConstraints;
-
-  /// The target's least side.
-  double target = 0;
-
-  _RenderSlopFace? get face => _face;
-  set face(_RenderSlopFace? value) {
-    if (identical(_face, value)) return;
-    _face = value;
-    // A face built during layout (under a LayoutBuilder) finds its slop laid
-    // out already or about to be; anywhere else the slop lays out again.
-    final box = slop;
-    if (box != null && box.attached && !box.owner!.debugDoingLayout) {
-      box.markNeedsLayout();
-    }
-  }
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderLane();
 }
 
-class _SlopScope extends InheritedWidget {
-  const _SlopScope({required this.link, required super.child});
-
-  final _SlopLink? link;
-
+class _RenderLane extends RenderProxyBox {
   @override
-  bool updateShouldNotify(_SlopScope oldWidget) => oldWidget.link != link;
-}
-
-class _SlopBox extends SingleChildRenderObjectWidget {
-  const _SlopBox({required this.link, required this.target, super.child});
-
-  final _SlopLink link;
-  final double target;
-
-  @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderSlopBox(link, target);
-
-  @override
-  void updateRenderObject(BuildContext context, _RenderSlopBox renderObject) {
-    renderObject.target = target;
-  }
-}
-
-class _RenderSlopBox extends RenderShiftedBox {
-  _RenderSlopBox(this._link, this._target) : super(null) {
-    _link.slop = this;
-  }
-
-  final _SlopLink _link;
-
-  double _target;
-  set target(double value) {
-    if (value == _target) return;
-    _target = value;
-    markNeedsLayout();
-  }
-
-  /// The marked face, while it is in this slop's tree.
-  _RenderSlopFace? get _face {
-    final face = _link.face;
-    return face != null && face.attached ? face : null;
-  }
-
-  @override
-  Size computeDryLayout(BoxConstraints constraints) {
-    final face = _face?.child;
-    final measured = face ?? child;
-    if (measured == null) return constraints.smallest;
-    return constraints.constrain(measured.getDryLayout(constraints));
-  }
-
-  @override
-  void performLayout() {
-    final child = this.child;
-    if (child == null) {
-      size = constraints.smallest;
-      return;
-    }
-    final data = child.parentData! as BoxParentData;
-    final face = _face;
-    if (face == null) {
-      _link.faceConstraints = null;
-      child.layout(constraints, parentUsesSize: true);
-      size = constraints.constrain(child.size);
-      data.offset = Offset.zero;
-      return;
-    }
-    // The control may grow to the target round its face (never tight, so a
-    // face that changes size still lays the slop out again).
-    _link
-      ..faceConstraints = constraints
-      ..target = _target;
-    child.layout(
-      BoxConstraints(
-        minWidth: constraints.minWidth,
-        minHeight: constraints.minHeight,
-        maxWidth: math.max(constraints.maxWidth, _target),
-        maxHeight: math.max(constraints.maxHeight, _target),
-      ),
-      parentUsesSize: true,
+  bool hitTest(BoxHitTestResult result, {required Offset position}) {
+    if (super.hitTest(result, position: position)) return true;
+    if (!size.contains(position)) return false;
+    return super.hitTest(
+      result,
+      position: Offset(position.dx, size.height / 2),
     );
-    size = constraints.constrain(face.faceSize);
-    // The face stands where it would without the target round it.
-    final at = MatrixUtils.transformPoint(
-      face.child!.getTransformTo(child),
-      Offset.zero,
-    );
-    data.offset = -at;
   }
+}
+
+/// A key in a [FrostedTargetLane] (a tag's remove key): its node spans the
+/// lane's height over the key's own width, so the box a screen reader
+/// outlines is the box a tap reaches (the lane takes a tap above or below
+/// the tag onto its middle row). The key's own node is gathered into it.
+/// Without a lane round it the key answers over its own box. Plumbing of
+/// the components.
+class FrostedLaneKey extends SingleChildRenderObjectWidget {
+  /// Creates a [FrostedLaneKey].
+  const FrostedLaneKey({required Widget child, super.key})
+    : super(child: child);
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderLaneKey();
+}
+
+class _RenderLaneKey extends RenderProxyBox {
+  _RenderLane? get _lane {
+    for (var node = parent; node != null; node = node.parent) {
+      if (node is _RenderLane) return node;
+    }
+    return null;
+  }
+
+  /// The key's width from the lane's top to its bottom, in this box's units
+  /// (its own box where it stands in no lane).
+  Rect get _reach {
+    final own = Offset.zero & size;
+    final lane = _lane;
+    if (lane == null || !lane.hasSize) return own;
+    final toLane = getTransformTo(lane);
+    if (toLane.invert() == 0) return own;
+    final box = MatrixUtils.transformRect(toLane, Offset.zero & lane.size);
+    return Rect.fromLTRB(
+      0,
+      math.min(0, box.top),
+      size.width,
+      math.max(size.height, box.bottom),
+    );
+  }
+
+  Rect? _reported;
+
+  @override
+  Rect get semanticBounds => _reach;
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    // The lane can change height without this key laying out again: the
+    // node follows it.
+    final reach = _reach;
+    if (_reported != reach) {
+      _reported = reach;
+      markNeedsSemanticsUpdate();
+    }
+    super.paint(context, offset);
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    config
+      ..isSemanticBoundary = true
+      ..isMergingSemanticsOfDescendants = true;
+  }
+}
+
+class _RenderFieldLine extends RenderProxyBox {
+  _RenderFieldLine(this._label, this._textDirection);
+
+  String? _label;
+  set label(String? value) {
+    if (value == _label) return;
+    _label = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  TextDirection? _textDirection;
+  set textDirection(TextDirection? value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  _RenderFieldRoom? get _room {
+    for (var node = parent; node != null; node = node.parent) {
+      if (node is _RenderFieldRoom) return node;
+    }
+    return null;
+  }
+
+  /// The line's width from the room's top to its bottom, in this box's
+  /// units (its own box where it stands in no room).
+  Rect get _reach {
+    final own = Offset.zero & size;
+    final room = _room;
+    if (room == null || !room.hasSize) return own;
+    final toRoom = getTransformTo(room);
+    if (toRoom.invert() == 0) return own;
+    final box = MatrixUtils.transformRect(toRoom, Offset.zero & room.size);
+    return Rect.fromLTRB(
+      0,
+      math.min(0, box.top),
+      size.width,
+      math.max(size.height, box.bottom),
+    );
+  }
+
+  Rect? _reported;
 
   @override
   bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    final child = this.child;
-    if (child == null) return false;
-    if (!size.contains(position) && _onNeighbour(this, position)) return false;
-    if (_face != null) {
-      final data = child.parentData! as BoxParentData;
-      if (!(data.offset & child.size).contains(position)) return false;
-      if (hitTestChildren(result, position: position)) {
-        result.add(BoxHitTestEntry(this, position));
-        return true;
-      }
-      return false;
-    }
-    final dx = math.max(0.0, (_target - size.width) / 2);
-    final dy = math.max(0.0, (_target - size.height) / 2);
-    final reach = Rect.fromLTRB(-dx, -dy, size.width + dx, size.height + dy);
-    if (!reach.contains(position)) return false;
-    // Brought inside the child, whose own test checks its size.
+    if (!hasSize || !_reach.contains(position)) return false;
+    // Brought onto the line, whose own test checks its size: over or under
+    // it, onto its middle (what draws the line may stand a pixel or two off
+    // its box, centred on its capitals).
     final inside = Offset(
       position.dx.clamp(0.0, math.max(0.0, size.width - 0.5)),
-      position.dy.clamp(0.0, math.max(0.0, size.height - 0.5)),
+      position.dy >= 0 && position.dy < size.height
+          ? position.dy
+          : size.height / 2,
     );
-    if (hitTestChildren(result, position: inside)) {
+    // Inside the line's box but past the editable in it (a line centred on
+    // its capitals stands taller than the editable it holds): onto the
+    // line's middle too.
+    if (hitTestChildren(result, position: inside) ||
+        (inside.dy != size.height / 2 &&
+            hitTestChildren(
+              result,
+              position: Offset(inside.dx, size.height / 2),
+            ))) {
       result.add(BoxHitTestEntry(this, position));
       return true;
     }
     return false;
   }
-}
-
-/// Whether [position], in the reach round [box], lies on a neighbour in the
-/// same run: a stack of small controls laid edge to edge, where a press on
-/// one must never go to the next.
-bool _onNeighbour(RenderBox box, Offset position) {
-  final own = box.parentData;
-  if (own is! ContainerBoxParentData<RenderBox>) return false;
-  final at = own.offset + position;
-  for (final other in [own.previousSibling, own.nextSibling]) {
-    if (other == null || !other.hasSize) continue;
-    final data = other.parentData! as BoxParentData;
-    if ((data.offset & other.size).contains(at)) return true;
-  }
-  return false;
-}
-
-/// Stands at [height], the strip a control draws, while [child], the
-/// control with its targets, lays out as tall as it asks and stands centred
-/// on it: the targets (48 under a finger) overhang the strip above and
-/// below, and nothing round it moves. Material pads a small control's
-/// targets the same way but grows the layout. A press in the overhang
-/// reaches the child unless a neighbour in the same run lies there, and
-/// only as far as the room round it does. Plumbing of the components (a
-/// toggle strip, a menu bar, a split button); pages never place one.
-class FrostedOverhang extends SingleChildRenderObjectWidget {
-  /// Creates a [FrostedOverhang].
-  const FrostedOverhang({
-    required this.height,
-    required super.child,
-    super.key,
-  });
-
-  /// The height the strip is drawn at and lays out at.
-  final double height;
 
   @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderOverhang(height);
+  Rect get semanticBounds => _reach;
 
   @override
-  void updateRenderObject(BuildContext context, RenderObject renderObject) {
-    (renderObject as _RenderOverhang).height = height;
-  }
-}
-
-class _RenderOverhang extends RenderShiftedBox {
-  _RenderOverhang(this._height) : super(null);
-
-  double _height;
-  set height(double value) {
-    if (value == _height) return;
-    _height = value;
-    markNeedsLayout();
-  }
-
-  BoxConstraints _inner(BoxConstraints c) =>
-      BoxConstraints(minWidth: c.minWidth, maxWidth: c.maxWidth);
-
-  @override
-  double computeMinIntrinsicHeight(double width) => _height;
-
-  @override
-  double computeMaxIntrinsicHeight(double width) => _height;
-
-  @override
-  Size computeDryLayout(BoxConstraints constraints) {
-    final child = this.child;
-    final width = child == null
-        ? 0.0
-        : child.getDryLayout(_inner(constraints)).width;
-    return constraints.constrain(Size(width, _height));
-  }
-
-  @override
-  void performLayout() {
-    final child = this.child;
-    if (child == null) {
-      size = constraints.constrain(Size(0, _height));
-      return;
+  void paint(PaintingContext context, Offset offset) {
+    // The room can change height without this line laying out again (a
+    // trailing part coming): the node follows it.
+    final reach = _reach;
+    if (_reported != reach) {
+      _reported = reach;
+      markNeedsSemanticsUpdate();
     }
-    child.layout(_inner(constraints), parentUsesSize: true);
-    size = constraints.constrain(Size(child.size.width, _height));
-    (child.parentData! as BoxParentData).offset = Alignment.center.alongOffset(
-      size - child.size as Offset,
-    );
+    super.paint(context, offset);
   }
 
   @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    final child = this.child;
-    if (child == null) return false;
-    final data = child.parentData! as BoxParentData;
-    if (!(data.offset & child.size).contains(position)) return false;
-    if (!size.contains(position) && _onNeighbour(this, position)) return false;
-    if (hitTestChildren(result, position: position)) {
-      result.add(BoxHitTestEntry(this, position));
-      return true;
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    config.isSemanticBoundary = true;
+    final label = _label;
+    if (label != null && label.isNotEmpty) {
+      config
+        ..label = label
+        ..textDirection = _textDirection;
     }
-    return false;
   }
 }
 
-class _SlopFaceBox extends SingleChildRenderObjectWidget {
-  const _SlopFaceBox({required this.link, super.child});
+/// Its controls stand at a finger's floor on every platform
+/// ([FrostedBreakpoints.touchHitTarget]), as a text entry's well does: an
+/// entry (a composer) keeps one size under a finger and a pointer. Plumbing
+/// of the components.
+class FrostedTouchTargets extends StatelessWidget {
+  /// Creates a [FrostedTouchTargets].
+  const FrostedTouchTargets({required this.child, super.key});
 
-  final _SlopLink link;
-
-  @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderSlopFace(link);
-
-  @override
-  void updateRenderObject(BuildContext context, _RenderSlopFace renderObject) {
-    renderObject.link = link;
-  }
-}
-
-class _RenderSlopFace extends RenderShiftedBox {
-  _RenderSlopFace(this._link) : super(null);
-
-  _SlopLink _link;
-  set link(_SlopLink value) {
-    if (identical(value, _link)) return;
-    if (attached && identical(_link.face, this)) _link.face = null;
-    _link = value;
-    if (attached) _link.face = this;
-    markNeedsLayout();
-  }
-
-  /// The face's own size, as its slop lays out at.
-  Size faceSize = Size.zero;
-
-  bool get _reaching =>
-      identical(_link.face, this) && _link.faceConstraints != null;
+  /// The entry.
+  final Widget child;
 
   @override
-  void attach(PipelineOwner owner) {
-    super.attach(owner);
-    _link.face = this;
-  }
-
-  @override
-  void detach() {
-    if (identical(_link.face, this)) _link.face = null;
-    super.detach();
-  }
-
-  @override
-  Size computeDryLayout(BoxConstraints constraints) {
-    final child = this.child;
-    if (child == null) return constraints.smallest;
-    final face = child.getDryLayout(_link.faceConstraints ?? constraints);
-    if (!_reaching) return constraints.constrain(face);
-    return constraints.constrain(_reach(face));
-  }
-
-  Size _reach(Size face) => Size(
-    math.max(face.width, _link.target),
-    math.max(face.height, _link.target),
+  Widget build(BuildContext context) => DesignTapTargetScope(
+    targets: (DesignTapTargets.maybeOf(context) ?? FrostedBreakpoints.targets)
+        .copyWith(input: DesignInput.touch),
+    child: child,
   );
-
-  @override
-  void performLayout() {
-    final child = this.child;
-    if (child == null) {
-      size = constraints.smallest;
-      faceSize = Size.copy(size);
-      return;
-    }
-    final data = child.parentData! as BoxParentData;
-    if (!_reaching) {
-      child.layout(constraints, parentUsesSize: true);
-      size = constraints.constrain(child.size);
-      faceSize = Size.copy(size);
-      data.offset = Offset.zero;
-      return;
-    }
-    child.layout(_link.faceConstraints!, parentUsesSize: true);
-    // A copy: the slop two boxes up lays out at it, and a child's own size
-    // is its parent's alone to hold (the debug check says so). Any change of
-    // it reaches the slop through the unbroken parentUsesSize chain between.
-    faceSize = Size.copy(child.size);
-    size = constraints.constrain(_reach(faceSize));
-    data.offset = Alignment.center.alongOffset(size - faceSize as Offset);
-  }
-
-  // The whole square answers, the room round the face too.
-  @override
-  bool hitTestSelf(Offset position) => _reaching;
 }

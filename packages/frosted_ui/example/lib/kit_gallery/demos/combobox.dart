@@ -24,12 +24,48 @@ const _cities = [
 
 const _tags = ['Design', 'Research', 'Writing', 'Engineering', 'Review'];
 
+// A long list, its value near the end: the list opens with the chosen row
+// in view and keeps the row the keys light in view as they move.
+const _countries = [
+  'Austria',
+  'Belgium',
+  'Brazil',
+  'Canada',
+  'Chile',
+  'Croatia',
+  'Denmark',
+  'Estonia',
+  'Finland',
+  'France',
+  'Germany',
+  'Greece',
+  'Iceland',
+  'India',
+  'Ireland',
+  'Italy',
+  'Japan',
+  'Kenya',
+  'Mexico',
+  'Netherlands',
+  'New Zealand',
+  'Norway',
+  'Poland',
+  'Portugal',
+  'Singapore',
+  'Spain',
+  'Sweden',
+  'Switzerland',
+  'United Kingdom',
+  'Uruguay',
+];
+
 // Reviewers are people (a "Design" tag stood in for one, self-review round
 // 5).
 const _people = ['Jonah Reyes', 'Priya Anand', 'Ines Park', 'Theo Lund'];
 
 Widget kitComboboxDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Combobox',
   sections: [
     kitSection(
@@ -89,6 +125,21 @@ Widget kitComboboxDemo(Brightness brightness) => kitScreen(
             onChanged: set,
             maxTags: 2,
             helper: 'Up to two',
+          ),
+        ),
+      ],
+    ),
+    kitSection(
+      'A long list',
+      children: [
+        KitHeld<String?>(
+          'Switzerland',
+          (country, set) => FrostedCombobox<String>(
+            label: 'Country',
+            options: _countries,
+            value: country,
+            onSelected: set,
+            hint: 'Search countries',
           ),
         ),
       ],

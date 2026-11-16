@@ -5,6 +5,7 @@ export 'package:ui_core/inventory.dart'
         DesignInventoryGallery,
         DesignInventoryRow;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/inventory.dart';
 
@@ -66,12 +67,15 @@ final DesignInventory frostedInventory = DesignInventory(
     // Actions
     DesignInventoryEntry.present(
       'Button',
-      (context) => FrostedButton('Save', onPressed: _none),
+      (context) => const FrostedButton('Save', onPressed: _none),
     ),
     DesignInventoryEntry.present(
       'IconButton',
-      (context) =>
-          FrostedIconButton(FrostedGlyphs.add, label: 'Add', onPressed: _none),
+      (context) => const FrostedIconButton(
+        FrostedGlyphs.add,
+        label: 'Add',
+        onPressed: _none,
+      ),
     ),
     const DesignInventoryEntry.absent(
       'FloatingActionButton',
@@ -90,31 +94,29 @@ final DesignInventory frostedInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'ToggleGroup',
-      (context) => FrostedToggleGroup<String>(
-        segments: const [
+      (context) => const FrostedToggleGroup<String>(
+        segments: [
           FrostedButtonSegment('b', 'Bold'),
           FrostedButtonSegment('i', 'Italic'),
         ],
-        selected: const {'b'},
+        selected: {'b'},
         multiple: true,
         onChanged: _drop,
       ),
     ),
     DesignInventoryEntry.present(
       'SplitButton',
-      (context) => FrostedSplitButton(
+      (context) => const FrostedSplitButton(
         label: 'Save',
         onPressed: _none,
-        actions: const [
-          FrostedSplitAction(label: 'Save as…', onPressed: _none),
-        ],
+        actions: [FrostedSplitAction(label: 'Save as…', onPressed: _none)],
       ),
     ),
     DesignInventoryEntry.present(
       'Link',
       (context) => const FrostedLink('Terms', link: 'Terms', onPressed: _none),
     ),
-    DesignInventoryEntry.present('Kbd', (context) => FrostedKbd('Esc')),
+    DesignInventoryEntry.present('Kbd', (context) => const FrostedKbd('Esc')),
     // Inputs
     DesignInventoryEntry.present(
       'TextField',
@@ -297,8 +299,8 @@ final DesignInventory frostedInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'NavigationBar',
-      (context) => FrostedNavigationBar(
-        items: const [
+      (context) => const FrostedNavigationBar(
+        items: [
           FrostedNavItem(FrostedGlyphs.house, 'Home'),
           FrostedNavItem(FrostedGlyphs.person, 'You'),
         ],
@@ -422,8 +424,8 @@ final DesignInventory frostedInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'DataTable',
-      (context) => FrostedDataTable<(String, int)>(
-        controller: DesignTableController<(String, int)>(
+      (context) => _Owned(
+        create: () => DesignTableController<(String, int)>(
           rows: const [('Notebook', 2), ('Pens', 10)],
           columns: [
             DesignTableColumn(id: 'item', label: 'Item', sortKey: (r) => r.$1),
@@ -435,27 +437,33 @@ final DesignInventory frostedInventory = DesignInventory(
             ),
           ],
         ),
-        cellBuilder: (context, row, column) =>
-            Text(column.id == 'item' ? row.$1 : '${row.$2}'),
+        builder: (context, table) => FrostedDataTable<(String, int)>(
+          controller: table,
+          cellBuilder: (context, row, column) =>
+              Text(column.id == 'item' ? row.$1 : '${row.$2}'),
+        ),
       ),
     ),
     DesignInventoryEntry.present(
       'Divider',
       (context) => const FrostedDivider(),
     ),
-    DesignInventoryEntry.present('ScrollArea', (context) {
-      final scroll = ScrollController();
-      return FrostedScrollArea(
-        controller: scroll,
-        child: SizedBox(
-          height: 120,
-          child: ListView(
-            controller: scroll,
-            children: [for (var i = 1; i <= 12; i++) Text('Row $i')],
+    DesignInventoryEntry.present(
+      'ScrollArea',
+      (context) => _Owned(
+        create: ScrollController.new,
+        builder: (context, scroll) => FrostedScrollArea(
+          controller: scroll,
+          child: SizedBox(
+            height: 120,
+            child: ListView(
+              controller: scroll,
+              children: [for (var i = 1; i <= 12; i++) Text('Row $i')],
+            ),
           ),
         ),
-      );
-    }),
+      ),
+    ),
     DesignInventoryEntry.present(
       'Resizable',
       (context) => const FrostedResizable(
@@ -509,13 +517,14 @@ final DesignInventory frostedInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'TreeView',
-      (context) => FrostedTreeView<String>(
-        controller: DesignTreeController<String>(
+      (context) => _Owned(
+        create: () => DesignTreeController<String>(
           roots: const ['Documents', 'Photos'],
           childrenOf: (n) => n == 'Documents' ? const ['Taxes'] : const [],
           expanded: const ['Documents'],
         ),
-        labelOf: (n) => n,
+        builder: (context, tree) =>
+            FrostedTreeView<String>(controller: tree, labelOf: (n) => n),
       ),
     ),
     DesignInventoryEntry.present(
@@ -596,8 +605,8 @@ final DesignInventory frostedInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'Menu',
-      (context) => FrostedMenu<String>(
-        items: const [
+      (context) => const FrostedMenu<String>(
+        items: [
           FrostedMenuItem('rename', 'Rename'),
           FrostedMenuItem('delete', 'Delete'),
         ],
@@ -771,4 +780,52 @@ class FrostedInventoryGallery extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<ScrollController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: const EdgeInsets.only(
+            top: FrostedSpacing.s8,
+            bottom: FrostedSpacing.s32,
+          ),
+        ),
+      );
+  }
+}
+
+// A specimen's controller, made once and disposed of with the specimen, as
+// an app's State would hold it.
+class _Owned<T extends ChangeNotifier> extends StatefulWidget {
+  const _Owned({required this.create, required this.builder});
+
+  final T Function() create;
+  final Widget Function(BuildContext context, T value) builder;
+
+  @override
+  State<_Owned<T>> createState() => _OwnedState<T>();
+}
+
+class _OwnedState<T extends ChangeNotifier> extends State<_Owned<T>> {
+  late final T _value = widget.create();
+
+  @override
+  void dispose() {
+    _value.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(context, _value);
 }

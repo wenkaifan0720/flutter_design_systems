@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../glyphs.dart';
@@ -6,7 +7,6 @@ import '../../chrome_metrics.dart';
 import '../../format.dart';
 import '../../internal/face.dart';
 import '../../internal/cap.dart';
-import '../../internal/hit_slop.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 
@@ -163,14 +163,12 @@ class FrostedWeekStrip extends StatelessWidget {
       if (!tappable) {
         return Semantics(label: spoken, excludeSemantics: true, child: column);
       }
-      return FrostedHitSlop(
-        child: FrostedPressable(
-          onPressed: () => onChanged!(date),
-          label: spoken,
-          toggled: state == FrostedDayStatus.complete,
-          radius: FrostedChromeMetrics.weekBead / 2,
-          child: column,
-        ),
+      return FrostedPressable(
+        onPressed: () => onChanged!(date),
+        label: spoken,
+        toggled: state == FrostedDayStatus.complete,
+        radius: FrostedChromeMetrics.weekBead / 2,
+        child: column,
       );
     }
 
@@ -193,4 +191,16 @@ class FrostedWeekStrip extends StatelessWidget {
       style: style.tabular,
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('start', start))
+      ..add(IterableProperty<FrostedDayStatus>('days', days))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(DiagnosticsProperty<FrostedHue>('hue', hue, defaultValue: null));
+  }
 }

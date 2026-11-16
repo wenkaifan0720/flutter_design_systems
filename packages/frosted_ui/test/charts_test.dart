@@ -622,7 +622,7 @@ void main() {
     expect(value.style!.color, context(t).hues.seafoam.ink);
     expect(value.style!.fontWeight, FontWeight.w600);
     final box = t.getRect(find.byType(FrostedDayBars));
-    final slot = (350 - 36) / 12;
+    const slot = (350 - 36) / 12;
     expect(
       t.getRect(find.text('+\$73.42')).right,
       moreOrLessEquals(box.left + 11.5 * slot + slot * 0.5 / 2, epsilon: 0.01),
@@ -753,7 +753,7 @@ void main() {
     // A chart alone keeps its words 8 under the plot.
     await _pump(
       t,
-      FrostedStepsChart(
+      const FrostedStepsChart(
         steps: _bills,
         daysInMonth: 30,
         marks: _novemberAxis,

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -35,7 +36,12 @@ class FrostedRangeSlider extends StatelessWidget {
     this.startLabel,
     this.endLabel,
     super.key,
-  });
+  }) : assert(max > min, 'A range slider spans some range.'),
+       assert(
+         divisions == null || divisions > 0,
+         'A stepped range slider has steps.',
+       ),
+       assert(minGap >= 0, 'The gap between the thumbs is not negative.');
 
   /// The range.
   final DesignRangeValues values;
@@ -151,7 +157,7 @@ class FrostedRangeSlider extends StatelessWidget {
                     ? t.colorScheme.toggleKnob
                     : t.colorScheme.textPrimary,
                 edge: t.glass.edge,
-                edges: EdgeInsets.all(FrostedStrokes.regular),
+                edges: const EdgeInsets.all(FrostedStrokes.regular),
                 shadows: t.shadows.toggleKnob,
               ),
             );
@@ -162,5 +168,42 @@ class FrostedRangeSlider extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DesignRangeValues>('values', values))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+          'onChanged',
+          onChanged,
+        ),
+      )
+      ..add(DoubleProperty('min', min, defaultValue: 0))
+      ..add(DoubleProperty('max', max, defaultValue: 1))
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(DoubleProperty('minGap', minGap, defaultValue: 0))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has(
+          'semanticFormatterCallback',
+          semanticFormatterCallback,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+          'onChangeStart',
+          onChangeStart,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<DesignRangeValues>>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(StringProperty('startLabel', startLabel, defaultValue: null))
+      ..add(StringProperty('endLabel', endLabel, defaultValue: null));
   }
 }

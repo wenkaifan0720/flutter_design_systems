@@ -11,9 +11,8 @@ import 'package:flutter/widgets.dart';
 /// The outline is cut by the even-odd rule (a field round the child and the
 /// hole), not `Path.combine`, whose difference the web renderer does not cut
 /// in Flutter 3.47. The field reaches [reach] past the child's box, so only
-/// the hole is taken: the child's shadow, the touch target a
-/// `FrostedHitSlop` spans round it and the node a screen reader outlines
-/// all keep their room.
+/// the hole is taken: the child's shadow and anything drawn past its box
+/// keep their room.
 class FrostedCutClipper extends CustomClipper<Path> {
   /// Clips clear of [hole]; [signature] is what the hole depends on.
   const FrostedCutClipper(this.hole, this.signature);

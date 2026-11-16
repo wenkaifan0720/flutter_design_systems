@@ -10,6 +10,7 @@ import '../kit.dart';
 
 Widget kitChoicesDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Radios, chips, rating & upload',
   sections: [
     kitSection(

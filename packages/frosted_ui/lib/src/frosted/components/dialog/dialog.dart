@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialLocalizations, MaterialType;
 import 'package:flutter/widgets.dart';
@@ -17,7 +18,6 @@ import '../sheet.dart';
 import '../../internal/dim.dart';
 import '../../internal/cap.dart';
 import '../../internal/act_row.dart';
-import '../../internal/hit_slop.dart';
 
 /// A dialog: a short decision or an acknowledgement on the desktop sheet's
 /// face (its white falling to the canvas, corners of 20, its edge and rim,
@@ -264,6 +264,25 @@ class FrostedDialog extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(IterableProperty<Widget>('actions', actions, defaultValue: null))
+      ..add(StringProperty('confirmLabel', confirmLabel, defaultValue: null))
+      ..add(StringProperty('cancelLabel', cancelLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onConfirm', onConfirm))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onCancel', onCancel))
+      ..add(
+        FlagProperty('destructive', value: destructive, ifTrue: 'destructive'),
+      )
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 /// Whether [words] fit one act each across [width], the foot's gap apart,
@@ -360,9 +379,8 @@ class _DangerAct extends StatelessWidget implements FrostedSizedAct {
       radius: height / 2,
       child: FrostedDim(off: onTap == null, child: face),
     );
-    // A compact act keeps the whole target round its face, as a button does.
-    return height < FrostedChromeMetrics.buttonHeight
-        ? FrostedHitSlop(child: act)
-        : act;
+    // A compact act stands in the whole target round its face, as a button
+    // does (its pressable lays it out there).
+    return act;
   }
 }

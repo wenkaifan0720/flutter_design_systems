@@ -5,6 +5,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
+import 'package:frosted_ui/src/frosted/internal/face.dart';
+import 'package:frosted_ui/src/frosted/internal/sliding_pill.dart';
 import 'package:frosted_ui/src/frosted/internal/well.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -124,7 +126,11 @@ void main() {
       _node(t, 'Search, Blue Fern typed'),
       isSemantics(isEnabled: false, hasTapAction: false, value: 'Blue Fern'),
     );
-    expect(t.getSize(find.byType(FrostedSearchLink).first).height, 44);
+    // The pill stands a finger's target tall (the source's 44 grows to 48).
+    expect(
+      t.getSize(find.byType(FrostedSearchLink).first).height,
+      FrostedBreakpoints.touchHitTarget,
+    );
     await t.tap(find.text('Search activity'));
     await t.tap(find.text('Blue Fern'));
     expect(opens, 1);
@@ -148,7 +154,10 @@ void main() {
     );
     expect(find.text('Blue Fern'), findsOneWidget);
     expect(_node(t, 'Search activity'), isSemantics(isTextField: true));
-    expect(t.getSize(find.byType(FrostedSearchField)).height, 44);
+    expect(
+      t.getSize(find.byType(FrostedSearchField)).height,
+      FrostedBreakpoints.touchHitTarget,
+    );
     await t.enterText(find.byType(TextField), 'Blue');
     await t.pump();
     expect(seen, ['Blue']);
@@ -231,9 +240,10 @@ void main() {
       expect(_node(t, 'All'), isSemantics(isSelected: true, isEnabled: true));
       expect(_node(t, 'Money in'), isSemantics(isSelected: false));
       expect(t.getSize(find.text('All')).height, lessThanOrEqualTo(32));
+      // A 32 chip in its touch target.
       expect(
         t.getSize(find.widgetWithText(FrostedPressable, 'All')).height,
-        32,
+        FrostedBreakpoints.touchHitTarget,
       );
       await t.tap(find.text('Money in'));
       await t.pump();
@@ -342,20 +352,44 @@ void main() {
         find
             .descendant(
               of: find.byType(FrostedSegmentedButton<String>).first,
-              matching: find.byType(Row),
+              matching: find.byType(FrostedSlidingPill),
             )
             .first,
       );
-      expect(range.height, 26);
+      // Each segment stands in its touch target round its face; the strip
+      // is drawn as a band at the faces' height and its 3 inset round them.
+      const target = FrostedBreakpoints.touchHitTarget;
+      Size face(String word) => t.getSize(
+        find
+            .descendant(
+              of: find.widgetWithText(FrostedPressable, word),
+              matching: find.byType(FrostedFace),
+            )
+            .first,
+      );
+      Size band(Finder strip) => t.getSize(
+        find.descendant(of: strip, matching: find.byType(FrostedFace)).first,
+      );
+      expect(range.height, target);
       expect(range.width, lessThan(358 - 6));
-      expect(t.getSize(find.widgetWithText(FrostedPressable, '1Y')).height, 26);
+      expect(
+        t.getSize(find.widgetWithText(FrostedPressable, '1Y')).height,
+        target,
+      );
+      expect(face('1Y').height, 28);
+      expect(
+        band(find.byType(FrostedSegmentedButton<String>).first).height,
+        32,
+      );
       final when = t.getSize(find.byType(FrostedSegmentedButton<String>).last);
       expect(when.width, 358);
-      expect(when.height, 42);
+      expect(when.height, target);
+      expect(band(find.byType(FrostedSegmentedButton<String>).last).height, 42);
       expect(
         t.getSize(find.widgetWithText(FrostedPressable, 'Today')).height,
-        36,
+        target,
       );
+      expect(face('Today').height, 38);
     },
   );
 
@@ -379,8 +413,8 @@ void main() {
       );
       // The test font draws every glyph 14 wide at 14: Now 42, Later 70,
       // Pick a day 140; with the 10 inset either side, 62, 90 and 160 of
-      // their own. The pill's 358 less its 3 inset either side and the two 2
-      // gaps leaves 348: 36 of slack, 12 to each.
+      // their own. The pill's 358 less its 2 inset either side and the two 2
+      // gaps leaves 350: 38 of slack, 12.67 to each.
       const fitting = ['Now', 'Later', 'Pick a day'];
       await _pump(t, pill(fitting));
       final widths = <double>[];
@@ -392,15 +426,34 @@ void main() {
           moreOrLessEquals(word.textSize.width, epsilon: 0.1),
           reason: '$label is drawn whole',
         );
-        expect(segment.height, 36, reason: label);
+        // A 38 face in its touch target.
+        expect(
+          segment.height,
+          FrostedBreakpoints.touchHitTarget,
+          reason: label,
+        );
+        expect(
+          t
+              .getSize(
+                find
+                    .descendant(
+                      of: find.widgetWithText(FrostedPressable, label),
+                      matching: find.byType(FrostedFace),
+                    )
+                    .first,
+              )
+              .height,
+          38,
+          reason: label,
+        );
         widths.add(segment.width);
       }
-      expect(widths[0], moreOrLessEquals(74, epsilon: 0.1));
-      expect(widths[1], moreOrLessEquals(102, epsilon: 0.1));
-      expect(widths[2], moreOrLessEquals(172, epsilon: 0.1));
+      expect(widths[0], moreOrLessEquals(74.67, epsilon: 0.1));
+      expect(widths[1], moreOrLessEquals(102.67, epsilon: 0.1));
+      expect(widths[2], moreOrLessEquals(172.67, epsilon: 0.1));
       expect(t.getSize(find.byType(FrostedSegmentedButton<String>)).width, 358);
       // Today, Tomorrow and Choose a date are 90, 132 and 202 of their own in
-      // this font, 424 for the 348: all narrow in proportion, none to nothing.
+      // this font, 424 for the 350: all narrow in proportion, none to nothing.
       const wide = ['Today', 'Tomorrow', 'Choose a date'];
       await _pump(t, pill(wide));
       final narrowed = [
@@ -409,7 +462,7 @@ void main() {
       ];
       expect(
         narrowed.fold(0.0, (a, b) => a + b),
-        moreOrLessEquals(348, epsilon: 0.1),
+        moreOrLessEquals(350, epsilon: 0.1),
       );
       expect(
         narrowed[1] / narrowed[0],
@@ -421,7 +474,7 @@ void main() {
       );
       expect(
         t.getSize(find.widgetWithText(FrostedPressable, 'Today')).height,
-        36,
+        FrostedBreakpoints.touchHitTarget,
       );
     },
   );
@@ -454,7 +507,11 @@ void main() {
       _node(t, 'Weekly summary'),
       isSemantics(isToggled: false, isEnabled: true, hasTapAction: true),
     );
-    expect(t.getSize(find.byType(FrostedSwitch).first), const Size(44, 26));
+    // A live switch stands in its touch target round its 44 × 26 track.
+    expect(
+      t.getSize(find.byType(FrostedSwitch).first),
+      const Size.square(FrostedBreakpoints.touchHitTarget),
+    );
     await t.tap(find.bySemanticsLabel('Weekly summary'));
     await t.pump();
     expect(seen, [true]);
@@ -693,7 +750,24 @@ void main() {
     );
     // Off, the later step is unspoken, as the source hides it.
     expect(find.bySemanticsLabel('Next month'), findsNothing);
-    expect(t.getSize(find.byType(FrostedMonthSwitch)), const Size(358, 38));
+    // The switch stands in its controls' touch targets, drawn as a 36 band.
+    expect(
+      t.getSize(find.byType(FrostedMonthSwitch)),
+      const Size(358, FrostedBreakpoints.touchHitTarget),
+    );
+    expect(
+      t
+          .getSize(
+            find
+                .descendant(
+                  of: find.byType(FrostedMonthSwitch),
+                  matching: find.byType(FrostedFace),
+                )
+                .first,
+          )
+          .height,
+      36,
+    );
     await t.tap(find.byKey(const ValueKey<String>('keep-month')));
     expect(anchor, isNotNull);
     // The months drop from the whole switch.
@@ -860,14 +934,16 @@ void main() {
     const across = (358 - 5 * 8) / 6;
     for (var i = 0; i < _icons.length; i++) {
       expect(wells[i].width, moreOrLessEquals(across), reason: '$i');
-      expect(wells[i].height, 44, reason: '$i');
+      // Each 44 well stands in its touch target (48 under a finger).
+      expect(wells[i].height, FrostedBreakpoints.touchHitTarget, reason: '$i');
       expect(
         wells[i].left,
         moreOrLessEquals(16 + (i % 6) * (across + 8)),
         reason: '$i',
       );
     }
-    expect(wells[6].top - wells[0].bottom, 8);
+    // The drawn wells stay 8 apart; their targets close up to 4.
+    expect(wells[6].top - wells[0].bottom, 4);
     Icon glyph(String label) => t.widget<Icon>(
       find.descendant(of: well(label), matching: find.byType(Icon)),
     );

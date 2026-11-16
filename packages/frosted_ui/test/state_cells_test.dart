@@ -424,7 +424,7 @@ final stateParts = <StatePart>[
   ),
   _p(
     'Navigation bar',
-    (on, _) => SizedBox(
+    (on, _) => const SizedBox(
       width: 360,
       child: FrostedNavigationBar(items: _places, onDestinationSelected: _drop),
     ),

@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show
         InputBorder,
@@ -81,6 +84,7 @@ class FrostedTextField extends StatefulWidget {
     this.value,
     this.onChanged,
     this.onSubmitted,
+    this.onEditingComplete,
     this.controller,
     this.focusNode,
     this.hint,
@@ -145,8 +149,16 @@ class FrostedTextField extends StatefulWidget {
   /// Called as the text changes.
   final ValueChanged<String>? onChanged;
 
-  /// Called with the text when the keyboard's done key is pressed.
+  /// Called with the text when the keyboard's done key is pressed; the field
+  /// then lets the focus go. A field that keeps the focus after Enter takes
+  /// it in [onEditingComplete] instead: never both.
   final ValueChanged<String>? onSubmitted;
+
+  /// Takes the keyboard's done key in place of [onSubmitted], for a field
+  /// that keeps the focus after Enter (an "add another" field): the focus
+  /// stays where it is. In a browser, typing after Enter goes nowhere in a
+  /// field that keeps the focus through [onSubmitted].
+  final VoidCallback? onEditingComplete;
 
   /// The text's controller, when the page keeps one.
   final TextEditingController? controller;
@@ -157,7 +169,7 @@ class FrostedTextField extends StatefulWidget {
   /// What the empty well says (What are you saving for?).
   final String? hint;
 
-  /// The help line under the well.
+  /// {@macro frosted.helper}
   final String? helper;
 
   /// A glyph or word before the text, drawn in the tertiary ink.
@@ -199,6 +211,92 @@ class FrostedTextField extends StatefulWidget {
 
   @override
   State<FrostedTextField> createState() => _FrostedTextFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(
+        EnumProperty<TextDirection>(
+          'textDirection',
+          textDirection,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('minLines', minLines, defaultValue: null))
+      ..add(IntProperty('maxLines', maxLines, defaultValue: 1))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        FlagProperty('obscureText', value: obscureText, ifTrue: 'obscureText'),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('maxLength', maxLength, defaultValue: null))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      )
+      ..add(
+        EnumProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _FrostedTextFieldState extends State<FrostedTextField>
@@ -257,74 +355,83 @@ class _FrostedTextFieldState extends State<FrostedTextField>
               horizontal: FrostedChromeMetrics.fieldInset,
               vertical: over,
             ),
-            child: Row(
-              spacing: FrostedSpacing.s8,
-              crossAxisAlignment: multi
-                  ? CrossAxisAlignment.start
-                  : CrossAxisAlignment.center,
-              children: [
-                if (widget.leading case final leading?)
-                  DefaultTextStyle.merge(
-                    style: style.c(t.colorScheme.textTertiary),
-                    child: IconTheme.merge(
-                      data: IconThemeData(
-                        size: FrostedIconSize.i18,
-                        color: t.colorScheme.textTertiary,
+            // The line answers taps from the well's top to its bottom.
+            child: FrostedFieldRoom(
+              child: Row(
+                spacing: FrostedSpacing.s8,
+                crossAxisAlignment: multi
+                    ? CrossAxisAlignment.start
+                    : CrossAxisAlignment.center,
+                children: [
+                  if (widget.leading case final leading?)
+                    DefaultTextStyle.merge(
+                      style: style.c(t.colorScheme.textTertiary),
+                      child: IconTheme.merge(
+                        data: IconThemeData(
+                          size: FrostedIconSize.i18,
+                          color: t.colorScheme.textTertiary,
+                        ),
+                        child: leading,
                       ),
-                      child: leading,
                     ),
-                  ),
-                Expanded(
-                  child: FrostedFieldTarget(
-                    label: widget.label,
-                    child: Material(
-                      type: MaterialType.transparency,
-                      child: frostedCapCentredEntry(
-                        style,
-                        one: !multi,
-                        TextField(
-                          contextMenuBuilder: FrostedTextContextMenu.editable,
-                          selectionControls: FrostedTextSelectionControls.of(
-                            Theme.of(context).platform,
-                          ),
-                          controller: fieldController,
-                          focusNode: fieldFocus,
-                          textDirection: widget.textDirection,
-                          autofocus: widget.autofocus,
-                          readOnly: readOnly,
-                          enabled: widget.enabled,
-                          obscureText: widget.obscureText,
-                          autofillHints: widget.autofillHints,
-                          // The length is held by a formatter: a maxLength
-                          // on the TextField adds a counter line under it.
-                          inputFormatters: [
-                            ...?widget.inputFormatters,
-                            if (maxLength != null)
-                              LengthLimitingTextInputFormatter(maxLength),
-                          ],
-                          minLines: widget.minLines,
-                          maxLines: widget.maxLines,
-                          onChanged: widget.onChanged,
-                          onSubmitted: widget.onSubmitted,
-                          keyboardType:
-                              widget.keyboardType ??
-                              (multi ? TextInputType.multiline : null),
-                          textInputAction:
-                              widget.textInputAction ??
-                              (multi ? TextInputAction.newline : null),
-                          style: style,
-                          cursorColor: t.colorScheme.textPrimary,
-                          decoration: _bareDecoration(
-                            hint: widget.hint,
-                            hintStyle: style.c(t.colorScheme.textTertiary),
+                  Expanded(
+                    child: FrostedFieldTarget(
+                      label: widget.label,
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: frostedCapCentredEntry(
+                          style,
+                          one: !multi,
+                          TextField(
+                            contextMenuBuilder: FrostedTextContextMenu.editable,
+                            selectionControls: FrostedTextSelectionControls.of(
+                              Theme.of(context).platform,
+                            ),
+                            controller: fieldController,
+                            focusNode: fieldFocus,
+                            textDirection: widget.textDirection,
+                            autofocus: widget.autofocus,
+                            readOnly: readOnly,
+                            enabled: widget.enabled,
+                            obscureText: widget.obscureText,
+                            autofillHints: widget.autofillHints,
+                            // The length is held by a formatter: a maxLength
+                            // on the TextField adds a counter line under it.
+                            inputFormatters: [
+                              ...?widget.inputFormatters,
+                              if (maxLength != null)
+                                LengthLimitingTextInputFormatter(maxLength),
+                            ],
+                            minLines: widget.minLines,
+                            maxLines: widget.maxLines,
+                            onChanged: widget.onChanged,
+                            onSubmitted: widget.onSubmitted,
+                            onEditingComplete: widget.onEditingComplete,
+                            keyboardType:
+                                widget.keyboardType ??
+                                (multi ? TextInputType.multiline : null),
+                            textInputAction:
+                                widget.textInputAction ??
+                                (multi ? TextInputAction.newline : null),
+                            style: style,
+                            cursorColor: t.colorScheme.textPrimary,
+                            decoration: _bareDecoration(
+                              hint: widget.hint,
+                              hintStyle: style.c(t.colorScheme.textTertiary),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-                ?widget.trailing,
-              ],
+                  // A trailing key keeps to the field's end keyline.
+                  if (widget.trailing case final trailing?)
+                    FrostedTargetSide(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: trailing,
+                    ),
+                ],
+              ),
             ),
           ),
         ),
@@ -419,6 +526,39 @@ class FrostedTextArea extends StatelessWidget {
     minLines: minLines,
     maxLines: maxLines,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(IntProperty('maxLength', maxLength, defaultValue: null))
+      ..add(IntProperty('minLines', minLines, defaultValue: 3))
+      ..add(IntProperty('maxLines', maxLines, defaultValue: 8));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -490,7 +630,7 @@ class FrostedAmountField extends StatefulWidget {
   /// What the empty well shows after the sign.
   final String hint;
 
-  /// The help line under the well.
+  /// {@macro frosted.helper}
   final String? helper;
 
   /// How large the field stands: the 64 well, or the form's 48
@@ -509,6 +649,55 @@ class FrostedAmountField extends StatefulWidget {
 
   @override
   State<FrostedAmountField> createState() => _FrostedAmountFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: '0'))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(
+        EnumProperty<FrostedAmountFieldSize>(
+          'size',
+          size,
+          defaultValue: FrostedAmountFieldSize.regular,
+        ),
+      )
+      ..add(FlagProperty('centered', value: centered, ifTrue: 'centered'))
+      ..add(
+        FlagProperty(
+          'showLabel',
+          value: showLabel,
+          ifFalse: 'showLabel: false',
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 class _FrostedAmountFieldState extends State<FrostedAmountField>
@@ -653,22 +842,25 @@ class _FrostedAmountFieldState extends State<FrostedAmountField>
         ),
         // heightFactor: given room to spare (a dialog, a tile with a
         // ceiling) the well keeps its own height rather than filling it.
-        child: Align(
-          alignment: AlignmentDirectional.centerStart,
-          heightFactor: 1,
-          // The sign before the figure, and the figure typed left to right,
-          // in any language ("$500.00", never "500.00 $").
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: Row(
-              mainAxisAlignment: widget.centered
-                  ? MainAxisAlignment.center
-                  : MainAxisAlignment.start,
-              crossAxisAlignment: small
-                  ? CrossAxisAlignment.center
-                  : CrossAxisAlignment.start,
-              spacing: FrostedChromeMetrics.amountWellGap,
-              children: [sign, input],
+        // The figure's line answers a tap anywhere in the well.
+        child: FrostedFieldRoom(
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            heightFactor: 1,
+            // The sign before the figure, and the figure typed left to right,
+            // in any language ("$500.00", never "500.00 $").
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Row(
+                mainAxisAlignment: widget.centered
+                    ? MainAxisAlignment.center
+                    : MainAxisAlignment.start,
+                crossAxisAlignment: small
+                    ? CrossAxisAlignment.center
+                    : CrossAxisAlignment.start,
+                spacing: FrostedChromeMetrics.amountWellGap,
+                children: [sign, input],
+              ),
             ),
           ),
         ),
@@ -722,13 +914,19 @@ class _SearchPill extends StatelessWidget {
     //   font: 400 16px/1 var(--font-t) }  .search .i { 18px }
     // .search--on { color: var(--ink); background: rgba(255,255,255,.9) }
     // .search-x { margin-right: -6px }
-    // At least the pill's height, growing with larger text; the line
-    // stands on its centre by the row's alignment.
+    // At least a finger's target (48, as a field's well is, on every
+    // platform: the pill is the box a tap reaches and a screen reader
+    // outlines), growing with larger text; the line stands on its centre by
+    // the row's alignment.
+    final height = math.max(
+      FrostedChromeMetrics.search,
+      FrostedBreakpoints.touchHitTarget,
+    );
     return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: FrostedChromeMetrics.search),
+      constraints: BoxConstraints(minHeight: height),
       child: FrostedFace(
         material: FrostedMaterial.well,
-        radius: BorderRadius.circular(FrostedChromeMetrics.search / 2),
+        radius: BorderRadius.circular(height / 2),
         color: typed || (focused && !t.isDark)
             ? t.glass.plane.withValues(alpha: _searchTypedOpacity)
             : null,
@@ -764,18 +962,21 @@ class _SearchPill extends StatelessWidget {
                       FrostedChromeMetrics.searchClearPull
                 : FrostedChromeMetrics.searchInset,
           ),
-          child: Row(
-            spacing: FrostedChromeMetrics.searchGap,
-            children: [
-              Icon(
-                FrostedGlyphs.search,
-                size: FrostedChromeMetrics.searchGlyph,
-                color: typed
-                    ? t.colorScheme.textPrimary
-                    : t.colorScheme.textTertiary,
-              ),
-              Expanded(child: child),
-            ],
+          // The line answers taps from the pill's top to its bottom.
+          child: FrostedFieldRoom(
+            child: Row(
+              spacing: FrostedChromeMetrics.searchGap,
+              children: [
+                Icon(
+                  FrostedGlyphs.search,
+                  size: FrostedChromeMetrics.searchGlyph,
+                  color: typed
+                      ? t.colorScheme.textPrimary
+                      : t.colorScheme.textTertiary,
+                ),
+                Expanded(child: child),
+              ],
+            ),
           ),
         ),
       ),
@@ -848,6 +1049,42 @@ class FrostedSearchField extends StatefulWidget {
 
   @override
   State<FrostedSearchField> createState() => _FrostedSearchFieldState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('hint', hint))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClear', onClear))
+      ..add(StringProperty('clearLabel', clearLabel, defaultValue: null))
+      ..add(DiagnosticsProperty<Key>('clearKey', clearKey, defaultValue: null));
+  }
 }
 
 class _FrostedSearchFieldState extends State<FrostedSearchField>
@@ -873,7 +1110,9 @@ class _FrostedSearchFieldState extends State<FrostedSearchField>
     final style = t.textTheme.bodyLarge.line(_searchLine);
     // .search-x { width: 28px; height: 28px; border-radius: 999px;
     //   background: var(--wash); color: var(--ink-2) }  .search-x .i { 14px }
-    final clear = FrostedHitSlop(
+    // The clear keeps to the pill's end keyline, its target growing inward.
+    final clear = FrostedTargetSide(
+      alignment: AlignmentDirectional.centerEnd,
       child: FrostedPressable(
         key: widget.clearKey,
         onPressed: widget.onClear ?? _clear,
@@ -905,40 +1144,49 @@ class _FrostedSearchFieldState extends State<FrostedSearchField>
       typed: typed,
       clearing: typed,
       focused: fieldFocus.hasFocus,
-      child: Row(
-        spacing: FrostedChromeMetrics.searchGap,
-        children: [
-          Expanded(
-            child: FrostedFieldTarget(
-              label: widget.label ?? widget.hint,
-              child: Material(
-                type: MaterialType.transparency,
-                child: frostedCapCentredEntry(
-                  style,
-                  TextField(
-                    contextMenuBuilder: FrostedTextContextMenu.editable,
-                    selectionControls: FrostedTextSelectionControls.of(
-                      Theme.of(context).platform,
-                    ),
-                    controller: fieldController,
-                    focusNode: fieldFocus,
-                    autofocus: widget.autofocus,
-                    onChanged: widget.onChanged,
-                    onSubmitted: widget.onSubmitted,
-                    textInputAction: TextInputAction.search,
-                    style: style.c(t.colorScheme.textPrimary),
-                    cursorColor: t.colorScheme.textPrimary,
-                    decoration: _bareDecoration(
-                      hint: widget.hint,
-                      hintStyle: style.c(t.colorScheme.textTertiary),
+      // As tall as the pill, so the line's room reaches its top and bottom.
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: math.max(
+            FrostedChromeMetrics.search,
+            FrostedBreakpoints.touchHitTarget,
+          ),
+        ),
+        child: Row(
+          spacing: FrostedChromeMetrics.searchGap,
+          children: [
+            Expanded(
+              child: FrostedFieldTarget(
+                label: widget.label ?? widget.hint,
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: frostedCapCentredEntry(
+                    style,
+                    TextField(
+                      contextMenuBuilder: FrostedTextContextMenu.editable,
+                      selectionControls: FrostedTextSelectionControls.of(
+                        Theme.of(context).platform,
+                      ),
+                      controller: fieldController,
+                      focusNode: fieldFocus,
+                      autofocus: widget.autofocus,
+                      onChanged: widget.onChanged,
+                      onSubmitted: widget.onSubmitted,
+                      textInputAction: TextInputAction.search,
+                      style: style.c(t.colorScheme.textPrimary),
+                      cursorColor: t.colorScheme.textPrimary,
+                      decoration: _bareDecoration(
+                        hint: widget.hint,
+                        hintStyle: style.c(t.colorScheme.textTertiary),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          if (typed) clear,
-        ],
+            if (typed) clear,
+          ],
+        ),
       ),
     );
   }
@@ -970,10 +1218,10 @@ class FrostedSearchLink extends StatelessWidget {
   /// Opens the search; null leaves the pill inert.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// A query the page already holds, shown in the ink.
@@ -1016,6 +1264,24 @@ class FrostedSearchLink extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('hint', hint))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -1065,10 +1331,10 @@ class FrostedPickerRow extends StatelessWidget {
   /// What a press does (opens the picker); null leaves it inert.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   @override
@@ -1140,6 +1406,24 @@ class FrostedPickerRow extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// The arrow between a transfer's From and To (`.swap`): a 32 white round
@@ -1165,10 +1449,10 @@ class FrostedSwapButton extends StatelessWidget {
   /// Swaps From and To; null draws the mark alone.
   final VoidCallback? onPressed;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// The button's spoken name, with [onPressed].
@@ -1219,15 +1503,13 @@ class FrostedSwapButton extends StatelessWidget {
     );
     disc = onPressed == null
         ? ExcludeSemantics(child: disc)
-        : FrostedHitSlop(
-            child: FrostedPressable(
-              focusNode: focusNode,
-              autofocus: autofocus,
-              onPressed: onPressed,
-              label: label,
-              radius: d / 2,
-              child: disc,
-            ),
+        : FrostedPressable(
+            focusNode: focusNode,
+            autofocus: autofocus,
+            onPressed: onPressed,
+            label: label,
+            radius: d / 2,
+            child: disc,
           );
     return SizedBox(
       height: height,
@@ -1237,6 +1519,22 @@ class FrostedSwapButton extends StatelessWidget {
         child: Center(child: disc),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -1269,7 +1567,15 @@ class FrostedNumberField extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     super.key,
-  });
+  }) : assert(step > 0, 'A number field steps by a positive amount.'),
+       assert(
+         max == null || max >= min,
+         'A number field\'s max is at least its min.',
+       ),
+       assert(
+         value >= min && (max == null || value <= max),
+         'A number field\'s value lies between its min and max.',
+       );
 
   /// The number.
   final int value;
@@ -1277,10 +1583,10 @@ class FrostedNumberField extends StatelessWidget {
   /// Called with the new number; null leaves it inert.
   final ValueChanged<int>? onChanged;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// What the rounds and the well are named by (the budget).
@@ -1366,6 +1672,27 @@ class FrostedNumberField extends StatelessWidget {
       ],
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('label', label))
+      ..add(IntProperty('step', step, defaultValue: 10))
+      ..add(IntProperty('min', min, defaultValue: 0))
+      ..add(IntProperty('max', max, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1435,10 +1762,10 @@ class FrostedSelect<T> extends StatefulWidget {
   /// Hands over the value chosen in the menu.
   final ValueChanged<T>? onChanged;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// The words over the well.
@@ -1460,6 +1787,30 @@ class FrostedSelect<T> extends StatefulWidget {
 
   @override
   State<FrostedSelect<T>> createState() => _FrostedSelectState<T>();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedSelectOption<T>>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('prompt', prompt, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
+      );
+  }
 }
 
 class _FrostedSelectState<T> extends State<FrostedSelect<T>> {
@@ -1487,72 +1838,93 @@ class _FrostedSelectState<T> extends State<FrostedSelect<T>> {
     final shown = chosen?.label ?? prompt ?? words.select;
     final wrong = error;
     final help = helper;
-    final field = Builder(
-      builder: (anchor) => FrostedPressable(
-        focusNode: widget.focusNode,
-        autofocus: widget.autofocus,
-        onPressed: change == null
-            ? null
-            : () async {
-                setState(() => _open = true);
-                final picked = await FrostedMenu.show<T>(
-                  anchor,
-                  fitAnchor: true,
-                  label: label ?? words.select,
-                  items: [
-                    for (final o in options)
-                      FrostedMenuItem<T>(
-                        o.value,
-                        o.label,
-                        checked: o.value == value,
-                        enabled: o.enabled,
-                        trailing: o.note == null
-                            ? null
-                            : Text(o.note!, style: t.textTheme.bodySmall),
-                      ),
-                  ],
-                );
-                if (mounted) setState(() => _open = false);
-                if (picked != null && picked != value) change(picked);
-              },
+    Future<void> open(BuildContext anchor, ValueChanged<T> change) async {
+      setState(() => _open = true);
+      final picked = await FrostedMenu.show<T>(
+        anchor,
+        fitAnchor: true,
         label: label ?? words.select,
-        value: chosen?.label,
-        radius: FrostedCorners.r12,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            minHeight: FrostedChromeMetrics.field,
-          ),
-          child: FrostedWell(
-            layers: FrostedStyleLayers(style, t.components.textField),
-            error: wrong != null,
-            enabled: change != null,
-            padding: const EdgeInsets.symmetric(
-              horizontal: FrostedChromeMetrics.fieldInset,
+        items: [
+          for (final o in options)
+            FrostedMenuItem<T>(
+              o.value,
+              o.label,
+              checked: o.value == value,
+              enabled: o.enabled,
+              trailing: o.note == null
+                  ? null
+                  : Text(o.note!, style: t.textTheme.bodySmall),
             ),
-            child: Row(
-              spacing: FrostedSpacing.s8,
-              children: [
-                Expanded(
-                  child: frostedCapCentred(
-                    Text(
-                      shown,
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                      style: chosen == null
-                          ? t.textTheme.bodyLarge
-                                .line(19.2)
-                                .c(t.colorScheme.textTertiary)
-                          : t.textTheme.bodyLarge.line(19.2),
+        ],
+      );
+      if (mounted) setState(() => _open = false);
+      if (picked != null && picked != value) change(picked);
+    }
+
+    final field = Builder(
+      // Enter and Space open the list through the press; an arrow opens it
+      // too, as a select's field does (FrostedMenu.show: by a key, the
+      // chosen item takes the focus).
+      builder: (anchor) => Focus(
+        canRequestFocus: false,
+        skipTraversal: true,
+        includeSemantics: false,
+        onKeyEvent: (node, event) {
+          if (change == null || _open || event is! KeyDownEvent) {
+            return KeyEventResult.ignored;
+          }
+          final key = event.logicalKey;
+          if (key != LogicalKeyboardKey.arrowDown &&
+              key != LogicalKeyboardKey.arrowUp) {
+            return KeyEventResult.ignored;
+          }
+          open(anchor, change);
+          return KeyEventResult.handled;
+        },
+        child: FrostedPressable(
+          focusNode: widget.focusNode,
+          autofocus: widget.autofocus,
+          onPressed: change == null ? null : () => open(anchor, change),
+          expanded: change == null ? null : _open,
+          label: label ?? words.select,
+          value: chosen?.label,
+          radius: FrostedCorners.r12,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: FrostedChromeMetrics.field,
+            ),
+            child: FrostedWell(
+              layers: FrostedStyleLayers(style, t.components.textField),
+              error: wrong != null,
+              enabled: change != null,
+              padding: const EdgeInsets.symmetric(
+                horizontal: FrostedChromeMetrics.fieldInset,
+              ),
+              child: Row(
+                spacing: FrostedSpacing.s8,
+                children: [
+                  Expanded(
+                    child: frostedCapCentred(
+                      Text(
+                        shown,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        style: chosen == null
+                            ? t.textTheme.bodyLarge
+                                  .line(19.2)
+                                  .c(t.colorScheme.textTertiary)
+                            : t.textTheme.bodyLarge.line(19.2),
+                      ),
                     ),
                   ),
-                ),
-                Icon(
-                  FrostedGlyphs.chevronDown,
-                  size: FrostedChromeMetrics.pickerGlyph,
-                  color: t.colorScheme.textTertiary,
-                ),
-              ],
+                  Icon(
+                    FrostedGlyphs.chevronDown,
+                    size: FrostedChromeMetrics.pickerGlyph,
+                    color: t.colorScheme.textTertiary,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

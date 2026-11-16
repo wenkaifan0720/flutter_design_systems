@@ -10,6 +10,7 @@ import '../kit.dart';
 
 Widget kitSliderDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Slider',
   sections: [
     kitSection(

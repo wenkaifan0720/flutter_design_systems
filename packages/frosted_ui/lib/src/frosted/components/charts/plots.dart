@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../internal/chart_parts.dart';
@@ -106,7 +106,7 @@ class FrostedLineChart extends StatelessWidget {
     super.key,
   });
 
-  /// What a screen reader calls the chart.
+  /// {@macro frosted.chartLabel}
   final String label;
 
   /// The lines, in legend order.
@@ -138,6 +138,27 @@ class FrostedLineChart extends StatelessWidget {
     curved: curved,
     height: height,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<FrostedChartSeries>('series', series))
+      ..add(
+        IterableProperty<String>(
+          'labels',
+          labels,
+          defaultValue: const <String>[],
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      )
+      ..add(IntProperty('current', current, defaultValue: null))
+      ..add(FlagProperty('curved', value: curved, ifFalse: 'curved: false'))
+      ..add(DoubleProperty('height', height, defaultValue: 200));
+  }
 }
 
 /// A [FrostedLineChart] with the light under each line filled to the floor:
@@ -161,7 +182,7 @@ class FrostedAreaChart extends StatelessWidget {
     super.key,
   });
 
-  /// What a screen reader calls the chart.
+  /// {@macro frosted.chartLabel}
   final String label;
 
   /// The areas, in legend order.
@@ -193,6 +214,27 @@ class FrostedAreaChart extends StatelessWidget {
     curved: curved,
     height: height,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<FrostedChartSeries>('series', series))
+      ..add(
+        IterableProperty<String>(
+          'labels',
+          labels,
+          defaultValue: const <String>[],
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      )
+      ..add(IntProperty('current', current, defaultValue: null))
+      ..add(FlagProperty('curved', value: curved, ifFalse: 'curved: false'))
+      ..add(DoubleProperty('height', height, defaultValue: 200));
+  }
 }
 
 /// Values side by side as bars from zero: one slot per point, each
@@ -217,7 +259,7 @@ class FrostedBarChart extends StatelessWidget {
     super.key,
   });
 
-  /// What a screen reader calls the chart.
+  /// {@macro frosted.chartLabel}
   final String label;
 
   /// The bars of each slot, in legend order.
@@ -246,6 +288,26 @@ class FrostedBarChart extends StatelessWidget {
     curved: false,
     height: height,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<FrostedChartSeries>('series', series))
+      ..add(
+        IterableProperty<String>(
+          'labels',
+          labels,
+          defaultValue: const <String>[],
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      )
+      ..add(IntProperty('current', current, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: 200));
+  }
 }
 
 class _XYChart extends StatelessWidget {
@@ -448,7 +510,9 @@ class _XYPainter extends CustomPainter {
     }
     for (final g in range.grid) {
       final tp = _text(format(g), note);
-      tp.paint(canvas, Offset(plot.right + _endRoom + 6, y(g) - tp.height / 2));
+      tp
+        ..paint(canvas, Offset(plot.right + _endRoom + 6, y(g) - tp.height / 2))
+        ..dispose();
     }
 
     // The foot's words, as many as fit.
@@ -466,6 +530,10 @@ class _XYPainter extends CustomPainter {
             : painters[i];
         final cx = (x(i) - tp.width / 2).clamp(0.0, size.width - tp.width);
         tp.paint(canvas, Offset(cx, plot.bottom + 6));
+        if (!identical(tp, painters[i])) tp.dispose();
+      }
+      for (final p in painters) {
+        p.dispose();
       }
     }
 
@@ -681,7 +749,7 @@ class FrostedPieChart extends StatelessWidget {
     super.key,
   });
 
-  /// What a screen reader calls the chart.
+  /// {@macro frosted.chartLabel}
   final String label;
 
   /// The shares, clockwise from the top.
@@ -759,6 +827,23 @@ class FrostedPieChart extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(IterableProperty<FrostedPieSlice>('slices', slices))
+      ..add(FlagProperty('donut', value: donut, ifFalse: 'donut: false'))
+      ..add(DoubleProperty('size', size, defaultValue: 180))
+      ..add(
+        FlagProperty(
+          'showLegend',
+          value: showLegend,
+          ifFalse: 'showLegend: false',
+        ),
+      );
   }
 }
 
@@ -897,6 +982,21 @@ class FrostedSparkline extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<double?>('values', values))
+      ..add(StringProperty('label', label))
+      ..add(ColorProperty('color', color, defaultValue: null))
+      ..add(FlagProperty('area', value: area, ifFalse: 'area: false'))
+      ..add(DoubleProperty('height', height, defaultValue: 32))
+      ..add(DoubleProperty('width', width, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<String Function(double value)>.has('format', format),
+      );
   }
 }
 

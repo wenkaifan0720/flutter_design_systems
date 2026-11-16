@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -103,8 +104,10 @@ class FrostedSwipeActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ClipRect(
     // The row slides within its own lane: what it leaves behind goes under
-    // the lane's edge, never out over the page's gutter (ui_core clips the
-    // actions only). The lane reaches as far as a tile's focus ring.
+    // the lane's start or end, never out over the page's gutter (ui_core
+    // clips the actions only). The lane reaches as far as a tile's focus
+    // ring along the swipe and is open above and below, as ui_core's strip
+    // is, so no shadow is cut there.
     clipper: const _Lane(
       FrostedChromeMetrics.focusRingGap + FrostedChromeMetrics.focusRingWidth,
     ),
@@ -138,6 +141,34 @@ class FrostedSwipeActions extends StatelessWidget {
       ),
     ),
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        IterableProperty<FrostedSwipeAction>(
+          'leading',
+          leading,
+          defaultValue: const [],
+        ),
+      )
+      ..add(
+        IterableProperty<FrostedSwipeAction>(
+          'trailing',
+          trailing,
+          defaultValue: const [],
+        ),
+      )
+      ..add(FlagProperty('fullSwipe', value: fullSwipe, ifTrue: 'fullSwipe'))
+      ..add(
+        FlagProperty(
+          'initiallyOpen',
+          value: initiallyOpen,
+          ifTrue: 'initiallyOpen',
+        ),
+      );
+  }
 }
 
 class _Lane extends CustomClipper<Rect> {
@@ -146,7 +177,12 @@ class _Lane extends CustomClipper<Rect> {
   final double reach;
 
   @override
-  Rect getClip(Size size) => (Offset.zero & size).inflate(reach);
+  Rect getClip(Size size) =>
+      Rect.fromLTRB(-reach, -size.height, size.width + reach, 2 * size.height);
+
+  // The clip itself, so a reader of the paint clip sees where it cuts.
+  @override
+  Rect getApproximateClipRect(Size size) => getClip(size);
 
   @override
   bool shouldReclip(_Lane old) => old.reach != reach;
@@ -192,7 +228,9 @@ class _Tile extends StatelessWidget {
         <Gradient>[t.colorScheme.buttonFill],
         null,
         t.colorScheme.buttonSheen,
-        t.shadows.button,
+        // Flat, as the other tones are: the tiles lie in the row's lane,
+        // under its edges, where a button's drop was cut flat at their foot.
+        const <BoxShadow>[],
       ),
       FrostedSwipeTone.destructive => (
         t.colorScheme.onDanger,

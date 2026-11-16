@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -149,13 +150,11 @@ class FrostedPressable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pressable = _pressable();
-    // A live control's node and reach span the platform's touch target
-    // round its face (48 under a finger, 44 under a pointer), as Material
-    // pads its targets; nothing round it moves.
-    return onPressed == null && onLongPress == null
-        ? pressable
-        : FrostedHitSlop(child: pressable);
+    // A control stands at the platform's touch target round its face (48
+    // under a finger, 44 under a pointer), live or not, as Material pads
+    // its targets: its node, its reach and its layout are that square, and
+    // going inert never moves what stands round it.
+    return _pressable();
   }
 
   Widget _pressable() => DesignPressable(
@@ -198,11 +197,66 @@ class FrostedPressable extends StatelessWidget {
         insets: ringInsets,
         child: face,
       );
-      // Under a FrostedHitSlop the control spans the target round its face.
-      return FrostedSlopFace(child: face);
+      // The control spans the target round its face.
+      return FrostedHitSlop(child: face);
     },
     child: child,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onLongPress', onLongPress))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(
+        EnumProperty<FrostedPressRole>(
+          'role',
+          role,
+          defaultValue: FrostedPressRole.button,
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('toggled', toggled, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('checked', checked, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'inMutuallyExclusiveGroup',
+          value: inMutuallyExclusiveGroup,
+          ifTrue: 'inMutuallyExclusiveGroup',
+        ),
+      )
+      ..add(DoubleProperty('radius', radius, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'ringInsets',
+          ringInsets,
+          defaultValue: EdgeInsets.zero,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'excludeChild',
+          value: excludeChild,
+          ifFalse: 'excludeChild: false',
+        ),
+      )
+      ..add(DoubleProperty('pressedOpacity', pressedOpacity, defaultValue: 1))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 }
 
 /// The keyboard's focus, the source's ring round its act on every part: round
@@ -322,5 +376,23 @@ class FrostedFocusRing extends StatelessWidget {
         ),
       ),
     ];
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('shown', value: shown, ifFalse: 'shown: false'))
+      ..add(DoubleProperty('radius', radius, defaultValue: 0))
+      ..add(
+        DiagnosticsProperty<OutlinedBorder>('shape', shape, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'insets',
+          insets,
+          defaultValue: EdgeInsets.zero,
+        ),
+      );
   }
 }

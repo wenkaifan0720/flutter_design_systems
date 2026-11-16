@@ -3,6 +3,8 @@
 /// preview frame and platform) and Frosted's own part of it. An app that draws its screens from
 /// `package:frosted_ui/frosted_ui.dart` does not need this library; the look's own chrome, gallery and tests import it
 /// beside that one.
+///
+/// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
 library;
 
 export 'package:ui_core/host.dart';

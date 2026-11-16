@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
+import 'package:frosted_ui/src/frosted/internal/face.dart';
 
 Future<void> _pump(
   WidgetTester t,
@@ -95,10 +96,17 @@ void main() {
         ),
       ],
     );
+    // The chip's glass, inside its touch target, grows round its words.
+    Finder glass() => find
+        .descendant(
+          of: find.byType(FrostedChip),
+          matching: find.byType(FrostedFace),
+        )
+        .first;
     await _pump(t, parts());
-    final rest = t.getSize(find.byType(FrostedChip)).height;
+    final rest = t.getSize(glass()).height;
     await _pump(t, parts(), scale: 2);
-    final chip = t.getRect(find.byType(FrostedChip));
+    final chip = t.getRect(glass());
     expect(chip.height, greaterThan(rest));
     final design = t.getRect(find.text('Design'));
     expect(design.top, greaterThanOrEqualTo(chip.top));
@@ -463,4 +471,100 @@ void main() {
       }
     },
   );
+
+  testWidgets('at 200% filter chips and segments grow round their words', (
+    t,
+  ) async {
+    Widget parts() => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FrostedFilterChipGroup<String>(
+          options: const [
+            FrostedFilterOption('all', 'All'),
+            FrostedFilterOption('in', 'Income'),
+          ],
+          value: 'all',
+          onChanged: (_) {},
+        ),
+        FrostedSegmentedButton<String>(
+          label: 'Theme',
+          segments: const [
+            FrostedButtonSegment('light', 'Light'),
+            FrostedButtonSegment('dark', 'Dark'),
+          ],
+          value: 'light',
+          onChanged: (_) {},
+        ),
+      ],
+    );
+    Rect face(String word) => t.getRect(
+      find
+          .ancestor(of: find.text(word), matching: find.byType(FrostedFace))
+          .first,
+    );
+    await _pump(t, parts());
+    final chip = face('Income').height;
+    final segment = face('Dark').height;
+    final word = t.getSize(find.text('Income')).height;
+    await _pump(t, parts(), scale: 2);
+    expect(t.getSize(find.text('Income')).height, greaterThan(word));
+    for (final (w, rest) in [('Income', chip), ('Dark', segment)]) {
+      final box = face(w);
+      final words = t.getRect(find.text(w));
+      expect(box.height, greaterThan(rest), reason: w);
+      expect(words.top, greaterThanOrEqualTo(box.top), reason: w);
+      expect(words.bottom, lessThanOrEqualTo(box.bottom), reason: w);
+    }
+  });
+
+  for (final direction in TextDirection.values) {
+    testWidgets(
+      "a form row's segments stand beside its words, under them at 200% "
+      '($direction)',
+      (t) async {
+        Widget row() => FrostedFormRow(
+          label: 'Backdrop',
+          trailing: FrostedSegmentedButton<String>(
+            label: 'Backdrop',
+            // Short enough to stand beside 'Backdrop' at 1x in the test
+            // font, whose every glyph is an em wide.
+            segments: const [
+              FrostedButtonSegment('dawn', 'Dawn'),
+              FrostedButtonSegment('dusk', 'Dusk'),
+              FrostedButtonSegment('sky', 'Sky'),
+            ],
+            value: 'dawn',
+            onChanged: (_) {},
+          ),
+        );
+        final rtl = direction == TextDirection.rtl;
+        final strip = find.byType(FrostedSegmentedButton<String>);
+        final label = find.text('Backdrop');
+        await _pump(t, row(), direction: direction);
+        var words = t.getRect(label);
+        var control = t.getRect(strip);
+        // The words stand cap-centred (ui_core's DesignCapCenter): the middle
+        // of their capitals, their box's, meets the control's, not the middle
+        // of their line.
+        final caps = find.ancestor(
+          of: label,
+          matching: find.byWidgetPredicate(
+            (w) => w.runtimeType.toString() == 'DesignCapCenter',
+          ),
+        );
+        expect(
+          (control.center.dy - t.getRect(caps.first).center.dy).abs(),
+          lessThan(1),
+        );
+        expect(rtl ? control.left : 390 - control.right, closeTo(16, .5));
+        await _pump(t, row(), scale: 2, direction: direction);
+        words = t.getRect(label);
+        control = t.getRect(strip);
+        expect(control.top, greaterThanOrEqualTo(words.bottom));
+        // At the row's start, whole within it.
+        expect(rtl ? 390 - control.right : control.left, closeTo(16, .5));
+        expect(control.width, lessThanOrEqualTo(358));
+      },
+    );
+  }
 }

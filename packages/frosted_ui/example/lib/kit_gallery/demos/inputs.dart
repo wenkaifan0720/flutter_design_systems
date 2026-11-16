@@ -32,6 +32,7 @@ class _LiveState<T> extends State<_Live<T>> {
 
 Widget kitInputsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Inputs',
   sections: [
     kitSection(

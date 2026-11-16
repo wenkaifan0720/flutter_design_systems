@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show listEquals;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart' show SchedulerBinding;
 import 'package:flutter/widgets.dart';
 
@@ -45,6 +45,22 @@ class FrostedLinearProgressIndicator extends StatefulWidget {
   @override
   State<FrostedLinearProgressIndicator> createState() =>
       _FrostedLinearProgressIndicatorState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('valueLabel', valueLabel, defaultValue: null))
+      ..add(
+        DoubleProperty(
+          'minHeight',
+          minHeight,
+          defaultValue: FrostedChromeMetrics.sliderTrack,
+        ),
+      );
+  }
 }
 
 class _FrostedLinearProgressIndicatorState
@@ -199,6 +215,29 @@ class FrostedCircularProgressIndicator extends StatefulWidget {
   @override
   State<FrostedCircularProgressIndicator> createState() =>
       _FrostedCircularProgressIndicatorState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('valueLabel', valueLabel, defaultValue: null))
+      ..add(
+        DoubleProperty(
+          'size',
+          size,
+          defaultValue: FrostedChromeMetrics.loadingRing,
+        ),
+      )
+      ..add(
+        DoubleProperty(
+          'strokeWidth',
+          strokeWidth,
+          defaultValue: FrostedChromeMetrics.loadingStroke,
+        ),
+      );
+  }
 }
 
 class _FrostedCircularProgressIndicatorState
@@ -366,7 +405,8 @@ class FrostedSkeleton extends StatelessWidget {
   const FrostedSkeleton.text({this.lines = 3, super.key})
     : width = null,
       height = 12,
-      shape = null;
+      shape = null,
+      assert(lines > 0, 'A text skeleton has at least one line.');
 
   /// An avatar's round, [size] across.
   const FrostedSkeleton.circle({double size = 40, super.key})
@@ -420,6 +460,16 @@ class FrostedSkeleton extends StatelessWidget {
       );
     }
     return ExcludeSemantics(child: bone(width, shape ?? FrostedCorners.small));
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('width', width))
+      ..add(DoubleProperty('height', height))
+      ..add(DiagnosticsProperty<OutlinedBorder>('shape', shape))
+      ..add(IntProperty('lines', lines));
   }
 }
 

@@ -11,15 +11,16 @@ import 'package:flutter/widgets.dart';
 /// Material's `MaterialLocalizations` are. The words every design system
 /// shares (Close, Back, Cancel, Today) are ui_core's `DesignLocalizations`.
 /// English ships ([FrostedLocalizationsEn]); another language is a subclass
-/// and a delegate that loads it, beside a `DefaultDesignLocalizations`
-/// subclass for the shared words. With no delegate installed the parts speak
-/// English.
+/// and a delegate that loads it. ui_core speaks the shared words in 30
+/// languages (`DesignLocalizations.delegate`); an app words them its own way
+/// with a `DefaultDesignLocalizations` subclass. With no delegate installed
+/// the parts speak English.
 ///
 /// ```dart
 /// MaterialApp(
 ///   localizationsDelegates: const [
 ///     FrostedLocalizations.delegate,
-///     DefaultDesignLocalizations.delegate,
+///     DesignLocalizations.delegate,
 ///   ],
 ///   home: home,
 /// )
@@ -143,28 +144,64 @@ abstract class FrostedLocalizations {
   /// A move between accounts.
   String get move;
 
-  /// The menu over a selection: cut.
+  /// The menu over a selection: cut. No longer read: the text menu says
+  /// Material's word, in the app's language.
+  @Deprecated(
+    'Use MaterialLocalizations.of(context).cutButtonLabel instead. '
+    'This feature was deprecated after v0.2.0.',
+  )
   String get cut;
 
-  /// Copy.
+  /// Copy. No longer read: the text menu says Material's word, in the
+  /// app's language.
+  @Deprecated(
+    'Use MaterialLocalizations.of(context).copyButtonLabel instead. '
+    'This feature was deprecated after v0.2.0.',
+  )
   String get copy;
 
-  /// Paste.
+  /// Paste. No longer read: the text menu says Material's word, in the
+  /// app's language.
+  @Deprecated(
+    'Use MaterialLocalizations.of(context).pasteButtonLabel instead. '
+    'This feature was deprecated after v0.2.0.',
+  )
   String get paste;
 
-  /// Select all.
+  /// Select all: a table's checkbox over every row. (The text menu says
+  /// Material's word, in the app's language.)
   String get selectAll;
 
-  /// Look up.
+  /// Look up. No longer read: the text menu says Material's word, in the
+  /// app's language.
+  @Deprecated(
+    'Use MaterialLocalizations.of(context).lookUpButtonLabel instead. '
+    'This feature was deprecated after v0.2.0.',
+  )
   String get lookUp;
 
-  /// Search the web.
+  /// Search the web. No longer read: the text menu says Material's word, in the
+  /// app's language.
+  @Deprecated(
+    'Use MaterialLocalizations.of(context).searchWebButtonLabel instead. '
+    'This feature was deprecated after v0.2.0.',
+  )
   String get searchWeb;
 
-  /// Share.
+  /// Share. No longer read: the text menu says Material's word, in the
+  /// app's language.
+  @Deprecated(
+    'Use MaterialLocalizations.of(context).shareButtonLabel instead. '
+    'This feature was deprecated after v0.2.0.',
+  )
   String get share;
 
-  /// Scan text with the camera.
+  /// Scan text with the camera. No longer read: the text menu says Material's word, in the
+  /// app's language.
+  @Deprecated(
+    'Use MaterialLocalizations.of(context).scanTextButtonLabel instead. '
+    'This feature was deprecated after v0.2.0.',
+  )
   String get scanText;
 
   /// A payment by card.
@@ -305,6 +342,9 @@ abstract class FrostedLocalizations {
 
   /// A list's pull, once armed.
   String get releaseToRefresh;
+
+  /// A transaction not yet settled, under its amount.
+  String get pending;
 }
 
 /// Frosted's English words.
@@ -603,6 +643,9 @@ class FrostedLocalizationsEn extends FrostedLocalizations {
 
   @override
   String get releaseToRefresh => 'Release to refresh';
+
+  @override
+  String get pending => 'Pending';
 
   @override
   String time(int hour, int minute) {

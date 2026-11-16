@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show
         InputBorder,
@@ -76,10 +79,10 @@ class FrostedComposer extends StatefulWidget {
   /// What send does with the written text.
   final ValueChanged<String>? onSend;
 
-  /// The node that holds this part's keyboard focus; null keeps one of its own.
+  /// {@macro frosted.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether this part takes keyboard focus when first shown.
+  /// {@macro frosted.autofocus}
   final bool autofocus;
 
   /// What the attach button does; null hides it.
@@ -105,6 +108,44 @@ class FrostedComposer extends StatefulWidget {
 
   @override
   State<FrostedComposer> createState() => _FrostedComposerState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<String>>.has('onSend', onSend))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onAttach', onAttach))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onVoice', onVoice))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onStop', onStop))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(
+        EnumProperty<FrostedComposerVariant>(
+          'variant',
+          variant,
+          defaultValue: FrostedComposerVariant.messages,
+        ),
+      );
+  }
 }
 
 class _FrostedComposerState extends State<FrostedComposer>
@@ -145,6 +186,15 @@ class _FrostedComposerState extends State<FrostedComposer>
     final over = ((FrostedChromeMetrics.roundButton - line) / 2).clamp(
       0.0,
       double.infinity,
+    );
+    // The seat and the attach stand in a finger's target (48) round their
+    // 40 faces, on every platform: the target takes the 4 the well kept
+    // round them, so the well stays 48 tall and each face 4 off its rim,
+    // and the field takes that 4 back where it meets the rim.
+    final reach = math.min(
+      (FrostedBreakpoints.touchHitTarget - FrostedChromeMetrics.roundButton) /
+          2,
+      FrostedChromeMetrics.composerInset,
     );
     // The hint is drawn here, not by the field, so the field is named once
     // (by the label) and a screen reader never reads the hint a second time.
@@ -219,16 +269,19 @@ class _FrostedComposerState extends State<FrostedComposer>
         ? Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: FrostedSpacing.s8,
+            spacing: FrostedSpacing.s8 - reach,
             children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  FrostedSpacing.s12,
-                  FrostedSpacing.s8,
-                  FrostedSpacing.s12,
-                  0,
+              // The line answers a tap anywhere over it to the well's rim.
+              FrostedFieldRoom(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    FrostedSpacing.s12 + reach,
+                    FrostedSpacing.s8 + reach,
+                    FrostedSpacing.s12 + reach,
+                    0,
+                  ),
+                  child: field,
                 ),
-                child: field,
               ),
               Row(
                 spacing: FrostedSpacing.s8,
@@ -247,18 +300,25 @@ class _FrostedComposerState extends State<FrostedComposer>
             children: [
               ?attach,
               Expanded(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minHeight: FrostedChromeMetrics.roundButton,
-                  ),
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        vertical: over,
-                        horizontal: FrostedSpacing.s8,
+                // The line answers taps from the seat's top to its bottom.
+                child: FrostedFieldRoom(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: FrostedChromeMetrics.roundButton + 2 * reach,
+                    ),
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.fromSTEB(
+                          attach == null
+                              ? FrostedSpacing.s8 + reach
+                              : FrostedSpacing.s8 - reach,
+                          over + reach,
+                          FrostedSpacing.s8 - reach,
+                          over + reach,
+                        ),
+                        child: field,
                       ),
-                      child: field,
                     ),
                   ),
                 ),
@@ -274,8 +334,8 @@ class _FrostedComposerState extends State<FrostedComposer>
       // Focused, the edge takes the accent, as a field's well does.
       edge: fieldFocus.hasFocus ? t.colorScheme.accent : t.glass.edge,
       sheen: t.glass.rim,
-      padding: const EdgeInsets.all(FrostedChromeMetrics.composerInset),
-      child: inside,
+      padding: EdgeInsets.all(FrostedChromeMetrics.composerInset - reach),
+      child: FrostedTouchTargets(child: inside),
     );
     return FrostedDim(off: !live, child: box);
   }
@@ -312,13 +372,11 @@ class _Seat extends StatelessWidget {
       ),
     );
     orb = FrostedDim(off: onTap == null, child: orb);
-    return FrostedHitSlop(
-      child: FrostedPressable(
-        onPressed: onTap,
-        label: label,
-        radius: d / 2,
-        child: orb,
-      ),
+    return FrostedPressable(
+      onPressed: onTap,
+      label: label,
+      radius: d / 2,
+      child: orb,
     );
   }
 }

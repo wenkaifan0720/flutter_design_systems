@@ -184,7 +184,7 @@ void main() {
         for (final brightness in Brightness.values) {
           await _pump(
             t,
-            Builder(builder: _everything),
+            const Builder(builder: _everything),
             preset: preset,
             brightness: brightness,
           );
@@ -222,7 +222,7 @@ void main() {
       // Narrow and large: nothing overflows.
       await _pump(
         t,
-        Builder(builder: _everything),
+        const Builder(builder: _everything),
         size: const Size(320, 900),
         textScale: 1.3,
       );
@@ -1134,9 +1134,10 @@ void main() {
         _node(t, 'Stretch'),
         isSemantics(isChecked: false, hasTapAction: true),
       );
+      // A live check stands in its touch target round its 24 disc.
       expect(
         t.getSize(find.byType(FrostedCheckbox).first),
-        const Size.square(24),
+        const Size.square(FrostedBreakpoints.touchHitTarget),
       );
       await t.tap(find.byType(FrostedCheckbox).first);
       await t.pump();

@@ -157,6 +157,32 @@ abstract final class FrostedGlyphs {
     matchTextDirection: true,
   );
 
+  /// Sends (a paper plane, flying toward the line's end); mirrors in a
+  /// right-to-left language.
+  static const IconData send = IconData(
+    0xE152,
+    fontFamily: _family,
+    fontPackage: _package,
+    matchTextDirection: true,
+  );
+
+  /// Undoes (an arrow curling back toward the line's start); mirrors in a
+  /// right-to-left language.
+  static const IconData undo = IconData(
+    0xE2A1,
+    fontFamily: _family,
+    fontPackage: _package,
+    matchTextDirection: true,
+  );
+
+  /// Redoes; mirrors in a right-to-left language.
+  static const IconData redo = IconData(
+    0xE2A0,
+    fontFamily: _family,
+    fontPackage: _package,
+    matchTextDirection: true,
+  );
+
   /// Two arrows: a move between accounts.
   static const IconData arrowRightLeft = LucideIcons.arrowRightLeft;
 

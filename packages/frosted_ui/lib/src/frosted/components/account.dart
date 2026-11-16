@@ -1,6 +1,7 @@
 // The demo account shell: who the app belongs to, as its chrome shows them
 // (the bell and the avatar at a top bar's end, the sidebar's foot). App
 // chrome, exported from the host library, not the main one.
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
@@ -122,6 +123,12 @@ class FrostedAccountScope extends InheritedWidget {
   @override
   bool updateShouldNotify(FrostedAccountScope oldWidget) =>
       account != oldWidget.account;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<FrostedAccount>('account', account));
+  }
 }
 
 /// The bell, then the avatar, of [account], 8 apart: what a top bar wears
@@ -166,6 +173,19 @@ class FrostedAccountMarks extends StatelessWidget {
       if (avatar) _avatarOf(context, account, key: avatarKey),
     ],
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<FrostedAccount>('account', account))
+      ..add(FlagProperty('bell', value: bell, ifFalse: 'bell: false'))
+      ..add(FlagProperty('avatar', value: avatar, ifFalse: 'avatar: false'))
+      ..add(DiagnosticsProperty<Key>('bellKey', bellKey, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Key>('avatarKey', avatarKey, defaultValue: null),
+      );
+  }
 }
 
 /// The bell that opens [account]'s notifications, carrying [key].
@@ -213,4 +233,12 @@ class FrostedBell extends StatelessWidget {
     badge: unread > 0,
     onPressed: onPressed,
   );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('unread', unread))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed));
+  }
 }

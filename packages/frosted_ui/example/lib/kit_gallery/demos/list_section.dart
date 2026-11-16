@@ -11,6 +11,7 @@ import '../kit.dart';
 
 Widget kitListSectionDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'List section',
   sections: [
     kitSection(

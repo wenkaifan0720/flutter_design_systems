@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show ValueListenable;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
@@ -33,7 +33,10 @@ class FrostedNavigationRail extends StatelessWidget {
     this.trailing,
     this.label,
     super.key,
-  });
+  }) : assert(
+         selectedIndex == null || selectedIndex >= 0,
+         'A rail\'s selected index is not negative.',
+       );
 
   /// The destinations, in the tab bar's order.
   final List<FrostedNavItem> items;
@@ -110,6 +113,21 @@ class FrostedNavigationRail extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedNavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -259,15 +277,13 @@ class FrostedBreadcrumb extends StatelessWidget {
                 excludeSemantics: true,
                 child: word,
               )
-            : FrostedHitSlop(
-                child: FrostedPressable(
-                  key: item.key,
-                  onPressed: item.onPressed,
-                  label: item.label,
-                  role: FrostedPressRole.link,
-                  radius: FrostedSpacing.s4,
-                  child: word,
-                ),
+            : FrostedPressable(
+                key: item.key,
+                onPressed: item.onPressed,
+                label: item.label,
+                role: FrostedPressRole.link,
+                radius: FrostedSpacing.s4,
+                child: word,
               ),
       );
     }
@@ -283,14 +299,24 @@ class FrostedBreadcrumb extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedBreadcrumbItem>('items', items))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// Pages of a long list, one at a time: the previous and next glyph
 /// buttons either side of the page numbers, the selected page on the
 /// brighter glass in the ink, the rest in the quiet ink; past seven pages
-/// the middle folds into an ellipsis round the selected one. Each number
-/// is a button that says its page and whether it is selected; the arrows
-/// say previous and next and go inert at the ends.
+/// the middle folds into an ellipsis round the selected one (past five
+/// where seven touch targets do not fit the width, as on a phone). Each
+/// number is a button that says its page and whether it is selected; the
+/// arrows say previous and next and go inert at the ends. Each stands in
+/// its touch target, the targets edge to edge.
 ///
 /// ```dart
 /// FrostedPagination(pageCount: 12, selectedIndex: page, onChanged: (p) => setState(() => page = p))
@@ -303,7 +329,11 @@ class FrostedPagination extends StatelessWidget {
     this.onChanged,
     this.label,
     super.key,
-  }) : assert(pageCount > 0);
+  }) : assert(pageCount > 0),
+       assert(
+         selectedIndex >= 0 && selectedIndex < pageCount,
+         'The page shown is one of the pages.',
+       );
 
   /// How many pages.
   final int pageCount;
@@ -317,34 +347,60 @@ class FrostedPagination extends StatelessWidget {
   /// What a screen reader calls it.
   final String? label;
 
-  /// The pages shown: every one up to seven, else the ends and the
-  /// selected page's neighbours, null for a fold.
-  List<int?> get _shown {
-    if (pageCount <= 7) return [for (var i = 0; i < pageCount; i++) i];
+  /// The pages shown in [width] at [target] apiece: every one when up to
+  /// seven fit (four or fewer always show), else the ends and the selected
+  /// page's neighbours in seven places or, where seven do not fit, five,
+  /// null for a fold.
+  List<int?> _shown(double width, double target) {
+    bool fits(double w) => !width.isFinite || w <= width;
+    if (pageCount <= 4 || (pageCount <= 7 && fits((pageCount + 2) * target))) {
+      return [for (var i = 0; i < pageCount; i++) i];
+    }
+    // The widest a fold of [slots] stands: slots - 1 pages, a fold and
+    // both arrows.
+    final slots = fits(8 * target + _fold) ? 7 : 5;
     final s = selectedIndex;
     final last = pageCount - 1;
-    if (s < 4) return [0, 1, 2, 3, 4, null, last];
-    if (s > last - 4) {
-      return [0, null, last - 4, last - 3, last - 2, last - 1, last];
+    final run = slots - 2;
+    if (s < run - 1) return [for (var i = 0; i < run; i++) i, null, last];
+    if (s > last - run + 1) {
+      return [0, null, for (var i = last - run + 1; i <= last; i++) i];
     }
-    return [0, null, s - 1, s, s + 1, null, last];
+    final k = (slots - 5) ~/ 2;
+    return [0, null, for (var i = s - k; i <= s + k; i++) i, null, last];
   }
+
+  // A fold's width.
+  static const double _fold = 27;
 
   @override
-  Widget build(BuildContext context) {
-    final pages = _pages(context);
-    return FrostedDim(off: onChanged == null, child: pages);
-  }
+  Widget build(BuildContext context) => FrostedDim(
+    off: onChanged == null,
+    child: LayoutBuilder(
+      builder: (context, box) => _pages(context, box.maxWidth),
+    ),
+  );
 
-  Widget _pages(BuildContext context) {
+  Widget _pages(BuildContext context, double width) {
     final t = context.frostedTheme;
     final words = FrostedLocalizations.of(context);
     final target = FrostedBreakpoints.hitTargetOf(context);
     const d = 36.0;
     void go(int i) => onChanged?.call(i.clamp(0, pageCount - 1));
-    Widget arrow(IconData icon, String name, bool live, int to) =>
-        FrostedHitSlop(
-          target: target,
+    // An arrow keeps its target's room when it goes inert at an end, its
+    // face on [side], so the pages never shift as the selection moves.
+    Widget arrow(
+      IconData icon,
+      String name,
+      bool live,
+      int to,
+      AlignmentDirectional side,
+    ) => SizedBox.square(
+      dimension: target,
+      child: Align(
+        alignment: side,
+        child: FrostedTargetSide(
+          alignment: side,
           child: FrostedPressable(
             onPressed: live && onChanged != null ? () => go(to) : null,
             label: name,
@@ -357,28 +413,33 @@ class FrostedPagination extends StatelessWidget {
               ),
             ),
           ),
-        );
+        ),
+      ),
+    );
     return Semantics(
       container: true,
       label: label,
       explicitChildNodes: true,
+      // The targets stand edge to edge: a tap between two faces goes to
+      // the nearer.
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        spacing: FrostedSpacing.s4,
         children: [
           // A pair of chevrons: [FrostedGlyphs.back] is an arrow, and
           // stood an arrow at one end against a chevron at the other.
+          // The arrows keep to the row's ends, their targets growing inward.
           arrow(
             FrostedGlyphs.chevronLeft,
             words.previous,
             selectedIndex > 0,
             selectedIndex - 1,
+            AlignmentDirectional.centerStart,
           ),
-          for (final page in _shown)
+          for (final page in _shown(width, target))
             if (page == null)
               ExcludeSemantics(
                 child: SizedBox(
-                  width: d * .75,
+                  width: _fold,
                   child: Text(
                     '…',
                     textAlign: TextAlign.center,
@@ -389,41 +450,35 @@ class FrostedPagination extends StatelessWidget {
                 ),
               )
             else
-              FrostedHitSlop(
-                target: target,
-                child: FrostedPressable(
-                  onPressed: onChanged == null ? null : () => go(page),
-                  label: words.page(page + 1, pageCount),
-                  selected: page == selectedIndex,
-                  radius: d / 2,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: d,
-                      minHeight: d,
+              FrostedPressable(
+                onPressed: onChanged == null ? null : () => go(page),
+                label: words.page(page + 1, pageCount),
+                selected: page == selectedIndex,
+                radius: d / 2,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: d, minHeight: d),
+                  child: FrostedFace(
+                    material: FrostedMaterial.paint,
+                    radius: BorderRadius.circular(d / 2),
+                    color: page == selectedIndex ? t.glass.fillHigh : null,
+                    edge: page == selectedIndex ? t.glass.edge : null,
+                    sheen: page == selectedIndex ? t.glass.rim : null,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: FrostedSpacing.s8,
                     ),
-                    child: FrostedFace(
-                      material: FrostedMaterial.paint,
-                      radius: BorderRadius.circular(d / 2),
-                      color: page == selectedIndex ? t.glass.fillHigh : null,
-                      edge: page == selectedIndex ? t.glass.edge : null,
-                      sheen: page == selectedIndex ? t.glass.rim : null,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: FrostedSpacing.s8,
-                      ),
-                      // As tall as the 36 face in a box of any height.
-                      child: Center(
-                        widthFactor: 1,
-                        heightFactor: 1,
-                        child: Text(
-                          '${page + 1}',
-                          style: page == selectedIndex
-                              ? t.textTheme.labelLarge.tabular.semibold.c(
-                                  t.colorScheme.textPrimary,
-                                )
-                              : t.textTheme.labelLarge.tabular.c(
-                                  t.colorScheme.textSecondary,
-                                ),
-                        ),
+                    // As tall as the 36 face in a box of any height.
+                    child: Center(
+                      widthFactor: 1,
+                      heightFactor: 1,
+                      child: Text(
+                        '${page + 1}',
+                        style: page == selectedIndex
+                            ? t.textTheme.labelLarge.tabular.semibold.c(
+                                t.colorScheme.textPrimary,
+                              )
+                            : t.textTheme.labelLarge.tabular.c(
+                                t.colorScheme.textSecondary,
+                              ),
                       ),
                     ),
                   ),
@@ -434,10 +489,21 @@ class FrostedPagination extends StatelessWidget {
             words.next,
             selectedIndex < pageCount - 1,
             selectedIndex + 1,
+            AlignmentDirectional.centerEnd,
           ),
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('pageCount', pageCount))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null));
   }
 }
 
@@ -533,6 +599,16 @@ class FrostedStepProgress extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('currentStep', currentStep))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('phase', phase, defaultValue: null));
+  }
 }
 
 /// Which of a few pages is shown: [count] dots, the selected one a short
@@ -553,7 +629,11 @@ class FrostedPageDots extends StatelessWidget {
     this.onChanged,
     this.position,
     super.key,
-  });
+  }) : assert(count > 0, 'Page dots stand for at least one page.'),
+       assert(
+         selectedIndex >= 0 && selectedIndex < count,
+         'The page shown is one of the pages.',
+       );
 
   /// How many pages.
   final int count;
@@ -658,5 +738,22 @@ class FrostedPageDots extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('count', count))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<ValueListenable<double>>(
+          'position',
+          position,
+          defaultValue: null,
+        ),
+      );
   }
 }

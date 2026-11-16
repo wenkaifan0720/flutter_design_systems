@@ -50,6 +50,13 @@ class _FrostedSlidingPillState extends State<FrostedSlidingPill> {
   /// once, not slid to.
   bool _placed = false;
 
+  /// Whether a cell is chosen: with none the pill fades out where it last
+  /// stood, and fades in where it next stands, rather than popping.
+  bool _on = false;
+
+  /// Whether the pill has shown yet: its first showing is at once.
+  bool _shown = false;
+
   @override
   Widget build(BuildContext context) {
     while (_cells.length < widget.count) {
@@ -57,7 +64,8 @@ class _FrostedSlidingPillState extends State<FrostedSlidingPill> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) => _measure());
     final at = _at;
-    final moves = FrostedMotion.of(context).moves && _placed;
+    final motion = FrostedMotion.of(context);
+    final moves = motion.moves && _placed;
     return Stack(
       children: [
         if (at != null)
@@ -67,7 +75,12 @@ class _FrostedSlidingPillState extends State<FrostedSlidingPill> {
                 ? FrostedChromeMetrics.selectionSlide
                 : Duration.zero,
             curve: Curves.easeOutCubic,
-            child: IgnorePointer(child: widget.pill),
+            child: AnimatedOpacity(
+              opacity: _on ? 1 : 0,
+              duration: _shown ? motion.base : Duration.zero,
+              curve: motion.curve,
+              child: IgnorePointer(child: widget.pill),
+            ),
           ),
         widget.builder(context, _cells.sublist(0, widget.count)),
       ],
@@ -86,10 +99,24 @@ class _FrostedSlidingPillState extends State<FrostedSlidingPill> {
       final o = cell.localToGlobal(Offset.zero, ancestor: me);
       next = widget.inset.deflateRect(o & cell.size);
     }
-    if (next != _at) {
+    if (next == null) {
+      // None chosen: the pill fades where it stood.
+      if (_on) {
+        setState(() {
+          _on = false;
+          _shown = true;
+        });
+      }
+      return;
+    }
+    if (next != _at || !_on) {
       setState(() {
-        _placed = _at != null;
+        // Slid from where it stood while shown; placed at once where it
+        // fades back in.
+        _placed = _at != null && _on;
+        _shown = _shown || _at != null;
         _at = next;
+        _on = true;
       });
     }
   }

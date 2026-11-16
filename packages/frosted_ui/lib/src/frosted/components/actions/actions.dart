@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
@@ -131,6 +132,14 @@ class FrostedButtonGroup extends StatelessWidget {
       ),
     );
   }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<FrostedButtonGroupItem>('items', items))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 }
 
 /// A key of the keyboard, as a shortcut names it (⌘, K, Esc): a keycap of
@@ -174,10 +183,10 @@ class FrostedKbd extends StatelessWidget {
   Widget _ltrBuild(BuildContext context) {
     final t = context.frostedTheme;
     Widget cap(String key) {
-      final r = FrostedCorners.r10;
+      const r = FrostedCorners.r10;
       return Container(
         constraints: const BoxConstraints(minWidth: 22, minHeight: 22),
-        padding: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(horizontal: FrostedSpacing.s6),
         decoration: BoxDecoration(
           color: t.glass.fillHigh,
           borderRadius: BorderRadius.circular(r.clamp(4, 8)),
@@ -225,5 +234,15 @@ class FrostedKbd extends StatelessWidget {
               ],
             ),
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('keys', keys))
+      ..add(
+        StringProperty('semanticsLabel', semanticsLabel, defaultValue: null),
+      );
   }
 }

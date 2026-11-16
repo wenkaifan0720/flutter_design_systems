@@ -35,6 +35,7 @@ export 'frosted/components/menu/menu.dart';
 export 'frosted/components/meters/meters.dart';
 export 'frosted/components/money/money.dart';
 export 'frosted/components/move/move.dart';
+export 'frosted/components/page_motion.dart';
 export 'frosted/components/nav_bar.dart';
 export 'frosted/components/pickers/pickers.dart';
 export 'frosted/components/popover/popover.dart';

@@ -10,6 +10,7 @@ import '../kit.dart';
 
 Widget kitComposerDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
+  measured: true,
   title: 'Composer',
   sections: [
     kitSection('Messages', children: [kitSpecimenComposerMessages()]),
