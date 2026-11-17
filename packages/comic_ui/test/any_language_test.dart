@@ -8,11 +8,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/comic_host.dart';
 
+import 'tiers.dart';
+
 void main() {
-  for (final (locale, direction) in const [
+  for (final (l, (locale, direction)) in const [
     (Locale('ar'), TextDirection.rtl),
     (Locale('de'), TextDirection.ltr),
-  ]) {
+  ].indexed) {
     final language = locale.languageCode;
 
     Future<void> pumpIn(WidgetTester tester, WidgetBuilder builder) async {
@@ -116,10 +118,14 @@ void main() {
       expect(tester.takeException(), isNull);
     }
 
-    for (final entry in comicInventory.entries.where(
-      (e) => e.builder != null,
-    )) {
-      testWidgets(
+    // Every run builds each part once, in Arabic and in German in turn, on Android or iOS in turn; the sweep builds
+    // it in the other language and on the other platform.
+    for (final (i, entry)
+        in comicInventory.entries.where((e) => e.builder != null).indexed) {
+      final platform = (i ~/ 2).isEven
+          ? TargetPlatform.android
+          : TargetPlatform.iOS;
+      testWidgetsOnEveryPlatform(
         '${entry.row} builds under an app in $language, and its fields '
         'select and open their menu',
         (tester) async {
@@ -127,10 +133,8 @@ void main() {
           expect(tester.takeException(), isNull);
           await selectInEachField(tester);
         },
-        variant: const TargetPlatformVariant({
-          TargetPlatform.android,
-          TargetPlatform.iOS,
-        }),
+        everyday: i % 2 == l ? {platform} : const {},
+        across: const {TargetPlatform.android, TargetPlatform.iOS},
       );
     }
   }

@@ -15,6 +15,7 @@ import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/design_review.dart';
 import 'gallery_support.dart';
 import 'support.dart';
+import 'tiers.dart';
 
 Set<String> _publicWidgets() => publicComicWidgets();
 
@@ -158,8 +159,13 @@ void main() {
     await loadComicFonts();
     await loadBundledFonts();
   });
-  for (final corners in GalleryCorners.values) {
+  for (final (c, corners) in GalleryCorners.values.indexed) {
     for (final mode in Brightness.values) {
+      // Every run follows the shape system and takes the census under the look's own square corners by day and the
+      // largest by night; the sweep under the other six settings.
+      final everyday = mode == Brightness.light
+          ? c == 0
+          : c == GalleryCorners.values.length - 1;
       final custom = CornerCustom(corners: corners);
       final theme = custom.theme('offset', mode);
       final built = <String>{};
@@ -173,6 +179,7 @@ void main() {
             expect(tester.takeException(), isNull);
             _contours(tester, theme.shapes, built);
           },
+          tags: sweepUnless(everyday),
         );
       }
       testWidgets('${corners.name}/${mode.name}: wrappers and editing menu', (
@@ -192,7 +199,7 @@ void main() {
         await settle(tester);
         _contours(tester, theme.shapes, built);
         expect(tester.takeException(), isNull);
-      });
+      }, tags: sweepUnless(everyday));
       test(
         '${corners.name}/${mode.name}: no exported component is missing',
         () {
@@ -205,6 +212,7 @@ void main() {
                 'Every new public component needs a rendered shape specimen',
           );
         },
+        tags: sweepUnless(everyday),
       );
       testWidgets(
         '${corners.name}/${mode.name}: review sheet',

@@ -201,28 +201,18 @@ class ComicCircularProgressIndicator extends StatefulWidget {
 class _ComicCircularProgressState extends State<ComicCircularProgressIndicator>
     with SingleTickerProviderStateMixin {
   late final AnimationController _motion = AnimationController(vsync: this);
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-  }
-
-  @override
-  void didUpdateWidget(ComicCircularProgressIndicator oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _sync();
-  }
-
+  // Run from build: iOS's Reduce Motion comes as a build, never as didChangeDependencies
+  // (designReduceMotionOf).
   void _sync() {
     final duration = ComicMotion.of(context).spinner;
     final changed = _motion.duration != duration;
     _motion.duration = duration;
     if (widget.value == null &&
         duration > Duration.zero &&
-        !MediaQuery.disableAnimationsOf(context) &&
+        !designReduceMotionOf(context) &&
         TickerMode.valuesOf(context).enabled) {
       if (!_motion.isAnimating || changed) _motion.repeat();
-    } else {
+    } else if (_motion.isAnimating || _motion.value != 0) {
       _motion.stop();
       _motion.value = 0;
     }
@@ -236,6 +226,7 @@ class _ComicCircularProgressState extends State<ComicCircularProgressIndicator>
 
   @override
   Widget build(BuildContext context) {
+    _sync();
     final t = ComicTheme.of(context);
     final c = t.colors;
     return Semantics(
@@ -386,28 +377,18 @@ class _ComicLinearProgressIndicatorState
     extends State<ComicLinearProgressIndicator>
     with SingleTickerProviderStateMixin {
   late final AnimationController _motion = AnimationController(vsync: this);
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-  }
-
-  @override
-  void didUpdateWidget(ComicLinearProgressIndicator oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _sync();
-  }
-
+  // Run from build: iOS's Reduce Motion comes as a build, never as didChangeDependencies
+  // (designReduceMotionOf).
   void _sync() {
     final duration = ComicMotion.of(context).progress;
     final changed = _motion.duration != duration;
     _motion.duration = duration;
     if (widget.value == null &&
         duration > Duration.zero &&
-        !MediaQuery.disableAnimationsOf(context) &&
+        !designReduceMotionOf(context) &&
         TickerMode.valuesOf(context).enabled) {
       if (!_motion.isAnimating || changed) _motion.repeat(reverse: true);
-    } else {
+    } else if (_motion.isAnimating || _motion.value != 0) {
       _motion.stop();
       _motion.value = 0;
     }
@@ -421,6 +402,7 @@ class _ComicLinearProgressIndicatorState
 
   @override
   Widget build(BuildContext context) {
+    _sync();
     final t = ComicTheme.of(context);
     final c = t.colors;
     return Semantics(
@@ -499,17 +481,17 @@ class ComicSkeleton extends StatefulWidget {
 class _ComicSkeletonState extends State<ComicSkeleton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _motion = AnimationController(vsync: this);
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  // Run from build: iOS's Reduce Motion comes as a build, never as didChangeDependencies
+  // (designReduceMotionOf).
+  void _sync() {
     final duration = ComicMotion.of(context).pulse;
     final changed = _motion.duration != duration;
     _motion.duration = duration;
     if (duration > Duration.zero &&
-        !MediaQuery.disableAnimationsOf(context) &&
+        !designReduceMotionOf(context) &&
         TickerMode.valuesOf(context).enabled) {
       if (!_motion.isAnimating || changed) _motion.repeat(reverse: true);
-    } else {
+    } else if (_motion.isAnimating || _motion.value != 0) {
       _motion.stop();
       _motion.value = 0;
     }
@@ -522,37 +504,40 @@ class _ComicSkeletonState extends State<ComicSkeleton>
   }
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    label: widget.label,
-    child: ExcludeSemantics(
-      child: RepaintBoundary(
-        child: SizedBox(
-          width: widget.width,
-          height: widget.height,
-          child: DecoratedBox(
-            decoration: ShapeDecoration(
-              color: ComicTheme.of(context).colors.track,
-              shape: ComicTheme.of(context).shapes.small,
-            ),
-            child: ClipPath(
-              clipper: ShapeBorderClipper(
+  Widget build(BuildContext context) {
+    _sync();
+    return Semantics(
+      label: widget.label,
+      child: ExcludeSemantics(
+        child: RepaintBoundary(
+          child: SizedBox(
+            width: widget.width,
+            height: widget.height,
+            child: DecoratedBox(
+              decoration: ShapeDecoration(
+                color: ComicTheme.of(context).colors.track,
                 shape: ComicTheme.of(context).shapes.small,
-                textDirection: Directionality.of(context),
               ),
-              child: CustomPaint(
-                painter: _PulsePainter(
-                  _motion,
-                  ComicTheme.of(context).colors.text,
-                  MediaQuery.devicePixelRatioOf(context),
+              child: ClipPath(
+                clipper: ShapeBorderClipper(
+                  shape: ComicTheme.of(context).shapes.small,
+                  textDirection: Directionality.of(context),
                 ),
-                child: const SizedBox.expand(),
+                child: CustomPaint(
+                  painter: _PulsePainter(
+                    _motion,
+                    ComicTheme.of(context).colors.text,
+                    MediaQuery.devicePixelRatioOf(context),
+                  ),
+                  child: const SizedBox.expand(),
+                ),
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 /// A count in a small square caption, with room for large text.

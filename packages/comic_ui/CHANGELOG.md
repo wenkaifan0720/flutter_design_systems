@@ -1,3 +1,21 @@
+## 0.2.1
+
+Needs ui_core 0.2.1.
+
+- Reduce Motion on iOS calms Comic too. Flutter puts iOS's Reduce Motion in dart:ui's
+  `AccessibilityFeatures.reduceMotion`, not in `MediaQuery.disableAnimationsOf`, which was all Comic read, so on an
+  iPhone with Reduce Motion on, Comic's presses, eases and loops still ran. Comic now reads ui_core's
+  `designReduceMotionOf`, which also covers Android's Remove animations and the web's `prefers-reduced-motion`.
+  `ComicMotion.of` and `ComicMotion.durationOf` give cuts under any of them. The progress burst, the progress bar and
+  the skeleton stop looping, and when the setting changes while one runs, it stops or starts at once.
+- From ui_core 0.2.1: a menu or popover its anchor opened gives the focus back to the anchor as it closes, and Home
+  and End in a menu keep the row they reach in view.
+- The tests run in tiers. `flutter test --exclude-tags goldens,sweep` is the everyday run. It keeps a case of every
+  matrix: each part, page and setting at least once, on a phone's touch and a desk's pointer. The rest of each
+  matrix (every platform, width, mode, corner family and edition) is tagged `sweep`, and `flutter test` runs every
+  tier. The behaviour checks are split into three files (the parts as drawn, the parts styled, the example pages), so
+  they run side by side.
+
 ## 0.2.0
 
 Comic draws its states in its own ink now: nothing on the page is see-through.

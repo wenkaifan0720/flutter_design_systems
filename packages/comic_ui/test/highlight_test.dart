@@ -15,6 +15,7 @@ import '../example/lib/kit_gallery/design_review.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import 'gallery_support.dart';
 import 'support.dart';
+import 'tiers.dart';
 
 OutlinedBorder _bare(OutlinedBorder s) => s.copyWith(side: BorderSide.none);
 
@@ -96,7 +97,7 @@ void main() {
     },
   );
 
-  for (final corners in GalleryCorners.values) {
+  for (final (c, corners) in GalleryCorners.values.indexed) {
     final custom = CornerCustom(corners: corners);
     final shapes = custom.shapes;
     final steps = {
@@ -118,11 +119,13 @@ void main() {
       // and the halves' 3 px inset, concentric with the face it sits in.
       _bare(comicInsetShape(shapes.small, 5.5)),
     };
-    for (final page in [
+    for (final (p, page) in [
       ...galleryPages,
       ...reviewPages,
       (id: 'review-corners', title: 'Corners', build: reviewCorners),
-    ]) {
+    ].indexed) {
+      // Every run reads each page's marks once, under one corner family in turn (every family on several pages);
+      // the sweep under the other three.
       testWidgets(
         '${corners.name}: every mark on ${page.id} takes its part\'s shape',
         (tester) async {
@@ -233,6 +236,7 @@ void main() {
           }
           expect(failures, isEmpty, reason: failures.join('\n'));
         },
+        tags: sweepUnless(p % GalleryCorners.values.length == c),
       );
     }
   }

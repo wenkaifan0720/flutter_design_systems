@@ -16,6 +16,7 @@ import 'pages/profile_page.dart';
 import 'pages/thread_page.dart';
 import 'pages/wall_page.dart';
 import 'support.dart';
+import 'tiers.dart';
 
 const _nav = [
   ComicNavItem(label: 'Today', short: 'Today', icon: LucideIcons.house),
@@ -80,17 +81,24 @@ void main() {
     expect(_crushed(tester), isEmpty);
   }
 
-  for (final page in _pages.entries) {
+  for (final (i, page) in _pages.entries.indexed) {
     testWidgets(
       '${page.key} on a small phone',
       (tester) => holds(tester, page.value, 'offset', false, 320),
     );
-    for (final preset in ComicThemeData.presets) {
+    // Every run holds each page once more, under one edition in turn, by day or by night and at a phone's or a
+    // desk's width in turn: over the eight pages, every edition, both modes and both widths. The sweep holds the rest.
+    for (final (e, preset) in ComicThemeData.presets.indexed) {
       for (final dark in const [false, true]) {
-        for (final width in const [390.0, 1440.0]) {
+        for (final (w, width) in const [390.0, 1440.0].indexed) {
+          final everyday =
+              e == i % ComicThemeData.presets.length &&
+              dark == i.isOdd &&
+              w == (i ~/ 2) % 2;
           testWidgets(
             '${page.key} $preset ${dark ? 'dark' : 'light'} @$width',
             (tester) => holds(tester, page.value, preset, dark, width),
+            tags: sweepUnless(everyday),
           );
         }
       }

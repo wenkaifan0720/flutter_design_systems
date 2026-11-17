@@ -18,6 +18,7 @@ import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 // ignore_for_file: avoid_relative_lib_imports
 import 'gallery_support.dart' show CornerCustom, GalleryCorners;
 import 'support.dart';
+import 'tiers.dart';
 
 /// One painted outline: [kind] is `fill`, `ring` (a stroke's line), `inner` or `outer` (a rim's two edges).
 class _Outline {
@@ -459,7 +460,8 @@ void main() {
   setUpAll(() async {
     await loadComicFonts();
   });
-  for (final corners in GalleryCorners.values) {
+  // Every run measures each corner family once, plain and bold in turn; the sweep the other weight.
+  for (final (c, corners) in GalleryCorners.values.indexed) {
     for (final bold in [false, true]) {
       final custom = CornerCustom(corners: corners, bold: bold);
       final setting = '${corners.name}${bold ? ', bold' : ''}';
@@ -521,6 +523,7 @@ void main() {
         experimentalLeakTesting: LeakTesting.settings.withIgnored(
           classes: ['LeaderLayer'],
         ),
+        tags: sweepUnless(bold == c.isOdd),
       );
     }
   }

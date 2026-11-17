@@ -12,6 +12,7 @@ import '../example/lib/kit_gallery/design_review.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import 'gallery_support.dart';
 import 'support.dart';
+import 'tiers.dart';
 
 /// Material's fallback for text with no style above it.
 const _fallback = TextStyle(
@@ -111,7 +112,8 @@ void main() {
   ];
   for (final mode in Brightness.values) {
     final theme = ComicThemeData.preset('offset', mode);
-    for (final page in pages) {
+    // Every run presses through each page once, by day and by night in turn; the sweep in the other mode.
+    for (final (p, page) in pages.indexed) {
       testWidgets('${mode.name}: ${page.id} and all it opens are styled', (
         tester,
       ) async {
@@ -170,7 +172,7 @@ void main() {
         }
         expect(tester.takeException(), isNull);
         expect(failures, isEmpty, reason: failures.join('\n'));
-      });
+      }, tags: sweepUnless(p.isEven == (mode == Brightness.light)));
     }
     testWidgets('${mode.name}: raised surfaces shown from code are styled', (
       tester,

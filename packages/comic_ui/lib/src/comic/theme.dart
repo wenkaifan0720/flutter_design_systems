@@ -114,9 +114,10 @@ class ComicMotion {
     pulse: Duration.zero,
   );
 
-  /// The tokens in force at [context]: [still] under Reduce Motion (`MediaQuery.disableAnimationsOf`).
-  static ComicMotion of(BuildContext context) =>
-      (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+  /// The tokens in force at [context]: [still] under Reduce Motion, whichever platform asked (ui_core's
+  /// `designReduceMotionOf`: Android's Remove animations, the web's prefers-reduced-motion, iOS's Reduce Motion).
+  /// [context] builds again when it changes; iOS's change comes as a build, so read it in `build` or as you act.
+  static ComicMotion of(BuildContext context) => designReduceMotionOf(context)
       ? still
       : ComicTheme.maybeOf(context)?.motion ?? const ComicMotion();
 
@@ -203,9 +204,7 @@ class ComicMotion {
 
   /// [d], or a cut where motion is off at [context].
   static Duration durationOf(BuildContext context, Duration d) =>
-      (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
-      ? Duration.zero
-      : d;
+      designReduceMotionOf(context) ? Duration.zero : d;
 }
 
 /// The keyboard's focus ring: a [width] line [gap] outside the control's own outline, in [color], which reads 3:1 on

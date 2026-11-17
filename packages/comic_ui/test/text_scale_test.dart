@@ -7,13 +7,15 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'gallery_support.dart';
 import 'support.dart';
+import 'tiers.dart';
 import 'world_checks.dart';
 
 void main() {
   setUpAll(loadComicFonts);
 
-  for (final page in galleryPages) {
-    for (final width in [390.0, 1440.0]) {
+  // Every run scales each page's text once, at a phone's width and a desk's in turn; the sweep at the other width.
+  for (final (p, page) in galleryPages.indexed) {
+    for (final (w, width) in [390.0, 1440.0].indexed) {
       testWidgets('${page.id} at text scale 2 and $width', (tester) async {
         tester.view.devicePixelRatio = 1;
         tester.view.physicalSize = Size(width, 844);
@@ -30,7 +32,7 @@ void main() {
             child: page.build(Brightness.light),
           ),
         );
-      });
+      }, tags: sweepUnless(p % 2 == w));
     }
   }
 }

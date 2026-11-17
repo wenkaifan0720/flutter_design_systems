@@ -12,7 +12,7 @@ come in a day and a night issue each.
 
 ```yaml
 dependencies:
-  comic_ui: ^0.1.0
+  comic_ui: ^0.2.1
 ```
 
 Comic bundles its two typefaces, Bangers for lettering and Shantell Sans for text. Load them before the first frame:

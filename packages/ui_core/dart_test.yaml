@@ -1,3 +1,4 @@
 # The pixel goldens were recorded on macOS: elsewhere, `flutter test --exclude-tags goldens`.
 tags:
   goldens: {}
+  sweep: {}

@@ -6,6 +6,7 @@ import 'package:comic_ui/comic_ui.dart';
 
 import 'support.dart';
 import 'shape_fit_support.dart';
+import 'tiers.dart';
 
 final _parts = <String, Widget Function()>{
   'act': () => ComicButton.filled('Save', onPressed: () {}),
@@ -125,14 +126,18 @@ void main() {
     'medium': ComicShapes.rounded(8),
     'large': ComicShapes.rounded(12),
   };
-  for (final MapEntry(key: set, value: shapes) in sets.entries) {
-    for (final width in [120.0, 240.0, 390.0]) {
-      for (final density in [
+  for (final (s, MapEntry(key: set, value: shapes)) in sets.entries.indexed) {
+    for (final (w, width) in [120.0, 240.0, 390.0].indexed) {
+      for (final (d, density) in [
         ComicDensity.standard,
         ComicDensity.comfortable,
         ComicDensity.compact,
-      ]) {
-        for (final scale in [1.0, 1.3]) {
+      ].indexed) {
+        for (final (c, scale) in [1.0, 1.3].indexed) {
+          // Every run fits each part under 12 of the 72 settings: every shape set at every width, the density and
+          // the text scale turning with them, so any two settings meet in each pair of their values (a pairwise
+          // cover). The sweep fits the other 60.
+          final everyday = d == (s + w) % 3 && c == (s + w) % 2;
           for (final MapEntry(key: name, value: build) in _parts.entries) {
             testWidgets(
               '$name / $set / $width / ${density.vertical} / $scale',
@@ -185,6 +190,7 @@ void main() {
                   }
                 }
               },
+              tags: sweepUnless(everyday),
             );
           }
         }

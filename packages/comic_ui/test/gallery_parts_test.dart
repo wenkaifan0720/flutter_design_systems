@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'gallery_support.dart';
 import 'support.dart';
+import 'tiers.dart';
 
 /// Every semantics node in the tree, with its rect on the screen.
 Iterable<(SemanticsNode, Rect)> placedNodes(
@@ -82,8 +83,8 @@ void main() {
     await loadBundledFonts();
   });
 
-  for (final page in galleryPages) {
-    for (final width in [galleryWidth, 1440.0]) {
+  for (final (p, page) in galleryPages.indexed) {
+    for (final (w, width) in [galleryWidth, 1440.0].indexed) {
       for (final (preset, b) in presetsAndModes) {
         // Every preset on the phone; the primary and an alternate print on desktop.
         if (width == 1440 && preset != 'offset' && preset != 'newsstand') {
@@ -111,6 +112,7 @@ void main() {
         );
       }
 
+      // Every run reads each page's semantics once, at a phone's width and a desk's in turn; the sweep at the other.
       testWidgets(
         '${page.id} at $width: each section says what it is, and every control its role and name',
         (tester) async {
@@ -192,6 +194,7 @@ void main() {
             }
           }
         },
+        tags: sweepUnless(p % 2 == w),
       );
     }
   }

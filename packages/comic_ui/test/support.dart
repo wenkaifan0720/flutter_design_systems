@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 
+import 'tiers.dart';
+
 const long = 'Donaudampfschifffahrtsgesellschaftskapitänsmütze';
 const longLine =
     'A much longer line than the example ever had to carry, with $long in the middle of it, and then more';
@@ -57,10 +59,15 @@ Widget comicApp(
 }
 
 /// Pumps [child] in a page-like column at each width, mode and direction, and fails on any overflow or exception.
+/// Every run takes a small phone by day left to right and a desk by night right to left, so each width, mode and
+/// direction is met; the sweep the other six.
 void check(String name, Widget Function() child) {
   for (final width in const [320.0, 1440.0]) {
     for (final dark in const [false, true]) {
       for (final dir in const [TextDirection.ltr, TextDirection.rtl]) {
+        final everyday =
+            (width, dark, dir) == (320.0, false, TextDirection.ltr) ||
+            (width, dark, dir) == (1440.0, true, TextDirection.rtl);
         testWidgets('$name @$width ${dark ? 'dark' : 'light'} ${dir.name}', (
           tester,
         ) async {
@@ -80,7 +87,7 @@ void check(String name, Widget Function() child) {
           );
           await tester.pump();
           expect(tester.takeException(), isNull);
-        });
+        }, tags: sweepUnless(everyday));
       }
     }
   }

@@ -11,6 +11,10 @@
 //   and by night: outside every clip but the window's, its rim drawn all round and its plate under it, its rows'
 //   words on one x, and a list from a field the field's width, from its leading edge, its words on the field's
 //   (DesignWidthCheck.checkList), its chosen row carrying the check.
+// Every test is in the goldens tier, so the library is tagged too: a run without it never compiles this file.
+@Tags(['goldens'])
+library;
+
 import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';

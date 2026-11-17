@@ -12,6 +12,7 @@ import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/live_pages.dart';
 import 'gallery_support.dart';
 import 'support.dart';
+import 'tiers.dart';
 
 /// What no page shows by itself, and why.
 const _offPage = {
@@ -64,8 +65,10 @@ void main() {
   });
 
   final built = <String>{};
-  for (final width in [390.0, 1440.0]) {
-    for (final page in livePages) {
+  // Every run opens each page once, at a phone's width and a desk's in turn, so the census below still meets every
+  // page; the sweep opens each at the other width.
+  for (final (w, width) in [390.0, 1440.0].indexed) {
+    for (final (p, page) in livePages.indexed) {
       testWidgets(
         '${page.id} opens through the navigation at ${width.toInt()}',
         (tester) async {
@@ -100,6 +103,7 @@ void main() {
             }
           }
         },
+        tags: sweepUnless(p % 2 == w),
       );
     }
   }
