@@ -6,6 +6,8 @@ works under a `MaterialApp`, a `CupertinoApp` or a `WidgetsApp`, at phone and de
 | Package | What it is |
 | --- | --- |
 | [`ui_core`](packages/ui_core) | Headless behaviours for Flutter design systems: the state, keyboard, focus and semantics of 24 controls, with every pixel left to the design system. |
+| [`brutal_ui`](packages/brutal_ui) | A Flutter design system with its make-up off: heavy black rules, square corners, a hard offset shadow under what you press, cells on shared rules and one flat colour block a screen. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/brutal/) |
+| [`civic_ui`](packages/civic_ui) | A Flutter design system for public services: one thing per page, large type, a heavy yellow focus, errors said in words, answers checked before they are sent. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/civic/) |
 | [`comic_ui`](packages/comic_ui) | A Flutter design system drawn as a printed comic: inked panels, speech balloons and everyday controls, five editions by day and night, with state motion. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/comic/) |
 | [`fluent2_design_ui`](packages/fluent2_design_ui) | Unofficial Fluent 2 widgets for Flutter: Fluent's tokens, type ramp and components, seven brand presets in light and dark, accessible controls. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/fluent2/) |
 | [`frosted_ui`](packages/frosted_ui) | Frosted glass widgets for Flutter: frosted panes on a canvas lit by soft washes of colour, seven light and dark palettes, accessible controls and a complete theme. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/frosted/) |
@@ -14,9 +16,10 @@ works under a `MaterialApp`, a `CupertinoApp` or a `WidgetsApp`, at phone and de
 | [`minimal_ui`](packages/minimal_ui) | A precise, quiet design system for Flutter: hairlines, dense rows, mono tabular figures and one primary colour, in three presets by day and by night. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/minimal/) |
 | [`neumorphism_ui`](packages/neumorphism_ui) | Neumorphism for Flutter: soft raised surfaces, inset controls, five light and dark palettes, accessible interactions, role-based shapes and state-resolved styling. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/neumorphism/) |
 | [`retro_desktop_ui`](packages/retro_desktop_ui) | Retro Desktop components for Flutter: pixel bevels, five light and dark presets, accessible controls, overlays, charts and customizable themes. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/retro_desktop/) |
+| [`terminal_ui`](packages/terminal_ui) | Terminal widgets for Flutter: an app drawn on a character grid, with box-drawn panes, bracketed buttons, inverse selection and keys beside every action. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/terminal/) |
 
-Eight looks are built on `ui_core`, each with a live gallery you can try in your browser: Neumorphism, Retro Desktop,
-Comic, Frosted, Ledger, Minimal, Material Expressive and Fluent 2. The
+Eleven looks are built on `ui_core`, each with a live gallery you can try in your browser: Neumorphism, Retro Desktop,
+Comic, Frosted, Ledger, Minimal, Material Expressive, Fluent 2, Civic, Terminal and Brutal. The
 [gallery index](https://wenkaifan0720.github.io/flutter_design_systems/) shows them side by side.
 
 Material Expressive and Fluent 2 are independent Flutter implementations, not affiliated with or endorsed by Google or
@@ -28,14 +31,14 @@ Most apps add a look, which brings `ui_core` with it. To build a look of your ow
 
 ```yaml
 dependencies:
-  ui_core: ^0.1.0
+  ui_core: ^0.2.0
 ```
 
 `ui_core`'s README shows a button of your own, the behaviours, and who disposes what.
 
 ## Feedback
 
-These are first releases, and feedback shapes the next ones: a component that's missing, a name that reads wrong, or a
+These are early releases, and feedback shapes the next ones: a component that's missing, a name that reads wrong, or a
 control that looks off at some size. Open an issue and say which package, which component, and the screen size.
 
 ## How the packages are made
