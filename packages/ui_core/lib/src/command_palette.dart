@@ -515,7 +515,7 @@ Future<void> showDesignCommandPalette({
 }) async {
   final chosen = await Navigator.of(context, rootNavigator: true).push(
     _PaletteRoute<DesignCommand>(
-      barrierBuilder: barrierBuilder,
+      barrierPaint: barrierBuilder,
       barrierDismissible: true,
       barrierLabel:
           barrierLabel ??
@@ -550,9 +550,12 @@ Future<void> showDesignCommandPalette({
 
 // showGeneralDialog's route, its barrier painted by a look when it gives a
 // builder.
+// The field is not named barrierBuilder: Flutter 3.50 gave RawDialogRoute a
+// barrierBuilder of its own type, and a field of that name here stops
+// ui_core compiling there.
 class _PaletteRoute<T> extends RawDialogRoute<T> {
   _PaletteRoute({
-    required this.barrierBuilder,
+    required this.barrierPaint,
     required super.pageBuilder,
     super.barrierDismissible,
     super.barrierColor,
@@ -561,12 +564,12 @@ class _PaletteRoute<T> extends RawDialogRoute<T> {
     super.transitionBuilder,
   });
 
-  final DesignBarrierBuilder? barrierBuilder;
+  final DesignBarrierBuilder? barrierPaint;
 
   @override
   Widget buildModalBarrier() {
     final barrier = super.buildModalBarrier();
-    final paint = barrierBuilder;
+    final paint = barrierPaint;
     return paint == null ? barrier : paintedBarrier(paint, animation!, barrier);
   }
 }

@@ -1,3 +1,8 @@
+## 0.2.2
+
+- Compiles on Flutter 3.50. `RawDialogRoute` gained a `barrierBuilder` there, and the command palette's route
+  had a field of that name and another type, so an app on 3.50 using any look failed to build. Nothing else changes.
+
 ## 0.2.1
 
 - A menu or popover (`DesignAnchoredOverlay`) that its anchor opened gives focus back to the anchor as it closes

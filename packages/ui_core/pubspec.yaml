@@ -2,7 +2,7 @@ name: ui_core
 description: >-
   Headless behaviours for Flutter design systems: the state, keyboard, focus and semantics of 24 controls, with
   every pixel left to the design system.
-version: 0.2.1
+version: 0.2.2
 homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/ui_core
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/ui_core
 
