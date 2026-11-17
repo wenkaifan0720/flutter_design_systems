@@ -3,6 +3,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:ui_core/ui_core.dart' show designReduceMotionOf;
 
 import 'density.dart';
 import 'fonts.dart';
@@ -140,10 +141,10 @@ abstract final class LedgerIconSize {
 }
 
 /// Motion: durations and curves. DERIVED: the source is static pages and
-/// moves nothing but its overlays' open and close. Where the platform asks
-/// for reduced motion (`MediaQuery.disableAnimations`, which a test sets
-/// through its binding's accessibility features), every change lands at
-/// once ([of]).
+/// moves nothing but its overlays' open and close. Where the reader asks for
+/// reduced motion (Android's Remove animations, the web's
+/// prefers-reduced-motion or iOS's Reduce Motion: ui_core's
+/// `designReduceMotionOf`), every change lands at once ([of]).
 abstract final class LedgerMotion {
   /// 120 ms: the quick step.
   static const Duration fast = Duration(milliseconds: 120);
@@ -162,9 +163,11 @@ abstract final class LedgerMotion {
   static Duration of(BuildContext context, [Duration step = fast]) =>
       isReduced(context) ? Duration.zero : step;
 
-  /// Whether the platform asks for reduced motion above [context].
-  static bool isReduced(BuildContext context) =>
-      MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+  /// Whether the reader asks for reduced motion above [context], on any
+  /// platform. [context] builds again when the answer changes; iOS's change
+  /// comes as a build, never as `didChangeDependencies`, so a State reads it
+  /// in `build` or as it acts.
+  static bool isReduced(BuildContext context) => designReduceMotionOf(context);
 }
 
 /// The paddings Ledger's parts use, on the spacing scale.

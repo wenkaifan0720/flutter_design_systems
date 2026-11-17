@@ -51,18 +51,8 @@ class _LedgerProgressBarState extends State<LedgerProgressBar>
     duration: const Duration(milliseconds: 1400),
   );
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-  }
-
-  @override
-  void didUpdateWidget(LedgerProgressBar old) {
-    super.didUpdateWidget(old);
-    _sync();
-  }
-
+  // Run from build: iOS's Reduce Motion comes as a build, never as
+  // didChangeDependencies (LedgerMotion.isReduced).
   void _sync() {
     final runs = widget.value == null && !LedgerMotion.isReduced(context);
     if (runs && !_run.isAnimating) {
@@ -80,6 +70,7 @@ class _LedgerProgressBarState extends State<LedgerProgressBar>
 
   @override
   Widget build(BuildContext context) {
+    _sync();
     final t = context.ledgerTheme;
     final v = widget.value;
     final rtl = Directionality.of(context) == TextDirection.rtl;
@@ -233,18 +224,8 @@ class _LedgerProgressRingState extends State<LedgerProgressRing>
     duration: const Duration(milliseconds: 1100),
   );
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-  }
-
-  @override
-  void didUpdateWidget(LedgerProgressRing old) {
-    super.didUpdateWidget(old);
-    _sync();
-  }
-
+  // Run from build: iOS's Reduce Motion comes as a build, never as
+  // didChangeDependencies (LedgerMotion.isReduced).
   void _sync() {
     final runs = widget.value == null && !LedgerMotion.isReduced(context);
     if (runs && !_turn.isAnimating) {
@@ -262,6 +243,7 @@ class _LedgerProgressRingState extends State<LedgerProgressRing>
 
   @override
   Widget build(BuildContext context) {
+    _sync();
     final t = context.ledgerTheme;
     final v = widget.value;
     Widget ring(double start, double sweep) => CustomPaint(
@@ -400,9 +382,9 @@ class _LedgerSkeletonState extends State<LedgerSkeleton>
     duration: const Duration(milliseconds: 1600),
   );
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  // Run from build: iOS's Reduce Motion comes as a build, never as
+  // didChangeDependencies (LedgerMotion.isReduced).
+  void _sync() {
     if (LedgerMotion.isReduced(context)) {
       _sheen.stop();
     } else if (!_sheen.isAnimating) {
@@ -418,6 +400,7 @@ class _LedgerSkeletonState extends State<LedgerSkeleton>
 
   @override
   Widget build(BuildContext context) {
+    _sync();
     final t = context.ledgerTheme;
     Widget bar(double widthFactor, double height) => FractionallySizedBox(
       alignment: AlignmentDirectional.centerStart,

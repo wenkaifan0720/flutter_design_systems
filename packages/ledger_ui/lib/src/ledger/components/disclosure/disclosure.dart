@@ -70,6 +70,7 @@ class LedgerDisclosure extends StatefulWidget {
 
 class _LedgerDisclosureState extends State<LedgerDisclosure> {
   late bool _open = widget.initiallyOpen;
+  final GlobalKey _body = GlobalKey();
 
   void _flip() {
     setState(() => _open = !_open);
@@ -80,6 +81,18 @@ class _LedgerDisclosureState extends State<LedgerDisclosure> {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final motion = LedgerMotion.of(context, LedgerMotion.base);
+    final body = KeyedSubtree(
+      key: _body,
+      child: _open
+          ? Padding(
+              padding: const EdgeInsets.only(
+                top: LedgerSpacing.s12,
+                bottom: LedgerSpacing.s16,
+              ),
+              child: widget.child,
+            )
+          : const SizedBox(width: double.infinity),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -136,20 +149,18 @@ class _LedgerDisclosureState extends State<LedgerDisclosure> {
           ),
         ),
         ClipRect(
-          child: AnimatedSize(
-            duration: motion,
-            curve: LedgerMotion.out,
-            alignment: AlignmentDirectional.topStart,
-            child: _open
-                ? Padding(
-                    padding: const EdgeInsets.only(
-                      top: LedgerSpacing.s12,
-                      bottom: LedgerSpacing.s16,
-                    ),
-                    child: widget.child,
-                  )
-                : const SizedBox(width: double.infinity),
-          ),
+          // Under Reduce Motion the body lands at once, with no
+          // AnimatedSize: at a zero duration it re-dirties its own layout
+          // (an assertion in debug). The key keeps the body's state as the
+          // setting flips.
+          child: motion == Duration.zero
+              ? body
+              : AnimatedSize(
+                  duration: motion,
+                  curve: LedgerMotion.out,
+                  alignment: AlignmentDirectional.topStart,
+                  child: body,
+                ),
         ),
       ],
     );

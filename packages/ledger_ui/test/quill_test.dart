@@ -25,6 +25,7 @@ import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/quill/entry.dart';
 import '../example/lib/kit_gallery/quill/quill.dart';
 import '../example/lib/kit_gallery/quill/register.dart';
+import 'tiers.dart';
 
 Future<void> _loadFonts() async {
   final manifest = json.decode(
@@ -314,156 +315,211 @@ String _sectionName(Element e) {
   return head is LedgerHead ? head.label : '${head.runtimeType}';
 }
 
+/// The [i]th case's everyday value of [all], turning over the cases; or, not [everyday], the rest of [all].
+List<T> _pick<T>(List<T> all, int i, bool everyday) => [
+  for (final (k, v) in all.indexed)
+    if ((k == i % all.length) == everyday) v,
+];
+
+/// The widths of [sizes], for a test's name.
+String _widthsOf(List<Size> sizes) =>
+    sizes.map((s) => s.width.round()).join(' and ');
+
 void main() {
   setUpAll(_loadFonts);
   setUpAll(_stillMotion);
   tearDownAll(_movingMotion);
 
-  for (final s in _screens) {
-    group(s.name, () {
-      testWidgets('lays out clean at 390, 768 and 1440, by day and by night', (
-        t,
-      ) async {
-        for (final size in const [_phone, _tablet, _desktop]) {
-          for (final a in const [QuillAppearance.light, QuillAppearance.dark]) {
-            await _open(t, s, size, appearance: a);
-            expect(
-              t.takeException(),
-              isNull,
-              reason: '${size.width.round()} wide, ${a.name}',
-            );
-          }
-        }
-      });
-
-      testWidgets('sets no words under 11 px', (t) async {
-        final small = <String>{};
-        for (final size in const [_phone, _desktop]) {
-          await _open(t, s, size);
-          // The seal's ring lettering is engraving, read as one picture by its spoken label (DECISIONS.md).
-          final engraved = find.descendant(
-            of: find.byType(LedgerSeal),
-            matching: find.byType(RichText),
-          );
-          final exempt = {for (final e in engraved.evaluate()) e.renderObject};
-          for (final e in find.byType(RichText).evaluate()) {
-            final p = e.renderObject! as RenderParagraph;
-            if (exempt.contains(p) ||
-                _isIcon(p) ||
-                p.text.toPlainText().trim().isEmpty ||
-                !_visible(p)) {
-              continue;
+  // Each screen's everyday case of each check is one of its sizes (and appearances), turning over the screens; the
+  // rest are the sweep's (tiers.dart).
+  for (final (i, s) in _screens.indexed) {
+    for (final everyday in const [true, false]) {
+      group(everyday ? s.name : '${s.name}, the sweep', () {
+        final looks = _pick(
+          [
+            for (final size in const [_phone, _tablet, _desktop])
+              for (final a in const [
+                QuillAppearance.light,
+                QuillAppearance.dark,
+              ])
+                (size, a),
+          ],
+          i,
+          everyday,
+        );
+        testWidgets(
+          'lays out clean at ${[for (final (size, a) in looks) '${size.width.round()} ${a.name}'].join(', ')}',
+          tags: sweepUnless(everyday),
+          (t) async {
+            for (final (size, a) in looks) {
+              await _open(t, s, size, appearance: a);
+              expect(
+                t.takeException(),
+                isNull,
+                reason: '${size.width.round()} wide, ${a.name}',
+              );
             }
-            p.text.visitChildren((span) {
-              if (span is TextSpan && (span.text?.trim().isNotEmpty ?? false)) {
-                final px = p.textScaler.scale(
-                  span.style?.fontSize ?? p.text.style?.fontSize ?? 14,
+          },
+        );
+
+        final read = _pick(const [_phone, _desktop], i, everyday);
+        testWidgets(
+          'sets no words under 11 px at ${_widthsOf(read)}',
+          tags: sweepUnless(everyday),
+          (t) async {
+            final small = <String>{};
+            for (final size in read) {
+              await _open(t, s, size);
+              // The seal's ring lettering is engraving, read as one picture by its spoken label (DECISIONS.md).
+              final engraved = find.descendant(
+                of: find.byType(LedgerSeal),
+                matching: find.byType(RichText),
+              );
+              final exempt = {
+                for (final e in engraved.evaluate()) e.renderObject,
+              };
+              for (final e in find.byType(RichText).evaluate()) {
+                final p = e.renderObject! as RenderParagraph;
+                if (exempt.contains(p) ||
+                    _isIcon(p) ||
+                    p.text.toPlainText().trim().isEmpty ||
+                    !_visible(p)) {
+                  continue;
+                }
+                p.text.visitChildren((span) {
+                  if (span is TextSpan &&
+                      (span.text?.trim().isNotEmpty ?? false)) {
+                    final px = p.textScaler.scale(
+                      span.style?.fontSize ?? p.text.style?.fontSize ?? 14,
+                    );
+                    if (px < 11) {
+                      small.add(
+                        '"${span.text}" ${px}px at ${size.width.round()}',
+                      );
+                    }
+                  }
+                  return true;
+                });
+              }
+            }
+            expect(small, isEmpty, reason: small.join('\n'));
+          },
+        );
+
+        final keyed = _pick(const [_phone, _desktop], i + 1, everyday);
+        testWidgets(
+          'keeps every section on its keylines at ${_widthsOf(keyed)}',
+          tags: sweepUnless(everyday),
+          (t) async {
+            final report = <String>[];
+            final problems = <String>[];
+            for (final size in keyed) {
+              await _open(t, s, size);
+              for (final e in find.byType(LedgerSection).evaluate()) {
+                final k = _keylines(t, e);
+                final name =
+                    '${s.name} ${size.width.round()} "${_sectionName(e)}"';
+                final leading = _lines(k.leading);
+                report.add(
+                  '$name leading $leading trailing ${_lines(k.trailing)}',
                 );
-                if (px < 11) {
-                  small.add('"${span.text}" ${px}px at ${size.width.round()}');
+                if (leading.first.abs() > 1.5) {
+                  problems.add('$name: no row starts on its edge ($leading)');
+                }
+                if (leading.length > 2) {
+                  problems.add(
+                    '$name: rows start on ${leading.length} lines $leading',
+                  );
+                }
+                for (final n in k.notes) {
+                  problems.add('$name: $n');
                 }
               }
-              return true;
-            });
-          }
-        }
-        expect(small, isEmpty, reason: small.join('\n'));
-      });
-
-      testWidgets('keeps every section on its keylines at 390 and 1440', (
-        t,
-      ) async {
-        final report = <String>[];
-        final problems = <String>[];
-        for (final size in const [_phone, _desktop]) {
-          await _open(t, s, size);
-          for (final e in find.byType(LedgerSection).evaluate()) {
-            final k = _keylines(t, e);
-            final name = '${s.name} ${size.width.round()} "${_sectionName(e)}"';
-            final leading = _lines(k.leading);
-            report.add('$name leading $leading trailing ${_lines(k.trailing)}');
-            if (leading.first.abs() > 1.5) {
-              problems.add('$name: no row starts on its edge ($leading)');
             }
-            if (leading.length > 2) {
-              problems.add(
-                '$name: rows start on ${leading.length} lines $leading',
-              );
-            }
-            for (final n in k.notes) {
-              problems.add('$name: $n');
-            }
-          }
-        }
-        // Every section's keylines go with a failure, so a fix reads the whole page.
-        expect(
-          problems,
-          isEmpty,
-          reason: [...problems, '', ...report].join('\n'),
+            // Every section's keylines go with a failure, so a fix reads the whole page.
+            expect(
+              problems,
+              isEmpty,
+              reason: [...problems, '', ...report].join('\n'),
+            );
+          },
         );
-      });
 
-      testWidgets('sets the controls that share a row at one height', (
-        t,
-      ) async {
-        final uneven = <String>[];
-        for (final size in const [_phone, _desktop]) {
-          await _open(t, s, size);
-          final boxes = <_Thing>[
-            for (final type in const [
-              LedgerTextField,
-              LedgerSelect<String>,
-              LedgerSelect<LedgerDensity>,
-              LedgerButton,
-              LedgerIconButton,
-              LedgerSwitch,
-            ])
-              for (final e in find.byType(type).evaluate())
-                if (e.renderObject case final RenderBox b when b.hasSize)
-                  (
-                    rect: b.localToGlobal(Offset.zero) & b.size,
-                    ends: true,
-                    what: '$type',
-                  ),
-          ];
-          for (final row in _rows(boxes)) {
-            row.sort((a, b) => a.rect.left.compareTo(b.rect.left));
-            // Neighbours on one line: no wider apart than a field pair's gap (columns stand 56 apart).
-            for (var i = 1; i < row.length; i++) {
-              final a = row[i - 1], b = row[i];
-              if (b.rect.left - a.rect.right > 32) continue;
-              if (_r(a.rect.height) != _r(b.rect.height)) {
-                uneven.add(
-                  '${s.name} ${size.width.round()}: ${a.what} ${a.rect.height}, ${b.what} ${b.rect.height}',
-                );
+        final rowed = _pick(const [_phone, _desktop], i, everyday);
+        testWidgets(
+          'sets the controls that share a row at one height at ${_widthsOf(rowed)}',
+          tags: sweepUnless(everyday),
+          (t) async {
+            final uneven = <String>[];
+            for (final size in rowed) {
+              await _open(t, s, size);
+              final boxes = <_Thing>[
+                for (final type in const [
+                  LedgerTextField,
+                  LedgerSelect<String>,
+                  LedgerSelect<LedgerDensity>,
+                  LedgerButton,
+                  LedgerIconButton,
+                  LedgerSwitch,
+                ])
+                  for (final e in find.byType(type).evaluate())
+                    if (e.renderObject case final RenderBox b when b.hasSize)
+                      (
+                        rect: b.localToGlobal(Offset.zero) & b.size,
+                        ends: true,
+                        what: '$type',
+                      ),
+              ];
+              for (final row in _rows(boxes)) {
+                row.sort((a, b) => a.rect.left.compareTo(b.rect.left));
+                // Neighbours on one line: no wider apart than a field pair's gap (columns stand 56 apart).
+                for (var i = 1; i < row.length; i++) {
+                  final a = row[i - 1], b = row[i];
+                  if (b.rect.left - a.rect.right > 32) continue;
+                  if (_r(a.rect.height) != _r(b.rect.height)) {
+                    uneven.add(
+                      '${s.name} ${size.width.round()}: ${a.what} ${a.rect.height}, ${b.what} ${b.rect.height}',
+                    );
+                  }
+                }
               }
             }
-          }
-        }
-        expect(uneven, isEmpty, reason: uneven.join('\n'));
-      });
+            expect(uneven, isEmpty, reason: uneven.join('\n'));
+          },
+        );
 
-      testWidgets("holds ui_core's keyline check at 390 and 1440", (t) async {
-        final problems = <String>[];
         // Tall enough that the whole page is laid out and painted: the check reads its pixels.
-        for (final size in const [Size(390, 3200), Size(1440, 2400)]) {
-          await _open(t, s, size);
-          final report =
-              await const DesignKeylineCheck(
-                look: 'Ledger',
-                pixelRatio: 2,
-              ).check(
-                t.element(find.byType(LedgerScreen).last),
-                runAsync: t.runAsync,
-              );
-          problems.addAll([
-            for (final p in report.problems)
-              if (!_misread.keys.any(p.contains)) '${size.width.round()}: $p',
-          ]);
-        }
-        expect(problems, isEmpty, reason: problems.join('\n'));
+        final tall = _pick(
+          const [Size(390, 3200), Size(1440, 2400)],
+          i + 1,
+          everyday,
+        );
+        testWidgets(
+          "holds ui_core's keyline check at ${_widthsOf(tall)}",
+          tags: sweepUnless(everyday),
+          (t) async {
+            final problems = <String>[];
+            for (final size in tall) {
+              await _open(t, s, size);
+              final report =
+                  await const DesignKeylineCheck(
+                    look: 'Ledger',
+                    pixelRatio: 2,
+                  ).check(
+                    t.element(find.byType(LedgerScreen).last),
+                    runAsync: t.runAsync,
+                  );
+              problems.addAll([
+                for (final p in report.problems)
+                  if (!_misread.keys.any(p.contains))
+                    '${size.width.round()}: $p',
+              ]);
+            }
+            expect(problems, isEmpty, reason: problems.join('\n'));
+          },
+        );
       });
-    });
+    }
   }
 
   // design6 P (11-11 noon, the user on :8506: "some dropdown spans the entire width"): from 600 a select stands at its

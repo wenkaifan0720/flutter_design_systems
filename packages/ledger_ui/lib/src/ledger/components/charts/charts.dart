@@ -961,7 +961,9 @@ class LedgerVisitRuler extends StatelessWidget {
   /// Whether the payments came in (a payer), inked green.
   final bool moneyIn;
 
-  /// What a screen reader says the ruler is; null says the visits.
+  /// What a screen reader says the ruler is; null says how many visits, in
+  /// English ("1 payment this month", "3 payments this month"). An app in
+  /// another language words it here, with its own plural forms.
   final String? semanticLabel;
 
   /// The month's first and last day under the ruler's two ends.
@@ -1008,7 +1010,11 @@ class LedgerVisitRuler extends StatelessWidget {
         .tracked(0)
         .colored(t.textTertiary);
     return Semantics(
-      label: semanticLabel ?? '${visits.length} payments this month',
+      label:
+          semanticLabel ??
+          (visits.length == 1
+              ? '1 payment this month'
+              : '${visits.length} payments this month'),
       excludeSemantics: true,
       child: startLabel == null && endLabel == null
           ? ruler

@@ -448,14 +448,15 @@ class _LeaderState extends State<_Leader> with SingleTickerProviderStateMixin {
     duration: const Duration(milliseconds: 1800),
   );
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final still = LedgerMotion.isReduced(context);
-    if (still) {
-      _draw
-        ..stop()
-        ..value = 1;
+  // Run from build: iOS's Reduce Motion comes as a build, never as
+  // didChangeDependencies (LedgerMotion.isReduced).
+  void _sync() {
+    if (LedgerMotion.isReduced(context)) {
+      if (_draw.isAnimating || _draw.value != 1) {
+        _draw
+          ..stop()
+          ..value = 1;
+      }
     } else if (!_draw.isAnimating) {
       _draw.repeat();
     }
@@ -469,6 +470,7 @@ class _LeaderState extends State<_Leader> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    _sync();
     final t = context.ledgerTheme;
     return CustomPaint(
       size: const Size(

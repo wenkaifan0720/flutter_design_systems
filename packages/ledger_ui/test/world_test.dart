@@ -15,6 +15,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../example/lib/gallery_pages.dart';
 import 'world_checks.dart';
+import 'tiers.dart';
 
 Future<void> _loadFonts() async {
   final manifest = json.decode(
@@ -346,20 +347,28 @@ void main() {
     });
   });
 
+  // Each page's everyday case is a phone or the desktop, by day or by night, turning over the pages; the other is the
+  // sweep's (tiers.dart).
   group('every gallery page at text scale 2.0', () {
-    for (final page in galleryPages) {
+    for (final (i, page) in galleryPages.indexed) {
       for (final size in const [_phone, _desktop]) {
-        testWidgets('${page.id} at ${size.width.round()}', (t) async {
-          _size(t, size);
-          await expectNoOverflowAtTextScale(t, page.build(Brightness.light));
-        });
+        testWidgets(
+          '${page.id} at ${size.width.round()}',
+          tags: sweepUnless(size == turn(const [_phone, _desktop], i)),
+          (t) async {
+            _size(t, size);
+            await expectNoOverflowAtTextScale(t, page.build(Brightness.light));
+          },
+        );
       }
     }
   });
 
   group('the main gallery pages meet the guidelines at 44', () {
-    for (final page in galleryPages.where((p) => _main.contains(p.id))) {
+    for (final (i, page)
+        in galleryPages.where((p) => _main.contains(p.id)).indexed) {
       for (final brightness in Brightness.values) {
+        final everyday = brightness == turn(Brightness.values, i);
         Future<void> open(WidgetTester t) async {
           _size(t, _phone);
           await t.pumpWidget(page.build(brightness));
@@ -367,13 +376,17 @@ void main() {
           await _fit(t, _phone.width);
         }
 
-        testWidgets('${page.id} ${brightness.name}', (t) async {
-          await open(t);
-          final semantics = t.ensureSemantics();
-          await expectLater(t, meetsGuideline(iOSTapTargetGuideline));
-          await expectLater(t, meetsGuideline(labeledTapTargetGuideline));
-          semantics.dispose();
-        });
+        testWidgets(
+          '${page.id} ${brightness.name}',
+          tags: sweepUnless(everyday),
+          (t) async {
+            await open(t);
+            final semantics = t.ensureSemantics();
+            await expectLater(t, meetsGuideline(iOSTapTargetGuideline));
+            await expectLater(t, meetsGuideline(labeledTapTargetGuideline));
+            semantics.dispose();
+          },
+        );
 
         // Text contrast reads the drawn pixels, so it depends on the rasterizer, as a golden does: Linux's FreeType
         // draws Ledger's 11 px small capitals, its mono figures and the cheque's light words with thinner strokes
@@ -392,7 +405,7 @@ void main() {
           // logical pixel, so an 11 px meta line in the third ink (4.6:1 on the paper: the dialog page's note, the
           // structure page's section notes) samples as antialiased grey (3.75-4.47).
           skip: _sampledThin.contains((page.id, brightness)),
-          tags: 'goldens',
+          tags: goldensSweepUnless(everyday),
         );
       }
     }

@@ -24,6 +24,7 @@ import 'package:ledger_ui/ledger_host.dart';
 
 import '../example/lib/gallery_pages.dart';
 import '../example/lib/kit_gallery/quill/quill.dart';
+import 'tiers.dart';
 
 Future<void> _loadFonts() async {
   final manifest = json.decode(
@@ -258,32 +259,45 @@ void main() {
   // test: 4.6 GB by the 99th page, against 0.6 GB untracked, so the walk outgrew a 7.75 GB Linux runner. The walk
   // makes nothing of its own through the helpers, so it tracks theirs too.
   final tracked = LeakTesting.settings.withTracked(createdByTestHelpers: true);
-  for (final width in const [600.0, 1024.0, 1440.0]) {
+  // Each page's everyday case is one of the four widths, turning over the pages; its other three are the sweep's
+  // (tiers.dart).
+  const widths = [390.0, 600.0, 1024.0, 1440.0];
+  for (final width in widths.skip(1)) {
     group(
       'every gallery page at ${width.round()}, opened from Quill\'s index: each example starts on its column\'s '
       'edge, and no word is broken',
       () {
-        for (final page in galleryPages) {
-          testWidgets(page.id, experimentalLeakTesting: tracked, (t) async {
-            addTearDown(t.view.reset);
-            await _open(t, page, Size(width, 900));
-            final where = '${page.id} ${width.round()}';
-            final found = [..._offEdge(t, where), ..._brokenWords(t, where)];
-            expect(found, isEmpty, reason: found.join('\n'));
-          });
+        for (final (i, page) in galleryPages.indexed) {
+          testWidgets(
+            page.id,
+            experimentalLeakTesting: tracked,
+            tags: sweepUnless(width == turn(widths, i)),
+            (t) async {
+              addTearDown(t.view.reset);
+              await _open(t, page, Size(width, 900));
+              final where = '${page.id} ${width.round()}';
+              final found = [..._offEdge(t, where), ..._brokenWords(t, where)];
+              expect(found, isEmpty, reason: found.join('\n'));
+            },
+          );
         }
       },
     );
   }
 
   group('no word is broken at 390 either, on any gallery page opened from Quill\'s index', () {
-    for (final page in galleryPages) {
-      testWidgets(page.id, experimentalLeakTesting: tracked, (t) async {
-        addTearDown(t.view.reset);
-        await _open(t, page, const Size(390, 844));
-        final found = _brokenWords(t, '${page.id} 390');
-        expect(found, isEmpty, reason: found.join('\n'));
-      });
+    for (final (i, page) in galleryPages.indexed) {
+      testWidgets(
+        page.id,
+        experimentalLeakTesting: tracked,
+        tags: sweepUnless(turn(widths, i) == 390),
+        (t) async {
+          addTearDown(t.view.reset);
+          await _open(t, page, const Size(390, 844));
+          final found = _brokenWords(t, '${page.id} 390');
+          expect(found, isEmpty, reason: found.join('\n'));
+        },
+      );
     }
   });
 

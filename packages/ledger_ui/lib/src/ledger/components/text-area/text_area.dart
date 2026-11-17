@@ -176,7 +176,11 @@ class _LedgerTextAreaState extends State<LedgerTextArea> {
                 builder: (context, s, _) => Text(
                   '$left',
                   style: t.meta.colored(s.ink),
-                  semanticsLabel: '$left characters left',
+                  // Material's counted words ("1 character remaining"),
+                  // in the app's language with its plural forms; LedgerHost
+                  // gives them where the app does not.
+                  semanticsLabel: MaterialLocalizations.of(context)
+                      .remainingTextFieldCharacterCount(left),
                 ),
               );
             },

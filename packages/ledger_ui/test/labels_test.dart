@@ -1,5 +1,7 @@
 // Every labelled control on every gallery page and every Quill screen keeps its label on the middle of its face, as
-// laid out and as drawn, under each density Ledger ships, on a phone and on the desktop (ui_core's label sweep).
+// laid out and as drawn, under each density Ledger ships, on a phone and on the desktop (ui_core's label sweep). Each
+// page's everyday case is one width and density, the two turning over the pages; the rest of its widths and densities
+// are the sweep's (tiers.dart).
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:convert';
 import 'dart:math' as math;
@@ -7,6 +9,7 @@ import 'dart:math' as math;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
 import 'package:ui_core/alignment.dart';
@@ -16,6 +19,14 @@ import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/quill/entry.dart';
 import '../example/lib/kit_gallery/quill/quill.dart';
 import '../example/lib/kit_gallery/quill/register.dart';
+import 'tiers.dart';
+
+/// Leak tracking without a creation stack per object, as walk_test's and design6_support.dart's: leaving out what the
+/// test helpers make keeps the stack every tracked object was made on, and over a test per page those outlive their
+/// test. These tests make nothing of their own through the helpers, so they track theirs too.
+final LeakTesting _tracked = LeakTesting.settings.withTracked(
+  createdByTestHelpers: true,
+);
 
 Future<void> _loadFonts() async {
   final manifest = json.decode(
@@ -83,14 +94,17 @@ const Map<String, String> _misread = {
       "one cap-height reading 0.3 over the hinting allowance (unexplained)",
 };
 
+/// Reads every width and density of [_widths] and [LedgerDensity.values] that [read] keeps.
 Future<List<String>> _sweep(
   WidgetTester t,
   String name,
+  bool Function(double width, LedgerDensity density) read,
   Future<void> Function(LedgerDensity density) pump,
 ) async {
   final found = <String>[];
   for (final width in _widths) {
     for (final density in LedgerDensity.values) {
+      if (!read(width, density)) continue;
       t.view.physicalSize = Size(width, width < 600 ? 844 : 900);
       t.view.devicePixelRatio = 1;
       await pump(density);
@@ -110,27 +124,51 @@ Future<List<String>> _sweep(
   return found;
 }
 
+/// The [i]th page's two tests: its everyday width and density, and the rest of them in the sweep.
+void _tiers(
+  int i,
+  String name,
+  Future<void> Function(WidgetTester t, LedgerDensity density) pump,
+) {
+  bool everyday(double width, LedgerDensity density) =>
+      width == turn(_widths, i) && density == turn(LedgerDensity.values, i);
+  for (final tier in const [true, false]) {
+    final at = tier
+        ? 'at ${turn(_widths, i).round()} ${turn(LedgerDensity.values, i).name}'
+        : 'at its other widths and densities';
+    testWidgets(
+      experimentalLeakTesting: _tracked,
+      '$name keeps its labels on their faces\' middles $at',
+      (t) async {
+        addTearDown(t.view.reset);
+        final found = await _sweep(
+          t,
+          name,
+          (w, d) => everyday(w, d) == tier,
+          (density) => pump(t, density),
+        );
+        expect(found, isEmpty, reason: found.join('\n'));
+      },
+      tags: goldensSweepUnless(tier),
+    );
+  }
+}
+
 void main() {
   setUpAll(_loadFonts);
   tearDown(() => kitDensity = null);
 
   group('every gallery page', () {
-    for (final page in galleryPages) {
-      testWidgets('${page.id} keeps its labels on their faces\' middles', (
-        t,
-      ) async {
-        addTearDown(t.view.reset);
-        final found = await _sweep(t, page.id, (density) async {
-          kitDensity = density;
-          await t.pumpWidget(
-            KeyedSubtree(
-              key: ValueKey(density),
-              child: page.build(Brightness.light),
-            ),
-          );
-        });
-        expect(found, isEmpty, reason: found.join('\n'));
-      }, tags: 'goldens');
+    for (final (i, page) in galleryPages.indexed) {
+      _tiers(i, page.id, (t, density) async {
+        kitDensity = density;
+        await t.pumpWidget(
+          KeyedSubtree(
+            key: ValueKey(density),
+            child: page.build(Brightness.light),
+          ),
+        );
+      });
     }
     // ui_core's label check reads the drawn pixels, so it depends on the rasterizer, as a golden does: tagged goldens,
     // Linux CI skips it and the macOS goldens job runs it.
@@ -149,25 +187,22 @@ void main() {
         () => QuillReceiptPage(tx: kitRecent.first),
       ),
     ];
-    for (final (name, page, pushed) in screens) {
-      testWidgets('$name keeps its labels on their faces\' middles', (t) async {
-        addTearDown(t.view.reset);
-        final found = await _sweep(t, name, (density) async {
-          await t.pumpWidget(
-            QuillApp(
-              key: UniqueKey(),
-              initialPage: page,
-              initialDensity: density,
-            ),
-          );
-          await _rest(t);
-          final top = pushed();
-          if (top != null) {
-            t.state<QuillFrameState>(find.byType(QuillFrame)).push(top);
-          }
-        });
-        expect(found, isEmpty, reason: found.join('\n'));
-      }, tags: 'goldens');
+    for (final (i, (name, page, pushed)) in screens.indexed) {
+      // Turned on past the gallery's pages, so the screens take the values the pages left.
+      _tiers(galleryPages.length + i, name, (t, density) async {
+        await t.pumpWidget(
+          QuillApp(
+            key: UniqueKey(),
+            initialPage: page,
+            initialDensity: density,
+          ),
+        );
+        await _rest(t);
+        final top = pushed();
+        if (top != null) {
+          t.state<QuillFrameState>(find.byType(QuillFrame)).push(top);
+        }
+      });
     }
   });
 }

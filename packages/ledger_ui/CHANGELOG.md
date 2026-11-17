@@ -1,3 +1,29 @@
+## 0.2.1
+
+Needs ui_core 0.2.1.
+
+- Reduce Motion on iOS calms Ledger too. Flutter puts iOS's Reduce Motion in dart:ui's
+  `AccessibilityFeatures.reduceMotion`, not in `MediaQuery.disableAnimationsOf`, which was all Ledger read, so on an
+  iPhone with Reduce Motion on, Ledger's eases, sheets and loops still ran. `LedgerMotion.isReduced` now reads ui_core's
+  `designReduceMotionOf`, which also covers Android's Remove animations and the web's `prefers-reduced-motion`, so
+  `LedgerMotion.of` and `LedgerSheet.motionOf` give cuts under any of them. The progress bar, the progress ring, the
+  skeleton and the loading state's leader stop looping, and when the setting changes while one runs, it stops or
+  starts at once.
+- Counted words take their plural form. A text area's count of what is left says Material's words ("1 character
+  remaining", "No characters remaining"), in the app's language with its plural forms; it said "1 characters left".
+  `LedgerVisitRuler`'s own label says "1 payment this month".
+- `LedgerDisclosure` opens and closes at once under Reduce Motion. At a zero duration its size animation re-dirtied
+  its own layout, an assertion in debug builds, on Android's Remove animations as on iOS's Reduce Motion.
+- From ui_core 0.2.1: a menu or popover its anchor opened gives the focus back to the anchor as it closes, and Home
+  and End in a menu keep the row they reach in view.
+- The tests run in tiers. `flutter test --exclude-tags goldens,sweep` is the everyday run, and
+  `flutter test --tags goldens --exclude-tags sweep` the pixel checks' (on macOS). Each keeps a case of every
+  matrix: every gallery page and screen once, with the width, the appearance and the density turning over them, so
+  each size, appearance, density, right to left and 200% text is still read on every run. The rest of each matrix is
+  tagged `sweep` (`flutter test --tags sweep`), and `flutter test` runs every tier. The pixel checks' sweep runs in
+  five files side by side, a test per density, and the tests that read page after page keep no creation stack per
+  object in leak tracking: the largest test process is 3.3 GB, from 4.0 GB.
+
 ## 0.2.0
 
 - **The ordinary parts, in Ledger's hand.** Ledger now carries a part for every row of ui_core's inventory of the

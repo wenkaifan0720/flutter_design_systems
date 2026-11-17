@@ -20,7 +20,7 @@ The parts take the parameters a Flutter developer expects: a press is `onPressed
 
 ```yaml
 dependencies:
-  ledger_ui: ^0.2.0
+  ledger_ui: ^0.2.1
 ```
 
 ## Use

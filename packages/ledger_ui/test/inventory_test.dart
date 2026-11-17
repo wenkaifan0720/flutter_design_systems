@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
 
+import 'tiers.dart';
+
 /// The rows still to build: none, every row is built in Ledger's hand.
 const Set<String> _toBuild = {};
 
@@ -134,13 +136,20 @@ void main() {
     }
   });
 
+  // Every run: by day at 390 and by night at 1440; the sweep (tiers.dart): the
+  // other two.
   for (final brightness in Brightness.values) {
     for (final size in const [Size(390, 844), Size(1440, 900)]) {
-      testWidgets('every live specimen lays out: ${brightness.name}, '
-          '${size.width.round()} wide', (t) async {
-        _size(t, size);
-        await _everySpecimen(t, brightness: brightness);
-      });
+      final everyday = (brightness == Brightness.light) == (size.width == 390);
+      testWidgets(
+        'every live specimen lays out: ${brightness.name}, '
+        '${size.width.round()} wide',
+        tags: sweepUnless(everyday),
+        (t) async {
+          _size(t, size);
+          await _everySpecimen(t, brightness: brightness);
+        },
+      );
     }
   }
 
