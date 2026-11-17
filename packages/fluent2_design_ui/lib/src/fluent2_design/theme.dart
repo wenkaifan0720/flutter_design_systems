@@ -216,11 +216,15 @@ abstract final class Fluent2Motion {
   static const Curve linear = Curves.linear;
 
   /// Whether a part at [context] moves: unless the reader has asked for
-  /// reduced motion (`MediaQuery.disableAnimationsOf`, Flutter's own switch,
-  /// which a test sets with `FakeAccessibilityFeatures`). Off, every state
-  /// change is a cut.
-  static bool on(BuildContext context) =>
-      !(MediaQuery.maybeDisableAnimationsOf(context) ?? false);
+  /// reduced motion, on any platform (ui_core's `designReduceMotionOf`:
+  /// Android's Remove animations and the web's prefers-reduced-motion through
+  /// `MediaQuery.disableAnimationsOf`, iOS's Reduce Motion through the
+  /// platform's accessibility features). Off, every state change is a cut.
+  ///
+  /// iOS's switch reaches [context] as a build, not as
+  /// `didChangeDependencies`: a part that runs a loop starts and stops it in
+  /// `build`.
+  static bool on(BuildContext context) => !designReduceMotionOf(context);
 
   /// [duration] at [context], or none when motion is off.
   static Duration of(BuildContext context, Duration duration) =>

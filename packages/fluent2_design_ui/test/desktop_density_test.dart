@@ -22,6 +22,8 @@ import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/components/input/field_core.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/internal/cap_label.dart';
 
+import 'tiers.dart';
+
 void _drop(Object? _) {}
 
 const _sizes = [
@@ -292,19 +294,27 @@ Future<_Place> _shown(
 }
 
 void main() {
-  for (final e in _entries) {
-    for (final scale in const [1.0, 1.5]) {
-      testWidgets('${e.name} at text scale $scale: under macOS its words stand '
-          'where Android\'s density puts them, centred, the part its size', (
-        tester,
-      ) async {
-        await _check(tester, e, scale);
-      });
-      testWidgets('${e.name} at text scale $scale: a host '
-          'InputDecorationTheme (padding 20, dense, 56 least) moves nothing '
-          'on Android, iOS or macOS', (tester) async {
-        await _checkHost(tester, e, scale);
-      });
+  // Every run checks each entry at one text scale, the scales turning over the entries; the sweep, at the other.
+  for (final (i, e) in _entries.indexed) {
+    for (final (at, scale) in const [1.0, 1.5].indexed) {
+      final tags = sweepUnless(at == i % 2);
+      testWidgets(
+        '${e.name} at text scale $scale: under macOS its words stand '
+        'where Android\'s density puts them, centred, the part its size',
+        tags: tags,
+        (tester) async {
+          await _check(tester, e, scale);
+        },
+      );
+      testWidgets(
+        '${e.name} at text scale $scale: a host '
+        'InputDecorationTheme (padding 20, dense, 56 least) moves nothing '
+        'on Android, iOS or macOS',
+        tags: tags,
+        (tester) async {
+          await _checkHost(tester, e, scale);
+        },
+      );
     }
   }
 }

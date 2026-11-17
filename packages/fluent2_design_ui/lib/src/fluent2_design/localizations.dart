@@ -278,6 +278,27 @@ abstract class Fluent2Localizations {
 
   /// A month and year ("March 2026").
   String monthYear(DateTime date) => '${months[date.month - 1]} ${date.year}';
+
+  // The counts below came in 0.2.1, with English bodies here, so a language
+  // written for 0.2.0 still builds (and says these in English until it adds
+  // its own). Each takes the count itself, for a language that picks its
+  // plural form from it.
+
+  /// A rating's score to a screen reader: [value] of [max] stars ("Rated 4.5
+  /// out of 5").
+  String ratedOutOf(String value, int max) => 'Rated $value out of $max';
+
+  /// How many scores a rating is made of ("1 rating", "1,204 ratings"):
+  /// [counted] is [count] as the locale writes its numbers.
+  String ratingsCount(int count, String counted) =>
+      count == 1 ? '$counted rating' : '$counted ratings';
+
+  /// A rating input's value, [value] of [max] stars ("3 of 5").
+  String ratingValue(String value, int max) => '$value of $max';
+
+  /// An avatar group to a screen reader: the [names] it shows and the [more]
+  /// it folds into its "+N" ("Ana, Kai and 3 more").
+  String namesAndMore(String names, int more) => '$names and $more more';
 }
 
 /// Fluent 2's English words.

@@ -180,18 +180,7 @@ class _Fluent2ProgressBarState extends State<Fluent2ProgressBar>
     duration: const Duration(milliseconds: 3000),
   );
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-  }
-
-  @override
-  void didUpdateWidget(Fluent2ProgressBar old) {
-    super.didUpdateWidget(old);
-    _sync();
-  }
-
+  // Run from build: iOS's Reduce Motion arrives as a build alone.
   void _sync() {
     final spin = widget.value == null && Fluent2Motion.on(context);
     if (spin && !_slide.isAnimating) {
@@ -209,6 +198,7 @@ class _Fluent2ProgressBarState extends State<Fluent2ProgressBar>
 
   @override
   Widget build(BuildContext context) {
+    _sync();
     final t = context.fluent2Theme;
     final w = widget;
     final track = fluent2ProgressTrack(t);

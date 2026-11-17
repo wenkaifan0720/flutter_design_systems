@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
 import 'gallery_support.dart';
+import 'tiers.dart';
 
 const _platforms = {
   TargetPlatform.android,
@@ -19,45 +20,63 @@ const _platforms = {
 void main() {
   final files = galleryPages.firstWhere((p) => p.id == 'app-files');
 
+  // Every run checks a phone's touch at 390 and a desk's pointer at 1440; the sweep, the other platforms at each.
   for (final width in [galleryWidth, 1440.0]) {
-    testWidgets('a file opens and closes with the look\'s motion at $width', (
-      t,
-    ) async {
-      addTearDown(releaseImages);
-      t.view.devicePixelRatio = 1;
-      t.view.physicalSize = Size(width, 900);
-      addTearDown(t.view.reset);
-      await t.pumpWidget(files.build(Brightness.light));
-      await settle(t);
-
-      await t.tap(find.text('Q3 plan.docx').hitTestable().first);
-      // The hero controller keeps the page off stage for the push's first frame.
-      await t.pump();
-      await t.pump();
-      final copy = find.text('Copy link');
-      expect(
-        find.ancestor(of: copy, matching: find.byType(Fluent2PageTransition)),
-        findsWidgets,
-      );
-      await t.pump(const Duration(milliseconds: 100));
-      final moving = t.getTopLeft(copy);
-      await settle(t);
-      final placed = t.getTopLeft(copy);
-      expect(moving.dy, placed.dy);
-      expect(moving.dx - placed.dx, inExclusiveRange(0, 20.001));
-
-      t
-          .state<NavigatorState>(
-            find.ancestor(of: copy, matching: find.byType(Navigator)).first,
-          )
-          .pop();
-      await t.pump();
-      await t.pump(const Duration(milliseconds: 50));
-      final leaving = t.getTopLeft(copy);
-      expect(leaving.dy, placed.dy);
-      expect(leaving.dx - placed.dx, inExclusiveRange(0, 20.001));
-      await settle(t);
-      expect(copy, findsNothing);
-    }, variant: const TargetPlatformVariant(_platforms));
+    final everyday = platformAt(width);
+    final description =
+        'a file opens and closes with the look\'s motion at $width';
+    testWidgets(
+      description,
+      (t) => _opensAndCloses(t, files, width),
+      variant: TargetPlatformVariant.only(everyday),
+    );
+    testWidgets(
+      description,
+      (t) => _opensAndCloses(t, files, width),
+      variant: TargetPlatformVariant(_platforms.difference({everyday})),
+      tags: const [sweep],
+    );
   }
+}
+
+Future<void> _opensAndCloses(
+  WidgetTester t,
+  GalleryPage files,
+  double width,
+) async {
+  addTearDown(releaseImages);
+  t.view.devicePixelRatio = 1;
+  t.view.physicalSize = Size(width, 900);
+  addTearDown(t.view.reset);
+  await t.pumpWidget(files.build(Brightness.light));
+  await settle(t);
+
+  await t.tap(find.text('Q3 plan.docx').hitTestable().first);
+  // The hero controller keeps the page off stage for the push's first frame.
+  await t.pump();
+  await t.pump();
+  final copy = find.text('Copy link');
+  expect(
+    find.ancestor(of: copy, matching: find.byType(Fluent2PageTransition)),
+    findsWidgets,
+  );
+  await t.pump(const Duration(milliseconds: 100));
+  final moving = t.getTopLeft(copy);
+  await settle(t);
+  final placed = t.getTopLeft(copy);
+  expect(moving.dy, placed.dy);
+  expect(moving.dx - placed.dx, inExclusiveRange(0, 20.001));
+
+  t
+      .state<NavigatorState>(
+        find.ancestor(of: copy, matching: find.byType(Navigator)).first,
+      )
+      .pop();
+  await t.pump();
+  await t.pump(const Duration(milliseconds: 50));
+  final leaving = t.getTopLeft(copy);
+  expect(leaving.dy, placed.dy);
+  expect(leaving.dx - placed.dx, inExclusiveRange(0, 20.001));
+  await settle(t);
+  expect(copy, findsNothing);
 }

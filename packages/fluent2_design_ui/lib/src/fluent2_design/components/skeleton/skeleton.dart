@@ -102,26 +102,18 @@ class _Fluent2SkeletonState extends State<Fluent2Skeleton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _beat = AnimationController(vsync: this);
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-  }
-
-  @override
-  void didUpdateWidget(Fluent2Skeleton old) {
-    super.didUpdateWidget(old);
-    if (old.animation != widget.animation) _sync();
-  }
-
+  // Run from build: iOS's Reduce Motion arrives as a build alone. A beat
+  // already running at its animation's pace runs on undisturbed.
   void _sync() {
-    _beat.duration = widget.animation == Fluent2SkeletonAnimation.wave
+    final pace = widget.animation == Fluent2SkeletonAnimation.wave
         ? const Duration(seconds: 3)
         : const Duration(seconds: 1);
-    if (Fluent2Motion.on(context)) {
-      _beat.repeat();
-    } else {
-      _beat.stop();
+    if (!Fluent2Motion.on(context)) {
+      if (_beat.isAnimating) _beat.stop();
+    } else if (!_beat.isAnimating || _beat.duration != pace) {
+      _beat
+        ..duration = pace
+        ..repeat();
     }
   }
 
@@ -132,7 +124,12 @@ class _Fluent2SkeletonState extends State<Fluent2Skeleton>
   }
 
   @override
-  Widget build(BuildContext context) => Semantics(
+  Widget build(BuildContext context) {
+    _sync();
+    return _drawn(context);
+  }
+
+  Widget _drawn(BuildContext context) => Semantics(
     label: widget.label ?? DesignLocalizations.of(context).loadingLabel,
     role: SemanticsRole.loadingSpinner,
     excludeSemantics: true,

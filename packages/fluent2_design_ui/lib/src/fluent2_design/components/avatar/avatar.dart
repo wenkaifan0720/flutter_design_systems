@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
+import '../../localizations.dart';
 import '../../styled.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
@@ -752,7 +753,9 @@ class Fluent2AvatarGroup extends StatelessWidget {
         ),
     ];
     final names = shown.map((p) => p.name).join(', ');
-    final spoken = rest > 0 && more ? '$names and $rest more' : names;
+    final spoken = rest > 0 && more
+        ? Fluent2Localizations.of(context).namesAndMore(names, rest)
+        : names;
     final group = SizedBox(
       width: width,
       height: size + ring * 2,

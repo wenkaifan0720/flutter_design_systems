@@ -406,6 +406,28 @@ class _Fluent2Arabic extends Fluent2LocalizationsEn {
   @override
   String notificationsUnread(int count) => 'الإشعارات، $count غير مقروءة';
   @override
+  String ratedOutOf(String value, int max) => 'التقييم $value من $max';
+  @override
+  String ratingsCount(int count, String counted) =>
+      switch (_arabicForm(count)) {
+        _ArabicForm.zero => 'لا تقييمات',
+        _ArabicForm.one => 'تقييم واحد',
+        _ArabicForm.two => 'تقييمان',
+        _ArabicForm.few => '$counted تقييمات',
+        _ArabicForm.many => '$counted تقييمًا',
+        _ArabicForm.other => '$counted تقييم',
+      };
+  @override
+  String ratingValue(String value, int max) => '$value من $max';
+  @override
+  String namesAndMore(String names, int more) => switch (_arabicForm(more)) {
+    _ArabicForm.zero || _ArabicForm.other => '$names و$more آخرين',
+    _ArabicForm.one => '$names وشخص آخر',
+    _ArabicForm.two => '$names وشخصان آخران',
+    _ArabicForm.few => '$names و$more أشخاص آخرين',
+    _ArabicForm.many => '$names و$more شخصًا آخر',
+  };
+  @override
   String get information => 'معلومات';
   @override
   String get success => 'نجاح';
@@ -451,3 +473,15 @@ class _Delegate<T> extends LocalizationsDelegate<T> {
   @override
   Type get type => T;
 }
+
+/// CLDR's Arabic plural forms.
+enum _ArabicForm { zero, one, two, few, many, other }
+
+_ArabicForm _arabicForm(int n) => switch (n % 100) {
+  _ when n == 0 => _ArabicForm.zero,
+  _ when n == 1 => _ArabicForm.one,
+  _ when n == 2 => _ArabicForm.two,
+  >= 3 && <= 10 => _ArabicForm.few,
+  >= 11 && <= 99 => _ArabicForm.many,
+  _ => _ArabicForm.other,
+};

@@ -7,6 +7,7 @@ import 'package:ui_core/ui_core.dart';
 import '../../icons.dart';
 import '../../internal/key_focus.dart';
 import '../../internal/well.dart';
+import '../../localizations.dart';
 import '../../theme.dart';
 
 /// The ink a rating's stars wear: Fluent's `neutral` (the first ink),
@@ -271,7 +272,8 @@ class _Fluent2RatingState extends State<Fluent2Rating> {
     final shown = _hover ?? widget.value;
     final width = size * widget.max;
     final step = _step;
-    String words(double v) => '${_figure(v)} of ${widget.max}';
+    final say = Fluent2Localizations.of(context);
+    String words(double v) => say.ratingValue(_figure(v), widget.max);
     final row = SizedBox(
       width: width,
       height: size,
@@ -419,12 +421,13 @@ class Fluent2RatingDisplay extends StatelessWidget {
         ? null
         : MaterialLocalizations.of(context).formatDecimal(n);
     final words = <String>[if (showValue || compact) _figure(value), ?counted];
+    final say = Fluent2Localizations.of(context);
     return Semantics(
       container: true,
       image: true,
       label: [
-        'Rated ${_figure(value)} out of $max',
-        if (counted != null) '$counted ${n == 1 ? 'rating' : 'ratings'}',
+        say.ratedOutOf(_figure(value), max),
+        if (n != null) say.ratingsCount(n, counted!),
       ].join(', '),
       child: ExcludeSemantics(
         child: Row(

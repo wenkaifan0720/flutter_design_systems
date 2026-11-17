@@ -1,3 +1,18 @@
+## 0.2.1
+
+- **Reduce Motion on iPhone and iPad.** iOS's Reduce Motion now calms Fluent 2 as Android's Remove animations and the
+  web's prefers-reduced-motion do: every change of state, every push and pop is a cut, the spinner, progress bar and
+  skeleton hold still, and a swiped row lands at once. Flutter carries iOS's switch outside `MediaQuery`, so
+  `Fluent2Motion.on` reads it through ui_core's `designReduceMotionOf`, and the moving parts stop and start as it
+  flips. Requires `ui_core: ^0.2.1`.
+- **Counts in any language.** A rating's spoken score ("Rated 4 out of 5, 1 rating") and an avatar group's ("Ana, Kai
+  and 3 more") now come from `Fluent2Localizations` (`ratedOutOf`, `ratingsCount`, `ratingValue`, `namesAndMore`), each
+  given its count, so a language picks its own plural form. They have English bodies, so a language written for 0.2.0
+  still builds.
+- **From ui_core 0.2.1.** A menu or list that a button opened gives the focus back to that button as it closes; a
+  combobox's list no longer opens again when the focus comes back to its field (Android's back then leaves the page);
+  Home and End in an open list keep the row they reach in view.
+
 ## 0.2.0
 
 - **Breaking: tap targets take room.** Every control stands in a target at least 48 square under a finger and 24

@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'gallery_support.dart';
+import 'tiers.dart';
 import 'world_checks.dart';
 
 void _noop() {}
@@ -174,34 +175,45 @@ void main() {
     });
   }
 
+  // Every run lays the main pages out at 200%; the sweep, every other page.
   for (final page in galleryPages) {
-    testWidgets('${page.id} lays out at text scale 2', (tester) async {
-      phone(tester);
-      await expectNoOverflowAtTextScale(
-        tester,
-        KeyedSubtree(
-          key: ValueKey(page.id),
-          child: page.build(Brightness.light),
-        ),
-      );
-    });
+    testWidgets(
+      '${page.id} lays out at text scale 2',
+      tags: sweepUnless(_mains.contains(page.id)),
+      (tester) async {
+        phone(tester);
+        await expectNoOverflowAtTextScale(
+          tester,
+          KeyedSubtree(
+            key: ValueKey(page.id),
+            child: page.build(Brightness.light),
+          ),
+        );
+      },
+    );
   }
 
-  for (final id in _mains) {
+  // Every run checks each main page's targets light or dark in turn (gallery_guidelines_test holds every page's);
+  // the sweep, the other way.
+  for (final (i, id) in _mains.indexed) {
     for (final b in Brightness.values) {
-      testWidgets('$id meets the target guidelines, ${b.name}', (tester) async {
-        phone(tester);
-        await tester.pumpWidget(
-          galleryPages.firstWhere((p) => p.id == id).build(b),
-        );
-        await settle(tester);
-        // expectMeetsGuidelines' three target and label guidelines, as they are.
-        final semantics = tester.ensureSemantics();
-        await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-        await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
-        await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-        semantics.dispose();
-      });
+      testWidgets(
+        '$id meets the target guidelines, ${b.name}',
+        tags: sweepUnless(b == Brightness.values[i % 2]),
+        (tester) async {
+          phone(tester);
+          await tester.pumpWidget(
+            galleryPages.firstWhere((p) => p.id == id).build(b),
+          );
+          await settle(tester);
+          // expectMeetsGuidelines' three target and label guidelines, as they are.
+          final semantics = tester.ensureSemantics();
+          await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+          await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+          await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+          semantics.dispose();
+        },
+      );
 
       // Its fourth, text contrast, read from each paragraph's own ink. Flutter's textContrastGuideline reads both
       // colours from a capture at one pixel per logical pixel, whatever the device: Selawik's 12 px strokes never

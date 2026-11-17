@@ -14,6 +14,7 @@ import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/main.dart';
 import 'gallery_support.dart';
+import 'tiers.dart';
 
 /// Every setting: each density away from the look's own, each brand colour of your own, and both at once.
 final Map<String, GalleryCustom> settings = {
@@ -53,13 +54,19 @@ void main() {
 
   // Out of the package's leak tracking, as every preset but the first is (leakTestingIn): a setting changes colours
   // and measures, not which widgets a page makes; gallery_guidelines_test holds each page's disposal.
+  // Every run checks the targets on each page under one setting, the settings turning over the pages, light and dark
+  // in turn; the sweep, under the rest.
   final untracked = LeakTesting.settings.withIgnoredAll();
-  for (final MapEntry(key: name, value: custom) in settings.entries) {
-    for (final page in galleryPages) {
+  final n = settings.length;
+  for (final (s, MapEntry(key: name, value: custom))
+      in settings.entries.indexed) {
+    for (final (i, page) in galleryPages.indexed) {
       for (final b in Brightness.values) {
+        final everyday = s == i % n && b == Brightness.values[(i ~/ n) % 2];
         testWidgets(
           '${page.id} ${b.name}, $name: the target guidelines hold',
           experimentalLeakTesting: untracked,
+          tags: sweepUnless(everyday),
           (tester) async {
             customize(custom);
             final semantics = tester.ensureSemantics();

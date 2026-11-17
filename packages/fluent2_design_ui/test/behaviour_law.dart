@@ -15,6 +15,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
+import 'tiers.dart';
+
 /// One interactive part: [build] wires its main callback to `hit`, or none when `hit` is null.
 class LawPart {
   const LawPart(
@@ -175,26 +177,34 @@ List<DesignPressableState> _pressables(WidgetTester tester) => tester
     .stateList<DesignPressableState>(find.byType(DesignPressable))
     .toList();
 
-/// The law over [parts], which names every part that takes a callback in the library files [reads] picks.
+/// The law over [parts], which names every part that takes a callback in the library files [reads] picks. A file
+/// runs one [slice] of [slices]: the parts whose place in [parts] leaves that remainder; the first slice also checks
+/// the table names every part.
 void behaviourLaw(
   Map<String, LawPart> parts, {
   required bool Function(String path) reads,
+  int slice = 0,
+  int slices = 1,
 }) {
-  test('every part that takes a callback is named in the table', () {
-    final found = _interactive(reads);
-    expect(
-      found.difference(parts.keys.toSet()),
-      isEmpty,
-      reason: 'a new control: add it to the table',
-    );
-    expect(
-      parts.keys.toSet().difference(found),
-      isEmpty,
-      reason: 'gone from the library: take it out',
-    );
-  });
+  if (slice == 0) {
+    test('every part that takes a callback is named in the table', () {
+      final found = _interactive(reads);
+      expect(
+        found.difference(parts.keys.toSet()),
+        isEmpty,
+        reason: 'a new control: add it to the table',
+      );
+      expect(
+        parts.keys.toSet().difference(found),
+        isEmpty,
+        reason: 'gone from the library: take it out',
+      );
+    });
+  }
 
-  for (final MapEntry(key: name, value: part) in parts.entries) {
+  for (final (turn, MapEntry(key: name, value: part))
+      in parts.entries.indexed) {
+    if (turn % slices != slice) continue;
     group(name, () {
       if (part.focus) {
         testWidgets(
@@ -311,43 +321,46 @@ void behaviourLaw(
         expect(tester.takeException(), isNull);
       });
 
-      for (final width in const [390.0, 768.0, 1024.0, 1440.0]) {
-        testWidgets('lays out at $width, at 2.0 text, and right to left', (
-          tester,
-        ) async {
-          await _size(tester, width, 1400);
-          expect(
-            await _faults(() async {
-              await tester.pumpWidget(_host(part.build(() {}), still: true));
-              await tester.pump();
-            }),
-            isEmpty,
-          );
-          expect(
-            await _faults(() async {
-              await tester.pumpWidget(
-                _host(part.build(() {}), still: true, scale: 2),
-              );
-              await tester.pump();
-            }),
-            isEmpty,
-            reason: 'at 2.0 text',
-          );
-          expect(
-            await _faults(() async {
-              await tester.pumpWidget(
-                _host(
-                  part.build(() {}),
-                  still: true,
-                  direction: TextDirection.rtl,
-                ),
-              );
-              await tester.pump();
-            }),
-            isEmpty,
-            reason: 'right to left',
-          );
-        });
+      // Every run lays each part out at one width, the widths turning over the parts; the sweep, at the other three.
+      for (final (at, width) in const [390.0, 768.0, 1024.0, 1440.0].indexed) {
+        testWidgets(
+          'lays out at $width, at 2.0 text, and right to left',
+          tags: sweepUnless(at == turn % 4),
+          (tester) async {
+            await _size(tester, width, 1400);
+            expect(
+              await _faults(() async {
+                await tester.pumpWidget(_host(part.build(() {}), still: true));
+                await tester.pump();
+              }),
+              isEmpty,
+            );
+            expect(
+              await _faults(() async {
+                await tester.pumpWidget(
+                  _host(part.build(() {}), still: true, scale: 2),
+                );
+                await tester.pump();
+              }),
+              isEmpty,
+              reason: 'at 2.0 text',
+            );
+            expect(
+              await _faults(() async {
+                await tester.pumpWidget(
+                  _host(
+                    part.build(() {}),
+                    still: true,
+                    direction: TextDirection.rtl,
+                  ),
+                );
+                await tester.pump();
+              }),
+              isEmpty,
+              reason: 'right to left',
+            );
+          },
+        );
       }
     });
   }

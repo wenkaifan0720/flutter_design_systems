@@ -11,6 +11,8 @@ import 'package:ui_core/alignment.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
+import 'tiers.dart';
+
 DesignAlignmentTheme _under(Fluent2Density density, {ThemeData? host}) =>
     (context, child) {
       final theme = Fluent2ThemeData.preset(
@@ -48,47 +50,58 @@ const _registers = {
 };
 
 void main() {
+  // Every run checks each register on its first platform (Android under a finger, macOS with a pointer); the sweep,
+  // on the others.
   for (final MapEntry(key: register, value: platforms) in _registers.entries) {
-    testWidgets('every one-line entry holds its capitals on its middle, '
-        '$register', (t) async {
-      final report = await DesignTextEntryCheck(
-        look: 'Fluent 2',
-        themes: {
-          'standard': _under(Fluent2Density.standard),
-          'comfortable': _under(Fluent2Density.comfortable),
-          'compact': _under(Fluent2Density.compact),
-          // A host theme that pads a decoration unevenly and gives it a
-          // minimum height: the bare editable must leave neither to it.
-          'uneven host': _under(
-            Fluent2Density.standard,
-            host: ThemeData(
-              inputDecorationTheme: const InputDecorationTheme(
-                contentPadding: EdgeInsets.fromLTRB(4, 20, 4, 2),
-                constraints: BoxConstraints(minHeight: 80),
-              ),
-            ),
-          ),
-        },
-        entries: {
-          for (final size in Fluent2InputSize.values) ...{
-            'text field, ${size.name}': (context, controller, hint) =>
-                Fluent2TextField(
-                  controller: controller,
-                  hint: hint,
-                  size: size,
-                  onChanged: _drop,
+    for (final (on, tags) in [
+      (platforms.take(1), sweepUnless(true)),
+      (platforms.skip(1), sweepUnless(false)),
+    ]) {
+      testWidgets(
+        'every one-line entry holds its capitals on its middle, '
+        '$register, on ${on.map((p) => p.name).join(', ')}',
+        tags: tags,
+        (t) async {
+          final report = await DesignTextEntryCheck(
+            look: 'Fluent 2',
+            themes: {
+              'standard': _under(Fluent2Density.standard),
+              'comfortable': _under(Fluent2Density.comfortable),
+              'compact': _under(Fluent2Density.compact),
+              // A host theme that pads a decoration unevenly and gives it a
+              // minimum height: the bare editable must leave neither to it.
+              'uneven host': _under(
+                Fluent2Density.standard,
+                host: ThemeData(
+                  inputDecorationTheme: const InputDecorationTheme(
+                    contentPadding: EdgeInsets.fromLTRB(4, 20, 4, 2),
+                    constraints: BoxConstraints(minHeight: 80),
+                  ),
                 ),
-          },
-          'search': (context, controller, hint) =>
-              Fluent2SearchBox(controller: controller, hint: hint),
-          'password': (context, controller, hint) => Fluent2PasswordField(
-            controller: controller,
-            hint: hint,
-            onChanged: _drop,
-          ),
+              ),
+            },
+            entries: {
+              for (final size in Fluent2InputSize.values) ...{
+                'text field, ${size.name}': (context, controller, hint) =>
+                    Fluent2TextField(
+                      controller: controller,
+                      hint: hint,
+                      size: size,
+                      onChanged: _drop,
+                    ),
+              },
+              'search': (context, controller, hint) =>
+                  Fluent2SearchBox(controller: controller, hint: hint),
+              'password': (context, controller, hint) => Fluent2PasswordField(
+                controller: controller,
+                hint: hint,
+                onChanged: _drop,
+              ),
+            },
+          ).check(pump: t.pumpWidget, platforms: on.toList());
+          report.verify();
         },
-      ).check(pump: t.pumpWidget, platforms: platforms);
-      report.verify();
-    });
+      );
+    }
   }
 }

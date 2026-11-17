@@ -117,24 +117,13 @@ class _Fluent2SpinnerState extends State<Fluent2Spinner>
     duration: const Duration(milliseconds: 1500),
   );
 
+  // Run from build: iOS's Reduce Motion arrives as a build alone.
   void _drive() {
     if (widget.value != null || !Fluent2Motion.on(context)) {
-      _turn.stop();
+      if (_turn.isAnimating) _turn.stop();
     } else if (!_turn.isAnimating) {
       _turn.repeat();
     }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _drive();
-  }
-
-  @override
-  void didUpdateWidget(Fluent2Spinner old) {
-    super.didUpdateWidget(old);
-    if ((old.value == null) != (widget.value == null)) _drive();
   }
 
   @override
@@ -145,6 +134,7 @@ class _Fluent2SpinnerState extends State<Fluent2Spinner>
 
   @override
   Widget build(BuildContext context) {
+    _drive();
     final t = context.fluent2Theme;
     final track = widget.inverted
         ? t.colors.neutralStrokeAlpha2

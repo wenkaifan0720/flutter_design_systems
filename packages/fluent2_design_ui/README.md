@@ -19,7 +19,7 @@ screen-reader names, 44 and 48 px touch targets, Reduce Motion.
 
 ```yaml
 dependencies:
-  fluent2_design_ui: ^0.1.0
+  fluent2_design_ui: ^0.2.1
 ```
 
 Load the bundled faces before `runApp`, so the first frame is set in them:
@@ -331,8 +331,9 @@ drawn at their design sizes, the directional ones mirrored right to left.
 - **Right to left.** Under a right-to-left `Directionality` every part mirrors: rows, a field's glyphs, tabs,
   segments, sliders, progress and swipe actions run from the reading start, and the glyphs that point flip. Parameters
   say start and end and take the directional geometry types. The gallery has a direction switch.
-- **Motion.** Reduce Motion (`MediaQuery.disableAnimations`) turns every change of state, and every push and pop,
-  into a cut.
+- **Motion.** Reduce Motion turns every change of state, and every push and pop, into a cut: iOS's Reduce Motion,
+  Android's Remove animations and the web's prefers-reduced-motion alike (ui_core's `designReduceMotionOf`; iOS's
+  switch reaches no `MediaQuery`).
 - **Other scripts.** Selawik draws the Latin alphabet. Arabic, Hebrew, Chinese, Japanese, Hindi, Thai and other
   scripts fall back to the platform's fonts (on the web, to the Noto fonts Flutter fetches).
 - **Words the parts say.** No part writes a word in English by itself. The words every look shares (Cancel, OK,
@@ -351,7 +352,7 @@ drawn at their design sizes, the directional ones mirrored right to left.
 
 ## Feedback
 
-This is 0.1.0, the first release: issues and suggestions are welcome on the repository.
+Issues and suggestions are welcome on the repository.
 
 ## Licences
 

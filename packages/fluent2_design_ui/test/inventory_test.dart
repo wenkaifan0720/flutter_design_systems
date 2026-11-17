@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
+import 'tiers.dart';
+
 Widget _app(Widget child, {Brightness brightness = Brightness.light}) =>
     MaterialApp(
       builder: (_, home) => Fluent2Host(brightness: brightness, child: home!),
@@ -117,10 +119,12 @@ void main() {
     }
   });
 
-  for (final width in const [390.0, 1440.0]) {
+  // Every run lays the gallery out on a phone by day and on a desk by night; the sweep, the other two.
+  for (final (at, width) in const [390.0, 1440.0].indexed) {
     for (final brightness in Brightness.values) {
       testWidgets(
         'the gallery lays out every row at $width ${brightness.name}',
+        tags: sweepUnless((at == 0) == (brightness == Brightness.light)),
         (tester) async {
           tester.view.physicalSize = Size(width, 1000);
           tester.view.devicePixelRatio = 1;

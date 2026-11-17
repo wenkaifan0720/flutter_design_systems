@@ -9,18 +9,35 @@
 //
 // Contrast reads drawn pixels, which hang on the rasterizer as a golden does: it is tagged `goldens` (run on macOS,
 // left out of `flutter test --exclude-tags goldens` elsewhere); the targets read only semantics and run everywhere.
+import 'package:fluent2_design_ui/fluent2_design_ui.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'gallery_support.dart';
+import 'tiers.dart';
 
 void main() {
   setUpAll(loadFluent2TestFonts);
 
-  for (final page in galleryPages) {
+  // Every run checks the targets on each page in the first preset (leak tracked, so each page's disposal is held),
+  // light and dark in turn, and each other preset once, on pages spread over the gallery, the other way; the sweep,
+  // the rest.
+  final presets = Fluent2ThemeData.presets;
+  final step = galleryPages.length ~/ (presets.length - 1);
+  for (final (i, page) in galleryPages.indexed) {
+    final mode = Brightness.values[i % 2];
+    final k = i ~/ step;
+    final other = i % step == 0 && k < presets.length - 1
+        ? presets[1 + k]
+        : null;
     for (final (preset, b) in presetsAndModes) {
+      final everyday =
+          (preset == presets.first && b == mode) ||
+          (preset == other && b != mode);
       testWidgets(
         '${page.id} in $preset ${b.name} meets the target guidelines',
         experimentalLeakTesting: leakTestingIn(preset),
+        tags: sweepUnless(everyday),
         (tester) async {
           final semantics = tester.ensureSemantics();
           try {
