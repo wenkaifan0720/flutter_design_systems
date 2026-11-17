@@ -21,20 +21,26 @@ void main() {
     for (final width in [390.0, 1440.0]) {
       for (final brightness in Brightness.values) {
         for (final scale in [1.0, 2.0]) {
-          testWidgets('${entry.key} at $width $brightness text $scale', (
-            tester,
-          ) async {
-            tester.view.physicalSize = Size(width, 1400);
-            tester.view.devicePixelRatio = 1;
-            tester.platformDispatcher.textScaleFactorTestValue = scale;
-            addTearDown(tester.view.reset);
-            addTearDown(
-              tester.platformDispatcher.clearTextScaleFactorTestValue,
-            );
-            await tester.pumpWidget(entry.value(brightness));
-            await tester.pumpAndSettle();
-            expect(tester.takeException(), isNull);
-          });
+          // Every day: a light phone at 1x and a dark desk at 2x; the other six in the sweep.
+          final everyday = width == 390
+              ? brightness == Brightness.light && scale == 1
+              : brightness == Brightness.dark && scale == 2;
+          testWidgets(
+            '${entry.key} at $width $brightness text $scale',
+            tags: sweepUnless(everyday),
+            (tester) async {
+              tester.view.physicalSize = Size(width, 1400);
+              tester.view.devicePixelRatio = 1;
+              tester.platformDispatcher.textScaleFactorTestValue = scale;
+              addTearDown(tester.view.reset);
+              addTearDown(
+                tester.platformDispatcher.clearTextScaleFactorTestValue,
+              );
+              await tester.pumpWidget(entry.value(brightness));
+              await tester.pumpAndSettle();
+              expect(tester.takeException(), isNull);
+            },
+          );
         }
       }
     }

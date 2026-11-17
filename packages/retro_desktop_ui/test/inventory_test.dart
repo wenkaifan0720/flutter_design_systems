@@ -73,7 +73,12 @@ void main() {
   for (final appearance in RetroDesktopAppearance.values) {
     for (final width in const [390.0, 1440.0]) {
       for (final dark in const [false, true]) {
+        // Every day: Platinum on a light phone, Chisel on a dark desk; the other six in the sweep.
+        final everyday = appearance == RetroDesktopAppearance.platinum
+            ? width == 390 && !dark
+            : width == 1440 && dark;
         testWidgets(
+          tags: sweepUnless(everyday),
           'the gallery lays out every row, ${appearance.name} at $width '
           '${dark ? 'dark' : 'light'}',
           (tester) async {

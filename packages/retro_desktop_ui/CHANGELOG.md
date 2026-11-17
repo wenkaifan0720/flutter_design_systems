@@ -1,3 +1,21 @@
+## 0.2.1
+
+Retro Desktop on ui_core 0.2.1.
+
+- **Reduce Motion on iOS.** The look's motion stood still for Android's Remove animations and the web's
+  `prefers-reduced-motion`, but not for iOS's Reduce Motion: Flutter reports that one only in dart:ui's accessibility
+  features, not in `MediaQuery.disableAnimationsOf`. The look now reads all three through ui_core's
+  `designReduceMotionOf`. With any of them on, `RetroDesktopMotion.of` gives every timing as zero, a page set to fade
+  changes at once, and the kit composites' motion is still.
+- **Focus goes back to what opened a popover.** Through ui_core 0.2.1, a `RetroDesktopPopover` or a
+  `RetroDesktopCombobox`'s list gives focus back to the control that opened it as it closes. The combobox's list no
+  longer opens again on that returned focus, so Android's back pops the page.
+- **Tests in two tiers.** `flutter test --exclude-tags goldens,sweep` runs the everyday tier: every part, page and
+  behaviour at representative sizes, by day and by night, right to left and at twice the text size. The exhaustive
+  matrices (every width, mode, direction, platform and preset) are tagged `sweep` in `dart_test.yaml`, and
+  `--exclude-tags goldens` still runs everything. The behaviour suite now runs in three files, a third of its 3,000
+  cases each, so no single test process holds them all.
+
 ## 0.2.0
 
 Retro Desktop on ui_core 0.2.0.

@@ -1,5 +1,10 @@
 // The same source-enumerated inventory as reach_test: every interactive part
-// must be keyboard reachable, expose state, and stop when disabled.
+// must be keyboard reachable, expose state, and stop when disabled. The parts
+// run in three files (behaviour_a/b/c_test.dart), a third each, so no test
+// process runs all 3,000 cases (one that did grew to 7.4 GB on Linux). Every
+// day each case runs on a desk platform and a phone one, and each part's 2x type
+// and RTL check at one width, the parts taking the four in turn; the rest of the
+// matrix is tagged sweep.
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -64,9 +69,20 @@ const _onCore = {
 /// the next row. Their rows are places to press, not presses, so hover changes nothing.
 const _oneStop = {'RetroDesktopListTable'};
 
-void main() {
+/// The widths of the 2x type and RTL check, each with the platform it runs on every day (four platforms, once each).
+final _everydayAt = <double, TargetPlatform>{
+  390.0: TargetPlatform.android,
+  768.0: TargetPlatform.iOS,
+  1024.0: TargetPlatform.windows,
+  1440.0: TargetPlatform.macOS,
+};
+
+/// The behaviour tests of every [parts]th interactive part, from the [part]th (0-based).
+void behaviourTests({required int part, required int parts}) {
   setUpAll(loadRetroDesktopFonts);
-  for (final entry in retroDesktopInteractiveSamples.entries) {
+  final entries = retroDesktopInteractiveSamples.entries.toList();
+  for (final (index, entry) in entries.indexed) {
+    if (index % parts != part) continue;
     final editor = [
       'RetroDesktopTextField',
       'RetroDesktopInput',
@@ -84,7 +100,7 @@ void main() {
         entry.key == 'RetroDesktopTimePicker';
     final closingAction = entry.key == 'RetroDesktopDialogAction';
     group(entry.key, () {
-      testWidgets('Tab focuses and keyboard activates', (tester) async {
+      testWidgetsAcross('Tab focuses and keyboard activates', (tester) async {
         _size(tester, 390);
         var hits = 0;
         if (closingAction) {
@@ -183,10 +199,10 @@ void main() {
           expect(hits, greaterThan(afterEnter));
         }
         expect(tester.takeException(), isNull);
-      }, variant: TargetPlatformVariant.all());
+      });
 
       if (!onCore) {
-        testWidgets('disabled parts take no focus or activation', (
+        testWidgetsAcross('disabled parts take no focus or activation', (
           tester,
         ) async {
           _size(tester, 390);
@@ -200,52 +216,63 @@ void main() {
             expect(state.states, contains(WidgetState.disabled));
           }
           expect(tester.takeException(), isNull);
-        }, variant: TargetPlatformVariant.all());
+        }, everyday: const {TargetPlatform.macOS});
       }
 
       if (!editor && !onCore && !oneStop) {
-        testWidgets('hover reaches the face and reduced motion stays still', (
-          tester,
-        ) async {
-          _size(tester, 390);
-          await tester.pumpWidget(_host(entry.value(() {})));
-          final first = find
-              .byWidgetPredicate(
-                (widget) =>
-                    widget is DesignPressable &&
-                    (widget.enabled ??
-                        (widget.onPressed != null ||
-                            widget.onLongPress != null)),
-              )
-              .first;
-          final mouse = await tester.createGesture(
-            kind: PointerDeviceKind.mouse,
-          );
-          await mouse.addPointer(location: Offset.zero);
-          addTearDown(mouse.removePointer);
-          await mouse.moveTo(tester.getCenter(first));
-          await tester.pump();
-          expect(
-            tester.state<DesignPressableState>(first).states,
-            contains(WidgetState.hovered),
-          );
-          if (!closingAction) await tester.tap(first);
-          await tester.pump();
-          await tester.pump();
-          expect(tester.hasRunningAnimations, isFalse);
-          expect(tester.takeException(), isNull);
-        }, variant: TargetPlatformVariant.all());
+        // A pointer's hover: a desk's every day.
+        testWidgetsAcross(
+          'hover reaches the face and reduced motion stays still',
+          (tester) async {
+            _size(tester, 390);
+            await tester.pumpWidget(_host(entry.value(() {})));
+            final first = find
+                .byWidgetPredicate(
+                  (widget) =>
+                      widget is DesignPressable &&
+                      (widget.enabled ??
+                          (widget.onPressed != null ||
+                              widget.onLongPress != null)),
+                )
+                .first;
+            final mouse = await tester.createGesture(
+              kind: PointerDeviceKind.mouse,
+            );
+            await mouse.addPointer(location: Offset.zero);
+            addTearDown(mouse.removePointer);
+            await mouse.moveTo(tester.getCenter(first));
+            await tester.pump();
+            expect(
+              tester.state<DesignPressableState>(first).states,
+              contains(WidgetState.hovered),
+            );
+            if (!closingAction) await tester.tap(first);
+            await tester.pump();
+            await tester.pump();
+            expect(tester.hasRunningAnimations, isFalse);
+            expect(tester.takeException(), isNull);
+          },
+          everyday: const {TargetPlatform.macOS},
+        );
       }
 
-      for (final width in [390.0, 768.0, 1024.0, 1440.0]) {
-        testWidgets('2x type and RTL at $width', (tester) async {
-          _size(tester, width);
-          await tester.pumpWidget(
-            _host(entry.value(() {}), scale: 2, direction: TextDirection.rtl),
-          );
-          await tester.pump();
-          expect(tester.takeException(), isNull);
-        }, variant: TargetPlatformVariant.all());
+      // Every day at one width a part, the parts taking the four widths in turn.
+      final widths = _everydayAt.keys.toList();
+      for (final width in widths) {
+        testWidgetsAcross(
+          '2x type and RTL at $width',
+          (tester) async {
+            _size(tester, width);
+            await tester.pumpWidget(
+              _host(entry.value(() {}), scale: 2, direction: TextDirection.rtl),
+            );
+            await tester.pump();
+            expect(tester.takeException(), isNull);
+          },
+          everyday: width == widths[index % widths.length]
+              ? {_everydayAt[width]!}
+              : const {},
+        );
       }
     });
   }

@@ -53,7 +53,7 @@ class RetroDesktopTextSelectionControls extends TextSelectionControls
       return TextMagnifierConfiguration.disabled;
     }
     final theme = RetroDesktopTheme.of(context);
-    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final reduceMotion = designReduceMotionOf(context);
     return TextMagnifierConfiguration(
       shouldDisplayHandlesInMagnifier: false,
       magnifierBuilder: (_, _, info) => _RetroDesktopMagnifier(

@@ -174,6 +174,64 @@ void main() {
     );
   });
 
+  // iOS's Reduce Motion reaches dart:ui's accessibility features alone, not MediaQuery.disableAnimations (Flutter 3.47
+  // sets only the first on iOS): the look reads both through ui_core 0.2.1's designReduceMotionOf.
+  testWidgets('iOS\'s Reduce Motion alone stills the look\'s motion: a page '
+      'set to fade stands in place, every timing is zero', (tester) async {
+    const timed = RetroDesktopMotion(
+      press: Duration(milliseconds: 50),
+      state: Duration(milliseconds: 100),
+      move: Duration(milliseconds: 150),
+      raise: Duration(milliseconds: 120),
+      travel: Duration(milliseconds: 200),
+      leave: Duration(milliseconds: 200),
+    );
+    final look = RetroDesktopThemeData.classic().copyWith(
+      // ignore: deprecated_member_use_from_same_package
+      motion: timed,
+    );
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(reduceMotion: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    await _app(tester, 1440, look: look);
+    final context = tester.element(find.byKey(const ValueKey('Documents')));
+    expect(
+      MediaQuery.disableAnimationsOf(context),
+      isFalse,
+      reason: 'only iOS\'s flag is set',
+    );
+    final motion = RetroDesktopMotion.of(context);
+    for (final d in [
+      motion.press,
+      motion.state,
+      motion.move,
+      motion.raise,
+      motion.travel,
+      motion.leave,
+    ]) {
+      expect(d, Duration.zero);
+    }
+    expect(
+      RetroDesktopMotion.durationOf(context, const Duration(milliseconds: 300)),
+      Duration.zero,
+    );
+    await _inPlace(
+      tester,
+      RetroDesktopPageRoute<void>(
+        builder: (context) => const _Page('Project notes'),
+      ),
+    );
+
+    // The flag cleared, the theme's timings come back to the same context.
+    tester.platformDispatcher.clearAccessibilityFeaturesTestValue();
+    await tester.pump();
+    final moving = RetroDesktopMotion.of(
+      tester.element(find.byKey(const ValueKey('Documents'))),
+    );
+    expect(moving.travel, timed.travel);
+    expect(moving.state, timed.state);
+  }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+
   testWidgets('a raised window open as the tree it stood in goes tells '
       'nobody mid-frame', (tester) async {
     await _app(

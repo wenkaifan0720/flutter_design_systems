@@ -81,72 +81,78 @@ void checkStyled(WidgetTester tester, Set<String> allowed, String why) {
 void main() {
   setUpAll(loadRetroDesktopFonts);
   for (final brightness in Brightness.values) {
-    testWidgets('$brightness: every line wears the look, overlays too', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(390, 1600);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      final theme = RetroDesktopThemeData.classic(brightness);
-      kitShownTheme = (b) => RetroDesktopThemeData.classic(b);
-      addTearDown(() => kitShownTheme = null);
-      final allowed = faces(theme);
-      final specimens = <String, Widget Function()>{
-        ...shapeSpecimens,
-        'kitRaiseLaunchers': kitRaiseLaunchers,
-      };
-      Future<void> host(String name) async {
-        await tester.pumpWidget(const SizedBox());
-        await tester.pumpWidget(
-          WidgetsApp(
-            color: const Color(0xFF000000),
-            pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
-              settings: settings,
-              pageBuilder: (context, _, _) => builder(context),
-            ),
-            builder: (context, child) =>
-                RetroDesktopTheme(data: theme, child: child!),
-            home: name == 'kitSpecimenScreen'
-                ? specimens[name]!()
-                : SingleChildScrollView(
-                    child: KeyedSubtree(
-                      key: ValueKey(name),
-                      child: specimens[name]!(),
+    // By day every run; by night in the sweep (the night's own faces and inks are the goldens' and complete_test's).
+    testWidgets(
+      '$brightness: every line wears the look, overlays too',
+      tags: sweepUnless(brightness == Brightness.light),
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 1600);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final theme = RetroDesktopThemeData.classic(brightness);
+        kitShownTheme = (b) => RetroDesktopThemeData.classic(b);
+        addTearDown(() => kitShownTheme = null);
+        final allowed = faces(theme);
+        final specimens = <String, Widget Function()>{
+          ...shapeSpecimens,
+          'kitRaiseLaunchers': kitRaiseLaunchers,
+        };
+        Future<void> host(String name) async {
+          await tester.pumpWidget(const SizedBox());
+          await tester.pumpWidget(
+            WidgetsApp(
+              color: const Color(0xFF000000),
+              pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
+                settings: settings,
+                pageBuilder: (context, _, _) => builder(context),
+              ),
+              builder: (context, child) =>
+                  RetroDesktopTheme(data: theme, child: child!),
+              home: name == 'kitSpecimenScreen'
+                  ? specimens[name]!()
+                  : SingleChildScrollView(
+                      child: KeyedSubtree(
+                        key: ValueKey(name),
+                        child: specimens[name]!(),
+                      ),
                     ),
-                  ),
-          ),
-        );
-        await tester.pump();
-      }
-
-      var opened = 0;
-      for (final name in specimens.keys) {
-        await host(name);
-        checkStyled(tester, allowed, name);
-        final count = find.byType(RetroDesktopPressable).evaluate().length;
-        for (var i = 0; i < count; i++) {
-          final press = find.byType(RetroDesktopPressable).at(i);
-          if (!tester.any(press)) break;
-          final widget = tester.widget<RetroDesktopPressable>(press);
-          if (widget.onPressed == null && widget.onLongPress == null) continue;
-          final box = tester.getRect(press);
-          if (box.isEmpty || box.bottom < 0 || box.top > 1600) continue;
-          await tester.tapAt(box.center);
+            ),
+          );
           await tester.pump();
-          await tester.pump(const Duration(milliseconds: 600));
-          checkStyled(tester, allowed, '$name after press $i');
-          opened++;
-          // Start the next press from the specimen as built, overlays shut.
-          await host(name);
         }
-        expect(tester.takeException(), isNull, reason: name);
-      }
-      expect(opened, greaterThan(60));
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(seconds: 5));
-      // A walk of every specimen and every press in one go: ui_core's longWalkLeakTesting (the package's
-      // flutter_test_config.dart). Telling the test helpers' objects apart keeps a stack for every object the walk
-      // makes, and ran a Linux test process out of memory; each part's own tests keep tracking its leaks.
-    }, experimentalLeakTesting: LeakTesting.settings.withIgnoredAll());
+
+        var opened = 0;
+        for (final name in specimens.keys) {
+          await host(name);
+          checkStyled(tester, allowed, name);
+          final count = find.byType(RetroDesktopPressable).evaluate().length;
+          for (var i = 0; i < count; i++) {
+            final press = find.byType(RetroDesktopPressable).at(i);
+            if (!tester.any(press)) break;
+            final widget = tester.widget<RetroDesktopPressable>(press);
+            if (widget.onPressed == null && widget.onLongPress == null) {
+              continue;
+            }
+            final box = tester.getRect(press);
+            if (box.isEmpty || box.bottom < 0 || box.top > 1600) continue;
+            await tester.tapAt(box.center);
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 600));
+            checkStyled(tester, allowed, '$name after press $i');
+            opened++;
+            // Start the next press from the specimen as built, overlays shut.
+            await host(name);
+          }
+          expect(tester.takeException(), isNull, reason: name);
+        }
+        expect(opened, greaterThan(60));
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump(const Duration(seconds: 5));
+        // A walk of every specimen and every press in one go: ui_core's longWalkLeakTesting (the package's
+        // flutter_test_config.dart). Telling the test helpers' objects apart keeps a stack for every object the walk
+        // makes, and ran a Linux test process out of memory; each part's own tests keep tracking its leaks.
+      },
+      experimentalLeakTesting: LeakTesting.settings.withIgnoredAll(),
+    );
   }
 }

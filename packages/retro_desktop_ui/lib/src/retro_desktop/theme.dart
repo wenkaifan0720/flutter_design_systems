@@ -2515,7 +2515,7 @@ class _RetroDesktopPageTransitions extends PageTransitionsBuilder {
   ) {
     final still =
         (motion.travel == Duration.zero && motion.leave == Duration.zero) ||
-        (MediaQuery.maybeDisableAnimationsOf(context) ?? false);
+        designReduceMotionOf(context);
     return still
         ? child
         : FadeTransition(

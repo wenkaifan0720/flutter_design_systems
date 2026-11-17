@@ -211,12 +211,22 @@ void main() {
     'standard': RetroDesktopDensity.standard,
     'comfortable': RetroDesktopDensity.comfortable,
   };
+  // Every day: each set, density and width once, the larger type twice (the tightest corner, compact at 120, among
+  // them); the other 33 in the sweep.
+  const everyday = {
+    'platinum compact 120.0 1.3',
+    'chisel standard 240.0 1.0',
+    'platinum comfortable 390.0 1.3',
+  };
   for (final set in sets.entries) {
     for (final density in densities.entries) {
       for (final width in [120.0, 240.0, 390.0]) {
         for (final scale in [1.0, 1.3]) {
           testWidgets(
             '${set.key} ${density.key} at $width and $scale keeps content inside',
+            tags: sweepUnless(
+              everyday.contains('${set.key} ${density.key} $width $scale'),
+            ),
             (tester) async {
               tester.view.physicalSize = Size(width, 1600);
               tester.view.devicePixelRatio = 1;

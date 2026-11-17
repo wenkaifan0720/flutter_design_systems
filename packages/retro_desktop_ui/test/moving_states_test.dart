@@ -13,14 +13,16 @@ import '../example/lib/everyday_screens.dart';
 import 'moving_states.dart';
 
 void main() {
-  for (final (width, platform) in const [
+  for (final (form, (width, platform)) in const [
     (390.0, TargetPlatform.iOS),
     (1440.0, TargetPlatform.macOS),
-  ]) {
-    for (final screen in everydayScreens) {
+  ].indexed) {
+    for (final (i, screen) in everydayScreens.indexed) {
       testWidgets(
         '${screen.id} at ${width.toInt()}: no shadow or ring is cut while it moves',
         variant: TargetPlatformVariant.only(platform),
+        // Every day each screen once, on a phone and on a desk in turn; the other in the sweep (dart_test.yaml).
+        tags: i % 2 == form ? null : const ['sweep'],
         (tester) async {
           tester.view
             ..physicalSize = Size(width, width < 600 ? 844 : 900)

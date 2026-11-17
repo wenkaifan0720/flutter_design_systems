@@ -8,6 +8,37 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
+/// The tag of a matrix's other cases (dart_test.yaml), beside `goldens`. Every day the tests run
+/// `flutter test --exclude-tags goldens,sweep`: each matrix keeps its representative cases there (each size, each mode,
+/// each direction and each platform family at least once), so a fault of every kind is still caught on every run. The
+/// whole matrix runs at READY and release (`--exclude-tags goldens` on Linux, every tag on macOS).
+const sweep = 'sweep';
+
+/// A matrix case's tags: none when it is one of the [everyday] representatives, else [sweep].
+List<String>? sweepUnless(bool everyday) => everyday ? null : const [sweep];
+
+/// The platforms a platform matrix runs every day: a desk's and a phone's. The other four run in the sweep.
+const everydayPlatforms = {TargetPlatform.macOS, TargetPlatform.android};
+
+/// [testWidgets] over every platform: [everyday] on every run (none when empty), the rest in the [sweep].
+void testWidgetsAcross(
+  String description,
+  WidgetTesterCallback body, {
+  Set<TargetPlatform> everyday = everydayPlatforms,
+}) {
+  if (everyday.isNotEmpty) {
+    testWidgets(description, body, variant: TargetPlatformVariant(everyday));
+  }
+  testWidgets(
+    description,
+    body,
+    variant: TargetPlatformVariant(
+      TargetPlatform.values.toSet().difference(everyday),
+    ),
+    tags: const [sweep],
+  );
+}
+
 const long = 'Donaudampfschifffahrtsgesellschaftskapitänsmütze';
 const longLine =
     'A much longer line than the example ever had to carry, with $long in the middle of it, and then more';
@@ -112,30 +143,36 @@ Widget retroDesktopApp(
 }
 
 /// Pumps [child] in a page-like column at each width, mode and direction, and fails on any overflow or exception.
+/// Every day: a light phone left to right and a dark desk right to left; the other six in the [sweep].
 void check(String name, Widget Function() child) {
   for (final width in const [320.0, 1440.0]) {
     for (final dark in const [false, true]) {
       for (final dir in const [TextDirection.ltr, TextDirection.rtl]) {
-        testWidgets('$name @$width ${dark ? 'dark' : 'light'} ${dir.name}', (
-          tester,
-        ) async {
-          tester.view.physicalSize = Size(width, 1200);
-          tester.view.devicePixelRatio = 1;
-          addTearDown(tester.view.reset);
-          await tester.pumpWidget(
-            retroDesktopApp(
-              SingleChildScrollView(
-                child: Center(
-                  child: SizedBox(width: width - 40, child: child()),
+        final everyday =
+            (width == 320 && !dark && dir == TextDirection.ltr) ||
+            (width == 1440 && dark && dir == TextDirection.rtl);
+        testWidgets(
+          '$name @$width ${dark ? 'dark' : 'light'} ${dir.name}',
+          tags: sweepUnless(everyday),
+          (tester) async {
+            tester.view.physicalSize = Size(width, 1200);
+            tester.view.devicePixelRatio = 1;
+            addTearDown(tester.view.reset);
+            await tester.pumpWidget(
+              retroDesktopApp(
+                SingleChildScrollView(
+                  child: Center(
+                    child: SizedBox(width: width - 40, child: child()),
+                  ),
                 ),
+                dark: dark,
+                direction: dir,
               ),
-              dark: dark,
-              direction: dir,
-            ),
-          );
-          await tester.pump();
-          expect(tester.takeException(), isNull);
-        });
+            );
+            await tester.pump();
+            expect(tester.takeException(), isNull);
+          },
+        );
       }
     }
   }

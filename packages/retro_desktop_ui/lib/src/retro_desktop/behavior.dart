@@ -80,9 +80,11 @@ class RetroDesktopMotion {
   /// A policy with no animation.
   static const still = RetroDesktopMotion();
 
-  /// Reads the theme policy, respecting the platform's Reduce Motion setting.
+  /// Reads the theme policy, respecting the platform's Reduce Motion setting
+  /// (Android's Remove animations, the web's prefers-reduced-motion, iOS's
+  /// Reduce Motion: ui_core's `designReduceMotionOf`).
   static RetroDesktopMotion of(BuildContext context) {
-    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) return still;
+    if (designReduceMotionOf(context)) return still;
     final motion = RetroDesktopTheme.of(context).motion;
     // Read neutral timing values so a copied policy file does not depend on the
     // package's concrete policy class retaining the same name.
@@ -101,9 +103,7 @@ class RetroDesktopMotion {
 
   /// Cuts an explicitly supplied duration when motion is disabled.
   static Duration durationOf(BuildContext context, Duration duration) =>
-      (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
-      ? Duration.zero
-      : duration;
+      designReduceMotionOf(context) ? Duration.zero : duration;
 
   /// Replaces selected policy values.
   RetroDesktopMotion copyWith({

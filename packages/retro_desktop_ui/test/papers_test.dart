@@ -157,16 +157,24 @@ Finder _inWindow(String window, Finder what) => find.descendant(
 void main() {
   setUpAll(loadRetroDesktopFonts);
 
-  for (final front in [
+  for (final (i, front) in [
     KitPapersWindow.documents,
     KitPapersWindow.details,
     KitPapersWindow.settings,
     KitPapersWindow.prints,
-  ]) {
+  ].indexed) {
     for (final width in [390.0, 1440.0]) {
       for (final dark in [false, true]) {
         for (final appearance in RetroDesktopAppearance.values) {
+          // Every day one case a window, the four turning round the widths, modes and appearances (each seen twice);
+          // the other 28 in the sweep.
+          final everyday =
+              (width == 1440) == i.isOdd &&
+              dark == (i >> 1).isOdd &&
+              (appearance == RetroDesktopAppearance.chisel) ==
+                  (i ^ (i >> 1)).isOdd;
           testWidgets(
+            tags: sweepUnless(everyday),
             'keylines: ${front.name} at $width, dark=$dark, ${appearance.name}',
             (tester) async {
               await _pump(

@@ -193,38 +193,41 @@ void main() {
     );
   });
 
-  for (final MapEntry(key: name, value: build) in _parts.entries) {
+  for (final (i, MapEntry(key: name, value: build)) in _parts.entries.indexed) {
     for (final dark in const [false, true]) {
-      testWidgets('$name reaches 48 by 48 at 390 ${dark ? 'dark' : 'light'}', (
-        tester,
-      ) async {
-        tester.view.physicalSize = const Size(390, 844);
-        tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.reset);
-        const key = ValueKey('part');
-        await tester.pumpWidget(
-          retroDesktopApp(
-            SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [KeyedSubtree(key: key, child: build())],
+      // Every day each part once, by day and by night in turn; the other in the sweep.
+      testWidgets(
+        '$name reaches 48 by 48 at 390 ${dark ? 'dark' : 'light'}',
+        tags: sweepUnless(dark == i.isOdd),
+        (tester) async {
+          tester.view.physicalSize = const Size(390, 844);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          const key = ValueKey('part');
+          await tester.pumpWidget(
+            retroDesktopApp(
+              SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [KeyedSubtree(key: key, child: build())],
+                  ),
                 ),
               ),
+              dark: dark,
             ),
-            dark: dark,
-          ),
-        );
-        await tester.pump();
-        expect(tester.takeException(), isNull);
-        final reaches = _reaches(
-          find.byKey(key).evaluate().single,
-          gestures: _byPointer.contains(name),
-        );
-        expect(reaches, isNotEmpty, reason: 'nothing in $name takes a tap');
-        expect(_problems(reaches), isEmpty);
-      });
+          );
+          await tester.pump();
+          expect(tester.takeException(), isNull);
+          final reaches = _reaches(
+            find.byKey(key).evaluate().single,
+            gestures: _byPointer.contains(name),
+          );
+          expect(reaches, isNotEmpty, reason: 'nothing in $name takes a tap');
+          expect(_problems(reaches), isEmpty);
+        },
+      );
     }
   }
 

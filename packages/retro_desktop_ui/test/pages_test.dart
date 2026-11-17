@@ -103,16 +103,24 @@ void main() {
     expect(_crushed(tester), isEmpty);
   }
 
-  for (final page in _pages.entries) {
+  // Every day each page runs on a small phone, in two presets (light on a phone, dark on a desk: the presets turn round
+  // the pages, so each is seen both ways) and at 2x text once (the pages turn round the widths and directions, so each
+  // width is seen both ways); the rest of the matrix in the sweep.
+  final presets = RetroDesktopThemeData.presets.toList();
+  for (final (i, page) in _pages.entries.indexed) {
     testWidgets(
       '${page.key} on a small phone',
       (tester) => holds(tester, page.value, 'classic', false, 320),
     );
-    for (final preset in RetroDesktopThemeData.presets) {
+    for (final (p, preset) in presets.indexed) {
       for (final dark in const [false, true]) {
         for (final width in const [390.0, 1440.0]) {
+          final everyday = dark
+              ? width == 1440 && p == (i + 2) % presets.length
+              : width == 390 && p == i % presets.length;
           testWidgets(
             '${page.key} $preset ${dark ? 'dark' : 'light'} @$width',
+            tags: sweepUnless(everyday),
             (tester) => holds(tester, page.value, preset, dark, width),
           );
         }
@@ -120,11 +128,13 @@ void main() {
     }
   }
 
-  for (final page in _pages.entries) {
-    for (final width in [390.0, 768.0, 1024.0, 1440.0]) {
-      for (final direction in TextDirection.values) {
+  const widths = [390.0, 768.0, 1024.0, 1440.0];
+  for (final (i, page) in _pages.entries.indexed) {
+    for (final (w, width) in widths.indexed) {
+      for (final (d, direction) in TextDirection.values.indexed) {
         testWidgets(
           '${page.key} at 2x text, $width, $direction',
+          tags: sweepUnless(i % (widths.length * 2) == w * 2 + d),
           (tester) => holds(
             tester,
             page.value,
