@@ -12,7 +12,7 @@ import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/hearth.dart';
 import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'gallery_support.dart' show loadBundledFonts, settle;
-import 'support.dart' show loadNeumorphicFonts;
+import 'support.dart' show loadNeumorphicFonts, sweepUnlessTurn;
 
 double _height(double width) => width < 600 ? 844 : (width < 1024 ? 1024 : 900);
 
@@ -89,7 +89,9 @@ void main() {
     await loadBundledFonts();
   });
 
-  for (final screen in hearthScreens) {
+  // Each screen at one of its three widths by day or by night every time, in turn; the sweep runs the rest.
+  for (final (turn, screen) in hearthScreens.indexed) {
+    var cell = 0;
     for (final width in [390.0, 768.0, 1440.0]) {
       for (final dark in [false, true]) {
         testWidgets(
@@ -180,6 +182,7 @@ void main() {
               }
             }
           },
+          tags: sweepUnlessTurn(turn, cell++, 6),
         );
       }
     }

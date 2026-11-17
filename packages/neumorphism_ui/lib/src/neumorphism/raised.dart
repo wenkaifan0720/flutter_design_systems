@@ -49,6 +49,8 @@ class _Carried {
       words = NeumorphicLocalizations.of(context),
       locale = Localizations.maybeLocaleOf(context) ?? const Locale('en'),
       scaler = MediaQuery.textScalerOf(context),
+      // MediaQuery's own flag, carried as it is where the surface was opened. Not a reading of Reduce Motion: that is
+      // NeumorphicMotion.of's, through designReduceMotionOf, which takes iOS's from the platform wherever it is read.
       disableAnimations = MediaQuery.disableAnimationsOf(context),
       motion = NeumorphicMotion.of(context),
       themes = InheritedTheme.capture(from: context, to: destination);

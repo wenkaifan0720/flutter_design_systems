@@ -13,7 +13,8 @@ import '../example/lib/kit_gallery/live.dart';
 import '../example/lib/kit_gallery/hearth.dart'
     show hearthScreens, isHearthScreen;
 import 'gallery_support.dart' show loadBundledFonts, settle;
-import 'support.dart' show loadNeumorphicFonts;
+import 'support.dart'
+    show loadNeumorphicFonts, matrixLeakTesting, sweepUnlessTurn;
 
 void main() {
   setUpAll(() async {
@@ -21,8 +22,13 @@ void main() {
     await loadBundledFonts();
   });
 
+  // Every page runs one of its sixteen sizes, directions and text sizes every time, in turn, and one of its two ways
+  // in through the navigation; the sweep runs the rest ([sweepUnlessTurn]).
+  var subject = 0;
   for (final page in liveGalleryPages) {
     if (isHearthScreen(page.id)) continue;
+    final turn = subject++;
+    var cell = 0;
     for (final width in [390.0, 768.0, 1024.0, 1440.0]) {
       for (final direction in TextDirection.values) {
         for (final scale in [1.0, 2.0]) {
@@ -51,48 +57,58 @@ void main() {
               await settle(tester);
               expect(tester.takeException(), isNull);
             },
+            tags: sweepUnlessTurn(turn, cell++, 16),
+            experimentalLeakTesting: matrixLeakTesting,
           );
         }
       }
     }
+    var way = 0;
     for (final width in [390.0, 1440.0]) {
-      testWidgets('live ${page.id} through the navigation at $width', (
-        tester,
-      ) async {
-        tester.view.physicalSize = Size(width, 900);
-        tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.reset);
-        await tester.pumpWidget(
-          GalleryApp(initialPage: page.id, initialCustomizing: true),
-        );
-        await settle(tester);
-        expect(tester.takeException(), isNull);
-        // The Overview opens on its pitch, not on its name (a phone shows no rail to name it).
-        expect(
-          page.id == 'overview'
-              ? find.byKey(const Key('overview-dial'))
-              : find.text(page.title),
-          findsWidgets,
-        );
-      });
+      testWidgets(
+        'live ${page.id} through the navigation at $width',
+        (tester) async {
+          tester.view.physicalSize = Size(width, 900);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          await tester.pumpWidget(
+            GalleryApp(initialPage: page.id, initialCustomizing: true),
+          );
+          await settle(tester);
+          expect(tester.takeException(), isNull);
+          // The Overview opens on its pitch, not on its name (a phone shows no rail to name it).
+          expect(
+            page.id == 'overview'
+                ? find.byKey(const Key('overview-dial'))
+                : find.text(page.title),
+            findsWidgets,
+          );
+        },
+        tags: sweepUnlessTurn(turn, way++, 2),
+        experimentalLeakTesting: matrixLeakTesting,
+      );
     }
   }
 
-  for (final screen in hearthScreens) {
+  for (final (turn, screen) in hearthScreens.indexed) {
+    var cell = 0;
     for (final width in [390.0, 768.0, 1440.0]) {
-      testWidgets('Hearth ${screen.id} fits $width at twice the text', (
-        tester,
-      ) async {
-        tester.view.physicalSize = Size(width, 900);
-        tester.view.devicePixelRatio = 1;
-        tester.platformDispatcher.textScaleFactorTestValue = 2;
-        addTearDown(tester.view.reset);
-        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-        await tester.pumpWidget(GalleryApp(initialPage: screen.id));
-        await settle(tester);
-        expect(tester.takeException(), isNull);
-        expect(find.byKey(ValueKey('hearth-${screen.id}')), findsOneWidget);
-      });
+      testWidgets(
+        'Hearth ${screen.id} fits $width at twice the text',
+        (tester) async {
+          tester.view.physicalSize = Size(width, 900);
+          tester.view.devicePixelRatio = 1;
+          tester.platformDispatcher.textScaleFactorTestValue = 2;
+          addTearDown(tester.view.reset);
+          addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+          await tester.pumpWidget(GalleryApp(initialPage: screen.id));
+          await settle(tester);
+          expect(tester.takeException(), isNull);
+          expect(find.byKey(ValueKey('hearth-${screen.id}')), findsOneWidget);
+        },
+        tags: sweepUnlessTurn(turn, cell++, 3),
+        experimentalLeakTesting: matrixLeakTesting,
+      );
     }
   }
   for (final width in [390.0, 1440.0]) {
@@ -115,6 +131,6 @@ void main() {
       await settle(tester);
       expect(tester.takeException(), isNull);
       expect(find.byKey(const ValueKey('hearth-home')), findsOneWidget);
-    });
+    }, experimentalLeakTesting: matrixLeakTesting);
   }
 }

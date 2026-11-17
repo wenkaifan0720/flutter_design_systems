@@ -35,6 +35,9 @@ bool _fills(WidgetTester tester, Color color) =>
         );
 
 void main() {
+  // Each part runs one of its 18 densities, widths and text sizes every time, in turn ([sweepInTurn]); the
+  // sweep runs the rest.
+  var matrixCase = 0;
   setUpAll(loadNeumorphicFonts);
   final parts = <(String, _Part, _SetTheme)>[
     (
@@ -322,6 +325,7 @@ void main() {
                   );
                 }
               },
+              tags: sweepInTurn(matrixCase++, 18),
             );
           }
         }

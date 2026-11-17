@@ -6,7 +6,7 @@ A soft UI design system for Flutter. Raised surfaces and pressed grooves share o
 
 ```yaml
 dependencies:
-  neumorphism_ui: ^0.2.0
+  neumorphism_ui: ^0.2.1
 ```
 
 ## Use
@@ -269,7 +269,7 @@ The parts' built-in words come from `DesignLocalizations`, the words every look 
   Every state (on, chosen, checked, focused, a slider's value) and every part without words reaches 3:1 through its colour, words or mark, by day and by night; high contrast adds a fine outline.
 - **Other scripts.** The bundled Manrope covers Latin. Other scripts fall back to the platform's fonts; on the web, Flutter fetches them.
 
-Known limits in 0.2.0:
+Known limits in 0.2.1:
 
 - The words every look shares (Cancel, Today, Close, "3 of 10" and the rest) come from ui_core's `DesignLocalizations`, which speaks 30 languages once your app adds `DesignLocalizations.delegate` beside Flutter's delegates (ui_core's README shows how). The look's own words (a stepper's More and Less, a file drop's prompts, a picker's AM and PM, Try again and a few more) stay English unless your app subclasses `NeumorphicLocalizations` and adds a delegate that loads it.
 - Dates and numbers are formatted with `intl` in the look's own words' language, so they are English too unless your subclass names another `localeName`. Short weekday names are English, and times show in 24-hour form.

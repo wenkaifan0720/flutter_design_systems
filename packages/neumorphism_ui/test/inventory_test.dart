@@ -27,6 +27,7 @@ void main() {
 
   test('the inventory verifies', neumorphicInventory.verify);
 
+  // A phone by day and a desk by night every time; the other two in the sweep.
   for (final width in const [390.0, 1440.0]) {
     for (final dark in const [false, true]) {
       testWidgets(
@@ -64,6 +65,7 @@ void main() {
             expect(tester.takeException(), isNull, reason: row.id);
           }
         },
+        tags: (width < 600) == dark ? const ['sweep'] : null,
       );
     }
   }

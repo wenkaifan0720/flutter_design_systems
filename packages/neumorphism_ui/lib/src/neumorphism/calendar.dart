@@ -503,7 +503,7 @@ class NeumorphicDateRangePicker extends StatelessWidget {
   /// Called when the range changes.
   final ValueChanged<DesignDateRange?>? onChanged;
 
-  /// The span's words after its dates; null: "N nights".
+  /// The span's words after its dates; null: the look's words, [NeumorphicLocalizations.nights].
   final String Function(int nights)? nightsLabel;
 
   /// The day cells' own style, before the date picker's theme.
@@ -524,7 +524,7 @@ class NeumorphicDateRangePicker extends StatelessWidget {
           final span = r == null
               ? words.chooseDate
               : '${words.formatFullDate(r.start)} – ${r.end == null ? '…' : words.formatFullDate(r.end!)}'
-                    '${nights == null ? '' : ', ${nightsLabel?.call(nights) ?? '$nights ${nights == 1 ? 'night' : 'nights'}'}'}';
+                    '${nights == null ? '' : ', ${nightsLabel?.call(nights) ?? words.nights(nights)}'}';
           return Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,

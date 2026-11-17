@@ -30,7 +30,7 @@ import '../example/lib/kit_gallery/hearth.dart';
 // ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/live.dart';
 import 'gallery_support.dart' show fitPage, loadBundledFonts, settle;
-import 'support.dart' show loadNeumorphicFonts;
+import 'support.dart' show loadNeumorphicFonts, sweepUnlessTurn;
 
 const _look = 'Neumorphism';
 
@@ -177,11 +177,13 @@ void main() {
     }, tags: ['goldens']);
   }
 
-  for (final screen in pages) {
-    testWidgets('controls keep their width $screen', (tester) async {
-      addTearDown(tester.view.reset);
-      final found = <String>[];
-      for (final width in [600.0, 1024.0, 1440.0, 1920.0]) {
+  // Each screen at one of the four widths every time, in turn, so every width is met; the sweep runs the rest.
+  for (final (turn, screen) in pages.indexed) {
+    for (final (cell, width) in [600.0, 1024.0, 1440.0, 1920.0].indexed) {
+      testWidgets('controls keep their width $screen ${width.toInt()}', (
+        tester,
+      ) async {
+        addTearDown(tester.view.reset);
         await show(tester, screen, width);
         final report = await read(
           tester,
@@ -190,12 +192,11 @@ void main() {
             runAsync: tester.runAsync,
           ),
         );
-        found.addAll([
+        verdict('WIDTHS $screen ${width.toInt()}', [
           for (final p in report.problems) '${width.toInt()} · $p',
         ]);
-      }
-      verdict('WIDTHS $screen', found);
-    });
+      }, tags: sweepUnlessTurn(turn, cell, 4));
+    }
   }
 
   // A field's open list: a select's menu, a combobox's or a multi-select's panel.

@@ -1079,12 +1079,11 @@ class NeumorphicMotion {
     leave: Duration.zero,
   );
 
-  /// The motion in scope at [context]: all cuts under `MediaQuery.disableAnimationsOf`.
+  /// The motion in scope at [context]: all cuts under Reduce Motion ([designReduceMotionOf]: Android's Remove
+  /// animations, the web's prefers-reduced-motion, or iOS's Reduce Motion).
   static NeumorphicMotion of(BuildContext context) {
     final motion = NeumorphicTheme.of(context).motion;
-    return (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
-        ? motion.still
-        : motion;
+    return designReduceMotionOf(context) ? motion.still : motion;
   }
 
   @override

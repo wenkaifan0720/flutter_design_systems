@@ -7,42 +7,49 @@ import 'support.dart';
 
 void main() {
   setUpAll(loadNeumorphicFonts);
+  // Every time: 320 right to left at twice the text and 350 left to right; the sweep runs the rest.
   for (final width in [320.0, 350.0]) {
     for (final scale in [1.0, 2.0]) {
       for (final direction in TextDirection.values) {
-        testWidgets('time targets wrap at $width, text $scale, $direction', (
-          tester,
-        ) async {
-          NeumorphicTime? picked;
-          await tester.pumpWidget(
-            neumorphicApp(
-              Center(
-                child: SizedBox(
-                  width: width,
-                  child: SingleChildScrollView(
-                    child: NeumorphicTimePicker(
-                      value: const NeumorphicTime(0, 0),
-                      twentyFour: true,
-                      minuteStep: 1,
-                      onChanged: (value) => picked = value,
+        testWidgets(
+          'time targets wrap at $width, text $scale, $direction',
+          (tester) async {
+            NeumorphicTime? picked;
+            await tester.pumpWidget(
+              neumorphicApp(
+                Center(
+                  child: SizedBox(
+                    width: width,
+                    child: SingleChildScrollView(
+                      child: NeumorphicTimePicker(
+                        value: const NeumorphicTime(0, 0),
+                        twentyFour: true,
+                        minuteStep: 1,
+                        onChanged: (value) => picked = value,
+                      ),
                     ),
                   ),
                 ),
+                direction: direction,
+                textScale: scale,
               ),
-              direction: direction,
-              textScale: scale,
-            ),
-          );
-          for (final target in find.byType(DesignPressable).evaluate()) {
-            final size = tester.getSize(find.byWidget(target.widget));
-            expect(size.width, greaterThanOrEqualTo(48));
-            expect(size.height, greaterThanOrEqualTo(48));
-          }
-          await tester.ensureVisible(find.text('59'));
-          await tester.tap(find.text('59'));
-          expect(picked, const NeumorphicTime(0, 59));
-          expect(tester.takeException(), isNull);
-        });
+            );
+            for (final target in find.byType(DesignPressable).evaluate()) {
+              final size = tester.getSize(find.byWidget(target.widget));
+              expect(size.width, greaterThanOrEqualTo(48));
+              expect(size.height, greaterThanOrEqualTo(48));
+            }
+            await tester.ensureVisible(find.text('59'));
+            await tester.tap(find.text('59'));
+            expect(picked, const NeumorphicTime(0, 59));
+            expect(tester.takeException(), isNull);
+          },
+          tags:
+              (width, scale, direction) == (320.0, 2.0, TextDirection.rtl) ||
+                  (width, scale, direction) == (350.0, 1.0, TextDirection.ltr)
+              ? null
+              : const ['sweep'],
+        );
       }
     }
   }

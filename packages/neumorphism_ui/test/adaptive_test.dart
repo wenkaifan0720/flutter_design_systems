@@ -8,8 +8,13 @@ import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 import 'support.dart';
 
-void _test(String description, WidgetTesterCallback body) =>
-    testWidgets(description, body, variant: TargetPlatformVariant.all());
+void _test(String description, WidgetTesterCallback body, {Object? tags}) =>
+    testWidgets(
+      description,
+      body,
+      variant: TargetPlatformVariant.all(),
+      tags: tags,
+    );
 
 Iterable<ScrollPhysics> _physics(ScrollPhysics? physics) sync* {
   while (physics != null) {
@@ -99,6 +104,14 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  // Every time, on every platform: a small phone right to left at twice the text, a tablet left to right, a small
+  // desk left to right at twice the text and a desk right to left; the sweep runs the rest.
+  final everyday = {
+    (320.0, 2.0, TextDirection.rtl),
+    (768.0, 1.0, TextDirection.ltr),
+    (1024.0, 2.0, TextDirection.ltr),
+    (1440.0, 1.0, TextDirection.rtl),
+  };
   for (final width in [320.0, 768.0, 1024.0, 1440.0]) {
     for (final scale in [1.0, 2.0]) {
       for (final direction in TextDirection.values) {
@@ -157,6 +170,9 @@ void main() {
             expect(saved, 1);
             expect(tester.takeException(), isNull);
           },
+          tags: everyday.contains((width, scale, direction))
+              ? null
+              : const ['sweep'],
         );
       }
     }

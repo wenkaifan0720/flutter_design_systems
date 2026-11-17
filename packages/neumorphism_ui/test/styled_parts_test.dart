@@ -79,6 +79,9 @@ Future<Color> _facePixel(WidgetTester tester, {Offset? point}) async {
 }
 
 void main() {
+  // Each part runs one of its 18 densities, widths and text sizes every time, in turn ([sweepInTurn]); the
+  // sweep runs the rest.
+  var matrixCase = 0;
   setUpAll(loadNeumorphicFonts);
   for (final kind in ['slab', 'well', 'card']) {
     testWidgets('$kind inherits content slots and keeps child overrides', (
@@ -342,6 +345,7 @@ void main() {
                   );
                 }
               },
+              tags: sweepInTurn(matrixCase++, 18),
             );
           }
         }

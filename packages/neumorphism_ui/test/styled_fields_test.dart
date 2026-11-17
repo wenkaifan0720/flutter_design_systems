@@ -9,6 +9,9 @@ import 'support.dart';
 typedef _Build = Widget Function(NeumorphicStyle?);
 
 void main() {
+  // Each part runs one of its 18 densities, widths and text sizes every time, in turn ([sweepInTurn]); the
+  // sweep runs the rest.
+  var matrixCase = 0;
   setUpAll(loadNeumorphicFonts);
   final parts = <(String, _Build, bool)>[
     (
@@ -112,6 +115,7 @@ void main() {
                 }
                 expect(tester.takeException(), isNull);
               },
+              tags: sweepInTurn(matrixCase++, 18),
             );
           }
         }

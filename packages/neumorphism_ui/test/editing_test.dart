@@ -21,8 +21,13 @@ Future<void> _frames(WidgetTester tester) async {
   }
 }
 
-void _test(String description, WidgetTesterCallback body) =>
-    testWidgets(description, body, variant: TargetPlatformVariant.all());
+void _test(String description, WidgetTesterCallback body, {Object? tags}) =>
+    testWidgets(
+      description,
+      body,
+      variant: TargetPlatformVariant.all(),
+      tags: tags,
+    );
 
 bool get _touch => const {
   TargetPlatform.android,
@@ -33,6 +38,13 @@ bool get _touch => const {
 void main() {
   setUpAll(loadNeumorphicFonts);
 
+  // Every time, on every platform: standard at 120 and 1.0, comfortable at 240 and 1.3, compact at 390 and 1.0; the
+  // sweep runs the rest.
+  final everyday = {
+    ('standard', 120.0, 1.0),
+    ('comfortable', 240.0, 1.3),
+    ('compact', 390.0, 1.0),
+  };
   for (final set in const ['look']) {
     for (final (densityName, density) in [
       ('standard', NeumorphicDensity.standard),
@@ -113,6 +125,9 @@ void main() {
                 }
               }
             },
+            tags: everyday.contains((densityName, width, scale))
+                ? null
+                : const ['sweep'],
           );
         }
       }

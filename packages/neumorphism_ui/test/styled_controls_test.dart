@@ -82,6 +82,9 @@ Future<int> pixel(WidgetTester tester) async {
 }
 
 void main() {
+  // Each part runs one of its 18 densities, widths and text sizes every time, in turn ([sweepInTurn]); the
+  // sweep runs the rest.
+  var matrixCase = 0;
   setUpAll(loadNeumorphicFonts);
   final parts = <(String, _Build, bool)>[
     (
@@ -242,6 +245,7 @@ void main() {
                 expect(tap.width, greaterThanOrEqualTo(48));
                 expect(tap.height, greaterThanOrEqualTo(48));
               },
+              tags: sweepInTurn(matrixCase++, 18),
             );
           }
         }

@@ -244,20 +244,12 @@ class _GalleryAppState extends State<GalleryApp> {
       barrierLabel: NeumorphicLocalizations.of(context).close,
       barrierColor: const Color(0x66000000),
       transitionDuration: motion.raise,
-      transitionBuilder: (context, animation, _, child) {
-        final curve = CurvedAnimation(
-          parent: animation,
-          curve: motion.enter,
-          reverseCurve: motion.exit,
-        );
-        return SlideTransition(
-          position: Tween(
-            begin: Offset(rtl ? 1 : -1, 0),
-            end: Offset.zero,
-          ).animate(curve),
-          child: child,
-        );
-      },
+      transitionBuilder: (context, animation, _, child) => _DrawerSlide(
+        animation: animation,
+        motion: motion,
+        fromRight: rtl,
+        child: child,
+      ),
       pageBuilder: (drawerContext, _, _) => Align(
         alignment: AlignmentDirectional.centerStart,
         child: DefaultTextStyle(
@@ -462,6 +454,56 @@ class _GalleryAppState extends State<GalleryApp> {
       onGenerateRoute: (_) => MaterialPageRoute<void>(builder: _home),
     );
   }
+}
+
+/// The drawer's slide in from the reading start: in on [motion]'s enter curve, out on its exit. A widget of its own so
+/// the eased animation is made once per drawer and disposed with it, not made again on every frame of the slide.
+class _DrawerSlide extends StatefulWidget {
+  const _DrawerSlide({
+    required this.animation,
+    required this.motion,
+    required this.fromRight,
+    required this.child,
+  });
+
+  final Animation<double> animation;
+  final NeumorphicMotion motion;
+  final bool fromRight;
+  final Widget child;
+
+  @override
+  State<_DrawerSlide> createState() => _DrawerSlideState();
+}
+
+class _DrawerSlideState extends State<_DrawerSlide> {
+  late final _eased = CurvedAnimation(
+    parent: widget.animation,
+    curve: widget.motion.enter,
+    reverseCurve: widget.motion.exit,
+  );
+
+  @override
+  void didUpdateWidget(_DrawerSlide oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _eased
+      ..curve = widget.motion.enter
+      ..reverseCurve = widget.motion.exit;
+  }
+
+  @override
+  void dispose() {
+    _eased.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => SlideTransition(
+    position: Tween(
+      begin: Offset(widget.fromRight ? 1 : -1, 0),
+      end: Offset.zero,
+    ).animate(_eased),
+    child: widget.child,
+  );
 }
 
 /// The theme's knobs, each a control of the look's own at its natural width, on a grid that starts at the left.

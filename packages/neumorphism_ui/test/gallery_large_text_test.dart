@@ -6,7 +6,7 @@ import '../example/lib/main.dart';
 // ignore: avoid_relative_lib_imports
 import '../example/lib/kit_gallery/live.dart';
 import 'gallery_support.dart' show loadBundledFonts, settle;
-import 'support.dart' show loadNeumorphicFonts;
+import 'support.dart' show loadNeumorphicFonts, sweepUnlessTurn;
 
 /// Every gallery page at the largest text a reader sets (2.0), on a phone and on a desktop: nothing overflows, and no
 /// part throws while it lays its words out.
@@ -15,8 +15,10 @@ void main() {
     await loadNeumorphicFonts();
     await loadBundledFonts();
   });
-  for (final page in liveGalleryPages) {
-    for (final width in const [390.0, 1440.0]) {
+  // Each page at one of the two widths every time, in turn, the other width than world_checks_test takes it at; the
+  // sweep runs the rest.
+  for (final (turn, page) in liveGalleryPages.indexed) {
+    for (final (cell, width) in const [390.0, 1440.0].indexed) {
       testWidgets('${page.id} at text 2.0, $width wide', (tester) async {
         tester.view.physicalSize = Size(width, 2400);
         tester.view.devicePixelRatio = 1;
@@ -29,7 +31,7 @@ void main() {
         );
         await settle(tester);
         expect(tester.takeException(), isNull);
-      });
+      }, tags: sweepUnlessTurn(turn + 1, cell, 2));
     }
   }
 }

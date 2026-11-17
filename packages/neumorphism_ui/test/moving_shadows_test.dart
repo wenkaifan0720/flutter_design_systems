@@ -9,7 +9,7 @@ import 'package:ui_core/alignment.dart' show DesignShadowClipCheck;
 // ignore: avoid_relative_lib_imports
 import '../example/lib/everyday_screens.dart';
 import 'moving_states.dart';
-import 'support.dart' show loadNeumorphicFonts;
+import 'support.dart' show loadNeumorphicFonts, sweepUnlessTurn;
 
 final _heights = {390.0: 844.0, 1440.0: 900.0};
 
@@ -90,12 +90,13 @@ Finder? _control(String words) {
 void main() {
   setUpAll(loadNeumorphicFonts);
 
-  for (final screen in everydayScreens) {
-    for (final (width, brightness) in [
+  // Each screen in one of its three sizes and modes every time, in turn; the sweep runs the rest.
+  for (final (turn, screen) in everydayScreens.indexed) {
+    for (final (cell, (width, brightness)) in [
       (390.0, Brightness.light),
       (1440.0, Brightness.light),
       (1440.0, Brightness.dark),
-    ]) {
+    ].indexed) {
       final name = '${screen.id} ${width.toInt()} ${brightness.name}';
       testWidgets('$name: no shadow is cut as its controls move', (
         tester,
@@ -155,7 +156,7 @@ void main() {
         expect(cuts, isEmpty, reason: '$name: shadows cut');
         await tester.pumpWidget(const SizedBox());
         await _settle(tester);
-      });
+      }, tags: sweepUnlessTurn(turn, cell, 3));
     }
   }
 }

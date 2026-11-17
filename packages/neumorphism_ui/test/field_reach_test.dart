@@ -9,13 +9,15 @@ import 'support.dart';
 void main() {
   setUpAll(loadNeumorphicFonts);
   {
-    for (final (densityName, density) in [
+    // Every time: the field at standard density and 1.0, the search at comfortable and 1.3, the password at compact
+    // and 2.0, on every platform; the sweep runs the rest.
+    for (final (d, (densityName, density)) in [
       ('standard', NeumorphicDensity.standard),
       ('comfortable', NeumorphicDensity.comfortable),
       ('compact', NeumorphicDensity.compact),
-    ]) {
-      for (final scale in [1.0, 1.3, 2.0]) {
-        for (final kind in ['field', 'search', 'password']) {
+    ].indexed) {
+      for (final (s, scale) in [1.0, 1.3, 2.0].indexed) {
+        for (final (k, kind) in ['field', 'search', 'password'].indexed) {
           testWidgets(
             '$kind has an editable target at $densityName and $scale',
             (tester) async {
@@ -74,6 +76,7 @@ void main() {
               );
             },
             variant: TargetPlatformVariant.all(),
+            tags: d == k && s == k ? null : const ['sweep'],
           );
         }
       }

@@ -1,3 +1,19 @@
+## 0.2.1
+
+- On iOS, Reduce Motion stills the look as Android's Remove animations and a browser's reduced motion do: a page
+  change, a press and every part's move go straight to their end. Flutter gives iOS's setting apart from
+  `MediaQuery.disableAnimations`, which the look read alone; `NeumorphicMotion.of` now reads both, through ui_core
+  0.2.1's `designReduceMotionOf`.
+- A date range picker's count of nights follows the app's language and its plural forms: the words come from
+  `NeumorphicLocalizations.nights`, English by default ("1 night", "2 nights"), and a translation gives every form
+  its language has with `Intl.plural`. It was English in every language.
+- The package's tests come in three tiers. `flutter test --exclude-tags goldens,sweep` is the one to run on every
+  change: each matrix of sizes, modes, directions and text sizes runs one case per page or part in turn, so every
+  size, both modes, right to left and twice the text are still met. `--tags sweep` runs the rest of those matrices,
+  and `--tags goldens` the pictures (recorded on macOS), before a release. The two largest matrices, which took over 5
+  GB of one test process, keep no stack trace per object for leak tracking and are held to every leak instead.
+- The example's drawer no longer makes an eased animation on every frame of its slide without disposing it.
+
 ## 0.2.0
 
 A quality release: the parts behave, line up and hold their shadows as a designer would ship them, on phones,

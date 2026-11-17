@@ -98,6 +98,16 @@ abstract class NeumorphicLocalizations {
   String stepOf(int step, int count) =>
       'Step ${formatNumber(step)} of ${formatNumber(count)}';
 
+  /// A date range's length after its dates: '1 night', '4 nights'. Concrete, so a delegate written before it still
+  /// builds. A translation gives each plural form its language has, through [Intl.plural] in its [localeName]
+  /// (Polish: one '1 noc', few '2 noce', many '5 nocy').
+  String nights(int count) => Intl.plural(
+    count,
+    one: '${formatNumber(count)} night',
+    other: '${formatNumber(count)} nights',
+    locale: localeName,
+  );
+
   /// Pagination's step back a page.
   String get previousPage => 'Previous page';
 

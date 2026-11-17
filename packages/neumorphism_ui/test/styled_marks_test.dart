@@ -7,6 +7,9 @@ import 'styled_controls_test.dart' show mount;
 import 'support.dart';
 
 void main() {
+  // Each part runs one of its 18 densities, widths and text sizes every time, in turn ([sweepInTurn]); the
+  // sweep runs the rest.
+  var matrixCase = 0;
   setUpAll(loadNeumorphicFonts);
   final parts = <(String, Widget Function())>[
     (
@@ -276,6 +279,7 @@ void main() {
                 }
                 expect(checked, greaterThan(0));
               },
+              tags: sweepInTurn(matrixCase++, 18),
             );
           }
         }

@@ -123,6 +123,12 @@ Future<_Place> _place(
 
 void main() {
   setUpAll(loadNeumorphicFonts);
+  // Every time: standard at 1.0, comfortable at 1.5 under an app input theme, compact at 1.5; the sweep runs the rest.
+  final everyday = {
+    ('standard', 1.0, false),
+    ('comfortable', 1.5, true),
+    ('compact', 1.5, false),
+  };
   for (final (densityName, density) in [
     ('standard', NeumorphicDensity.standard),
     ('comfortable', NeumorphicDensity.comfortable),
@@ -132,109 +138,115 @@ void main() {
       for (final hostile in [false, true]) {
         final config =
             '$densityName ×$scale${hostile ? ' under an app input theme' : ''}';
-        testWidgets('text entries hold their line: $config', (tester) async {
-          addTearDown(tester.view.reset);
-          final faults = <String>[];
-          void near(String what, double a, double b) {
-            if ((a - b).abs() > .5) {
-              faults.add(
-                '$what: ${a.toStringAsFixed(2)} vs ${b.toStringAsFixed(2)}',
-              );
+        testWidgets(
+          'text entries hold their line: $config',
+          (tester) async {
+            addTearDown(tester.view.reset);
+            final faults = <String>[];
+            void near(String what, double a, double b) {
+              if ((a - b).abs() > .5) {
+                faults.add(
+                  '$what: ${a.toStringAsFixed(2)} vs ${b.toStringAsFixed(2)}',
+                );
+              }
             }
-          }
 
-          final byPlatform = <TargetPlatform, Map<String, _Place>>{};
-          for (final platform in [
-            TargetPlatform.android,
-            TargetPlatform.iOS,
-            TargetPlatform.macOS,
-          ]) {
-            debugDefaultTargetPlatformOverride = platform;
-            try {
-              final places = byPlatform[platform] = {};
-              final os = platform.name;
-              for (final MapEntry(key: name, value: e) in _entries.entries) {
-                final text = TextEditingController();
-                final empty = await _place(
-                  tester,
-                  e.build(text),
-                  density: density,
-                  scale: scale,
-                  hostile: hostile,
-                  hint: e.hint,
-                );
-                places[name] = empty;
-                // The line is centred by its capitals (DesignCapCenter), not its line box: ui_core's
-                // DesignTextEntryCheck holds that (inline_alignment_test). Here the hint on the line it stands for.
-                near(
-                  '$name · $os: hint on its line',
-                  empty.hint!.center.dy,
-                  empty.line.center.dy,
-                );
-                if (e.typed) {
-                  final typed = await _place(
+            final byPlatform = <TargetPlatform, Map<String, _Place>>{};
+            for (final platform in [
+              TargetPlatform.android,
+              TargetPlatform.iOS,
+              TargetPlatform.macOS,
+            ]) {
+              debugDefaultTargetPlatformOverride = platform;
+              try {
+                final places = byPlatform[platform] = {};
+                final os = platform.name;
+                for (final MapEntry(key: name, value: e) in _entries.entries) {
+                  final text = TextEditingController();
+                  final empty = await _place(
                     tester,
                     e.build(text),
                     density: density,
                     scale: scale,
                     hostile: hostile,
-                    type: 'Pepper',
+                    hint: e.hint,
                   );
+                  places[name] = empty;
+                  // The line is centred by its capitals (DesignCapCenter), not its line box: ui_core's
+                  // DesignTextEntryCheck holds that (inline_alignment_test). Here the hint on the line it stands for.
                   near(
-                    '$name · $os: typed line where the empty one stood',
-                    typed.line.center.dy - typed.box.top,
-                    empty.line.center.dy - empty.box.top,
+                    '$name · $os: hint on its line',
+                    empty.hint!.center.dy,
+                    empty.line.center.dy,
                   );
-                  near(
-                    '$name · $os: box height typed',
-                    typed.box.height,
-                    empty.box.height,
+                  if (e.typed) {
+                    final typed = await _place(
+                      tester,
+                      e.build(text),
+                      density: density,
+                      scale: scale,
+                      hostile: hostile,
+                      type: 'Pepper',
+                    );
+                    near(
+                      '$name · $os: typed line where the empty one stood',
+                      typed.line.center.dy - typed.box.top,
+                      empty.line.center.dy - empty.box.top,
+                    );
+                    near(
+                      '$name · $os: box height typed',
+                      typed.box.height,
+                      empty.box.height,
+                    );
+                  }
+                  text.dispose();
+                }
+                // Several lines: the first stands where a field's one line does.
+                final area = await _place(
+                  tester,
+                  const NeumorphicTextArea(hint: 'Notes', lines: 3),
+                  density: density,
+                  scale: scale,
+                  hostile: hostile,
+                );
+                final field = places['field']!;
+                // One line is centred by its capitals, several start where they are laid out: the first of several
+                // stands within a pixel of where one line does (0.9 at ×1.5, the capitals' shift).
+                final first = area.line.top - area.box.top;
+                final one = field.line.top - field.box.top;
+                if ((first - one).abs() > 1) {
+                  faults.add(
+                    'text area · $os: first line from the top: '
+                    '${first.toStringAsFixed(2)} vs ${one.toStringAsFixed(2)}',
                   );
                 }
-                text.dispose();
+              } finally {
+                debugDefaultTargetPlatformOverride = null;
               }
-              // Several lines: the first stands where a field's one line does.
-              final area = await _place(
-                tester,
-                const NeumorphicTextArea(hint: 'Notes', lines: 3),
-                density: density,
-                scale: scale,
-                hostile: hostile,
-              );
-              final field = places['field']!;
-              // One line is centred by its capitals, several start where they are laid out: the first of several
-              // stands within a pixel of where one line does (0.9 at ×1.5, the capitals' shift).
-              final first = area.line.top - area.box.top;
-              final one = field.line.top - field.box.top;
-              if ((first - one).abs() > 1) {
-                faults.add(
-                  'text area · $os: first line from the top: '
-                  '${first.toStringAsFixed(2)} vs ${one.toStringAsFixed(2)}',
+            }
+            // A box and its line are where they are on Android: the least target is 48 on every platform.
+            for (final other in [TargetPlatform.iOS, TargetPlatform.macOS]) {
+              for (final name in _entries.keys) {
+                final a = byPlatform[TargetPlatform.android]![name]!;
+                final m = byPlatform[other]![name]!;
+                near(
+                  '$name: box height, ${other.name} vs android',
+                  m.box.height,
+                  a.box.height,
+                );
+                near(
+                  '$name: line from the top, ${other.name} vs android',
+                  m.line.top - m.box.top,
+                  a.line.top - a.box.top,
                 );
               }
-            } finally {
-              debugDefaultTargetPlatformOverride = null;
             }
-          }
-          // A box and its line are where they are on Android: the least target is 48 on every platform.
-          for (final other in [TargetPlatform.iOS, TargetPlatform.macOS]) {
-            for (final name in _entries.keys) {
-              final a = byPlatform[TargetPlatform.android]![name]!;
-              final m = byPlatform[other]![name]!;
-              near(
-                '$name: box height, ${other.name} vs android',
-                m.box.height,
-                a.box.height,
-              );
-              near(
-                '$name: line from the top, ${other.name} vs android',
-                m.line.top - m.box.top,
-                a.line.top - a.box.top,
-              );
-            }
-          }
-          expect(faults, isEmpty, reason: faults.join('\n'));
-        });
+            expect(faults, isEmpty, reason: faults.join('\n'));
+          },
+          tags: everyday.contains((densityName, scale, hostile))
+              ? null
+              : const ['sweep'],
+        );
       }
     }
   }

@@ -86,12 +86,18 @@ void main() {
     expect(_crushed(tester), isEmpty);
   }
 
+  // Each page in each preset runs one of its 32 cases every time, in turn, so the everyday tier still meets every
+  // size, both modes, right to left and twice the text; the sweep runs the rest.
+  var subject = 0;
   for (final page in _pages.entries) {
     testWidgets(
       '${page.key} on a small phone',
       (tester) => holds(tester, page.value, 'porcelain', false, 320),
+      experimentalLeakTesting: matrixLeakTesting,
     );
     for (final preset in NeumorphicThemeData.presets) {
+      final turn = subject++;
+      var cell = 0;
       for (final dark in const [false, true]) {
         for (final width in const [390.0, 768.0, 1024.0, 1440.0]) {
           for (final direction in TextDirection.values) {
@@ -107,6 +113,8 @@ void main() {
                   textScale: scale,
                   direction: direction,
                 ),
+                tags: sweepUnlessTurn(turn, cell++, 32),
+                experimentalLeakTesting: matrixLeakTesting,
               );
             }
           }
