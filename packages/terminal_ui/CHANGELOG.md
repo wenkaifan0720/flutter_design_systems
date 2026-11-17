@@ -1,3 +1,24 @@
+## 0.1.1
+
+- On iOS, Reduce Motion stills the look as Android's Remove animations and a
+  browser's reduced motion do: a spring settles without overshoot, the caret
+  stands as a steady block, the spinner holds, and a screen, a dialog, a
+  sheet, a side sheet and the command palette come up at once. Flutter gives
+  iOS's setting apart from `MediaQuery.disableAnimations`, which the look
+  read alone; it now reads both, through `ui_core` 0.2.1's
+  `designReduceMotionOf`, and follows the setting as it changes.
+- What a screen reader hears for an avatar group follows the app's language
+  and its plural forms: the words come from
+  `TermLocalizations.avatarGroupLabel`, English by default ("1 person: …",
+  "2 people: …"), and an app extends `DefaultTermLocalizations`, with a
+  delegate, to word every form its language has. It said "1 people".
+- The package's tests come in three tiers. `flutter test --exclude-tags
+  goldens,sweep` is the one to run on every change: each matrix of widths,
+  themes, directions and text sizes runs one case per screen or part in
+  turn, so every width, both themes, right to left and twice the text are
+  still met. `--tags sweep` runs the rest of those matrices, and
+  `--tags goldens` the pictures (recorded on macOS), before a release.
+
 ## 0.1.0
 
 - First release: 84 of `ui_core`'s 89 inventory components (actions,

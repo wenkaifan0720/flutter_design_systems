@@ -1,7 +1,9 @@
 // slipway's screens at a phone's, a tablet's and a desk's width, at night
-// and on paper, once right to left and once at 200% text: each lays out
-// with nothing overflowing and nothing thrown, and names itself to a
-// screen reader.
+// and on paper, right to left and at 200% text: each lays out with nothing
+// overflowing and nothing thrown, and names itself to a screen reader. Every
+// run takes each screen at one width and theme, in turn (the screens meet
+// all six), one screen right to left and one at 200%; the sweep runs the
+// rest (tiers.dart).
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:terminal_ui/terminal_ui.dart';
@@ -10,6 +12,7 @@ import 'package:terminal_ui/terminal_ui.dart';
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/everyday_screens.dart';
 import 'faces.dart';
+import 'tiers.dart';
 
 Future<void> _pump(WidgetTester tester, Widget app, double width) async {
   tester.view.devicePixelRatio = 1;
@@ -24,7 +27,9 @@ Future<void> _pump(WidgetTester tester, Widget app, double width) async {
 void main() {
   setUpAll(loadFaces);
 
-  for (final screen in everydayScreens) {
+  final screens = everydayScreens.length;
+  for (final (turn, screen) in everydayScreens.indexed) {
+    var cell = 0;
     for (final width in const [390.0, 768.0, 1440.0]) {
       for (final brightness in Brightness.values) {
         testWidgets('${screen.id} at ${width.toInt()} ${brightness.name}', (
@@ -42,7 +47,7 @@ void main() {
           };
           expect(find.bySemanticsLabel(name), findsWidgets);
           semantics.dispose();
-        });
+        }, tags: sweepUnlessTurn(turn, cell++, 6));
       }
     }
     testWidgets('${screen.id} right to left', (tester) async {
@@ -52,7 +57,7 @@ void main() {
         Directionality.of(tester.element(find.byType(TermTopBar))),
         TextDirection.rtl,
       );
-    });
+    }, tags: sweepUnlessTurn(turn, 0, screens));
   }
 
   testWidgets('the grid holds at 200% text', (tester) async {
@@ -74,12 +79,12 @@ void main() {
     expect(grid.lineHeight, 48);
   });
 
-  for (final screen in everydayScreens) {
+  for (final (turn, screen) in everydayScreens.indexed) {
     testWidgets('${screen.id} at 200% text on a phone', (tester) async {
       tester.platformDispatcher.textScaleFactorTestValue = 2;
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       await _pump(tester, screen.app(Brightness.light, TextDirection.ltr), 390);
       expect(tester.takeException(), isNull);
-    });
+    }, tags: sweepUnlessTurn(turn, 1, screens));
   }
 }

@@ -112,7 +112,7 @@ Future<T?> showTermSideSheet<T>({
   final grid = context.termGrid;
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
-  final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+  final still = designReduceMotionOf(context);
   return navigator.push<T>(
     _TermSideSheetRoute<T>(
       edge: edge,

@@ -12,6 +12,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 
 import '../grid.dart';
+import '../localizations.dart';
 import '../primitives/box.dart';
 import '../primitives/control.dart';
 import '../primitives/spring.dart';
@@ -1349,7 +1350,7 @@ class TermAvatarGroup extends StatelessWidget {
     final shown = names.take(max).toList();
     final rest = names.length - shown.length;
     return Semantics(
-      label: '${names.length} people: ${names.join(', ')}',
+      label: TermLocalizations.of(context).avatarGroupLabel(names),
       excludeSemantics: true,
       child: Row(
         mainAxisSize: MainAxisSize.min,

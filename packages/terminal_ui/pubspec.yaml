@@ -1,7 +1,7 @@
 name: terminal_ui
 description: >-
   Terminal widgets for Flutter: an app drawn on a character grid, with box-drawn panes, bracketed buttons, inverse selection and keys beside every action.
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/terminal_ui
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/terminal_ui
 topics:
@@ -32,7 +32,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.2.0
+  ui_core: ^0.2.1
   material_ui: ^1.9.0
 
 

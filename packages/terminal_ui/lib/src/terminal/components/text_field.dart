@@ -287,7 +287,7 @@ class _TermTextFieldState extends State<TermTextField> {
 
     // Flutter's caret blinks on a timer whatever the setting; under Reduce
     // Motion the field hides it and a steady block is painted in its place.
-    final steady = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final steady = designReduceMotionOf(context);
     final caret = hasError ? theme.danger : theme.accent;
 
     // Material's field, on a Material surface of its own that paints

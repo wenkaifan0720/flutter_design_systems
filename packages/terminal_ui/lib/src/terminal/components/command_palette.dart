@@ -459,7 +459,7 @@ Future<void> showTermCommandPalette({
   final grid = context.termGrid;
   final navigator = Navigator.of(context, rootNavigator: true);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
-  final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+  final still = designReduceMotionOf(context);
   final chosen = await navigator.push<DesignCommand>(
     RawDialogRoute<DesignCommand>(
       barrierDismissible: true,

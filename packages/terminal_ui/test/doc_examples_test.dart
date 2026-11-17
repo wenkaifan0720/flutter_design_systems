@@ -661,6 +661,12 @@ final Map<String, DocExample> _examples = {
     termInventory.verify();
     return null;
   },
+  "localizations.dart:19": (context) => Text(
+    TermLocalizations.of(context)
+        .avatarGroupLabel(const ['Ada Lovelace', 'Alan Turing']),
+  ),
+  "localizations.dart:37": (context) =>
+      const DefaultTermLocalizations().avatarGroupLabel(const ['Ada Lovelace']),
   "palette.dart:17": (context) {
     final palette = TermPalette.night.copyWith(cyan: const Color(0xFF7DD3FC));
     return palette;

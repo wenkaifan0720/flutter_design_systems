@@ -117,23 +117,18 @@ class _TermStepperState extends State<TermStepper>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-  }
-
-  @override
   void didUpdateWidget(TermStepper oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.period != widget.period) {
       _ticker.stop();
       _step = 0;
     }
-    _sync();
   }
 
+  // Followed in build: iOS's Reduce Motion changing comes as a build alone,
+  // with no didChangeDependencies.
   void _sync() {
-    final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final still = designReduceMotionOf(context);
     final run =
         widget.running && !still && TickerMode.valuesOf(context).enabled;
     if (run && !_ticker.isActive) {
@@ -151,5 +146,8 @@ class _TermStepperState extends State<TermStepper>
   }
 
   @override
-  Widget build(BuildContext context) => widget.builder(context, _step);
+  Widget build(BuildContext context) {
+    _sync();
+    return widget.builder(context, _step);
+  }
 }

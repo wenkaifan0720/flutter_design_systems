@@ -132,7 +132,7 @@ Future<T?> showTermDialog<T>({
   final theme = TermTheme.of(context);
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
-  final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+  final still = designReduceMotionOf(context);
   return navigator.push<T>(
     RawDialogRoute<T>(
       barrierDismissible: barrierDismissible,
@@ -525,7 +525,7 @@ Future<T?> showTermSheet<T>({
   final grid = context.termGrid;
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
-  final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+  final still = designReduceMotionOf(context);
   return navigator.push<T>(
     RawDialogRoute<T>(
       barrierDismissible: barrierDismissible,

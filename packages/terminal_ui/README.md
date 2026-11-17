@@ -39,7 +39,7 @@ widgets.
 
 ```yaml
 dependencies:
-  terminal_ui: ^0.1.0
+  terminal_ui: ^0.1.1
 ```
 
 Put `TermTheme` round your app in its builder, and load the faces before the

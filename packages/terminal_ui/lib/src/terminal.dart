@@ -37,6 +37,7 @@ export 'terminal/primitives/field_frame.dart';
 export 'terminal/primitives/menu.dart';
 export 'terminal/primitives/spring.dart';
 export 'terminal/inventory.dart';
+export 'terminal/localizations.dart';
 export 'terminal/palette.dart';
 export 'terminal/style.dart';
 export 'terminal/theme.dart';

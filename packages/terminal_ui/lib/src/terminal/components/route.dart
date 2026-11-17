@@ -160,7 +160,7 @@ class _TermScreenChange extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final still = designReduceMotionOf(context);
     // The screen clears before the new one is drawn: its ground is solid
     // from the first frame, so the screen it covers never shows through,
     // whatever route that one is.
