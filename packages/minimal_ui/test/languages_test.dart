@@ -18,6 +18,7 @@ import '../example/lib/kit_gallery/demos/shell.dart';
 import '../example/lib/kit_gallery/demos/status.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/main.dart';
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'world_checks.dart';
 
 Widget _gallery(
@@ -278,30 +279,47 @@ void main() {
     expect(ink('Stretch before bed'), t.foreground);
   });
 
-  for (final page in galleryPagesAll) {
-    testWidgets('${page.name} at twice the text size', (tester) async {
-      _onAPhone(tester);
-      await expectNoOverflowAtTextScale(tester, _gallery(page));
-    });
+  // Every page at twice the text size and right to left. The everyday tier
+  // takes every other page, the two in turn (Text fields and Lists and
+  // tables at twice the size, Pickers right to left among them); the sweep
+  // tier the rest.
+  for (final (i, page) in galleryPagesAll.indexed) {
+    testWidgets(
+      '${page.name} at twice the text size',
+      (tester) async {
+        _onAPhone(tester);
+        await expectNoOverflowAtTextScale(tester, _gallery(page));
+      },
+      tags: i % 4 == 2 ? null : 'sweep',
+      experimentalLeakTesting: longWalkLeakTesting,
+    );
 
-    testWidgets('${page.name} right to left', (tester) async {
-      _onAPhone(tester);
-      await tester.pumpWidget(_gallery(page, direction: TextDirection.rtl));
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-    });
+    testWidgets(
+      '${page.name} right to left',
+      (tester) async {
+        _onAPhone(tester);
+        await tester.pumpWidget(_gallery(page, direction: TextDirection.rtl));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      },
+      tags: i % 4 == 0 ? null : 'sweep',
+      experimentalLeakTesting: longWalkLeakTesting,
+    );
   }
 
   for (final page in galleryPagesAll.where((p) => _everyday.contains(p.name))) {
     for (final brightness in Brightness.values) {
-      testWidgets('${page.name} meets the guidelines, ${brightness.name}', (
-        tester,
-      ) async {
-        _onAPhone(tester);
-        await tester.pumpWidget(_gallery(page, brightness: brightness));
-        await tester.pumpAndSettle();
-        await expectMeetsGuidelines(tester, android: false);
-      }, tags: 'goldens');
+      testWidgets(
+        '${page.name} meets the guidelines, ${brightness.name}',
+        (tester) async {
+          _onAPhone(tester);
+          await tester.pumpWidget(_gallery(page, brightness: brightness));
+          await tester.pumpAndSettle();
+          await expectMeetsGuidelines(tester, android: false);
+        },
+        tags: 'goldens',
+        experimentalLeakTesting: longWalkLeakTesting,
+      );
     }
   }
 }

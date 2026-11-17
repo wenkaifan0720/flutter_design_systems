@@ -330,13 +330,15 @@ class _BusyMarkState extends State<_BusyMark>
     duration: const Duration(seconds: 1),
   );
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  // Run from build: iOS's Reduce Motion arrives as a build, not as a
+  // change of dependencies.
+  void _run() {
     if (context.minimalStill) {
-      _turn
-        ..stop()
-        ..value = 0;
+      if (_turn.isAnimating || _turn.value != 0) {
+        _turn
+          ..stop()
+          ..value = 0;
+      }
     } else if (!_turn.isAnimating) {
       _turn.repeat();
     }
@@ -349,13 +351,16 @@ class _BusyMarkState extends State<_BusyMark>
   }
 
   @override
-  Widget build(BuildContext context) => SizedBox.square(
-    dimension: widget.size,
-    child: RotationTransition(
-      turns: _turn,
-      child: CustomPaint(painter: _BusyPainter(widget.ink)),
-    ),
-  );
+  Widget build(BuildContext context) {
+    _run();
+    return SizedBox.square(
+      dimension: widget.size,
+      child: RotationTransition(
+        turns: _turn,
+        child: CustomPaint(painter: _BusyPainter(widget.ink)),
+      ),
+    );
+  }
 }
 
 class _BusyPainter extends CustomPainter {

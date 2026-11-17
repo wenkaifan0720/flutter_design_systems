@@ -8,8 +8,11 @@
 //
 // ui_core's template (design-kit/files/test/flutter_test_config.dart);
 // look:package adds leak_tracker_flutter_testing to the dev dependencies.
-// Minimal's gallery walks are a test per page, and its inventory walks run
-// in drip's app too, under drip's own config: none takes the long walk's.
+// Minimal's walks of whole gallery pages and app screens take the long
+// walk's (below): tracked, a file of them grew test by test to 3.4 GB in
+// one process and ran two and a half times as long. Each part's own tests,
+// and the apps' happy path, keep tracking; the inventory walks run in
+// drip's app too, under drip's own config, and keep it.
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';

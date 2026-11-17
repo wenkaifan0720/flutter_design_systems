@@ -1,3 +1,34 @@
+## 0.2.1
+
+Built on ui_core 0.2.1. Nothing is renamed or removed: an app on 0.2.0 compiles on 0.2.1 unchanged.
+
+### Fixes
+
+- Reduce Motion now includes iOS's. Minimal read only `MediaQuery.disableAnimations`, which Flutter never sets on
+  iOS, so on an iPhone with Reduce Motion on, a switch's thumb, a counter, a reveal and the press feedback moved as
+  designed, and the busy button's mark, the spinner, the progress bar of no known total, the skeleton, the loading
+  state and a media slot's sheen ran on. `context.minimalStill` now reads ui_core's `designReduceMotionOf` (Android's
+  Remove animations, the web's `prefers-reduced-motion` and iOS's Reduce Motion), and each of those loops stops and
+  starts again as the setting changes, on any platform.
+- A heatmap's label said "1 of 1 days kept", and in English whatever the app's language. It now comes from
+  `MinimalLocalizations.daysKeptOf(kept, total)` ("1 of 1 day kept"), with both counts as numbers, so a translation
+  says them in its own plural forms. `daysKept(count)`, a week's dots, reads it.
+- An avatar group's "Ana, Ben and 3 more" was English in every language; it now comes from
+  `MinimalLocalizations.namesAndMore(names, more)`, the count as a number.
+- From ui_core 0.2.1: a menu, a select or a popover gives focus back to the control that opened it as it closes; a
+  combobox's or a tag input's list no longer opens again on the focus given back to its field; Home and End in a
+  menu keep the row they reach in view.
+
+### Development
+
+- The tests come in three tiers. `flutter test --exclude-tags goldens,sweep`, the everyday tier, runs every check
+  with each matrix (pages by width, text size and direction; apps by width and appearance; platforms; corner
+  families; languages; densities) once, in turn; `--tags sweep` runs the rest of the matrices, and `--tags goldens`
+  the pixel goldens, recorded on macOS. All three together are the whole suite.
+- The tests' walks of whole gallery pages and app screens run with leak tracking paused (ui_core's test template's
+  `longWalkLeakTesting`); each part's own tests, and the apps' happy path, keep it. Tracked, a file of page walks grew
+  test by test to 3.4 GB in one test process and ran two and a half times as long.
+
 ## 0.2.0
 
 Built on ui_core 0.2.0. Nothing is renamed or removed: an app on 0.1.0 compiles on 0.2.0 unchanged (one widget it

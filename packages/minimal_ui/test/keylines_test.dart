@@ -4,6 +4,9 @@
 // leading keyline and what ends a row on a glyph or a control ends on one
 // trailing keyline; controls sharing a row share a height and a centre line.
 // ignore_for_file: avoid_relative_lib_imports
+@Tags(['goldens'])
+library;
+
 import 'dart:convert';
 import 'dart:ui' as ui;
 
@@ -14,6 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 
 import '../example/lib/main.dart';
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 
 String _kind(Widget w) => w.runtimeType.toString().split('<').first;
 
@@ -598,33 +602,38 @@ void main() {
 
   for (final size in const [Size(390, 844), Size(1440, 900)]) {
     for (final screen in keylineScreens) {
-      testWidgets('${screen.name} at ${size.width.round()}', (tester) async {
-        await openKeylineScreen(tester, screen, size);
-        final (boxes, image) = await measureKeylines(
-          tester,
-          scope: screen.scope,
-        );
-        image.dispose();
-        expect(boxes, isNotEmpty);
-        for (final box in boxes) {
-          final allowed =
-              _declared['${screen.name} at ${size.width.round()} ${box.kind}'];
-          final where =
-              '${screen.name} at ${size.width.round()}\n'
-              '${box.describe()}';
-          expect(
-            box.leading.length,
-            lessThanOrEqualTo(allowed?.lead ?? 1),
-            reason: 'leading keylines: $where',
+      testWidgets(
+        '${screen.name} at ${size.width.round()}',
+        (tester) async {
+          await openKeylineScreen(tester, screen, size);
+          final (boxes, image) = await measureKeylines(
+            tester,
+            scope: screen.scope,
           );
-          expect(
-            box.trailing.length,
-            lessThanOrEqualTo(allowed?.trail ?? 1),
-            reason: 'trailing keylines: $where',
-          );
-          expect(box.rowFaults, isEmpty, reason: 'controls in a row: $where');
-        }
-      }, tags: 'goldens');
+          image.dispose();
+          expect(boxes, isNotEmpty);
+          for (final box in boxes) {
+            final allowed =
+                _declared['${screen.name} at ${size.width.round()} ${box.kind}'];
+            final where =
+                '${screen.name} at ${size.width.round()}\n'
+                '${box.describe()}';
+            expect(
+              box.leading.length,
+              lessThanOrEqualTo(allowed?.lead ?? 1),
+              reason: 'leading keylines: $where',
+            );
+            expect(
+              box.trailing.length,
+              lessThanOrEqualTo(allowed?.trail ?? 1),
+              reason: 'trailing keylines: $where',
+            );
+            expect(box.rowFaults, isEmpty, reason: 'controls in a row: $where');
+          }
+        },
+        tags: 'goldens',
+        experimentalLeakTesting: longWalkLeakTesting,
+      );
     }
   }
 }

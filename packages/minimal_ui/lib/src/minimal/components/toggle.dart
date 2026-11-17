@@ -17,9 +17,9 @@ import 'pressable.dart';
 ///
 /// Tap or Enter/Space flips it, and a short horizontal drag throws the
 /// thumb. The thumb travels in [MinimalMotion.fast] with no overshoot, and in
-/// no time at all under `MediaQuery.disableAnimations`. A null [onChanged]
-/// is a disabled switch: dimmed, and it swallows taps. The hit area pads out
-/// to 44.
+/// no time at all under Reduce Motion (Android's, iOS's or the web's). A
+/// null [onChanged] is a disabled switch: dimmed, and it swallows taps. The
+/// hit area pads out to 44.
 ///
 /// `showLabel: true` is the labelled register for a switch that stands on
 /// its own (a sheet footer's `Create another`): the [label] prints after

@@ -1,7 +1,7 @@
 name: minimal_ui
 description: >-
   A precise, quiet design system for Flutter: hairlines, dense rows, mono tabular figures and one primary colour, in three presets by day and by night.
-version: 0.2.0
+version: 0.2.1
 homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/minimal_ui
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/minimal_ui
 topics:
@@ -32,7 +32,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.2.0
+  ui_core: ^0.2.1
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"

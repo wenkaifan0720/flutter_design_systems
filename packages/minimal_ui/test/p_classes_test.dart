@@ -21,6 +21,7 @@ import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../example/lib/main.dart';
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'keylines_test.dart' show keylineScreens, loadKeylineFonts;
 
 const Map<String, MinimalDensity> _densities = {
@@ -184,18 +185,31 @@ void main() {
       await _settle(tester);
     }
 
-    for (final page in examplePages) {
-      testWidgets(page.name, (tester) async {
-        await open(tester, 'page=${GalleryApp.pageSlug(page.name)}');
-        await holds(tester, page.name);
-      });
+    // The everyday tier: every other page (Buttons, Selection and
+    // Navigation among them) and the first app screen; the sweep tier the
+    // rest.
+    for (final (i, page) in examplePages.indexed) {
+      testWidgets(
+        page.name,
+        (tester) async {
+          await open(tester, 'page=${GalleryApp.pageSlug(page.name)}');
+          await holds(tester, page.name);
+        },
+        tags: i.isOdd ? null : 'sweep',
+        experimentalLeakTesting: longWalkLeakTesting,
+      );
     }
-    for (final screen in keylineScreens) {
-      testWidgets(screen.name, (tester) async {
-        await open(tester, 'app=${screen.app}');
-        await screen.open(tester);
-        await holds(tester, screen.name);
-      });
+    for (final (i, screen) in keylineScreens.indexed) {
+      testWidgets(
+        screen.name,
+        (tester) async {
+          await open(tester, 'app=${screen.app}');
+          await screen.open(tester);
+          await holds(tester, screen.name);
+        },
+        tags: i == 0 ? null : 'sweep',
+        experimentalLeakTesting: longWalkLeakTesting,
+      );
     }
   });
 
@@ -370,65 +384,76 @@ void main() {
   });
 
   group('(d) a select: closed at most 320, open from its leading edge', () {
+    // The everyday tier at 600, where the cap first holds; the sweep tier
+    // the wider three.
     for (final width in const [600.0, 1024.0, 1440.0, 1920.0]) {
-      testWidgets('Pickers at ${width.round()}', (tester) async {
-        tester.view
-          ..physicalSize = Size(width, 1000)
-          ..devicePixelRatio = 1;
-        addTearDown(tester.view.reset);
-        await tester.pumpWidget(
-          GalleryApp.at(
-            Uri.parse(
-              'http://localhost/?page=${GalleryApp.pageSlug('Pickers')}',
+      testWidgets(
+        'Pickers at ${width.round()}',
+        (tester) async {
+          tester.view
+            ..physicalSize = Size(width, 1000)
+            ..devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          await tester.pumpWidget(
+            GalleryApp.at(
+              Uri.parse(
+                'http://localhost/?page=${GalleryApp.pageSlug('Pickers')}',
+              ),
             ),
-          ),
-        );
-        await _settle(tester);
-        final selects = find.byWidgetPredicate(
-          (w) => _kind(w) == 'MinimalSelect',
-        );
-        expect(selects, findsWidgets);
-        Element? first;
-        for (final e in selects.evaluate()) {
-          final face = _faceOf(e.renderObject! as RenderBox);
-          final rect = _rectOf(face);
-          expect(
-            rect.width,
-            lessThanOrEqualTo(MinimalLayout.controlMax),
-            reason: 'closed select ${rect.width} wide at $rect',
           );
-          final press =
-              find
-                      .descendant(
-                        of: find.byElementPredicate((x) => x == e),
-                        matching: find.byType(MinimalPressable),
-                      )
-                      .evaluate()
-                      .first
-                      .widget
-                  as MinimalPressable;
-          final enabled = press.enabled && press.onPressed != null;
-          if (first == null && enabled && rect.bottom < 900) first = e;
-        }
-        // Open the first one the window shows and read the list's card.
-        final field = _rectOf(_faceOf(first!.renderObject! as RenderBox));
-        await tester.tapAt(field.centerLeft + const Offset(24, 0));
-        await _settle(tester);
-        final card = _rectOf(
-          tester
-              .renderObject<RenderCustomSingleChildLayoutBox>(
-                find.byType(CustomSingleChildLayout).last,
-              )
-              .child!,
-        );
-        final at = 'field $field, list $card';
-        expect(
-          card.left,
-          moreOrLessEquals(field.left, epsilon: 0.5),
-          reason: at,
-        );
-        expect(card.width, greaterThanOrEqualTo(field.width - 0.5), reason: at);
-      });
+          await _settle(tester);
+          final selects = find.byWidgetPredicate(
+            (w) => _kind(w) == 'MinimalSelect',
+          );
+          expect(selects, findsWidgets);
+          Element? first;
+          for (final e in selects.evaluate()) {
+            final face = _faceOf(e.renderObject! as RenderBox);
+            final rect = _rectOf(face);
+            expect(
+              rect.width,
+              lessThanOrEqualTo(MinimalLayout.controlMax),
+              reason: 'closed select ${rect.width} wide at $rect',
+            );
+            final press =
+                find
+                        .descendant(
+                          of: find.byElementPredicate((x) => x == e),
+                          matching: find.byType(MinimalPressable),
+                        )
+                        .evaluate()
+                        .first
+                        .widget
+                    as MinimalPressable;
+            final enabled = press.enabled && press.onPressed != null;
+            if (first == null && enabled && rect.bottom < 900) first = e;
+          }
+          // Open the first one the window shows and read the list's card.
+          final field = _rectOf(_faceOf(first!.renderObject! as RenderBox));
+          await tester.tapAt(field.centerLeft + const Offset(24, 0));
+          await _settle(tester);
+          final card = _rectOf(
+            tester
+                .renderObject<RenderCustomSingleChildLayoutBox>(
+                  find.byType(CustomSingleChildLayout).last,
+                )
+                .child!,
+          );
+          final at = 'field $field, list $card';
+          expect(
+            card.left,
+            moreOrLessEquals(field.left, epsilon: 0.5),
+            reason: at,
+          );
+          expect(
+            card.width,
+            greaterThanOrEqualTo(field.width - 0.5),
+            reason: at,
+          );
+        },
+        tags: width == 600 ? null : 'sweep',
+        experimentalLeakTesting: longWalkLeakTesting,
+      );
     }
   });
 

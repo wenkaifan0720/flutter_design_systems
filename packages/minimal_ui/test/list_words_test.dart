@@ -95,9 +95,13 @@ Future<void> _expectOn(WidgetTester tester, double value, String what) async {
 }
 
 void main() {
-  for (final width in const [390.0, 1440.0]) {
-    for (final MapEntry(key: name, value: density) in _densities.entries) {
+  // Both parts at two widths and both densities. The everyday tier: 390
+  // standard and 1440 compact; the sweep tier the other two.
+  for (final (w, width) in const [390.0, 1440.0].indexed) {
+    for (final (d, MapEntry(key: name, value: density))
+        in _densities.entries.indexed) {
       final at = '${width.toInt()} $name';
+      final tier = w == d ? null : 'sweep';
 
       testWidgets('$at: a combobox lists its options on its words', (
         tester,
@@ -125,7 +129,7 @@ void main() {
           );
           await tester.pumpWidget(const SizedBox());
         }
-      });
+      }, tags: tier);
 
       testWidgets('$at: a tag input lists its options on its tags\' words', (
         tester,
@@ -166,7 +170,7 @@ void main() {
         final tag = tester.getTopLeft(find.text('Lisbon').first).dx;
         expect(tag, closeTo(hint, 0.5), reason: "the tag's words");
         await _expectOn(tester, tag, 'tag input, one tag');
-      });
+      }, tags: tier);
     }
   }
 }

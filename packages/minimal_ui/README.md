@@ -18,7 +18,7 @@ The parts carry the names Material gives them (`MinimalButton`, `MinimalTextFiel
 
 ```yaml
 dependencies:
-  minimal_ui: ^0.2.0
+  minimal_ui: ^0.2.1
 ```
 
 ## Set up
@@ -255,7 +255,8 @@ ordinary app does not need it.
   control's tap target is at least 44 × 44 under a finger and 24 × 24 under a pointer (ui_core's `DesignTapTarget`;
   `MinimalTheme` declares the floors with `DesignTapTargetScope`): the compact faces keep their size and the target
   grows round them, whatever the density. Text meets 4.5:1 contrast, and with reduced motion
-  (`MediaQuery.disableAnimations`) every change switches at once.
+  (Android's Remove animations, iOS's Reduce Motion or the web's prefers-reduced-motion, read through ui_core's
+  `designReduceMotionOf`) every change switches at once.
 - **Labels as strings.** Some parts take a `String` label or an `IconData` where Flutter would take a widget
   (`MinimalButton`'s label, `MinimalListTile`'s title, `MinimalChip`'s label). A widget slot beside each, when one
   comes, will be optional, so nothing that compiles today breaks.

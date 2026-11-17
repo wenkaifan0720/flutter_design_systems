@@ -368,11 +368,15 @@ class _SpinState extends State<_Spin> with SingleTickerProviderStateMixin {
     duration: const Duration(seconds: 1),
   );
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  // Run from build: iOS's Reduce Motion arrives as a build, not as a
+  // change of dependencies.
+  void _run() {
     if (context.minimalStill) {
-      _turn.value = 0;
+      if (_turn.isAnimating || _turn.value != 0) {
+        _turn
+          ..stop()
+          ..value = 0;
+      }
     } else if (!_turn.isAnimating) {
       _turn.repeat();
     }
@@ -385,6 +389,8 @@ class _SpinState extends State<_Spin> with SingleTickerProviderStateMixin {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      RotationTransition(turns: _turn, child: widget.child);
+  Widget build(BuildContext context) {
+    _run();
+    return RotationTransition(turns: _turn, child: widget.child);
+  }
 }

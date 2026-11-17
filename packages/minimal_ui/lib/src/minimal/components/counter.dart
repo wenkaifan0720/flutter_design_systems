@@ -17,7 +17,8 @@ import '../theme.dart';
 /// same width), which is why [style] defaults to [MinimalThemeData.figure].
 ///
 /// It is a ONE-SHOT per value change, never a loop, and it lands on exactly
-/// the value it was given; under `MediaQuery.disableAnimations` it swaps.
+/// the value it was given; under Reduce Motion (Android's, iOS's or the
+/// web's) it swaps.
 /// [format] renders the value (`12d`, `€1,284`); it announces as printed.
 ///
 /// ```dart

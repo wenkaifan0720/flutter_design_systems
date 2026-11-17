@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 
 import '../component_themes.dart';
 import '../internal/styled.dart';
+import '../localizations.dart';
 import '../theme.dart';
 import 'card.dart';
 import 'img.dart';
@@ -258,9 +259,8 @@ class MinimalAvatarGroup extends StatelessWidget {
       size / 2 + initials * 0.75 + _ring,
     );
     final count = shown.length + (overflow > 0 ? 1 : 0);
-    final spoken = overflow > 0
-        ? '${shown.join(', ')} and $overflow more'
-        : shown.join(', ');
+    final spoken = MinimalLocalizations.of(context)
+        .namesAndMore(shown, overflow);
     // A face's rim in the ground: the ring round it is the only cut.
     final rim = BorderSide(color: ground, width: t.hairline);
     final face = MinimalStyle(side: WidgetStatePropertyAll(rim));

@@ -16,8 +16,8 @@ import '../theme.dart';
 /// invisible row that still eats taps is a bug the page cannot see. The
 /// child keeps its element (and its state) through a reversal mid-move,
 /// and it is clipped only while it moves, so a settled child's focus ring
-/// still paints outside its edge. Under `MediaQuery.disableAnimations`, or
-/// with [MinimalMotion.animate] off, it switches at once. Inside a
+/// still paints outside its edge. Under Reduce Motion (Android's, iOS's or
+/// the web's), or with [MinimalMotion.animate] off, it switches at once. Inside a
 /// [MinimalListSection] it is a row like any other: the group draws no rule for
 /// it while it is folded away.
 ///

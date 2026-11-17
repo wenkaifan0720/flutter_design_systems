@@ -54,6 +54,7 @@ class MinimalHeatmap extends StatelessWidget {
   final bool legend;
 
   /// What a screen reader announces; null composes `71 of 81 days kept`
+  /// ([MinimalLocalizations.daysKeptOf], in the app's language and plurals)
   /// over the days recorded (the future is not counted). Pass one built
   /// from the same figures when a header above prints the record.
   final String? semanticLabel;
@@ -126,7 +127,9 @@ class MinimalHeatmap extends StatelessWidget {
       },
     );
     return Semantics(
-      label: semanticLabel ?? '$kept of ${levels.length} days kept',
+      label:
+          semanticLabel ??
+          MinimalLocalizations.of(context).daysKeptOf(kept, levels.length),
       image: true,
       excludeSemantics: true,
       child: !legend

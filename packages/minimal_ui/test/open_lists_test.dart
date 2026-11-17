@@ -79,9 +79,12 @@ void _expectChoice(
 }
 
 void main() {
+  // Four checks by day and by night. The everyday tier takes each check
+  // once, the two in turn; the sweep tier the rest.
   for (final brightness in Brightness.values) {
     final t = MinimalThemeData.preset('standard', brightness);
     final at = brightness.name;
+    String? tier(int check) => check % 2 == brightness.index ? null : 'sweep';
 
     testWidgets('$at: the select\'s menu says its choice in ink and weight', (
       tester,
@@ -100,7 +103,7 @@ void main() {
       await tester.tap(find.text('Weekdays'));
       await tester.pumpAndSettle();
       _expectChoice(tester, t, 'Weekdays', ['Every day', 'Weekends'], 'menu');
-    });
+    }, tags: tier(0));
 
     testWidgets('$at: the select\'s sheet says its choice in ink and weight', (
       tester,
@@ -120,7 +123,7 @@ void main() {
       await tester.tap(find.text('Weekdays'));
       await tester.pumpAndSettle();
       _expectChoice(tester, t, 'Weekdays', ['Every day', 'Weekends'], 'sheet');
-    });
+    }, tags: tier(1));
 
     testWidgets('$at: the combobox says its choice, and the pointer\'s and '
         'the keyboard\'s row take the muted fill', (tester) async {
@@ -163,7 +166,7 @@ void main() {
       ];
       expect(filled, hasLength(1), reason: 'one row the keyboard is on');
       expect(_fill(tester, filled.single), t.muted);
-    });
+    }, tags: tier(2));
 
     testWidgets('$at: a choice group mutes all but its chosen row', (
       tester,
@@ -203,6 +206,6 @@ void main() {
       for (final option in _options) {
         expect(_style(tester, option.label).color, t.foreground);
       }
-    });
+    }, tags: tier(3));
   }
 }

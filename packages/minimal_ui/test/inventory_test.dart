@@ -92,8 +92,11 @@ void main() {
     expect(gaps.last.absentReason, contains('MinimalTimePicker'));
   });
 
-  for (final brightness in Brightness.values) {
-    for (final size in const [Size(390, 640), Size(1000, 640)]) {
+  // Every specimen by day and by night at two widths, and at 200% text. The
+  // everyday tier: by day at 390 and by night at 1000 (200% is the gallery
+  // pages' in languages_test); the sweep tier the rest.
+  for (final (b, brightness) in Brightness.values.indexed) {
+    for (final (w, size) in const [Size(390, 640), Size(1000, 640)].indexed) {
       testWidgets('every live specimen lays out: ${brightness.name}, '
           '${size.width.round()} wide', (tester) async {
         tester.view.physicalSize = size * 1;
@@ -112,7 +115,7 @@ void main() {
         // Let a carousel's or a toast's timers run out before the end.
         await tester.pumpWidget(const SizedBox());
         await tester.pump(const Duration(seconds: 10));
-      });
+      }, tags: w != b ? null : 'sweep');
     }
   }
 
@@ -134,7 +137,7 @@ void main() {
     }
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 10));
-  });
+  }, tags: 'sweep');
 
   testWidgets('the inventory page lists every row under its group', (
     tester,

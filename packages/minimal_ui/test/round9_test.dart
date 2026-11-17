@@ -316,6 +316,7 @@ void main() {
     await tester.pump(const Duration(seconds: 10));
   });
 
+  // The everyday tier on a phone, the sweep tier at 1000.
   for (final width in [1000.0, 390.0]) {
     testWidgets('every inventory specimen lays out, top to bottom, $width '
         'wide', (tester) async {
@@ -336,7 +337,7 @@ void main() {
       }
       await tester.pumpWidget(const SizedBox());
       await tester.pump(const Duration(seconds: 10));
-    });
+    }, tags: width == 390 ? null : 'sweep');
   }
 }
 

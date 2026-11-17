@@ -80,23 +80,15 @@ class _MinimalCircularProgressIndicatorState
     duration: const Duration(seconds: 1),
   );
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _run();
-  }
-
-  @override
-  void didUpdateWidget(MinimalCircularProgressIndicator oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _run();
-  }
-
+  // Run from build: iOS's Reduce Motion arrives as a build, not as a
+  // change of dependencies.
   void _run() {
     if (widget.value != null || context.minimalStill) {
-      _turn
-        ..stop()
-        ..value = 0;
+      if (_turn.isAnimating || _turn.value != 0) {
+        _turn
+          ..stop()
+          ..value = 0;
+      }
     } else if (!_turn.isAnimating) {
       _turn.repeat();
     }
@@ -110,6 +102,7 @@ class _MinimalCircularProgressIndicatorState
 
   @override
   Widget build(BuildContext context) {
+    _run();
     final t = context.minimalTheme;
     final value = widget.value;
     return Semantics(
@@ -268,13 +261,15 @@ class _MinimalSkeletonState extends State<MinimalSkeleton>
     end: 0.5,
   ).animate(_eased);
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  // Run from build: iOS's Reduce Motion arrives as a build, not as a
+  // change of dependencies.
+  void _run() {
     if (context.minimalStill) {
-      _pulse
-        ..stop()
-        ..value = 0;
+      if (_pulse.isAnimating || _pulse.value != 0) {
+        _pulse
+          ..stop()
+          ..value = 0;
+      }
     } else if (!_pulse.isAnimating) {
       _pulse.repeat(reverse: true);
     }
@@ -289,6 +284,7 @@ class _MinimalSkeletonState extends State<MinimalSkeleton>
 
   @override
   Widget build(BuildContext context) {
+    _run();
     final t = context.minimalTheme;
     final shape = widget.circle
         ? const CircleBorder()

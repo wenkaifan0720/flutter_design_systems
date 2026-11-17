@@ -3,11 +3,15 @@
 // within half a device pixel), on every gallery page and every app screen,
 // under standard and compact density.
 // ignore_for_file: avoid_relative_lib_imports, avoid_print
+@Tags(['goldens'])
+library;
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/alignment.dart';
 
 import '../example/lib/main.dart';
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'keylines_test.dart'
     show keylineScreens, loadKeylineFonts, precacheShownImages;
 
@@ -87,27 +91,37 @@ void main() {
   for (final density in const ['standard', 'compact']) {
     for (final page in examplePages) {
       final at = '$density · ${page.name}';
-      testWidgets(at, skip: _misreadings.containsKey(page.name), (
-        tester,
-      ) async {
-        final slug = GalleryApp.pageSlug(page.name);
-        await _open(
-          tester,
-          const Size(1440, 900),
-          'page=$slug&density=$density',
-        );
-        await _check(tester, at);
-      }, tags: 'goldens');
+      testWidgets(
+        at,
+        skip: _misreadings.containsKey(page.name),
+        (tester) async {
+          final slug = GalleryApp.pageSlug(page.name);
+          await _open(
+            tester,
+            const Size(1440, 900),
+            'page=$slug&density=$density',
+          );
+          await _check(tester, at);
+        },
+        tags: 'goldens',
+        experimentalLeakTesting: longWalkLeakTesting,
+      );
     }
     for (final size in const [Size(390, 844), Size(1440, 900)]) {
       for (final screen in keylineScreens) {
         final where = '${screen.name} at ${size.width.round()}';
         final at = '$density · $where';
-        testWidgets(at, skip: _misreadings.containsKey(where), (tester) async {
-          await _open(tester, size, 'app=${screen.app}&density=$density');
-          await screen.open(tester);
-          await _check(tester, at);
-        }, tags: 'goldens');
+        testWidgets(
+          at,
+          skip: _misreadings.containsKey(where),
+          (tester) async {
+            await _open(tester, size, 'app=${screen.app}&density=$density');
+            await screen.open(tester);
+            await _check(tester, at);
+          },
+          tags: 'goldens',
+          experimentalLeakTesting: longWalkLeakTesting,
+        );
       }
     }
   }

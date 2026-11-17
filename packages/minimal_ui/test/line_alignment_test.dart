@@ -7,6 +7,9 @@
 // text's baseline, nothing in the editable's decoration but the hint, at each
 // density, at text scale 1.5 and under a host InputDecorationTheme whose
 // padding is uneven and whose constraints set a minimum.
+@Tags(['goldens'])
+library;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

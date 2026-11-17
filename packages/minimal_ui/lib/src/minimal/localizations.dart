@@ -392,8 +392,20 @@ abstract class MinimalLocalizations {
   String countOf(int value, int total, {String? noun}) =>
       '$value of $total${noun == null ? '' : ' $noun'}';
 
+  /// What a screen reader hears for a record of days: "71 of 81 days
+  /// kept", "1 of 1 day kept". Both counts come as numbers, so a
+  /// translation says the days in its own plural forms.
+  String daysKeptOf(int kept, int total) =>
+      '$kept of $total ${total == 1 ? 'day' : 'days'} kept';
+
   /// What a screen reader hears for a week's dots: "4 of 7 days kept".
-  String daysKept(int count) => '$count of 7 days kept';
+  String daysKept(int count) => daysKeptOf(count, 7);
+
+  /// What a screen reader hears for a row of faces: the [names] shown, then
+  /// how many [more] there are ("Ana, Ben and 3 more"). The count comes as
+  /// a number, so a translation says it in its own plural forms.
+  String namesAndMore(List<String> names, int more) =>
+      more > 0 ? '${names.join(', ')} and $more more' : names.join(', ');
 
   /// What a screen reader hears for a priority's glyph, [priority] its
   /// name: "High priority" ([priorityNone] is heard alone).

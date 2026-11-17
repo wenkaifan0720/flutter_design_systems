@@ -9,6 +9,7 @@ import 'package:minimal_ui/minimal_host.dart';
 
 import '../example/lib/kit_gallery/apps/app_frame.dart';
 import '../example/lib/main.dart';
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 
 void main() {
   // The apps fill the window and lay themselves out for it (design6 A2,
@@ -65,11 +66,19 @@ void main() {
       return found;
     }
 
-    for (final app in exampleApps) {
-      for (final size in const [phone, tablet, laptop]) {
+    // Each app at each width, by day and by night. The everyday tier opens
+    // each app once, the first on a phone by day, the next on a tablet by
+    // night, the third on a laptop by day; the sweep tier the rest.
+    for (final (a, app) in exampleApps.indexed) {
+      for (final (s, size) in const [phone, tablet, laptop].indexed) {
         for (final brightness in Brightness.values) {
+          final everyday =
+              s == a % 3 &&
+              brightness == (a.isEven ? Brightness.light : Brightness.dark);
           testWidgets(
             '${app.name} at ${size.width.round()}, ${brightness.name}',
+            tags: everyday ? null : 'sweep',
+            experimentalLeakTesting: longWalkLeakTesting,
             (tester) async {
               await openApp(tester, app.slug, size, brightness: brightness);
               expect(
@@ -185,75 +194,93 @@ void main() {
       await tester.pumpAndSettle();
     });
 
-    testWidgets('the Gallery control leads back from every width', (
-      tester,
-    ) async {
-      for (final size in const [phone, tablet, laptop]) {
-        await openApp(tester, 'orders', size);
-        final gallery = find.byType(KitGalleryButton);
-        final at = 'at ${size.width.round()}';
-        expect(gallery, findsOneWidget, reason: 'no Gallery control $at');
-        // A screen reader finds it, by its name, at every width.
-        expect(
-          find.bySemanticsLabel('Gallery'),
-          findsOneWidget,
-          reason: 'no Gallery for a screen reader $at',
-        );
-        await tester.tap(gallery);
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('Back to the gallery'));
-        await tester.pumpAndSettle();
-        // Back in the gallery: no app with a way out (a wide Overview shows
-        // Ritual live in its window, with none).
-        expect(
-          find.byWidgetPredicate((w) => w is KitApp && w.gallery != null),
-          findsNothing,
-          reason: 'still in the app $at',
-        );
-        expect(find.text('Minimal'), findsWidgets);
-      }
-    });
+    // At each width: the everyday tier on a phone, the sweep tier the rest.
+    for (final (s, size) in const [phone, tablet, laptop].indexed) {
+      testWidgets(
+        'the Gallery control leads back at '
+        '${size.width.round()}',
+        (tester) async {
+          await openApp(tester, 'orders', size);
+          final gallery = find.byType(KitGalleryButton);
+          final at = 'at ${size.width.round()}';
+          expect(gallery, findsOneWidget, reason: 'no Gallery control $at');
+          // A screen reader finds it, by its name, at every width.
+          expect(
+            find.bySemanticsLabel('Gallery'),
+            findsOneWidget,
+            reason: 'no Gallery for a screen reader $at',
+          );
+          await tester.tap(gallery);
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Back to the gallery'));
+          await tester.pumpAndSettle();
+          // Back in the gallery: no app with a way out (a wide Overview shows
+          // Ritual live in its window, with none).
+          expect(
+            find.byWidgetPredicate((w) => w is KitApp && w.gallery != null),
+            findsNothing,
+            reason: 'still in the app $at',
+          );
+          expect(find.text('Minimal'), findsWidgets);
+        },
+        tags: s == 0 ? null : 'sweep',
+        experimentalLeakTesting: longWalkLeakTesting,
+      );
+    }
 
     // The apps are apps on Flutter's own Material, whose page routes read
     // the app's theme: the example gives it Minimal's motion, so a drill-in
     // never takes the platform's slide or zoom (the coordinator's walk saw a
     // look's pages fly in on the web).
-    testWidgets('a drill-in fades in Minimal\'s few pixels on every platform', (
-      tester,
-    ) async {
-      for (final platform in TargetPlatform.values) {
-        debugDefaultTargetPlatformOverride = platform;
-        for (final size in const [phone, laptop]) {
-          final why = '$platform at ${size.width.round()}';
-          tester.view
-            ..physicalSize = size
-            ..devicePixelRatio = 1;
-          addTearDown(tester.view.reset);
-          await tester.pumpWidget(const SizedBox());
-          await tester.pumpWidget(
-            GalleryApp.at(
-              Uri.parse('http://localhost/?app=habits&screen=habits'),
-            ),
-          );
-          await tester.pumpAndSettle();
-          // The Habits tab's row (Today, kept in its stack, lists it too).
-          await tester.tap(find.text('Meditate').last);
-          await tester.pump();
-          await tester.pump(MinimalChromeMetrics.push ~/ 2);
-          final words = find.text('Ten minutes, before the phone.').last;
-          final mid = tester.getTopLeft(words);
-          await tester.pumpAndSettle();
-          final end = tester.getTopLeft(words);
-          expect(mid.dy, end.dy, reason: why);
-          expect(
-            (mid.dx - end.dx).abs(),
-            lessThanOrEqualTo(MinimalChromeMetrics.pushSlide),
-            reason: why,
-          );
-        }
+    // Every platform at both widths: the everyday tier Android on a phone
+    // and macOS on a laptop, the sweep tier the rest.
+    for (final platform in TargetPlatform.values) {
+      for (final size in const [phone, laptop]) {
+        final everyday =
+            (platform == TargetPlatform.android && size == phone) ||
+            (platform == TargetPlatform.macOS && size == laptop);
+        testWidgets(
+          'a drill-in fades in Minimal\'s few pixels on '
+          '${platform.name} at ${size.width.round()}',
+          (tester) async {
+            debugDefaultTargetPlatformOverride = platform;
+            // Unset before the test ends, pass or fail: the binding checks
+            // it before tear-downs.
+            try {
+              final why = '$platform at ${size.width.round()}';
+              tester.view
+                ..physicalSize = size
+                ..devicePixelRatio = 1;
+              addTearDown(tester.view.reset);
+              await tester.pumpWidget(const SizedBox());
+              await tester.pumpWidget(
+                GalleryApp.at(
+                  Uri.parse('http://localhost/?app=habits&screen=habits'),
+                ),
+              );
+              await tester.pumpAndSettle();
+              // The Habits tab's row (Today, kept in its stack, lists it too).
+              await tester.tap(find.text('Meditate').last);
+              await tester.pump();
+              await tester.pump(MinimalChromeMetrics.push ~/ 2);
+              final words = find.text('Ten minutes, before the phone.').last;
+              final mid = tester.getTopLeft(words);
+              await tester.pumpAndSettle();
+              final end = tester.getTopLeft(words);
+              expect(mid.dy, end.dy, reason: why);
+              expect(
+                (mid.dx - end.dx).abs(),
+                lessThanOrEqualTo(MinimalChromeMetrics.pushSlide),
+                reason: why,
+              );
+            } finally {
+              debugDefaultTargetPlatformOverride = null;
+            }
+          },
+          tags: everyday ? null : 'sweep',
+          experimentalLeakTesting: longWalkLeakTesting,
+        );
       }
-      // Unset before the test ends: the binding checks it before tear-downs.
-      debugDefaultTargetPlatformOverride = null;
-    });
+    }
   });
 }

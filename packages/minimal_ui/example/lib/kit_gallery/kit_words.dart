@@ -145,6 +145,30 @@ class KitArabicWords extends MinimalLocalizationsEn {
   @override
   String rowsOf(int first, int last, int count) => '$first–$last من $count';
   @override
+  String daysKeptOf(int kept, int total) => 'أُنجز $kept من ${_days(total)}';
+  @override
+  String namesAndMore(List<String> names, int more) =>
+      more > 0 ? '${names.join('، ')} و${_others(more)}' : names.join('، ');
+
+  /// Days counted as Arabic counts them, after من: one, two, three to ten
+  /// (the plural), eleven to ninety-nine (the singular, accusative), and the
+  /// singular from a hundred.
+  static String _days(int n) => switch (n % 100) {
+    _ when n == 1 => 'يوم واحد',
+    _ when n == 2 => 'يومين',
+    >= 3 && <= 10 => '$n أيام',
+    >= 11 && <= 99 => '$n يومًا',
+    _ => '$n يوم',
+  };
+
+  /// The others past the faces shown, counted the same way.
+  static String _others(int n) => switch (n % 100) {
+    _ when n == 1 => 'واحد آخر',
+    _ when n == 2 => 'اثنان آخران',
+    >= 3 && <= 10 => '$n آخرون',
+    _ => '$n آخر',
+  };
+  @override
   String get reorder => 'إعادة الترتيب';
   @override
   String get taskBacklog => 'مؤجلة';

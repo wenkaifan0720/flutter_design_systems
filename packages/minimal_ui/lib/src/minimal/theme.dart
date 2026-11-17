@@ -1938,11 +1938,13 @@ extension MinimalThemeContext on BuildContext {
 /// The one motion switch every Minimal component reads.
 extension MinimalMotionContext on BuildContext {
   /// True when motion should collapse to its end state: the test and
-  /// walkthrough kill-switch ([MinimalMotion.animate] false) or the platform's
-  /// reduce-motion setting (`MediaQuery.disableAnimations`).
-  bool get minimalStill =>
-      !MinimalMotion.animate ||
-      (MediaQuery.maybeDisableAnimationsOf(this) ?? false);
+  /// walkthrough kill-switch ([MinimalMotion.animate] false) or the reader's
+  /// Reduce Motion, whichever platform asked (ui_core's
+  /// [designReduceMotionOf]: Android's and the web's
+  /// `MediaQuery.disableAnimations`, iOS's `AccessibilityFeatures.reduceMotion`).
+  /// iOS's change comes as a build, so a State reads it in `build` or as it
+  /// acts, not once in `didChangeDependencies`.
+  bool get minimalStill => !MinimalMotion.animate || designReduceMotionOf(this);
 }
 
 /// Scale-step adjustments that keep a style on the scale.

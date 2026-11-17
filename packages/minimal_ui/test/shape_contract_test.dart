@@ -727,10 +727,14 @@ void main() {
     );
   });
 
-  for (final MapEntry(key: family, value: shapes) in _families.entries) {
+  // Every framed part under every corner family. The everyday tier draws
+  // each part once, under the families in turn; the sweep tier the rest.
+  for (final (f, MapEntry(key: family, value: shapes))
+      in _families.entries.indexed) {
     group('under $family corners', () {
       final theme = _look.copyWith(shapes: shapes);
-      for (final MapEntry(key: name, value: c) in _framed.entries) {
+      for (final (p, MapEntry(key: name, value: c))
+          in _framed.entries.indexed) {
         testWidgets('$name draws its step', (tester) async {
           await tester.pumpWidget(_host(c.build(), theme));
           await tester.pump(const Duration(milliseconds: 300));
@@ -740,7 +744,7 @@ void main() {
             expect(_highlight(tester), want, reason: '$name highlight');
           }
           expect(tester.takeException(), isNull);
-        });
+        }, tags: p % _families.length == f ? null : 'sweep');
       }
 
       testWidgets('MinimalLinearProgressIndicator clips to the pill', (

@@ -226,10 +226,14 @@ class _SheenState extends State<_Sheen> with SingleTickerProviderStateMixin {
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _still = context.minimalStill;
+  // Run from build: iOS's Reduce Motion arrives as a build, not as a
+  // change of dependencies.
+  void _run() {
+    final still = context.minimalStill;
+    if (still == _still && (still || _sweep.isAnimating || _rest != null)) {
+      return;
+    }
+    _still = still;
     if (_still) {
       _rest?.cancel();
       _rest = null;
@@ -250,6 +254,7 @@ class _SheenState extends State<_Sheen> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    _run();
     final t = context.minimalTheme;
     final glow = t.isLightAppearance
         ? const Color(0xFFFFFFFF).withValues(alpha: 0.5)

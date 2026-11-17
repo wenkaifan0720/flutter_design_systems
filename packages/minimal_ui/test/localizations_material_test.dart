@@ -54,11 +54,15 @@ Finder _oneOf(Set<String> words) =>
     find.byWidgetPredicate((w) => w is Text && words.contains(w.data));
 
 void main() {
-  for (final locale in const [Locale('ar'), Locale('de')]) {
-    for (final MapEntry(key: name, value: build) in _parts.entries) {
+  // Every part in both languages on both platforms. The everyday tier takes
+  // each part once, in Arabic and German in turn; the sweep tier the rest.
+  for (final (l, locale) in const [Locale('ar'), Locale('de')].indexed) {
+    for (final (p, MapEntry(key: name, value: build))
+        in _parts.entries.indexed) {
       testWidgets(
         'a $name builds and opens its menu under an app in '
         '${locale.languageCode} with no Material or Cupertino words',
+        tags: p % 2 == l ? null : 'sweep',
         variant: const TargetPlatformVariant({
           TargetPlatform.android,
           TargetPlatform.iOS,

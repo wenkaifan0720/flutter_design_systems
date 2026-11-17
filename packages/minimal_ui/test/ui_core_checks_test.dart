@@ -3,12 +3,16 @@
 // under each density, day and night; DesignWidthCheck at 600, 1024, 1440
 // and 1920; checkList on each field that opens a list, at 390 and 1440.
 // ignore_for_file: avoid_relative_lib_imports, avoid_print
+@Tags(['goldens'])
+library;
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/alignment.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 
 import '../example/lib/main.dart';
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'keylines_test.dart'
     show keylineScreens, loadKeylineFonts, precacheShownImages;
 
@@ -210,21 +214,25 @@ void main() {
                   : const [Size(390, 844), Size(1440, 900)]) {
             final where = '${screen.name} at ${size.width.round()}';
             final at = '$density · $appearance · $where';
-            testWidgets(at, skip: _misreadings.containsKey('rows: $where'), (
-              tester,
-            ) async {
-              await _show(
-                tester,
-                screen,
-                size,
-                extra: '&density=$density&appearance=$appearance',
-              );
-              _verify(
-                at,
-                await const DesignRowCheck(look: 'Minimal')
-                    .check(_root(tester), runAsync: tester.runAsync),
-              );
-            }, tags: 'goldens');
+            testWidgets(
+              at,
+              skip: _misreadings.containsKey('rows: $where'),
+              (tester) async {
+                await _show(
+                  tester,
+                  screen,
+                  size,
+                  extra: '&density=$density&appearance=$appearance',
+                );
+                _verify(
+                  at,
+                  await const DesignRowCheck(look: 'Minimal')
+                      .check(_root(tester), runAsync: tester.runAsync),
+                );
+              },
+              tags: 'goldens',
+              experimentalLeakTesting: longWalkLeakTesting,
+            );
           }
         }
       }
@@ -235,16 +243,20 @@ void main() {
     for (final width in const [600.0, 1024.0, 1440.0, 1920.0]) {
       for (final screen in _screens) {
         final where = '${screen.name} at ${width.round()}';
-        testWidgets(where, skip: _misreadings.containsKey('widths: $where'), (
-          tester,
-        ) async {
-          await _show(tester, screen, Size(width, 1000));
-          _verify(
-            where,
-            await const DesignWidthCheck(look: 'Minimal')
-                .check(_root(tester), runAsync: tester.runAsync),
-          );
-        }, tags: 'goldens');
+        testWidgets(
+          where,
+          skip: _misreadings.containsKey('widths: $where'),
+          (tester) async {
+            await _show(tester, screen, Size(width, 1000));
+            _verify(
+              where,
+              await const DesignWidthCheck(look: 'Minimal')
+                  .check(_root(tester), runAsync: tester.runAsync),
+            );
+          },
+          tags: 'goldens',
+          experimentalLeakTesting: longWalkLeakTesting,
+        );
       }
     }
   });
@@ -253,41 +265,45 @@ void main() {
     for (final width in const [390.0, 1440.0]) {
       for (final screen in _screens) {
         final where = '${screen.name} at ${width.round()}';
-        testWidgets(where, skip: _misreadings.containsKey('list: $where'), (
-          tester,
-        ) async {
-          await _show(tester, screen, Size(width, 1000));
-          // The first select on the screen that opens a menu in place.
-          final field = find.byWidgetPredicate((w) {
-            if (_kind(w) != 'MinimalSelect') return false;
-            return (w as MinimalSelect).presentation ==
-                MinimalSelectPresentation.menu;
-          });
-          final shown = [
-            for (final e in field.evaluate())
-              if (tester
-                      .getRect(find.byElementPredicate((x) => x == e))
-                      .bottom <
-                  950)
-                e,
-          ];
-          if (shown.isEmpty) return;
-          final face = find
-              .descendant(
-                of: find.byElementPredicate((x) => x == shown.first),
-                matching: find.byType(MinimalPressable),
-              )
-              .first;
-          final press = tester.widget<MinimalPressable>(face);
-          if (!press.enabled || press.onPressed == null) return;
-          await tester.tap(face);
-          await _settle(tester);
-          _verify(
-            where,
-            await const DesignWidthCheck(look: 'Minimal')
-                .checkList(tester.element(face), runAsync: tester.runAsync),
-          );
-        }, tags: 'goldens');
+        testWidgets(
+          where,
+          skip: _misreadings.containsKey('list: $where'),
+          (tester) async {
+            await _show(tester, screen, Size(width, 1000));
+            // The first select on the screen that opens a menu in place.
+            final field = find.byWidgetPredicate((w) {
+              if (_kind(w) != 'MinimalSelect') return false;
+              return (w as MinimalSelect).presentation ==
+                  MinimalSelectPresentation.menu;
+            });
+            final shown = [
+              for (final e in field.evaluate())
+                if (tester
+                        .getRect(find.byElementPredicate((x) => x == e))
+                        .bottom <
+                    950)
+                  e,
+            ];
+            if (shown.isEmpty) return;
+            final face = find
+                .descendant(
+                  of: find.byElementPredicate((x) => x == shown.first),
+                  matching: find.byType(MinimalPressable),
+                )
+                .first;
+            final press = tester.widget<MinimalPressable>(face);
+            if (!press.enabled || press.onPressed == null) return;
+            await tester.tap(face);
+            await _settle(tester);
+            _verify(
+              where,
+              await const DesignWidthCheck(look: 'Minimal')
+                  .checkList(tester.element(face), runAsync: tester.runAsync),
+            );
+          },
+          tags: 'goldens',
+          experimentalLeakTesting: longWalkLeakTesting,
+        );
       }
     }
   });

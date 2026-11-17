@@ -12,6 +12,7 @@ import 'package:minimal_ui/minimal_host.dart';
 import '../example/lib/kit_gallery/apps/app_frame.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/main.dart';
+import 'flutter_test_config.dart' show longWalkLeakTesting;
 
 /// Exported for 0.1's callers, drawn by no part since ui_core's
 /// DesignTapTarget took its place.
@@ -39,69 +40,78 @@ Set<String> _exportedWidgets() {
 void main() {
   final built = <String>{};
 
-  for (final page in galleryPagesAll) {
-    for (final size in const [Size(390, 844), Size(1440, 1000)]) {
-      testWidgets('${page.name} builds at ${size.width.round()}', (
-        tester,
-      ) async {
-        tester.view
-          ..physicalSize = size
-          ..devicePixelRatio = 1;
-        addTearDown(tester.view.reset);
-        kitEmbedded = true;
-        await tester.pumpWidget(
-          MaterialApp(
-            builder: (context, child) => MinimalHost(
-              light: kitTheme(Brightness.light),
-              dark: kitTheme(Brightness.dark),
-              brightness: Brightness.light,
-              child: child!,
+  // Each page and app at both widths. The everyday tier builds each once,
+  // at 390 and 1440 in turn, which the census below needs no more than;
+  // the sweep tier the other width.
+  for (final (i, page) in galleryPagesAll.indexed) {
+    for (final (w, size) in const [Size(390, 844), Size(1440, 1000)].indexed) {
+      testWidgets(
+        '${page.name} builds at ${size.width.round()}',
+        (tester) async {
+          tester.view
+            ..physicalSize = size
+            ..devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          kitEmbedded = true;
+          await tester.pumpWidget(
+            MaterialApp(
+              builder: (context, child) => MinimalHost(
+                light: kitTheme(Brightness.light),
+                dark: kitTheme(Brightness.dark),
+                brightness: Brightness.light,
+                child: child!,
+              ),
+              home: ExamplePageView(
+                page: page,
+                brightness: Brightness.light,
+                onOpen: (_) {},
+                bar: MinimalAppBar(title: page.name),
+              ),
             ),
-            home: ExamplePageView(
-              page: page,
-              brightness: Brightness.light,
-              onOpen: (_) {},
-              bar: MinimalAppBar(title: page.name),
-            ),
-          ),
-        );
-        // Spinners and skeletons never settle: a few frames build every
-        // demo and run its first animations.
-        for (var i = 0; i < 4; i++) {
-          await tester.pump(const Duration(milliseconds: 100));
-        }
-        for (final element in tester.allElements) {
-          built.add('${element.widget.runtimeType}'.split('<').first);
-        }
-        await tester.pumpWidget(const SizedBox());
-      });
+          );
+          // Spinners and skeletons never settle: a few frames build every
+          // demo and run its first animations.
+          for (var i = 0; i < 4; i++) {
+            await tester.pump(const Duration(milliseconds: 100));
+          }
+          for (final element in tester.allElements) {
+            built.add('${element.widget.runtimeType}'.split('<').first);
+          }
+          await tester.pumpWidget(const SizedBox());
+        },
+        tags: w == i % 2 ? null : 'sweep',
+        experimentalLeakTesting: longWalkLeakTesting,
+      );
     }
   }
 
   // The apps build what no page does (the shell's parts, the tables, the
   // records): pumped at both widths, they count toward the last test. Their
   // own checks are apps_test.dart's.
-  for (final app in exampleApps) {
-    for (final size in const [Size(390, 844), Size(1440, 1000)]) {
-      testWidgets('${app.name} builds at ${size.width.round()}', (
-        tester,
-      ) async {
-        tester.view
-          ..physicalSize = size
-          ..devicePixelRatio = 1;
-        addTearDown(tester.view.reset);
-        await tester.pumpWidget(
-          GalleryApp.at(Uri.parse('http://localhost/?app=${app.slug}')),
-        );
-        for (var i = 0; i < 4; i++) {
-          await tester.pump(const Duration(milliseconds: 100));
-        }
-        expect(find.byType(KitApp), findsOneWidget);
-        for (final element in tester.allElements) {
-          built.add('${element.widget.runtimeType}'.split('<').first);
-        }
-        await tester.pumpWidget(const SizedBox());
-      });
+  for (final (i, app) in exampleApps.indexed) {
+    for (final (w, size) in const [Size(390, 844), Size(1440, 1000)].indexed) {
+      testWidgets(
+        '${app.name} builds at ${size.width.round()}',
+        (tester) async {
+          tester.view
+            ..physicalSize = size
+            ..devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          await tester.pumpWidget(
+            GalleryApp.at(Uri.parse('http://localhost/?app=${app.slug}')),
+          );
+          for (var i = 0; i < 4; i++) {
+            await tester.pump(const Duration(milliseconds: 100));
+          }
+          expect(find.byType(KitApp), findsOneWidget);
+          for (final element in tester.allElements) {
+            built.add('${element.widget.runtimeType}'.split('<').first);
+          }
+          await tester.pumpWidget(const SizedBox());
+        },
+        tags: w == i % 2 ? null : 'sweep',
+        experimentalLeakTesting: longWalkLeakTesting,
+      );
     }
   }
 

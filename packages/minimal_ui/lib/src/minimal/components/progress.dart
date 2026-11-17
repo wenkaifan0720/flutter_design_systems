@@ -81,24 +81,16 @@ class _MinimalLinearProgressIndicatorState
     duration: MinimalLinearProgressIndicator.sweep,
   );
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _run();
-  }
-
-  @override
-  void didUpdateWidget(MinimalLinearProgressIndicator oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _run();
-  }
-
-  /// Sweeps only while the total is unknown and motion is on.
+  /// Sweeps only while the total is unknown and motion is on. Run from
+  /// build: iOS's Reduce Motion arrives as a build, not as a change of
+  /// dependencies.
   void _run() {
     if (widget.value != null || context.minimalStill) {
-      _sweep
-        ..stop()
-        ..value = 0;
+      if (_sweep.isAnimating || _sweep.value != 0) {
+        _sweep
+          ..stop()
+          ..value = 0;
+      }
     } else if (!_sweep.isAnimating) {
       _sweep.repeat();
     }
@@ -112,6 +104,7 @@ class _MinimalLinearProgressIndicatorState
 
   @override
   Widget build(BuildContext context) {
+    _run();
     final t = context.minimalTheme;
     final height = widget.height;
     final fill = t.tone(widget.tone).indicator;
