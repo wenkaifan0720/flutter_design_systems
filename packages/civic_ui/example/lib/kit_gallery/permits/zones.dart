@@ -120,9 +120,7 @@ class _PermitsZonesPageState extends State<PermitsZonesPage> {
     final count = Semantics(
       liveRegion: true,
       child: Text(
-        context
-            .say(found.length == 1 ? '1 street' : '23 streets')
-            .replaceAll('23', '${found.length}'),
+        context.sayCount(found.length, one: '1 street', other: '# streets'),
         // A count reads as the applications' does: a quiet line over the list.
         style: text.caption,
       ),

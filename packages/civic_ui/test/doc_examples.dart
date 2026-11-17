@@ -66,10 +66,30 @@ void testDocExamples({
         ),
       );
       await tester.pumpAndSettle();
+      await _finish(tester);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     });
   }
+}
+
+/// Lets an example that works on (a font loading, say) finish, and runs the
+/// frames it asks for, before its tree goes: a loaded font tells the app its
+/// fonts changed, and from Flutter 3.50 that asks for a frame.
+Future<void> _finish(WidgetTester tester) async {
+  final made = tester.state<_OnceState>(find.byType(_Once))._made;
+  if (made is! Future<Object?>) return;
+  var done = false;
+  made.whenComplete(() => done = true).ignore();
+  // The engine's work takes real time; what follows it, the test's clock.
+  for (var i = 0; i < 200 && !done; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 10)),
+    );
+    await tester.pump();
+  }
+  expect(done, isTrue, reason: 'the example finishes within 2 s');
+  await tester.pumpAndSettle();
 }
 
 /// [code] with its layout gone: no whitespace, no trailing comma, and no

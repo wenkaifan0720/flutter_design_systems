@@ -1,90 +1,27 @@
-// Brindlemere parking permits' screens hold at 390, 768 and 1440, by day
-// and by night, and at 390 right to left in Arabic and at twice the text:
-// nothing overflows or throws. And the service's behaviours a reader leans
-// on: a details page sent empty shows the error summary with a link per
-// problem and moves the focus to it; a summary's Change says which answer
-// it changes; a tap on the bar's title goes home, never to the hidden skip
-// link; the arrow keys move a question's answer.
+// Brindlemere parking permits' everyday screens, each once a run in a
+// setting dealt round them (screens_matrix.dart: every width, each theme,
+// right to left and twice the text met every run; the rest is the sweep).
+// And the service's behaviours a reader leans on: a details page sent empty
+// shows the error summary with a link per problem and moves the focus to
+// it; a summary's Change says which answer it changes; a tap on the bar's
+// title goes home, never to the hidden skip link; the arrow keys move a
+// question's answer.
 // ignore_for_file: avoid_relative_lib_imports
-import 'dart:convert';
-
 import 'package:civic_ui/civic_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../example/lib/everyday_screens.dart';
 import '../example/lib/kit_gallery/permits/permits.dart';
-
-Future<void> _loadFonts() async {
-  final manifest = json.decode(
-    await rootBundle.loadString('FontManifest.json'),
-  ) as List<dynamic>;
-  for (final entry in manifest.cast<Map<String, dynamic>>()) {
-    final family = entry['family'] as String;
-    final loader = FontLoader(
-      family.startsWith('packages/') ? family : civicFontFamily(family),
-    );
-    for (final font
-        in (entry['fonts'] as List<dynamic>).cast<Map<String, dynamic>>()) {
-      loader.addFont(rootBundle.load(font['asset'] as String));
-    }
-    await loader.load();
-  }
-}
-
-Future<void> _show(
-  WidgetTester tester,
-  Widget app, {
-  required double width,
-  double height = 900,
-  double text = 1,
-}) async {
-  tester.view.physicalSize = Size(width, height);
-  tester.view.devicePixelRatio = 1;
-  tester.platformDispatcher.textScaleFactorTestValue = text;
-  addTearDown(tester.view.reset);
-  addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-  await tester.pumpWidget(app);
-  for (var i = 0; i < 20; i++) {
-    await tester.pump(const Duration(milliseconds: 50));
-  }
-}
+import 'screens_matrix.dart';
 
 void main() {
-  setUpAll(_loadFonts);
-
-  const configs = [
-    (390.0, Brightness.light, TextDirection.ltr, 1.0),
-    (390.0, Brightness.dark, TextDirection.ltr, 1.0),
-    (768.0, Brightness.light, TextDirection.ltr, 1.0),
-    (1440.0, Brightness.dark, TextDirection.ltr, 1.0),
-    (390.0, Brightness.light, TextDirection.rtl, 1.0),
-    (390.0, Brightness.light, TextDirection.ltr, 2.0),
-  ];
-
-  for (final screen in everydayScreens) {
-    for (final (width, brightness, direction, text) in configs) {
-      testWidgets(
-        '${screen.id} at $width, ${brightness.name}, ${direction.name}, '
-        'text ×$text',
-        (tester) async {
-          await _show(
-            tester,
-            screen.app(brightness, direction),
-            width: width,
-            text: text,
-          );
-          expect(tester.takeException(), isNull);
-          expect(find.byType(CivicScaffold), findsOneWidget);
-        },
-      );
-    }
-  }
+  setUpAll(loadScreenFonts);
+  screensMatrix(everyRun);
 
   testWidgets('a details page sent empty shows its problems and takes the '
       'focus to them', (tester) async {
-    await _show(
+    await showScreen(
       tester,
       const PermitsApp(initialPage: PermitsPage.details),
       width: 390,
@@ -118,7 +55,7 @@ void main() {
     tester,
   ) async {
     final handle = tester.ensureSemantics();
-    await _show(
+    await showScreen(
       tester,
       const PermitsApp(initialPage: PermitsPage.check),
       width: 1440,
@@ -131,7 +68,7 @@ void main() {
   // place in the bar instead.
   testWidgets("a tap on the bar's title goes to the start, past the hidden "
       'skip link', (tester) async {
-    await _show(
+    await showScreen(
       tester,
       const PermitsApp(initialPage: PermitsPage.check),
       width: 1440,
@@ -149,7 +86,7 @@ void main() {
   });
 
   testWidgets("the arrow keys move a question's answer", (tester) async {
-    await _show(
+    await showScreen(
       tester,
       const PermitsApp(initialPage: PermitsPage.vehicle),
       width: 390,

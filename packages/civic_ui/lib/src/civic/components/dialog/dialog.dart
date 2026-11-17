@@ -31,7 +31,9 @@ Future<T?> showCivicDialog<T>({
   bool useRootNavigator = true,
 }) {
   final t = CivicTheme.of(context);
-  final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+  // Reduce Motion, whichever platform asked (iOS's included): the scrim is
+  // there at once.
+  final still = designReduceMotionOf(context);
   return showGeneralDialog<T>(
     context: context,
     useRootNavigator: useRootNavigator,

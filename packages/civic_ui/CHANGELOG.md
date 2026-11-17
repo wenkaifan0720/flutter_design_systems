@@ -1,3 +1,24 @@
+## 0.1.1
+
+Needs ui_core 0.2.1.
+
+- Reduce Motion on iOS calms Civic too. Flutter puts iOS's Reduce Motion in dart:ui's
+  `AccessibilityFeatures.reduceMotion`, not in `MediaQuery.disableAnimationsOf`, which was all Civic read, so on an
+  iPhone with Reduce Motion on, Civic's colour and opacity changes kept their usual pace and a dialog's scrim still
+  faded in. Civic now reads ui_core's `designReduceMotionOf`, which also covers Android's Remove animations and the
+  web's `prefers-reduced-motion`: under any of them a colour or opacity change is a short fade, settled within
+  150 ms, and a dialog's scrim is up at once. Civic's moves were critically damped already and stay as they were.
+- From ui_core 0.2.1: a list or menu gives the focus back to what opened it as it closes, a combobox's list no
+  longer opens on focus given back to its field (only on a tap, Tab, Down or typing), and Home and End in a list keep
+  the row they reach in view.
+- The example service says its counts in Arabic in the form each number takes (zero, one, two, few, many and other,
+  CLDR's), where it had one form for every count: "5 شوارع", "23 شارعًا", "100 شارع".
+- The tests run in tiers. `flutter test --exclude-tags goldens,sweep` is the everyday run: every screen of the
+  example once, the settings dealt round them (each width, each theme, right to left, twice the text), and every
+  part's specimen once, by day and by night in turn. Every screen in every setting, and every specimen both ways, is
+  tagged `sweep`; `flutter test` runs every tier. The doc examples' test lets an example that loads a font finish, and
+  runs the frame the font change asks for, so it passes on Flutter 3.50 as on 3.47.
+
 ## 0.1.0
 
 - First release. Civic, the plain look of public services, on ui_core: the theme by day and by night, Atkinson

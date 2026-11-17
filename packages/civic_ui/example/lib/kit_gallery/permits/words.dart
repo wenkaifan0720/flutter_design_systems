@@ -10,7 +10,68 @@ extension PermitsSay on BuildContext {
   String say(String english) => Directionality.of(this) == TextDirection.rtl
       ? permitsArabic[english] ?? english
       : english;
+
+  /// [n] things counted in the reader's language, in the form [n] takes
+  /// there ([permitsCount]).
+  String sayCount(int n, {required String one, required String other}) =>
+      permitsCount(
+        n,
+        one: one,
+        other: other,
+        arabic: Directionality.of(this) == TextDirection.rtl,
+      );
 }
+
+/// [n] things counted, `#` standing for [n]: in English [one] for 1 and
+/// [other] for every other count; in Arabic the form CLDR's plural rules
+/// give [n] (zero, one, two, few for 3 to 10, many for 11 to 99, other for
+/// 100 and on), from [permitsArabicCounts] under [other].
+String permitsCount(
+  int n, {
+  required String one,
+  required String other,
+  bool arabic = false,
+}) {
+  final forms = arabic ? permitsArabicCounts[other] : null;
+  final form = forms == null
+      ? (n == 1 ? one : other)
+      : forms[permitsArabicPlural(n)] ?? forms['other']!;
+  return form.replaceAll('#', '$n');
+}
+
+/// The plural category CLDR gives the whole number [n] in Arabic.
+String permitsArabicPlural(int n) {
+  final hundreds = n.abs() % 100;
+  return switch (n.abs()) {
+    0 => 'zero',
+    1 => 'one',
+    2 => 'two',
+    _ when hundreds >= 3 && hundreds <= 10 => 'few',
+    _ when hundreds >= 11 => 'many',
+    _ => 'other',
+  };
+}
+
+/// The service's counts in Arabic, keyed by their English for any count but
+/// 1, a form for each of Arabic's plural categories (`#`: the number).
+const Map<String, Map<String, String>> permitsArabicCounts = {
+  '# streets': {
+    'zero': 'لا توجد شوارع',
+    'one': 'شارع واحد',
+    'two': 'شارعان',
+    'few': '# شوارع',
+    'many': '# شارعًا',
+    'other': '# شارع',
+  },
+  'Showing # applications': {
+    'zero': 'لا توجد طلبات لعرضها',
+    'one': 'عرض طلب واحد',
+    'two': 'عرض طلبين',
+    'few': 'عرض # طلبات',
+    'many': 'عرض # طلبًا',
+    'other': 'عرض # طلب',
+  },
+};
 
 /// What the reader typed (an address, a name, a file's name), each line kept
 /// in its own order inside a page of either direction: "14 Ropewalk Row" on
@@ -124,8 +185,6 @@ const Map<String, String> permitsArabic = {
   'Status': 'الحالة',
   'Filter': 'تصفية',
   'Apply for another permit': 'التقديم على تصريح آخر',
-  'Showing 3 applications': 'عرض 3 طلبات',
-  'Showing 1 application': 'عرض طلب واحد',
   'No applications match': 'لا توجد طلبات مطابقة',
   'Clear the filters to see every application.':
       'امسح عوامل التصفية لرؤية كل الطلبات.',
@@ -234,8 +293,6 @@ const Map<String, String> permitsArabic = {
   'Search for a street': 'ابحث عن شارع',
   'For example, Ropewalk\u00A0Row': 'مثال: Ropewalk\u00A0Row',
   'Zone': 'المنطقة',
-  '1 street': 'شارع واحد',
-  '23 streets': '23 شارعًا',
   'No streets match “Quillon”': 'لا توجد شوارع تطابق "Quillon"',
   'To find more streets:': 'للعثور على شوارع أكثر:',
   'check the spelling of the street': 'تحقق من تهجئة اسم الشارع',

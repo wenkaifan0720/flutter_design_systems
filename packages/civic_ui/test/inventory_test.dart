@@ -1,6 +1,8 @@
 // Civic answers every row of ui_core's shared component list once, each
 // absent row with a reason rather than a to-do, and every live specimen
 // builds and lays out on a phone, by day and by night, without a throw.
+// Every run builds each specimen once, by day and by night in turn; both
+// for every specimen is the sweep (tagged `sweep`).
 // ignore_for_file: avoid_relative_lib_imports
 import 'package:civic_ui/civic_ui.dart';
 import 'package:material_ui/material_ui.dart';
@@ -17,8 +19,9 @@ void main() {
     );
   });
 
+  final present = civicInventory.entries.where((e) => e.isPresent).indexed;
   for (final brightness in Brightness.values) {
-    for (final entry in civicInventory.entries.where((e) => e.isPresent)) {
+    for (final (i, entry) in present) {
       testWidgets('${entry.row} builds (${brightness.name})', (tester) async {
         tester.view.physicalSize = const Size(390, 900);
         tester.view.devicePixelRatio = 1;
@@ -41,7 +44,7 @@ void main() {
         );
         await tester.pump(const Duration(milliseconds: 500));
         expect(tester.takeException(), isNull);
-      });
+      }, tags: brightness.index == i % 2 ? null : 'sweep');
     }
   }
 }

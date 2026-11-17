@@ -375,13 +375,11 @@ List<Widget> _applicationsList(BuildContext context, {String? selected}) {
     Semantics(
       liveRegion: true,
       child: Text(
-        context
-            .say(
-              shown.length == 1
-                  ? 'Showing 1 application'
-                  : 'Showing 3 applications',
-            )
-            .replaceAll('3', '${shown.length}'),
+        context.sayCount(
+          shown.length,
+          one: 'Showing 1 application',
+          other: 'Showing # applications',
+        ),
         style: context.civicText.caption,
       ),
     ),
