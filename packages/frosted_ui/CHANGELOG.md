@@ -1,3 +1,19 @@
+## 0.2.1
+
+Frosted 0.2.1 stands on ui_core 0.2.1. Nothing is renamed or removed.
+
+- iOS's Reduce Motion now calms Frosted. Flutter reports it in `AccessibilityFeatures.reduceMotion`, not
+  `MediaQuery.disableAnimationsOf`, which was all `FrostedMotion.of` read, so on an iPhone set to Reduce Motion every
+  switch, toast, menu and sheet still eased. `FrostedMotion.of` reads ui_core's `designReduceMotionOf` (Android's Remove
+  animations, the web's `prefers-reduced-motion` and iOS's Reduce Motion), and the progress indicators, the skeleton
+  and the loading state stop and start their loops as the setting changes.
+- An insight's visit dots no longer say "1 visits": `FrostedLocalizations.visits(count)` speaks them in the app's
+  plural forms, "1 visit" and "13 visits" in English by default. It has a body, so localizations written for 0.2.0
+  still build.
+- From ui_core 0.2.1: a menu or popover gives focus back to the control that opened it as it closes, a combobox's list
+  no longer opens again on that returned focus (so Android's back pops the page), and Home and End keep the item they
+  focus in view.
+
 ## 0.2.0
 
 Frosted 0.2.0 stands on ui_core 0.2.0.

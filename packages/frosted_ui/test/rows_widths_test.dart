@@ -21,6 +21,7 @@ import 'package:frosted_ui/frosted_ui.dart';
 import 'package:ui_core/alignment.dart';
 
 import 'gallery_support.dart';
+import 'tiers.dart';
 import 'ui_core_checks.dart';
 
 // The gallery is the example app; a test sets the theme it shows.
@@ -329,108 +330,114 @@ void main() {
     }
   }
 
+  // The everyday tier takes the selection page, the one that holds most of
+  // them (nine at 1440); the sweep the rest.
   for (final page in galleryPages) {
-    testWidgets('${page.id}: from 600 up every strip and choice group keeps '
-        "to its content at its line's start, as wide at 1024 as at 1440, "
-        'and never across the window at 600', (tester) async {
-      addTearDown(() => kitShownTheme = null);
-      addTearDown(tester.view.reset);
-      tester.view.devicePixelRatio = 1;
-      final problems = <String>[];
-      final drawn = <int, List<(String, Rect)>>{};
-      for (final width in [600.0, 1024.0, 1440.0]) {
-        await _pump(
-          tester,
-          page,
-          width,
-          Brightness.light,
-          FrostedDensity.standard,
-        );
-        final at = width.round();
-        final seen = <(String, Rect)>[];
-        for (final e
-            in find
-                .byWidgetPredicate((w) => _ownWidth.containsKey(_kind(w)))
-                .evaluate()) {
-          final kind = _ownWidth[_kind(e.widget)]!;
-          final r = _drawn(e);
-          final line = _onScreen(e);
-          seen.add((kind, r));
-          // Below the desktop a group's cells may be larger than at 1440,
-          // but none is drawn across the window.
-          if (at == 600 && r.width > 0.9 * width) {
-            problems.add('600 · $kind ${r.width.round()} wide');
-          }
-          // The desktop's card stands in the middle of its row, turned.
-          if (kind == 'credit card') {
-            // 408 wide turned 4deg: 408 cos 4 + 257 sin 4 = 425.
-            if (r.width > 426) {
-              problems.add('$at · a credit card ${r.width.round()} wide');
+    testWidgets(
+      '${page.id}: from 600 up every strip and choice group keeps '
+      "to its content at its line's start, as wide at 1024 as at 1440, "
+      'and never across the window at 600',
+      tags: sweepUnless(page.id == 'selection'),
+      (tester) async {
+        addTearDown(() => kitShownTheme = null);
+        addTearDown(tester.view.reset);
+        tester.view.devicePixelRatio = 1;
+        final problems = <String>[];
+        final drawn = <int, List<(String, Rect)>>{};
+        for (final width in [600.0, 1024.0, 1440.0]) {
+          await _pump(
+            tester,
+            page,
+            width,
+            Brightness.light,
+            FrostedDensity.standard,
+          );
+          final at = width.round();
+          final seen = <(String, Rect)>[];
+          for (final e
+              in find
+                  .byWidgetPredicate((w) => _ownWidth.containsKey(_kind(w)))
+                  .evaluate()) {
+            final kind = _ownWidth[_kind(e.widget)]!;
+            final r = _drawn(e);
+            final line = _onScreen(e);
+            seen.add((kind, r));
+            // Below the desktop a group's cells may be larger than at 1440,
+            // but none is drawn across the window.
+            if (at == 600 && r.width > 0.9 * width) {
+              problems.add('600 · $kind ${r.width.round()} wide');
             }
-            continue;
-          }
-          if ((r.left - line.left).abs() > 0.5) {
-            problems.add(
-              '$at · $kind drawn ${(r.left - line.left).toStringAsFixed(1)} '
-              'in from its line',
-            );
-          }
-          if (kind == 'segmented') {
-            final label = (e.widget as dynamic).label as String;
-            final group = find
-                .descendant(
-                  of: _the(e),
-                  matching: find.byWidgetPredicate(
-                    (w) =>
-                        w is Semantics &&
-                        w.container &&
-                        w.properties.label == label,
-                  ),
-                )
-                .evaluate()
-                .first;
-            final box = _onScreen(group);
-            if ((box.width - r.width).abs() > 0.5 ||
-                (box.left - r.left).abs() > 0.5) {
+            // The desktop's card stands in the middle of its row, turned.
+            if (kind == 'credit card') {
+              // 408 wide turned 4deg: 408 cos 4 + 257 sin 4 = 425.
+              if (r.width > 426) {
+                problems.add('$at · a credit card ${r.width.round()} wide');
+              }
+              continue;
+            }
+            if ((r.left - line.left).abs() > 0.5) {
               problems.add(
-                '$at · segmented "$label": a screen reader\'s box '
-                '${box.width.round()} wide at ${box.left.round()} over a '
-                'strip ${r.width.round()} wide at ${r.left.round()}',
+                '$at · $kind drawn ${(r.left - line.left).toStringAsFixed(1)} '
+                'in from its line',
               );
             }
-          }
-          if (kind == 'icon picker') {
-            for (final well
-                in find
-                    .descendant(of: _the(e), matching: _faces)
-                    .evaluate()
-                    .map(_onScreen)) {
-              if (well.width > well.height * 1.25) {
+            if (kind == 'segmented') {
+              final label = (e.widget as dynamic).label as String;
+              final group = find
+                  .descendant(
+                    of: _the(e),
+                    matching: find.byWidgetPredicate(
+                      (w) =>
+                          w is Semantics &&
+                          w.container &&
+                          w.properties.label == label,
+                    ),
+                  )
+                  .evaluate()
+                  .first;
+              final box = _onScreen(group);
+              if ((box.width - r.width).abs() > 0.5 ||
+                  (box.left - r.left).abs() > 0.5) {
                 problems.add(
-                  '$at · an icon well ${well.width.round()} by '
-                  '${well.height.round()}, not about square',
+                  '$at · segmented "$label": a screen reader\'s box '
+                  '${box.width.round()} wide at ${box.left.round()} over a '
+                  'strip ${r.width.round()} wide at ${r.left.round()}',
                 );
               }
             }
+            if (kind == 'icon picker') {
+              for (final well
+                  in find
+                      .descendant(of: _the(e), matching: _faces)
+                      .evaluate()
+                      .map(_onScreen)) {
+                if (well.width > well.height * 1.25) {
+                  problems.add(
+                    '$at · an icon well ${well.width.round()} by '
+                    '${well.height.round()}, not about square',
+                  );
+                }
+              }
+            }
+          }
+          drawn[at] = seen;
+        }
+        final narrow = drawn[1024]!, broad = drawn[1440]!;
+        expect(narrow.length, broad.length);
+        for (var i = 0; i < narrow.length; i++) {
+          final (kind, a) = narrow[i];
+          final b = broad[i].$2;
+          if ((a.width - b.width).abs() > 0.5) {
+            problems.add(
+              '#$i $kind: ${a.width.round()} wide at 1024, ${b.width.round()} '
+              'at 1440, drawn across its column',
+            );
           }
         }
-        drawn[at] = seen;
-      }
-      final narrow = drawn[1024]!, broad = drawn[1440]!;
-      expect(narrow.length, broad.length);
-      for (var i = 0; i < narrow.length; i++) {
-        final (kind, a) = narrow[i];
-        final b = broad[i].$2;
-        if ((a.width - b.width).abs() > 0.5) {
-          problems.add(
-            '#$i $kind: ${a.width.round()} wide at 1024, ${b.width.round()} '
-            'at 1440, drawn across its column',
-          );
-        }
-      }
-      print('CHECK own ${page.id} ${narrow.length} ${problems.length}');
-      expect(problems, isEmpty, reason: problems.join('\n'));
-    });
+        print('CHECK own ${page.id} ${narrow.length} ${problems.length}');
+        expect(problems, isEmpty, reason: problems.join('\n'));
+      },
+    );
   }
 
   for (final width in [600.0, 1440.0]) {

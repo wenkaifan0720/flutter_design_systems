@@ -3,11 +3,14 @@
 // 14-20 pt answered, inside a 44-48 well). The field's line now spans the row its well holds, and its one node spans
 // the same box: the box a screen reader outlines is the box a tap reaches. At 390 and 1440, left to right and right to
 // left: a tap 1 pt inside the well's row at its top and at its bottom, over the line's middle, gives the field focus.
+// The everyday tier takes 390 left to right and 1440 right to left; the sweep the other two.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/src/frosted/internal/hit_slop.dart';
+
+import 'tiers.dart';
 
 Future<void> _pump(
   WidgetTester t,
@@ -55,6 +58,9 @@ bool _focused(WidgetTester t) =>
 void main() {
   for (final width in [390.0, 1440.0]) {
     for (final direction in TextDirection.values) {
+      final tier = sweepUnless(
+        (width > 390) == (direction == TextDirection.rtl),
+      );
       for (final MapEntry(key: name, value: build) in _fields.entries) {
         final tag = '$name, ${width.toInt()}, ${direction.name}';
         testWidgets(
@@ -84,6 +90,7 @@ void main() {
               await t.pumpWidget(const SizedBox());
             }
           },
+          tags: tier,
         );
 
         testWidgets(
@@ -98,6 +105,7 @@ void main() {
             expect(node.rect.height, closeTo(room.size.height, 0.01));
             handle.dispose();
           },
+          tags: tier,
         );
       }
     }

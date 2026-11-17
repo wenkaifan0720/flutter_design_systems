@@ -237,6 +237,11 @@ abstract class FrostedLocalizations {
   /// A step's place among [count].
   String step(int step, int count);
 
+  /// A row of [count] visit dots, as a screen reader hears it: "1 visit",
+  /// "13 visits". A language says it in its own plural forms (Arabic has
+  /// six). English here, so words written against 0.2.0 still build.
+  String visits(int count) => count == 1 ? '1 visit' : '$count visits';
+
   /// A chip's remove button.
   String get remove;
 

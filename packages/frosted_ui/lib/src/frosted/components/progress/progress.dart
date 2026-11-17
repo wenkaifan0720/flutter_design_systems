@@ -71,6 +71,9 @@ class _FrostedLinearProgressIndicatorState
     duration: const Duration(milliseconds: 1600),
   );
 
+  // Run while the value is unknown and anything moves. Called from build:
+  // iOS's Reduce Motion builds this again but calls no
+  // didChangeDependencies.
   void _sync() {
     final moves = FrostedMotion.of(context).moves;
     if (widget.value == null && moves) {
@@ -81,18 +84,6 @@ class _FrostedLinearProgressIndicatorState
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-  }
-
-  @override
-  void didUpdateWidget(FrostedLinearProgressIndicator old) {
-    super.didUpdateWidget(old);
-    _sync();
-  }
-
-  @override
   void dispose() {
     _run.dispose();
     super.dispose();
@@ -100,6 +91,7 @@ class _FrostedLinearProgressIndicatorState
 
   @override
   Widget build(BuildContext context) {
+    _sync();
     final t = context.frostedTheme;
     final motion = FrostedMotion.of(context);
     final h = widget.minHeight;
@@ -248,24 +240,14 @@ class _FrostedCircularProgressIndicatorState
     duration: const Duration(seconds: 1),
   );
 
+  // Turn while the value is unknown and anything moves; from build, as the
+  // linear indicator's.
   void _sync() {
     if (widget.value == null && FrostedMotion.of(context).moves) {
       if (!_turn.isAnimating) _turn.repeat();
     } else {
       _turn.stop();
     }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-  }
-
-  @override
-  void didUpdateWidget(FrostedCircularProgressIndicator old) {
-    super.didUpdateWidget(old);
-    _sync();
   }
 
   @override
@@ -276,6 +258,7 @@ class _FrostedCircularProgressIndicatorState
 
   @override
   Widget build(BuildContext context) {
+    _sync();
     final t = context.frostedTheme;
     final motion = FrostedMotion.of(context);
     final value = widget.value;
@@ -519,9 +502,11 @@ class _BoneState extends State<_Bone> with SingleTickerProviderStateMixin {
     _shown++;
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  // The light runs while anything moves, in phase with the page's other
+  // bones, and rests at its start when nothing does. Called from build:
+  // iOS's Reduce Motion builds this again but calls no
+  // didChangeDependencies.
+  void _sync() {
     if (FrostedMotion.of(context).moves) {
       if (!_light.isAnimating) {
         final now = SchedulerBinding.instance.currentSystemFrameTimeStamp;
@@ -531,7 +516,7 @@ class _BoneState extends State<_Bone> with SingleTickerProviderStateMixin {
             _period.inMicroseconds;
         _light.repeat();
       }
-    } else {
+    } else if (_light.isAnimating || _light.value != 0) {
       _light.stop();
       _light.value = 0;
     }
@@ -546,6 +531,7 @@ class _BoneState extends State<_Bone> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    _sync();
     final block = DecoratedBox(
       decoration: ShapeDecoration(
         shape: widget.shape.copyWith(side: BorderSide(color: widget.edge)),

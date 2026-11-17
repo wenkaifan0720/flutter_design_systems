@@ -208,7 +208,8 @@ abstract final class FrostedIconSize {
 /// what rises over it (a toast, a menu, a sheet), [slow] for a figure
 /// counting to its value; every one eased out on [curve]. The look's are
 /// [look]; read them through [of], which answers [still]
-/// under Reduce Motion (`MediaQuery.disableAnimations`).
+/// under Reduce Motion (ui_core's `designReduceMotionOf`: Android's and the
+/// web's `MediaQuery.disableAnimations`, or iOS's Reduce Motion).
 ///
 /// ```dart
 /// final motion = FrostedMotion.of(context);
@@ -250,10 +251,16 @@ class FrostedMotion with Diagnosticable {
   bool get moves => fast > Duration.zero || base > Duration.zero;
 
   /// The timings in force at [context]: the look's, or [still] under
-  /// Reduce Motion (`MediaQuery.disableAnimations`; a test holds a spinner
-  /// still with `FakeAccessibilityFeatures(disableAnimations: true)`).
+  /// Reduce Motion, read through ui_core's `designReduceMotionOf`
+  /// (`MediaQuery.disableAnimations`, which Flutter sets on Android and the
+  /// web, or iOS's Reduce Motion, which it reports only in the platform's
+  /// accessibility features). A change of iOS's flag builds [context] again
+  /// but calls no `didChangeDependencies`, so read it in `build` (or as the
+  /// motion happens). A test holds a spinner still with
+  /// `FakeAccessibilityFeatures(disableAnimations: true)`, or iOS's
+  /// `reduceMotion: true`.
   static FrostedMotion of(BuildContext context) =>
-      (MediaQuery.maybeDisableAnimationsOf(context) ?? false) ? still : look;
+      designReduceMotionOf(context) ? still : look;
 
   /// This with the named timings changed.
   FrostedMotion copyWith({

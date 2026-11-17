@@ -1,10 +1,13 @@
 // The shared inventory as Frosted answers it: every row answered, each live
 // specimen a Frosted class of the row's name that builds without throwing,
-// and the one gap with its reason.
+// and the one gap with its reason. The everyday tier builds each specimen at
+// one width, the widths in turn; the sweep at the other.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
+
+import 'tiers.dart';
 
 /// [home] in an app under Frosted's host, as a page gets it.
 Widget _app(Widget home) => MaterialApp(
@@ -85,11 +88,11 @@ void main() {
   });
 
   group('each live specimen builds', () {
-    for (final row in DesignInventoryRow.all) {
+    for (final (i, row) in DesignInventoryRow.all.indexed) {
       final entry = frostedInventory.entryFor(row.id);
       final build = entry?.builder;
       if (build == null) continue;
-      for (final size in const [Size(390, 844), Size(1280, 900)]) {
+      for (final (j, size) in const [Size(390, 844), Size(1280, 900)].indexed) {
         testWidgets('${row.id} at ${size.width.round()} wide', (t) async {
           t.view.physicalSize = size;
           t.view.devicePixelRatio = 1;
@@ -113,7 +116,7 @@ void main() {
           // Gone again: whatever it started stops with it.
           await t.pumpWidget(const SizedBox.shrink());
           await t.pump(const Duration(seconds: 10));
-        });
+        }, tags: sweepUnless(i % 2 == j));
       }
     }
   });

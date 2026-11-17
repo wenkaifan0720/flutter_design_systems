@@ -15,7 +15,8 @@
 // host theme, its hint and typed words stand where they do there, and on a
 // one-line part they are centred on the part's box within half a pixel; at
 // text scale 1 and 1.5 (a box is at least its height and grows with larger
-// text).
+// text). The everyday tier takes each part at one scale, the scales in turn;
+// the sweep takes the other.
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,6 +24,8 @@ import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/src/frosted/internal/face.dart';
 import 'package:frosted_ui/src/frosted/internal/well.dart';
+
+import 'tiers.dart';
 
 /// Frosted at standard density whatever the platform.
 final FrostedThemeData _standard = FrostedThemeData(
@@ -400,6 +403,7 @@ void main() {
           }
         }
       },
+      tags: sweepUnless(_cases.indexOf(c).isEven == (scale == 1.0)),
     );
   }
 }

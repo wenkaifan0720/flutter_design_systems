@@ -22,7 +22,7 @@ own `glass`, `pearl` and `toast`.
 
 ```yaml
 dependencies:
-  frosted_ui: ^0.1.0
+  frosted_ui: ^0.2.1
 ```
 
 ```dart

@@ -185,6 +185,16 @@ class _FrostedArabic extends FrostedLocalizationsEn {
   String page(int page, int count) => 'الصفحة $page من $count';
   @override
   String step(int step, int count) => 'الخطوة $step من $count';
+  // Arabic's six plural forms (CLDR): zero, one, two, few (3 to 10 in the
+  // last two digits), many (11 to 99), other.
+  @override
+  String visits(int count) => switch (count) {
+    0 => 'لا زيارات',
+    1 => 'زيارة واحدة',
+    2 => 'زيارتان',
+    _ when count % 100 >= 3 && count % 100 <= 10 => '$count زيارات',
+    _ => '$count زيارة',
+  };
   @override
   String get remove => 'إزالة';
   @override

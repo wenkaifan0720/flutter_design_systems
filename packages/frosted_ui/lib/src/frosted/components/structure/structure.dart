@@ -2165,7 +2165,8 @@ class FrostedInsight extends StatelessWidget {
   /// How many visits the dots count; null for no dots.
   final int? visits;
 
-  /// What the dots say; null for "N visits".
+  /// What the dots say; null for [FrostedLocalizations.visits] ("1 visit",
+  /// "13 visits").
   final String? visitsLabel;
 
   /// What stands under the words (a chart, a row).
@@ -2304,7 +2305,7 @@ class _Visits extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    label: label ?? '$count visits',
+    label: label ?? FrostedLocalizations.of(context).visits(count),
     child: ExcludeSemantics(
       // .visits { flex-wrap: wrap; gap: 6px } .visits i { 10px round;
       // background: linear-gradient(135deg, var(--a), var(--b)) }

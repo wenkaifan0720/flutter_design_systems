@@ -688,16 +688,6 @@ class _RingState extends State<_Ring> with SingleTickerProviderStateMixin {
   );
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!FrostedMotion.of(context).moves) {
-      _turn.stop();
-    } else if (!_turn.isAnimating) {
-      _turn.repeat();
-    }
-  }
-
-  @override
   void dispose() {
     _turn.dispose();
     super.dispose();
@@ -705,6 +695,14 @@ class _RingState extends State<_Ring> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // Turning while anything moves. Here, not in didChangeDependencies:
+    // iOS's Reduce Motion builds this again but calls no
+    // didChangeDependencies.
+    if (!FrostedMotion.of(context).moves) {
+      _turn.stop();
+    } else if (!_turn.isAnimating) {
+      _turn.repeat();
+    }
     final t = context.frostedTheme;
     return RotationTransition(
       turns: _turn,

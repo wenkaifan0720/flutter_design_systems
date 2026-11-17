@@ -4,7 +4,7 @@
 // the due line, balance changes, the route, the done mark; the Keel Card
 // (plain, frozen, on its desktop stage), the debit card, the card number,
 // a goal's card and row, the new-goal card, the mosaic and a pane; then
-// every one of them at 320 wide and text scale 1.3 in both presets, light
+// every one of them at 320 wide and text scale 1.3 in every preset, light
 // and dark.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
@@ -13,6 +13,8 @@ import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/src/frosted/internal/face.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+
+import 'tiers.dart';
 
 /// Pumps [child] across a phone's page (or a window of [size]), 20 in from
 /// each side, under Frosted's host in [preset] and [brightness], at
@@ -1739,8 +1741,9 @@ void main() {
     });
   });
 
+  // The everyday tier: the first preset by day and the second by night.
   group('sweep', () {
-    for (final preset in FrostedThemeData.presets) {
+    for (final (p, preset) in FrostedThemeData.presets.indexed) {
       for (final brightness in Brightness.values) {
         testWidgets(
           'every meter and card at 320 wide and text scale 1.3, $preset '
@@ -1765,6 +1768,10 @@ void main() {
             }
             expect(failures, isEmpty);
           },
+          tags: sweepUnless(
+            (p, brightness) == (0, Brightness.light) ||
+                (p, brightness) == (1, Brightness.dark),
+          ),
         );
       }
     }

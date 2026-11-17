@@ -17,6 +17,7 @@ import 'package:frosted_ui/frosted_host.dart';
 import 'package:ui_core/alignment.dart';
 
 import 'keylines.dart';
+import 'tiers.dart';
 
 // Harbor is the example app's; a test reads it from there.
 // ignore_for_file: avoid_relative_lib_imports
@@ -211,6 +212,13 @@ void main() {
     final wide = size.width >= 1024;
     for (final MapEntry(key: look, value: (brightness, backdrop))
         in looks.entries) {
+      // The everyday tier walks both screens on a phone by day and at desktop
+      // width by night; the sweep the other looks.
+      final tier = sweepUnless(
+        (device, look) == ('phone', 'day') ||
+            (device, look) == ('desktop', 'night'),
+      );
+
       Future<void> pump(WidgetTester tester) async {
         tester.view.physicalSize = size;
         tester.view.devicePixelRatio = 1;
@@ -221,7 +229,7 @@ void main() {
         await _settle(tester);
       }
 
-      testWidgets('Activity on a $device by $look', (tester) async {
+      testWidgets('Activity on a $device by $look', tags: tier, (tester) async {
         await pump(tester);
         expect(tester.takeException(), isNull);
         expect(find.text('Activity'), findsWidgets);
@@ -257,7 +265,7 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('Settings on a $device by $look', (tester) async {
+      testWidgets('Settings on a $device by $look', tags: tier, (tester) async {
         await pump(tester);
         await tester.tap(find.text('Settings').first);
         await _settle(tester);
