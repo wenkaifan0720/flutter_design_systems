@@ -586,7 +586,7 @@ class BrutalPageDots extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final words = DesignLocalizations.of(context);
-    final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final reduce = designReduceMotionOf(context);
     final layers = [style, theme.pageDotsStyle];
     Widget dot(int i) => AnimatedContainer(
       duration: reduce ? Duration.zero : const Duration(milliseconds: 200),

@@ -15,6 +15,7 @@ export 'brutal/feedback.dart';
 export 'brutal/format.dart';
 export 'brutal/fonts.dart';
 export 'brutal/lists.dart';
+export 'brutal/localizations.dart';
 export 'brutal/menu.dart';
 export 'brutal/navigation.dart';
 export 'brutal/overlays.dart';

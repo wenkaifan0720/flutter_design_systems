@@ -725,7 +725,7 @@ class _Turned extends StatelessWidget {
   @override
   Widget build(BuildContext context) => TweenAnimationBuilder<double>(
     tween: Tween(end: open ? 0.5 : 0),
-    duration: MediaQuery.maybeDisableAnimationsOf(context) ?? false
+    duration: designReduceMotionOf(context)
         ? Duration.zero
         : const Duration(milliseconds: 140),
     builder: (context, turns, child) =>

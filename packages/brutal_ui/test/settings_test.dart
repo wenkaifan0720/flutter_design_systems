@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../example/lib/kit_gallery/admit/admit.dart';
+import 'tiers.dart';
 
 Future<void> _open(WidgetTester tester, double width) async {
   tester.view.physicalSize = Size(width, width < 600 ? 844 : 900);
@@ -27,55 +28,71 @@ Future<void> _back(WidgetTester tester, Finder onPage) async {
 }
 
 void main() {
-  for (final width in const [390.0, 1440.0]) {
-    testWidgets('Name and email opens its page at ${width.toInt()}', (
-      tester,
-    ) async {
-      await _open(tester, width);
-      await _tap(tester, find.text('Name and email'));
-      final page = find.text('Tickets and receipts go here.');
-      expect(page, findsOneWidget);
-      await _back(tester, page);
-      expect(page, findsNothing);
-      expect(find.text('Payment'), findsOneWidget);
-    });
+  // Each row every run at one width, the phone and the desk taking turns; the
+  // rest in the sweep.
+  for (final (w, width) in const [390.0, 1440.0].indexed) {
+    testWidgets(
+      'Name and email opens its page at ${width.toInt()}',
+      tags: sweepUnless(w == 0),
+      (tester) async {
+        await _open(tester, width);
+        await _tap(tester, find.text('Name and email'));
+        final page = find.text('Tickets and receipts go here.');
+        expect(page, findsOneWidget);
+        await _back(tester, page);
+        expect(page, findsNothing);
+        expect(find.text('Payment'), findsOneWidget);
+      },
+    );
 
-    testWidgets('Payment opens its page at ${width.toInt()}', (tester) async {
-      await _open(tester, width);
-      await _tap(tester, find.text('Payment'));
-      final page = find.text('Save card');
-      expect(page, findsOneWidget);
-      await _back(tester, page);
-      expect(page, findsNothing);
-    });
+    testWidgets(
+      'Payment opens its page at ${width.toInt()}',
+      tags: sweepUnless(w == 1),
+      (tester) async {
+        await _open(tester, width);
+        await _tap(tester, find.text('Payment'));
+        final page = find.text('Save card');
+        expect(page, findsOneWidget);
+        await _back(tester, page);
+        expect(page, findsNothing);
+      },
+    );
 
-    testWidgets('the density select opens and takes a choice at '
-        '${width.toInt()}', (tester) async {
-      await _open(tester, width);
-      expect(find.text('Compact'), findsNothing);
-      await _tap(tester, find.text('Standard'));
-      expect(find.text('Compact'), findsOneWidget);
-      await tester.tap(find.text('Compact'));
-      await tester.pumpAndSettle();
-      expect(find.text('Comfortable'), findsNothing);
-      expect(find.text('Compact'), findsOneWidget);
-    });
+    testWidgets(
+      'the density select opens and takes a choice at '
+      '${width.toInt()}',
+      tags: sweepUnless(w == 0),
+      (tester) async {
+        await _open(tester, width);
+        expect(find.text('Compact'), findsNothing);
+        await _tap(tester, find.text('Standard'));
+        expect(find.text('Compact'), findsOneWidget);
+        await tester.tap(find.text('Compact'));
+        await tester.pumpAndSettle();
+        expect(find.text('Comfortable'), findsNothing);
+        expect(find.text('Compact'), findsOneWidget);
+      },
+    );
 
-    testWidgets('Sign out asks first at ${width.toInt()}', (tester) async {
-      await _open(tester, width);
-      await _tap(tester, find.text('Sign out'));
-      expect(find.text('Sign out?'), findsOneWidget);
-      await tester.tap(find.text('Stay signed in'));
-      await tester.pumpAndSettle();
-      expect(find.text('Sign out?'), findsNothing);
-      await _tap(tester, find.text('Sign out'));
-      await tester.tap(find.text('Sign out').last);
-      await tester.pumpAndSettle();
-      expect(find.text('Sign out?'), findsNothing);
-      expect(find.text('Signed out on this device.'), findsOneWidget);
-      // The toast's own time runs out.
-      await tester.pump(const Duration(seconds: 10));
-      await tester.pumpAndSettle();
-    });
+    testWidgets(
+      'Sign out asks first at ${width.toInt()}',
+      tags: sweepUnless(w == 1),
+      (tester) async {
+        await _open(tester, width);
+        await _tap(tester, find.text('Sign out'));
+        expect(find.text('Sign out?'), findsOneWidget);
+        await tester.tap(find.text('Stay signed in'));
+        await tester.pumpAndSettle();
+        expect(find.text('Sign out?'), findsNothing);
+        await _tap(tester, find.text('Sign out'));
+        await tester.tap(find.text('Sign out').last);
+        await tester.pumpAndSettle();
+        expect(find.text('Sign out?'), findsNothing);
+        expect(find.text('Signed out on this device.'), findsOneWidget);
+        // The toast's own time runs out.
+        await tester.pump(const Duration(seconds: 10));
+        await tester.pumpAndSettle();
+      },
+    );
   }
 }

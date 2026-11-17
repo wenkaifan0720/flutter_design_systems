@@ -1006,7 +1006,7 @@ class _WheelState extends State<_Wheel> {
 
   void _go(int i) {
     if (i < 0 || i >= widget.labels.length || widget.onChanged == null) return;
-    final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final reduce = designReduceMotionOf(context);
     if (reduce) {
       _scroll.jumpToItem(i);
     } else {

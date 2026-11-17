@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../example/lib/everyday_screens.dart';
+import 'tiers.dart';
 
 Future<void> _loadFonts() async {
   final manifest = json.decode(
@@ -30,73 +31,81 @@ Future<void> _loadFonts() async {
 
 void main() {
   setUpAll(_loadFonts);
-  for (final screen in everydayScreens) {
-    for (final width in const [390.0, 768.0, 1440.0]) {
+  // Each screen every run at one width, by day or by night, turning over the
+  // screens so every width meets both; the rest in the sweep.
+  for (final (i, screen) in everydayScreens.indexed) {
+    for (final (w, width) in const [390.0, 768.0, 1440.0].indexed) {
       for (final brightness in Brightness.values) {
-        testWidgets('${screen.id} at ${width.toInt()} by ${brightness.name}', (
-          tester,
-        ) async {
-          tester.view.physicalSize = Size(width, width < 600 ? 844 : 900);
-          tester.view.devicePixelRatio = 1;
-          addTearDown(tester.view.reset);
-          await tester.pumpWidget(screen.app(brightness, TextDirection.ltr));
-          await tester.pumpAndSettle();
-          expect(tester.takeException(), isNull);
-        });
+        testWidgets(
+          '${screen.id} at ${width.toInt()} by ${brightness.name}',
+          tags: sweepUnless(w == i % 3 && brightness.index == (i ~/ 3) % 2),
+          (tester) async {
+            tester.view.physicalSize = Size(width, width < 600 ? 844 : 900);
+            tester.view.devicePixelRatio = 1;
+            addTearDown(tester.view.reset);
+            await tester.pumpWidget(screen.app(brightness, TextDirection.ltr));
+            await tester.pumpAndSettle();
+            expect(tester.takeException(), isNull);
+          },
+        );
       }
     }
   }
-  for (final screen in everydayScreens) {
-    for (final width in const [390.0, 1440.0]) {
-      testWidgets('${screen.id} at ${width.toInt()} names each control once', (
-        tester,
-      ) async {
-        tester.view.physicalSize = Size(width, width < 600 ? 844 : 900);
-        tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.reset);
-        final semantics = tester.ensureSemantics();
-        await tester.pumpWidget(
-          screen.app(Brightness.light, TextDirection.ltr),
-        );
-        await tester.pumpAndSettle();
-        final twice = <String>[];
-        final buttons = <String>{};
-        void visit(SemanticsNode node) {
-          final data = node.getSemanticsData();
-          final lines = data.label
-              .split('\n')
-              .map((l) => l.trim().toLowerCase())
-              .where((l) => l.isNotEmpty)
-              .toList();
-          if (lines.toSet().length < lines.length) twice.add(data.label);
-          if (data.flagsCollection.isButton) buttons.add(data.label);
-          node.visitChildren((child) {
-            visit(child);
-            return true;
-          });
-        }
-
-        visit(
-          tester
-              .binding
-              .renderViews
-              .first
-              .owner!
-              .semanticsOwner!
-              .rootSemanticsNode!,
-        );
-        expect(twice, isEmpty, reason: 'a name, then the same words again');
-        // Under a sheet or a dialog the page, its places with it, is rightly
-        // hidden from a screen reader.
-        if (width >= 1024 && !const {'filter', 'cancel'}.contains(screen.id)) {
-          expect(
-            buttons,
-            containsAll(const ['Home', 'Events', 'Tickets', 'Settings']),
-            reason: "the side list's places, beside the body's navigator",
+  // Each screen every run at a phone's or a desk's width, in turn.
+  for (final (i, screen) in everydayScreens.indexed) {
+    for (final (w, width) in const [390.0, 1440.0].indexed) {
+      testWidgets(
+        '${screen.id} at ${width.toInt()} names each control once',
+        tags: sweepUnless(w == i % 2),
+        (tester) async {
+          tester.view.physicalSize = Size(width, width < 600 ? 844 : 900);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          final semantics = tester.ensureSemantics();
+          await tester.pumpWidget(
+            screen.app(Brightness.light, TextDirection.ltr),
           );
-        }
-        semantics.dispose();
-      });
+          await tester.pumpAndSettle();
+          final twice = <String>[];
+          final buttons = <String>{};
+          void visit(SemanticsNode node) {
+            final data = node.getSemanticsData();
+            final lines = data.label
+                .split('\n')
+                .map((l) => l.trim().toLowerCase())
+                .where((l) => l.isNotEmpty)
+                .toList();
+            if (lines.toSet().length < lines.length) twice.add(data.label);
+            if (data.flagsCollection.isButton) buttons.add(data.label);
+            node.visitChildren((child) {
+              visit(child);
+              return true;
+            });
+          }
+
+          visit(
+            tester
+                .binding
+                .renderViews
+                .first
+                .owner!
+                .semanticsOwner!
+                .rootSemanticsNode!,
+          );
+          expect(twice, isEmpty, reason: 'a name, then the same words again');
+          // Under a sheet or a dialog the page, its places with it, is rightly
+          // hidden from a screen reader.
+          if (width >= 1024 &&
+              !const {'filter', 'cancel'}.contains(screen.id)) {
+            expect(
+              buttons,
+              containsAll(const ['Home', 'Events', 'Tickets', 'Settings']),
+              reason: "the side list's places, beside the body's navigator",
+            );
+          }
+          semantics.dispose();
+        },
+      );
     }
   }
 }

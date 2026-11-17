@@ -1,6 +1,9 @@
 // Admit's everyday screens on a phone and a desktop, by day and by night,
 // each matching its golden.
 // ignore_for_file: avoid_relative_lib_imports
+@Tags(['goldens'])
+library;
+
 import 'dart:convert';
 import 'dart:io';
 

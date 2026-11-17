@@ -1840,7 +1840,7 @@ class _AnimatedBrutalThemeState
 
   @override
   Widget build(BuildContext context) => BrutalTheme(
-    data: MediaQuery.maybeDisableAnimationsOf(context) ?? false
+    data: designReduceMotionOf(context)
         ? widget.data
         : _data!.evaluate(animation),
     child: widget.child,

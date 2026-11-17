@@ -73,6 +73,13 @@ goes back to what opened it; a field's list leaves the keyboard in the field), a
 Under a pointer the controls stand
 at the platform's density (40 px on a desktop, 48 on a phone), and everything a pointer presses takes the keyboard too.
 
+Brutal speaks the app's language through ui_core's `DesignLocalizations` (add `DesignLocalizations.delegate` to the
+app's `localizationsDelegates`). The few words of its own, such as a data table's count of rows, come from
+`BrutalLocalizations`: English, unless the app gives its own subclass with a
+`LocalizationsDelegate<BrutalLocalizations>`. Every count is given its number, so a language picks its plural form.
+Under Reduce Motion (Android's Remove animations, the web's `prefers-reduced-motion` or iOS's Reduce Motion) a
+press, a change of colour or theme and a list's arrow settle at once or in a short fade, and nothing loops.
+
 ## Make it yours
 
 Three layers, each over the last: the brand, a kind of part across the app, one part. Each takes only what keeps the

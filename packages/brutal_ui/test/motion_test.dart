@@ -17,6 +17,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../example/lib/kit_gallery/admit/admit.dart';
 import '../example/lib/kit_gallery/kit.dart';
+import 'tiers.dart';
 
 final _stage = GlobalKey();
 
@@ -128,7 +129,16 @@ void main() {
     (name: 'desk by night', size: Size(1440, 900), brightness: Brightness.dark),
   ];
 
-  for (final c in cases) {
+  for (final (ci, c) in cases.indexed) {
+    // Each check every run in one case, the phone by day and the desk by
+    // night taking turns; the other in the sweep.
+    var k = 0;
+    void check(String description, WidgetTesterCallback body) => testWidgets(
+      description,
+      body,
+      tags: sweepUnless(k++ % cases.length == ci),
+    );
+
     Future<void> show(WidgetTester tester, Widget child) async {
       tester.view.physicalSize = c.size;
       tester.view.devicePixelRatio = 1;
@@ -138,7 +148,7 @@ void main() {
     }
 
     group(c.name, () {
-      testWidgets('a carousel at 30% and 70% of a swipe', (tester) async {
+      check('a carousel at 30% and 70% of a swipe', (tester) async {
         await show(
           tester,
           BrutalCarousel(
@@ -162,7 +172,7 @@ void main() {
         expect(find.text('Slide 2'), findsOneWidget);
       });
 
-      testWidgets('a swiped row, mid-drag and released', (tester) async {
+      check('a swiped row, mid-drag and released', (tester) async {
         await show(
           tester,
           const BrutalSwipeRow(
@@ -190,7 +200,7 @@ void main() {
         await tester.pumpAndSettle();
       });
 
-      testWidgets('a slider dragged past both ends', (tester) async {
+      check('a slider dragged past both ends', (tester) async {
         await show(
           tester,
           _Held<double>(
@@ -213,7 +223,7 @@ void main() {
         await tester.pumpAndSettle();
       });
 
-      testWidgets('a range slider with its thumbs meeting', (tester) async {
+      check('a range slider with its thumbs meeting', (tester) async {
         await show(
           tester,
           _Held<BrutalRangeValues>(
@@ -286,7 +296,7 @@ void main() {
         ),
       ];
       for (final (name, specimen, part, target) in changes) {
-        testWidgets('$name half-way through a change', (tester) async {
+        check('$name half-way through a change', (tester) async {
           await show(tester, specimen);
           await tester.tap(target.isEmpty ? part() : find.text(target));
           await _halfway(tester);
@@ -296,7 +306,7 @@ void main() {
         });
       }
 
-      testWidgets('a disclosure half-open and half-closed', (tester) async {
+      check('a disclosure half-open and half-closed', (tester) async {
         await show(
           tester,
           const BrutalDisclosure(
@@ -317,7 +327,7 @@ void main() {
         }
       });
 
-      testWidgets("a range's preview ends on the day the pointer rests on", (
+      check("a range's preview ends on the day the pointer rests on", (
         tester,
       ) async {
         await show(
@@ -373,7 +383,7 @@ void main() {
         await _clean(tester, 'range preview');
       });
 
-      testWidgets('a pull to refresh, mid-pull', (tester) async {
+      check('a pull to refresh, mid-pull', (tester) async {
         await show(
           tester,
           SizedBox(
@@ -401,7 +411,7 @@ void main() {
         await tester.pumpAndSettle();
       });
 
-      testWidgets('a lifted row, mid-move', (tester) async {
+      check('a lifted row, mid-move', (tester) async {
         await show(
           tester,
           _Held<List<String>>(
@@ -438,7 +448,7 @@ void main() {
         await tester.pumpAndSettle();
       });
 
-      testWidgets('a sheet and a dialog do not jump when they settle', (
+      check('a sheet and a dialog do not jump when they settle', (
         tester,
       ) async {
         await show(
@@ -495,7 +505,7 @@ void main() {
         }
       });
 
-      testWidgets('a pushed page mid-change comes a short way, over a page '
+      check('a pushed page mid-change comes a short way, over a page '
           'that stays put, and goes back the same way', (tester) async {
         Route<void> page() => MaterialPageRoute<void>(
           builder: (context) => ColoredBox(
@@ -554,40 +564,56 @@ void main() {
   // (brutalPageTransitions). Without it, macOS and the web on
   // a Mac slide Cupertino's whole width in. iOS takes Brutal's push too,
   // with its swipe back round it.
-  testWidgets(
-    "the example app's own routes, Flutter's MaterialPageRoute, change "
-    "Brutal's way",
-    (tester) async {
-      tester.view.physicalSize = const Size(390, 900);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      await tester.pumpWidget(const AdmitApp(initialPlace: AdmitPlace.events));
-      await tester.pumpAndSettle();
-      final beneath = tester.getRect(find.text('Northern Lines'));
-      await tester.tap(find.text('Low Tide'));
-      await tester.pumpAndSettle();
-      final rest = tester.getRect(find.text('Buy tickets'));
-      Navigator.of(tester.element(find.text('Buy tickets'))).pop();
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Low Tide'));
-      await _halfway(tester);
-      await _clean(tester, 'the event page half-way in');
-      final mid = tester.getRect(find.text('Buy tickets'));
-      expect(mid.top, rest.top, reason: 'it moves only along');
-      expect(
-        mid.left - rest.left,
-        inInclusiveRange(1, BrutalPageTransitionsBuilder.travel),
-        reason: 'it comes from the end side, a short way',
-      );
-      expect(
-        tester.getRect(find.text('Northern Lines')),
-        beneath,
-        reason: 'the page beneath stays where it is',
-      );
-      await tester.pumpAndSettle();
-    },
-    variant: TargetPlatformVariant.all(),
-  );
+  // iOS (its swipe back round Brutal's push), Android and macOS (Cupertino's
+  // slide without brutalPageTransitions) every run; the rest in the sweep.
+  const pageChangePlatforms = {
+    TargetPlatform.iOS,
+    TargetPlatform.android,
+    TargetPlatform.macOS,
+  };
+  for (final everyday in const [true, false]) {
+    testWidgets(
+      "the example app's own routes, Flutter's MaterialPageRoute, change "
+      "Brutal's way",
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+          const AdmitApp(initialPlace: AdmitPlace.events),
+        );
+        await tester.pumpAndSettle();
+        final beneath = tester.getRect(find.text('Northern Lines'));
+        await tester.tap(find.text('Low Tide'));
+        await tester.pumpAndSettle();
+        final rest = tester.getRect(find.text('Buy tickets'));
+        Navigator.of(tester.element(find.text('Buy tickets'))).pop();
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Low Tide'));
+        await _halfway(tester);
+        await _clean(tester, 'the event page half-way in');
+        final mid = tester.getRect(find.text('Buy tickets'));
+        expect(mid.top, rest.top, reason: 'it moves only along');
+        expect(
+          mid.left - rest.left,
+          inInclusiveRange(1, BrutalPageTransitionsBuilder.travel),
+          reason: 'it comes from the end side, a short way',
+        );
+        expect(
+          tester.getRect(find.text('Northern Lines')),
+          beneath,
+          reason: 'the page beneath stays where it is',
+        );
+        await tester.pumpAndSettle();
+      },
+      variant: TargetPlatformVariant(
+        everyday
+            ? pageChangePlatforms
+            : TargetPlatform.values.toSet().difference(pageChangePlatforms),
+      ),
+      tags: sweepUnless(everyday),
+    );
+  }
 }
 
 void _none() {}

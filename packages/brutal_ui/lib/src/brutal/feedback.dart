@@ -384,16 +384,15 @@ class _BrutalSpinnerState extends State<BrutalSpinner>
     duration: const Duration(milliseconds: 1100),
   );
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    if (still) {
+  // From build: iOS's Reduce Motion changes arrive as a build, never as
+  // didChangeDependencies (designReduceMotionOf).
+  void _sync() {
+    if (!designReduceMotionOf(context)) {
+      if (!_turn.isAnimating) _turn.repeat();
+    } else if (_turn.isAnimating || _turn.value != 0) {
       _turn
         ..stop()
         ..value = 0;
-    } else if (!_turn.isAnimating) {
-      _turn.repeat();
     }
   }
 
@@ -405,6 +404,7 @@ class _BrutalSpinnerState extends State<BrutalSpinner>
 
   @override
   Widget build(BuildContext context) {
+    _sync();
     final theme = BrutalTheme.of(context);
     final ink =
         widget.color ??
@@ -527,8 +527,7 @@ class BrutalProgressBar extends StatelessWidget {
               ? _Sliding(color: fill)
               : TweenAnimationBuilder<double>(
                   tween: Tween(end: v),
-                  duration:
-                      (MediaQuery.maybeDisableAnimationsOf(context) ?? false)
+                  duration: designReduceMotionOf(context)
                       ? Duration.zero
                       : const Duration(milliseconds: 280),
                   curve: Curves.easeOutCubic,
@@ -567,15 +566,15 @@ class _SlidingState extends State<_Sliding>
     duration: const Duration(milliseconds: 1400),
   );
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) {
+  // From build: iOS's Reduce Motion changes arrive as a build, never as
+  // didChangeDependencies (designReduceMotionOf).
+  void _sync() {
+    if (!designReduceMotionOf(context)) {
+      if (!_run.isAnimating) _run.repeat();
+    } else if (_run.isAnimating || _run.value != 0.5) {
       _run
         ..stop()
         ..value = 0.5;
-    } else if (!_run.isAnimating) {
-      _run.repeat();
     }
   }
 
@@ -586,26 +585,29 @@ class _SlidingState extends State<_Sliding>
   }
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, box) => AnimatedBuilder(
-      animation: _run,
-      builder: (context, _) {
-        final block = box.maxWidth * 0.3;
-        final x = -block + (box.maxWidth + block) * _run.value;
-        return ClipRect(
-          child: Stack(
-            children: [
-              PositionedDirectional(
-                start: x,
-                top: 0,
-                bottom: 0,
-                width: block,
-                child: ColoredBox(color: widget.color),
-              ),
-            ],
-          ),
-        );
-      },
-    ),
-  );
+  Widget build(BuildContext context) {
+    _sync();
+    return LayoutBuilder(
+      builder: (context, box) => AnimatedBuilder(
+        animation: _run,
+        builder: (context, _) {
+          final block = box.maxWidth * 0.3;
+          final x = -block + (box.maxWidth + block) * _run.value;
+          return ClipRect(
+            child: Stack(
+              children: [
+                PositionedDirectional(
+                  start: x,
+                  top: 0,
+                  bottom: 0,
+                  width: block,
+                  child: ColoredBox(color: widget.color),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 }

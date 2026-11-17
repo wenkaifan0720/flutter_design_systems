@@ -13,8 +13,7 @@ import 'lists.dart';
 import 'surface.dart';
 import 'theme.dart';
 
-bool _still(BuildContext context) =>
-    MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+bool _still(BuildContext context) => designReduceMotionOf(context);
 
 /// A heading that opens to show [child] under it: a row with a square
 /// cell holding a plus (a minus while open). A press anywhere on the row,
@@ -1192,15 +1191,15 @@ class _BrutalSkeletonState extends State<BrutalSkeleton>
     duration: const Duration(milliseconds: 900),
   );
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_still(context)) {
+  // From build: iOS's Reduce Motion changes arrive as a build, never as
+  // didChangeDependencies (designReduceMotionOf).
+  void _sync() {
+    if (!_still(context)) {
+      if (!_breath.isAnimating) _breath.repeat(reverse: true);
+    } else if (_breath.isAnimating || _breath.value != 1) {
       _breath
         ..stop()
         ..value = 1;
-    } else if (!_breath.isAnimating) {
-      _breath.repeat(reverse: true);
     }
   }
 
@@ -1212,6 +1211,7 @@ class _BrutalSkeletonState extends State<BrutalSkeleton>
 
   @override
   Widget build(BuildContext context) {
+    _sync();
     final theme = BrutalTheme.of(context);
     final fill =
         DesignStyleOf([widget.style, theme.skeletonStyle], const {}).fill ??

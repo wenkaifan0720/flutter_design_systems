@@ -11,6 +11,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'feedback.dart';
 import 'lists.dart';
+import 'localizations.dart';
 import 'surface.dart';
 import 'theme.dart';
 import 'wayfinding.dart';
@@ -329,8 +330,10 @@ class BrutalDataTable<R> extends StatelessWidget {
                 Expanded(
                   child: Text(
                     selectable && controller.selectedCount > 0
-                        ? '${controller.selectedCount} selected'
-                        : '${controller.filteredRows.length} rows',
+                        ? DesignLocalizations.of(context)
+                              .selectedRowCountTitle(controller.selectedCount)
+                        : BrutalLocalizations.of(context)
+                              .rowCount(controller.filteredRows.length),
                     style: t.secondary,
                   ),
                 ),

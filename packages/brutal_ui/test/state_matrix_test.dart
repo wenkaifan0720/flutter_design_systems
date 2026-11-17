@@ -4,6 +4,9 @@
 // review reads); hovered must paint as idle does, but where a pointer
 // shows something on purpose (a rating's preview).
 // ignore_for_file: avoid_relative_lib_imports
+@Tags(['goldens'])
+library;
+
 import 'dart:convert';
 import 'dart:io';
 

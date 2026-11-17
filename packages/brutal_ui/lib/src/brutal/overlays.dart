@@ -416,7 +416,7 @@ class _ArriveState extends State<_Arrive> {
 
   @override
   Widget build(BuildContext context) {
-    final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final reduce = designReduceMotionOf(context);
     return FadeTransition(
       opacity: _solid,
       child: reduce

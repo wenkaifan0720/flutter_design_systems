@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../example/lib/kit_gallery/kit.dart';
+import 'tiers.dart';
 
 /// [builder]'s specimen on a page's column in the look's app.
 Widget _host(
@@ -63,25 +64,31 @@ void main() {
       scale: 2.0,
     ),
   ];
-  for (final entry in BrutalInventory.registry.entries) {
-    for (final c in cases) {
-      testWidgets('${entry.row}, ${c.name}', (tester) async {
-        tester.view.physicalSize = Size(c.width, 900);
-        tester.view.devicePixelRatio = 1;
-        addTearDown(tester.view.reset);
-        await tester.pumpWidget(
-          _host(
-            entry.builder!,
-            brightness: c.dark ? Brightness.dark : Brightness.light,
-            direction: c.rtl ? TextDirection.rtl : TextDirection.ltr,
-            textScale: c.scale,
-          ),
-        );
-        // A skeleton breathes and a spinner turns for ever: a second lays
-        // everything out without waiting for them to settle.
-        await tester.pump(const Duration(seconds: 1));
-        expect(tester.takeException(), isNull);
-      });
+  // Each row every run in one case, the cases turning over the rows (so each
+  // case meets a quarter of them); every row in every case in the sweep.
+  for (final (i, entry) in BrutalInventory.registry.entries.indexed) {
+    for (final (j, c) in cases.indexed) {
+      testWidgets(
+        '${entry.row}, ${c.name}',
+        tags: sweepUnless(j == i % cases.length),
+        (tester) async {
+          tester.view.physicalSize = Size(c.width, 900);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          await tester.pumpWidget(
+            _host(
+              entry.builder!,
+              brightness: c.dark ? Brightness.dark : Brightness.light,
+              direction: c.rtl ? TextDirection.rtl : TextDirection.ltr,
+              textScale: c.scale,
+            ),
+          );
+          // A skeleton breathes and a spinner turns for ever: a second lays
+          // everything out without waiting for them to settle.
+          await tester.pump(const Duration(seconds: 1));
+          expect(tester.takeException(), isNull);
+        },
+      );
     }
   }
 }

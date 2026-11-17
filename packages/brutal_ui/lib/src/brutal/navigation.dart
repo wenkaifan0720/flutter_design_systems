@@ -1191,7 +1191,7 @@ class _TabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final reduce = designReduceMotionOf(context);
     return TweenAnimationBuilder<double>(
       tween: Tween(end: on ? BrutalTabBar.barHeight : rest),
       duration: reduce ? Duration.zero : const Duration(milliseconds: 160),

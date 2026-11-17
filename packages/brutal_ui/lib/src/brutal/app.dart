@@ -451,7 +451,7 @@ class _PageArriveState extends State<_PageArrive> {
 
   @override
   Widget build(BuildContext context) {
-    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) {
+    if (designReduceMotionOf(context)) {
       return widget.child;
     }
     final end = Directionality.of(context) == TextDirection.rtl ? -1.0 : 1.0;
