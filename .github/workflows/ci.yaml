@@ -51,19 +51,23 @@ jobs:
           for p in $pick; do
             [ -d "packages/$p" ] || { echo "No package named $p"; exit 1; }
           done
-          json=$(printf '%s\n' $pick | jq -R . | jq -sc 'map(select(length > 0))')
+          # A package whose suite outgrows one runner's memory is split into parts (flutter test --total-shards).
+          shards() { case "$1" in material_expressive_ui) echo 4 ;; *) echo 1 ;; esac; }
+          json=$(for p in $pick; do n=$(shards "$p"); for i in $(seq 0 $((n - 1))); do
+            jq -nc --arg p "$p" --argjson i "$i" --argjson n "$n" '{package: $p, shard: $i, shards: $n}'
+          done; done | jq -sc .)
           echo "packages=$json" >> "$GITHUB_OUTPUT"
           echo "Testing: $json"
 
   check:
-    name: ${{ matrix.package }}
+    name: ${{ matrix.shards > 1 && format('{0} ({1}/{2})', matrix.package, matrix.shard + 1, matrix.shards) || matrix.package }}
     needs: changes
     if: needs.changes.outputs.packages != '[]'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        package: ${{ fromJSON(needs.changes.outputs.packages) }}
+        include: ${{ fromJSON(needs.changes.outputs.packages) }}
     steps:
       - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
@@ -74,14 +78,16 @@ jobs:
       - name: Resolve the workspace
         run: flutter pub get
       - name: Analyze
+        if: matrix.shard == 0
         run: dart analyze --fatal-infos packages/${{ matrix.package }}
       - name: Test, without the goldens
         working-directory: packages/${{ matrix.package }}
         run: |
           if [ -d test ]; then
-            flutter test --exclude-tags goldens
+            flutter test --exclude-tags goldens --total-shards ${{ matrix.shards }} --shard-index ${{ matrix.shard }}
           fi
       - name: Dry-run publish
+        if: matrix.shard == 0
         run: dart pub publish --dry-run --directory packages/${{ matrix.package }}
 
   goldens:
