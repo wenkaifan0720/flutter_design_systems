@@ -303,39 +303,42 @@ void main() {
     expect(_rowLeft(tester), 0);
   });
 
-  testWidgets('keyboard: Left shows the end actions and focuses the first; '
-      'Escape closes and focus is back in the row; right to left mirrors', (
-    tester,
-  ) async {
-    await tester.pumpWidget(_row(reduceMotion: true));
-    _rowNode.requestFocus();
-    await tester.pump();
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
-    await tester.pump();
-    await tester.pump();
-    expect(_rowLeft(tester), -160, reason: 'Reduce Motion: no slide');
-    expect(_rowNode.hasFocus, isFalse);
-    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-    await tester.pump();
-    expect(_rowLeft(tester), 0);
-    expect(_rowNode.hasFocus, isTrue);
+  // Android's and the web's flag, then iOS's alone.
+  for (final ios in [false, true]) {
+    testWidgets('keyboard: Left shows the end actions and focuses the first; '
+        'Escape closes and focus is back in the row; right to left mirrors'
+        '${ios ? ' (iOS\'s Reduce Motion alone)' : ''}', (tester) async {
+      if (ios) iosReduceMotion(tester);
+      await tester.pumpWidget(_row(reduceMotion: !ios));
+      _rowNode.requestFocus();
+      await tester.pump();
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+      await tester.pump();
+      await tester.pump();
+      expect(_rowLeft(tester), -160, reason: 'Reduce Motion: no slide');
+      expect(_rowNode.hasFocus, isFalse);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pump();
+      expect(_rowLeft(tester), 0);
+      expect(_rowNode.hasFocus, isTrue);
 
-    await tester.pumpWidget(const SizedBox());
-    await tester.pumpWidget(
-      _row(direction: TextDirection.rtl, reduceMotion: true),
-    );
-    _rowNode.requestFocus();
-    await tester.pump();
-    final rest = _rowLeft(tester);
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
-    await tester.pump();
-    await tester.pump();
-    expect(
-      _rowLeft(tester) - rest,
-      -80,
-      reason: 'right to left, Left slides the row left, showing the start',
-    );
-  });
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(
+        _row(direction: TextDirection.rtl, reduceMotion: !ios),
+      );
+      _rowNode.requestFocus();
+      await tester.pump();
+      final rest = _rowLeft(tester);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+      await tester.pump();
+      await tester.pump();
+      expect(
+        _rowLeft(tester) - rest,
+        -80,
+        reason: 'right to left, Left slides the row left, showing the start',
+      );
+    });
+  }
 
   testWidgets('a screen reader gets each action on the row', (tester) async {
     final semantics = tester.ensureSemantics();

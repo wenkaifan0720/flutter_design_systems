@@ -145,6 +145,74 @@ void main() {
       );
     });
 
+    testWidgets('designReduceMotionOf: Android\'s Remove animations, the '
+        'web\'s prefers-reduced-motion (both flags), or iOS\'s Reduce Motion '
+        'alone', (tester) async {
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      Future<bool> under({
+        bool disableAnimations = false,
+        bool reduceMotion = false,
+      }) async {
+        tester.platformDispatcher.accessibilityFeaturesTestValue =
+            FakeAccessibilityFeatures(
+              disableAnimations: disableAnimations,
+              reduceMotion: reduceMotion,
+            );
+        late bool reduced;
+        await tester.pumpWidget(
+          MediaQuery.fromView(
+            view: tester.view,
+            child: Builder(
+              builder: (context) {
+                reduced = designReduceMotionOf(context);
+                return const SizedBox();
+              },
+            ),
+          ),
+        );
+        return reduced;
+      }
+
+      expect(await under(), isFalse);
+      expect(await under(disableAnimations: true), isTrue, reason: 'Android');
+      expect(
+        await under(disableAnimations: true, reduceMotion: true),
+        isTrue,
+        reason: 'the web',
+      );
+      expect(await under(reduceMotion: true), isTrue, reason: 'iOS');
+    });
+
+    testWidgets('follows iOS\'s Reduce Motion alone, which MediaQuery does '
+        'not carry, and its reader builds again as it changes', (tester) async {
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      final seen = <bool>[];
+      await tester.pumpWidget(
+        MediaQuery.fromView(
+          view: tester.view,
+          child: Builder(
+            builder: (context) {
+              seen.add(DesignMotionPolicy.of(context).reduceMotion);
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      expect(seen, [false]);
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(reduceMotion: true);
+      await tester.pump();
+      expect(seen, [false, true]);
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures();
+      await tester.pump();
+      expect(seen, [false, true, false]);
+    });
+
     test('equal policies share a hash; reduced and full differ', () {
       expect(
         DesignMotionPolicy(reduceMotion: DateTime.now().year > 0).hashCode,

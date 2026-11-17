@@ -3,6 +3,8 @@
 /// row in view. Inside ui_core; not exported.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -10,6 +12,7 @@ import '../combobox.dart';
 import '../pressable.dart';
 import 'announce.dart';
 import 'back.dart';
+import 'quiet_focus.dart';
 
 /// An option taken from the list, as a [RawAutocomplete]'s `onSelected` gets
 /// it: a new object each time, so the autocomplete never skips an option it
@@ -50,9 +53,33 @@ class DesignListKeys {
         _route = route;
         _syncBack();
       }
-      return Actions(actions: _actions, child: child);
+      return Focus(
+        canRequestFocus: false,
+        skipTraversal: true,
+        includeSemantics: false,
+        onFocusChange: _focusChanged,
+        child: Actions(actions: _actions, child: child),
+      );
     },
   );
+
+  // The autocomplete opens its list as the field gains focus. Focus given
+  // back by ui_core (a closed popover's) is not the user's: the list closes
+  // again before it is built, and Down, a press or typing opens it.
+  void _focusChanged(bool focused) {
+    if (!focused || !DesignQuietFocus.isRestoring) return;
+    // After the autocomplete has heard the focus too.
+    scheduleMicrotask(() {
+      final field = _field;
+      if (field == null || !field.mounted) return;
+      // Its list shows while one of its arrows can move a highlight.
+      const shows = AutocompleteNextOptionIntent();
+      if (!(_autocomplete(shows)?.isEnabled(shows) ?? false)) return;
+      _shown = false;
+      _syncBack();
+      Actions.maybeInvoke<Intent>(field, const DismissIntent());
+    });
+  }
 
   // While the list is open, the field's route holds this: a system back
   // (Android's button or gesture) closes the list as Escape does, focus

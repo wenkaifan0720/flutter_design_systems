@@ -13,6 +13,7 @@ import 'package:flutter/widgets.dart';
 
 import 'internal/announce.dart';
 import 'localizations.dart';
+import 'motion.dart';
 
 /// Where a pull stands.
 enum DesignRefreshMode {
@@ -147,7 +148,7 @@ class DesignPullToRefreshState extends State<DesignPullToRefresh>
   }
 
   void _go(double to) {
-    if (MediaQuery.disableAnimationsOf(context)) {
+    if (designReduceMotionOf(context)) {
       _extent.value = to;
     } else {
       _extent.animateTo(

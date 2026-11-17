@@ -453,4 +453,48 @@ void main() {
     },
     variant: TargetPlatformVariant.only(TargetPlatform.android),
   );
+
+  testWidgets(
+    'focus given back to the field by a closing popover opens no list',
+    (tester) async {
+      final popover = MenuController();
+      await _pushed(
+        tester,
+        Align(
+          alignment: Alignment.topLeft,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const _Host(),
+              DesignAnchoredOverlay(
+                controller: popover,
+                anchorBuilder: (context, anchor) => DesignPressable(
+                  onPressed: anchor.toggle,
+                  builder: (context, states, _) => const Text('Filter'),
+                ),
+                overlayBuilder: (context, info) => DesignPressable(
+                  onPressed: info.close,
+                  builder: (context, states, _) =>
+                      const Text('Clear', key: ValueKey('item')),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.tap(find.byKey(_fieldKey));
+      await tester.pumpAndSettle();
+      expect(_listed(), _colours);
+      popover.open();
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('item')), findsOneWidget);
+      await _back(tester);
+      expect(find.byKey(const ValueKey('item')), findsNothing);
+      expect(_fieldFocused(tester), isTrue, reason: 'given back to the field');
+      expect(_listed(), isEmpty, reason: 'the user did not give it');
+      await _back(tester);
+      expect(find.text('Home'), findsOneWidget);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
 }

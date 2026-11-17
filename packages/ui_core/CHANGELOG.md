@@ -1,3 +1,24 @@
+## 0.2.1
+
+- A menu or popover (`DesignAnchoredOverlay`) that its anchor opened gives focus back to the anchor as it closes
+  (Escape, Android's back, a choice), even when a tap on the anchor left focus elsewhere. Before, focus went back to
+  whatever held it before the tap: a combobox's field, say, whose list then opened again and held Android's next back,
+  so the page did not pop.
+- A combobox's or a tag input's list no longer opens on focus that ui_core gives back to its field (a popover the app
+  opened, closing). Focus the user gives (a tap, Tab) opens it as before, and Down, a press or typing opens it at any
+  time.
+- Home and End in a menu or popover (`DesignAnchoredOverlay` with `arrowKeyNavigation`) focus its first or last item
+  and keep it wholly in view, a lazy list run to that end first so the row is built; the item focused as it opens is
+  kept in view too. Before, focus could land on a row scrolled out of sight, or, in a lazy list, on the last row built
+  rather than the last item.
+- Reduce Motion now includes iOS's. Flutter puts iOS's Reduce Motion in dart:ui's `AccessibilityFeatures.reduceMotion`,
+  not `MediaQuery.disableAnimationsOf`, which is all ui_core read, so on an iPhone with Reduce Motion on, every spring
+  ran as designed. A new read, `designReduceMotionOf(context)`, is true for Android's Remove animations, the web's
+  `prefers-reduced-motion` and iOS's Reduce Motion. A widget that read it builds again when any of them changes.
+  `DesignMotionPolicy.of` and every part that calms its motion (the carousel, side sheet, pull to refresh, command
+  palette, scroll area, swipe actions and toasts) now read it. A look's own `MediaQuery.disableAnimationsOf` reads
+  should move to it.
+
 ## 0.2.0
 
 Nothing is renamed or removed: an app on 0.1.0 compiles on 0.2.0 unchanged. In a debug build, a value out of its

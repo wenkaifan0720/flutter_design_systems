@@ -202,37 +202,53 @@ void main() {
     expect(_toaster.paused, isFalse);
   });
 
-  testWidgets('Reduce Motion neither shortens the time nor bounces', (
-    tester,
-  ) async {
-    debugSemanticsDisableAnimations = true;
-    addTearDown(() => debugSemanticsDisableAnimations = null);
-    var most = 0.0;
-    Widget watch(BuildContext context, DesignToastDetails details) =>
-        AnimatedBuilder(
-          animation: details.animation,
-          builder: (context, _) {
-            if (details.animation.value > most) most = details.animation.value;
-            return _paint(context, details);
-          },
+  // Android's and the web's flag, then iOS's alone.
+  for (final ios in [false, true]) {
+    testWidgets(
+      'Reduce Motion${ios ? ', iOS\'s alone,' : ''} neither shortens the time '
+      'nor bounces',
+      (tester) async {
+        // Android's flag also reaches the binding (AnimationController); iOS's
+        // reaches no one but the kit.
+        if (ios) {
+          iosReduceMotion(tester);
+        } else {
+          debugSemanticsDisableAnimations = true;
+          addTearDown(() => debugSemanticsDisableAnimations = null);
+        }
+        var most = 0.0;
+        Widget watch(BuildContext context, DesignToastDetails details) =>
+            AnimatedBuilder(
+              animation: details.animation,
+              builder: (context, _) {
+                if (details.animation.value > most) {
+                  most = details.animation.value;
+                }
+                return _paint(context, details);
+              },
+            );
+        await tester.pumpWidget(
+          _app(reduceMotion: !ios, dampingRatio: 0.4, toastBuilder: watch),
         );
-    await tester.pumpWidget(
-      _app(reduceMotion: true, dampingRatio: 0.4, toastBuilder: watch),
-    );
-    _toaster.show(const DesignToast(message: 'calm'));
-    await tester.pumpAndSettle(const Duration(milliseconds: 16));
-    await tester.pump(const Duration(seconds: 3));
-    expect(find.text('calm'), findsOneWidget);
-    expect(most, lessThanOrEqualTo(1.0));
+        _toaster.show(const DesignToast(message: 'calm'));
+        await tester.pumpAndSettle(const Duration(milliseconds: 16));
+        await tester.pump(const Duration(seconds: 3));
+        expect(find.text('calm'), findsOneWidget);
+        expect(most, lessThanOrEqualTo(1.0));
 
-    // Without Reduce Motion the same spring overshoots.
-    debugSemanticsDisableAnimations = null;
-    most = 0;
-    await tester.pumpWidget(_app(dampingRatio: 0.4, toastBuilder: watch));
-    _toaster.show(const DesignToast(message: 'lively'));
-    await tester.pumpAndSettle(const Duration(milliseconds: 16));
-    expect(most, greaterThan(1.0));
-  });
+        // Without Reduce Motion the same spring overshoots.
+        debugSemanticsDisableAnimations = null;
+        if (ios) {
+          iosReduceMotion(tester, on: false);
+        }
+        most = 0;
+        await tester.pumpWidget(_app(dampingRatio: 0.4, toastBuilder: watch));
+        _toaster.show(const DesignToast(message: 'lively'));
+        await tester.pumpAndSettle(const Duration(milliseconds: 16));
+        expect(most, greaterThan(1.0));
+      },
+    );
+  }
 
   testWidgets('with a screen reader an action toast stays until acted on', (
     tester,

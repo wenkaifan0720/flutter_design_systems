@@ -16,6 +16,7 @@ import 'package:flutter/widgets.dart';
 
 import 'internal/announce.dart';
 import 'localizations.dart';
+import 'motion.dart';
 
 /// What a carousel's controls act on.
 @immutable
@@ -287,7 +288,7 @@ class _DesignCarouselState extends State<DesignCarousel> {
   bool _focused = false;
   Timer? _timer;
 
-  bool get _still => MediaQuery.disableAnimationsOf(context);
+  bool get _still => designReduceMotionOf(context);
 
   bool get _running =>
       widget.autoplayInterval != null &&
@@ -300,8 +301,19 @@ class _DesignCarouselState extends State<DesignCarousel> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Reduce Motion: no autoplay unless the reader presses play.
-    if (!_playChosen) _playing = !_still;
+    _followStill();
+    _schedule();
+  }
+
+  bool? _wasStill;
+
+  // Reduce Motion: no autoplay unless the reader presses play. Followed in
+  // build as well: iOS's Reduce Motion changing comes as a build alone.
+  void _followStill() {
+    final still = _still;
+    if (still == _wasStill) return;
+    _wasStill = still;
+    if (!_playChosen) _playing = !still;
     _schedule();
   }
 
@@ -412,6 +424,7 @@ class _DesignCarouselState extends State<DesignCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    _followStill();
     final n = widget.itemCount;
     final viewport = Focus(
       focusNode: _slides,

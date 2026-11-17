@@ -65,7 +65,7 @@ void main() {
     // Under Reduce Motion it is asked to play: it must not.
     build: (c) => Builder(
       builder: (context) => _view(
-        autoplayInterval: MediaQuery.disableAnimationsOf(context)
+        autoplayInterval: designReduceMotionOf(context)
             ? const Duration(milliseconds: 300)
             : null,
       ),
@@ -253,21 +253,48 @@ void main() {
     expect(cut(), Clip.none);
   });
 
-  testWidgets('Reduce Motion: no autoplay, and a turn jumps', (tester) async {
-    await tester.pumpWidget(
-      _carousel(
-        autoplayInterval: const Duration(seconds: 1),
-        reduceMotion: true,
-      ),
+  // Android's and the web's flag, then iOS's alone.
+  for (final ios in [false, true]) {
+    testWidgets(
+      'Reduce Motion${ios ? ', iOS\'s alone' : ''}: no autoplay, and a turn '
+      'jumps',
+      (tester) async {
+        if (ios) iosReduceMotion(tester);
+        await tester.pumpWidget(
+          _carousel(
+            autoplayInterval: const Duration(seconds: 1),
+            reduceMotion: !ios,
+          ),
+        );
+        expect(_controls!.playing, isFalse);
+        await tester.pump(const Duration(seconds: 5));
+        expect(_controls!.page, 0);
+        await tester.tap(find.text('>'));
+        await tester.pump();
+        await tester.pump();
+        expect(_controls!.page, 1);
+        expect(tester.hasRunningAnimations, isFalse);
+      },
     );
+  }
+
+  testWidgets('iOS\'s Reduce Motion turned on stops its autoplay; turned off, '
+      'it plays again', (tester) async {
+    await tester.pumpWidget(
+      _carousel(autoplayInterval: const Duration(seconds: 1)),
+    );
+    expect(_controls!.playing, isTrue);
+    iosReduceMotion(tester);
+    await tester.pump();
     expect(_controls!.playing, isFalse);
-    await tester.pump(const Duration(seconds: 5));
+    await tester.pump(const Duration(seconds: 3));
     expect(_controls!.page, 0);
-    await tester.tap(find.text('>'));
+    iosReduceMotion(tester, on: false);
     await tester.pump();
-    await tester.pump();
+    expect(_controls!.playing, isTrue);
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
     expect(_controls!.page, 1);
-    expect(tester.hasRunningAnimations, isFalse);
   });
 
   testWidgets('a screen reader hears the carousel and each slide\'s place', (

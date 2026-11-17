@@ -3,6 +3,7 @@
 // and a Navigator with an Overlay; [harness] sets the reader's settings.
 import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 /// [home] in a bare app, as a reader with [textDirection], [textScale],
 /// Reduce Motion ([reduceMotion]) and a screen reader
@@ -43,6 +44,17 @@ Widget harness(
       );
     },
   );
+}
+
+/// iOS's Reduce Motion, [on] for the rest of the test: the platform's
+/// `reduceMotion` alone, which MediaQuery does not carry. (Android's Remove
+/// animations sets `disableAnimations` alone, and the web's
+/// prefers-reduced-motion both; [harness]'s `reduceMotion` sets
+/// `disableAnimations`.)
+void iosReduceMotion(WidgetTester tester, {bool on = true}) {
+  tester.platformDispatcher.accessibilityFeaturesTestValue =
+      FakeAccessibilityFeatures(reduceMotion: on);
+  addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
 }
 
 /// A plain face for a pressable in the reference painters: [label] in a box.

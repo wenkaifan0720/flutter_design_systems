@@ -531,9 +531,7 @@ class DesignToasterState extends State<DesignToaster>
     setState(() => record.swiped = true);
     record.presence!.animateTo(
       0,
-      duration: MediaQuery.disableAnimationsOf(context)
-          ? Duration.zero
-          : _swipeResize,
+      duration: designReduceMotionOf(context) ? Duration.zero : _swipeResize,
       curve: _swipeResizeCurve,
     );
   }

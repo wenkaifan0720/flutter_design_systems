@@ -119,17 +119,31 @@ Every behaviour has a contract test, run on each change, that checks:
 - that an error is announced as it appears;
 - its keys, left to right and right to left;
 - that nothing overflows at twice the text size, and every tap target is at least 44 by 44;
-- that under Reduce Motion it settles within a second and nothing runs on.
+- that under Reduce Motion, Android's and the web's flag or iOS's alone, it settles within a second and nothing
+  runs on.
 
 ## Motion
 
 Motion is springs only: a look's motion tokens are (damping ratio, stiffness) pairs, run through `designSpring`,
-`DesignMotionPolicy` and `springTo`, and nothing takes a duration or an easing curve. Under Reduce Motion
-(`MediaQuery.disableAnimationsOf`), `DesignMotionPolicy.of(context)` critically damps every spatial spring (one
-that moves, resizes or reshapes something) at its own stiffness, so nothing overshoots or bounces, and turns every
-effects spring (opacity, colour) into a short fade: critically damped at a stiffness of at least 3800
-(`DesignMotionPolicy.reducedEffectsStiffness`), settled within 150 ms, so nothing lingers. Neither is cut to an
-instant change, which reads as a flash.
+`DesignMotionPolicy` and `springTo`, and nothing takes a duration or an easing curve. Under Reduce Motion,
+`DesignMotionPolicy.of(context)` critically damps every spatial spring (one that moves, resizes or reshapes
+something) at its own stiffness, so nothing overshoots or bounces, and turns every effects spring (opacity, colour)
+into a short fade: critically damped at a stiffness of at least 3800 (`DesignMotionPolicy.reducedEffectsStiffness`),
+settled within 150 ms, so nothing lingers. Neither is cut to an instant change, which reads as a flash.
+
+Whether the reader asked for reduced motion is one read, `designReduceMotionOf(context)`, and every part of
+ui_core reads it. The platforms ask differently:
+
+| Platform | The setting | What Flutter sets |
+| --- | --- | --- |
+| Android | Remove animations | `MediaQuery.disableAnimationsOf` |
+| Web | `prefers-reduced-motion` | both |
+| iOS | Reduce Motion | only dart:ui's `AccessibilityFeatures.reduceMotion`, which MediaQuery does not carry |
+
+So `MediaQuery.disableAnimationsOf(context)` alone misses an iPhone with Reduce Motion on; read
+`designReduceMotionOf(context)` (or `DesignMotionPolicy.of(context)`) instead. A widget that read it builds again
+when either setting changes. iOS's change comes as a build, not as `didChangeDependencies`, so read it in `build`
+or as you act, not once in `didChangeDependencies`.
 
 ### A look's page transitions
 

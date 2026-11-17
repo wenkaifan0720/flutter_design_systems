@@ -418,6 +418,9 @@ final Map<String, DocExample> _examples = {
     slotId: 'hero',
     fallback: ColoredBox(color: Color(0xFFDDDDDD)),
   ),
+  'designReduceMotionOf': (context) => designReduceMotionOf(context)
+      ? Duration.zero
+      : const Duration(milliseconds: 200),
   'DesignMotionPolicy': (context) {
     final controller = AnimationController(vsync: const TestVSync());
     _disposers.add(controller.dispose);

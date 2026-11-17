@@ -324,21 +324,33 @@ void main() {
     expect(find.byKey(_panel), findsNothing);
   });
 
-  testWidgets('Reduce Motion fades it in place; a narrow screen leaves a '
-      'gap beside it; a screen reader hears its name', (tester) async {
-    final semantics = tester.ensureSemantics();
-    tester.view.physicalSize = const Size(320, 640);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(_app(reduceMotion: true));
-    await tester.tap(find.text('open'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
-    final rect = tester.getRect(find.byKey(_panel));
-    expect(rect.left, 56, reason: 'already in place, and 56 px left beside it');
-    expect(find.byType(FadeTransition), findsWidgets);
-    await tester.pumpAndSettle();
-    expect(find.bySemanticsLabel('Filters'), findsOneWidget);
-    semantics.dispose();
-  });
+  // Android's and the web's flag, then iOS's alone.
+  for (final ios in [false, true]) {
+    testWidgets(
+      'Reduce Motion${ios ? ', iOS\'s alone,' : ''} fades it in place; a narrow '
+      'screen leaves a '
+      'gap beside it; a screen reader hears its name',
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        tester.view.physicalSize = const Size(320, 640);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        if (ios) iosReduceMotion(tester);
+        await tester.pumpWidget(_app(reduceMotion: !ios));
+        await tester.tap(find.text('open'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+        final rect = tester.getRect(find.byKey(_panel));
+        expect(
+          rect.left,
+          56,
+          reason: 'already in place, and 56 px left beside it',
+        );
+        expect(find.byType(FadeTransition), findsWidgets);
+        await tester.pumpAndSettle();
+        expect(find.bySemanticsLabel('Filters'), findsOneWidget);
+        semantics.dispose();
+      },
+    );
+  }
 }

@@ -15,6 +15,7 @@ import 'internal/announce.dart';
 import 'internal/option_list.dart';
 import 'internal/painted_barrier.dart';
 import 'localizations.dart';
+import 'motion.dart';
 import 'pressable.dart';
 
 /// A command in a palette.
@@ -520,7 +521,7 @@ Future<void> showDesignCommandPalette({
           barrierLabel ??
           DesignLocalizations.of(context).commandPaletteBarrierLabel,
       barrierColor: barrierBuilder == null ? barrierColor : null,
-      transitionDuration: MediaQuery.disableAnimationsOf(context)
+      transitionDuration: designReduceMotionOf(context)
           ? Duration.zero
           : const Duration(milliseconds: 150),
       transitionBuilder: (context, animation, _, child) =>

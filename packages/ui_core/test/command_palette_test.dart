@@ -330,6 +330,45 @@ void main() {
     semantics.dispose();
   });
 
+  // Android's and the web's flag, then iOS's alone.
+  for (final ios in [false, true]) {
+    testWidgets('modal under Reduce Motion${ios ? ', iOS\'s alone' : ''}: '
+        'it shows at once, no fade', (tester) async {
+      if (ios) iosReduceMotion(tester);
+      late BuildContext app;
+      await tester.pumpWidget(
+        harness(
+          Builder(
+            builder: (context) {
+              app = context;
+              return const SizedBox.expand();
+            },
+          ),
+          reduceMotion: !ios,
+        ),
+      );
+      unawaited(
+        showDesignCommandPalette(
+          context: app,
+          palette: (run) => _palette(onSelected: run),
+          surfaceBuilder: (context, palette) =>
+              SizedBox(width: 400, child: palette),
+        ),
+      );
+      await tester.pump();
+      final fades = tester.widgetList<FadeTransition>(
+        find.ancestor(
+          of: find.text('New file'),
+          matching: find.byType(FadeTransition),
+        ),
+      );
+      expect(fades, isNotEmpty);
+      for (final fade in fades) {
+        expect(fade.opacity.value, 1, reason: 'shown at once');
+      }
+    });
+  }
+
   testWidgets('modal: Ctrl+K opens it, Escape closes it and focus returns; '
       'a chosen command runs after it closed', (tester) async {
     late BuildContext app;

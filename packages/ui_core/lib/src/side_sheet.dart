@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'barrier.dart';
 import 'internal/painted_barrier.dart';
 import 'localizations.dart';
+import 'motion.dart';
 
 /// Which edge a [DesignSideSheetRoute] comes from.
 enum DesignSheetEdge {
@@ -256,7 +257,7 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    if (MediaQuery.disableAnimationsOf(context)) {
+    if (designReduceMotionOf(context)) {
       return FadeTransition(opacity: animation, child: child);
     }
     // The page is the screen's width; the panel moves its own, so a finger

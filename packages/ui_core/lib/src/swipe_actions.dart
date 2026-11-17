@@ -11,6 +11,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'motion.dart';
 import 'pressable.dart';
 
 /// An action behind a row.
@@ -254,7 +255,7 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
     if (armed == _armedNow) return;
     _armedNow = armed;
     final to = armed ? 1.0 : 0.0;
-    if (MediaQuery.disableAnimationsOf(context)) {
+    if (designReduceMotionOf(context)) {
       _arm.value = to;
     } else {
       _arm.animateTo(
@@ -272,7 +273,7 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
       _open = open;
       widget.onOpenChanged?.call(open);
     }
-    if (MediaQuery.disableAnimationsOf(context)) {
+    if (designReduceMotionOf(context)) {
       _offset.value = to;
     } else {
       _offset.animateTo(
@@ -356,7 +357,7 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
         _offset
             .animateTo(
               start ? _width : -_width,
-              duration: MediaQuery.disableAnimationsOf(context)
+              duration: designReduceMotionOf(context)
                   ? Duration.zero
                   : const Duration(milliseconds: 180),
             )

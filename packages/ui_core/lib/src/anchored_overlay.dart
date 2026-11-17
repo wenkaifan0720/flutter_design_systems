@@ -19,6 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/back.dart';
+import 'internal/quiet_focus.dart';
 import 'motion.dart';
 
 /// Which side of the anchor a surface sits on. [start] and [end] follow the
@@ -722,6 +723,37 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
   FocusNode? _returnTo;
   bool _open = false;
 
+  // Round the anchor, taking no focus itself: the anchor's own node is the
+  // first one in it that can take focus.
+  final FocusNode _anchorArea = FocusNode(
+    debugLabel: 'DesignAnchoredOverlay anchor',
+    canRequestFocus: false,
+    skipTraversal: true,
+  );
+  // A pointer pressed on the anchor, until the frame its press ends in: the
+  // open it makes is the anchor's, though a tap leaves the focus where it
+  // was.
+  bool _anchorPressed = false;
+
+  void _anchorReleased() {
+    WidgetsBinding.instance
+      ..addPostFrameCallback((_) => _anchorPressed = false)
+      ..ensureVisualUpdate();
+  }
+
+  // Where focus goes when the surface closes: to the anchor, when the anchor
+  // opened it (pressed, or from the keys while focused), even after a tap,
+  // as a menu button's menu gives it back; else where it was.
+  FocusNode? _returnFor(FocusNode current) {
+    if (_anchorArea.hasFocus) return current;
+    if (_anchorPressed) {
+      for (final node in _anchorArea.descendants) {
+        if (node.canRequestFocus && !node.skipTraversal) return node;
+      }
+    }
+    return current;
+  }
+
   // While the surface is open, the anchor's route holds [_back]: a system
   // back (Android's button or gesture) closes it, innermost first, and the
   // page stays; the next back pops the page.
@@ -854,6 +886,7 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
     _intent?.dispose();
     _presence.dispose();
     _scope.dispose();
+    _anchorArea.dispose();
     super.dispose();
   }
 
@@ -863,7 +896,7 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
   void _onOpenRequested(Offset? position, VoidCallback showOverlay) {
     final current = FocusManager.instance.primaryFocus;
     if (current != null && !_scope.hasFocus && !_scope.hasPrimaryFocus) {
-      _returnTo = current;
+      _returnTo = _returnFor(current);
     }
     _holdBack(true);
     showOverlay();
@@ -926,21 +959,88 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
     }
     if (!inside) return;
     if (target != null && target.context != null && target.canRequestFocus) {
-      target.requestFocus();
+      // Given back, not given by the user: a field's list stays closed.
+      DesignQuietFocus.restore(target);
     } else {
       _scope.unfocus();
     }
   }
 
-  void _focusEdge({required bool first}) {
-    final nodes = _scope.traversalDescendants
-        .where((n) => n.canRequestFocus && !n.skipTraversal)
-        .toList();
+  // Focuses the surface's first or last item and keeps it wholly in view.
+  // From Home or End ([run]), a lazy list, which builds only the rows near
+  // its view, runs to that end first, so its first or last row is built.
+  void _focusEdge({required bool first, bool run = false}) {
+    final nodes = _inReadingOrder(
+      _scope.traversalDescendants
+          .where((n) => n.canRequestFocus && !n.skipTraversal)
+          .toList(),
+    );
     if (nodes.isEmpty) {
       _scope.requestFocus();
       return;
     }
-    (first ? nodes.first : nodes.last).requestFocus();
+    final node = first ? nodes.first : nodes.last;
+    final context = node.context;
+    final position = context == null ? null : _innerScroll(context);
+    if (run && position != null && position.hasContentDimensions) {
+      final end = first ? position.minScrollExtent : position.maxScrollExtent;
+      if (position.pixels != end) {
+        position.jumpTo(end);
+        WidgetsBinding.instance
+          ..addPostFrameCallback((_) {
+            if (mounted && _controller.isOpen) _focusEdge(first: first);
+          })
+          ..ensureVisualUpdate();
+        return;
+      }
+    }
+    node.requestFocus();
+    final row = context?.findRenderObject();
+    if (position == null || row == null || !row.attached) return;
+    position
+      ..ensureVisible(
+        row,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+      ).ignore()
+      ..ensureVisible(
+        row,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+      ).ignore();
+  }
+
+  // [nodes] as they are read, top to bottom, then from the line's start: a
+  // lazy list adds the rows it builds after those it built before, so the
+  // order they joined the focus tree in is not where they are.
+  List<FocusNode> _inReadingOrder(List<FocusNode> nodes) {
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    Rect? at(FocusNode node) {
+      final box = node.context?.findRenderObject();
+      return box is RenderBox && box.attached && box.hasSize ? node.rect : null;
+    }
+
+    final placed = [
+      for (final (i, node) in nodes.indexed) (i: i, node: node, rect: at(node)),
+    ];
+    placed.sort((a, b) {
+      final ra = a.rect, rb = b.rect;
+      if (ra == null || rb == null) return a.i.compareTo(b.i);
+      if ((ra.top - rb.top).abs() > 0.5) return ra.top.compareTo(rb.top);
+      final along = rtl
+          ? rb.right.compareTo(ra.right)
+          : ra.left.compareTo(rb.left);
+      return along != 0 ? along : a.i.compareTo(b.i);
+    });
+    return [for (final p in placed) p.node];
+  }
+
+  // The list that scrolls [context] inside the surface, if any: never the
+  // page's round the anchor, which the surface sees as well (it inherits from
+  // where its anchor is).
+  ScrollPosition? _innerScroll(BuildContext context) {
+    final inner = Scrollable.maybeOf(context);
+    final scope = _scope.context;
+    final outer = scope == null ? null : Scrollable.maybeOf(scope);
+    return inner == null || identical(inner, outer) ? null : inner.position;
   }
 
   void _close() => _controller.close();
@@ -1001,10 +1101,10 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
             onInvoke: (_) => _close(),
           ),
           _FirstIntent: CallbackAction<_FirstIntent>(
-            onInvoke: (_) => _focusEdge(first: true),
+            onInvoke: (_) => _focusEdge(first: true, run: true),
           ),
           _LastIntent: CallbackAction<_LastIntent>(
-            onInvoke: (_) => _focusEdge(first: false),
+            onInvoke: (_) => _focusEdge(first: false, run: true),
           ),
         },
         child: surface,
@@ -1068,6 +1168,16 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
             open: controller.open,
             close: controller.close,
             toggle: toggle,
+          ),
+        );
+        anchor = Listener(
+          onPointerDown: (_) => _anchorPressed = true,
+          onPointerUp: (_) => _anchorReleased(),
+          onPointerCancel: (_) => _anchorReleased(),
+          child: Focus(
+            focusNode: _anchorArea,
+            includeSemantics: false,
+            child: anchor,
           ),
         );
         if (widget.arrowKeyNavigation) {

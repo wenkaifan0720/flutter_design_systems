@@ -109,6 +109,33 @@ bool _fieldFocused(WidgetTester tester) => tester
     .focusNode
     .hasFocus;
 
+// A combobox beside a popover, its button [anchor] and one item in it; the
+// popover opens on a press of its button, or from [popover].
+Widget _besidePopover({MenuController? popover}) => Column(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    _combobox(value: 'Banana', options: const ['Apple', 'Banana']),
+    DesignAnchoredOverlay(
+      controller: popover,
+      anchorBuilder: (context, anchor) => DesignPressable(
+        onPressed: anchor.toggle,
+        builder: (context, states, _) =>
+            plainFace('Filter', key: const ValueKey('anchor')),
+      ),
+      overlayBuilder: (context, info) => DesignPressable(
+        onPressed: info.close,
+        builder: (context, states, _) =>
+            plainFace('Clear', key: const ValueKey('item')),
+      ),
+    ),
+  ],
+);
+
+// Whether the field's route lets a back pop it: no open list holds it.
+bool _pagePops(WidgetTester tester) =>
+    ModalRoute.of(tester.element(find.byKey(_fieldKey)))!.popDisposition ==
+    RoutePopDisposition.pop;
+
 void main() {
   String? chosen;
   behaviourContract(
@@ -828,4 +855,73 @@ void main() {
     await _back(tester);
     expect(find.text('Home'), findsOneWidget);
   }, variant: TargetPlatformVariant.only(TargetPlatform.android));
+
+  testWidgets(
+    'a popover opened by a tap on its button gives focus back to the button, '
+    'not to the field focused before it, and the next back pops the page',
+    (tester) async {
+      await _pushed(
+        tester,
+        Align(alignment: Alignment.topCenter, child: _besidePopover()),
+      );
+      await tester.tap(find.byKey(_fieldKey));
+      await tester.pumpAndSettle();
+      expect(_listed(), ['Apple', 'Banana']);
+      await _back(tester);
+      expect(_listed(), isEmpty);
+      expect(_fieldFocused(tester), isTrue);
+      // A tap leaves the focus where it was: in the field.
+      await tester.tap(find.byKey(const ValueKey('anchor')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('item')), findsOneWidget);
+      await _back(tester);
+      expect(find.byKey(const ValueKey('item')), findsNothing);
+      expect(
+        Focus.of(tester.element(find.byKey(const ValueKey('anchor')))).hasFocus,
+        isTrue,
+        reason: 'focus is back on the button',
+      );
+      expect(_listed(), isEmpty, reason: 'no list opened');
+      expect(_pagePops(tester), isTrue);
+      await _back(tester);
+      expect(find.text('Home'), findsOneWidget);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
+
+  testWidgets(
+    'focus given back to the field by a closing popover opens no list; the '
+    'next back pops the page, and Down still opens it',
+    (tester) async {
+      final popover = MenuController();
+      await _pushed(
+        tester,
+        Align(
+          alignment: Alignment.topCenter,
+          child: _besidePopover(popover: popover),
+        ),
+      );
+      await tester.tap(find.byKey(_fieldKey));
+      await tester.pumpAndSettle();
+      expect(_listed(), ['Apple', 'Banana']);
+      // Opened by the app, not its button: focus goes back where it was.
+      popover.open();
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('item')), findsOneWidget);
+      expect(_listed(), isEmpty);
+      await _back(tester);
+      expect(find.byKey(const ValueKey('item')), findsNothing);
+      expect(_fieldFocused(tester), isTrue, reason: 'given back to the field');
+      expect(_listed(), isEmpty, reason: 'the user did not give it');
+      expect(_pagePops(tester), isTrue);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pumpAndSettle();
+      expect(_listed(), ['Apple', 'Banana'], reason: 'Down opens it');
+      await _back(tester);
+      expect(_listed(), isEmpty);
+      await _back(tester);
+      expect(find.text('Home'), findsOneWidget);
+    },
+    variant: TargetPlatformVariant.only(TargetPlatform.android),
+  );
 }

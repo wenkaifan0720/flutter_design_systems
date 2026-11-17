@@ -212,37 +212,41 @@ void main() {
     expect(c.offset, closeTo(before + 320, 0.1));
   });
 
-  testWidgets('a tab stop: the keys scroll, and the frame shows the focus; '
-      'Reduce Motion jumps', (tester) async {
-    FocusManager.instance.highlightStrategy =
-        FocusHighlightStrategy.alwaysTraditional;
-    addTearDown(
-      () => FocusManager.instance.highlightStrategy =
-          FocusHighlightStrategy.automatic,
-    );
-    final c = ScrollController();
-    addTearDown(c.dispose);
-    await tester.pumpWidget(_area(c, reduceMotion: true));
-    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-    await tester.pump();
-    final frame = tester.widget<Container>(find.byType(Container).first);
-    expect(
-      (frame.foregroundDecoration! as BoxDecoration).border!.top.color,
-      const Color(0xFF0000FF),
-    );
-    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
-    await tester.pump();
-    expect(c.offset, 48, reason: 'jumped, no animation');
-    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
-    await tester.pump();
-    expect(c.offset, 48 + 320);
-    await tester.sendKeyEvent(LogicalKeyboardKey.end);
-    await tester.pump();
-    expect(c.offset, 1600);
-    await tester.sendKeyEvent(LogicalKeyboardKey.home);
-    await tester.pump();
-    expect(c.offset, 0);
-  });
+  // Android's and the web's flag, then iOS's alone.
+  for (final ios in [false, true]) {
+    testWidgets('a tab stop: the keys scroll, and the frame shows the focus; '
+        'Reduce Motion${ios ? ', iOS\'s alone,' : ''} jumps', (tester) async {
+      FocusManager.instance.highlightStrategy =
+          FocusHighlightStrategy.alwaysTraditional;
+      addTearDown(
+        () => FocusManager.instance.highlightStrategy =
+            FocusHighlightStrategy.automatic,
+      );
+      final c = ScrollController();
+      addTearDown(c.dispose);
+      if (ios) iosReduceMotion(tester);
+      await tester.pumpWidget(_area(c, reduceMotion: !ios));
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      final frame = tester.widget<Container>(find.byType(Container).first);
+      expect(
+        (frame.foregroundDecoration! as BoxDecoration).border!.top.color,
+        const Color(0xFF0000FF),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await tester.pump();
+      expect(c.offset, 48, reason: 'jumped, no animation');
+      await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+      await tester.pump();
+      expect(c.offset, 48 + 320);
+      await tester.sendKeyEvent(LogicalKeyboardKey.end);
+      await tester.pump();
+      expect(c.offset, 1600);
+      await tester.sendKeyEvent(LogicalKeyboardKey.home);
+      await tester.pump();
+      expect(c.offset, 0);
+    });
+  }
 
   testWidgets('right to left: the bar is on the left; a hover shows it', (
     tester,

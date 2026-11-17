@@ -544,20 +544,28 @@ void main() {
     semantics.dispose();
   });
 
-  testWidgets('Reduce Motion: the surface never overshoots', (tester) async {
-    var most = 0.0;
-    void watch(double v) => most = v > most ? v : most;
-    await tester.pumpWidget(
-      harness(
-        Center(child: _overlay(dampingRatio: 0.3, onPresence: watch)),
-        reduceMotion: true,
-      ),
+  // Android's and the web's flag, then iOS's alone.
+  for (final ios in [false, true]) {
+    testWidgets(
+      'Reduce Motion${ios ? ', iOS\'s alone' : ''}: the surface never '
+      'overshoots',
+      (tester) async {
+        var most = 0.0;
+        void watch(double v) => most = v > most ? v : most;
+        if (ios) iosReduceMotion(tester);
+        await tester.pumpWidget(
+          harness(
+            Center(child: _overlay(dampingRatio: 0.3, onPresence: watch)),
+            reduceMotion: !ios,
+          ),
+        );
+        await tester.tap(find.byKey(_anchorKey));
+        await tester.pumpAndSettle(const Duration(milliseconds: 8));
+        expect(most, lessThanOrEqualTo(1.0));
+        expect(most, greaterThan(0.99));
+      },
     );
-    await tester.tap(find.byKey(_anchorKey));
-    await tester.pumpAndSettle(const Duration(milliseconds: 8));
-    expect(most, lessThanOrEqualTo(1.0));
-    expect(most, greaterThan(0.99));
-  });
+  }
 
   testWidgets('at 200% text a tall surface is held to its side\'s room', (
     tester,
@@ -793,4 +801,112 @@ void main() {
       expect(find.text('Home'), findsOneWidget);
     }, variant: TargetPlatformVariant.only(TargetPlatform.android));
   });
+
+  testWidgets(
+    'closed, a surface its anchor opened gives focus back to the anchor, '
+    'though a tap on it left focus elsewhere',
+    (tester) async {
+      final anchor = FocusNode(debugLabel: 'anchor');
+      final other = FocusNode(debugLabel: 'other');
+      addTearDown(anchor.dispose);
+      addTearDown(other.dispose);
+      await tester.pumpWidget(
+        _at(
+          Alignment.topCenter,
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Focus(
+                focusNode: other,
+                child: const SizedBox(width: 10, height: 10),
+              ),
+              _overlay(itemNodes: _nodes(2), anchorNode: anchor),
+            ],
+          ),
+        ),
+      );
+      other.requestFocus();
+      await tester.pump();
+      await tester.tap(find.byKey(_anchorKey));
+      await tester.pumpAndSettle();
+      expect(find.byKey(_surfaceKey), findsOneWidget);
+      expect(other.hasFocus, isFalse, reason: 'focus moved in');
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.byKey(_surfaceKey), findsNothing);
+      expect(anchor.hasPrimaryFocus, isTrue);
+    },
+  );
+
+  for (final lazy in [false, true]) {
+    testWidgets(
+      'Home and End focus the first and last item of a long list and keep it '
+      'wholly in view (${lazy ? 'a lazy list' : 'a column'})',
+      (tester) async {
+        const count = 40;
+        Widget item(int i) => DesignPressable(
+          onPressed: () {},
+          builder: (context, states, _) => SizedBox(
+            key: ValueKey('item $i'),
+            height: 30,
+            child: Text('Item $i'),
+          ),
+        );
+        final anchor = FocusNode(debugLabel: 'anchor');
+        addTearDown(anchor.dispose);
+        await tester.pumpWidget(
+          _at(
+            Alignment.topCenter,
+            DesignAnchoredOverlay(
+              arrowKeyNavigation: true,
+              anchorBuilder: (context, overlay) => DesignPressable(
+                focusNode: anchor,
+                onPressed: overlay.toggle,
+                builder: (context, states, _) =>
+                    plainFace('Open', key: _anchorKey),
+              ),
+              overlayBuilder: (context, info) => SizedBox(
+                key: const ValueKey('list'),
+                width: 120,
+                height: 150,
+                child: lazy
+                    ? ListView.builder(
+                        itemCount: count,
+                        itemBuilder: (context, i) => item(i),
+                      )
+                    : SingleChildScrollView(
+                        child: Column(
+                          children: [for (var i = 0; i < count; i++) item(i)],
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        );
+        bool focused(int i) =>
+            Focus.of(tester.element(find.byKey(ValueKey('item $i')))).hasFocus;
+        bool inView(int i) {
+          final list = tester.getRect(find.byKey(const ValueKey('list')));
+          final row = tester.getRect(find.byKey(ValueKey('item $i')));
+          return row.top >= list.top - 0.5 && row.bottom <= list.bottom + 0.5;
+        }
+
+        anchor.requestFocus();
+        await tester.pump();
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pumpAndSettle();
+        expect(focused(0), isTrue);
+        await tester.sendKeyEvent(LogicalKeyboardKey.end);
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('item ${count - 1}')), findsOneWidget);
+        expect(focused(count - 1), isTrue, reason: 'End: the last item');
+        expect(inView(count - 1), isTrue, reason: 'End: in view');
+        await tester.sendKeyEvent(LogicalKeyboardKey.home);
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('item 0')), findsOneWidget);
+        expect(focused(0), isTrue, reason: 'Home: the first item');
+        expect(inView(0), isTrue, reason: 'Home: in view');
+      },
+    );
+  }
 }

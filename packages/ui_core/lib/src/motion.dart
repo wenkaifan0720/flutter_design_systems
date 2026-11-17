@@ -6,11 +6,94 @@
 /// easing curve: a system's motion tokens are (ζ, k) pairs — Material's come
 /// from Compose's `ExpressiveMotionTokens` / `StandardMotionTokens` — and a
 /// component runs them through [designSpring], [DesignMotionPolicy] and
-/// [DesignSpringDrive.springTo].
+/// [DesignSpringDrive.springTo]. Whether the reader asked for reduced
+/// motion is one read, [designReduceMotionOf], whichever platform asked.
 library;
 
 import 'package:flutter/physics.dart' show SpringSimulation, Tolerance;
+import 'package:flutter/scheduler.dart' show SchedulerBinding, SchedulerPhase;
 import 'package:flutter/widgets.dart';
+
+/// Whether the reader asked for reduced motion at [context]: Android's
+/// Remove animations or the web's prefers-reduced-motion
+/// ([MediaQuery.disableAnimationsOf]), or iOS's Reduce Motion (dart:ui's
+/// `AccessibilityFeatures.reduceMotion`, which MediaQuery does not carry).
+///
+/// [context] builds again when either changes. A change of iOS's comes as a
+/// build, not as `didChangeDependencies`, so a State reads it in `build` or
+/// as it acts, not once in `didChangeDependencies`.
+///
+/// ```dart
+/// designReduceMotionOf(context) ? Duration.zero : const Duration(milliseconds: 200)
+/// ```
+bool designReduceMotionOf(BuildContext context) {
+  // Both read, so [context] hears either change.
+  final disabled = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+  final reduced = _PlatformReduceMotion.of(context);
+  return disabled || reduced;
+}
+
+// iOS's Reduce Motion: MediaQuery's data has no field for it, so MediaQuery
+// tells no one when it alone changes. Read from the platform; each context
+// that read it is built again when it changes.
+final class _PlatformReduceMotion with WidgetsBindingObserver {
+  _PlatformReduceMotion._() : _value = _read() {
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  static _PlatformReduceMotion? _instance;
+
+  static bool of(BuildContext context) {
+    final watcher = _instance ??= _PlatformReduceMotion._();
+    if (context is Element) watcher._add(context);
+    return _read();
+  }
+
+  static bool _read() => WidgetsBinding
+      .instance
+      .platformDispatcher
+      .accessibilityFeatures
+      .reduceMotion;
+
+  bool _value;
+  final List<WeakReference<Element>> _readers = [];
+  final Expando<bool> _reading = Expando();
+  int _pruneAt = 64;
+
+  void _add(Element element) {
+    if (_reading[element] ?? false) return;
+    _reading[element] = true;
+    if (_readers.length >= _pruneAt) {
+      _readers.removeWhere(_gone);
+      _pruneAt = _readers.length < 32 ? 64 : _readers.length * 2;
+    }
+    _readers.add(WeakReference(element));
+  }
+
+  static bool _gone(WeakReference<Element> reader) =>
+      !(reader.target?.mounted ?? false);
+
+  @override
+  void didChangeAccessibilityFeatures() {
+    final value = _read();
+    if (value == _value) return;
+    _value = value;
+    // Mid-build an element may be marked only under the one building.
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) => _rebuild());
+    } else {
+      _rebuild();
+    }
+  }
+
+  void _rebuild() {
+    _readers.removeWhere(_gone);
+    for (final reader in _readers) {
+      reader.target?.markNeedsBuild();
+    }
+  }
+}
 
 /// The Flutter spring for the token (ζ = [dampingRatio], k = [stiffness]):
 /// `SpringDescription.withDampingRatio(mass: 1, stiffness: k, ratio: ζ)`,
@@ -27,7 +110,7 @@ SpringDescription designSpring({
 
 /// The Reduce Motion policy: which spring a component actually runs.
 ///
-/// Under Reduce Motion ([MediaQuery.disableAnimationsOf]) every SPATIAL
+/// Under Reduce Motion ([designReduceMotionOf]) every SPATIAL
 /// spring — one that moves, resizes or reshapes something — is critically
 /// damped: ζ = 1 at the token's stiffness, so nothing overshoots or
 /// bounces and it still arrives on the token's timescale. EFFECTS springs
@@ -45,11 +128,11 @@ class DesignMotionPolicy {
   /// Creates a [DesignMotionPolicy].
   const DesignMotionPolicy({this.reduceMotion = false});
 
-  /// The policy in force at [context]: Reduce Motion when the platform asks
-  /// animations to be disabled.
-  factory DesignMotionPolicy.of(BuildContext context) => DesignMotionPolicy(
-    reduceMotion: MediaQuery.maybeDisableAnimationsOf(context) ?? false,
-  );
+  /// The policy in force at [context]: Reduce Motion when the reader asked
+  /// for it, on any platform ([designReduceMotionOf]); [context] builds again
+  /// when that changes.
+  factory DesignMotionPolicy.of(BuildContext context) =>
+      DesignMotionPolicy(reduceMotion: designReduceMotionOf(context));
 
   /// Whether the reader asked for reduced motion.
   final bool reduceMotion;

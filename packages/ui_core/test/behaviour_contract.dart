@@ -338,30 +338,36 @@ void behaviourContract(
       });
     }
 
-    if (motion != null) {
-      testWidgets('Reduce Motion: it settles and nothing runs on', (
-        tester,
-      ) async {
-        final p = await pump(tester, reduceMotion: true);
-        await motion(p);
-        // Spatial springs run critically damped (DesignMotionPolicy): they arrive
-        // without overshoot on the token's timescale, well inside a second.
-        // "Still moving" is a frame asked for: an open overlay keeps a frame
-        // callback for its deferred layout (OverlayPortal) that asks for none.
-        var waited = Duration.zero;
-        const frame = Duration(milliseconds: 16);
-        while (tester.binding.hasScheduledFrame && waited < _settle) {
-          await tester.pump(frame);
-          waited += frame;
-        }
-        expect(
-          tester.binding.hasScheduledFrame,
-          isFalse,
-          reason:
-              'under Reduce Motion it is still within '
-              '${_settle.inMilliseconds} ms',
-        );
-      });
+    // Android's and the web's flag, then iOS's alone.
+    for (final ios in motion == null ? const <bool>[] : const [false, true]) {
+      testWidgets(
+        ios
+            ? 'Reduce Motion, iOS\'s alone: it settles and nothing runs on'
+            : 'Reduce Motion: it settles and nothing runs on',
+        (tester) async {
+          if (ios) iosReduceMotion(tester);
+          final p = await pump(tester, reduceMotion: !ios);
+          await motion!(p);
+          // Spatial springs run critically damped (DesignMotionPolicy): they
+          // arrive without overshoot on the token's timescale, well inside a
+          // second. "Still moving" is a frame asked for: an open overlay keeps
+          // a frame callback for its deferred layout (OverlayPortal) that asks
+          // for none.
+          var waited = Duration.zero;
+          const frame = Duration(milliseconds: 16);
+          while (tester.binding.hasScheduledFrame && waited < _settle) {
+            await tester.pump(frame);
+            waited += frame;
+          }
+          expect(
+            tester.binding.hasScheduledFrame,
+            isFalse,
+            reason:
+                'under Reduce Motion it is still within '
+                '${_settle.inMilliseconds} ms',
+          );
+        },
+      );
     }
   });
 }

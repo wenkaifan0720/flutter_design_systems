@@ -9,6 +9,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'motion.dart';
+
 /// When a [DesignScrollArea]'s scrollbar shows.
 enum DesignScrollbarVisibility {
   /// While it scrolls, and while a pointer is over the scrollbar.
@@ -257,7 +259,7 @@ class _DesignScrollAreaState extends State<DesignScrollArea> {
     final p = _position;
     if (p == null) return;
     final target = pixels.clamp(p.minScrollExtent, p.maxScrollExtent);
-    if (!animate || MediaQuery.disableAnimationsOf(context)) {
+    if (!animate || designReduceMotionOf(context)) {
       p.jumpTo(target);
     } else {
       p.animateTo(

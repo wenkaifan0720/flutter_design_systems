@@ -60,6 +60,29 @@ void main() {
     },
   );
 
+  // Android's and the web's flag, then iOS's alone.
+  for (final ios in [false, true]) {
+    testWidgets('Reduce Motion${ios ? ', iOS\'s alone,' : ''} moves the '
+        'indicator at once, in and out', (tester) async {
+      if (ios) iosReduceMotion(tester);
+      await tester.pumpWidget(harness(_view(), reduceMotion: !ios));
+      final rest = tester
+          .widget<DesignPullToRefresh>(find.byType(DesignPullToRefresh))
+          .restExtent;
+      unawaited(_key.currentState!.refresh());
+      await tester.pump();
+      expect(_state!.extent, rest, reason: 'in at once');
+      expect(tester.hasRunningAnimations, isFalse);
+      _pending!.complete();
+      await tester.pump();
+      await tester.pump();
+      expect(_state!.mode, DesignRefreshMode.done);
+      expect(_state!.extent, 0, reason: 'out at once');
+      expect(tester.hasRunningAnimations, isFalse);
+      await tester.pump(const Duration(milliseconds: 200));
+    });
+  }
+
   for (final (name, physics) in [
     ('clamping', const ClampingScrollPhysics()),
     ('bouncing', const BouncingScrollPhysics()),
