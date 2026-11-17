@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -8,9 +11,10 @@ import '../../format.dart';
 import '../../internal/cap_center.dart';
 import '../../internal/end_glyph.dart';
 import '../../internal/face.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/on_cheque.dart';
 import '../../internal/text_input.dart';
+import '../../internal/styled.dart';
+import '../../style.dart';
 import '../../theme.dart';
 import '../marks/marks.dart';
 import '../money/money.dart';
@@ -20,29 +24,59 @@ import '../pressable/pressable.dart';
 /// All), Today or Later. The chosen one is set in the ink, the rest in
 /// the mono's second ink, all in one ring of the light paper; [onChanged]
 /// null shows the set without letting it change. Each says whether it is
-/// chosen.
+/// chosen. The options are any values: [labelOf] words each (its
+/// `toString()` when null), so a range can be an enum.
 ///
 /// ```dart
 /// LedgerSegmentedControl(options: const ['1M', '3M', '1Y', 'All'], value: '1Y', onChanged: (r) {})
 /// ```
-class LedgerSegmentedControl extends StatelessWidget {
+///
+/// ```dart
+/// LedgerSegmentedControl<({String short, int months})>(options: ranges, value: ranges.last, labelOf: (r) => r.short, onChanged: (r) {})
+/// ```
+class LedgerSegmentedControl<T> extends StatelessWidget {
   /// A strip of [options], [value] the chosen one.
   const LedgerSegmentedControl({
     required this.options,
     required this.value,
     this.onChanged,
+    this.labelOf,
+    this.style,
     super.key,
   });
 
-  /// The segments' words, in order.
-  final List<String> options;
+  /// The segments' values, in order.
+  final List<T> options;
 
-  /// The chosen segment's words.
-  final String value;
+  /// The chosen segment's value.
+  final T value;
 
   /// Called with the segment chosen; null shows the set without letting it
   /// change.
-  final ValueChanged<String>? onChanged;
+  final ValueChanged<T>? onChanged;
+
+  /// The words of each segment; null: the value's `toString()`.
+  final String Function(T option)? labelOf;
+
+  /// Each segment's look, over `components.segmentedControl`. It reads
+  /// `fill`, `foreground`, `edge`, `side`, `overlay`, `shape`, `padding` and
+  /// `textStyle`; the chosen segment is `selected`.
+  final LedgerStyle? style;
+
+  String _say(T option) => labelOf?.call(option) ?? '$option';
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ObjectFlagProperty<Object?>.has('labelOf', labelOf));
+    properties
+      ..add(IterableProperty<T>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<LedgerStyle>('style', style, defaultValue: null),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,67 +86,110 @@ class LedgerSegmentedControl extends StatelessWidget {
     // its 5 above and under its line stay.
     final height =
         _height - _line + MediaQuery.textScalerOf(context).scale(_line);
-    return Container(
-      padding: const EdgeInsets.all(_pad),
+    // The strip stands at the tap floor: its chips as tall as the floor less
+    // the ring's room round them, each at least the floor's width. Each
+    // chip's target runs the strip's whole height through the ring's room
+    // above and under it, so its chosen ink fills the slot it is given.
+    final floor = DesignTapTargets.of(context).floorOn();
+    final chip = math.max(height, floor.height - 2 * _pad);
+    // The ring is drawn behind the strip, not padded round it: 3 inside its
+    // outer edge (its 1 rule, then 2 of paper) at the ends, and the chips'
+    // own 3 above and under them.
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: t.surface,
         borderRadius: BorderRadius.circular(t.controlRadius),
         border: Border.all(color: t.border),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        spacing: _gap,
-        children: [
-          for (final o in options)
-            // Each chip answers a 44 point touch round its 26 face.
-            LedgerHitSlop(
-              child: LedgerPressable(
-                // The chosen chip stays live (a screen reader must not call it
-                // dimmed); choosing it again changes nothing.
-                onTap: onChanged == null
-                    ? null
-                    : o == value
-                    ? _keep
-                    : () => onChanged!(o),
-                label: o,
-                selected: o == value,
-                radius: t.controlRadius,
-                // The ink fill leaves the old choice and inks in under the new
-                // one in Ledger's one motion.
-                child: LedgerFace(
-                  style: LedgerFaceStyle(
-                    ink: o == value ? t.surface : t.textSecondary,
-                    ground: BoxDecoration(
-                      color: o == value ? t.textPrimary : null,
-                      borderRadius: BorderRadius.circular(t.controlRadius),
-                    ),
-                  ),
-                  builder: (context, s, _) => Container(
-                    height: height,
-                    padding: const EdgeInsets.symmetric(horizontal: _chipPad),
-                    decoration: s.ground,
-                    // Its own width under a loose one: a Container's alignment
-                    // would stretch it.
-                    child: Center(
-                      widthFactor: 1,
-                      child: ledgerCapCenter(
-                        words,
-                        Text(o, softWrap: false, style: words.colored(s.ink)),
-                      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: _pad),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: _gap,
+          children: [
+            for (final o in options)
+              Flexible(
+                child: LedgerPressable(
+                  // The chosen chip stays live (a screen reader must not call it
+                  // dimmed); choosing it again changes nothing.
+                  onTap: onChanged == null
+                      ? null
+                      : o == value
+                      ? _keep
+                      : () => onChanged!(o),
+                  label: _say(o),
+                  selected: o == value,
+                  radius: t.controlRadius,
+                  ringInsets: const EdgeInsets.symmetric(vertical: _pad),
+                  // The ink fill leaves the old choice and inks in under the new
+                  // one in Ledger's one motion.
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: _pad),
+                    child: Builder(
+                      builder: (context) {
+                        final so = LedgerStyleOf(
+                          [style, t.components.segmentedControl],
+                          {
+                            ...LedgerPressStates.of(context),
+                            if (o == value) WidgetState.selected,
+                            if (onChanged == null) WidgetState.disabled,
+                          },
+                        );
+                        return LedgerFace(
+                          style: so.dress(
+                            LedgerFaceStyle(
+                              ink: o == value ? t.surface : t.textSecondary,
+                              ground: BoxDecoration(
+                                color: o == value ? t.textPrimary : null,
+                                borderRadius: BorderRadius.circular(
+                                  t.controlRadius,
+                                ),
+                              ),
+                            ),
+                          ),
+                          builder: (context, s, _) => Container(
+                            height: chip,
+                            constraints: BoxConstraints(minWidth: floor.width),
+                            padding:
+                                so.padding(Directionality.of(context)) ??
+                                const EdgeInsets.symmetric(
+                                  horizontal: _chipPad,
+                                ),
+                            decoration: s.ground,
+                            // Its own width under a loose one: a Container's alignment
+                            // would stretch it. A word longer than the strip's share
+                            // is set smaller, never cut.
+                            child: Center(
+                              widthFactor: 1,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: ledgerCapCenter(
+                                  words,
+                                  Text(
+                                    _say(o),
+                                    softWrap: false,
+                                    style: so.words(words, s.ink),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   static void _keep() {}
 
-  // `.chips`: 3 inside its ring, 2 between; `.chip` 26 tall, 0 12.
-  static const double _pad = 3;
+  // `.chips`: 2 inside its ring (3 in the source), 2 between; `.chip` 26 tall, 0 12.
+  static const double _pad = 2;
   static const double _gap = 2;
   static const double _height = 26;
   static const double _line = 16;
@@ -122,12 +199,17 @@ class LedgerSegmentedControl extends StatelessWidget {
 /// Filter pills (`.filters`): each its own ring of the light paper, the
 /// chosen one in the ink, wrapping 6 apart; [value] null chooses none.
 /// [label] names the set. [onChanged] null shows them without letting
-/// them change. [optionKeys] keys each pill by its words.
+/// them change. [optionKeys] keys each pill by its value. The options are
+/// any values: [labelOf] words each (its `toString()` when null).
 ///
 /// ```dart
 /// LedgerFilters(label: 'Direction', options: const ['All', 'Money in', 'Money out'], value: 'All', onChanged: (f) {})
 /// ```
-class LedgerFilters extends StatelessWidget {
+///
+/// ```dart
+/// LedgerFilters<({String words, bool? incoming})>(label: 'Direction', options: directions, value: directions.first, labelOf: (d) => d.words, onChanged: (d) {})
+/// ```
+class LedgerFilters<T> extends StatelessWidget {
   /// Pills for each of [options], the [value] chosen, named [label].
   const LedgerFilters({
     required this.options,
@@ -135,24 +217,58 @@ class LedgerFilters extends StatelessWidget {
     required this.label,
     this.onChanged,
     this.optionKeys,
+    this.labelOf,
+    this.style,
     super.key,
   });
 
-  /// The pills' words, in order.
-  final List<String> options;
+  /// The pills' values, in order.
+  final List<T> options;
 
-  /// The chosen pill's words; null chooses none.
-  final String? value;
+  /// The chosen pill's value; null chooses none.
+  final T? value;
 
   /// What the set filters, for a screen reader.
   final String label;
 
   /// Called with the pill chosen; null shows them without letting them change.
-  final ValueChanged<String?>? onChanged;
+  final ValueChanged<T?>? onChanged;
 
-  /// A key for each option's pill, by its words (a test's or a walk's
+  /// A key for each option's pill, by its value (a test's or a walk's
   /// target); an option it leaves out stands unkeyed.
-  final Map<String, Key>? optionKeys;
+  final Map<T, Key>? optionKeys;
+
+  /// The words of each pill; null: the value's `toString()`.
+  final String Function(T option)? labelOf;
+
+  /// Each pill's look, over `components.toggleGroup` (the same pill). It
+  /// reads `fill`, `foreground`, `edge`, `side`, `overlay`, `shape`,
+  /// `padding` and `textStyle`; the chosen pill is `selected`.
+  final LedgerStyle? style;
+
+  /// The words of [option].
+  String wordsOf(T option) => labelOf?.call(option) ?? '$option';
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ObjectFlagProperty<Object?>.has('labelOf', labelOf));
+    properties
+      ..add(IterableProperty<T>('options', options))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<ValueChanged<T?>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<Map<T, Key>>(
+          'optionKeys',
+          optionKeys,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<LedgerStyle>('style', style, defaultValue: null),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -166,41 +282,63 @@ class LedgerFilters extends StatelessWidget {
         runSpacing: _gap,
         children: [
           for (final o in options)
-            // Each filter answers a 44 point touch round its 32 face.
-            LedgerHitSlop(
+            // Each filter laid out at the tap floor round its 32 face.
+            DesignTapTarget(
               key: optionKeys?[o],
               child: LedgerPressable(
                 onTap: onChanged == null
                     ? null
                     : () => onChanged!(o == value ? null : o),
-                label: o,
+                label: wordsOf(o),
                 selected: o == value,
                 radius: t.controlRadius,
-                child: LedgerFace(
-                  style: LedgerFaceStyle(
-                    ink: o == value ? t.surface : t.textSecondary,
-                    ground: BoxDecoration(
-                      color: o == value ? t.textPrimary : t.surface,
-                      borderRadius: BorderRadius.circular(t.controlRadius),
-                      border: Border.all(
-                        color: o == value ? t.textPrimary : t.border,
+                child: Builder(
+                  builder: (context) {
+                    final so = LedgerStyleOf(
+                      [style, t.components.toggleGroup],
+                      {
+                        ...LedgerPressStates.of(context),
+                        if (o == value) WidgetState.selected,
+                        if (onChanged == null) WidgetState.disabled,
+                      },
+                    );
+                    return LedgerFace(
+                      style: so.dress(
+                        LedgerFaceStyle(
+                          ink: o == value ? t.surface : t.textSecondary,
+                          ground: BoxDecoration(
+                            color: o == value ? t.textPrimary : t.surface,
+                            borderRadius: BorderRadius.circular(
+                              t.controlRadius,
+                            ),
+                            border: Border.all(
+                              color: o == value ? t.textPrimary : t.border,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  builder: (context, s, _) => Container(
-                    height: _height,
-                    padding: const EdgeInsets.symmetric(horizontal: _pad),
-                    decoration: s.ground,
-                    // Its own width under a loose one: a Container's alignment
-                    // would stretch it.
-                    child: Center(
-                      widthFactor: 1,
-                      child: ledgerCapCenter(
-                        words,
-                        Text(o, softWrap: false, style: words.colored(s.ink)),
+                      builder: (context, s, _) => Container(
+                        height: _height,
+                        padding:
+                            so.padding(Directionality.of(context)) ??
+                            const EdgeInsets.symmetric(horizontal: _pad),
+                        decoration: s.ground,
+                        // Its own width under a loose one: a Container's alignment
+                        // would stretch it.
+                        child: Center(
+                          widthFactor: 1,
+                          child: ledgerCapCenter(
+                            words,
+                            Text(
+                              wordsOf(o),
+                              softWrap: false,
+                              style: so.words(words, s.ink),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -213,13 +351,13 @@ class LedgerFilters extends StatelessWidget {
   // line of their own inside the ring (DesignCapCenter sets their capitals
   // on its middle), so the ring stays out of their box.
   static const double _height = 32;
-  static const double _pad = 13;
+  static const double _pad = 12;
   static const double _gap = 6;
 }
 
 /// The switch (`.toggle`): 44 by 26, its knob of the light paper on the
 /// darker paper, at the end on the ink when on; a null [onChanged] dims it
-/// to .45. Taps reach 44 round it. Says its [semanticLabel] and whether it
+/// to .45. It lays out at the tap floor round its face. Says its [semanticLabel] and whether it
 /// is on.
 ///
 /// ```dart
@@ -233,8 +371,20 @@ class LedgerSwitch extends StatelessWidget {
     this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
+    this.style,
     super.key,
-  });
+  }) : _drawn = false;
+
+  /// The switch drawn in a row that is the one control (a toggle row): no
+  /// target or focus of its own.
+  const LedgerSwitch._drawn({required this.value, this.semanticLabel})
+    : onChanged = null,
+      focusNode = null,
+      autofocus = false,
+      style = null,
+      _drawn = true;
+
+  final bool _drawn;
 
   /// On or off.
   final bool value;
@@ -252,9 +402,46 @@ class LedgerSwitch extends StatelessWidget {
   /// Whether the switch takes the focus when it first stands.
   final bool autofocus;
 
+  /// This switch's look, over `components.switchTheme`. It reads `fill`
+  /// (the track), `foreground` (the knob) and `edge` (the track's ring),
+  /// each for its off and its `selected` (on) states.
+  final LedgerStyle? style;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('value', value: value, ifTrue: 'value'))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<LedgerStyle>('style', style, defaultValue: null),
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
+    final layers = [style, t.components.switchTheme];
+    final base = {if (onChanged == null && !_drawn) WidgetState.disabled};
+    final off = LedgerStyleOf(layers, base);
+    final on = LedgerStyleOf(layers, {...base, WidgetState.selected});
+    final inks = _SwitchInks(
+      offTrack: off.fill ?? t.surfaceAlt,
+      onTrack: on.fill ?? t.textPrimary,
+      offRing: off.edge ?? t.textTertiary,
+      onRing: on.edge ?? t.textPrimary,
+      offKnob: off.foreground ?? t.textTertiary,
+      onKnob: on.foreground ?? t.surface,
+    );
     // The knob slides and the inks cross over the base 200 (DERIVED: the
     // source's toggle jumps).
     final face = TweenAnimationBuilder<double>(
@@ -267,12 +454,13 @@ class LedgerSwitch extends StatelessWidget {
         // On is the reading end: mirrored in a right-to-left page.
         child: Transform.flip(
           flipX: Directionality.of(context) == TextDirection.rtl,
-          child: CustomPaint(painter: _SwitchPainter(at, t)),
+          child: CustomPaint(painter: _SwitchPainter(at, inks)),
         ),
       ),
     );
     final change = onChanged;
-    return LedgerHitSlop(
+    if (_drawn) return face;
+    return DesignTapTarget(
       child: LedgerPressable(
         onTap: change == null ? null : () => change(!value),
         label: semanticLabel,
@@ -290,12 +478,41 @@ class LedgerSwitch extends StatelessWidget {
   static const double _off = .45;
 }
 
+/// A switch's inks, off and on: its track, its ring and its knob.
+@immutable
+class _SwitchInks {
+  const _SwitchInks({
+    required this.offTrack,
+    required this.onTrack,
+    required this.offRing,
+    required this.onRing,
+    required this.offKnob,
+    required this.onKnob,
+  });
+
+  final Color offTrack, onTrack, offRing, onRing, offKnob, onKnob;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _SwitchInks &&
+      other.offTrack == offTrack &&
+      other.onTrack == onTrack &&
+      other.offRing == offRing &&
+      other.onRing == onRing &&
+      other.offKnob == offKnob &&
+      other.onKnob == onKnob;
+
+  @override
+  int get hashCode =>
+      Object.hash(offTrack, onTrack, offRing, onRing, offKnob, onKnob);
+}
+
 class _SwitchPainter extends CustomPainter {
   _SwitchPainter(this.at, this.t);
 
   /// 0 off, 1 on, between on the way.
   final double at;
-  final LedgerThemeData t;
+  final _SwitchInks t;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -308,10 +525,7 @@ class _SwitchPainter extends CustomPainter {
     // as nothing there. Here its ring and a smaller knob are in the third
     // ink (over 4.5:1), so an off switch is seen as one (WCAG 1.4.11).
     canvas
-      ..drawRRect(
-        box,
-        Paint()..color = Color.lerp(t.surfaceAlt, t.textPrimary, at)!,
-      )
+      ..drawRRect(box, Paint()..color = Color.lerp(t.offTrack, t.onTrack, at)!)
       // A 1 px ring whose outer edge is the box's: a hairline (a stroke of
       // no width) is one device pixel half a pixel in, so at 2x and 3x an
       // off switch drew a device pixel smaller than an on one beside it.
@@ -320,13 +534,13 @@ class _SwitchPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1
-          ..color = Color.lerp(t.textTertiary, t.textPrimary, at)!,
+          ..color = Color.lerp(t.offRing, t.onRing, at)!,
       );
     // The knob: radial-gradient(circle at 12px 12px, #F9F6F0 8.5px, 0 at
     // 9.2px), placed from inside the 1 px ring (30px when on); off, 6 of
     // the third ink.
     final c = Offset(13 + 18 * at, 13);
-    final knob = Color.lerp(t.textTertiary, t.surface, at)!;
+    final knob = Color.lerp(t.offKnob, t.onKnob, at)!;
     final r = 6 + 2.5 * at;
     final edge = r + .7;
     canvas.drawCircle(
@@ -383,12 +597,31 @@ class LedgerToggleRow extends StatelessWidget {
   /// Called with the flipped value; null disables the row.
   final ValueChanged<bool>? onChanged;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(FlagProperty('value', value: value, ifTrue: 'value'))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -402,9 +635,9 @@ class LedgerToggleRow extends StatelessWidget {
       label: semanticLabel ?? title,
       toggled: value,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s14),
         child: Row(
-          spacing: 14,
+          spacing: LedgerSpacing.s14,
           children: [
             if (icon case final g?) LedgerGlyph(g),
             Expanded(
@@ -420,7 +653,7 @@ class LedgerToggleRow extends StatelessWidget {
                     child: Text(title, style: t.rowTitle.colored(ink)),
                   ),
                   if (subtitle case final words?) ...[
-                    const SizedBox(height: 3),
+                    const SizedBox(height: LedgerSpacing.s4),
                     Text(words, style: t.bodySmall),
                   ],
                 ],
@@ -431,10 +664,12 @@ class LedgerToggleRow extends StatelessWidget {
             ExcludeFocus(
               child: IgnorePointer(
                 child: ExcludeSemantics(
-                  child: LedgerSwitch(
-                    value: value,
-                    semanticLabel: semanticLabel ?? title,
-                    onChanged: off ? null : onChanged,
+                  child: Opacity(
+                    opacity: off ? LedgerSwitch._off : 1,
+                    child: LedgerSwitch._drawn(
+                      value: value,
+                      semanticLabel: semanticLabel ?? title,
+                    ),
                   ),
                 ),
               ),
@@ -506,16 +741,36 @@ class LedgerSettingRow extends StatelessWidget {
   /// Opens the setting; null makes the row words, not a control.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   /// Whether it can be used now; false holds it in the third ink, a button
   /// that says it is not enabled.
   final bool enabled;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('enabled', value: enabled, ifTrue: 'enabled'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -548,9 +803,9 @@ class LedgerSettingRow extends StatelessWidget {
       ),
     };
     final line = Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s14),
       child: Row(
-        spacing: 14,
+        spacing: LedgerSpacing.s14,
         children: [
           if (icon case final g?) LedgerGlyph(g),
           Expanded(
@@ -567,7 +822,7 @@ class LedgerSettingRow extends StatelessWidget {
                 else
                   name,
                 if (subtitle case final words?) ...[
-                  const SizedBox(height: 3),
+                  const SizedBox(height: LedgerSpacing.s4),
                   Text(words, style: t.bodySmall),
                 ],
               ],
@@ -660,14 +915,50 @@ class LedgerSearchField extends StatelessWidget {
   /// words' Clear ([DesignLocalizations.clearButtonTooltip]).
   final String? clearLabel;
 
-  /// The field's focus; never disposed when given.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the field takes the focus when it first stands.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   /// A key for the round clear (a test's or a walk's target).
   final Key? clearKey;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onCleared', onCleared))
+      ..add(StringProperty('clearLabel', clearLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(DiagnosticsProperty<Key>('clearKey', clearKey, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -741,8 +1032,10 @@ class LedgerSearchField extends StatelessWidget {
                 valueListenable: controller!,
                 builder: (context, v, _) => v.text.isEmpty
                     ? const SizedBox.shrink()
-                    // The 24 disc answers a 44 point touch round it.
-                    : LedgerHitSlop(
+                    // The 24 disc laid out at the tap floor round it, on
+                    // the field's end.
+                    : DesignTapTarget(
+                        alignment: AlignmentDirectional.centerEnd,
                         child: LedgerPressable(
                           key: clearKey,
                           onTap: onCleared,
@@ -836,13 +1129,13 @@ class LedgerField extends StatelessWidget {
   /// Called with the words as they are typed.
   final ValueChanged<String>? onChanged;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   /// The keyboard the field asks for.
   final TextInputType? keyboardType;
 
-  /// The field's focus; never disposed when given.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
   /// A control in the typed line's place; it speaks for itself.
@@ -850,6 +1143,42 @@ class LedgerField extends StatelessWidget {
 
   /// Words shown read only on the typed line, read as the field's value.
   final String? value;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('prefix', prefix, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('value', value, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -864,10 +1193,10 @@ class LedgerField extends StatelessWidget {
       container: control != null,
       label: label,
       child: Padding(
-        padding: const EdgeInsets.only(top: 16),
+        padding: const EdgeInsets.only(top: LedgerSpacing.s16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: 4,
+          spacing: LedgerSpacing.s4,
           children: [
             ExcludeSemantics(
               child: Text(
@@ -877,7 +1206,10 @@ class LedgerField extends StatelessWidget {
             ),
             if (control != null)
               Padding(
-                padding: const EdgeInsets.only(top: 4, bottom: 6),
+                padding: const EdgeInsets.only(
+                  top: LedgerSpacing.s4,
+                  bottom: LedgerSpacing.s6,
+                ),
                 child: Align(
                   alignment: AlignmentDirectional.centerStart,
                   child: control,
@@ -885,7 +1217,10 @@ class LedgerField extends StatelessWidget {
               )
             else
               Container(
-                padding: const EdgeInsets.only(top: 4, bottom: 8),
+                padding: const EdgeInsets.only(
+                  top: LedgerSpacing.s4,
+                  bottom: LedgerSpacing.s8,
+                ),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
@@ -904,7 +1239,7 @@ class LedgerField extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
-                    spacing: 6,
+                    spacing: LedgerSpacing.s6,
                     children: [
                       if (prefix case final p?)
                         Text(
@@ -1005,11 +1340,10 @@ class LedgerPickLine extends StatelessWidget {
   /// Opens the choice of another account; null reads the line back.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   /// Ruled under it (none in a sheet).
@@ -1017,6 +1351,35 @@ class LedgerPickLine extends StatelessWidget {
 
   /// Whether the chevron ends the line; null draws it only live.
   final bool? showChevron;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('mask', mask))
+      ..add(DiagnosticsProperty<num>('balance', balance, defaultValue: null))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('ruled', value: ruled, ifTrue: 'ruled'))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'showChevron',
+          showChevron,
+          defaultValue: null,
+        ),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1038,7 +1401,7 @@ class LedgerPickLine extends StatelessWidget {
             ],
           );
     final line = Row(
-      spacing: 12,
+      spacing: LedgerSpacing.s12,
       children: [
         LedgerGlyph(icon, size: LedgerGlyphSize.pick),
         Expanded(
@@ -1060,7 +1423,7 @@ class LedgerPickLine extends StatelessWidget {
                     ),
                     if (held != null)
                       Padding(
-                        padding: const EdgeInsets.only(top: 4),
+                        padding: const EdgeInsets.only(top: LedgerSpacing.s4),
                         child: held,
                       ),
                   ]
@@ -1092,7 +1455,10 @@ class LedgerPickLine extends StatelessWidget {
       ],
     );
     return Container(
-      padding: const EdgeInsets.only(top: 12, bottom: 14),
+      padding: const EdgeInsets.only(
+        top: LedgerSpacing.s12,
+        bottom: LedgerSpacing.s14,
+      ),
       decoration: ruled
           ? BoxDecoration(
               border: Border(bottom: BorderSide(color: t.border)),
@@ -1100,7 +1466,7 @@ class LedgerPickLine extends StatelessWidget {
           : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: 8,
+        spacing: LedgerSpacing.s8,
         children: [
           ExcludeSemantics(
             child: Text(
@@ -1109,9 +1475,9 @@ class LedgerPickLine extends StatelessWidget {
             ),
           ),
           if (onTap != null)
-            // The 36 line answers a 44 point touch, 4 into the room above
-            // and below it.
-            LedgerHitSlop(
+            // The 36 line laid out at the tap floor, 4 of room above and
+            // below it.
+            DesignTapTarget(
               child: LedgerPressable(
                 focusNode: focusNode,
                 autofocus: autofocus,
@@ -1184,16 +1550,44 @@ class LedgerChequeAmount extends StatelessWidget {
   /// Called with the sum as it is typed.
   final ValueChanged<String>? onChanged;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   /// Whether the [amount] reads back in the input's typed look rather
   /// than engraved; read only.
   final bool typed;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('words', words))
+      ..add(StringProperty('unit', unit))
+      ..add(DiagnosticsProperty<num>('amount', amount, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('typed', value: typed, ifTrue: 'typed'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1209,7 +1603,7 @@ class LedgerChequeAmount extends StatelessWidget {
         .colored(t.textPrimary);
     // `.amount-cur`: 400 24/1 serif, the second ink, 6 down.
     final cur = Padding(
-      padding: const EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.only(top: LedgerSpacing.s6),
       child: Text(
         '\$',
         style: t.figureSmall
@@ -1232,7 +1626,7 @@ class LedgerChequeAmount extends StatelessWidget {
             excludeSemantics: true,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 4,
+              spacing: LedgerSpacing.s4,
               children: [
                 cur,
                 Expanded(
@@ -1270,7 +1664,7 @@ class LedgerChequeAmount extends StatelessWidget {
           )
         : Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 4,
+            spacing: LedgerSpacing.s4,
             children: [
               cur,
               Expanded(
@@ -1301,7 +1695,10 @@ class LedgerChequeAmount extends StatelessWidget {
             ],
           );
     return Container(
-      padding: const EdgeInsets.only(top: 14, bottom: 16),
+      padding: const EdgeInsets.only(
+        top: LedgerSpacing.s14,
+        bottom: LedgerSpacing.s16,
+      ),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: t.border)),
       ),
@@ -1325,8 +1722,13 @@ class LedgerChequeAmount extends StatelessWidget {
             ),
           ),
           Container(
-            margin: const EdgeInsets.only(top: 8),
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+            margin: const EdgeInsets.only(top: LedgerSpacing.s8),
+            padding: const EdgeInsets.fromLTRB(
+              LedgerSpacing.s14,
+              LedgerSpacing.s12,
+              LedgerSpacing.s14,
+              LedgerSpacing.s8,
+            ),
             decoration: BoxDecoration(
               color: t.background,
               borderRadius: BorderRadius.circular(t.smallRadius),
@@ -1337,15 +1739,15 @@ class LedgerChequeAmount extends StatelessWidget {
             child: Directionality(textDirection: TextDirection.ltr, child: sum),
           ),
           Container(
-            margin: const EdgeInsets.only(top: 14),
-            padding: const EdgeInsets.only(bottom: 3),
+            margin: const EdgeInsets.only(top: LedgerSpacing.s14),
+            padding: const EdgeInsets.only(bottom: LedgerSpacing.s4),
             decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: t.textFaint)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
-              spacing: 10,
+              spacing: LedgerSpacing.s10,
               children: [
                 Expanded(
                   child: Text(
@@ -1425,7 +1827,7 @@ class LedgerStepper extends StatelessWidget {
     this.onChanged,
     this.showRings = true,
     super.key,
-  });
+  }) : assert(step > 0);
 
   /// The sum.
   final num value;
@@ -1450,6 +1852,20 @@ class LedgerStepper extends StatelessWidget {
 
   /// Whether the lower and raise rings stand at its ends.
   final bool showRings;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<num>('value', value))
+      ..add(StringProperty('label', label))
+      ..add(DiagnosticsProperty<num>('step', step))
+      ..add(DiagnosticsProperty<num>('min', min))
+      ..add(StringProperty('lowerLabel', lowerLabel, defaultValue: null))
+      ..add(StringProperty('raiseLabel', raiseLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<num>>.has('onChanged', onChanged))
+      ..add(FlagProperty('showRings', value: showRings, ifTrue: 'showRings'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1517,13 +1933,16 @@ class LedgerStepper extends StatelessWidget {
       onDecrease: canLower ? () => onChanged!(value - step) : null,
       child: showRings
           ? Padding(
-              padding: const EdgeInsets.only(top: 6, bottom: 10),
+              padding: const EdgeInsets.only(
+                top: LedgerSpacing.s6,
+                bottom: LedgerSpacing.s10,
+              ),
               // From 600 at its measure, at the start of its slot: its
               // rings round the sum, not at the ends of a wide column.
               child: LedgerLayout.atMeasure(
                 context,
                 Row(
-                  spacing: 16,
+                  spacing: LedgerSpacing.s16,
                   children: [
                     ring(
                       LucideIcons.minus,
@@ -1542,7 +1961,10 @@ class LedgerStepper extends StatelessWidget {
             )
           // `.add-amount`: 4 above, 8 under.
           : Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 8),
+              padding: const EdgeInsets.only(
+                top: LedgerSpacing.s4,
+                bottom: LedgerSpacing.s8,
+              ),
               child: sum,
             ),
     );

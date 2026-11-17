@@ -13,15 +13,23 @@ import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../gallery_words.dart';
 import '../kit.dart';
 import 'entry.dart';
 import 'home.dart';
 import 'overview.dart';
 import 'register.dart';
 import 'settings.dart';
+import 'words.dart';
 
 /// Where the app opens.
 enum QuillPage { overview, home, register, settings }
+
+/// A state of a destination Quill can open straight onto, as a link or a
+/// sweep of its everyday screens does: the Register searching or finding
+/// nothing, an entry's receipt, a new entry, the Sign out question over
+/// Settings, or an account's sheet over Home.
+enum QuillScene { searching, nothingFound, receipt, newEntry, signOut, account }
 
 /// How the app is lit.
 enum QuillAppearance { light, dark, system }
@@ -73,11 +81,20 @@ class QuillApp extends StatefulWidget {
     this.initialDirection = TextDirection.ltr,
     this.textScale,
     this.initialPart,
+    this.registerOffline = false,
+    this.initialScene,
     super.key,
   });
 
   final QuillPage initialPage;
   final QuillAppearance initialAppearance;
+
+  /// The state of [initialPage] it opens on; null: the page as it first
+  /// stands.
+  final QuillScene? initialScene;
+
+  /// Whether the Register opens unable to load (its error state).
+  final bool registerOffline;
 
   /// The direction it opens in. Settings changes it after.
   final TextDirection initialDirection;
@@ -126,10 +143,25 @@ class _QuillAppState extends State<QuillApp> {
         initialPage: widget.initialPage,
         parts: widget.parts,
         initialPart: widget.initialPart,
+        registerOffline: widget.registerOffline,
+        initialScene: widget.initialScene,
       );
       return MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Quill',
+        // A pushed page laid down in Ledger's motion (Flutter's routes read
+        // the app's theme, not the host's).
+        theme: kitAppTheme,
+        // Hebrew while it reads right to left, else English: ui_core's words
+        // (Cancel, Close, Search, Today...) in either, from its 30.
+        locale: _prefs.direction == TextDirection.rtl
+            ? const Locale('he')
+            : const Locale('en'),
+        localizationsDelegates: galleryDelegates,
+        supportedLocales: DesignLocalizations.supportedLocales,
+        // The phone bar's wordmark reads it: Quill's name in its language.
+        title: _prefs.direction == TextDirection.rtl
+            ? quillHebrewWords['Quill']!
+            : 'Quill',
         // The window's link (`/#/inputs?theme=dark`) chose the page already:
         // the app opens on its frame, never on a route named by the link.
         // (onGenerateRoute is what gives the app its Navigator at all.)
@@ -152,9 +184,12 @@ class _QuillAppState extends State<QuillApp> {
                   QuillAppearance.dark => Brightness.dark,
                   QuillAppearance.system => null,
                 },
-                child: LedgerAccountScope(
-                  account: kitMaren,
-                  child: child ?? const SizedBox.shrink(),
+                // The owner in the app's language (Hebrew right to left).
+                child: Builder(
+                  builder: (context) => LedgerAccountScope(
+                    account: context.sayOwner,
+                    child: child ?? const SizedBox.shrink(),
+                  ),
                 ),
               ),
             ),
@@ -185,11 +220,19 @@ class QuillFrame extends StatefulWidget {
     this.initialPage = QuillPage.overview,
     this.parts = const [],
     this.initialPart,
+    this.registerOffline = false,
+    this.initialScene,
     super.key,
   });
 
   final QuillPage initialPage;
   final List<QuillPart> parts;
+
+  /// As [QuillApp.initialScene].
+  final QuillScene? initialScene;
+
+  /// As [QuillApp.registerOffline].
+  final bool registerOffline;
 
   /// As [QuillApp.initialPart].
   final int? initialPart;
@@ -202,12 +245,35 @@ class QuillFrame extends StatefulWidget {
 class QuillFrameState extends State<QuillFrame> {
   late QuillPage _page = widget.initialPage;
 
+  /// The scene the first destination opens on, gone once another is chosen.
+  late QuillScene? _scene = widget.initialScene;
+
   /// The frame's own navigator from the rail's width; none on a phone.
   final _desk = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
     super.initState();
+    // A scene pushed over the destination, after the first frame, where a
+    // tap opens it; the Register's and Settings' own open in them.
+    final scene = _scene;
+    if (scene != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        switch (scene) {
+          case QuillScene.receipt:
+            push(QuillReceiptPage(tx: kitDays.first.rows.first));
+          case QuillScene.newEntry:
+            _newEntry();
+          case QuillScene.account:
+            showQuillAccount(context, kitAccounts.first);
+          case QuillScene.searching ||
+              QuillScene.nothingFound ||
+              QuillScene.signOut:
+            break;
+        }
+      });
+    }
     final part = widget.initialPart;
     if (part == null || part < 0 || part >= widget.parts.length) return;
     // After the first frame, where the index's tap opens it: the frame's
@@ -231,14 +297,33 @@ class QuillFrameState extends State<QuillFrame> {
     }
   }
 
-  static const _destinations = [
-    LedgerNavItem(LucideIcons.bookOpen, 'Ledger', ValueKey('tab-overview')),
-    LedgerNavItem(LucideIcons.house, 'Home', ValueKey('tab-home')),
-    LedgerNavItem(LucideIcons.scrollText, 'Register', ValueKey('tab-register')),
-    LedgerNavItem(LucideIcons.settings, 'Settings', ValueKey('tab-settings')),
+  static List<LedgerNavItem> _destinations(BuildContext context) => [
+    LedgerNavItem(
+      LucideIcons.bookOpen,
+      context.say('Ledger'),
+      const ValueKey('tab-overview'),
+    ),
+    LedgerNavItem(
+      LucideIcons.house,
+      context.say('Home'),
+      const ValueKey('tab-home'),
+    ),
+    LedgerNavItem(
+      LucideIcons.scrollText,
+      context.say('Register'),
+      const ValueKey('tab-register'),
+    ),
+    LedgerNavItem(
+      LucideIcons.settings,
+      context.say('Settings'),
+      const ValueKey('tab-settings'),
+    ),
   ];
 
-  void _go(QuillPage page) => setState(() => _page = page);
+  void _go(QuillPage page) => setState(() {
+    _page = page;
+    _scene = null;
+  });
 
   void _newEntry() => push(const QuillEntryPage());
 
@@ -251,31 +336,76 @@ class QuillFrameState extends State<QuillFrame> {
         parts: widget.parts,
       ),
       QuillPage.home => QuillHome(onOpen: _go),
-      QuillPage.register => const QuillRegister(),
-      QuillPage.settings => const QuillSettings(),
+      QuillPage.register => QuillRegister(
+        offline: widget.registerOffline,
+        initialQuery: switch (_scene) {
+          QuillScene.searching => 'Blue Fern',
+          QuillScene.nothingFound => 'Zanzibar',
+          _ => null,
+        },
+      ),
+      QuillPage.settings => QuillSettings(
+        askSignOut: _scene == QuillScene.signOut,
+      ),
     };
     // A destination's own pushes (a register row's receipt) reach the
     // nearest navigator: the frame's from 600. Choosing another
-    // destination replaces its page, and what was pushed on it goes too.
+    // destination replaces its page in place, and what was pushed on it
+    // goes too; only a push is laid down in Ledger's page motion.
     final framed =
         MediaQuery.sizeOf(context).width >= LedgerNavigationFrame.railFrom;
     return LedgerNavigationFrame(
-      destinations: _destinations,
+      destinations: _destinations(context),
       selectedIndex: _page.index,
       onDestinationSelected: (i) => _go(QuillPage.values[i]),
-      brand: 'Quill',
+      brand: context.say('Quill'),
       action: ShellAction(
         icon: LucideIcons.plus,
-        label: 'New entry',
+        label: context.say('New entry'),
         onPressed: (_) => _newEntry(),
       ),
       body: framed
           ? Navigator(
               key: _desk,
-              pages: [MaterialPage<void>(key: ValueKey(_page), child: page)],
+              pages: [_InPlace(key: ValueKey(_page), child: page)],
               onDidRemovePage: (_) {},
             )
           : KeyedSubtree(key: ValueKey(_page), child: page),
     );
   }
+}
+
+/// A destination's page in the frame's navigator: chosen from the side bar
+/// or the rail, it changes in place, as the tab bar's does on a phone. What
+/// is pushed over it is laid down in Ledger's page motion.
+class _InPlace extends Page<void> {
+  const _InPlace({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Route<void> createRoute(BuildContext context) => _InPlaceRoute(this);
+}
+
+class _InPlaceRoute extends PageRoute<void> {
+  _InPlaceRoute(_InPlace page) : super(settings: page);
+
+  @override
+  Duration get transitionDuration => Duration.zero;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  bool get maintainState => true;
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) => (settings as _InPlace).child;
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../format.dart';
@@ -38,6 +39,17 @@ class LedgerAvatarStack extends StatelessWidget {
 
   /// Its name for a screen reader; null lists the first names.
   final String? label;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('names', names))
+      ..add(IntProperty('max', max))
+      ..add(IntProperty('total', total, defaultValue: null))
+      ..add(DoubleProperty('size', size))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) {

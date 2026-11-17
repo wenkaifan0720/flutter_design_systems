@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -39,6 +40,28 @@ class LedgerKeyFocus extends StatefulWidget {
 
   /// The control.
   final Widget child;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('enabled', value: enabled, ifTrue: 'enabled'))
+      ..add(
+        ObjectFlagProperty<Map<LogicalKeyboardKey, VoidCallback>>.has(
+          'keys',
+          keys,
+        ),
+      )
+      ..add(DoubleProperty('radius', radius))
+      ..add(DiagnosticsProperty<EdgeInsetsGeometry>('ringInsets', ringInsets))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      );
+  }
 
   @override
   State<LedgerKeyFocus> createState() => _LedgerKeyFocusState();

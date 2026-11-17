@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -30,7 +31,7 @@ class LedgerSearchEntry extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     super.key,
-  });
+  }) : assert(filterCount >= 0);
 
   /// Opens the search.
   final VoidCallback onTap;
@@ -57,6 +58,31 @@ class LedgerSearchEntry extends StatelessWidget {
 
   /// Whether the entry takes focus when it first appears.
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onFilterPressed',
+          onFilterPressed,
+        ),
+      )
+      ..add(StringProperty('filterLabel', filterLabel))
+      ..add(IntProperty('filterCount', filterCount))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,8 +123,8 @@ class LedgerSearchEntry extends StatelessWidget {
                     ),
                     if (filterCount > 0)
                       PositionedDirectional(
-                        top: _markInset - _knock,
-                        end: _markInset - _knock,
+                        top: _markOnGlyph - _knock,
+                        end: _markOnGlyph - _knock,
                         // Knocked out of the glyph by a ring of the paper:
                         // ink never lies over ink.
                         child: Container(
@@ -112,7 +138,9 @@ class LedgerSearchEntry extends StatelessWidget {
                               minWidth: _mark,
                               minHeight: _mark,
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: LedgerSpacing.s4,
+                            ),
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: t.accent,
@@ -141,6 +169,8 @@ class LedgerSearchEntry extends StatelessWidget {
   // DERIVED: the filter square is the field's 46, 8 from it; its mark 16.
   static const double _gap = 8;
   static const double _mark = 16;
-  static const double _markInset = 5;
+  // The count's mark seated on the sliders glyph's upper corner, measured
+  // from the glyph's box to its drawn ink.
+  static const double _markOnGlyph = 5;
   static const double _knock = 2;
 }

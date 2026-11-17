@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../internal/engraving.dart';
@@ -17,13 +18,22 @@ import '../../theme.dart';
 /// ```
 class LedgerGuilloche extends StatelessWidget {
   /// A rosette [size] across, in [color].
-  const LedgerGuilloche({this.size = 400, this.color, super.key});
+  const LedgerGuilloche({this.size = 400, this.color, super.key})
+    : assert(size > 0);
 
   /// Its width and height.
   final double size;
 
   /// Its ink; null takes the green.
   final Color? color;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('size', size))
+      ..add(ColorProperty('color', color, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
@@ -81,13 +91,22 @@ class _RosettePainter extends CustomPainter {
 /// ```
 class LedgerGuillocheBand extends StatelessWidget {
   /// A band [height] tall, in [color].
-  const LedgerGuillocheBand({this.height = 14, this.color, super.key});
+  const LedgerGuillocheBand({this.height = 14, this.color, super.key})
+    : assert(height > 0);
 
   /// The band's height.
   final double height;
 
   /// Its ink; null takes the green.
   final Color? color;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('height', height))
+      ..add(ColorProperty('color', color, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
@@ -153,7 +172,8 @@ class LedgerCardChip extends StatelessWidget {
     required this.height,
     required this.color,
     super.key,
-  });
+  }) : assert(width > 0),
+       assert(height > 0);
 
   /// The chip's width.
   final double width;
@@ -163,6 +183,15 @@ class LedgerCardChip extends StatelessWidget {
 
   /// Its ink.
   final Color color;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('width', width))
+      ..add(DoubleProperty('height', height))
+      ..add(ColorProperty('color', color));
+  }
 
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
@@ -221,8 +250,10 @@ class _ChipPainter extends CustomPainter {
 
 /// A tear line of punched holes (`.perf`): a hole of the darker paper,
 /// shaded by the rule's ink, 2.1
-/// round (fading out by 2.6) every 9 along a strip 6 tall, the last cut at
-/// its end; [vertical] runs it down (`.vperf`). Says nothing.
+/// round (fading out by 2.6) every 9 along a strip 6 tall, whole holes
+/// only, the spare length split between its ends (a hole cut at an end
+/// reads as sliced by a slip's notch); [vertical] runs it down (`.vperf`).
+/// Says nothing.
 ///
 /// ```dart
 /// LedgerPerforation()
@@ -233,6 +264,14 @@ class LedgerPerforation extends StatelessWidget {
 
   /// Whether the line runs down rather than across.
   final bool vertical;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      FlagProperty('vertical', value: vertical, ifTrue: 'vertical'),
+    );
+  }
 
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
@@ -267,7 +306,12 @@ class _PerfPainter extends CustomPainter {
     canvas
       ..save()
       ..clipRect(Offset.zero & size);
-    for (var at = 0.0; at < run; at += 9) {
+    // As many whole holes (each 6 across) as the run holds, 9 apart, the
+    // spare split between the two ends.
+    final holes = run < _hole ? 0 : ((run - _hole) / _pitch).floor() + 1;
+    final lead = (run - (holes - 1) * _pitch - _hole) / 2;
+    for (var i = 0; i < holes; i++) {
+      final at = lead + i * _pitch;
       final c = vertical ? Offset(3, at + 3) : Offset(at + 3, 3);
       canvas.drawCircle(
         c,
@@ -283,6 +327,9 @@ class _PerfPainter extends CustomPainter {
     }
     canvas.restore();
   }
+
+  static const double _hole = 6;
+  static const double _pitch = 9;
 
   @override
   bool shouldRepaint(_PerfPainter old) =>

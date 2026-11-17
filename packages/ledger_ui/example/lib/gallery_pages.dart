@@ -2,9 +2,14 @@
 import 'package:flutter/widgets.dart';
 
 import 'kit_gallery/demos/foundations.dart';
+import 'kit_gallery/demos/inventory.dart';
 import 'kit_gallery/demos/preview.dart';
+import 'kit_gallery/demos/wayfinding.dart';
 import 'kit_gallery/demos/top_bar.dart';
+import 'kit_gallery/demos/acts.dart';
 import 'kit_gallery/demos/sheet.dart';
+import 'kit_gallery/demos/asides.dart';
+import 'kit_gallery/demos/collections.dart';
 import 'kit_gallery/demos/states.dart';
 import 'kit_gallery/demos/money.dart';
 import 'kit_gallery/demos/controls.dart';
@@ -12,6 +17,9 @@ import 'kit_gallery/demos/structure.dart';
 import 'kit_gallery/demos/marks.dart';
 import 'kit_gallery/demos/register.dart';
 import 'kit_gallery/demos/inputs.dart';
+import 'kit_gallery/demos/fields.dart';
+import 'kit_gallery/demos/working.dart';
+import 'kit_gallery/demos/margins.dart';
 import 'kit_gallery/demos/goals.dart';
 import 'kit_gallery/demos/gauge.dart';
 import 'kit_gallery/demos/charts.dart';
@@ -25,6 +33,7 @@ import 'kit_gallery/demos/selection.dart';
 import 'kit_gallery/demos/commit.dart';
 import 'kit_gallery/demos/entry.dart';
 import 'kit_gallery/demos/rolls.dart';
+import 'kit_gallery/demos/swipe.dart';
 
 /// One page of the gallery: its title and the screen it shows, by day or by night.
 typedef GalleryPage = ({
@@ -36,9 +45,30 @@ typedef GalleryPage = ({
 /// Every page, in the gallery's order.
 const List<GalleryPage> galleryPages = [
   (id: 'foundations', title: 'Foundations', build: kitFoundationsDemo),
+  (id: 'inventory', title: 'Inventory', build: kitInventoryDemo),
   (id: 'preview', title: 'Host & preview', build: kitPreviewDemo),
+  (
+    id: 'wayfinding',
+    title: 'Breadcrumbs, pages, steps & the palette',
+    build: kitWayfindingDemo,
+  ),
   (id: 'top-bar', title: 'Top bar & screen', build: kitTopBarDemo),
+  (
+    id: 'acts',
+    title: 'Toggle groups, split buttons & keys',
+    build: kitActsDemo,
+  ),
   (id: 'sheet', title: 'Sheet', build: kitSheetDemo),
+  (
+    id: 'asides',
+    title: 'Side sheets, action sheets, popovers, tooltips & banners',
+    build: kitAsidesDemo,
+  ),
+  (
+    id: 'collections',
+    title: 'Tables, ordering, carousels, scrolling & fetching',
+    build: kitCollectionsDemo,
+  ),
   (id: 'states', title: 'States & toast', build: kitStatesDemo),
   (id: 'money', title: 'Money', build: kitMoneyDemo),
   (id: 'controls', title: 'Buttons, marks & the seal', build: kitControlsDemo),
@@ -57,6 +87,17 @@ const List<GalleryPage> galleryPages = [
     id: 'inputs',
     title: 'Chips, filters, switches, fields & the stepper',
     build: kitInputsDemo,
+  ),
+  (id: 'fields', title: 'More fields', build: kitFieldsDemo),
+  (
+    id: 'working',
+    title: 'Progress, placeholders, shares & sparklines',
+    build: kitWorkingDemo,
+  ),
+  (
+    id: 'margins',
+    title: 'Rules, counts, folds & timelines',
+    build: kitMarginsDemo,
   ),
   (id: 'goals', title: 'Goals & categories', build: kitGoalsDemo),
   (
@@ -83,4 +124,5 @@ const List<GalleryPage> galleryPages = [
   (id: 'commit', title: 'Dialog, action bar & composer', build: kitCommitDemo),
   (id: 'entry', title: 'Search entry & dates', build: kitEntryDemo),
   (id: 'rolls', title: 'Stacks, weeks & counters', build: kitRollsDemo),
+  (id: 'swipe', title: 'Swipe actions', build: kitSwipeDemo),
 ];

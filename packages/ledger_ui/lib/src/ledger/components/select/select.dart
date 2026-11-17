@@ -1,6 +1,6 @@
-import 'dart:math' as math;
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -8,6 +8,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../internal/cap_center.dart';
 import '../../internal/end_glyph.dart';
 import '../../internal/field_frame.dart';
+import '../../internal/option_paper.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 import '../text-field/text_field.dart';
@@ -39,17 +40,19 @@ class LedgerSelectItem<T> {
 /// A choice among [items], written on a rule as [LedgerTextField] is: the
 /// chosen item's words on the line (its [hint] in the third ink while none
 /// is), a chevron at the end. A press opens the list under it on the raised
-/// paper, ruled between its rows, the chosen one ticked in the accent; the
-/// arrow keys move through it, Enter chooses, Escape closes. A null
+/// paper, ruled between its rows, the chosen one on the menu's paper and
+/// ticked in the accent. Enter, Space or Down opens it too; open, the
+/// keyboard stands on the chosen option (the first while none is), the
+/// arrow keys move at once, round from the last to the first, Home and End
+/// go to its ends, a letter to the next option it starts, Enter chooses and
+/// closes, and Escape closes, the keyboard back on the field. A null
 /// [onChanged] disables it. From 600 it stands at a short entry's measure
-/// (at the start of its slot, at most [LedgerLayout.fieldMeasure]) and its
-/// list hugs its options (never narrower than the select); on a phone both
-/// span the column. The field's words stand on the rule with no inset, so
-/// the list's paper stands out past the field by its rows' inset (a glyph
-/// column's too, hung before the words) and past its end by the same 16:
-/// every option's words start on the field's words, the tick on its
-/// chevron's end, the paper kept 4 inside the window (a phone's 20 gutter
-/// holds the 16).
+/// (at the start of its slot, at most [LedgerLayout.fieldMeasure]); on a
+/// phone it spans the column. Its list is the field's width, on the field's
+/// leading edge, wider only to fit its widest option (at most 320, as
+/// ui_core holds every list from a field). The field's words stand on the
+/// rule with no inset; the list's rows keep their 16, so its words stand 16
+/// in from the field's.
 ///
 /// ```dart
 /// LedgerSelect<String>(label: 'Currency', value: 'USD', items: const [LedgerSelectItem(value: 'USD', label: 'US dollar'), LedgerSelectItem(value: 'EUR', label: 'Euro')], onChanged: (v) {})
@@ -98,8 +101,30 @@ class LedgerSelect<T> extends StatefulWidget {
   /// Its focus; the select's own when null. The caller's to dispose.
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<LedgerSelectItem<T>>('items', items))
+      ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<T>>.has('onChanged', onChanged))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(FlagProperty('isRequired', value: isRequired, ifTrue: 'isRequired'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   State<LedgerSelect<T>> createState() => _LedgerSelectState<T>();
@@ -151,47 +176,55 @@ class _LedgerSelectState<T> extends State<LedgerSelect<T>> {
             matchAnchorWidth: true,
             preferredExtent: 240,
           ),
-          anchorBuilder: (context, anchor) => LedgerPressable(
-            onTap: enabled ? anchor.toggle : null,
-            focusNode: _focus,
-            autofocus: widget.autofocus,
-            label: widget.label ?? hint,
-            value: chosen?.label,
-            expanded: anchor.isOpen,
-            isError: widget.error != null,
-            child: SizedBox(
-              height: LedgerTextField.heightOf(t),
-              child: Row(
-                spacing: 8,
-                children: [
-                  Expanded(
-                    child: ledgerCapCenter(
-                      words,
-                      Text(
-                        chosen?.label ?? hint,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.ellipsis,
-                        style: chosen == null
-                            ? words
-                                  .copyWith(fontWeight: FontWeight.w400)
-                                  .colored(t.textTertiary)
-                            : words.colored(
-                                enabled ? t.textPrimary : t.textTertiary,
-                              ),
+          // Down opens the list from the field, as Enter and Space do.
+          anchorBuilder: (context, anchor) => CallbackShortcuts(
+            bindings: {
+              if (enabled && !anchor.isOpen)
+                const SingleActivator(LogicalKeyboardKey.arrowDown):
+                    anchor.open,
+            },
+            child: LedgerPressable(
+              onTap: enabled ? anchor.toggle : null,
+              focusNode: _focus,
+              autofocus: widget.autofocus,
+              label: widget.label ?? hint,
+              value: chosen?.label,
+              expanded: anchor.isOpen,
+              isError: widget.error != null,
+              child: SizedBox(
+                height: LedgerTextField.heightOf(t),
+                child: Row(
+                  spacing: LedgerSpacing.s8,
+                  children: [
+                    Expanded(
+                      child: ledgerCapCenter(
+                        words,
+                        Text(
+                          chosen?.label ?? hint,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          style: chosen == null
+                              ? words
+                                    .copyWith(fontWeight: FontWeight.w400)
+                                    .colored(t.textTertiary)
+                              : words.colored(
+                                  enabled ? t.textPrimary : t.textTertiary,
+                                ),
+                        ),
                       ),
                     ),
-                  ),
-                  AnimatedRotation(
-                    turns: anchor.isOpen ? .5 : 0,
-                    duration: const Duration(milliseconds: 160),
-                    child: LedgerEndGlyph(
-                      LucideIcons.chevronDown,
-                      size: _chevron,
-                      color: enabled ? t.textSecondary : t.textTertiary,
+                    AnimatedRotation(
+                      turns: anchor.isOpen ? .5 : 0,
+                      duration: const Duration(milliseconds: 160),
+                      child: LedgerEndGlyph(
+                        LucideIcons.chevronDown,
+                        size: _chevron,
+                        color: enabled ? t.textSecondary : t.textTertiary,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -202,7 +235,6 @@ class _LedgerSelectState<T> extends State<LedgerSelect<T>> {
               items: widget.items,
               value: widget.value,
               maxHeight: info.maxSize.height,
-              anchor: info.anchorRect,
               onChosen: (value) {
                 info.close();
                 widget.onChanged?.call(value);
@@ -221,12 +253,11 @@ class _LedgerSelectState<T> extends State<LedgerSelect<T>> {
   );
 }
 
-class _SelectList<T> extends StatelessWidget {
+class _SelectList<T> extends StatefulWidget {
   const _SelectList({
     required this.items,
     required this.value,
     required this.maxHeight,
-    required this.anchor,
     required this.onChosen,
   });
 
@@ -234,47 +265,118 @@ class _SelectList<T> extends StatelessWidget {
   final T? value;
   final double maxHeight;
 
-  /// The field's box in the overlay (the window).
-  final Rect anchor;
   final ValueChanged<T> onChosen;
 
   @override
+  State<_SelectList<T>> createState() => _SelectListState<T>();
+}
+
+class _SelectListState<T> extends State<_SelectList<T>> {
+  late List<FocusNode> _nodes = _made();
+
+  List<FocusNode> _made() => [for (final item in widget.items) _node(item)];
+
+  // Wherever the keyboard goes in a long list (an arrow, Home, End, a
+  // letter), its option is scrolled into view.
+  FocusNode _node(LedgerSelectItem<T> item) {
+    late final FocusNode node;
+    node = FocusNode(debugLabel: item.label)..addListener(() => _inView(node));
+    return node;
+  }
+
+  void _inView(FocusNode node) {
+    final at = node.context;
+    if (!node.hasPrimaryFocus || at == null || !at.mounted) return;
+    for (final policy in const [
+      ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+      ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+    ]) {
+      Scrollable.ensureVisible(at, alignmentPolicy: policy);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // The overlay moves the keyboard to the list's first option once it has
+    // built, in this frame's end; the chosen option takes it after, so a
+    // list opens on what is chosen.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final chosen = widget.items.indexWhere(
+        (item) => item.enabled && item.value == widget.value,
+      );
+      if (chosen < 0) return;
+      final node = _nodes[chosen]..requestFocus();
+      // A long list opens with the chosen one in the middle of its view.
+      final at = node.context;
+      if (at != null) Scrollable.ensureVisible(at, alignment: 0.5);
+    });
+  }
+
+  @override
+  void didUpdateWidget(_SelectList<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.items.length != widget.items.length) {
+      for (final n in _nodes) {
+        n.dispose();
+      }
+      _nodes = _made();
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final n in _nodes) {
+      n.dispose();
+    }
+    super.dispose();
+  }
+
+  /// A letter typed in the list goes to the next option its words start
+  /// with, round from the last to the first.
+  KeyEventResult _typed(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+    final keys = HardwareKeyboard.instance;
+    final letter = event.character?.trim().toLowerCase() ?? '';
+    if (letter.isEmpty ||
+        keys.isControlPressed ||
+        keys.isMetaPressed ||
+        keys.isAltPressed) {
+      return KeyEventResult.ignored;
+    }
+    final from = _nodes.indexWhere((n) => n.hasPrimaryFocus);
+    for (var step = 1; step <= _nodes.length; step++) {
+      final i = (from + step) % _nodes.length;
+      final item = widget.items[i];
+      if (item.enabled && item.label.toLowerCase().startsWith(letter)) {
+        _nodes[i].requestFocus();
+        return KeyEventResult.handled;
+      }
+    }
+    return KeyEventResult.ignored;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final items = widget.items;
+    final value = widget.value;
+    final onChosen = widget.onChosen;
+    final maxHeight = widget.maxHeight;
     final t = context.ledgerTheme;
     final words = t.rowTitle.copyWith(
       leadingDistribution: TextLeadingDistribution.even,
     );
-    // The list hugs its options: its widest words with the room round them,
-    // the glyphs' and the tick's columns; the overlay holds it to at least
-    // the select's own width.
-    final scaler = MediaQuery.textScalerOf(context);
-    final direction = Directionality.of(context);
-    var widest = 0.0;
-    for (final item in items) {
-      final p = TextPainter(
-        text: TextSpan(text: item.label, style: words),
-        textDirection: direction,
-        textScaler: scaler,
-        maxLines: 1,
-      )..layout();
-      if (p.width > widest) widest = p.width;
-      p.dispose();
-    }
-    final glyphs = items.any((i) => i.icon != null) ? _glyph + _gap : 0.0;
-    final hug = (2 * _pad + glyphs + widest + _gap + _glyph).ceilToDouble();
-    // Out past the field's start by the rows' inset, so the words stand on
-    // the field's; past its end by the pad, so the tick ends on the
-    // chevron's end. Each kept [_margin] inside the window.
-    final window = MediaQuery.sizeOf(context).width;
-    final rtl = direction == TextDirection.rtl;
-    final before = rtl ? window - anchor.right : anchor.left;
-    final after = rtl ? anchor.left : window - anchor.right;
-    final start = math.max(0.0, math.min(_pad + glyphs, before - _margin));
-    final end = math.max(0.0, math.min(_pad, after - _margin));
-    return _Outdent(
-      start: start,
-      end: end,
-      hug: hug,
+    // The overlay holds the list to the field's width, wider only as far as
+    // its widest option (its rows' intrinsic width) needs.
+    final glyphs = items.any((i) => i.icon != null);
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      includeSemantics: false,
+      onKeyEvent: _typed,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: maxHeight),
         child: DecoratedBox(
@@ -287,7 +389,7 @@ class _SelectList<T> extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(t.smallRadius),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s4),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -301,32 +403,41 @@ class _SelectList<T> extends StatelessWidget {
                           child: ColoredBox(color: t.hairline),
                         ),
                       ),
+                    // The chosen option stands on the menu's paper, its words
+                    // semibold and the green tick at its end, as a menu's
+                    // chosen item does; a pointer or the keyboard marks the
+                    // words alone ([LedgerOptionWords]), never the row.
                     LedgerPressable(
                       onTap: item.enabled ? () => onChosen(item.value) : null,
+                      focusNode: _nodes[i],
                       label: item.label,
                       selected: item.value == value,
                       radius: 0,
-                      ringInsets: const EdgeInsets.all(2),
-                      child: SizedBox(
-                        height: t.density.height(_row),
-                        child: Padding(
+                      rulesFocus: false,
+                      child: Builder(
+                        builder: (context) => Container(
+                          height: t.density.height(_row),
+                          color: item.value == value ? t.menuSelected : null,
                           padding: const EdgeInsets.symmetric(horizontal: _pad),
                           child: Row(
                             spacing: _gap,
                             children: [
                               if (item.icon case final g?)
                                 Icon(g, size: _glyph, color: t.textSecondary)
-                              else if (glyphs > 0)
+                              else if (glyphs)
                                 // The glyphs' column, kept on every row so
                                 // every option's words start on one x.
                                 const SizedBox(width: _glyph),
                               Expanded(
                                 child: ledgerCapCenter(
                                   words,
-                                  Text(
+                                  LedgerOptionWords(
                                     item.label,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                    states: {
+                                      ...LedgerPressStates.of(context),
+                                      if (item.value == value)
+                                        WidgetState.selected,
+                                    },
                                     style: words.colored(
                                       item.enabled
                                           ? t.textPrimary
@@ -363,107 +474,4 @@ class _SelectList<T> extends StatelessWidget {
   static const double _pad = 16;
   static const double _glyph = 18;
   static const double _gap = 12;
-  static const double _margin = 4;
-}
-
-/// Lays its [child] (the list's paper) out [start] wider before the box the
-/// overlay places on the field and [end] wider after it, at least [hug]
-/// across, and stands it that far out: the box stays on the field (where
-/// the overlay holds it), the paper reaches past it. Taken by a press
-/// anywhere on the paper.
-class _Outdent extends SingleChildRenderObjectWidget {
-  const _Outdent({
-    required this.start,
-    required this.end,
-    required this.hug,
-    required super.child,
-  });
-
-  final double start;
-  final double end;
-  final double hug;
-
-  @override
-  _RenderOutdent createRenderObject(BuildContext context) =>
-      _RenderOutdent(start, end, hug, Directionality.of(context));
-
-  @override
-  void updateRenderObject(BuildContext context, _RenderOutdent r) => r
-    ..start = start
-    ..end = end
-    ..hug = hug
-    ..direction = Directionality.of(context);
-}
-
-class _RenderOutdent extends RenderShiftedBox {
-  _RenderOutdent(this._start, this._end, this._hug, this._direction)
-    : super(null);
-
-  double _start;
-  set start(double v) {
-    if (v == _start) return;
-    _start = v;
-    markNeedsLayout();
-  }
-
-  double _end;
-  set end(double v) {
-    if (v == _end) return;
-    _end = v;
-    markNeedsLayout();
-  }
-
-  double _hug;
-  set hug(double v) {
-    if (v == _hug) return;
-    _hug = v;
-    markNeedsLayout();
-  }
-
-  TextDirection _direction;
-  set direction(TextDirection v) {
-    if (v == _direction) return;
-    _direction = v;
-    markNeedsLayout();
-  }
-
-  @override
-  void performLayout() {
-    final c = child!;
-    final width = constraints.constrainWidth(
-      math.max(constraints.minWidth, _hug - _start - _end),
-    );
-    final paper = width + _start + _end;
-    c.layout(
-      BoxConstraints(
-        minWidth: paper,
-        maxWidth: paper,
-        maxHeight: constraints.maxHeight,
-      ),
-      parentUsesSize: true,
-    );
-    final before = _direction == TextDirection.rtl ? _end : _start;
-    (c.parentData! as BoxParentData).offset = Offset(-before, 0);
-    size = constraints.constrain(Size(width, c.size.height));
-  }
-
-  @override
-  bool hitTest(BoxHitTestResult result, {required Offset position}) {
-    final c = child;
-    if (c == null) return false;
-    final at = (c.parentData! as BoxParentData).offset;
-    if (!(at & c.size).contains(position)) return false;
-    if (hitTestChildren(result, position: position)) {
-      result.add(BoxHitTestEntry(this, position));
-      return true;
-    }
-    return false;
-  }
-
-  @override
-  Rect get paintBounds {
-    final c = child;
-    if (c == null) return Offset.zero & size;
-    return (c.parentData! as BoxParentData).offset & c.size;
-  }
 }

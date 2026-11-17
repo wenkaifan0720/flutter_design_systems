@@ -9,6 +9,7 @@ import 'package:ledger_ui/ledger_ui.dart';
 import '../kit.dart';
 import 'quill.dart';
 import 'register.dart';
+import 'words.dart';
 
 class QuillOverview extends StatelessWidget {
   const QuillOverview({
@@ -27,69 +28,85 @@ class QuillOverview extends StatelessWidget {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
     final pitch = Text(
-      'Ruled lines instead of boxes, the serif for money, small capitals '
-      'for every label, and paper slips for the records that matter: '
-      'an app set the way a ledger is.',
+      context.say(
+        'Ruled lines instead of boxes, the serif for money, small capitals '
+        'for every label, and paper slips for the records that matter: '
+        'an app set the way a ledger is.',
+      ),
       style: wide ? t.title.sized(34).line(42) : t.title.sized(24).line(31),
     );
-    final record = quillReceipt(kitBlueFern);
+    final record = quillReceipt(context, kitBlueFern);
     final screens = LedgerSection(
-      head: const LedgerHead('Screens', note: 'Quill, built on it'),
+      head: LedgerHead(
+        context.say('Screens'),
+        note: context.say('Quill, built on it'),
+      ),
       child: LedgerRows(
         children: [
           LedgerSettingRow(
-            title: 'Home',
-            subtitle: 'The figure, the accounts, the last of the register',
+            title: context.say('Home'),
+            subtitle: context.say(
+              'The figure, the accounts, the last of the register',
+            ),
             onTap: () => onOpen(QuillPage.home),
           ),
           LedgerSettingRow(
-            title: 'Register',
-            subtitle: 'Every entry by day, filtered; each opens its receipt',
+            title: context.say('Register'),
+            subtitle: context.say(
+              'Every entry by day, filtered; each opens its receipt',
+            ),
             onTap: () => onOpen(QuillPage.register),
           ),
           LedgerSettingRow(
-            title: 'New entry',
-            subtitle: 'A form on the rule, checked as it is filled',
+            title: context.say('New entry'),
+            subtitle: context.say(
+              'A form on the rule, checked as it is filled',
+            ),
             onTap: onNewEntry,
           ),
           LedgerSettingRow(
-            title: 'Settings',
-            subtitle: 'Profile, alerts, preferences and the appearance',
+            title: context.say('Settings'),
+            subtitle: context.say(
+              'Profile, alerts, preferences and the appearance',
+            ),
             onTap: () => onOpen(QuillPage.settings),
           ),
         ],
       ),
     );
-    const holds = LedgerSection(
-      head: LedgerHead('In the package'),
+    final holds = LedgerSection(
+      head: LedgerHead(context.say('In the package')),
       child: LedgerFacts(
         columns: LedgerFactColumns.pair,
         facts: [
-          LedgerFact(
-            'Parts',
-            'Fields to slips',
-            note: 'Forms, rows, the register, receipts, charts, navigation',
-          ),
-          LedgerFact(
-            'Widths',
-            '320 to 1440',
-            note: 'A tab bar, then a rail, then the side bar',
-          ),
-          LedgerFact(
-            'Light and dark',
-            'Both',
-            note: 'Or your own paper, ink and accent',
-          ),
-          LedgerFact(
-            'Access',
-            '44 targets',
-            note: 'Spoken names, a double-ruled focus, text to 200%',
-          ),
+          for (final (label, value, note) in const [
+            (
+              'Parts',
+              'Fields to slips',
+              'Forms, rows, the register, receipts, charts, navigation',
+            ),
+            (
+              'Widths',
+              '320 to 1440',
+              'A tab bar, then a rail, then the side bar',
+            ),
+            ('Light and dark', 'Both', 'Or your own paper, ink and accent'),
+            (
+              'Access',
+              '44 targets',
+              'Spoken names, a double-ruled focus, text to 200%',
+            ),
+          ])
+            LedgerFact(
+              context.say(label),
+              context.say(value),
+              note: context.say(note),
+            ),
         ],
       ),
     );
     final install = LedgerSection(
-      head: const LedgerHead('Add it'),
+      head: LedgerHead(context.say('Add it')),
       // Printed on the slip's side room, as a receipt's words are.
       child: LedgerSlip(
         padding: const EdgeInsets.symmetric(
@@ -110,8 +127,10 @@ class QuillOverview extends StatelessWidget {
               '    ),',
             ),
             Text(
-              "In your app's builder, under a MaterialApp, a CupertinoApp or "
-              'a WidgetsApp; then any part.',
+              context.say(
+                "In your app's builder, under a MaterialApp, a CupertinoApp or "
+                'a WidgetsApp; then any part.',
+              ),
               style: t.bodySmall,
             ),
           ],
@@ -121,7 +140,10 @@ class QuillOverview extends StatelessWidget {
     final index = parts.isEmpty
         ? null
         : LedgerSection(
-            head: LedgerHead('Every part', note: '${parts.length} pages'),
+            head: LedgerHead(
+              context.say('Every part'),
+              note: '${parts.length} ${context.say('pages')}',
+            ),
             child: LedgerRows(
               children: [
                 for (final part in parts)
@@ -155,7 +177,7 @@ class QuillOverview extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Expanded(child: holds),
+              Expanded(child: holds),
               const SizedBox(width: LedgerSpacing.s56),
               SizedBox(width: _recordWidth, child: install),
             ],
@@ -181,7 +203,10 @@ class QuillOverview extends StatelessWidget {
       );
     }
     return LedgerScreen(
-      topBar: const LedgerTopBar(title: 'Ledger', meta: 'ledger_ui · Flutter'),
+      topBar: LedgerTopBar(
+        title: context.say('Ledger'),
+        meta: 'ledger_ui · Flutter',
+      ),
       body: body,
     );
   }

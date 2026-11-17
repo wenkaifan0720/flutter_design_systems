@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../theme.dart';
@@ -28,6 +29,15 @@ class LedgerCounter extends StatelessWidget {
 
   /// How the value is rendered; plain digits when omitted.
   final String Function(int value)? format;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ObjectFlagProperty<Object?>.has('format', format));
+    properties
+      ..add(IntProperty('value', value))
+      ..add(DiagnosticsProperty<TextStyle>('style', style, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) {

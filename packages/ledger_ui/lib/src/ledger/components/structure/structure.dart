@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -103,6 +104,19 @@ class LedgerHead extends StatelessWidget {
   final Key? linkKey;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(StringProperty('linkLabel', linkLabel, defaultValue: null))
+      ..add(StringProperty('footnote', footnote, defaultValue: null))
+      ..add(FlagProperty('faintRule', value: faintRule, ifTrue: 'faintRule'))
+      ..add(DiagnosticsProperty<Key>('linkKey', linkKey, defaultValue: null));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final rubric = Semantics(
@@ -141,6 +155,12 @@ class LedgerHead extends StatelessWidget {
             label: linkLabel ?? words,
             onTap: onTap!,
             linkKey: linkKey,
+            headBox: _takesAfter(context)
+                ? (
+                    box: DesignTapTargets.of(context).floorOn().height,
+                    top: LedgerChromeMetrics.headTop,
+                  )
+                : null,
           ),
           final words => Text(words.toUpperCase(), style: t.meta),
         };
@@ -151,8 +171,14 @@ class LedgerHead extends StatelessWidget {
           top: BorderSide(color: faintRule ? t.border : t.headRule),
         ),
       ),
+      // A link that takes the head's room starts its press at the rule and
+      // sets its words, and the rubric beside them, the 11 under it.
       padding: EdgeInsets.only(
-        top: _hero ? _heroTop : LedgerChromeMetrics.headTop,
+        top: _hero
+            ? _heroTop
+            : _takesAfter(context)
+            ? 0
+            : LedgerChromeMetrics.headTop,
       ),
       // At a large text size the note turns under the rubric when the two
       // do not fit one line, rather than squeeze the rubric's words apart.
@@ -183,11 +209,28 @@ class LedgerHead extends StatelessWidget {
     );
   }
 
+  /// Whether the head's link takes the head's room, from its rule down to
+  /// the tap floor: when the floor is taller than the 11 over the line, the
+  /// line and the 8 under it ([LedgerChromeMetrics.headAfter]) together, so
+  /// a tap anywhere a finger lands beside the link reaches it. Its section
+  /// then sets no gap of its own under the head.
+  bool _takesAfter(BuildContext context) =>
+      !_hero &&
+      trailing == null &&
+      note != null &&
+      onTap != null &&
+      MediaQuery.textScalerOf(context).scale(1) <= 1 &&
+      DesignTapTargets.of(context).floorOn().height >
+          LedgerChromeMetrics.headTop + _line + LedgerChromeMetrics.headAfter;
+
+  // The rubric's and the note's line, held to a whole pixel.
+  static const double _line = 17;
+
   // `.hero .head`: centred, 10 under the rule; `.fn`: 3 after the label,
   // raised 5 (vertical-align: 5px).
   static const double _heroTop = 10;
   static const double _runGap = 4;
-  static const double _markGap = 3;
+  static const double _markGap = 2;
   static const double _markRise = 5;
   static const double _markScale = 1.3;
 }
@@ -198,8 +241,11 @@ class _HeadLink extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.linkKey,
+    this.headBox,
   });
 
+  /// The press's box under the head's rule, when it takes the head's room.
+  final ({double box, double top})? headBox;
   final String words;
   final String label;
   final VoidCallback onTap;
@@ -210,7 +256,16 @@ class _HeadLink extends StatelessWidget {
     // `.head-link` hung its chevron 3 past the column (margin-right -3);
     // the link's chevron now sets its own ink on the column's end
     // (LedgerEndGlyph), so the link stands in the column.
-    return LedgerMoreLink(words, key: linkKey, label: label, onTap: onTap);
+    final box = headBox;
+    return box == null
+        ? LedgerMoreLink(words, key: linkKey, label: label, onTap: onTap)
+        : LedgerMoreLink._inHead(
+            words,
+            box,
+            key: linkKey,
+            label: label,
+            onTap: onTap,
+          );
   }
 }
 
@@ -225,12 +280,20 @@ class _HeadLink extends StatelessWidget {
 /// ```
 class LedgerMoreLink extends StatelessWidget {
   /// A link worded [words] that calls [onTap].
-  const LedgerMoreLink(
-    this.words, {
+  const LedgerMoreLink(this.words, {required this.onTap, this.label, super.key})
+    : _headBox = null;
+
+  /// A head's link: its press the [box] tall from the head's rule, its words
+  /// [top] under it, so the head's rubric and the link share a baseline.
+  const LedgerMoreLink._inHead(
+    this.words,
+    this._headBox, {
     required this.onTap,
     this.label,
     super.key,
   });
+
+  final ({double box, double top})? _headBox;
 
   /// The link's words, set in capitals.
   final String words;
@@ -242,26 +305,53 @@ class LedgerMoreLink extends StatelessWidget {
   final String? label;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('words', words))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    return LedgerPressable(
+    final face = Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: LedgerChromeMetrics.linkGap,
+      children: [
+        // `.head-link`: white-space nowrap.
+        Text(words.toUpperCase(), softWrap: false, style: t.link),
+        LedgerEndGlyph(
+          LucideIcons.chevronRight,
+          size: LedgerChromeMetrics.linkGlyph,
+          color: t.accentText,
+        ),
+      ],
+    );
+    final box = _headBox;
+    final link = LedgerPressable(
       onTap: onTap,
       role: LedgerPressRole.link,
       label: label ?? words,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        spacing: LedgerChromeMetrics.linkGap,
-        children: [
-          // `.head-link`: white-space nowrap.
-          Text(words.toUpperCase(), softWrap: false, style: t.link),
-          LedgerEndGlyph(
-            LucideIcons.chevronRight,
-            size: LedgerChromeMetrics.linkGlyph,
-            color: t.accentText,
-          ),
-        ],
-      ),
+      ringInsets: box == null ? EdgeInsets.zero : EdgeInsets.only(top: box.top),
+      child: box == null
+          ? face
+          : SizedBox(
+              height: box.box,
+              child: Padding(
+                padding: EdgeInsets.only(top: box.top),
+                child: Align(
+                  alignment: AlignmentDirectional.topEnd,
+                  widthFactor: 1,
+                  heightFactor: null,
+                  child: face,
+                ),
+              ),
+            ),
     );
+    // A link standing alone is laid out at the tap floor round its words.
+    return box == null ? DesignTapTarget(child: link) : link;
   }
 }
 
@@ -292,7 +382,8 @@ class LedgerSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         head,
-        const SizedBox(height: LedgerChromeMetrics.headAfter),
+        if (!(head is LedgerHead && (head as LedgerHead)._takesAfter(context)))
+          const SizedBox(height: LedgerChromeMetrics.headAfter),
         child,
       ],
     ),
@@ -317,6 +408,12 @@ class LedgerRows extends StatelessWidget {
   final bool divided;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(FlagProperty('divided', value: divided, ifTrue: 'divided'));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final rule = context.ledgerTheme.hairline;
     return Column(
@@ -324,7 +421,10 @@ class LedgerRows extends StatelessWidget {
       children: [
         for (var i = 0; i < children.length; i++) ...[
           if (i > 0 && divided)
-            ColoredBox(color: rule, child: const SizedBox(height: 1)),
+            ColoredBox(
+              color: rule,
+              child: const SizedBox(height: LedgerLayout.hairline),
+            ),
           children[i],
         ],
       ],
@@ -395,15 +495,50 @@ class LedgerRow extends StatelessWidget {
   /// Makes the whole row one link.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   /// What a screen reader says when the row's words say too little.
   final String? semanticLabel;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(
+        StringProperty(
+          'trailingSubtitle',
+          trailingSubtitle,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'subtitleMonospace',
+          value: subtitleMonospace,
+          ifTrue: 'subtitleMonospace',
+        ),
+      )
+      ..add(EnumProperty<LedgerTone>('subtitleTone', subtitleTone))
+      ..add(
+        EnumProperty<LedgerTone>('trailingSubtitleTone', trailingSubtitleTone),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -481,7 +616,9 @@ Widget ledgerTitle(
           WidgetSpan(
             alignment: PlaceholderAlignment.middle,
             child: Padding(
-              padding: const EdgeInsetsDirectional.only(start: 8),
+              padding: const EdgeInsetsDirectional.only(
+                start: LedgerSpacing.s8,
+              ),
               child: Transform.translate(
                 offset: const Offset(0, -1),
                 child: tag,
@@ -700,6 +837,15 @@ class LedgerKeyValue extends StatelessWidget {
   final Widget? action;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('value', value))
+      ..add(FlagProperty('monospace', value: monospace, ifTrue: 'monospace'));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final words = t.rowTitle;
@@ -748,8 +894,8 @@ class LedgerKeyValue extends StatelessWidget {
     );
   }
 
-  // `.kv`: 11 0, 15/20; `.kv-v .mono` 13 medium; the action 10 after it.
-  static const double _pad = 11;
+  // `.kv`: 12 0 (11 in the source: a 44 row), 15/20; `.kv-v .mono` 13 medium; the action 10 after it.
+  static const double _pad = 12;
   static const double _line = 20;
   static const double _monoSize = 13;
   static const double _actionGap = 10;
@@ -850,6 +996,15 @@ class LedgerFacts extends StatelessWidget {
 
   /// Whether the ink rule stands over them (no head stands above).
   final bool ruled;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<LedgerFact>('facts', facts))
+      ..add(EnumProperty<LedgerFactColumns>('columns', columns))
+      ..add(FlagProperty('ruled', value: ruled, ifTrue: 'ruled'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1068,6 +1223,12 @@ class LedgerNotes extends StatelessWidget {
   final List<LedgerNote> notes;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<LedgerNote>('notes', notes));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final words = t.bodySmall.colored(t.textSecondary);
@@ -1138,6 +1299,15 @@ class LedgerRecordHead extends StatelessWidget {
 
   /// Words set in the mono after the [subtitle] (`··9015`).
   final String? mono;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(StringProperty('mono', mono, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1217,6 +1387,14 @@ class LedgerMonthRule extends StatelessWidget {
   final String? note;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('month', month))
+      ..add(StringProperty('note', note, defaultValue: null));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     return Container(
@@ -1269,6 +1447,14 @@ class LedgerFlag extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final words = t.bodySmall.colored(t.textSecondary);
@@ -1276,34 +1462,42 @@ class LedgerFlag extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(top: BorderSide(color: t.hairline)),
       ),
-      padding: const EdgeInsets.only(top: _top),
+      // The whole line is the link, from its hairline down to the tap
+      // floor, its words 12 under the hairline as ever.
       child: MergeSemantics(
         child: LedgerPressable(
           onTap: onTap,
           role: LedgerPressRole.link,
           excludeChild: false,
-          child: Row(
-            spacing: _gap,
-            children: [
-              Container(
-                width: _bead,
-                height: _bead,
-                decoration: BoxDecoration(
-                  color: t.danger,
-                  shape: BoxShape.circle,
+          child: Container(
+            constraints: BoxConstraints(
+              minHeight: DesignTapTargets.of(context).floorOn().height,
+            ),
+            padding: const EdgeInsets.only(top: _top),
+            alignment: AlignmentDirectional.topStart,
+            child: Row(
+              spacing: _gap,
+              children: [
+                Container(
+                  width: _bead,
+                  height: _bead,
+                  decoration: BoxDecoration(
+                    color: t.danger,
+                    shape: BoxShape.circle,
+                  ),
                 ),
-              ),
-              Expanded(
-                child: Text.rich(
-                  ledgerMarked(text, words, words.semibold.colored(t.over)),
+                Expanded(
+                  child: Text.rich(
+                    ledgerMarked(text, words, words.semibold.colored(t.over)),
+                  ),
                 ),
-              ),
-              LedgerEndGlyph(
-                LucideIcons.chevronRight,
-                size: _chevron,
-                color: t.textTertiary,
-              ),
-            ],
+                LedgerEndGlyph(
+                  LucideIcons.chevronRight,
+                  size: _chevron,
+                  color: t.textTertiary,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1357,6 +1551,12 @@ class LedgerQuickActions extends StatelessWidget {
 
   /// The ways, in order.
   final List<LedgerQuickAction> actions;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<LedgerQuickAction>('actions', actions));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1471,7 +1671,7 @@ class LedgerQuickActions extends StatelessWidget {
   // chevron 16.
   static const double _top = 16;
   static const double _foot = 14;
-  static const double _gap = 9;
+  static const double _gap = 10;
   static const double _text = 12.5;
   static const double _line = 16;
   static const double _ring = 44;
@@ -1503,6 +1703,14 @@ class LedgerDelta extends StatelessWidget {
 
   /// A pill after the words (the percentage).
   final Widget? pill;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('rise', rise, defaultValue: null))
+      ..add(IterableProperty<String>('words', words));
+  }
 
   @override
   Widget build(BuildContext context) {

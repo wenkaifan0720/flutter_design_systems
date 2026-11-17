@@ -282,7 +282,8 @@ void main() {
           final box = t.getSize(_ringed(find.byType(EditableText)).first);
           expect(box.height, (wide ? 116 : 95) + 8);
           final row = t.getSize(find.byKey(const ValueKey('amount')));
-          expect(row.height, moreOrLessEquals(wide ? 219 : 198));
+          // A point over the source's: the hint's line 4 under (was 3).
+          expect(row.height, moreOrLessEquals(wide ? 220 : 199));
         },
       );
     });
@@ -387,7 +388,7 @@ void main() {
   // --- the rows' heights, as the live profile measures them -------------------
 
   group('row heights', () {
-    testWidgets('a switch row is 71 with its rule, 70 last', (t) async {
+    testWidgets('a switch row is 72 with its rule, 71 last', (t) async {
       await _everywhere(
         t,
         LedgerRows(
@@ -415,14 +416,15 @@ void main() {
           final last = t.getRect(find.byKey(const ValueKey('weekly')));
           // The profile at 390: `.toggle-row` 71.8, the last 70.8; held
           // to whole pixels (the title's line 21), 71 and 70.
-          expect(first.height, moreOrLessEquals(70));
-          expect(last.top - first.top, moreOrLessEquals(71));
-          expect(last.height, moreOrLessEquals(70));
+          // A point over: the second line 4 under the first (was 3).
+          expect(first.height, moreOrLessEquals(71));
+          expect(last.top - first.top, moreOrLessEquals(72));
+          expect(last.height, moreOrLessEquals(71));
         },
       );
     });
 
-    testWidgets('a setting row is 70 with its rule, 69 last', (t) async {
+    testWidgets('a setting row is 71 with its rule, 70 last', (t) async {
       await _everywhere(
         t,
         LedgerRows(
@@ -449,8 +451,9 @@ void main() {
           final currency = t.getRect(find.byKey(const ValueKey('currency')));
           // The profile at 390: `.set-row` 70 with its rule (Month starts
           // on), 69 last in its group (Currency): 28 + 20 + 3 + 18.
-          expect(currency.top - month.top, moreOrLessEquals(70));
-          expect(currency.height, moreOrLessEquals(69));
+          // A point over: the second line 4 under the first (was 3).
+          expect(currency.top - month.top, moreOrLessEquals(71));
+          expect(currency.height, moreOrLessEquals(70));
         },
       );
     });
@@ -552,7 +555,14 @@ void main() {
           ),
         ),
         (wide, theme) {
-          final face = t.getRect(find.byKey(const ValueKey('compact')));
+          // The face 40, laid out at the tap floor round it.
+          expect(t.getSize(find.byKey(const ValueKey('compact'))).height, 44);
+          final face = t.getRect(
+            find.descendant(
+              of: find.byKey(const ValueKey('compact')),
+              matching: find.byType(LedgerPressable),
+            ),
+          );
           final glyph = t.getRect(find.byIcon(LucideIcons.plus));
           expect(face.height, 40);
           // 16 inside its ring of 1.

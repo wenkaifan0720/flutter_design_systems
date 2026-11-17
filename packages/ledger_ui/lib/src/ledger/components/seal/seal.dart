@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
@@ -82,6 +83,17 @@ class LedgerSeal extends StatelessWidget {
 
   /// How large it is pressed.
   final LedgerSealSize size;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('kicker', kicker))
+      ..add(StringProperty('value', value))
+      ..add(StringProperty('foot', foot))
+      ..add(EnumProperty<LedgerSealTone>('tone', tone))
+      ..add(EnumProperty<LedgerSealSize>('size', size));
+  }
 
   @override
   Widget build(BuildContext context) {

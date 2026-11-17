@@ -276,7 +276,9 @@ void main() {
       expect(t.takeException(), isNull);
     });
 
-    testWidgets('26 tall in a ring 3 inside', (t) async {
+    testWidgets('chips 26, or the tap floor less the ring, 2 inside it', (
+      t,
+    ) async {
       await _pump(
         t,
         _atStart(
@@ -287,11 +289,37 @@ void main() {
           ),
         ),
       );
-      // `.chip` 26 tall; `.chips` 3 inside its 1 px ring.
+      // `.chip` 26 tall; `.chips` 3 inside its 1 px ring; the strip at
+      // least the tap floor (a finger's 44 here), its chips taking the room:
+      // each chip's target runs the strip's height, its face 3 inside it.
       expect(
-        t.getSize(find.byType(LedgerSegmentedControl)).height,
-        26 + 2 * (3 + 1),
+        t
+            .getSize(find.byWidgetPredicate((w) => w is LedgerSegmentedControl))
+            .height,
+        44,
       );
+      final chips = t.elementList(
+        find.descendant(
+          of: find.byWidgetPredicate((w) => w is LedgerSegmentedControl),
+          matching: find.byType(LedgerPressable),
+        ),
+      );
+      expect(chips, hasLength(_ranges.length));
+      for (final chip in chips) {
+        expect(chip.size!.height, 44);
+        expect(chip.size!.width, greaterThanOrEqualTo(44));
+        // The face: the nearest box round the chip's words.
+        final face = find
+            .ancestor(
+              of: find.descendant(
+                of: find.byElementPredicate((e) => identical(e, chip)),
+                matching: find.byType(Text),
+              ),
+              matching: find.byType(Container),
+            )
+            .first;
+        expect(t.getSize(face).height, 44 - 2 * 2);
+      }
     });
   });
 
@@ -313,7 +341,7 @@ void main() {
               value: 'All',
               onChanged: direction.add,
             ),
-            LedgerFilters(
+            LedgerFilters<String>(
               label: 'Account',
               options: const ['Keel Card', 'Everyday'],
               value: null,
@@ -387,9 +415,10 @@ void main() {
           final out = t.getRect(find.text('Money out'));
           expect(moneyIn.top, all.top);
           expect(out.top, all.top);
-          // `.filter` 0 13 inside its 1 px ring; `.filters` 6 apart.
-          expect(moneyIn.left - all.right, 2 * (13 + 1) + 6);
-          expect(out.left - moneyIn.right, 2 * (13 + 1) + 6);
+          // `.filter` 0 12 (13 in the source, on the 2 grid) inside its
+          // 1 px ring; `.filters` 6 apart.
+          expect(moneyIn.left - all.right, 2 * (12 + 1) + 6);
+          expect(out.left - moneyIn.right, 2 * (12 + 1) + 6);
         },
       );
     });
@@ -451,8 +480,14 @@ void main() {
             matching: find.byType(Opacity),
           );
           expect(t.widget<Opacity>(dimmed).opacity, .45);
+          // Each face 44 by 26, laid out at the tap floor round it.
           for (final e in t.elementList(find.byType(LedgerSwitch))) {
-            expect(e.size, const Size(44, 26));
+            expect(e.size, const Size(44, 44));
+            final face = find.descendant(
+              of: find.byWidget(e.widget),
+              matching: find.byType(LedgerPressable),
+            );
+            expect(t.getSize(face), const Size(44, 26));
           }
         },
       );
@@ -529,13 +564,16 @@ void main() {
             t.widget<Text>(find.text(label)).style?.color,
             theme.textTertiary,
           );
+          // The row dims the switch it draws (the nearest Opacity above it).
           expect(
             t
                 .widget<Opacity>(
-                  find.descendant(
-                    of: find.byType(LedgerSwitch),
-                    matching: find.byType(Opacity),
-                  ),
+                  find
+                      .ancestor(
+                        of: find.byType(LedgerSwitch),
+                        matching: find.byType(Opacity),
+                      )
+                      .first,
                 )
                 .opacity,
             .45,
@@ -734,7 +772,11 @@ void main() {
           expect(find.text('WHEN'), findsOneWidget);
           // The chips stand at the field's start, as wide as they are.
           expect(
-            t.getRect(find.byType(LedgerSegmentedControl)).left,
+            t
+                .getRect(
+                  find.byWidgetPredicate((w) => w is LedgerSegmentedControl),
+                )
+                .left,
             t.getRect(find.byType(LedgerField)).left,
           );
         },

@@ -10,18 +10,32 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../kit.dart';
 import 'quill.dart';
+import 'words.dart';
 
 class QuillSettings extends StatefulWidget {
-  const QuillSettings({super.key});
+  const QuillSettings({this.askSignOut = false, super.key});
+
+  /// Whether it opens asking to sign out, the question over it.
+  final bool askSignOut;
 
   @override
   State<QuillSettings> createState() => _QuillSettingsState();
 }
 
 class _QuillSettingsState extends State<QuillSettings> {
-  String _name = kitMaren.name;
+  String? _name;
   String _email = 'maren.holt@example.com';
   String _phone = '(415) 555-0119';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.askSignOut) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _signOut();
+      });
+    }
+  }
 
   Future<void> _edit(
     String label,
@@ -31,9 +45,9 @@ class _QuillSettingsState extends State<QuillSettings> {
     final words = TextEditingController(text: value);
     final ok = await LedgerDialog.show(
       context,
-      title: 'Change ${label.toLowerCase()}',
-      confirmLabel: 'Save',
-      children: [LedgerTextField(label: label, controller: words)],
+      title: context.say('Change ${label.toLowerCase()}'),
+      confirmLabel: context.say('Save'),
+      children: [LedgerTextField(label: context.say(label), controller: words)],
     );
     if (ok == true && words.text.trim().isNotEmpty) done(words.text.trim());
     words.dispose();
@@ -42,12 +56,16 @@ class _QuillSettingsState extends State<QuillSettings> {
   Future<void> _signOut() async {
     final ok = await LedgerDialog.show(
       context,
-      title: 'Sign out of Quill?',
-      body: 'Your entries stay on this device until you sign in again.',
+      title: context.say('Sign out of Quill?'),
+      body: context.say(
+        'Your entries stay on this device until you sign in again.',
+      ),
       type: LedgerDialogType.destructive,
-      confirmLabel: 'Sign out',
+      confirmLabel: context.say('Sign out'),
     );
-    if (ok == true && mounted) LedgerToast.show(context, 'Signed out');
+    if (ok == true && mounted) {
+      LedgerToast.show(context, context.say('Signed out'));
+    }
   }
 
   @override
@@ -56,24 +74,28 @@ class _QuillSettingsState extends State<QuillSettings> {
     final width = MediaQuery.sizeOf(context).width;
     final wide = LedgerLayout.isWide(context);
     final paired = width >= LedgerNavigationFrame.railFrom;
+    final name = _name ?? context.say(kitMaren.name);
 
     final profile = LedgerSection(
-      head: const LedgerHead('Profile', note: 'Since Mar 2023'),
+      head: LedgerHead(
+        context.say('Profile'),
+        note: context.say('Since Mar 2023'),
+      ),
       child: LedgerRows(
         children: [
           LedgerSettingRow(
-            title: 'Name',
-            value: _name,
-            onTap: () => _edit('Name', _name, (v) => setState(() => _name = v)),
+            title: context.say('Name'),
+            value: name,
+            onTap: () => _edit('Name', name, (v) => setState(() => _name = v)),
           ),
           LedgerSettingRow(
-            title: 'Email',
+            title: context.say('Email'),
             value: _email,
             onTap: () =>
                 _edit('Email', _email, (v) => setState(() => _email = v)),
           ),
           LedgerSettingRow(
-            title: 'Phone',
+            title: context.say('Phone'),
             value: _phone,
             onTap: () =>
                 _edit('Phone', _phone, (v) => setState(() => _phone = v)),
@@ -83,14 +105,17 @@ class _QuillSettingsState extends State<QuillSettings> {
     );
 
     final alerts = LedgerSection(
-      head: const LedgerHead('Alerts', note: 'What Quill tells you'),
+      head: LedgerHead(
+        context.say('Alerts'),
+        note: context.say('What Quill tells you'),
+      ),
       child: LedgerRows(
         children: [
           for (final a in kitAlerts)
             LedgerToggleRow(
               icon: a.icon,
-              title: a.label,
-              subtitle: a.sub,
+              title: context.say(a.label),
+              subtitle: context.say(a.sub),
               value: prefs.alerts[a.label] ?? false,
               onChanged: (v) => prefs.update((p) => p.alerts[a.label] = v),
             ),
@@ -99,41 +124,50 @@ class _QuillSettingsState extends State<QuillSettings> {
     );
 
     final currency = LedgerSelect<String>(
-      label: 'Currency',
+      label: context.say('Currency'),
       value: prefs.currency,
-      items: const [
-        LedgerSelectItem(value: 'USD', label: 'US dollar'),
-        LedgerSelectItem(value: 'EUR', label: 'Euro'),
-        LedgerSelectItem(value: 'GBP', label: 'Pound sterling'),
+      items: [
+        LedgerSelectItem(value: 'USD', label: context.say('US dollar')),
+        LedgerSelectItem(value: 'EUR', label: context.say('Euro')),
+        LedgerSelectItem(value: 'GBP', label: context.say('Pound sterling')),
       ],
       onChanged: (v) => prefs.update((p) => p.currency = v),
     );
     final week = LedgerSelect<String>(
-      label: 'Week starts on',
+      label: context.say('Week starts on'),
       value: prefs.weekStart,
-      items: const [
-        LedgerSelectItem(value: 'monday', label: 'Monday'),
-        LedgerSelectItem(value: 'sunday', label: 'Sunday'),
+      items: [
+        LedgerSelectItem(value: 'monday', label: context.say('Monday')),
+        LedgerSelectItem(value: 'sunday', label: context.say('Sunday')),
       ],
       onChanged: (v) => prefs.update((p) => p.weekStart = v),
     );
     final density = LedgerSelect<LedgerDensity>(
-      label: 'Density',
+      label: context.say('Density'),
       value: prefs.density,
-      helper: 'Each step sets rows and controls 4 px tighter',
-      items: const [
-        LedgerSelectItem(value: LedgerDensity.standard, label: 'Standard'),
+      helper: context.say('Compact fits more entries on a screen'),
+      items: [
+        LedgerSelectItem(
+          value: LedgerDensity.standard,
+          label: context.say('Standard'),
+        ),
         LedgerSelectItem(
           value: LedgerDensity.comfortable,
-          label: 'Comfortable',
+          label: context.say('Comfortable'),
         ),
-        LedgerSelectItem(value: LedgerDensity.compact, label: 'Compact'),
+        LedgerSelectItem(
+          value: LedgerDensity.compact,
+          label: context.say('Compact'),
+        ),
       ],
       onChanged: (v) => prefs.update((p) => p.density = v),
     );
     const fieldGap = LedgerGap(LedgerSpacing.s24);
     final preferences = LedgerSection(
-      head: const LedgerHead('Preferences', note: 'This device'),
+      head: LedgerHead(
+        context.say('Preferences'),
+        note: context.say('This device'),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -172,7 +206,10 @@ class _QuillSettingsState extends State<QuillSettings> {
     );
 
     final appearance = LedgerSection(
-      head: const LedgerHead('Appearance', note: 'Paper and ink'),
+      head: LedgerHead(
+        context.say('Appearance'),
+        note: context.say('Paper and ink'),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -184,7 +221,7 @@ class _QuillSettingsState extends State<QuillSettings> {
             LedgerRadio<QuillAppearance>(
               value: value,
               groupValue: prefs.appearance,
-              label: label,
+              label: context.say(label),
               onChanged: (v) => prefs.update((p) => p.appearance = v!),
             ),
         ],
@@ -192,11 +229,14 @@ class _QuillSettingsState extends State<QuillSettings> {
     );
 
     final reading = LedgerSection(
-      head: const LedgerHead('Reading', note: 'Which way the pages run'),
+      head: LedgerHead(
+        context.say('Reading'),
+        note: context.say('Which way the pages run'),
+      ),
       child: LedgerToggleRow(
         icon: LucideIcons.arrowRightLeft,
-        title: 'Right to left',
-        subtitle: 'The pages mirrored, as Arabic and Hebrew read',
+        title: context.say('Right to left'),
+        subtitle: context.say('The pages mirrored, as Arabic and Hebrew read'),
         value: prefs.direction == TextDirection.rtl,
         onChanged: (on) => prefs.update(
           (p) => p.direction = on ? TextDirection.rtl : TextDirection.ltr,
@@ -210,7 +250,7 @@ class _QuillSettingsState extends State<QuillSettings> {
     final signOut = Align(
       alignment: AlignmentDirectional.centerStart,
       child: LedgerButton(
-        'Sign out',
+        context.say('Sign out'),
         isDestructiveAction: true,
         expand: !paired,
         onPressed: _signOut,
@@ -219,7 +259,10 @@ class _QuillSettingsState extends State<QuillSettings> {
 
     const gap = LedgerGap(LedgerSpacing.s40);
     return LedgerScreen(
-      topBar: const LedgerTopBar(title: 'Settings', meta: 'Quill 1.0'),
+      topBar: LedgerTopBar(
+        title: context.say('Settings'),
+        meta: context.say('Quill 1.0'),
+      ),
       body: wide
           ? Row(
               crossAxisAlignment: CrossAxisAlignment.start,

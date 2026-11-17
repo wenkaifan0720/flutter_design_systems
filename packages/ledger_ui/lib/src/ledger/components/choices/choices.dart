@@ -1,15 +1,18 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../format.dart';
 import '../../internal/button_ends.dart';
 import '../../internal/cap_center.dart';
-import '../../format.dart';
 import '../../internal/engraving.dart';
 import '../../internal/even_acts.dart';
 import '../../internal/face.dart';
+import '../../internal/menu_marks.dart';
 import '../../internal/narrow.dart';
+import '../../internal/option_paper.dart';
 import '../../internal/per_line.dart';
 import '../../internal/whole_pixel.dart';
 import '../../theme.dart';
@@ -60,8 +63,11 @@ class LedgerMenuItem {
 /// menu's shadow, a mono [head] over its [items], one choice of a set
 /// (the months Spending can show): each 46 tall, the chosen one checked
 /// in the green on the paper. Stand it 10 under the control that opens it
-/// (centred under it on a phone, at its start from 1024). Read as its
-/// [semanticLabel], each item a button that says whether it is chosen.
+/// (centred under it on a phone, at its start from 1024). One item at a
+/// time is marked under its words, the pointer's underline or the
+/// keyboard's double rule, whichever moved last; with the keys in it, the
+/// pointer moves their place too. Read as its [semanticLabel], each item a
+/// button that says whether it is chosen.
 ///
 /// ```dart
 /// LedgerMenu(head: 'Spent by month', semanticLabel: 'Months', items: [LedgerMenuItem('October 2026', amount: 2486.12, selected: true, onTap: () {})])
@@ -85,7 +91,17 @@ class LedgerMenu extends StatelessWidget {
   final String? semanticLabel;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<LedgerMenuItem>('items', items))
+      ..add(StringProperty('head', head, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
+
+  @override
   Widget build(BuildContext context) {
+    ledgerWatchInput();
     final t = context.ledgerTheme;
     final larger = MediaQuery.textScalerOf(context).scale(1) > 1;
     return Semantics(
@@ -100,30 +116,32 @@ class LedgerMenu extends StatelessWidget {
           borderRadius: BorderRadius.circular(t.cardRadius),
           boxShadow: t.menuShadow,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (head case final h?)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: _padX,
-                  vertical: _headPad,
+        child: LedgerMenuMarks(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (head case final h?)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: _padX,
+                    vertical: _headPad,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: t.hairline)),
+                  ),
+                  // `.menu-head` is a block of running copy holding a `.meta`
+                  // span: its line is the body's 21.75.
+                  child: Text(
+                    h.toUpperCase(),
+                    style: t.meta,
+                    strutStyle: StrutStyle.fromTextStyle(t.body),
+                  ),
                 ),
-                decoration: BoxDecoration(
-                  border: Border(bottom: BorderSide(color: t.hairline)),
-                ),
-                // `.menu-head` is a block of running copy holding a `.meta`
-                // span: its line is the body's 21.75.
-                child: Text(
-                  h.toUpperCase(),
-                  style: t.meta,
-                  strutStyle: StrutStyle.fromTextStyle(t.body),
-                ),
-              ),
-            for (final (i, item) in items.indexed)
-              _item(t, item, first: i == 0, larger: larger),
-          ],
+              for (final (i, item) in items.indexed)
+                _item(t, item, first: i == 0, larger: larger),
+            ],
+          ),
         ),
       ),
     );
@@ -137,17 +155,24 @@ class LedgerMenu extends StatelessWidget {
   }) {
     final on = item.selected;
     final amount = item.amount;
-    final words = on ? t.rowTitle.semibold : t.rowTitle;
+    // The chosen item's words are semibold; a pointer or the keyboard marks
+    // the words alone, under them on their own row ([LedgerOptionWords]).
+    Widget words(Set<WidgetState> states, {int? maxLines}) => LedgerOptionWords(
+      item.label,
+      states: {...states, if (on) WidgetState.selected},
+      style: t.rowTitle,
+      maxLines: maxLines,
+    );
     // At a large text size the item grows rather than cut its label: the
     // label wraps whole, and the amount turns under it when the two do not
     // fit one line.
-    final Widget body = larger
+    Widget body(Set<WidgetState> states) => larger
         ? Wrap(
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: _gap,
             children: [
-              Text(item.label, style: words),
+              words(states),
               if (amount != null)
                 LedgerAmount(amount, size: LedgerAmountSize.small),
             ],
@@ -156,15 +181,7 @@ class LedgerMenu extends StatelessWidget {
             spacing: _gap,
             children: [
               Expanded(
-                child: ledgerCapCenter(
-                  t.rowTitle,
-                  Text(
-                    item.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: words,
-                  ),
-                ),
+                child: ledgerCapCenter(t.rowTitle, words(states, maxLines: 1)),
               ),
               if (amount != null)
                 ledgerCapCenter(
@@ -179,33 +196,47 @@ class LedgerMenu extends StatelessWidget {
       label: item.label,
       value: amount == null ? null : LedgerFormat.money(amount),
       selected: on,
-      child: Container(
-        height: larger ? null : _itemHeight,
-        constraints: larger
-            ? const BoxConstraints(minHeight: _itemHeight)
-            : null,
-        padding: larger
-            ? const EdgeInsets.symmetric(horizontal: _padX, vertical: _grownPad)
-            : const EdgeInsets.symmetric(horizontal: _padX),
-        color: on ? t.menuSelected : null,
-        // The rule between items drawn over the item's top, so its row keeps
-        // the item's whole 46 and stands on its middle.
-        foregroundDecoration: first
-            ? null
-            : BoxDecoration(
-                border: Border(top: BorderSide(color: t.hairline)),
-              ),
-        child: Row(
-          spacing: _gap,
-          children: [
-            SizedBox(
-              width: _check,
-              child: on
-                  ? Icon(LucideIcons.check, size: _checkGlyph, color: t.accent)
-                  : null,
+      rulesFocus: false,
+      child: Builder(
+        builder: (context) => LedgerMenuRow(
+          states: LedgerPressStates.of(context),
+          enabled: item.onTap != null,
+          builder: (context, marks) => Container(
+            height: larger ? null : _itemHeight,
+            constraints: larger
+                ? const BoxConstraints(minHeight: _itemHeight)
+                : null,
+            padding: larger
+                ? const EdgeInsets.symmetric(
+                    horizontal: _padX,
+                    vertical: _grownPad,
+                  )
+                : const EdgeInsets.symmetric(horizontal: _padX),
+            color: on ? t.menuSelected : null,
+            // The rule between items drawn over the item's top, so its row keeps
+            // the item's whole 46 and stands on its middle.
+            foregroundDecoration: first
+                ? null
+                : BoxDecoration(
+                    border: Border(top: BorderSide(color: t.hairline)),
+                  ),
+            child: Row(
+              spacing: _gap,
+              children: [
+                SizedBox(
+                  width: _check,
+                  child: on
+                      ? Icon(
+                          LucideIcons.check,
+                          size: _checkGlyph,
+                          color: t.accent,
+                        )
+                      : null,
+                ),
+                Expanded(child: body(marks)),
+              ],
             ),
-            Expanded(child: body),
-          ],
+          ),
         ),
       ),
     );
@@ -219,9 +250,9 @@ class LedgerMenu extends StatelessWidget {
   static const double _headPad = 8;
   static const double _itemHeight = 46;
   static const double _gap = 12;
-  // Grown with a large text, an item's words stand 3 clear of its rules (a
+  // Grown with a large text, an item's words stand 4 clear of its rules (a
   // label of one line keeps the 46).
-  static const double _grownPad = 3;
+  static const double _grownPad = 4;
   static const double _check = 18;
   static const double _checkGlyph = 16;
 }
@@ -259,11 +290,10 @@ class LedgerSuggestion extends StatelessWidget {
   /// Takes the figure; null disables it.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   /// The suggestion's name, over its [text].
@@ -274,6 +304,26 @@ class LedgerSuggestion extends StatelessWidget {
 
   /// The spoken name; "Use the suggested $275" when null.
   final String? semanticLabel;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(StringProperty('text', text))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('action', action))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -420,12 +470,30 @@ class LedgerCategoryTile extends StatelessWidget {
   /// Opens the category.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<num>('spent', spent))
+      ..add(FlagProperty('overBudget', value: overBudget, ifTrue: 'overBudget'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -581,15 +649,32 @@ class LedgerOption extends StatelessWidget {
   /// Chooses the option; null disables it.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   /// Whether this is the chosen option.
   final bool selected;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -699,12 +784,38 @@ class LedgerCategoryMini extends StatelessWidget {
   /// Opens the category.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<num>('spent', spent))
+      ..add(DiagnosticsProperty<num>('budget', budget, defaultValue: null))
+      ..add(DoubleProperty('pace', pace, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(
+        StringProperty(
+          'trailingSubtitle',
+          trailingSubtitle,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -832,6 +943,16 @@ class LedgerIconPicker extends StatelessWidget {
   final String semanticLabel;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<LedgerIconChoice>('choices', choices))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
+      ..add(StringProperty('semanticLabel', semanticLabel));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final onSelect = onSelected;
@@ -912,7 +1033,7 @@ class LedgerIconPicker extends StatelessWidget {
   static const double _rowGap = 10;
   static const double _padTop = 8;
   static const double _padBottom = 6;
-  static const double _ringGap = 3;
+  static const double _ringGap = 2;
 }
 
 // --- Move's ways ---------------------------------------------------------------
@@ -971,6 +1092,14 @@ class LedgerWays extends StatelessWidget {
 
   /// What a screen reader says the group is.
   final String semanticLabel;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<LedgerWay>('ways', ways))
+      ..add(StringProperty('semanticLabel', semanticLabel));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1138,7 +1267,7 @@ class LedgerWays extends StatelessWidget {
   static const double _deskTop = 20;
   static const double _deskSide = 18;
   static const double _deskBottom = 18;
-  static const double _deskGap = 3;
+  static const double _deskGap = 4;
   static const double _deskRing = 44;
   static const double _deskRingBelow = 10;
   static const double _deskGlyph = 19;
@@ -1175,6 +1304,16 @@ class LedgerAllocationRow extends StatelessWidget {
 
   /// Its share of the whole, as the page writes it ("80.6%").
   final String share;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<LedgerStackTone>('tone', tone))
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(StringProperty('share', share));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1247,9 +1386,9 @@ class LedgerAllocationRow extends StatelessWidget {
     );
   }
 
-  // `.alloc-row`: 11 0, 10 apart; `.sw-alloc` 12 square; `.alloc-pct` 52
+  // `.alloc-row`: 12 0 (11 in the source: a 44 row), 10 apart; `.sw-alloc` 12 square; `.alloc-pct` 52
   // wide, 400 12/20 mono.
-  static const double _pad = 11;
+  static const double _pad = 12;
   static const double _gap = 10;
   static const double _swatch = 12;
   static const double _pct = 12;
@@ -1341,6 +1480,19 @@ class LedgerHoldingRow extends StatelessWidget {
 
   // A table's row where the holdings stand as one (LedgerHoldings.tableIn);
   // a phone's two lines where the room is short of it.
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('symbol', symbol))
+      ..add(StringProperty('kind', kind))
+      ..add(StringProperty('shares', shares))
+      ..add(DiagnosticsProperty<num>('value', value))
+      ..add(DiagnosticsProperty<num>('today', today))
+      ..add(StringProperty('initials', initials, defaultValue: null));
+  }
+
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, c) =>
@@ -1579,6 +1731,12 @@ class LedgerHoldings extends StatelessWidget {
       MediaQuery.textScalerOf(context).scale(1) <= 1;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<String>('heads', heads));
+  }
+
+  @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, c) => _build(context, tableIn(context, c.maxWidth)),
   );
@@ -1618,7 +1776,10 @@ class LedgerHoldings extends StatelessWidget {
           ),
         for (var i = 0; i < rows.length; i++) ...[
           if (i > 0)
-            ColoredBox(color: t.hairline, child: const SizedBox(height: 1)),
+            ColoredBox(
+              color: t.hairline,
+              child: const SizedBox(height: LedgerLayout.hairline),
+            ),
           rows[i],
         ],
       ],

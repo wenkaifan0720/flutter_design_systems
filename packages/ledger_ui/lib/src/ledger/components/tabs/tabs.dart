@@ -1,5 +1,9 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../internal/cap_center.dart';
 import '../../internal/face.dart';
@@ -50,6 +54,17 @@ class LedgerTabs extends StatefulWidget {
 
   /// The strip's inset for its labels; the hairline under them ignores it.
   final EdgeInsetsGeometry padding;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('tabs', tabs))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
+      ..add(IterableProperty<int?>('counts', counts, defaultValue: null))
+      ..add(DiagnosticsProperty<EdgeInsetsGeometry>('padding', padding));
+  }
 
   @override
   State<LedgerTabs> createState() => _LedgerTabsState();
@@ -143,13 +158,16 @@ class _LedgerTabsState extends State<LedgerTabs> {
           controller: _scroll,
           scrollDirection: Axis.horizontal,
           padding: widget.padding,
+          // The tabs meet: each one's press takes half the gap on either
+          // side of its words, so a tap between two reaches the nearer.
           child: Row(
-            spacing: _gap,
             children: [
               for (var i = 0; i < widget.tabs.length; i++)
                 KeyedSubtree(
                   key: _keys[i],
                   child: _Tab(
+                    before: i == 0 ? 0 : _gap / 2,
+                    after: i == widget.tabs.length - 1 ? 0 : _gap / 2,
                     label: widget.tabs[i],
                     count: widget.counts?[i],
                     selected: i == widget.selectedIndex,
@@ -170,6 +188,8 @@ class _LedgerTabsState extends State<LedgerTabs> {
 
 class _Tab extends StatelessWidget {
   const _Tab({
+    required this.before,
+    required this.after,
     required this.label,
     required this.selected,
     required this.focusNode,
@@ -177,6 +197,9 @@ class _Tab extends StatelessWidget {
     this.onTap,
   });
 
+  /// The room of the gap its press takes before and after its words.
+  final double before;
+  final double after;
   final String label;
   final int? count;
   final bool selected;
@@ -186,6 +209,12 @@ class _Tab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
+    final room = EdgeInsetsDirectional.only(start: before, end: after);
+    // A tab's words narrower than the tap floor stand centred in it.
+    final least = math.max(
+      0.0,
+      DesignTapTargets.of(context).floorOn().width - before - after,
+    );
     return LedgerPressable(
       onTap: onTap,
       focusNode: focusNode,
@@ -193,61 +222,68 @@ class _Tab extends StatelessWidget {
       value: count == null ? null : '$count',
       selected: selected,
       radius: t.smallRadius,
+      ringInsets: room,
       // Chosen, the tab's words ink up and its rule is drawn in under
       // it from the reading start; left, the rule is drawn back out. One
       // value moves both, in Ledger's one motion.
-      child: LedgerEase(
-        value: selected ? 1 : 0,
-        duration: LedgerMotion.base,
-        builder: (context, chosen, _) {
-          final ink = Color.lerp(t.textSecondary, t.textPrimary, chosen)!;
-          return SizedBox(
-            height: _height,
-            child: Stack(
-              children: [
-                Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    spacing: _countGap,
-                    children: [
-                      ledgerCapCenter(
-                        t.rowTitle,
-                        Text(
-                          label,
-                          maxLines: 1,
-                          softWrap: false,
-                          style: t.rowTitle.sized(14).line(20).colored(ink),
+      child: Padding(
+        padding: room,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: least),
+          child: LedgerEase(
+            value: selected ? 1 : 0,
+            duration: LedgerMotion.base,
+            builder: (context, chosen, _) {
+              final ink = Color.lerp(t.textSecondary, t.textPrimary, chosen)!;
+              return SizedBox(
+                height: _height,
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        spacing: _countGap,
+                        children: [
+                          ledgerCapCenter(
+                            t.rowTitle,
+                            Text(
+                              label,
+                              maxLines: 1,
+                              softWrap: false,
+                              style: t.rowTitle.sized(14).line(20).colored(ink),
+                            ),
+                          ),
+                          if (count != null)
+                            ledgerCapCenter(
+                              t.meta,
+                              Text(
+                                '$count',
+                                style: t.meta.line(16).colored(t.textTertiary),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    // The ink rule the chosen tab stands on: one, and heavier
+                    // than a hairline, so a choice never reads as focus (the
+                    // double rule under a control).
+                    if (chosen > 0)
+                      PositionedDirectional(
+                        start: 0,
+                        end: 0,
+                        bottom: 0,
+                        child: FractionallySizedBox(
+                          alignment: AlignmentDirectional.centerStart,
+                          widthFactor: chosen.clamp(0.0, 1.0),
+                          child: Container(height: _rule, color: t.textPrimary),
                         ),
                       ),
-                      if (count != null)
-                        ledgerCapCenter(
-                          t.meta,
-                          Text(
-                            '$count',
-                            style: t.meta.line(16).colored(t.textTertiary),
-                          ),
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
-                // The ink rule the chosen tab stands on: one, and heavier
-                // than a hairline, so a choice never reads as focus (the
-                // double rule under a control).
-                if (chosen > 0)
-                  PositionedDirectional(
-                    start: 0,
-                    end: 0,
-                    bottom: 0,
-                    child: FractionallySizedBox(
-                      alignment: AlignmentDirectional.centerStart,
-                      widthFactor: chosen.clamp(0.0, 1.0),
-                      child: Container(height: _rule, color: t.textPrimary),
-                    ),
-                  ),
-              ],
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       ),
     );
   }

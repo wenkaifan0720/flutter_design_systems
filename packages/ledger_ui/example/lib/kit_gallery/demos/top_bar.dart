@@ -8,6 +8,8 @@
 /// close.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
@@ -289,7 +291,11 @@ Widget kitSpecimenScreenHeading() => LedgerScreen(
         // As tall as its two ways, never the serif's taller line: they stand
         // on the bar's line with the desk search beside them.
         return SizedBox(
-          height: LedgerIconButton.sideOf(t, LedgerIconButtonSize.medium),
+          // Or the tap floor, which the ways are laid out at.
+          height: math.max(
+            LedgerIconButton.sideOf(t, LedgerIconButtonSize.medium),
+            DesignTapTargets.of(context).floorOn().height,
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -298,6 +304,8 @@ Widget kitSpecimenScreenHeading() => LedgerScreen(
                 semanticLabel: 'Earlier months',
                 // The bar's own size, as its bell and desk search beside it.
                 size: LedgerIconButtonSize.medium,
+                // On the start keyline, as the later way stands on the end.
+                tapAlignment: AlignmentDirectional.centerStart,
                 onPressed: () {},
               ),
               // The bar keeps its height: at a large text size the month
@@ -323,6 +331,7 @@ Widget kitSpecimenScreenHeading() => LedgerScreen(
                 LucideIcons.chevronRight,
                 semanticLabel: 'Next month, not yet',
                 size: LedgerIconButtonSize.medium,
+                tapAlignment: AlignmentDirectional.centerEnd,
                 onPressed: null,
               ),
             ],

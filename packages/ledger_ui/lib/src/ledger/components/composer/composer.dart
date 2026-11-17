@@ -1,11 +1,12 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../chrome_metrics.dart';
-import '../../internal/hit_slop.dart';
 import '../../internal/text_input.dart';
 import '../../theme.dart';
 import '../chip/chip.dart';
@@ -89,11 +90,50 @@ class LedgerComposer extends StatefulWidget {
   /// Its name for a screen reader; null speaks the hint.
   final String? semanticLabel;
 
-  /// The field's focus; never disposed when given.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether the field takes the focus when it first stands.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('hint', hint))
+      ..add(EnumProperty<LedgerComposerStyle>('style', style))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onSubmitted', onSubmitted))
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has('onStopPressed', onStopPressed),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onAttachPressed',
+          onAttachPressed,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has('onVoicePressed', onVoicePressed),
+      )
+      ..add(FlagProperty('sending', value: sending, ifTrue: 'sending'))
+      ..add(StringProperty('sendLabel', sendLabel))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   State<LedgerComposer> createState() => _LedgerComposerState();
@@ -134,6 +174,17 @@ class _LedgerComposerState extends State<LedgerComposer> {
       child: ValueListenableBuilder<TextEditingValue>(
         valueListenable: _controller,
         builder: (context, value, _) {
+          // The room each ring's target takes round its 36 (4 for a finger, none
+          // for a pointer), taken from the 5 round the rings.
+          final room = math.min(
+            _padEnd - 1,
+            math.max(
+              0.0,
+              (DesignTapTargets.of(context).floorOn().height -
+                      LedgerChromeMetrics.ringButton) /
+                  2,
+            ),
+          );
           final words = value.text.trim().isNotEmpty;
           final field = LedgerTextInput(
             controller: _controller,
@@ -147,9 +198,15 @@ class _LedgerComposerState extends State<LedgerComposer> {
                 ? TextInputAction.newline
                 : TextInputAction.send,
             keyboardType: TextInputType.multiline,
-            onSubmitted: assistant || !words || widget.onSubmitted == null
+            // The send key sends and the field keeps the focus for the next
+            // message (an empty one sends nothing): in onEditingComplete,
+            // never onSubmitted, whose submit restarts the text input of a
+            // field that keeps the focus (a browser's then takes no typing).
+            onEditingComplete: assistant
                 ? null
-                : (_) => widget.onSubmitted!(),
+                : () {
+                    if (words) widget.onSubmitted?.call();
+                  },
           );
           final end = _End(
             sending: widget.sending,
@@ -227,19 +284,21 @@ class _LedgerComposerState extends State<LedgerComposer> {
               ),
               child: Padding(
                 padding: EdgeInsets.only(
-                  left: widget.onAttachPressed == null ? _pad : _padAttach,
-                  right: _padEnd,
-                  top: _padEnd,
-                  bottom: _padEnd,
+                  left: widget.onAttachPressed == null
+                      ? _pad
+                      : _padAttach - room,
+                  right: _padEnd - room,
+                  top: _padEnd - room,
+                  bottom: _padEnd - room,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  spacing: _gap,
+                  spacing: _gap - room,
                   children: [
                     if (widget.onAttachPressed != null) _attach(),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: _lift),
+                        padding: EdgeInsets.symmetric(vertical: _lift + room),
                         child: field,
                       ),
                     ),
@@ -276,8 +335,11 @@ class _LedgerComposerState extends State<LedgerComposer> {
   static const int _messageLines = 5;
   static const int _assistantLines = 6;
   static const double _pad = 16;
-  static const double _padAttach = 5;
-  static const double _padEnd = 5;
+  static const double _round = 46;
+  static const double _act = 36;
+  // Each act centred in the round's height.
+  static const double _padAttach = (_round - _act) / 2;
+  static const double _padEnd = (_round - _act) / 2;
   static const double _gap = 8;
   static const double _lift = 10;
   static const double _slipPad = 16;
@@ -384,7 +446,7 @@ class _Disc extends StatelessWidget {
           LedgerChromeMetrics.ringButton,
           floor: LedgerChromeMetrics.densityFloor,
         );
-    return LedgerHitSlop(
+    return DesignTapTarget(
       child: LedgerPressable(
         onTap: onTap,
         label: label,

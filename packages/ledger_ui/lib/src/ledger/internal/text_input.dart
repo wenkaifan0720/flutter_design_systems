@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -15,6 +16,7 @@ class LedgerTextInput extends StatefulWidget {
     this.placeholder,
     this.onChanged,
     this.onSubmitted,
+    this.onEditingComplete,
     this.focusNode,
     this.autofocus = false,
     this.keyboardType,
@@ -39,8 +41,15 @@ class LedgerTextInput extends StatefulWidget {
   /// Called with the words as they are typed.
   final ValueChanged<String>? onChanged;
 
-  /// Called with the words when the keyboard submits them.
+  /// Called with the words when the keyboard submits them; the input gives
+  /// up the focus.
   final ValueChanged<String>? onSubmitted;
+
+  /// Called on the keyboard's act key in place of the input giving up the
+  /// focus. An input that keeps the focus takes the act here, never in
+  /// [onSubmitted] too: told of a submit while it keeps the focus, it
+  /// restarts its text input, and a browser's then takes no typing.
+  final VoidCallback? onEditingComplete;
 
   /// The input's focus; never disposed when given.
   final FocusNode? focusNode;
@@ -56,6 +65,62 @@ class LedgerTextInput extends StatefulWidget {
 
   /// How many lines it grows to; 1 keeps it to one.
   final int maxLines;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<TextStyle>('style', style))
+      ..add(
+        DiagnosticsProperty<TextStyle>('placeholderStyle', placeholderStyle),
+      )
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('placeholder', placeholder, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('maxLines', maxLines));
+  }
 
   @override
   State<LedgerTextInput> createState() => _LedgerTextInputState();
@@ -121,6 +186,7 @@ class _LedgerTextInputState extends State<LedgerTextInput> {
             textInputAction: widget.textInputAction,
             onChanged: widget.onChanged,
             onSubmitted: widget.onSubmitted,
+            onEditingComplete: widget.onEditingComplete,
             minLines: 1,
             maxLines: widget.maxLines,
           ),

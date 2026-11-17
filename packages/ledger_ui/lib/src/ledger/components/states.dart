@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -25,6 +26,12 @@ class LedgerLoadingState extends StatelessWidget {
   /// The words before the leader; null is the shared words' Loading
   /// ([DesignLocalizations.loadingLabel]).
   final String? message;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('message', message, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +96,17 @@ class LedgerErrorState extends StatelessWidget {
   final VoidCallback? onRetryPressed;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('message', message, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has('onRetryPressed', onRetryPressed),
+      );
+  }
+
+  @override
   Widget build(BuildContext context) => _BlankPage(
     title: title,
     body: message,
@@ -96,7 +114,7 @@ class LedgerErrorState extends StatelessWidget {
     act: onRetryPressed == null
         ? null
         : LedgerButton(
-            'Try again',
+            DesignLocalizations.of(context).retryButtonLabel,
             icon: LucideIcons.rotateCw,
             onPressed: onRetryPressed,
           ),
@@ -154,6 +172,33 @@ class LedgerEmptyState extends StatelessWidget {
   final Key? actionKey;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('titleItalic', titleItalic, defaultValue: null))
+      ..add(StringProperty('body', body, defaultValue: null))
+      ..add(DiagnosticsProperty<LedgerSeal>('seal', seal, defaultValue: null))
+      ..add(StringProperty('actionLabel', actionLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<IconData>(
+          'actionIcon',
+          actionIcon,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onActionPressed',
+          onActionPressed,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Key>('actionKey', actionKey, defaultValue: null),
+      );
+  }
+
+  @override
   Widget build(BuildContext context) => _BlankPage(
     title: title,
     titleItalic: titleItalic,
@@ -174,8 +219,9 @@ class LedgerEmptyState extends StatelessWidget {
 /// the hairline every 32, its double margin rule in the green rule at 18
 /// and 22, padded clear of it; from 1024 ruled every 36, its rules at 28
 /// and 32, padded 36 36 32 56, its title 44 on 46. The ruling breaks round
-/// the words, the act and the stamp, each laid on the slip's own paper:
-/// ink never lies over ink. A [failed] page rules its margin in the
+/// the words and the act in a whole band from the margin rule to the slip's
+/// end, and round the stamp, each laid on the slip's own paper: ink never
+/// lies over ink, and no rule is left a stub beside the words. A [failed] page rules its margin in the
 /// vermilion.
 class _BlankPage extends StatelessWidget {
   const _BlankPage({
@@ -203,11 +249,47 @@ class _BlankPage extends StatelessWidget {
         : t.title
               .sized(LedgerChromeMetrics.emptyTitle)
               .line(LedgerChromeMetrics.emptyTitleLine);
-    Widget clear(Widget child, {BoxShape shape = BoxShape.rectangle}) =>
-        DecoratedBox(
-          decoration: BoxDecoration(color: t.surface, shape: shape),
-          child: child,
-        );
+    // The slip's padding; its start measured past the second margin rule,
+    // where each block's band of clear paper begins.
+    final pad = wide
+        ? const EdgeInsetsDirectional.fromSTEB(
+            _startWide,
+            _topWide,
+            _endWide,
+            _footWide,
+          )
+        : const EdgeInsetsDirectional.fromSTEB(
+            LedgerChromeMetrics.emptyStart,
+            LedgerChromeMetrics.emptyTop,
+            LedgerChromeMetrics.emptyEnd,
+            LedgerChromeMetrics.emptyFoot,
+          );
+    final band =
+        (wide ? _rule2Wide : LedgerChromeMetrics.emptyMarginRule2) +
+        LedgerLayout.hairline;
+    // A block on the slip's own paper across the whole line, from past the
+    // margin rule to the slip's end: the ruling breaks round it whole,
+    // never leaving a stub of rule beside the words.
+    Widget clear(Widget child) => SizedBox(
+      width: double.infinity,
+      child: ColoredBox(
+        color: t.surface,
+        child: Padding(
+          padding: EdgeInsetsDirectional.only(
+            start: pad.start - band,
+            end: pad.end,
+          ),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: child,
+          ),
+        ),
+      ),
+    );
+    Widget round(Widget child) => DecoratedBox(
+      decoration: BoxDecoration(color: t.surface, shape: BoxShape.circle),
+      child: child,
+    );
     return DecoratedBox(
       decoration: BoxDecoration(
         color: t.surface,
@@ -232,26 +314,21 @@ class _BlankPage extends StatelessWidget {
                   ),
           ),
           child: Padding(
-            padding: wide
-                ? const EdgeInsetsDirectional.fromSTEB(
-                    _startWide,
-                    _topWide,
-                    _endWide,
-                    _footWide,
-                  )
-                : const EdgeInsetsDirectional.fromSTEB(
-                    LedgerChromeMetrics.emptyStart,
-                    LedgerChromeMetrics.emptyTop,
-                    LedgerChromeMetrics.emptyEnd,
-                    LedgerChromeMetrics.emptyFoot,
-                  ),
+            padding: EdgeInsetsDirectional.only(
+              start: band,
+              top: pad.top,
+              bottom: pad.bottom,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (seal != null)
-                  Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: clear(seal!, shape: BoxShape.circle),
+                  Padding(
+                    padding: EdgeInsetsDirectional.only(end: pad.end),
+                    child: Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: round(seal!),
+                    ),
                   ),
                 if (seal != null)
                   const SizedBox(height: LedgerChromeMetrics.emptyTitleTop),

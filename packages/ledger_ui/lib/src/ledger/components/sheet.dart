@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialLocalizations, MaterialType, ModalBottomSheetRoute;
 import 'package:flutter/widgets.dart';
@@ -45,6 +46,12 @@ class LedgerSheetHead extends StatelessWidget {
   final List<Widget> actions;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('title', title));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
@@ -74,17 +81,9 @@ class LedgerSheetHead extends StatelessWidget {
             ),
           ),
           ...actions,
-          if (close != null)
-            Transform.translate(
-              // Hung toward the card's reading end.
-              offset: Offset(
-                Directionality.of(context) == TextDirection.rtl
-                    ? -LedgerChromeMetrics.sheetCloseHang
-                    : LedgerChromeMetrics.sheetCloseHang,
-                0,
-              ),
-              child: close,
-            ),
+          // On the column's end, as every part of the card: its whole target
+          // inside the head, so a tap reaches all of it.
+          ?close,
         ],
       ),
     );
@@ -195,6 +194,19 @@ class LedgerSheetShell extends StatelessWidget {
   );
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(FlagProperty('showClose', value: showClose, ifTrue: 'showClose'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onClose', onClose))
+      ..add(DiagnosticsProperty<Key>('closeKey', closeKey, defaultValue: null))
+      ..add(
+        FlagProperty('useSafeArea', value: useSafeArea, ifTrue: 'useSafeArea'),
+      );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final wide = LedgerLayout.isWide(context);
     final inset = useSafeArea && !wide
@@ -218,6 +230,7 @@ class LedgerSheetShell extends StatelessWidget {
                       semanticLabel: DesignLocalizations.of(context)
                           .closeButtonLabel,
                       size: LedgerIconButtonSize.small,
+                      tapAlignment: AlignmentDirectional.centerEnd,
                       onPressed:
                           onClose ?? () => Navigator.of(context).maybePop(),
                     )
@@ -300,10 +313,7 @@ abstract final class LedgerSheet {
   /// asks for reduced motion.
   static AnimationStyle motionOf(BuildContext context) =>
       LedgerMotion.isReduced(context)
-      ? const AnimationStyle(
-          duration: Duration.zero,
-          reverseDuration: Duration.zero,
-        )
+      ? AnimationStyle.noAnimation
       : const AnimationStyle(
           duration: LedgerMotion.slow,
           curve: Curves.easeOutCubic,
@@ -391,7 +401,11 @@ abstract final class LedgerSheet {
         elevation: 0,
         isScrollControlled: true,
         sheetAnimationStyle: motionOf(context),
-        constraints: BoxConstraints(maxHeight: most),
+        // A tablet's sheet stands centred at the sheet's measure.
+        constraints: BoxConstraints(
+          maxHeight: most,
+          maxWidth: LedgerLayout.sheetMeasure,
+        ),
         builder: (sheetContext) => Padding(
           // The keyboard rides outside the card: the card keeps its geometry
           // and simply sits higher.
@@ -450,7 +464,10 @@ abstract final class LedgerSheet {
       elevation: 0,
       isScrollControlled: true,
       sheetAnimationStyle: motionOf(context),
-      constraints: BoxConstraints(maxHeight: most),
+      constraints: BoxConstraints(
+        maxHeight: most,
+        maxWidth: LedgerLayout.sheetMeasure,
+      ),
       builder: (sheetContext) {
         final keyboard = MediaQuery.viewInsetsOf(sheetContext).bottom;
         return Padding(

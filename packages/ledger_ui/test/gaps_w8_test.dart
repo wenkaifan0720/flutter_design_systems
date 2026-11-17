@@ -241,8 +241,8 @@ void main() {
             ),
           );
           expect(box.color, theme.surfaceInverse);
-          // 3 of the slip's paper inside 1 of the ink.
-          expect(box.boxShadow!.map((s) => s.spreadRadius), [4, 3]);
+          // 2 of the slip's paper (3 in the source) inside 1 of the ink.
+          expect(box.boxShadow!.map((s) => s.spreadRadius), [3, 2]);
           expect(box.boxShadow!.last.color, theme.surface);
         },
       );
@@ -516,10 +516,11 @@ void main() {
           final c = t.getRect(find.text('Add to goal'));
           if (wide) {
             expect(c.top, a.top);
-            // `.big .ring` 44 with 10 under, then 3 to the title (the
+            // `.big .ring` 44 with 10 under, then 4 to the title (3 in the
+            // source, on the 2 grid; the
             // glyph's box stands inside the ring's 1 px rule).
             final ring = t.getRect(find.byIcon(LucideIcons.arrowRightLeft));
-            expect(a.top - ring.top, closeTo(44 + 10 + 3 - 1, .01));
+            expect(a.top - ring.top, closeTo(44 + 10 + 4 - 1, .01));
           } else {
             expect(b.top, a.top);
             expect(c.top, greaterThan(a.bottom));
@@ -558,7 +559,8 @@ void main() {
           final row = t.getRect(find.byType(LedgerAllocationRow).first);
           // `.alloc-row`: 11 0 round a 20 line, three faces on one
           // baseline (a little over 20, as in the browser).
-          expect(row.height, inInclusiveRange(42, 44));
+          // 12 round the line (11 in the source, on the 2 grid).
+          expect(row.height, inInclusiveRange(44, 46));
           expect(
             t.getRect(find.text('Stocks')).top - row.top,
             greaterThanOrEqualTo(11),

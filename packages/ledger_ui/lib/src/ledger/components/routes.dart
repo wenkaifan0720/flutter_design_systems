@@ -3,9 +3,9 @@ import 'package:flutter/widgets.dart';
 
 import '../theme.dart';
 
-/// The go_router [Page] for a route pushed off a root: its route runs the
-/// platform's own transition (the host never pins a platform), standing on
-/// the theme's ground.
+/// The go_router [Page] for a route pushed off a root: its route is laid
+/// down in Ledger's page motion (`LedgerPageTransitions`, which the host
+/// sets on every platform), standing on the theme's ground.
 ///
 /// Its chrome is derived, never authored: an [LedgerScreen] inside reads the
 /// route's register and draws the round back button. Build one through
@@ -26,8 +26,9 @@ class LedgerPage<T> extends Page<T> {
   Route<T> createRoute(BuildContext context) => _LedgerPageRoute<T>(this);
 }
 
-/// The route of a [LedgerPage]: the platform's page transition, its content
-/// on the theme's ground, rebuilt from the page whenever the page changes.
+/// The route of a [LedgerPage]: the theme's page transition (Ledger's, under
+/// the host), its content on the theme's ground, rebuilt from the page
+/// whenever the page changes.
 class _LedgerPageRoute<T> extends PageRoute<T>
     with MaterialRouteTransitionMixin<T> {
   _LedgerPageRoute(LedgerPage<T> page) : super(settings: page);

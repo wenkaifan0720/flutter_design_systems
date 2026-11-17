@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 
@@ -162,6 +163,51 @@ class LedgerNavBar extends StatelessWidget {
   /// The rule over the bar, 1 (`border-top: 1px`).
   static const double _rule = 1;
 
+  /// The text scaler every tab's name sets at: the reader's, or less, so
+  /// the widest of [labels] fits a column [column] wide with the least
+  /// room between names ([_Tab._nameGap], grown as a word space grows).
+  static TextScaler _namesScaler(
+    BuildContext context,
+    List<String> labels,
+    double column,
+  ) {
+    final scaler = MediaQuery.textScalerOf(context);
+    if (!column.isFinite || column <= 0) return scaler;
+    final style = context.ledgerTheme.tab;
+    final room = column - scaler.scale(_Tab._nameGap);
+    var fit = 1.0;
+    for (final label in labels) {
+      final painter = TextPainter(
+        text: TextSpan(text: label, style: style),
+        textScaler: scaler,
+        textDirection: Directionality.of(context),
+        maxLines: 1,
+      )..layout();
+      if (painter.width > room && room > 0) {
+        fit = math.min(fit, room / painter.width);
+      }
+      painter.dispose();
+    }
+    return fit >= 1 ? scaler : _ShrunkScaler(scaler, fit);
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<LedgerNavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
@@ -225,9 +271,26 @@ class LedgerNavBar extends StatelessWidget {
               alignment: Alignment.topCenter,
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: height - _rule - foot),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [for (final cell in cells) Expanded(child: cell)],
+                // A name wider than its column at a large text size sets
+                // smaller on its one line rather than lose its end; every
+                // name sets at the size the widest needs, so the bar's
+                // names stay one size (each shrinking to its own column
+                // read as five sizes of type).
+                child: LayoutBuilder(
+                  builder: (context, row) => MediaQuery(
+                    data: MediaQuery.of(context).copyWith(
+                      textScaler: _namesScaler(context, [
+                        for (final item in items) item.label,
+                        ?act?.label,
+                      ], row.maxWidth / cells.length),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        for (final cell in cells) Expanded(child: cell),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -316,10 +379,12 @@ class _Tab extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         // A pointer over a tab shows the click cursor. The chosen tab's ink
-        // and its green tick come and go in Ledger's one motion.
+        // and its green tick land at once, in the frame its page does: a
+        // selection never trails the page it names.
         child: MouseRegion(
           cursor: SystemMouseCursors.click,
           child: LedgerFace(
+            duration: Duration.zero,
             style: LedgerFaceStyle(
               ink: ink,
               ground: BoxDecoration(
@@ -379,4 +444,28 @@ class _Tab extends StatelessWidget {
       ),
     );
   }
+}
+
+/// [base], every size times [factor]: the tab bar's names, set together at
+/// the size the widest needs.
+@immutable
+class _ShrunkScaler extends TextScaler {
+  const _ShrunkScaler(this.base, this.factor);
+
+  final TextScaler base;
+  final double factor;
+
+  @override
+  double scale(double fontSize) => base.scale(fontSize) * factor;
+
+  @override
+  // ignore: deprecated_member_use, TextScaler requires it.
+  double get textScaleFactor => base.textScaleFactor * factor;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _ShrunkScaler && other.base == base && other.factor == factor;
+
+  @override
+  int get hashCode => Object.hash(base, factor);
 }

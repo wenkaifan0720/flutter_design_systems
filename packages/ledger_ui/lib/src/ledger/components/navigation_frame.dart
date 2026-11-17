@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart' show ShellAction, ShellInsets;
 
@@ -54,6 +55,24 @@ class LedgerNavigationFrame extends StatelessWidget {
 
   /// The width from which the rail replaces the tab bar.
   static const double railFrom = 600;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<LedgerNavItem>('destinations', destinations))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {

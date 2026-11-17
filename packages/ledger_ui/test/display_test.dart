@@ -569,7 +569,9 @@ void main() {
           expect(find.text('1'), findsOneWidget);
           expect(_node(t, RegExp('^NET WORTH')), isSemantics(isHeader: true));
           final head = t.getRect(find.byType(LedgerHead));
-          final chips = t.getRect(find.byType(LedgerSegmentedControl));
+          final chips = t.getRect(
+            find.byWidgetPredicate((w) => w is LedgerSegmentedControl),
+          );
           expect(chips.right, closeTo(head.right, .5));
           // Centred on one line with the rubric.
           expect(
@@ -1215,14 +1217,15 @@ void main() {
           ],
         ),
         (wide, theme) {
-          // `.pill` 0 10 around its words; `.tag` 0 7 inside its 1 px ring.
+          // `.pill` 0 10 around its words; `.tag` 0 6 (7 in the source, on
+          // the 2 grid) inside its 1 px ring.
           expect(
             t.getSize(find.byType(LedgerPill)).width,
             t.getSize(find.text('Autopay on')).width + 2 * 10,
           );
           expect(
             t.getSize(find.byType(LedgerTag)).width,
-            t.getSize(find.text('PENDING')).width + 2 * (7 + 1),
+            t.getSize(find.text('PENDING')).width + 2 * (6 + 1),
           );
           expect(t.getSize(find.byType(LedgerTag)).height, 18);
         },

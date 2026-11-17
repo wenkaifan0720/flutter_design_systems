@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
@@ -7,7 +10,6 @@ import '../chrome_metrics.dart';
 import '../internal/bar_slot.dart';
 import '../internal/cap_center.dart';
 import '../internal/end_glyph.dart';
-import '../internal/hit_slop.dart';
 import '../internal/side_inset.dart';
 import '../theme.dart';
 import 'avatar/avatar.dart';
@@ -140,6 +142,12 @@ class LedgerAccountScope extends InheritedWidget {
   @override
   bool updateShouldNotify(LedgerAccountScope oldWidget) =>
       account != oldWidget.account;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<Object?>('account', account));
+  }
 }
 
 /// The bell, then the avatar, of [account]: what the phone's top bar wears
@@ -176,14 +184,37 @@ class LedgerAccountMarks extends StatelessWidget {
   final Key? avatarKey;
 
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    spacing: LedgerChromeMetrics.toolsGap,
-    children: [
-      if (showBell) _bellOf(context, account, key: bellKey),
-      if (showAvatar) _avatarOf(context, account, key: avatarKey),
-    ],
-  );
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<LedgerAccount>('account', account))
+      ..add(FlagProperty('showBell', value: showBell, ifTrue: 'showBell'))
+      ..add(FlagProperty('showAvatar', value: showAvatar, ifTrue: 'showAvatar'))
+      ..add(DiagnosticsProperty<Key>('bellKey', bellKey, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Key>('avatarKey', avatarKey, defaultValue: null),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Each laid out at the tap floor, its face on the bar's end edge and its
+    // target growing toward the start: the last face stands on the keyline,
+    // and the room the avatar's target takes before its disc already parts
+    // the two, so their targets meet rather than reach into each other.
+    final floor = DesignTapTargets.of(context).floorOn().width;
+    final room = showAvatar && showBell
+        ? math.max(0.0, floor - LedgerChromeMetrics.avatar)
+        : 0.0;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: math.max(0.0, LedgerChromeMetrics.toolsGap - room),
+      children: [
+        if (showBell) _bellOf(context, account, key: bellKey),
+        if (showAvatar) _avatarOf(context, account, key: avatarKey),
+      ],
+    );
+  }
 }
 
 /// The bell that opens [account]'s notifications, carrying [key].
@@ -200,8 +231,14 @@ Widget _bellOf(
           key: key,
           unread: account.unread,
           onPressed: onPressed,
+          tapAlignment: AlignmentDirectional.centerEnd,
         )
-      : LedgerBell(key: key, unread: account.unread, onPressed: onPressed);
+      : LedgerBell(
+          key: key,
+          unread: account.unread,
+          onPressed: onPressed,
+          tapAlignment: AlignmentDirectional.centerEnd,
+        );
 }
 
 /// The bar's avatar that opens [account]'s profile, carrying [key].
@@ -212,13 +249,15 @@ Widget _avatarOf(BuildContext context, LedgerAccount account, {Key? key}) {
     initials: account.initials,
     label: 'Profile and settings',
     onTap: open == null ? null : () => open(context),
+    tapAlignment: AlignmentDirectional.centerEnd,
   );
 }
 
 /// The way back off a pushed page, or the close of a cover or a sheet, as
 /// the route's bar draws it: on a phone the 36 ringed button with the
-/// chevron (the cross to close) saying "Back to [label]"; at desktop width
-/// the crumb over the title, the 15 chevron and [label] in the mono
+/// chevron (the cross to close) saying "Back to [label]"; at desktop width,
+/// and beside a tablet's rail (where no phone bar stands), the crumb over
+/// the title, the 15 chevron and [label] in the mono
 /// capitals, hung 4 into the gutter; on a sheet's card the ringed close.
 /// [label] names where back goes (Home, Activity); unset, the bar's
 /// `backLabel` names it.
@@ -255,14 +294,29 @@ class LedgerBack extends StatelessWidget {
   /// Where back goes.
   final String? label;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   final bool _close;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -282,11 +336,15 @@ class LedgerBack extends StatelessWidget {
     final glyph = close ? LucideIcons.x : LucideIcons.chevronLeft;
     if (close ||
         LedgerSheetShell.around(context) ||
-        !LedgerLayout.isWide(context)) {
+        (!LedgerLayout.isWide(context) && LedgerSideInset.of(context) == 0)) {
       return LedgerIconButton.outlined(
         glyph,
         semanticLabel: spoken,
         size: LedgerIconButtonSize.small,
+        // In a sheet's head it stands at the end.
+        tapAlignment: LedgerSheetShell.around(context)
+            ? AlignmentDirectional.centerEnd
+            : AlignmentDirectional.center,
         onPressed: onPressed,
         focusNode: focusNode,
         autofocus: autofocus,
@@ -314,21 +372,25 @@ class LedgerBack extends StatelessWidget {
         ),
       ],
     );
-    return Transform.translate(
-      // Hung into the gutter at the reading start.
-      offset: Offset(
-        Directionality.of(context) == TextDirection.rtl
-            ? LedgerChromeMetrics.crumbHang
-            : -LedgerChromeMetrics.crumbHang,
-        0,
-      ),
-      child: LedgerHitSlop(
-        child: LedgerPressable(
-          onTap: onPressed,
-          label: spoken,
-          role: LedgerPressRole.link,
-          focusNode: focusNode,
-          autofocus: autofocus,
+    const hang = LedgerChromeMetrics.crumbHang;
+    return DesignTapTarget(
+      // The words on the crumb's line at the top of its reach.
+      alignment: AlignmentDirectional.topStart,
+      child: LedgerPressable(
+        onTap: onPressed,
+        label: spoken,
+        role: LedgerPressRole.link,
+        focusNode: focusNode,
+        autofocus: autofocus,
+        // The ring follows the paint, hung with it.
+        ringInsets: const EdgeInsetsDirectional.only(start: -hang, end: hang),
+        child: Transform.translate(
+          // Hung into the gutter at the reading start: its paint only, so
+          // the press stays inside the masthead, where a tap reaches it.
+          offset: Offset(
+            Directionality.of(context) == TextDirection.rtl ? hang : -hang,
+            0,
+          ),
           child: crumb,
         ),
       ),
@@ -454,6 +516,20 @@ class LedgerTopBar extends StatelessWidget {
   }
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title, defaultValue: null))
+      ..add(StringProperty('titleItalic', titleItalic, defaultValue: null))
+      ..add(StringProperty('meta', meta, defaultValue: null))
+      ..add(StringProperty('backLabel', backLabel, defaultValue: null))
+      ..add(DiagnosticsProperty<Key>('bellKey', bellKey, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Key>('avatarKey', avatarKey, defaultValue: null),
+      );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final exit = leading ?? autoLeading(context, label: backLabel);
     final Widget head;
@@ -557,6 +633,9 @@ class LedgerTopBar extends StatelessWidget {
   /// desktop's meta.
   static const double _headingGapWide = 10;
 
+  // DERIVED: a pointer's floor (ui_core's 24), the crumb's least reach.
+  static const double _pointerReach = 24;
+
   /// The masthead: on a phone a tab's meta over its title; on the desktop
   /// every page's, with the crumb, the search pill and the bell.
   Widget _masthead(BuildContext context, Widget? exit, bool wide) {
@@ -588,30 +667,46 @@ class LedgerTopBar extends StatelessWidget {
               style: titleStyle,
             ),
           );
-    // One page frame: at desktop width a pushed page's crumb stands in the
-    // eyebrow's own line (the meta's 16, the title 8 under it), so its
+    // One page frame: at desktop width, and beside a tablet's rail (a
+    // pushed page there has no phone bar to hold its way back), a pushed
+    // page's crumb stands in the eyebrow's own line (the meta's 16, the title 8 under it), so its
     // title, search and bell stand where a tab's do. A meta it has too sets
     // on that line after the crumb.
     final eyebrow =
         (MediaQuery.textScalerOf(context).scale(t.meta.fontSize!) *
                 t.meta.height!)
             .roundToDouble();
-    final crumb = wide && pushed
+    // The crumb's line is the meta's, its reach the pointer's floor: the
+    // words keep the line at its top and the gap under it gives up the rest.
+    final reach = math.max(eyebrow, _pointerReach);
+    final crumb = pushed
         ? SizedBox(
-            height: eyebrow,
+            height: reach,
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               spacing: LedgerChromeMetrics.crumbToMeta,
               children: [
                 exit,
                 if (meta != null) ...[
-                  Text('·', style: t.meta.colored(t.textFaint)),
+                  SizedBox(
+                    height: eyebrow,
+                    child: Center(
+                      child: Text('·', style: t.meta.colored(t.textFaint)),
+                    ),
+                  ),
                   Flexible(
-                    child: Text(
-                      meta!.toUpperCase(),
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                      style: t.meta,
+                    child: SizedBox(
+                      height: eyebrow,
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: Text(
+                          meta!.toUpperCase(),
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          style: t.meta,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -631,12 +726,14 @@ class LedgerTopBar extends StatelessWidget {
           SizedBox(
             height: meta != null || crumb != null
                 ? (heading != null
-                      // `.monthbar`: 10 under the desktop's meta, none on
-                      // a phone.
-                      ? (wide ? _headingGapWide : 0)
-                      : wide
-                      ? LedgerChromeMetrics.titleGapWide
-                      : LedgerChromeMetrics.titleGap)
+                          // `.monthbar`: 10 under the desktop's meta (or
+                          // its crumb), none on a phone.
+                          ? (wide || crumb != null ? _headingGapWide : 0)
+                          : wide || crumb != null
+                          ? LedgerChromeMetrics.titleGapWide
+                          : LedgerChromeMetrics.titleGap) -
+                      // What the crumb's reach took of the gap.
+                      (crumb == null ? 0 : reach - eyebrow)
                 : 0,
           ),
           words,

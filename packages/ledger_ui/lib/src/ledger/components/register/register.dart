@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../format.dart';
@@ -165,6 +166,22 @@ class LedgerRegister extends StatelessWidget {
   static const double _deskFrom = 720;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(EnumProperty<LedgerRegisterColumns>('columns', columns))
+      ..add(IterableProperty<String>('heads', heads, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'searchResults',
+          value: searchResults,
+          ifTrue: 'searchResults',
+        ),
+      )
+      ..add(FlagProperty('showDay', value: showDay, ifTrue: 'showDay'));
+  }
+
+  @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) =>
         LedgerLayout.isWide(context) && box.maxWidth < _deskFrom
@@ -194,7 +211,10 @@ class LedgerRegister extends StatelessWidget {
           items.add(const SizedBox(height: _monthGap));
         } else if (showDay) {
           items.add(
-            ColoredBox(color: t.hairline, child: const SizedBox(height: 1)),
+            ColoredBox(
+              color: t.hairline,
+              child: const SizedBox(height: LedgerLayout.hairline),
+            ),
           );
         }
       }
@@ -250,7 +270,7 @@ class _ColumnHeads extends StatelessWidget {
     final acct = widths.account == null ? null : next();
     final amount = next();
     return Container(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: LedgerSpacing.s8),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: t.border)),
       ),
@@ -259,7 +279,7 @@ class _ColumnHeads extends StatelessWidget {
         children: [
           SizedBox(width: widths.when, child: head(when)),
           // The heads' mark column is 36 wide in every register.
-          const SizedBox(width: 36),
+          const SizedBox(width: LedgerSpacing.s36),
           Expanded(child: head(name)),
           if (cat != null) SizedBox(width: widths.category, child: head(cat)),
           if (acct != null) SizedBox(width: widths.account, child: head(acct)),
@@ -301,6 +321,15 @@ class LedgerDayGroup extends StatelessWidget {
 
   /// The day's transactions.
   final List<Widget> rows;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(DiagnosticsProperty<num>('net', net));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -364,24 +393,39 @@ class LedgerDayGroup extends StatelessWidget {
         textBaseline: TextBaseline.alphabetic,
         spacing: _headGap,
         children: [
-          Semantics(
-            header: true,
-            child: Text(label.toUpperCase(), style: t.label),
-          ),
-          // The note gives way to the net on a narrow head; at a large text
-          // size it wraps, whole.
-          if (note case final words?)
+          // At a large text size the note drops whole under the day when
+          // the two don't fit side by side, never broken mid-date.
+          if (larger && note != null)
             Expanded(
-              child: Text(
-                words.toUpperCase(),
-                maxLines: larger ? null : 1,
-                softWrap: larger,
-                overflow: larger ? null : TextOverflow.ellipsis,
-                style: t.meta,
+              child: Wrap(
+                spacing: _headGap,
+                children: [
+                  Semantics(
+                    header: true,
+                    child: Text(label.toUpperCase(), style: t.label),
+                  ),
+                  Text(note!.toUpperCase(), style: t.meta),
+                ],
               ),
             )
-          else
-            const Spacer(),
+          else ...[
+            Semantics(
+              header: true,
+              child: Text(label.toUpperCase(), style: t.label),
+            ),
+            // The note gives way to the net on a narrow head.
+            if (note case final words?)
+              Expanded(
+                child: Text(
+                  words.toUpperCase(),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: t.meta,
+                ),
+              )
+            else
+              const Spacer(),
+          ],
           Semantics(
             label: 'Net ${LedgerFormat.money(net, showSign: true)}',
             excludeSemantics: true,
@@ -486,12 +530,35 @@ class LedgerTransactionRow extends StatelessWidget {
   /// Opens the transaction's record.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('category', category))
+      ..add(StringProperty('when', when))
+      ..add(StringProperty('account', account))
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(StringProperty('initials', initials, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('glyph', glyph, defaultValue: null))
+      ..add(FlagProperty('pending', value: pending, ifTrue: 'pending'))
+      ..add(StringProperty('pendingLabel', pendingLabel))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -535,12 +602,14 @@ class LedgerTransactionRow extends StatelessWidget {
       final widths = (scope ?? _phoneScope).widths;
       final cells = side.sized(14).colored(t.textSecondary);
       row = Padding(
-        padding: EdgeInsets.symmetric(vertical: dense ? 8 : 12),
+        padding: EdgeInsets.symmetric(
+          vertical: dense ? LedgerSpacing.s8 : LedgerSpacing.s12,
+        ),
         child: LayoutBuilder(
           builder: (context, room) {
             final w = _fit(widths, room.maxWidth);
             return Row(
-              spacing: 16,
+              spacing: LedgerSpacing.s16,
               children: [
                 SizedBox(
                   width: w.when,
@@ -590,9 +659,11 @@ class LedgerTransactionRow extends StatelessWidget {
       );
     } else {
       row = Padding(
-        padding: EdgeInsets.symmetric(vertical: dense ? 10 : 14),
+        padding: EdgeInsets.symmetric(
+          vertical: dense ? LedgerSpacing.s10 : LedgerSpacing.s14,
+        ),
         child: Row(
-          spacing: 14,
+          spacing: LedgerSpacing.s14,
           children: [
             lead,
             Expanded(
@@ -607,7 +678,7 @@ class LedgerTransactionRow extends StatelessWidget {
                   // one line (a large text size), the time turns under,
                   // whole.
                   Wrap(
-                    spacing: 8,
+                    spacing: LedgerSpacing.s8,
                     children: [
                       Text(
                         category,
@@ -671,6 +742,14 @@ class LedgerBillList extends StatelessWidget {
   final List<String>? heads;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(
+      IterableProperty<String>('heads', heads, defaultValue: null),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
@@ -687,8 +766,8 @@ class LedgerBillList extends StatelessWidget {
       children: [
         if (wide && words != null && words.length == 5)
           Container(
-            margin: const EdgeInsets.only(top: 8),
-            padding: const EdgeInsets.only(bottom: 8),
+            margin: const EdgeInsets.only(top: LedgerSpacing.s8),
+            padding: const EdgeInsets.only(bottom: LedgerSpacing.s8),
             decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: t.border)),
             ),
@@ -760,12 +839,32 @@ class LedgerBillRow extends StatelessWidget {
   /// Opens the bill.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('due', due))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('account', account))
+      ..add(StringProperty('status', status))
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(FlagProperty('autopay', value: autopay, ifTrue: 'autopay'))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -787,7 +886,7 @@ class LedgerBillRow extends StatelessWidget {
     if (wide) {
       final cells = side.sized(14).colored(t.textSecondary);
       row = Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s14),
         child: Row(
           spacing: _gapWide,
           children: [
@@ -818,9 +917,9 @@ class LedgerBillRow extends StatelessWidget {
       );
     } else {
       row = Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s14),
         child: Row(
-          spacing: 14,
+          spacing: LedgerSpacing.s14,
           children: [
             LedgerDateTab(due),
             Expanded(
@@ -832,10 +931,10 @@ class LedgerBillRow extends StatelessWidget {
                     end: figure,
                     minLength: _leaderMin,
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: LedgerSpacing.s2),
                   if (larger)
                     Wrap(
-                      spacing: 14,
+                      spacing: LedgerSpacing.s14,
                       children: [
                         Text(account, style: side),
                         Text(
@@ -860,7 +959,7 @@ class LedgerBillRow extends StatelessWidget {
                             style: side,
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: LedgerSpacing.s14),
                         Text(
                           status,
                           maxLines: 1,

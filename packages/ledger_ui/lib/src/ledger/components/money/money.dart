@@ -111,6 +111,17 @@ class LedgerFigure extends StatelessWidget {
   final bool showCents;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(EnumProperty<LedgerFigureSize>('size', size))
+      ..add(EnumProperty<LedgerFigureTone>('tone', tone))
+      ..add(FlagProperty('showSign', value: showSign, ifTrue: 'showSign'))
+      ..add(FlagProperty('showCents', value: showCents, ifTrue: 'showCents'));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final ink = switch (tone) {
@@ -282,6 +293,23 @@ class LedgerAmount extends StatelessWidget {
   final TextAlign? textAlign;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(EnumProperty<LedgerTone>('tone', tone))
+      ..add(FlagProperty('showSign', value: showSign, ifTrue: 'showSign'))
+      ..add(EnumProperty<LedgerAmountSize>('size', size))
+      ..add(
+        DiagnosticsProperty<TextAlign>(
+          'textAlign',
+          textAlign,
+          defaultValue: null,
+        ),
+      );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final inks = t.inks(tone);
@@ -352,6 +380,15 @@ class LedgerStatementTotal extends StatelessWidget {
   final LedgerTone tone;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(DiagnosticsProperty<num>('amount', amount))
+      ..add(EnumProperty<LedgerTone>('tone', tone));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     return Column(
@@ -410,7 +447,8 @@ class LedgerLeaderLine extends StatelessWidget {
     this.minLength = LedgerChromeMetrics.leaderMin,
     this.centred = false,
     super.key,
-  });
+  }) : assert(inset >= 0),
+       assert(minLength >= 0);
 
   /// The name, at the line's start.
   final Widget start;
@@ -427,6 +465,15 @@ class LedgerLeaderLine extends StatelessWidget {
   /// Whether the parts and the leader stand centred on the line rather
   /// than on one baseline.
   final bool centred;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('inset', inset))
+      ..add(DoubleProperty('minLength', minLength))
+      ..add(FlagProperty('centred', value: centred, ifTrue: 'centred'));
+  }
 
   @override
   Widget build(BuildContext context) => LedgerFace(

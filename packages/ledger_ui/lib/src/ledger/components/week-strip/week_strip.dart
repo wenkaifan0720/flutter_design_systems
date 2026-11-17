@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../theme.dart';
@@ -68,6 +69,16 @@ class LedgerWeekStrip extends StatelessWidget {
     LedgerDayMark.today => 'today, still to do',
     LedgerDayMark.upcoming => 'to come',
   };
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<LedgerDayMark>('days', days))
+      ..add(IterableProperty<String>('letters', letters))
+      ..add(IterableProperty<String>('names', names))
+      ..add(StringProperty('label', label));
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -371,25 +371,20 @@ Future<List<String>> _overlays(
 /// ui_core's checks of what a person sees, on the screen the test pumped (under [_shotKey]).
 // At its own 3x: at 2x a ringed circle's apex and a box's side fall a whole device pixel off as drawn where at 3x
 // they read true (probe, 11-11: a ringed bell beside a ringed box, day and night).
+/// How long one of the every-page tests may take: each reads every screen and gallery page, three densities, as
+/// drawn at 3x (1440 by night: 7.7 minutes alone, the fields page 45 s a density; 11-14). Four at once on a loaded
+/// Mac ran past 20.
+const Duration _reading = Duration(minutes: 40);
+
 const DesignRowCheck _rowCheck = DesignRowCheck(look: 'Ledger');
 const DesignWidthCheck _widthCheck = DesignWidthCheck(look: 'Ledger');
 
-/// A select's list as Ledger draws it (msg_9d4382691e94): its words on the field's words. The field's words stand on
-/// their ruled line with no inset, so the list's paper stands out past the field by its rows' inset.
-const DesignWidthCheck _listCheck = DesignWidthCheck(look: 'Ledger');
-
-/// ui_core's checkList holds a list's edge on its field's edge, which lines the words up only for a field whose words
-/// stand inset in a face of their own. Ledger's field has no face and no inset: its list's paper stands out past the
-/// field by the rows' inset ([outdent]) so the words share one x. Set aside by kind: a leading edge out past the
-/// field's by that outdent, as laid out and as drawn, and nothing else.
-bool _outdentAside(String problem, double outdent) {
-  if (!problem.contains('its leading edge is')) return false;
-  final pasts = RegExp(r'(\d+(?:\.\d+)?) px out past')
-      .allMatches(problem)
-      .map((m) => double.parse(m[1]!))
-      .toList();
-  return pasts.isNotEmpty && pasts.every((v) => (v - outdent).abs() <= 1);
-}
+/// A select's list as Ledger draws it (msg_f34cb1737578): the field's width on the field's leading edge, its words 16
+/// in from the field's. A field written on a rule has no inset; the list's rows keep their 16.
+const DesignWidthCheck _listCheck = DesignWidthCheck(
+  look: 'Ledger',
+  listWordsIndent: 16,
+);
 
 /// ui_core's checkList takes for the field's popup any box whose top or foot is within 32 px of the field's (by height
 /// alone), drawn in a layer other than the field's after it. Ledger's navigation frame paints its side bar or rail
@@ -549,13 +544,19 @@ bool _onCard(String p, Set<String> names) {
   return m == null || names.contains(m[1]) || names.contains(m[2]);
 }
 
-/// The spoken names of the pills on screen by day: each chip's, each filter's options, and a compact date picker's
-/// two pills (the same rule over the same raised fill; r10 read them 0.8 device px off at 1440 by day only).
+/// The spoken names of the pills on screen by day: each chip's, each filter's options, each toggle group's options
+/// (the filters' pill, ringed the same; 0.2.0 read a chosen one beside one not 4 device px off at 390 and 1440 by
+/// day, and by night 0.5 device px off with 0.1 px as laid out: the chosen pill's light fill read beside the dark
+/// ones, so a toggle group's are held by night too), and a compact date picker's two pills (the same rule over the
+/// same raised fill; r10 read them 0.8 device px off at 1440 by day only).
 Set<String> _dayPills(WidgetTester t) => {
   for (final e in find.byType(LedgerChip).evaluate())
     if (!e.ledgerTheme.isDark) (e.widget as LedgerChip).label,
-  for (final e in find.byType(LedgerFilters).evaluate())
-    if (!e.ledgerTheme.isDark) ...(e.widget as LedgerFilters).options,
+  for (final e in find.byWidgetPredicate((w) => w is LedgerFilters).evaluate())
+    if (!e.ledgerTheme.isDark) ..._filterWords(e.widget),
+  for (final e
+      in find.byWidgetPredicate((w) => w is LedgerToggleGroup).evaluate())
+    ..._toggleWords(e.widget),
   for (final e in find.byType(LedgerDatePicker).evaluate())
     if (!e.ledgerTheme.isDark &&
         (e.widget as LedgerDatePicker).presentation ==
@@ -563,6 +564,21 @@ Set<String> _dayPills(WidgetTester t) => {
       for (final part in const ['date', 'time'])
         '${(e.widget as LedgerDatePicker).label} $part',
 };
+
+/// A filter set's pills as it words them, whatever it holds.
+Iterable<String> _filterWords(Widget filters) {
+  final f = filters as LedgerFilters<Object?>;
+  return [for (final o in f.options) f.wordsOf(o)];
+}
+
+/// A toggle group's options as it words them, whatever it holds (read through `dynamic`: its `labelOf` takes its own
+/// type, which a cast to `LedgerToggleGroup<Object?>` would refuse).
+Iterable<String> _toggleWords(Widget group) {
+  // Through `dynamic`: a group of strings' labelOf takes a String, so a cast to a group of Object? would not hold it.
+  final dynamic g = group;
+  // ignore: avoid_dynamic_calls
+  return [for (final Object? o in g.options as List) g.labelOf(o) as String];
+}
 
 final RegExp _capsFinding = RegExp(
   r'^a \w+ "(.+?)" beside a \w+ "(.+?)": the capitals of ".+?" are ([\d.]+) px (?:below|above) the row.s centre line '
@@ -630,19 +646,29 @@ Future<List<String>> _rowsAsDrawn(WidgetTester t) async {
 /// composer's Attach, with a composer on screen. Likewise a masthead's month bar (Earlier months, the month, the next
 /// month not yet there), read as a stepper since its disabled disc is drawn in pencil rather than faded: it stands in
 /// the title's place, its ways at the bar's two ends by design. Any other width finding fails.
+/// The titles of the disclosures on screen. ui_core's width check takes any one-line control with an expanded state
+/// for a select's closed face; a disclosure's head is a ruled row across its column (an accordion's), which opens its
+/// own section in place, never a list of choices, so it is held to its column, not to its words.
+Set<String> _disclosures(WidgetTester t) => {
+  for (final e in find.byType(LedgerDisclosure).evaluate())
+    (e.widget as LedgerDisclosure).title,
+};
+
 Future<List<String>> _widthsAsDrawn(WidgetTester t) async {
   final composer = find.byType(LedgerComposer).evaluate().isNotEmpty;
   final monthBar = find
       .byWidgetPredicate((w) => w is LedgerTopBar && w.heading != null)
       .evaluate()
       .isNotEmpty;
+  final disclosures = _disclosures(t);
   return [
     for (final p in (await _widthCheck.check(
       _screen(t),
       runAsync: t.runAsync,
     )).problems)
       if (!(composer && p.startsWith('a stepper "Attach": ')) &&
-          !(monthBar && p.startsWith('a stepper "Earlier months": ')))
+          !(monthBar && p.startsWith('a stepper "Earlier months": ')) &&
+          !disclosures.any((d) => p.startsWith('a select "$d": ')))
         p,
   ];
 }
@@ -866,7 +892,10 @@ Future<List<String>> _fills(WidgetTester t) async {
     }
   }
 
-  for (final e in find.byType(LedgerSegmentedControl).evaluate()) {
+  for (final e
+      in find
+          .byWidgetPredicate((w) => w is LedgerSegmentedControl)
+          .evaluate()) {
     final ring = _global(
       e.renderObject! as RenderBox,
       Offset.zero & (e.renderObject! as RenderBox).size,
@@ -1216,7 +1245,7 @@ void main() {
           print('design6 rows set aside, $when: $_asideRows');
           expect(found, isEmpty, reason: found.join('\n'));
         },
-        timeout: const Timeout(Duration(minutes: 20)),
+        timeout: const Timeout(_reading),
         tags: 'goldens',
       );
     }
@@ -1402,7 +1431,7 @@ void main() {
       }
       expect(found, isEmpty, reason: found.join('\n'));
     },
-    timeout: const Timeout(Duration(minutes: 20)),
+    timeout: const Timeout(_reading),
     tags: 'goldens',
   );
 
@@ -1433,114 +1462,115 @@ void main() {
         ]);
         expect(found, isEmpty, reason: found.join('\n'));
       },
-      timeout: const Timeout(Duration(minutes: 20)),
+      timeout: const Timeout(_reading),
       tags: 'goldens',
     );
   }
 
-  testWidgets("a field's list: its words on the field's words, its paper out past the field by its rows' inset, at "
-      'least as wide', (t) async {
-    addTearDown(t.view.reset);
-    final found = <String>[];
-    final gutters = <double>{};
-    for (final name in const ['settings', 'entry']) {
-      final s = _screens.firstWhere((s) => s.name == name);
-      for (final size in const [
-        Size(390, 844),
-        Size(600, 900),
-        Size(1024, 768),
-        Size(1440, 900),
-        Size(1920, 1080),
-      ]) {
-        await _quill(t, s, size);
-        final selects = find.byWidgetPredicate((w) => w is LedgerSelect);
-        for (var i = 0; i < selects.evaluate().length; i++) {
-          final select = selects.at(i);
-          final face = find
-              .descendant(of: select, matching: find.byType(LedgerPressable))
-              .first;
-          await _reveal(t, face);
-          final faceRect = t.getRect(face);
-          await t.tap(face);
-          await t.pumpAndSettle();
-          final list = find.byWidgetPredicate(
-            (w) => w.runtimeType.toString().startsWith('_SelectList'),
-          );
-          final at =
-              '$name ${size.width.round()} "${(t.widget(select) as LedgerSelect).label}"';
-          if (list.evaluate().isEmpty) {
-            found.add('$at: no list opened');
-            continue;
-          }
-          // Out past the field by the rows' 16 (Quill's lists carry no glyphs), 4 inside the window at most.
-          final outdent = math.min(16.0, faceRect.left - 4);
-          found.addAll([
-            for (final p in (await _listCheck.checkList(
-              t.element(face),
-              runAsync: t.runAsync,
-            )).problems)
-              if (!_outdentAside(p, outdent) && !_barAside(t, p, faceRect))
-                '$at, as ui_core reads it: $p',
-          ]);
-          final listRect = t.getRect(
-            find
-                .descendant(of: list, matching: find.byType(DecoratedBox))
-                .first,
-          );
-          if ((faceRect.left - listRect.left - outdent).abs() > .5) {
-            found.add(
-              '$at: the list starts at ${listRect.left}, the field at ${faceRect.left}, not $outdent out',
+  testWidgets(
+    "a field's list: on the field's leading edge, at least its width, its words 16 in from the field's",
+    (t) async {
+      addTearDown(t.view.reset);
+      final found = <String>[];
+      final gutters = <double>{};
+      for (final name in const ['settings', 'entry']) {
+        final s = _screens.firstWhere((s) => s.name == name);
+        for (final size in const [
+          Size(390, 844),
+          Size(600, 900),
+          Size(1024, 768),
+          Size(1440, 900),
+          Size(1920, 1080),
+        ]) {
+          await _quill(t, s, size);
+          final selects = find.byWidgetPredicate((w) => w is LedgerSelect);
+          for (var i = 0; i < selects.evaluate().length; i++) {
+            final select = selects.at(i);
+            final face = find
+                .descendant(of: select, matching: find.byType(LedgerPressable))
+                .first;
+            await _reveal(t, face);
+            final faceRect = t.getRect(face);
+            await t.tap(face);
+            await t.pumpAndSettle();
+            final list = find.byWidgetPredicate(
+              (w) => w.runtimeType.toString().startsWith('_SelectList'),
             );
-          }
-          if (listRect.width < faceRect.width - .5) {
-            found.add(
-              '$at: the list is ${listRect.width} wide, the field ${faceRect.width}',
+            final at =
+                '$name ${size.width.round()} "${(t.widget(select) as LedgerSelect).label}"';
+            if (list.evaluate().isEmpty) {
+              found.add('$at: no list opened');
+              continue;
+            }
+            found.addAll([
+              for (final p in (await _listCheck.checkList(
+                t.element(face),
+                runAsync: t.runAsync,
+              )).problems)
+                if (!_barAside(t, p, faceRect)) '$at, as ui_core reads it: $p',
+            ]);
+            final listRect = t.getRect(
+              find
+                  .descendant(of: list, matching: find.byType(DecoratedBox))
+                  .first,
             );
-          }
-          final fieldWords = find
-              .descendant(of: face, matching: find.byType(RichText))
-              .evaluate()
-              .map((e) {
-                final p = e.renderObject! as RenderParagraph;
-                return _global(p, Offset.zero & p.size).left;
-              })
-              .first;
-          final words = find
-              .descendant(of: list, matching: find.byType(RichText))
-              .evaluate()
-              .where((e) {
-                final p = e.renderObject! as RenderParagraph;
-                return !_isIcon(p) && _words(p).trim().isNotEmpty;
-              });
-          final xs = <double>{};
-          for (final e in words) {
-            final p = e.renderObject! as RenderParagraph;
-            final x = _global(p, Offset.zero & p.size).left;
-            gutters.add((x - listRect.left).roundToDouble());
-            xs.add(x.roundToDouble());
-            if ((x - fieldWords).abs() > .5 && outdent == 16) {
+            if ((listRect.left - faceRect.left).abs() > .5) {
               found.add(
-                '$at: "${_words(p)}" starts at $x, the field\'s words at $fieldWords',
+                '$at: the list starts at ${listRect.left}, the field at ${faceRect.left}',
               );
             }
+            if (listRect.width < faceRect.width - .5) {
+              found.add(
+                '$at: the list is ${listRect.width} wide, the field ${faceRect.width}',
+              );
+            }
+            final fieldWords = find
+                .descendant(of: face, matching: find.byType(RichText))
+                .evaluate()
+                .map((e) {
+                  final p = e.renderObject! as RenderParagraph;
+                  return _global(p, Offset.zero & p.size).left;
+                })
+                .first;
+            final words = find
+                .descendant(of: list, matching: find.byType(RichText))
+                .evaluate()
+                .where((e) {
+                  final p = e.renderObject! as RenderParagraph;
+                  return !_isIcon(p) && _words(p).trim().isNotEmpty;
+                });
+            final xs = <double>{};
+            for (final e in words) {
+              final p = e.renderObject! as RenderParagraph;
+              final x = _global(p, Offset.zero & p.size).left;
+              gutters.add((x - listRect.left).roundToDouble());
+              xs.add(x.roundToDouble());
+              // The rows' 16 in from the field's words (Quill's lists carry no glyphs).
+              if ((x - fieldWords - 16).abs() > .5) {
+                found.add(
+                  '$at: "${_words(p)}" starts at $x, not 16 in from the field\'s words at $fieldWords',
+                );
+              }
+            }
+            // design6 P (11-11 night): every option's words start on one x, and the open list is never cut.
+            if (xs.length > 1) {
+              found.add("$at: the options' words start at ${xs.join(', ')}");
+            }
+            if (_cut(t, list) case final cut?) found.add('$at: $cut');
+            await t.sendKeyEvent(LogicalKeyboardKey.escape);
+            await t.pumpAndSettle();
           }
-          // design6 P (11-11 night): every option's words start on one x, and the open list is never cut.
-          if (xs.length > 1) {
-            found.add("$at: the options' words start at ${xs.join(', ')}");
-          }
-          if (_cut(t, list) case final cut?) found.add('$at: $cut');
-          await t.sendKeyEvent(LogicalKeyboardKey.escape);
-          await t.pumpAndSettle();
         }
       }
-    }
-    if (gutters.length != 1) {
-      found.add(
-        'the lists set their words at ${gutters.join(', ')} from their start',
-      );
-    }
-    expect(found, isEmpty, reason: found.join('\n'));
-  }, tags: 'goldens');
+      if (gutters.length != 1) {
+        found.add(
+          'the lists set their words at ${gutters.join(', ')} from their start',
+        );
+      }
+      expect(found, isEmpty, reason: found.join('\n'));
+    },
+    tags: 'goldens',
+  );
 
   testWidgets(
     "a field's list in a card keeps its options' words on one x, glyphs or none, and is never cut",
@@ -1851,15 +1881,18 @@ Future<void> _list(WidgetTester t, String at, List<String> found) async {
   );
   final field = t.getRect(face);
   // Ledger's own way, as the pilot's `.menu-item` sets it: the words one gutter (16) in, past the glyphs' column
-  // (18 and 12) when any option has a glyph; the paper out past the field by those 46 where the window has the room
-  // (4 kept inside it), so the words stand on the field's.
+  // (18 and 12) when any option has a glyph; the paper on the field's leading edge (msg_f34cb1737578).
   if ((xs['Rent']! - paper.left - (16 + 18 + 12)).abs() > .5) {
     found.add('$at: the words stand ${xs['Rent']! - paper.left} in, not 46');
   }
-  final outdent = math.min(46.0, field.left - 4);
-  if ((field.left - paper.left - outdent).abs() > .5) {
+  if ((paper.left - field.left).abs() > .5) {
     found.add(
-      '$at: the paper stands ${field.left - paper.left} out past the field, not $outdent',
+      '$at: the paper starts at ${paper.left}, the field at ${field.left}',
+    );
+  }
+  if (paper.width < field.width - .5) {
+    found.add(
+      '$at: the paper is ${paper.width} wide, the field ${field.width}',
     );
   }
   if (_cut(t, list) case final cut?) found.add('$at: $cut');

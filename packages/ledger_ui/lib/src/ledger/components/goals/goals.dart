@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../format.dart';
@@ -52,12 +53,31 @@ class LedgerGoalLine extends StatelessWidget {
   /// Opens the goal.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<num>('saved', saved))
+      ..add(DiagnosticsProperty<num>('target', target))
+      ..add(StringProperty('by', by, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +89,7 @@ class LedgerGoalLine extends StatelessWidget {
       role: LedgerPressRole.link,
       label: [name, '$percent%', ?by].join(', '),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s16),
         child: _GoalBody(
           icon: icon,
           name: name,
@@ -136,19 +156,19 @@ class _GoalBody extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: LedgerSpacing.s12),
         LedgerGauge(
           ratio: _share(saved, target),
           tick: false,
           tone: LedgerGaugeTone.green,
           semanticLabel: 'Saved',
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: LedgerSpacing.s6),
         Row(
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          spacing: 12,
+          spacing: LedgerSpacing.s12,
           children: [
             Flexible(
               child: Text.rich(
@@ -197,6 +217,12 @@ double _share(num saved, num target) =>
 /// LedgerGoalCard(icon: LucideIcons.plane, name: 'Lisbon in May', saved: 2840, target: 4000, by: 'by May 2027', status: 'Behind', behindSchedule: true, note: 'Add \$110 to stay on track.', onTap: () {})
 /// ```
 class LedgerGoalCard extends StatelessWidget {
+  // A goal from 1024: 22 above and below, its figure 44 from its words; on a
+  // phone 18 above and below.
+  static const double _deskPad = 22;
+  static const double _deskColumnGap = 44;
+  static const double _phonePad = 18;
+
   /// A goal's card: [name], [saved] of [target], its [status] and [note].
   const LedgerGoalCard({
     required this.icon,
@@ -240,12 +266,40 @@ class LedgerGoalCard extends StatelessWidget {
   /// Opens the goal.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<num>('saved', saved))
+      ..add(DiagnosticsProperty<num>('target', target))
+      ..add(StringProperty('by', by, defaultValue: null))
+      ..add(StringProperty('status', status))
+      ..add(
+        FlagProperty(
+          'behindSchedule',
+          value: behindSchedule,
+          ifTrue: 'behindSchedule',
+        ),
+      )
+      ..add(StringProperty('note', note))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -267,19 +321,19 @@ class LedgerGoalCard extends StatelessWidget {
     );
     final Widget card = wide
         ? Padding(
-            padding: const EdgeInsets.symmetric(vertical: 22),
+            padding: const EdgeInsets.symmetric(vertical: _deskPad),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
-              spacing: 44,
+              spacing: _deskColumnGap,
               children: [
                 Expanded(child: body),
                 SizedBox(
                   width: 264,
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 6),
+                    padding: const EdgeInsets.only(top: LedgerSpacing.s6),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: 8,
+                      spacing: LedgerSpacing.s8,
                       children: [pill, words],
                     ),
                   ),
@@ -288,15 +342,15 @@ class LedgerGoalCard extends StatelessWidget {
             ),
           )
         : Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
+            padding: const EdgeInsets.symmetric(vertical: _phonePad),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 body,
-                const SizedBox(height: 10),
+                const SizedBox(height: LedgerSpacing.s10),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 10,
+                  spacing: LedgerSpacing.s10,
                   children: [
                     pill,
                     Expanded(child: words),
@@ -362,12 +416,38 @@ class LedgerCategoryLine extends StatelessWidget {
   /// Opens the category.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(DiagnosticsProperty<num>('spent', spent))
+      ..add(DiagnosticsProperty<num>('budget', budget))
+      ..add(DoubleProperty('pace', pace, defaultValue: null))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(
+        StringProperty(
+          'trailingSubtitle',
+          trailingSubtitle,
+          defaultValue: null,
+        ),
+      )
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -401,9 +481,9 @@ class LedgerCategoryLine extends StatelessWidget {
     final Widget line;
     if (wide) {
       line = Padding(
-        padding: const EdgeInsets.symmetric(vertical: 13),
+        padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s14),
         child: Row(
-          spacing: 28,
+          spacing: LedgerSpacing.s28,
           children: [
             SizedBox(
               width: 236,
@@ -411,9 +491,9 @@ class LedgerCategoryLine extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   title,
-                  const SizedBox(height: 2),
+                  const SizedBox(height: LedgerSpacing.s2),
                   // One line; at a large text size the second turns under.
-                  Wrap(spacing: 12, children: words),
+                  Wrap(spacing: LedgerSpacing.s12, children: words),
                 ],
               ),
             ),
@@ -424,19 +504,19 @@ class LedgerCategoryLine extends StatelessWidget {
       );
     } else {
       line = Padding(
-        padding: const EdgeInsets.only(top: 15, bottom: 14),
+        padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             LedgerLeaderLine(start: title, end: amount),
-            const SizedBox(height: 10),
+            const SizedBox(height: LedgerSpacing.s10),
             gauge,
-            const SizedBox(height: 6),
+            const SizedBox(height: LedgerSpacing.s6),
             // At its ends, in one face (so on one baseline); at a large
             // text size the end words turn under.
             Wrap(
               alignment: WrapAlignment.spaceBetween,
-              spacing: 12,
+              spacing: LedgerSpacing.s12,
               children: words,
             ),
           ],

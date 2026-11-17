@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../theme.dart';
@@ -49,6 +50,18 @@ class LedgerMemberCard extends StatelessWidget {
 
   /// The lines under the rule, usually [LedgerKeyValue]s.
   final List<Widget> details;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('kind', kind))
+      ..add(StringProperty('since', since))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('initials', initials))
+      ..add(StringProperty('subtitle', subtitle))
+      ..add(DiagnosticsProperty<LedgerSeal>('seal', seal));
+  }
 
   @override
   Widget build(BuildContext context) {

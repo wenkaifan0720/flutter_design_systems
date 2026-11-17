@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../format.dart';
@@ -86,6 +87,15 @@ class LedgerGlyph extends StatelessWidget {
 
   /// How large it stands.
   final LedgerGlyphSize size;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(EnumProperty<LedgerGlyphTone>('tone', tone))
+      ..add(EnumProperty<LedgerGlyphSize>('size', size));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -226,6 +236,17 @@ class LedgerMonogram extends StatelessWidget {
   final bool selected;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('initials', initials, defaultValue: null))
+      ..add(EnumProperty<LedgerMonogramTone>('tone', tone))
+      ..add(EnumProperty<LedgerMonogramSize>('size', size))
+      ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
@@ -299,7 +320,7 @@ class LedgerMonogram extends StatelessWidget {
 
   // `.person.is-on .mg`: box-shadow 0 0 0 3px paper, 0 0 0 4px green;
   // `.member-mg` the same 3 and 4 in the paper-hi and the ink.
-  static const double _ringGap = 3;
+  static const double _ringGap = 2;
 }
 
 /// A frame of the faint ink's dashes round its [child] (`border: 1px
@@ -325,6 +346,12 @@ class LedgerDashedFrame extends StatelessWidget {
   /// Inside the dashes: 18 for a new goal's tile (`.goal-new`), 16 18 for
   /// a goal's blank preview (`.goal-blank`).
   final EdgeInsetsGeometry padding;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<EdgeInsetsGeometry>('padding', padding));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -354,6 +381,12 @@ class LedgerDateTab extends StatelessWidget {
 
   /// The day shown.
   final DateTime date;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<DateTime>('date', date));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -456,6 +489,15 @@ class LedgerPill extends StatelessWidget {
   final LedgerPillSize size;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(EnumProperty<LedgerPillTone>('tone', tone))
+      ..add(EnumProperty<LedgerPillSize>('size', size));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final small = size == LedgerPillSize.small;
@@ -527,6 +569,14 @@ class LedgerTag extends StatelessWidget {
   final LedgerTagTone tone;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(EnumProperty<LedgerTagTone>('tone', tone));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final unread = tone == LedgerTagTone.unread;
@@ -565,7 +615,7 @@ class LedgerTag extends StatelessWidget {
   /// The most a tag's word grows with the reader's text (130%).
   static const double textScale = 1.3;
 
-  // `.tag`: 18 tall, 0 7, a 1 px ring.
+  // `.tag`: 18 tall, 0 6 (7 in the source), a 1 px ring.
   static const double _height = 18;
-  static const double _pad = 7;
+  static const double _pad = 6;
 }

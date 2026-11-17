@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart' show setEquals;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -53,13 +53,15 @@ class LedgerPressable extends StatelessWidget {
     this.isError = false,
     this.radius = 0,
     this.ringInsets = EdgeInsets.zero,
+    this.rulesFocus = true,
     this.excludeChild = true,
     this.pressedOpacity = 1,
     this.focusNode,
     this.autofocus = false,
     this.onLongPress,
     super.key,
-  });
+  }) : assert(radius >= 0),
+       assert(pressedOpacity >= 0 && pressedOpacity <= 1);
 
   /// What a press does; null makes the control inert.
   final VoidCallback? onTap;
@@ -111,6 +113,13 @@ class LedgerPressable extends StatelessWidget {
   /// How far inside the child's box the face stands.
   final EdgeInsetsGeometry ringInsets;
 
+  /// Whether keyboard focus rules the double rule under the face. False
+  /// where the face writes focus in its own words instead (an option in an
+  /// open list doubles the rule under its words, on its own row, where a
+  /// rule across the list would read as a break between options); such a
+  /// face reads focus from [LedgerPressStates].
+  final bool rulesFocus;
+
   /// Whether the child's own semantics are replaced by [label].
   final bool excludeChild;
 
@@ -122,8 +131,58 @@ class LedgerPressable extends StatelessWidget {
   /// the pressable's own.
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onLongPress', onLongPress))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('value', value, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(EnumProperty<LedgerPressRole>('role', role))
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('toggled', toggled, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('checked', checked, defaultValue: null))
+      ..add(FlagProperty('mixed', value: mixed, ifTrue: 'mixed'))
+      ..add(
+        FlagProperty(
+          'inMutuallyExclusiveGroup',
+          value: inMutuallyExclusiveGroup,
+          ifTrue: 'inMutuallyExclusiveGroup',
+        ),
+      )
+      ..add(DiagnosticsProperty<bool>('expanded', expanded, defaultValue: null))
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
+      ..add(DoubleProperty('radius', radius))
+      ..add(DiagnosticsProperty<EdgeInsetsGeometry>('ringInsets', ringInsets))
+      ..add(
+        FlagProperty(
+          'rulesFocus',
+          value: rulesFocus,
+          ifFalse: 'face writes focus',
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'excludeChild',
+          value: excludeChild,
+          ifTrue: 'excludeChild',
+        ),
+      )
+      ..add(DoubleProperty('pressedOpacity', pressedOpacity))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,6 +217,7 @@ class LedgerPressable extends StatelessWidget {
           insets: ringInsets,
           color: t.textPrimary,
           shown:
+              rulesFocus &&
               states.contains(WidgetState.focused) &&
               !LedgerFieldRuled.rules(context, focusNode),
           child: pressedOpacity < 1
@@ -209,6 +269,12 @@ class LedgerPressStates extends InheritedWidget {
   @override
   bool updateShouldNotify(LedgerPressStates oldWidget) =>
       !setEquals(oldWidget.states, states);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<Object?>('states', states));
+  }
 }
 
 /// The focus mark a Ledger control wears: the accountant's double rule,
@@ -230,7 +296,7 @@ class LedgerFocusRing extends StatelessWidget {
     this.insets = EdgeInsets.zero,
     this.shown = true,
     super.key,
-  });
+  }) : assert(radius >= 0);
 
   /// The corner radius of the face it rules under.
   final double radius;
@@ -246,6 +312,16 @@ class LedgerFocusRing extends StatelessWidget {
 
   /// Whether the rule is drawn: the control keeps one tree either way.
   final bool shown;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('radius', radius))
+      ..add(ColorProperty('color', color))
+      ..add(DiagnosticsProperty<EdgeInsetsGeometry>('insets', insets))
+      ..add(FlagProperty('shown', value: shown, ifTrue: 'shown'));
+  }
 
   @override
   Widget build(BuildContext context) {

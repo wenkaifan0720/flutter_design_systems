@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -20,8 +21,14 @@ class LedgerFieldFrame extends StatelessWidget {
     required this.line,
     this.focusNode,
     this.labelCursor = SystemMouseCursors.click,
+    this.ruled = true,
+    this.style,
     super.key,
   });
+
+  /// Whether the frame rules under the whole line; false leaves the line to
+  /// rule its own parts (a code's slots, each on its own short rule).
+  final bool ruled;
 
   /// What [DesignField] made: the words, the state, the control's node.
   final DesignFieldParts parts;
@@ -36,15 +43,54 @@ class LedgerFieldFrame extends StatelessWidget {
   /// field's caret cursor, a select's click.
   final MouseCursor labelCursor;
 
+  /// The field's own style, over `components.textField`: its `edge` inks
+  /// the rule, its `fill` lays a paper behind the line and its `padding`
+  /// stands round it.
+  final DesignStyle? style;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('ruled', value: ruled, ifTrue: 'ruled'))
+      ..add(DiagnosticsProperty<DesignFieldParts>('parts', parts))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(DiagnosticsProperty<MouseCursor>('labelCursor', labelCursor))
+      ..add(
+        DiagnosticsProperty<DesignStyle>('style', style, defaultValue: null),
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wrong = parts.errorText != null;
-    final rule = !parts.enabled
-        ? t.border
-        : wrong
-        ? t.danger
-        : t.headRule;
+    final so = DesignStyleOf(
+      [style, t.components.textField],
+      {
+        if (!parts.enabled) WidgetState.disabled,
+        if (wrong) WidgetState.error,
+        if (parts.focused) WidgetState.focused,
+      },
+    );
+    final rule =
+        so.edge ??
+        (!parts.enabled
+            ? t.border
+            : wrong
+            ? t.danger
+            : t.headRule);
+    final room = so.padding(Directionality.of(context));
+    final paper = so.fill;
+    Widget line = this.line;
+    if (room != null) line = Padding(padding: room, child: line);
+    if (paper != null) line = ColoredBox(color: paper, child: line);
     final label = parts.labelText;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -84,59 +130,80 @@ class LedgerFieldFrame extends StatelessWidget {
               ),
             ),
           ),
-        LedgerFace(
-          style: LedgerFaceStyle(ink: rule),
-          duration: LedgerMotion.base,
-          builder: (context, s, line) => Stack(
-            children: [
-              line!,
-              PositionedDirectional(
-                start: 0,
-                end: 0,
-                bottom: 0,
-                height: 1,
-                child: ColoredBox(color: s.ink),
-              ),
-              // Focus doubles the rule: a second line over the first, the
-              // focus rule's gap apart, as a ledger rules a total.
-              LedgerEase(
-                value: parts.focused && parts.enabled ? 1 : 0,
-                duration: LedgerMotion.base,
-                builder: (context, drawn, _) => PositionedDirectional(
+        if (!ruled)
+          LedgerFieldRuled(node: focusNode, child: line)
+        else
+          LedgerFace(
+            style: LedgerFaceStyle(ink: rule),
+            duration: LedgerMotion.base,
+            builder: (context, s, line) => Stack(
+              children: [
+                line!,
+                // The rules are paint over the line's foot: a tap there
+                // reaches the line (a ColoredBox would take it).
+                PositionedDirectional(
                   start: 0,
                   end: 0,
-                  bottom: 1 + LedgerChromeMetrics.focusGap,
+                  bottom: 0,
                   height: 1,
-                  child: FractionallySizedBox(
-                    alignment: AlignmentDirectional.centerStart,
-                    widthFactor: drawn.clamp(0.0, 1.0),
-                    child: ColoredBox(color: s.ink),
+                  child: IgnorePointer(child: ColoredBox(color: s.ink)),
+                ),
+                // Focus doubles the rule: a second line over the first, the
+                // focus rule's gap apart, as a ledger rules a total.
+                LedgerEase(
+                  value: parts.focused && parts.enabled ? 1 : 0,
+                  duration: LedgerMotion.base,
+                  builder: (context, drawn, _) => PositionedDirectional(
+                    start: 0,
+                    end: 0,
+                    bottom: 1 + LedgerChromeMetrics.focusGap,
+                    height: 1,
+                    child: IgnorePointer(
+                      child: FractionallySizedBox(
+                        alignment: AlignmentDirectional.centerStart,
+                        widthFactor: drawn.clamp(0.0, 1.0),
+                        child: ColoredBox(color: s.ink),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
+            child: LedgerFieldRuled(node: focusNode, child: line),
           ),
-          child: LedgerFieldRuled(node: focusNode, child: line),
-        ),
         if (parts.error case final error?)
-          Padding(
-            padding: const EdgeInsets.only(top: _noteGap),
-            child: DefaultTextStyle(
-              style: t.bodySmall.sized(12).line(16).colored(t.danger),
-              child: error,
+          _ground(
+            Padding(
+              padding: const EdgeInsets.only(top: _noteGap),
+              child: DefaultTextStyle(
+                style: t.bodySmall.sized(12).line(16).colored(t.danger),
+                child: error,
+              ),
             ),
           )
         else if (parts.helper case final help?)
-          Padding(
-            padding: const EdgeInsets.only(top: _noteGap),
-            child: DefaultTextStyle(
-              style: t.bodySmall.sized(12).line(16).colored(t.textTertiary),
-              child: help,
+          _ground(
+            Padding(
+              padding: const EdgeInsets.only(top: _noteGap),
+              child: DefaultTextStyle(
+                style: t.bodySmall.sized(12).line(16).colored(t.textTertiary),
+                child: help,
+              ),
             ),
           ),
       ],
     );
   }
+
+  // The field's ground under its help or error: a press there focuses the
+  // field, as a press on its label does, so a tap reaches all of the box a
+  // screen reader outlines. It adds nothing a screen reader hears.
+  Widget _ground(Widget note) => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    excludeFromSemantics: true,
+    onTap: parts.enabled ? focusNode?.requestFocus : null,
+    child: note,
+  );
 
   static const double _labelGap = 2;
   static const double _noteGap = 6;

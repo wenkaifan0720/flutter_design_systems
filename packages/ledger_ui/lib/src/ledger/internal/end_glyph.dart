@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -39,6 +40,15 @@ class LedgerEndGlyph extends StatelessWidget {
     LucideIcons.x: 5,
     LucideIcons.arrowRight: 4,
   };
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(DoubleProperty('size', size))
+      ..add(ColorProperty('color', color));
+  }
 
   @override
   Widget build(BuildContext context) {

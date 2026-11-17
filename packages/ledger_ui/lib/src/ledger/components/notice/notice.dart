@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../theme.dart';
@@ -55,12 +56,33 @@ class LedgerNoteRow extends StatelessWidget {
   /// Opens what the notification is about.
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('body', body))
+      ..add(StringProperty('when', when))
+      ..add(FlagProperty('unread', value: unread, ifTrue: 'unread'))
+      ..add(StringProperty('unreadTag', unreadTag))
+      ..add(StringProperty('unreadLabel', unreadLabel))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +95,9 @@ class LedgerNoteRow extends StatelessWidget {
             WidgetSpan(
               alignment: PlaceholderAlignment.middle,
               child: Padding(
-                padding: const EdgeInsetsDirectional.only(start: 8),
+                padding: const EdgeInsetsDirectional.only(
+                  start: LedgerSpacing.s8,
+                ),
                 child: LedgerTag(unreadTag, tone: LedgerTagTone.unread),
               ),
             ),
@@ -93,7 +117,7 @@ class LedgerNoteRow extends StatelessWidget {
     );
     final row = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 14,
+      spacing: LedgerSpacing.s14,
       children: [
         LedgerGlyph(
           icon,
@@ -104,7 +128,7 @@ class LedgerNoteRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               LedgerLeaderLine(start: name, end: time),
-              const SizedBox(height: 3),
+              const SizedBox(height: LedgerSpacing.s4),
               Text(body, style: t.bodySmall),
             ],
           ),
@@ -119,7 +143,10 @@ class LedgerNoteRow extends StatelessWidget {
       label: unread ? '$title, $unreadLabel' : title,
       child: unread
           ? Container(
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+              padding: const EdgeInsets.symmetric(
+                vertical: LedgerSpacing.s14,
+                horizontal: LedgerSpacing.s12,
+              ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(t.smallRadius),
                 gradient: LinearGradient(
@@ -132,7 +159,7 @@ class LedgerNoteRow extends StatelessWidget {
               child: row,
             )
           : Padding(
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s14),
               child: row,
             ),
     );
@@ -169,15 +196,25 @@ class LedgerEffect extends StatelessWidget {
   final bool blocking;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('text', text))
+      ..add(FlagProperty('blocking', value: blocking, ifTrue: 'blocking'));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final words = t.body.sized(14).line(20).colored(t.textSecondary);
     return MergeSemantics(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s12),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 14,
+          spacing: LedgerSpacing.s14,
           children: [
             LedgerGlyph(
               icon,
@@ -220,11 +257,19 @@ class LedgerEffects extends StatelessWidget {
   final bool ruled;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<LedgerEffect>('children', children))
+      ..add(FlagProperty('ruled', value: ruled, ifTrue: 'ruled'));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     return Padding(
       // `.effects`: margin-top 6px.
-      padding: const EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.only(top: LedgerSpacing.s6),
       child: Container(
         decoration: ruled
             ? BoxDecoration(

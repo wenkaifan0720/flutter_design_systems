@@ -243,6 +243,87 @@ void main() {
     });
   });
 
+  group('paper corners', () {
+    test('every preset keeps its own corners, within the bounds', () {
+      for (final id in LedgerThemeData.presets) {
+        for (final brightness in Brightness.values) {
+          final t = LedgerThemeData.preset(id, brightness);
+          expect(
+            t.cardRadius,
+            inInclusiveRange(0, LedgerThemeData.cardRadiusMost),
+          );
+          expect(
+            t.smallRadius,
+            inInclusiveRange(0, LedgerThemeData.smallRadiusMost),
+          );
+          expect(
+            t.sheetRadius,
+            inInclusiveRange(0, LedgerThemeData.sheetRadiusMost),
+          );
+        }
+      }
+      // A record's corners are its own (paper's: 16, 8, 24 and 12).
+      final terracotta = LedgerThemeData.preset('terracotta', Brightness.light);
+      expect(terracotta.cardRadius, paperTokens.shape.cardRadius);
+      expect(terracotta.smallRadius, paperTokens.shape.smallRadius);
+      expect(terracotta.sheetRadius, paperTokens.shape.sheetRadius);
+      expect(terracotta.controlRadius, paperTokens.shape.controlRadius);
+    });
+
+    test('a paper rounded past its bound fails an assert that says why', () {
+      final day = LedgerThemeData.light();
+      for (final (make, rule) in <(LedgerThemeData Function(), String)>[
+        (
+          () => day.copyWith(cardRadius: 40),
+          'a Ledger slip rounds from 0 to 22',
+        ),
+        (
+          () => day.copyWith(cardRadius: -1),
+          'a Ledger slip rounds from 0 to 22',
+        ),
+        (
+          () => day.copyWith(smallRadius: 12),
+          'a Ledger date tab rounds from 0 to 10',
+        ),
+        (
+          () => day.copyWith(sheetRadius: 40),
+          'a Ledger sheet or dialog rounds from 0',
+        ),
+      ]) {
+        expect(
+          make,
+          throwsA(
+            isA<AssertionError>().having(
+              (e) => '${e.message}',
+              'message',
+              contains(rule),
+            ),
+          ),
+        );
+      }
+      // The ends of each range, and any corner for what the hand holds.
+      final ends = day.copyWith(
+        cardRadius: 22,
+        smallRadius: 0,
+        sheetRadius: 28,
+      );
+      expect(
+        [ends.cardRadius, ends.smallRadius, ends.sheetRadius],
+        [22, 0, 28],
+      );
+      expect(day.copyWith(controlRadius: 0).controlRadius, 0);
+      expect(day.copyWith(controlRadius: 999).controlRadius, 999);
+    });
+
+    test('a curve past its ends keeps a paper within its bound', () {
+      final square = LedgerThemeData.light().copyWith(sheetRadius: 0);
+      final round = LedgerThemeData.light().copyWith(sheetRadius: 28);
+      expect(LedgerThemeData.lerp(square, round, 1.2).sheetRadius, 28);
+      expect(LedgerThemeData.lerp(square, round, -.2).sheetRadius, 0);
+      expect(LedgerThemeData.lerp(square, round, .5).sheetRadius, 14);
+    });
+  });
+
   group('LedgerFormat', () {
     final now = DateTime(2026, 10, 28, 19, 40);
 
@@ -399,7 +480,8 @@ void main() {
     await t.pumpWidget(
       app(const ValueKey('none'), const [DefaultWidgetsLocalizations.delegate]),
     );
-    expect(seen, isA<DefaultMaterialLocalizations>());
+    // English: Flutter's own in the catalog's app, material_ui's English in the package.
+    expect(seen?.copyButtonLabel, 'Copy');
     expect(seen, isNot(isA<_OwnWords>()));
   });
 }

@@ -258,9 +258,9 @@ void main() {
             debugShowCheckedModeBanner: false,
             builder: (context, page) =>
                 LedgerHost(brightness: Brightness.light, child: page!),
-            home: RepaintBoundary(
+            home: const RepaintBoundary(
               key: _shot,
-              child: const ColoredBox(
+              child: ColoredBox(
                 color: Color(0xFFF2EDE3),
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(24, 100, 24, 0),
@@ -310,9 +310,9 @@ void main() {
             debugShowCheckedModeBanner: false,
             builder: (context, page) =>
                 LedgerHost(brightness: Brightness.light, child: page!),
-            home: RepaintBoundary(
+            home: const RepaintBoundary(
               key: _shot,
-              child: const ColoredBox(
+              child: ColoredBox(
                 color: Color(0xFF959595),
                 child: Padding(
                   padding: EdgeInsets.only(top: 100),

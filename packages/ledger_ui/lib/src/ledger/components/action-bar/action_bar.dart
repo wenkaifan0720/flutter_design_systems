@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
@@ -78,6 +79,28 @@ class LedgerActionBar extends StatelessWidget {
 
   /// The room under which the summary stacks over the act.
   static const double stackBelow = 320;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('summary', summary, defaultValue: null))
+      ..add(StringProperty('detail', detail, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
+      ..add(StringProperty('busyLabel', busyLabel))
+      ..add(FlagProperty('floating', value: floating, ifTrue: 'floating'));
+  }
 
   @override
   Widget build(BuildContext context) {

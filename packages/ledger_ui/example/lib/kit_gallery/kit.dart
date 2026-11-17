@@ -15,10 +15,12 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'gallery_words.dart';
 import 'keel.dart';
 import 'theme.dart';
 
@@ -81,6 +83,17 @@ LedgerThemeData _atKitDensity(LedgerThemeData t) {
 LedgerThemeData kitTheme(Brightness brightness) =>
     _atKitDensity(LedgerThemeData.preset(kitPreset, brightness));
 
+/// The example's own Material theme. Flutter's `MaterialPageRoute` reads the
+/// app's `ThemeData`, not the host's, so it carries Ledger's page motion:
+/// a pushed page is laid down in Ledger's motion, never flown in by the
+/// platform's slide or zoom (the README's line). Built each time, so it is
+/// the platform's of the moment (a theme keeps the platform it was made on).
+ThemeData get kitAppTheme => ThemeData(
+  pageTransitionsTheme: const PageTransitionsTheme(
+    builders: ledgerPageTransitions,
+  ),
+);
+
 Widget _kitApp({required Brightness brightness, required Widget home}) =>
     Builder(
       builder: (context) => LedgerTheme.maybeOf(context) != null
@@ -92,6 +105,10 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
           : MaterialApp(
               debugShowCheckedModeBanner: false,
               title: 'Keel',
+              theme: kitAppTheme,
+              // ui_core's words in the 30 languages it speaks.
+              localizationsDelegates: galleryDelegates,
+              supportedLocales: DesignLocalizations.supportedLocales,
               builder: (context, child) => LedgerHost(
                 light: kitTheme(Brightness.light),
                 dark: kitTheme(Brightness.dark),
@@ -314,6 +331,10 @@ Widget kitSpecimenStage({
 }) => MaterialApp(
   debugShowCheckedModeBanner: false,
   title: 'Keel',
+  theme: kitAppTheme,
+  // ui_core's words in the 30 languages it speaks.
+  localizationsDelegates: galleryDelegates,
+  supportedLocales: DesignLocalizations.supportedLocales,
   builder: (context, home) => LedgerHost(
     light: _atKitDensity(LedgerThemeData.preset(style, Brightness.light)),
     dark: _atKitDensity(LedgerThemeData.preset(style, Brightness.dark)),
@@ -356,4 +377,49 @@ class _KitStage extends StatelessWidget {
       _KitPlace.screen => child,
     },
   );
+}
+
+/// Lays [child] out [by] wider at each side than the room it is given and
+/// centred on it, so what it clips (a list, a band) reaches into the page's
+/// gutter and a shadow at the column's edge falls whole. Its own size is
+/// the room's; a tap reaches only inside it.
+class KitBleed extends SingleChildRenderObjectWidget {
+  /// [child], [by] wider at each side.
+  const KitBleed({required this.by, required super.child, super.key});
+
+  /// How far past the room at each side.
+  final double by;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) => _RenderBleed(by);
+
+  @override
+  void updateRenderObject(BuildContext context, RenderObject renderObject) =>
+      (renderObject as _RenderBleed).by = by;
+}
+
+class _RenderBleed extends RenderShiftedBox {
+  _RenderBleed(this._by) : super(null);
+
+  double _by;
+  set by(double value) {
+    if (value == _by) return;
+    _by = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void performLayout() {
+    final c = child!;
+    final width = constraints.maxWidth + 2 * _by;
+    c.layout(
+      BoxConstraints.tightFor(width: width).copyWith(
+        minHeight: constraints.minHeight,
+        maxHeight: constraints.maxHeight,
+      ),
+      parentUsesSize: true,
+    );
+    (c.parentData! as BoxParentData).offset = Offset(-_by, 0);
+    size = constraints.constrain(Size(constraints.maxWidth, c.size.height));
+  }
 }

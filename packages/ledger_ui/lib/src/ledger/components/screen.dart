@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
@@ -38,7 +39,7 @@ import 'top_bar.dart';
 /// ```
 ///
 /// ```dart
-/// LedgerScreen.form(topBar: const LedgerTopBar(title: 'New entry'), footer: save, body: fields)
+/// LedgerScreen.form(topBar: const LedgerTopBar(title: 'New entry'), footer: save, body: form)
 /// ```
 class LedgerScreen extends StatelessWidget {
   /// A page.
@@ -107,6 +108,20 @@ class LedgerScreen extends StatelessWidget {
       return identical(authored, LedgerTopBar.none) ? null : authored;
     }
     return const LedgerTopBar();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('scrollable', value: scrollable, ifTrue: 'scrollable'))
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      );
   }
 
   @override

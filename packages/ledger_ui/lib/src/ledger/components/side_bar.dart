@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart' show ShellAction;
 import 'package:ui_core/ui_core.dart';
@@ -79,6 +82,33 @@ class LedgerSideBar extends StatelessWidget {
 
   /// Whether it stands on the media ground (opaque).
   final bool solid;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('extended', value: extended, ifTrue: 'extended'))
+      ..add(IterableProperty<LedgerNavItem>('items', items))
+      ..add(IntProperty('selectedIndex', selectedIndex, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<int>>.has(
+          'onDestinationSelected',
+          onDestinationSelected,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'profileSelected',
+          value: profileSelected,
+          ifTrue: 'profileSelected',
+        ),
+      )
+      ..add(FlagProperty('solid', value: solid, ifTrue: 'solid'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -196,8 +226,10 @@ class LedgerSideBar extends StatelessWidget {
       label: label,
       selected: on,
       radius: _railMark / 2,
-      // The chosen mark's fill and ring ink in, in Ledger's one motion.
+      // The chosen mark's fill and ring land at once, in the frame its page
+      // does, as the side bar's links do.
       child: LedgerFace(
+        duration: Duration.zero,
         style: LedgerFaceStyle(
           ink: green
               ? t.onAccent
@@ -405,9 +437,11 @@ class _Link extends StatelessWidget {
       label: item.label,
       selected: current,
       radius: t.controlRadius,
-      // The chosen link's fill, ring and ink come and go in Ledger's one
-      // motion.
+      // The chosen link's fill, ring and ink land at once, in the frame its
+      // page does: a selection never trails the page it names (the press
+      // has already sunk the link on the tap).
       child: LedgerFace(
+        duration: Duration.zero,
         style: LedgerFaceStyle(
           ink: current ? t.textPrimary : t.textSecondary,
           quiet: current ? t.accent : t.textSecondary,
@@ -419,8 +453,12 @@ class _Link extends StatelessWidget {
                 : null,
           ),
         ),
+        // 40, or the tap floor where a finger reaches it (a tablet's).
         builder: (context, s, _) => Container(
-          height: LedgerChromeMetrics.navLink,
+          height: math.max(
+            LedgerChromeMetrics.navLink,
+            DesignTapTargets.of(context).floorOn().height,
+          ),
           padding: const EdgeInsets.symmetric(
             horizontal: LedgerChromeMetrics.navPad,
           ),
@@ -483,7 +521,16 @@ class _Foot extends StatelessWidget {
         onTap: open == null ? null : () => open(context),
         label: 'Profile and settings',
         selected: current,
-        child: larger ? _stacked(t, meta) : _beside(t, meta),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: DesignTapTargets.of(context).floorOn().height,
+          ),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            heightFactor: 1,
+            child: larger ? _stacked(t, meta) : _beside(t, meta),
+          ),
+        ),
       ),
     );
   }

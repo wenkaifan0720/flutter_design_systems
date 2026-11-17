@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../format.dart';
@@ -46,7 +47,7 @@ class LedgerGauge extends StatelessWidget {
     this.budgetLabel,
     this.semanticLabel = 'Spent',
     super.key,
-  });
+  }) : assert(ratio >= 0);
 
   /// Spent over budget (or saved over target): 1 is the budget.
   final double ratio;
@@ -82,6 +83,22 @@ class LedgerGauge extends StatelessWidget {
   static const double _h = 16;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('ratio', ratio))
+      ..add(DoubleProperty('pace', pace, defaultValue: null))
+      ..add(DoubleProperty('budgetAt', budgetAt))
+      ..add(FlagProperty('tick', value: tick, ifTrue: 'tick'))
+      ..add(EnumProperty<LedgerGaugeTone>('tone', tone))
+      ..add(StringProperty('paceLabel', paceLabel, defaultValue: null))
+      ..add(StringProperty('startLabel', startLabel, defaultValue: null))
+      ..add(StringProperty('endLabel', endLabel, defaultValue: null))
+      ..add(StringProperty('budgetLabel', budgetLabel, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final line = t.meta.sized(11).line(16).tracked(0);
@@ -110,7 +127,9 @@ class LedgerGauge extends StatelessWidget {
                       x: pace! * at,
                       shift: -1.0,
                       child: Padding(
-                        padding: const EdgeInsetsDirectional.only(end: 6),
+                        padding: const EdgeInsetsDirectional.only(
+                          end: LedgerSpacing.s6,
+                        ),
                         child: Text(
                           paceLabel!,
                           style: line.medium.colored(t.pace),
@@ -119,7 +138,7 @@ class LedgerGauge extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: LedgerSpacing.s2),
               ],
               LedgerWholeAspect(
                 aspectRatio: _w / _h,
@@ -131,7 +150,7 @@ class LedgerGauge extends StatelessWidget {
               if (startLabel != null ||
                   endLabel != null ||
                   budgetLabel != null) ...[
-                const SizedBox(height: 6),
+                const SizedBox(height: LedgerSpacing.s6),
                 _LabelRow(
                   mirrored: rtl,
                   marks: [
@@ -337,6 +356,14 @@ class LedgerStackBar extends StatelessWidget {
   final String semanticLabel;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<LedgerStackPart>('parts', parts))
+      ..add(StringProperty('semanticLabel', semanticLabel));
+  }
+
+  @override
   Widget build(BuildContext context) => Semantics(
     label: semanticLabel,
     excludeSemantics: true,
@@ -360,7 +387,9 @@ class _StackPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const w = 600.0, h = 22.0, gap = 3.0;
+    const w = 600.0, h = 22.0;
+    // The parts 2 apart on screen, in the drawing's own (stretched) units.
+    final gap = LedgerSpacing.s2 * w / size.width;
     // preserveAspectRatio="none": stretched across, strokes and all.
     canvas
       ..save()
@@ -432,6 +461,16 @@ class LedgerBudgetRule extends StatelessWidget {
   final String semanticLabel;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('spent', spent))
+      ..add(DoubleProperty('budget', budget))
+      ..add(DoubleProperty('suggested', suggested))
+      ..add(StringProperty('semanticLabel', semanticLabel));
+  }
+
+  @override
   Widget build(BuildContext context) => Semantics(
     label: semanticLabel,
     value:
@@ -456,7 +495,7 @@ class _RulePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const w = 432.0, h = 30.0, b0 = 9.0, b1 = 21.0, spacing = 3.0;
+    const w = 432.0, h = 30.0, b0 = 9.0, b1 = 21.0, hatch = 3.0;
     canvas
       ..save()
       ..scale(size.width / w);
@@ -472,7 +511,7 @@ class _RulePainter extends CustomPainter {
     final xin = math.min(xs, xb);
     canvas
       ..drawPath(
-        ledgerHatchRect(0, b0, xin, b1, spacing),
+        ledgerHatchRect(0, b0, xin, b1, hatch),
         ledgerStroke(ledgerInk(ink, .8), .75),
       )
       ..drawRect(
@@ -485,7 +524,7 @@ class _RulePainter extends CustomPainter {
         ..drawRect(over, Paint()..color = ledgerInk(red, .12))
         ..drawRect(over, ledgerStroke(red, .9))
         ..drawPath(
-          ledgerHatchRect(xb, b0, xs, b1, spacing * .8),
+          ledgerHatchRect(xb, b0, xs, b1, hatch * .8),
           ledgerStroke(red, .85),
         );
     }
@@ -577,17 +616,23 @@ class LedgerChartKey extends StatelessWidget {
   final List<LedgerKeyEntry> entries;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<LedgerKeyEntry>('entries', entries));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final words = t.meta.sized(11).line(16).tracked(0).colored(t.textTertiary);
     return Wrap(
-      spacing: 16,
-      runSpacing: 6,
+      spacing: LedgerSpacing.s16,
+      runSpacing: LedgerSpacing.s6,
       children: [
         for (final e in entries)
           Row(
             mainAxisSize: MainAxisSize.min,
-            spacing: 6,
+            spacing: LedgerSpacing.s6,
             children: [
               CustomPaint(
                 size: switch (e.swatch) {

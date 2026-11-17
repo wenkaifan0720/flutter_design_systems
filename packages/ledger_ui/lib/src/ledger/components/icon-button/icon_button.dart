@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../chrome_metrics.dart';
 import '../../internal/end_glyph.dart';
 import '../../internal/face.dart';
-import '../../internal/hit_slop.dart';
+import '../../internal/styled.dart';
+import '../../style.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 
@@ -34,8 +37,8 @@ enum LedgerIconButtonSize {
 /// or with [LedgerIconButton.outlined] ringed in the rule (the way back, a
 /// sheet's close, the desktop's bell). [showBadge] marks it with the green
 /// dot ringed in the paper (unread notes). A null [onPressed] disables it:
-/// its glyph in pencil, the third ink. Taps reach 44 round it at every
-/// size. A left or right chevron or arrow turns the other way in a
+/// its glyph in pencil, the third ink. It lays out at the tap floor round
+/// its face at every size (44 for a finger, 24 for a pointer). A left or right chevron or arrow turns the other way in a
 /// right-to-left page, so a way back points to the reading start.
 ///
 /// ```dart
@@ -55,6 +58,8 @@ class LedgerIconButton extends StatelessWidget {
     this.showBadge = false,
     this.focusNode,
     this.autofocus = false,
+    this.tapAlignment = AlignmentDirectional.center,
+    this.style,
     super.key,
   }) : outlined = false;
 
@@ -67,11 +72,19 @@ class LedgerIconButton extends StatelessWidget {
     this.showBadge = false,
     this.focusNode,
     this.autofocus = false,
+    this.tapAlignment = AlignmentDirectional.center,
+    this.style,
     super.key,
   }) : outlined = true;
 
   /// Its glyph.
   final IconData icon;
+
+  /// Where the face stands in its tap target where the target is larger:
+  /// centred, or on the edge a keyline runs ([AlignmentDirectional.centerStart]
+  /// at the start of a column, [AlignmentDirectional.centerEnd] at its end),
+  /// the target growing away from it.
+  final AlignmentDirectional tapAlignment;
 
   /// What it does, spoken (Back to Home, Close).
   final String semanticLabel;
@@ -85,13 +98,17 @@ class LedgerIconButton extends StatelessWidget {
   /// Whether a rule rings it.
   final bool outlined;
 
+  /// This button's look, over `components.iconButton`. It reads `fill`,
+  /// `foreground`, `edge`, `side`, `overlay`, `shape` and `iconSize`.
+  final LedgerStyle? style;
+
   /// Whether it carries the green dot.
   final bool showBadge;
 
   /// The button's focus; never disposed when given.
   final FocusNode? focusNode;
 
-  /// Whether it takes the focus when it first stands.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   /// Its side at [size] under [t]'s density: what a line it shares with
@@ -102,6 +119,32 @@ class LedgerIconButton extends StatelessWidget {
   /// ```
   static double sideOf(LedgerThemeData t, LedgerIconButtonSize size) =>
       t.density.height(size.size, floor: _floor);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(
+        DiagnosticsProperty<AlignmentDirectional>('tapAlignment', tapAlignment),
+      )
+      ..add(StringProperty('semanticLabel', semanticLabel))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(EnumProperty<LedgerIconButtonSize>('size', size))
+      ..add(FlagProperty('outlined', value: outlined, ifTrue: 'outlined'))
+      ..add(
+        DiagnosticsProperty<LedgerStyle>('style', style, defaultValue: null),
+      )
+      ..add(FlagProperty('showBadge', value: showBadge, ifTrue: 'showBadge'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -115,25 +158,38 @@ class LedgerIconButton extends StatelessWidget {
           Positioned.fill(
             // Disabled, the glyph is in pencil (the third ink); the change
             // moves in Ledger's one motion.
-            child: LedgerFace(
-              style: LedgerFaceStyle(
-                ink: onPressed == null ? t.textTertiary : t.textPrimary,
-                ground: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: outlined ? Border.all(color: t.border) : null,
-                ),
-              ),
-              builder: (context, s, _) => DecoratedBox(
-                decoration: s.ground,
-                child: Center(
-                  child: ledgerGlyph(
-                    context,
-                    icon,
-                    size: size.glyph,
-                    color: s.ink,
+            child: Builder(
+              builder: (context) {
+                final so = LedgerStyleOf(
+                  [style, t.components.iconButton],
+                  {
+                    ...LedgerPressStates.of(context),
+                    if (onPressed == null) WidgetState.disabled,
+                  },
+                );
+                return LedgerFace(
+                  style: so.dress(
+                    LedgerFaceStyle(
+                      ink: onPressed == null ? t.textTertiary : t.textPrimary,
+                      ground: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: outlined ? Border.all(color: t.border) : null,
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                  builder: (context, s, _) => DecoratedBox(
+                    decoration: s.ground,
+                    child: Center(
+                      child: ledgerGlyph(
+                        context,
+                        icon,
+                        size: so.iconSize ?? size.glyph,
+                        color: s.ink,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           if (showBadge)
@@ -156,7 +212,8 @@ class LedgerIconButton extends StatelessWidget {
         ],
       ),
     );
-    return LedgerHitSlop(
+    return DesignTapTarget(
+      alignment: tapAlignment,
       child: LedgerPressable(
         onTap: onPressed,
         label: semanticLabel,
@@ -189,6 +246,7 @@ class LedgerBell extends StatelessWidget {
     required this.onPressed,
     this.focusNode,
     this.autofocus = false,
+    this.tapAlignment = AlignmentDirectional.center,
     super.key,
   }) : _outlined = false;
 
@@ -198,6 +256,7 @@ class LedgerBell extends StatelessWidget {
     required this.onPressed,
     this.focusNode,
     this.autofocus = false,
+    this.tapAlignment = AlignmentDirectional.center,
     super.key,
   }) : _outlined = true;
 
@@ -207,14 +266,38 @@ class LedgerBell extends StatelessWidget {
   /// What a press does; null disables it.
   final VoidCallback? onPressed;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   final bool _outlined;
+
+  /// Where the bell stands in its tap target where the target is larger:
+  /// centred, or on the edge a keyline runs ([AlignmentDirectional.centerStart]
+  /// at the start of a column, [AlignmentDirectional.centerEnd] at its end),
+  /// the target growing away from it.
+  final AlignmentDirectional tapAlignment;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IntProperty('unread', unread))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<AlignmentDirectional>('tapAlignment', tapAlignment),
+      );
+  }
 
   @override
   Widget build(BuildContext context) => _outlined
@@ -225,6 +308,7 @@ class LedgerBell extends StatelessWidget {
           showBadge: unread > 0,
           focusNode: focusNode,
           autofocus: autofocus,
+          tapAlignment: tapAlignment,
         )
       : LedgerIconButton(
           LucideIcons.bell,
@@ -233,5 +317,6 @@ class LedgerBell extends StatelessWidget {
           showBadge: unread > 0,
           focusNode: focusNode,
           autofocus: autofocus,
+          tapAlignment: tapAlignment,
         );
 }

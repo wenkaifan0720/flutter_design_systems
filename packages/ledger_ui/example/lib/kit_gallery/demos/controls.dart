@@ -75,10 +75,12 @@ Widget kitControlsDemo(Brightness brightness) => kitScreen(
       'Icon buttons, disabled',
       children: [
         kitRow(const [
+          // Each row's first face on the column's start keyline.
           LedgerIconButton.outlined(
             LucideIcons.chevronLeft,
             semanticLabel: 'Back to Home',
             size: LedgerIconButtonSize.small,
+            tapAlignment: AlignmentDirectional.centerStart,
             onPressed: null,
           ),
           LedgerIconButton(
@@ -165,10 +167,12 @@ Widget kitSpecimenIconButtons() => Column(
     Row(
       spacing: LedgerSpacing.s16,
       children: [
+        // Each row's first face on the column's start keyline.
         LedgerIconButton.outlined(
           LucideIcons.chevronLeft,
           semanticLabel: 'Back to Home',
           size: LedgerIconButtonSize.small,
+          tapAlignment: AlignmentDirectional.centerStart,
           onPressed: () {},
         ),
         LedgerIconButton.outlined(
@@ -182,7 +186,11 @@ Widget kitSpecimenIconButtons() => Column(
     Row(
       spacing: LedgerSpacing.s16,
       children: [
-        LedgerBell(unread: 1, onPressed: () {}),
+        LedgerBell(
+          unread: 1,
+          onPressed: () {},
+          tapAlignment: AlignmentDirectional.centerStart,
+        ),
         LedgerBell.outlined(unread: 1, onPressed: () {}),
       ],
     ),
@@ -195,6 +203,7 @@ Widget kitSpecimenAvatar() => Align(
     initials: 'MH',
     label: 'Profile and settings',
     onTap: () {},
+    tapAlignment: AlignmentDirectional.centerStart,
   ),
 );
 

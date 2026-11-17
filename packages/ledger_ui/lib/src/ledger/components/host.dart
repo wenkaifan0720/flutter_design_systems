@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:ui_core/host.dart';
+import 'package:ui_core/ui_core.dart';
 
+import '../page_motion.dart';
 import '../theme.dart';
+import 'toast.dart';
 
 /// The one mount of Ledger. Picks the theme for the brightness in force,
 /// publishes it as a [LedgerTheme], gives the platform primitives
@@ -13,7 +17,7 @@ import '../theme.dart';
 /// break. Day to night (or
 /// one theme to another) the paper and the ink fade across in
 /// [LedgerMotion.slow] ([AnimatedLedgerTheme]); with reduced motion on they
-/// change at once. Every render host
+/// change at once. It hosts the toasts ([LedgerToaster]). Every render host
 /// mounts it once above its Navigator: the app in its router builder, a page
 /// preview in its own.
 ///
@@ -80,6 +84,32 @@ class LedgerHost extends StatelessWidget {
   static SystemUiOverlayStyle systemBarsOf(LedgerThemeData theme) =>
       theme.isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark;
 
+  // LedgerSpacing's steps are every 2 from 2 to 40: the grid it declares.
+  static const _grid = DesignSpacing(grid: 2);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<LedgerThemeData>(
+          'light',
+          light,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<LedgerThemeData>('dark', dark, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<Brightness>(
+          'brightness',
+          brightness,
+          defaultValue: null,
+        ),
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     final wanted =
@@ -118,7 +148,13 @@ class LedgerHost extends StatelessWidget {
                     style: now.body,
                     child: IconTheme(
                       data: IconThemeData(color: now.textPrimary, size: 24),
-                      child: _HostMark(child: child),
+                      // Ledger's parts stand on a 2-pt grid (LedgerSpacing's
+                      // steps), declared for ui_core's spacing check.
+                      child: DesignSpacingScope(
+                        spacing: _grid,
+                        // Toasts stand over the app, above its navigator.
+                        child: LedgerToaster(child: _HostMark(child: child)),
+                      ),
                     ),
                   ),
                 ),
@@ -211,4 +247,11 @@ ThemeData _ledgerMaterialTheme(LedgerThemeData t, TargetPlatform platform) =>
         selectionHandleColor: t.accent,
       ),
       dividerTheme: DividerThemeData(color: t.hairline, thickness: 1),
+      // A page pushed under the host is laid down in Ledger's motion (and on
+      // iOS keeps its edge swipe back): this theme stands nearest the
+      // navigator, so without the map its routes would fly in on the
+      // platform's slide or zoom, a LedgerPage's included.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: ledgerPageTransitions,
+      ),
     );

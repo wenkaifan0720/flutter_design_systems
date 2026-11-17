@@ -179,9 +179,9 @@ void main() {
       final rings = act(t).boxShadow!;
       expect(rings, hasLength(2));
       expect(rings.first.color, theme.accent);
-      expect(rings.first.spreadRadius, 4);
+      expect(rings.first.spreadRadius, 3);
       expect(rings.last.color, theme.sideBarFill);
-      expect(rings.last.spreadRadius, 3);
+      expect(rings.last.spreadRadius, 2);
       // Not current: the green drop alone.
       await t.pumpWidget(bar(0));
       expect(act(t).boxShadow, theme.primaryShadow);
@@ -348,7 +348,12 @@ void main() {
     testWidgets("a day's head stands in the body's line", (t) async {
       await _everywhere(
         t,
-        LedgerDayGroup('Today', note: 'Wed, Oct 28', net: -9.65, rows: []),
+        const LedgerDayGroup(
+          'Today',
+          note: 'Wed, Oct 28',
+          net: -9.65,
+          rows: [],
+        ),
         (wide, theme) {
           // `.dayhead` 10 0 9 (12 0 10) over its rule; its net a span in
           // the body's 15/1.45 (21.75) line: 41.75 tall on a phone, as the
@@ -364,10 +369,10 @@ void main() {
     testWidgets('a day stands 4 under its month rule', (t) async {
       await _everywhere(
         t,
-        LedgerRegister(
+        const LedgerRegister(
           children: [
-            const LedgerMonthRule('September 2026', note: 'Last month'),
-            LedgerDayGroup('Wed, Sep 30', net: -18.4, rows: const []),
+            LedgerMonthRule('September 2026', note: 'Last month'),
+            LedgerDayGroup('Wed, Sep 30', net: -18.4, rows: []),
           ],
         ),
         (wide, theme) => expect(

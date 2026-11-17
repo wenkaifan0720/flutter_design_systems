@@ -236,7 +236,7 @@ abstract final class LedgerChromeMetrics {
   static const double sideActText = 14;
 
   /// The gap between the current side bar act and its green ring.
-  static const double sideActRingGap = 3;
+  static const double sideActRingGap = 2;
 
   /// The green ring round the current side bar act.
   static const double sideActRing = 1;
@@ -315,7 +315,11 @@ abstract final class LedgerChromeMetrics {
   /// The distance between the sheet head's title and its close.
   static const double sheetHeadGap = 12;
 
-  /// How far the sheet's close hangs into the gutter.
+  /// How far the sheet's close hung into the gutter, before 0.2.0.
+  @Deprecated(
+    'The close stands on the column\'s end, its target inside the head. '
+    'This feature was deprecated after ledger_ui 0.2.0.',
+  )
   static const double sheetCloseHang = 6;
 
   /// `.sheet-body` 8 under the head; `.sheet-foot` 20 over the acts.
@@ -397,11 +401,11 @@ abstract final class LedgerChromeMetrics {
   /// A button's glyph distance from its words.
   static const double buttonGap = 10;
 
-  /// `.btn-quiet`: 32 tall, padded 13, its glyph 15 and 6 from its words.
+  /// `.btn-quiet`: 32 tall, padded 12 (13 in the source), its glyph 15 and 6 from its words.
   static const double quietButton = 32;
 
   /// A small button's side padding.
-  static const double quietPad = 13;
+  static const double quietPad = 12;
 
   /// A small button's glyph size.
   static const double quietGlyph = 15;

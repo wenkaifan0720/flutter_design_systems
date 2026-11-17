@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
 import '../../internal/hatch.dart';
@@ -20,13 +22,21 @@ class LedgerBrandMark extends StatelessWidget {
     this.size = LedgerChromeMetrics.brandMark,
     this.color,
     super.key,
-  });
+  }) : assert(size > 0);
 
   /// Its width and height.
   final double size;
 
   /// Its ink; null is the green.
   final Color? color;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('size', size))
+      ..add(ColorProperty('color', color, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) => ExcludeSemantics(
@@ -118,6 +128,15 @@ class LedgerWordmark extends StatelessWidget {
   }
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('name', name))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(EnumProperty<LedgerWordmarkSize>('size', size));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final style = size == LedgerWordmarkSize.large
@@ -139,11 +158,15 @@ class LedgerWordmark extends StatelessWidget {
         ),
       ],
     );
-    return LedgerPressable(
-      onTap: onTap,
-      label: '$name, home',
-      role: LedgerPressRole.link,
-      child: mark,
+    // Laid out at the tap floor round the mark, so its height answers a
+    // finger too.
+    return DesignTapTarget(
+      child: LedgerPressable(
+        onTap: onTap,
+        label: '$name, home',
+        role: LedgerPressRole.link,
+        child: mark,
+      ),
     );
   }
 }

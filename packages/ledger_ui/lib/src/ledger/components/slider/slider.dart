@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -70,12 +71,42 @@ class LedgerSlider extends StatefulWidget {
   /// The word after the figure ("pages"), spoken with every value.
   final String? unit;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(ObjectFlagProperty<Object?>.has('format', format));
+    properties
+      ..add(StringProperty('label', label))
+      ..add(FlagProperty('showLabel', value: showLabel, ifTrue: 'showLabel'))
+      ..add(DoubleProperty('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<double>>.has(
+          'onChangeEnd',
+          onChangeEnd,
+        ),
+      )
+      ..add(DoubleProperty('min', min))
+      ..add(DoubleProperty('max', max))
+      ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(StringProperty('unit', unit, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   State<LedgerSlider> createState() => _LedgerSliderState();

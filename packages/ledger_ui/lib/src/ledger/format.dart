@@ -89,6 +89,16 @@ abstract final class LedgerFormat {
       .map(String.fromCharCode)
       .join('\u2060');
 
+  /// [figure] held left to right inside words of either direction: wrapped
+  /// in a left-to-right isolate (U+2066 to U+2069), so a line that reads
+  /// right to left prints "+$73.42" and "··4821" as written, never
+  /// "$73.42+" and "4821··". Readers pass the marks over.
+  ///
+  /// ```dart
+  /// Text('${LedgerFormat.isolated('+3.86%')} since September')
+  /// ```
+  static String isolated(String figure) => '\u2066$figure\u2069';
+
   /// The whole dollars of [amount]'s size, rounded half to even: 2.50 is 2,
   /// 3.50 is 4.
   static int wholeDollars(num amount) {

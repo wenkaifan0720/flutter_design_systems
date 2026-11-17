@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../internal/face.dart';
-import '../../internal/hit_slop.dart';
+import '../../internal/styled.dart';
+import '../../style.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 
@@ -45,25 +48,31 @@ class _Choice extends StatelessWidget {
     if (words == null) {
       face = mark;
     } else {
-      face = SizedBox(
-        height: t.density.height(_line),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: _gap,
-          children: [
-            mark,
-            Flexible(
-              child: Text(
-                words,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: t.body
-                    .line(20)
-                    .copyWith(leadingDistribution: TextLeadingDistribution.even)
-                    .colored(live ? t.textPrimary : t.textTertiary),
+      // The line is the density's height at least; words that wrap (a long
+      // label, large text) grow it rather than being cut, 4 clear of the
+      // next line's words.
+      face = ConstrainedBox(
+        constraints: BoxConstraints(minHeight: t.density.height(_line)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: _gap,
+            children: [
+              mark,
+              Flexible(
+                child: Text(
+                  words,
+                  style: t.body
+                      .line(20)
+                      .copyWith(
+                        leadingDistribution: TextLeadingDistribution.even,
+                      )
+                      .colored(live ? t.textPrimary : t.textTertiary),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -80,7 +89,14 @@ class _Choice extends StatelessWidget {
       child: face,
     );
     final drawn = Opacity(opacity: live ? 1 : _off, child: control);
-    return words == null ? LedgerHitSlop(child: drawn) : drawn;
+    // A bare mark stands on its column's start keyline, its target growing
+    // toward the end.
+    return words == null
+        ? DesignTapTarget(
+            alignment: AlignmentDirectional.centerStart,
+            child: drawn,
+          )
+        : drawn;
   }
 
   static const double _line = 48;
@@ -90,8 +106,8 @@ class _Choice extends StatelessWidget {
 
 /// A checkbox: a 20 square ringed in the ink, filled with the ink and
 /// ticked in the paper when [value] is true, a dash when it is null (with
-/// [tristate]). With a [label] the words stand after it on one line, and the
-/// line is the target. [isError] rings it in the danger red; a null
+/// [tristate]). With a [label] the words stand after it on its line (two or
+/// more when they wrap), and the line is the target. [isError] rings it in the danger red; a null
 /// [onChanged] disables it.
 ///
 /// ```dart
@@ -108,6 +124,7 @@ class LedgerCheckbox extends StatelessWidget {
     this.isError = false,
     this.focusNode,
     this.autofocus = false,
+    this.style,
     super.key,
   }) : assert(tristate || value != null);
 
@@ -132,8 +149,14 @@ class LedgerCheckbox extends StatelessWidget {
   /// The checkbox's focus; never disposed when given.
   final FocusNode? focusNode;
 
-  /// Whether it takes the focus when it first stands.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  /// This box's look, over `components.checkbox`. It reads `fill`,
+  /// `foreground` (the mark), `edge`, `side`, `overlay`, `shape`,
+  /// `minimumSize` (the box's side) and `iconSize` (the mark's); a ticked
+  /// or mixed box is `selected`, an error one `error`.
+  final LedgerStyle? style;
 
   void _next() {
     final next = switch (value) {
@@ -145,36 +168,75 @@ class LedgerCheckbox extends StatelessWidget {
   }
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<bool>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<ValueChanged<bool?>>.has('onChanged', onChanged))
+      ..add(FlagProperty('tristate', value: tristate, ifTrue: 'tristate'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<LedgerStyle>('style', style, defaultValue: null),
+      );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final on = value ?? true;
     final ring = isError ? t.danger : t.borderStrong;
     // The box fills with ink and its mark inks in, in Ledger's one motion.
-    final mark = LedgerFace(
-      style: LedgerFaceStyle(
-        ink: on ? t.background : t.background.withValues(alpha: 0),
-        ground: BoxDecoration(
-          color: on ? (isError ? t.danger : t.textPrimary) : t.surface,
-          borderRadius: BorderRadius.circular(_radius),
-          border: Border.all(
-            color: on ? const Color(0x00000000) : ring,
-            width: 1.5,
-          ),
-        ),
-      ),
-      builder: (context, s, _) => Container(
-        width: _size,
-        height: _size,
-        decoration: s.ground,
-        // No mark at all once it has faded out: an empty box carries none.
-        child: s.ink.a == 0
-            ? null
-            : Icon(
-                value == null ? LucideIcons.minus : LucideIcons.check,
-                size: 14,
-                color: s.ink,
+    final mark = Builder(
+      builder: (context) {
+        final so = LedgerStyleOf(
+          [style, t.components.checkbox],
+          {
+            ...LedgerPressStates.of(context),
+            if (value ?? true) WidgetState.selected,
+            if (isError) WidgetState.error,
+            if (onChanged == null) WidgetState.disabled,
+          },
+        );
+        final side = so.minimumSize?.shortestSide ?? _size;
+        return LedgerFace(
+          style: so.dress(
+            LedgerFaceStyle(
+              ink: on ? t.background : t.background.withValues(alpha: 0),
+              ground: BoxDecoration(
+                color: on ? (isError ? t.danger : t.textPrimary) : t.surface,
+                borderRadius: BorderRadius.circular(_radius),
+                border: Border.all(
+                  color: on ? const Color(0x00000000) : ring,
+                  width: 1.5,
+                ),
               ),
-      ),
+            ),
+          ),
+          builder: (context, s, _) => Container(
+            width: side,
+            height: side,
+            decoration: s.ground,
+            // No mark at all once it has faded out: an empty box carries none.
+            child: s.ink.a == 0
+                ? null
+                : Icon(
+                    value == null ? LucideIcons.minus : LucideIcons.check,
+                    size: so.iconSize ?? 14,
+                    color: s.ink,
+                  ),
+          ),
+        );
+      },
     );
     return _Choice(
       mark: mark,
@@ -238,8 +300,30 @@ class LedgerRadio<T> extends StatelessWidget {
   /// The radio's focus; never disposed when given.
   final FocusNode? focusNode;
 
-  /// Whether it takes the focus when it first stands.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<T>('value', value))
+      ..add(
+        DiagnosticsProperty<T>('groupValue', groupValue, defaultValue: null),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<T?>>.has('onChanged', onChanged))
+      ..add(FlagProperty('toggleable', value: toggleable, ifTrue: 'toggleable'))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -5,6 +6,8 @@ import 'package:ui_core/ui_core.dart';
 import '../../chrome_metrics.dart';
 import '../../internal/even_acts.dart';
 import '../../internal/narrow.dart';
+import '../../internal/styled.dart';
+import '../../style.dart';
 import '../../theme.dart';
 import '../button/button.dart';
 import '../host.dart';
@@ -48,11 +51,17 @@ class LedgerDialog extends StatelessWidget {
     this.cancelLabel,
     this.onConfirmPressed,
     this.onCancelPressed,
+    this.style,
     super.key,
   });
 
   /// The decision, in the serif.
   final String title;
+
+  /// The card's look, over `components.dialog` (which also dresses every
+  /// dialog `LedgerDialog.show` raises). It reads `fill`, `edge`, `side`,
+  /// `shape` and `padding`.
+  final LedgerStyle? style;
 
   /// The question's words.
   final String? body;
@@ -122,6 +131,32 @@ class LedgerDialog extends StatelessWidget {
   }
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(
+        DiagnosticsProperty<LedgerStyle>('style', style, defaultValue: null),
+      )
+      ..add(StringProperty('body', body, defaultValue: null))
+      ..add(EnumProperty<LedgerDialogType>('type', type))
+      ..add(StringProperty('confirmLabel', confirmLabel, defaultValue: null))
+      ..add(StringProperty('cancelLabel', cancelLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onConfirmPressed',
+          onConfirmPressed,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onCancelPressed',
+          onCancelPressed,
+        ),
+      );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final destructive = type == LedgerDialogType.destructive;
@@ -133,7 +168,9 @@ class LedgerDialog extends StatelessWidget {
         confirmLabel ??
         (acknowledge
             ? 'Got it'
-            : (destructive ? shared.deleteButtonTooltip : 'Confirm'));
+            : (destructive
+                  ? shared.deleteButtonTooltip
+                  : shared.confirmButtonLabel));
     // Both acts are LedgerButtons, so they share one height at every
     // density (a confirm drawn by hand at 48 stood beside a 40 Cancel at
     // compact).
@@ -144,6 +181,7 @@ class LedgerDialog extends StatelessWidget {
       isDestructiveAction: destructive,
     );
     final words = body;
+    final so = LedgerStyleOf([style, t.components.dialog], const {});
     return Semantics(
       scopesRoute: true,
       namesRoute: true,
@@ -156,13 +194,17 @@ class LedgerDialog extends StatelessWidget {
           child: Material(
             type: MaterialType.transparency,
             child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: t.surface,
-                borderRadius: BorderRadius.circular(t.sheetRadius),
-                boxShadow: t.dialogShadow,
+              decoration: so.paper(
+                BoxDecoration(
+                  color: t.surface,
+                  borderRadius: BorderRadius.circular(t.sheetRadius),
+                  boxShadow: t.dialogShadow,
+                ),
               ),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(_pad, _top, _pad, _pad),
+                padding:
+                    so.padding(Directionality.of(context)) ??
+                    const EdgeInsets.fromLTRB(_pad, _top, _pad, _pad),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,

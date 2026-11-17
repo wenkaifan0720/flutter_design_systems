@@ -18,6 +18,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
 
@@ -191,6 +192,10 @@ const Map<String, String> _offTheEdge = {
       'a docked band runs its rule edge to edge, as on a screen: past the column by its own 24 gutter, so its total '
       'and its act stand on the column\'s edges',
   'Action bar, alone': 'the same band, alone: its rule past the column by its gutter, its words on the column\'s edges',
+  'Page marks':
+      'marks a person can press each stand in a tap target at the finger\'s floor (44), so the first mark stands in '
+      'the middle of its own, 16 in, as a padded tap target lays out; marks that only show the place start on the '
+      'edge',
   'A counter':
       'a rolling figure gives each digit the widest digit\'s place, so the figure never shivers as it rolls; a narrow '
       'leading 1 stands in the middle of its place, 4 in, as a tabular figure\'s does',
@@ -248,39 +253,39 @@ List<String> _brokenWords(WidgetTester t, String where) => [
 void main() {
   setUpAll(_loadFonts);
 
+  // A test per page, its leaks tracked without a creation stack per object. To leave out what the test helpers make,
+  // leak tracking keeps the stack every tracked object was made on, and in a walk of every page they outlive the
+  // test: 4.6 GB by the 99th page, against 0.6 GB untracked, so the walk outgrew a 7.75 GB Linux runner. The walk
+  // makes nothing of its own through the helpers, so it tracks theirs too.
+  final tracked = LeakTesting.settings.withTracked(createdByTestHelpers: true);
   for (final width in const [600.0, 1024.0, 1440.0]) {
-    testWidgets(
-      'every gallery page at ${width.round()}, opened from Quill\'s index: each example starts on its '
-      'column\'s edge, and no word is broken',
-      (t) async {
-        addTearDown(t.view.reset);
-        final found = <String>[];
+    group(
+      'every gallery page at ${width.round()}, opened from Quill\'s index: each example starts on its column\'s '
+      'edge, and no word is broken',
+      () {
         for (final page in galleryPages) {
-          await _open(t, page, Size(width, 900));
-          final where = '${page.id} ${width.round()}';
-          found
-            ..addAll(_offEdge(t, where))
-            ..addAll(_brokenWords(t, where));
+          testWidgets(page.id, experimentalLeakTesting: tracked, (t) async {
+            addTearDown(t.view.reset);
+            await _open(t, page, Size(width, 900));
+            final where = '${page.id} ${width.round()}';
+            final found = [..._offEdge(t, where), ..._brokenWords(t, where)];
+            expect(found, isEmpty, reason: found.join('\n'));
+          });
         }
-        expect(found, isEmpty, reason: found.join('\n'));
       },
-      timeout: const Timeout(Duration(minutes: 10)),
     );
   }
 
-  testWidgets(
-    'no word is broken at 390 either, on any gallery page opened from Quill\'s index',
-    (t) async {
-      addTearDown(t.view.reset);
-      final found = <String>[];
-      for (final page in galleryPages) {
+  group('no word is broken at 390 either, on any gallery page opened from Quill\'s index', () {
+    for (final page in galleryPages) {
+      testWidgets(page.id, experimentalLeakTesting: tracked, (t) async {
+        addTearDown(t.view.reset);
         await _open(t, page, const Size(390, 844));
-        found.addAll(_brokenWords(t, '${page.id} 390'));
-      }
-      expect(found, isEmpty, reason: found.join('\n'));
-    },
-    timeout: const Timeout(Duration(minutes: 10)),
-  );
+        final found = _brokenWords(t, '${page.id} 390');
+        expect(found, isEmpty, reason: found.join('\n'));
+      });
+    }
+  });
 
   testWidgets(
     'from 600 a category tile, a glyph round and a way keep to their content, from the column\'s start',

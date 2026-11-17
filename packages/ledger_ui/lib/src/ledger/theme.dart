@@ -1,16 +1,19 @@
 import 'dart:ui' show lerpDouble;
 
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'density.dart';
 import 'fonts.dart';
-
 import 'internal/narrow.dart';
+import 'internal/platform_words.dart';
 import 'internal/themes/frost.g.dart';
 import 'internal/themes/gallery.g.dart';
 import 'internal/themes/paper.g.dart';
 import 'internal/themes/signal.g.dart';
+import 'page_motion.dart';
+import 'style.dart';
 import 'tokens.dart';
 
 export 'tokens.dart';
@@ -203,6 +206,12 @@ class LedgerGap extends StatelessWidget {
   final double size;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('size', size));
+  }
+
+  @override
   Widget build(BuildContext context) => SizedBox(width: size, height: size);
 }
 
@@ -217,6 +226,10 @@ abstract final class LedgerLayout {
   /// The touch-target floor.
   static const double minHitTarget = 44;
 
+  /// A hairline rule's width: the one point the source draws every rule at,
+  /// and the paper a knockout keeps round its words so no rule touches them.
+  static const double hairline = 1;
+
   /// The window width from which a form's short entries (a select, a sum)
   /// stand at their own measure instead of across their column: the
   /// rail's 600.
@@ -229,6 +242,10 @@ abstract final class LedgerLayout {
   /// third of its column) and it stands at the start of the cell, up to
   /// this.
   static const double fieldMeasure = 320;
+
+  /// A bottom sheet's widest (Material's 640): on a tablet it stands as a
+  /// card centred over the page, never stretched across it.
+  static const double sheetMeasure = 640;
 
   /// [field] at its measure from [measuredFrom] (at the start of its slot,
   /// at most [fieldMeasure] across); across its column under it.
@@ -288,6 +305,13 @@ abstract final class LedgerLayout {
 /// [plain] in the page ink, [moneyIn] green, [over] vermilion (spent past a
 /// budget, and only then) and [move] the quiet ink of money moved between
 /// the owner's own accounts.
+///
+/// The tones say what the money did, so a theme keeps each tied to its
+/// source: `LedgerThemeData.moneyIn` is the accent's green, `over` the
+/// over colour's vermilion and `move` the third ink. `LedgerThemeData.from`
+/// and the presets derive them so. Given apart in `copyWith`, they break the
+/// meaning: a `moneyIn` that is not the accent no longer matches the act
+/// that brought the money, and a red one reads income as overspending.
 enum LedgerTone {
   /// In the page ink.
   plain,
@@ -403,7 +427,40 @@ final class LedgerThemeData with Diagnosticable {
     required this.smallRadius,
     required this.sheetRadius,
     this.density = LedgerDensity.standard,
-  });
+    this.components = const LedgerComponentThemes(),
+  }) : assert(
+         cardRadius >= 0 && cardRadius <= cardRadiusMost,
+         'cardRadius is $cardRadius: a Ledger slip rounds from 0 to 22, the '
+         "range its presets span (carbon's 2 to verdigris's 22). Rounder, it "
+         'reads as a plastic pill, not a leaf of paper. controlRadius, what '
+         'the hand holds, may be any corner.',
+       ),
+       assert(
+         smallRadius >= 0 && smallRadius <= smallRadiusMost,
+         'smallRadius is $smallRadius: a Ledger date tab rounds from 0 to 10, '
+         "the range its presets span (carbon's 2 to verdigris's 10). Rounder, "
+         'it reads as a plastic chip, not paper.',
+       ),
+       assert(
+         sheetRadius >= 0 && sheetRadius <= sheetRadiusMost,
+         'sheetRadius is $sheetRadius: a Ledger sheet or dialog rounds from 0 '
+         "to 28, the range its presets span (carbon's 4 to verdigris's 28). "
+         'Rounder, it reads as a plastic pill, not a leaf of paper.',
+       );
+
+  /// The roundest a slip, a menu or a toast is drawn ([cardRadius]): 22,
+  /// the roundest of Ledger's presets (verdigris). A theme past it, or below
+  /// 0, fails an assert in debug builds.
+  static const double cardRadiusMost = 22;
+
+  /// The roundest a date tab or a small paper part is drawn ([smallRadius]):
+  /// 10, the roundest of Ledger's presets (verdigris).
+  static const double smallRadiusMost = 10;
+
+  /// The roundest a sheet or a dialog is drawn ([sheetRadius]): 28, the
+  /// roundest of Ledger's presets (verdigris). [controlRadius] has no bound:
+  /// round or square, a control held in the hand is still Ledger's.
+  static const double sheetRadiusMost = 28;
 
   /// The preset this theme is (`quire`, `terracotta`).
   final String id;
@@ -502,19 +559,27 @@ final class LedgerThemeData with Diagnosticable {
   /// ring.
   final Color accentRule;
 
-  /// Money in, and its cents.
+  /// Money in ([LedgerTone.moneyIn]): the [accent]'s green as it reads in
+  /// words. It means money received, so it stays the accent's ink: change
+  /// both together (`LedgerThemeData.from` does). Never red: a red `moneyIn`
+  /// reads income as overspending.
   final Color moneyIn;
 
-  /// Money in's cents.
+  /// Money in's cents: [moneyIn] veiled.
   final Color moneyInCents;
 
-  /// Over budget, and its cents.
+  /// Over budget ([LedgerTone.over]): the over colour (`LedgerThemeData
+  /// .from`'s `over`, the [danger] vermilion) as it reads in words, for
+  /// spending past a limit and nothing else. It is the book's one red, so
+  /// an ordinary spend stays in the page ink.
   final Color over;
 
-  /// Over budget's cents.
+  /// Over budget's cents: [over] veiled.
   final Color overCents;
 
-  /// A move between the owner's own accounts, and its cents.
+  /// A move between the owner's own accounts ([LedgerTone.move]): the third
+  /// ink, quiet, since nothing was earned or spent. Keep it an ink, neither
+  /// the green nor the red.
   final Color move;
 
   /// A move's cents.
@@ -693,16 +758,16 @@ final class LedgerThemeData with Diagnosticable {
 
   // ---- shape --------------------------------------------------------------
 
-  /// Paper: a memo slip, a menu, a toast.
+  /// Paper: a memo slip, a menu, a toast. 0 to [cardRadiusMost].
   final double cardRadius;
 
-  /// What the hand holds: buttons, chips, pills (round).
+  /// What the hand holds: buttons, chips, pills (round). Any corner.
   final double controlRadius;
 
-  /// A date tab, a small paper part.
+  /// A date tab, a small paper part. 0 to [smallRadiusMost].
   final double smallRadius;
 
-  /// A sheet and a dialog.
+  /// A sheet and a dialog. 0 to [sheetRadiusMost].
   final double sheetRadius;
 
   // ---- density ------------------------------------------------------------
@@ -712,6 +777,13 @@ final class LedgerThemeData with Diagnosticable {
   /// and [LedgerThemeData.dark] default to the platform's
   /// ([LedgerDensity.adaptivePlatformDensity]).
   final LedgerDensity density;
+
+  // ---- component themes ---------------------------------------------------
+
+  /// How each part looks across the app, over the book's own drawing: one
+  /// [LedgerStyle] per part, each null until set ([LedgerComponentThemes]).
+  /// A part's own `style:` goes over its theme here.
+  final LedgerComponentThemes components;
 
   /// The bundled faces: Inter Tight for every word of the interface,
   /// Instrument Serif (regular and italic) for figures, titles and
@@ -891,6 +963,7 @@ final class LedgerThemeData with Diagnosticable {
     double? smallRadius,
     double? sheetRadius,
     LedgerDensity? density,
+    LedgerComponentThemes? components,
   }) => LedgerThemeData(
     id: id ?? this.id,
     brightness: brightness ?? this.brightness,
@@ -986,13 +1059,17 @@ final class LedgerThemeData with Diagnosticable {
     smallRadius: smallRadius ?? this.smallRadius,
     sheetRadius: sheetRadius ?? this.sheetRadius,
     density: density ?? this.density,
+    components: components ?? this.components,
   );
 
   /// The theme [t] of the way from [a] to [b], as `ThemeData.lerp` blends
   /// two Material themes: colours, type and shadows blend, and the [id] and
   /// [brightness] switch half-way. [AnimatedLedgerTheme] animates through it.
+  /// Its ends are [a] and [b] themselves: a text style blended all the way
+  /// is not always equal to its end (a bundled face's fallbacks).
   static LedgerThemeData lerp(LedgerThemeData a, LedgerThemeData b, double t) {
-    if (identical(a, b)) return a;
+    if (identical(a, b) || t == 0) return a;
+    if (t == 1) return b;
     return LedgerThemeData(
       id: t < 0.5 ? a.id : b.id,
       brightness: t < 0.5 ? a.brightness : b.brightness,
@@ -1083,11 +1160,21 @@ final class LedgerThemeData with Diagnosticable {
       initials: TextStyle.lerp(a.initials, b.initials, t)!,
       footnote: TextStyle.lerp(a.footnote, b.footnote, t)!,
       search: TextStyle.lerp(a.search, b.search, t)!,
-      cardRadius: lerpDouble(a.cardRadius, b.cardRadius, t)!,
+      cardRadius: _within(
+        lerpDouble(a.cardRadius, b.cardRadius, t)!,
+        cardRadiusMost,
+      ),
       controlRadius: lerpDouble(a.controlRadius, b.controlRadius, t)!,
-      smallRadius: lerpDouble(a.smallRadius, b.smallRadius, t)!,
-      sheetRadius: lerpDouble(a.sheetRadius, b.sheetRadius, t)!,
+      smallRadius: _within(
+        lerpDouble(a.smallRadius, b.smallRadius, t)!,
+        smallRadiusMost,
+      ),
+      sheetRadius: _within(
+        lerpDouble(a.sheetRadius, b.sheetRadius, t)!,
+        sheetRadiusMost,
+      ),
       density: t < 0.5 ? a.density : b.density,
+      components: LedgerComponentThemes.lerp(a.components, b.components, t),
     );
   }
 
@@ -1188,7 +1275,8 @@ final class LedgerThemeData with Diagnosticable {
           other.controlRadius == controlRadius &&
           other.smallRadius == smallRadius &&
           other.sheetRadius == sheetRadius &&
-          other.density == density;
+          other.density == density &&
+          other.components == components;
 
   @override
   int get hashCode => Object.hashAll([
@@ -1286,6 +1374,7 @@ final class LedgerThemeData with Diagnosticable {
     smallRadius,
     sheetRadius,
     density,
+    components,
   ]);
 
   @override
@@ -1385,7 +1474,10 @@ final class LedgerThemeData with Diagnosticable {
       ..add(DoubleProperty('controlRadius', controlRadius))
       ..add(DoubleProperty('smallRadius', smallRadius))
       ..add(DoubleProperty('sheetRadius', sheetRadius))
-      ..add(DiagnosticsProperty<LedgerDensity>('density', density));
+      ..add(DiagnosticsProperty<LedgerDensity>('density', density))
+      ..add(
+        DiagnosticsProperty<LedgerComponentThemes>('components', components),
+      );
   }
 
   // GENERATED-END
@@ -1789,7 +1881,8 @@ final class LedgerThemeData with Diagnosticable {
   /// cannot read 4.5:1 on the eased accent words, the act wears those words'
   /// colour, with the page or its ink (whichever reads better) as its words.
   /// A record's translucent surface is laid on its page: Ledger's papers are
-  /// opaque.
+  /// opaque. Its corners are the record's own, within the bounds a Ledger
+  /// theme keeps ([cardRadiusMost], [smallRadiusMost], [sheetRadiusMost]).
   factory LedgerThemeData.fromTokens(
     String id,
     LedgerTokens tokens,
@@ -1944,6 +2037,10 @@ final class LedgerThemeData with Diagnosticable {
     );
   }
 
+  /// A [lerp]'s paper corner [r] held from 0 to [most], where a theme
+  /// animated on a curve that overshoots its ends would pass the bound.
+  static double _within(double r, double most) => r.clamp(0, most).toDouble();
+
   /// [ink] eased toward [toward] in twentieths until it reads at [min] on
   /// every one of [grounds] (or [toward] itself).
   static Color _reach(
@@ -2078,20 +2175,19 @@ class LedgerTheme extends StatelessWidget {
   /// What it styles.
   final Widget child;
 
-  /// The theme in scope at [context]. Throws when there is none.
-  /// `context.ledgerTheme` is the same.
-  static LedgerThemeData of(BuildContext context) {
-    final found = maybeOf(context);
-    if (found == null) {
-      throw FlutterError.fromParts([
-        ErrorSummary('No LedgerTheme in scope.'),
-        ErrorHint(
-          "Put a LedgerTheme in the app's builder, or above this widget.",
-        ),
-      ]);
-    }
-    return found;
-  }
+  /// The theme in scope at [context]; with none, the quire preset in the
+  /// platform's brightness ([LedgerThemeData.light] or
+  /// [LedgerThemeData.dark]), as Material's `Theme.of` falls back to its
+  /// own. `context.ledgerTheme` is the same.
+  static LedgerThemeData of(BuildContext context) =>
+      maybeOf(context) ??
+      switch (MediaQuery.maybePlatformBrightnessOf(context)) {
+        Brightness.dark => _darkDefault,
+        _ => _lightDefault,
+      };
+
+  static final LedgerThemeData _lightDefault = LedgerThemeData.light();
+  static final LedgerThemeData _darkDefault = LedgerThemeData.dark();
 
   /// The theme in scope at [context], or null.
   static LedgerThemeData? maybeOf(BuildContext context) =>
@@ -2109,21 +2205,33 @@ class LedgerTheme extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget under = child;
     // Ledger's text field and sheet ask for the words of the Material
-    // library Ledger is built on. An app with none (a CupertinoApp, a
-    // WidgetsApp, an app on another Material library, whose words are
-    // another type) gets the English ones; an app that has them keeps its
-    // own. A Localizations sets the direction from its locale: the app's own
-    // direction (a right-to-left switch) is kept.
-    if (Localizations.maybeLocaleOf(context) != null &&
-        Localizations.of<MaterialLocalizations>(
-              context,
-              MaterialLocalizations,
-            ) ==
-            null) {
+    // library Ledger is built on, and a field's menu on iOS for Cupertino's.
+    // An app with none of either (a CupertinoApp, a WidgetsApp, or an app
+    // whose words are another library's type, as flutter_localizations' are)
+    // gets Ledger's own (internal/platform_words.dart), never a throw; an app
+    // that has them keeps its own. A Localizations sets the direction from its locale: the
+    // app's own direction (a right-to-left switch) is kept.
+    final missing = Localizations.maybeLocaleOf(context) == null
+        ? const <LocalizationsDelegate<Object?>>[]
+        : <LocalizationsDelegate<Object?>>[
+            if (Localizations.of<MaterialLocalizations>(
+                  context,
+                  MaterialLocalizations,
+                ) ==
+                null)
+              ledgerMaterialWords,
+            if (Localizations.of<CupertinoLocalizations>(
+                  context,
+                  CupertinoLocalizations,
+                ) ==
+                null)
+              ledgerCupertinoWords,
+          ];
+    if (missing.isNotEmpty) {
       final direction = Directionality.maybeOf(context);
       under = Localizations.override(
         context: context,
-        delegates: const [DefaultMaterialLocalizations.delegate],
+        delegates: missing,
         child: direction == null
             ? under
             : Directionality(textDirection: direction, child: under),
@@ -2147,11 +2255,12 @@ class LedgerTheme extends StatelessWidget {
   static final Expando<ThemeData> _bridges = Expando<ThemeData>('ledger');
 
   /// What Flutter's own widgets under Ledger read (a text field's caret,
-  /// selection and handles, a route's ground), in Ledger's colours, with no
-  /// ink, splash or highlight, and Material's density pinned to standard so
-  /// a desktop never shrinks a part a second time ([LedgerDensity] is the
-  /// look's one density). Private: an app never sees a Material type in
-  /// Ledger's API, and no Ledger part reads a token from it.
+  /// selection and handles, a route's ground and its page motion), in
+  /// Ledger's colours and motion, with no ink, splash or highlight, and
+  /// Material's density pinned to standard so a desktop never shrinks a part
+  /// a second time ([LedgerDensity] is the look's one density). Private: an
+  /// app never sees a Material type in Ledger's API, and no Ledger part reads
+  /// a token from it.
   static ThemeData _materialUnder(LedgerThemeData t) => ThemeData(
     useMaterial3: true,
     brightness: t.brightness,
@@ -2185,6 +2294,9 @@ class LedgerTheme extends StatelessWidget {
       outlineVariant: t.border,
     ),
     dividerTheme: DividerThemeData(color: t.hairline, thickness: 1),
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: ledgerPageTransitions,
+    ),
   );
 
   @override

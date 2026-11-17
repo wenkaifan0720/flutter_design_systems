@@ -1,11 +1,16 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
 import '../../internal/button_ends.dart';
 import '../../internal/cap_center.dart';
 import '../../internal/end_glyph.dart';
 import '../../internal/face.dart';
-import '../../internal/hit_slop.dart';
+import '../../internal/styled.dart';
+import '../../style.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 
@@ -75,6 +80,7 @@ class LedgerButton extends StatelessWidget {
     this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
+    this.style,
     super.key,
   }) : _face = _Face.ringed;
 
@@ -90,6 +96,7 @@ class LedgerButton extends StatelessWidget {
     this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
+    this.style,
     super.key,
   }) : _face = _Face.filled;
 
@@ -105,6 +112,7 @@ class LedgerButton extends StatelessWidget {
     this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
+    this.style,
     super.key,
   }) : _face = _Face.ink;
 
@@ -120,6 +128,7 @@ class LedgerButton extends StatelessWidget {
     this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
+    this.style,
     super.key,
   }) : _face = _Face.text;
 
@@ -151,10 +160,47 @@ class LedgerButton extends StatelessWidget {
   /// Its focus node, which the caller disposes; null keeps its own.
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
+  /// This button's look, over its component theme (`components.button`,
+  /// `.filledButton`, `.inkButton` or `.textButton` by its kind). It reads
+  /// `fill`, `foreground`, `edge`, `side`, `overlay`, `shape`, `padding`,
+  /// `minimumSize`, `textStyle` and `iconSize`.
+  final LedgerStyle? style;
+
   final _Face _face;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<IconData>('icon', icon, defaultValue: null))
+      ..add(FlagProperty('iconAfter', value: iconAfter, ifTrue: 'iconAfter'))
+      ..add(FlagProperty('expand', value: expand, ifTrue: 'expand'))
+      ..add(
+        FlagProperty(
+          'isDestructiveAction',
+          value: isDestructiveAction,
+          ifTrue: 'isDestructiveAction',
+        ),
+      )
+      ..add(EnumProperty<LedgerButtonSize>('size', size))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<LedgerStyle>('style', style, defaultValue: null),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -220,7 +266,13 @@ class LedgerButton extends StatelessWidget {
         LedgerChromeMetrics.buttonGap,
       ),
     };
-    final style = switch (size) {
+    final themed = switch (_face) {
+      _Face.ringed => t.components.button,
+      _Face.filled => t.components.filledButton,
+      _Face.ink => t.components.inkButton,
+      _Face.text => t.components.textButton,
+    };
+    final lettering = switch (size) {
       LedgerButtonSize.small => t.buttonSmall.colored(ink),
       LedgerButtonSize.medium => t.button.sized(_mediumWords).colored(ink),
       LedgerButtonSize.large => t.button.colored(ink),
@@ -247,8 +299,16 @@ class LedgerButton extends StatelessWidget {
     // rim, drop and ink moves in Ledger's one motion ([LedgerFace]).
     final face = Builder(
       builder: (context) {
-        final held = LedgerPressStates.of(context)
-            .contains(WidgetState.pressed);
+        final states = LedgerPressStates.of(context);
+        final held = states.contains(WidgetState.pressed);
+        final hovered = !held && states.contains(WidgetState.hovered);
+        final so = LedgerStyleOf(
+          [style, themed],
+          {...states, if (!live) WidgetState.disabled},
+        );
+        final least = so.minimumSize;
+        final tall = math.max(height, least?.height ?? 0);
+        final room = so.padding(Directionality.of(context));
         // Held, the face takes a stamp's impression: its fill a shade
         // further into the ink, a ring's paper a wash of it; by lamplight,
         // where no drop falls, it is all the press writes.
@@ -257,19 +317,35 @@ class LedgerButton extends StatelessWidget {
             : ring != null
             ? t.textPrimary.withValues(alpha: _impression / 2)
             : null;
+        // Under a pointer the act answers before it is pressed: a fill
+        // lifts a tenth toward its own words (a press sinks it toward the
+        // ink), a ring's paper takes half a press's wash.
+        final Color? hoveredFill = fill != null
+            ? Color.lerp(fill, ink, _hoverLift)
+            : ring != null
+            ? t.textPrimary.withValues(alpha: _impression / 4)
+            : null;
         return LedgerFace(
-          style: LedgerFaceStyle(
-            ink: ink,
-            rule: frameless && held ? ink : null,
-            ground: BoxDecoration(
-              color: held && live ? pressedFill : fill,
-              borderRadius: BorderRadius.circular(t.controlRadius),
-              border: ring == null ? null : Border.all(color: ring),
-              boxShadow: held ? null : shadow,
+          style: so.dress(
+            LedgerFaceStyle(
+              ink: ink,
+              rule: frameless && (held || hovered) && live ? ink : null,
+              ground: BoxDecoration(
+                color: !live
+                    ? fill
+                    : held
+                    ? pressedFill
+                    : hovered
+                    ? hoveredFill
+                    : fill,
+                borderRadius: BorderRadius.circular(t.controlRadius),
+                border: ring == null ? null : Border.all(color: ring),
+                boxShadow: held ? null : shadow,
+              ),
             ),
           ),
           builder: (context, s, _) {
-            final type = style.colored(s.ink);
+            final type = so.words(lettering, s.ink);
             final words = s.rule == null
                 ? type
                 : type.copyWith(
@@ -280,14 +356,24 @@ class LedgerButton extends StatelessWidget {
             // right-to-left page: Continue's arrow points on.
             final glyph = icon == null
                 ? null
-                : ledgerGlyph(context, icon!, size: glyphSize, color: s.ink);
+                : ledgerGlyph(
+                    context,
+                    icon!,
+                    size: so.iconSize ?? glyphSize,
+                    color: s.ink,
+                  );
             return Container(
-              height: larger ? null : height,
-              constraints: larger ? BoxConstraints(minHeight: height) : null,
-              padding: EdgeInsets.symmetric(
-                horizontal: ends,
-                vertical: larger ? _largerPad : 0,
+              height: larger ? null : tall,
+              constraints: BoxConstraints(
+                minHeight: larger ? tall : 0,
+                minWidth: least?.width ?? 0,
               ),
+              padding:
+                  room ??
+                  EdgeInsets.symmetric(
+                    horizontal: ends,
+                    vertical: larger ? _largerPad : 0,
+                  ),
               decoration: s.ground,
               child: Row(
                 mainAxisSize: expand && !measured
@@ -319,7 +405,7 @@ class LedgerButton extends StatelessWidget {
         );
       },
     );
-    final button = LedgerHitSlop(
+    final button = DesignTapTarget(
       child: LedgerPressable(
         onTap: onPressed,
         label: semanticLabel ?? label,
@@ -362,4 +448,8 @@ class LedgerButton extends StatelessWidget {
 
   // How far a held face's fill goes into the ink.
   static const double _impression = .12;
+
+  // How far a hovered fill lifts toward its words: a tenth, as a pointer's
+  // highlight reads on a filled act without passing for a press.
+  static const double _hoverLift = .1;
 }

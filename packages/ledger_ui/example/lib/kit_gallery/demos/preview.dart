@@ -153,20 +153,31 @@ class _Phone extends StatelessWidget {
           child: ClipRect(
             child: AspectRatio(
               aspectRatio: 390 / _height,
-              child: FittedBox(
-                child: SizedBox(
-                  width: 390,
-                  height: _height,
-                  child: LedgerPreview(
-                    light: kitTheme(Brightness.light),
-                    dark: kitTheme(Brightness.dark),
-                    brightness: brightness,
-                    presentation: presentation,
-                    tabs: presentation == LedgerPresentation.root
-                        ? keelTabs
-                        : const [],
-                    activeIndex: 1,
-                    child: LedgerAccountScope(account: kitMaren, child: child),
+              // Shrunk below a phone's width, the page is a picture of itself:
+              // its parts too small to press, so none is offered to a finger
+              // or a screen reader.
+              child: LayoutBuilder(
+                builder: (context, slot) => _picture(
+                  shrunk: slot.maxWidth < 390,
+                  child: FittedBox(
+                    child: SizedBox(
+                      width: 390,
+                      height: _height,
+                      child: LedgerPreview(
+                        light: kitTheme(Brightness.light),
+                        dark: kitTheme(Brightness.dark),
+                        brightness: brightness,
+                        presentation: presentation,
+                        tabs: presentation == LedgerPresentation.root
+                            ? keelTabs
+                            : const [],
+                        activeIndex: 1,
+                        child: LedgerAccountScope(
+                          account: kitMaren,
+                          child: child,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -177,6 +188,9 @@ class _Phone extends StatelessWidget {
     );
   }
 }
+
+Widget _picture({required bool shrunk, required Widget child}) =>
+    shrunk ? ExcludeSemantics(child: IgnorePointer(child: child)) : child;
 
 /// Spending's head: October's spend against its budget (the sample data's
 /// spending).

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -5,7 +6,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../chrome_metrics.dart';
 import '../../format.dart';
-import '../../internal/hit_slop.dart';
 import '../../theme.dart';
 import '../button/button.dart';
 import '../icon-button/icon_button.dart';
@@ -103,6 +103,42 @@ class LedgerDatePicker extends StatefulWidget {
   final bool use24hFormat;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<DateTime>('value', value))
+      ..add(
+        ObjectFlagProperty<ValueChanged<DateTime>>.has('onChanged', onChanged),
+      )
+      ..add(StringProperty('label', label))
+      ..add(EnumProperty<LedgerDatePickerMode>('mode', mode))
+      ..add(
+        EnumProperty<LedgerDatePickerPresentation>(
+          'presentation',
+          presentation,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>(
+          'firstDate',
+          firstDate,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
+      )
+      ..add(DiagnosticsProperty<DateTime>('today', today, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'use24hFormat',
+          value: use24hFormat,
+          ifTrue: 'use24hFormat',
+        ),
+      );
+  }
+
+  @override
   State<LedgerDatePicker> createState() => _LedgerDatePickerState();
 }
 
@@ -152,7 +188,7 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
       ],
       foot: (sheetContext) => [
         LedgerButton.filled(
-          'Done',
+          DesignLocalizations.of(sheetContext).doneButtonLabel,
           expand: true,
           onPressed: () => Navigator.of(sheetContext).pop(draft.value),
         ),
@@ -310,7 +346,7 @@ bool _same(DateTime a, DateTime b) =>
 DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
 
 /// A value pill of the compact line: the mono words on the raised paper in a
-/// ring, 32 tall with the 44 point target round it.
+/// ring, 32 tall, laid out at the tap floor round it.
 class _Pill extends StatelessWidget {
   const _Pill(this.text, {required this.label, required this.onTap});
 
@@ -321,7 +357,7 @@ class _Pill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    return LedgerHitSlop(
+    return DesignTapTarget(
       child: LedgerPressable(
         onTap: onTap,
         label: label,
@@ -433,12 +469,15 @@ class _CalendarState extends State<_Calendar> {
               semanticLabel: DesignLocalizations.of(context)
                   .previousMonthTooltip,
               size: LedgerIconButtonSize.small,
+              // Both on the reading end, so the last stands on the keyline.
+              tapAlignment: AlignmentDirectional.centerEnd,
               onPressed: canBack ? () => _step(-1) : null,
             ),
             LedgerIconButton.outlined(
               LucideIcons.chevronRight,
               semanticLabel: DesignLocalizations.of(context).nextMonthTooltip,
               size: LedgerIconButtonSize.small,
+              tapAlignment: AlignmentDirectional.centerEnd,
               onPressed: canOn ? () => _step(1) : null,
             ),
           ],
@@ -496,7 +535,7 @@ class _CalendarState extends State<_Calendar> {
     return SizedBox(
       height: _cell44,
       child: Center(
-        child: LedgerHitSlop(
+        child: DesignTapTarget(
           child: LedgerPressable(
             onTap: open ? () => widget.onPick(d) : null,
             label: LedgerFormat.longDate(d),
@@ -585,7 +624,7 @@ class _Clock extends StatelessWidget {
         ),
       ),
       Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
+        padding: const EdgeInsets.symmetric(horizontal: LedgerSpacing.s2),
         // The wheels' figures keep their size in their rows; so does the
         // colon between them.
         child: Text(

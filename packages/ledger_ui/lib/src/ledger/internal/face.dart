@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../theme.dart';
@@ -87,6 +88,14 @@ class LedgerFace extends StatelessWidget {
   final Widget? child;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty<LedgerFaceStyle>('style', style))
+      ..add(DiagnosticsProperty<Duration>('duration', duration));
+  }
+
+  @override
   Widget build(BuildContext context) => _AnimatedFace(
     style: style,
     builder: builder,
@@ -160,6 +169,17 @@ class LedgerEase extends StatelessWidget {
 
   /// What stands inside and never changes with the value.
   final Widget? child;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('value', value))
+      ..add(
+        ObjectFlagProperty<ValueWidgetBuilder<double>>.has('builder', builder),
+      )
+      ..add(DiagnosticsProperty<Duration>('duration', duration));
+  }
 
   @override
   Widget build(BuildContext context) => TweenAnimationBuilder<double>(

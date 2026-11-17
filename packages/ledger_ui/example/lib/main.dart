@@ -6,6 +6,7 @@
 // Register, whose name a part's page shares); `theme=dark` at night, `dir=rtl` right to left, `text=200` the words at
 // twice the size. The older `?page=`, `?part=<id>`, `?dark=1`, `?rtl=1` and
 // `?text=2` still read. `?density=comfortable|compact` sets that density; Settings changes them afterwards.
+// `state=error` opens the Register unable to load (its error state and Try again).
 // `?slow=8` runs every animation eight times slower, to see one mid-way;
 // `?a11y=1` turns the semantics on from the start, as a screen reader would. `?keylines=1` draws
 // ui_core's keyline sheet over it (each region outlined, its leading keylines blue, its trailing green, an edge off
@@ -56,6 +57,7 @@ Future<void> main() async {
         : TextDirection.ltr,
     // `text=200` is a percentage, `text=2` a factor.
     textScale: text == null ? null : (text > 5 ? text / 100 : text),
+    registerOffline: query['state'] == 'error',
     parts: [
       for (final page in galleryPages) (title: page.title, build: page.build),
     ],

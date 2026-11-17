@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialApp, MaterialType;
 import 'package:flutter/widgets.dart';
@@ -121,6 +122,36 @@ class LedgerPreview extends StatelessWidget {
 
   // The preview is a window of its own: a side bar or rail of the app it
   // stands in (a gallery's) never reaches over its page.
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<LedgerThemeData>(
+          'light',
+          light,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<LedgerThemeData>('dark', dark, defaultValue: null),
+      )
+      ..add(EnumProperty<LedgerPresentation>('presentation', presentation))
+      ..add(IterableProperty<LedgerNavItem>('tabs', tabs))
+      ..add(IntProperty('activeIndex', activeIndex))
+      ..add(
+        DiagnosticsProperty<ShellAction>('action', action, defaultValue: null),
+      )
+      ..add(StringProperty('brand', brand, defaultValue: null))
+      ..add(FlagProperty('drawer', value: drawer, ifTrue: 'drawer'))
+      ..add(FlagProperty('fullScreen', value: fullScreen, ifTrue: 'fullScreen'))
+      ..add(FlagProperty('back', value: back, ifTrue: 'back'))
+      ..add(DiagnosticsProperty<PreviewPlatform>('platform', platform))
+      ..add(DiagnosticsProperty<Brightness>('brightness', brightness))
+      ..add(FlagProperty('device', value: device, ifTrue: 'device'))
+      ..add(StringProperty('location', location, defaultValue: null));
+  }
+
   @override
   Widget build(BuildContext context) =>
       LedgerSideInset(inset: 0, child: _frame(context));

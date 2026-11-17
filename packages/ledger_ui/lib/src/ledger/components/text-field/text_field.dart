@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialType, TextField;
 import 'package:flutter/services.dart';
@@ -6,6 +7,8 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../internal/cap_center.dart';
 import '../../internal/field_frame.dart';
+import '../../internal/styled.dart';
+import '../../style.dart';
 import '../../theme.dart';
 
 /// A field written on a rule, as a ledger is: its [label] in the small
@@ -64,8 +67,10 @@ class LedgerTextField extends StatefulWidget {
     this.onChanged,
     this.onSubmitted,
     this.onEditingComplete,
+    this.style,
     super.key,
-  });
+  }) : assert(maxLines == null || maxLines > 0),
+       assert(minLines == null || minLines > 0);
 
   /// The words; the field's own when null.
   final TextEditingController? controller;
@@ -107,7 +112,7 @@ class LedgerTextField extends StatefulWidget {
   /// Whether the words are hidden (a password).
   final bool obscureText;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   /// The keyboard the field asks for.
@@ -134,11 +139,22 @@ class LedgerTextField extends StatefulWidget {
   /// Called with the words as they are typed.
   final ValueChanged<String>? onChanged;
 
-  /// Called with the words when the keyboard submits them.
+  /// Called with the words when the keyboard submits them; the field gives
+  /// up the focus. A field that keeps the focus after the act key (one
+  /// adding another) takes it in [onEditingComplete] instead, never both:
+  /// told of a submit while it keeps the focus, a field restarts its text
+  /// input, and a browser's then takes no typing.
   final ValueChanged<String>? onSubmitted;
 
-  /// Called when the keyboard's act key is pressed.
+  /// Called when the keyboard's act key is pressed, in place of the field
+  /// giving up the focus; see [onSubmitted].
   final VoidCallback? onEditingComplete;
+
+  /// The field's look, over `components.textField`. It reads `edge` (the
+  /// rule's ink), `fill` (a paper behind the written line), `padding` (round
+  /// the line), `foreground` (the words' ink) and `textStyle` (the words');
+  /// a field is `focused`, `error` or `disabled` as it stands.
+  final LedgerStyle? style;
 
   /// The words' style: the medium at 16 on a 24 line.
   static TextStyle wordsOf(LedgerThemeData t) => t.rowTitle
@@ -157,6 +173,92 @@ class LedgerTextField extends StatefulWidget {
   static double heightOf(LedgerThemeData t) => t.density.height(_height);
 
   static const double _height = 48;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<TextEditingController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('hint', hint, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
+      ..add(StringProperty('prefix', prefix, defaultValue: null))
+      ..add(FlagProperty('isRequired', value: isRequired, ifTrue: 'isRequired'))
+      ..add(FlagProperty('enabled', value: enabled, ifTrue: 'enabled'))
+      ..add(FlagProperty('readOnly', value: readOnly, ifTrue: 'readOnly'))
+      ..add(
+        FlagProperty('obscureText', value: obscureText, ifTrue: 'obscureText'),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputAction>(
+          'textInputAction',
+          textInputAction,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextCapitalization>(
+          'textCapitalization',
+          textCapitalization,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        IterableProperty<String>(
+          'autofillHints',
+          autofillHints,
+          defaultValue: null,
+        ),
+      )
+      ..add(IntProperty('maxLines', maxLines, defaultValue: null))
+      ..add(IntProperty('minLines', minLines, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<String>>.has(
+          'onSubmitted',
+          onSubmitted,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<LedgerStyle>('style', style, defaultValue: null),
+      );
+  }
 
   @override
   State<LedgerTextField> createState() => _LedgerTextFieldState();
@@ -197,7 +299,14 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
     final words = widget.prefix == null
         ? LedgerTextField.wordsOf(t)
         : LedgerTextField.sumOf(t);
-    final ink = enabled ? t.textPrimary : t.textTertiary;
+    final so = LedgerStyleOf(
+      [widget.style, t.components.textField],
+      {
+        if (!enabled) WidgetState.disabled,
+        if (widget.error != null) WidgetState.error,
+      },
+    );
+    final ink = so.foreground ?? (enabled ? t.textPrimary : t.textTertiary);
     final oneLine = widget.maxLines == 1 || widget.obscureText;
     final editable = Material(
       type: MaterialType.transparency,
@@ -205,7 +314,7 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
         controller: _controller,
         focusNode: _focus,
         decoration: null,
-        style: words.colored(ink),
+        style: so.words(words, ink),
         cursorColor: t.textPrimary,
         cursorWidth: 1.5,
         enabled: enabled,
@@ -298,8 +407,21 @@ class _LedgerTextFieldState extends State<LedgerTextField> {
         focusNode: _focus,
         labelCursor: SystemMouseCursors.text,
         line: parts.control,
+        style: widget.style,
       ),
-      child: line,
+      // The whole written line is the field's: a tap on its sign or beside
+      // its words focuses it as a tap on them does (its trailing act, a
+      // press of its own, keeps its taps).
+      child: TextFieldTapRegion(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: enabled ? _focus.requestFocus : null,
+          child: MouseRegion(
+            cursor: enabled ? SystemMouseCursors.text : MouseCursor.defer,
+            child: line,
+          ),
+        ),
+      ),
     );
     // A sum is a short entry: at its measure from 600, as a select is; free
     // words keep their column.

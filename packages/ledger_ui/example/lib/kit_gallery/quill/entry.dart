@@ -4,8 +4,10 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:ledger_ui/ledger_ui.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../kit.dart';
+import 'words.dart';
 
 class QuillEntryPage extends StatefulWidget {
   const QuillEntryPage({super.key});
@@ -54,6 +56,13 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
     LedgerSelectItem(value: 'monthly', label: 'Every month'),
   ];
 
+  /// [items] with their words in Quill's language.
+  List<LedgerSelectItem<String>> _said(List<LedgerSelectItem<String>> items) =>
+      [
+        for (final i in items)
+          LedgerSelectItem(value: i.value, label: context.say(i.label)),
+      ];
+
   @override
   void dispose() {
     _amount.dispose();
@@ -67,14 +76,20 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
   void _save() {
     final value = _value;
     setState(() {
-      _amountError = value == null || value <= 0 ? 'Enter what was paid' : null;
-      _payeeError = _payee.text.trim().isEmpty ? 'Say who was paid' : null;
-      _categoryError = _category == null ? 'Choose a category' : null;
+      _amountError = value == null || value <= 0
+          ? context.say('Enter what was paid')
+          : null;
+      _payeeError = _payee.text.trim().isEmpty
+          ? context.say('Say who was paid')
+          : null;
+      _categoryError = _category == null
+          ? context.say('Choose a category')
+          : null;
     });
     if (_amountError != null || _payeeError != null || _categoryError != null) {
       return;
     }
-    LedgerToast.show(context, 'Entry saved to the register');
+    LedgerToast.show(context, context.say('Entry saved to the register'));
     Navigator.of(context).pop();
   }
 
@@ -106,7 +121,7 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
     // form at its own width, as a desktop form's act does, not a bar across
     // it.
     final save = LedgerButton.filled(
-      'Save entry',
+      context.say('Save entry'),
       expand: !paired,
       size: LedgerButtonSize.large,
       onPressed: _save,
@@ -117,7 +132,7 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
         _pair(
           paired,
           LedgerTextField(
-            label: 'Amount',
+            label: context.say('Amount'),
             prefix: r'$',
             hint: '0.00',
             controller: _amount,
@@ -127,8 +142,8 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
             textInputAction: TextInputAction.next,
           ),
           LedgerTextField(
-            label: 'Payee',
-            hint: 'Who was paid',
+            label: context.say('Payee'),
+            hint: context.say('Who was paid'),
             controller: _payee,
             isRequired: true,
             error: _payeeError,
@@ -140,10 +155,10 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
         _pair(
           paired,
           LedgerSelect<String>(
-            label: 'Category',
-            hint: 'Choose one',
+            label: context.say('Category'),
+            hint: context.say('Choose one'),
             value: _category,
-            items: _categories,
+            items: _said(_categories),
             isRequired: true,
             error: _categoryError,
             onChanged: (v) => setState(() {
@@ -152,9 +167,9 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
             }),
           ),
           LedgerSelect<String>(
-            label: 'Account',
+            label: context.say('Account'),
             value: _account,
-            items: _accounts,
+            items: _said(_accounts),
             onChanged: (v) => setState(() => _account = v),
           ),
         ),
@@ -162,22 +177,22 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
         _pair(
           paired,
           LedgerSelect<String>(
-            label: 'Day',
+            label: context.say('Day'),
             value: _day,
-            items: _days,
+            items: _said(_days),
             onChanged: (v) => setState(() => _day = v),
           ),
           LedgerSelect<String>(
-            label: 'Repeat',
+            label: context.say('Repeat'),
             value: _repeat,
-            items: _repeats,
+            items: _said(_repeats),
             onChanged: (v) => setState(() => _repeat = v),
           ),
         ),
         _fieldGap,
         LedgerTextField(
-          label: 'Note',
-          hint: 'What it was for',
+          label: context.say('Note'),
+          hint: context.say('What it was for'),
           controller: _note,
           maxLines: 4,
           minLines: 2,
@@ -185,12 +200,12 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
         const LedgerGap(LedgerSpacing.s16),
         LedgerCheckbox(
           value: _keepReceipt,
-          label: 'Keep the receipt with the entry',
+          label: context.say('Keep the receipt with the entry'),
           onChanged: (v) => setState(() => _keepReceipt = v ?? false),
         ),
         LedgerCheckbox(
           value: _budgeted,
-          label: 'Count it against the budget',
+          label: context.say('Count it against the budget'),
           onChanged: (v) => setState(() => _budgeted = v ?? false),
         ),
         if (paired) ...[
@@ -228,7 +243,7 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
           SizedBox(
             width: _preview,
             child: LedgerSection(
-              head: const LedgerHead('As it will print'),
+              head: LedgerHead(context.say('As it will print')),
               child: ListenableBuilder(
                 listenable: Listenable.merge([_amount, _payee]),
                 builder: (context, _) => _receipt(),
@@ -241,7 +256,7 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
       body = measured;
     }
     return LedgerScreen.form(
-      topBar: const LedgerTopBar(title: 'New entry'),
+      topBar: LedgerTopBar(title: context.say('New entry')),
       footer: paired ? null : save,
       body: body,
     );
@@ -249,26 +264,33 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
 
   Widget _receipt() {
     final payee = _payee.text.trim();
-    final account = _accounts.firstWhere((a) => a.value == _account).label;
-    final day = _days.firstWhere((d) => d.value == _day).label;
+    final account = context.say(
+      _accounts.firstWhere((a) => a.value == _account).label,
+    );
+    final day = context.say(_days.firstWhere((d) => d.value == _day).label);
+    // Before a payee is written the slip is a new entry under a pen, never
+    // the field's label printed as a name.
+    final name = payee.isEmpty ? context.say('New entry') : payee;
     return LedgerReceipt(
-      kind: 'Quill · New entry',
-      number: 'No. —',
-      leading: LedgerMonogram(payee.isEmpty ? 'Payee' : payee),
-      name: payee.isEmpty ? 'Payee' : payee,
-      subtitle: '${_category ?? 'No category'} · $account',
+      kind: context.say('Quill · New entry'),
+      number: '${context.say('No.')} —',
+      leading: payee.isEmpty
+          ? const LedgerGlyph(LucideIcons.penLine)
+          : LedgerMonogram(name),
+      name: name,
+      subtitle: '${context.say(_category ?? 'No category')} · $account',
       figure: LedgerFigure(-(_value ?? 0)),
       seal: LedgerSeal(
-        kicker: _account,
-        value: 'Draft',
-        foot: LedgerFormat.date(kitNow),
+        kicker: context.say(_account),
+        value: context.say('Draft'),
+        foot: context.sayDate(kitNow),
         tone: LedgerSealTone.plain,
       ),
       details: [
-        LedgerKeyValue('Day', day),
+        LedgerKeyValue(context.say('Day'), day),
         LedgerKeyValue(
-          'Repeat',
-          _repeats.firstWhere((r) => r.value == _repeat).label,
+          context.say('Repeat'),
+          context.say(_repeats.firstWhere((r) => r.value == _repeat).label),
         ),
       ],
     );

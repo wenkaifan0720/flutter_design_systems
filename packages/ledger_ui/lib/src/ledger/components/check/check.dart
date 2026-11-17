@@ -1,9 +1,10 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
-import '../../internal/hit_slop.dart';
 import '../../theme.dart';
 import '../pressable/pressable.dart';
 
@@ -13,8 +14,9 @@ import '../pressable/pressable.dart';
 /// null makes it a MARK, not a control (as a null callback holds any
 /// Flutter control): a finished line's tick, undimmed, that lets taps
 /// through. Give a check that stands without words a
-/// [label], spoken and never printed. Its 44 point target reaches past the
-/// ring.
+/// [label], spoken and never printed. It lays out at the tap floor round its
+/// ring (44 for a finger, 24 for a pointer), and a tap anywhere in that
+/// room reaches it.
 ///
 /// ```dart
 /// LedgerCheck(value: done, label: 'Pay rent', onChanged: (v) => setState(() => done = v))
@@ -28,20 +30,26 @@ class LedgerCheck extends StatelessWidget {
     this.label,
     this.focusNode,
     this.autofocus = false,
+    this.tapAlignment = AlignmentDirectional.centerStart,
     super.key,
-  });
+  }) : assert(size > 0);
 
   /// Whether it is done.
   final bool value;
 
+  /// Where the disc stands in its tap target where the target is larger:
+  /// on the start keyline by default (a task's check heads its line), or centred, or on the edge a keyline runs ([AlignmentDirectional.centerStart]
+  /// at the start of a column, [AlignmentDirectional.centerEnd] at its end),
+  /// the target growing away from it.
+  final AlignmentDirectional tapAlignment;
+
   /// Called with the new state; null makes the check a mark.
   final ValueChanged<bool>? onChanged;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
 
   /// The ring's side: 26 in a row, 22 beside small words.
@@ -49,6 +57,27 @@ class LedgerCheck extends StatelessWidget {
 
   /// What is being ticked off, spoken.
   final String? label;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('value', value: value, ifTrue: 'value'))
+      ..add(
+        DiagnosticsProperty<AlignmentDirectional>('tapAlignment', tapAlignment),
+      )
+      ..add(ObjectFlagProperty<ValueChanged<bool>>.has('onChanged', onChanged))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(DoubleProperty('size', size))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,9 +106,11 @@ class LedgerCheck extends StatelessWidget {
         child: ExcludeSemantics(child: face),
       );
     }
-    // The slop is the one node (it merges what is under it), so a screen
-    // reader outlines, and the tap-target guideline measures, its 44.
-    return LedgerHitSlop(
+    // Laid out at the floor round its disc, so where a tap lands, what a
+    // screen reader outlines and the room it takes are one; one node, its
+    // check and its press merged.
+    return DesignTapTarget(
+      alignment: tapAlignment,
       child: Semantics(
         checked: value,
         child: LedgerPressable(

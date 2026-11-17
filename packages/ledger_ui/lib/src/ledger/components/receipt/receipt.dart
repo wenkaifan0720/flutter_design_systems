@@ -1,9 +1,14 @@
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart' show OverflowBoxFit;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/narrow.dart';
 import '../../internal/on_cheque.dart';
+import '../../internal/styled.dart';
+import '../../style.dart';
 import '../../theme.dart';
 import '../engravings/engravings.dart';
 import '../money/money.dart';
@@ -18,27 +23,50 @@ import '../structure/structure.dart';
 /// ```
 class LedgerSlip extends StatelessWidget {
   /// A slip holding [child].
-  const LedgerSlip({required this.child, this.padding, super.key});
+  const LedgerSlip({required this.child, this.padding, this.style, super.key});
 
   /// What is printed on the slip.
   final Widget child;
 
-  /// The room round [child]; null takes the slip's own.
+  /// The room round [child]; null takes the style's, then the slip's own.
   final EdgeInsetsGeometry? padding;
+
+  /// The slip's look, over `components.slip`. It reads `fill`, `edge`,
+  /// `side`, `shape` and `padding`.
+  final LedgerStyle? style;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<EdgeInsetsGeometry>(
+          'padding',
+          padding,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<LedgerStyle>('style', style, defaultValue: null),
+      );
+  }
 
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
+    final so = LedgerStyleOf([style, t.components.slip], const {});
     // A card for the keyline check: what is printed on it starts and ends
     // on its side room.
     return DesignKeylineRegion(
       label: 'slip',
       child: Container(
-        padding: padding,
-        decoration: BoxDecoration(
-          color: t.surface,
-          borderRadius: BorderRadius.circular(t.smallRadius),
-          boxShadow: t.paperShadow,
+        padding: padding ?? so.padding(Directionality.of(context)),
+        decoration: so.paper(
+          BoxDecoration(
+            color: t.surface,
+            borderRadius: BorderRadius.circular(t.smallRadius),
+            boxShadow: t.paperShadow,
+          ),
         ),
         child: child,
       ),
@@ -109,7 +137,9 @@ class LedgerStub extends StatelessWidget {
             ),
             Expanded(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: wide ? 22 : 14),
+                padding: EdgeInsets.symmetric(
+                  horizontal: wide ? 22 : LedgerSpacing.s14,
+                ),
                 child: const LedgerPerforation(),
               ),
             ),
@@ -180,6 +210,14 @@ class LedgerSlipHead extends StatelessWidget {
   final String end;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('start', start))
+      ..add(StringProperty('end', end));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
@@ -189,14 +227,17 @@ class LedgerSlipHead extends StatelessWidget {
     final style = t.meta.sized(11).line(16);
     final larger = MediaQuery.textScalerOf(context).scale(1) > 1;
     return Padding(
-      padding: EdgeInsets.only(top: wide ? 16 : 12, bottom: wide ? 26 : 18),
+      padding: EdgeInsets.only(
+        top: wide ? LedgerSpacing.s16 : LedgerSpacing.s12,
+        bottom: wide ? 26 : 18,
+      ),
       // At a large text size the end turns under the start when the two do
       // not fit one line, rather than squeeze the kind's words apart.
       child: larger
           ? Wrap(
               alignment: WrapAlignment.spaceBetween,
-              spacing: 12,
-              runSpacing: 2,
+              spacing: LedgerSpacing.s12,
+              runSpacing: LedgerSpacing.s2,
               children: [
                 Text(start.toUpperCase(), style: style),
                 Text(end.toUpperCase(), style: style),
@@ -204,7 +245,7 @@ class LedgerSlipHead extends StatelessWidget {
             )
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              spacing: 12,
+              spacing: LedgerSpacing.s12,
               children: [
                 Flexible(child: Text(start.toUpperCase(), style: style)),
                 Text(end.toUpperCase(), style: style),
@@ -265,6 +306,21 @@ class LedgerReceipt extends StatelessWidget {
   /// slot (a column beside a form) it takes the phone's.
   static const double _deskFrom = 520;
 
+  /// Between the figure and its seal (the source's 12).
+  static const double _figureSealGap = LedgerSpacing.s12;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('kind', kind))
+      ..add(StringProperty('number', number))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('subtitle', subtitle))
+      ..add(DiagnosticsProperty<LedgerFigure>('figure', figure))
+      ..add(DiagnosticsProperty<LedgerSeal>('seal', seal));
+  }
+
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, box) =>
@@ -312,13 +368,18 @@ class LedgerReceipt extends StatelessWidget {
         children: [
           const LedgerSlipBand(),
           Padding(
-            padding: EdgeInsets.fromLTRB(side, 0, side, wide ? 8 : 6),
+            padding: EdgeInsets.fromLTRB(
+              side,
+              0,
+              side,
+              wide ? LedgerSpacing.s8 : LedgerSpacing.s6,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 LedgerSlipHead(kind, number),
                 Row(
-                  spacing: 14,
+                  spacing: LedgerSpacing.s14,
                   children: [
                     leading,
                     Expanded(
@@ -329,7 +390,7 @@ class LedgerReceipt extends StatelessWidget {
                             header: true,
                             child: Text(name, style: name0),
                           ),
-                          const SizedBox(height: 3),
+                          const SizedBox(height: LedgerSpacing.s4),
                           Text(subtitle, style: t.bodySmall),
                         ],
                       ),
@@ -341,30 +402,42 @@ class LedgerReceipt extends StatelessWidget {
                     top: wide ? 36 : 28,
                     bottom: wide ? 30 : 22,
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    spacing: 12,
-                    children: [
-                      // The figure stands whole (`white-space: nowrap`);
-                      // when it and the seal overrun the row, as a
-                      // paycheck's +$3,412.50 does on a phone, the seal
-                      // gives way into the slip's side (`.seal { flex:
-                      // none }` overflowing), its round pressed in full.
-                      LedgerFigure(
-                        figure.amount,
-                        size: LedgerFigureSize.receipt,
-                        tone: figure.tone,
-                        showSign: figure.showSign,
-                        showCents: figure.showCents,
-                      ),
-                      Flexible(child: pressed),
-                    ],
+                  child: LayoutBuilder(
+                    builder: (context, row) => Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      spacing: _figureSealGap,
+                      children: [
+                        // The figure stands whole (`white-space: nowrap`);
+                        // when it and the seal overrun the row, as a
+                        // paycheck's +$3,412.50 does on a phone, the seal
+                        // gives way into the slip's side (`.seal { flex:
+                        // none }` overflowing), its round pressed in full.
+                        // A figure wider than the row itself (seven
+                        // figures at a large text size) is set smaller to
+                        // fit, never cut.
+                        LimitedBox(
+                          maxWidth: math.max(0, row.maxWidth - _figureSealGap),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: AlignmentDirectional.bottomStart,
+                            child: LedgerFigure(
+                              figure.amount,
+                              size: LedgerFigureSize.receipt,
+                              tone: figure.tone,
+                              showSign: figure.showSign,
+                              showCents: figure.showCents,
+                            ),
+                          ),
+                        ),
+                        Flexible(child: pressed),
+                      ],
+                    ),
                   ),
                 ),
                 _Bleed(side: side, child: const LedgerStub()),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
+                  padding: const EdgeInsets.only(bottom: LedgerSpacing.s6),
                   child: LedgerRows(children: details),
                 ),
               ],
@@ -439,6 +512,18 @@ class LedgerCheque extends StatelessWidget {
   final LedgerSeal? stamp;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('kind', kind))
+      ..add(StringProperty('date', date))
+      ..add(StringProperty('micr', micr))
+      ..add(
+        DiagnosticsProperty<LedgerSeal>('stamp', stamp, defaultValue: null),
+      );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final wide = LedgerLayout.isWide(context);
     final seal = stamp;
@@ -488,7 +573,12 @@ class LedgerCheque extends StatelessWidget {
         children: [
           const LedgerSlipBand(),
           Padding(
-            padding: EdgeInsets.fromLTRB(side, 0, side, wide ? 6 : 4),
+            padding: EdgeInsets.fromLTRB(
+              side,
+              0,
+              side,
+              wide ? LedgerSpacing.s6 : LedgerSpacing.s4,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -507,7 +597,10 @@ class LedgerCheque extends StatelessWidget {
                 _Bleed(side: side, child: const LedgerStub()),
                 ExcludeSemantics(
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 10, bottom: 8),
+                    padding: const EdgeInsets.only(
+                      top: LedgerSpacing.s10,
+                      bottom: LedgerSpacing.s8,
+                    ),
                     // The foot line is printing, left to right in either
                     // direction, as a card face's is.
                     child: Text(

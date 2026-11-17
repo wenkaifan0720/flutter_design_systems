@@ -6,7 +6,6 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -41,50 +40,43 @@ Widget kitCommitDemo(Brightness brightness) => kitScreen(
 
 /// A docked bar as its screen stands it: its band runs its own gutter past
 /// the column at each side, so its total and its act stand on the column's
-/// edges as the page's words do. On the gallery's page the band is cut at
-/// the column, so its hairline ends where the page's rules do.
-Widget _docked(Widget bar) => ClipRect(
-  child: _Bleed(by: LedgerChromeMetrics.gutter, child: bar),
+/// edges as the page's words do. On the gallery's page the band's hairline
+/// is cut at the column, so it ends where the page's rules do; below the
+/// hairline nothing is cut, so the act's drop falls whole past the column.
+Widget _docked(Widget bar) => ClipPath(
+  clipper: const _HairlineAtColumn(),
+  child: KitBleed(by: LedgerChromeMetrics.gutter, child: bar),
 );
 
-/// [child] laid out [by] wider at each side than its slot, as tall as it is.
-class _Bleed extends SingleChildRenderObjectWidget {
-  const _Bleed({required this.by, required super.child});
+/// Cuts the band's top line (its hairline) at the column's edges and leaves
+/// the rest of the band, the act's drop with it, room to fall past them.
+class _HairlineAtColumn extends CustomClipper<Path> {
+  const _HairlineAtColumn();
 
-  final double by;
+  /// The band's hairline and the row it stands on.
+  static const double _line = 2;
 
-  @override
-  RenderObject createRenderObject(BuildContext context) => _RenderBleed(by);
-
-  @override
-  void updateRenderObject(BuildContext context, _RenderBleed renderObject) =>
-      renderObject.by = by;
-}
-
-class _RenderBleed extends RenderShiftedBox {
-  _RenderBleed(this._by) : super(null);
-
-  double _by;
-  set by(double value) {
-    if (value == _by) return;
-    _by = value;
-    markNeedsLayout();
-  }
+  /// How far past the column the act's drop may fall: past its blur.
+  static const double _drop = 40;
 
   @override
-  void performLayout() {
-    final c = child!;
-    final width = constraints.maxWidth + 2 * _by;
-    c.layout(
-      BoxConstraints.tightFor(width: width)
-          .copyWith(maxHeight: constraints.maxHeight),
-      parentUsesSize: true,
+  Path getClip(Size size) => Path()
+    ..addRect(Rect.fromLTWH(0, 0, size.width, _line))
+    ..addRect(
+      Rect.fromLTRB(-_drop, _line, size.width + _drop, size.height + _drop),
     );
-    (c.parentData! as BoxParentData).offset = Offset(-_by, 0);
-    size = constraints.constrain(Size(constraints.maxWidth, c.size.height));
-  }
+
+  // What it lets through, for a reader of its bounds (ui_core's shadow
+  // check): the drop's room past the column, not the column alone.
+  @override
+  Rect getApproximateClipRect(Size size) =>
+      Rect.fromLTRB(-_drop, 0, size.width + _drop, size.height + _drop);
+
+  @override
+  bool shouldReclip(_HairlineAtColumn oldClipper) => false;
 }
 
+/// [child] laid out [by] wider at each side than its slot, as tall as it is.
 class _Live extends StatefulWidget {
   const _Live();
 

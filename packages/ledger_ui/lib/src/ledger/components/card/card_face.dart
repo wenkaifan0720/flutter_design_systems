@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -101,6 +102,21 @@ class LedgerCardFace extends StatelessWidget {
       : LedgerThemeData.light();
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('brand', brand))
+      ..add(StringProperty('kind', kind))
+      ..add(IterableProperty<String>('number', number))
+      ..add(StringProperty('holder', holder))
+      ..add(StringProperty('account', account, defaultValue: null))
+      ..add(EnumProperty<LedgerCardStock>('stock', stock))
+      ..add(EnumProperty<LedgerCardSize>('size', size))
+      ..add(FlagProperty('frozen', value: frozen, ifTrue: 'frozen'))
+      ..add(DiagnosticsProperty<LedgerSeal>('seal', seal, defaultValue: null));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final page = context.ledgerTheme;
     final paper = stock == LedgerCardStock.debit;
@@ -130,7 +146,12 @@ class LedgerCardFace extends StatelessWidget {
         ? (
             w: wide ? 280 : 264,
             h: wide ? 176 : 166,
-            pad: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            pad: const EdgeInsets.fromLTRB(
+              LedgerSpacing.s16,
+              LedgerSpacing.s14,
+              LedgerSpacing.s16,
+              LedgerSpacing.s12,
+            ),
             r: 12,
             brandSize: 21,
             mark: 20,
@@ -148,7 +169,12 @@ class LedgerCardFace extends StatelessWidget {
         ? (
             w: 400,
             h: 252,
-            pad: const EdgeInsets.fromLTRB(24, 22, 24, 20),
+            pad: const EdgeInsets.fromLTRB(
+              LedgerSpacing.s24,
+              22,
+              LedgerSpacing.s24,
+              LedgerSpacing.s20,
+            ),
             r: 16,
             brandSize: 30,
             mark: 28,
@@ -165,7 +191,12 @@ class LedgerCardFace extends StatelessWidget {
         : (
             w: double.infinity,
             h: 216,
-            pad: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+            pad: const EdgeInsets.fromLTRB(
+              LedgerSpacing.s20,
+              18,
+              LedgerSpacing.s20,
+              LedgerSpacing.s16,
+            ),
             r: 14,
             brandSize: 26,
             mark: 24,
@@ -279,7 +310,7 @@ class LedgerCardFace extends StatelessWidget {
                     ],
                   ),
                   Row(
-                    spacing: 12,
+                    spacing: LedgerSpacing.s12,
                     children: [
                       LedgerCardChip(
                         width: m.chip.width,
@@ -317,7 +348,7 @@ class LedgerCardFace extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    spacing: 12,
+                    spacing: LedgerSpacing.s12,
                     children: [
                       Flexible(
                         child: Text(
@@ -504,6 +535,14 @@ class _FrostPainter extends CustomPainter {
 /// LedgerCardDetails(number: const ['4242', '4242', '4242', '7730'], expiry: '09/29', cvc: '317', name: 'Maren Holt')
 /// ```
 class LedgerCardDetails extends StatelessWidget {
+  // `.card-details`: padding 18px 18px 16px.
+  static const EdgeInsets _detailsPadding = EdgeInsets.fromLTRB(
+    18,
+    18,
+    18,
+    LedgerSpacing.s16,
+  );
+
   /// A card's [number], [expiry], [cvc] and [name].
   const LedgerCardDetails({
     required this.number,
@@ -542,6 +581,20 @@ class LedgerCardDetails extends StatelessWidget {
   final String nameLabel;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('number', number))
+      ..add(StringProperty('expiry', expiry))
+      ..add(StringProperty('cvc', cvc))
+      ..add(StringProperty('name', name))
+      ..add(StringProperty('numberLabel', numberLabel))
+      ..add(StringProperty('expiryLabel', expiryLabel))
+      ..add(StringProperty('cvcLabel', cvcLabel))
+      ..add(StringProperty('nameLabel', nameLabel));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     const print = LedgerCardFace._print;
@@ -558,7 +611,7 @@ class LedgerCardDetails extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(key.toUpperCase(), style: label),
-        const SizedBox(height: 4),
+        const SizedBox(height: LedgerSpacing.s4),
         Text(
           v,
           softWrap: larger && sans,
@@ -580,14 +633,14 @@ class LedgerCardDetails extends StatelessWidget {
           painter: _InkStockPainter(),
           child: Padding(
             // `.card-details`: padding 18px 18px 16px.
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+            padding: _detailsPadding,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(numberLabel.toUpperCase(), style: label),
                 // `.cd-num`: margin-top 8px, flex, space-between, 500
                 // 21px/28px var(--mono), letter-spacing .02em.
-                const SizedBox(height: 8),
+                const SizedBox(height: LedgerSpacing.s8),
                 Semantics(
                   label: number.join(' '),
                   excludeSemantics: true,
@@ -597,7 +650,7 @@ class LedgerCardDetails extends StatelessWidget {
                     alignment: larger
                         ? WrapAlignment.start
                         : WrapAlignment.spaceBetween,
-                    spacing: 12,
+                    spacing: LedgerSpacing.s12,
                     children: [
                       for (final g in number)
                         Text(
@@ -614,9 +667,9 @@ class LedgerCardDetails extends StatelessWidget {
                 // `.cd-grid`: margin-top 16px, padding-top 14px, border-top
                 // 1px solid rgba(239, 233, 221, .16); columns auto auto
                 // minmax(0, 1fr), 28px apart.
-                const SizedBox(height: 16),
+                const SizedBox(height: LedgerSpacing.s16),
                 Container(
-                  padding: const EdgeInsets.only(top: 14),
+                  padding: const EdgeInsets.only(top: LedgerSpacing.s14),
                   decoration: BoxDecoration(
                     border: Border(
                       top: BorderSide(color: print.withValues(alpha: .16)),
@@ -624,8 +677,8 @@ class LedgerCardDetails extends StatelessWidget {
                   ),
                   child: larger
                       ? Wrap(
-                          spacing: 28,
-                          runSpacing: 14,
+                          spacing: LedgerSpacing.s28,
+                          runSpacing: LedgerSpacing.s14,
                           children: [
                             cell(expiryLabel, expiry),
                             cell(cvcLabel, cvc),
@@ -634,7 +687,7 @@ class LedgerCardDetails extends StatelessWidget {
                         )
                       : Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: 28,
+                          spacing: LedgerSpacing.s28,
                           children: [
                             cell(expiryLabel, expiry),
                             cell(cvcLabel, cvc),

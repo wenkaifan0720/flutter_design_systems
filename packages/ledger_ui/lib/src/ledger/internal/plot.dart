@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../theme.dart';
@@ -66,6 +67,15 @@ class LedgerPlot extends StatelessWidget {
 
   /// Draws the engraving and its labels at the plot's size.
   final LedgerPlotParts Function(Size size, bool wide) draw;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DoubleProperty('phoneAspect', phoneAspect))
+      ..add(DoubleProperty('deskAspect', deskAspect))
+      ..add(DoubleProperty('height', height, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -214,6 +224,14 @@ class LedgerDayRulerLabels extends StatelessWidget {
   final double width;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<LedgerRulerMark>('marks', marks))
+      ..add(DoubleProperty('width', width));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
@@ -328,6 +346,16 @@ class LedgerMonthKeys extends StatelessWidget {
 
   /// The index of the key that ends the plot, in the ink.
   final int? end;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('keys', keys))
+      ..add(DoubleProperty('gutter', gutter))
+      ..add(IntProperty('now', now, defaultValue: null))
+      ..add(IntProperty('end', end, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) {

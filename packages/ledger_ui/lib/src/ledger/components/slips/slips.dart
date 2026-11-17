@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -72,6 +73,19 @@ class LedgerStatementSlip extends StatelessWidget {
   final String dueLabel;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('kind', kind))
+      ..add(StringProperty('number', number))
+      ..add(DoubleProperty('balance', balance))
+      ..add(StringProperty('due', due))
+      ..add(StringProperty('dueNote', dueNote))
+      ..add(StringProperty('balanceLabel', balanceLabel))
+      ..add(StringProperty('dueLabel', dueLabel));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
@@ -82,7 +96,7 @@ class LedgerStatementSlip extends StatelessWidget {
       children: [
         Text(balanceLabel.toUpperCase(), style: t.label),
         // `.stmt-fig .fig`: margin-top 10px; `.fig-m`.
-        const SizedBox(height: 10),
+        const SizedBox(height: LedgerSpacing.s10),
         LedgerFigure(balance, size: LedgerFigureSize.section),
       ],
     );
@@ -98,10 +112,10 @@ class LedgerStatementSlip extends StatelessWidget {
         Text(dueLabel.toUpperCase(), style: t.label),
         // `.stmt-date`: margin-top 6px, 400 28px/30px var(--serif),
         // letter-spacing -.005em.
-        const SizedBox(height: 6),
+        const SizedBox(height: LedgerSpacing.s6),
         Text(due, textAlign: dueAlign, style: _serif(t, 28, 30, -.005)),
         // `.stmt-due .meta`: margin-top 2px.
-        const SizedBox(height: 2),
+        const SizedBox(height: LedgerSpacing.s2),
         Text(dueNote.toUpperCase(), textAlign: dueAlign, style: t.meta),
       ],
     );
@@ -111,7 +125,12 @@ class LedgerStatementSlip extends StatelessWidget {
         children: [
           const LedgerSlipBand(),
           Padding(
-            padding: EdgeInsets.fromLTRB(side, 0, side, wide ? 6 : 4),
+            padding: EdgeInsets.fromLTRB(
+              side,
+              0,
+              side,
+              wide ? LedgerSpacing.s6 : LedgerSpacing.s4,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -120,7 +139,10 @@ class LedgerStatementSlip extends StatelessWidget {
                 // gap 16px, padding 2px 0 18px, border-bottom 1px solid
                 // var(--ink).
                 Container(
-                  padding: const EdgeInsets.only(top: 2, bottom: 18),
+                  padding: const EdgeInsets.only(
+                    top: LedgerSpacing.s2,
+                    bottom: 18,
+                  ),
                   decoration: BoxDecoration(
                     border: Border(bottom: BorderSide(color: t.headRule)),
                   ),
@@ -131,14 +153,14 @@ class LedgerStatementSlip extends StatelessWidget {
                       ? Wrap(
                           alignment: WrapAlignment.spaceBetween,
                           crossAxisAlignment: WrapCrossAlignment.end,
-                          spacing: 16,
-                          runSpacing: 12,
+                          spacing: LedgerSpacing.s16,
+                          runSpacing: LedgerSpacing.s12,
                           children: [balanceColumn, dueColumn],
                         )
                       : Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          spacing: 16,
+                          spacing: LedgerSpacing.s16,
                           children: [
                             balanceColumn,
                             Flexible(child: dueColumn),
@@ -218,12 +240,33 @@ class LedgerMemo extends StatelessWidget {
   /// Opens what the foot names (the merchant).
   final VoidCallback? onTap;
 
-  /// The control's focus; null keeps one of its own. The caller disposes
-  /// the node it gives.
+  /// {@macro ledger.focusNode}
   final FocusNode? focusNode;
 
-  /// Whether it takes focus when it first appears.
+  /// {@macro ledger.autofocus}
   final bool autofocus;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('text', text))
+      ..add(StringProperty('over', over, defaultValue: null))
+      ..add(StringProperty('textAfter', textAfter, defaultValue: null))
+      ..add(DiagnosticsProperty<LedgerSeal>('seal', seal))
+      ..add(StringProperty('note', note))
+      ..add(StringProperty('noteAmount', noteAmount, defaultValue: null))
+      ..add(StringProperty('noteAfter', noteAfter, defaultValue: null))
+      ..add(ObjectFlagProperty<VoidCallback>.has('onTap', onTap))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -243,12 +286,12 @@ class LedgerMemo extends StatelessWidget {
     final footRow = Container(
       // `.memo-foot`: margin-top 16px (the gap above), padding-top 14px,
       // border-top 1px solid var(--rule-2), gap 12px, align-items center.
-      padding: const EdgeInsets.only(top: 14),
+      padding: const EdgeInsets.only(top: LedgerSpacing.s14),
       decoration: BoxDecoration(
         border: Border(top: BorderSide(color: t.hairline)),
       ),
       child: Row(
-        spacing: 12,
+        spacing: LedgerSpacing.s12,
         children: [
           ?leading,
           Expanded(
@@ -299,7 +342,7 @@ class LedgerMemo extends StatelessWidget {
     final larger = MediaQuery.textScalerOf(context).scale(1) > 1;
     return LedgerSlip(
       // `.memo`: padding 20px.
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(LedgerSpacing.s20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -307,7 +350,7 @@ class LedgerMemo extends StatelessWidget {
           if (larger)
             Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 12,
+              spacing: LedgerSpacing.s12,
               children: [
                 verdict,
                 Align(alignment: AlignmentDirectional.centerEnd, child: stamp),
@@ -316,13 +359,13 @@ class LedgerMemo extends StatelessWidget {
           else
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              spacing: 12,
+              spacing: LedgerSpacing.s12,
               children: [
                 Flexible(child: verdict),
                 stamp,
               ],
             ),
-          const SizedBox(height: 16),
+          const SizedBox(height: LedgerSpacing.s16),
           if (onTap == null)
             MergeSemantics(child: footRow)
           else
@@ -367,11 +410,24 @@ class LedgerMemoSlip extends StatelessWidget {
   final List<Widget> actions;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('label', label))
+      ..add(StringProperty('note', note));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     return LedgerSlip(
       // `.goal-memo`: padding 18px 20px 20px.
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+      padding: const EdgeInsets.fromLTRB(
+        LedgerSpacing.s20,
+        18,
+        LedgerSpacing.s20,
+        LedgerSpacing.s20,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -379,12 +435,16 @@ class LedgerMemoSlip extends StatelessWidget {
           Text(label.toUpperCase(), style: t.label.colored(t.textSecondary)),
           // `.memo-note`: margin-top 8px, 400 22px/27px var(--serif),
           // letter-spacing -.003em.
-          const SizedBox(height: 8),
+          const SizedBox(height: LedgerSpacing.s8),
           Text(note, style: _serif(t, 22, 27, -.003)),
           if (actions.isNotEmpty) ...[
             // `.memo-acts`: flex-wrap, gap 10px, margin-top 16px.
-            const SizedBox(height: 16),
-            Wrap(spacing: 10, runSpacing: 10, children: actions),
+            const SizedBox(height: LedgerSpacing.s16),
+            Wrap(
+              spacing: LedgerSpacing.s10,
+              runSpacing: LedgerSpacing.s10,
+              children: actions,
+            ),
           ],
         ],
       ),
@@ -402,6 +462,14 @@ class LedgerMemoSlip extends StatelessWidget {
 /// LedgerFrozenBanner(title: 'Frozen today at 9:41 AM', text: 'Nothing is cancelled. Unfreeze it any time.', effects: const [LedgerEffect(icon: LucideIcons.ban, title: 'Declined', text: 'New purchases and cash withdrawals.', blocking: true)], actionLabel: 'Unfreeze card', onActionPressed: () {})
 /// ```
 class LedgerFrozenBanner extends StatelessWidget {
+  // From 1024: padding 18px 22px 8px.
+  static const EdgeInsets _deskPadding = EdgeInsets.fromLTRB(
+    22,
+    18,
+    22,
+    LedgerSpacing.s8,
+  );
+
   /// The frozen card's notice: [title], [text], its [effects] and the act that
   /// undoes it.
   const LedgerFrozenBanner({
@@ -441,12 +509,33 @@ class LedgerFrozenBanner extends StatelessWidget {
   final Key? actionKey;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('text', text))
+      ..add(IterableProperty<LedgerEffect>('effects', effects))
+      ..add(StringProperty('actionLabel', actionLabel))
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onActionPressed',
+          onActionPressed,
+        ),
+      )
+      ..add(DiagnosticsProperty<IconData>('icon', icon))
+      ..add(DiagnosticsProperty<IconData>('actionIcon', actionIcon))
+      ..add(
+        DiagnosticsProperty<Key>('actionKey', actionKey, defaultValue: null),
+      );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
     final head = Row(
       // `.fb-head`: flex, align-items center, gap 14px.
-      spacing: 14,
+      spacing: LedgerSpacing.s14,
       children: [
         // `.frozen-banner .ring`: 40 round, 1px solid var(--ink); its
         // glyph 18.
@@ -473,7 +562,7 @@ class LedgerFrozenBanner extends StatelessWidget {
                 child: Text(title, style: _serif(t, 22, 26, -.005)),
               ),
               // `.fb-s`: margin-top 2px, 13px/18px, var(--ink-3).
-              const SizedBox(height: 2),
+              const SizedBox(height: LedgerSpacing.s2),
               Text(text, style: t.bodySmall),
             ],
           ),
@@ -496,23 +585,23 @@ class LedgerFrozenBanner extends StatelessWidget {
       // gap 14px 24px, padding 18px 22px 8px; the effects in a row 28px
       // apart, no rule under each.
       return LedgerSlip(
-        padding: const EdgeInsets.fromLTRB(22, 18, 22, 8),
+        padding: _deskPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              spacing: 24,
+              spacing: LedgerSpacing.s24,
               children: [
                 Expanded(child: head),
                 act,
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: LedgerSpacing.s14),
             Container(
               decoration: rule,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 28,
+                spacing: LedgerSpacing.s28,
                 children: [for (final e in effects) Expanded(child: e)],
               ),
             ),
@@ -522,16 +611,24 @@ class LedgerFrozenBanner extends StatelessWidget {
     }
     return LedgerSlip(
       // `.frozen-banner`: padding 16px 16px 18px.
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+      padding: const EdgeInsets.fromLTRB(
+        LedgerSpacing.s16,
+        LedgerSpacing.s16,
+        LedgerSpacing.s16,
+        18,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // `.fb-head`: padding-bottom 4px.
-          Padding(padding: const EdgeInsets.only(bottom: 4), child: head),
+          Padding(
+            padding: const EdgeInsets.only(bottom: LedgerSpacing.s4),
+            child: head,
+          ),
           // `.frozen-banner .effects`: margin-top 6px, then its rule.
           LedgerEffects(ruled: true, children: effects),
           // `.fb-btn`: width 100%, margin-top 14px.
-          const SizedBox(height: 14),
+          const SizedBox(height: LedgerSpacing.s14),
           act,
         ],
       ),
@@ -555,12 +652,21 @@ class LedgerDialogLead extends StatelessWidget {
   final String text;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(StringProperty('text', text));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     return Padding(
       // `.dialog-lead`: padding 12px 0 4px; 400 22px/27px var(--serif),
       // letter-spacing -.003em, var(--ink).
-      padding: const EdgeInsets.only(top: 12, bottom: 4),
+      padding: const EdgeInsets.only(
+        top: LedgerSpacing.s12,
+        bottom: LedgerSpacing.s4,
+      ),
       child: Text(text, style: _serif(t, 22, 27, -.003)),
     );
   }
@@ -593,6 +699,15 @@ class LedgerDoneHead extends StatelessWidget {
   final String? emphasis;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('meta', meta))
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('emphasis', emphasis, defaultValue: null));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
@@ -605,7 +720,7 @@ class LedgerDoneHead extends StatelessWidget {
         // `.done-head .meta`: var(--green).
         Text(meta.toUpperCase(), style: t.meta.colored(t.accent)),
         // `.done-t`: margin-top 8px.
-        const SizedBox(height: 8),
+        const SizedBox(height: LedgerSpacing.s8),
         Semantics(
           header: true,
           child: Text.rich(
@@ -684,6 +799,16 @@ class LedgerSplitTicket extends StatelessWidget {
   final LedgerSplitHalf theirs;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('start', start))
+      ..add(StringProperty('end', end))
+      ..add(DiagnosticsProperty<LedgerSplitHalf>('mine', mine))
+      ..add(DiagnosticsProperty<LedgerSplitHalf>('theirs', theirs));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     // `.half-them`: background rgba(222, 231, 221, .5) (the green wash).
@@ -693,7 +818,12 @@ class LedgerSplitTicket extends StatelessWidget {
     Widget half(LedgerSplitHalf h, {required bool them}) => Container(
       color: them ? wash : null,
       // `.half`: column, align-items flex-start, padding 16px 16px 18px.
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+      padding: const EdgeInsets.fromLTRB(
+        LedgerSpacing.s16,
+        LedgerSpacing.s16,
+        LedgerSpacing.s16,
+        18,
+      ),
       child: MergeSemantics(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -706,13 +836,13 @@ class LedgerSplitTicket extends StatelessWidget {
                   : LedgerMonogramTone.plain,
             ),
             // `.half .mg`: margin-bottom 10px.
-            const SizedBox(height: 10),
+            const SizedBox(height: LedgerSpacing.s10),
             // `.half-n`: 500 15px/20px var(--sans).
             Text(h.name, style: t.rowTitle),
             // `.half-s`: 13px/18px, var(--ink-3).
             Text(h.note, style: t.bodySmall),
             // `.half .fig`: margin-top 14px; `.fig-m`.
-            const SizedBox(height: 14),
+            const SizedBox(height: LedgerSpacing.s14),
             LedgerFigure(h.amount, size: LedgerFigureSize.section),
           ],
         ),
@@ -728,7 +858,12 @@ class LedgerSplitTicket extends StatelessWidget {
             // `.ticket-top`: space-between, gap 12px, padding 12px 16px
             // 11px, border-bottom 1px solid var(--rule-2).
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 11),
+              padding: const EdgeInsets.fromLTRB(
+                LedgerSpacing.s16,
+                LedgerSpacing.s12,
+                LedgerSpacing.s16,
+                11,
+              ),
               decoration: BoxDecoration(
                 border: Border(bottom: BorderSide(color: t.hairline)),
               ),
@@ -737,8 +872,8 @@ class LedgerSplitTicket extends StatelessWidget {
               child: MediaQuery.textScalerOf(context).scale(1) > 1
                   ? Wrap(
                       alignment: WrapAlignment.spaceBetween,
-                      spacing: 12,
-                      runSpacing: 2,
+                      spacing: LedgerSpacing.s12,
+                      runSpacing: LedgerSpacing.s2,
                       children: [
                         Text(start.toUpperCase(), style: meta),
                         Text(end.toUpperCase(), style: meta),
@@ -746,7 +881,7 @@ class LedgerSplitTicket extends StatelessWidget {
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      spacing: 12,
+                      spacing: LedgerSpacing.s12,
                       children: [
                         Flexible(child: Text(start.toUpperCase(), style: meta)),
                         Text(end.toUpperCase(), style: meta),
@@ -865,7 +1000,7 @@ class LedgerSavedAfter extends StatelessWidget {
     this.subtitle,
     this.trailingSubtitle,
     super.key,
-  });
+  }) : assert(ratio >= 0);
 
   /// The line's words, on the dot leader.
   final String title;
@@ -883,13 +1018,30 @@ class LedgerSavedAfter extends StatelessWidget {
   final String? trailingSubtitle;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('value', value))
+      ..add(DoubleProperty('ratio', ratio))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(
+        StringProperty(
+          'trailingSubtitle',
+          trailingSubtitle,
+          defaultValue: null,
+        ),
+      );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final sub = ledgerSubLine(context, start: subtitle, end: trailingSubtitle);
     return Container(
       // `.add-after`: padding 14px 0, border-top and border-bottom 1px
       // solid var(--rule).
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s14),
       decoration: BoxDecoration(
         border: Border.symmetric(horizontal: BorderSide(color: t.border)),
       ),
@@ -907,7 +1059,7 @@ class LedgerSavedAfter extends StatelessWidget {
               ),
             ),
             // `.add-after .gauge`: margin-top 10px.
-            const SizedBox(height: 10),
+            const SizedBox(height: LedgerSpacing.s10),
             LedgerGauge(
               ratio: ratio,
               tick: false,
@@ -915,8 +1067,8 @@ class LedgerSavedAfter extends StatelessWidget {
               semanticLabel: title,
             ),
             if (sub != null) ...[
-              // `.sub`: margin-top 3px.
-              const SizedBox(height: 3),
+              // `.sub`: margin-top 3px, on the grid at 4.
+              const SizedBox(height: LedgerSpacing.s4),
               sub,
             ],
           ],
@@ -957,6 +1109,15 @@ class LedgerBeforeRow extends StatelessWidget {
   final IconData icon;
 
   @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('title', title))
+      ..add(StringProperty('subtitle', subtitle, defaultValue: null))
+      ..add(DiagnosticsProperty<IconData>('icon', icon));
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final subLine = ledgerSubLine(context, start: subtitle);
@@ -964,9 +1125,9 @@ class LedgerBeforeRow extends StatelessWidget {
     return MergeSemantics(
       child: Padding(
         // `.row`: padding 14px 0, its parts 14px apart.
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        padding: const EdgeInsets.symmetric(vertical: LedgerSpacing.s14),
         child: Row(
-          spacing: 14,
+          spacing: LedgerSpacing.s14,
           children: [
             // `.glyph-before`: 40 by 44, 1px dashed var(--ink-4), radius
             // var(--r-sheet), var(--ink-3); its glyph 16.
@@ -995,7 +1156,10 @@ class LedgerBeforeRow extends StatelessWidget {
                     ),
                     end: value,
                   ),
-                  if (subLine != null) ...[const SizedBox(height: 3), subLine],
+                  if (subLine != null) ...[
+                    const SizedBox(height: LedgerSpacing.s4),
+                    subLine,
+                  ],
                 ],
               ),
             ),

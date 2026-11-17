@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart' show OverflowBoxFit;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -99,8 +100,8 @@ class _Engraving extends CustomPainter {
 }
 
 // Each chart's source parameters, per width class: the plot's aspect
-// (height over width), its scale's gutter, the hatch's spacing and stroke.
-typedef _Spec = ({double w, double h, double gut, double spacing, double sw});
+// (height over width), its scale's gutter, the hatch's pitch and stroke.
+typedef _Spec = ({double w, double h, double gut, double hatch, double sw});
 
 LedgerPlotLabel _scaleLabel(
   LedgerThemeData t,
@@ -114,7 +115,7 @@ LedgerPlotLabel _scaleLabel(
   // On the paper, so a line that runs under a figure grown with a large
   // text (a projection's drop at the plot's end) breaks round it.
   child: Padding(
-    padding: const EdgeInsets.only(bottom: 2),
+    padding: const EdgeInsets.only(bottom: LedgerSpacing.s2),
     child: ColoredBox(
       color: t.background,
       child: Padding(
@@ -138,7 +139,7 @@ LedgerPlotLabel _budgetLabel(
   top: y,
   shift: const Offset(0, -1),
   child: Padding(
-    padding: const EdgeInsets.only(bottom: 2),
+    padding: const EdgeInsets.only(bottom: LedgerSpacing.s2),
     child: Text(
       text,
       softWrap: false,
@@ -159,7 +160,7 @@ LedgerPlotLabel _pointLabel(
   // On the paper, as a note is: the line it names may run close by it
   // ("Today" beside a falling line), and breaks round the words.
   child: Padding(
-    padding: EdgeInsets.only(right: end ? 8 : 14 - _scaleKnock),
+    padding: EdgeInsets.only(right: end ? LedgerSpacing.s8 : 14 - _scaleKnock),
     child: ColoredBox(
       color: t.background,
       child: Padding(
@@ -188,7 +189,7 @@ LedgerPlotLabel _noteLabel(
   top: at.dy - lift,
   child: Container(
     height: lift,
-    padding: const EdgeInsets.only(left: 7),
+    padding: const EdgeInsets.only(left: LedgerSpacing.s8),
     alignment: Alignment.topLeft,
     decoration: BoxDecoration(
       border: Border(left: BorderSide(color: t.textPrimary)),
@@ -196,7 +197,10 @@ LedgerPlotLabel _noteLabel(
     child: ColoredBox(
       color: t.background,
       child: Padding(
-        padding: const EdgeInsets.only(right: 4, bottom: 1),
+        padding: const EdgeInsets.only(
+          right: LedgerSpacing.s4,
+          bottom: LedgerLayout.hairline,
+        ),
         child: ledgerPlotText(text, t.plotNote, t.textPrimary),
       ),
     ),
@@ -218,7 +222,10 @@ LedgerPlotLabel _markLabel(
         child: ColoredBox(
           color: t.background,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+            padding: const EdgeInsets.symmetric(
+              horizontal: LedgerSpacing.s4,
+              vertical: LedgerLayout.hairline,
+            ),
             child: Text(
               text,
               softWrap: false,
@@ -232,7 +239,7 @@ LedgerPlotLabel _markLabel(
         top: y,
         shift: end ? const Offset(-1, -1) : const Offset(-.5, -1),
         child: Padding(
-          padding: const EdgeInsets.only(bottom: 7),
+          padding: const EdgeInsets.only(bottom: LedgerSpacing.s8),
           child: Text(text, softWrap: false, style: t.plotMark),
         ),
       );
@@ -314,7 +321,7 @@ class LedgerNetWorthChart extends StatelessWidget {
     this.height,
     this.semanticLabel = 'Net worth by month',
     super.key,
-  });
+  }) : assert(height == null || height > 0);
 
   /// Each month end's net worth, the last today's.
   final List<double> values;
@@ -337,11 +344,27 @@ class LedgerNetWorthChart extends StatelessWidget {
   /// The plot's height; null takes the phone's or the desktop's.
   final double? height;
 
+  /// {@template ledger.chartLabel}
   /// What a screen reader says the chart is.
+  /// {@endtemplate}
   final String semanticLabel;
 
-  static const _Spec _phone = (w: 342, h: 168, gut: 30, spacing: 3.1, sw: .6);
-  static const _Spec _desk = (w: 712, h: 330, gut: 36, spacing: 3.5, sw: .65);
+  static const _Spec _phone = (w: 342, h: 168, gut: 30, hatch: 3.1, sw: .6);
+  static const _Spec _desk = (w: 712, h: 330, gut: 36, hatch: 3.5, sw: .65);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<double>('values', values))
+      ..add(DoubleProperty('low', low))
+      ..add(DoubleProperty('high', high))
+      ..add(IterableProperty<LedgerGridLine>('grid', grid))
+      ..add(StringProperty('endLabel', endLabel))
+      ..add(IterableProperty<String>('months', months, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -379,7 +402,7 @@ class LedgerNetWorthChart extends StatelessWidget {
     final pts = [
       for (var i = 0; i < values.length; i++) Offset(x(i), y(values[i])),
     ];
-    final area = ledgerEngravedArea(pts, top, yb, s.spacing);
+    final area = ledgerEngravedArea(pts, top, yb, s.hatch);
     final ink = t.textPrimary, green = t.pace, paper = t.background;
     final last = pts.last;
     final ops = <void Function(Canvas)>[
@@ -487,7 +510,8 @@ class LedgerCumulativeChart extends StatelessWidget {
     this.height,
     this.semanticLabel = 'Spent through the month against the budget',
     super.key,
-  });
+  }) : assert(days >= 1),
+       assert(height == null || height > 0);
 
   /// The month's spending summed by the end of each day so far.
   final List<double> cumulative;
@@ -516,11 +540,29 @@ class LedgerCumulativeChart extends StatelessWidget {
   /// The plot's height; null takes the phone's or the desktop's.
   final double? height;
 
-  /// What a screen reader says the chart is.
+  /// {@macro ledger.chartLabel}
   final String semanticLabel;
 
-  static const _Spec _phone = (w: 342, h: 248, gut: 30, spacing: 3.1, sw: .6);
-  static const _Spec _desk = (w: 712, h: 392, gut: 40, spacing: 3.6, sw: .7);
+  static const _Spec _phone = (w: 342, h: 248, gut: 30, hatch: 3.1, sw: .6);
+  static const _Spec _desk = (w: 712, h: 392, gut: 40, hatch: 3.6, sw: .7);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<double>('cumulative', cumulative))
+      ..add(DoubleProperty('budget', budget))
+      ..add(IntProperty('days', days))
+      ..add(DoubleProperty('high', high))
+      ..add(IterableProperty<LedgerGridLine>('grid', grid))
+      ..add(StringProperty('budgetLabel', budgetLabel))
+      ..add(
+        DiagnosticsProperty<LedgerChartNote>('note', note, defaultValue: null),
+      )
+      ..add(StringProperty('month', month))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -566,7 +608,7 @@ class LedgerCumulativeChart extends StatelessWidget {
         Offset(x(d + 1), y(cumulative[d])),
     ];
     final ink = t.textPrimary, green = t.pace, paper = t.background;
-    final area = ledgerEngravedArea(pts, top, yb, s.spacing);
+    final area = ledgerEngravedArea(pts, top, yb, s.hatch);
     final last = pts.last, first = pts[1];
     final ops = <void Function(Canvas)>[
       for (final g in grid) (c) => ledgerDotted(c, y(g.value), 0, w, ink),
@@ -661,7 +703,8 @@ class LedgerDayBars extends StatelessWidget {
     this.deskHeight,
     this.semanticLabel = 'Spent per day',
     super.key,
-  });
+  }) : assert(days >= 1),
+       assert(height == null || height > 0);
 
   /// Each day's spending so far.
   final List<double> values;
@@ -700,11 +743,36 @@ class LedgerDayBars extends StatelessWidget {
   /// The plot's height from 1024.
   final double? deskHeight;
 
-  /// What a screen reader says the chart is.
+  /// {@macro ledger.chartLabel}
   final String semanticLabel;
 
-  static const _Spec _phone = (w: 342, h: 132, gut: 30, spacing: 2.6, sw: .6);
-  static const _Spec _desk = (w: 712, h: 236, gut: 40, spacing: 3.0, sw: .6);
+  static const _Spec _phone = (w: 342, h: 132, gut: 30, hatch: 2.6, sw: .6);
+  static const _Spec _desk = (w: 712, h: 236, gut: 40, hatch: 3.0, sw: .6);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<double>('values', values))
+      ..add(IntProperty('days', days))
+      ..add(DoubleProperty('cap', cap, defaultValue: null))
+      ..add(DiagnosticsProperty<Map<int, String>>('capLabels', capLabels))
+      ..add(IterableProperty<LedgerChartMark>('marks', marks))
+      ..add(IterableProperty<LedgerGridLine>('grid', grid))
+      ..add(
+        IterableProperty<LedgerGridLine>(
+          'phoneGrid',
+          phoneGrid,
+          defaultValue: null,
+        ),
+      )
+      ..add(DoubleProperty('high', high, defaultValue: null))
+      ..add(EnumProperty<LedgerBarTone>('tone', tone))
+      ..add(StringProperty('month', month))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(DoubleProperty('deskHeight', deskHeight, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -792,7 +860,7 @@ class LedgerDayBars extends StatelessWidget {
       var top0 = y(v);
       if (yb - top0 < 1.2) top0 = yb - 1.2;
       final bar = Rect.fromLTRB(x0, top0, x1, yb);
-      final hatch = ledgerHatchRect(x0, top0, x1, yb, s.spacing);
+      final hatch = ledgerHatchRect(x0, top0, x1, yb, s.hatch);
       ops
         ..add((c) => c.drawPath(hatch, ledgerStroke(ledgerInk(color, .6), .6)))
         ..add((c) => c.drawRect(bar, ledgerStroke(color, .75)));
@@ -817,7 +885,12 @@ class LedgerDayBars extends StatelessWidget {
               child: ColoredBox(
                 color: paper,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 1, 4, 4),
+                  padding: const EdgeInsets.fromLTRB(
+                    0,
+                    1,
+                    LedgerSpacing.s4,
+                    LedgerSpacing.s4,
+                  ),
                   child: ledgerPlotText(words, t.plotCaption, t.textPrimary),
                 ),
               ),
@@ -871,7 +944,7 @@ class LedgerVisitRuler extends StatelessWidget {
     this.startLabel,
     this.endLabel,
     super.key,
-  });
+  }) : assert(days >= 1);
 
   /// Each payment's day and amount.
   final List<(int, double)> visits;
@@ -904,6 +977,20 @@ class LedgerVisitRuler extends StatelessWidget {
   static const double _labelsTop = 4;
   static const double _labelSize = 10;
   static const double _labelLine = 12;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<Object?>('visits', visits));
+    properties
+      ..add(IntProperty('days', days))
+      ..add(IntProperty('today', today))
+      ..add(IntProperty('current', current, defaultValue: null))
+      ..add(FlagProperty('moneyIn', value: moneyIn, ifTrue: 'moneyIn'))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(StringProperty('startLabel', startLabel, defaultValue: null))
+      ..add(StringProperty('endLabel', endLabel, defaultValue: null));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1028,7 +1115,8 @@ class LedgerMonthLine extends StatelessWidget {
     this.deskHeight,
     this.semanticLabel = 'Balance through the month',
     super.key,
-  });
+  }) : assert(days >= 1),
+       assert(height == null || height > 0);
 
   /// The balance by the end of each day so far.
   final List<double> values;
@@ -1066,11 +1154,30 @@ class LedgerMonthLine extends StatelessWidget {
   /// The plot's height from 1024.
   final double? deskHeight;
 
-  /// What a screen reader says the chart is.
+  /// {@macro ledger.chartLabel}
   final String semanticLabel;
 
-  static const _Spec _phone = (w: 342, h: 196, gut: 30, spacing: 3.1, sw: .6);
-  static const _Spec _desk = (w: 712, h: 300, gut: 40, spacing: 3.5, sw: .65);
+  static const _Spec _phone = (w: 342, h: 196, gut: 30, hatch: 3.1, sw: .6);
+  static const _Spec _desk = (w: 712, h: 300, gut: 40, hatch: 3.5, sw: .65);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<double>('values', values))
+      ..add(DoubleProperty('start', start))
+      ..add(IntProperty('days', days))
+      ..add(DoubleProperty('low', low))
+      ..add(DoubleProperty('high', high))
+      ..add(IterableProperty<LedgerGridLine>('grid', grid))
+      ..add(StringProperty('endLabel', endLabel, defaultValue: null))
+      ..add(IterableProperty<LedgerChartMark>('marks', marks))
+      ..add(FlagProperty('endAbove', value: endAbove, ifTrue: 'endAbove'))
+      ..add(StringProperty('month', month))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(DoubleProperty('deskHeight', deskHeight, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1116,7 +1223,7 @@ class LedgerMonthLine extends StatelessWidget {
       for (var d = 0; d < values.length; d++) Offset(x(d + 1), y(values[d])),
     ];
     final ink = t.textPrimary, green = t.pace, paper = t.background;
-    final area = ledgerEngravedArea(pts, top, yb, s.spacing);
+    final area = ledgerEngravedArea(pts, top, yb, s.hatch);
     final last = pts.last;
     final ops = <void Function(Canvas)>[
       for (final g in grid) (c) => ledgerDotted(c, y(g.value), 0, w, ink),
@@ -1203,7 +1310,7 @@ class LedgerMonthBars extends StatelessWidget {
     this.height,
     this.semanticLabel = 'By month',
     super.key,
-  });
+  }) : assert(height == null || height > 0);
 
   /// Each month's amount, the latest last.
   final List<double> values;
@@ -1226,14 +1333,45 @@ class LedgerMonthBars extends StatelessWidget {
   /// The plot's height; null takes the phone's or the desktop's.
   final double? height;
 
-  /// What a screen reader says the chart is.
+  /// {@macro ledger.chartLabel}
   final String semanticLabel;
 
-  static const _phone = (w: 342.0, h: 164.0, top: 58.0, spacing: 2.6);
-  static const _desk = (w: 712.0, h: 240.0, top: 64.0, spacing: 3.0);
+  static const _phone = (w: 342.0, h: 164.0, top: 58.0, hatch: 2.6);
+  static const _desk = (w: 712.0, h: 240.0, top: 64.0, hatch: 3.0);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<double>('values', values))
+      ..add(
+        DiagnosticsProperty<LedgerChartBracket>(
+          'bracket',
+          bracket,
+          defaultValue: null,
+        ),
+      )
+      ..add(IterableProperty<LedgerChartMark>('marks', marks))
+      ..add(EnumProperty<LedgerBarTone>('tone', tone))
+      ..add(DoubleProperty('high', high, defaultValue: null))
+      ..add(IterableProperty<String>('months', months, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel));
+  }
 
   @override
   Widget build(BuildContext context) {
+    assert(
+      marks.every((m) => m.day >= 0 && m.day < values.length),
+      "a mark's day is one of the bars",
+    );
+    assert(
+      bracket == null ||
+          (bracket!.first >= 0 &&
+              bracket!.first <= bracket!.last &&
+              bracket!.last < values.length),
+      "the bracket's first and last are bars, in order",
+    );
     final t = context.ledgerTheme;
     return Semantics(
       label: semanticLabel,
@@ -1273,7 +1411,7 @@ class LedgerMonthBars extends StatelessWidget {
       if (i == n - 1) {
         ops.add((c) => c.drawRect(bar, Paint()..color = color));
       } else {
-        final hatch = ledgerHatchRect(x0, y0, x0 + bw, yb, s.spacing);
+        final hatch = ledgerHatchRect(x0, y0, x0 + bw, yb, s.hatch);
         ops
           ..add(
             (c) => c.drawPath(hatch, ledgerStroke(ledgerInk(color, .75), .6)),
@@ -1301,7 +1439,7 @@ class LedgerMonthBars extends StatelessWidget {
           top: yk,
           shift: const Offset(-.5, -1),
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 4),
+            padding: const EdgeInsets.only(bottom: LedgerSpacing.s4),
             child: ledgerPlotText(b.text, t.plotCaption, t.textPrimary),
           ),
         ),
@@ -1341,7 +1479,8 @@ class LedgerStepTotal extends StatelessWidget {
     this.height,
     this.semanticLabel = 'Bills summed as they fall due',
     super.key,
-  });
+  }) : assert(days >= 1),
+       assert(height == null || height > 0);
 
   /// Each bill's day and amount, in date order.
   final List<(int, double)> steps;
@@ -1364,11 +1503,25 @@ class LedgerStepTotal extends StatelessWidget {
   /// The plot's height; null takes the phone's or the desktop's.
   final double? height;
 
-  /// What a screen reader says the chart is.
+  /// {@macro ledger.chartLabel}
   final String semanticLabel;
 
-  static const _Spec _phone = (w: 342, h: 220, gut: 30, spacing: 3.1, sw: .6);
-  static const _Spec _desk = (w: 712, h: 320, gut: 40, spacing: 3.5, sw: .65);
+  static const _Spec _phone = (w: 342, h: 220, gut: 30, hatch: 3.1, sw: .6);
+  static const _Spec _desk = (w: 712, h: 320, gut: 40, hatch: 3.5, sw: .65);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<Object?>('steps', steps));
+    properties
+      ..add(IntProperty('days', days))
+      ..add(DoubleProperty('high', high))
+      ..add(IterableProperty<LedgerGridLine>('grid', grid))
+      ..add(IterableProperty<LedgerChartNote>('notes', notes))
+      ..add(StringProperty('month', month))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1423,7 +1576,7 @@ class LedgerStepTotal extends StatelessWidget {
         Offset(pts[i].dx + (i.isEven && i > 0 ? .01 : 0), pts[i].dy),
     ];
     final ink = t.textPrimary, paper = t.background;
-    final area = ledgerEngravedArea(fnPts, top, yb, s.spacing, band: false);
+    final area = ledgerEngravedArea(fnPts, top, yb, s.hatch, band: false);
     final ops = <void Function(Canvas)>[
       for (final g in grid) (c) => ledgerDotted(c, y(g.value), 0, w, ink),
       (c) => ledgerPaintArea(
@@ -1495,7 +1648,8 @@ class LedgerGoalChart extends StatelessWidget {
     this.deskHeight,
     this.semanticLabel = 'Saved over time against the target',
     super.key,
-  });
+  }) : assert(months >= 1),
+       assert(height == null || height > 0);
 
   /// Each month's index and the sum saved by its end, up to now.
   final List<(int, double)> history;
@@ -1539,11 +1693,32 @@ class LedgerGoalChart extends StatelessWidget {
   /// The plot's height from 1024.
   final double? deskHeight;
 
-  /// What a screen reader says the chart is.
+  /// {@macro ledger.chartLabel}
   final String semanticLabel;
 
-  static const _Spec _phone = (w: 342, h: 196, gut: 30, spacing: 3.1, sw: .6);
-  static const _Spec _desk = (w: 712, h: 300, gut: 40, spacing: 3.5, sw: .65);
+  static const _Spec _phone = (w: 342, h: 196, gut: 30, hatch: 3.1, sw: .6);
+  static const _Spec _desk = (w: 712, h: 300, gut: 40, hatch: 3.5, sw: .65);
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<Object?>('history', history));
+    properties.add(IterableProperty<Object?>('projection', projection));
+    properties
+      ..add(IntProperty('months', months))
+      ..add(DoubleProperty('target', target))
+      ..add(DoubleProperty('low', low))
+      ..add(DoubleProperty('high', high))
+      ..add(IterableProperty<LedgerGridLine>('grid', grid))
+      ..add(StringProperty('targetLabel', targetLabel))
+      ..add(StringProperty('endLabel', endLabel, defaultValue: null))
+      ..add(StringProperty('gapLabel', gapLabel, defaultValue: null))
+      ..add(IterableProperty<String>('keys', keys, defaultValue: null))
+      ..add(IntProperty('now', now, defaultValue: null))
+      ..add(DoubleProperty('height', height, defaultValue: null))
+      ..add(DoubleProperty('deskHeight', deskHeight, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1586,7 +1761,7 @@ class LedgerGoalChart extends StatelessWidget {
     final hp = [for (final (i, v) in history) Offset(x(i), y(v))];
     final pp = [hp.last, for (final (i, v) in projection) Offset(x(i), y(v))];
     final ink = t.textPrimary, green = t.pace, paper = t.background;
-    final area = ledgerEngravedArea(hp, top, yb, s.spacing);
+    final area = ledgerEngravedArea(hp, top, yb, s.hatch);
     final now = hp.last, end = pp.last;
     final ahead = projection.isNotEmpty;
     final ops = <void Function(Canvas)>[
@@ -1668,7 +1843,7 @@ class LedgerGoalChart extends StatelessWidget {
           top: (g0 + g1) / 2,
           shift: const Offset(-1, -.5),
           child: Padding(
-            padding: const EdgeInsets.only(right: 14),
+            padding: const EdgeInsets.only(right: LedgerSpacing.s14),
             child: ledgerPlotText(
               words,
               t.plotPoint
