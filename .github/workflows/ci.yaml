@@ -54,13 +54,14 @@ jobs:
           # A package whose suite outgrows one runner's memory is split into parts (flutter test --total-shards).
           shards() { case "$1" in material_expressive_ui) echo 4 ;; *) echo 1 ;; esac; }
           json=$(for p in $pick; do n=$(shards "$p"); for i in $(seq 0 $((n - 1))); do
-            jq -nc --arg p "$p" --argjson i "$i" --argjson n "$n" '{package: $p, shard: $i, shards: $n}'
+            label=$p; [ "$n" -gt 1 ] && label="$p ($((i + 1))/$n)"
+            jq -nc --arg p "$p" --arg l "$label" --argjson i "$i" --argjson n "$n" '{package: $p, label: $l, shard: $i, shards: $n}'
           done; done | jq -sc .)
           echo "packages=$json" >> "$GITHUB_OUTPUT"
           echo "Testing: $json"
 
   check:
-    name: ${{ matrix.shards > 1 && format('{0} ({1}/{2})', matrix.package, matrix.shard + 1, matrix.shards) || matrix.package }}
+    name: ${{ matrix.label }}
     needs: changes
     if: needs.changes.outputs.packages != '[]'
     runs-on: ubuntu-latest
