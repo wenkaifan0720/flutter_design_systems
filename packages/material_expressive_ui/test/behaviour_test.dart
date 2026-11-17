@@ -20,6 +20,8 @@ import 'package:material_expressive_ui/src/material_expressive/internal/state_fa
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/behavior.g.dart';
 import 'package:material_expressive_ui/src/material_expressive/internal/tokens/list_tokens.g.dart';
 
+import 'support/tiers.dart';
+
 /// One interactive part: [build] wires its main callback to `hit`, or none when `hit` is null.
 class _Part {
   const _Part(
@@ -981,11 +983,16 @@ void main() {
     }
   });
 
-  for (final MapEntry(key: name, value: part) in _parts.entries) {
+  for (final (row, MapEntry(key: name, value: part))
+      in _parts.entries.indexed) {
     group(name, () {
+      // Every part through every check; the everyday tier gives each part
+      // one of the three in turn (Reduce Motion; Tab and the disabled face;
+      // the hover) and lays one part out at each width (support/tiers).
       if (part.focus) {
         testWidgets(
           'Tab reaches it and its focus layer shows; Enter and Space press it',
+          tags: sweepUnless(everydayTurn(row, 1, 3)),
           (tester) async {
             await _size(tester, 390);
             var hits = 0;
@@ -1049,102 +1056,117 @@ void main() {
       }
 
       if (part.disables) {
-        testWidgets('with no callback it takes no focus and its face is told', (
-          tester,
-        ) async {
-          await _size(tester, 390);
-          await tester.pumpWidget(_host(part.build(null), still: true));
-          await tester.pump();
-          await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-          await tester.pump();
-          expect(
-            _focusInPart(tester),
-            isFalse,
-            reason: 'a disabled $name took focus',
-          );
-          for (final ink in _inks(tester)) {
-            if (ink.statesController == null) continue;
-            expect(_statesOf(ink), contains(WidgetState.disabled));
-          }
-        });
+        testWidgets(
+          'with no callback it takes no focus and its face is told',
+          tags: sweepUnless(everydayTurn(row, 1, 3)),
+          (tester) async {
+            await _size(tester, 390);
+            await tester.pumpWidget(_host(part.build(null), still: true));
+            await tester.pump();
+            await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+            await tester.pump();
+            expect(
+              _focusInPart(tester),
+              isFalse,
+              reason: 'a disabled $name took focus',
+            );
+            for (final ink in _inks(tester)) {
+              if (ink.statesController == null) continue;
+              expect(_statesOf(ink), contains(WidgetState.disabled));
+            }
+          },
+        );
       }
 
       if (part.pressable) {
-        testWidgets('a hover reaches its face', (tester) async {
-          await _size(tester, 390);
-          await tester.pumpWidget(_host(part.build(() {}), still: true));
-          await tester.pump();
-          final first = _live();
-          final mouse = await tester.createGesture(
-            kind: PointerDeviceKind.mouse,
-          );
-          await mouse.addPointer(location: Offset.zero);
-          addTearDown(mouse.removePointer);
-          await mouse.moveTo(tester.getCenter(first));
-          await tester.pump();
-          expect(
-            _statesOf(tester.widget<InkResponse>(first)),
-            contains(WidgetState.hovered),
-          );
-        });
+        testWidgets(
+          'a hover reaches its face',
+          tags: sweepUnless(everydayTurn(row, 2, 3)),
+          (tester) async {
+            await _size(tester, 390);
+            await tester.pumpWidget(_host(part.build(() {}), still: true));
+            await tester.pump();
+            final first = _live();
+            final mouse = await tester.createGesture(
+              kind: PointerDeviceKind.mouse,
+            );
+            await mouse.addPointer(location: Offset.zero);
+            addTearDown(mouse.removePointer);
+            await mouse.moveTo(tester.getCenter(first));
+            await tester.pump();
+            expect(
+              _statesOf(tester.widget<InkResponse>(first)),
+              contains(WidgetState.hovered),
+            );
+          },
+        );
       }
 
       // Reduce Motion critically damps Expressive's springs (contract §2) rather than cutting them, so a press
       // still moves for a moment; what the law forbids is motion that never ends.
-      testWidgets('under Reduce Motion a press settles and nothing loops', (
-        tester,
-      ) async {
-        await _size(tester, 390);
-        await tester.pumpWidget(_host(part.build(() {}), still: true));
-        await tester.pump();
-        if (part.pressable) {
-          await tester.tap(_live(), warnIfMissed: false);
-        }
-        await tester.pumpAndSettle();
-        expect(tester.hasRunningAnimations, isFalse);
-        expect(tester.takeException(), isNull);
-      });
-
-      for (final width in const [390.0, 768.0, 1024.0, 1440.0]) {
-        testWidgets('lays out at $width, at 2.0 text, and right to left', (
-          tester,
-        ) async {
-          await _size(tester, width, 1400);
-          expect(
-            await _faults(() async {
-              await tester.pumpWidget(_host(part.build(() {}), still: true));
-              await tester.pump();
-            }),
-            isEmpty,
-          );
-          expect(
-            await _faults(() async {
-              await tester.pumpWidget(
-                _host(part.build(() {}), still: true, scale: 2),
-              );
-              await tester.pump();
-            }),
-            isEmpty,
-            reason: 'at 2.0 text',
-          );
-          if (part.crushes == null) {
-            expect(_crushed(tester), isEmpty, reason: 'at 2.0 text');
+      testWidgets(
+        'under Reduce Motion a press settles and nothing loops',
+        tags: sweepUnless(everydayTurn(row, 0, 3)),
+        (tester) async {
+          await _size(tester, 390);
+          await tester.pumpWidget(_host(part.build(() {}), still: true));
+          await tester.pump();
+          if (part.pressable) {
+            await tester.tap(_live(), warnIfMissed: false);
           }
-          expect(
-            await _faults(() async {
-              await tester.pumpWidget(
-                _host(
-                  part.build(() {}),
-                  still: true,
-                  direction: TextDirection.rtl,
-                ),
-              );
-              await tester.pump();
-            }),
-            isEmpty,
-            reason: 'right to left',
-          );
-        });
+          await tester.pumpAndSettle();
+          expect(tester.hasRunningAnimations, isFalse);
+          expect(tester.takeException(), isNull);
+        },
+      );
+
+      for (final (column, width) in const [
+        390.0,
+        768.0,
+        1024.0,
+        1440.0,
+      ].indexed) {
+        testWidgets(
+          'lays out at $width, at 2.0 text, and right to left',
+          tags: sweepUnless(everydayOnce(row, column, _parts.length, 4)),
+          (tester) async {
+            await _size(tester, width, 1400);
+            expect(
+              await _faults(() async {
+                await tester.pumpWidget(_host(part.build(() {}), still: true));
+                await tester.pump();
+              }),
+              isEmpty,
+            );
+            expect(
+              await _faults(() async {
+                await tester.pumpWidget(
+                  _host(part.build(() {}), still: true, scale: 2),
+                );
+                await tester.pump();
+              }),
+              isEmpty,
+              reason: 'at 2.0 text',
+            );
+            if (part.crushes == null) {
+              expect(_crushed(tester), isEmpty, reason: 'at 2.0 text');
+            }
+            expect(
+              await _faults(() async {
+                await tester.pumpWidget(
+                  _host(
+                    part.build(() {}),
+                    still: true,
+                    direction: TextDirection.rtl,
+                  ),
+                );
+                await tester.pump();
+              }),
+              isEmpty,
+              reason: 'right to left',
+            );
+          },
+        );
       }
     });
   }

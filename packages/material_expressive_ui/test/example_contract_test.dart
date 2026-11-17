@@ -16,13 +16,18 @@ import 'gallery_support.dart';
 import 'overlay_fixtures.dart';
 import 'shape_support.dart';
 import 'support/font_glyphs.dart';
+import 'support/tiers.dart';
 
 String _name(Widget widget) => widget.runtimeType.toString().split('<').first;
 
 void main() {
   setUpAll(loadExpressiveFonts);
 
-  testWidgets('every exported widget is live in the example', (tester) async {
+  // A property of the whole example (every exported widget live on some
+  // page): READY and a release read it (support/tiers).
+  testWidgets('every exported widget is live in the example', tags: sweep, (
+    tester,
+  ) async {
     final seen = <String>{};
     void see() {
       for (final element

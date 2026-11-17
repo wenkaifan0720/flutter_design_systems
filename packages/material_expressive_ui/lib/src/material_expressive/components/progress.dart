@@ -241,10 +241,24 @@ abstract class _ProgressState<T extends StatefulWidget> extends State<T>
         : 1;
   }
 
-  /// Under Reduce Motion (`MediaQuery.disableAnimationsOf`) nothing loops:
+  /// Under Reduce Motion ([ExpressiveMotion.reduceMotion]) nothing loops:
   /// the wave stands still and an indeterminate indicator holds one frame
   /// of its cycle, its first line part way out.
   bool _still = false;
+
+  /// Whether [_still] has been read once and the ticker set to it.
+  bool _followed = false;
+
+  /// Reads Reduce Motion as the indicator builds (each subclass's build
+  /// starts with it): iOS's comes as a build, not as a change of
+  /// dependencies (`designReduceMotionOf`).
+  void _followReduceMotion() {
+    final still = ExpressiveMotion.of(context).reduceMotion;
+    if (_followed && still == _still) return;
+    _followed = true;
+    _still = still;
+    _syncTicker();
+  }
 
   bool get _moves => (value == null || wavy) && !_still;
 
@@ -253,13 +267,6 @@ abstract class _ProgressState<T extends StatefulWidget> extends State<T>
     super.initState();
     _amplitude.value = targetAmplitude;
     clock.amplitude = targetAmplitude;
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _still = ExpressiveMotion.of(context).reduceMotion;
-    _syncTicker();
   }
 
   void _syncTicker() {
@@ -623,6 +630,7 @@ class _ExpressiveLinearProgressState
 
   @override
   Widget build(BuildContext context) {
+    _followReduceMotion();
     if (widget.wavy) {
       assert(
         ExpressiveHeroMoment.debugCheck(
@@ -1050,6 +1058,7 @@ class _ExpressiveCircularProgressState
 
   @override
   Widget build(BuildContext context) {
+    _followReduceMotion();
     if (widget.wavy) {
       assert(
         ExpressiveHeroMoment.debugCheck(

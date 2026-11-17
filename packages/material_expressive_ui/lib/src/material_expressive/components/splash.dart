@@ -567,7 +567,7 @@ class _ExpressiveSplashScreenState extends State<ExpressiveSplashScreen>
       _scheduled = false;
       return;
     }
-    if (MediaQuery.disableAnimationsOf(context)) return _fade();
+    if (ExpressiveMotion.of(context).reduceMotion) return _fade();
     final source = _sources.where((s) => s.mounted).lastOrNull;
     if (source == null) return _fade();
     final anchor = _liveAnchor();

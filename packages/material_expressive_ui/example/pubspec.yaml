@@ -16,7 +16,7 @@ dependencies:
   material_expressive_ui:
     path: ../
   # An example imports the foundation itself too (its alignment sheet, say).
-  ui_core: ^0.2.0
+  ui_core: ^0.2.1
 
 
 dev_dependencies:

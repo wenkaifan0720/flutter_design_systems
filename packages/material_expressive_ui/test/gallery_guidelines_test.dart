@@ -20,14 +20,21 @@ import 'package:flutter/foundation.dart' show precisionErrorTolerance;
 import 'package:flutter/services.dart' show Brightness;
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
+import 'flutter_test_config.dart' show pageWalkLeakTesting;
 import 'gallery_support.dart';
+import 'support/tiers.dart';
 
 void main() {
+  LeakTesting.settings = pageWalkLeakTesting;
   setUpAll(loadExpressiveFonts);
 
-  for (final page in galleryPages) {
-    for (final (preset, b) in presetsAndModes) {
+  // Every page in every preset by day and night; the everyday tier reads
+  // each preset and mode once, each on another page (support/tiers).
+  final cases = presetsAndModes.toList();
+  for (final (row, page) in galleryPages.indexed) {
+    for (final (column, (preset, b)) in cases.indexed) {
       Future<void> meets(WidgetTester tester, {required bool contrast}) async {
         final semantics = tester.ensureSemantics();
         await pumpGalleryPage(tester, page, preset, b);
@@ -46,6 +53,9 @@ void main() {
       testWidgets(
         '${page.id} in $preset ${b.name} meets the guidelines',
         (tester) => meets(tester, contrast: false),
+        tags: sweepUnless(
+          everydayOnce(row, column, galleryPages.length, cases.length),
+        ),
       );
       testWidgets(
         '${page.id} in $preset ${b.name} meets the text contrast guideline',

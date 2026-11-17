@@ -19,6 +19,7 @@ import '../example/lib/kit_gallery/trip.dart';
 import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'gallery_support.dart';
 import 'overlay_fixtures.dart';
+import 'support/tiers.dart';
 
 /// Half a pixel either way of a device pixel's rounding.
 const _tolerance = 1.0;
@@ -420,40 +421,58 @@ void main() {
   setUpAll(loadExpressiveFonts);
   tearDown(() => kitShownTheme = null);
 
-  testWidgets('every page and overlay is aligned', (tester) async {
-    final failures = <String>[];
-    for (final page in galleryExamplePages) {
-      await pumpGalleryPage(tester, page, 'baseline', Brightness.light);
-      expect(tester.takeException(), isNull, reason: page.id);
-      failures.addAll(checkAlignment(tester, page.id));
-    }
-    await forEachOverlay(
-      tester,
-      ExpressiveThemeData.preset('baseline', Brightness.light),
-      (name) => failures.addAll(checkAlignment(tester, 'overlay $name')),
+  // Every example page and overlay; the everyday tier reads one page in
+  // four, the sweep the other pages, every overlay and whether each rule
+  // measured something (support/tiers).
+  for (final everyday in [true, false]) {
+    testWidgets(
+      everyday
+          ? 'one page in four is aligned'
+          : 'every other page and overlay is aligned, and each rule measures',
+      tags: sweepUnless(everyday),
+      (tester) async {
+        final failures = <String>[];
+        for (final (row, page) in galleryExamplePages.indexed) {
+          if (everydayEvery(row, 4) != everyday) continue;
+          await pumpGalleryPage(tester, page, 'baseline', Brightness.light);
+          expect(tester.takeException(), isNull, reason: page.id);
+          failures.addAll(checkAlignment(tester, page.id));
+        }
+        if (everyday) {
+          expect(failures.toSet().toList(), isEmpty);
+          measured.clear();
+          return;
+        }
+        await forEachOverlay(
+          tester,
+          ExpressiveThemeData.preset('baseline', Brightness.light),
+          (name) => failures.addAll(checkAlignment(tester, 'overlay $name')),
+        );
+        expect(failures.toSet().toList(), isEmpty);
+        // ignore: avoid_print
+        print('measured: $measured');
+        for (final rule in const [
+          'button',
+          'row',
+          'field',
+          'group',
+          'bar icons',
+          'bar labels',
+          'item label',
+          'app bar icons',
+          'app bar title',
+        ]) {
+          expect(
+            measured[rule] ?? 0,
+            greaterThan(0),
+            reason: '$rule measured nothing',
+          );
+        }
+        measured.clear();
+      },
+      experimentalLeakTesting: longWalkLeakTesting,
     );
-    expect(failures.toSet().toList(), isEmpty);
-    // ignore: avoid_print
-    print('measured: $measured');
-    for (final rule in const [
-      'button',
-      'row',
-      'field',
-      'group',
-      'bar icons',
-      'bar labels',
-      'item label',
-      'app bar icons',
-      'app bar title',
-    ]) {
-      expect(
-        measured[rule] ?? 0,
-        greaterThan(0),
-        reason: '$rule measured nothing',
-      );
-    }
-    measured.clear();
-  }, experimentalLeakTesting: longWalkLeakTesting);
+  }
 
   // The column's edges (shapes.md §7; the coordinator's 11-08 review): on
   // the trip planner's screens, at a phone's width and a desktop's,

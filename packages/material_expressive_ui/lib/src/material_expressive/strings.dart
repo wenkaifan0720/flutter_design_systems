@@ -386,7 +386,8 @@ class ExpressiveLocalizations {
   String carouselPage(int page, int count) =>
       _shared.carouselSlideLabel(page - 1, count);
 
-  /// A code input of [length] characters.
+  /// A code input of [length] characters. Given the count, so a language
+  /// picks its plural form (English: 1 character, 2 characters).
   final String Function(int length) codeInput;
 
   /// A quantity stepper's minus button, for what it counts ([label]).
@@ -398,7 +399,8 @@ class ExpressiveLocalizations {
   /// A step indicator on step [step] (1-based) of [count].
   final String Function(int step, int count) stepOf;
 
-  /// A step indicator past its last of [count] steps.
+  /// A step indicator past its last of [count] steps. Given the count, so a
+  /// language picks its plural form.
   final String Function(int count) allStepsDone;
 
   // Date pickers.
@@ -530,13 +532,15 @@ class ExpressiveLocalizations {
   /// A typed minute out of range.
   final String badMinute;
 
-  /// A 24-hour dial number.
+  /// A 24-hour dial number. Given the count, so a language picks its
+  /// plural form (English: 1 hour, 2 hours; Arabic has six).
   final String Function(int hours) hours;
 
   /// A 12-hour dial number.
   final String Function(int hour) oClock;
 
-  /// A minute dial number.
+  /// A minute dial number. Given the count, so a language picks its plural
+  /// form (English: 1 minute, 2 minutes).
   final String Function(int minutes) minutes;
 
   // Wayfinding.
@@ -609,16 +613,18 @@ String _removeChip(String label) => 'Remove $label';
 String _rated(String value, int max) => 'Rated $value of $max';
 String _rate(int index, int max) => 'Rate $index of $max';
 String _carouselPage(int page, int count) => 'Page $page of $count';
-String _codeInput(int length) => 'Code, $length characters';
+String _codeInput(int length) =>
+    length == 1 ? 'Code, 1 character' : 'Code, $length characters';
 String _decrease(String label) => 'Decrease $label';
 String _increase(String label) => 'Increase $label';
 String _stepOf(int step, int count) => 'Step $step of $count';
-String _allStepsDone(int count) => 'All $count steps done';
+String _allStepsDone(int count) =>
+    count == 1 ? 'The step is done' : 'All $count steps done';
 String _outOfYears(int first, int last) => 'Pick a year from $first to $last';
 String _goToYear(int year) => 'Go to $year';
-String _hours(int n) => '$n hours';
+String _hours(int n) => n == 1 ? '1 hour' : '$n hours';
 String _oClock(int n) => "$n o'clock";
-String _minutes(int n) => '$n minutes';
+String _minutes(int n) => n == 1 ? '1 minute' : '$n minutes';
 
 /// Gives its subtree [strings] in place of the ones above it (a host's
 /// translation, or a product's own wording).

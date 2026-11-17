@@ -139,11 +139,16 @@ double contrastRatio(Color a, Color b) {
 Future<List<String>> inkedContrastFailures(WidgetTester tester) async {
   final view = tester.binding.renderViews.first;
   final layer = view.debugLayer! as OffsetLayer;
-  late final ui.Image image;
   late final ByteData bytes;
+  late final int width, height;
   await tester.runAsync(() async {
-    image = await layer.toImage(view.paintBounds, pixelRatio: 1);
-    bytes = (await image.toByteData())!;
+    final image = await layer.toImage(view.paintBounds, pixelRatio: 1);
+    try {
+      (width, height) = (image.width, image.height);
+      bytes = (await image.toByteData())!;
+    } finally {
+      image.dispose();
+    }
   });
   final failures = <String>[];
   for (final element in find.byType(RichText).evaluate()) {
@@ -162,18 +167,15 @@ Future<List<String>> inkedContrastFailures(WidgetTester tester) async {
       return true;
     });
     if (inks.isEmpty) continue;
-    final box =
-        MatrixUtils.transformRect(
-          p.getTransformTo(null),
-          Offset.zero & p.size,
-        ).intersect(
-          Offset.zero & Size(image.width.toDouble(), image.height.toDouble()),
-        );
+    final box = MatrixUtils.transformRect(
+      p.getTransformTo(null),
+      Offset.zero & p.size,
+    ).intersect(Offset.zero & Size(width.toDouble(), height.toDouble()));
     if (box.isEmpty) continue;
     final counts = <int, int>{};
     for (var y = box.top.floor(); y < box.bottom.ceil(); y++) {
       for (var x = box.left.floor(); x < box.right.ceil(); x++) {
-        final v = bytes.getUint32((y * image.width + x) * 4) >> 8;
+        final v = bytes.getUint32((y * width + x) * 4) >> 8;
         counts[v] = (counts[v] ?? 0) + 1;
       }
     }

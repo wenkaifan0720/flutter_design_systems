@@ -14,6 +14,7 @@ import '../example/lib/kit_gallery/everyday.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import 'gallery_guidelines_test.dart' show galleryGuidelineFailures;
 import 'gallery_support.dart';
+import 'support/tiers.dart';
 
 void main() {
   final output = Platform.environment['EXPRESSIVE_DESIGN_REVIEW_OUT'];
@@ -34,9 +35,12 @@ void main() {
     }
   });
 
-  for (final page in everydayGalleryPages) {
-    for (final mode in Brightness.values) {
-      for (final width in [390.0, 768.0, 1440.0]) {
+  // Every everyday page by day and night at three widths; the everyday tier
+  // reads each page once, in the mode and width its turn gives
+  // (support/tiers).
+  for (final (row, page) in everydayGalleryPages.indexed) {
+    for (final (m, mode) in Brightness.values.indexed) {
+      for (final (w, width) in [390.0, 768.0, 1440.0].indexed) {
         // CI (Linux) leaves out the pixels variant (`goldens`): the golden
         // and text contrast, both read from the drawn pixels. The layout,
         // tap-target and label checks run everywhere.
@@ -123,7 +127,9 @@ void main() {
               }
               semantics.dispose();
             },
-            tags: golden ? const ['goldens'] : null,
+            tags: golden
+                ? const ['goldens']
+                : sweepUnless(everydayTurn(row, m * 3 + w, 6)),
             skip: golden && !recorded,
           );
         }

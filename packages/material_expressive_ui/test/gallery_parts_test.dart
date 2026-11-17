@@ -8,8 +8,11 @@ import 'dart:ui' show CheckedState, Tristate;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
+import 'flutter_test_config.dart' show pageWalkLeakTesting;
 import 'gallery_support.dart';
+import 'support/tiers.dart';
 
 /// The gallery's sections on screen, by their labels, in the page's order.
 List<(String, Finder)> sections() {
@@ -113,12 +116,13 @@ final bool _recorded =
     autoUpdateGoldenFiles || Directory('test/goldens').existsSync();
 
 void main() {
+  LeakTesting.settings = pageWalkLeakTesting;
   setUpAll(() async {
     await loadExpressiveFonts();
     await loadBundledFonts();
   });
 
-  for (final page in galleryPages) {
+  for (final (row, page) in galleryPages.indexed) {
     for (final (preset, b) in presetsAndModes) {
       testWidgets(
         '${page.id} in $preset ${b.name}: each section matches its golden',
@@ -243,6 +247,8 @@ void main() {
         }
         handle.dispose();
       },
+      // Every page; the everyday tier reads one in four (support/tiers).
+      tags: sweepUnless(everydayEvery(row, 4)),
     );
   }
 }

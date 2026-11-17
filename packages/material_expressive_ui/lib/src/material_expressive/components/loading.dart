@@ -279,9 +279,22 @@ class _ExpressiveLoadingIndicatorState extends State<ExpressiveLoadingIndicator>
   final _TimelineOrigin _origin = _TimelineOrigin();
   Ticker? _ticker;
 
-  /// Under Reduce Motion (`MediaQuery.disableAnimationsOf`) the
+  /// Under Reduce Motion ([ExpressiveMotion.reduceMotion]) the
   /// indeterminate indicator holds its first shape instead of morphing.
   bool _still = false;
+
+  /// Whether [_still] has been read once and the ticker set to it.
+  bool _followed = false;
+
+  /// Reads Reduce Motion as the indicator builds: iOS's comes as a build,
+  /// not as a change of dependencies (`designReduceMotionOf`).
+  void _followReduceMotion() {
+    final still = ExpressiveMotion.of(context).reduceMotion;
+    if (_followed && still == _still) return;
+    _followed = true;
+    _still = still;
+    _sync();
+  }
 
   void _sync() {
     final moving = widget.progress == null && !_still;
@@ -295,13 +308,6 @@ class _ExpressiveLoadingIndicatorState extends State<ExpressiveLoadingIndicator>
       _ticker = null;
       _elapsed.value = Duration.zero;
     }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _still = ExpressiveMotion.of(context).reduceMotion;
-    _sync();
   }
 
   @override
@@ -319,6 +325,7 @@ class _ExpressiveLoadingIndicatorState extends State<ExpressiveLoadingIndicator>
 
   @override
   Widget build(BuildContext context) {
+    _followReduceMotion();
     final t = context.expressiveTheme;
     final visual = t.loadingIndicatorTheme.layeredUnder(widget.style);
     const states = <WidgetState>{};

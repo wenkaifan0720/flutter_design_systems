@@ -446,11 +446,11 @@ class _PulseState extends State<_Pulse> with SingleTickerProviderStateMixin {
   );
   bool _running = false;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final motion = ExpressiveMotion.of(context);
-    if (motion.reduceMotion) {
+  /// Reads Reduce Motion as the pulse builds: iOS's comes as a build, not
+  /// as a change of dependencies (`designReduceMotionOf`).
+  void _followReduceMotion() {
+    if (ExpressiveMotion.of(context).reduceMotion) {
+      if (!_running && _opacity.value == 1) return;
       _running = false;
       _opacity
         ..stop()
@@ -477,8 +477,10 @@ class _PulseState extends State<_Pulse> with SingleTickerProviderStateMixin {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      FadeTransition(opacity: _opacity, child: widget.child);
+  Widget build(BuildContext context) {
+    _followReduceMotion();
+    return FadeTransition(opacity: _opacity, child: widget.child);
+  }
 }
 
 // ---------------------------------------------------------------------------

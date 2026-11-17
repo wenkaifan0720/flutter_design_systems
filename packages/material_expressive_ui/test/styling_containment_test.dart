@@ -13,11 +13,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
 
+import 'support/tiers.dart';
+
 final _theme = ExpressiveThemeData.preset('baseline', Brightness.light);
 const _densities = [
   ExpressiveDensity.standard,
   ExpressiveDensity.comfortable,
   ExpressiveDensity.compact,
+];
+
+/// The everyday tier's settings of a part's containment check, which the
+/// parts take in turn: together each density, width and text scale once, the
+/// tightest (compact, 120dp, 1.3) among them.
+const _everyday = <(ExpressiveDensity, double, double)>[
+  (ExpressiveDensity.compact, 120.0, 1.3),
+  (ExpressiveDensity.standard, 240.0, 1.0),
+  (ExpressiveDensity.comfortable, 390.0, 1.3),
 ];
 
 // Ignore pixels outside a scroll viewport, but never the surface's shape clip:
@@ -685,301 +696,325 @@ void main() {
       onPressed: () {},
     ),
   };
-  for (final entry in controls.entries) {
-    testWidgets('${entry.key} contains its label and glyph '
-        'under every offered setting', (tester) async {
-      for (final density in _densities) {
-        for (final width in [120.0, 240.0, 390.0]) {
-          for (final scale in [1.0, 1.3]) {
-            await tester.pumpWidget(
-              MaterialApp(
-                home: ExpressiveHost(
-                  light: _theme.copyWith(density: density),
-                  brightness: Brightness.light,
-                  child: MediaQuery(
-                    data: MediaQueryData(textScaler: TextScaler.linear(scale)),
-                    child: Center(
-                      child: SizedBox(
-                        width: width,
-                        child: Center(child: entry.value()),
+  // Every density, width and text scale; the everyday tier reads each part
+  // under one of the three [_everyday] settings in turn, and the sweep the
+  // other seventeen (support/tiers).
+  for (final (row, entry) in controls.entries.indexed) {
+    final mine = _everyday[row % _everyday.length];
+    for (final everyday in [true, false]) {
+      testWidgets(
+        '${entry.key} contains its label and glyph '
+        'under ${everyday ? 'one offered setting' : 'the other offered settings'}',
+        tags: sweepUnless(everyday),
+        (tester) async {
+          for (final density in _densities) {
+            for (final width in [120.0, 240.0, 390.0]) {
+              for (final scale in [1.0, 1.3]) {
+                if (((density, width, scale) == mine) != everyday) {
+                  continue;
+                }
+                await tester.pumpWidget(
+                  MaterialApp(
+                    home: ExpressiveHost(
+                      light: _theme.copyWith(density: density),
+                      brightness: Brightness.light,
+                      child: MediaQuery(
+                        data: MediaQueryData(
+                          textScaler: TextScaler.linear(scale),
+                        ),
+                        child: Center(
+                          child: SizedBox(
+                            width: width,
+                            child: Center(child: entry.value()),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            );
-            if (entry.key.startsWith('wavy ') ||
-                entry.key.startsWith('skeleton') ||
-                entry.key == 'loading state') {
-              await tester.pump(const Duration(milliseconds: 100));
-            } else {
-              await tester.pumpAndSettle();
-            }
-            for (final surface in find.byType(ExpressiveSurface).evaluate()) {
-              final faceFinder = find.byElementPredicate((e) => e == surface);
-              final paintedFinder = find
-                  .descendant(
-                    of: faceFinder,
-                    matching: find.byWidgetPredicate(
-                      (w) => w.runtimeType.toString() == '_SurfacePaint',
+                );
+                if (entry.key.startsWith('wavy ') ||
+                    entry.key.startsWith('skeleton') ||
+                    entry.key == 'loading state') {
+                  await tester.pump(const Duration(milliseconds: 100));
+                } else {
+                  await tester.pumpAndSettle();
+                }
+                for (final surface
+                    in find.byType(ExpressiveSurface).evaluate()) {
+                  final faceFinder = find.byElementPredicate(
+                    (e) => e == surface,
+                  );
+                  final paintedFinder = find
+                      .descendant(
+                        of: faceFinder,
+                        matching: find.byWidgetPredicate(
+                          (w) => w.runtimeType.toString() == '_SurfacePaint',
+                        ),
+                      )
+                      .first;
+                  final dynamic painted = tester.widget(paintedFinder);
+                  final shape = painted.shape as ShapeBorder;
+                  final face = tester.getRect(paintedFinder);
+                  for (final finder in [
+                    find.byType(Text),
+                    find.byType(Icon),
+                    find.byType(EditableText),
+                    find.byWidgetPredicate(
+                      (w) =>
+                          w is CustomPaint &&
+                          const [
+                            '_LoadingPainter',
+                            '_LinearPainter',
+                            '_LinearWavyPainter',
+                            '_CircularPainter',
+                            '_CircularWavyPainter',
+                          ].contains(w.painter.runtimeType.toString()),
                     ),
-                  )
-                  .first;
-              final dynamic painted = tester.widget(paintedFinder);
-              final shape = painted.shape as ShapeBorder;
-              final face = tester.getRect(paintedFinder);
-              for (final finder in [
-                find.byType(Text),
-                find.byType(Icon),
-                find.byType(EditableText),
-                find.byWidgetPredicate(
-                  (w) =>
-                      w is CustomPaint &&
-                      const [
-                        '_LoadingPainter',
-                        '_LinearPainter',
-                        '_LinearWavyPainter',
-                        '_CircularPainter',
-                        '_CircularWavyPainter',
-                      ].contains(w.painter.runtimeType.toString()),
-                ),
-              ]) {
-                for (final element
-                    in find
-                        .descendant(of: faceFinder, matching: finder)
-                        .evaluate()) {
-                  Rect? localBounds;
-                  if (element.widget case CustomPaint(:final painter)
-                      when painter.runtimeType.toString() ==
-                          '_LoadingPainter') {
-                    final box = element.findRenderObject()! as RenderBox;
-                    final path = _loadingPaintPath(painter!, box.size);
-                    localBounds = path.getBounds();
-                    // This native vector is the shape itself, not content
-                    // in a rectangular box. Its rotated path fits the
-                    // circle even where empty bounds corners do not.
-                    final glyph = path
-                        .transform(box.getTransformTo(null).storage)
-                        .shift(-face.topLeft);
-                    final outside = Path.combine(
-                      PathOperation.difference,
-                      glyph,
-                      shape.getOuterPath(Offset.zero & face.size),
-                    );
-                    expect(
-                      outside.getBounds().isEmpty,
-                      isTrue,
-                      reason:
-                          '${entry.key} native painted path $density $width $scale',
-                    );
-                    continue;
-                  }
-                  // A text by what its font can paint: its glyph run's
-                  // ascent to descent, not the line height's leading, which
-                  // paints nothing (a label drawn by its capitals on its
-                  // face's middle carries its line box a pixel or two off).
-                  final paragraph = element.widget is Text
-                      ? element.findRenderObject()
-                      : null;
-                  if (paragraph case final RenderParagraph p) {
-                    final text = p.text.toPlainText();
-                    final boxes = p.getBoxesForSelection(
-                      TextSelection(baseOffset: 0, extentOffset: text.length),
-                      boxHeightStyle: BoxHeightStyle.tight,
-                    );
-                    if (boxes.isNotEmpty) {
-                      // Across the paragraph's own width: a wrapped line's
-                      // trailing space hangs past it and paints nothing.
-                      final run = boxes
-                          .map((b) => b.toRect())
-                          .reduce((a, b) => a.expandToInclude(b));
-                      localBounds = Rect.fromLTRB(
-                        run.left.clamp(0.0, p.size.width),
-                        run.top,
-                        run.right.clamp(0.0, p.size.width),
-                        run.bottom,
+                  ]) {
+                    for (final element
+                        in find
+                            .descendant(of: faceFinder, matching: finder)
+                            .evaluate()) {
+                      Rect? localBounds;
+                      if (element.widget case CustomPaint(:final painter)
+                          when painter.runtimeType.toString() ==
+                              '_LoadingPainter') {
+                        final box = element.findRenderObject()! as RenderBox;
+                        final path = _loadingPaintPath(painter!, box.size);
+                        localBounds = path.getBounds();
+                        // This native vector is the shape itself, not content
+                        // in a rectangular box. Its rotated path fits the
+                        // circle even where empty bounds corners do not.
+                        final glyph = path
+                            .transform(box.getTransformTo(null).storage)
+                            .shift(-face.topLeft);
+                        final outside = Path.combine(
+                          PathOperation.difference,
+                          glyph,
+                          shape.getOuterPath(Offset.zero & face.size),
+                        );
+                        expect(
+                          outside.getBounds().isEmpty,
+                          isTrue,
+                          reason:
+                              '${entry.key} native painted path $density $width $scale',
+                        );
+                        continue;
+                      }
+                      // A text by what its font can paint: its glyph run's
+                      // ascent to descent, not the line height's leading, which
+                      // paints nothing (a label drawn by its capitals on its
+                      // face's middle carries its line box a pixel or two off).
+                      final paragraph = element.widget is Text
+                          ? element.findRenderObject()
+                          : null;
+                      if (paragraph case final RenderParagraph p) {
+                        final text = p.text.toPlainText();
+                        final boxes = p.getBoxesForSelection(
+                          TextSelection(
+                            baseOffset: 0,
+                            extentOffset: text.length,
+                          ),
+                          boxHeightStyle: BoxHeightStyle.tight,
+                        );
+                        if (boxes.isNotEmpty) {
+                          // Across the paragraph's own width: a wrapped line's
+                          // trailing space hangs past it and paints nothing.
+                          final run = boxes
+                              .map((b) => b.toRect())
+                              .reduce((a, b) => a.expandToInclude(b));
+                          localBounds = Rect.fromLTRB(
+                            run.left.clamp(0.0, p.size.width),
+                            run.top,
+                            run.right.clamp(0.0, p.size.width),
+                            run.bottom,
+                          );
+                        }
+                      }
+                      final visible = _visibleRect(
+                        tester,
+                        element,
+                        localBounds: localBounds,
+                      );
+                      if (visible == null) continue;
+                      _inside(
+                        shape.getOuterPath(Offset.zero & face.size),
+                        visible.shift(-face.topLeft),
+                        '${entry.key} $density $width $scale content=${element.widget} face=$face shape=$shape',
                       );
                     }
                   }
-                  final visible = _visibleRect(
-                    tester,
-                    element,
-                    localBounds: localBounds,
-                  );
-                  if (visible == null) continue;
-                  _inside(
-                    shape.getOuterPath(Offset.zero & face.size),
-                    visible.shift(-face.topLeft),
-                    '${entry.key} $density $width $scale content=${element.widget} face=$face shape=$shape',
-                  );
                 }
-              }
-            }
-            for (final element in find.byType(DecoratedBox).evaluate()) {
-              final decoration = (element.widget as DecoratedBox).decoration;
-              if (decoration is! ShapeDecoration) continue;
-              final finder = find.byElementPredicate((e) => e == element);
-              final face = tester.getRect(finder);
-              // Native loading retains its original ShapeDecoration paint.
-              // Keep the approved vector-containment proof on that plate.
-              for (final glyph
-                  in find
-                      .descendant(
-                        of: finder,
-                        matching: find.byWidgetPredicate(
-                          (w) =>
-                              w is CustomPaint &&
-                              w.painter.runtimeType.toString() ==
-                                  '_LoadingPainter',
-                        ),
-                      )
-                      .evaluate()) {
-                final box = glyph.findRenderObject()! as RenderBox;
-                final painter = (glyph.widget as CustomPaint).painter!;
-                final path = _loadingPaintPath(painter, box.size)
-                    .transform(box.getTransformTo(null).storage)
-                    .shift(-face.topLeft);
-                expect(
-                  Path.combine(
-                    PathOperation.difference,
-                    path,
-                    decoration.shape.getOuterPath(Offset.zero & face.size),
-                  ).getBounds().isEmpty,
-                  isTrue,
-                  reason:
-                      '${entry.key} native decorated vector $density $width $scale',
-                );
-              }
-              for (final glyph
-                  in find
-                      .descendant(
-                        of: finder,
-                        matching: find.byWidgetPredicate(
-                          (w) => w is Icon || w is Text || w is EditableText,
-                        ),
-                      )
-                      .evaluate()) {
-                final visible = _visibleRect(tester, glyph);
-                if (visible == null) continue;
-                _inside(
-                  decoration.shape.getOuterPath(Offset.zero & face.size),
-                  visible.shift(-face.topLeft),
-                  '${entry.key} decoration $density $width $scale',
-                );
-              }
-            }
-            // Navigation's icon and label are siblings of its ripple plate.
-            for (final item
-                in find
-                    .byWidgetPredicate(
-                      (w) => w.runtimeType.toString() == '_NavItemLayout',
-                    )
-                    .evaluate()) {
-              final finder = find.byElementPredicate((e) => e == item);
-              final painted = find
-                  .descendant(
-                    of: finder,
-                    matching: find.byWidgetPredicate(
-                      (w) => w.runtimeType.toString() == '_SurfacePaint',
-                    ),
-                  )
-                  .first;
-              final dynamic surface = tester.widget(painted);
-              final face = tester.getRect(painted);
-              final shape = surface.shape as ShapeBorder;
-              final dynamic layout = item.widget;
-              final includeLabel =
-                  layout.geometry.position == ExpressiveNavItemPosition.start;
-              final content = find.descendant(
-                of: finder,
-                matching: find.byWidgetPredicate(
-                  (w) => w is Icon || (includeLabel && w is Text),
-                ),
-              );
-              for (final child in content.evaluate()) {
-                final visible = _visibleRect(tester, child);
-                if (visible == null) continue;
-                _inside(
-                  shape.getOuterPath(Offset.zero & face.size),
-                  visible.shift(-face.topLeft),
-                  '${entry.key} indicator $density $width $scale',
-                );
-              }
-            }
-            for (final element in find.byType(CustomPaint).evaluate()) {
-              final painter = (element.widget as CustomPaint).painter;
-              if (painter.runtimeType.toString() == '_ScaledChartPainter') {
-                final finder = find.byElementPredicate((e) => e == element);
-                final size = tester.getSize(finder);
-                final path = Path()..addRect(Offset.zero & size);
-                // The painter disposes its labels once painted, so each
-                // one's box is read as it is drawn.
-                final labels = _Labels();
-                painter!.paint(labels, size);
-                expect(labels.boxes, isNotEmpty);
-                for (final box in labels.boxes) {
-                  _inside(
-                    path,
-                    box,
-                    '${entry.key} canvas label $density $width $scale',
-                  );
-                }
-              }
-              if (painter.runtimeType.toString() == '_BodyPainter') {
-                final dynamic body = painter;
-                final finder = find.byElementPredicate((e) => e == element);
-                final face = tester.getRect(finder);
-                for (final glyph
-                    in find
-                        .descendant(
-                          of: finder,
-                          matching: find.byWidgetPredicate(
-                            (w) => w is Icon || w is Text,
-                          ),
-                        )
-                        .evaluate()) {
-                  final visible = _visibleRect(tester, glyph);
-                  if (visible != null) {
+                for (final element in find.byType(DecoratedBox).evaluate()) {
+                  final decoration =
+                      (element.widget as DecoratedBox).decoration;
+                  if (decoration is! ShapeDecoration) continue;
+                  final finder = find.byElementPredicate((e) => e == element);
+                  final face = tester.getRect(finder);
+                  // Native loading retains its original ShapeDecoration paint.
+                  // Keep the approved vector-containment proof on that plate.
+                  for (final glyph
+                      in find
+                          .descendant(
+                            of: finder,
+                            matching: find.byWidgetPredicate(
+                              (w) =>
+                                  w is CustomPaint &&
+                                  w.painter.runtimeType.toString() ==
+                                      '_LoadingPainter',
+                            ),
+                          )
+                          .evaluate()) {
+                    final box = glyph.findRenderObject()! as RenderBox;
+                    final painter = (glyph.widget as CustomPaint).painter!;
+                    final path = _loadingPaintPath(painter, box.size)
+                        .transform(box.getTransformTo(null).storage)
+                        .shift(-face.topLeft);
+                    expect(
+                      Path.combine(
+                        PathOperation.difference,
+                        path,
+                        decoration.shape.getOuterPath(Offset.zero & face.size),
+                      ).getBounds().isEmpty,
+                      isTrue,
+                      reason:
+                          '${entry.key} native decorated vector $density $width $scale',
+                    );
+                  }
+                  for (final glyph
+                      in find
+                          .descendant(
+                            of: finder,
+                            matching: find.byWidgetPredicate(
+                              (w) =>
+                                  w is Icon || w is Text || w is EditableText,
+                            ),
+                          )
+                          .evaluate()) {
+                    final visible = _visibleRect(tester, glyph);
+                    if (visible == null) continue;
                     _inside(
-                      (body.shape as ShapeBorder).getOuterPath(
-                        Offset.zero & face.size,
-                      ),
+                      decoration.shape.getOuterPath(Offset.zero & face.size),
                       visible.shift(-face.topLeft),
-                      '${entry.key} body $density $width $scale',
+                      '${entry.key} decoration $density $width $scale',
                     );
                   }
                 }
+                // Navigation's icon and label are siblings of its ripple plate.
+                for (final item
+                    in find
+                        .byWidgetPredicate(
+                          (w) => w.runtimeType.toString() == '_NavItemLayout',
+                        )
+                        .evaluate()) {
+                  final finder = find.byElementPredicate((e) => e == item);
+                  final painted = find
+                      .descendant(
+                        of: finder,
+                        matching: find.byWidgetPredicate(
+                          (w) => w.runtimeType.toString() == '_SurfacePaint',
+                        ),
+                      )
+                      .first;
+                  final dynamic surface = tester.widget(painted);
+                  final face = tester.getRect(painted);
+                  final shape = surface.shape as ShapeBorder;
+                  final dynamic layout = item.widget;
+                  final includeLabel =
+                      layout.geometry.position ==
+                      ExpressiveNavItemPosition.start;
+                  final content = find.descendant(
+                    of: finder,
+                    matching: find.byWidgetPredicate(
+                      (w) => w is Icon || (includeLabel && w is Text),
+                    ),
+                  );
+                  for (final child in content.evaluate()) {
+                    final visible = _visibleRect(tester, child);
+                    if (visible == null) continue;
+                    _inside(
+                      shape.getOuterPath(Offset.zero & face.size),
+                      visible.shift(-face.topLeft),
+                      '${entry.key} indicator $density $width $scale',
+                    );
+                  }
+                }
+                for (final element in find.byType(CustomPaint).evaluate()) {
+                  final painter = (element.widget as CustomPaint).painter;
+                  if (painter.runtimeType.toString() == '_ScaledChartPainter') {
+                    final finder = find.byElementPredicate((e) => e == element);
+                    final size = tester.getSize(finder);
+                    final path = Path()..addRect(Offset.zero & size);
+                    // The painter disposes its labels once painted, so each
+                    // one's box is read as it is drawn.
+                    final labels = _Labels();
+                    painter!.paint(labels, size);
+                    expect(labels.boxes, isNotEmpty);
+                    for (final box in labels.boxes) {
+                      _inside(
+                        path,
+                        box,
+                        '${entry.key} canvas label $density $width $scale',
+                      );
+                    }
+                  }
+                  if (painter.runtimeType.toString() == '_BodyPainter') {
+                    final dynamic body = painter;
+                    final finder = find.byElementPredicate((e) => e == element);
+                    final face = tester.getRect(finder);
+                    for (final glyph
+                        in find
+                            .descendant(
+                              of: finder,
+                              matching: find.byWidgetPredicate(
+                                (w) => w is Icon || w is Text,
+                              ),
+                            )
+                            .evaluate()) {
+                      final visible = _visibleRect(tester, glyph);
+                      if (visible != null) {
+                        _inside(
+                          (body.shape as ShapeBorder).getOuterPath(
+                            Offset.zero & face.size,
+                          ),
+                          visible.shift(-face.topLeft),
+                          '${entry.key} body $density $width $scale',
+                        );
+                      }
+                    }
+                  }
+                  if (![
+                    '_CheckboxPainter',
+                    '_RadioPainter',
+                  ].contains(painter.runtimeType.toString())) {
+                    continue;
+                  }
+                  final dynamic mark = painter;
+                  final shape = mark.shape as OutlinedBorder?;
+                  if (shape == null) continue;
+                  final finder = find.byElementPredicate((e) => e == element);
+                  final size = tester.getSize(finder);
+                  final inset = mark.inset as EdgeInsets;
+                  _inside(
+                    shape.getOuterPath(Offset.zero & size),
+                    inset.deflateRect(Offset.zero & size),
+                    '${entry.key} mark $density $width $scale',
+                  );
+                }
+                final exception = tester.takeException();
+                expect(
+                  exception,
+                  isNull,
+                  reason:
+                      '${entry.key} $density $width $scale '
+                      '${exception is FlutterError ? exception.diagnostics.map((d) => d.toStringDeep()).join() : exception}',
+                );
               }
-              if (![
-                '_CheckboxPainter',
-                '_RadioPainter',
-              ].contains(painter.runtimeType.toString())) {
-                continue;
-              }
-              final dynamic mark = painter;
-              final shape = mark.shape as OutlinedBorder?;
-              if (shape == null) continue;
-              final finder = find.byElementPredicate((e) => e == element);
-              final size = tester.getSize(finder);
-              final inset = mark.inset as EdgeInsets;
-              _inside(
-                shape.getOuterPath(Offset.zero & size),
-                inset.deflateRect(Offset.zero & size),
-                '${entry.key} mark $density $width $scale',
-              );
             }
-            final exception = tester.takeException();
-            expect(
-              exception,
-              isNull,
-              reason:
-                  '${entry.key} $density $width $scale '
-                  '${exception is FlutterError ? exception.diagnostics.map((d) => d.toStringDeep()).join() : exception}',
-            );
           }
-        }
-      }
-    });
+        },
+      );
+    }
   }
 }
 

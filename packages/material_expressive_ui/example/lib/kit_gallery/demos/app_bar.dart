@@ -420,7 +420,11 @@ Widget _results(BuildContext context, String query) {
     padding: const EdgeInsets.all(ExpressiveSpacing.s16),
     children: <Widget>[
       Text(
-        query.isEmpty ? 'Recent' : '${matches.length} places',
+        query.isEmpty
+            ? 'Recent'
+            : matches.length == 1
+            ? '1 place'
+            : '${matches.length} places',
         style: t.type.titleSmall.copyWith(color: t.colors.onSurfaceVariant),
       ),
       for (final place in query.isEmpty ? _places.take(3) : matches)

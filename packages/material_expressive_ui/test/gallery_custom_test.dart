@@ -5,13 +5,16 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/main.dart';
 import '../example/lib/kit_gallery/kit.dart';
+import 'flutter_test_config.dart' show pageWalkLeakTesting;
 import 'gallery_guidelines_test.dart' show galleryGuidelineFailures;
 import 'gallery_parts_test.dart' show sectionsOrPage, slug;
 import 'gallery_support.dart';
+import 'support/tiers.dart';
 
 final settings = <String, GalleryCustom>{
   'standard': const GalleryCustom(density: 'standard'),
@@ -32,6 +35,7 @@ final _recorded =
     autoUpdateGoldenFiles || Directory('test/goldens').existsSync();
 
 void main() {
+  LeakTesting.settings = pageWalkLeakTesting;
   setUpAll(() async {
     await loadExpressiveFonts();
     await loadBundledFonts();
@@ -72,9 +76,13 @@ void main() {
   });
 
   group('custom settings', () {
-    for (final MapEntry(key: name, value: custom) in settings.entries) {
-      for (final page in galleryExamplePages) {
-        for (final mode in Brightness.values) {
+    // Every setting on every page by day and night; the everyday tier reads
+    // each setting and mode once, each on another page (support/tiers).
+    final columns = settings.length * Brightness.values.length;
+    for (final (s, MapEntry(key: name, value: custom))
+        in settings.entries.indexed) {
+      for (final (row, page) in galleryExamplePages.indexed) {
+        for (final (m, mode) in Brightness.values.indexed) {
           Future<void> meets(
             WidgetTester tester, {
             required bool contrast,
@@ -97,6 +105,14 @@ void main() {
           testWidgets(
             '${page.id}, $name ${mode.name}: guidelines',
             (tester) => meets(tester, contrast: false),
+            tags: sweepUnless(
+              everydayOnce(
+                row,
+                s * Brightness.values.length + m,
+                galleryExamplePages.length,
+                columns,
+              ),
+            ),
           );
           // Text contrast reads the drawn pixels, the rasterizer's as a
           // golden's are: macOS runs it.

@@ -16,6 +16,7 @@ import '../example/lib/kit_gallery/kit.dart';
 import 'flutter_test_config.dart' show longWalkLeakTesting;
 import 'gallery_support.dart';
 import 'overlay_fixtures.dart';
+import 'support/tiers.dart';
 
 /// The style MaterialApp hands WidgetsApp for text nothing else styles.
 const materialErrorTextStyle = TextStyle(
@@ -151,95 +152,121 @@ void main() {
     }
   });
 
-  for (final ground in _Ground.values) {
-    for (final mount in _Mount.values) {
+  // Every overlay on each ground with the theme in each place; the everyday
+  // tier reads each overlay once, on the ground and place its turn gives
+  // (support/tiers).
+  final columns = _Ground.values.length * _Mount.values.length;
+  for (final (g, ground) in _Ground.values.indexed) {
+    for (final (m, mount) in _Mount.values.indexed) {
+      final column = g * _Mount.values.length + m;
       group('${ground.name} ground, theme in the app ${mount.name}', () {
-        for (final MapEntry(key: name, value: open) in overlayRoutes.entries) {
-          testWidgets('$name text is styled', (tester) async {
-            tester.view.physicalSize = const Size(412, 915);
-            tester.view.devicePixelRatio = 1;
-            addTearDown(tester.view.reset);
-            await tester.pumpWidget(
-              _bare(
-                ground: ground,
-                mount,
-                (context) => Center(
-                  child: GestureDetector(
-                    key: const ValueKey('open'),
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => open(context),
-                    child: const SizedBox.square(dimension: 48),
+        for (final (row, MapEntry(key: name, value: open))
+            in overlayRoutes.entries.indexed) {
+          testWidgets(
+            '$name text is styled',
+            tags: sweepUnless(everydayTurn(row, column, columns)),
+            (tester) async {
+              tester.view.physicalSize = const Size(412, 915);
+              tester.view.devicePixelRatio = 1;
+              addTearDown(tester.view.reset);
+              await tester.pumpWidget(
+                _bare(
+                  ground: ground,
+                  mount,
+                  (context) => Center(
+                    child: GestureDetector(
+                      key: const ValueKey('open'),
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => open(context),
+                      child: const SizedBox.square(dimension: 48),
+                    ),
                   ),
                 ),
-              ),
-            );
-            await tester.tap(find.byKey(const ValueKey('open')));
-            await _open(tester);
-            expect(tester.takeException(), isNull);
-            expectNoFallbackText(tester, '$name, theme in ${mount.name}');
-          });
+              );
+              await tester.tap(find.byKey(const ValueKey('open')));
+              await _open(tester);
+              expect(tester.takeException(), isNull);
+              expectNoFallbackText(tester, '$name, theme in ${mount.name}');
+            },
+          );
         }
 
-        for (final MapEntry(key: name, value: (widget, raise))
-            in raisedOverlays.entries) {
-          testWidgets('$name text is styled', (tester) async {
-            tester.view.physicalSize = const Size(412, 915);
-            tester.view.devicePixelRatio = 1;
-            addTearDown(tester.view.reset);
-            await tester.pumpWidget(
-              _bare(
-                ground: ground,
-                mount,
-                (context) => Align(
-                  alignment: Alignment.topCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 80),
-                    child: SizedBox(width: 280, child: widget),
+        for (final (row, MapEntry(key: name, value: (widget, raise)))
+            in raisedOverlays.entries.indexed) {
+          testWidgets(
+            '$name text is styled',
+            tags: sweepUnless(
+              everydayTurn(overlayRoutes.length + row, column, columns),
+            ),
+            (tester) async {
+              tester.view.physicalSize = const Size(412, 915);
+              tester.view.devicePixelRatio = 1;
+              addTearDown(tester.view.reset);
+              await tester.pumpWidget(
+                _bare(
+                  ground: ground,
+                  mount,
+                  (context) => Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 80),
+                      child: SizedBox(width: 280, child: widget),
+                    ),
                   ),
                 ),
-              ),
-            );
-            await _open(tester);
-            expectNoFallbackText(tester, '$name at rest');
-            await raise(tester);
-            await _open(tester);
-            expect(tester.takeException(), isNull);
-            expectNoFallbackText(tester, '$name, theme in ${mount.name}');
-          });
+              );
+              await _open(tester);
+              expectNoFallbackText(tester, '$name at rest');
+              await raise(tester);
+              await _open(tester);
+              expect(tester.takeException(), isNull);
+              expectNoFallbackText(tester, '$name, theme in ${mount.name}');
+            },
+          );
         }
       });
     }
   }
 
-  testWidgets('every example page is styled under a bare WidgetsApp', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.reset);
-    final failures = <String>[];
-    for (final page in galleryExamplePages) {
-      for (final brightness in Brightness.values) {
-        await tester.pumpWidget(
-          KeyedSubtree(
-            key: ValueKey('${page.id}/${brightness.name}'),
-            child: _bare(
-              _Mount.builder,
-              (_) => galleryBuildPage(page, brightness),
-              theme: ExpressiveThemeData.preset('baseline', brightness),
-            ),
-          ),
-        );
-        await settle(tester);
-        tester.takeException();
-        failures.addAll([
-          for (final f in fallbackText(tester))
-            '${page.id}/${brightness.name}: $f',
-        ]);
-      }
-    }
-    expect(failures, isEmpty, reason: failures.join('\n'));
-  }, experimentalLeakTesting: longWalkLeakTesting);
+  // Every example page by day and night; the everyday tier reads one page in
+  // four, the sweep the others (support/tiers).
+  for (final everyday in [true, false]) {
+    testWidgets(
+      everyday
+          ? 'one example page in four is styled under a bare WidgetsApp'
+          : 'every other example page is styled under a bare WidgetsApp',
+      tags: sweepUnless(everyday),
+      (tester) async {
+        tester.view.physicalSize = const Size(390, 844);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final failures = <String>[];
+        for (final (row, page) in galleryExamplePages.indexed) {
+          if (everydayEvery(row, 4) != everyday) continue;
+          for (final brightness in Brightness.values) {
+            await tester.pumpWidget(
+              KeyedSubtree(
+                key: ValueKey('${page.id}/${brightness.name}'),
+                child: _bare(
+                  _Mount.builder,
+                  (_) => galleryBuildPage(page, brightness),
+                  theme: ExpressiveThemeData.preset('baseline', brightness),
+                ),
+              ),
+            );
+            await settle(tester);
+            tester.takeException();
+            failures.addAll([
+              for (final f in fallbackText(tester))
+                '${page.id}/${brightness.name}: $f',
+            ]);
+          }
+        }
+        expect(failures, isEmpty, reason: failures.join('\n'));
+      },
+      experimentalLeakTesting: longWalkLeakTesting,
+    );
+  }
 
   testWidgets('the example app chrome and its open menus are styled', (
     tester,

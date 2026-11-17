@@ -33,3 +33,13 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
 /// and a walk makes enough of them to run out of memory; each part's own
 /// tests keep tracking it. A walk passes it as its `experimentalLeakTesting:`.
 LeakTesting get longWalkLeakTesting => LeakTesting.settings.withIgnoredAll();
+
+/// The leak tracking a file of whole-page tests runs under (a gallery walk:
+/// every page in every preset, setting or language): every object tracked,
+/// the test helpers' too, without the stack trace that telling them apart
+/// keeps for each one. Those stack traces grew a walk's tester by 25 MB a
+/// test, past 4 GB in a quarter of one file; tracked this way it stays near
+/// 1 GB, and a leak in a page still fails the test that made it. A walk's
+/// file sets it as its `main` starts.
+LeakTesting get pageWalkLeakTesting =>
+    LeakTesting.settings.withTracked(createdByTestHelpers: true);

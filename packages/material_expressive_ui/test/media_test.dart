@@ -114,8 +114,28 @@ Widget _app(AssetBundle bundle) => DefaultAssetBundle(
   ),
 );
 
-void _mediaTest(String description, Future<void> Function(WidgetTester) body) {
+/// [testWidgets] that lets go of the images it loaded before it ends. The
+/// image cache keeps a loaded image alive past the widget that showed it, as
+/// an app's does, and lets go of a cleared one only at the next frame. A
+/// file-level tearDown clears the cache after the test's last frame, so the
+/// image stayed undisposed whenever its test ran last (alone, or last in a
+/// shard), and leak tracking failed the file in tearDownAll. This clears the
+/// cache inside the test and pumps the frame that lets the image go.
+void _imageTest(String description, WidgetTesterCallback body) {
   testWidgets(description, (tester) async {
+    try {
+      await body(tester);
+    } finally {
+      PaintingBinding.instance.imageCache
+        ..clear()
+        ..clearLiveImages();
+      await tester.pump();
+    }
+  });
+}
+
+void _mediaTest(String description, Future<void> Function(WidgetTester) body) {
+  _imageTest(description, (tester) async {
     try {
       await body(tester);
     } finally {
@@ -125,13 +145,9 @@ void _mediaTest(String description, Future<void> Function(WidgetTester) body) {
 }
 
 void main() {
-  tearDown(() {
-    debugNetworkImageHttpClientProvider = null;
-    PaintingBinding.instance.imageCache.clear();
-    PaintingBinding.instance.imageCache.clearLiveImages();
-  });
+  tearDown(() => debugNetworkImageHttpClientProvider = null);
 
-  testWidgets(
+  _imageTest(
     'a face pile reserves space for its remaining count at narrow widths',
     (tester) async {
       await tester.pumpWidget(
@@ -163,7 +179,7 @@ void main() {
     },
   );
 
-  testWidgets('alignment reaches the slot picture', (tester) async {
+  _imageTest('alignment reaches the slot picture', (tester) async {
     await tester.pumpWidget(
       _themed(
         const Center(
@@ -292,7 +308,7 @@ void main() {
   });
 
   group('ExpressiveMedia', () {
-    testWidgets(
+    _imageTest(
       'takes its ratio from the width, and is silent unless labelled',
       (tester) async {
         final semantics = tester.ensureSemantics();
@@ -336,7 +352,7 @@ void main() {
       },
     );
 
-    testWidgets('masks by the corner scale', (tester) async {
+    _imageTest('masks by the corner scale', (tester) async {
       await tester.pumpWidget(
         _themed(
           const Center(
@@ -356,7 +372,7 @@ void main() {
       expect(border, _theme.shapes.corner(ExpressiveCorner.extraLarge));
     });
 
-    testWidgets('a shaped image is a hero moment', (tester) async {
+    _imageTest('a shaped image is a hero moment', (tester) async {
       await tester.pumpWidget(
         _themed(
           const Center(
@@ -421,7 +437,7 @@ void main() {
       expect(ExpressiveAvatar.initialsOf(''), '');
     });
 
-    testWidgets('m is Material\'s list avatar: 40dp primaryContainer circle, '
+    _imageTest('m is Material\'s list avatar: 40dp primaryContainer circle, '
         'initials in titleMedium onPrimaryContainer', (tester) async {
       final semantics = tester.ensureSemantics();
       await tester.pumpWidget(
@@ -457,7 +473,7 @@ void main() {
       semantics.dispose();
     });
 
-    testWidgets('sizes, icon and empty-name kinds, and the pending photo', (
+    _imageTest('sizes, icon and empty-name kinds, and the pending photo', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -502,7 +518,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('a row of compact avatars prints every name\'s initials at one '
+    _imageTest('a row of compact avatars prints every name\'s initials at one '
         'size', (tester) async {
       // Compact density draws the 32dp avatar at 24dp, under its 14dp type:
       // the initials scale down, all by the scale the widest pair needs, so
@@ -540,7 +556,7 @@ void main() {
       expect(heights[2], moreOrLessEquals(heights[0], epsilon: 0.01));
     });
 
-    testWidgets('a shaped avatar is a hero moment', (tester) async {
+    _imageTest('a shaped avatar is a hero moment', (tester) async {
       await tester.pumpWidget(
         _themed(
           const Center(

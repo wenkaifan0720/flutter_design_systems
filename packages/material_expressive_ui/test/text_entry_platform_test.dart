@@ -14,6 +14,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
 
+import 'support/tiers.dart';
+
 /// One text-entry part: [build] it empty (its hint showing) or holding
 /// text; [box] is the container its line is centred in, or null when the
 /// line is not centred (a floating label above it, several lines).
@@ -194,100 +196,109 @@ void main() {
     }
     _controllers.clear();
   });
-  for (final (label, density) in [
+  // Every part at every density; the everyday tier reads each part once, at
+  // the density its turn gives (support/tiers).
+  for (final (column, (label, density)) in [
     ('standard', ExpressiveDensity.standard),
     ('comfortable', ExpressiveDensity.comfortable),
     ('compact', ExpressiveDensity.compact),
-  ]) {
-    for (final part in _parts) {
-      testWidgets('${part.name} at $label density: the line on '
-          "the box's centre, the same on macOS as on Android", (tester) async {
-        final theme = ExpressiveThemeData.preset(
-          'baseline',
-          Brightness.light,
-        ).copyWith(density: density);
-        final measured = <TargetPlatform, List<_Measure>>{};
-        try {
-          for (final platform in [
-            TargetPlatform.android,
-            TargetPlatform.macOS,
-          ]) {
-            debugDefaultTargetPlatformOverride = platform;
-            for (final typed in [false, true]) {
-              await tester.pumpWidget(
-                MaterialApp(
-                  key: ValueKey('$platform/$typed'),
-                  home: ExpressiveHost(
-                    light: theme,
-                    brightness: Brightness.light,
-                    child: Align(
-                      alignment: AlignmentDirectional.topStart,
-                      child: SizedBox(
-                        width: 360,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            KeyedSubtree(
-                              key: const ValueKey('part'),
-                              child: part.build(typed),
-                            ),
-                          ],
+  ].indexed) {
+    for (final (row, part) in _parts.indexed) {
+      testWidgets(
+        '${part.name} at $label density: the line on '
+        "the box's centre, the same on macOS as on Android",
+        tags: sweepUnless(everydayTurn(row, column, 3)),
+        (tester) async {
+          final theme = ExpressiveThemeData.preset(
+            'baseline',
+            Brightness.light,
+          ).copyWith(density: density);
+          final measured = <TargetPlatform, List<_Measure>>{};
+          try {
+            for (final platform in [
+              TargetPlatform.android,
+              TargetPlatform.macOS,
+            ]) {
+              debugDefaultTargetPlatformOverride = platform;
+              for (final typed in [false, true]) {
+                await tester.pumpWidget(
+                  MaterialApp(
+                    key: ValueKey('$platform/$typed'),
+                    home: ExpressiveHost(
+                      light: theme,
+                      brightness: Brightness.light,
+                      child: Align(
+                        alignment: AlignmentDirectional.topStart,
+                        child: SizedBox(
+                          width: 360,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              KeyedSubtree(
+                                key: const ValueKey('part'),
+                                child: part.build(typed),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              );
-              await tester.pumpAndSettle();
-              expect(tester.takeException(), isNull);
-              (measured[platform] ??= []).add(_measure(tester, part, typed));
-            }
-          }
-        } finally {
-          debugDefaultTargetPlatformOverride = null;
-        }
-        final failures = <String>[];
-        for (final MapEntry(key: platform, value: states) in measured.entries) {
-          for (final (i, m) in states.indexed) {
-            final what = '${platform.name}, ${i == 0 ? 'empty' : 'typed'}';
-            // The line is drawn by its capitals on the box's middle
-            // (DesignCapCenter; row_alignment_test's DesignTextEntryCheck
-            // reads the capitals): its line box sits off the middle by the
-            // typeface's ascent and descent, a few pixels at most, and the
-            // hint stands where the typed line does.
-            if (m.box case final box?) {
-              if (m.hint case final hint?
-                  when (hint - states[1].line).abs() > .5) {
-                failures.add(
-                  '$what: the hint at $hint, the typed line at '
-                  '${states[1].line}',
                 );
+                await tester.pumpAndSettle();
+                expect(tester.takeException(), isNull);
+                (measured[platform] ??= []).add(_measure(tester, part, typed));
               }
-              // A few pixels for body text; a time input's display digits
-              // carry a larger offset, a tenth of their line.
-              final slack = m.lineHeight * .1 > 3 ? m.lineHeight * .1 : 3.0;
-              if (i == 1 && (m.line - box).abs() > slack) {
-                failures.add('$what: the text at ${m.line}, the box at $box');
+            }
+          } finally {
+            debugDefaultTargetPlatformOverride = null;
+          }
+          final failures = <String>[];
+          for (final MapEntry(key: platform, value: states)
+              in measured.entries) {
+            for (final (i, m) in states.indexed) {
+              final what = '${platform.name}, ${i == 0 ? 'empty' : 'typed'}';
+              // The line is drawn by its capitals on the box's middle
+              // (DesignCapCenter; row_alignment_test's DesignTextEntryCheck
+              // reads the capitals): its line box sits off the middle by the
+              // typeface's ascent and descent, a few pixels at most, and the
+              // hint stands where the typed line does.
+              if (m.box case final box?) {
+                if (m.hint case final hint?
+                    when (hint - states[1].line).abs() > .5) {
+                  failures.add(
+                    '$what: the hint at $hint, the typed line at '
+                    '${states[1].line}',
+                  );
+                }
+                // A few pixels for body text; a time input's display digits
+                // carry a larger offset, a tenth of their line.
+                final slack = m.lineHeight * .1 > 3 ? m.lineHeight * .1 : 3.0;
+                if (i == 1 && (m.line - box).abs() > slack) {
+                  failures.add('$what: the text at ${m.line}, the box at $box');
+                }
               }
             }
           }
-        }
-        final android = measured[TargetPlatform.android]!;
-        final macOS = measured[TargetPlatform.macOS]!;
-        for (var i = 0; i < 2; i++) {
-          if (macOS[i].size != android[i].size) {
-            failures.add('macOS ${macOS[i].size}, Android ${android[i].size}');
+          final android = measured[TargetPlatform.android]!;
+          final macOS = measured[TargetPlatform.macOS]!;
+          for (var i = 0; i < 2; i++) {
+            if (macOS[i].size != android[i].size) {
+              failures.add(
+                'macOS ${macOS[i].size}, Android ${android[i].size}',
+              );
+            }
+            if ((macOS[i].line - android[i].line).abs() > .5) {
+              failures.add(
+                'the line at ${macOS[i].line} on macOS, '
+                '${android[i].line} on Android',
+              );
+            }
           }
-          if ((macOS[i].line - android[i].line).abs() > .5) {
-            failures.add(
-              'the line at ${macOS[i].line} on macOS, '
-              '${android[i].line} on Android',
-            );
-          }
-        }
-        expect(failures, isEmpty, reason: failures.join('\n'));
-      });
+          expect(failures, isEmpty, reason: failures.join('\n'));
+        },
+      );
     }
   }
 }

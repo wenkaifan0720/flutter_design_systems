@@ -16,7 +16,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
 
+import 'flutter_test_config.dart' show pageWalkLeakTesting;
 import 'gallery_support.dart';
+import 'support/tiers.dart';
 
 Widget _host(Widget child) => MaterialApp(
   debugShowCheckedModeBanner: false,
@@ -161,54 +163,63 @@ void main() {
       final out = Platform.environment['EXPRESSIVE_CURSOR_SWEEP_OUT'];
       if (out != null) File(out).writeAsStringSync('${_swept.join('\n')}\n');
     });
-    for (final page in galleryPages) {
-      testWidgets(page.id, (tester) async {
-        final semantics = tester.ensureSemantics();
-        await pumpGalleryPage(
-          tester,
-          page,
-          'baseline',
-          Brightness.light,
-          width: _sweepWidth,
-        );
-        final view = Offset.zero & tester.view.physicalSize;
-        final root = tester
-            .binding
-            .renderViews
-            .first
-            .owner!
-            .semanticsOwner!
-            .rootSemanticsNode!;
-        final wrong = <String>[];
-        final mouse = await _mouse(tester);
-        for (final (node, rect) in _placed(root, Matrix4.identity()).toList()) {
-          final d = node.getSemanticsData();
-          final wanted = _wanted(d);
-          if (wanted == null || rect.shortestSide < 4) continue;
-          final at = rect.center;
-          if (!view.contains(at)) continue;
-          await _cursorAt(tester, mouse, at);
-          final shown = _onTheWeb(tester, at);
-          final what = '${page.id} | ${_role(d)} | ${_name(d)}';
-          _swept.add('$what | $shown');
-          // A node's centre that no gesture or text entry answers (a form
-          // field's merged node, label to help text) is not where a click
-          // acts: the arrow is right there.
-          if (!wanted.allows(shown) && !_acts(tester, at)) {
-            _swept.add('DEAD $what | $shown');
-            continue;
+    // Every page; the everyday tier reads one in four (support/tiers).
+    for (final (row, page) in galleryPages.indexed) {
+      testWidgets(
+        page.id,
+        tags: sweepUnless(everydayEvery(row, 4)),
+        experimentalLeakTesting: pageWalkLeakTesting,
+        (tester) async {
+          final semantics = tester.ensureSemantics();
+          await pumpGalleryPage(
+            tester,
+            page,
+            'baseline',
+            Brightness.light,
+            width: _sweepWidth,
+          );
+          final view = Offset.zero & tester.view.physicalSize;
+          final root = tester
+              .binding
+              .renderViews
+              .first
+              .owner!
+              .semanticsOwner!
+              .rootSemanticsNode!;
+          final wrong = <String>[];
+          final mouse = await _mouse(tester);
+          for (final (node, rect) in _placed(
+            root,
+            Matrix4.identity(),
+          ).toList()) {
+            final d = node.getSemanticsData();
+            final wanted = _wanted(d);
+            if (wanted == null || rect.shortestSide < 4) continue;
+            final at = rect.center;
+            if (!view.contains(at)) continue;
+            await _cursorAt(tester, mouse, at);
+            final shown = _onTheWeb(tester, at);
+            final what = '${page.id} | ${_role(d)} | ${_name(d)}';
+            _swept.add('$what | $shown');
+            // A node's centre that no gesture or text entry answers (a form
+            // field's merged node, label to help text) is not where a click
+            // acts: the arrow is right there.
+            if (!wanted.allows(shown) && !_acts(tester, at)) {
+              _swept.add('DEAD $what | $shown');
+              continue;
+            }
+            if (!wanted.allows(shown)) {
+              final why =
+                  '$what: $shown, wanted $wanted '
+                  '(${_regionAt(tester, at)})';
+              wrong.add(why);
+              _swept.add('WRONG $why');
+            }
           }
-          if (!wanted.allows(shown)) {
-            final why =
-                '$what: $shown, wanted $wanted '
-                '(${_regionAt(tester, at)})';
-            wrong.add(why);
-            _swept.add('WRONG $why');
-          }
-        }
-        expect(wrong, isEmpty, reason: wrong.join('\n'));
-        semantics.dispose();
-      });
+          expect(wrong, isEmpty, reason: wrong.join('\n'));
+          semantics.dispose();
+        },
+      );
     }
   });
 }

@@ -1,3 +1,18 @@
+## 0.2.1
+
+- Reduce Motion includes iOS's: Expressive stands on ui_core 0.2.1, whose `designReduceMotionOf` reads iOS's Reduce
+  Motion as well as Android's Remove animations and the web's `prefers-reduced-motion`. On an iPhone with Reduce
+  Motion on, springs used to run as designed; now spatial springs are critically damped, effects become a short fade,
+  the loading and progress indicators and the skeleton's pulse hold still, and the splash fades instead of handing
+  off. The indicators and the pulse follow it both ways while shown. Needs `ui_core: ^0.2.1`.
+- Counted words take their plural form: a time picker says "1 hour" and "1 minute" (not "1 hours", "1 minutes"), a
+  code field "Code, 1 character", a one-step indicator "The step is done". `ExpressiveLocalizations` hands each of
+  these the count, so a translation words every count its own way (Arabic's one, two, few and many among them).
+- The package's tests come in tiers: `flutter test --exclude-tags goldens,sweep` meets every kind of check once
+  (each preset, mode, setting, width, direction and text scale, each part's behaviours) and leaves the rest of
+  each matrix to `sweep`; `flutter test` runs them all. No test process passes 4 GB (the gallery walks peaked at
+  10 GB), and `media_test.dart` no longer fails in `tearDownAll` when it runs sharded.
+
 ## 0.2.0
 
 - Fields, sheets and menus no longer crash in apps set to a language other than English; their built-in labels now
