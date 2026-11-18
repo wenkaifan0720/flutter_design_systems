@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui' show SemanticsRole;
 
 import 'package:material_ui/material_ui.dart'
     show Theme, ThemeData, VisualDensity;
@@ -799,48 +798,6 @@ void main() {
       height: 20 / 14,
       leadingDistribution: TextLeadingDistribution.even,
       color: white,
-    );
-
-    testWidgets(
-      'chosen tab fill is compared with its painted face inside the 48 px target',
-      (tester) async {
-        Widget tabs(double fillWidth) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final label in ['Posts', 'Recent'])
-              Semantics(
-                onTap: () {},
-                selected: label == 'Posts',
-                role: SemanticsRole.tab,
-                child: DesignTapTarget(
-                  minSize: const Size(66, 48),
-                  child: SizedBox(
-                    width: 56,
-                    height: 30,
-                    child: Center(
-                      child: Container(
-                        width: fillWidth,
-                        height: 30,
-                        alignment: Alignment.center,
-                        color: label == 'Posts' ? lit : null,
-                        child: _words(label, label == 'Posts' ? lift : _lower),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        );
-        Future<Iterable<String>> findings(double width) async => (await _labels(
-          tester,
-          [tabs(width)],
-        )).where((f) => f.contains('chosen fill'));
-        expect(await findings(56), isEmpty);
-        expect(
-          await findings(42),
-          contains(contains('in its cell of 56 by 30')),
-        );
-      },
     );
 
     // A cell of a toggle group: 110 by 44, its words on a fill [fill] in

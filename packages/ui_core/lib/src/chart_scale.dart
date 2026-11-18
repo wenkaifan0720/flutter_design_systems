@@ -87,14 +87,12 @@ class DesignLinearScale extends DesignScale {
     required this.max,
     required super.start,
     required super.end,
-    this.divisions,
-  }) : assert(divisions == null || divisions > 0);
+  });
 
   /// A scale widened to whole ticks: [min] and [max] out to the nearest
   /// multiples of a 1, 2 or 5 × 10ⁿ step that gives about [tickCount]
   /// ticks, and to 0 when [includeZero]. A single value widens by one
-  /// each way. With [divisions], the scale covers the data in exactly that
-  /// many equal intervals, rounding the span up to 1, 2, 2.5 or 5 × 10ⁿ.
+  /// each way.
   factory DesignLinearScale.nice({
     required double min,
     required double max,
@@ -102,9 +100,7 @@ class DesignLinearScale extends DesignScale {
     required double end,
     int tickCount = 5,
     bool includeZero = false,
-    int? divisions,
   }) {
-    assert(divisions == null || divisions > 0);
     var lo = math.min(min, max);
     var hi = math.max(min, max);
     if (includeZero) {
@@ -112,33 +108,8 @@ class DesignLinearScale extends DesignScale {
       hi = math.max(hi, 0);
     }
     if (lo == hi) {
-      if (divisions == null || !includeZero || lo != 0) lo -= 1;
+      lo -= 1;
       hi += 1;
-    }
-    if (divisions != null) {
-      final range = hi - lo;
-      final unit = math
-          .pow(10, (math.log(range) / math.ln10).floor())
-          .toDouble();
-      final span = const [1.0, 2.0, 2.5, 5.0, 10.0]
-          .map((factor) => factor * unit)
-          .firstWhere((width) => width >= range, orElse: () => 10 * unit);
-      final step = span / divisions;
-      // Keep zero on an end for a one-sided domain that includes it. For
-      // other domains align the lower bound to a step if both ends fit.
-      final aligned = (lo / step).floorToDouble() * step;
-      final lower = hi == 0
-          ? -span
-          : aligned + span >= hi
-          ? aligned
-          : lo;
-      return DesignLinearScale(
-        min: lower,
-        max: math.max(hi, lower + span),
-        start: start,
-        end: end,
-        divisions: divisions,
-      );
     }
     // Until the step holds: widening can change it, and the ticks are read
     // at the step of the widened bounds (d3's nice).
@@ -159,10 +130,6 @@ class DesignLinearScale extends DesignScale {
 
   /// The greatest value.
   final double max;
-
-  /// The exact number of equal intervals, or null to choose whole-number
-  /// steps for the tick count requested by [ticks].
-  final int? divisions;
 
   @override
   double map(double value) {
@@ -188,22 +155,6 @@ class DesignLinearScale extends DesignScale {
           position: map(min),
           label: localizations.formatDecimal(min),
         ),
-      ];
-    }
-    if (divisions case final n?) {
-      final step = (max - min) / n;
-      final digits = math.min(
-        math.max(decimal.decimalsOf(min), decimal.decimalsOf(step)),
-        math.max(0, -(math.log(step) / math.ln10).floor()) + 2,
-      );
-      return [
-        for (var i = 0; i <= n; i++)
-          if ((i == n ? max : min + i * step) case final value)
-            DesignScaleTick(
-              value: value,
-              position: map(value),
-              label: localizations.formatDecimal(value, fractionDigits: digits),
-            ),
       ];
     }
     final step = _tickStep(min, max, count);

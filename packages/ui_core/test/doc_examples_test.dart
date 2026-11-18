@@ -617,9 +617,6 @@ final Map<String, DocExample> _examples = {
       child: child,
     ),
   ),
-  'DesignSheetPageRoute': (context) => DesignSheetPageRoute<void>(
-    builder: (context) => const Text('Edit recording'),
-  ),
   'DesignBottomSheetRoute': (context) => DesignBottomSheetRoute<void>(
     snapSizes: const [0.5, 1],
     builder: (context, details) => ListView(

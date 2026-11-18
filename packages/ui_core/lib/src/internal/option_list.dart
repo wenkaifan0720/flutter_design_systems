@@ -6,7 +6,6 @@ library;
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../combobox.dart';
@@ -45,9 +44,9 @@ class DesignListKeys {
   /// Whether a list of options is on screen.
   bool get isOpen => _list != null && _shown;
 
-  /// Wraps the text field so arrows move its highlight and a hardware Enter
-  /// accepts it. An active input-method composition keeps its Enter key.
-  Widget field(TextEditingController controller, Widget child) => Builder(
+  /// [child], the field view, with these keys over the autocomplete's: its
+  /// arrows and pages reach them first.
+  Widget field(Widget child) => Builder(
     builder: (context) {
       _field = context;
       final route = ModalRoute.of(context);
@@ -60,19 +59,6 @@ class DesignListKeys {
         skipTraversal: true,
         includeSemantics: false,
         onFocusChange: _focusChanged,
-        onKeyEvent: (_, event) {
-          if (event is! KeyDownEvent ||
-              (event.logicalKey != LogicalKeyboardKey.enter &&
-                  event.logicalKey != LogicalKeyboardKey.numpadEnter) ||
-              !controller.value.composing.isCollapsed ||
-              HardwareKeyboard.instance.isControlPressed ||
-              HardwareKeyboard.instance.isMetaPressed ||
-              HardwareKeyboard.instance.isAltPressed ||
-              HardwareKeyboard.instance.isShiftPressed) {
-            return KeyEventResult.ignored;
-          }
-          return submit() ? KeyEventResult.handled : KeyEventResult.ignored;
-        },
         child: Actions(actions: _actions, child: child),
       );
     },

@@ -1,10 +1,26 @@
-/// Formats amounts, counts, dates and times using fixed English conventions.
-/// [DisplayFormat.relative] takes the time to measure against.
+/// Display formatting: money, counts, dates, clock times and the relative
+/// day — the strings a generated screen actually prints.
+///
+/// PURE AND DETERMINISTIC, no intl. A generated app renders inside
+/// walkthroughs and golden frames, and a locale-aware formatter makes the
+/// same record read differently on two machines, which turns a diff into a
+/// false failure. The vocabulary here is English and the shapes are fixed,
+/// so a screen's text is a function of its data and one user setting (the
+/// 24-hour clock) and nothing else. An app that genuinely ships to several
+/// locales replaces these at that point; it does not need them to be
+/// half-localised now.
+///
+/// Nothing here touches [DateTime.now]: [DisplayFormat.relative] takes the
+/// moment to measure against as an argument, because a formatter that reads
+/// the clock cannot be tested.
 library;
 
 import 'package:flutter/widgets.dart';
 
-/// English display formats for amounts, counts and dates.
+/// The formatters. A design system re-exports this file from its own
+/// `format.dart` and may name the class after itself
+/// (`typedef ExpressiveFormat = DisplayFormat;`), so page code reads
+/// `ExpressiveFormat.money(…)`.
 ///
 /// ```dart
 /// Text(DisplayFormat.money(129900))

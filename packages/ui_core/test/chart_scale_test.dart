@@ -40,36 +40,6 @@ void main() {
       expect(labels(below).first, '-40');
     });
 
-    test(
-      'fixed divisions span the nice endpoints in both directions',
-      () async {
-        final ar = await DesignLocalizations.delegate.load(const Locale('ar'));
-        for (final (lo, hi) in [
-          (0.0, 23.0),
-          (-23.0, 0.0),
-          (-12.0, 13.0),
-          (0.0, 0.0),
-        ]) {
-          final s = DesignLinearScale.nice(
-            min: hi,
-            max: lo,
-            start: 100,
-            end: 0,
-            divisions: 4,
-            includeZero: true,
-          );
-          final ticks = s.ticks(ar);
-          expect(ticks.map((t) => t.position), [100, 75, 50, 25, 0]);
-          expect(ticks.first.value, lessThanOrEqualTo(lo));
-          expect(ticks.last.value, greaterThanOrEqualTo(hi));
-          if (lo == 0 && hi == 23) {
-            expect(ticks.map((t) => t.value), [0, 6.25, 12.5, 18.75, 25]);
-            expect(ticks[1].label, ar.formatDecimal(6.25, fractionDigits: 2));
-          }
-        }
-      },
-    );
-
     test('fractions keep the step\'s decimals, no more', () {
       final s = DesignLinearScale.nice(min: 0, max: 1, start: 0, end: 1);
       expect(labels(s), ['0.0', '0.2', '0.4', '0.6', '0.8', '1.0']);

@@ -31,7 +31,7 @@ class DesignReorderItem {
   /// How many items there are.
   final int count;
 
-  /// Wraps a drag handle. Focus it and use Alt+Up or Alt+Down to reorder.
+  /// Wraps the look's drag handle: a press on it starts a drag at once.
   final Widget Function(Widget handle) handle;
 
   /// Moves it up one; null at the top (a menu's "Move up").
@@ -234,13 +234,13 @@ class _DesignReorderableListState<T extends Object>
     );
     if (!refocus) return;
     final group = _groups[_keyOf(item)];
-    final stops = group?.traversalDescendants.toList() ?? const <FocusNode>[];
-    final focused = stops.indexWhere((node) => node.hasPrimaryFocus);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || group == null || group.context == null) return;
-      final next = group.traversalDescendants.toList();
-      if (next.isNotEmpty) {
-        next[focused.clamp(0, next.length - 1)].requestFocus();
+      for (final node in group.traversalDescendants) {
+        if (node.canRequestFocus && !node.skipTraversal) {
+          node.requestFocus();
+          return;
+        }
       }
     });
   }
@@ -258,9 +258,8 @@ class _DesignReorderableListState<T extends Object>
     final reorder = DesignReorderItem(
       index: index,
       count: n,
-      handle: (handle) => Focus(
-        child: ReorderableDragStartListener(index: index, child: handle),
-      ),
+      handle: (handle) =>
+          ReorderableDragStartListener(index: index, child: handle),
       moveUp: index > 0 ? () => _moveBy(key, -1) : null,
       moveDown: index < n - 1 ? () => _moveBy(key, 1) : null,
     );

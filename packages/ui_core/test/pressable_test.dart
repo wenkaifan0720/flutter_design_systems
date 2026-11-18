@@ -218,37 +218,6 @@ void main() {
     h.dispose();
   });
 
-  testWidgets('explicit names and values are read once while a changed '
-      'subtitle stays in the button name', (tester) async {
-    final semantics = tester.ensureSemantics();
-    Future<void> show(String subtitle) => tester.pumpWidget(
-      _app(
-        DesignPressable(
-          semanticLabel: 'Paper size',
-          semanticValue: 'A4',
-          onPressed: () {},
-          builder: (_, _, _) => Column(
-            children: [
-              const Text('Paper size'),
-              const Text('A4'),
-              Text(subtitle),
-            ],
-          ),
-        ),
-      ),
-    );
-    for (final subtitle in ['Unread', 'Read']) {
-      await show(subtitle);
-      final data = tester
-          .getSemantics(find.byType(DesignPressable))
-          .getSemanticsData();
-      expect(data.label.split('\n'), ['Paper size', subtitle]);
-      expect(data.value, 'A4');
-      expect(data.hasAction(SemanticsAction.tap), isTrue);
-    }
-    semantics.dispose();
-  });
-
   testWidgets('a tab is read as a tab, chosen or not, not a button', (
     tester,
   ) async {

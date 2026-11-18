@@ -881,25 +881,6 @@ void main() {
       );
     });
 
-    testWidgets(
-      'a two-tone raised rim stays complete on a nearly black panel',
-      (tester) async {
-        expect(
-          await _check(
-            tester,
-            surface: const Color(0xff1c1c22),
-            cancel: _button(
-              'Cancel',
-              const CustomPaint(painter: _Raised(), size: Size(150, 48)),
-              text: _label('Cancel', colour: const Color(0xffe8e8ec)),
-            ),
-            ok: _button('OK', _face(fill: const Color(0xffa7a1ff))),
-          ),
-          isEmpty,
-        );
-      },
-    );
-
     testWidgets('its ring with contrast', (tester) async {
       final outlined = _face(fill: _dark, ring: const Color(0xFF6A7282));
       expect(
@@ -1436,48 +1417,6 @@ void main() {
           tester,
           Stack(children: [front, window(20, 20, actions(later: 40))]),
         ),
-        _laterOff,
-      );
-    });
-
-    testWidgets('text behind a window cannot erase the top edge of its '
-        'visible actions', (tester) async {
-      final obscured = Positioned(
-        left: 200,
-        top: 39,
-        width: 240,
-        child: Semantics(
-          container: true,
-          label: 'Notes',
-          child: const Text(
-            'An earlier window title crosses the second control',
-            style: _style,
-          ),
-        ),
-      );
-      Widget foreground({double later = 48}) => Positioned(
-        left: 20,
-        top: 20,
-        child: Semantics(
-          container: true,
-          label: 'Files',
-          child: Stack(
-            children: [
-              const Positioned.fill(child: ColoredBox(color: _light)),
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: actions(later: later),
-              ),
-            ],
-          ),
-        ),
-      );
-      expect(
-        await desk(tester, Stack(children: [obscured, foreground()])),
-        isEmpty,
-      );
-      expect(
-        await desk(tester, Stack(children: [obscured, foreground(later: 40)])),
         _laterOff,
       );
     });

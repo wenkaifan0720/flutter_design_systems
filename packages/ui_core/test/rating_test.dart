@@ -211,29 +211,6 @@ void main() {
       expect(_host.value, 0.5);
     });
 
-    testWidgets(
-      'only the held item presses, including a half step in RTL; cancellation clears it',
-      (tester) async {
-        await tester.pumpWidget(
-          harness(
-            const _Host(allowHalf: true),
-            textDirection: TextDirection.rtl,
-          ),
-        );
-        final press = await tester.startGesture(_on(tester, 2, 0.75));
-        await tester.pump();
-        Iterable<int> held() => _items.values
-            .where((d) => d.states.contains(WidgetState.pressed))
-            .map((d) => d.index);
-        expect(held(), [2]);
-        expect(_host.sent, isEmpty);
-        await press.cancel();
-        await tester.pump();
-        expect(held(), isEmpty);
-        expect(_host.sent, isEmpty);
-      },
-    );
-
     testWidgets('hovering previews the value a tap would set', (tester) async {
       await tester.pumpWidget(harness(const _Host(value: 1)));
       final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
@@ -264,12 +241,9 @@ void main() {
         ),
       );
       final drag = await tester.startGesture(_on(tester, 0, 0.5));
-      await tester.pump();
-      expect(_items[0]!.states, contains(WidgetState.pressed));
       await drag.moveTo(_on(tester, 1, 0.5));
       await tester.pump();
-      expect(_items[0]!.states, isNot(contains(WidgetState.pressed)));
-      expect(_items[1]!.states, contains(WidgetState.pressed));
+      expect(_items[0]!.states, contains(WidgetState.pressed));
       await drag.moveTo(_on(tester, 2, 0.5));
       await tester.pump();
       await drag.moveTo(_on(tester, 3, 0.5));

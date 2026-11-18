@@ -154,20 +154,18 @@ void main() {
         tester.getCenter(find.text('Quit')) + const Offset(2, 0),
       );
       expect(_litRows(_fileRows), ['Quit']);
-      // Leaving both the panel and the bar closes the menu.
+      // Out of the menu: none lit; Down starts again at the first.
       await _moveTo(tester, mouse, const Offset(700, 500));
       expect(_litRows(_fileRows), isEmpty);
-      expect(find.text('New'), findsNothing);
-      await _click(tester, mouse, find.text('File'));
+      expect(find.text('New'), findsOneWidget, reason: 'it stays open');
       await _key(tester, LogicalKeyboardKey.arrowDown);
       expect(_litRows(_fileRows), ['New']);
-      // A key moves the highlight while the pointer is over a different row.
+      // A key moved last: the pointer leaving keeps the keys' row.
       await _moveTo(tester, mouse, tester.getCenter(find.text('Quit')));
       await _key(tester, LogicalKeyboardKey.arrowUp);
+      await _moveTo(tester, mouse, const Offset(700, 500));
       // Up from Quit passes the disabled Revert.
       expect(_litRows(_fileRows), ['Open recent']);
-      await _moveTo(tester, mouse, const Offset(700, 500));
-      expect(find.text('New'), findsNothing);
     });
 
     testWidgets('a disabled row under the pointer lights none', (tester) async {

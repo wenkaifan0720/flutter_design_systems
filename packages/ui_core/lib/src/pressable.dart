@@ -14,13 +14,7 @@ import 'dart:async';
 import 'package:flutter/gestures.dart'
     show PointerDeviceKind, kPressTimeout, kPrimaryMouseButton, kTouchSlop;
 import 'package:flutter/semantics.dart'
-    show
-        ChildSemanticsConfigurationsResult,
-        ChildSemanticsConfigurationsResultBuilder,
-        SemanticsConfiguration,
-        SemanticsRole,
-        SemanticsValidationResult;
-import 'package:flutter/rendering.dart' show RenderProxyBox;
+    show SemanticsRole, SemanticsValidationResult;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -547,21 +541,12 @@ class DesignPressableState extends State<DesignPressable> {
         child: Center(widthFactor: 1, heightFactor: 1, child: face),
       );
     }
-    if (widget.excludeSemantics) {
-      face = ExcludeSemantics(child: face);
-    } else if (widget.semanticLabel != null || widget.semanticValue != null) {
-      face = _FaceSemantics(
-        label: widget.semanticLabel,
-        value: widget.semanticValue,
-        child: face,
-      );
-    }
     Widget node = GestureDetector(
       behavior: HitTestBehavior.opaque,
       excludeFromSemantics: true,
       onTap: widget.onPressed == null ? null : _press,
       onLongPress: widget.onLongPress,
-      child: face,
+      child: widget.excludeSemantics ? ExcludeSemantics(child: face) : face,
     );
     // The press from the pointer, beside the recognizers rather than in
     // their arena (as forui's FTappable does), so a tap quicker than
@@ -636,61 +621,5 @@ class DesignPressableState extends State<DesignPressable> {
       child: node,
     );
     return widget.excludeSemantics ? node : MergeSemantics(child: node);
-  }
-}
-
-// A label or value explicitly supplied by the button already names that text.
-// Keep other content, such as a subtitle that changes independently.
-class _FaceSemantics extends SingleChildRenderObjectWidget {
-  const _FaceSemantics({
-    required this.label,
-    required this.value,
-    required super.child,
-  });
-  final String? label;
-  final String? value;
-
-  @override
-  _RenderFaceSemantics createRenderObject(BuildContext context) =>
-      _RenderFaceSemantics((label, value));
-
-  @override
-  void updateRenderObject(
-    BuildContext context,
-    _RenderFaceSemantics renderObject,
-  ) {
-    renderObject.words = (label, value);
-  }
-}
-
-class _RenderFaceSemantics extends RenderProxyBox {
-  _RenderFaceSemantics(this._words);
-  (String?, String?) _words;
-
-  set words((String?, String?) value) {
-    if (_words == value) return;
-    _words = value;
-    markNeedsSemanticsUpdate();
-  }
-
-  @override
-  void describeSemanticsConfiguration(SemanticsConfiguration config) {
-    super.describeSemanticsConfiguration(config);
-    config.childConfigurationsDelegate = _merge;
-  }
-
-  ChildSemanticsConfigurationsResult _merge(
-    List<SemanticsConfiguration> children,
-  ) {
-    final result = ChildSemanticsConfigurationsResultBuilder();
-    for (final child in children) {
-      final text = child.label;
-      if (text.isNotEmpty && (text == _words.$1 || text == _words.$2)) {
-        result.markAsMergeUp(child.copy()..label = '');
-      } else {
-        result.markAsMergeUp(child);
-      }
-    }
-    return result.build();
   }
 }

@@ -296,6 +296,10 @@ void main() {
       }
       // Held still, so it is let go with no fling.
       await tester.pump(const Duration(milliseconds: 300));
+      // ignore: avoid_print
+      print(
+        'PROBE route=${ModalRoute.of(tester.element(find.byKey(_panel)))!.animation!.value} slide=${tester.widget<SlideTransition>(find.ancestor(of: find.byKey(_panel), matching: find.byType(SlideTransition)).first).position.value}',
+      );
       expect(left(), moreOrLessEquals(by, epsilon: 0.5));
       await drag.up();
       await tester.pump();

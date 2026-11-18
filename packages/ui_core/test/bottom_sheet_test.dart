@@ -129,41 +129,6 @@ Future<void> _drag(WidgetTester tester, double dy) async {
 }
 
 void main() {
-  for (final reduce in [false, true]) {
-    testWidgets(
-      'a full-screen sheet is a named page with motion and Escape (reduce $reduce)',
-      (tester) async {
-        final route = DesignSheetPageRoute<void>(
-          semanticLabel: 'Edit recording',
-          builder: (_) =>
-              const ColoredBox(key: _panel, color: Color(0xFFEEEEEE)),
-        );
-        await tester.pumpWidget(
-          harness(
-            Builder(
-              builder: (context) => GestureDetector(
-                onTap: () => Navigator.of(context).push(route),
-                child: const Text('Open'),
-              ),
-            ),
-            reduceMotion: reduce,
-          ),
-        );
-        await tester.tap(find.text('Open'));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 40));
-        expect(_rect(tester).top, reduce ? isZero : greaterThan(0));
-        await tester.pumpAndSettle();
-        expect(route.opaque && route.fullscreenDialog, isTrue);
-        expect(_rect(tester), const Rect.fromLTWH(0, 0, 800, 600));
-        expect(find.bySemanticsLabel('Edit recording'), findsOneWidget);
-        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-        await tester.pumpAndSettle();
-        expect(find.text('Open'), findsOneWidget);
-      },
-    );
-  }
-
   behaviourContract(
     'DesignBottomSheetRoute',
     build: (c) => Builder(
@@ -223,39 +188,6 @@ void main() {
       await p.tester.pump();
     },
   );
-
-  testWidgets('Enter activates the first action in a keyboard-opened sheet', (
-    tester,
-  ) async {
-    final activated = <String>[];
-    await tester.pumpWidget(
-      _app(
-        () => DesignBottomSheetRoute<void>(
-          builder: (_, details) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final label in ['Pin', 'Share'])
-                DesignPressable(
-                  onPressed: () {
-                    activated.add(label);
-                    details.close();
-                  },
-                  builder: (_, states, child) => Text(label),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.pumpAndSettle();
-    expect(tester.getSemantics(find.text('Pin')), isSemantics(isFocused: true));
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    await tester.pumpAndSettle();
-    expect(activated, ['Pin']);
-    expect(Focus.of(tester.element(find.text('open'))).hasPrimaryFocus, isTrue);
-  });
 
   testWidgets('it rises to its first size, a share of the room, and is laid '
       'out at it', (tester) async {

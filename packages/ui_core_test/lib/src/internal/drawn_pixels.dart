@@ -91,8 +91,6 @@ class DrawnPixels {
   /// The commonest colour of the whole image.
   final int ground;
 
-  final _solids = <(int, int, int, int), ({int colour, double share})>{};
-
   /// The commonest colour inside [rect] (logical, from the boundary's top
   /// left): the face of a card or a section.
   int groundIn(Rect rect) {
@@ -105,9 +103,7 @@ class DrawnPixels {
   /// left) and the share of its pixels in it, 0 to 1: a surface of one
   /// colour, when that share is large.
   ({int colour, double share}) solidIn(Rect rect) {
-    final bounds = _span(rect);
-    if (_solids[bounds] case final cached?) return cached;
-    final (left, top, right, bottom) = bounds;
+    final (left, top, right, bottom) = _span(rect);
     final all = (right - left) * (bottom - top);
     if (all <= 0) return (colour: ground, share: 0);
     final counts = <int, int>{};
@@ -118,7 +114,7 @@ class DrawnPixels {
       }
     }
     final most = counts.entries.reduce((a, b) => b.value > a.value ? b : a);
-    return _solids[bounds] = (colour: most.key, share: most.value / all);
+    return (colour: most.key, share: most.value / all);
   }
 
   /// The commonest colour in a band [by] logical pixels wide around [rect]
@@ -564,44 +560,6 @@ class DrawnPixels {
       0.2126 * _linear[(c >> 24) & 0xFF] +
       0.7152 * _linear[(c >> 16) & 0xFF] +
       0.0722 * _linear[(c >> 8) & 0xFF];
-
-  /// Whether the rectangular face has a light top and left rim and a dark
-  /// bottom and right rim. The two colours contrast across the bevel even
-  /// when the dark rim is close to the surrounding [over] colour.
-  bool hasBevel(Rect face, {required int over, required double floor}) {
-    if (face.shortestSide < 12 ||
-        face.left < 1 ||
-        face.top < 1 ||
-        face.right + 1 >= width / ratio ||
-        face.bottom + 1 >= height / ratio) {
-      return false;
-    }
-    int at(double x, double y) => _at((x * ratio).floor(), (y * ratio).floor());
-    final light = at(face.center.dx, face.top + 0.5);
-    final dark = at(face.center.dx, face.bottom - 0.5);
-    final high = _luminance(light), low = _luminance(dark);
-    if (alike(dark, over) ||
-        low >= _luminance(over) ||
-        (high + 0.05) / (low + 0.05) < floor) {
-      return false;
-    }
-    for (final fraction in [0.25, 0.5, 0.75]) {
-      final x = face.left + face.width * fraction;
-      final y = face.top + face.height * fraction;
-      // Both halves of the rim must have the same sharp edge. A flat fill
-      // casting a dark shadow has no brighter rim just inside its top.
-      if (!alike(at(x, face.top + 0.5), light) ||
-          !alike(at(face.left + 0.5, y), light) ||
-          !alike(at(x, face.bottom - 0.5), dark) ||
-          !alike(at(face.right - 0.5, y), dark) ||
-          !alike(at(x, face.bottom + 0.5), over) ||
-          !alike(at(face.right + 0.5, y), over) ||
-          high <= _luminance(at(x, face.top + 3))) {
-        return false;
-      }
-    }
-    return true;
-  }
 
   /// Whether [rect] (logical, from the boundary's top left) is drawn mostly
   /// lighter than [over]: a face's highlight (a groove's lit side, too faint

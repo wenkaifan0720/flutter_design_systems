@@ -14,7 +14,6 @@ library;
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -707,16 +706,11 @@ class _DesignWheelPickerState extends State<DesignWheelPicker> {
       );
     }
 
-    final behavior = ScrollConfiguration.of(context);
     final wheel = NotificationListener<ScrollNotification>(
       onNotification: (n) => _onScroll(c, n),
       child: SizedBox(
         height: widget.itemExtent * widget.visibleItemCount,
         child: ListWheelScrollView.useDelegate(
-          scrollBehavior: behavior.copyWith(
-            scrollbars: false,
-            dragDevices: {...behavior.dragDevices, PointerDeviceKind.mouse},
-          ),
           controller: _controllers[c],
           itemExtent: widget.itemExtent,
           physics: enabled

@@ -2258,25 +2258,6 @@ void main() {
       expect(await _list(tester), isEmpty);
     });
 
-    testWidgets('a ruled field and list keep their painted widths through a '
-        'larger transparent repaint layer', (tester) async {
-      await _pump(
-        tester,
-        RepaintBoundary(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: SizedBox(width: 320, child: _select('Apple')),
-            ),
-          ),
-        ),
-        width: 1440,
-      );
-      await _open(tester);
-      expect(await _list(tester), isEmpty);
-    });
-
     testWidgets("a button beside the field's column, nearer than its list, "
         'is no list of the field', (tester) async {
       // Neumorphism's add device at 1440: the dialog's own button stands to

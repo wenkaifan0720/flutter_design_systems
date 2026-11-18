@@ -1,7 +1,7 @@
 # ui_core
 
-Headless controls for Flutter design systems. The package handles input, keyboard navigation, focus and accessibility.
-Your widget builders draw each state using your design system's shapes, colours and typography.
+Headless behaviours for Flutter design systems. Each one keeps the state, the keyboard, focus and what a screen reader
+hears; it hands a builder what to draw, and the design system draws every pixel. No Material, no Cupertino.
 
 The look packages built on it (`comic_ui`, `fluent2_design_ui`, `frosted_ui`, `neumorphism_ui` and the rest) re-export
 it, so an app that uses a look rarely imports it directly. Import it to build a look of your own:
@@ -93,7 +93,6 @@ class InkButton extends StatelessWidget {
 | Tooltip | `DesignTooltip` | `RawTooltip` |
 | Shortcut label (a menu row's keys) | `designShortcutLabel`, `designShortcutKeys` | `MenuItemButton`'s |
 | Bottom sheet | `DesignBottomSheetRoute`, `DesignBottomSheetController`, `DesignBottomSheetDragHandle` | `ModalBottomSheetRoute`, `DraggableScrollableSheet` |
-| Full-screen sheet | `DesignSheetPageRoute` | `PageRoute` |
 | Dialog and alert | `DesignDialogRoute`, `DesignDialog` | `DialogRoute`, `AlertDialog` |
 | Swipe actions, from outside | `DesignSwipeActionsController` | |
 | Tabs | `DesignTabController`, `DesignTabBar`, `DesignTabView` | `TabController`, `TabBar`, `TabBarView` |
@@ -124,11 +123,20 @@ The behaviours take what Flutter's own widgets take, under Flutter's names:
   commands that carry no `onPressed` of their own).
 - What a builder paints (a split button's label and its actions, a menu entry, a command, a toast, a table's column,
   a shell's tab) carries its words as a `String` and its glyph as `IconData`: they are what type-ahead, search and a screen reader read, and your
-  builder turns them into widgets.
+  builder turns them into widgets. A `Widget` slot may come beside each in a later minor version, the `String`
+  then optional, so nothing you write now breaks.
 
-## Accessibility
+## What each behaviour promises
 
-Controls expose their label, value, role and available actions to assistive technology. Keyboard navigation follows the reading direction. Use a builder’s `WidgetState` values to show focus, press, selection and disabled states. Motion follows the platform’s reduced-motion preference.
+Every behaviour has a contract test, run on each change, that checks:
+- what a screen reader hears of it (its role, label, value and actions);
+- that it is disabled, and out of the focus order, when its callback is null (or `enabled` is false, where it
+  takes one);
+- that an error is announced as it appears;
+- its keys, left to right and right to left;
+- that nothing overflows at twice the text size, and every tap target is at least 44 by 44;
+- that under Reduce Motion, Android's and the web's flag or iOS's alone, it settles within a second and nothing
+  runs on.
 
 ## Motion
 
@@ -245,7 +253,33 @@ your subclass to `localizationsDelegates`; a word added in a later minor version
 translate it. `DesignLocalizations` also says the day a week starts on (`firstDayOfWeek`), which a calendar follows unless told
 otherwise.
 
-For number and chart labels, use `formatDecimal`, `parseDecimal` and `formatPercent`. Date and time controls use the locale’s calendar order, digits, separators and first day of the week.
+42 words are Material's own translations: 0.2.0's seventeen, the overlays' 15 key names (`keyboardKeyAlt`,
+`keyboardKeyControl` and the rest, under Material's names), the routes' five (`dialogLabel`, `alertDialogLabel`,
+`bottomSheetLabel`, `drawerLabel`, `tabLabel`) and the values' five (below). Eight more are the date and time fields'
+segment names and empty segments' letters, from CLDR and Material's date data (below). The other 54 messages are
+ui_core's own, and in every language but English they await a native speaker's check; a correction is a patch
+version: 0.3.0's `keyboardKeyOption`, `keyboardKeyEnter`, `keyboardKeyTab` and `searchFailedMessage` (overlays),
+`dragHandleLabel` (routes) and the values' 11 (below), and 0.2.0's 38, `clearButtonTooltip`, `showMoreLabel`, `showLessLabel`, `selectedLabel`, `loadingLabel`, `noResultsLabel`,
+`retryButtonLabel`, `doneButtonLabel`, `confirmButtonLabel`, `positionLabel`, `carouselLabel`, `carouselSlideLabel`,
+`colorAreaLabel`, the four `colorChannel` names, `commandPaletteLabel`, `commandPaletteBarrierLabel`,
+`commandPaletteResultsMessage`, `sortedAscendingHint`, `sortedDescendingHint`, `requiredHint`, `formProblemsMessage`,
+`showPasswordLabel`, `hidePasswordLabel`, `menuBarLabel`, `refreshingMessage`, `refreshedMessage`,
+`rangeSliderStartLabel`, `rangeSliderEndLabel`, `reorderableListMovedMessage`, `sideSheetBarrierLabel`,
+`splitButtonMenuLabel`, `splitViewHandleLabel`, `tagInputDeleteLabel`, `toasterRegionLabel` and `treeLevelHint`.
+
+<!-- 0.3.0 values -->
+The value behaviours (0.3.0) add five more of Material's words (`anteMeridiemAbbreviation`,
+`postMeridiemAbbreviation`, `timePickerHourLabel`, `timePickerMinuteLabel`, `dateOutOfRangeLabel`); the date and time
+fields' segment names, CLDR's own (`dateFieldYearLabel`, `dateFieldMonthLabel`, `dateFieldDayLabel`,
+`timeFieldSecondLabel`, `timeFieldDayPeriodLabel`); an empty segment's letters, split from Material's date hint
+(`dateFieldYearPlaceholder`, `dateFieldMonthPlaceholder`, `dateFieldDayPlaceholder`); and 11 messages of ui_core's
+own that await a native speaker's check: `emptyValueLabel`, `ratingLabel`, `ratingValueLabel`,
+`chartSeriesCountLabel`, `chartPointCountLabel`, `chartSliceCountLabel`, `chartRangeLabel`, `chartExtremesLabel`,
+`chartPointLabel`, `chartShowTableLabel` and `listSeparator`. Numbers go through `formatDecimal`, `parseDecimal` and
+`formatPercent`, dates and times through `formatYear`, `formatShortMonth`, `formatShortMonthDay` and `formatTimeOfDay`,
+in the reader's separators, digits and patterns: CLDR's, through package:intl's data, read when the translations are
+generated, so ui_core carries no dependency on intl.
+<!-- 0.3.0 values end -->
 
 ## Tap targets, density and spacing
 
@@ -260,9 +294,49 @@ face in steps (-4 to 4), never its target: a compact face stands in the same tar
 `DesignSpacingScope` declares the grid a look's spacing stands on (`DesignSpacing`, 4 pt by default; a look whose values
 sit on 2 pt declares 2), read by `DesignSpacing.of` and by ui_core_test's spacing check.
 
-## Testing your design system
+## The checks a look is held to
+<!-- 0.3.0 tooling -->
 
-Add `ui_core_test` to your test dependencies to check alignment, widths, tap targets and clipping on rendered screens. Use `DesignKeylineRegion` to identify a card or section, and `DesignKeylineFace` for a visible face that blends into its background. [ui_core_test on pub.dev](https://pub.dev/packages/ui_core_test)
+The checks a look's tests run (controls that line up row by row, labels on their faces' middles, keylines, widths,
+word breaks and clips, tap targets, cursors, cut shadows and spacing), and the sheets that draw them for review, are a
+package of their own since 0.3.0: [ui_core_test](https://pub.dev/packages/ui_core_test), which a look takes as a dev
+dependency, as an app takes `flutter_test`. An app never compiles them. What a look's widgets wear for them is here:
+`DesignCapCenter`, `DesignKeylineRegion` and `DesignKeylineFace`, and the floors and the grid they hold a look to
+(`DesignTapTargetScope`, `DesignSpacingScope`).
+<!-- 0.3.0 tooling end -->
+
+`test/moving_states.dart` (beside ui_core's other tests; copy it into your package's `test/`) holds the moments
+between a look's states still, so a test can capture and check them: a press held halfway, a hover, a keyboard
+focus, a sheet halfway open, a carousel halfway through a swipe. A press that flashes a square ink before its round
+face fills, or a focus ring cut by its row, shows only there.
+
+## Templates for a look's package
+
+ui_core holds itself to these; a look's package copies them:
+- **Analysis options.** ui_core's `analysis_options.yaml`: the strict modes and Flutter's lints, with
+  `public_member_api_docs`, `avoid_dynamic_calls`, `unawaited_futures`, `prefer_const_constructors`,
+  `use_named_constants` and `missing_code_block_language_in_doc_comment`. pana and pub.dev read a package's own
+  options, never a workspace root's, so each package carries them.
+- **Leak tracking.** `test/flutter_test_config.dart` turns on Flutter's leak tracking for every test (with
+  `leak_tracker_flutter_testing` among the dev dependencies): what a test or the package makes and never disposes
+  fails the test that made it.
+- **Compiled doc examples.** `test/doc_examples.dart` holds `testDocExamples`: every example in your lib's docs,
+  written out as an entry in your `doc_examples_test.dart`, so an example that stops compiling fails analysis, one
+  missing from the file fails a test, and each one is built and run.
+- **Renames.** A rename keeps the old name for one minor version, as
+  `@Deprecated('Use minimumSize instead. This feature was deprecated after v0.2.0.')`, with a data-driven fix in
+  `lib/fix_data.yaml` so `dart fix --apply` moves your callers, and a `test_fixes/` pair (`button.dart` with the old
+  name, `button.dart.expect` with the new; `dart fix --compare-to-golden test_fixes`). Its CHANGELOG entry is tagged
+  **Breaking**.
+- **A theme's `.of`.** A theme's `of(context)` gives the look's default when none is above, as `Theme.of` does, and
+  `maybeOf` gives null; only a part's own state (`DesignForm.of`, `DesignToaster.of`) asserts that it is there.
+  ui_core's `DesignSpacing.of`, `DesignTapTargets.of` and `DesignLocalizations.of` fall back so.
+- **Package-only code.** A file under the look module's `package/lib_overrides/` replaces the exported file at the
+  same path under the package's `lib/`: code drip's own apps do not take (a look loading `material_ui`'s and
+  `cupertino_ui`'s own words, say). An override whose in-repo file was renamed or removed fails the export.
+- **Repeated docs.** A rule many parameters share is written once, in a `{@template}`, and named by `{@macro}` where
+  it repeats: ui_core's `design.focusNode` (a focus node given is the caller's), `design.autofocus` and
+  `design.nullDisables`.
 
 ## Lining controls up
 
@@ -324,10 +398,17 @@ parameter's documentation says what the behaviour does given none (most make the
   `DesignInventoryGallery`, which lists a design system's answers to it. A design system's own tests and gallery
   use it; an app does not.
 - The checks (`package:ui_core/alignment.dart` until 0.2) are `package:ui_core_test/ui_core_test.dart`, a package
-  of their own.
+  of their own (0.3.0 tooling).
 
 ## Requirements and versions
 
 ui_core needs Flutter 3.47 or later (Dart 3.13), and depends on Flutter alone.
 
-Consult the CHANGELOG for migration instructions between minor releases. The main library is the supported API for apps. `host.dart` and `inventory.dart` are intended for design-system authors and may change in a patch release.
+Before 1.0, a minor version (0.1 to 0.2) may change the API, and the CHANGELOG says what changed and how to move; a
+patch version (0.1.0 to 0.1.1) never does. A rename keeps its old name, deprecated, for one minor version, with a
+`dart fix`.
+
+`host.dart` and `inventory.dart`, and a look's `<look>_parts.dart` and `<look>_host.dart`, are outside semver: they
+are tooling for looks, not an app's API, and may change in any version, a patch included (each says so in its library
+doc, and the CHANGELOG says how to move). The checks left `lib/` for ui_core_test in 0.3.0, so an app never compiles
+them; before 1.0 the rest of the review tooling (the inventory, the preview) is meant to follow.
