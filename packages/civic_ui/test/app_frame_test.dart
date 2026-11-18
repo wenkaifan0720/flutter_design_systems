@@ -10,6 +10,7 @@ import 'dart:async';
 
 import 'package:civic_ui/civic_ui.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -79,8 +80,11 @@ void main() {
     final semantics = tester.ensureSemantics();
     BuildContext? acted;
     await _show(tester, _place(onAct: (context) => acted = context));
-    expect(find.byType(CivicNavigationBar), findsOneWidget);
-    expect(find.byType(CivicSideNavigation), findsNothing);
+    // Along the foot, side by side, each a glyph over its name.
+    final home = tester.getCenter(find.byKey(const ValueKey('home')));
+    expect(tester.getCenter(find.byKey(const ValueKey('account'))).dy, home.dy);
+    expect(home.dy, greaterThan(844 - 96));
+    expect(find.byIcon(LucideIcons.house), findsOneWidget);
     for (final place in ['home', 'applications', 'account']) {
       expect(find.byKey(ValueKey(place)), findsOneWidget);
     }
@@ -109,8 +113,7 @@ void main() {
       width: 768,
       height: 1024,
     );
-    expect(find.byType(CivicNavigationBar), findsOneWidget);
-    expect(find.byType(CivicSideNavigation), findsNothing);
+    expect(find.byIcon(LucideIcons.house), findsOneWidget);
     final home = tester.getCenter(find.byKey(const ValueKey('home')));
     final account = tester.getCenter(find.byKey(const ValueKey('account')));
     expect(account.dx, home.dx, reason: 'one over the other');
@@ -135,8 +138,12 @@ void main() {
       width: 1024,
       height: 768,
     );
-    expect(find.byType(CivicSideNavigation), findsOneWidget);
-    expect(find.byType(CivicNavigationBar), findsNothing);
+    // Words alone, one over the other at the start.
+    expect(find.byIcon(LucideIcons.house), findsNothing);
+    final home = tester.getCenter(find.byKey(const ValueKey('home')));
+    final account = tester.getCenter(find.byKey(const ValueKey('account')));
+    expect(account.dy, greaterThan(home.dy));
+    expect(home.dx, lessThan(CivicLayout.sideNavigationWidth));
     expect(find.text('Brindlemere permits'), findsOneWidget);
     expect(
       find.descendant(
@@ -178,6 +185,67 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('account')));
     await tester.pumpAndSettle();
     expect(picked, 2);
+  });
+
+  for (final (width, height) in [
+    (390.0, 844.0),
+    (768.0, 1024.0),
+    (1440.0, 900.0),
+  ]) {
+    testWidgets('at $width the places are one tab stop: the arrows move '
+        'along them and Enter picks the one reached', (tester) async {
+      int? picked;
+      await _show(
+        tester,
+        _hosted(
+          CivicShellFrame(
+            places: _places,
+            selectedIndex: 0,
+            onSelected: (index) => picked = index,
+            child: const CivicScreen(body: Text('Home')),
+          ),
+        ),
+        width: width,
+        height: height,
+      );
+      Focus.of(tester.element(find.byKey(const ValueKey('home'))))
+          .requestFocus();
+      await tester.pump();
+      final next = width < CivicLayout.medium
+          ? LogicalKeyboardKey.arrowRight
+          : LogicalKeyboardKey.arrowDown;
+      await tester.sendKeyEvent(next);
+      await tester.pump();
+      expect(picked, isNull, reason: 'the arrows move, they do not pick');
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(picked, 1);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
+  }
+
+  testWidgets('a screen reader hears each place as a tab and where it '
+      'stands', (tester) async {
+    final semantics = tester.ensureSemantics();
+    await _show(
+      tester,
+      _hosted(
+        CivicShellFrame(
+          places: _places,
+          selectedIndex: 1,
+          onSelected: (_) {},
+          child: const CivicScreen(body: Text('Applications')),
+        ),
+      ),
+    );
+    expect(
+      tester.getSemantics(find.byKey(const ValueKey('applications'))),
+      isSemantics(
+        label: 'Applications\nTab 2 of 3',
+        isSelected: true,
+        hasTapAction: true,
+      ),
+    );
+    semantics.dispose();
   });
 
   testWidgets("a place's page has no way back", (tester) async {

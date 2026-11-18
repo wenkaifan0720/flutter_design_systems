@@ -2,7 +2,7 @@
 // page), the type ramp, the focus every part shares, the material an app's
 // own part can wear, what an app can change, the measures, and how
 // dates, times and sums are written.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import '../kit.dart';

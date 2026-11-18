@@ -1388,6 +1388,15 @@ class CivicTheme extends StatelessWidget {
       CivicThemeData._floorsMessage,
     );
     final text = textOf(context);
+    // The app's page change, from the Material theme round Civic (an app
+    // puts civicPageTransitions there): the theme Civic puts under its parts
+    // is the one a MaterialPageRoute under them reads.
+    final transitions = Theme.of(context).pageTransitionsTheme;
+    var bridge = _bridges[data];
+    if (bridge == null || bridge.pageTransitionsTheme != transitions) {
+      bridge = _bridges[data] = _materialUnder(data)
+          .copyWith(pageTransitionsTheme: transitions);
+    }
     return _CivicScope(
       data: data,
       child: DesignTapTargetScope(
@@ -1395,7 +1404,7 @@ class CivicTheme extends StatelessWidget {
         child: DesignSpacingScope(
           spacing: DesignSpacing.fallback,
           child: Theme(
-            data: _bridges[data] ??= _materialUnder(data),
+            data: bridge,
             child: IconTheme.merge(
               data: IconThemeData(color: data.textPrimary, size: 24),
               child: DefaultTextStyle(style: text.body, child: under),
@@ -1410,8 +1419,9 @@ class CivicTheme extends StatelessWidget {
 
   /// What Flutter's own widgets under Civic read (a text field's caret and
   /// selection, a route's ground), in Civic's colours, with no ink, splash or
-  /// highlight, and Material's density pinned to standard. Private: no
-  /// Material type is in Civic's API, and no Civic part reads a token from it.
+  /// highlight, and Material's density pinned to standard (a route's page
+  /// change is the app's own, put in by [build]). Private: no Material type
+  /// is in Civic's API, and no Civic part reads a token from it.
   static ThemeData _materialUnder(CivicThemeData t) => ThemeData(
     useMaterial3: true,
     brightness: t.brightness,

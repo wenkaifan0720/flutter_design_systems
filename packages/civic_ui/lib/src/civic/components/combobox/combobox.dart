@@ -18,6 +18,12 @@ import '../text-field/text_field.dart';
 /// hears the row reached and how many matched. When nothing
 /// matches the list says so ("No results").
 ///
+/// Given a [search] in place of [options] (a register looked up as the
+/// reader types), the list says "Loading" while it looks, in words: nothing
+/// spins. When the search fails it says so, with "Try again" under it: Down
+/// reaches it, Enter or a press runs the search again. A screen reader
+/// hears each as it appears. ui_core's [DesignCombobox] runs the search.
+///
 /// Use it where a select would hold too many answers to scan (a country,
 /// a street, a school); use [CivicRadioGroup] for a few.
 ///
@@ -36,7 +42,8 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
   /// A box that finds an answer from [options].
   const CivicCombobox({
     super.key,
-    required this.options,
+    this.options = const [],
+    this.search,
     this.displayStringForOption,
     this.value,
     this.onSelected,
@@ -50,8 +57,12 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
     this.style,
   });
 
-  /// The answers.
+  /// The answers typing narrows, when there is no [search].
   final Iterable<T> options;
+
+  /// Finds the answers for the words typed, in place of narrowing
+  /// [options]: a register looked up as the reader types.
+  final DesignOptionSearch<T>? search;
 
   /// An answer's words; null says its `toString`.
   final String Function(T option)? displayStringForOption;
@@ -93,9 +104,9 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final text = context.civicText;
     return DesignCombobox<T>(
       options: options,
+      search: search,
       displayStringForOption: _say,
       value: value,
       onSelected: onSelected,
@@ -133,16 +144,35 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
           ),
         ),
       ),
-      emptyBuilder: (context) => Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: CivicSpacing.s12,
-          vertical: CivicSpacing.s12,
-        ),
-        child: Text(
-          DesignLocalizations.of(context).noResultsLabel,
-          style: text.body.copyWith(color: t.textSecondary),
-        ),
-      ),
+      emptyBuilder: (context) =>
+          _Note(DesignLocalizations.of(context).noResultsLabel),
+      // The words say it is looking: nothing spins.
+      loadingBuilder: (context) =>
+          _Note(DesignLocalizations.of(context).loadingLabel),
+      errorBuilder: (context, failure) {
+        final words = DesignLocalizations.of(context);
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // The list's own node says it as it appears.
+            ExcludeSemantics(
+              child: _Note(words.searchFailedMessage, color: t.danger),
+            ),
+            DesignPressable(
+              onPressed: failure.retry,
+              semanticLabel: words.retryButtonLabel,
+              builder: (context, states, _) => CivicListOption(
+                label: words.retryButtonLabel,
+                chosen: false,
+                hovered: states.contains(WidgetState.hovered),
+                pressed: states.contains(WidgetState.pressed),
+                focused: failure.focused,
+              ),
+            ),
+          ],
+        );
+      },
       optionBuilder: (context, option, states) => CivicListOption(
         label: _say(option),
         chosen: states.contains(WidgetState.selected),
@@ -162,6 +192,7 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('options', options))
+      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onSelected', onSelected))
       ..add(StringProperty('labelText', labelText, defaultValue: null))
@@ -186,5 +217,36 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
       ..add(
         DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null),
       );
+  }
+}
+
+// A line of words in the list where its options would be: no matches, the
+// search looking, or its failure.
+class _Note extends StatelessWidget {
+  const _Note(this.words, {this.color});
+
+  final String words;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.civicTheme;
+    // As wide as the list (the field's width), its words at the start.
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      heightFactor: 1,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: CivicSpacing.s12,
+          vertical: CivicSpacing.s12,
+        ),
+        child: Text(
+          words,
+          style: context.civicText.body.copyWith(
+            color: color ?? t.textSecondary,
+          ),
+        ),
+      ),
+    );
   }
 }

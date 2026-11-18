@@ -1,3 +1,34 @@
+## 0.2.0
+
+Needs ui_core 0.3.0. Civic stops writing what ui_core now does, and keeps its painting: it looks as it did and moves
+as it did or better. No public name changed.
+
+- The dialog is ui_core's `DesignDialogRoute` under Civic's painting. Its scrim comes up on Civic's panel spring under
+  a dialog that stands whole from its first frame; the focus stays inside it and goes back to what opened it. A dialog
+  that must be answered (`barrierDismissible: false`) is an alert to a screen reader, and now Android's back leaves it
+  open as Escape always did: only its own buttons close it. Under Reduce Motion it is up within 150 ms, a short fade
+  (it was there at once).
+- `CivicTabBar` is ui_core's `DesignTabBar` under Civic's painting: one tab stop, the arrow keys moving along it
+  (mirrored right to left, Home and End to the ends) and choosing the tab they reach; a screen reader hears each tab
+  with its place ("Tab 1 of 3"); the chosen tab's bar comes on Civic's state spring and the strip scrolls it into view.
+  Each tab keeps the room its label takes in bold, so a chosen tab's label is never cut and the tabs beside it stand
+  still.
+- `CivicShellFrame` is ui_core's `DesignAdaptiveShell` at Civic's widths (a bar below 600, a rail to 1024, the site's
+  side navigation from there; `CivicShellFrame.modeFor`). The places are one tab stop: the arrow keys move along them
+  and Enter or Space picks one; F6 moves the focus between the places and the page. A screen reader hears each place
+  as a tab with its place, and the side navigation as the navigation menu. A phone's bar springs away under a pushed
+  page. `CivicNavigationBar` and `CivicSideNavigation` on their own are as they were.
+- `CivicCombobox` takes a `search` in place of `options`, for answers looked up as the reader types (a register): the
+  list says "Loading" in words while it looks (nothing spins), and when the search fails it says so, with "Try again"
+  under it, which a press or Down and Enter runs again.
+- On material_ui's `MaterialApp`, the page change an app puts in its `ThemeData` (`civicPageTransitions`) now plays
+  under `CivicTheme`: the Material theme Civic puts under its parts had the default page change, which a
+  `MaterialPageRoute` under them read (a Mac played the Cupertino slide).
+- The pub.dev page: the homepage is the live gallery, the README opens with a picture of Civic at desktop and phone
+  width and the links to the gallery and the API, and the package shows six screenshots. Install with
+  `flutter pub add civic_ui material_ui`: the example and the tests stand on `material_ui`, as Flutter 3.50 asks.
+- `dart doc` documents the package with no warnings.
+
 ## 0.1.1
 
 Needs ui_core 0.2.1.

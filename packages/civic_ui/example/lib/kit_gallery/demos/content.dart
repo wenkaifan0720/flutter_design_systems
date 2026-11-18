@@ -1,7 +1,7 @@
 // What a page shows: rows of a list, statuses, section headings, help
 // folded under its title, a rule, the inset rule and the warning, the
 // confirmation panel and the banner.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 

@@ -6,10 +6,14 @@ import '../../internal/paint.dart';
 import '../../theme.dart';
 
 /// Opens [builder]'s [CivicDialog] over the page, on a scrim of ink, and
-/// returns what it closes with. The keyboard's focus stays inside it until
-/// it closes, then goes back where it was; Escape and a press on the scrim
-/// close it unless [barrierDismissible] is false (a dialog that must be
-/// answered).
+/// returns what it closes with: ui_core's [DesignDialogRoute], Civic's
+/// painting. The scrim comes up on a spring under a dialog that stands whole
+/// from its first frame (under Reduce Motion, whichever platform asks for
+/// it, the two fade in together, settled within 150 ms). The keyboard's
+/// focus stays inside it until it closes, then goes back to what held it.
+/// Escape, Android's back and a press on the scrim close it, unless
+/// [barrierDismissible] is false: a dialog that must be answered, which only
+/// its own buttons close and which a screen reader hears as an alert.
 ///
 /// ```dart
 /// final cancel = await showCivicDialog<bool>(
@@ -31,29 +35,28 @@ Future<T?> showCivicDialog<T>({
   bool useRootNavigator = true,
 }) {
   final t = CivicTheme.of(context);
-  // Reduce Motion, whichever platform asked (iOS's included): the scrim is
-  // there at once.
-  final still = designReduceMotionOf(context);
-  return showGeneralDialog<T>(
-    context: context,
-    useRootNavigator: useRootNavigator,
-    barrierDismissible: barrierDismissible,
-    barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
-    // By night the scrim is black and deeper, so the page behind falls
-    // back as far as it does by day.
-    barrierColor: t.isDark
-        ? const Color(0xFF000000).withValues(alpha: 0.85)
-        : const Color(0xFF0C1116).withValues(alpha: 0.6),
-    transitionDuration: still
-        ? Duration.zero
-        : const Duration(milliseconds: 160),
-    pageBuilder: (context, _, _) => CivicTheme(
-      data: t,
-      child: Builder(builder: builder),
+  return Navigator.of(context, rootNavigator: useRootNavigator).push(
+    DesignDialogRoute<T>(
+      isAlert: !barrierDismissible,
+      barrierDismissible: barrierDismissible,
+      // By night the scrim is black and deeper, so the page behind falls
+      // back as far as it does by day.
+      barrierColor: t.isDark
+          ? const Color(0xFF000000).withValues(alpha: 0.85)
+          : const Color(0xFF0C1116).withValues(alpha: 0.6),
+      // The scrim comes up on Civic's panel spring; the dialog itself does
+      // not move.
+      dampingRatio: CivicMotion.panel.dampingRatio,
+      stiffness: CivicMotion.panel.stiffness,
+      builder: (context, _) => CivicTheme(
+        data: t,
+        // One that must be answered: neither Escape nor back closes it.
+        child: PopScope<T>(
+          canPop: barrierDismissible,
+          child: Builder(builder: builder),
+        ),
+      ),
     ),
-    // The scrim fades in under it; the dialog itself stands whole from its
-    // first frame, so the page never shows through its words.
-    transitionBuilder: (context, animation, _, child) => child,
   );
 }
 
@@ -110,8 +113,8 @@ class CivicDialog extends StatelessWidget {
           ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: maxWidth),
+            // Its title names the route the dialog's route scopes.
             child: Semantics(
-              scopesRoute: true,
               namesRoute: true,
               explicitChildNodes: true,
               label: title,

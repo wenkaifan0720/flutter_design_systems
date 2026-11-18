@@ -3,8 +3,8 @@
 // AccessibilityFeatures.reduceMotion, never MediaQuery's disableAnimations,
 // and Civic still calms. A colour or opacity change becomes a short fade
 // (settled within 150 ms), a move stays as it was (Civic's springs are
-// critically damped already: nothing of Civic's bounces), and a dialog's
-// scrim is up at once.
+// critically damped already: nothing of Civic's bounces), and a dialog is
+// up within 150 ms.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:async';
 
@@ -56,8 +56,10 @@ Future<double> _springAfter(
   return read;
 }
 
-/// How long the scrim of a dialog opened by [showCivicDialog] takes.
-Future<Duration> _dialogTransition(WidgetTester tester) async {
+/// How far a dialog opened by [showCivicDialog] has come up 150 ms after
+/// it opens (its route's animation, which the scrim and, under Reduce
+/// Motion, the dialog's fade follow).
+Future<double> _dialogAt150(WidgetTester tester) async {
   await tester.pumpWidget(const SizedBox());
   final page = GlobalKey();
   await tester.pumpWidget(
@@ -77,10 +79,11 @@ Future<Duration> _dialogTransition(WidgetTester tester) async {
     ),
   );
   await tester.pump();
-  final took = route.transitionDuration;
+  await tester.pump(const Duration(milliseconds: 150));
+  final shown = route.animation!.value;
   route.navigator!.pop();
   await tester.pumpAndSettle();
-  return took;
+  return shown;
 }
 
 void main() {
@@ -106,14 +109,16 @@ void main() {
     expect(calmed, closeTo(usual, 1e-9));
   }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
-  testWidgets("a dialog's scrim is up at once under Reduce Motion, iOS's "
-      "alone or Android's", (tester) async {
+  testWidgets("a dialog is up within 150 ms under Reduce Motion, iOS's "
+      "alone or Android's; its scrim comes up on a spring otherwise", (
+    tester,
+  ) async {
     addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
-    expect(await _dialogTransition(tester), const Duration(milliseconds: 160));
+    expect(await _dialogAt150(tester), lessThan(0.99), reason: 'a spring');
     tester.platformDispatcher.accessibilityFeaturesTestValue = _iosReduceMotion;
-    expect(await _dialogTransition(tester), Duration.zero, reason: 'iOS');
+    expect(await _dialogAt150(tester), closeTo(1, 0.01), reason: 'iOS');
     tester.platformDispatcher.accessibilityFeaturesTestValue =
         const FakeAccessibilityFeatures(disableAnimations: true);
-    expect(await _dialogTransition(tester), Duration.zero, reason: 'Android');
+    expect(await _dialogAt150(tester), closeTo(1, 0.01), reason: 'Android');
   });
 }

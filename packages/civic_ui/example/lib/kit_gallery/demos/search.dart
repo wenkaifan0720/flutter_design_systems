@@ -1,6 +1,6 @@
 // Finding things: the search box with its joined button, and the pages of
 // a long list (the page shown in ink, far pages folded).
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import '../kit.dart';

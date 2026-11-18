@@ -1,7 +1,7 @@
 // The application: the start page, the task list of what it takes, one
 // question per page, the reader's details with the error summary, the
 // answers checked, the confirmation.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 

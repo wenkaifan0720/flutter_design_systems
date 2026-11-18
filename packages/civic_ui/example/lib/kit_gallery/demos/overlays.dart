@@ -1,5 +1,5 @@
 // The dialog and the toast, open as a page shows them.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import '../kit.dart';

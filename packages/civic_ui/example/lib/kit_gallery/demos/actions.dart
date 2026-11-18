@@ -1,6 +1,6 @@
 // Buttons and links: the page's one action, the actions beside it, the
 // start of a service, the destructive one, and links in words.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 

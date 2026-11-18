@@ -1,6 +1,6 @@
 // Choices: radios with hints, checkboxes under a question, a select for a
 // long list, and switches for settings that act at once.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import '../kit.dart';
@@ -226,6 +226,17 @@ class _Combobox extends StatefulWidget {
 
 class _ComboboxState extends State<_Combobox> {
   String? _country;
+  String? _street;
+  bool _offline = false;
+
+  // The council's register of streets, looked up as the reader types: it
+  // takes a moment, and fails while the demo is set offline.
+  Future<Iterable<String>> _lookUp(String words) async {
+    await Future<void>.delayed(const Duration(milliseconds: 700));
+    if (_offline) throw StateError('The register could not be reached');
+    final asked = words.trim().toLowerCase();
+    return _streets.where((s) => s.toLowerCase().contains(asked));
+  }
 
   @override
   Widget build(BuildContext context) => KitSection(
@@ -238,6 +249,31 @@ class _ComboboxState extends State<_Combobox> {
         value: _country,
         onSelected: (c) => setState(() => _country = c),
       ),
+      CivicCombobox<String>(
+        labelText: 'Street the permit is for',
+        helperText: 'The council’s register is looked up as you type.',
+        search: _lookUp,
+        value: _street,
+        onSelected: (s) => setState(() => _street = s),
+      ),
+      CivicSwitch(
+        labelText: 'The register is offline',
+        value: _offline,
+        onChanged: (v) => setState(() => _offline = v),
+      ),
     ],
   );
 }
+
+const _streets = [
+  'Abbey Road',
+  'Brook Lane',
+  'Bridge Street',
+  'Castle Hill',
+  'Church Walk',
+  'Dock Lane',
+  'Elm Row',
+  'Market Place',
+  'Mill Street',
+  'Station Road',
+];

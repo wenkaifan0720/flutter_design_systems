@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 
 import '../../internal/frame_scope.dart';
+import '../../internal/places.dart';
 import '../../theme.dart';
 import '../button/button.dart';
 import '../icon-button/icon_button.dart';
@@ -44,14 +46,21 @@ class CivicShellAction extends ShellAction {
 }
 
 /// An app's frame around its pages: the places along the bottom below 600
-/// wide ([CivicNavigationBar]), the same places down the start as a rail
-/// from 600 (a tablet), the site's [CivicSideNavigation] from 1024, with the
-/// app's one [action]. What [CivicShell] stands a router's branches in, and
-/// [CivicPreview] one page; an app with its own navigation can stand its
-/// pages in it too.
+/// wide (as a [CivicNavigationBar] paints them), the same places down the
+/// start as a rail from 600 (a tablet), the site's side navigation (as a
+/// [CivicSideNavigation] paints it) from 1024, with the app's one [action].
+/// What `CivicShell` stands a router's branches in, and [CivicPreview] one
+/// page; an app with its own navigation can stand its pages in it too.
+///
+/// ui_core's [DesignAdaptiveShell] under Civic's painting and Civic's
+/// widths: the places are one tab stop, the arrow keys moving along them
+/// (Up and Down in the rail and the side navigation) and Enter or Space
+/// choosing; F6 moves the focus between the places and the page. A screen
+/// reader hears each place as a tab with its place ("Tab 1 of 3"), and the
+/// side navigation as the navigation menu.
 ///
 /// [showPlaces] false takes the bar off a phone (a page pushed over a
-/// place); from 600 wide the places stay on every page.
+/// place), on a spring; from 600 wide the places stay on every page.
 ///
 /// ```dart
 /// CivicShellFrame(
@@ -98,105 +107,112 @@ class CivicShellFrame extends StatelessWidget {
   /// Whether a phone shows the places' bar.
   final bool showPlaces;
 
+  /// How the places stand in a window [width] wide: Civic's widths, not
+  /// Material's (a bar below [CivicLayout.medium], a rail to
+  /// [CivicLayout.expanded], the site's side navigation from there).
+  static DesignNavigationMode modeFor(double width) => !CivicLayout.isApp(width)
+      ? DesignNavigationMode.sidebar
+      : width >= CivicLayout.medium
+      ? DesignNavigationMode.rail
+      : DesignNavigationMode.bar;
+
   @override
   Widget build(BuildContext context) {
     if (places.isEmpty) return child;
     final t = context.civicTheme;
+    final styles = [null, t.navigationStyle];
+    final labels = [for (final p in places) p.label];
     final act = action;
-    final width = MediaQuery.sizeOf(context).width;
-    if (CivicLayout.isApp(width) && width >= CivicLayout.medium) {
-      // A tablet: the phone's places down the start, the act over them.
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          MediaQuery.removePadding(
-            context: context,
-            removeRight: Directionality.of(context) == TextDirection.ltr,
-            removeLeft: Directionality.of(context) == TextDirection.rtl,
-            child: CivicRailScope(
-              leading: act == null ? null : _Act(act, wide: false),
-              child: CivicNavigationBar(
-                destinations: places,
-                selectedIndex: selectedIndex,
-                onDestinationSelected: onSelected,
-              ),
-            ),
-          ),
-          Expanded(
-            child: CivicFrameScope(besideNavigation: true, child: child),
-          ),
-        ],
-      );
-    }
-    if (!CivicLayout.isApp(width)) {
-      final name = brand;
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          MediaQuery.removePadding(
-            context: context,
-            removeRight: Directionality.of(context) == TextDirection.ltr,
-            removeLeft: Directionality.of(context) == TextDirection.rtl,
-            child: CivicSideNavigation(
-              destinations: places,
-              selectedIndex: selectedIndex,
-              onDestinationSelected: onSelected,
-              header: name == null
-                  ? null
-                  : Text(name, style: context.civicText.headingS),
-              footer: act == null ? null : _Act(act, wide: true),
-            ),
-          ),
-          // The page's bar and column line up with the places beside it.
-          Expanded(
-            child: CivicFrameScope(besideNavigation: true, child: child),
-          ),
-        ],
-      );
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(
-          child: MediaQuery.removePadding(
-            context: context,
-            removeBottom: showPlaces,
-            child: child,
-          ),
-        ),
-        if (showPlaces)
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: CivicNavigationBar(
-                  destinations: places,
-                  selectedIndex: selectedIndex,
-                  onDestinationSelected: onSelected,
-                ),
-              ),
-              if (act != null)
-                // The act's square stands on the bar's rule, at its end.
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: t.background,
-                    border: Border(top: BorderSide(color: t.rule)),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsetsDirectional.only(
-                      start: CivicSpacing.s4,
-                      end: CivicSpacing.s8,
-                      bottom: MediaQuery.paddingOf(context).bottom,
-                    ),
-                    child: SizedBox(
-                      height: CivicNavigationBar.height,
-                      child: Center(child: _Act(act, wide: false)),
-                    ),
-                  ),
-                ),
-            ],
+    final mode = modeFor(MediaQuery.sizeOf(context).width);
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    // The places beside the page take no inset on the page's side.
+    Widget beside(Widget navigation) => MediaQuery.removePadding(
+      context: context,
+      removeRight: !rtl,
+      removeLeft: rtl,
+      child: navigation,
+    );
+    return DesignAdaptiveShell(
+      mode: mode,
+      showNavigation: showPlaces,
+      dampingRatio: CivicMotion.panel.dampingRatio,
+      stiffness: CivicMotion.panel.stiffness,
+      selectedIndex: selectedIndex,
+      onDestinationSelected: onSelected,
+      destinations: [
+        for (final p in places)
+          DesignNavigationDestination(
+            label: p.label,
+            icon: p.icon,
+            selectedIcon: p.selectedIcon,
           ),
       ],
+      destinationBuilder: (context, destination, details) {
+        final selected = details.states.contains(WidgetState.selected);
+        // The key a test finds the place by, as the place's own.
+        return KeyedSubtree(
+          key: places[details.index].key,
+          child: details.mode == DesignNavigationMode.sidebar
+              ? CivicSidePlace(
+                  styles: styles,
+                  label: destination.label,
+                  states: details.states,
+                  selected: selected,
+                )
+              : CivicBarPlace(
+                  styles: styles,
+                  icon: destination.icon,
+                  selectedIcon: destination.selectedIcon,
+                  label: destination.label,
+                  states: details.states,
+                  selected: selected,
+                  rail: details.mode == DesignNavigationMode.rail,
+                ),
+        );
+      },
+      navigationBuilder: (context, details) => switch (details.mode) {
+        // A phone: the places along the foot, the act's square at their end.
+        // A bar is a tab bar to a screen reader, which holds its tabs alone:
+        // the shell's group stands round the places, the act outside it.
+        DesignNavigationMode.bar => Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: CivicPlacesBand(
+                styles: styles,
+                labels: labels,
+                places: details.destinations,
+                group: details.group,
+              ),
+            ),
+            if (act != null) _ActSquare(act),
+          ],
+        ),
+        // A tablet: the phone's places down the start, the act over them.
+        DesignNavigationMode.rail => beside(
+          CivicPlacesRail(
+            styles: styles,
+            labels: labels,
+            lead: act == null ? null : _Act(act, wide: false),
+            places: details.destinations,
+          ),
+        ),
+        DesignNavigationMode.sidebar => beside(
+          CivicPlacesSide(
+            styles: styles,
+            header: brand == null
+                ? null
+                : Text(brand!, style: context.civicText.headingS),
+            footer: act == null ? null : _Act(act, wide: true),
+            places: details.destinations,
+          ),
+        ),
+      },
+      // The page's bar and column line up with the places beside it.
+      body: CivicFrameScope(
+        besideNavigation: mode != DesignNavigationMode.bar,
+        child: child,
+      ),
     );
   }
 
@@ -209,6 +225,36 @@ class CivicShellFrame extends StatelessWidget {
       ..add(
         FlagProperty('showPlaces', value: showPlaces, ifFalse: 'places hidden'),
       );
+  }
+}
+
+/// The act's square on a phone: its glyph on the bar's ground and rule, at
+/// the bar's height above the safe inset.
+class _ActSquare extends StatelessWidget {
+  const _ActSquare(this.action);
+
+  final ShellAction action;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.civicTheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: t.background,
+        border: Border(top: BorderSide(color: t.rule)),
+      ),
+      child: Padding(
+        padding: EdgeInsetsDirectional.only(
+          start: CivicSpacing.s4,
+          end: CivicSpacing.s8,
+          bottom: MediaQuery.paddingOf(context).bottom,
+        ),
+        child: SizedBox(
+          height: CivicNavigationBar.height,
+          child: Center(child: _Act(action, wide: false)),
+        ),
+      ),
+    );
   }
 }
 

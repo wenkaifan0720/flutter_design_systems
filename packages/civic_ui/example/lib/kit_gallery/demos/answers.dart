@@ -1,6 +1,6 @@
 // The answers summary: what the reader said, set out to check, each with
 // the way back to change it.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import '../kit.dart';

@@ -1,14 +1,29 @@
 name: civic_ui
 description: >-
   A Flutter design system for public services: one thing per page, large type, a heavy yellow focus, errors said in words, answers checked before they are sent.
-version: 0.1.1
-homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/civic_ui
+version: 0.2.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/civic/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/civic_ui
+issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
 topics:
   - design-system
   - widgets
   - ui
   - theme
+  - accessibility
+screenshots:
+  - description: "Civic's start page at desktop and phone width, by day."
+    path: screenshots/hero.png
+  - description: "One question per page, its answers and their hints, on a phone by day."
+    path: screenshots/question_390_day.png
+  - description: "The error summary, which takes the focus and links each problem to its field, at desktop width."
+    path: screenshots/errors_1440_day.png
+  - description: "Every answer set out to check before it is sent, each with its Change link, at desktop width at night."
+    path: screenshots/check_1440_night.png
+  - description: "A reader's applications as rows on cards, the places along the foot, on a phone at night."
+    path: screenshots/applications_390_night.png
+  - description: "Civic's overview, its accents and its three moves, at desktop width by day."
+    path: screenshots/overview_1440_day.png
 
 environment:
   sdk: ">=3.13.0 <4.0.0"
@@ -19,7 +34,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.2.1
+  ui_core: ^0.3.0
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -29,6 +44,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
+  ui_core_test: ^0.1.0
 
 flutter:
   fonts:

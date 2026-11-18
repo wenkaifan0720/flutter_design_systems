@@ -1,7 +1,7 @@
 // A record's history down its rule, newest first, what a list says when
 // it has nothing to show, and what a page says while it loads or when it
 // cannot load.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import '../kit.dart';

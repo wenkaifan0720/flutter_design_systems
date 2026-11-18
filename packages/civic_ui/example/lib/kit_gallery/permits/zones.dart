@@ -3,7 +3,7 @@
 // from 1024 wide, above them below), the results five to a page with
 // pagination, and the page's empty and unavailable states. Street names
 // are proper names: they stay as they are in Arabic.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import 'account.dart';

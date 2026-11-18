@@ -1,6 +1,6 @@
 // The top bar and the page: the band that says whose service it is, the
 // back link, the caption and the heading over a reading column.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 

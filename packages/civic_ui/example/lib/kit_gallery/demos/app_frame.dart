@@ -2,7 +2,7 @@
 // along a phone's foot, a column down the start from 600 wide) with the
 // app's one act beside them, a page in its reading column, and the plain
 // field a generated page asks with.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 

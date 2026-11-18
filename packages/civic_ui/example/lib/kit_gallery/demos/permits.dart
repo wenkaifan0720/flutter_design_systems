@@ -1,6 +1,6 @@
 // Brindlemere parking permits, the service built from Civic's parts,
 // opened on its start page.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../kit_permits.dart';
 

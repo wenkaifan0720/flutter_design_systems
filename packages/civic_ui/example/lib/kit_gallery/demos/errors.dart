@@ -1,6 +1,6 @@
 // The error summary: what a page sent with problems shows first, each
 // problem a link to its field, the fields saying the same words.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import '../kit.dart';

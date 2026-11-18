@@ -1,6 +1,6 @@
 // The navigation: the bar along a phone's foot, the side navigation from
 // 600 wide, and the tabs.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 

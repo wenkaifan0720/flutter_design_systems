@@ -1,6 +1,6 @@
 // Facts in columns: a plain table, and one whose columns sort, whose rows
 // tick and whose pages follow under it.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import '../kit.dart';

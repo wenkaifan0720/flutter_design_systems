@@ -1,6 +1,6 @@
 // Civic against the shared component list: each row's live specimen, or
 // why a public service leaves it out and what it uses instead.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import '../kit.dart';

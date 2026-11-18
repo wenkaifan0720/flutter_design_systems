@@ -103,36 +103,42 @@ class CivicPreview extends StatelessWidget {
       platform: platform,
       brightness: brightness,
       device: device,
-      child: MaterialApp(
-        // A new presentation is a new stack: raise it afresh.
-        key: ValueKey<CivicPresentation>(presentation),
-        title: brand ?? '',
-        debugShowCheckedModeBanner: false,
-        builder: (context, app) => CivicHost(
-          light: light,
-          dark: dark,
-          brightness: brightness,
-          child: app ?? const SizedBox.shrink(),
+      // The preview's app stands in a semantics container of its own: the
+      // modal barrier under its routes hides only what it paints, never the
+      // page round the preview.
+      child: Semantics(
+        container: true,
+        child: MaterialApp(
+          // A new presentation is a new stack: raise it afresh.
+          key: ValueKey<CivicPresentation>(presentation),
+          title: brand ?? '',
+          debugShowCheckedModeBanner: false,
+          builder: (context, app) => CivicHost(
+            light: light,
+            dark: dark,
+            brightness: brightness,
+            child: app ?? const SizedBox.shrink(),
+          ),
+          home: switch (presentation) {
+            CivicPresentation.root => framed(child, places: true),
+            // The places stand beside a pushed page from 600 wide, as the
+            // app's frame stands them; a phone's bar yields to it.
+            CivicPresentation.pushed => PreviewStage(
+              route: (context, page) => CivicPage<void>(
+                key: stageKey,
+                child: page,
+              ).createRoute(context),
+              child: framed(child, places: false),
+            ),
+            CivicPresentation.sheet => PreviewStage(
+              route: (context, page) => CivicSheetPage<void>(
+                key: stageKey,
+                child: page,
+              ).createRoute(context),
+              child: child,
+            ),
+          },
         ),
-        home: switch (presentation) {
-          CivicPresentation.root => framed(child, places: true),
-          // The places stand beside a pushed page from 600 wide, as the
-          // app's frame stands them; a phone's bar yields to it.
-          CivicPresentation.pushed => PreviewStage(
-            route: (context, page) => CivicPage<void>(
-              key: stageKey,
-              child: page,
-            ).createRoute(context),
-            child: framed(child, places: false),
-          ),
-          CivicPresentation.sheet => PreviewStage(
-            route: (context, page) => CivicSheetPage<void>(
-              key: stageKey,
-              child: page,
-            ).createRoute(context),
-            child: child,
-          ),
-        },
       ),
     );
   }

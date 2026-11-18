@@ -1,6 +1,6 @@
 // Boxes to write in: a text field sized for its answer, a paragraph, a
 // date as three boxes, a file to send, and a fieldset over an address.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import '../kit.dart';

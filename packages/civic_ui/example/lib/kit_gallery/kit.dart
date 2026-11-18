@@ -10,7 +10,7 @@
 /// Civic depends on.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import 'gallery_words.dart';
@@ -21,30 +21,117 @@ CivicThemeData kitTheme(Brightness brightness) =>
     CivicThemeData.preset(kitPreset, brightness);
 
 /// The app every demo stands in: Civic's theme and toaster over the
-/// navigator, [home] its one page.
+/// navigator, [home] its one page, in [direction]: by default the direction
+/// it is opened in, so a part opened from the gallery right to left reads
+/// right to left (in Arabic's words for the parts' own).
 Widget kitApp({
   required Brightness brightness,
   required Widget home,
-  TextDirection direction = TextDirection.ltr,
-}) => MaterialApp(
-  debugShowCheckedModeBanner: false,
-  theme: ThemeData(
-    pageTransitionsTheme: const PageTransitionsTheme(
-      builders: civicPageTransitions,
+  TextDirection? direction,
+}) => Builder(
+  builder: (context) => Semantics(
+    // A nested app stands in a semantics container of its own: the
+    // modal barrier under its routes hides only what it paints, never the
+    // page round it (material_ui's MaterialApp has no container).
+    container: true,
+    child: MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: civicPageTransitions,
+        ),
+      ),
+      locale:
+          (direction ?? Directionality.maybeOf(context)) == TextDirection.rtl
+          ? const Locale('ar')
+          : const Locale('en'),
+      localizationsDelegates: galleryDelegates,
+      supportedLocales: DesignLocalizations.supportedLocales,
+      color: kitTheme(brightness).action,
+      builder: (context, child) => CivicTheme(
+        data: kitTheme(brightness),
+        child: CivicToaster(child: child ?? const SizedBox.shrink()),
+      ),
+      home: home,
     ),
   ),
-  locale: direction == TextDirection.rtl
-      ? const Locale('ar')
-      : const Locale('en'),
-  localizationsDelegates: galleryDelegates,
-  supportedLocales: DesignLocalizations.supportedLocales,
-  color: kitTheme(brightness).action,
-  builder: (context, child) => CivicTheme(
-    data: kitTheme(brightness),
-    child: CivicToaster(child: child ?? const SizedBox.shrink()),
-  ),
-  home: home,
 );
+
+/// Where a catalog specimen sits on its stage, and so the part of the phone
+/// the lab keeps of it (the specimen's `frame` in metadata.yaml names the
+/// same band): the bottom or top edge, a band across the middle, or the
+/// whole phone.
+class KitFrame {
+  /// Along the bottom edge, [height] tall.
+  const KitFrame.bottom(double this.height) : _place = _KitPlace.bottom;
+
+  /// Along the top edge, [height] tall.
+  const KitFrame.top(double this.height) : _place = _KitPlace.top;
+
+  /// A band [height] tall across the middle.
+  const KitFrame.band(double this.height) : _place = _KitPlace.band;
+
+  /// The whole phone.
+  const KitFrame.screen() : height = null, _place = _KitPlace.screen;
+
+  /// The band's height in logical pixels; null for the whole phone.
+  final double? height;
+  final _KitPlace _place;
+}
+
+enum _KitPlace { bottom, top, band, screen }
+
+/// The stage a catalog specimen renders on (the specimens registry the
+/// catalog generates calls it): Civic's theme in the preset [style] and
+/// [brightness], on the page's ground, [child] placed by [frame]. A
+/// specimen builder never names a style.
+Widget kitSpecimenStage({
+  required String style,
+  required Brightness brightness,
+  required KitFrame frame,
+  required Widget child,
+}) => Semantics(
+  container: true,
+  child: MaterialApp(
+    debugShowCheckedModeBanner: false,
+    localizationsDelegates: galleryDelegates,
+    supportedLocales: DesignLocalizations.supportedLocales,
+    builder: (context, home) => CivicTheme(
+      data: CivicThemeData.preset(style, brightness),
+      child: home ?? const SizedBox.shrink(),
+    ),
+    home: _KitStage(frame: frame, child: child),
+  ),
+);
+
+class _KitStage extends StatelessWidget {
+  const _KitStage({required this.frame, required this.child});
+
+  final KitFrame frame;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+    color: context.civicTheme.ground,
+    child: switch (frame._place) {
+      _KitPlace.bottom => Stack(
+        fit: StackFit.expand,
+        children: [Positioned(left: 0, right: 0, bottom: 0, child: child)],
+      ),
+      _KitPlace.top => Stack(
+        fit: StackFit.expand,
+        children: [Positioned(left: 0, right: 0, top: 0, child: child)],
+      ),
+      _KitPlace.band => Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: CivicSpacing.s16),
+          child: child,
+        ),
+      ),
+      _KitPlace.screen => child,
+    },
+  );
+}
 
 /// A demo screen: the service's top bar over a reading column titled
 /// [title], [intro] under the title, then [sections], one per variant or
