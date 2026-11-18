@@ -159,7 +159,7 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
     this.requireSelection = false,
     this.controller,
     this.focusNode,
-    this.optionsViewOpenDirection = OptionsViewOpenDirection.down,
+    this.optionsViewOpenDirection = OptionsViewOpenDirection.mostSpace,
     this.optionsMaxHeight = 300,
     this.semanticLabel,
     this.emptyBuilder,
@@ -222,7 +222,8 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
   /// null: the combobox makes its own and disposes it.
   final FocusNode? focusNode;
 
-  /// Whether the list opens below the field (the default) or above it.
+  /// Where the list opens. By default it uses the side of the field with
+  /// more available space, accounting for the on-screen keyboard.
   final OptionsViewOpenDirection optionsViewOpenDirection;
 
   /// The list's greatest height; past it, it scrolls.
@@ -331,7 +332,7 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
         EnumProperty<OptionsViewOpenDirection>(
           'optionsViewOpenDirection',
           optionsViewOpenDirection,
-          defaultValue: OptionsViewOpenDirection.down,
+          defaultValue: OptionsViewOpenDirection.mostSpace,
         ),
       )
       ..add(
@@ -532,6 +533,7 @@ class _DesignComboboxState<T extends Object> extends State<DesignCombobox<T>> {
             // ui_core's keys over the autocomplete's: they wrap, open a
             // closed list without moving, and pass over disabled options.
             child: _keys.field(
+              controller,
               widget.fieldBuilder(
                 context,
                 DesignComboboxField(

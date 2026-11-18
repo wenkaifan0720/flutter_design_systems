@@ -137,6 +137,28 @@ bool _pagePops(WidgetTester tester) =>
     RoutePopDisposition.pop;
 
 void main() {
+  testWidgets('options open above the field when there is more room there', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      harness(
+        Align(
+          alignment: Alignment.bottomLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 48),
+            child: SizedBox(width: 280, child: _combobox()),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(_fieldKey));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getBottomLeft(find.text('Banana')).dy,
+      lessThanOrEqualTo(tester.getTopLeft(find.byKey(_fieldKey)).dy),
+    );
+  });
+
   String? chosen;
   behaviourContract(
     'DesignCombobox',

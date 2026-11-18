@@ -1,8 +1,5 @@
-// ui_core_test's example (the exporter writes it as its example/lib/main.dart):
-// a review page. A plain settings card, its rows marked as one keyline
-// region, drawn under a DesignKeylineSheet, which outlines the region, draws
-// its leading and trailing keylines, and marks in red any edge off them. The
-// third row's switch is 6 px short of the trailing line on purpose.
+// A settings card under a DesignKeylineSheet. The switch in the third row
+// ends 6 px before the trailing keyline, which the sheet marks in red.
 import 'package:flutter/widgets.dart';
 import 'package:ui_core_test/ui_core_test.dart';
 import 'package:ui_core/ui_core.dart';

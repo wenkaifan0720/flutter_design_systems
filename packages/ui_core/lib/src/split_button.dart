@@ -67,6 +67,7 @@ class DesignSplitButton extends StatelessWidget {
     this.layoutBuilder,
     this.minimumSize = const Size(44, 44),
     this.controller,
+    this.placement = const DesignOverlayPlacement(),
     this.highlightFollowsPointer = true,
   });
 
@@ -119,6 +120,11 @@ class DesignSplitButton extends StatelessWidget {
   /// The menu's controller; null: its own.
   final MenuController? controller;
 
+  /// Where the menu opens relative to both halves of the button. Its leading
+  /// edge aligns with the button by default. The menu is at least as wide
+  /// as the button when the screen has room.
+  final DesignOverlayPlacement placement;
+
   /// Whether a pointer over a menu item moves the keys there; true by
   /// default, as `DesignMenuBar.highlightFollowsPointer`: one item lit, the
   /// current one (hovered when the pointer moved last, focused when the keys
@@ -134,7 +140,7 @@ class DesignSplitButton extends StatelessWidget {
       arrowKeyNavigation: true,
       semanticLabel:
           menuLabel ?? DesignLocalizations.of(context).splitButtonMenuLabel,
-      placement: const DesignOverlayPlacement(align: DesignOverlayAlign.end),
+      placement: placement,
       anchorBuilder: (context, anchor) {
         KeyEventResult open(FocusNode node, KeyEvent event) {
           if (event is KeyDownEvent &&
@@ -178,20 +184,25 @@ class DesignSplitButton extends StatelessWidget {
         return layoutBuilder?.call(context, main, toggle) ??
             Row(mainAxisSize: MainAxisSize.min, children: [main, toggle]);
       },
-      overlayBuilder: (context, info) => surfaceBuilder(context, info, [
-        for (final a in actions)
-          DesignMenuRow(
-            highlightFollowsPointer: highlightFollowsPointer,
-            onPressed: a.enabled
-                ? () {
-                    info.close();
-                    a.onPressed?.call();
-                  }
-                : null,
-            semanticLabel: a.label,
-            builder: (context, states) => itemBuilder(context, a, states),
-          ),
-      ]),
+      overlayBuilder: (context, info) => ConstrainedBox(
+        constraints: BoxConstraints(
+          minWidth: info.anchorRect.width.clamp(0.0, info.maxSize.width),
+        ),
+        child: surfaceBuilder(context, info, [
+          for (final a in actions)
+            DesignMenuRow(
+              highlightFollowsPointer: highlightFollowsPointer,
+              onPressed: a.enabled
+                  ? () {
+                      info.close();
+                      a.onPressed?.call();
+                    }
+                  : null,
+              semanticLabel: a.label,
+              builder: (context, states) => itemBuilder(context, a, states),
+            ),
+        ]),
+      ),
     );
   }
 
@@ -231,6 +242,13 @@ class DesignSplitButton extends StatelessWidget {
         >.has('surfaceBuilder', surfaceBuilder),
       )
       ..add(StringProperty('menuLabel', menuLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<DesignOverlayPlacement>(
+          'placement',
+          placement,
+          defaultValue: const DesignOverlayPlacement(),
+        ),
+      )
       ..add(
         ObjectFlagProperty<
           Widget Function(BuildContext context, Widget main, Widget toggle)

@@ -46,6 +46,7 @@ late _HostState _host;
 
 class _Host extends StatefulWidget {
   const _Host({
+    super.key,
     this.value,
     this.enabled = true,
     this.min,
@@ -139,6 +140,21 @@ Future<void> _enter(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('exposes the declared numeric bounds throughout the range', (
+    tester,
+  ) async {
+    for (final value in [0.0, 2.0, 8.0]) {
+      await tester.pumpWidget(
+        harness(_Host(value: value, min: 0, max: 8, key: ValueKey(value))),
+      );
+      final data = semanticsOf(
+        tester,
+        find.byType(DesignNumberField),
+      ).getSemanticsData();
+      expect(data.minValue, '0.0');
+      expect(data.maxValue, '8.0');
+    }
+  });
   setUp(() {
     _details = null;
     _buttons.clear();

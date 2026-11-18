@@ -33,7 +33,8 @@ class DesignRatingItemDetails {
   final bool isPreview;
 
   /// The rating's states: [WidgetState.focused], [WidgetState.hovered],
-  /// [WidgetState.pressed] (while dragged), [WidgetState.disabled].
+  /// [WidgetState.disabled], and [WidgetState.pressed] on the item under
+  /// the held pointer as it presses or drags.
   final Set<WidgetState> states;
 }
 
@@ -230,6 +231,7 @@ class _DesignRatingState extends State<DesignRating> {
   double? _preview;
   // The value a drag has set so far; null, no drag.
   double? _dragged;
+  int? _pressedItem;
   bool _hovered = false;
 
   FocusNode get _node =>
@@ -254,6 +256,7 @@ class _DesignRatingState extends State<DesignRating> {
     if (!_interactive) {
       _preview = null;
       _dragged = null;
+      _pressedItem = null;
     }
   }
 
@@ -316,8 +319,15 @@ class _DesignRatingState extends State<DesignRating> {
     _dragTo(global);
   }
 
+  void _press(double? value) {
+    final index = value?.ceil();
+    final pressed = index == null ? null : index - 1;
+    if (pressed != _pressedItem) setState(() => _pressedItem = pressed);
+  }
+
   void _dragTo(Offset global) {
     final at = _valueAt(global);
+    _press(at);
     if (at == null || at == _dragged) return;
     _dragged = at;
     DesignHaptics.of(context).selectionChanged?.call();
@@ -326,6 +336,7 @@ class _DesignRatingState extends State<DesignRating> {
   }
 
   void _dragEnd() {
+    if (_pressedItem != null) setState(() => _pressedItem = null);
     // A tap cancels the drag it never became: nothing to end.
     final at = _dragged;
     if (at == null) return;
@@ -379,7 +390,6 @@ class _DesignRatingState extends State<DesignRating> {
     final states = <WidgetState>{
       if (_interactive && _node.hasFocus) WidgetState.focused,
       if (_interactive && _hovered) WidgetState.hovered,
-      if (_dragged != null) WidgetState.pressed,
       if (disabled) WidgetState.disabled,
     };
     final items = [
@@ -392,7 +402,9 @@ class _DesignRatingState extends State<DesignRating> {
               index: i,
               fill: (shown - i).clamp(0, 1).toDouble(),
               isPreview: preview != null,
-              states: states,
+              states: i == _pressedItem
+                  ? {...states, WidgetState.pressed}
+                  : states,
             ),
           ),
         ),
@@ -435,6 +447,9 @@ class _DesignRatingState extends State<DesignRating> {
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             excludeFromSemantics: true,
+            onHorizontalDragDown: _interactive
+                ? (details) => _press(_valueAt(details.globalPosition))
+                : null,
             onTapUp: _interactive
                 ? (details) {
                     final at = _valueAt(details.globalPosition);

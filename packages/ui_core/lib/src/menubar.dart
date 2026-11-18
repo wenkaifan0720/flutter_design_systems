@@ -201,9 +201,12 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
   final List<MenuController> _menus = [];
   final List<FocusNode> _nodes = [];
   int _current = 0;
+  int? _openIndex;
+  Timer? _leave;
 
   @override
   void dispose() {
+    _leave?.cancel();
     for (final n in _nodes) {
       n.dispose();
     }
@@ -221,19 +224,37 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
       _nodes.removeLast().dispose();
     }
     if (_current >= n) _current = n == 0 ? 0 : n - 1;
+    if ((_openIndex ?? -1) >= n) _openIndex = null;
     for (var i = 0; i < n; i++) {
       _nodes[i].skipTraversal = i != _current;
     }
   }
 
-  int? get _openIndex {
-    for (var i = 0; i < _menus.length; i++) {
-      if (_menus[i].isOpen) return i;
-    }
-    return null;
-  }
-
   int _wrap(int i) => i % widget.menus.length;
+
+  // The bar and its cascading menus live in separate overlay entries. A
+  // pointer can cross the small gap between them without dismissing either.
+  Widget _pointerRegion(Widget child) => Builder(
+    builder: (context) => MouseRegion(
+      onEnter: (_) => _leave?.cancel(),
+      onExit: (event) {
+        final index = _openIndex;
+        if (index == null) return;
+        final box = context.findRenderObject()! as RenderBox;
+        final near = (Offset.zero & box.size)
+            .inflate(const DesignOverlayPlacement().gap)
+            .contains(box.globalToLocal(event.position));
+        _leave?.cancel();
+        _leave = Timer(
+          near ? const Duration(milliseconds: 150) : Duration.zero,
+          () {
+            if (mounted && _openIndex == index) _menus[index].close();
+          },
+        );
+      },
+      child: child,
+    ),
+  );
 
   // Moves to top item [i]; [open] opens its menu once focus is on it, so
   // the menu gives focus back there when it closes.
@@ -242,10 +263,10 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
     if (was != null && was != i) _menus[was].close();
     setState(() => _current = i);
     _nodes[i].requestFocus();
-    if (open && !_menus[i].isOpen) {
+    if (open && _openIndex != i) {
       // The focus change applies in a microtask queued before this one.
       scheduleMicrotask(() {
-        if (mounted) _menus[i].open();
+        if (mounted && _current == i && i < _menus.length) _menus[i].open();
       });
     }
   }
@@ -291,9 +312,10 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
       child: RawMenuAnchorGroup(
         controller: _group,
         child: FocusTraversalGroup(
-          child:
-              widget.barBuilder?.call(context, items) ??
-              Row(mainAxisSize: MainAxisSize.min, children: items),
+          child: _pointerRegion(
+            widget.barBuilder?.call(context, items) ??
+                Row(mainAxisSize: MainAxisSize.min, children: items),
+          ),
         ),
       ),
     );
@@ -311,11 +333,19 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
         trigger: DesignOverlayTrigger.manual,
         arrowKeyNavigation: true,
         semanticLabel: entry.label,
-        onOpenChanged: (_) => setState(() {}),
+        onOpenChanged: (open) {
+          if (open) {
+            _openIndex = i;
+          } else if (_openIndex == i) {
+            _openIndex = null;
+          }
+        },
         anchorBuilder: (context, anchor) => MouseRegion(
           onEnter: (_) {
             final open = _openIndex;
-            if (open != null && open != i) _goTo(i, open: true);
+            if (entry.enabled && open != null && open != i) {
+              _goTo(i, open: true);
+            }
           },
           child: DesignPressable(
             focusNode: _nodes[i],
@@ -339,7 +369,8 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
           root: _menus[i],
           painters: DesignMenuPainters(
             itemBuilder: widget.itemBuilder,
-            surfaceBuilder: widget.surfaceBuilder,
+            surfaceBuilder: (context, info, items) =>
+                _pointerRegion(widget.surfaceBuilder(context, info, items)),
             dividerBuilder: widget.dividerBuilder,
             highlightFollowsPointer: widget.highlightFollowsPointer,
           ),

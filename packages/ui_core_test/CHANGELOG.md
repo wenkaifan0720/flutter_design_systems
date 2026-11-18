@@ -1,3 +1,10 @@
+## 0.1.1
+
+- Selected-tab fills are measured against the visible tab face, including when a larger touch target surrounds it.
+- List width checks follow transparent repaint layers to the page behind the field and its options.
+- Row checks measure outlined and bevelled controls against their background and distinguish controls in separate windows.
+- Rows on the same surface reuse the captured image and background measurements.
+
 ## 0.1.0
 
 The checks a design system's tests run, moved out of ui_core 0.2.1's `package:ui_core/alignment.dart` into a package

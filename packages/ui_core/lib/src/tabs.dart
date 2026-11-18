@@ -769,48 +769,14 @@ class _RenderTabStrip extends RenderBox
     return (rects, Size(width, constraints.constrainHeight(at)));
   }
 
-  // Each tab's face, in the tab's own space ([_faceOf]), read in a layout
+  // Each tab's face, in the tab's own space, read in a layout
   // callback: the strip reads its tabs' insides, laid out just now.
   List<Rect> _faces(List<RenderBox> tabs) {
     var faces = const <Rect>[];
     invokeLayoutCallback<BoxConstraints>((_) {
-      faces = [for (final t in tabs) _faceOf(t)];
+      faces = [for (final t in tabs) RenderDesignTapTarget.faceRectOf(t)];
     });
     return faces;
-  }
-
-  // The face of [tab], in the tab's own space: what a touch target holds
-  // when the tab is one (down its single children, as a look wraps its face
-  // in [DesignTapTarget]), the target standing larger as its hit area; else
-  // the whole tab. Where a box between places what it holds counts; a
-  // transform (a press's scale) does not.
-  static Rect _faceOf(RenderBox tab) {
-    final whole = Offset.zero & tab.size;
-    RenderObject node = tab;
-    var offset = Offset.zero;
-    for (var depth = 0; depth < 64; depth++) {
-      if (node is RenderDesignTapTarget) {
-        final face = node.child;
-        if (face == null || !face.hasSize) return whole;
-        final data = face.parentData;
-        if (data is BoxParentData) offset += data.offset;
-        return offset & face.size;
-      }
-      RenderObject? only;
-      var count = 0;
-      node.visitChildren((child) {
-        only = child;
-        count++;
-      });
-      final next = only;
-      if (count != 1 || next == null) return whole;
-      if (!identical(node, tab)) {
-        final data = node.parentData;
-        if (data is BoxParentData) offset += data.offset;
-      }
-      node = next;
-    }
-    return whole;
   }
 
   @override

@@ -143,6 +143,21 @@ void main() {
     _frames.clear();
   });
 
+  testWidgets('a mouse drag turns a wheel under the default scroll behavior', (
+    tester,
+  ) async {
+    await tester.pumpWidget(harness(const _Host()));
+    final before = _wheelRow(tester, 0);
+    await tester.drag(
+      find.text('March'),
+      const Offset(0, -100),
+      kind: PointerDeviceKind.mouse,
+    );
+    await tester.pumpAndSettle();
+    expect(_wheelRow(tester, 0), greaterThan(before));
+    expect(_host.selection.first, _wheelRow(tester, 0));
+  });
+
   behaviourContract(
     'DesignWheelPicker',
     build: (c) => _Host(enabled: c.enabled),
