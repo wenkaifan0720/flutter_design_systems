@@ -1,24 +1,18 @@
+## 0.1.1
+
+- Date and date-range panels scroll on short screens. Calendar dates, weekday labels, and the month heading follow the system text size.
+- Line, area, and bar charts scale their axis labels. The plot makes room for larger text and skips labels that would overlap.
+- The pie chart places its legend below the ring when labels need more width. Long entries wrap so their amounts remain visible. In the gallery, the inline sparkline and its total stay together when the caption wraps.
+- The range slider's track meets both handles at the minimum and maximum. The colored interval follows the handle positions in both reading directions.
+- At large text sizes, list rows measure their trailing control. The filter switches stay aligned and a servings stepper leaves room for its label.
+- Simmer keeps the same weekly plan on Today, in the planner and in recipe details. Adding a dinner or clearing the week can be undone.
+- Simmer builds its shopping list from the week's dinners and household size. Checked items and handwritten extras carry over when the list is rebuilt.
+- Recipe tags grow with their text, the account address has room to wrap, and search keeps durations and quoted queries readable in right-to-left layouts.
+
 ## 0.1.0
 
-- First release. The theme (light and dark, three densities, a brand factory that keeps words readable on its gel),
-  the material (glazed faces raised, level and sunken under one light, the grained chrome bar, letterpressed words,
-  the engraved line, the focus ring) and the everyday parts: `GlossButton`, `GlossIconButton`, `GlossTextField`,
-  `GlossSelect`, `GlossCheckbox`, `GlossRadio`, `GlossSwitch`, `GlossSegmentedButton`, `GlossStepper`,
-  `GlossSlider`, `GlossChip`, `GlossWell`, `GlossListTile`, `GlossSectionHeader`, `GlossCard`, `GlossTopBar`,
-  `GlossTabBar`, `GlossNavigationBar`, `GlossNavigationRail`, `GlossSidebar`, `GlossScaffold`, `GlossDialog`,
-  `showGlossSheet` and `GlossToaster`, and `glossPageTransitions`, the look's own page change.
-- The app frame: `GlossHost` (the theme, the toaster and the porcelain above the navigator), `GlossScreen` (a page's
-  margins, column, bar, footer and keyboard), `GlossPage` and `GlossSheetPage`, `GlossAppShell` with `GlossTab`s and a
-  `GlossShellAction` (a gel bead in the chrome, never floating), `GlossLoadingState`, `GlossErrorState`, `GlossInput`
-  and `GlossPreview`; `GlossTopBar.autoLeading` gives a pushed page its back glyph and a sheet its close.
-- Counted words: `glossPlural` picks a phrase's form for a count in the reader's language (CLDR's rules for the 30
-  languages ui_core speaks), and `glossPluralCategory` names the category.
-- On ui_core 0.3.0, which runs the behaviour while Gloss paints: `GlossDialog` and `showGlossDialog` (focus on the
-  safe key, Escape, an `isAlert` dialog read as an alert, keys stacking when they do not fit), `showGlossSheet`,
-  `GlossSheetPage` and `showGlossActionSheet` (a sheet that follows the finger and settles or slides away),
-  `showGlossSideSheet`, `GlossTabBar` (one tab stop, the arrows, Home and End), `GlossScaffold` and `GlossAppShell`
-  from the rail up (the places one tab stop, F6 between them and the page; a phone's bar, which holds the act, stays
-  Gloss's, and `showNavigation` hides it), `GlossWheelPicker` and `GlossTimePicker` (each drum one tab stop, typing jumps to a row),
-  `GlossTooltip` (one at a time, Escape hides it), `GlossRating` (a drag sweeps, Home clears, a digit sets), the
-  charts' axes (ui_core's scale), and `GlossSwipeRow` (closes as its list scrolls). `GlossCombobox` and
-  `GlossTagInput` show a search on its way and a failed one with Try again, and take a `debounceDuration`.
+- Added glazed buttons, fields, selection controls, calendars, lists, and charts, with light and dark themes, three densities, and a custom brand palette.
+- Added `GlossHost`, `GlossScreen`, and `GlossScaffold` for app setup and layout. `GlossAppShell` adapts navigation to the window width.
+- Added dialogs, sheets, menus, toasts, tooltips, and `glossPageTransitions` for navigation.
+- Integrated keyboard navigation, screen reader labels, and reduced-motion behavior through `ui_core` 0.3.0.
+- Added localized plural selection through `glossPlural` and `glossPluralCategory`. Searchable fields support asynchronous results, retries, and debouncing.

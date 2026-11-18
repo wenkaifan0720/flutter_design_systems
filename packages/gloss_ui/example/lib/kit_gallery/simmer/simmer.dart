@@ -314,6 +314,27 @@ class SimmerFrameState extends State<SimmerFrame> {
   late SimmerScene? _scene = widget.initialScene;
   final _desk = GlobalKey<NavigatorState>();
 
+  /// Planned recipe IDs, one per day. A null entry is a night off.
+  final List<String?> week = [...simmerWeek];
+
+  /// Groceries shared by Today, the planner and the shopping list.
+  late List<SimmerItem> shoppingItems =
+      widget.initialScene == SimmerScene.emptyList ? [] : simmerShopping();
+
+  /// Changes one dinner in the week.
+  void planDinner(int day, String? recipe) =>
+      setState(() => week[day] = recipe);
+
+  /// Replaces all seven dinners, including nights off.
+  void replaceWeek(List<String?> dinners) =>
+      setState(() => week.setAll(0, dinners));
+
+  /// Opens the shopping list made from the current week.
+  void makeShoppingList(int servings) {
+    shoppingItems = simmerShoppingFor(week, servings, shoppingItems);
+    go(SimmerPlace.shopping);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -414,7 +435,12 @@ class SimmerFrameState extends State<SimmerFrame> {
           GlossListTile(
             leading: const SimmerAvatar(size: 32),
             title: simmerOwner.name,
-            subtitle: 'This week: 6 dinners',
+            subtitle: glossPlural(
+              context,
+              week.whereType<String>().length,
+              one: 'This week: 1 dinner',
+              other: 'This week: ${week.whereType<String>().length} dinners',
+            ),
             showChevron: false,
             semanticLabel: 'Account, ${simmerOwner.name}',
             onTap: () => go(SimmerPlace.settings),
@@ -654,6 +680,15 @@ String simmerMinutes(int minutes) => minutes < 60
     : minutes % 60 == 0
     ? '${minutes ~/ 60} h'
     : '${minutes ~/ 60} h ${minutes % 60} min';
+
+/// The duration and cuisine of a recipe in Simmer's English-language catalog.
+String simmerRecipeSummary(BuildContext context, SimmerRecipe recipe) {
+  final duration = simmerMinutes(recipe.minutes);
+  if (Directionality.of(context) == TextDirection.rtl) {
+    return '\u2066${duration.replaceAll(' ', '\u00a0')} · ${recipe.cuisine}\u2069';
+  }
+  return '$duration · ${recipe.cuisine}';
+}
 
 /// A row a checkbox leads: the whole row ticks it, as a finger expects, and a
 /// screen reader hears one checkbox named by the row.

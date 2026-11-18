@@ -41,7 +41,7 @@ class SimmerShopping extends StatefulWidget {
 }
 
 class _SimmerShoppingState extends State<SimmerShopping> {
-  final List<SimmerItem> _items = simmerShopping();
+  List<SimmerItem> get _items => SimmerFrame.of(context).shoppingItems;
   final TextEditingController _adding = TextEditingController();
   late SimmerListState _state = widget.initialState;
   Timer? _retry;
@@ -60,11 +60,11 @@ class _SimmerShoppingState extends State<SimmerShopping> {
     });
   }
 
-  Widget _stateView(BuildContext context) {
+  Widget _stateView(BuildContext context, SimmerListState state) {
     final frame = SimmerFrame.of(context);
     // The state's one gel key is the page's: at the foot in a thumb's reach
     // (in the title strip on a desk), the words in the middle of the page.
-    final key = switch (_state) {
+    final key = switch (state) {
       SimmerListState.failed => GlossButton.filled(
         'Try again',
         icon: const Icon(LucideIcons.refreshCw),
@@ -86,7 +86,7 @@ class _SimmerShoppingState extends State<SimmerShopping> {
       bottom: key == null ? null : SimmerKeys(primary: key),
       children: [
         const SizedBox(height: GlossSpacing.huge),
-        switch (_state) {
+        switch (state) {
           SimmerListState.failed => const GlossStateView(
             state: GlossState.error,
             icon: Icon(LucideIcons.cloudOff),
@@ -111,14 +111,21 @@ class _SimmerShoppingState extends State<SimmerShopping> {
   void _add() {
     final name = _adding.text.trim();
     if (name.isEmpty) return;
-    setState(() => _items.add(SimmerItem(name, '1', 'Other')));
+    setState(
+      () => _items.add(SimmerItem(name, '1', 'Other', addedByHand: true)),
+    );
     _adding.clear();
     showGlossToast(context, 'Added $name');
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_state != SimmerListState.ready) return _stateView(context);
+    final state = switch (_state) {
+      SimmerListState.ready || SimmerListState.empty =>
+        _items.isEmpty ? SimmerListState.empty : SimmerListState.ready,
+      _ => _state,
+    };
+    if (state != SimmerListState.ready) return _stateView(context, state);
     final theme = context.glossTheme;
     final t = theme.textTheme;
     final c = theme.colors;

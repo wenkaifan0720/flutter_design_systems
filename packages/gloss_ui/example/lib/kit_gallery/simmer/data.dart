@@ -390,7 +390,13 @@ const simmerWeek = <String?>[
 /// A thing to buy.
 class SimmerItem {
   /// [amount] of [name], from [aisle].
-  SimmerItem(this.name, this.amount, this.aisle, {this.bought = false});
+  SimmerItem(
+    this.name,
+    this.amount,
+    this.aisle, {
+    this.bought = false,
+    this.addedByHand = false,
+  });
 
   /// What it is.
   final String name;
@@ -403,6 +409,52 @@ class SimmerItem {
 
   /// Whether it is in the basket.
   bool bought;
+
+  /// Whether this was added in the shopping field and stays when the plan changes.
+  final bool addedByHand;
+}
+
+/// Combines the week's ingredients, including repeated dinners, for [servings] people.
+/// Checked ingredients and handwritten extras carry over from [previous].
+List<SimmerItem> simmerShoppingFor(
+  Iterable<String?> week,
+  int servings,
+  List<SimmerItem> previous,
+) {
+  final amounts = <({String name, String unit, String aisle}), double>{};
+  for (final id in week.whereType<String>()) {
+    for (final ingredient in simmerRecipe(id).ingredients) {
+      final key = (
+        name: ingredient.name,
+        unit: ingredient.unit,
+        aisle: ingredient.aisle,
+      );
+      amounts.update(
+        key,
+        (value) => value + ingredient.amount,
+        ifAbsent: () => ingredient.amount,
+      );
+    }
+  }
+  final bought = {
+    for (final item in previous)
+      if (!item.addedByHand && item.bought) (item.name, item.aisle),
+  };
+  return [
+    for (final entry in amounts.entries)
+      SimmerItem(
+        entry.key.name,
+        SimmerIngredient(
+          entry.key.name,
+          entry.value,
+          entry.key.unit,
+          entry.key.aisle,
+        ).amountFor(servings),
+        entry.key.aisle,
+        bought: bought.contains((entry.key.name, entry.key.aisle)),
+      ),
+    ...previous.where((item) => item.addedByHand),
+  ];
 }
 
 /// The shopping list this week's plan makes, in shop order.

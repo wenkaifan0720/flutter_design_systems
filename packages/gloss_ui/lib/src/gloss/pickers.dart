@@ -233,15 +233,8 @@ class _GlossCalendarState extends State<GlossCalendar> {
     }
   }
 
-  // The days are set in fixed cells, a finger wide: their figures grow
-  // with the reader's text up to 1.3x, past that they would run together.
   @override
-  Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
-    maxScaleFactor: 1.3,
-    child: Builder(builder: _build),
-  );
-
-  Widget _build(BuildContext context) {
+  Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
     final words = DesignLocalizations.of(context);
@@ -280,8 +273,6 @@ class _GlossCalendarState extends State<GlossCalendar> {
                   ),
                   child: Text(
                     header.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.label.copyWith(color: c.ink),
                   ),
                 ),
@@ -306,8 +297,8 @@ class _GlossCalendarState extends State<GlossCalendar> {
             ],
           ),
         ),
-        weekdayBuilder: (context, weekday, label) => SizedBox(
-          height: 28,
+        weekdayBuilder: (context, weekday, label) => ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 28),
           child: Center(
             child: Text(
               label,
@@ -398,30 +389,39 @@ class _GlossCalendarState extends State<GlossCalendar> {
                     child: ColoredBox(color: glaze),
                   ),
                 Center(
-                  child: SizedBox.square(
-                    dimension: dayHeight - 4,
-                    child: AnimatedGlossSurface(
-                      face: face.copyWith(
-                        foreground: ink,
-                        focus: glossFocusOf(
-                          c,
-                          focused: states.contains(WidgetState.focused),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints.loose(
+                      Size.square(dayHeight - 4),
+                    ),
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: AnimatedGlossSurface(
+                        face: face.copyWith(
+                          foreground: ink,
+                          focus: glossFocusOf(
+                            c,
+                            focused: states.contains(WidgetState.focused),
+                          ),
                         ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${day.date.day}',
-                          style: theme.textTheme.body.copyWith(
-                            color: ink,
-                            fontWeight: end || day.isToday
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                            fontVariations: glossWeightAxis(
-                              end || day.isToday
+                        child: Center(
+                          child: Text(
+                            '${day.date.day}',
+                            maxLines: 1,
+                            softWrap: false,
+                            style: theme.textTheme.body.copyWith(
+                              color: ink,
+                              fontWeight: end || day.isToday
                                   ? FontWeight.w600
                                   : FontWeight.w400,
+                              fontVariations: glossWeightAxis(
+                                end || day.isToday
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                              ),
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
                             ),
-                            fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                         ),
                       ),
@@ -576,14 +576,15 @@ Widget _fieldColumn({
 
 Widget _calendarPanel(BuildContext context, Widget calendar) => GlossSurface(
   face: glossPanelFace(GlossTheme.of(context).colors, radius: 20),
-  child: Padding(
+  child: SingleChildScrollView(
+    primary: false,
     padding: const EdgeInsets.all(GlossSpacing.medium),
     child: calendar,
   ),
 );
 
-/// A date field: a well showing the chosen day, which opens a calendar on
-/// a porcelain panel under it; a press on a day takes it and closes.
+/// A date field that opens a scrollable month calendar. Selecting a day
+/// closes the panel and calls [onChanged].
 ///
 /// ```dart
 /// GlossDatePicker(label: 'Cook on', value: DateTime(2026, 11, 18), firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (day) {})
@@ -687,8 +688,8 @@ class GlossDatePicker extends StatelessWidget {
   }
 }
 
-/// A date-range field: a well showing the span, which opens a range
-/// calendar; the second day pressed ends the span and closes it.
+/// A date-range field that opens a scrollable calendar. Select a start day
+/// and an end day to close the panel and receive the range in [onChanged].
 ///
 /// ```dart
 /// GlossDateRangePicker(label: 'Plan', value: null, firstDate: DateTime(2026), lastDate: DateTime(2027), onChanged: (range) {})

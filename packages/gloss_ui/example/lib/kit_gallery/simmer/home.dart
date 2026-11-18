@@ -25,76 +25,91 @@ class SimmerHome extends StatelessWidget {
     final t = theme.textTheme;
     final c = theme.colors;
     final frame = SimmerFrame.of(context);
-    final tonight = simmerRecipe(simmerWeek[simmerToday]!);
+    final id = frame.week[simmerToday];
+    final tonight = id == null ? null : simmerRecipe(id);
     final width = MediaQuery.sizeOf(context).width;
     final wide = width >= 1024;
-    final list = simmerShopping();
+    final list = frame.shoppingItems;
     final left = list.where((i) => !i.bought).length;
-    final lead = GlossCard(
-      padding: EdgeInsets.zero,
-      onTap: () => frame.push(SimmerRecipePage(recipe: tonight)),
-      semanticLabel: 'Tonight, ${tonight.name}',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          AspectRatio(
-            aspectRatio: wide ? 16 / 9 : 16 / 10,
-            child: SimmerDish(recipe: tonight, radius: 0),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(GlossSpacing.regular + 4),
+    final lead = tonight == null
+        ? GlossWell(
+            header: 'Tonight · ${simmerDays[simmerToday]}',
+            children: [
+              GlossListTile(
+                title: 'Night off',
+                subtitle: 'Plan a dinner for tonight',
+                onTap: () => frame.push(const SimmerPlanner()),
+              ),
+            ],
+          )
+        : GlossCard(
+            padding: EdgeInsets.zero,
+            onTap: () => frame.push(SimmerRecipePage(recipe: tonight)),
+            semanticLabel: 'Tonight, ${tonight.name}',
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  'Tonight · ${simmerDays[simmerToday]}',
-                  style: t.caption.copyWith(color: c.jadeInk),
+                AspectRatio(
+                  aspectRatio: wide ? 16 / 9 : 16 / 10,
+                  child: SimmerDish(recipe: tonight, radius: 0),
                 ),
-                const SizedBox(height: GlossSpacing.small),
-                Text(tonight.name, style: t.headline),
-                const SizedBox(height: GlossSpacing.tight),
-                Text(tonight.blurb, style: t.secondary),
-                const SizedBox(height: GlossSpacing.medium),
-                Wrap(
-                  spacing: GlossSpacing.regular,
-                  runSpacing: GlossSpacing.small,
-                  children: [
-                    _Fact(LucideIcons.clock, simmerMinutes(tonight.minutes)),
-                    _Fact(LucideIcons.users, 'Serves ${tonight.serves}'),
-                    _Fact(LucideIcons.flame, '${tonight.kcal} kcal'),
-                  ],
-                ),
-                const SizedBox(height: GlossSpacing.large),
-                // The key keeps its words whole: with large text, Swap
-                // goes under it.
-                Wrap(
-                  spacing: GlossSpacing.small,
-                  runSpacing: GlossSpacing.small,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    GlossButton.filled(
-                      'Start cooking',
-                      icon: const Icon(LucideIcons.cookingPot),
-                      onPressed: () => frame.push(
-                        SimmerRecipePage(recipe: tonight, cooking: true),
+                Padding(
+                  padding: const EdgeInsets.all(GlossSpacing.regular + 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tonight · ${simmerDays[simmerToday]}',
+                        style: t.caption.copyWith(color: c.jadeInk),
                       ),
-                    ),
-                    GlossButton.text(
-                      'Swap',
-                      onPressed: () => frame.go(SimmerPlace.recipes),
-                    ),
-                  ],
+                      const SizedBox(height: GlossSpacing.small),
+                      Text(tonight.name, style: t.headline),
+                      const SizedBox(height: GlossSpacing.tight),
+                      Text(tonight.blurb, style: t.secondary),
+                      const SizedBox(height: GlossSpacing.medium),
+                      Wrap(
+                        spacing: GlossSpacing.regular,
+                        runSpacing: GlossSpacing.small,
+                        children: [
+                          _Fact(
+                            LucideIcons.clock,
+                            simmerMinutes(tonight.minutes),
+                          ),
+                          _Fact(LucideIcons.users, 'Serves ${tonight.serves}'),
+                          _Fact(LucideIcons.flame, '${tonight.kcal} kcal'),
+                        ],
+                      ),
+                      const SizedBox(height: GlossSpacing.large),
+                      // The key keeps its words whole: with large text, Swap
+                      // goes under it.
+                      Wrap(
+                        spacing: GlossSpacing.small,
+                        runSpacing: GlossSpacing.small,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          GlossButton.filled(
+                            'Start cooking',
+                            icon: const Icon(LucideIcons.cookingPot),
+                            onPressed: () => frame.push(
+                              SimmerRecipePage(recipe: tonight, cooking: true),
+                            ),
+                          ),
+                          GlossButton.text(
+                            'Swap',
+                            onPressed: () => frame.go(SimmerPlace.recipes),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
+          );
     final week = GlossWell(
       header: 'This week',
       children: [
-        for (final (i, id) in simmerWeek.indexed)
+        for (final (i, id) in frame.week.indexed)
           GlossListTile(
             leading: _DayBead(day: simmerDays[i], today: i == simmerToday),
             title: id == null ? 'Night off' : simmerRecipe(id).name,

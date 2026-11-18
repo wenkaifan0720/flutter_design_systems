@@ -114,25 +114,18 @@ class GlossRangeSlider extends StatelessWidget {
       endLabel: endLabel,
       semanticFormatterCallback: semanticFormatterCallback,
       thumbSize: const Size.square(_target),
-      trackBuilder: (context, track) => Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: _target / 2 - _groove / 2,
-          ),
-          child: SizedBox(
-            height: _groove,
-            child: CustomPaint(
-              size: Size.infinite,
-              painter: _RangeGroove(
-                c: c,
-                start: track.start,
-                end: track.end,
-                enabled: enabled,
-                fill: fill,
-                rtl: rtl,
-                highContrast: high,
-              ),
-            ),
+      trackBuilder: (context, track) => SizedBox(
+        height: _groove,
+        child: CustomPaint(
+          size: Size.infinite,
+          painter: _RangeGroove(
+            c: c,
+            start: track.start,
+            end: track.end,
+            enabled: enabled,
+            fill: fill,
+            rtl: rtl,
+            highContrast: high,
           ),
         ),
       ),
@@ -186,17 +179,20 @@ class _RangeGroove extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    // The core track spans from the first thumb's center to the last one's.
+    final radius = size.height / 2;
     paintGlossFace(
       canvas,
-      Offset.zero & size,
+      Rect.fromLTRB(-radius, 0, size.width + radius, size.height),
       GlossFace.well(c).copyWith(
         lift: enabled ? -1 : -0.5,
         edge: highContrast ? c.ink : const Color(0x00000000),
       ),
       highContrast: highContrast,
     );
-    final a = 5 + start * (size.width - 10);
-    final b = 5 + end * (size.width - 10);
+    final a = start * size.width;
+    final b = end * size.width;
     final lit = rtl
         ? Rect.fromLTRB(size.width - b, 0, size.width - a, size.height)
         : Rect.fromLTRB(a, 0, b, size.height);

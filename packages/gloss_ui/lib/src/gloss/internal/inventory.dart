@@ -1,6 +1,4 @@
-/// Gloss's answer to the component inventory: a live specimen for every
-/// row. [GlossInventory.registry] is what the look's test verifies and what
-/// an inventory gallery lists.
+/// Interactive examples of the Gloss components in [DesignInventoryRow.all].
 library;
 
 import 'package:flutter/widgets.dart';
@@ -42,10 +40,9 @@ final _last = DateTime(2026, 12, 31);
 DesignInventoryEntry _row(String id, WidgetBuilder builder) =>
     DesignInventoryEntry.present(id, builder);
 
-/// Gloss's inventory: every row of [DesignInventoryRow.all] answered with
-/// a live specimen, or left out with a reason.
+/// The component examples in the Gloss inventory.
 abstract final class GlossInventory {
-  /// The registry.
+  /// Component rows with their example builders and availability.
   static final DesignInventory registry = _registry();
 }
 

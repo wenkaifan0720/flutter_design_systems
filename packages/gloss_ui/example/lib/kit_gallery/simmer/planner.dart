@@ -24,7 +24,7 @@ class SimmerPlanner extends StatefulWidget {
 }
 
 class _SimmerPlannerState extends State<SimmerPlanner> {
-  final List<String?> _week = [...simmerWeek];
+  List<String?> get _week => SimmerFrame.of(context).week;
 
   @override
   void initState() {
@@ -39,7 +39,8 @@ class _SimmerPlannerState extends State<SimmerPlanner> {
   int get _planned => _week.whereType<String>().length;
 
   void _put(int day, String? id) {
-    setState(() => _week[day] = id);
+    final frame = SimmerFrame.of(context);
+    setState(() => frame.planDinner(day, id));
     showGlossToast(
       context,
       id == null
@@ -78,13 +79,18 @@ class _SimmerPlannerState extends State<SimmerPlanner> {
       ),
     );
     if (cleared != true || !mounted) return;
+    final frame = SimmerFrame.of(context);
     final before = [..._week];
-    setState(() => _week.fillRange(0, _week.length, null));
+    setState(() => frame.replaceWeek(List.filled(before.length, null)));
     showGlossToast(
       context,
       'The week is clear',
       actionLabel: 'Undo',
-      onAction: () => setState(() => _week.setAll(0, before)),
+      onAction: () {
+        if (!frame.mounted) return;
+        frame.replaceWeek(before);
+        if (mounted) setState(() {});
+      },
     );
   }
 
@@ -160,14 +166,17 @@ class _SimmerPlannerState extends State<SimmerPlanner> {
       onPressed: _planned == 0
           ? null
           : () {
-              frame.go(SimmerPlace.shopping);
+              final count = _planned;
+              final servings = SimmerPrefs.of(context).household;
+              Navigator.of(context).popUntil((route) => route.isFirst);
+              frame.makeShoppingList(servings);
               showGlossToast(
                 context,
                 glossPlural(
                   context,
-                  _planned,
+                  count,
                   one: 'The list has 1 dinner in it',
-                  other: 'The list has $_planned dinners in it',
+                  other: 'The list has $count dinners in it',
                 ),
               );
             },

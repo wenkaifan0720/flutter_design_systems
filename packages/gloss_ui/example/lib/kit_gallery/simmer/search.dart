@@ -91,7 +91,7 @@ class _SimmerSearchState extends State<SimmerSearch> {
         GlossStateView(
           state: GlossState.empty,
           icon: const Icon(LucideIcons.searchX),
-          title: 'Nothing for “${_field.text.trim()}”',
+          title: '\u2066Nothing for “\u2068${_field.text.trim()}\u2069”\u2069',
           message: 'No recipe has that in its name or its ingredients. Try something in your cupboard.',
           actions: [
             Wrap(
@@ -142,7 +142,7 @@ class _SimmerSearchState extends State<SimmerSearch> {
                   ),
                 ),
                 title: r.name,
-                subtitle: '${simmerMinutes(r.minutes)} · ${r.cuisine}',
+                subtitle: simmerRecipeSummary(context, r),
                 onTap: () => frame.push(SimmerRecipePage(recipe: r)),
               ),
           ],

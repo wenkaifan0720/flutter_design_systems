@@ -213,22 +213,14 @@ Future<T?> showGlossDialog<T>({
   );
 }
 
-/// Gloss's close: the way its dialogs and sheets left before ui_core ran
-/// them (an ease-in cubic run backwards over the route's own time: quick
-/// away, then slowing to gone), as ui_core's close spring. From rest, damped
-/// 1.02, the spring keeps within 0.06 of that fall and is gone when it was
-/// (M3's routes recorded frame by frame; a stiller spring keeps closer
-/// mid-way but leaves a side sheet's edge creeping out after).
+/// Damping of the closing spring shared by dialogs and sheets.
 const double _fallDamping = 1.02;
 
 /// The stiffness of a fall over [ms] milliseconds, as the dialog's 320 falls
 /// at 640 (a spring's time goes as one over the root of its stiffness).
 double _fallStiffness(int ms) => 640 * (320 / ms) * (320 / ms);
 
-/// Gloss's rise: its dialogs and sheets came on the panel spring played over
-/// the route's own time ([_PanelCurve]: dialog 320 ms, sheet 380, sheet page
-/// 300, action sheet 340) before ui_core ran them. The same spring stiffened
-/// to that time rises the same way at real time.
+/// Adapts the panel's opening spring to the route duration.
 double _riseStiffness(int ms) {
   final scale = _PanelCurve._span * 1000 / ms;
   return GlossMotion.panelStiffness * scale * scale;
@@ -247,9 +239,7 @@ final SpringSimulation _fall = SpringSimulation(
   0,
 );
 
-/// Where presence [p] (0 gone, 1 open) stands on the fall's clock: 1 as the
-/// panel starts to leave, 0 when its time is up (where M3's fall ended), for
-/// what Gloss fades on that clock.
+/// Converts a closing spring's position to the opacity animation's clock.
 double _fallClock(double p) {
   const time = 0.32;
   if (p >= 1) return 1;

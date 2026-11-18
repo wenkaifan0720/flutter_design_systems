@@ -1,7 +1,4 @@
-/// Gloss's charts, drawn in its material: a shallow tray with lines
-/// engraved across it, bars standing up as gel tubes, lines of gel with a
-/// soft glow under them, the donut a ring of gel in a groove, and the
-/// sparkline a thread of jade ending in a bead.
+/// Line, area, bar, pie, and sparkline charts in the Gloss theme.
 library;
 
 import 'dart:math' as math;
@@ -111,14 +108,7 @@ class _Legend extends StatelessWidget {
                   child: GlossSurface(face: _gelOf(color)),
                 ),
                 const SizedBox(width: GlossSpacing.small),
-                Flexible(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.caption,
-                  ),
-                ),
+                Flexible(child: Text(label, style: theme.textTheme.caption)),
               ],
             ),
         ],
@@ -198,6 +188,7 @@ abstract class _AxesPainter extends CustomPainter {
     required this.labels,
     required this.series,
     required this.direction,
+    required this.textScaler,
     required this.t,
     required this.words,
   });
@@ -207,12 +198,11 @@ abstract class _AxesPainter extends CustomPainter {
   final List<String> labels;
   final List<GlossSeries> series;
   final TextDirection direction;
+  final TextScaler textScaler;
   final double t;
 
   /// The reader's words, for ui_core's ticks.
   final DesignLocalizations words;
-
-  static const double _foot = 20;
 
   /// ui_core's scale up the start, from 0 to a whole tick over the most:
   /// each step a round figure (1, 2 or 5 times a power of ten), never 1.3
@@ -238,6 +228,7 @@ abstract class _AxesPainter extends CustomPainter {
       TextPainter(
         text: TextSpan(text: s, style: text),
         textDirection: direction,
+        textScaler: textScaler,
         textAlign: align,
         maxLines: 1,
       )..layout();
@@ -247,14 +238,29 @@ abstract class _AxesPainter extends CustomPainter {
     final ticks = _scale.ticks(words);
     // Gloss's figures: compact past a thousand (1.2k).
     final figures = [for (final tick in ticks) _words(_figure(tick.value))];
-    final gutter = figures.map((f) => f.width).fold(0.0, math.max) + 8;
+    final gutter = math.min(
+      size.width,
+      figures.map((f) => f.width).fold(0.0, math.max) + GlossSpacing.small,
+    );
+    final lineHeight = figures.map((f) => f.height).fold(0.0, math.max);
+    // The tray already has room for a 16 px caption and its two half-lines
+    // at the ends of the value axis.
+    final foot = 20 + math.max(0.0, lineHeight - 16);
+    final upper = math.min(
+      size.height,
+      math.max(
+        0.0,
+        lineHeight / 2 - (GlossSpacing.regular - GlossMetrics.rimRoom),
+      ),
+    );
     final rtl = direction == TextDirection.rtl;
     final plot = Rect.fromLTRB(
       rtl ? 0 : gutter,
-      0,
+      upper,
       rtl ? size.width - gutter : size.width,
-      size.height - _foot,
+      math.max(upper, size.height - foot),
     );
+    var previousY = double.infinity;
     for (final (i, tick) in ticks.indexed) {
       final y = plot.bottom - plot.height * tick.position;
       // An engraved line: a dark cut, light on its lower lip.
@@ -274,24 +280,38 @@ abstract class _AxesPainter extends CustomPainter {
             ..strokeWidth = 1,
         );
       final f = figures[i];
-      f.paint(
-        canvas,
-        Offset(
-          rtl ? plot.right + 8 : plot.left - 8 - f.width,
-          y - f.height / 2,
-        ),
-      );
+      if (i == 0 ||
+          i == ticks.length - 1 ||
+          (previousY - y >= lineHeight + 2 && y - plot.top >= lineHeight + 2)) {
+        f.paint(
+          canvas,
+          Offset(
+            rtl ? plot.right + 8 : plot.left - 8 - f.width,
+            y - f.height / 2,
+          ),
+        );
+        previousY = y;
+      }
     }
     for (final f in figures) {
       f.dispose();
     }
     final n = labels.length;
-    if (n > 0) {
+    if (n > 0 && plot.width > 0) {
       final every = math.max(1, (n * 44 / plot.width).ceil());
+      Rect? previous;
       for (var i = 0; i < n; i += every) {
         final x = xAt(plot, i, n);
         final w = _words(labels[i]);
-        w.paint(canvas, Offset(x - w.width / 2, plot.bottom + 5));
+        final left = (x - w.width / 2).clamp(
+          plot.left,
+          math.max(plot.left, plot.right - w.width),
+        );
+        final bounds = Offset(left.toDouble(), plot.bottom + 5) & w.size;
+        if (previous == null || !previous.overlaps(bounds)) {
+          w.paint(canvas, bounds.topLeft);
+          previous = bounds.inflate(GlossSpacing.tight);
+        }
         w.dispose();
       }
     }
@@ -305,6 +325,10 @@ abstract class _AxesPainter extends CustomPainter {
   bool shouldRepaint(_AxesPainter old) =>
       old.t != t ||
       old.c != c ||
+      old.text != text ||
+      old.direction != direction ||
+      old.textScaler != textScaler ||
+      old.words != words ||
       !listEquals(old.labels, labels) ||
       !listEquals(
         [for (final s in old.series) ...s.values],
@@ -319,6 +343,7 @@ class _LinePainter extends _AxesPainter {
     required super.labels,
     required super.series,
     required super.direction,
+    required super.textScaler,
     required super.t,
     required super.words,
     required this.area,
@@ -333,15 +358,17 @@ class _LinePainter extends _AxesPainter {
   @override
   double xAt(Rect plot, int i, int n) {
     final f = n <= 1 ? 0.5 : i / (n - 1);
-    final run = plot.width - 2 * _edge;
+    final edge = math.min(_edge, plot.width / 2);
+    final run = plot.width - 2 * edge;
     return direction == TextDirection.rtl
-        ? plot.right - _edge - run * f
-        : plot.left + _edge + run * f;
+        ? plot.right - edge - run * f
+        : plot.left + edge + run * f;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
     final plot = paintAxes(canvas, size);
+    if (plot.isEmpty) return;
     final top = this.top;
     for (final (si, s) in series.indexed) {
       if (s.values.isEmpty) continue;
@@ -422,6 +449,7 @@ class _BarPainter extends _AxesPainter {
     required super.labels,
     required super.series,
     required super.direction,
+    required super.textScaler,
     required super.t,
     required super.words,
   });
@@ -436,6 +464,7 @@ class _BarPainter extends _AxesPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final plot = paintAxes(canvas, size);
+    if (plot.isEmpty) return;
     final top = this.top;
     final n = labels.isEmpty
         ? series.fold(0, (a, s) => math.max(a, s.values.length))
@@ -490,8 +519,8 @@ class _Grow extends StatelessWidget {
   }
 }
 
-/// A line chart: each series a line of gel over the engraved tray, its
-/// figures at their labels.
+/// A line chart with an engraved grid and a legend for multiple series.
+/// Axis labels use the ambient text scale and reading direction.
 ///
 /// ```dart
 /// GlossLineChart(labels: const ['Mon', 'Tue', 'Wed'], series: const [GlossSeries('Minutes', [35, 20, 45])], semanticLabel: 'Cooking time this week')
@@ -544,6 +573,7 @@ class GlossLineChart extends StatelessWidget {
           labels: labels,
           series: series,
           direction: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
           words: DesignLocalizations.of(context),
           t: t,
           area: area,
@@ -561,8 +591,7 @@ class GlossLineChart extends StatelessWidget {
   }
 }
 
-/// An area chart: a line chart whose lines are glazed down to the tray's
-/// floor.
+/// A line chart with a translucent fill between each series and the baseline.
 ///
 /// ```dart
 /// GlossAreaChart(labels: const ['Mon', 'Tue', 'Wed'], series: const [GlossSeries('Meals', [2, 3, 2])], semanticLabel: 'Meals cooked')
@@ -582,8 +611,8 @@ class GlossAreaChart extends GlossLineChart {
   Widget build(BuildContext context) => _axes(context, area: true);
 }
 
-/// A bar chart: each figure a gel tube standing up from the tray's floor,
-/// a group of tubes at each label when there are several series.
+/// A bar chart that groups the series at each label. Axis labels use the
+/// ambient text scale and reading direction.
 ///
 /// ```dart
 /// GlossBarChart(labels: const ['Mon', 'Tue', 'Wed'], series: const [GlossSeries('Recipes', [3, 1, 4])], semanticLabel: 'Recipes cooked each day')
@@ -634,6 +663,7 @@ class GlossBarChart extends StatelessWidget {
           labels: labels,
           series: series,
           direction: Directionality.of(context),
+          textScaler: MediaQuery.textScalerOf(context),
           words: DesignLocalizations.of(context),
           t: t,
         ),
@@ -650,8 +680,9 @@ class GlossBarChart extends StatelessWidget {
   }
 }
 
-/// A donut: the slices as arcs of gel laid in a ring groove, the total in
-/// its middle, a legend beside it (under it when narrow).
+/// A donut chart showing each slice and its value in a legend. The total
+/// appears in the center. The legend moves below the ring when its labels
+/// need the full width.
 ///
 /// ```dart
 /// GlossPieChart(slices: const [GlossSlice('Dinners', 7), GlossSlice('Lunches', 4)], semanticLabel: 'Meals this week')
@@ -712,17 +743,35 @@ class GlossPieChart extends StatelessWidget {
         ),
       ),
     );
-    final legend = _Legend([
+    final entries = [
       for (final (i, s) in slices.indexed)
         ('${s.label} ${_figure(s.value)}', colors[i]),
-    ]);
+    ];
+    final legend = _Legend(entries);
+    final direction = Directionality.of(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    final widest = entries.fold(
+      0.0,
+      (width, entry) => math.max(
+        width,
+        TextPainter.computeWidth(
+          text: TextSpan(text: entry.$1, style: theme.textTheme.caption),
+          textDirection: direction,
+          textScaler: scaler,
+        ),
+      ),
+    );
+    final legendRoom = math.max(
+      180.0,
+      GlossSpacing.large + 12 + GlossSpacing.small + widest,
+    );
     return Semantics(
       label: semanticLabel,
       value: [for (final s in slices) '${s.label} ${_figure(s.value)}']
           .join(', '),
       excludeSemantics: true,
       child: LayoutBuilder(
-        builder: (context, box) => box.maxWidth >= size + 180
+        builder: (context, box) => box.maxWidth >= size + legendRoom
             ? Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [

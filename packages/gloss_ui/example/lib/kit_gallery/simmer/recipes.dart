@@ -207,7 +207,7 @@ class _SimmerRecipesState extends State<SimmerRecipes> {
                         ),
                       ),
                       title: r.name,
-                      subtitle: '${simmerMinutes(r.minutes)} · ${r.cuisine}',
+                      subtitle: simmerRecipeSummary(context, r),
                       selected: r.id == _selected,
                       showChevron: false,
                       onTap: () => setState(() => _selected = r.id),
@@ -326,7 +326,7 @@ class SimmerRecipeTile extends StatelessWidget {
                 ),
                 const SizedBox(height: GlossSpacing.tight),
                 Text(
-                  '${simmerMinutes(recipe.minutes)} · ${recipe.cuisine}',
+                  simmerRecipeSummary(context, recipe),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: t.secondary.copyWith(fontSize: 13),
@@ -516,12 +516,20 @@ class _SimmerRecipePageState extends State<SimmerRecipePage> {
         primary: GlossButton.filled(
           'Add to this week',
           icon: const Icon(LucideIcons.calendarPlus),
-          onPressed: () => showGlossToast(
-            context,
-            'Added to Saturday',
-            actionLabel: 'Undo',
-            onAction: () {},
-          ),
+          onPressed: () {
+            final frame = SimmerFrame.of(context);
+            final saturday = simmerDays.indexOf('Saturday');
+            final before = frame.week[saturday];
+            frame.planDinner(saturday, _r.id);
+            showGlossToast(
+              context,
+              'Added to Saturday',
+              actionLabel: 'Undo',
+              onAction: () {
+                if (frame.mounted) frame.planDinner(saturday, before);
+              },
+            );
+          },
         ),
       ),
       children: body,
@@ -537,14 +545,18 @@ class _Tag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.glossTheme;
-    return SizedBox(
-      height: 28,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 28),
       child: GlossSurface(
         face: GlossFace.well(theme.colors).copyWith(lift: -0.6),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: GlossSpacing.medium),
+          padding: const EdgeInsets.symmetric(
+            horizontal: GlossSpacing.medium,
+            vertical: GlossSpacing.tight,
+          ),
           child: Center(
             widthFactor: 1,
+            heightFactor: 1,
             child: Text(
               text,
               style: theme.textTheme.caption.copyWith(

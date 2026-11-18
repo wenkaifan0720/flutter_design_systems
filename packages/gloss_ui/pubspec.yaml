@@ -1,7 +1,7 @@
 name: gloss_ui
 description: >-
-  Skeuomorphic Flutter widgets of glazed, moulded parts under one light: jade gel for the main action, pearl for what you handle, wells pressed into porcelain.
-version: 0.1.0
+  Skeuomorphic widgets for Flutter with glazed controls, recessed panels, accessible forms, navigation, and charts in coordinated light and dark themes.
+version: 0.1.1
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/gloss/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/gloss_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
@@ -31,7 +31,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.3.0
+  ui_core: ^0.3.1
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"

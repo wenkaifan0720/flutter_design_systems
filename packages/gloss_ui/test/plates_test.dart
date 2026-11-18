@@ -5,7 +5,9 @@
 // moulds is wherever it sits, and stands in the well by one inset all round.
 // At a phone's width and a desk's.
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gloss_ui/gloss_ui.dart';
@@ -83,6 +85,59 @@ void _seated(_Seat well, _Seat plate, double inset, Set<String> sides) {
 
 void main() {
   for (final width in const [390.0, 1440.0]) {
+    testWidgets(
+      'at ${width.toInt()}: the painted range meets each bead at both endpoints',
+      (tester) async {
+        const boundaryKey = ValueKey('range');
+        for (final direction in TextDirection.values) {
+          await _show(
+            tester,
+            width,
+            RepaintBoundary(
+              key: boundaryKey,
+              child: Directionality(
+                textDirection: direction,
+                child: GlossRangeSlider(
+                  values: const GlossRangeValues(0, 1),
+                  onChanged: (_) {},
+                ),
+              ),
+            ),
+          );
+          final boundary = tester.renderObject<RenderRepaintBoundary>(
+            find.byKey(boundaryKey),
+          );
+          final samples = await tester.runAsync(() async {
+            const dpr = 2.0;
+            final image = await boundary.toImage(pixelRatio: dpr);
+            try {
+              final data = (await image.toByteData(
+                format: ui.ImageByteFormat.rawRgba,
+              ))!;
+              final y = image.height ~/ 2;
+              // The bead is centered in a 44 px target. Check the groove just beyond
+              // its 14 px radius at each end, away from its antialiased edge.
+              const inset = 22 + 14 + 3;
+              bool jade(double x) {
+                final offset = (y * image.width + x.floor()) * 4;
+                final red = data.getUint8(offset);
+                final green = data.getUint8(offset + 1);
+                final blue = data.getUint8(offset + 2);
+                return green > red + 24 && green > blue + 11;
+              }
+
+              return [jade(inset * dpr), jade(image.width - inset * dpr)];
+            } finally {
+              image.dispose();
+            }
+          });
+          expect(samples, [
+            true,
+            true,
+          ], reason: 'The jade interval reaches both handles in $direction');
+        }
+      },
+    );
     for (final end in const [false, true]) {
       final ends = end ? {'right', 'top', 'bottom'} : {'left', 'top', 'bottom'};
       testWidgets('at ${width.toInt()}: the segmented thumb at its '

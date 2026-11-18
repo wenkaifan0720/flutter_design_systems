@@ -93,17 +93,23 @@ class _SparkLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.glossTheme.textTheme;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      spacing: GlossSpacing.medium,
+      runSpacing: GlossSpacing.small,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text('Meals this week', style: t.body),
-        const SizedBox(width: GlossSpacing.medium),
-        const GlossSparkline(
-          semanticLabel: 'Meals this week, day by day',
-          values: [2, 3, 1, 3, 2, 4, 3],
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const GlossSparkline(
+              semanticLabel: 'Meals this week, day by day',
+              values: [2, 3, 1, 3, 2, 4, 3],
+            ),
+            const SizedBox(width: GlossSpacing.medium),
+            Text('18', style: t.label),
+          ],
         ),
-        const SizedBox(width: GlossSpacing.medium),
-        Text('18', style: t.label),
       ],
     );
   }

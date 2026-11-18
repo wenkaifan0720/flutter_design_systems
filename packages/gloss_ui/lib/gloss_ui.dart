@@ -1,6 +1,5 @@
-/// Gloss: an app made of glazed, moulded parts under one light from above.
-/// Jade gel for the one action, pearl for what you handle, groups in wells
-/// pressed into porcelain, letterpressed bars. See guidance.md.
+/// Gloss widgets and themes for Flutter. Use [GlossTheme] to apply the light
+/// or dark palette to controls, navigation, charts, and overlays.
 library;
 
 export 'package:ui_core/ui_core.dart';

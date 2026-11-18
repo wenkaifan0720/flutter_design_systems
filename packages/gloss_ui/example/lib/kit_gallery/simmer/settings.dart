@@ -27,22 +27,32 @@ class SimmerSettings extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.all(GlossSpacing.regular),
-          child: Row(
+          child: OverflowBar(
+            alignment: MainAxisAlignment.spaceBetween,
+            spacing: GlossSpacing.medium,
+            overflowSpacing: GlossSpacing.small,
             children: [
-              const SimmerAvatar(),
-              const SizedBox(width: GlossSpacing.medium),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(simmerOwner.name, style: t.label),
-                    // At large sizes an address breaks after its @, never mid-word.
-                    Text(
-                      simmerOwner.email.replaceFirst('@', '@\u200B'),
-                      style: t.secondary,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SimmerAvatar(),
+                  const SizedBox(width: GlossSpacing.medium),
+                  Flexible(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(simmerOwner.name, style: t.label),
+                        Text(
+                          simmerOwner.email.replaceFirst('@', '@\u200B'),
+                          textDirection: TextDirection.ltr,
+                          semanticsLabel: simmerOwner.email,
+                          style: t.secondary,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               GlossButton(
                 'Edit',

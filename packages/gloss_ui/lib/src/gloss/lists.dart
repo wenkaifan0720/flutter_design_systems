@@ -258,45 +258,7 @@ class GlossListTile extends StatelessWidget {
       final rowHeight = subtitle == null
           ? theme.rowHeight
           : theme.rowHeight + 16;
-      // With the words at 1.5 times their size or more, a control at the
-      // end (a stepper, a key) stands under them, at the row's end, when the
-      // title would not keep a line beside it: the words keep the row's
-      // width and never break inside a word. A short title keeps it inline.
-      final scaler = MediaQuery.textScalerOf(context);
-      bool underAt(double width) {
-        if (trailing == null || scaler.scale(1) < 1.5) return false;
-        final words = TextPainter(
-          text: TextSpan(text: title, style: theme.textTheme.body),
-          textScaler: scaler,
-          textDirection: Directionality.of(context),
-          maxLines: 1,
-        )..layout();
-        final room = width - (leading == null ? 0 : 36) - 140;
-        final fits = words.width <= room;
-        words.dispose();
-        return !fits;
-      }
-
-      Widget withUnder(bool under, Widget row) => !under
-          ? row
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                row,
-                const SizedBox(height: GlossSpacing.small),
-                // Under the words it belongs to, where the eye goes next.
-                Padding(
-                  padding: EdgeInsetsDirectional.only(
-                    start: leading == null ? 0 : 24 + GlossSpacing.medium,
-                  ),
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: trailing,
-                  ),
-                ),
-              ],
-            );
+      final largeText = MediaQuery.textScalerOf(context).scale(10) >= 15;
       return CustomPaint(
         painter: _RowPainter(
           colors: c,
@@ -315,93 +277,115 @@ class GlossListTile extends StatelessWidget {
             // row), the title the rest, so the value sits at the row's end.
             child: LayoutBuilder(
               builder: (context, box) {
-                final under = underAt(box.maxWidth);
-                return withUnder(
-                  under,
-                  Row(
-                    children: [
-                      if (leading != null) ...[
-                        IconTheme.merge(
-                          data: IconThemeData(size: 22, color: glyph),
-                          child: SizedBox.square(
-                            dimension: 24,
-                            child: Center(child: leading),
-                          ),
-                        ),
-                        const SizedBox(width: GlossSpacing.medium),
-                      ],
-                      Expanded(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            DesignCapCenter(
-                              capHeightFactor: glossCapHeightFactor,
-                              child: Text(
-                                title,
-                                style: theme.textTheme.body
-                                    .copyWith(
-                                      color: ink,
-                                      fontWeight: FontWeight.w500,
-                                      fontVariations: glossWeightAxis(
-                                        FontWeight.w500,
-                                      ),
-                                    )
-                                    .merge(layered.textStyle),
-                              ),
-                            ),
-                            if (subtitle != null)
-                              Text(
-                                subtitle!,
-                                style: theme.textTheme.secondary.copyWith(
-                                  color: muted,
-                                ),
-                              ),
-                          ],
+                final heading = Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (leading != null) ...[
+                      IconTheme.merge(
+                        data: IconThemeData(size: 22, color: glyph),
+                        child: SizedBox.square(
+                          dimension: 24,
+                          child: Center(child: leading),
                         ),
                       ),
-                      if (trailingText != null) ...[
-                        const SizedBox(width: GlossSpacing.medium),
-                        ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: box.maxWidth.isFinite
-                                ? box.maxWidth * 0.45
-                                : double.infinity,
-                          ),
-                          child: Text(
-                            trailingText!,
-                            textAlign: TextAlign.end,
-                            maxLines:
-                                MediaQuery.textScalerOf(context).scale(10) >= 15
-                                ? 2
-                                : 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.body.copyWith(color: muted),
-                          ),
-                        ),
-                      ],
-                      if (trailing != null && !under) ...[
-                        const SizedBox(width: GlossSpacing.medium),
-                        trailing!,
-                      ],
-                      if (chevron) ...[
-                        const SizedBox(width: GlossSpacing.small),
-                        Transform.flip(
-                          flipX:
-                              Directionality.of(context) == TextDirection.rtl,
-                          child: SizedBox(
-                            width: 8,
-                            height: 14,
-                            child: CustomPaint(
-                              painter: GlossChevronPainter(
-                                disabled ? c.inkDisabled : c.inkSecondary,
-                              ),
+                      const SizedBox(width: GlossSpacing.medium),
+                    ],
+                    Flexible(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          DesignCapCenter(
+                            capHeightFactor: glossCapHeightFactor,
+                            child: Text(
+                              title,
+                              style: theme.textTheme.body
+                                  .copyWith(
+                                    color: ink,
+                                    fontWeight: FontWeight.w500,
+                                    fontVariations: glossWeightAxis(
+                                      FontWeight.w500,
+                                    ),
+                                  )
+                                  .merge(layered.textStyle),
                             ),
                           ),
+                          if (subtitle != null)
+                            Text(
+                              subtitle!,
+                              style: theme.textTheme.secondary.copyWith(
+                                color: muted,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+                final end = [
+                  if (trailingText != null) ...[
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: box.maxWidth.isFinite
+                            ? box.maxWidth * 0.45
+                            : double.infinity,
+                      ),
+                      child: Text(
+                        trailingText!,
+                        textAlign: TextAlign.end,
+                        maxLines: largeText ? 2 : 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.body.copyWith(color: muted),
+                      ),
+                    ),
+                  ],
+                  if (trailing != null) ...[
+                    if (trailingText != null)
+                      const SizedBox(width: GlossSpacing.medium),
+                    trailing!,
+                  ],
+                  if (chevron) ...[
+                    if (trailingText != null || trailing != null)
+                      const SizedBox(width: GlossSpacing.small),
+                    Transform.flip(
+                      flipX: Directionality.of(context) == TextDirection.rtl,
+                      child: SizedBox(
+                        width: 8,
+                        height: 14,
+                        child: CustomPaint(
+                          painter: GlossChevronPainter(
+                            disabled ? c.inkDisabled : c.inkSecondary,
+                          ),
                         ),
-                      ],
+                      ),
+                    ),
+                  ],
+                ];
+                if (largeText && trailing != null) {
+                  // Measure the actual words and control before deciding
+                  // whether the control needs its own line.
+                  return OverflowBar(
+                    alignment: MainAxisAlignment.spaceBetween,
+                    spacing: GlossSpacing.medium,
+                    overflowSpacing: GlossSpacing.small,
+                    overflowAlignment: OverflowBarAlignment.end,
+                    children: [
+                      heading,
+                      Row(mainAxisSize: MainAxisSize.min, children: end),
                     ],
-                  ),
+                  );
+                }
+                return Row(
+                  children: [
+                    Expanded(child: heading),
+                    if (end.isNotEmpty)
+                      SizedBox(
+                        width: trailing != null || trailingText != null
+                            ? GlossSpacing.medium
+                            : GlossSpacing.small,
+                      ),
+                    ...end,
+                  ],
                 );
               },
             ),

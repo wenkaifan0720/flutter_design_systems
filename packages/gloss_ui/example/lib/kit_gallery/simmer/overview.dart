@@ -226,10 +226,7 @@ class _LivePieceState extends State<_LivePiece> {
               children: [
                 Text(recipe.name, style: t.title),
                 const SizedBox(height: GlossSpacing.tight),
-                Text(
-                  '${simmerMinutes(recipe.minutes)} · ${recipe.cuisine}',
-                  style: t.secondary,
-                ),
+                Text(simmerRecipeSummary(context, recipe), style: t.secondary),
                 const SizedBox(height: GlossSpacing.regular),
                 GlossSegmentedButton<String>(
                   expanded: true,
