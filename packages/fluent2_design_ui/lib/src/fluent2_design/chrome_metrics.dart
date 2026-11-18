@@ -228,8 +228,11 @@ abstract final class Fluent2ChromeMetrics {
   /// A menu item's least height under a pointer.
   static const double menuItem = 32;
 
-  /// A menu item's least height under a finger.
-  static const double menuItemTouch = 44;
+  /// A menu item's least height under a finger: the finger's whole target,
+  /// so a row's face fills it (ui_core keeps a face its own size inside a
+  /// larger target) and the row's fill stands as far from the menu's top
+  /// and foot as from its sides.
+  static const double menuItemTouch = 48;
 
   /// The room round a menu item's parts: Fluent's spacingHorizontalSNudge
   /// (6), one of its nudges between the 4-pt steps.

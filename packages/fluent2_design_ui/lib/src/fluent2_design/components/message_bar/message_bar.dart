@@ -265,9 +265,18 @@ class Fluent2MessageBar extends StatelessWidget {
               ),
             );
           } else {
+            // Under a pointer the acts stand in Fluent's 36 band (a small
+            // button 6 from its top and foot). Under a finger an act's face
+            // is its whole 48 target, taller than the band: the bar holds
+            // it as far from its top and foot as from its end.
+            final hold = Fluent2Layout.padded(context) && actions.isNotEmpty
+                ? Fluent2Spacing.m
+                : 0.0;
             content = Padding(
-              padding: const EdgeInsetsDirectional.only(
+              padding: EdgeInsetsDirectional.only(
                 start: Fluent2Spacing.m,
+                top: hold,
+                bottom: hold,
               ),
               child: Row(
                 children: [

@@ -1,7 +1,7 @@
 name: fluent2_design_ui
 description: >-
   Unofficial Fluent 2 for Flutter, built from Fluent's own tokens: calm neutral layers, acrylic for what floats, subtle strokes and one brand ramp, light and dark.
-version: 0.3.0
+version: 0.3.1
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/fluent2/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/fluent2_design_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues

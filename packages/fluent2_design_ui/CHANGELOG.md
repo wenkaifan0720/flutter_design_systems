@@ -1,3 +1,12 @@
+## 0.3.1
+
+Fixed:
+
+- Under a finger, a list's or a menu's rows stand 48, filling their touch target, so a chosen or active row's fill
+  stands 4 from the list's top and foot as from its sides (it stood 6 down and 4 across).
+- Under a finger, a one-line message bar holds its actions 12 from its top and foot, as from its end; an action's
+  48 target used to stand 1 from the bar's edges.
+
 ## 0.3.0
 
 Needs ui_core 0.3.0. Fluent 2's parts take their behaviour from ui_core now and keep Fluent's faces: the same layers,
