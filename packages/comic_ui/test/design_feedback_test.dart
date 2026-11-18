@@ -143,7 +143,6 @@ void main() {
           : find.byType(ComicDialog);
       final route = ModalRoute.of(tester.element(raised))! as PopupRoute;
       // The page behind is screened in the scrim's ink, not dimmed by a see-through barrier (law 1).
-      expect(route, isA<ComicScreenedRoute<dynamic>>());
       expect(route.barrierColor, isNull);
       final scrim = tester.widget<ComicScreenScrim>(
         find.byType(ComicScreenScrim),

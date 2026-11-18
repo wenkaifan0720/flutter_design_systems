@@ -1,7 +1,7 @@
 /// The screen and its bars, the picture and the states a page can be in.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 import '../kit.dart';

@@ -162,7 +162,8 @@ class _ShapeTween extends Tween<ShapeBorder?> {
 /// The design kit's [DesignStyleOf] under Comic's name.
 typedef ComicStyleOf = DesignStyleOf;
 
-/// The rim a styled part draws: [side] when set, else [edge] (or [fallback]) at the theme's regular stroke.
+/// The rim a styled part draws: [DesignStyleOf.side] when set, else [DesignStyleOf.edge] (or [fallback]) at the theme's
+/// regular stroke.
 ///
 /// ```dart
 /// final look = ComicStyleOf([style, theme.cardTheme], const {});

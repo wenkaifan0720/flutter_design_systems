@@ -3,8 +3,7 @@
 // moon or sun turns the page to night or day; Customize opens the theme's knobs (the preset, the strokes, the density,
 // the faces, your own colours, the reading direction and the text scaling) and every page takes them as you set them.
 // Comic's corners stay square and its type at the look's sizes: the platform's text scaling serves readers.
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/comic_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';

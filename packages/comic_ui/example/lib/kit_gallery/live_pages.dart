@@ -2,7 +2,7 @@
 /// own specimens: every component the package exports is live on at least one of them, and every one responds.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/comic_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';

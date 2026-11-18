@@ -1,5 +1,6 @@
 // Comic's answer to the shared inventory: every row, a live specimen of the class an app reaches for. A row's class is
 // `Comic<Stem>`, so an app written against another look moves here by its import and its prefix.
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/inventory.dart';
 
@@ -137,7 +138,9 @@ final DesignInventory comicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'Kbd',
-      (context) => const ComicKbd(['Ctrl', 'K']),
+      (context) => const ComicKbd.shortcut(
+        SingleActivator(LogicalKeyboardKey.keyK, control: true),
+      ),
     ),
     // Inputs
     DesignInventoryEntry.present(
@@ -369,14 +372,17 @@ final DesignInventory comicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'MenuBar',
-      (context) => const ComicMenuBar(
+      (context) => ComicMenuBar(
         menus: [
           DesignMenuEntry(
             label: 'File',
             children: [
               DesignMenuEntry(
                 label: 'New',
-                shortcut: 'Ctrl+N',
+                shortcut: ComicKbd.labelOf(
+                  context,
+                  const SingleActivator(LogicalKeyboardKey.keyN, control: true),
+                ),
                 onPressed: _tap,
               ),
             ],

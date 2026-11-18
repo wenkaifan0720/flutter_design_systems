@@ -1,3 +1,50 @@
+## 0.3.0
+
+Needs ui_core 0.3.0. Comic's parts take their behaviour from ui_core now and keep their print: the same panels, inks
+and pops, with ui_core's keys, screen-reader words, focus and springs under them.
+
+Breaking:
+
+- `ComicWindowSizeClass` is gone. `ComicThemeData.window` is ui_core's `DesignWindowSizeClass`, on the same
+  Material breakpoints, except that from 1600 wide it is `extraLarge` (Comic's `large` ran from 1200 up).
+- `ComicTabBar` calls `onChanged` only when the tab changes. A press on the chosen tab, which called it again with
+  the same index, does nothing now: ui_core's `DesignTabBar` reports changes only.
+
+Changes:
+
+- Menus light one row. In a menu bar's or a split button's menu, ui_core 0.3.0 lights the row the pointer moved over
+  last or the one the keys moved to, and none in a menu the pointer opened until one of them moves. Comic's own quiet
+  menu, which did this before, is gone.
+- `ComicTooltip` is ui_core's `DesignTooltip` in Comic's balloon. It still waits 400 ms and stands under its
+  control. It now stays while the pointer moves onto it, closes on Escape, shows one at a time, and opens at once along
+  a toolbar after the first.
+- `ComicKbd.shortcut(activator)` and `ComicKbd.labelOf(context, activator)` take a shortcut's keys from ui_core, in
+  the platform's order and the reader's words. Comic spells them in words on a Mac too ("Shift+Command+N"), since its
+  typefaces draw none of ⌃ ⌥ ⇧ ⌘.
+- `ComicCombobox` takes `search` and `debounceDuration`, and `ComicMultiSelect` takes `debounceDuration`. While an
+  app's search is on its way, both say "Loading"; when it fails, they say "Couldn't load results" and offer Try again,
+  which the arrow keys reach.
+- Dialogs and bottom sheets ride ui_core's routes. They open and close on springs: a dialog still pops in with a
+  short bounce, and a sheet stops at its edge. A screen reader hears a dialog, and focus returns where it was. A
+  bottom sheet now follows a drag down and a fling puts it away, and a `ComicBottomSheet` hands its scroll over to
+  that drag. Under Reduce Motion both still cut, never fade. The router's sheet page on a desktop now pops in as a
+  dialog does; before, it faded.
+- The command palette keeps its field's focus when Enter runs a command, on the web too.
+- A screen reader hears the page around a `ComicPreview`. Its app now stands in a semantics container of its own:
+  on material_ui's `MaterialApp`, which puts none round its navigator, the preview's barrier hid what the page
+  showed before it.
+- `ComicTabBar` is ui_core's `DesignTabBar` in Comic's trough. It has one tab stop, arrows (mirrored right to left),
+  Home and End. A screen reader hears "Saved, Tab 2 of 3". The thumb moves on a spring.
+- `ComicWheelPicker` is ui_core's `DesignWheelPicker` on Comic's drum. Page Up and Page Down step five, typing jumps
+  to a value, a snap springs, and each row that crosses the band ticks.
+- `ComicChart` picks, steps and reads its points through ui_core's `DesignChart`. Up and Down move between series,
+  Home and End go to the ends, and a screen reader steps point by point.
+- The review checks come from `ui_core_test`, a dev dependency.
+
+The pub.dev page opens with a picture of Comic, links to the live gallery, the API reference and the other looks, and a
+quick start. The README's Material snippets stand on `material_ui`, Flutter's Material from 3.50, where `ComicTheme`
+already gives a pushed `MaterialPageRoute` Comic's cut; the example and the tests import it too.
+
 ## 0.2.1
 
 Needs ui_core 0.2.1.

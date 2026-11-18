@@ -1,7 +1,7 @@
 /// Panels and speech above a page, plus live controls that raise each surface.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 import '../kit.dart';

@@ -703,7 +703,7 @@ class ComicTier extends StatelessWidget {
     final t = ComicTheme.of(context);
     final flex = spans ?? _shares(children.length);
     // A tablet lays a tier across as a desk does (a stretched phone column wastes its width), in the same gutter.
-    final across = t.window != ComicWindowSizeClass.compact;
+    final across = t.window != DesignWindowSizeClass.compact;
     final gap = across ? 16.0 : 10.0;
     final slant = slanted && children.length == 2
         ? (t.desk ? 44.0 : 18.0)

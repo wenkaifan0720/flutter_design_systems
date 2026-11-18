@@ -10,12 +10,19 @@ import 'package:comic_ui/comic_ui.dart';
 
 void main() {
   test('every public widget describes every public field it is built with', () {
-    // The whole lib: drip's kit lays it under design_kit/, the package under
-    // src/.
-    final lib = Directory('lib');
+    // Comic's lib and, in drip, ui_core's beside it (design_system/ and
+    // design_kit/); the package's lib is Comic's alone. Drip's gate lays the
+    // app and the kit parts it installs in lib too, which are neither's.
+    final roots = [
+      for (final dir in const ['lib/design_system', 'lib/design_kit'])
+        if (Directory(dir).existsSync()) Directory(dir),
+    ];
     final missing = <String>[];
     var widgets = 0;
-    for (final file in lib.listSync(recursive: true).whereType<File>()) {
+    for (final file in [
+      for (final lib in roots.isEmpty ? [Directory('lib')] : roots)
+        ...lib.listSync(recursive: true),
+    ].whereType<File>()) {
       if (!file.path.endsWith('.dart') || file.path.contains('/internal/')) {
         continue;
       }

@@ -13,8 +13,8 @@
 // the map wraps the cut in ui_core's DesignSwipeBackPageTransitionsBuilder, so
 // a swipe from the left edge still pops a page (Flutter's
 // CupertinoPageTransition is never built).
-import 'package:flutter/cupertino.dart' show CupertinoPageTransition;
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransition;
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart'
     show ComicPageTransitionsBuilder, comicPageTransitions;

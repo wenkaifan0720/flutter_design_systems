@@ -1,7 +1,7 @@
 /// The look's devices on plain data: Ben-Day dots, action lines, multi-layer lettering and drawn marks. Each paints once, in a RepaintBoundary, on whole device pixels.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 import '../kit.dart';

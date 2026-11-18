@@ -10,7 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/comic_host.dart';
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 // ignore_for_file: avoid_relative_lib_imports, avoid_print
 import '../example/lib/kit_gallery/gate_screens.dart';

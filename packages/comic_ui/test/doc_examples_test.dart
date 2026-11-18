@@ -5,10 +5,11 @@
 // docs say the caller has them; one that would leave the test (a network picture, an app of its own, a dialog it
 // raises at once) is compiled and not run.
 // ignore_for_file: unused_local_variable
+import 'dart:io' show Directory;
 import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart' show FontLoader;
+import 'package:flutter/services.dart' show FontLoader, LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/comic_host.dart';
@@ -597,13 +598,28 @@ final Map<String, DocExample> _examples = {
 
     return example;
   },
-  'ComicMenuBar': (context) => const ComicMenuBar(
+  'ComicMenuBar': (context) => ComicMenuBar(
     menus: [
       DesignMenuEntry(
         label: 'File',
-        children: [DesignMenuEntry(label: 'New', shortcut: 'Ctrl+N')],
+        children: [
+          DesignMenuEntry(
+            label: 'New',
+            shortcut: ComicKbd.labelOf(
+              context,
+              const SingleActivator(LogicalKeyboardKey.keyN, control: true),
+            ),
+          ),
+        ],
       ),
     ],
+  ),
+  'ComicKbd.labelOf': (context) => DesignMenuEntry(
+    label: 'New',
+    shortcut: ComicKbd.labelOf(
+      context,
+      const SingleActivator(LogicalKeyboardKey.keyN, control: true),
+    ),
   ),
   'ComicCommand': (context) {
     void create([Object? a, Object? b]) {}
@@ -1457,7 +1473,13 @@ void main() {
   testDocExamples(
     self: 'test/doc_examples_test.dart',
     examples: _examples,
-    skip: const {'comic_parts.dart'},
+    // In drip, Comic's lib is design_system/, beside ui_core's and the app's.
+    lib: Directory('lib/design_system').existsSync()
+        ? 'lib/design_system'
+        : 'lib',
+    // art.dart and shell.dart stay in drip (the package leaves them out), so
+    // their examples can't be written out in the package's copy of this file.
+    skip: const {'comic_parts.dart', 'art.dart', 'shell.dart'},
     wrap: (child) => TickerMode(
       enabled: false,
       child: MaterialApp(

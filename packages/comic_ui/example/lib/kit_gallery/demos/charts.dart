@@ -1,7 +1,7 @@
 /// Figures inked true to their amounts, on plain numbers. A figure means whatever the page says it means, so none of them assumes money, distance or time.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 import '../kit.dart';

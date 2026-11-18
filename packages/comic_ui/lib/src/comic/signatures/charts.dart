@@ -752,7 +752,7 @@ class _FlowArt extends CustomPainter {
 }
 
 /// Many amounts flowing into one, as ribbons drawn to scale: each ribbon's width is its amount, and they stack to the total, so
-/// a reader sees who gives most. It can be money, hours or tonnes: [figure] words are yours. It keeps to any width, and any
+/// a reader sees who gives most. It can be money, hours or tonnes: each [ComicFlowFrom.figure]'s words are yours. It keeps to any width, and any
 /// number of rows scales to its height limit. No rows draws nothing.
 ///
 /// ```dart
@@ -1114,7 +1114,7 @@ class _SwatchPainter extends CustomPainter {
 }
 
 /// A whole split into parts: a stacked bar true to its amounts, a scale of what's done against what's left, and a key with each
-/// part's words. [done] is the number to mark on the scale. A budget, a schedule, a storage meter. No parts draws nothing.
+/// part's words. The first part is what the scale marks as done. A budget, a schedule, a storage meter. No parts draws nothing.
 ///
 /// ```dart
 /// ComicShares(stamp: 'Paid', parts: const [ComicShare('Rent', 540, figure: '€540', ink: ComicShareFill.lamp), ComicShare('Food', 156, figure: '€156')])

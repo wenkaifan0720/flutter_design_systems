@@ -27,7 +27,13 @@ import 'internal/style_guard.dart';
 DateTime _day(DateTime day) => DateTime(day.year, day.month, day.day);
 String _locale(BuildContext context) {
   final locale = Localizations.maybeLocaleOf(context)?.toString() ?? 'en_US';
-  return DateFormat.localeExists(locale) ? locale : 'en_US';
+  // intl knows only en_US until the app loads its date data (Comic's delegate does, as Flutter's global ones do);
+  // before then asking after any other locale throws, so the dates read in English.
+  try {
+    return DateFormat.localeExists(locale) ? locale : 'en_US';
+  } on Exception {
+    return 'en_US';
+  }
 }
 
 /// A month of caption cells, at most [maxWidth] wide and standing at the start of a wider column. Arrows move by day

@@ -738,7 +738,7 @@ class _StepRow extends StatelessWidget {
 }
 
 /// Someone speaking in a panel of a strip: the time in a caption, what they said in a balloon, their portrait under it, their name
-/// on a plate. Four of these make a thread read as a strip, on alternating dots with [mine] for your own.
+/// on a plate. Four of these make a thread read as a strip, on alternating dots, [warm] on every other one.
 ///
 /// ```dart
 /// ComicVoicePanel(time: 'Tue 21:16', words: 'Booked for the fourth.', name: 'Sam')

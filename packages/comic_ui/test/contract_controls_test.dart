@@ -484,7 +484,7 @@ void main() {
         expect(tester.takeException(), isNull);
         expect(find.bySemanticsLabel('Balance'), findsOneWidget);
         expect(
-          tester.getSemantics(find.byType(ComicChart)).getSemanticsData().value,
+          tester.getSemantics(find.bySemanticsLabel('Balance')).value,
           'Net: -3, 8',
         );
       }

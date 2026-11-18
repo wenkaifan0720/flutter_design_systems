@@ -101,6 +101,69 @@ class ComicTrack extends StatelessWidget {
     final motion = ComicMotion.of(context);
     final height = minHeight ?? fieldHeight(context);
     final lit = this.lit;
+    return ComicTrough(
+      shape: shape,
+      rim: rim,
+      fill: fill,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(end: lit?.toDouble() ?? -1),
+        duration: still || lit == null ? Duration.zero : motion.state,
+        curve: motion.standard,
+        builder: (context, at, _) => _Cells(
+          thumbAt: lit == null ? null : at,
+          thumbShape: inner,
+          thumb: thumb,
+          gap: gap,
+          equal: equal,
+          cellWidth: cellWidth == null
+              ? null
+              : math.max(0, cellWidth! - 2 * rim.width / cells.length),
+          grow: grow,
+          height: math.max(0, height),
+          rim: rim.width,
+          direction: Directionality.of(context),
+          children: cells,
+        ),
+      ),
+    );
+  }
+}
+
+/// A trough round cells it does not lay out: [shape] filled with [fill] and ringed by [rim] over [child], which stands
+/// the rim in from each end and spans the rim's bands above and below, as a [ComicTrack]'s cells do (a tab bar's strip
+/// sits in it). With [clip] the child is cut to the outline, for a strip that scrolls under the rim.
+class ComicTrough extends StatelessWidget {
+  /// Creates a trough round [child].
+  const ComicTrough({
+    super.key,
+    required this.shape,
+    required this.rim,
+    required this.fill,
+    required this.child,
+    this.clip = false,
+  });
+
+  /// The trough's outline.
+  final OutlinedBorder shape;
+
+  /// The trough's rim, drawn over the child.
+  final BorderSide rim;
+
+  /// The trough's fill.
+  final Color fill;
+
+  /// Whether the child is cut to [shape].
+  final bool clip;
+
+  /// The cells.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget cells = Padding(
+      padding: EdgeInsets.symmetric(horizontal: rim.width),
+      child: child,
+    );
     return _TrackRim(
       rim: rim.width,
       child: DecoratedBox(
@@ -108,29 +171,15 @@ class ComicTrack extends StatelessWidget {
         decoration: ShapeDecoration(shape: shape.copyWith(side: rim)),
         child: DecoratedBox(
           decoration: ShapeDecoration(color: fill, shape: shape),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: rim.width),
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(end: lit?.toDouble() ?? -1),
-              duration: still || lit == null ? Duration.zero : motion.state,
-              curve: motion.standard,
-              builder: (context, at, _) => _Cells(
-                thumbAt: lit == null ? null : at,
-                thumbShape: inner,
-                thumb: thumb,
-                gap: gap,
-                equal: equal,
-                cellWidth: cellWidth == null
-                    ? null
-                    : math.max(0, cellWidth! - 2 * rim.width / cells.length),
-                grow: grow,
-                height: math.max(0, height),
-                rim: rim.width,
-                direction: Directionality.of(context),
-                children: cells,
-              ),
-            ),
-          ),
+          child: clip
+              ? ClipPath(
+                  clipper: ShapeBorderClipper(
+                    shape: shape,
+                    textDirection: Directionality.of(context),
+                  ),
+                  child: cells,
+                )
+              : cells,
         ),
       ),
     );

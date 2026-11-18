@@ -212,102 +212,106 @@ class ComicTabBar extends StatefulWidget {
   }
 }
 
-class _ComicTabBarState extends State<ComicTabBar> {
-  final List<FocusNode> _nodes = [];
-  final ScrollController _scroll = ScrollController();
+class _ComicTabBarState extends State<ComicTabBar>
+    with TickerProviderStateMixin {
+  DesignTabController? _controller;
+  bool _still = false;
+  BuildContext? _chosenTab;
+
+  // ui_core's bar brings a tab into view as it is chosen; the tab chosen as the bar first shows is brought inside the
+  // rim here, after the frame: a cut, as a page change is. Only the bar's own row moves; the page around it stays.
   @override
   void initState() {
     super.initState();
-    _syncNodes();
-    _showChosen();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final tab = _chosenTab;
+      if (!mounted || tab == null || !tab.mounted) return;
+      final row = Scrollable.maybeOf(tab)?.position;
+      final box = tab.findRenderObject();
+      if (row == null || box == null || !box.attached) return;
+      for (final policy in const [
+        ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+        ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+      ]) {
+        row.ensureVisible(box, alignmentPolicy: policy);
+      }
+    });
+  }
+
+  int get _chosen => widget.tabs.isEmpty
+      ? 0
+      : widget.selectedIndex.clamp(0, widget.tabs.length - 1);
+
+  // The thumb slides as Comic's states change: a critically damped spring of about ComicMotion.state's 120 ms, no
+  // overshoot. With still motion (Reduce Motion, a still theme) it lands within a frame: a cut, never a slide.
+  void _make() {
+    final old = _controller;
+    _controller = DesignTabController(
+      length: widget.tabs.length,
+      initialIndex: _chosen,
+      vsync: this,
+      stiffness: _still ? 1e6 : 1600,
+    )..addListener(_moved);
+    if (old != null) {
+      old.removeListener(_moved);
+      // The bar lets go of it as it builds with the new one.
+      WidgetsBinding.instance.addPostFrameCallback((_) => old.dispose());
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final still = ComicMotion.of(context).state == Duration.zero;
+    if (_controller == null || still != _still) {
+      _still = still;
+      _make();
+    }
   }
 
   @override
   void didUpdateWidget(ComicTabBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _syncNodes();
-    if (oldWidget.selectedIndex != widget.selectedIndex) _showChosen();
+    final controller = _controller!;
+    if (controller.length != widget.tabs.length) {
+      _make();
+    } else if (controller.index != _chosen) {
+      controller.animateTo(_chosen);
+    }
   }
 
-  // Where the tabs scroll, the chosen one is brought inside the rim after the frame: a cut, as a page change is. Only
-  // the bar's own row moves; the page around it stays where it is.
-  void _showChosen() {
+  // A press or a key moved the bar: the app chooses. Where it keeps its tab, the thumb goes back to it.
+  void _moved() {
+    final controller = _controller!;
+    if (controller.index == _chosen) return;
+    widget.onChanged?.call(controller.index);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _nodes.isEmpty || !_scroll.hasClients) return;
-      final chosen = _nodes[widget.selectedIndex.clamp(0, _nodes.length - 1)]
-          .context
-          ?.findRenderObject();
-      if (chosen == null || !chosen.attached) return;
-      for (final policy in const [
-        ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
-        ScrollPositionAlignmentPolicy.keepVisibleAtStart,
-      ]) {
-        _scroll.position.ensureVisible(chosen, alignmentPolicy: policy);
+      if (mounted && _controller == controller && controller.index != _chosen) {
+        controller.animateTo(_chosen);
       }
     });
   }
 
-  void _syncNodes() {
-    while (_nodes.length < widget.tabs.length) {
-      _nodes.add(FocusNode());
-    }
-    while (_nodes.length > widget.tabs.length) {
-      _nodes.removeLast().dispose();
-    }
-  }
-
   @override
   void dispose() {
-    for (final node in _nodes) {
-      node.dispose();
-    }
-    _scroll.dispose();
+    _controller!
+      ..removeListener(_moved)
+      ..dispose();
     super.dispose();
-  }
-
-  KeyEventResult _keys(int index, KeyEvent event) {
-    if ((event is! KeyDownEvent && event is! KeyRepeatEvent) ||
-        widget.onChanged == null ||
-        _nodes.isEmpty) {
-      return KeyEventResult.ignored;
-    }
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final key = event.logicalKey;
-    final next = key == LogicalKeyboardKey.home
-        ? 0
-        : key == LogicalKeyboardKey.end
-        ? _nodes.length - 1
-        : key == LogicalKeyboardKey.arrowRight
-        ? (index + (rtl ? -1 : 1)) % _nodes.length
-        : key == LogicalKeyboardKey.arrowLeft
-        ? (index + (rtl ? 1 : -1)) % _nodes.length
-        : null;
-    if (next == null) return KeyEventResult.ignored;
-    _nodes[next].requestFocus();
-    Scrollable.ensureVisible(
-      _nodes[next].context!,
-      alignment: .5,
-      duration: ComicMotion.of(context).state,
-    );
-    widget.onChanged!(next);
-    return KeyEventResult.handled;
   }
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
-    for (var i = 0; i < _nodes.length; i++) {
-      _nodes[i].skipTraversal =
-          i != widget.selectedIndex.clamp(0, _nodes.length - 1);
-    }
     // The segmented control's trough at the control corner: a tab heads the panel under it and shares its corner.
     // One rim, tabs of one width side by side with no dividers, the chosen tab a thumb that slides.
     final rim = BorderSide(color: c.nightLine, width: t.rim(2.5));
     final outer = t.shapes.small;
     final inner = ComicTrack.cellShape(outer, rim);
+    final height = ComicTrack.fieldHeight(context);
     // On a phone, across the width it is given, tabs of one width; from 600 up each tab keeps to its words, as a tab
     // bar on a wide screen does (the design kit's checks holds a tab bar to what its tabs take). It scrolls sideways only
-    // when they need more. Each tab says it is one, inside a bar that says it is a tab bar.
+    // when they need more.
     final wide = t.width >= 600;
     // A tab's own width: its words at the reader's text size, the face's padding, and the inset each side.
     final scaler = MediaQuery.textScalerOf(context);
@@ -323,109 +327,80 @@ class _ComicTabBarState extends State<ComicTabBar> {
       words.dispose();
       if (own > widest) widest = own;
     }
+    final enabled = widget.onChanged != null;
     return LayoutBuilder(
       builder: (context, box) {
-        // A phone's tabs that need more than the row (large text): the trough's rim holds still at the row's ends and
-        // the tabs scroll inside it, each at its own width, so the one past the end shows cut by the rim. Scrolled
-        // with them, the rim's end went off the screen with the last tab, and nothing said there was one (the
-        // fresh-eyes read, 11-15).
-        final inside =
-            !wide &&
-            box.hasBoundedWidth &&
-            widest * widget.tabs.length + 2 * rim.width > box.maxWidth;
-        final bar = _bar(
-          context,
-          rim: inside ? rim.copyWith(color: const Color(0x00000000)) : rim,
-          equal: !wide && !inside,
-          minWidth: !wide && box.hasBoundedWidth ? box.maxWidth : 0,
-          outer: outer,
-          inner: inner,
-        );
-        if (!inside) return bar;
-        return DecoratedBox(
-          position: DecorationPosition.foreground,
-          decoration: ShapeDecoration(shape: outer.copyWith(side: rim)),
-          child: ClipPath(
-            clipper: ShapeBorderClipper(shape: outer),
-            child: bar,
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _bar(
-    BuildContext context, {
-    required BorderSide rim,
-    required bool equal,
-    required double minWidth,
-    required OutlinedBorder outer,
-    required OutlinedBorder inner,
-  }) {
-    final t = ComicTheme.of(context), c = t.colors;
-    return SingleChildScrollView(
-      controller: _scroll,
-      scrollDirection: Axis.horizontal,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(minWidth: minWidth),
-        child: Semantics(
-          role: SemanticsRole.tabBar,
-          label: widget.label ?? ComicLocalizations.of(context).tabs,
-          container: true,
-          explicitChildNodes: true,
-          child: ComicTrack(
+        // Tabs that need more than the row (large text on a phone): the trough's rim holds still at the row's ends and
+        // the tabs scroll inside it, each at its own width, so the one past the end shows cut by the rim (the
+        // fresh-eyes read, 11-15). From 600 up the trough hugs its tabs at the start.
+        final scrolls =
+            wide ||
+            (box.hasBoundedWidth &&
+                widest * widget.tabs.length + 2 * rim.width > box.maxWidth);
+        return Align(
+          alignment: AlignmentDirectional.centerStart,
+          heightFactor: 1,
+          child: ComicTrough(
             shape: outer,
             rim: rim,
             fill: c.dark ? c.card : c.control,
-            thumb: c.caption,
-            equal: equal,
-            lit: widget.tabs.isEmpty
-                ? null
-                : widget.selectedIndex.clamp(0, widget.tabs.length - 1),
-            cells: [
-              for (var i = 0; i < widget.tabs.length; i++)
-                MergeSemantics(
-                  child: Semantics(
-                    role: SemanticsRole.tab,
-                    child: ComicPressable(
-                      label: widget.tabs[i],
-                      button: false,
-                      selected: i == widget.selectedIndex,
-                      focusNode: _nodes[i],
-                      wash: false,
-                      ring: false,
-                      sink: false,
-                      keys: (_, event) => _keys(i, event),
-                      onPressed: widget.onChanged == null
-                          ? null
-                          : () => widget.onChanged!(i),
-                      builder: (context, states) => ComicTrackFace(
-                        states: states,
-                        shape: inner,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: ComicSpace.gap,
-                        ),
-                        child: CapLabel(
-                          child: Text(
-                            widget.tabs[i],
-                            maxLines: 1,
-                            style: t.type.title.copyWith(
-                              color: i == widget.selectedIndex
-                                  ? c.onCaption
-                                  : c.dark
-                                  ? c.text
-                                  : c.onPaper,
-                            ),
+            clip: scrolls,
+            child: DesignTabBar(
+              controller: _controller!,
+              isScrollable: scrolls,
+              semanticLabel:
+                  widget.label ?? ComicLocalizations.of(context).tabs,
+              tabs: [
+                for (final tab in widget.tabs)
+                  DesignTab(label: tab, enabled: enabled),
+              ],
+              tabBuilder: (context, tab, at) {
+                if (at.index == _chosen) _chosenTab = context;
+                // A disabled face is screened back toward its paper, as every Comic press is; the thumb stays.
+                return ComicScreened(
+                  on: at.states.contains(WidgetState.disabled),
+                  child: SizedBox(
+                    height: height,
+                    child: ComicTrackFace(
+                      states: at.states,
+                      shape: inner,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: ComicSpace.gap,
+                      ),
+                      child: CapLabel(
+                        child: Text(
+                          tab.label,
+                          maxLines: 1,
+                          style: t.type.title.copyWith(
+                            color: at.selection > .5
+                                ? c.onCaption
+                                : c.dark
+                                ? c.text
+                                : c.onPaper,
                           ),
                         ),
                       ),
                     ),
                   ),
+                );
+              },
+              // The thumb: the trough's outline moved in by its rim and 2 px, under the chosen tab, painted as the
+              // trough's own thumb is.
+              indicatorBuilder: (context, thumb) => CustomPaint(
+                painter: _Thumb(
+                  inner,
+                  c.caption,
+                  EdgeInsets.symmetric(
+                    horizontal: ComicTrack.inset,
+                    vertical: ComicTrack.inset + rim.width,
+                  ),
+                  Directionality.of(context),
                 ),
-            ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -1257,4 +1232,28 @@ class ComicPagination extends StatelessWidget {
       ..add(IntProperty('window', window, defaultValue: 1))
       ..add(StringProperty('label', label, defaultValue: null));
   }
+}
+
+class _Thumb extends CustomPainter {
+  const _Thumb(this.shape, this.color, this.inset, this.direction);
+  final OutlinedBorder shape;
+  final Color color;
+  final EdgeInsets inset;
+  final TextDirection direction;
+
+  @override
+  void paint(Canvas canvas, Size size) => canvas.drawPath(
+    shape.getOuterPath(
+      inset.deflateRect(Offset.zero & size),
+      textDirection: direction,
+    ),
+    Paint()..color = color,
+  );
+
+  @override
+  bool shouldRepaint(_Thumb old) =>
+      old.shape != shape ||
+      old.color != color ||
+      old.inset != inset ||
+      old.direction != direction;
 }

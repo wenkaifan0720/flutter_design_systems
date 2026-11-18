@@ -20,35 +20,6 @@ import 'internal/platform_words.dart';
 /// The width where the phone layout becomes the 12-column desktop layout.
 const double comicDeskWidth = 1024;
 
-/// Material's window classes, by the width the page is given: compact under 600, medium under 840, expanded under 1200,
-/// large from 1200. Comic's 12-column desktop starts at [comicDeskWidth], inside expanded.
-enum ComicWindowSizeClass {
-  /// Under 600 wide: a phone.
-  compact,
-
-  /// 600 to 840: a large phone held across, a small tablet.
-  medium,
-
-  /// 840 to 1200: a tablet, a small window.
-  expanded,
-
-  /// 1200 and up: a desktop.
-  large;
-
-  /// The class of a page [width] wide.
-  static ComicWindowSizeClass ofWidth(double width) => width < 600
-      ? compact
-      : width < 840
-      ? medium
-      : width < 1200
-      ? expanded
-      : large;
-
-  /// The class of the page at [context].
-  static ComicWindowSizeClass of(BuildContext context) =>
-      ofWidth(MediaQuery.sizeOf(context).width);
-}
-
 /// Comic's motion: a page being turned, quick and snappy, with a small overshoot where a panel pops. A press lands in
 /// [press]; a control's state (a switch's thumb, a check inked in, a selected segment) moves in [state]; what moves across
 /// the page in [move]; what pops over it in [raise] (a dialog, a menu), or [travel] from the page's foot (a sheet), and
@@ -1761,8 +1732,10 @@ class ComicThemeData with Diagnosticable {
   /// True from 1024 wide up: the 12-column layout.
   bool get desk => width >= comicDeskWidth;
 
-  /// The window class of the page this theme was built for.
-  ComicWindowSizeClass get window => ComicWindowSizeClass.ofWidth(width);
+  /// The window class of the page this theme was built for: ui_core's, Material's breakpoints (compact under 600,
+  /// medium under 840, expanded under 1200, large under 1600, extra large above). Comic's 12-column desktop starts at
+  /// [comicDeskWidth], inside expanded.
+  DesignWindowSizeClass get window => DesignWindowSizeClass.fromWidth(width);
 
   late final ComicFocusRing _focus = ComicFocusRing(
     color: _comicFocusColor(colors),

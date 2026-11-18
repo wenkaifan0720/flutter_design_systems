@@ -335,7 +335,6 @@ class ComicSplitButton extends StatelessWidget {
     final rim = comicRim(t, look, c.nightLine);
     final inner = comicInsetShape(outer, rim.width + 3);
     final height = t.density.height(48);
-    ComicLastInput.follow();
     return DesignSplitButton(
       label: label,
       onPressed: onPressed,
@@ -416,7 +415,6 @@ class ComicSplitButton extends StatelessWidget {
         );
       },
       itemBuilder: (context, action, states) => comicMenuRow(
-        context,
         states,
         (states) => ComicMenuRowFace(states: states, label: action.label),
       ),
@@ -458,16 +456,13 @@ Widget comicRaisedSurface(
       maxHeight: maxSize.height,
       maxWidth: math.min(width, maxSize.width),
     ),
-    // One current row: none while the pointer opened the menu and nothing has moved since (comicMenuRow).
-    child: ComicMenuSurface(
-      child: ComicRaisedFrame(
-        child: SingleChildScrollView(
-          child: IntrinsicWidth(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: items,
-            ),
+    child: ComicRaisedFrame(
+      child: SingleChildScrollView(
+        child: IntrinsicWidth(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: items,
           ),
         ),
       ),
@@ -476,21 +471,60 @@ Widget comicRaisedSurface(
 );
 
 /// A key on the keyboard, or a run of them, as a small cap standing on its own edge: Ctrl, K, Enter. Words beside it
-/// say what it does; a screen reader hears the keys joined by "plus".
+/// say what it does; a screen reader hears the keys joined by "plus". [ComicKbd.shortcut] takes its keys from a
+/// shortcut, as the platform orders them and the reader's language names them.
 ///
 /// ```dart
 /// ComicKbd(const ['Ctrl', 'K'])
 /// ```
 class ComicKbd extends StatelessWidget {
   /// Creates a [ComicKbd] for [keys], pressed together.
-  const ComicKbd(this.keys, {super.key});
+  const ComicKbd(this.keys, {super.key}) : shortcut = null;
 
-  /// The keys, in the order they're held.
+  /// Creates a [ComicKbd] for the keys of [shortcut]: ui_core's `designShortcutKeys`, spelled in words on every
+  /// platform (Ctrl, Shift, Command, Enter), as Comic's faces draw none of Apple's ⌃ ⌥ ⇧ ⌘ ↵.
+  const ComicKbd.shortcut(MenuSerializableShortcut this.shortcut, {super.key})
+    : keys = const [];
+
+  /// The keys, in the order they're held; empty for [ComicKbd.shortcut], whose keys come from [shortcut].
   final List<String> keys;
+
+  /// The shortcut the keys come from, for [ComicKbd.shortcut]; null for [keys] as given.
+  final MenuSerializableShortcut? shortcut;
+
+  /// [shortcut] as a menu row writes it ("Ctrl+N" here, "Command+N" on a Mac), for a menu entry's or a command's
+  /// `shortcut`: ui_core's `designShortcutLabel`, in the words [ComicKbd.shortcut] uses.
+  ///
+  /// ```dart
+  /// DesignMenuEntry(label: 'New', shortcut: ComicKbd.labelOf(context, const SingleActivator(LogicalKeyboardKey.keyN, control: true)))
+  /// ```
+  static String labelOf(
+    BuildContext context,
+    MenuSerializableShortcut shortcut,
+  ) => _enterInWords(
+    context,
+    designShortcutLabel(context, shortcut, appleSymbols: false),
+  );
+
+  // Off Apple's platforms ui_core writes Enter as ↵ even with its symbols off; Comic's faces draw no ↵, so Enter is
+  // the reader's word there too, as it is on a Mac.
+  static String _enterInWords(BuildContext context, String keys) =>
+      keys.replaceAll('↵', DesignLocalizations.of(context).keyboardKeyEnter);
 
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
+    final keys = switch (shortcut) {
+      null => this.keys,
+      final shortcut => [
+        for (final key in designShortcutKeys(
+          context,
+          shortcut,
+          appleSymbols: false,
+        ))
+          _enterInWords(context, key),
+      ],
+    };
     final words = t.type.text(13, 1.1, weight: FontWeight.w700, color: c.text);
     // The cap stands on its edge: the same shape in the line's colour, two pixels taller, drawn under it (the look draws
     // no shadow). The line is the night issue's cream at night, as a field's contour is, so a cap reads on the black
@@ -555,6 +589,14 @@ class ComicKbd extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(IterableProperty<String>('keys', keys));
+    properties
+      ..add(IterableProperty<String>('keys', keys))
+      ..add(
+        DiagnosticsProperty<MenuSerializableShortcut>(
+          'shortcut',
+          shortcut,
+          defaultValue: null,
+        ),
+      );
   }
 }

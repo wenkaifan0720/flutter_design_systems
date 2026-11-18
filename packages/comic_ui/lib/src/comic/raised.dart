@@ -79,7 +79,6 @@ class _ComicRoute<T> extends PopupRoute<T> with ComicScreenedRoute<T> {
     required this.carried,
     required this.builder,
     required this.dismissible,
-    required this.sheet,
     required this.closeLabel,
     required this.dimBackground,
     this.drawer = false,
@@ -89,7 +88,7 @@ class _ComicRoute<T> extends PopupRoute<T> with ComicScreenedRoute<T> {
        );
   final _Carried carried;
   final WidgetBuilder builder;
-  final bool dismissible, sheet;
+  final bool dismissible;
   final bool dimBackground;
 
   /// Stands at the start edge, the window's full height, and slides in from that edge.
@@ -108,7 +107,7 @@ class _ComicRoute<T> extends PopupRoute<T> with ComicScreenedRoute<T> {
   Color? get screenInk => dimBackground ? carried.scrim : null;
   @override
   Duration get transitionDuration =>
-      sheet || drawer ? carried.motion.travel : carried.motion.raise;
+      drawer ? carried.motion.travel : carried.motion.raise;
   @override
   Duration get reverseTransitionDuration => carried.motion.leave;
 
@@ -142,16 +141,14 @@ class _ComicRoute<T> extends PopupRoute<T> with ComicScreenedRoute<T> {
   ) => carried.wrap(
     context,
     Builder(
-      builder: (context) => sheet
-          ? _SheetFrame(child: Builder(builder: builder))
-          : drawer
+      builder: (context) => drawer
           ? _DrawerFrame(child: Builder(builder: builder))
           : builder(context),
     ),
   );
-  // Motion is drawn, never faded (law 6): every frame of a raised layer is printed at full ink. A drawer or a
-  // sheet travels in from its edge and stops there, its overshoot held at the edge so it never comes loose from
-  // it; a dialog pops in, its overshoot a short bounce in place.
+  // Motion is drawn, never faded (law 6): every frame of a raised layer is printed at full ink. A drawer travels
+  // in from its edge and stops there, its overshoot held at the edge so it never comes loose from it; a menu pops
+  // in, its overshoot a short bounce in place.
   @override
   Widget buildTransitions(
     BuildContext context,
@@ -160,15 +157,13 @@ class _ComicRoute<T> extends PopupRoute<T> with ComicScreenedRoute<T> {
     Widget child,
   ) {
     final travel = CurveTween(curve: _HeldAtEdge(carried.motion.enter));
-    if (drawer || sheet) {
+    if (drawer) {
       return SlideTransition(
         position: Tween(
-          begin: drawer
-              ? Offset(
-                  Directionality.of(context) == TextDirection.rtl ? 1 : -1,
-                  0,
-                )
-              : const Offset(0, 1),
+          begin: Offset(
+            Directionality.of(context) == TextDirection.rtl ? 1 : -1,
+            0,
+          ),
           end: Offset.zero,
         ).chain(travel).animate(animation),
         child: child,
@@ -195,7 +190,6 @@ class _HeldAtEdge extends Curve {
 Future<T?> _raise<T>(
   BuildContext context,
   WidgetBuilder builder, {
-  bool sheet = false,
   bool drawer = false,
   bool barrierDismissible = true,
   bool useRootNavigator = true,
@@ -209,7 +203,6 @@ Future<T?> _raise<T>(
       carried: carried,
       builder: builder,
       dismissible: barrierDismissible,
-      sheet: sheet,
       closeLabel:
           closeLabel ?? DesignLocalizations.of(context).closeButtonLabel,
       dimBackground: dimBackground,
@@ -255,43 +248,9 @@ Future<T?> showComicNavigationDrawer<T>(
   closeLabel: closeLabel,
 );
 
-class _SheetFrame extends StatelessWidget {
-  const _SheetFrame({required this.child});
-  final Widget child;
-  @override
-  Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
-    return Padding(
-      padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
-      child: SafeArea(
-        bottom: false,
-        child: Align(
-          alignment: Alignment.bottomCenter,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: 640,
-              maxHeight: math.max(
-                48,
-                media.size.height -
-                    media.viewInsets.bottom -
-                    media.padding.top -
-                    24,
-              ),
-            ),
-            child: MediaQuery.removeViewInsets(
-              context: context,
-              removeBottom: true,
-              child: child,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Raises a dialog, restoring focus when it closes. Escape and back close it;
-/// [barrierDismissible] controls only presses on the scrim.
+/// Raises a dialog on ui_core's [DesignDialogRoute]: it pops in on a spring over a screen of dots. Escape and back
+/// close it, Tab stays inside it, a screen reader hears a dialog, and focus returns to what opened it.
+/// [barrierDismissible] controls only presses on the screen.
 ///
 /// ```dart
 /// showComicDialog<void>(context, builder: (_) => ComicDialog(title: 'Keep this issue?'))
@@ -302,13 +261,19 @@ Future<T?> showComicDialog<T>(
   bool barrierDismissible = true,
   bool useRootNavigator = true,
   String? closeLabel,
-}) => _raise<T>(
-  context,
-  builder,
-  barrierDismissible: barrierDismissible,
-  useRootNavigator: useRootNavigator,
-  closeLabel: closeLabel,
-);
+}) {
+  final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
+  final carry = comicCarryTo(context, navigator);
+  return navigator.push<T>(
+    ComicDialogRoute<T>(
+      screenInk: ComicTheme.of(context).colors.scrim,
+      barrierDismissible: barrierDismissible,
+      barrierLabel:
+          closeLabel ?? DesignLocalizations.of(context).closeButtonLabel,
+      builder: (context) => carry(context, Builder(builder: builder)),
+    ),
+  );
+}
 
 /// A square inked panel with a lettered title and wrapping action row.
 ///
@@ -454,7 +419,10 @@ class _ModalPanel extends StatelessWidget {
   }
 }
 
-/// Raises a sheet from the page's foot, carrying its theme and direction.
+/// Raises a sheet from the page's foot on ui_core's [DesignBottomSheetRoute], carrying its theme and direction. It
+/// travels in on a spring and stops at its edge, as tall as its content up to the window less 24; a drag down or a
+/// fling puts it away, and a [ComicBottomSheet] inside hands its scroll over to that drag. Escape, back and a press on
+/// the screen close it, and focus returns to what opened it.
 ///
 /// ```dart
 /// showComicBottomSheet<void>(context, builder: (_) => ComicBottomSheet(title: 'Details', child: Text('Issue 12')))
@@ -465,14 +433,142 @@ Future<T?> showComicBottomSheet<T>(
   bool barrierDismissible = true,
   bool useRootNavigator = true,
   String? closeLabel,
-}) => _raise<T>(
-  context,
-  builder,
-  sheet: true,
-  barrierDismissible: barrierDismissible,
-  useRootNavigator: useRootNavigator,
-  closeLabel: closeLabel,
-);
+}) {
+  final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
+  final carry = comicCarryTo(context, navigator);
+  return navigator.push<T>(
+    ComicBottomSheetRoute<T>(
+      screenInk: ComicTheme.of(context).colors.scrim,
+      barrierDismissible: barrierDismissible,
+      barrierLabel:
+          closeLabel ?? DesignLocalizations.of(context).closeButtonLabel,
+      builder: (context, sheet) => carry(
+        context,
+        _SheetScope(
+          sheet: sheet,
+          child: SafeArea(
+            top: false,
+            bottom: false,
+            child: LayoutBuilder(
+              builder: (context, room) => ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: math.max(48, room.maxHeight - 24),
+                ),
+                child: Builder(builder: builder),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+// The open sheet round a ComicBottomSheet, whose scroll view takes the sheet's controller (the hand-over to its drag).
+class _SheetScope extends InheritedWidget {
+  const _SheetScope({required this.sheet, required super.child});
+  final DesignBottomSheetDetails sheet;
+
+  static ScrollController? scrollOf(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<_SheetScope>()
+      ?.sheet
+      .scrollController;
+
+  @override
+  bool updateShouldNotify(_SheetScope old) =>
+      sheet.scrollController != old.sheet.scrollController;
+}
+
+/// A dialog route of Comic's on ui_core's [DesignDialogRoute]: the page behind screened with dots of [screenInk] (law
+/// 1), the face popping in from .92 on an underdamped spring, its overshoot a short bounce in place, as Comic's dialogs
+/// always have. Never faded (law 6): under Reduce Motion it cuts. Kept out of the barrel.
+class ComicDialogRoute<T> extends DesignDialogRoute<T> {
+  /// Creates a [ComicDialogRoute] whose face [builder] builds.
+  ComicDialogRoute({
+    required Color screenInk,
+    required WidgetBuilder builder,
+    super.barrierDismissible,
+    super.barrierLabel,
+    super.settings,
+  }) : super(
+         dampingRatio: .6,
+         stiffness: 900,
+         barrierBuilder: (context, animation) =>
+             ComicScreenScrim(animation: animation, ink: screenInk),
+         builder: (context, dialog) =>
+             _Pop(animation: dialog.animation, child: builder(context)),
+       );
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => child;
+}
+
+// The face's pop: .92 to 1 on the route's presence, which passes 1 and comes back. A theme's still motion holds it.
+class _Pop extends StatelessWidget {
+  const _Pop({required this.animation, required this.child});
+  final Animation<double> animation;
+  final Widget child;
+  @override
+  Widget build(BuildContext context) =>
+      ComicMotion.of(context).raise == Duration.zero
+      ? child
+      : AnimatedBuilder(
+          animation: animation,
+          builder: (context, child) =>
+              Transform.scale(scale: .92 + .08 * animation.value, child: child),
+          child: child,
+        );
+}
+
+/// A bottom sheet route of Comic's on ui_core's [DesignBottomSheetRoute]: the page behind screened with dots of
+/// [screenInk] (law 1), the panel at most 640 wide and centred, so a press beside it on a wide window lands on the
+/// screen and closes it. It travels on an underdamped spring, held at its edge. Never faded (law 6): under Reduce
+/// Motion it cuts. Kept out of the barrel.
+class ComicBottomSheetRoute<T> extends DesignBottomSheetRoute<T> {
+  /// Creates a [ComicBottomSheetRoute] whose panel [builder] builds.
+  ComicBottomSheetRoute({
+    required Color screenInk,
+    required super.builder,
+    super.barrierDismissible,
+    super.barrierLabel,
+    super.settings,
+  }) : super(
+         useSafeArea: true,
+         dampingRatio: .75,
+         stiffness: 600,
+         barrierBuilder: (context, animation) =>
+             ComicScreenScrim(animation: animation, ink: screenInk),
+       );
+
+  /// The panel's widest.
+  static const double maxWidth = 640;
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) => Align(
+    alignment: Alignment.bottomCenter,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: maxWidth),
+      child: super.buildPage(context, animation, secondaryAnimation),
+    ),
+  );
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => child;
+}
 
 /// A scrollable inked sheet, with a close control and optional actions.
 ///
@@ -533,12 +629,12 @@ class ComicBottomSheet extends StatelessWidget {
         );
     final body = slivers != null
         ? CustomScrollView(
-            controller: controller,
+            controller: controller ?? _SheetScope.scrollOf(context),
             shrinkWrap: true,
             slivers: slivers!,
           )
         : SingleChildScrollView(
-            controller: controller,
+            controller: controller ?? _SheetScope.scrollOf(context),
             padding: const EdgeInsets.all(ComicSpace.gap),
             child: child,
           );
@@ -1492,12 +1588,17 @@ ComicRaised showComicTooltip(
   return handle;
 }
 
-/// Explains its child on hover, keyboard focus or long press.
+/// Explains its child on hover, keyboard focus or long press: ui_core's [DesignTooltip] in Comic's balloon
+/// ([ComicTooltipFace]), under the child, centred on it.
+///
+/// It shows when a pointer rests on the child for [waitDuration], at once when the keyboard's focus reaches it, and
+/// after a long press. The pointer may move onto the balloon and it stays; Escape hides it; one shows at a time, and
+/// along a toolbar the next shows at once. A screen reader hears [message] as the child's tooltip.
 ///
 /// ```dart
 /// ComicTooltip(message: 'Save this issue', child: ComicIconButton(icon, label: 'Save', onPressed: save))
 /// ```
-class ComicTooltip extends StatefulWidget {
+class ComicTooltip extends StatelessWidget {
   /// Creates a tooltip. Its child keeps its own semantics and activation.
   const ComicTooltip({
     super.key,
@@ -1518,8 +1619,37 @@ class ComicTooltip extends StatefulWidget {
 
   /// Appearance of the explanation balloon.
   final ComicStyle? style;
+
+  // Under the child and centred on it, 6 px off; above it where too little room is left below.
+  static const _placement = DesignOverlayPlacement(
+    side: DesignOverlaySide.below,
+    align: DesignOverlayAlign.center,
+    gap: 6,
+    preferredExtent: 48,
+    matchAnchorWidth: false,
+  );
+
   @override
-  State<ComicTooltip> createState() => _ComicTooltipState();
+  Widget build(BuildContext context) => DesignTooltip(
+    message: message,
+    hoverDelay: waitDuration,
+    placement: _placement,
+    tooltipBuilder: (context, info) => AnimatedBuilder(
+      animation: info.animation,
+      // A short pop from .92, opaque from its first frame, and cut away at the end: nothing fades (law 6). Under Reduce
+      // Motion it stands at its size.
+      builder: (context, face) => info.animation.isDismissed
+          ? const SizedBox.shrink()
+          : Transform.scale(
+              scale: designReduceMotionOf(context)
+                  ? 1
+                  : .92 + .08 * info.animation.value.clamp(0, 1),
+              child: face,
+            ),
+      child: ComicTooltipFace(message: message, style: style),
+    ),
+    child: child,
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -1537,76 +1667,6 @@ class ComicTooltip extends StatefulWidget {
         DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null),
       );
   }
-}
-
-class _ComicTooltipState extends State<ComicTooltip> {
-  ComicRaised? _up;
-  Timer? _timer;
-  void _show() {
-    _timer?.cancel();
-    if (!mounted || _up != null) return;
-    final box = context.findRenderObject();
-    if (box is! RenderBox || !box.hasSize) return;
-    final up = showComicTooltip(
-      context,
-      message: widget.message,
-      style: widget.style,
-      anchor: box.localToGlobal(Offset.zero) & box.size,
-    );
-    _up = up;
-    up.closed.whenComplete(() {
-      if (identical(up, _up)) _up = null;
-    });
-  }
-
-  void _hide() {
-    _timer?.cancel();
-    _up?.dismiss();
-  }
-
-  @override
-  void dispose() {
-    _hide();
-    super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(covariant ComicTooltip old) {
-    super.didUpdateWidget(old);
-    if (old.message != widget.message) _hide();
-  }
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    tooltip: widget.message,
-    child: MouseRegion(
-      onEnter: (_) {
-        _timer?.cancel();
-        _timer = Timer(widget.waitDuration, _show);
-      },
-      onExit: (_) => _hide(),
-      child: Focus(
-        canRequestFocus: false,
-        skipTraversal: true,
-        includeSemantics: false,
-        onFocusChange: (focused) {
-          if (focused &&
-              FocusManager.instance.highlightMode ==
-                  FocusHighlightMode.traditional) {
-            _show();
-          } else if (!focused) {
-            _hide();
-          }
-        },
-        child: GestureDetector(
-          excludeFromSemantics: true,
-          onLongPress: _show,
-          onLongPressEnd: (_) => _hide(),
-          child: widget.child,
-        ),
-      ),
-    ),
-  );
 }
 
 /// A short announcement printed as a narration panel, with an optional action.
@@ -2469,7 +2529,9 @@ class ComicMenuRowFace extends StatelessWidget {
 /// then the matches. Its active row wears the pointer's light Ben-Day shade and follows both the pointer and the Up and
 /// Down keys, which wrap at the ends; Enter or a press takes it and writes its words into the field, which keeps the
 /// focus, and while the field holds them the list shows that option chosen (the caption's flat yellow and a check).
-/// Options match on [displayStringForOption]'s words, any part, any case.
+/// Options match on [displayStringForOption]'s words, any part, any case. Given a [search] (a server's, say), it asks
+/// that instead: the list says it is looking while the answer is on its way, and that the search failed, with a Try
+/// again the keys reach with Down, if it throws.
 ///
 /// ```dart
 /// ComicCombobox<String>(label: 'City', options: const ['Lisbon', 'London', 'Lyon'], onSelected: pick)
@@ -2490,10 +2552,21 @@ class ComicCombobox<T extends Object> extends StatefulWidget {
     this.isOptionEnabled,
     this.focusNode,
     this.autofocus = false,
+    this.search,
+    this.debounceDuration,
   });
 
-  /// Everything the field can offer, in the order offered.
+  /// Everything the field can offer, in the order offered. With a [search], the options it offers before any words
+  /// are typed are the search's for no words, and these go unused.
   final List<T> options;
+
+  /// Finds the options for the typed words in place of matching [options]: ui_core's `DesignCombobox.search`. Only
+  /// the latest words' answer shows; while it is on its way the list says it is looking, and if it throws, the list
+  /// says the search failed and offers Try again, the field keeping the focus.
+  final DesignOptionSearch<T>? search;
+
+  /// How long typing rests before [search] runs: one search a pause, not one a letter. Null runs it at every change.
+  final Duration? debounceDuration;
 
   /// Whether an option can be taken; null: all can. One that cannot shows in the secondary ink, and the keys, the
   /// pointer and Enter pass over it.
@@ -2562,6 +2635,14 @@ class ComicCombobox<T extends Object> extends StatefulWidget {
           ifTrue: 'autofocus',
           defaultValue: false,
         ),
+      )
+      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
+        ),
       );
   }
 }
@@ -2605,7 +2686,8 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
     DesignCombobox<T>(
       controller: _text,
       focusNode: widget.focusNode,
-      search: _search,
+      search: widget.search ?? _search,
+      debounceDuration: widget.debounceDuration,
       displayStringForOption: _words,
       // The option taken: an opened list starts on it.
       value: _taken,
@@ -2637,23 +2719,79 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
       ),
       surfaceBuilder: (context, list) =>
           ComicRaisedFrame(style: widget.style, child: list),
-      emptyBuilder: (context) {
-        final t = ComicTheme.of(context);
-        return SizedBox(
-          width: double.infinity,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: comicFieldListWords(t, widget.style),
-              vertical: 10,
+      emptyBuilder: (context) => comicSearchNote(
+        context,
+        DesignLocalizations.of(context).noResultsLabel,
+        widget.style,
+      ),
+      // The search's states, when an app searches (Comic's own match over the options never waits).
+      loadingBuilder: widget.search == null
+          ? null
+          : (context) => comicSearchNote(
+              context,
+              DesignLocalizations.of(context).loadingLabel,
+              widget.style,
             ),
-            child: Text(
-              DesignLocalizations.of(context).noResultsLabel,
-              style: t.type.body.copyWith(color: t.colors.textSecondary),
-            ),
-          ),
-        );
-      },
+      errorBuilder: widget.search == null
+          ? null
+          : (context, failure) =>
+                comicSearchFailed(context, failure, widget.style),
     ),
+  );
+}
+
+/// A line in a field's list that is no option, in the secondary ink where the options' words start: nothing matches,
+/// a search is looking, or it failed.
+Widget comicSearchNote(
+  BuildContext context,
+  String words, [
+  ComicStyle? style,
+]) {
+  final t = ComicTheme.of(context);
+  return SizedBox(
+    width: double.infinity,
+    child: Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: comicFieldListWords(t, style),
+        vertical: 10,
+      ),
+      child: Text(
+        words,
+        style: t.type.body.copyWith(color: t.colors.textSecondary),
+      ),
+    ),
+  );
+}
+
+/// A field's list after its search threw ([failure]): that it failed, and Try again as a menu row, lit while the keys
+/// are on it or the pointer is over it.
+Widget comicSearchFailed(
+  BuildContext context,
+  DesignSearchError failure, [
+  ComicStyle? style,
+]) {
+  final words = DesignLocalizations.of(context);
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      // The list's own node says it as it appears.
+      ExcludeSemantics(
+        child: comicSearchNote(context, words.searchFailedMessage, style),
+      ),
+      DesignPressable(
+        onPressed: failure.retry,
+        semanticLabel: words.retryButtonLabel,
+        builder: (context, states, _) => ComicMenuRowFace(
+          states: {
+            if (failure.focused || states.contains(WidgetState.hovered))
+              WidgetState.focused,
+          },
+          label: words.retryButtonLabel,
+          start: comicFieldListWords(ComicTheme.of(context), style),
+        ),
+      ),
+    ],
   );
 }
 

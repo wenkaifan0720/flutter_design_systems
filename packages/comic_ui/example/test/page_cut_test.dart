@@ -1,17 +1,16 @@
-// A page change under Comic is a cut on Flutter's own Material too. comic_ui stands on material_ui, so the
-// PageTransitionsTheme ComicTheme gives the routes it reaches is material_ui's, and Flutter's MaterialPageRoute (what an
-// app on Flutter's MaterialApp pushes, as this example does) never reads it. The app gives
-// comicPageTransitions to its own ThemeData, the README's line, and a page it pushes stands whole and
-// in place in its first frame, nothing left running. Without that line the same route flies in, and the test sees it.
+// A page change under Comic is a cut on an app's own MaterialApp. comic_ui stands on material_ui (Flutter's Material
+// from 3.50), and ComicTheme gives material_ui's Theme comicPageTransitions, so a MaterialPageRoute the app pushes
+// stands whole and in place in its first frame, nothing left running, with no theme of the app's (the README's quick
+// start) and with the line an app on Flutter's own MaterialApp needs (the README's set-up) alike.
 //
 // A widget test: the export puts package/example_unit_test/ in the example's test/, where `flutter test` runs it.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui_example/gallery_pages.dart' show GalleryPage;
 import 'package:comic_ui_example/main.dart';
 
-/// Flutter's MaterialApp with Comic installed as the README shows, and with or without its page change.
+/// A MaterialApp with Comic installed as the README shows, with or without the page change in its own theme.
 Widget _app(GlobalKey<NavigatorState> navigator, {required bool cut}) =>
     MaterialApp(
       navigatorKey: navigator,
@@ -27,7 +26,7 @@ Widget _app(GlobalKey<NavigatorState> navigator, {required bool cut}) =>
       home: const ComicScaffold(body: Text('The first page')),
     );
 
-/// Flutter's own route, as an app pushes it.
+/// Material's own route, as an app pushes it.
 Route<void> _second() => MaterialPageRoute<void>(
   builder: (context) => const ComicScaffold(
     topBar: ComicAppBar(title: 'The second page'),
@@ -63,31 +62,33 @@ Future<void> _cuts(
 }
 
 void main() {
-  testWidgets("Flutter's MaterialPageRoute cuts under the README's ThemeData", (
-    tester,
-  ) async {
-    final navigator = GlobalKey<NavigatorState>();
-    await tester.pumpWidget(_app(navigator, cut: true));
-    expect(
-      comicPageTransitions.values,
-      everyElement(isA<PageTransitionsBuilder>()),
-      reason: "One map for both Materials' PageTransitionsTheme",
-    );
-    await _cuts(tester, navigator.currentState!, 'The first page', 'Its words');
-  }, variant: TargetPlatformVariant.all());
-
-  testWidgets("without the line, Flutter's MaterialPageRoute flies in", (
+  testWidgets("a MaterialPageRoute cuts with no theme of the app's", (
     tester,
   ) async {
     final navigator = GlobalKey<NavigatorState>();
     await tester.pumpWidget(_app(navigator, cut: false));
-    navigator.currentState!.push(_second()).ignore();
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 16));
-    expect(tester.hasRunningAnimations, isTrue);
-    await tester.pumpAndSettle();
-    expect(find.text('Its words'), findsOneWidget);
+    await _cuts(tester, navigator.currentState!, 'The first page', 'Its words');
   }, variant: TargetPlatformVariant.all());
+
+  testWidgets(
+    "a MaterialPageRoute cuts under the README's ThemeData line too",
+    (tester) async {
+      final navigator = GlobalKey<NavigatorState>();
+      await tester.pumpWidget(_app(navigator, cut: true));
+      expect(
+        comicPageTransitions.values,
+        everyElement(isA<PageTransitionsBuilder>()),
+        reason: "One map for both Materials' PageTransitionsTheme",
+      );
+      await _cuts(
+        tester,
+        navigator.currentState!,
+        'The first page',
+        'Its words',
+      );
+    },
+    variant: TargetPlatformVariant.all(),
+  );
 
   testWidgets("a page the example's own app pushes cuts", (tester) async {
     tester.view.devicePixelRatio = 1;
@@ -119,10 +120,10 @@ void main() {
   }, variant: TargetPlatformVariant.all());
 
   testWidgets(
-    "on iOS the edge swipe still takes a page back under the README's ThemeData, the page following the finger",
+    "on iOS the edge swipe still takes a page back, the page following the finger",
     (tester) async {
       final navigator = GlobalKey<NavigatorState>();
-      await tester.pumpWidget(_app(navigator, cut: true));
+      await tester.pumpWidget(_app(navigator, cut: false));
       navigator.currentState!.push(_second()).ignore();
       await tester.pump();
       final screen = tester.getRect(find.byType(Navigator).first);

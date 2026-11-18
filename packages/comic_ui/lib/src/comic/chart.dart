@@ -320,9 +320,14 @@ class ComicBarChart extends ComicLineChart {
 }
 
 class _ComicChartState extends State<ComicChart> {
-  int? _at;
   bool _focused = false;
-  final _focus = FocusNode(debugLabel: 'ComicChart');
+  // ui_core's chart takes the keys on this node; Comic rings the whole chart (its labels and key too) while it has them.
+  late final FocusNode _focus = FocusNode(debugLabel: 'ComicChart')
+    ..addListener(() {
+      if (_focused != _focus.hasFocus) {
+        setState(() => _focused = _focus.hasFocus);
+      }
+    });
 
   @override
   void dispose() {
@@ -332,45 +337,6 @@ class _ComicChartState extends State<ComicChart> {
 
   int get _count =>
       widget.series.fold<int>(0, (n, s) => math.max(n, s.values.length));
-
-  int _nearest(double dx, double width, double start, double end) {
-    if (_count <= 1) return 0;
-    final count = math.max(_count, widget.labels.length);
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    // The plot as the ink lays it: the axis gutter on the start side, the
-    // last label's room on the end side, 4 of air inside each.
-    final left = (rtl ? end : start) + 4;
-    final plot = math.max(1.0, width - start - end - 8);
-    var at = ((dx - left) / plot).clamp(0.0, 1.0);
-    if (rtl) at = 1 - at;
-    return widget._bars
-        ? (at * count).floor().clamp(0, _count - 1)
-        : (at * (count - 1)).round().clamp(0, _count - 1);
-  }
-
-  KeyEventResult _keys(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
-    final count = _count;
-    if (count == 0) return KeyEventResult.ignored;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final key = event.logicalKey;
-    final step = key == LogicalKeyboardKey.arrowRight
-        ? (rtl ? -1 : 1)
-        : key == LogicalKeyboardKey.arrowLeft
-        ? (rtl ? 1 : -1)
-        : null;
-    if (key == LogicalKeyboardKey.escape && _at != null) {
-      setState(() => _at = null);
-      return KeyEventResult.handled;
-    }
-    if (step == null) return KeyEventResult.ignored;
-    setState(
-      () => _at = ((_at ?? (step > 0 ? -1 : count)) + step).clamp(0, count - 1),
-    );
-    return KeyEventResult.handled;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -441,56 +407,60 @@ class _ComicChartState extends State<ComicChart> {
     final end = labelled && !widget._bars && lastPoint < widget.labels.length
         ? math.max(0.0, half(lastPoint))
         : 0.0;
-    final shown = _at == null || _at! >= _count ? null : _at;
-    final plate = shown == null
-        ? null
-        : [
-            if (shown < widget.labels.length) widget.labels[shown],
-            for (final s in widget.series)
-              if (shown < s.values.length && s.values[shown] != null)
-                '${s.label}: ${fmt(s.values[shown]!)}',
-          ];
-    final plot = LayoutBuilder(
-      builder: (context, box) => MouseRegion(
-        onHover: widget.loading || nothing
-            ? null
-            : (e) => setState(
-                () => _at = _nearest(
-                  e.localPosition.dx,
-                  box.maxWidth,
-                  start,
-                  end,
-                ),
-              ),
-        onExit: (_) => setState(() => _at = null),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: widget.loading || nothing
-              ? null
-              : (d) => setState(
-                  () => _at = _nearest(
-                    d.localPosition.dx,
-                    box.maxWidth,
-                    start,
-                    end,
+    final slots = math.max(_count, widget.labels.length);
+    String slotName(int i) =>
+        i >= 0 && i < widget.labels.length ? widget.labels[i] : '${i + 1}';
+    _focus.canRequestFocus = !widget.loading && !nothing;
+    // ui_core's chart picks the point under a pointer or a finger, steps it with the keys and lets Escape drop it, and
+    // tells a screen reader the chart and each point. Its plot is Comic's: the axis gutter and the last label's room
+    // beside it, 4 of air inside each, so its points stand where the ink draws them.
+    final plot = SizedBox(
+      height: widget.height,
+      child: DesignChart(
+        focusNode: _focus,
+        semanticLabel: widget.label,
+        semanticSummary: read,
+        xAxis: widget._bars ? DesignChartXAxis.band : DesignChartXAxis.linear,
+        categories: widget._bars
+            ? [for (var i = 0; i < slots; i++) slotName(i)]
+            : null,
+        padding: EdgeInsetsDirectional.only(start: start + 4, end: end + 4),
+        formatX: (x) => slotName(x.round()),
+        formatY: fmt,
+        series: widget.loading || nothing
+            ? const []
+            : [
+                for (final s in widget.series)
+                  DesignChartSeries(
+                    label: s.label,
+                    points: [
+                      for (var i = 0; i < slots; i++)
+                        DesignChartPoint(
+                          i.toDouble(),
+                          i < s.values.length &&
+                                  s.values[i] != null &&
+                                  s.values[i]!.isFinite
+                              ? s.values[i]
+                              : null,
+                        ),
+                    ],
                   ),
-                ),
-          onHorizontalDragUpdate: widget.loading || nothing
+              ],
+        builder: (context, chart) {
+          final at = chart.active?.index;
+          final shown = at == null || at >= _count ? null : at;
+          final plate = shown == null
               ? null
-              : (d) => setState(
-                  () => _at = _nearest(
-                    d.localPosition.dx,
-                    box.maxWidth,
-                    start,
-                    end,
-                  ),
-                ),
-          child: Stack(
+              : [
+                  if (shown < widget.labels.length) widget.labels[shown],
+                  for (final s in widget.series)
+                    if (shown < s.values.length && s.values[shown] != null)
+                      '${s.label}: ${fmt(s.values[shown]!)}',
+                ];
+          return Stack(
             clipBehavior: Clip.none,
             children: [
-              SizedBox(
-                height: widget.height,
-                width: box.maxWidth,
+              SizedBox.expand(
                 child: RepaintBoundary(
                   child: CustomPaint(
                     painter: _ChartInk(
@@ -572,8 +542,8 @@ class _ComicChartState extends State<ComicChart> {
                   ),
                 ),
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
     Widget entry(Color swatch, String words) => Row(
@@ -591,58 +561,49 @@ class _ComicChartState extends State<ComicChart> {
         Text(words, style: axis),
       ],
     );
-    return Semantics(
-      container: true,
-      label: widget.label,
-      value: read,
-      excludeSemantics: true,
-      child: Focus(
-        focusNode: _focus,
-        onKeyEvent: _keys,
-        canRequestFocus: !widget.loading && !nothing,
-        onFocusChange: (on) => setState(() => _focused = on),
-        // A chart is a stop in the tab order (the arrows read its points), so it wears the ring every stop wears,
-        // round the whole chart at the control step.
-        child: ComicHighlight(
-          states: _focused
-              ? const {WidgetState.focused}
-              : const <WidgetState>{},
-          shape: t.shapes.small,
-          wash: false,
-          // In a box of fixed height the plot gives up what its labels and key need; unbounded, it keeps its own height.
-          child: LayoutBuilder(
-            builder: (context, room) => Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (room.maxHeight.isFinite) Flexible(child: plot) else plot,
-                if (labelled)
-                  Padding(
-                    padding: EdgeInsetsDirectional.only(start: start, end: end),
-                    child: _XLabels(
-                      labels: widget.labels,
-                      bars: widget._bars,
-                      count: math.max(_count, widget.labels.length),
-                      style: xStyle,
-                    ),
+    // A chart is a stop in the tab order (the arrows read its points), so it wears the ring every stop wears, round the
+    // whole chart at the control step. Its words are its one node's, ui_core's chart's (its label, its summary, a step
+    // per point): the labels and the key under the plot are not read again.
+    return ComicHighlight(
+      states: _focused ? const {WidgetState.focused} : const <WidgetState>{},
+      shape: t.shapes.small,
+      wash: false,
+      // In a box of fixed height the plot gives up what its labels and key need; unbounded, it keeps its own height.
+      child: LayoutBuilder(
+        builder: (context, room) => Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (room.maxHeight.isFinite) Flexible(child: plot) else plot,
+            if (labelled)
+              ExcludeSemantics(
+                child: Padding(
+                  padding: EdgeInsetsDirectional.only(start: start, end: end),
+                  child: _XLabels(
+                    labels: widget.labels,
+                    bars: widget._bars,
+                    count: math.max(_count, widget.labels.length),
+                    style: xStyle,
                   ),
-                if (!widget.loading && !nothing) ...[
-                  const SizedBox(height: ComicSpace.close),
-                  Wrap(
-                    spacing: ComicSpace.near,
-                    runSpacing: ComicSpace.close,
-                    children: [
-                      for (final (i, s) in widget.series.indexed)
-                        entry(c.series[i % c.series.length], s.label),
-                      // The band keys its own fill, as a series keys its ink.
-                      if (widget.band?.label != null)
-                        entry(c.currentUserTint, widget.band!.label!),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
+                ),
+              ),
+            if (!widget.loading && !nothing) ...[
+              const SizedBox(height: ComicSpace.close),
+              ExcludeSemantics(
+                child: Wrap(
+                  spacing: ComicSpace.near,
+                  runSpacing: ComicSpace.close,
+                  children: [
+                    for (final (i, s) in widget.series.indexed)
+                      entry(c.series[i % c.series.length], s.label),
+                    // The band keys its own fill, as a series keys its ink.
+                    if (widget.band?.label != null)
+                      entry(c.currentUserTint, widget.band!.label!),
+                  ],
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );

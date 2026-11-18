@@ -1,7 +1,7 @@
 /// People in the look: initials, a picture or a drawn bust. The cast is fiction: a bust is a shape selected by enum or seed, nobody's likeness.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 import '../kit.dart';

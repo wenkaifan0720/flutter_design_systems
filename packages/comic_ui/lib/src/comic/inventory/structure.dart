@@ -37,7 +37,7 @@ const Set<WidgetState> _focused = {WidgetState.focused};
 /// walk the bar and the lists. An entry's `data`, when it is an `IconData`, is drawn beside its words.
 ///
 /// ```dart
-/// ComicMenuBar(menus: const [DesignMenuEntry(label: 'File', children: [DesignMenuEntry(label: 'New', shortcut: 'Ctrl+N')])])
+/// ComicMenuBar(menus: [DesignMenuEntry(label: 'File', children: [DesignMenuEntry(label: 'New', shortcut: ComicKbd.labelOf(context, const SingleActivator(LogicalKeyboardKey.keyN, control: true)))])])
 /// ```
 class ComicMenuBar extends StatelessWidget {
   /// Creates a [ComicMenuBar].
@@ -59,7 +59,6 @@ class ComicMenuBar extends StatelessWidget {
       look.shape ?? t.shapes.medium,
       rim.width + 4,
     );
-    ComicLastInput.follow();
     return DesignMenuBar(
       menus: menus,
       semanticLabel: label ?? DesignLocalizations.of(context).menuBarLabel,
@@ -84,7 +83,6 @@ class ComicMenuBar extends StatelessWidget {
       itemBuilder: (context, entry, level, states) {
         if (level == DesignMenuLevel.menu) {
           return comicMenuRow(
-            context,
             states,
             (states) => ComicMenuRowFace(
               states: states,
@@ -200,7 +198,7 @@ DesignCommandPalette _palette(
                     label ??
                     DesignLocalizations.of(context).commandPaletteLabel,
                 hint: hint ?? ComicLocalizations.of(context).searchCommands,
-                onSubmitted: (_) => field.submit(),
+                onEditingComplete: field.submit,
               ),
             ),
           ],

@@ -10,6 +10,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart' show imageCache;
+import 'package:flutter_test/flutter_test.dart' show tearDown;
 import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
@@ -17,5 +19,13 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
     LeakTesting.enable();
     LeakTracking.warnForUnsupportedPlatforms = false;
   }
+  // A picture a test leaves in Flutter's image cache is the cache's, not a
+  // leak: the cache is emptied after each test, which disposes each one.
+  // Drip's design-systems gate runs the kit-parts contract under these rules,
+  // and without this its pictures were reported as never disposed. A plain
+  // test starts no binding, so it has no image cache to empty.
+  tearDown(() {
+    if (BindingBase.debugBindingType() != null) imageCache.clear();
+  });
   await testMain();
 }

@@ -1,7 +1,7 @@
 /// The comic page's structure: inked panels with gutters in tiers, the narrator's caption, and the lettered heads.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 import '../kit.dart';

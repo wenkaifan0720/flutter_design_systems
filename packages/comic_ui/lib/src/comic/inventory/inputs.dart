@@ -726,6 +726,7 @@ class ComicMultiSelect<T extends Object> extends StatefulWidget {
     required this.onChanged,
     this.options = const [],
     this.search,
+    this.debounceDuration,
     this.labelOf,
     this.onCreate,
     this.label,
@@ -748,8 +749,13 @@ class ComicMultiSelect<T extends Object> extends StatefulWidget {
   /// What typing suggests (less what is chosen).
   final Iterable<T> options;
 
-  /// Finds suggestions for the typed words, in place of filtering [options].
+  /// Finds suggestions for the typed words, in place of filtering [options]. Only the latest words' answer shows;
+  /// while it is on its way the list says it is looking, and if it throws, the list says the search failed and offers
+  /// Try again, the editor keeping the focus.
   final FutureOr<Iterable<T>> Function(String query)? search;
+
+  /// How long typing rests before [search] runs: one search a pause, not one a letter. Null runs it at every change.
+  final Duration? debounceDuration;
 
   /// A value's words; `toString` when null.
   final String Function(T value)? labelOf;
@@ -793,6 +799,13 @@ class ComicMultiSelect<T extends Object> extends StatefulWidget {
         ObjectFlagProperty<FutureOr<Iterable<T>> Function(String query)>.has(
           'search',
           search,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
         ),
       )
       ..add(
@@ -855,6 +868,16 @@ class _ComicMultiSelectState<T extends Object>
       onChanged: widget.onChanged,
       options: widget.options,
       search: widget.search,
+      debounceDuration: widget.debounceDuration,
+      loadingBuilder: widget.search == null
+          ? null
+          : (context) => comicSearchNote(
+              context,
+              DesignLocalizations.of(context).loadingLabel,
+            ),
+      errorBuilder: widget.search == null
+          ? null
+          : (context, failure) => comicSearchFailed(context, failure),
       displayStringForOption: _words,
       onCreate: widget.onCreate,
       maxTags: widget.maxTags,
@@ -1273,7 +1296,13 @@ class _RailInk extends CustomPainter {
 
 String _locale(BuildContext context) {
   final locale = Localizations.maybeLocaleOf(context)?.toString() ?? 'en_US';
-  return DateFormat.localeExists(locale) ? locale : 'en_US';
+  // intl knows only en_US until the app loads its date data (Comic's delegate does, as Flutter's global ones do);
+  // before then asking after any other locale throws, so the dates read in English.
+  try {
+    return DateFormat.localeExists(locale) ? locale : 'en_US';
+  } on Exception {
+    return 'en_US';
+  }
 }
 
 /// A month or two of the date picker's caption cells over a calendar the caller holds: one day, a span, or several
@@ -1719,8 +1748,9 @@ Future<DesignDateRange?> showComicDateRangePicker(
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-/// One value off a turning drum: the rows roll past a caption band that holds the chosen one. A drag or a fling turns
-/// it, the arrows step it, and a screen reader hears it as an adjustable value.
+/// One value off a turning drum, on ui_core's [DesignWheelPicker]: the rows roll past a caption band that holds the
+/// chosen one. A drag or a fling turns it; Up and Down step it, Page Up and Down by five, Home and End to the ends, and
+/// typing jumps to a value's words; a screen reader hears it as an adjustable value.
 ///
 /// ```dart
 /// ComicWheelPicker<int>(label: 'Copies', values: const [1, 2, 3, 4, 5], value: copies, labelOf: (n) => '$n', onChanged: (n) => setState(() => copies = n))
@@ -1806,51 +1836,17 @@ class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
   @override
   FocusNode? get callerFocus => widget.focusNode;
 
-  late final FixedExtentScrollController _wheel = FixedExtentScrollController(
-    initialItem: math.max(0, widget.values.indexOf(widget.value)),
-  );
-  bool _focused = false, _hovered = false;
-
   int get _index => math.max(0, widget.values.indexOf(widget.value));
 
-  @override
-  void didUpdateWidget(ComicWheelPicker<T> old) {
-    super.didUpdateWidget(old);
-    if (_wheel.hasClients && _wheel.selectedItem != _index) {
-      _wheel.jumpToItem(_index);
+  // ui_core's picker owns its column's focus: the caller's node stands round it and hands focus in.
+  void _handIn(bool focused) {
+    if (!focused || !focus.hasPrimaryFocus) return;
+    for (final node in focus.descendants) {
+      if (node.canRequestFocus && !node.skipTraversal) {
+        node.requestFocus();
+        return;
+      }
     }
-  }
-
-  @override
-  void dispose() {
-    _wheel.dispose();
-    super.dispose();
-  }
-
-  void _step(int by) {
-    final next = (_index + by).clamp(0, widget.values.length - 1);
-    if (next == _index) return;
-    widget.onChanged?.call(widget.values[next]);
-  }
-
-  KeyEventResult _keys(FocusNode node, KeyEvent event) {
-    if (widget.onChanged == null ||
-        (event is! KeyDownEvent && event is! KeyRepeatEvent)) {
-      return KeyEventResult.ignored;
-    }
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.arrowDown) {
-      _step(1);
-    } else if (key == LogicalKeyboardKey.arrowUp) {
-      _step(-1);
-    } else if (key == LogicalKeyboardKey.home) {
-      _step(-_index);
-    } else if (key == LogicalKeyboardKey.end) {
-      _step(widget.values.length - 1 - _index);
-    } else {
-      return KeyEventResult.ignored;
-    }
-    return KeyEventResult.handled;
   }
 
   @override
@@ -1859,58 +1855,88 @@ class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
     final live = widget.onChanged != null;
     final frame = t.shapes.medium;
     final band = t.shapes.small;
-    final index = _index;
-    final wheel = SizedBox(
-      height: widget.itemExtent * widget.visible,
-      child: Stack(
-        children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: ComicSpace.close),
-              child: SizedBox(
-                height: widget.itemExtent,
-                width: double.infinity,
-                child: DecoratedBox(
-                  decoration: ShapeDecoration(
-                    color: c.caption,
-                    shape: band.copyWith(
-                      side: BorderSide(color: c.nightLine, width: 2.5),
+    final picker = DesignWheelPicker(
+      columns: (_) => [
+        DesignWheelColumn(
+          itemCount: widget.values.length,
+          itemLabel: (i) => widget.labelOf(widget.values[i]),
+          semanticLabel: widget.label,
+        ),
+      ],
+      selection: [_index],
+      onChanged: live
+          ? (selection) {
+              if (selection.first != _index) {
+                widget.onChanged!(widget.values[selection.first]);
+              }
+            }
+          : null,
+      itemExtent: widget.itemExtent,
+      visibleItemCount: widget.visible,
+      // Comic's drum: a wider wheel than iOS's, unsqueezed, the rows off the band faded back.
+      diameterRatio: 1.8,
+      squeeze: 1,
+      overAndUnderCenterOpacity: .6,
+      autofocus: widget.autofocus,
+      itemBuilder: (context, row) => Center(
+        child: Text(
+          row.label,
+          maxLines: 1,
+          style: t.type.text(
+            18,
+            1.2,
+            weight: FontWeight.w800,
+            color: row.selected ? c.onCaption : c.text,
+          ),
+        ),
+      ),
+      columnBuilder: (context, column, wheel) => ComicHighlight(
+        states: {
+          for (final state in const [WidgetState.focused, WidgetState.hovered])
+            if (column.states.contains(state)) state,
+        },
+        shape: frame,
+        wash: false,
+        child: DecoratedBox(
+          position: DecorationPosition.foreground,
+          decoration: ShapeDecoration(
+            shape: frame.copyWith(
+              side: BorderSide(color: c.nightLine, width: 2.5),
+            ),
+          ),
+          child: DecoratedBox(
+            decoration: ShapeDecoration(
+              color: c.dark ? c.card : c.control,
+              shape: frame,
+            ),
+            child: ClipPath(
+              clipper: ShapeBorderClipper(shape: frame),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: ComicSpace.close,
+                    ),
+                    child: SizedBox(
+                      height: widget.itemExtent,
+                      width: double.infinity,
+                      child: DecoratedBox(
+                        decoration: ShapeDecoration(
+                          color: c.caption,
+                          shape: band.copyWith(
+                            side: BorderSide(color: c.nightLine, width: 2.5),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  wheel,
+                ],
               ),
             ),
           ),
-          ListWheelScrollView.useDelegate(
-            controller: _wheel,
-            itemExtent: widget.itemExtent,
-            diameterRatio: 1.8,
-            overAndUnderCenterOpacity: .6,
-            physics: live
-                ? const FixedExtentScrollPhysics()
-                : const NeverScrollableScrollPhysics(),
-            onSelectedItemChanged: live
-                ? (i) {
-                    if (i != _index) widget.onChanged!(widget.values[i]);
-                  }
-                : null,
-            childDelegate: ListWheelChildBuilderDelegate(
-              childCount: widget.values.length,
-              builder: (context, i) => Center(
-                child: Text(
-                  widget.labelOf(widget.values[i]),
-                  maxLines: 1,
-                  style: t.type.text(
-                    18,
-                    1.2,
-                    weight: FontWeight.w800,
-                    color: i == index ? c.onCaption : c.text,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
     // A picker's width at the start of a wider column, as the date picker's: its chosen band never spans a desktop
@@ -1921,76 +1947,14 @@ class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
       heightFactor: 1,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: ComicDatePicker.maxWidth),
-        child: _drum(live, index, frame, wheel),
-      ),
-    );
-  }
-
-  Widget _drum(bool live, int index, OutlinedBorder frame, Widget wheel) {
-    final c = ComicTheme.of(context).colors;
-    return Semantics(
-      container: true,
-      slider: true,
-      label: widget.label,
-      value: widget.labelOf(widget.value),
-      enabled: live,
-      increasedValue: live && index < widget.values.length - 1
-          ? widget.labelOf(widget.values[index + 1])
-          : null,
-      decreasedValue: live && index > 0
-          ? widget.labelOf(widget.values[index - 1])
-          : null,
-      onIncrease: live && index < widget.values.length - 1
-          ? () => _step(1)
-          : null,
-      onDecrease: live && index > 0 ? () => _step(-1) : null,
-      child: ExcludeSemantics(
         child: Focus(
-          canRequestFocus: false,
+          focusNode: focus,
           skipTraversal: true,
           includeSemantics: false,
-          onKeyEvent: _keys,
-          child: FocusableActionDetector(
-            autofocus: widget.autofocus,
-            enabled: live,
-            focusNode: focus,
-            mouseCursor: live
-                ? SystemMouseCursors.grab
-                : SystemMouseCursors.basic,
-            onShowFocusHighlight: (value) => setState(() => _focused = value),
-            onShowHoverHighlight: (value) => setState(() => _hovered = value),
-            child: LimitedBox(
-              maxWidth: 200,
-              child: ComicScreened(
-                on: !live,
-                child: ComicHighlight(
-                  states: {
-                    if (_focused) WidgetState.focused,
-                    if (_hovered) WidgetState.hovered,
-                  },
-                  shape: frame,
-                  wash: false,
-                  child: DecoratedBox(
-                    position: DecorationPosition.foreground,
-                    decoration: ShapeDecoration(
-                      shape: frame.copyWith(
-                        side: BorderSide(color: c.nightLine, width: 2.5),
-                      ),
-                    ),
-                    child: DecoratedBox(
-                      decoration: ShapeDecoration(
-                        color: c.dark ? c.card : c.control,
-                        shape: frame,
-                      ),
-                      child: ClipPath(
-                        clipper: ShapeBorderClipper(shape: frame),
-                        child: wheel,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          onFocusChange: _handIn,
+          child: LimitedBox(
+            maxWidth: 200,
+            child: ComicScreened(on: !live, child: picker),
           ),
         ),
       ),

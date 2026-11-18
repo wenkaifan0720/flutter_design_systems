@@ -134,6 +134,7 @@ const _flows = <String, String>{
   'ComicStars':
       'a row of small drawings, each its own size, standing at the start',
   'ComicNavigationBar': 'the full width of the page',
+  'ComicTabBar': 'one trough across a phone\'s row; from 600 up it hugs its tabs; its thumb paints to the chosen tab',
   'ComicNavigationRail':
       'the full height of its column, at the rail\'s own width',
   'ComicHighlight':

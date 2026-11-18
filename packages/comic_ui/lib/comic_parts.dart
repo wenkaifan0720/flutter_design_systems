@@ -14,7 +14,6 @@
 library;
 
 export 'package:ui_core/ui_core.dart';
-export 'package:ui_core/alignment.dart';
 export 'package:ui_core/inventory.dart';
 
 export 'comic_ui.dart';

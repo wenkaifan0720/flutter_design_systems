@@ -1,7 +1,7 @@
 /// A page's opening panel. The cover is the look's whole home, once; a splash opens any other page. Both have a band of about 130 on a phone so the work shows first.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 import '../kit.dart';

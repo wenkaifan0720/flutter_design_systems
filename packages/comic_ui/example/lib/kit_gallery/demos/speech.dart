@@ -1,7 +1,7 @@
 /// What the people say and what the page shouts: the shapes that carry words. A balloon sizes to any words with its tail fused on; a burst fits any number.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 import '../kit.dart';

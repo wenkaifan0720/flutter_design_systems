@@ -4,7 +4,8 @@ library;
 
 import 'dart:ui' show PointerDeviceKind;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 import '../kit.dart';
@@ -139,13 +140,14 @@ Widget kitSpecimenSplitButton() => Builder(
   ),
 );
 
+// The keys as the platform orders them and the reader's language names them (ComicKbd.shortcut).
 Widget kitSpecimenKbd() => const Wrap(
   spacing: 12,
   runSpacing: 12,
   children: [
-    ComicKbd(['Ctrl', 'K']),
-    ComicKbd(['Esc']),
-    ComicKbd(['Shift', 'Enter']),
+    ComicKbd.shortcut(SingleActivator(LogicalKeyboardKey.keyK, control: true)),
+    ComicKbd.shortcut(SingleActivator(LogicalKeyboardKey.escape)),
+    ComicKbd.shortcut(SingleActivator(LogicalKeyboardKey.enter, shift: true)),
   ],
 );
 
@@ -351,45 +353,81 @@ Widget kitSpecimenActionSheet() => Builder(
 
 // ---------------------------------------------------------------- structure
 
-Widget kitSpecimenMenuBar() => ComicMenuBar(
-  menus: [
-    DesignMenuEntry(
-      label: 'File',
-      children: [
-        DesignMenuEntry(label: 'New', shortcut: 'Ctrl+N', onPressed: () {}),
-        DesignMenuEntry(label: 'Open', shortcut: 'Ctrl+O', onPressed: () {}),
-        const DesignMenuEntry.divider(),
-        DesignMenuEntry(
-          label: 'Export',
-          children: [
-            DesignMenuEntry(label: 'As PDF', onPressed: () {}),
-            DesignMenuEntry(label: 'As images', onPressed: () {}),
-          ],
-        ),
-      ],
-    ),
-    DesignMenuEntry(
-      label: 'Edit',
-      children: [
-        DesignMenuEntry(label: 'Undo', shortcut: 'Ctrl+Z', onPressed: () {}),
-        const DesignMenuEntry(label: 'Redo', shortcut: 'Ctrl+Y'),
-      ],
-    ),
-    DesignMenuEntry(
-      label: 'View',
-      children: [
-        DesignMenuEntry(label: 'Show grid', checked: true, onPressed: () {}),
-        DesignMenuEntry(label: 'Show bleed', checked: false, onPressed: () {}),
-      ],
-    ),
-  ],
+Widget kitSpecimenMenuBar() => Builder(
+  builder: (context) => ComicMenuBar(
+    menus: [
+      DesignMenuEntry(
+        label: 'File',
+        children: [
+          DesignMenuEntry(
+            label: 'New',
+            shortcut: ComicKbd.labelOf(
+              context,
+              const SingleActivator(LogicalKeyboardKey.keyN, control: true),
+            ),
+            onPressed: () {},
+          ),
+          DesignMenuEntry(
+            label: 'Open',
+            shortcut: ComicKbd.labelOf(
+              context,
+              const SingleActivator(LogicalKeyboardKey.keyO, control: true),
+            ),
+            onPressed: () {},
+          ),
+          const DesignMenuEntry.divider(),
+          DesignMenuEntry(
+            label: 'Export',
+            children: [
+              DesignMenuEntry(label: 'As PDF', onPressed: () {}),
+              DesignMenuEntry(label: 'As images', onPressed: () {}),
+            ],
+          ),
+        ],
+      ),
+      DesignMenuEntry(
+        label: 'Edit',
+        children: [
+          DesignMenuEntry(
+            label: 'Undo',
+            shortcut: ComicKbd.labelOf(
+              context,
+              const SingleActivator(LogicalKeyboardKey.keyZ, control: true),
+            ),
+            onPressed: () {},
+          ),
+          DesignMenuEntry(
+            label: 'Redo',
+            shortcut: ComicKbd.labelOf(
+              context,
+              const SingleActivator(LogicalKeyboardKey.keyY, control: true),
+            ),
+          ),
+        ],
+      ),
+      DesignMenuEntry(
+        label: 'View',
+        children: [
+          DesignMenuEntry(label: 'Show grid', checked: true, onPressed: () {}),
+          DesignMenuEntry(
+            label: 'Show bleed',
+            checked: false,
+            onPressed: () {},
+          ),
+        ],
+      ),
+    ],
+  ),
 );
 
-final List<DesignCommand> _commands = [
+List<DesignCommand> _commands(BuildContext context) => [
   DesignCommand(
     label: 'New issue',
     group: 'Issues',
-    shortcut: 'Ctrl+N',
+    shortcut: ComicKbd.labelOf(
+      context,
+      const SingleActivator(LogicalKeyboardKey.keyN, control: true),
+    ),
     data: ComicGlyphs.plus,
     onPressed: () {},
   ),
@@ -419,10 +457,11 @@ Widget kitSpecimenCommand() => Builder(
   builder: (context) => ComicColumn(
     gap: 12,
     children: [
-      ComicCommand(commands: _commands),
+      ComicCommand(commands: _commands(context)),
       ComicButton(
         'Open over the page',
-        onPressed: () => showComicCommand(context, commands: _commands),
+        onPressed: () =>
+            showComicCommand(context, commands: _commands(context)),
       ),
     ],
   ),

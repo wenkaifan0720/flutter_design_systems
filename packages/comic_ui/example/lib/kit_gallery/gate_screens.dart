@@ -2,7 +2,7 @@
 /// a balloon, one burst where attention already is. A comics reader and shop: Library, Shop, Account and Settings.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 import 'kit.dart';

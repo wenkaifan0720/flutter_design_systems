@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:comic_ui/comic_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:comic_ui/comic_ui.dart';
 
 import 'support.dart';
 
@@ -200,6 +200,66 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Stay'), findsNothing);
   });
+
+  // With nothing inside it focused (a dialog of words alone, a sheet of text), Escape closes the raised layer once:
+  // the page pushed under it stays.
+  for (final (kind, raise) in <(String, void Function(BuildContext))>[
+    (
+      'dialog',
+      (context) => unawaited(
+        showComicDialog<void>(
+          context,
+          barrierDismissible: false,
+          builder: (_) => const ComicDialog(title: 'Stay'),
+        ),
+      ),
+    ),
+    (
+      'bottom sheet',
+      (context) => unawaited(
+        showComicBottomSheet<void>(
+          context,
+          barrierDismissible: false,
+          builder: (_) => const Text('Stay'),
+        ),
+      ),
+    ),
+  ]) {
+    testWidgets('Escape closes a $kind alone, never the page under it', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          Builder(
+            builder: (context) => ComicButton(
+              'Next',
+              onPressed: () => unawaited(
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => Scaffold(
+                      body: ComicButton(
+                        'Raise',
+                        onPressed: () => raise(context),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('NEXT'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('RAISE'));
+      await tester.pumpAndSettle();
+      expect(find.text('Stay'), findsOneWidget);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.text('Stay'), findsNothing);
+      expect(find.text('RAISE'), findsOneWidget);
+    });
+  }
 
   testWidgets('a combobox says so when nothing fits, and takes nothing', (
     tester,

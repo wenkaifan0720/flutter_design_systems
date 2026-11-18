@@ -1,29 +1,59 @@
 # comic_ui
 
+A Flutter design system drawn as a printed comic page: inked panels, speech balloons and Ben-Day dots in flat inks,
+every change of state a quick cut or pop.
+
+![Comic's cover page at desktop and phone width, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/hero.png)
+
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/comic/)** ·
+[API reference](https://pub.dev/documentation/comic_ui/latest/) ·
+[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+
+## Install
+
+```sh
+flutter pub add comic_ui material_ui
+```
+
+`material_ui` is Flutter's Material as a package, as it is from Flutter 3.50; the quick start's app is a
+`MaterialApp`. An app on `WidgetsApp` or `CupertinoApp` needs only `comic_ui` (see [Set up the theme](#set-up-the-theme)).
+
+## Quick start
+
+Comic bundles its two typefaces, Bangers for lettering and Shantell Sans for text. Load them before the first frame,
+then put `ComicTheme` under your app:
+
+```dart
+import 'package:material_ui/material_ui.dart';
+import 'package:comic_ui/comic_ui.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await comicLoadFonts();
+  runApp(
+    MaterialApp(
+      builder: (context, child) => ComicTheme(
+        data: ComicThemeData.offset(MediaQuery.platformBrightnessOf(context)),
+        child: child!,
+      ),
+      home: ComicScaffold(
+        topBar: const ComicAppBar(title: 'The plan'),
+        body: Center(
+          child: ComicButton.filled('New plan', onPressed: () {}),
+        ),
+      ),
+    ),
+  );
+}
+```
+
+## What it is
+
 Comic is a design system for Flutter that draws an app as a page of a printed comic: flat process inks on paper,
 heavy inked panels set in tiers, narration captions, speech balloons with tails, Ben-Day dots for tone and one starburst
 a screen. Its everyday parts (buttons, fields, selects, lists, dialogs, navigation) are ordinary, accessible controls
 in that print, and every change of state moves the way a comic does: a quick cut, a small pop. Five print editions
 come in a day and a night issue each.
-
-![The buttons page at desktop width, by day](screenshots/buttons_1440_day.png)
-
-## Install
-
-```yaml
-dependencies:
-  comic_ui: ^0.2.1
-```
-
-Comic bundles its two typefaces, Bangers for lettering and Shantell Sans for text. Load them before the first frame:
-
-```dart
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await comicLoadFonts();
-  runApp(const App());
-}
-```
 
 ## Set up the theme
 
@@ -33,7 +63,7 @@ widget you use; your navigator, routes and localizations stay yours.
 With `MaterialApp`:
 
 ```dart
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 
 class App extends StatelessWidget {
@@ -41,12 +71,6 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    // Comic's page change, a cut: Flutter's MaterialPageRoute reads Flutter's Theme, which Comic doesn't reach.
-    theme: ThemeData(
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: comicPageTransitions,
-      ),
-    ),
     builder: (context, child) => ComicTheme(
       data: ComicThemeData.offset(MediaQuery.platformBrightnessOf(context)),
       child: child!,
@@ -57,9 +81,11 @@ class App extends StatelessWidget {
 ```
 
 A page changes as a comic's panel does: a cut, the next page whole in its first frame. comic_ui stands on
-material_ui, so the routes Comic's own theme reaches cut already; a `MaterialPageRoute` your app pushes on Flutter's
-`MaterialApp` reads Flutter's `Theme`, and flies in unless that theme carries `comicPageTransitions`, the
-`theme:` line above. The one map fits both Materials' `PageTransitionsTheme`. On iOS a page still pops with a swipe
+material_ui, and `ComicTheme` gives material_ui's `Theme` the cut, so a `MaterialPageRoute` your app pushes on
+material_ui's `MaterialApp` cuts already. On Flutter's own `MaterialApp` (`package:flutter/material.dart`, deprecated
+from Flutter 3.50) a `MaterialPageRoute` reads Flutter's `Theme`, which Comic doesn't reach, and flies in unless that
+theme carries `comicPageTransitions`: `theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders:
+comicPageTransitions))`. The one map fits both Materials' `PageTransitionsTheme`. On iOS a page still pops with a swipe
 from the screen's leading edge, the page following the finger: the map wraps the cut there in ui_core's
 `DesignSwipeBackPageTransitionsBuilder`. A map of your own built on `ComicPageTransitionsBuilder` keeps the swipe the
 same way, or with `designSwipeBack(map)`.
@@ -187,7 +213,8 @@ ComicListSection(
 )
 ```
 
-A dialog cuts in as a panel on its print. Escape and the back gesture close it, and focus returns where it was:
+A dialog pops in as a panel on its print, with a short bounce (a cut under Reduce Motion). Escape and the back
+gesture close it, and focus returns where it was:
 
 ```dart
 showComicDialog<void>(
@@ -229,9 +256,9 @@ take a `Widget`.
 
 | | |
 | --- | --- |
-| ![Buttons at desktop width, by day](screenshots/buttons_1440_day.png) | ![Selection at desktop width, at night](screenshots/selection_1440_night.png) |
-| ![Comic's own panels and balloons on a phone, by day](screenshots/panels_390_day.png) | ![A settings page on a phone, at night](screenshots/settings_390_night.png) |
-| ![Charts at desktop width, by day](screenshots/charts_1440_day.png) | |
+| ![Buttons at desktop width, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/buttons_1440_day.png) | ![Ticks, switches, chips and sliders at desktop width, at night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/selection_1440_night.png) |
+| ![Comic's speech and thought balloons, bursts and stamps at desktop width, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/balloons_1440_day.png) | ![A settings page on a phone, at night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/settings_390_night.png) |
+| ![Charts at desktop width, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/charts_1440_day.png) | |
 
 ## Editions and colours
 

@@ -5,6 +5,19 @@
 /// beside that one.
 ///
 /// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
+///
+/// {@canonicalFor chrome_metrics}
+/// {@canonicalFor chrome_metrics.ComicChromeMetrics}
+/// {@canonicalFor host}
+/// {@canonicalFor host.ComicChromeScope}
+/// {@canonicalFor host.ComicHost}
+/// {@canonicalFor host.ComicPage}
+/// {@canonicalFor host.ComicPresentation}
+/// {@canonicalFor host.ComicPreview}
+/// {@canonicalFor host.ComicSheetPage}
+/// {@canonicalFor host.ComicShellAction}
+/// {@canonicalFor registry}
+/// {@canonicalFor registry.comicInventory}
 library;
 
 export 'package:ui_core/host.dart';

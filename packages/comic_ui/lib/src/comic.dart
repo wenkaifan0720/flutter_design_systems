@@ -48,8 +48,12 @@ export 'comic/raised.dart'
         ComicMenuRowFace,
         comicMenuRowShape,
         comicCarryTo,
+        ComicBottomSheetRoute,
+        ComicDialogRoute,
         comicFieldListWords,
-        comicRaisedPlate;
+        comicRaisedPlate,
+        comicSearchFailed,
+        comicSearchNote;
 
 export 'comic/editing.dart';
 

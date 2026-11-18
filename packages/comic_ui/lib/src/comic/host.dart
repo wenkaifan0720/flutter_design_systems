@@ -9,7 +9,7 @@ import 'package:ui_core/host.dart';
 import 'chrome.dart';
 import 'nav.dart';
 import 'press.dart';
-import 'raised.dart' show ComicScreenedRoute;
+import 'raised.dart' show ComicBottomSheetRoute, ComicDialogRoute;
 import 'theme.dart';
 
 ComicBrand _brand(String? name) => ComicBrand(name: name ?? '');
@@ -246,12 +246,12 @@ class ComicSheetPage<T> extends Page<T> {
       );
     }
     if (t.desk) {
-      return _ScreenedDialogRoute<T>(
-        t.colors.scrim,
+      return ComicDialogRoute<T>(
+        screenInk: t.colors.scrim,
         settings: this,
         barrierDismissible: true,
         barrierLabel: DesignLocalizations.of(context).closeButtonLabel,
-        pageBuilder: (sheetContext, _, _) => Center(
+        builder: (sheetContext) => Center(
           child: SizedBox(
             width: 560,
             height: drawer ? null : most(sheetContext),
@@ -263,23 +263,15 @@ class ComicSheetPage<T> extends Page<T> {
         ),
       );
     }
-    return _ScreenedSheetRoute<T>(
-      t.colors.scrim,
+    // The route stands the panel above the keyboard.
+    return ComicBottomSheetRoute<T>(
+      screenInk: t.colors.scrim,
       settings: this,
-      backgroundColor: const Color(0x00000000),
-      modalBarrierColor: const Color(0x00000000),
-      elevation: 0,
-      isScrollControlled: true,
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
-        ),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: most(sheetContext)),
-          child: SizedBox(
-            height: drawer ? null : most(sheetContext),
-            child: card(sheetContext),
-          ),
+      builder: (sheetContext, _) => ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: most(sheetContext)),
+        child: SizedBox(
+          height: drawer ? null : most(sheetContext),
+          child: card(sheetContext),
         ),
       ),
     );
@@ -373,47 +365,53 @@ class ComicPreview extends StatelessWidget {
     return PreviewFrame(
       platform: platform,
       brightness: brightness,
-      child: MaterialApp(
-        key: ValueKey<Object>((presentation, drawer)),
-        debugShowCheckedModeBanner: false,
-        builder: (context, app) => ComicHost(
-          light: light,
-          dark: dark,
-          brightness: brightness,
-          child: app ?? const SizedBox.shrink(),
+      // A preview is an app nested in a page. Its own semantics container keeps the page readable: material_ui's
+      // MaterialApp puts none round its Navigator, and the home route's barrier would hide from a screen reader
+      // all the page paints before it.
+      child: Semantics(
+        container: true,
+        child: MaterialApp(
+          key: ValueKey<Object>((presentation, drawer)),
+          debugShowCheckedModeBanner: false,
+          builder: (context, app) => ComicHost(
+            light: light,
+            dark: dark,
+            brightness: brightness,
+            child: app ?? const SizedBox.shrink(),
+          ),
+          home: switch (presentation) {
+            ComicPresentation.root => Builder(
+              builder: (context) => tabs.isEmpty
+                  ? child
+                  : Column(
+                      children: [
+                        Expanded(child: scoped(child)),
+                        if (!ComicTheme.of(context).desk)
+                          ComicNavigationBar(
+                            destinations: nav,
+                            selectedIndex: activeIndex,
+                            action: action,
+                          ),
+                      ],
+                    ),
+            ),
+            ComicPresentation.pushed => PreviewStage(
+              route: (context, page) => ComicPage<void>(
+                key: const ValueKey<String>('kapow-preview'),
+                child: page,
+              ).createRoute(context),
+              child: scoped(child),
+            ),
+            ComicPresentation.sheet => PreviewStage(
+              route: (context, page) => ComicSheetPage<void>(
+                key: const ValueKey<String>('kapow-preview'),
+                drawer: drawer,
+                child: page,
+              ).createRoute(context),
+              child: child,
+            ),
+          },
         ),
-        home: switch (presentation) {
-          ComicPresentation.root => Builder(
-            builder: (context) => tabs.isEmpty
-                ? child
-                : Column(
-                    children: [
-                      Expanded(child: scoped(child)),
-                      if (!ComicTheme.of(context).desk)
-                        ComicNavigationBar(
-                          destinations: nav,
-                          selectedIndex: activeIndex,
-                          action: action,
-                        ),
-                    ],
-                  ),
-          ),
-          ComicPresentation.pushed => PreviewStage(
-            route: (context, page) => ComicPage<void>(
-              key: const ValueKey<String>('kapow-preview'),
-              child: page,
-            ).createRoute(context),
-            child: scoped(child),
-          ),
-          ComicPresentation.sheet => PreviewStage(
-            route: (context, page) => ComicSheetPage<void>(
-              key: const ValueKey<String>('kapow-preview'),
-              drawer: drawer,
-              child: page,
-            ).createRoute(context),
-            child: child,
-          ),
-        },
       ),
     );
   }
@@ -464,35 +462,4 @@ class ComicPreview extends StatelessWidget {
         ),
       );
   }
-}
-
-// The page behind a routed sheet is screened, not dimmed (law 1), as behind every raised layer of Comic's.
-class _ScreenedDialogRoute<T> extends RawDialogRoute<T>
-    with ComicScreenedRoute<T> {
-  _ScreenedDialogRoute(
-    this.screenInk, {
-    required super.pageBuilder,
-    super.settings,
-    super.barrierDismissible,
-    super.barrierLabel,
-  }) : super(barrierColor: null);
-
-  @override
-  final Color screenInk;
-}
-
-class _ScreenedSheetRoute<T> extends ModalBottomSheetRoute<T>
-    with ComicScreenedRoute<T> {
-  _ScreenedSheetRoute(
-    this.screenInk, {
-    required super.builder,
-    required super.isScrollControlled,
-    super.settings,
-    super.backgroundColor,
-    super.modalBarrierColor,
-    super.elevation,
-  });
-
-  @override
-  final Color screenInk;
 }

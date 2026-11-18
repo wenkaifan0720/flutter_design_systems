@@ -1,7 +1,7 @@
 /// What a person presses, types or picks. The initial values are stable; all controls respond to input.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 

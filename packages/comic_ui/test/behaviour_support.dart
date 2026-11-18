@@ -196,6 +196,9 @@ final _parts = <String, _Part>{
   ),
   'ComicTabBar': _Part(
     (hit) => ComicTabBar(tabs: const ['All', 'Saved'], onChanged: _on(hit)),
+    // One tab stop, the chosen tab: the arrows choose (ui_core's DesignTabBar), and Enter on the chosen tab changes
+    // nothing, so it calls nothing (routes_values_adopt_test).
+    keys: false,
   ),
   'ComicPageDots': _Part(
     (hit) => ComicPageDots(
