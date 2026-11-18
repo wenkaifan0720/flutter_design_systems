@@ -2,6 +2,7 @@
 This package carries work of others under their own licenses. Each license's full text is in THIRD_PARTY_NOTICES/:
 
 - flutter_localizations-3.47.0-BSD-3.txt
+- intl-0.20.3-BSD-3.txt
 - unicode-cldr-Unicode-3.0.txt
 
 --------------------------------------------------------------------------------
