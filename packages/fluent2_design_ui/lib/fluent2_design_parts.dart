@@ -1,5 +1,5 @@
 /// Everything `fluent2_design_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (colors.dart, component_themes.dart, components/input/field_core.dart, components/list/check_indicator.dart, components/pressable/pressable.dart, internal/arrow.dart, internal/cap_label.dart, internal/chosen.dart, internal/footer_band.dart, internal/hit_slop.dart, internal/icon_fill.dart, internal/in_row.dart, internal/key_focus.dart, internal/layer.dart, internal/list_keys.dart, internal/measure.dart, internal/menu_lead.dart, internal/menu_surface.dart, internal/platform_words.dart, internal/presets.g.dart, internal/report_height.dart, internal/side_inset.dart, internal/well.dart, knobs.dart).
+/// keeps back (colors.dart, component_themes.dart, components/input/field_core.dart, components/list/check_indicator.dart, components/pressable/pressable.dart, internal/arrow.dart, internal/cap_label.dart, internal/chosen.dart, internal/footer_band.dart, internal/hit_slop.dart, internal/icon_fill.dart, internal/in_row.dart, internal/key_focus.dart, internal/layer.dart, internal/list_keys.dart, internal/measure.dart, internal/menu_lead.dart, internal/menu_surface.dart, internal/platform_words.dart, internal/presets.g.dart, internal/report_height.dart, internal/route_motion.dart, internal/search_states.dart, internal/side_inset.dart, internal/well.dart, knobs.dart).
 ///
 /// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
 /// rest of your app stays on the package:
@@ -14,7 +14,6 @@
 library;
 
 export 'package:ui_core/ui_core.dart';
-export 'package:ui_core/alignment.dart';
 export 'package:ui_core/inventory.dart';
 
 export 'fluent2_design_ui.dart';
@@ -40,6 +39,8 @@ export 'src/fluent2_design/internal/menu_surface.dart';
 export 'src/fluent2_design/internal/platform_words.dart';
 export 'src/fluent2_design/internal/presets.g.dart';
 export 'src/fluent2_design/internal/report_height.dart';
+export 'src/fluent2_design/internal/route_motion.dart';
+export 'src/fluent2_design/internal/search_states.dart';
 export 'src/fluent2_design/internal/side_inset.dart';
 export 'src/fluent2_design/internal/well.dart';
 export 'src/fluent2_design/knobs.dart';

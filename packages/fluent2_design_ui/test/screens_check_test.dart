@@ -17,7 +17,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/internal/cap_label.dart';
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 import 'gallery_support.dart';
 
@@ -75,6 +75,16 @@ final _misreads = <(RegExp, String)>[
     'a table row\'s face is read with its own bottom hairline, which stands '
         'inside its box: between the row\'s two hairlines its words are '
         'centred, half a pixel over the box\'s middle',
+  ),
+  (
+    RegExp(
+      r'a control "(Posts|Recent)\nTab 1 of \d": its chosen fill is '
+      r'5[68] by (30|22) px in its cell of 66(\.\d)? by 48',
+    ),
+    'a subtle-circular tab\'s pill keeps its own height inside its 48 px '
+        'touch target (ui_core 0.3.0), and the chosen-fill rule takes the '
+        'target\'s slot, not the face in it, for the cell; fixed in '
+        'ui_core_test 0.1.1',
   ),
 ];
 

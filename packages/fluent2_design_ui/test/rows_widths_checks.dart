@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/src/fluent2_design/components/input/field_core.dart'
     show Fluent2FieldButton, Fluent2ListboxColumn;
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 import 'gallery_support.dart';
 import 'ui_core_checks.dart';
@@ -138,6 +138,14 @@ final _widthMisreads = <(RegExp, String)>[
     'a navigation drawer\'s item is a row of its list and spans the drawer '
         '(the inventory stands the drawer across its card); its content is '
         'read as its glyph alone',
+  ),
+  (
+    RegExp(
+      r'a button "Dismiss": \d+ px wide as laid out, [\d.]+ as drawn; its '
+      r'content and padding take 0 ',
+    ),
+    'a page previewed as a sheet stands on ui_core\'s dialog route, whose '
+        'overlay (its dismiss, the preview\'s width) is read as a button',
   ),
   (
     RegExp(r'a stepper "Back to (Files|Calendar)": '),

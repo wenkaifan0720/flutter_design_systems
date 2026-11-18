@@ -1,47 +1,33 @@
 # fluent2_design_ui
 
-An independent Flutter implementation of Fluent 2, not affiliated with or endorsed by Microsoft.
+Unofficial Fluent 2 for Flutter, built from Fluent's own tokens: calm neutral layers, acrylic for what floats, subtle
+strokes and one brand ramp, light and dark. An independent implementation, not affiliated with or endorsed by Microsoft.
 
-Fluent 2 for Flutter, drawn from Fluent's own published tokens (`@fluentui/tokens` 1.0.0-alpha.24) and the measures in
-its React components' styles: calm neutral layers on a faintly brand-tinted ground, acrylic for what floats, dense but
-legible rows, forms, toolbars and commands, 4 px corners, subtle strokes, and one brand colour carried as a
-sixteen-shade ramp. Every token in the spec is a field of the same name here, and every component reads the token its
-Fluent counterpart reads. Seven brand presets, each in light and dark, and accessible controls throughout: focus rings,
-screen-reader names, 44 and 48 px touch targets, Reduce Motion.
+![Fluent 2's sample app at 1440 px by day, beside the same app on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/fluent2_design_ui/screenshots/hero.png)
 
-| | |
-|---|---|
-| ![Overview on a desktop, light](screenshots/overview_desktop_light.png) | ![Files on a desktop, dark](screenshots/files_desktop_dark.png) |
-| ![A request form on a desktop, light](screenshots/request_desktop_light.png) | ![Overview on a phone, dark](screenshots/overview_phone_dark.png) |
-| ![Settings on a phone, light](screenshots/settings_phone_light.png) | ![Buttons on a phone, dark](screenshots/buttons_phone_dark.png) |
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/fluent2/)** · [API reference](https://pub.dev/documentation/fluent2_design_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
-```yaml
-dependencies:
-  fluent2_design_ui: ^0.2.1
+```sh
+flutter pub add fluent2_design_ui material_ui
 ```
 
-Load the bundled faces before `runApp`, so the first frame is set in them:
+## Quick start
+
+`Fluent2Theme` is the whole install: put it in your app's `builder:`, and load the bundled faces before `runApp`, so
+the first frame is set in them. The package has no app widget of its own; here it stands under material_ui's
+`MaterialApp` (Flutter 3.50 moves Material out of `package:flutter`).
 
 ```dart
+import 'package:fluent2_design_ui/fluent2_design_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await fluent2LoadFonts();
   runApp(const App());
 }
-```
-
-## Set up the theme
-
-`Fluent2Theme` is the whole install. Put it in your app's `builder:`, under whichever app widget you use; there is no
-app widget of the package's own.
-
-Under a `MaterialApp`:
-
-```dart
-import 'package:flutter/material.dart';
-import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -57,10 +43,31 @@ class App extends StatelessWidget {
       darkData: Fluent2ThemeData.lapis(Brightness.dark),
       child: child!,
     ),
-    home: const InboxPage(),
+    home: Fluent2Scaffold(
+      topBar: const Fluent2AppBar(title: 'Inbox'),
+      body: Center(
+        child: Fluent2Button(
+          'Compose',
+          appearance: Fluent2ButtonAppearance.primary,
+          icon: Fluent2Icons.edit,
+          onPressed: () {},
+        ),
+      ),
+    ),
   );
 }
 ```
+
+## In pictures
+
+![A request form's Type select open on a 1440 desktop by night, its chosen option marked by Fluent's brand pill and check](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/fluent2_design_ui/screenshots/select_desktop_dark.png)
+
+| | |
+|---|---|
+| ![A file list on a 1440 desktop by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/fluent2_design_ui/screenshots/files_desktop_dark.png) | ![A request form on a 1440 desktop by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/fluent2_design_ui/screenshots/request_desktop_light.png) |
+| ![Settings on a 390 phone by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/fluent2_design_ui/screenshots/settings_phone_light.png) | ![Buttons on a 390 phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/fluent2_design_ui/screenshots/buttons_phone_dark.png) |
+
+## Set up the theme
 
 The look's own routes (its sheets, dialogs and `Fluent2Page`) take Fluent 2's page motion from `Fluent2Theme`; the
 `theme:` gives it to the `MaterialPageRoute`s the app pushes itself, which read the app widget's theme. On iOS the map
@@ -256,7 +263,7 @@ when you add one of your own, build it the same way.
    change of state (hover, press, focus, chosen,
    disabled, error, day to night) eases the whole face from where it stands to where it is going, over Fluent's 100 ms
    easy-ease, and a change mid-way turns without a jump: `Fluent2Eased` is how, for a part of your own. Nothing
-   bounces or overshoots; Reduce Motion cuts.
+   bounces or overshoots; Reduce Motion cuts (a dialog or a sheet fades for a moment instead).
 7. **Never:** two primary acts in one view, decoration with no job, a dashed stroke, a control drawn as a raised bump
    or a key cap.
 
@@ -291,7 +298,7 @@ Fluent2Button(
 
 What stays Fluent's whatever you set: the corner and stroke tokens, the two-tone focus ring (a dark and a light
 stroke, so it shows on any fill), the acrylic, the shadows' elevations, the touch targets and the motion, which Reduce
-Motion turns to cuts.
+Motion turns to cuts and short fades.
 
 ## Presets
 
@@ -331,9 +338,9 @@ drawn at their design sizes, the directional ones mirrored right to left.
 - **Right to left.** Under a right-to-left `Directionality` every part mirrors: rows, a field's glyphs, tabs,
   segments, sliders, progress and swipe actions run from the reading start, and the glyphs that point flip. Parameters
   say start and end and take the directional geometry types. The gallery has a direction switch.
-- **Motion.** Reduce Motion turns every change of state, and every push and pop, into a cut: iOS's Reduce Motion,
-  Android's Remove animations and the web's prefers-reduced-motion alike (ui_core's `designReduceMotionOf`; iOS's
-  switch reaches no `MediaQuery`).
+- **Motion.** Reduce Motion turns every change of state, and every push and pop, into a cut, and a dialog's or a
+  sheet's travel into a fade of about 150 ms (ui_core's routes): iOS's Reduce Motion, Android's Remove animations and
+  the web's prefers-reduced-motion alike (ui_core's `designReduceMotionOf`; iOS's switch reaches no `MediaQuery`).
 - **Other scripts.** Selawik draws the Latin alphabet. Arabic, Hebrew, Chinese, Japanese, Hindi, Thai and other
   scripts fall back to the platform's fonts (on the web, to the Noto fonts Flutter fetches).
 - **Words the parts say.** No part writes a word in English by itself. The words every look shares (Cancel, OK,

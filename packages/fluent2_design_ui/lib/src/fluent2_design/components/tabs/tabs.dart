@@ -7,6 +7,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../internal/cap_label.dart';
 import '../../internal/icon_fill.dart';
+import '../../internal/key_focus.dart';
 import '../../internal/well.dart';
 import '../../styled.dart';
 import '../../theme.dart';
@@ -81,16 +82,18 @@ class Fluent2Tab {
 /// column with [vertical]), the one at [selectedIndex] selected: its
 /// words in body1Strong (the width each tab keeps either way), its glyph
 /// filled and in the brand, and under it the 3 brand indicator that slides
-/// from the tab chosen before (`durationSlow`, `curveDecelerateMax`; it
-/// settles at once under Reduce Motion), or in the
-/// circular appearances its pill. A row longer than its room scrolls,
-/// keeping the selected tab in view. A row of transparent or subtle tabs
-/// hangs its first tab's inset (its padding round the words) toward the
-/// start, so the first word and its indicator start where a title and a
-/// field in the same column start; a pill's edge stays on the column's. A tab press asks [onChanged] for its
-/// index; null draws the list disabled. [Fluent2TabList.items] takes tabs
-/// with glyphs, or one out of use. Read as a tab bar of tabs, the
-/// selected one said.
+/// from the tab chosen before on a spring that settles in `durationSlow`
+/// (critically damped under Reduce Motion), or in the circular appearances
+/// its pill. A row longer than its room scrolls, keeping the selected and
+/// the focused tab in view. A row of transparent or subtle tabs hangs its
+/// first tab's inset (its padding round the words) toward the start, so the
+/// first word and its indicator start where a title and a field in the same
+/// column start; a pill's edge stays on the column's. A tab press, or the
+/// arrows along the row (one tab stop; mirrored right to left, Home and End
+/// to the ends, tabs out of use skipped), asks [onChanged] for its index;
+/// null draws the list disabled. [Fluent2TabList.items] takes tabs with
+/// glyphs, or one out of use. Read as a tab bar of tabs, "Files, Tab 2 of
+/// 3". It is ui_core's `DesignTabBar` in Fluent's faces.
 ///
 /// ```dart
 /// Fluent2TabList(tabs: const ['Chat', 'Files', 'Notes'], selectedIndex: tab, onChanged: (i) => setState(() => tab = i))
@@ -191,180 +194,222 @@ class Fluent2TabList extends StatefulWidget {
 }
 
 class _Fluent2TabListState extends State<Fluent2TabList>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _slide = AnimationController(
-    vsync: this,
-    duration: Fluent2Motion.slow,
-    value: 1,
-  );
-  late List<GlobalKey> _keys = _keysFor(widget._count);
+    with TickerProviderStateMixin {
+  DesignTabController? _tabs;
 
-  /// Where the indicator starts its slide from, relative to the selected
-  /// tab: its offset along the axis and its length's ratio.
-  double _from = 0;
-  double _scale = 1;
+  // The indicator's slide: Fluent's `durationSlow` (300 ms) on ui_core's
+  // spring, ω = 6 / 0.3 s.
+  static const double _stiffness = 400;
 
-  static List<GlobalKey> _keysFor(int n) => [
-    for (var i = 0; i < n; i++) GlobalKey(),
-  ];
+  bool get _circular =>
+      widget.appearance == Fluent2TabAppearance.subtleCircular ||
+      widget.appearance == Fluent2TabAppearance.filledCircular;
+
+  int get _at =>
+      widget._count == 0 ? 0 : widget.selectedIndex.clamp(0, widget._count - 1);
+
+  DesignTabController? _controllerFor(int count) {
+    if (count == 0) return null;
+    return DesignTabController(
+      length: count,
+      initialIndex: _at,
+      vsync: this,
+      dampingRatio: Fluent2Motion.springDamping,
+      stiffness: _stiffness,
+    )..addListener(_picked);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _tabs = _controllerFor(widget._count);
+  }
 
   @override
   void didUpdateWidget(Fluent2TabList old) {
     super.didUpdateWidget(old);
     if (old._count != widget._count) {
-      _keys = _keysFor(widget._count);
+      _tabs?.dispose();
+      _tabs = _controllerFor(widget._count);
       return;
     }
-    if (old.selectedIndex == widget.selectedIndex) return;
-    final was = old.selectedIndex;
-    final now = widget.selectedIndex;
-    if (was < 0 || now < 0 || was >= _keys.length || now >= _keys.length) {
-      return;
-    }
-    final before = _rectOf(was);
-    final after = _rectOf(now);
-    final circular =
-        widget.appearance == Fluent2TabAppearance.subtleCircular ||
-        widget.appearance == Fluent2TabAppearance.filledCircular;
-    if (before != null &&
-        after != null &&
-        !circular &&
-        Fluent2Motion.on(context)) {
-      final length = widget.vertical ? after.height : after.width;
-      _from = widget.vertical
-          ? before.top - after.top
-          : before.left - after.left;
-      _scale = length == 0
-          ? 1
-          : (widget.vertical ? before.height : before.width) / length;
-      _slide
-        ..value = 0
-        ..animateTo(1, curve: Fluent2Motion.decelerateMax);
-    } else {
-      _slide.value = 1;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final at = _keys[now].currentContext;
-      if (!mounted || at == null) return;
-      Scrollable.ensureVisible(
-        at,
-        alignment: 0.5,
-        duration: Fluent2Motion.on(context)
-            ? Fluent2Motion.normal
-            : Duration.zero,
-        curve: Fluent2Motion.decelerateMid,
-      );
-    });
+    final tabs = _tabs;
+    if (tabs != null && tabs.index != _at) tabs.animateTo(_at);
   }
 
-  Rect? _rectOf(int i) {
-    final box = _keys[i].currentContext?.findRenderObject();
-    final list = context.findRenderObject();
-    if (box is! RenderBox || list is! RenderBox || !box.hasSize) return null;
-    final at = box.localToGlobal(Offset.zero, ancestor: list);
-    return at & box.size;
+  // A tab the bar chose (a press, the arrows): asked of [onChanged]; the
+  // list shows what [selectedIndex] then says.
+  void _picked() {
+    final tabs = _tabs!;
+    if (tabs.index == _at) return;
+    widget.onChanged?.call(tabs.index);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && identical(tabs, _tabs) && tabs.index != _at) {
+        tabs.index = _at;
+      }
+    });
   }
 
   @override
   void dispose() {
-    _slide.dispose();
+    _tabs?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final circular =
-        widget.appearance == Fluent2TabAppearance.subtleCircular ||
-        widget.appearance == Fluent2TabAppearance.filledCircular;
+    final tabs = _tabs;
+    if (tabs == null) return const SizedBox.shrink();
+    final circular = _circular;
     final gap = !circular
         ? 0.0
         : widget.size == Fluent2TabSize.small
         ? Fluent2Spacing.sNudge
         : Fluent2Spacing.s;
-    final change = widget.onChanged;
-    final selected = widget.selectedIndex;
-    final tabs = [
-      for (final (i, tab) in widget._all.indexed)
-        KeyedSubtree(
-          key: _keys[i],
+    final live = widget.onChanged != null;
+    final all = widget._all;
+    final t = context.fluent2Theme;
+    final thick = widget.size == Fluent2TabSize.small
+        ? Fluent2Stroke.thick
+        : Fluent2Stroke.thicker;
+    final inset = switch (widget.size) {
+      Fluent2TabSize.small => widget.vertical ? 4.0 : 6.0,
+      Fluent2TabSize.medium => widget.vertical ? 8.0 : 12.0,
+      Fluent2TabSize.large => widget.vertical ? 10.0 : 12.0,
+    };
+    final look = Fluent2StyleOf(
+      [widget.style, t.tabListTheme],
+      {
+        WidgetState.selected,
+        if (!live || !all[_at].enabled) WidgetState.disabled,
+      },
+    );
+    // The strip never scrolls itself: Fluent's row scrolls round it (below),
+    // so its tabs keep their own widths and the row its keyline outline. The
+    // indicator stands over the tabs, as Fluent's does, so a focused tab's
+    // ring never covers it.
+    final bar = DesignTabBar(
+      controller: tabs,
+      indicatorPosition: DecorationPosition.foreground,
+      direction: widget.vertical ? Axis.vertical : Axis.horizontal,
+      semanticLabel: widget.label,
+      tabs: [
+        for (final tab in all)
+          DesignTab(
+            label: tab.label,
+            icon: tab.icon,
+            enabled: live && tab.enabled,
+          ),
+      ],
+      tabBuilder: (context, tab, details) {
+        final face = _Reveal(
+          selected: details.states.contains(WidgetState.selected),
+          focused: details.states.contains(WidgetState.focused),
           child: _Tab(
-            tab: tab,
-            selected: i == selected,
+            tab: all[details.index],
+            states: details.states,
             appearance: widget.appearance,
             size: widget.size,
             vertical: widget.vertical,
-            slide: i == selected ? _slide : null,
-            from: _from,
-            scale: _scale,
             style: widget.style,
-            onTap: change == null || !tab.enabled
-                ? null
-                : () {
-                    if (i != selected) change(i);
-                  },
           ),
-        ),
-    ];
-    final bar = Semantics(
-      role: SemanticsRole.tabBar,
-      container: true,
-      explicitChildNodes: true,
-      label: widget.label,
-      child: widget.vertical
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: gap,
-              children: tabs,
-            )
-          // The row is as tall as its tallest tab (a tab with a glyph),
-          // and every tab takes that height, as Fluent's flex row
-          // stretches its tabs; never the height round the list. Under a
-          // finger that is the 48 target, a circular tab's pill included
-          // (every control's face stands the target there).
-          : IntrinsicHeight(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: gap,
-                children: tabs,
-              ),
-            ),
+        );
+        // Circular tabs stand [gap] apart.
+        return gap == 0 || details.index == details.count - 1
+            ? face
+            : Padding(
+                padding: widget.vertical
+                    ? EdgeInsets.only(bottom: gap)
+                    : EdgeInsetsDirectional.only(end: gap),
+                child: face,
+              );
+      },
+      // The 3 brand indicator under the selected tab's words (at its start
+      // in a column), sliding on the spring from the tab chosen before; the
+      // circular tabs fill their pill instead.
+      indicatorBuilder: circular
+          ? null
+          : (context, details) {
+              final states = details.states;
+              // In the chosen tab's hover and press inks, as its words.
+              final mark = DecoratedBox(
+                decoration: BoxDecoration(
+                  color:
+                      look.edge ??
+                      (!live || !all[_at].enabled
+                          ? t.textDisabled
+                          : states.contains(WidgetState.pressed)
+                          ? t.colors.compoundBrandStrokePressed
+                          : states.contains(WidgetState.hovered)
+                          ? t.colors.compoundBrandStrokeHover
+                          : t.colors.compoundBrandStroke),
+                  borderRadius: BorderRadius.circular(10000),
+                ),
+              );
+              // ui_core lays the indicator out in the chosen tab's face.
+              return widget.vertical
+                  ? Padding(
+                      padding: EdgeInsets.symmetric(vertical: inset),
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: SizedBox(
+                          width: thick,
+                          height: double.infinity,
+                          child: mark,
+                        ),
+                      ),
+                    )
+                  : Padding(
+                      padding: EdgeInsets.symmetric(horizontal: inset),
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: SizedBox(
+                          height: thick,
+                          width: double.infinity,
+                          child: mark,
+                        ),
+                      ),
+                    );
+            },
     );
-    if (widget.vertical) return bar;
+    if (widget.vertical) {
+      // A column of tabs takes the room's width, as a stretched column.
+      return LayoutBuilder(
+        builder: (context, box) => box.hasBoundedWidth
+            ? SizedBox(width: box.maxWidth, child: bar)
+            : bar,
+      );
+    }
     // The first tab's inset: its padding at the side, and the words' 2 when
     // it shows no glyph (a glyph's box starts at the padding).
     final side = widget.size == Fluent2TabSize.small ? 6.0 : 10.0;
     final hang = circular || widget._count == 0
         ? 0.0
-        : side + (widget._all.first.icon == null ? 2 : 0);
+        : side + (all.first.icon == null ? 2 : 0);
     // A row of tabs keeps every name whole: as the reader's text grows the
     // names grow only while the row fits its room (never under their own
     // size); a row too long for its room at its own size scrolls, at the
-    // reader's size.
+    // reader's size, the chosen and the focused tab kept in view.
     final strip = LayoutBuilder(
       builder: (context, box) {
         // The room the hang already widened.
         final fit = _fitScale(context, box.maxWidth, gap, side);
         final size =
-            (widget.size == Fluent2TabSize.large
-                    ? context.fluent2Theme.subtitle2
-                    : context.fluent2Theme.body1Strong)
+            (widget.size == Fluent2TabSize.large ? t.subtitle2 : t.body1Strong)
                 .fontSize ??
             14;
-        final capped =
-            fit > 1 &&
-            fit < MediaQuery.textScalerOf(context).scale(size) / size;
+        final reader = MediaQuery.textScalerOf(context).scale(size) / size;
+        final capped = fit > 1 && fit < reader;
         return MediaQuery.withClampedTextScaling(
           maxScaleFactor: fit,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             clipBehavior: Clip.hardEdge,
-            // Capped to fit, the row stands in its room: a face's own
-            // rounding past the measure is drawn smaller whole, never cut
-            // at the edge.
             child: _OutlineFromKeyline(
               by: hang,
+              // Capped to fit, the row stands in its room: a face's own
+              // rounding past the measure is drawn smaller whole, never cut
+              // at the edge.
               child: capped
                   ? SizedBox(
                       width: box.maxWidth,
@@ -421,6 +466,69 @@ class _Fluent2TabListState extends State<Fluent2TabList>
     if (fits < 1) return reader;
     return math.min(reader, fits);
   }
+}
+
+/// Scrolls [child], a tab, into view in a row that scrolls: centred as it
+/// is chosen ([selected] turns true), as the old row did, and the least way
+/// as the keys reach it ([focused] turns true), over Fluent's
+/// `durationNormal` (a cut under Reduce Motion).
+class _Reveal extends StatefulWidget {
+  const _Reveal({
+    required this.selected,
+    required this.focused,
+    required this.child,
+  });
+
+  final bool selected;
+  final bool focused;
+  final Widget child;
+
+  @override
+  State<_Reveal> createState() => _RevealState();
+}
+
+class _RevealState extends State<_Reveal> {
+  void _show({double? centre}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final duration = Fluent2Motion.on(context)
+          ? Fluent2Motion.normal
+          : Duration.zero;
+      if (centre != null) {
+        Scrollable.ensureVisible(
+          context,
+          alignment: centre,
+          duration: duration,
+          curve: Fluent2Motion.decelerateMid,
+        );
+        return;
+      }
+      for (final policy in const [
+        ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+        ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+      ]) {
+        Scrollable.ensureVisible(
+          context,
+          duration: duration,
+          curve: Fluent2Motion.decelerateMid,
+          alignmentPolicy: policy,
+        );
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(_Reveal old) {
+    super.didUpdateWidget(old);
+    if (widget.selected && !old.selected) {
+      _show(centre: 0.5);
+    } else if (widget.focused && !old.focused) {
+      _show();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// Lays [child] out [by] wider than the room it is given and moves it [by]
@@ -572,27 +680,23 @@ class _RenderHangStart extends RenderProxyBox {
 class _Tab extends StatelessWidget {
   const _Tab({
     required this.tab,
-    required this.selected,
+    required this.states,
     required this.appearance,
     required this.size,
     required this.vertical,
-    required this.slide,
-    required this.from,
-    required this.scale,
     required this.style,
-    required this.onTap,
   });
 
   final Fluent2Tab tab;
-  final bool selected;
+
+  /// ui_core's tab states: selected, hovered, pressed, focused, disabled.
+  final Set<WidgetState> states;
   final Fluent2TabAppearance appearance;
   final Fluent2TabSize size;
   final bool vertical;
-  final Animation<double>? slide;
-  final double from;
-  final double scale;
   final Fluent2Style? style;
-  final VoidCallback? onTap;
+
+  bool get selected => states.contains(WidgetState.selected);
 
   bool get _circular =>
       appearance == Fluent2TabAppearance.subtleCircular ||
@@ -645,177 +749,139 @@ class _Tab extends StatelessWidget {
         : Fluent2Spacing.sNudge;
     final rest = large ? t.body2 : t.body1;
     final strong = large ? t.subtitle2 : t.body1Strong;
-    // The role alone, merged with the press's own node: the press brings the
-    // selected state, the enabled flag and the tap (the press's node is a
-    // container, so a role around it would stand on a node of its own).
+    // ui_core's bar presses the tab, moves the keys and names it to a screen
+    // reader; the face paints its states and Fluent's focus ring.
     return DesignTapTarget(
       minSize: Fluent2Layout.tapFloorOf(context),
-      child: MergeSemantics(
-        child: Semantics(
-          role: SemanticsRole.tab,
-          child: Fluent2Pressable(
-            onPressed: onTap,
-            label: tab.label,
-            selected: selected,
-            radius: _circular ? 10000 : Fluent2Radius.medium,
-            builder: (context, states) {
-              final press = states.press;
-              final disabled = press == Fluent2Press.disabled;
-              final f = _face(t, press);
-              // The tab bar theme's colours over Fluent's, in the tab's
-              // states: `fill`, `foreground` (words and glyph), `edge` (the
-              // selected indicator, or a circular tab's rim).
-              final look = Fluent2StyleOf([style, t.tabListTheme], states);
-              final ink = look.foreground ?? f.ink;
-              final fill = look.fill ?? f.fill;
-              return fluent2EasedInks(
-                [ink, fill, look.foreground ?? f.glyph, look.edge ?? f.stroke],
-                (context, inks) {
-                  final [ink, fill, glyphInk, edgeInk] = inks;
-                  final icon = tab.icon == null
-                      ? null
-                      : Icon(
-                          selected
-                              ? (tab.selectedIcon ?? fluent2Filled(tab.icon!))
-                              : fluent2FillOn(tab.icon!, states),
-                          size: glyphSize,
-                          color: glyphInk,
-                        );
-                  // The selected cut's width is kept by every state, so choosing
-                  // a tab never moves its neighbours; the rest cut stands in the
-                  // middle of it (Fluent's `contentReservedSpace`).
-                  final words = Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: Fluent2Spacing.xxs,
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Visibility(
-                          visible: false,
-                          maintainSize: true,
-                          maintainAnimation: true,
-                          maintainState: true,
-                          child: Text(tab.label, maxLines: 1, style: strong),
-                        ),
-                        fluent2CapCentred(
-                          Text(
-                            tab.label,
-                            maxLines: 1,
-                            style: (selected ? strong : rest)
-                                .merge(look.textStyle)
-                                .c(ink),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                  final content = Row(
-                    mainAxisSize: MainAxisSize.min,
-                    spacing: gap,
-                    children: [?icon, words],
-                  );
-                  final shape = BorderRadius.circular(
-                    _circular ? 10000 : Fluent2Radius.medium,
-                  );
-                  Widget box = Container(
-                    padding: room,
-                    alignment: vertical
-                        ? AlignmentDirectional.centerStart
-                        : Alignment.center,
-                    decoration: BoxDecoration(
-                      color: fill,
-                      borderRadius: shape,
-                      border: _circular
-                          ? Border.all(
-                              color: edgeInk,
-                              width: Fluent2Stroke.thin,
-                            )
-                          : null,
-                    ),
-                    child: content,
-                  );
-                  if (_circular) return box;
-                  final bar = selected
-                      ? look.edge ??
-                            press.pick(
-                              t.colors.compoundBrandStroke,
-                              t.colors.compoundBrandStrokeHover,
-                              t.colors.compoundBrandStrokePressed,
-                              t.textDisabled,
-                            )
-                      : disabled
-                      ? null
-                      : press.pick(
-                          t.colors.transparentStroke,
-                          t.colors.neutralStroke1Hover,
-                          t.colors.neutralStroke1Pressed,
-                        );
-                  if (bar == null) return box;
-                  final thick = size == Fluent2TabSize.small
-                      ? Fluent2Stroke.thick
-                      : Fluent2Stroke.thicker;
-                  Widget mark = DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: bar,
-                      borderRadius: BorderRadius.circular(10000),
-                    ),
-                  );
-                  final s = slide;
-                  if (s != null) {
-                    mark = AnimatedBuilder(
-                      animation: s,
-                      builder: (context, child) {
-                        final a = s.value;
-                        final k = scale + (1 - scale) * a;
-                        final d = from * (1 - a);
-                        return Transform(
-                          alignment: vertical
-                              ? Alignment.topCenter
-                              : Alignment.centerLeft,
-                          transform: vertical
-                              ? (Matrix4.translationValues(0, d, 0)
-                                  ..scaleByDouble(1, k, 1, 1))
-                              : (Matrix4.translationValues(d, 0, 0)
-                                  ..scaleByDouble(k, 1, 1, 1)),
-                          child: child,
-                        );
-                      },
-                      child: mark,
-                    );
-                  }
-                  final inset = switch (size) {
-                    Fluent2TabSize.small => vertical ? 4.0 : 6.0,
-                    Fluent2TabSize.medium => vertical ? 8.0 : 12.0,
-                    Fluent2TabSize.large => vertical ? 10.0 : 12.0,
-                  };
-                  box = Stack(
-                    clipBehavior: Clip.none,
+      child: Fluent2KeyRing(
+        focused: states.contains(WidgetState.focused),
+        radius: _circular ? 10000 : Fluent2Radius.medium,
+        child: Builder(
+          builder: (context) {
+            final press = states.press;
+            final disabled = press == Fluent2Press.disabled;
+            final f = _face(t, press);
+            // The tab bar theme's colours over Fluent's, in the tab's
+            // states: `fill`, `foreground` (words and glyph), `edge` (the
+            // selected indicator, or a circular tab's rim).
+            final look = Fluent2StyleOf([style, t.tabListTheme], states);
+            final ink = look.foreground ?? f.ink;
+            final fill = look.fill ?? f.fill;
+            return fluent2EasedInks(
+              [ink, fill, look.foreground ?? f.glyph, look.edge ?? f.stroke],
+              (context, inks) {
+                final [ink, fill, glyphInk, edgeInk] = inks;
+                final icon = tab.icon == null
+                    ? null
+                    : Icon(
+                        selected
+                            ? (tab.selectedIcon ?? fluent2Filled(tab.icon!))
+                            : fluent2FillOn(tab.icon!, states),
+                        size: glyphSize,
+                        color: glyphInk,
+                      );
+                // The selected cut's width is kept by every state, so choosing
+                // a tab never moves its neighbours; the rest cut stands in the
+                // middle of it (Fluent's `contentReservedSpace`).
+                final words = Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: Fluent2Spacing.xxs,
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
                     children: [
-                      box,
-                      if (vertical)
-                        PositionedDirectional(
-                          start: 0,
-                          top: inset,
-                          bottom: inset,
-                          width: thick,
-                          child: mark,
-                        )
-                      else
-                        Positioned(
-                          left: inset,
-                          right: inset,
-                          bottom: 0,
-                          height: thick,
-                          child: mark,
+                      Visibility(
+                        visible: false,
+                        maintainSize: true,
+                        maintainAnimation: true,
+                        maintainState: true,
+                        child: Text(tab.label, maxLines: 1, style: strong),
+                      ),
+                      fluent2CapCentred(
+                        Text(
+                          tab.label,
+                          maxLines: 1,
+                          style: (selected ? strong : rest)
+                              .merge(look.textStyle)
+                              .c(ink),
                         ),
+                      ),
                     ],
-                  );
-                  return box;
-                },
-              );
-            },
-          ),
+                  ),
+                );
+                final content = Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: gap,
+                  children: [?icon, words],
+                );
+                final shape = BorderRadius.circular(
+                  _circular ? 10000 : Fluent2Radius.medium,
+                );
+                Widget box = Container(
+                  padding: room,
+                  alignment: vertical
+                      ? AlignmentDirectional.centerStart
+                      : Alignment.center,
+                  decoration: BoxDecoration(
+                    color: fill,
+                    borderRadius: shape,
+                    border: _circular
+                        ? Border.all(color: edgeInk, width: Fluent2Stroke.thin)
+                        : null,
+                  ),
+                  child: content,
+                );
+                if (_circular || selected) return box;
+                // The selected tab's bar is ui_core's indicator; an
+                // unchosen tab shows a bar under the pointer.
+                final bar = disabled
+                    ? null
+                    : press.pick(
+                        t.colors.transparentStroke,
+                        t.colors.neutralStroke1Hover,
+                        t.colors.neutralStroke1Pressed,
+                      );
+                if (bar == null) return box;
+                final thick = size == Fluent2TabSize.small
+                    ? Fluent2Stroke.thick
+                    : Fluent2Stroke.thicker;
+                final mark = DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: bar,
+                    borderRadius: BorderRadius.circular(10000),
+                  ),
+                );
+                final inset = switch (size) {
+                  Fluent2TabSize.small => vertical ? 4.0 : 6.0,
+                  Fluent2TabSize.medium => vertical ? 8.0 : 12.0,
+                  Fluent2TabSize.large => vertical ? 10.0 : 12.0,
+                };
+                box = Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    box,
+                    if (vertical)
+                      PositionedDirectional(
+                        start: 0,
+                        top: inset,
+                        bottom: inset,
+                        width: thick,
+                        child: mark,
+                      )
+                    else
+                      Positioned(
+                        left: inset,
+                        right: inset,
+                        bottom: 0,
+                        height: thick,
+                        child: mark,
+                      ),
+                  ],
+                );
+                return box;
+              },
+            );
+          },
         ),
       ),
     );

@@ -116,7 +116,7 @@ class Fluent2TableCell {
 }
 
 /// One row of a [Fluent2Table]: its [cells] in the columns' order and what
-/// a press on it does ([onTap]).
+/// a press on it does ([onPressed]).
 ///
 /// ```dart
 /// Fluent2TableRow(cells: [Fluent2TableCell('Q3 plan.docx'), Fluent2TableCell('Kai Tanaka'), Fluent2TableCell('2h ago')], onPressed: open)

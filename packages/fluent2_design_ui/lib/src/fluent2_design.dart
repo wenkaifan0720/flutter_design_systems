@@ -87,7 +87,9 @@ export 'fluent2_design/theme.dart';
 // The shared kit's values the look's parts take and hand back: a range, a
 // date range and its calendar, a colour, a table's rows and columns, a code,
 // a menu bar's entries, a command, where a flyout opens, a toast's handle,
-// the inventory, and iOS's swipe back round a page's push.
+// the inventory, iOS's swipe back round a page's push, and a window's size
+// class.
+export 'package:ui_core/ui_core.dart' show DesignWindowSizeClass;
 export 'package:ui_core/ui_core.dart'
     show DesignOverlaySide, DesignOverlayAlign;
 export 'package:ui_core/ui_core.dart'

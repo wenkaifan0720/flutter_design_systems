@@ -25,7 +25,7 @@ enum Fluent2BreadcrumbSize {
 }
 
 /// One place on a [Fluent2Breadcrumb]'s path: its [label], a glyph before
-/// it ([icon]) and where a press leads ([onTap]).
+/// it ([icon]) and where a press leads ([onPressed]).
 ///
 /// ```dart
 /// Fluent2BreadcrumbItem('Files', icon: Fluent2Icons.folder, onPressed: openFiles)

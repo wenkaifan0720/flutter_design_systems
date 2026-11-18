@@ -55,11 +55,11 @@ enum Fluent2CardOrientation {
 /// Fluent 2's Card: a bounded surface summarising one item (a file, a
 /// meeting, a person), its [children] laid in a column (or a row with
 /// [orientation]) at the size's room, a [Fluent2CardPreview] reaching its
-/// edges, in the [appearance]'s face. With [onTap] the whole card is one
+/// edges, in the [appearance]'s face. With [onPressed] the whole card is one
 /// press, stepping to its hover face (`shadow8` for a filled card) and its
 /// pressed fill. With [selected] set it is selectable: its check at the top
 /// end corner and, while selected, its selected fill inside the selected
-/// stroke; a press asks [onSelectedChanged] for the other state (null
+/// stroke; a press asks [onSelected] for the other state (null
 /// draws it disabled). Read as its words, or as [label] when given.
 ///
 /// [style] restyles it over `Fluent2ThemeData.cardTheme`, in its states

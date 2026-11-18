@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
+import '../../internal/search_states.dart';
 import '../../internal/list_keys.dart';
 import '../../internal/measure.dart';
 import '../../localizations.dart';
@@ -469,8 +472,9 @@ class _Fluent2SelectState<T> extends State<Fluent2Select<T>> {
 /// option (the focus ring on it) round the list, past an option out of
 /// use; Enter or a press chooses it and the field then says its label;
 /// Escape closes the list, and leaving the field puts back the chosen
-/// label. A choice calls [onChanged]; null
-/// draws it disabled. Read as a text field named [label].
+/// label. An app's [search] can find the options instead, the list saying
+/// "Loading" while it runs and offering "Try again" when it fails. A choice
+/// calls [onChanged]; null draws it disabled. Read as a text field named [label].
 ///
 /// ```dart
 /// Fluent2Combobox<String>(label: 'Assignee', hint: 'Type a name', value: owner, options: [for (final p in people) Fluent2Option(p.id, p.name)], onChanged: (v) => setState(() => owner = v))
@@ -490,6 +494,8 @@ class Fluent2Combobox<T> extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     this.style,
+    this.search,
+    this.debounceDuration,
     super.key,
   });
 
@@ -533,6 +539,17 @@ class Fluent2Combobox<T> extends StatefulWidget {
   /// {@macro fluent2.autofocus}
   final bool autofocus;
 
+  /// Finds the options for the typed words, in place of filtering
+  /// [options]: an app's own search, at once or on its way. Only the latest
+  /// words' answer shows. While it is on its way the list shows a spinner and
+  /// "Loading"; when it throws, the list says the search failed and offers
+  /// "Try again", which Down reaches, the field keeping the focus.
+  final FutureOr<Iterable<Fluent2Option<T>>> Function(String query)? search;
+
+  /// How long typing rests before [search] runs: one search a pause, not
+  /// one a letter. Null runs it at every change.
+  final Duration? debounceDuration;
+
   @override
   State<Fluent2Combobox<T>> createState() => _Fluent2ComboboxState<T>();
 
@@ -571,7 +588,19 @@ class Fluent2Combobox<T> extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        ObjectFlagProperty<
+          FutureOr<Iterable<Fluent2Option<T>>> Function(String query)?
+        >.has('search', search),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -581,11 +610,16 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
       widget.focusNode ?? (_ownFocus ??= FocusNode(debugLabel: 'combobox'));
   final _text = TextEditingController();
 
+  // The option last chosen, which a search may have found outside
+  // [Fluent2Combobox.options].
+  Fluent2Option<T>? _taken;
+
   Fluent2Option<T>? get _chosen {
     for (final o in widget.options) {
       if (o.value == widget.value) return o;
     }
-    return null;
+    final taken = _taken;
+    return taken != null && taken.value == widget.value ? taken : null;
   }
 
   @override
@@ -616,6 +650,7 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
   }
 
   void _take(Fluent2Option<T> o) {
+    _taken = o;
     if (o.value != widget.value) widget.onChanged?.call(o.value);
   }
 
@@ -659,6 +694,10 @@ class _Fluent2ComboboxState<T> extends State<Fluent2Combobox<T>> {
         highlightFollowsPointer: false,
         displayStringForOption: (o) => o.label,
         requireSelection: true,
+        search: widget.search,
+        debounceDuration: widget.debounceDuration,
+        loadingBuilder: widget.search == null ? null : fluent2SearchLoading,
+        errorBuilder: widget.search == null ? null : fluent2SearchFailed,
         controller: _text,
         focusNode: _focus,
         semanticLabel: widget.label ?? scope?.label,

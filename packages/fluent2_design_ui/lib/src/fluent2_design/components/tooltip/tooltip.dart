@@ -1,7 +1,6 @@
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../internal/arrow.dart';
 import '../../styled.dart';
@@ -105,7 +104,13 @@ class Fluent2TooltipBubble extends StatelessWidget {
     );
     if (p == null) return bubble;
     return CustomPaint(
-      foregroundPainter: _ArrowPainter(placement: p, fill: fill, height: arrow),
+      foregroundPainter: _ArrowPainter(
+        placement: p,
+        fill: fill,
+        height: arrow,
+        // A tooltip's aim moves as the tip lands (ui_core's surfaceRect).
+        repaint: p is Listenable ? p as Listenable : null,
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: arrow),
         child: bubble,
@@ -146,6 +151,7 @@ class _ArrowPainter extends CustomPainter {
     required this.placement,
     required this.fill,
     required this.height,
+    super.repaint,
   });
 
   final Fluent2ArrowPlacement placement;
@@ -166,19 +172,22 @@ class _ArrowPainter extends CustomPainter {
   bool shouldRepaint(_ArrowPainter old) => true;
 }
 
-/// Fluent 2's Tooltip: a short [message] naming or explaining its [child]
-/// (an icon-only command, a truncated name), shown in a bubble above it
-/// (or [below]) after the pointer rests on it for 250 ms, on a long press
-/// on a touch screen, and while the keyboard's focus is inside it; hidden
-/// 250 ms after the pointer leaves. [withArrow] adds the 6 arrow pointing
-/// at the control (Fluent draws none by default). The message is the
-/// control's tooltip to a screen reader. Never put an act or the only
-/// copy of something needed inside one.
+/// Fluent 2's Tooltip: a short [message] naming or explaining its [child] (an
+/// icon-only command, a truncated name), shown in a bubble above it (or
+/// [Fluent2TooltipPosition.below]) after the pointer rests on it for 250 ms, on
+/// a long press on a touch screen, and while the keyboard's focus is inside it;
+/// hidden 250 ms after the pointer leaves it and the bubble. The pointer may
+/// move onto the bubble, Escape hides it, and one shows at a time: along a
+/// toolbar the next shows at once. [withArrow] adds the 6 arrow pointing at the
+/// control (Fluent draws none by default), aimed where the bubble landed. The
+/// message is the control's tooltip to a screen reader. It is ui_core's
+/// `DesignTooltip` in Fluent's bubble. Never put an act or the only copy of
+/// something needed inside one.
 ///
 /// ```dart
 /// Fluent2Tooltip(message: 'Share', child: Fluent2IconButton(Fluent2Icons.share, label: 'Share', onPressed: share))
 /// ```
-class Fluent2Tooltip extends StatefulWidget {
+class Fluent2Tooltip extends StatelessWidget {
   /// A tooltip that names [child] with [message] on hover, long press or focus.
   const Fluent2Tooltip({
     required this.message,
@@ -209,8 +218,40 @@ class Fluent2Tooltip extends StatefulWidget {
   /// Whether the bubble points at [child].
   final bool withArrow;
 
+  /// Fluent's 4 between the control and the bubble (with the arrow, its
+  /// room is inside the bubble's box) and 8 from the window's edges.
+  DesignOverlayPlacement get _placement => DesignOverlayPlacement(
+    side: switch (position) {
+      Fluent2TooltipPosition.above => DesignOverlaySide.above,
+      Fluent2TooltipPosition.below => DesignOverlaySide.below,
+      Fluent2TooltipPosition.after => DesignOverlaySide.end,
+    },
+    align: DesignOverlayAlign.center,
+    gap: 4,
+    margin: 8,
+    preferredExtent: 48,
+    matchAnchorWidth: false,
+  );
+
   @override
-  State<Fluent2Tooltip> createState() => _Fluent2TooltipState();
+  Widget build(BuildContext context) => DesignTooltip(
+    message: message,
+    hoverDelay: const Duration(milliseconds: 250),
+    dismissDelay: const Duration(milliseconds: 250),
+    placement: _placement,
+    tooltipBuilder: (context, info) => FadeTransition(
+      opacity: info.animation,
+      child: Fluent2TooltipBubble(
+        message: message,
+        appearance: appearance,
+        style: style,
+        placement: withArrow && position != Fluent2TooltipPosition.after
+            ? _Aim(info)
+            : null,
+      ),
+    ),
+    child: child,
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -238,97 +279,27 @@ class Fluent2Tooltip extends StatefulWidget {
   }
 }
 
-class _Fluent2TooltipState extends State<Fluent2Tooltip> {
-  final GlobalKey<RawTooltipState> _tip = GlobalKey<RawTooltipState>();
-  final Fluent2ArrowPlacement _placement = Fluent2ArrowPlacement();
+/// The arrow's place read from where ui_core landed the bubble: on the side
+/// it took, at the control's centre. It notifies as the bubble lands.
+class _Aim extends Fluent2ArrowPlacement implements Listenable {
+  _Aim(this.info);
 
-  Offset _place(TooltipPositionContext c) {
-    const edge = 8.0;
-    // Fluent's 4 between the control and the bubble; with the arrow the
-    // bubble stands 6 further off, and the room the arrow is drawn in is
-    // already in its box.
-    const gap = 4.0;
-    final size = c.tooltipSize;
-    if (widget.position == Fluent2TooltipPosition.after) {
-      final rtl = Directionality.of(context) == TextDirection.rtl;
-      final right = c.target.dx + c.targetSize.width / 2 + gap;
-      final left = c.target.dx - c.targetSize.width / 2 - gap - size.width;
-      final fitsRight = right + size.width <= c.overlaySize.width - edge;
-      final fitsLeft = left >= edge;
-      final y = (c.target.dy - size.height / 2)
-          .clamp(
-            edge,
-            math.max(edge, c.overlaySize.height - edge - size.height),
-          )
-          .toDouble();
-      final toRight = rtl ? !fitsLeft && fitsRight : fitsRight || !fitsLeft;
-      return Offset(toRight ? right : left, y);
-    }
-    final top = c.target.dy - c.targetSize.height / 2;
-    final bottom = c.target.dy + c.targetSize.height / 2;
-    final aboveY = top - gap - size.height;
-    final belowY = bottom + gap;
-    final wantAbove = widget.position == Fluent2TooltipPosition.above;
-    final fitsAbove = aboveY >= edge;
-    final fitsBelow = belowY + size.height <= c.overlaySize.height - edge;
-    final above = wantAbove
-        ? (fitsAbove || !fitsBelow)
-        : (fitsAbove && !fitsBelow);
-    final x = (c.target.dx - size.width / 2)
-        .clamp(edge, math.max(edge, c.overlaySize.width - edge - size.width))
-        .toDouble();
-    _placement
-      ..isAbove = above
-      ..offset = c.target.dx - x;
-    return Offset(x, above ? aboveY : belowY);
+  final DesignOverlayInfo info;
+
+  @override
+  bool get isAbove => info.side == DesignOverlaySide.above;
+
+  @override
+  double get offset {
+    final landed = info.surfaceRect.value;
+    return landed == null ? 0 : info.anchorRect.center.dx - landed.left;
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Focus(
-      canRequestFocus: false,
-      skipTraversal: true,
-      includeSemantics: false,
-      onFocusChange: (focused) {
-        if (focused) {
-          if (FocusManager.instance.highlightMode ==
-              FocusHighlightMode.traditional) {
-            _tip.currentState?.ensureTooltipVisible();
-          }
-        } else {
-          RawTooltip.dismissAllToolTips();
-        }
-      },
-      child: RawTooltip(
-        key: _tip,
-        semanticsTooltip: widget.message,
-        hoverDelay: const Duration(milliseconds: 250),
-        dismissDelay: const Duration(milliseconds: 250),
-        animationStyle: AnimationStyle(
-          curve: Fluent2Motion.decelerateMid,
-          duration: Fluent2Motion.on(context)
-              ? Fluent2Motion.normal
-              : Duration.zero,
-          reverseDuration: Fluent2Motion.on(context)
-              ? Fluent2Motion.faster
-              : Duration.zero,
-        ),
-        positionDelegate: _place,
-        tooltipBuilder: (context, animation) => FadeTransition(
-          opacity: animation,
-          child: Fluent2TooltipBubble(
-            message: widget.message,
-            appearance: widget.appearance,
-            style: widget.style,
-            placement:
-                widget.withArrow &&
-                    widget.position != Fluent2TooltipPosition.after
-                ? _placement
-                : null,
-          ),
-        ),
-        child: widget.child,
-      ),
-    );
-  }
+  void addListener(VoidCallback listener) =>
+      info.surfaceRect.addListener(listener);
+
+  @override
+  void removeListener(VoidCallback listener) =>
+      info.surfaceRect.removeListener(listener);
 }

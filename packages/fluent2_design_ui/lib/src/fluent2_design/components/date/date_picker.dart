@@ -389,7 +389,7 @@ class _Day extends StatelessWidget {
 }
 
 /// Fluent's DatePicker: a field-faced button saying the chosen date (or
-/// its [placeholder] in the fourth ink) with the calendar glyph at its
+/// its [hint] in the fourth ink) with the calendar glyph at its
 /// end in the third ink, opening a [Fluent2Calendar]: on a tablet, the
 /// desktop or under a pointer in a popover under the field, on a phone in a
 /// bottom sheet headed by [label]; a day chosen closes it and calls [onChanged]. Null

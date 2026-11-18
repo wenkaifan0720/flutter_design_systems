@@ -117,3 +117,78 @@ class _Fluent2KeyFocusState extends State<Fluent2KeyFocus> {
     );
   }
 }
+
+/// Fluent's focus indicator round [child] while [focused] and the keyboard,
+/// not a pointer, holds focus: for a control whose focus ui_core keeps (a
+/// rating, a number field, a wheel, a chart), which reports it in its
+/// states. Plumbing of the components.
+class Fluent2KeyRing extends StatefulWidget {
+  /// Rings [child] while [focused] by the keyboard.
+  const Fluent2KeyRing({
+    required this.focused,
+    required this.radius,
+    required this.child,
+    this.ringInsets = EdgeInsets.zero,
+    super.key,
+  });
+
+  /// Whether the control holds focus.
+  final bool focused;
+
+  /// The ringed object's corner radius.
+  final double radius;
+
+  /// How far inside [child]'s box the ringed object stands.
+  final EdgeInsets ringInsets;
+
+  /// The control's face.
+  final Widget child;
+
+  @override
+  State<Fluent2KeyRing> createState() => _Fluent2KeyRingState();
+}
+
+class _Fluent2KeyRingState extends State<Fluent2KeyRing> {
+  bool _keyboard = _Fluent2KeyFocusState._isKeyboard(
+    FocusManager.instance.highlightMode,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    FocusManager.instance.addHighlightModeListener(_onMode);
+  }
+
+  @override
+  void dispose() {
+    FocusManager.instance.removeHighlightModeListener(_onMode);
+    super.dispose();
+  }
+
+  void _onMode(FocusHighlightMode mode) {
+    final keyboard = _Fluent2KeyFocusState._isKeyboard(mode);
+    if (keyboard != _keyboard) setState(() => _keyboard = keyboard);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final at = widget.ringInsets;
+    return Stack(
+      fit: StackFit.passthrough,
+      clipBehavior: Clip.none,
+      children: [
+        widget.child,
+        if (widget.focused && _keyboard)
+          Positioned(
+            left: at.left,
+            top: at.top,
+            right: at.right,
+            bottom: at.bottom,
+            child: IgnorePointer(
+              child: Fluent2FocusRing(radius: widget.radius),
+            ),
+          ),
+      ],
+    );
+  }
+}

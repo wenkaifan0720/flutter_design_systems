@@ -3,7 +3,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:material_ui/material_ui.dart' show ModalBottomSheetRoute;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
@@ -11,6 +10,7 @@ import 'package:ui_core/host.dart';
 import '../chrome_metrics.dart';
 import '../icons.dart';
 import '../internal/measure.dart';
+import '../internal/route_motion.dart';
 import '../theme.dart';
 import 'button/button.dart';
 import 'dialog/dialog.dart';
@@ -33,9 +33,11 @@ Future<T?> showFluent2Dialog<T>(
 }) => Fluent2Dialog.show<T>(context, builder);
 
 /// Raises the [Fluent2Sheet] [builder] makes at the window's [edge], [width]
-/// wide (never closer than 56 to the far side), over the overlay. The builder
-/// gets the sheet's close. Escape, a press on the overlay or a drag to its edge
-/// closes it and the focus goes back where it was.
+/// wide (never closer than 56 to the far side), over the overlay, sliding in
+/// on ui_core's spring (settling in Fluent's `durationGentle`; a drag let go
+/// settles at its speed). The builder gets the sheet's close. Escape, a press
+/// on the overlay or a drag to its edge closes it and the focus goes back
+/// where it was.
 ///
 /// ```dart
 /// showFluent2Sheet<void>(context, builder: (context, close) => Fluent2Sheet(title: 'Filters', onClose: close, child: filters))
@@ -55,7 +57,8 @@ Future<T?> showFluent2Sheet<T>(
       width: width,
       barrierColor: t.overlay,
       barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
-      transitionDuration: Fluent2Motion.of(context, Fluent2Motion.gentle),
+      dampingRatio: Fluent2Motion.springDamping,
+      stiffness: Fluent2Motion.springGentle,
       builder: (inner, sheet) => themes.wrap(
         RoutePresentationScope(
           presentation: RoutePresentation.sheet,
@@ -184,7 +187,11 @@ Widget _sheetWidth(BuildContext context, double maxWidth, Widget sheet) =>
 
 /// Raises what [builder] makes (a [Fluent2BottomSheet], usually) off the
 /// bottom edge over the overlay, at most 600 wide; completes with what it pops
-/// with, null when it is dismissed. It rides above the keyboard.
+/// with, null when it is dismissed. It is ui_core's bottom sheet
+/// (`DesignBottomSheetRoute`): it rises on a spring that settles in Fluent's
+/// `durationGentle`, rides above the keyboard, follows a drag (a
+/// [Fluent2BottomSheet]'s words, scrolled to their top, hand the drag on) and
+/// closes when let go low or flung down; focus goes back to what raised it.
 ///
 /// ```dart
 /// showFluent2BottomSheet<void>(context, builder: (context) => Fluent2BottomSheet(title: 'Share', onClose: () => Navigator.of(context).pop(), child: people))
@@ -197,25 +204,21 @@ Future<T?> showFluent2BottomSheet<T>(
   final navigator = Fluent2Host.navigatorOf(context);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push<T>(
-    ModalBottomSheetRoute<T>(
-      capturedThemes: themes,
+    DesignBottomSheetRoute<T>(
       barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
-      backgroundColor: const Color(0x00000000),
-      modalBarrierColor: t.overlay,
-      elevation: 0,
-      isScrollControlled: true,
-      sheetAnimationStyle: Fluent2Sheet.motionOf(context),
-      constraints: BoxConstraints(
-        maxHeight: Fluent2Sheet.maxHeight(context),
-        maxWidth: Fluent2ChromeMetrics.dialogWidth,
-      ),
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
-        ),
-        child: RoutePresentationScope(
-          presentation: RoutePresentation.sheet,
-          child: builder(sheetContext),
+      barrierColor: t.overlay,
+      dampingRatio: Fluent2Motion.springDamping,
+      stiffness: Fluent2Motion.springGentle,
+      builder: (sheetContext, details) => themes.wrap(
+        fluent2BottomSheetPlace(
+          maxHeight: Fluent2Sheet.maxHeight(context),
+          child: PrimaryScrollController(
+            controller: details.scrollController,
+            child: RoutePresentationScope(
+              presentation: RoutePresentation.sheet,
+              child: builder(sheetContext),
+            ),
+          ),
         ),
       ),
     ),

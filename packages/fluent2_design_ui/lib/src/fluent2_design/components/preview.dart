@@ -118,35 +118,27 @@ class Fluent2Preview extends StatelessWidget {
     platform: platform,
     brightness: brightness,
     device: device,
-    child: MaterialApp(
-      key: ValueKey<Object>((presentation, drawer, fullScreen, back)),
-      debugShowCheckedModeBanner: false,
-      // The page reads the way the app round the preview reads: the inner
-      // app's own locale would otherwise set it left to right.
-      builder: (inner, app) => Directionality(
-        textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
-        child: Fluent2Host(
-          light: light,
-          darkData: darkData,
-          brightness: brightness,
-          child: app ?? const SizedBox.shrink(),
+    // Its own semantics container: the route under the preview's app stands
+    // a modal barrier, which hides from a screen reader whatever painted
+    // before it in its container (an app's heading above the preview).
+    child: Semantics(
+      container: true,
+      child: MaterialApp(
+        key: ValueKey<Object>((presentation, drawer, fullScreen, back)),
+        debugShowCheckedModeBanner: false,
+        // The page reads the way the app round the preview reads: the inner
+        // app's own locale would otherwise set it left to right.
+        builder: (inner, app) => Directionality(
+          textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
+          child: Fluent2Host(
+            light: light,
+            darkData: darkData,
+            brightness: brightness,
+            child: app ?? const SizedBox.shrink(),
+          ),
         ),
-      ),
-      home: switch (presentation) {
-        Fluent2Presentation.root => _Root(
-          tabs: tabs,
-          activeIndex: selectedIndex,
-          action: action,
-          brand: brand,
-          location: location,
-          child: child,
-        ),
-        Fluent2Presentation.pushed => PreviewStage(
-          route: (context, page) => Fluent2Page<void>(
-            key: const ValueKey<String>('fluent2-preview'),
-            child: page,
-          ).createRoute(context),
-          child: _Beside(
+        home: switch (presentation) {
+          Fluent2Presentation.root => _Root(
             tabs: tabs,
             activeIndex: selectedIndex,
             action: action,
@@ -154,18 +146,32 @@ class Fluent2Preview extends StatelessWidget {
             location: location,
             child: child,
           ),
-        ),
-        Fluent2Presentation.sheet => PreviewStage(
-          route: (context, page) => Fluent2SheetPage<void>(
-            key: const ValueKey<String>('fluent2-preview'),
-            drawer: drawer,
-            fullScreen: fullScreen,
-            back: back,
-            child: page,
-          ).createRoute(context),
-          child: child,
-        ),
-      },
+          Fluent2Presentation.pushed => PreviewStage(
+            route: (context, page) => Fluent2Page<void>(
+              key: const ValueKey<String>('fluent2-preview'),
+              child: page,
+            ).createRoute(context),
+            child: _Beside(
+              tabs: tabs,
+              activeIndex: selectedIndex,
+              action: action,
+              brand: brand,
+              location: location,
+              child: child,
+            ),
+          ),
+          Fluent2Presentation.sheet => PreviewStage(
+            route: (context, page) => Fluent2SheetPage<void>(
+              key: const ValueKey<String>('fluent2-preview'),
+              drawer: drawer,
+              fullScreen: fullScreen,
+              back: back,
+              child: page,
+            ).createRoute(context),
+            child: child,
+          ),
+        },
+      ),
     ),
   );
 

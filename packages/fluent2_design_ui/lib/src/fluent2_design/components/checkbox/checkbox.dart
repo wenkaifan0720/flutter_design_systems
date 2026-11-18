@@ -166,13 +166,13 @@ class _Indicator extends StatelessWidget {
   }
 }
 
-/// Fluent 2's Checkbox: the box (16, its corner 2; [Fluent2CheckboxShape
-/// .circular] a disc; [Fluent2CheckboxSize.large] 20) 8 in from its edges,
-/// its [label] 4 beside it in body1, the whole row one checkbox. Unchecked
-/// it is the accessible stroke with the label in the third ink; checked
-/// the brand fill (`compoundBrandBackground`) with the white check and the
-/// label in the first ink; a null [value] is mixed, the brand stroke round
-/// the brand square. A press, or Space, asks [onChanged] for the other
+/// Fluent 2's Checkbox: the box (16, its corner 2;
+/// [Fluent2CheckboxShape.circular] a disc; [Fluent2CheckboxSize.large] 20) 8 in
+/// from its edges, its [label] 4 beside it in body1, the whole row one
+/// checkbox. Unchecked it is the accessible stroke with the label in the third
+/// ink; checked the brand fill (`compoundBrandBackground`) with the white check
+/// and the label in the first ink; a null [value] is mixed, the brand stroke
+/// round the brand square. A press, or Space, asks [onChanged] for the other
 /// state (mixed goes to checked); null [onChanged] draws it disabled.
 ///
 /// [style] restyles the box over `Fluent2ThemeData.checkboxTheme`, in its
@@ -368,7 +368,7 @@ class Fluent2Checkbox extends StatelessWidget {
 
 /// A task's done mark drawn as Fluent's circular checkbox at its large
 /// size: a 20 ring in the accessible stroke while open, the brand disc
-/// with the white check once [done]. A press or Space asks [onChanged] for
+/// with the white check once [value]. A press or Space asks [onChanged] for
 /// the other state; with no [onChanged] it is disabled, inert in the
 /// disabled inks; [readOnly] makes it a mark that only reports (drawn at
 /// full strength, not a control).

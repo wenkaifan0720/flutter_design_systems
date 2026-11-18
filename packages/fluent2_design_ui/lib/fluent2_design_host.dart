@@ -5,6 +5,30 @@
 /// beside that one.
 ///
 /// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
+///
+/// {@canonicalFor chrome_metrics}
+/// {@canonicalFor chrome_metrics.Fluent2ChromeMetrics}
+/// {@canonicalFor account}
+/// {@canonicalFor account.Fluent2Account}
+/// {@canonicalFor account.Fluent2AccountScope}
+/// {@canonicalFor account.Fluent2Bell}
+/// {@canonicalFor host}
+/// {@canonicalFor host.Fluent2Host}
+/// {@canonicalFor host.Fluent2MediaGround}
+/// {@canonicalFor preview}
+/// {@canonicalFor preview.Fluent2Presentation}
+/// {@canonicalFor preview.Fluent2Preview}
+/// {@canonicalFor routes}
+/// {@canonicalFor routes.Fluent2Page}
+/// {@canonicalFor sheet_page}
+/// {@canonicalFor sheet_page.Fluent2SheetPage}
+/// {@canonicalFor shell_frame}
+/// {@canonicalFor shell_frame.Fluent2ShellAction}
+/// {@canonicalFor shell_frame.Fluent2ShellInsets}
+/// {@canonicalFor inventory}
+/// {@canonicalFor inventory.Fluent2InventoryGallery}
+/// {@canonicalFor inventory.fluent2Inventory}
+/// {@canonicalFor inventory.fluent2InventoryHeights}
 library;
 
 export 'package:ui_core/host.dart';

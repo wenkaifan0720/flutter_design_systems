@@ -294,7 +294,7 @@ class Fluent2Radio<T> extends StatelessWidget {
   }
 }
 
-/// Fluent 2's RadioGroup: one choice among its [items] ([Fluent2Radio]s),
+/// Fluent 2's RadioGroup: one choice among its [options] ([Fluent2Radio]s),
 /// laid out by [layout]; a press, Space or an arrow key chooses (the
 /// arrows move the choice and the focus along the group). [value] is the
 /// chosen one's value; null [onChanged] draws every radio disabled. Read

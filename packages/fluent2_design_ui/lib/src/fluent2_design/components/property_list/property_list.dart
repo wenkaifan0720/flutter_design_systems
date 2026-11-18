@@ -22,7 +22,7 @@ enum Fluent2DescriptionListLayout {
 
 /// One fact of a [Fluent2DescriptionList]: its [label] and its [value] (or a
 /// [child] standing as the value: a persona, a tag), a glyph before the
-/// value ([icon]), and what a press on it opens ([onTap], its chevron at
+/// value ([icon]), and what a press on it opens ([onPressed], its chevron at
 /// the end).
 ///
 /// ```dart

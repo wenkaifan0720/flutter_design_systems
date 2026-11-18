@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/cap_label.dart';
+import '../../internal/search_states.dart';
 import '../../internal/well.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
@@ -37,7 +40,9 @@ enum Fluent2MultiSelectSize {
 /// active option; a comma adds what was typed when it names an option; Backspace
 /// or Left in an empty input moves to the last tag, where Backspace or
 /// Delete takes it away and the arrows walk the tags; Escape closes the
-/// list. Null [onChanged] draws it disabled. Read as a text field named
+/// list. An app's [search] can find the options instead, the list saying
+/// "Loading" while it runs and offering "Try again" when it fails. Null
+/// [onChanged] draws it disabled. Read as a text field named
 /// [label], each tag a button "Remove …" with a Remove action. The
 /// behaviour is the design kit's DesignTagInput; Fluent 2 paints the
 /// field, the tags and the list.
@@ -59,6 +64,8 @@ class Fluent2MultiSelect<T> extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     this.style,
+    this.search,
+    this.debounceDuration,
     super.key,
   });
 
@@ -97,6 +104,17 @@ class Fluent2MultiSelect<T> extends StatefulWidget {
 
   /// {@macro fluent2.autofocus}
   final bool autofocus;
+
+  /// Finds the options for the typed words, in place of filtering
+  /// [options]: an app's own search, at once or on its way. Only the latest
+  /// words' answer shows. While it is on its way the list shows a spinner and
+  /// "Loading"; when it throws, the list says the search failed and offers
+  /// "Try again", which Down reaches, the input keeping the focus.
+  final FutureOr<Iterable<Fluent2Option<T>>> Function(String query)? search;
+
+  /// How long typing rests before [search] runs: one search a pause, not
+  /// one a letter. Null runs it at every change.
+  final Duration? debounceDuration;
 
   @override
   State<Fluent2MultiSelect<T>> createState() => _Fluent2MultiSelectState<T>();
@@ -137,7 +155,19 @@ class Fluent2MultiSelect<T> extends StatefulWidget {
           defaultValue: null,
         ),
       )
-      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        ObjectFlagProperty<
+          FutureOr<Iterable<Fluent2Option<T>>> Function(String query)?
+        >.has('search', search),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -160,11 +190,15 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
     super.dispose();
   }
 
+  // The options taken so far, which a search may have found outside
+  // [Fluent2MultiSelect.options].
+  final Map<T, Fluent2Option<T>> _taken = {};
+
   List<Fluent2Option<T>> get _chosen => [
     for (final v in widget.selected)
       widget.options.firstWhere(
         (o) => o.value == v,
-        orElse: () => Fluent2Option<T>(v, '$v'),
+        orElse: () => _taken[v] ?? Fluent2Option<T>(v, '$v'),
       ),
   ];
 
@@ -174,6 +208,9 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
   void _change(List<Fluent2Option<T>> next) {
     final change = widget.onChanged;
     if (change == null) return;
+    for (final o in next) {
+      _taken[o.value] = o;
+    }
     final kept = [
       for (final o in next)
         if (o.enabled || widget.selected.contains(o.value)) o.value,
@@ -204,6 +241,10 @@ class _Fluent2MultiSelectState<T> extends State<Fluent2MultiSelect<T>> {
       // keeps its own.
       highlightFollowsPointer: false,
       displayStringForOption: (o) => o.label,
+      search: widget.search,
+      debounceDuration: widget.debounceDuration,
+      loadingBuilder: widget.search == null ? null : fluent2SearchLoading,
+      errorBuilder: widget.search == null ? null : fluent2SearchFailed,
       controller: _text,
       focusNode: _focus,
       semanticLabel: name,

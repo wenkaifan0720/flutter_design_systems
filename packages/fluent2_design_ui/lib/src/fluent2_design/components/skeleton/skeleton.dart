@@ -165,10 +165,11 @@ class _SkeletonScope extends InheritedWidget {
       moving != old.moving;
 }
 
-/// One shape of a [Fluent2Skeleton]: a [rectangle] as wide as [width] (the
-/// parent's by default) and [size] tall, or a [circle] or [square] [size]
-/// across (Fluent's sizes 8 to 128; 16 by default). Outside a skeleton it
-/// stands still in the opaque stencil.
+/// One shape of a [Fluent2Skeleton]: a [Fluent2SkeletonShape.rectangle] as wide
+/// as [width] (the parent's by default) and [size] tall, or a
+/// [Fluent2SkeletonShape.circle] or [Fluent2SkeletonShape.square] [size] across
+/// (Fluent's sizes 8 to 128; 16 by default). Outside a skeleton it stands still
+/// in the opaque stencil.
 ///
 /// ```dart
 /// Fluent2SkeletonItem(size: 12, width: 160)

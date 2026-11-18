@@ -3,7 +3,7 @@
 /// sending into a Northwind chat, live.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
 import '../kit.dart';

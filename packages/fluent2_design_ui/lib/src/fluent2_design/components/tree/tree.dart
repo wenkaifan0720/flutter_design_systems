@@ -60,15 +60,15 @@ class Fluent2TreeItem<T> {
   bool get isBranch => children.isNotEmpty;
 }
 
-/// Fluent 2's Tree: nested [items] (a workspace's folders and files, a
-/// channel list), each a row 32 tall (44 on a phone) on the subtle fill's
-/// hover and pressed steps, indented 24 a level: a branch leads with its 12
-/// chevron in a 24 column (turning down while open, `durationNormal`), a
-/// leaf stands where the chevron would. A press on a branch opens or shuts
-/// it; a press on a leaf asks [onChanged] for its value, and the item whose
-/// value is [value] wears the subtle selected fill. Open branches are the
-/// tree's own, from [initiallyOpen]. Read as items that say whether they are
-/// expanded and which is selected.
+/// Fluent 2's Tree: nested [items] (a workspace's folders and files, a channel
+/// list), each a row 32 tall (44 on a phone) on the subtle fill's hover and
+/// pressed steps, indented 24 a level: a branch leads with its 12 chevron in a
+/// 24 column (turning down while open, `durationNormal`), a leaf stands where
+/// the chevron would. A press on a branch opens or shuts it; a press on a leaf
+/// asks [onChanged] for its value, and the item whose value is [value] wears
+/// the subtle selected fill. Open branches are the tree's own, from
+/// [initiallyExpanded]. Read as items that say whether they are expanded and
+/// which is selected.
 ///
 /// ```dart
 /// Fluent2Tree<String>(items: [Fluent2TreeItem('design', 'Design', children: [Fluent2TreeItem('brand', 'Brand guidelines.pdf')])], value: 'brand', initiallyExpanded: const {'design'}, onChanged: open)

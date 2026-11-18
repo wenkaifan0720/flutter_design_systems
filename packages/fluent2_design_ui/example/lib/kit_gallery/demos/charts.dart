@@ -3,7 +3,7 @@
 /// hours with one day picked, and the hues in their fixed order.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
 import '../kit.dart';

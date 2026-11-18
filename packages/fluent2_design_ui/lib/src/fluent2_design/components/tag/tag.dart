@@ -371,10 +371,10 @@ class _TagContent extends StatelessWidget {
 /// value: [label] (over a [secondary] line in caption2 at the medium
 /// size) after an [icon] or a person's [avatar], on the [appearance]'s
 /// face at Fluent's three sizes. Static, it states (a file's labels, a
-/// task's project); with [onDismiss] it is a removable token (a picked
+/// task's project); with [onDeleted] it is a removable token (a picked
 /// recipient) whose whole face is one button ending in the dismiss mark.
 /// [enabled] false draws the disabled face. Read as its
-/// label (and "remove" with [onDismiss]).
+/// label (and "remove" with [onDeleted]).
 ///
 /// ```dart
 /// Fluent2Tag('Launch', icon: Fluent2Icons.folder, appearance: Fluent2TagAppearance.brand)
@@ -610,12 +610,12 @@ IconData _dismissGlyph(Fluent2TagSize size) => switch (size) {
   Fluent2TagSize.extraSmall => Fluent2Icons.dismiss12,
 };
 
-/// Fluent 2's InteractionTag: a tag that acts. Its primary part ([onTap])
+/// Fluent 2's InteractionTag: a tag that acts. Its primary part ([onPressed])
 /// opens what it names, or, with [selected] set, toggles the tag in and
 /// out of a choice (the brand fill while chosen: a filter, a topic, a
-/// day); a [onDismiss] adds its secondary part past a hairline, the
+/// day); an [onDeleted] adds its secondary part past a hairline, the
 /// dismiss mark as its own button. Both parts take the 44 touch target
-/// where there is room. Null [onTap] and [onDismiss] draw it disabled.
+/// where there is room. Null [onPressed] and [onDeleted] draw it disabled.
 /// Read as a button named [label], selected or not, and "Remove [label]".
 ///
 /// ```dart
@@ -980,10 +980,10 @@ class Fluent2TagItem<T> {
 
 /// Fluent 2's TagGroup: [items] in one wrapping row at the size's gap (8,
 /// 6, 4), sharing a size, an appearance and a shape. With [selected] and
-/// [onSelectedChanged] each is a choosable [Fluent2InteractionTag] (one at
+/// [onSelectionChanged] each is a choosable [Fluent2InteractionTag] (one at
 /// a time unless [multiple]): the filters over a list, the topics of a
-/// post. With [onDismiss] each is removable (the recipients picked, the
-/// labels set). Neither: static [Fluent2Tag]s. Null [onSelectedChanged]
+/// post. With [onDeleted] each is removable (the recipients picked, the
+/// labels set). Neither: static [Fluent2Tag]s. Null [onSelectionChanged]
 /// draws a choosable group inert. Read as a group named [label].
 ///
 /// ```dart

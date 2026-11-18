@@ -53,7 +53,7 @@ class Fluent2StatDelta {
 /// [delta] badge beside it, a quiet [caption] under it, a [trend]
 /// sparkline at its foot and an [icon] at its start. On a Fluent card
 /// (`neutralCardBackground`, 4 corners, 12 round, `shadow4`) unless
-/// [framed] is false; with [onTap] the card opens what it counts. Read as
+/// [framed] is false; with [onPressed] the card opens what it counts. Read as
 /// one: label, value, delta, caption.
 ///
 /// ```dart

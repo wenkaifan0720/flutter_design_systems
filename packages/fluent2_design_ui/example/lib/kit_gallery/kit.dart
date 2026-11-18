@@ -13,9 +13,9 @@
 /// Fluent 2 depends on.
 library;
 
-import 'package:flutter/cupertino.dart'
+import 'package:cupertino_ui/cupertino_ui.dart'
     show CupertinoLocalizations, DefaultCupertinoLocalizations;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
@@ -144,34 +144,39 @@ ThemeData get kitAppTheme => ThemeData(
   ),
 );
 
+// In a semantics container of its own: the route under the app stands a
+// modal barrier, which hides from a screen reader whatever painted before it
+// in its container (the gallery's headings above a demo).
 Widget _kitApp({required Brightness brightness, required Widget home}) =>
-    MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: kitAppTheme,
-      locale: kitLocale,
-      localizationsDelegates: kitLocalizations,
-      supportedLocales: DesignLocalizations.supportedLocales,
-      title: 'Northwind',
-      builder: (context, child) => kitWordsScope(
+    Semantics(container: true, child: _kitMaterialApp(brightness, home));
+
+Widget _kitMaterialApp(Brightness brightness, Widget home) => MaterialApp(
+  debugShowCheckedModeBanner: false,
+  theme: kitAppTheme,
+  locale: kitLocale,
+  localizationsDelegates: kitLocalizations,
+  supportedLocales: DesignLocalizations.supportedLocales,
+  title: 'Northwind',
+  builder: (context, child) => kitWordsScope(
+    context,
+    Directionality(
+      textDirection: kitShownDirection,
+      child: _kitTextScale(
         context,
-        Directionality(
-          textDirection: kitShownDirection,
-          child: _kitTextScale(
-            context,
-            Fluent2Host(
-              light: kitTheme(Brightness.light),
-              darkData: kitTheme(Brightness.dark),
-              brightness: brightness,
-              child: Fluent2AccountScope(
-                account: _kitOwner,
-                child: child ?? const SizedBox.shrink(),
-              ),
-            ),
+        Fluent2Host(
+          light: kitTheme(Brightness.light),
+          darkData: kitTheme(Brightness.dark),
+          brightness: brightness,
+          child: Fluent2AccountScope(
+            account: _kitOwner,
+            child: child ?? const SizedBox.shrink(),
           ),
         ),
       ),
-      home: home,
-    );
+    ),
+  ),
+  home: home,
+);
 
 /// A variant's name in words, as a page shows it: `extraLarge` reads
 /// "Extra large", `subtleCircular` "Subtle circular".
@@ -373,29 +378,33 @@ Widget kitSpecimenStage({
   required Brightness brightness,
   required KitFrame frame,
   required Widget child,
-}) => MaterialApp(
-  debugShowCheckedModeBanner: false,
-  theme: kitAppTheme,
-  locale: kitLocale,
-  localizationsDelegates: kitLocalizations,
-  supportedLocales: DesignLocalizations.supportedLocales,
-  title: 'Northwind',
-  builder: (context, home) => Directionality(
-    textDirection: kitShownDirection,
-    child: _kitTextScale(
-      context,
-      Fluent2Host(
-        light: Fluent2ThemeData.preset(style, Brightness.light),
-        darkData: Fluent2ThemeData.preset(style, Brightness.dark),
-        brightness: brightness,
-        child: Fluent2AccountScope(
-          account: kitInes,
-          child: home ?? const SizedBox.shrink(),
+}) => Semantics(
+  // Its own semantics container, as the demo app's (_kitApp).
+  container: true,
+  child: MaterialApp(
+    debugShowCheckedModeBanner: false,
+    theme: kitAppTheme,
+    locale: kitLocale,
+    localizationsDelegates: kitLocalizations,
+    supportedLocales: DesignLocalizations.supportedLocales,
+    title: 'Northwind',
+    builder: (context, home) => Directionality(
+      textDirection: kitShownDirection,
+      child: _kitTextScale(
+        context,
+        Fluent2Host(
+          light: Fluent2ThemeData.preset(style, Brightness.light),
+          darkData: Fluent2ThemeData.preset(style, Brightness.dark),
+          brightness: brightness,
+          child: Fluent2AccountScope(
+            account: kitInes,
+            child: home ?? const SizedBox.shrink(),
+          ),
         ),
       ),
     ),
+    home: _KitStage(frame: frame, child: child),
   ),
-  home: _KitStage(frame: frame, child: child),
 );
 
 class _KitStage extends StatelessWidget {

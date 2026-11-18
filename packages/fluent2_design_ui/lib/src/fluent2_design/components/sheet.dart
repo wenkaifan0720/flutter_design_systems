@@ -1,18 +1,17 @@
 import 'package:flutter/foundation.dart';
-import 'package:material_ui/material_ui.dart'
-    show Material, MaterialLocalizations, MaterialType, ModalBottomSheetRoute;
+import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 
 import '../chrome_metrics.dart';
 import '../icons.dart';
 import '../styled.dart';
 import '../internal/measure.dart';
+import '../internal/route_motion.dart';
 import '../theme.dart';
 import 'button/button.dart';
 import 'host.dart';
-
-import 'package:ui_core/ui_core.dart';
 
 /// A sheet's head (Fluent's `DrawerHeaderTitle` and `DialogTitle`): its
 /// [title] in subtitle1 and, at its end, the dismiss button ([close]; none
@@ -412,9 +411,11 @@ class Fluent2Sheet extends StatelessWidget {
     ),
   );
 
-  /// The rise and the fall (Fluent's `durationGentle` in, `durationNormal`
-  /// out, decelerating and accelerating): none when motion is off
-  /// ([Fluent2Motion.on]).
+  /// The rise and the fall as a timed style (Fluent's `durationGentle` in,
+  /// `durationNormal` out, decelerating and accelerating), for a sheet raised
+  /// on Flutter's own route: none when motion is off ([Fluent2Motion.on]).
+  /// Fluent 2's own sheets move on ui_core's springs instead, settling in
+  /// about as long ([Fluent2Motion.springGentle]).
   static AnimationStyle motionOf(BuildContext context) =>
       Fluent2Motion.on(context)
       ? const AnimationStyle(
@@ -438,6 +439,12 @@ class Fluent2Sheet extends StatelessWidget {
   /// navigator, [Fluent2Host.navigatorOf]): a [Fluent2SheetShell] headed by
   /// [title], holding [builder]'s parts and [foot]'s acts. Completes with
   /// the value the sheet pops with: null when it is dismissed.
+  ///
+  /// On a phone it is ui_core's bottom sheet (`DesignBottomSheetRoute`): it
+  /// rises on a spring, rides above the keyboard, follows a drag (its parts,
+  /// scrolled to their top, hand the drag on) and closes when let go low or
+  /// flung down. On a wide window it is ui_core's dialog route, centred and
+  /// fading. Focus goes back to what raised it as it closes.
   static Future<T?> show<T>(
     BuildContext context, {
     required String title,
@@ -447,10 +454,8 @@ class Fluent2Sheet extends StatelessWidget {
   }) {
     final t = context.fluent2Theme;
     final navigator = Fluent2Host.navigatorOf(context);
-    final words = MaterialLocalizations.of(context);
     final themes = InheritedTheme.capture(from: context, to: navigator.context);
     final most = maxHeight(context);
-    final motion = motionOf(context);
     Widget shell(BuildContext sheetContext) => RoutePresentationScope(
       presentation: RoutePresentation.sheet,
       child: Fluent2SheetShell(
@@ -463,20 +468,25 @@ class Fluent2Sheet extends StatelessWidget {
     );
     if (Fluent2Layout.isWide(context)) {
       return navigator.push(
-        RawDialogRoute<T>(
+        DesignDialogRoute<T>(
           barrierDismissible: true,
           barrierLabel: DesignLocalizations.of(context)
               .modalBarrierDismissLabel,
           barrierColor: t.overlay,
-          transitionDuration: motion.duration ?? Duration.zero,
-          pageBuilder: (sheetContext, _, _) => themes.wrap(
-            Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: Fluent2ChromeMetrics.dialogWidth,
-                  maxHeight: most,
+          semanticLabel: title,
+          dampingRatio: Fluent2Motion.springDamping,
+          stiffness: Fluent2Motion.springGentle,
+          builder: (sheetContext, details) => themes.wrap(
+            fluent2Fade(
+              details.animation,
+              Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: Fluent2ChromeMetrics.dialogWidth,
+                    maxHeight: most,
+                  ),
+                  child: shell(sheetContext),
                 ),
-                child: shell(sheetContext),
               ),
             ),
           ),
@@ -484,26 +494,22 @@ class Fluent2Sheet extends StatelessWidget {
       );
     }
     return navigator.push(
-      ModalBottomSheetRoute<T>(
-        capturedThemes: themes,
+      DesignBottomSheetRoute<T>(
         barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
-        barrierOnTapHint: words.scrimOnTapHint(words.bottomSheetLabel),
-        backgroundColor: const Color(0x00000000),
-        modalBarrierColor: t.overlay,
-        elevation: 0,
-        isScrollControlled: true,
-        sheetAnimationStyle: motion,
+        barrierColor: t.overlay,
+        semanticLabel: title,
+        dampingRatio: Fluent2Motion.springDamping,
+        stiffness: Fluent2Motion.springGentle,
         // A tablet's sheet stands no wider than the desktop's dialog, as
         // showFluent2BottomSheet's, centred over the window's foot.
-        constraints: BoxConstraints(
-          maxHeight: most,
-          maxWidth: Fluent2ChromeMetrics.dialogWidth,
-        ),
-        builder: (sheetContext) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+        builder: (sheetContext, details) => themes.wrap(
+          fluent2BottomSheetPlace(
+            maxHeight: most,
+            child: PrimaryScrollController(
+              controller: details.scrollController,
+              child: shell(sheetContext),
+            ),
           ),
-          child: shell(sheetContext),
         ),
       ),
     );
@@ -521,7 +527,6 @@ class Fluent2Sheet extends StatelessWidget {
   }) {
     final t = context.fluent2Theme;
     final most = maxHeight(context);
-    final motion = motionOf(context);
     Widget card(BuildContext sheetContext, _SheetPlace? place) =>
         RoutePresentationScope(
           presentation: RoutePresentation.sheet,
@@ -529,78 +534,55 @@ class Fluent2Sheet extends StatelessWidget {
         );
     if (Fluent2Layout.isWide(context)) {
       if (drawer) {
-        return RawDialogRoute<T>(
+        return DesignSideSheetRoute<T>(
           settings: settings,
-          barrierDismissible: true,
+          width: Fluent2ChromeMetrics.drawerWidth,
           barrierLabel: DesignLocalizations.of(context)
               .modalBarrierDismissLabel,
           barrierColor: t.overlay,
-          transitionDuration: motion.duration ?? Duration.zero,
-          transitionBuilder: (context, animation, _, child) => SlideTransition(
-            position:
-                Tween<Offset>(
-                      begin: Offset(
-                        Directionality.of(context) == TextDirection.rtl
-                            ? -1
-                            : 1,
-                        0,
-                      ),
-                      end: Offset.zero,
-                    )
-                    .chain(CurveTween(curve: Fluent2Motion.decelerateMid))
-                    .animate(animation),
-            child: child,
-          ),
-          pageBuilder: (sheetContext, _, _) => Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: SizedBox(
-              width: Fluent2ChromeMetrics.drawerWidth,
-              height: double.infinity,
-              child: card(sheetContext, _SheetPlace.side),
-            ),
-          ),
+          dampingRatio: Fluent2Motion.springDamping,
+          stiffness: Fluent2Motion.springGentle,
+          builder: (sheetContext, _) => card(sheetContext, _SheetPlace.side),
         );
       }
-      return RawDialogRoute<T>(
+      return DesignDialogRoute<T>(
         settings: settings,
         barrierDismissible: true,
         barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
         barrierColor: t.overlay,
-        transitionDuration: motion.duration ?? Duration.zero,
-        pageBuilder: (sheetContext, _, _) => Center(
-          child: SizedBox(
-            width: Fluent2ChromeMetrics.dialogWidth,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: most),
-              child: card(sheetContext, _SheetPlace.dialog),
+        dampingRatio: Fluent2Motion.springDamping,
+        stiffness: Fluent2Motion.springGentle,
+        builder: (sheetContext, details) => fluent2Fade(
+          details.animation,
+          Center(
+            child: SizedBox(
+              width: Fluent2ChromeMetrics.dialogWidth,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: most),
+                child: card(sheetContext, _SheetPlace.dialog),
+              ),
             ),
           ),
         ),
       );
     }
-    return ModalBottomSheetRoute<T>(
+    // A page sheet stands at the tallest a sheet stands (a share of the room
+    // over the keyboard); a drawer as tall as its content.
+    return DesignBottomSheetRoute<T>(
       settings: settings,
-      backgroundColor: const Color(0x00000000),
-      modalBarrierColor: t.overlay,
-      elevation: 0,
-      isScrollControlled: true,
-      sheetAnimationStyle: motion,
-      constraints: BoxConstraints(
+      barrierColor: t.overlay,
+      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+      snapSizes: drawer ? null : const [Fluent2ChromeMetrics.sheetMaxFraction],
+      dampingRatio: Fluent2Motion.springDamping,
+      stiffness: Fluent2Motion.springGentle,
+      builder: (sheetContext, details) => fluent2BottomSheetPlace(
         maxHeight: most,
-        maxWidth: Fluent2ChromeMetrics.dialogWidth,
+        fill: !drawer,
+        child: PrimaryScrollController(
+          controller: details.scrollController,
+          child: card(sheetContext, _SheetPlace.bottom),
+        ),
       ),
-      builder: (sheetContext) {
-        final keyboard = MediaQuery.viewInsetsOf(sheetContext).bottom;
-        return Padding(
-          padding: EdgeInsets.only(bottom: keyboard),
-          child: drawer
-              ? card(sheetContext, _SheetPlace.bottom)
-              : SizedBox(
-                  height: most - keyboard,
-                  child: card(sheetContext, _SheetPlace.bottom),
-                ),
-        );
-      },
     );
   }
 

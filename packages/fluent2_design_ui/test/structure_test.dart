@@ -196,7 +196,8 @@ void main() {
       await t.tap(find.text('Files').first);
       await t.tap(find.text('Wiki').first, warnIfMissed: false);
       expect(asked, [1]);
-      expect(_node(t, 'Posts'), isSemantics(isSelected: true));
+      // ui_core's tab says its place after its name, as Material's does.
+      expect(_node(t, 'Posts\nTab 1 of 3'), isSemantics(isSelected: true));
       s.dispose();
     });
 

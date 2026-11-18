@@ -5,10 +5,10 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../icons.dart';
 import '../../internal/measure.dart';
-import '../../localizations.dart';
 import '../../theme.dart';
 import '../input/field_core.dart';
 import '../pressable/pressable.dart';
@@ -16,12 +16,16 @@ import '../pressable/pressable.dart';
 /// Fluent 2's SpinButton: a number in a field 32 tall (24 small), 10 in
 /// at its start, and at its end the two 24 wide steppers stacked, the
 /// up and down chevrons (16) in the third ink on a subtle fill under the
-/// pointer; each moves [value] by [step] within [min] and [max] (the one
-/// at a bound is disabled), as do the up and down arrow keys (Page Up and
-/// Down by ten steps); typed figures are taken on Enter or when the field
-/// lets go of focus. [format] says the value in the field (the number at
-/// [step]'s precision by default). [onChanged] gets each value; null
-/// draws it disabled. Read as a spin button named [label].
+/// pointer; each moves [value] to the next multiple of [step] within [min]
+/// and [max] (the one at a bound is disabled), repeating while held, as do
+/// the up and down arrow keys (Page Up and Down by ten steps); figures typed
+/// in the reader's digits are taken on Enter (the field keeps the focus) or
+/// when the field lets go of it, and text that is no number puts the last
+/// value back. [format] says the value in the field while it rests (the
+/// number at [step]'s precision by default); editing, it shows the number.
+/// [onChanged] gets each value; null draws it disabled. Read as an
+/// adjustable field named [label]. It is ui_core's `DesignNumberField` in
+/// Fluent's field and steppers.
 ///
 /// ```dart
 /// Fluent2SpinButton(label: 'Seats', value: seats, min: 1, max: 50, onChanged: (v) => setState(() => seats = v.toInt()))
@@ -143,114 +147,23 @@ class Fluent2SpinButton extends StatefulWidget {
 }
 
 class _Fluent2SpinButtonState extends State<Fluent2SpinButton> {
-  late final TextEditingController _text = TextEditingController(
-    text: _say(widget.value),
-  );
-  FocusNode? _ownFocus;
-  FocusNode get _focus => widget.focusNode ?? (_ownFocus ??= FocusNode());
-
-  int get _precision {
-    final s = widget.step.toString();
-    final dot = s.indexOf('.');
-    return dot < 0 ? 0 : s.length - dot - 1;
-  }
-
-  String _say(num v) =>
-      widget.format?.call(v) ??
-      (_precision == 0 ? v.round().toString() : v.toStringAsFixed(_precision));
-
-  num _clamp(num v) {
-    var out = v;
-    if (widget.min case final lo?) out = math.max(out, lo);
-    if (widget.max case final hi?) out = math.min(out, hi);
-    return _precision == 0
-        ? out.round()
-        : double.parse(out.toStringAsFixed(_precision));
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _focus.addListener(_onFocus);
-  }
-
-  @override
-  void didUpdateWidget(Fluent2SpinButton old) {
-    super.didUpdateWidget(old);
-    if (old.focusNode != widget.focusNode) {
-      (old.focusNode ?? _ownFocus)?.removeListener(_onFocus);
-      _focus.addListener(_onFocus);
-    }
-    final words = _say(widget.value);
-    if (!_focus.hasFocus && words != _text.text) _text.text = words;
-  }
-
-  @override
-  void dispose() {
-    _focus.removeListener(_onFocus);
-    _ownFocus?.dispose();
-    _text.dispose();
-    super.dispose();
-  }
-
-  void _onFocus() {
-    if (!_focus.hasFocus) _commit();
-    if (mounted) setState(() {});
-  }
-
-  void _commit() {
-    final typed = num.tryParse(_text.text.replaceAll(RegExp(r'[^0-9.\-]'), ''));
-    final next = typed == null ? widget.value : _clamp(typed);
-    _text.text = _say(next);
-    if (next != widget.value) widget.onChanged?.call(next);
-  }
-
-  void _by(num steps) {
-    final next = _clamp(widget.value + widget.step * steps);
-    _text.text = _say(next);
-    if (next != widget.value) widget.onChanged?.call(next);
-  }
+  // A whole value stepped by whole steps answers a whole number.
+  num _out(double v) =>
+      widget.value is int && widget.step is int && v == v.roundToDouble()
+      ? v.round()
+      : v;
 
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final c = t.colors;
     final scope = Fluent2FieldScope.maybeOf(context);
-    final live = widget.onChanged != null;
+    final change = widget.onChanged;
+    final live = change != null;
     final small = widget.size == Fluent2InputSize.small;
-    final canUp = live && (widget.max == null || widget.value < widget.max!);
-    final canDown = live && (widget.min == null || widget.value > widget.min!);
+    final format = widget.format;
     final style = (small ? t.caption1 : t.body1).c(
       live ? c.neutralForeground1 : c.neutralForegroundDisabled,
-    );
-    final editor = CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.arrowUp): () => _by(1),
-        const SingleActivator(LogicalKeyboardKey.arrowDown): () => _by(-1),
-        const SingleActivator(LogicalKeyboardKey.pageUp): () => _by(10),
-        const SingleActivator(LogicalKeyboardKey.pageDown): () => _by(-10),
-      },
-      child: Semantics(
-        label: widget.label ?? scope?.label,
-        increasedValue: canUp ? _say(_clamp(widget.value + widget.step)) : null,
-        decreasedValue: canDown
-            ? _say(_clamp(widget.value - widget.step))
-            : null,
-        onIncrease: canUp ? () => _by(1) : null,
-        onDecrease: canDown ? () => _by(-1) : null,
-        child: Fluent2FieldEditor(
-          autofocus: widget.autofocus,
-          controller: _text,
-          focusNode: _focus,
-          enabled: live,
-          keyboardType: const TextInputType.numberWithOptions(
-            decimal: true,
-            signed: true,
-          ),
-          onSubmitted: (_) => _commit(),
-          style: style,
-        ),
-      ),
     );
     final h = small ? 24.0 : 32.0;
     // Fluent's SpinButton draws its border in an overlay over the root's
@@ -262,18 +175,6 @@ class _Fluent2SpinButtonState extends State<Fluent2SpinButton> {
     // figures keep theirs.
     final touch = Fluent2Layout.padded(context);
     const target = Fluent2Layout.touchHitTarget;
-    final up = _Stepper(
-      up: true,
-      touch: touch,
-      appearance: widget.appearance,
-      onTap: canUp ? () => _by(1) : null,
-    );
-    final down = _Stepper(
-      up: false,
-      touch: touch,
-      appearance: widget.appearance,
-      onTap: canDown ? () => _by(-1) : null,
-    );
     // Asked to take its parent's width, from 600 it stops at 320, its
     // buttons beside it under a finger included.
     final width = widget.width.isInfinite && fluent2Roomy(context)
@@ -281,42 +182,129 @@ class _Fluent2SpinButtonState extends State<Fluent2SpinButton> {
         : widget.width.isInfinite
         ? widget.width
         : MediaQuery.textScalerOf(context).scale(widget.width);
-    return SizedBox(
-      width: touch ? width + 2 * target - 24 : width,
-      child: Fluent2FieldFrame(
+    // The field's states, for the frame round it, and its words.
+    var states = const <WidgetState>{};
+    var words = '';
+    return DesignNumberField(
+      value: widget.value.toDouble(),
+      onChanged: !live
+          ? null
+          : (v) {
+              // Cleared, the field shows the value again.
+              if (v == null) return setState(() {});
+              final next = _out(v);
+              if (next != widget.value) change(next);
+            },
+      min: widget.min?.toDouble(),
+      max: widget.max?.toDouble(),
+      step: widget.step.toDouble(),
+      focusNode: widget.focusNode,
+      autofocus: widget.autofocus,
+      semanticLabel: widget.label ?? scope?.label,
+      semanticFormatterCallback: format == null ? null : (v) => format(_out(v)),
+      fieldBuilder: (context, field) {
+        states = field.states;
+        words = field.controller.text;
+        final editor = Fluent2FieldEditor(
+          controller: field.controller,
+          focusNode: field.focusNode,
+          enabled: live,
+          keyboardType: field.keyboardType,
+          inputFormatters: field.inputFormatters,
+          // Enter takes the typed value and, as Fluent's text fields do,
+          // gives up the focus (a phone's keyboard closes); ui_core's keeps
+          // it.
+          onEditingComplete: () {
+            field.onEditingComplete();
+            field.focusNode.unfocus();
+          },
+          style: style,
+        );
+        if (format == null || states.contains(WidgetState.focused)) {
+          return editor;
+        }
+        // At rest the field says the value [format]'s way over the number,
+        // which a screen reader still reads.
+        return Stack(
+          alignment: AlignmentDirectional.centerStart,
+          children: [
+            Opacity(opacity: 0, alwaysIncludeSemantics: true, child: editor),
+            IgnorePointer(
+              child: ExcludeSemantics(
+                child: Text(
+                  format(widget.value),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.clip,
+                  style: style,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+      buttonBuilder: (context, button) => _Stepper(
+        up: button.isIncrement,
+        touch: touch,
         appearance: widget.appearance,
-        style: widget.style,
-        focused: _focus.hasFocus,
-        enabled: live,
-        invalid: widget.invalid || (scope?.invalid ?? false),
-        textNode: true,
-        minHeight: h,
-        padding: EdgeInsetsDirectional.only(
-          start:
-              (small ? Fluent2Spacing.s : Fluent2Spacing.mNudge) - strokes.left,
-        ),
+        states: button.states,
+      ),
+      // ui_core's node steps the value: it says the value too. A Material
+      // text field and that node both say whether they are enabled, which
+      // Flutter will not merge, so the field stands in a node of its own
+      // under it.
+      layoutBuilder: (context, field, down, up) => Semantics(
+        // At rest, [format]'s words, as its next values say theirs.
+        value:
+            words.isEmpty ||
+                format == null ||
+                states.contains(WidgetState.focused)
+            ? words
+            : format(widget.value),
         child: SizedBox(
-          height: touch ? target : math.max(h - strokes.vertical, 0),
-          child: Row(
-            spacing: Fluent2Spacing.xs,
-            children: touch
-                ? [
-                    Expanded(child: editor),
-                    SizedBox(width: target, child: down),
-                    SizedBox(width: target, child: up),
-                  ]
-                : [
-                    Expanded(child: editor),
-                    SizedBox(
-                      width: 24,
-                      child: Column(
-                        children: [
-                          Expanded(child: up),
-                          Expanded(child: down),
-                        ],
-                      ),
-                    ),
-                  ],
+          width: touch ? width + 2 * target - 24 : width,
+          child: Fluent2FieldFrame(
+            appearance: widget.appearance,
+            style: widget.style,
+            focused: states.contains(WidgetState.focused),
+            enabled: live,
+            invalid:
+                widget.invalid ||
+                (scope?.invalid ?? false) ||
+                states.contains(WidgetState.error),
+            // The field's words, flags and editing in one node the frame's
+            // size, as a text field's (under ui_core's node, which steps).
+            textNode: true,
+            minHeight: h,
+            padding: EdgeInsetsDirectional.only(
+              start:
+                  (small ? Fluent2Spacing.s : Fluent2Spacing.mNudge) -
+                  strokes.left,
+            ),
+            child: SizedBox(
+              height: touch ? target : math.max(h - strokes.vertical, 0),
+              child: Row(
+                spacing: Fluent2Spacing.xs,
+                children: touch
+                    ? [
+                        Expanded(child: field),
+                        SizedBox(width: target, child: down),
+                        SizedBox(width: target, child: up),
+                      ]
+                    : [
+                        Expanded(child: field),
+                        SizedBox(
+                          width: 24,
+                          child: Column(
+                            children: [
+                              Expanded(child: up),
+                              Expanded(child: down),
+                            ],
+                          ),
+                        ),
+                      ],
+              ),
+            ),
           ),
         ),
       ),
@@ -324,23 +312,20 @@ class _Fluent2SpinButtonState extends State<Fluent2SpinButton> {
   }
 }
 
-/// One stepper: 24 wide, half the field's height, its chevron 16 drawn
-/// toward the field's middle (Fluent's 4 and 1 of room), its corner at the
-/// field's end; under a finger ([touch]) a 48 square with its chevron in
-/// the middle, the down one before the up one, which holds the end's
-/// corners.
+/// A stepper's face in the states ui_core's step button reports (it is no
+/// tab stop and no node: the field itself steps).
 class _Stepper extends StatelessWidget {
   const _Stepper({
     required this.up,
     required this.touch,
     required this.appearance,
-    required this.onTap,
+    required this.states,
   });
 
   final bool up;
   final bool touch;
   final Fluent2InputAppearance appearance;
-  final VoidCallback? onTap;
+  final Set<WidgetState> states;
 
   @override
   Widget build(BuildContext context) {
@@ -362,13 +347,9 @@ class _Stepper extends StatelessWidget {
       ),
       _ => (c.subtleBackgroundHover, fluent2Step(t, c.subtleBackgroundPressed)),
     };
-    return Fluent2Pressable(
-      onPressed: onTap,
-      label: up
-          ? Fluent2Localizations.of(context).increase
-          : Fluent2Localizations.of(context).decrease,
-      radius: Fluent2Radius.small,
-      builder: (context, states) => Container(
+    return MouseRegion(
+      cursor: states.enabled ? SystemMouseCursors.click : MouseCursor.defer,
+      child: Container(
         decoration: BoxDecoration(
           color: states.press.pick(
             c.transparentBackground,

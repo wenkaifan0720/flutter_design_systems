@@ -1691,15 +1691,6 @@ class Fluent2OptionFace extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(Fluent2Radius.medium),
       ),
-      foregroundDecoration: highlighted
-          ? BoxDecoration(
-              borderRadius: BorderRadius.circular(Fluent2Radius.medium),
-              border: Border.all(
-                color: c.strokeFocus2,
-                width: Fluent2Stroke.thick,
-              ),
-            )
-          : null,
       child: Row(
         children: [
           Padding(
@@ -1748,11 +1739,22 @@ class Fluent2OptionFace extends StatelessWidget {
         ],
       ),
     );
-    return fluent2ChosenRow(
+    final chosen = fluent2ChosenRow(
       row: row,
       chosen: selected,
       colors: c,
       press: press,
+    );
+    if (!highlighted) return chosen;
+    // The keyboard's ring over the chosen pill, as a menu's: the ring is
+    // the row's outermost line.
+    return DecoratedBox(
+      position: DecorationPosition.foreground,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+        border: Border.all(color: c.strokeFocus2, width: Fluent2Stroke.thick),
+      ),
+      child: chosen,
     );
   }
 

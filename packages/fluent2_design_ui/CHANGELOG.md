@@ -1,3 +1,68 @@
+## 0.3.0
+
+Needs ui_core 0.3.0. Fluent 2's parts take their behaviour from ui_core now and keep Fluent's faces: the same layers,
+inks, rings and timings, with ui_core's keys, screen-reader words, focus and springs under them.
+
+Breaking:
+
+- `showFluent2Sheet` no longer takes `transitionDuration`: ui_core's side sheet moves on a spring
+  (`dampingRatio`, `stiffness`). It travels in Fluent's gentle 250 ms, as before.
+- `Fluent2WindowClass` is gone: use ui_core's `DesignWindowSizeClass` (exported here), on the same Material
+  breakpoints, which from 1600 wide says `extraLarge`. Compare classes by `index`.
+- `Fluent2Tooltip` and `Fluent2Rating` are now `StatelessWidget`s (each builds ui_core's part); code that named their
+  `State` types no longer compiles.
+
+Changes:
+
+- **Dialogs and sheets ride ui_core's routes.** `Fluent2Dialog.show` is a `DesignDialogRoute`: it rises from .95 and
+  fades in on a spring that settles in Fluent's 250 ms; focus moves in, Tab stays inside, and the focus goes back where
+  it was. `Fluent2Dialog.confirm` is an alert dialog to a screen reader (`show` takes `isAlert`). A phone's bottom
+  sheet (`Fluent2Sheet.show`, the router's sheet page, `showFluent2BottomSheet`) is a `DesignBottomSheetRoute`: it
+  follows a drag down, a fling puts it away, its scroll hands over to that drag, and it lifts with the keyboard; a page
+  sheet rests at Fluent's 90%. On a wide window the sheet page's drawer is ui_core's side sheet. Under Reduce Motion
+  these routes now fade briefly (about 150 ms) where they cut before.
+- **`Fluent2Tooltip` is ui_core's `DesignTooltip`** in Fluent's bubble. It still waits 250 ms and stands above its
+  control, 4 from it, and its arrow now points at the control even where the bubble is pushed along the edge. It stays
+  while the pointer moves onto it, closes on Escape, shows one at a time, and opens at once along a toolbar after the
+  first.
+- **`Fluent2TabList` is ui_core's `DesignTabBar`** in Fluent's tabs: one tab stop, the arrows along the row (mirrored
+  right to left), Home and End, tabs out of use skipped; a screen reader hears "Files, Tab 2 of 3". The indicator
+  slides on a spring that settles in Fluent's 300 ms. Its hang, its fit to the reader's text size and its scrolling
+  are unchanged.
+- **`Fluent2Rating` is ui_core's `DesignRating`.** Home or 0 now clears it to no stars; the keys and the drag are
+  ui_core's.
+- **`Fluent2SpinButton` is ui_core's `DesignNumberField`.** A step lands on a multiple of `step`; Page Up and Page Down
+  go to the next multiple of ten steps; the field shows its error state while its words are no number; the step buttons are no longer tab stops
+  (the field's arrows step). `format` still shows the value in its own words while the field is at rest.
+- **`Fluent2WheelPicker` is ui_core's `DesignWheelPicker`** on Fluent's band: Page Up and Page Down step five, typing
+  jumps to a value, and a snap springs.
+- **The charts pick and read their points through ui_core.** `Fluent2LineChart` and `Fluent2AreaChart` are
+  `DesignChart`s, `Fluent2PieChart` a `DesignPieChart`, each drawn by Fluent's painter: one tab stop, the arrows step
+  point by point (Up and Down between lines), Home and End go to the ends, Escape lets go, and a screen reader steps
+  through the points. The values spring from one set to the next.
+- **A search's states.** `Fluent2Combobox` and `Fluent2MultiSelect` take `search` and `debounceDuration`. While an
+  app's search is on its way the list shows a spinner and "Loading"; when it fails it says "Couldn't load results"
+  and offers Try again, which Down reaches.
+- **`Fluent2Kbd.shortcut(activator)`** writes an app's shortcut as ui_core does: the platform's order and the reader's
+  words ("Ctrl+Shift+N"), Apple's symbols on macOS and iOS.
+- **From ui_core 0.3.0.** A menu opened by a click lights no row until the pointer or the keys move; Enter in a
+  combobox keeps the field's focus on the web too. The review checks come from `ui_core_test`, a dev dependency.
+
+Fixed:
+
+- Right to left, a line or bar chart's value card opens to the crosshair's left, toward the reading direction, where
+  it opened to the right and covered the points still to read.
+- A listbox option that is both chosen and the keyboard's active one draws its focus ring over the brand pill at its
+  leading edge, as a menu's row does; the pill used to cut the ring.
+- A tab list's indicator stands over the tabs, as Fluent's does, so a focused tab's ring no longer covers it; it
+  darkens with the chosen tab under the pointer and the press, and keeps to the tab's face in a column.
+- `Fluent2Preview`'s app stands in a semantics container of its own: the route under it no longer hides the heading
+  an app places above the preview from a screen reader.
+
+The package's page: its homepage is the live gallery, the README opens on a hero picture and links to the gallery,
+the API reference and all the looks, and the quick start stands on material_ui (Flutter 3.50 moves Material out of
+`package:flutter`).
+
 ## 0.2.1
 
 - **Reduce Motion on iPhone and iPad.** iOS's Reduce Motion now calms Fluent 2 as Android's Remove animations and the

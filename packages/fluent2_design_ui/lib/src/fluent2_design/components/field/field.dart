@@ -363,7 +363,7 @@ class _Validation extends StatelessWidget {
 /// Fluent 2's Field: its [label] (a [Fluent2Label], or a [Fluent2InfoLabel]
 /// when [info] is given; the asterisk when [required]) 4 over the
 /// [child] control, then the validation line ([validationMessage] with its
-/// [validationState]'s glyph: an error by default) and the [hint] in
+/// [validationState]'s glyph: an error by default) and the [helper] in
 /// caption1 in the third ink, 2 apart. The control takes the field's label
 /// as its spoken name and, for an error, its red stroke.
 /// [Fluent2FieldOrientation.horizontal] stands the label in the start third.

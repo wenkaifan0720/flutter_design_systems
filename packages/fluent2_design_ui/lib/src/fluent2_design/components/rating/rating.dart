@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -152,14 +151,15 @@ String _figure(double v) =>
 /// filled in the [color]'s ink, the rest outlined in it; with
 /// [allowHalf] a star's start half chooses the half step. The pointer
 /// previews the score it passes over, a press or a drag across the row
-/// sets it; arrows step it, Home and End take the least and the most.
-/// Null [onChanged] draws it disabled. Read as an adjustable named
-/// [label] saying "3 of 5".
+/// sets it (a step played at each star); arrows step it (mirrored right to
+/// left), End fills it, Home or 0 clears it, a digit sets that many. Null
+/// [onChanged] draws it disabled. Read as a slider named [label] saying
+/// "3 of 5". It is ui_core's `DesignRating` drawn in Fluent's stars.
 ///
 /// ```dart
 /// Fluent2Rating(label: 'Rate this meeting', value: score, onChanged: (v) => setState(() => score = v))
 /// ```
-class Fluent2Rating extends StatefulWidget {
+class Fluent2Rating extends StatelessWidget {
   /// A rating the user sets, [value] of [max] stars.
   const Fluent2Rating({
     required this.value,
@@ -203,7 +203,55 @@ class Fluent2Rating extends StatefulWidget {
   final bool autofocus;
 
   @override
-  State<Fluent2Rating> createState() => _Fluent2RatingState();
+  Widget build(BuildContext context) {
+    final t = context.fluent2Theme;
+    final change = onChanged;
+    final inks = _Inks.of(t, color, filled: false, enabled: change != null);
+    final star = _starOf(size);
+    final say = Fluent2Localizations.of(context);
+    // The focus the stars report, for the ring round the row.
+    var focused = false;
+    final rating = DesignRating(
+      value: value,
+      onChanged: change == null
+          ? null
+          : (v) {
+              if (v != value) change(v);
+            },
+      itemCount: max,
+      allowHalf: allowHalf,
+      focusNode: focusNode,
+      autofocus: autofocus,
+      semanticLabel: label,
+      semanticFormatterCallback: (v) => say.ratingValue(_figure(v), max),
+      itemBuilder: (context, item) {
+        focused = item.states.contains(WidgetState.focused);
+        return _Star(size: star, fill: item.fill, inks: inks, filled: false);
+      },
+      layoutBuilder: (context, stars) => Fluent2KeyRing(
+        focused: focused,
+        radius: Fluent2Radius.medium,
+        child: SizedBox(
+          width: star * max,
+          height: star,
+          child: Row(children: stars),
+        ),
+      ),
+    );
+    // Its own width even where the row is tight, so a press past the last
+    // star chooses nothing; on the start keyline by its drawn face, the
+    // target growing toward the end.
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      widthFactor: 1,
+      heightFactor: 1,
+      child: DesignTapTarget(
+        minSize: Fluent2Layout.tapFloorOf(context),
+        alignment: AlignmentDirectional.centerStart,
+        child: rating,
+      ),
+    );
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -238,117 +286,6 @@ class Fluent2Rating extends StatefulWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'));
-  }
-}
-
-class _Fluent2RatingState extends State<Fluent2Rating> {
-  double? _hover;
-
-  double get _step => widget.allowHalf ? 0.5 : 1;
-
-  double _clamp(double v) => v.clamp(_step, widget.max.toDouble());
-
-  void _set(double v) {
-    final next = _clamp(v);
-    if (next != widget.value) widget.onChanged?.call(next);
-  }
-
-  double _at(Offset local, double width) {
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final star = width / widget.max;
-    final x = (rtl ? width - local.dx : local.dx).clamp(0.0, width - 0.01);
-    final whole = (x / star).floor();
-    final part = x - whole * star;
-    final half = widget.allowHalf && part < star / 2;
-    return _clamp(whole + (half ? 0.5 : 1.0));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.fluent2Theme;
-    final live = widget.onChanged != null;
-    final inks = _Inks.of(t, widget.color, filled: false, enabled: live);
-    final size = _starOf(widget.size);
-    final shown = _hover ?? widget.value;
-    final width = size * widget.max;
-    final step = _step;
-    final say = Fluent2Localizations.of(context);
-    String words(double v) => say.ratingValue(_figure(v), widget.max);
-    final row = SizedBox(
-      width: width,
-      height: size,
-      child: Row(
-        children: [
-          for (var i = 0; i < widget.max; i++)
-            _Star(
-              size: size,
-              fill: (shown - i).clamp(0.0, 1.0),
-              inks: inks,
-              filled: false,
-            ),
-        ],
-      ),
-    );
-    final value = widget.value;
-    final rating = Semantics(
-      container: true,
-      label: widget.label,
-      value: words(value),
-      enabled: live,
-      increasedValue: live && value < widget.max
-          ? words(_clamp(value + step))
-          : null,
-      decreasedValue: live && value > step ? words(_clamp(value - step)) : null,
-      onIncrease: live && value < widget.max ? () => _set(value + step) : null,
-      onDecrease: live && value > step ? () => _set(value - step) : null,
-      child: ExcludeSemantics(
-        child: DesignTapTarget(
-          minSize: Fluent2Layout.tapFloorOf(context),
-          // On the start keyline by its drawn face, the target growing
-          // toward the end.
-          alignment: AlignmentDirectional.centerStart,
-          child: Fluent2KeyFocus(
-            focusNode: widget.focusNode,
-            autofocus: widget.autofocus,
-            enabled: live,
-            radius: Fluent2Radius.medium,
-            keys: !live
-                ? const {}
-                : {
-                    LogicalKeyboardKey.arrowRight: () => _set(value + step),
-                    LogicalKeyboardKey.arrowUp: () => _set(value + step),
-                    LogicalKeyboardKey.arrowLeft: () => _set(value - step),
-                    LogicalKeyboardKey.arrowDown: () => _set(value - step),
-                    LogicalKeyboardKey.home: () => _set(step),
-                    LogicalKeyboardKey.end: () => _set(widget.max.toDouble()),
-                  },
-            child: !live
-                ? row
-                : MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    onHover: (e) =>
-                        setState(() => _hover = _at(e.localPosition, width)),
-                    onExit: (_) => setState(() => _hover = null),
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTapUp: (d) => _set(_at(d.localPosition, width)),
-                      onHorizontalDragUpdate: (d) =>
-                          _set(_at(d.localPosition, width)),
-                      child: row,
-                    ),
-                  ),
-          ),
-        ),
-      ),
-    );
-    // Its own width even where the row is tight, so a press past the last
-    // star chooses nothing.
-    return Align(
-      alignment: AlignmentDirectional.centerStart,
-      widthFactor: 1,
-      heightFactor: 1,
-      child: rating,
-    );
   }
 }
 

@@ -72,8 +72,8 @@ class Fluent2AccordionItem {
 /// header (the chevron, the title, 10 in at the start and 12 at the end, 44
 /// tall) over its panel 12 in from either side. One open at a time unless
 /// [multiple]; the open one shuts again only when [collapsible]. Open
-/// state is the caller's ([openItems], told through [onToggle]) or the
-/// accordion's own from [initiallyOpen]. Panels open with Fluent's collapse
+/// state is the caller's ([expanded], told through [onExpansionChanged]) or the
+/// accordion's own from [initiallyExpanded]. Panels open with Fluent's collapse
 /// motion (`durationNormal`), at once under Reduce Motion.
 /// Read as headers that say whether they are expanded.
 ///
@@ -104,7 +104,7 @@ class Fluent2Accordion extends StatefulWidget {
   final bool collapsible;
 
   /// The open sections' values when the caller keeps them; null keeps them
-  /// here, starting from [initiallyOpen].
+  /// here, starting from [initiallyExpanded].
   final Set<Object>? expanded;
 
   /// The sections open at first, by value.

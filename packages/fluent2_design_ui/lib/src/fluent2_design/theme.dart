@@ -229,48 +229,16 @@ abstract final class Fluent2Motion {
   /// [duration] at [context], or none when motion is off.
   static Duration of(BuildContext context, Duration duration) =>
       on(context) ? duration : Duration.zero;
-}
 
-/// The window's size class, Material's breakpoints: [compact] under 600,
-/// [medium] under 840, [expanded] under 1200, [large] from there.
-///
-/// ```dart
-/// final wide = Fluent2WindowClass.of(context) >= Fluent2WindowClass.expanded;
-/// ```
-enum Fluent2WindowClass implements Comparable<Fluent2WindowClass> {
-  /// Under 600: a phone.
-  compact,
+  /// The damping ratio (ζ) of the springs ui_core's routes move Fluent 2's
+  /// surfaces on (the dialog, the sheets): 1, critically damped, as Fluent's
+  /// decelerating curves never overshoot.
+  static const double springDamping = 1;
 
-  /// 600 to under 840: a small tablet, or a phone on its side.
-  medium,
-
-  /// 840 to under 1200: a tablet, or a small window.
-  expanded,
-
-  /// 1200 and over: a desktop window.
-  large;
-
-  /// The class of a window [width] wide.
-  static Fluent2WindowClass forWidth(double width) => width < 600
-      ? compact
-      : width < 840
-      ? medium
-      : width < 1200
-      ? expanded
-      : large;
-
-  /// The class of the window at [context].
-  static Fluent2WindowClass of(BuildContext context) =>
-      forWidth(MediaQuery.sizeOf(context).width);
-
-  /// Whether this class is [other] or wider.
-  bool operator >=(Fluent2WindowClass other) => index >= other.index;
-
-  /// Whether this class is narrower than [other].
-  bool operator <(Fluent2WindowClass other) => index < other.index;
-
-  @override
-  int compareTo(Fluent2WindowClass other) => index - other.index;
+  /// A spring's stiffness (k) that settles within 2% of rest in [gentle]
+  /// (250 ms), as the dialog's and the sheets' rise did: ω = 6 / 0.25 s,
+  /// k = ω². Its start is as quick as `decelerateMid`'s.
+  static const double springGentle = 576;
 }
 
 /// A fixed spacer of one [Fluent2Spacing] step.
@@ -1832,7 +1800,7 @@ class AnimatedFluent2Theme extends ImplicitlyAnimatedWidget {
   /// The theme to arrive at.
   final Fluent2ThemeData data;
 
-  /// The media ground's theme, as [Fluent2Theme.dark]; not animated.
+  /// The media ground's theme, as [Fluent2Theme.darkData]; not animated.
   final Fluent2ThemeData? darkData;
 
   /// What it styles.

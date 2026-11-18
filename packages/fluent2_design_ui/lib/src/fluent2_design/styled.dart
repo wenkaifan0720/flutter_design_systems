@@ -89,7 +89,7 @@ class Fluent2Eased<T> extends StatefulWidget {
   /// Where the face is going.
   final T value;
 
-  /// The face a share [t] of the way from [a] to [b].
+  /// The face a share `t` of the way from `a` to `b`.
   final T Function(T a, T b, double t) lerp;
 
   /// What draws the face, given the face at this frame.
@@ -361,8 +361,8 @@ double fluent2CornerOf(OutlinedBorder? shape, double height, double fallback) =>
       _ => fallback,
     };
 
-/// The rim a styled part draws: [side] when set, else [edge] (or [fallback])
-/// at the theme's regular stroke.
+/// The rim a styled part draws: the look's `side` when set, else its `edge` (or
+/// [fallback]) at the theme's regular stroke.
 ///
 /// ```dart
 /// final look = Fluent2StyleOf([style, theme.cardTheme], const {});

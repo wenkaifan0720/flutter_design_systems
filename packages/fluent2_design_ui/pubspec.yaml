@@ -1,27 +1,29 @@
 name: fluent2_design_ui
 description: >-
-  Unofficial Fluent 2 widgets for Flutter: Fluent's tokens, type ramp and components, seven brand presets in light and dark, accessible controls.
-version: 0.2.1
-homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/fluent2_design_ui
+  Unofficial Fluent 2 for Flutter, built from Fluent's own tokens: calm neutral layers, acrylic for what floats, subtle strokes and one brand ramp, light and dark.
+version: 0.3.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/fluent2/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/fluent2_design_ui
+issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
 topics:
   - design-system
   - widgets
   - ui
   - theme
+  - fluent
 screenshots:
-  - description: "A sample app's overview on a 1440 desktop, light, under Fluent's navigation pane."
-    path: screenshots/overview_desktop_light.png
-  - description: "A file list and its toolbar on a 1440 desktop, dark."
+  - description: "Fluent 2's sample app at 1440 px by day under its navigation pane, beside the same app on a 390 px phone by night over its tab bar."
+    path: screenshots/hero.png
+  - description: "A file list in dated groups with its search and tabs on a 1440 desktop by night."
     path: screenshots/files_desktop_dark.png
-  - description: "A request form of fields, selects and a date picker on a 1440 desktop, light."
+  - description: "A request form of fields, selects and a date picker on a 1440 desktop by day."
     path: screenshots/request_desktop_light.png
-  - description: "The sample app's overview on a 390 phone, dark, over its tab bar."
-    path: screenshots/overview_phone_dark.png
-  - description: "Settings on a 390 phone, light, with switches, selects and grouped lists."
+  - description: "Settings on a 390 phone by day, with switches, selects and grouped lists."
     path: screenshots/settings_phone_light.png
-  - description: "Fluent's button appearances and sizes, split and toggle buttons, on a phone, dark."
+  - description: "Fluent's button appearances and sizes, split and toggle buttons, on a 390 phone by night."
     path: screenshots/buttons_phone_dark.png
+  - description: "A request form's Type select open on a 1440 desktop by night, its chosen option marked by Fluent's brand pill and check."
+    path: screenshots/select_desktop_dark.png
 
 environment:
   sdk: ">=3.13.0 <4.0.0"
@@ -32,7 +34,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.2.1
+  ui_core: ^0.3.0
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -42,6 +44,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
+  ui_core_test: ^0.1.0
 
 flutter:
   fonts:

@@ -632,7 +632,7 @@ class Fluent2SearchBox extends StatefulWidget {
   /// The empty words; null is "Search" in the app's language.
   final String? hint;
 
-  /// The spoken name; null says [placeholder].
+  /// The spoken name; null says [hint].
   final String? label;
 
   /// {@macro fluent2.appearance}
@@ -795,10 +795,10 @@ class _Fluent2SearchBoxState extends State<Fluent2SearchBox>
 }
 
 /// A way into search drawn as Fluent's SearchBox: the same field face and
-/// search glyph with its [placeholder] in the fourth ink, or the [query]
+/// search glyph with its [hint] in the fourth ink, or the [query]
 /// the page already holds in the first; the whole field is one button
-/// that opens the search ([onTap]). [onFilter] stands a filter button
-/// beside it. Null [onTap] draws it disabled.
+/// that opens the search ([onPressed]). [onFilter] stands a filter button
+/// beside it. Null [onPressed] draws it disabled.
 ///
 /// ```dart
 /// Fluent2SearchEntry(hint: 'Search Northwind', onPressed: () => Navigator.of(context).pushNamed('/search'))

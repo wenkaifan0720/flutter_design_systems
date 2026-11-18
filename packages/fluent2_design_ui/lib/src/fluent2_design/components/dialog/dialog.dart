@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
 
 import '../../chrome_metrics.dart';
+import '../../internal/route_motion.dart';
 import '../../styled.dart';
 import '../../theme.dart';
 import '../button/button.dart';
@@ -10,13 +11,12 @@ import '../host.dart';
 
 import 'package:ui_core/ui_core.dart';
 
-/// Fluent 2's Dialog, its surface drawn in place: the surface centred over
-/// the overlay, at most 600 wide, its corners 8, 24 round its parts, in
-/// `shadow64`; the [title] in subtitle1, the [body] 8 under it in body1,
+/// Fluent 2's Dialog, its surface drawn in place: the surface centred over the
+/// overlay, at most 600 wide, its corners 8, 24 round its parts, in `shadow64`;
+/// the [title] in subtitle1, the [message] and [content] 8 under it in body1,
 /// the [actions] 24 under that at the end, 8 apart, the primary last (on a
-/// narrow phone they stack, the primary on top). An alert dialog: no
-/// dismiss in its head, closed by its own acts. Raise one with [show] or
-/// [confirm].
+/// narrow phone they stack, the primary on top). An alert dialog: no dismiss in
+/// its head, closed by its own acts. Raise one with [show] or [confirm].
 ///
 /// ```dart
 /// Fluent2Dialog(title: 'Delete Q3 plan.docx?', content: const Text('It moves to the recycle bin for 30 days.'), actions: [Fluent2Button('Cancel', onPressed: cancel), Fluent2Button('Delete', appearance: Fluent2ButtonAppearance.primary, onPressed: delete)])
@@ -49,46 +49,40 @@ class Fluent2Dialog extends StatelessWidget {
   final List<Widget> actions;
 
   /// Raises [dialog] over the whole app; completes with the value it pops
-  /// with (null when the overlay is tapped).
+  /// with (null when the overlay is tapped or Escape pressed).
+  ///
+  /// It is ui_core's dialog route (`DesignDialogRoute`): it fades in from
+  /// .95 of its size on a spring that settles in Fluent's `durationGentle`,
+  /// and under Reduce Motion only fades. Focus moves into it, Tab stays
+  /// inside it, and as it closes the focus goes back to what held it. A
+  /// screen reader hears a dialog named by its title, or with [isAlert] an
+  /// alert dialog (the overlay still closes it).
   static Future<T?> show<T>(
     BuildContext context,
-    Widget Function(BuildContext context) dialog,
-  ) {
+    Widget Function(BuildContext context) dialog, {
+    bool isAlert = false,
+  }) {
     final t = context.fluent2Theme;
     final navigator = Fluent2Host.navigatorOf(context);
     final themes = InheritedTheme.capture(from: context, to: navigator.context);
     return navigator.push(
-      RawDialogRoute<T>(
+      DesignDialogRoute<T>(
+        isAlert: isAlert,
         barrierDismissible: true,
         barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
         barrierColor: t.overlay,
-        transitionDuration: Fluent2Motion.on(context)
-            ? Fluent2Motion.gentle
-            : Duration.zero,
-        // Tweens' drives, not CurvedAnimations: nothing to dispose when
-        // the route goes.
-        transitionBuilder: (context, animation, _, child) => FadeTransition(
-          opacity: animation.drive(
-            CurveTween(curve: Fluent2Motion.decelerateMid),
-          ),
-          child: ScaleTransition(
-            scale: animation.drive(
-              Tween<double>(
-                begin: 0.95,
-                end: 1,
-              ).chain(CurveTween(curve: Fluent2Motion.decelerateMid)),
-            ),
-            child: child,
-          ),
+        dampingRatio: Fluent2Motion.springDamping,
+        stiffness: Fluent2Motion.springGentle,
+        builder: (dialogContext, details) => themes.wrap(
+          fluent2DialogRise(details.animation, Builder(builder: dialog)),
         ),
-        pageBuilder: (dialogContext, _, _) =>
-            themes.wrap(Builder(builder: dialog)),
       ),
     );
   }
 
-  /// Asks [title] (with [message]) and completes true on [confirmLabel],
-  /// false on [cancelLabel], null when dismissed. Fluent 2 has no danger
+  /// Asks [title] (with [message]), an alert dialog to a screen reader, and
+  /// completes true on [confirmLabel], false on [cancelLabel], null when
+  /// dismissed. Fluent 2 has no danger
   /// button: a loss is the primary act whose words say it ('Delete'). The
   /// labels default to "OK" and "Cancel" in the app's language.
   static Future<bool?> confirm(
@@ -99,6 +93,7 @@ class Fluent2Dialog extends StatelessWidget {
     String? cancelLabel,
   }) => show<bool>(
     context,
+    isAlert: true,
     (dialogContext) => Fluent2Dialog(
       title: title,
       content: message == null ? null : Text(message),
@@ -129,8 +124,9 @@ class Fluent2Dialog extends StatelessWidget {
           constraints: const BoxConstraints(
             maxWidth: Fluent2ChromeMetrics.dialogWidth,
           ),
+          // The route round it is the dialog a screen reader hears; its
+          // title names it.
           child: Semantics(
-            scopesRoute: true,
             namesRoute: true,
             explicitChildNodes: true,
             label: title,

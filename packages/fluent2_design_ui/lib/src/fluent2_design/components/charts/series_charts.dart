@@ -6,6 +6,9 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'package:ui_core/ui_core.dart';
+
+import '../../internal/key_focus.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
 import 'charts.dart';
@@ -66,7 +69,7 @@ class _Swatch extends StatelessWidget {
   );
 }
 
-class _Plot extends StatefulWidget {
+class _Plot extends StatelessWidget {
   const _Plot({
     required this.series,
     required this.labels,
@@ -85,36 +88,11 @@ class _Plot extends StatefulWidget {
   final String Function(double value)? valueLabel;
   final Color? ground;
 
-  @override
-  State<_Plot> createState() => _PlotState();
-}
-
-class _PlotState extends State<_Plot> {
-  int? _at;
-
-  String _say(double v) => widget.valueLabel?.call(v) ?? _plain(v);
-
-  void _point(Offset local, double width, double left, double right) {
-    final n = widget.labels.length;
-    if (n == 0) return;
-    final room = math.max(1.0, width - left - right);
-    // Right to left the run starts at the right edge.
-    final dx = Directionality.of(context) == TextDirection.rtl
-        ? width - local.dx
-        : local.dx;
-    final i = n == 1 ? 0 : (((dx - left) / room) * (n - 1)).round();
-    final at = i.clamp(0, n - 1);
-    if (at != _at) setState(() => _at = at);
-  }
-
-  void _leave() {
-    if (_at != null) setState(() => _at = null);
-  }
+  String _say(double v) => valueLabel?.call(v) ?? _plain(v);
 
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
-    final series = widget.series;
     final colors = [
       for (final (i, s) in series.indexed) _hueOf(t, s, i, series.length),
     ];
@@ -124,6 +102,8 @@ class _PlotState extends State<_Plot> {
         high = math.max(high, v);
       }
     }
+    // Fluent's value axis: three lines, the top a round number over the peak
+    // whose half is round too, so the plot fills its height.
     final top = _niceTop(high);
     final scaler = MediaQuery.textScalerOf(context);
     final dir = Directionality.of(context);
@@ -143,23 +123,19 @@ class _PlotState extends State<_Plot> {
     final left =
         ticks.map((w) => widthOf(w, tick)).reduce(math.max) + Fluent2Spacing.s;
     final direct = series.length >= 2 && series.length <= 4;
-    final at = _at;
-    final spoken = [
-      ?widget.label,
+    final summary = [
       for (final s in series)
         if (s.values.isNotEmpty)
           '${s.name}, from ${_say(s.values.first)} to ${_say(s.values.last)}',
     ].join('. ');
-    return Semantics(
-      label: spoken,
-      image: true,
-      excludeSemantics: true,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (series.length >= 2)
-            Padding(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (series.length >= 2)
+          // The chart says its series' names itself.
+          ExcludeSemantics(
+            child: Padding(
               padding: const EdgeInsets.only(bottom: Fluent2Spacing.s),
               child: Wrap(
                 spacing: Fluent2Spacing.m,
@@ -177,89 +153,116 @@ class _PlotState extends State<_Plot> {
                 ],
               ),
             ),
-          SizedBox(
-            height: widget.height,
-            child: LayoutBuilder(
-              builder: (context, box) {
-                final width = box.maxWidth;
-                final room = direct && width >= 360
-                    ? math.min(
-                        96.0,
-                        series
-                                .map((s) => widthOf(s.name, t.caption1))
-                                .reduce(math.max) +
-                            Fluent2Spacing.s,
-                      )
-                    : Fluent2Spacing.xs;
-                return MouseRegion(
-                  onHover: (e) => _point(e.localPosition, width, left, room),
-                  onExit: (_) => _leave(),
-                  child: Listener(
-                    // A touch points at a value: a pointer down, not a
-                    // press (the chart is an image to a screen reader).
-                    behavior: HitTestBehavior.opaque,
-                    onPointerDown: (d) =>
-                        _point(d.localPosition, width, left, room),
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onHorizontalDragUpdate: (d) =>
-                          _point(d.localPosition, width, left, room),
-                      onHorizontalDragEnd: (_) => _leave(),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          Positioned.fill(
-                            child: CustomPaint(
-                              painter: _PlotPainter(
-                                series: series,
-                                labels: widget.labels,
-                                colors: colors,
-                                top: top,
-                                ticks: ticks,
-                                area: widget.area,
-                                left: left,
-                                right: room,
-                                at: at,
-                                grid: t.colors.neutralStroke2,
-                                cross: t.colors.neutralStrokeAccessible,
-                                ground: widget.ground ?? t.surface,
-                                tick: tick,
-                                name: t.caption1.c(t.textSecondary),
-                                scaler: scaler,
-                                direction: dir,
-                                direct: room > Fluent2Spacing.xs,
-                              ),
+          ),
+        SizedBox(
+          height: height,
+          child: LayoutBuilder(
+            builder: (context, box) {
+              final width = box.maxWidth;
+              final room = direct && width >= 360
+                  ? math.min(
+                      96.0,
+                      series
+                              .map((s) => widthOf(s.name, t.caption1))
+                              .reduce(math.max) +
+                          Fluent2Spacing.s,
+                    )
+                  : Fluent2Spacing.xs;
+              // ui_core's chart picks the point (a pointer along the run, a
+              // finger's scrub, a tap held, the keys) and says it; Fluent's
+              // painter draws the run, its value axis, the crosshair and
+              // the card.
+              return DesignChart(
+                semanticLabel:
+                    label ?? [for (final s in series) s.name].join(', '),
+                semanticSummary: summary,
+                series: [
+                  for (final s in series)
+                    DesignChartSeries(
+                      label: s.name,
+                      points: [
+                        for (final (i, v) in s.values.indexed)
+                          DesignChartPoint(i.toDouble(), v),
+                      ],
+                    ),
+                ],
+                formatX: (x) {
+                  final i = x.round();
+                  return i >= 0 && i < labels.length ? labels[i] : _plain(x);
+                },
+                formatY: _say,
+                padding: EdgeInsetsDirectional.only(start: left, end: room),
+                builder: (context, chart) {
+                  final at = chart.active?.index;
+                  final drawn = [
+                    for (final (i, s) in series.indexed)
+                      Fluent2ChartSeries(s.name, [
+                        for (final p in chart.series[i].points) p.y ?? 0,
+                      ], hue: s.hue),
+                  ];
+                  return Fluent2KeyRing(
+                    focused: chart.states.contains(WidgetState.focused),
+                    radius: Fluent2Radius.medium,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: _PlotPainter(
+                              series: drawn,
+                              labels: labels,
+                              colors: colors,
+                              top: top,
+                              ticks: ticks,
+                              area: area,
+                              left: left,
+                              right: room,
+                              at: at,
+                              grid: t.colors.neutralStroke2,
+                              cross: t.colors.neutralStrokeAccessible,
+                              ground: ground ?? t.surface,
+                              tick: tick,
+                              name: t.caption1.c(t.textSecondary),
+                              scaler: scaler,
+                              direction: dir,
+                              direct: room > Fluent2Spacing.xs,
                             ),
                           ),
-                          if (at != null && at < widget.labels.length)
-                            _Card(
-                              x: _xOf(at, width, left, room),
-                              width: width,
-                              title: widget.labels[at],
-                              lines: [
-                                for (final (i, s) in series.indexed)
-                                  if (at < s.values.length)
-                                    (colors[i], s.name, _say(s.values[at])),
-                              ],
-                            ),
-                        ],
-                      ),
+                        ),
+                        if (at != null && at < labels.length)
+                          _Card(
+                            x: _xOf(at, width, left, room, dir),
+                            width: width,
+                            title: labels[at],
+                            lines: [
+                              for (final (i, s) in series.indexed)
+                                if (at < s.values.length)
+                                  (colors[i], s.name, _say(s.values[at])),
+                            ],
+                          ),
+                      ],
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  double _xOf(int i, double width, double left, double right) {
-    final n = widget.labels.length;
+  double _xOf(
+    int i,
+    double width,
+    double left,
+    double right,
+    TextDirection direction,
+  ) {
+    final n = labels.length;
     final room = width - left - right;
     final x = n == 1 ? left + room / 2 : left + room * i / (n - 1);
-    return Directionality.of(context) == TextDirection.rtl ? width - x : x;
+    return direction == TextDirection.rtl ? width - x : x;
   }
 }
 
@@ -281,9 +284,14 @@ class _Card extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
-    // Beside the crosshair, on whichever side has the room.
-    final opensLeft = x + Fluent2Spacing.s + _w > width;
-    final at = opensLeft ? x - Fluent2Spacing.s - _w : x + Fluent2Spacing.s;
+    // Beside the crosshair, past it in the reading direction where there is
+    // the room (right to left, to its left), else before it.
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final right = x + Fluent2Spacing.s;
+    final left = x - Fluent2Spacing.s - _w;
+    final at = rtl
+        ? (left >= 0 ? left : right)
+        : (right + _w <= width ? right : left);
     return Positioned(
       left: at.clamp(0.0, math.max(0.0, width - _w)),
       top: 0,
@@ -740,8 +748,6 @@ class Fluent2PieChart extends StatefulWidget {
 }
 
 class _Fluent2PieChartState extends State<Fluent2PieChart> {
-  int? _at;
-
   static String _text(Fluent2PieSlice s) => s.valueText ?? _plain(s.value);
 
   List<Fluent2PieSlice> _parts(String other) {
@@ -754,26 +760,6 @@ class _Fluent2PieChartState extends State<Fluent2PieChart> {
     ];
   }
 
-  int? _hit(Offset local, List<Fluent2PieSlice> parts) {
-    final c = Offset(widget.size / 2, widget.size / 2);
-    final d = local - c;
-    final r = d.distance;
-    if (r > widget.size / 2 || r < widget.size / 2 - widget.thickness) {
-      return null;
-    }
-    final total = parts.fold<double>(0, (a, s) => a + math.max(0, s.value));
-    if (total <= 0) return null;
-    var angle = math.atan2(d.dy, d.dx) + math.pi / 2;
-    if (angle < 0) angle += 2 * math.pi;
-    var from = 0.0;
-    for (final (i, s) in parts.indexed) {
-      final sweep = 2 * math.pi * math.max(0, s.value) / total;
-      if (angle < from + sweep) return i;
-      from += sweep;
-    }
-    return parts.length - 1;
-  }
-
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
@@ -782,167 +768,174 @@ class _Fluent2PieChartState extends State<Fluent2PieChart> {
       for (final (i, s) in parts.indexed)
         (s.hue ?? Fluent2ChartHue.categorical[i]).of(t),
     ];
-    final at = _at;
-    final spoken = [
-      ?widget.label,
-      for (final s in parts) '${s.label} ${_text(s)}',
-    ].join(', ');
+    final summary = [for (final s in parts) '${s.label} ${_text(s)}']
+        .join(', ');
+    // ui_core's pie picks the part (under a pointer or a finger, the keys)
+    // and says it; Fluent's painter draws the ring and the words in its hole.
     final donut = SizedBox.square(
       dimension: widget.size,
-      child: MouseRegion(
-        onHover: (e) {
-          final i = _hit(e.localPosition, parts);
-          if (i != _at) setState(() => _at = i);
+      child: DesignPieChart(
+        semanticLabel:
+            widget.label ?? [for (final s in parts) s.label].join(', '),
+        semanticSummary: summary,
+        slices: [
+          for (final s in parts)
+            DesignPieSlice(label: s.label, value: math.max(0, s.value)),
+        ],
+        holeRadius:
+            math.max(0, widget.size / 2 - widget.thickness) / (widget.size / 2),
+        formatValue: (v) {
+          for (final s in parts) {
+            if (s.value == v) return _text(s);
+          }
+          return _plain(v);
         },
-        onExit: (_) => setState(() => _at = null),
-        child: Listener(
-          // A touch points at a slice: a pointer down, not a press.
-          behavior: HitTestBehavior.opaque,
-          onPointerDown: (d) {
-            final i = _hit(d.localPosition, parts);
-            if (i != _at) setState(() => _at = i);
-          },
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _DonutPainter(
-                    values: [for (final s in parts) s.value],
-                    colors: colors,
-                    thickness: widget.thickness,
-                    at: at,
+        builder: (context, pie) {
+          final at = pie.active;
+          return Fluent2KeyRing(
+            focused: pie.states.contains(WidgetState.focused),
+            radius: widget.size / 2,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _DonutPainter(
+                      slices: pie.slices,
+                      colors: colors,
+                      thickness: widget.thickness,
+                      at: at,
+                    ),
                   ),
                 ),
-              ),
-              // The words in the hole stay inside it: drawn smaller, whole,
-              // where a large text size would carry them onto the ring.
-              SizedBox.square(
-                dimension: math.max(
-                  0,
-                  (widget.size - 2 * (widget.thickness + Fluent2Spacing.xs)) /
-                      math.sqrt2,
+                // The words in the hole stay inside it: drawn smaller, whole,
+                // where a large text size would carry them onto the ring.
+                SizedBox.square(
+                  dimension: math.max(
+                    0,
+                    (widget.size - 2 * (widget.thickness + Fluent2Spacing.xs)) /
+                        math.sqrt2,
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: at != null && at < parts.length
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _text(parts[at]),
+                                style: t.subtitle2.tabular,
+                              ),
+                              Text(
+                                parts[at].label,
+                                maxLines: 1,
+                                style: t.caption1.c(t.textSecondary),
+                              ),
+                            ],
+                          )
+                        : widget.center ?? const SizedBox.shrink(),
+                  ),
                 ),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: at != null
-                      ? Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(_text(parts[at]), style: t.subtitle2.tabular),
-                            Text(
-                              parts[at].label,
-                              maxLines: 1,
-                              style: t.caption1.c(t.textSecondary),
-                            ),
-                          ],
-                        )
-                      : widget.center ?? const SizedBox.shrink(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    final legend = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: Fluent2Spacing.xs,
-      children: [
-        for (final (i, s) in parts.indexed)
-          Row(
-            spacing: Fluent2Spacing.s,
-            children: [
-              _Swatch(colors[i]),
-              Expanded(
-                child: Text(
-                  s.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: t.caption1.c(t.textSecondary),
-                ),
-              ),
-              Text(_text(s), style: t.caption1.tabular),
-            ],
-          ),
-      ],
-    );
-    return Semantics(
-      label: spoken,
-      image: true,
-      excludeSemantics: true,
-      child: LayoutBuilder(
-        builder: (context, box) {
-          // The legend stands beside the donut while its words have their
-          // room at the reader's text size, else under it, never cut.
-          final beside =
-              !box.hasBoundedWidth ||
-              box.maxWidth >=
-                  widget.size + MediaQuery.textScalerOf(context).scale(160);
-          if (!beside) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: Fluent2Spacing.m,
-              children: [
-                Center(child: donut),
-                legend,
               ],
-            );
-          }
-          return Row(
-            spacing: Fluent2Spacing.xl,
-            children: [
-              donut,
-              Expanded(child: legend),
-            ],
+            ),
           );
         },
       ),
+    );
+    final legend = ExcludeSemantics(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: Fluent2Spacing.xs,
+        children: [
+          for (final (i, s) in parts.indexed)
+            Row(
+              spacing: Fluent2Spacing.s,
+              children: [
+                _Swatch(colors[i]),
+                Expanded(
+                  child: Text(
+                    s.label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: t.caption1.c(t.textSecondary),
+                  ),
+                ),
+                Text(_text(s), style: t.caption1.tabular),
+              ],
+            ),
+        ],
+      ),
+    );
+
+    return LayoutBuilder(
+      builder: (context, box) {
+        // The legend stands beside the donut while its words have their
+        // room at the reader's text size, else under it, never cut.
+        final beside =
+            !box.hasBoundedWidth ||
+            box.maxWidth >=
+                widget.size + MediaQuery.textScalerOf(context).scale(160);
+        if (!beside) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: Fluent2Spacing.m,
+            children: [
+              Center(child: donut),
+              legend,
+            ],
+          );
+        }
+        return Row(
+          spacing: Fluent2Spacing.xl,
+          children: [
+            donut,
+            Expanded(child: legend),
+          ],
+        );
+      },
     );
   }
 }
 
 class _DonutPainter extends CustomPainter {
   _DonutPainter({
-    required this.values,
+    required this.slices,
     required this.colors,
     required this.thickness,
     required this.at,
   });
 
-  final List<double> values;
+  /// ui_core's slices: each part's angles from the top, clockwise (the other
+  /// way right to left).
+  final List<DesignPieSliceDetails> slices;
   final List<Color> colors;
   final double thickness;
   final int? at;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final total = values.fold<double>(0, (a, v) => a + math.max(0, v));
-    if (total <= 0) return;
     final r = (math.min(size.width, size.height) - thickness) / 2;
     final rect = Rect.fromCircle(center: size.center(Offset.zero), radius: r);
-    final count = values.where((v) => v > 0).length;
+    final count = slices.where((s) => s.sweepAngle != 0).length;
     final gap = count > 1 ? 2 / r : 0.0;
-    var from = -math.pi / 2;
-    for (final (i, v) in values.indexed) {
-      final sweep = 2 * math.pi * math.max(0, v) / total;
-      if (sweep > 0) {
-        canvas.drawArc(
-          rect,
-          from + gap / 2,
-          math.max(0.0, sweep - gap),
-          false,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = thickness
-            ..color = at == null || at == i
-                ? colors[i]
-                : colors[i].withValues(alpha: .4),
-        );
-      }
-      from += sweep;
+    for (final (i, s) in slices.indexed) {
+      final sweep = s.sweepAngle;
+      if (sweep.abs() <= gap) continue;
+      final g = sweep.sign * gap;
+      canvas.drawArc(
+        rect,
+        s.startAngle + g / 2,
+        sweep - g,
+        false,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = thickness
+          ..color = at == null || at == i
+              ? colors[i]
+              : colors[i].withValues(alpha: .4),
+      );
     }
   }
 
@@ -950,6 +943,6 @@ class _DonutPainter extends CustomPainter {
   bool shouldRepaint(_DonutPainter old) =>
       old.at != at ||
       old.thickness != thickness ||
-      !identical(old.values, values) ||
+      !listEquals(old.slices, slices) ||
       !identical(old.colors, colors);
 }

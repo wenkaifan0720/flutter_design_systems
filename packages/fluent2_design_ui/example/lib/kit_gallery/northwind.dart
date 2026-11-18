@@ -9,7 +9,7 @@
 /// package's example carries it.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
@@ -497,10 +497,15 @@ class _FilesRoot extends StatelessWidget {
   const _FilesRoot();
 
   @override
-  Widget build(BuildContext context) => Navigator(
-    onGenerateRoute: (settings) => MaterialPageRoute<void>(
-      settings: settings,
-      builder: (context) => const _Files(),
+  Widget build(BuildContext context) => Semantics(
+    // Its own semantics container: the route under the navigator stands a
+    // modal barrier, which would hide what painted before it.
+    container: true,
+    child: Navigator(
+      onGenerateRoute: (settings) => MaterialPageRoute<void>(
+        settings: settings,
+        builder: (context) => const _Files(),
+      ),
     ),
   );
 }

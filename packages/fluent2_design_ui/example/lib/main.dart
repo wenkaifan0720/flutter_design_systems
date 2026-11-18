@@ -5,8 +5,7 @@
 //
 // A link opens a page in a given theme, direction and text size, the scheme every look's gallery reads:
 // /#/<page>?theme=dark&dir=rtl&text=200 (and preset=<id>).
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 
 import 'gallery_pages.dart';

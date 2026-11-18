@@ -13,7 +13,7 @@ import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
@@ -209,18 +209,37 @@ Finder _cellOf(Finder inside) {
         .ancestor(of: joined.first, matching: find.byWidgetPredicate(press))
         .first;
   }
-  return find
-      .ancestor(
-        of: inside,
-        matching: find.byWidgetPredicate(
-          (w) => w is Fluent2Pressable || w is Fluent2ButtonBox,
-        ),
-      )
-      .first;
+  final own = find.ancestor(
+    of: inside,
+    matching: find.byWidgetPredicate(
+      (w) => w is Fluent2Pressable || w is Fluent2ButtonBox,
+    ),
+  );
+  // A tab is ui_core's pressable (DesignTabBar's).
+  return own.evaluate().isNotEmpty
+      ? own.first
+      : find
+            .ancestor(of: inside, matching: find.byWidgetPredicate(press))
+            .first;
 }
 
-Finder _pressOf(Finder inside) =>
-    find.ancestor(of: inside, matching: find.byType(Fluent2Pressable)).first;
+Finder _pressOf(Finder inside) {
+  final own = find.ancestor(
+    of: inside,
+    matching: find.byType(Fluent2Pressable),
+  );
+  // A tab is ui_core's pressable (DesignTabBar's).
+  return own.evaluate().isNotEmpty
+      ? own.first
+      : find
+            .ancestor(
+              of: inside,
+              matching: find.byWidgetPredicate(
+                (w) => w.runtimeType.toString() == 'DesignPressable',
+              ),
+            )
+            .first;
+}
 
 void main() {
   setUpAll(() async {

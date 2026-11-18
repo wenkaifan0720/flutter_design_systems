@@ -449,14 +449,17 @@ void main() {
           ),
         ),
       );
-      double width(String name) =>
-          tester.getSemantics(find.bySemanticsLabel(name)).rect.width;
+      // A tab says its name, then its place (ui_core's "Tab 1 of 2").
+      double width(String name) => tester
+          .getSemantics(find.bySemanticsLabel(RegExp('^$name\n')))
+          .rect
+          .width;
       double drawn(String name) => tester
           .getSize(
             find
                 .ancestor(
                   of: find.text(name).last,
-                  matching: find.byType(Fluent2Pressable),
+                  matching: find.byType(DesignPressable),
                 )
                 .first,
           )

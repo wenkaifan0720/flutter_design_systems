@@ -5,7 +5,7 @@
 // look exposes its push as fluent2PageTransitions, a map of widgets-level PageTransitionsBuilders, and the app puts
 // it in its own ThemeData. On every platform the push played is Fluent 2's own; on iOS ui_core's swipe back stands
 // round it, so a swipe from the screen's left edge still pops the page.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 

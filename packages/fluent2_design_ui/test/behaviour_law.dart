@@ -3,7 +3,7 @@
 // callback is enumerated from the source, so a new one fails until it is named in a table. Each one: Tab reaches it,
 // its focus ring paints, Enter and Space press it, with no callback it takes no focus and its face is told it is
 // disabled, a hover reaches its face's states, and with animations disabled nothing it does leaves a running
-// animation. Each part lays out with no exception at 390, 768, 1024 and 1440, at text scale 2.0 and right to left.
+// animation (a route it raises fades, as ui_core's routes do under Reduce Motion, and settles). Each part lays out with no exception at 390, 768, 1024 and 1440, at text scale 2.0 and right to left.
 library;
 
 import 'dart:io';
@@ -16,6 +16,11 @@ import 'package:fluent2_design_ui/fluent2_design_ui.dart';
 import 'package:fluent2_design_ui/fluent2_design_host.dart';
 
 import 'tiers.dart';
+
+// A route raised over the page: its barrier is tinted (a dialog's, a sheet's).
+final _raisedRoute = find.byWidgetPredicate(
+  (w) => w is AnimatedModalBarrier || (w is ModalBarrier && w.color != null),
+);
 
 /// One interactive part: [build] wires its main callback to `hit`, or none when `hit` is null.
 class LawPart {
@@ -317,6 +322,12 @@ void behaviourLaw(
         }
         await tester.pump();
         await tester.pump();
+        if (tester.hasRunningAnimations) {
+          // Only a route the press raised may still move: ui_core's routes
+          // fade under Reduce Motion, on a spring that settles within 300 ms.
+          expect(_raisedRoute, findsWidgets);
+          await tester.pump(const Duration(milliseconds: 300));
+        }
         expect(tester.hasRunningAnimations, isFalse);
         expect(tester.takeException(), isNull);
       });

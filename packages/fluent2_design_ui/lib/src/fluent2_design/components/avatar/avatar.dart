@@ -138,9 +138,9 @@ String fluent2Initials(String name, {bool single = false}) {
 /// Fluent 2's Avatar: a person (or a group, with [Fluent2AvatarShape.square])
 /// as their picture ([image]), else the initials of [name] (or [initials])
 /// in the size's type, else the person glyph; coloured by [color]; with a
-/// [presence] badge at its bottom end, and the brand ring while [active].
+/// [presence] badge at its bottom end, and the brand ring while [selected].
 /// [size] is one of Fluent's (16 to 128, 32 by default). Read as an image
-/// named [name] and its presence; with [onTap] a button.
+/// named [name] and its presence; with [onPressed] a button.
 ///
 /// ```dart
 /// Fluent2Avatar(name: 'Ines Duarte', color: Fluent2AvatarColor.colorful, presence: Fluent2Presence.available)
@@ -197,7 +197,7 @@ class Fluent2Avatar extends StatelessWidget {
   /// What a press does (open the profile); null is a picture.
   final VoidCallback? onPressed;
 
-  /// What a screen reader says with [onTap]; null says [name].
+  /// What a screen reader says with [onPressed]; null says [name].
   final String? label;
 
   /// The glyph drawn with neither picture nor initials; null is the
@@ -626,7 +626,7 @@ class Fluent2AvatarPerson {
 /// [size], stacked (each overlapping the one before by Fluent's step and
 /// ringed in neutralBackground2, as Fluent rings them) or spread, then the
 /// overflow "+N" in the neutral disc. Read as one image: the names shown
-/// and how many more. With [onTap] (open the list of everyone) a button.
+/// and how many more. With [onPressed] (open the list of everyone) a button.
 ///
 /// ```dart
 /// Fluent2AvatarGroup(people: [Fluent2AvatarPerson('Ines Duarte'), Fluent2AvatarPerson('Kai Tanaka'), Fluent2AvatarPerson('Mara Okafor')], max: 3)

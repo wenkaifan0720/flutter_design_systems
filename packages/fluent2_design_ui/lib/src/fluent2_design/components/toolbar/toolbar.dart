@@ -44,7 +44,7 @@ enum _ToolbarKind { button, toggle, divider }
 /// ```
 @immutable
 class Fluent2ToolbarItem {
-  /// A command: [icon], named by [label], doing [onTap].
+  /// A command: [icon], named by [label], doing [onPressed].
   const Fluent2ToolbarItem.button({
     required IconData this.icon,
     required String this.label,

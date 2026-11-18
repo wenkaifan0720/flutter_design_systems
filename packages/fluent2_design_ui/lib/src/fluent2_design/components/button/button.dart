@@ -687,12 +687,12 @@ class _RenderOwnWidth extends RenderPositionedBox {
   }
 }
 
-/// Fluent 2's Button: [label] in the size's type, an optional [icon]
-/// before it (after it with [iconAfter]), on the [appearance]'s face at the
-/// [shape]'s corner, stepping through its rest, hover and pressed colours.
-/// [expand] stretches it across its parent (a sheet's one act). Read as a
-/// button named [label]; null [onTap] draws it disabled. Use one
-/// [Fluent2ButtonAppearance.primary] per view.
+/// Fluent 2's Button: [label] in the size's type, an optional [icon] before it
+/// (after it with [iconPosition] [Fluent2IconPosition.after]), on the
+/// [appearance]'s face at the [shape]'s corner, stepping through its rest,
+/// hover and pressed colours. [expand] stretches it across its parent (a
+/// sheet's one act). Read as a button named [label]; null [onPressed] draws it
+/// disabled. Use one [Fluent2ButtonAppearance.primary] per view.
 ///
 /// [style] restyles it slot by slot (fill, foreground, edge, overlay, side,
 /// shape, padding, minimumSize, textStyle, iconSize) over its appearance's
@@ -891,7 +891,7 @@ class Fluent2Button extends StatelessWidget {
 /// Fluent2IconButton(Fluent2Icons.moreHorizontal, label: 'More options', onPressed: openMenu)
 /// ```
 class Fluent2IconButton extends StatelessWidget {
-  /// An icon-only button showing [icon], read as [semanticLabel].
+  /// An icon-only button showing [icon], read as [label].
   const Fluent2IconButton(
     this.icon, {
     required this.label,
@@ -1401,7 +1401,7 @@ class Fluent2CompoundButton extends StatelessWidget {
 }
 
 /// Fluent 2's MenuButton: a [Fluent2Button] whose words end in the down
-/// chevron, saying it opens a menu; [onTap] opens it (a [Fluent2Menu]).
+/// chevron, saying it opens a menu; [onPressed] opens it (a [Fluent2Menu]).
 ///
 /// ```dart
 /// Fluent2MenuButton('Sort', icon: Fluent2Icons.arrowSort, onPressed: () => Fluent2Menu.show(context, items: sorts))

@@ -20,7 +20,7 @@ enum Fluent2LinkAppearance {
 /// second ink's link aliases when [appearance] is subtle), underlined
 /// under the pointer and while pressed, always underlined when [inline]
 /// (a link inside a sentence, which must not lean on colour alone); the
-/// keyboard's focus rings it. Null [onTap] draws it disabled in the
+/// keyboard's focus rings it. Null [onPressed] draws it disabled in the
 /// disabled ink. Read as a link named by its words; Enter follows it.
 ///
 /// ```dart

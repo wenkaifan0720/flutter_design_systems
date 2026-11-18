@@ -1288,7 +1288,10 @@ Future<Fluent2Time?> showFluent2TimePicker(
 
 /// A turning drum of choices: the chosen line on the subtle selected fill, its
 /// words strong, the lines above and below in the third ink, drawn smaller
-/// round the drum. Drag or fling it; the arrows step it.
+/// round the drum. Drag or fling it, or tap a line; the arrows step it (Page
+/// Up and Down by five, Home and End to the ends), typing a choice's first
+/// letters finds it, and a screen reader steps it as an adjustable. It is
+/// ui_core's `DesignWheelPicker`, one column, in Fluent's lines and band.
 ///
 /// ```dart
 /// Fluent2WheelPicker<int>(label: 'Guests', items: const [1, 2, 3, 4], value: guests, onChanged: setGuests)
@@ -1351,123 +1354,66 @@ class Fluent2WheelPicker<T> extends StatefulWidget {
 
 class _Fluent2WheelPickerState<T> extends State<Fluent2WheelPicker<T>> {
   static const _line = 36.0;
-  late final _wheel = FixedExtentScrollController(
-    initialItem: math.max(0, widget.items.indexOf(widget.value)),
-  );
-  late int _at = math.max(0, widget.items.indexOf(widget.value));
 
   String _say(T item) => widget.itemLabel?.call(item) ?? '$item';
-
-  @override
-  void didUpdateWidget(Fluent2WheelPicker<T> old) {
-    super.didUpdateWidget(old);
-    final i = widget.items.indexOf(widget.value);
-    if (i >= 0 && i != _at) {
-      _at = i;
-      if (_wheel.hasClients) _wheel.jumpToItem(i);
-    }
-  }
-
-  @override
-  void dispose() {
-    _wheel.dispose();
-    super.dispose();
-  }
-
-  void _step(int by) {
-    final n = widget.items.length;
-    final to = widget.looping ? (_at + by) % n : (_at + by).clamp(0, n - 1);
-    if (to == _at) return;
-    if (!Fluent2Motion.on(context)) {
-      _wheel.jumpToItem(to);
-      return;
-    }
-    _wheel.animateToItem(
-      to,
-      duration: Fluent2Motion.fast,
-      curve: Fluent2Motion.decelerateMid,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
     final c = t.colors;
-    final live = widget.onChanged != null;
-    final n = widget.items.length;
-    Text line(int i, bool chosen) => Text(
-      _say(widget.items[i]),
-      maxLines: 1,
-      style: (chosen ? t.body1Strong : t.body1).tabular.c(
-        !live
-            ? c.neutralForegroundDisabled
-            : chosen
-            ? c.neutralForeground1
-            : t.textTertiary,
-      ),
-    );
-    return Semantics(
-      container: true,
-      label: widget.label,
-      value: _say(widget.items[_at]),
-      increasedValue: live ? _say(widget.items[(_at + 1) % n]) : null,
-      decreasedValue: live ? _say(widget.items[(_at - 1) % n]) : null,
-      onIncrease: live ? () => _step(1) : null,
-      onDecrease: live ? () => _step(-1) : null,
-      child: Fluent2KeyFocus(
-        enabled: live,
-        radius: Fluent2Radius.medium,
-        keys: {
-          LogicalKeyboardKey.arrowDown: () => _step(1),
-          LogicalKeyboardKey.arrowUp: () => _step(-1),
-          LogicalKeyboardKey.pageDown: () => _step(5),
-          LogicalKeyboardKey.pageUp: () => _step(-5),
-        },
-        child: SizedBox(
-          height: _line * widget.rows,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                height: _line,
-                decoration: BoxDecoration(
-                  // iOS's selection band in Fluent's grey step, laid over
-                  // the ground so it shows on the tinted page.
-                  color: live ? fluent2Well(t) : fluent2WellDisabled(t),
-                  borderRadius: BorderRadius.circular(Fluent2Radius.medium),
-                ),
-              ),
-              ExcludeSemantics(
-                child: IgnorePointer(
-                  ignoring: !live,
-                  child: ListWheelScrollView.useDelegate(
-                    controller: _wheel,
-                    itemExtent: _line,
-                    physics: const FixedExtentScrollPhysics(),
-                    perspective: 0.003,
-                    diameterRatio: 2.2,
-                    onSelectedItemChanged: (raw) {
-                      final i = raw % n;
-                      setState(() => _at = i);
-                      widget.onChanged?.call(widget.items[i]);
-                    },
-                    childDelegate: widget.looping
-                        ? ListWheelChildLoopingListDelegate(
-                            children: [
-                              for (var i = 0; i < n; i++)
-                                Center(child: line(i, i == _at)),
-                            ],
-                          )
-                        : ListWheelChildBuilderDelegate(
-                            childCount: n,
-                            builder: (context, i) =>
-                                Center(child: line(i, i == _at)),
-                          ),
-                  ),
-                ),
-              ),
-            ],
+    final change = widget.onChanged;
+    final live = change != null;
+    final items = widget.items;
+    return DesignWheelPicker(
+      columns: (_) => [
+        DesignWheelColumn(
+          itemCount: items.length,
+          itemLabel: (i) => _say(items[i]),
+          semanticLabel: widget.label,
+          looping: widget.looping,
+        ),
+      ],
+      selection: [math.max(0, items.indexOf(widget.value))],
+      onChanged: change == null ? null : (picked) => change(items[picked[0]]),
+      itemExtent: _line,
+      visibleItemCount: widget.rows,
+      // Fluent's drum: a gentle curve, its rows evenly spaced (no squeeze:
+      // ui_core's 1.45 is iOS's).
+      diameterRatio: 2.2,
+      squeeze: 1,
+      // A turn settles in Fluent's `durationFast` (150 ms): ω = 6 / 0.15 s.
+      dampingRatio: Fluent2Motion.springDamping,
+      stiffness: 1600,
+      itemBuilder: (context, item) => Center(
+        child: Text(
+          item.label,
+          maxLines: 1,
+          style: (item.selected ? t.body1Strong : t.body1).tabular.c(
+            !live || !item.enabled
+                ? c.neutralForegroundDisabled
+                : item.selected
+                ? c.neutralForeground1
+                : t.textTertiary,
           ),
+        ),
+      ),
+      columnBuilder: (context, column, wheel) => Fluent2KeyRing(
+        focused: column.states.contains(WidgetState.focused),
+        radius: Fluent2Radius.medium,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              height: _line,
+              decoration: BoxDecoration(
+                // iOS's selection band in Fluent's grey step, laid over
+                // the ground so it shows on the tinted page.
+                color: live ? fluent2Well(t) : fluent2WellDisabled(t),
+                borderRadius: BorderRadius.circular(Fluent2Radius.medium),
+              ),
+            ),
+            wheel,
+          ],
         ),
       ),
     );

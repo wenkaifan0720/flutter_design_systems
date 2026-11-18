@@ -296,12 +296,12 @@ final class Fluent2BadgeFace with Diagnosticable {
   }
 }
 
-/// Fluent 2's Badge: a short status or category word ([label]) with an
-/// optional [icon] before it (after it with [iconAfter]) on the
-/// [appearance]'s face in its [color], at one of Fluent's six sizes; the
-/// tiny and extra-small sizes are dots that carry no words. It states,
-/// never acts. Read as [semanticLabel], else its label; a bare dot or
-/// glyph needs a [semanticLabel] to be heard.
+/// Fluent 2's Badge: a short status or category word ([label]) with an optional
+/// [icon] before it (after it with [iconPosition] [Fluent2IconPosition.after])
+/// on the [appearance]'s face in its [color], at one of Fluent's six sizes; the
+/// tiny and extra-small sizes are dots that carry no words. It states, never
+/// acts. Read as [semanticLabel], else its label; a bare dot or glyph needs a
+/// [semanticLabel] to be heard.
 ///
 /// ```dart
 /// Fluent2LabelBadge(label: 'Draft', appearance: Fluent2BadgeAppearance.tint, color: Fluent2BadgeColor.informative)
