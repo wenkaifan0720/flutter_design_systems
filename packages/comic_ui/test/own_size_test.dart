@@ -129,7 +129,7 @@ const _flows = <String, String>{
   'ComicPageDots': 'a wrapping row of caption marks; with a callback, one control round them',
   'ComicPlated':
       'paints the hard print under the part it wraps, at that part\'s size',
-  'ComicScreenScrim': 'the dot-screen backdrop, painted to the page it covers',
+  'ComicScreenScrim': 'the backdrop, painted to the page it covers',
   'ComicSkeleton': 'the placeholder fills available width when none is given',
   'ComicStars':
       'a row of small drawings, each its own size, standing at the start',

@@ -67,13 +67,13 @@ Widget kitSpecimenLettering() => Builder(
       gap: 10,
       children: [
         ComicLettering(
-          'Masthead',
+          kitSay(context, 'Masthead'),
           size: 72,
           fill: c.caption,
           style: ComicLetteringStyle.masthead,
         ),
         ComicLettering(
-          'A splash title',
+          kitSay(context, 'A splash title'),
           size: 48,
           fill: c.paper,
           style: ComicLetteringStyle.title,
@@ -89,8 +89,13 @@ Widget kitSpecimenSfx() => Builder(
     return Wrap(
       spacing: 18,
       children: [
-        ComicSfx('Pop!', size: 26, fill: c.caption),
-        ComicSfx('Krash!', size: 40, fill: c.caption, big: true),
+        ComicSfx(kitSay(context, 'Pop!'), size: 26, fill: c.caption),
+        ComicSfx(
+          kitSay(context, 'Krash!'),
+          size: 40,
+          fill: c.caption,
+          big: true,
+        ),
       ],
     );
   },

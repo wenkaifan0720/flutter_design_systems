@@ -1,7 +1,7 @@
 # comic_ui
 
-A Flutter design system drawn as a printed comic page: inked panels, speech balloons and Ben-Day dots in flat inks,
-every change of state a quick cut or pop.
+Comic is a Flutter component library for apps styled as printed comics. It includes form controls, navigation,
+charts, speech balloons and illustrated panels. Five colour presets support light and dark mode.
 
 ![Comic's cover page at desktop and phone width, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/comic_ui/screenshots/hero.png)
 
@@ -46,14 +46,6 @@ Future<void> main() async {
   );
 }
 ```
-
-## What it is
-
-Comic is a design system for Flutter that draws an app as a page of a printed comic: flat process inks on paper,
-heavy inked panels set in tiers, narration captions, speech balloons with tails, Ben-Day dots for tone and one starburst
-a screen. Its everyday parts (buttons, fields, selects, lists, dialogs, navigation) are ordinary, accessible controls
-in that print, and every change of state moves the way a comic does: a quick cut, a small pop. Five print editions
-come in a day and a night issue each.
 
 ## Set up the theme
 
@@ -284,45 +276,17 @@ final branded = ComicThemeData.from(
 );
 ```
 
-The parts people restyle most take a `style:` (a `ComicStyle` of `WidgetStateProperty` slots: fill, foreground, edge,
-overlay, side, shape, padding, minimumSize, textStyle, iconSize), resolved above their component theme in
-`ComicThemeData.copyWith`:
+Buttons, fields, choice controls, panels, overlays and avatars accept `ComicStyle`. Each property can depend on
+`WidgetState`. A widget's style takes precedence over its component theme in `ComicThemeData`. Supply opaque
+colours for fills and overlays. Use `AnimatedComicTheme` to animate a theme change.
 
-- buttons: `ComicButton` (and `.filled`, `.text`), `ComicIconButton`, `ComicSendButton`, `ComicLink`;
-- fields: text field, text area, search, select and select field, number field, one-time code, combobox, `ComicInput`;
-- choices: checkbox, check row, radio group, switch, switch row, chip, choice boxes, segmented button, slider;
-- the date and time pickers;
-- surfaces: panel, card, picture card, well, caption, balloon;
-- raised surfaces: dialog, bottom sheet, sheet, menu and menu anchor, tooltip, snack bar, toast;
-- avatars and badges.
+To change the default square control corners, pass `shapes: ComicShapes.rounded(12)` to
+`ComicThemeData.copyWith`. Nested controls follow their container's corners. Use `ComicTypeface`, `ComicDensity`
+and `ComicStrokes` to change type, spacing or outline weight.
 
-The rest (the app bar, navigation bar, rail and drawer, tabs, list rows, charts, progress, and Comic's own art) take
-their look from the theme alone. Every fill and overlay a style gives is an opaque ink: a see-through one asserts in a
-debug build (law 1). `AnimatedComicTheme` moves a subtree from one theme to another.
-
-What a theme may change is what keeps it a comic: the edition's inks (`ComicThemeData.from`), the text face
-(`ComicTypeface`), density (`ComicDensity`), and the ink's weight in two steps, `ComicStrokes.standard` and
-`ComicStrokes.bold`. Comic stays square, its motion a cut and a pop, and its type at the look's sizes under the
-platform's text scaling.
-
-## How Comic is built
-
-Comic keeps seven laws, and every part follows them:
-
-1. Everything is printed on paper in flat process inks. Tone and shade are Ben-Day dots; nothing is blurred, graded
-   or see-through.
-2. Things are panels: a heavy inked contour, set in tiers with gutters between them. Panels never overlap each other.
-   What labels or switches is square; only speech is round.
-3. Only the page's top layer breaks a panel's border: balloons, captions, the one burst, and the cast (heads in a crowd
-   overlap as figures in a panel do). The order is page, panel, caption or balloon, burst.
-4. There is no light source. A raised thing stands on a hard offset print of ink, down and to the end; a pressed thing
-   sinks onto it. There are no soft shadows.
-5. Speech is a balloon with a tail to whoever says it, narration a caption box, and noise lettered as a sound effect.
-   There is one starburst a screen.
-6. Motion is drawn: a quick cut, a short pop, motion lines. A part's change of state (pressed, chosen, focused,
-   disabled, day to night) moves from where it is to where it is going, and turns from where it is if a new change
-   comes mid-way. With reduced motion on, you see the still panel.
-7. Night is the night issue: black gutters and cream contours, decided, not inverted.
+Comic uses a plain tint for hover and press, an ink outline for keyboard focus and a solid fill for disabled
+controls. Halftone patterns are reserved for illustrations. Speech balloons, narration captions and display
+lettering keep a clear background behind the words.
 
 ## Accessibility and languages
 
@@ -337,38 +301,29 @@ Comic keeps seven laws, and every part follows them:
 - **Other scripts.** Bangers and Shantell Sans cover Latin scripts. Arabic, Hebrew, Chinese, Japanese, Hindi, Thai and
   other scripts fall back to the platform's fonts (on the web, to the Noto fonts the engine fetches; a build made
   with `--no-web-resources-cdn` must bundle its own).
-- **Built-in words.** The words parts show or speak by themselves come in two sets, both English when nothing is
-  registered. The words every look shares (Close, Cancel, Clear, Back, Previous month, Loading, No results, ...) are
-  ui_core's `DesignLocalizations`, under `MaterialLocalizations`' names: translate them by extending
-  `DefaultDesignLocalizations` and adding its delegate to your app's `localizationsDelegates`. Comic's own words (a
-  stepper's More and Less, the text-editing menu, a file drop's prompts, a rating's "3 of 5", ...) are
-  `ComicLocalizations`: a subclass and its delegate replace them. Every part that says something also takes your
-  words for it directly.
-- **Dates and numbers.** Month and weekday names come from `intl` in your app's locale once you call
-  `initializeDateFormatting()`; otherwise they are English. Time pickers follow the platform's 24-hour setting.
-  The week starts on Monday unless you pass `firstWeekday`, and counts and money are printed as you pass them; Comic
-  does not format numbers by locale.
+- **Control labels.** Extend `DefaultDesignLocalizations` for shared labels such as Close, Cancel and Loading.
+  Extend `ComicLocalizations` for Comic-specific labels such as file prompts and ratings. Register your delegates in
+  `localizationsDelegates`. Both libraries default to English.
+- **Dates and numbers.** Call `initializeDateFormatting()` for localized month and weekday names. Use
+  `firstWeekday` to change the Monday start. Time pickers follow the platform's 24-hour setting. Pass
+  locale-formatted strings for counts and currency.
 - **Motion.** With the platform's reduced motion on, every state change switches at once.
 
 ## Copying a component
 
-To change a part beyond its style, copy its file from `lib/src/comic/`, rename its public classes, and import the parts
-library in place of its sibling imports:
+To customise a component beyond its style, copy its Dart source into your app, rename the widget and import
+the shared helpers.
 
 ```dart
 import 'package:comic_ui/comic_parts.dart';
 ```
 
-It exports the tokens, painters and layout helpers the parts are built from. The rest of your app stays on
-`comic_ui.dart`.
+Use `comic_ui.dart` elsewhere in your app. The parts library supports copied components and can change between releases.
 
 ## Example
 
-The example app opens every page of the gallery through Comic's own navigation: Overview, Buttons, Text fields,
-Selection, Pickers, Navigation, Lists and tables, Cards and media, Dialogs and sheets, Feedback, Charts, Type and
-colour, a form, settings, a list and a checkout, then Comic's own panels, balloons, print and cover. The moon or sun in
-its app bar switches day and night, and Customize changes the edition, the colours, the reading direction and
-the text scaling on every page.
+The gallery includes individual controls and complete form, settings, list and checkout screens. Use the app bar
+to switch light and dark mode. Open Customize to change the edition, colours, reading direction and text size.
 
 ## Licence
 

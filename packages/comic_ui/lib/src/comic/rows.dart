@@ -459,7 +459,7 @@ class ComicListTile extends StatelessWidget {
   /// plain row of words, not a disabled one.
   final bool enabled;
 
-  /// Overrides the spoken row name.
+  /// Overrides the spoken row name. By default it includes [title] and [subtitle].
   final String? label;
 
   /// Selection and destructive emphasis.
@@ -673,8 +673,9 @@ class ComicListTile extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: enabled ? onPressed : null,
-        label: label ?? title,
-        hint: subtitle,
+        label:
+            label ??
+            [title, if (subtitle?.isNotEmpty == true) subtitle!].join(', '),
         value: note,
         selected: selected ? true : null,
         outline: grouped == null ? null : WidgetStatePropertyAll(grouped),

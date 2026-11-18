@@ -8,7 +8,6 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'layout.dart';
-import 'print.dart';
 import 'theme.dart';
 import 'internal/reach.dart' show RingInClip;
 import 'press.dart';
@@ -205,8 +204,7 @@ class ComicCaption extends StatelessWidget {
   }
 }
 
-/// A panel's fill. `plain` the card; `well` a step off it; `dots` and `currentUserDots` Ben-Day under the words, whose quiet words go
-/// to full ink by themselves; `lamp` the narrator's fill, whose inks all change to its letters.
+/// Backgrounds for [ComicPanel]. The tinted fills use full-strength text ink.
 enum ComicPanelFill {
   /// The panel ground.
   plain,
@@ -214,10 +212,10 @@ enum ComicPanelFill {
   /// A recessed tonal ground.
   inset,
 
-  /// Halftone dots on the secondary tint.
+  /// The secondary print tint.
   dots,
 
-  /// Halftone dots on the viewer's tint.
+  /// The viewer’s print tint.
   currentUserDots,
 
   /// The warm narration fill.
@@ -452,18 +450,8 @@ class ComicPanel extends StatelessWidget {
           );
     if (compact) inner = ComicCompactScope(on: true, child: inner);
     inner = switch (ground) {
-      ComicPanelFill.dots => ComicBenDay(
-        color: c.dotTint,
-        pitch: 9,
-        radius: 2.2,
-        child: ComicDotsScope(child: inner),
-      ),
-      ComicPanelFill.currentUserDots => ComicBenDay(
-        color: c.currentUserDot,
-        pitch: 10,
-        radius: c.dark ? 2.2 : 1.9,
-        child: ComicDotsScope(child: inner),
-      ),
+      ComicPanelFill.dots ||
+      ComicPanelFill.currentUserDots => ComicDotsScope(child: inner),
       ComicPanelFill.lamp => ComicLetteringScope(c.onCaption, child: inner),
       _ => inner,
     };
@@ -471,6 +459,8 @@ class ComicPanel extends StatelessWidget {
         look.fill ??
         switch (ground) {
           ComicPanelFill.inset => c.inset,
+          ComicPanelFill.dots => c.shadeTint,
+          ComicPanelFill.currentUserDots => c.currentUserTint,
           ComicPanelFill.lamp => c.caption,
           _ => c.card,
         };

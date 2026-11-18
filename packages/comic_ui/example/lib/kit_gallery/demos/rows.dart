@@ -25,8 +25,8 @@ Widget kitRowsDemo(Brightness brightness) => kitScreen(
 Widget kitSpecimenSwitchRow() => kitState(
   true,
   (context, value, change) => ComicSwitchRow(
-    label: 'A note each week',
-    note: 'Monday morning',
+    label: kitSay(context, 'A note each week'),
+    note: kitSay(context, 'Monday morning'),
     value: value,
     onChanged: change,
     isFirst: true,

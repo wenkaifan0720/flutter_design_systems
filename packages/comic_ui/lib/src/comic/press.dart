@@ -1,8 +1,8 @@
 // The one press every control in Comic stands on: the design kit's pressable (focus, Enter and Space, hover, one
-// semantics node, the states) with Comic's face on it, in print (laws 1 and 4): the pointer lays a light Ben-Day
+// semantics node, the states) with Comic's face on it, in print (laws 1 and 4): the pointer lays a plain ink
 // shade on the part's own outline, a press swells it and sinks the face (onto its hard print, for a part that stands
 // on one), a disabled face is screened back toward its paper, and a ring only the keyboard sees. Each moves on Comic's
-// motion tokens; nothing is see-through.
+// motion tokens.
 import 'package:flutter/foundation.dart';
 
 import 'dart:math' as math;
@@ -15,7 +15,6 @@ import 'package:ui_core/ui_core.dart';
 
 import 'internal/geometry.dart';
 import 'internal/reach.dart';
-import 'print.dart' show ComicScreenGrid;
 import 'styled.dart';
 import 'theme.dart';
 
@@ -40,9 +39,9 @@ extension ComicPressStates on Set<WidgetState> {
   bool get error => contains(WidgetState.error);
 }
 
-/// Comic's tap floors, declared to the design kit's [DesignTapTargets]: 44 by 44 for a pointer, 48 by 48 for a finger
-/// (Android's, as Material's padded tap target). [ComicTheme] declares them round an app with no floors of its own; a
-/// [DesignTapTargetScope] above it declares others. Density never moves them.
+/// Minimum hit areas for Comic controls, in logical pixels.
+/// [ComicTheme] uses 44 for a pointer and 48 for touch. An enclosing
+/// [DesignTapTargetScope] can supply different sizes.
 abstract final class ComicTapTarget {
   /// Every control's least target for a pointer.
   static const double target = 44;
@@ -196,7 +195,7 @@ class ComicStateDecoration extends StatelessWidget {
       lerp: Decoration.lerp,
       child: inner,
       builder: (context, decoration, child) {
-        // Under a disabled face's screen an ink fill leaves the face: the screen prints it under the face as dots.
+        // Under a disabled face's screen an ink fill leaves the face: its solid tint is painted beneath the words.
         final ground = _ScreenScope.groundOf(context);
         final fill = ground == null || position != DecorationPosition.background
             ? null
@@ -250,20 +249,15 @@ class ComicStateDecoration extends StatelessWidget {
   }
 }
 
-/// Makes a face a control. Use it for a tile of your own: the parts in this library already stand on it.
+/// An accessible press target for a custom control.
 ///
-/// It stands on the design kit's `DesignPressable`: one semantics node named [label], the face's own words kept out of
-/// it, or merged in when [label] is null; Enter and Space press it; the face's [builder] gets the press's
-/// `Set<WidgetState>`. The pointer lays a light Ben-Day shade in its outline; a finger swells the shade and sinks the
-/// face a pixel, or onto its print with [plate]; the keyboard rings it ([ComicThemeData.focus]); each on
-/// [ComicMotion.press] and a cut under Reduce Motion. The cursor turns to [SystemMouseCursors.click] over a part that
-/// presses and stays [SystemMouseCursors.basic] over one that doesn't. [WidgetState.hovered] reaches [builder],
-/// [outline] and [overlay], so a style can give hover a look of its own. Null [onPressed] is disabled, and the face
-/// says so, screened back toward its paper: pass [busy] instead to take no press while keeping focus and face.
+/// [builder] receives the current widget states. Hover and press animate a
+/// plain tint across the face. [plate] gives the face a hard ink shadow and
+/// lets it sink when pressed. Keyboard focus draws an outline around the face.
+/// Enter and Space activate it. A null [onPressed] disables it.
 ///
-/// It stands on the design kit's `DesignTapTarget`, laid out at least its floor ([ComicTapTarget.targetOf]: 44, or 48
-/// by 48 where a finger reaches it, as Material's padded tap target), the face centred: the box it takes in a layout,
-/// the area a tap reaches and the box a screen reader outlines are one. A tap in the margin reaches the face's centre.
+/// Supply [label] to name the control or omit it to merge the child's semantics.
+/// [busy] temporarily suspends activation while retaining focus.
 ///
 /// ```dart
 /// ComicPressable(onPressed: open, label: 'Issue 12', child: tile)
@@ -369,17 +363,16 @@ class ComicPressable extends StatelessWidget {
   /// False when the face draws the ring itself.
   final bool ring;
 
-  /// A Ben-Day shade over the face under the pointer and the press.
+  /// Whether hover and press tint the face.
   final bool wash;
 
-  /// The shade's dots on a face that isn't paper: the letters' colour.
+  /// The tint on a face that isn't paper: the letters' colour.
   final Color? washColor;
 
   /// The face lands a pixel under the finger.
   final bool sink;
 
-  /// The face stands on a hard print of its outline in the line's ink, [comicPressPlate] down and to the end, and
-  /// sinks onto it under the press (law 4): the act, a button, an icon button. A disabled face has none.
+  /// Whether the face rises on an ink shadow and sinks when pressed.
   final bool plate;
 
   /// A face under 44: its target is 44 round it on every platform (48 where a finger reaches it, as every press).
@@ -671,11 +664,8 @@ OutlinedBorder _defaultOutline(double radius, ComicThemeData t) => radius > 0
     ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius))
     : t.shapes.small;
 
-/// The look's interaction marks on one part of a face: a Ben-Day shade in the ink (light under the pointer, swollen
-/// under the press; or [overlay] as given) and the keyboard's ring, each in [shape]. The shade fills the part's exact
-/// outline with whole-pixel dots, opaque, so the face is printed darker, never washed; the ring stands
-/// [ComicFocusRing.gap] outside it, concentric (a rounded corner grows by the gap, a square one stays square, a circle
-/// stays a circle).
+/// A plain ink tint under the pointer or a press, and a keyboard ring following
+/// the control's outline. The tint is uniform across the lettering.
 ///
 /// [ComicPressable] draws it over its whole face. A face whose pressable part is smaller than its target (a tab bar's
 /// indicator above its word) turns the press's own marks off and puts this around that part.
@@ -720,7 +710,7 @@ class ComicHighlight extends StatelessWidget {
   /// Shades under the pointer and the press.
   final bool wash;
 
-  /// The shade's dots on a part that isn't paper: the letters' colour. Null: the ink.
+  /// The tint on a part that isn't paper: the letters' colour. Null: the ink.
   final Color? washColor;
 
   /// A styled part's wash for these states, drawn as given.
@@ -734,7 +724,7 @@ class ComicHighlight extends StatelessWidget {
     final t = ComicTheme.of(context);
     final ringed = ring && states.focused;
     final over = overlay;
-    // A styled overlay draws as given; the look's own shade is dots: light under the pointer, swollen under the press.
+    // A styled overlay keeps its own strength. The default is a light, even tint.
     final washTo = over != null
         ? 1.0
         : !wash
@@ -744,7 +734,7 @@ class ComicHighlight extends StatelessWidget {
         : states.hovered
         ? _hoverShade
         : 0.0;
-    final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
+    final tint = over ?? (washColor ?? t.colors.text).withValues(alpha: .10);
     final motion = ComicMotion.of(context);
     // The wash and the ring each move from where they are: the ring inks in round the face, and out.
     return TweenAnimationBuilder<double>(
@@ -761,9 +751,7 @@ class ComicHighlight extends StatelessWidget {
           foregroundPainter: w <= 0 && r <= 0
               ? null
               : _PressPainter(
-                  w <= 0 || over == null
-                      ? null
-                      : over.withValues(alpha: over.a * w),
+                  w <= 0 ? null : tint.withValues(alpha: tint.a * w),
                   // Drawn, not faded: the ring's line thickens from nothing to its width.
                   r <= 0
                       ? null
@@ -775,10 +763,6 @@ class ComicHighlight extends StatelessWidget {
                   shape.copyWith(side: BorderSide.none),
                   Directionality.maybeOf(context),
                   r <= 0 ? null : ringGap,
-                  w <= 0 || over != null
-                      ? null
-                      : ComicScreenGrid(_shadePitch, _shadeRadius * w, dpr),
-                  washColor ?? t.colors.text,
                   printed ? comicPressPlate : 0,
                   !RingInClip.of(context),
                 ),
@@ -824,9 +808,7 @@ class ComicHighlight extends StatelessWidget {
   }
 }
 
-/// The press's Ben-Day shade: a dot every [_shadePitch], [_shadeRadius] round under the press (about a quarter of the
-/// face in ink), [_hoverShade] of that under the pointer (about a tenth).
-const double _shadePitch = 5, _shadeRadius = 1.0, _hoverShade = .5;
+const double _hoverShade = .65;
 
 class _PressPainter extends CustomPainter {
   _PressPainter(
@@ -835,8 +817,6 @@ class _PressPainter extends CustomPainter {
     this.drawn,
     this.direction, [
     this.gap,
-    this.shade,
-    this.shadeInk = const Color(0xFF000000),
     this.print = 0,
     this.emanata = true,
   ]);
@@ -846,10 +826,6 @@ class _PressPainter extends CustomPainter {
 
   /// Whether the ring's corners carry emanata: not inside a container that clips at its edge ([RingInClip]).
   final bool emanata;
-
-  /// The Ben-Day shade's screen, its dots in [shadeInk]; null: none.
-  final ComicScreenGrid? shade;
-  final Color shadeInk;
 
   /// The part's outline: the wash fills it, the ring stands concentric outside it.
   final OutlinedBorder drawn;
@@ -869,13 +845,6 @@ class _PressPainter extends CustomPainter {
         drawn.getOuterPath(r, textDirection: direction),
         fillPaint(wash!),
       );
-    }
-    final shade = this.shade;
-    if (shade != null && shade.radius > 0) {
-      canvas.save();
-      canvas.clipPath(drawn.getOuterPath(r, textDirection: direction));
-      shade.paint(canvas, r, shadeInk);
-      canvas.restore();
     }
     final ring = this.ring;
     if (ring != null) {
@@ -967,9 +936,6 @@ class _PressPainter extends CustomPainter {
       o.print != print ||
       o.emanata != emanata ||
       o.wash != wash ||
-      o.shade?.radius != shade?.radius ||
-      o.shade?.pitch != shade?.pitch ||
-      o.shadeInk != shadeInk ||
       o.ring?.color != ring?.color ||
       o.ring?.width != ring?.width ||
       o.ring?.gap != ring?.gap ||
@@ -984,17 +950,14 @@ const double comicEmanataLength = 1.5,
     comicEmanataGap = 1.5,
     comicEmanataSpread = .5;
 
-/// How far a press's print stands from its face, down and to the end (law 4): under a floating layer's
-/// ([comicRaisedPlate], 4), as a control is a smaller thing on the page.
+/// The distance between a raised control and its hard shadow, in logical pixels.
 const double comicPressPlate = 3;
 
 /// How far a disabled face is screened back toward its paper: half way, opaque.
 const double comicDisabledScreen = .5;
 
-/// A raised face on its print (law 4): the face's outline in the line's ink, [comicPressPlate] down and to the end, and
-/// the face sinking onto it while [down] with the look's pop. The print stays where it is; only the face moves.
-/// [ComicPressable.plate] stands a whole press on one; a part whose face is smaller than its target (an icon button)
-/// puts this round the face itself. Kept out of the barrel.
+/// A raised face with a fixed ink shadow. When [down] is true, the face moves
+/// toward the shadow. [shape] defines both outlines.
 ///
 /// ```dart
 /// ComicPlated(down: states.pressed, shape: theme.shapes.small, child: face)
@@ -1086,25 +1049,14 @@ class _PrintPainter extends CustomPainter {
       old.direction != direction;
 }
 
-/// A disabled face's ink fill, printed as a Ben-Day screen of that ink on the paper: a dot every [comicDisabledDotPitch]
-/// along a row, rows half that apart and staggered (print's 45-degree screen), each [comicDisabledDotRadius] round:
-/// about a fifth of the fill in ink, the same on every part at every size. Coarser than the press's shade (a dot every
-/// 5 in the letters' ink), so a disabled fill never reads as one under the pointer, and never flat, as a chosen one is.
+/// Legacy dot dimensions for artwork matching the 0.2.0 print screen.
 const double comicDisabledDotPitch = 7, comicDisabledDotRadius = 1.25;
 
-/// The contrast a disabled face's words keep against its dots, and against the paper between them, by day and by night.
-const double comicDisabledWordsContrast = 3;
+/// Minimum word contrast on a disabled control's fill.
+const double comicDisabledWordsContrast = 4.5;
 
-/// A face screened back toward its paper, opaque (law 1: nothing see-through): what a disabled part wears, or a
-/// person standing out of a set, in place of a see-through face. The change moves on the state motion. Kept out of the
-/// barrel.
-///
-/// With [dots] (a disabled part), a face on an ink fill (a filled button, a ticked box, a chosen chip: a fill a
-/// [ComicStateDecoration] draws, away from the paper) is printed as the look prints a tint: its fill becomes a
-/// Ben-Day screen of that same ink on the paper ([comicDisabledDotPitch]), and its words, icons and lines stay solid,
-/// all in one screened ink, the page's own ink screened back toward the paper only as far as keeps them
-/// [comicDisabledWordsContrast] against the dots, by day and by night. A face with no ink fill (an outlined button, a
-/// field) is screened back toward its paper by [amount], each colour its own.
+/// Softens an unavailable control's ink while keeping its words distinct on a
+/// flat, lightly inked ground.
 ///
 /// ```dart
 /// ComicScreened(on: !enabled, child: field)
@@ -1115,7 +1067,7 @@ class ComicScreened extends StatelessWidget {
     super.key,
     required this.on,
     this.amount = comicDisabledScreen,
-    this.dots = true,
+    this.muteFill = true,
     required this.child,
   });
 
@@ -1125,9 +1077,9 @@ class ComicScreened extends StatelessWidget {
   /// How far toward the paper, from 0 (the face as it is) to 1 (paper).
   final double amount;
 
-  /// An ink fill becomes a Ben-Day screen of its ink, its words one screened ink: a disabled part. False screens
-  /// every colour back by [amount] (a person standing out of a set).
-  final bool dots;
+  /// Gives disabled controls a muted fill and separate readable ink. An avatar
+  /// outside a group instead softens its portrait as a whole.
+  final bool muteFill;
 
   /// The face.
   final Widget child;
@@ -1135,7 +1087,6 @@ class ComicScreened extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
-    final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
     return TweenAnimationBuilder<double>(
       tween: Tween(end: on ? amount : 0),
       duration: ComicMotion.of(context).state,
@@ -1147,12 +1098,11 @@ class ComicScreened extends StatelessWidget {
           target: amount,
           ground: t.colors.card,
           ink: t.colors.text,
-          dots: dots,
-          dpr: dpr,
+          muteFill: muteFill,
           child: face,
         );
         return _ScreenScope(
-          ground: dots && a > 0 ? t.colors.card : null,
+          ground: muteFill && a > 0 ? t.colors.card : null,
           child: screen,
         );
       },
@@ -1167,16 +1117,16 @@ class ComicScreened extends StatelessWidget {
       ..add(DoubleProperty('amount', amount, defaultValue: comicDisabledScreen))
       ..add(
         FlagProperty(
-          'dots',
-          value: dots,
-          ifFalse: 'dots: false',
+          'muteFill',
+          value: muteFill,
+          ifFalse: 'muteFill: false',
           defaultValue: true,
         ),
       );
   }
 }
 
-// Tells the face's decorations under a screen that prints ink fills as dots the paper they print on; null: none does.
+// Tells the face's decorations under a screen that prints ink fills separately which paper they stand on; null: none does.
 class _ScreenScope extends InheritedWidget {
   const _ScreenScope({required this.ground, required super.child});
   final Color? ground;
@@ -1296,28 +1246,23 @@ class _RenderFillMark extends RenderProxyBox {
   }
 }
 
-// A face screened back by [amount] (toward [target]), opaque. A face with no ink fill: each colour moves that far
-// toward [ground], and what is transparent stays so; at 0 it paints its child as it is, with no layer. With [dots], a
-// face whose ink fills its decorations handed up ([_FillMark]): those fills printed under it as dots of their ink on
-// [ground], and the rest of the face moving toward one screened ink, [ink] screened back as far as keeps it
-// [comicDisabledWordsContrast] against them.
+// A disabled face keeps its muted fills separate from its lettering.
 class _Screen extends SingleChildRenderObjectWidget {
   const _Screen({
     required this.amount,
     required this.target,
     required this.ground,
     required this.ink,
-    required this.dots,
-    required this.dpr,
+    required this.muteFill,
     super.child,
   });
-  final double amount, target, dpr;
+  final double amount, target;
   final Color ground, ink;
-  final bool dots;
+  final bool muteFill;
 
   @override
   RenderObject createRenderObject(BuildContext context) =>
-      _RenderScreen(amount, target, ground, ink, dots, dpr);
+      _RenderScreen(amount, target, ground, ink, muteFill);
 
   @override
   void updateRenderObject(BuildContext context, _RenderScreen renderObject) =>
@@ -1326,8 +1271,7 @@ class _Screen extends SingleChildRenderObjectWidget {
         ..target = target
         ..ground = ground
         ..ink = ink
-        ..dots = dots
-        ..dpr = dpr;
+        ..muteFill = muteFill;
 }
 
 class _RenderScreen extends RenderProxyBox {
@@ -1336,17 +1280,16 @@ class _RenderScreen extends RenderProxyBox {
     this._target,
     this._ground,
     this._ink,
-    this._dots,
-    this._dpr,
+    this._muteFill,
   );
-  double _amount, _target, _dpr;
+  double _amount, _target;
   Color _ground, _ink;
-  bool _dots;
+  bool _muteFill;
 
   // The ink fills the face's decorations handed up as it painted, in this box's coordinates.
   final List<(Color, Path)> _fills = [];
 
-  // The dotted fills' layer, kept from frame to frame as the screen's is and held here: a context that never takes it
+  // The muted fills' layer, kept from frame to frame as the screen's is and held here: a context that never takes it
   // into its tree (a recording one, as a test paints with) leaves nothing undisposed.
   final LayerHandle<ContainerLayer> _under = LayerHandle<ContainerLayer>();
 
@@ -1382,31 +1325,23 @@ class _RenderScreen extends RenderProxyBox {
     markNeedsPaint();
   }
 
-  set dots(bool value) {
-    if (value == _dots) return;
-    _dots = value;
-    markNeedsPaint();
-  }
-
-  set dpr(double value) {
-    if (value == _dpr) return;
-    _dpr = value;
+  set muteFill(bool value) {
+    if (value == _muteFill) return;
+    _muteFill = value;
     markNeedsPaint();
   }
 
   @override
   bool get alwaysNeedsCompositing => child != null && _amount > 0;
 
-  /// The words' one ink on a dotted face: [_ink] screened back toward the paper as far as [_target] goes, or less,
-  /// as far as keeps [comicDisabledWordsContrast] against the paper and against each fill's dots, as the eye mixes
-  /// them (in light, not in sRGB).
-  Color _wordsOn(ComicScreenGrid grid) {
-    final cover = math.pi * grid.radius * grid.radius / (grid.pitch * grid.row);
-    final paper = _ground.computeLuminance();
+  // The same solid fill is used here and in paint, so every label meets its
+  // contrast ratio against the ground the reader actually sees.
+  Color _muted(Color fill) => Color.lerp(fill, _ground, .85)!;
+
+  Color _wordsOn() {
     final grounds = [
-      paper,
-      for (final (color, _) in _fills)
-        cover * color.computeLuminance() + (1 - cover) * paper,
+      _ground.computeLuminance(),
+      for (final (fill, _) in _fills) _muted(fill).computeLuminance(),
     ];
     for (var a = _target; a > 0; a -= .01) {
       final words = Color.lerp(_ink, _ground, a)!;
@@ -1431,9 +1366,9 @@ class _RenderScreen extends RenderProxyBox {
       context.paintChild(child, offset);
       return;
     }
-    // The dotted fills go under the face: a layer laid before it, filled once the face has handed them up.
+    // The muted fills go under the face: a layer laid before it, filled once the face has handed them up.
     final ContainerLayer? under;
-    if (_dots) {
+    if (_muteFill) {
       under = _under.layer ??= ContainerLayer();
       under.removeAllChildren();
       context.addLayer(under);
@@ -1453,7 +1388,8 @@ class _RenderScreen extends RenderProxyBox {
       offset,
     );
     if (under == null || _fills.isEmpty) {
-      final a = _amount, k = 1 - _amount, g = _ground;
+      final a = _muteFill ? _amount * .24 : _amount;
+      final k = 1 - a, g = _ground;
       screen.colorFilter = ColorFilter.matrix([
         k, 0, 0, 0, a * g.r * 255, //
         0, k, 0, 0, a * g.g * 255,
@@ -1462,15 +1398,10 @@ class _RenderScreen extends RenderProxyBox {
       ]);
       return;
     }
-    // How far along the change of state: the fill goes from flat ink to its dots on the paper, the face from its own
+    // How far along the change of state: the fill goes from ink to its flat tint, the face from its own
     // colours to the one screened ink.
     final s = _target <= 0 ? 1.0 : (_amount / _target).clamp(0.0, 1.0);
-    final grid = ComicScreenGrid(
-      comicDisabledDotPitch,
-      comicDisabledDotRadius,
-      _dpr,
-    );
-    final w = _wordsOn(grid), k = 1 - s;
+    final w = _wordsOn(), k = 1 - s;
     screen.colorFilter = ColorFilter.matrix([
       k, 0, 0, 0, s * w.r * 255, //
       0, k, 0, 0, s * w.g * 255,
@@ -1484,11 +1415,7 @@ class _RenderScreen extends RenderProxyBox {
       final drawn = outline.shift(offset);
       final box = drawn.getBounds();
       bounds = bounds.isEmpty ? box : bounds.expandToInclude(box);
-      canvas.drawPath(drawn, fillPaint(Color.lerp(color, _ground, s)!));
-      canvas.save();
-      canvas.clipPath(drawn);
-      grid.paint(canvas, box, color);
-      canvas.restore();
+      canvas.drawPath(drawn, fillPaint(Color.lerp(color, _muted(color), s)!));
     }
     under.append(PictureLayer(bounds)..picture = recorder.endRecording());
   }

@@ -226,7 +226,7 @@ class _ComicTabBarState extends State<ComicTabBar>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final tab = _chosenTab;
       if (!mounted || tab == null || !tab.mounted) return;
-      final row = Scrollable.maybeOf(tab)?.position;
+      final row = Scrollable.maybeOf(tab, axis: Axis.horizontal)?.position;
       final box = tab.findRenderObject();
       if (row == null || box == null || !box.attached) return;
       for (final policy in const [
@@ -355,7 +355,8 @@ class _ComicTabBarState extends State<ComicTabBar>
                   DesignTab(label: tab, enabled: enabled),
               ],
               tabBuilder: (context, tab, at) {
-                if (at.index == _chosen) _chosenTab = context;
+                // A fixed strip has no viewport of its own to reveal a tab in.
+                if (at.index == _chosen) _chosenTab = scrolls ? context : null;
                 // A disabled face is screened back toward its paper, as every Comic press is; the thumb stays.
                 return ComicScreened(
                   on: at.states.contains(WidgetState.disabled),

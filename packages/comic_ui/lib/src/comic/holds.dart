@@ -11,6 +11,7 @@ import 'glyphs.dart';
 
 import 'frames.dart';
 import 'internal/row_frame.dart';
+import 'internal/lettering.dart' show comicDisplayFor;
 import 'layout.dart';
 import 'styled.dart';
 import 'component_themes.dart';
@@ -51,7 +52,10 @@ class ComicCard extends StatelessWidget {
       children: [
         Semantics(
           header: true,
-          child: Text(title, style: ComicTheme.of(context).type.panel),
+          child: Text(
+            title,
+            style: comicDisplayFor(title, ComicTheme.of(context).type.panel),
+          ),
         ),
         ...children,
       ],

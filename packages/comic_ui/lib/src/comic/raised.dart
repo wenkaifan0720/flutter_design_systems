@@ -16,7 +16,6 @@ import 'glyphs.dart';
 import 'balloons.dart';
 import 'controls.dart';
 import 'internal/menu_open.dart';
-import 'print.dart' show ComicScreenGrid;
 import 'frames.dart';
 import 'localizations.dart';
 import 'press.dart';
@@ -28,6 +27,7 @@ import 'layout.dart';
 import 'tell.dart';
 import 'tones.dart';
 import 'internal/cap_label.dart';
+import 'internal/lettering.dart' show comicDisplayFor;
 import 'internal/track.dart';
 import 'internal/style_guard.dart';
 import 'knobs.dart' show ComicSpace;
@@ -56,8 +56,7 @@ class _Carried {
   );
 }
 
-/// Carries [context]'s theme, direction and words over to a surface a route raises on [navigator]. Returns what wraps the
-/// surface. Kept out of the barrel.
+/// Carries the current theme, text direction and localizations into a route on [navigator].
 Widget Function(BuildContext, Widget) comicCarryTo(
   BuildContext context,
   NavigatorState navigator,
@@ -248,9 +247,9 @@ Future<T?> showComicNavigationDrawer<T>(
   closeLabel: closeLabel,
 );
 
-/// Raises a dialog on ui_core's [DesignDialogRoute]: it pops in on a spring over a screen of dots. Escape and back
-/// close it, Tab stays inside it, a screen reader hears a dialog, and focus returns to what opened it.
-/// [barrierDismissible] controls only presses on the screen.
+/// Shows a dialog and returns the result passed to [Navigator.pop].
+/// Escape and back dismiss the dialog. Focus returns to the control that opened it.
+/// Set [barrierDismissible] to control whether tapping the backdrop dismisses it.
 ///
 /// ```dart
 /// showComicDialog<void>(context, builder: (_) => ComicDialog(title: 'Keep this issue?'))
@@ -403,7 +402,10 @@ class _ModalPanel extends StatelessWidget {
                           namesRoute: true,
                           header: true,
                           child: CapLabel(
-                            child: Text(title!, style: t.type.panel),
+                            child: Text(
+                              title!,
+                              style: comicDisplayFor(title!, t.type.panel),
+                            ),
                           ),
                         ),
                       ...children,
@@ -479,9 +481,8 @@ class _SheetScope extends InheritedWidget {
       sheet.scrollController != old.sheet.scrollController;
 }
 
-/// A dialog route of Comic's on ui_core's [DesignDialogRoute]: the page behind screened with dots of [screenInk] (law
-/// 1), the face popping in from .92 on an underdamped spring, its overshoot a short bounce in place, as Comic's dialogs
-/// always have. Never faded (law 6): under Reduce Motion it cuts. Kept out of the barrel.
+/// A dialog that springs into view over a plain [ComicScreenScrim].
+/// The dialog appears immediately when reduced motion is enabled.
 class ComicDialogRoute<T> extends DesignDialogRoute<T> {
   /// Creates a [ComicDialogRoute] whose face [builder] builds.
   ComicDialogRoute({
@@ -525,10 +526,8 @@ class _Pop extends StatelessWidget {
         );
 }
 
-/// A bottom sheet route of Comic's on ui_core's [DesignBottomSheetRoute]: the page behind screened with dots of
-/// [screenInk] (law 1), the panel at most 640 wide and centred, so a press beside it on a wide window lands on the
-/// screen and closes it. It travels on an underdamped spring, held at its edge. Never faded (law 6): under Reduce
-/// Motion it cuts. Kept out of the barrel.
+/// A sheet that slides up over a plain [ComicScreenScrim].
+/// The sheet is centred and at most 640 logical pixels wide.
 class ComicBottomSheetRoute<T> extends DesignBottomSheetRoute<T> {
   /// Creates a [ComicBottomSheetRoute] whose panel [builder] builds.
   ComicBottomSheetRoute({
@@ -677,7 +676,13 @@ class ComicBottomSheet extends StatelessWidget {
                                     header: true,
                                     namesRoute: true,
                                     child: CapLabel(
-                                      child: Text(title!, style: t.type.panel),
+                                      child: Text(
+                                        title!,
+                                        style: comicDisplayFor(
+                                          title!,
+                                          t.type.panel,
+                                        ),
+                                      ),
                                     ),
                                   ),
                           ),
@@ -795,13 +800,11 @@ class ComicMenuItem<T> {
   final bool selected;
 }
 
-/// An inked menu. The current option ([ComicMenuItem.selected]) is printed chosen, as every chosen thing in Comic is:
-/// the caption's flat yellow, its words in the caption's ink, and a check. Opened from the keys, [showComicMenu]'s menu
-/// opens with it (else the first item) active; opened by the pointer, with no item active until the pointer reaches
-/// one or a key lights it. The active item, the one Enter takes, wears the pointer's light Ben-Day shade (swollen
-/// under the press) and follows both the pointer and the keys, one item at a time, as a desktop menu's does: the arrows (wrapping at the ends), Home and End, and a typed letter
-/// (the next item it starts; letters typed in a run spell the start). Dots, never the chosen fill nor a line, so it
-/// can't read as a second choice or a divider. The focused choice stays visible inside a scrolling menu.
+/// A menu that marks the selected item with a yellow fill and check.
+///
+/// Arrow keys, Home, End and typing move the active row. Hovering a row
+/// gives it the same tint. Enter selects the active item. [showComicMenu]
+/// initially focuses the selected or first item when opened from the keyboard.
 ///
 /// ```dart
 /// ComicMenu<String>(items: const [ComicMenuItem('save', 'Save')], onSelected: save)
@@ -1739,13 +1742,28 @@ class ComicSnackBar extends StatelessWidget {
               Expanded(child: Text(message, style: t.type.body)),
             ],
           );
+    final surface = comicStyleOf([style, t.snackBarTheme], const {});
+    final rim = comicRim(t, surface, t.colors.nightLine, 3);
+    final inset = t.desk ? ComicSpace.wide : ComicSpace.gap;
+    final pad =
+        (surface.padding(Directionality.of(context)) ?? EdgeInsets.all(inset))
+            .resolve(Directionality.of(context));
+    final end = Directionality.of(context) == TextDirection.rtl
+        ? pad.left
+        : pad.right;
+    final shape = comicInsetShape(
+      surface.shape ?? t.shapes.medium,
+      rim.width + end,
+    );
+    final actionStyle = ComicStyle(shape: WidgetStatePropertyAll(shape));
     final actions = <Widget>[
       if (onAction != null && actionLabel != null)
-        ComicButton(actionLabel!, onPressed: onAction),
+        ComicButton(actionLabel!, style: actionStyle, onPressed: onAction),
       if (onDismiss != null)
         // As tall as the action beside it: one row, one height.
         ComicIconButton(
           ComicGlyphs.x,
+          style: actionStyle,
           // Its size takes the density again: the field's height before it.
           size: ComicTrack.fieldHeight(context) - t.density.heightDelta,
           label: dismissLabel ?? ComicLocalizations.of(context).dismiss,
@@ -1760,6 +1778,7 @@ class ComicSnackBar extends StatelessWidget {
       child: _RaisedFrame(
         style: style,
         theme: t.snackBarTheme,
+        padding: EdgeInsets.all(inset),
         shape: t.shapes.medium,
         plate: true,
         child: inline
@@ -1778,7 +1797,12 @@ class ComicSnackBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (title != null) ...[
-                    CapLabel(child: Text(title!, style: t.type.panel)),
+                    CapLabel(
+                      child: Text(
+                        title!,
+                        style: comicDisplayFor(title!, t.type.panel),
+                      ),
+                    ),
                     const SizedBox(height: ComicSpace.close),
                   ],
                   words,
@@ -1904,7 +1928,7 @@ class _OverlayLifetimeState extends State<_OverlayLifetime> {
   Widget build(BuildContext context) => widget.child;
 }
 
-/// The design kit's toaster on a navigator's overlay: empty, it takes no room and no press.
+/// Shows toasts in the navigator overlay.
 class _ToastHost {
   _ToastHost(OverlayState overlay, ComicLocalizations words) {
     late final OverlayEntry entry;
@@ -2151,10 +2175,7 @@ ComicRaised showComicToast(
   return handle;
 }
 
-/// How far a floating surface's plate stands off it (11-12): the floating action button's print, the surface's own
-/// outline in its rim's ink, this far down and to the end, under it. Comic draws no shadow; the plate is its mark for
-/// "raised", so a surface reads on top wherever its edge falls (on a panel's rule, a field's rim). Drawn outside the
-/// surface's box: a list keeps its field's width.
+/// The offset of the solid ink shadow under a raised surface, in logical pixels.
 const double comicRaisedPlate = 4;
 
 class _RaisedFrame extends StatelessWidget {
@@ -2258,9 +2279,7 @@ class _PlatePainter extends CustomPainter {
       old.outline != outline || old.ink != ink || old.direction != direction;
 }
 
-/// The menu's raised face for a surface the design kit places (a split button's menu, a menubar's, a popover, a
-/// palette): the menu theme's fill and rim in the medium corner, [padding] inside. Kept out of the barrel: the parts
-/// that need it stand on it.
+/// A menu or popover frame with a themed fill, rim and inner [padding].
 class ComicRaisedFrame extends StatelessWidget {
   /// Creates a [ComicRaisedFrame].
   const ComicRaisedFrame({
@@ -2344,11 +2363,8 @@ OutlinedBorder comicMenuRowShape(ComicThemeData t) {
   );
 }
 
-/// One row of a raised menu whose list the design kit drives. Chosen ([checked]) is printed as Comic prints every
-/// chosen thing: the caption's flat yellow, its words in the caption's ink, and a check. The active row, while the
-/// keyboard or the pointer is on it (the one Enter takes), wears the pointer's light Ben-Day shade, swollen under the
-/// press: dots, never the chosen fill nor a line, so it can't read as a second choice or a divider. The quiet ink when
-/// disabled. At least the touch target tall. Kept out of the barrel.
+/// A menu row with a solid tint for hover and a check beside a selected label.
+/// The row grows to fit large text and the configured touch target.
 class ComicMenuRowFace extends StatelessWidget {
   /// Creates a [ComicMenuRowFace].
   const ComicMenuRowFace({
@@ -2376,7 +2392,7 @@ class ComicMenuRowFace extends StatelessWidget {
   /// sheet, beside buttons, takes their control step instead.
   final OutlinedBorder? shape;
 
-  /// The row's states from the design kit: focused (the keyboard), hovered, pressed, disabled.
+  /// The active hover, focus, press and disabled states for this row.
   final Set<WidgetState> states;
 
   /// The row's words.
@@ -2524,14 +2540,12 @@ class ComicMenuRowFace extends StatelessWidget {
   }
 }
 
-/// A field that offers matching choices as a person types: the menu's own face under the field, the field's width.
-/// Down or Up opens the list on the option taken (else the first), showing every option until the words are edited,
-/// then the matches. Its active row wears the pointer's light Ben-Day shade and follows both the pointer and the Up and
-/// Down keys, which wrap at the ends; Enter or a press takes it and writes its words into the field, which keeps the
-/// focus, and while the field holds them the list shows that option chosen (the caption's flat yellow and a check).
-/// Options match on [displayStringForOption]'s words, any part, any case. Given a [search] (a server's, say), it asks
-/// that instead: the list says it is looking while the answer is on its way, and that the search failed, with a Try
-/// again the keys reach with Down, if it throws.
+/// An editable field that shows matching [options] in a menu.
+///
+/// Use [displayStringForOption] to provide labels or [search] to request
+/// suggestions asynchronously. A failed request can be retried from the menu.
+/// Arrow keys and the pointer move the active row. Enter or a tap selects it
+/// and returns focus to the field.
 ///
 /// ```dart
 /// ComicCombobox<String>(label: 'City', options: const ['Lisbon', 'London', 'Lyon'], onSelected: pick)
@@ -2795,10 +2809,7 @@ Widget comicSearchFailed(
   );
 }
 
-/// The page behind a modal layer, screened (law 1: nothing see-through): Ben-Day dots of [ink], opaque, swelling over the
-/// whole screen with [animation] and shrinking away with it (law 6: drawn, not faded). The page shows between the dots.
-/// Comic's routes lay it under their barrier; a route of your own can too. Give it the theme's `colors.scrim`: black
-/// dots by day, and by night the night's cream line, a reverse screen that knocks the black ground back.
+/// A uniform veil over the page behind a modal. The route drives its opacity.
 ///
 /// ```dart
 /// ComicScreenScrim(animation: animation, ink: ComicTheme.of(context).colors.scrim)
@@ -2811,33 +2822,17 @@ class ComicScreenScrim extends StatelessWidget {
     required this.ink,
   });
 
-  /// The layer's own coming and going: 0 is no dots, 1 the whole screen.
+  /// The route progress, from a clear page to the full veil.
   final Animation<double> animation;
 
-  /// The dots' ink; its alpha is dropped, as print has none.
+  /// The veil colour at full strength.
   final Color ink;
 
   @override
-  Widget build(BuildContext context) {
-    final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
-    return RepaintBoundary(
-      child: AnimatedBuilder(
-        animation: animation,
-        builder: (context, _) => SizedBox.expand(
-          child: CustomPaint(
-            painter: _ScrimPainter(
-              ink.withValues(alpha: 1),
-              ComicScreenGrid(
-                comicScrimPitch,
-                comicScrimRadius * animation.value.clamp(0, 1),
-                dpr,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => FadeTransition(
+    opacity: animation,
+    child: ColoredBox(color: ink, child: const SizedBox.expand()),
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -2848,14 +2843,14 @@ class ComicScreenScrim extends StatelessWidget {
   }
 }
 
-/// A modal route whose page behind is screened, not dimmed (law 1): a [ComicScreenScrim] of [screenInk] under its
+/// A modal route which lays a [ComicScreenScrim] of [screenInk] under its
 /// barrier, which still takes the presses. Give the route no barrier colour of its own.
 ///
 /// ```dart
 /// class IssueRoute<T> extends RawDialogRoute<T> with ComicScreenedRoute<T> { IssueRoute({required super.pageBuilder}) : super(barrierColor: null, barrierLabel: 'Close'); @override Color? get screenInk => const Color(0x99000000); }
 /// ```
 mixin ComicScreenedRoute<T> on ModalRoute<T> {
-  /// The dots' ink; null leaves the page as it is.
+  /// The veil colour; null leaves the page as it is.
   Color? get screenInk;
 
   @override
@@ -2875,23 +2870,5 @@ mixin ComicScreenedRoute<T> on ModalRoute<T> {
   }
 }
 
-/// The modal screen's dots: one every [comicScrimPitch], [comicScrimRadius] round at full strength, about a quarter of
-/// the page in ink: the page still reads behind, screened back.
+/// Legacy grid dimensions for artwork matching the 0.2.0 modal screen.
 const double comicScrimPitch = 6, comicScrimRadius = 1.25;
-
-class _ScrimPainter extends CustomPainter {
-  const _ScrimPainter(this.ink, this.grid);
-  final Color ink;
-  final ComicScreenGrid grid;
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (grid.radius <= 0) return;
-    grid.paint(canvas, Offset.zero & size, ink);
-  }
-
-  @override
-  bool shouldRepaint(_ScrimPainter old) =>
-      old.ink != ink ||
-      old.grid.radius != grid.radius ||
-      old.grid.pitch != grid.pitch;
-}

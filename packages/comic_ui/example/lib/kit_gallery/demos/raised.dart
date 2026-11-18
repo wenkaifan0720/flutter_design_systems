@@ -26,8 +26,9 @@ Widget kitRaisedDemo(Brightness brightness) => kitScreen(
 Widget kitTryRaised() => Builder(
   builder: (context) => Builder(
     builder: (context) => Wrap(
-      spacing: 8,
-      runSpacing: 8,
+      // Keep the focus marks clear when the launch buttons wrap.
+      spacing: ComicSpace.gap,
+      runSpacing: ComicSpace.gap,
       children: [
         ComicButton(
           kitSay(context, 'Toast'),
@@ -248,10 +249,10 @@ const _cities = [
 
 Widget kitSpecimenAutocomplete() => Builder(
   builder: (context) => ComicCombobox<String>(
-    label: 'City',
-    hint: 'Start typing a city',
-    helper: 'A city not on the list says so.',
-    options: _cities,
+    label: kitSay(context, 'City'),
+    hint: kitSay(context, 'Start typing a city'),
+    helper: kitSay(context, 'A city not on the list says so.'),
+    options: [for (final city in _cities) kitSay(context, city)],
     onSelected: (city) => kitFeedback(context, '$city chosen.'),
   ),
 );

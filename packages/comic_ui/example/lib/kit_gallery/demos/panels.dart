@@ -28,130 +28,156 @@ Widget kitPanelsDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-Widget kitSpecimenArtBand() => const SizedBox(
-  height: 128,
-  child: ComicArtBand(
-    ground: 2,
-    leading: ComicMark(ComicMarks.peak),
-    sfx: 'Crunch!',
-    caption: 'A date',
+Widget kitSpecimenArtBand() => Builder(
+  builder: (context) => SizedBox(
+    height: 128,
+    child: ComicArtBand(
+      ground: 2,
+      leading: ComicMark(ComicMarks.peak),
+      sfx: kitSay(context, 'Crunch!'),
+      caption: kitSay(context, 'A date'),
+    ),
   ),
 );
 
-Widget kitSpecimenEventPanel() => const ComicTier(
-  phone: ComicTierLayout.stack,
-  children: [
-    ComicEventPanel(
-      when: 'Sat 14 Nov',
-      title: 'A morning walk',
-      // A no-break space keeps the duration whole.
-      where: 'From the station · about 4 hours',
-      leading: ComicMark(ComicMarks.peak),
-      ground: 2,
-      people: [
-        ComicPerson(initials: 'AB', size: 24),
-        ComicPerson(initials: 'CD', size: 24, fillIndex: 1),
-      ],
-      tally: '5 in',
-    ),
-    ComicEventPanel(
-      when: 'Fri 4 – Sun 6 Dec',
-      title: 'The long weekend',
-      count: '23',
-      countWord: 'days to go',
-      big: true,
-      leading: ComicMark(ComicMarks.cabin, onNight: true),
-      ground: 4,
-    ),
-  ],
+Widget kitSpecimenEventPanel() => Builder(
+  builder: (context) => ComicTier(
+    phone: ComicTierLayout.stack,
+    children: [
+      ComicEventPanel(
+        when: kitSay(context, 'Sat 14 Nov'),
+        title: kitSay(context, 'A morning walk'),
+        // A no-break space keeps the duration whole.
+        where: kitSay(context, 'From the station · about 4 hours'),
+        leading: ComicMark(ComicMarks.peak),
+        ground: 2,
+        people: [
+          ComicPerson(initials: 'AB', size: 24),
+          ComicPerson(initials: 'CD', size: 24, fillIndex: 1),
+        ],
+        tally: kitSay(context, '5 in'),
+      ),
+      ComicEventPanel(
+        when: kitSay(context, 'Fri 4 – Sun 6 Dec'),
+        title: kitSay(context, 'The long weekend'),
+        count: '23',
+        countWord: kitSay(context, 'days to go'),
+        big: true,
+        leading: ComicMark(ComicMarks.cabin, onNight: true),
+        ground: 4,
+      ),
+    ],
+  ),
 );
 
-Widget kitSpecimenMarkPanel() => const ComicTier(
-  children: [
-    ComicMarkPanel(
-      date: 'Sun 8 Nov',
-      leading: ComicMark(ComicMarks.mug),
-      sfx: 'Munch!',
-      title: 'A slow brunch',
-      words: 'Two breakfasts. Both for one.',
-    ),
-    ComicMarkPanel(
-      date: 'Sat 7 Nov',
-      leading: ComicMark(ComicMarks.pumpkin),
-      ground: 3,
-      sfx: 'Scoop!',
-      title: 'Something in the kitchen',
-      words: 'Six tries, five faces.',
-    ),
-  ],
+Widget kitSpecimenMarkPanel() => Builder(
+  builder: (context) => ComicTier(
+    children: [
+      ComicMarkPanel(
+        date: kitSay(context, 'Sun 8 Nov'),
+        leading: ComicMark(ComicMarks.mug),
+        sfx: kitSay(context, 'Munch!'),
+        title: kitSay(context, 'A slow brunch'),
+        words: kitSay(context, 'Two breakfasts. Both for one.'),
+      ),
+      ComicMarkPanel(
+        date: kitSay(context, 'Sat 7 Nov'),
+        leading: ComicMark(ComicMarks.pumpkin),
+        ground: 3,
+        sfx: kitSay(context, 'Scoop!'),
+        title: kitSay(context, 'Something in the kitchen'),
+        words: kitSay(context, 'Six tries, five faces.'),
+      ),
+    ],
+  ),
 );
 
 Widget kitSpecimenStepPanel() => Builder(
   builder: (context) => ComicStepPanel(
     number: '1',
     leading: const ComicMark(ComicMarks.pan),
-    sfx: 'Sizzle!',
-    words: 'Soften the onions in the oil over a medium heat.',
+    sfx: kitSay(context, 'Sizzle!'),
+    words: kitSay(context, 'Soften the onions in the oil over a medium heat.'),
     action: ComicButton(
-      '8 min',
+      kitSay(context, '8 min'),
       size: ComicButtonSize.small,
       onPressed: () => kitFeedback(context, 'Eight-minute timer started.'),
     ),
   ),
 );
 
-Widget kitSpecimenVoicePanel() => const ComicTier(
-  children: [
-    ComicVoicePanel(
-      time: 'Tue 21:16',
-      words: 'Booked for the fourth.',
-      name: 'Sam',
-      portrait: ComicPortrait(ComicBust.bob),
-    ),
-    ComicVoicePanel(
-      time: 'Tue 21:20',
-      words: 'I can bring the soup.',
-      name: 'Robin',
-      portrait: ComicPortrait(ComicBust.topknot),
-      warm: true,
-    ),
-  ],
+Widget kitSpecimenVoicePanel() => Builder(
+  builder: (context) => ComicTier(
+    children: [
+      ComicVoicePanel(
+        time: kitSay(context, 'Tue 21:16'),
+        words: kitSay(context, 'Booked for the fourth.'),
+        name: kitSay(context, 'Sam'),
+        portrait: ComicPortrait(ComicBust.bob),
+      ),
+      ComicVoicePanel(
+        time: kitSay(context, 'Tue 21:20'),
+        words: kitSay(context, 'I can bring the soup.'),
+        name: kitSay(context, 'Robin'),
+        portrait: ComicPortrait(ComicBust.topknot),
+        warm: true,
+      ),
+    ],
+  ),
 );
 
-Widget kitSpecimenChapterPanel() => const ComicChapterPanel(
-  caption: 'Chapter 1',
-  title: 'The drive north',
-  art: ComicArtBand(ground: 2, leading: ComicMark(ComicMarks.cabin)),
-  children: [
-    ComicTimedRow('16:00', title: 'Leave', isFirst: true, inset: 14),
-    ComicTimedRow('18:40', title: 'Arrive', selected: true, inset: 14),
-  ],
+Widget kitSpecimenChapterPanel() => Builder(
+  builder: (context) => ComicChapterPanel(
+    caption: kitSay(context, 'Chapter 1'),
+    title: kitSay(context, 'The drive north'),
+    art: ComicArtBand(ground: 2, leading: ComicMark(ComicMarks.cabin)),
+    children: [
+      ComicTimedRow(
+        '16:00',
+        title: kitSay(context, 'Leave'),
+        isFirst: true,
+        inset: 14,
+      ),
+      ComicTimedRow(
+        '18:40',
+        title: kitSay(context, 'Arrive'),
+        selected: true,
+        inset: 14,
+      ),
+    ],
+  ),
 );
 
-Widget kitSpecimenSay() => const ComicColumn(
-  gap: 12,
-  children: [
-    ComicSpeech(
-      person: ComicPerson(initials: 'SA', size: 48),
-      text:
+Widget kitSpecimenSay() => Builder(
+  builder: (context) => ComicColumn(
+    gap: 12,
+    children: [
+      ComicSpeech(
+        person: ComicPerson(initials: 'SA', size: 48),
+        text: kitSay(
+          context,
           'A line of chat, wrapping as it needs to, with its tail at the head.',
-      author: 'Sam · 21:20',
-    ),
-    ComicSpeech(
-      person: ComicPerson(initials: 'RO', size: 48, fillIndex: 1),
-      text: 'Short.',
-      author: 'Robin · 21:22',
-    ),
-  ],
+        ),
+        author: kitSay(context, 'Sam · 21:20'),
+      ),
+      ComicSpeech(
+        person: ComicPerson(initials: 'RO', size: 48, fillIndex: 1),
+        text: kitSay(context, 'Short.'),
+        author: kitSay(context, 'Robin · 21:22'),
+      ),
+    ],
+  ),
 );
 
-Widget kitSpecimenReply() => _ReplyDemo(
-  builder: (controller, send) => ComicReply(
-    person: const ComicPerson(initials: 'Me', size: 44, fillIndex: 2),
-    hint: 'Say something…',
-    controller: controller,
-    onSend: send,
-    onSubmitted: (_) => send(),
+Widget kitSpecimenReply() => Builder(
+  builder: (context) => _ReplyDemo(
+    builder: (controller, send) => ComicReply(
+      person: const ComicPerson(initials: 'Me', size: 44, fillIndex: 2),
+      hint: kitSay(context, 'Say something…'),
+      controller: controller,
+      onSend: send,
+      onSubmitted: (_) => send(),
+    ),
   ),
 );
 
@@ -183,18 +209,22 @@ class _ReplyDemoState extends State<_ReplyDemo> {
   Widget build(BuildContext context) => widget.builder(controller, send);
 }
 
-Widget kitSpecimenClaim() => const ComicClaim(
-  before: 'You owe Sam',
-  figure: '19',
-  note: 'Your share of Saturday.',
-  person: ComicPerson(initials: 'SD', size: 56),
+Widget kitSpecimenClaim() => Builder(
+  builder: (context) => ComicClaim(
+    before: kitSay(context, 'You owe Sam'),
+    figure: '19',
+    note: kitSay(context, 'Your share of Saturday.'),
+    person: ComicPerson(initials: 'SD', size: 56),
+  ),
 );
 
-Widget kitSpecimenFigures() => const ComicFigures([
-  ('20 min', 'First'),
-  ('1 h 10', 'Then'),
-  ('1 h 30', 'In all'),
-], highlightLast: true);
+Widget kitSpecimenFigures() => Builder(
+  builder: (context) => ComicFigures([
+    (kitSay(context, '20 min'), kitSay(context, 'First')),
+    (kitSay(context, '1 h 10'), kitSay(context, 'Then')),
+    (kitSay(context, '1 h 30'), kitSay(context, 'In all')),
+  ], highlightLast: true),
+);
 
 Widget kitSpecimenAmountRow() => Builder(
   builder: (context) => ComicColumn(
@@ -205,7 +235,7 @@ Widget kitSpecimenAmountRow() => Builder(
         isFirst: true,
       ),
       ComicAmountRow(
-        '3 × 400 g',
+        kitSay(context, '3 × 400 g'),
         kitSay(context, 'tins of something,'),
         note: kitSay(context, 'drained'),
       ),

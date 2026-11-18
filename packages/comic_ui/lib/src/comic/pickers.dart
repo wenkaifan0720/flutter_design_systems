@@ -36,7 +36,7 @@ String _locale(BuildContext context) {
   }
 }
 
-/// A month of caption cells, at most [maxWidth] wide and standing at the start of a wider column. Arrows move by day
+/// A seven-column month that grows to fit the scaled day numbers. Arrows move by day
 /// or week; Page Up and Down change month.
 ///
 /// ```dart
@@ -98,8 +98,7 @@ class ComicDatePicker extends StatefulWidget {
   /// takes it, so two calendars on one screen share their grid.
   static const double dayWidth = 48;
 
-  /// The widest a month stands: seven days of [dayWidth]. Spread over a desktop column its days read as a table, not a
-  /// picker (the design kit's checks reads a week as a group of choices, held to what its days take).
+  /// Width of the seven-column month at its default cell size.
   static const double maxWidth = 7 * dayWidth;
 
   @override
@@ -280,7 +279,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
           .dimensions
           .resolve(direction)
           .horizontal;
-      final padding = (look.padding(direction)?.horizontal ?? 0) + 8;
+      final padding = look.padding(direction)?.horizontal ?? 0;
       final painter = TextPainter(
         textDirection: direction,
         textScaler: MediaQuery.textScalerOf(context),
@@ -293,7 +292,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
         painter.layout();
         minimumDayWidth = math.max(
           minimumDayWidth,
-          (painter.width + inset + padding).ceilToDouble(),
+          (painter.width + inset / 2 + padding).ceilToDouble(),
         );
       }
       painter.dispose();
@@ -379,13 +378,11 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
                     (look.padding(Directionality.of(context)) ??
                             EdgeInsets.zero)
                         .add(
-                          shape == null
-                              ? EdgeInsets.zero
-                              : const EdgeInsets.symmetric(
-                                  horizontal: ComicSpace.tight,
-                                ),
-                        )
-                        .add(EdgeInsets.all(reserve)),
+                          EdgeInsets.symmetric(
+                            vertical: reserve,
+                            horizontal: reserve / 2,
+                          ),
+                        ),
                 // The number alone sets the cell, its capitals on the middle; today's dot is laid over the cell
                 // under it, so today stands as tall as the days beside it (ui_core's DesignRowCheck: 4 px taller).
                 child: Stack(
@@ -460,7 +457,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
       widthFactor: 1,
       heightFactor: 1,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: ComicDatePicker.maxWidth),
+        constraints: BoxConstraints(maxWidth: 7 * minimumDayWidth),
         child: _grid(previous, next, month, count, lead, cell, minimumDayWidth),
       ),
     );

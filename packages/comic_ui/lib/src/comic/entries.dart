@@ -873,7 +873,7 @@ class ComicButtonSegment<T> {
 
 /// Exclusive choices in one trough at a field's height: every segment one width, no dividers, the chosen one a thumb
 /// (the trough's outline moved in by its rim and 4 px, concentric under every corner family) that slides to the next
-/// choice. A segment's words never move when it is chosen; only their ink changes.
+/// choice. When the labels need more space, the segments stack at the reader's text size.
 ///
 /// ```dart
 /// ComicSegmentedButton<String>(label: 'View', segments: const [ComicButtonSegment('all', 'All'), ComicButtonSegment('saved', 'Saved')], value: 'all', onChanged: change)
@@ -971,6 +971,10 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
         ? 0
         : key == LogicalKeyboardKey.end
         ? _nodes.length - 1
+        : key == LogicalKeyboardKey.arrowDown
+        ? (index + 1) % _nodes.length
+        : key == LogicalKeyboardKey.arrowUp
+        ? (index + _nodes.length - 1) % _nodes.length
         : key == LogicalKeyboardKey.arrowRight
         ? (index + (rtl ? -1 : 1)) % _nodes.length
         : key == LogicalKeyboardKey.arrowLeft
@@ -998,7 +1002,17 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
     final rim = comicRim(t, track, c.nightLine);
     // One trough at a field's height and rim, the segments side by side in it with no dividers, one width each; the
     // chosen one is a thumb, the trough's own outline moved in by its rim and 4 px, and it slides.
-    final outer = track.shape ?? t.shapes.capsule;
+    final shape = track.shape ?? t.shapes.capsule;
+    // A column of segments keeps the corner of one row. Growing a stadium
+    // to the height of the whole column would cut into the first and last labels.
+    final outer = shape is StadiumBorder
+        ? RoundedRectangleBorder(
+            side: shape.side,
+            borderRadius: BorderRadius.circular(
+              ComicTrack.fieldHeight(context) / 2,
+            ),
+          )
+        : shape;
     final inner = ComicTrack.cellShape(outer, rim);
     final lit = comicStyleOf(layers, const {WidgetState.selected});
     return Semantics(
@@ -1016,6 +1030,7 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
           thumb: lit.fill ?? c.caption,
           lit: selected < 0 ? null : selected,
           cellWidth: widget.rowSegmentWidth,
+          stackWhenNarrow: true,
           cells: [
             for (var i = 0; i < widget.segments.length; i++)
               _segment(context, t, layers, inner, i),
@@ -1063,6 +1078,7 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
         return ComicTrackFace(
           states: states,
           shape: inner,
+          wrap: true,
           overlay: look.overlay?.resolve(states),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -1071,14 +1087,15 @@ class _ComicSegmentedState<T> extends State<ComicSegmentedButton<T>> {
                 Icon(segment.icon, size: look.iconSize ?? 18, color: ink),
                 const SizedBox(width: ComicSpace.close),
               ],
-              CapLabel(
-                child: Text(
-                  segment.label,
-                  maxLines: 1,
-                  textAlign: TextAlign.center,
-                  style: t.type.title
-                      .merge(look.textStyle)
-                      .copyWith(color: ink),
+              Flexible(
+                child: CapLabel(
+                  child: Text(
+                    segment.label,
+                    textAlign: TextAlign.center,
+                    style: t.type.title
+                        .merge(look.textStyle)
+                        .copyWith(color: ink),
+                  ),
                 ),
               ),
             ],

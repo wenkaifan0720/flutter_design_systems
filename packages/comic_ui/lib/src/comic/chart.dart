@@ -1205,9 +1205,7 @@ class _SparkInk extends CustomPainter {
       old.area != area;
 }
 
-/// An area under a line is a Ben-Day tint of the line's ink (law 1: flat inks, nothing see-through): a dot every
-/// [_areaPitch], [_areaRadius] round under a chart's line (about a quarter of the area in ink), [_sparkRadius] under a
-/// sparkline's, which is small enough to want half.
+// A sparkline uses larger dots to keep its filled area visible at small sizes.
 const double _areaPitch = 5, _areaRadius = 1.05, _sparkRadius = 1.4;
 
 void _screen(Canvas canvas, Path area, Color ink, double radius, double dpr) {

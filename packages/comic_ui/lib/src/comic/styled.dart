@@ -159,7 +159,7 @@ class _ShapeTween extends Tween<ShapeBorder?> {
 /// final fill = look.fill ?? colors.card;
 /// ```
 ///
-/// The design kit's [DesignStyleOf] under Comic's name.
+/// An alias for [DesignStyleOf].
 typedef ComicStyleOf = DesignStyleOf;
 
 /// The rim a styled part draws: [DesignStyleOf.side] when set, else [DesignStyleOf.edge] (or [fallback]) at the theme's

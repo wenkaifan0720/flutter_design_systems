@@ -20,15 +20,27 @@ import 'theme.dart';
 export 'kit_words.dart';
 
 /// The sample tabs a chrome demo shows.
-const kitTabs = [
-  ComicNavItem(label: 'Today', short: 'Today', icon: LucideIcons.house),
-  ComicNavItem(label: 'Places', short: 'Places', icon: LucideIcons.compass),
+List<ComicNavItem> kitTabs(BuildContext context) => [
   ComicNavItem(
-    label: 'Figures',
-    short: 'Figures',
+    label: kitSay(context, 'Today'),
+    short: kitSay(context, 'Today'),
+    icon: LucideIcons.house,
+  ),
+  ComicNavItem(
+    label: kitSay(context, 'Places'),
+    short: kitSay(context, 'Places'),
+    icon: LucideIcons.compass,
+  ),
+  ComicNavItem(
+    label: kitSay(context, 'Figures'),
+    short: kitSay(context, 'Figures'),
     icon: LucideIcons.chartColumn,
   ),
-  ComicNavItem(label: 'You', short: 'You', icon: LucideIcons.user),
+  ComicNavItem(
+    label: kitSay(context, 'You'),
+    short: kitSay(context, 'You'),
+    icon: LucideIcons.user,
+  ),
 ];
 
 const _kitBrand = ComicBrand(name: 'Your name');
@@ -90,7 +102,7 @@ Widget _kitApp({
       child: showSampleNavigation && !embedded
           ? ComicChromeScope(
               brand: _kitBrand,
-              nav: kitTabs,
+              nav: kitTabs(context),
               active: 0,
               child: child,
             )
@@ -158,7 +170,7 @@ Widget kitSpecimenStage({
     brightness: brightness,
     child: ComicChromeScope(
       brand: _kitBrand,
-      nav: kitTabs,
+      nav: kitTabs(context),
       active: 0,
       child: home ?? const SizedBox.shrink(),
     ),

@@ -7,8 +7,7 @@ import 'package:ui_core/ui_core.dart';
 bool comicFlatInk(Color? color) =>
     color == null || color.a == 0 || color.a == 1;
 
-/// A styled part's [layers] read at [states], as `ComicStyleOf` reads them, with law 1 checked in debug builds: the
-/// fill it resolves, and the overlay at its states and hovered, pressed or focused, are opaque.
+/// Resolves [layers] for [states] and checks that fills and overlays are opaque in debug mode.
 DesignStyleOf comicStyleOf(List<DesignStyle?> layers, Set<WidgetState> states) {
   final look = DesignStyleOf(layers, states);
   assert(

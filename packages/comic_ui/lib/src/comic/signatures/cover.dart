@@ -15,7 +15,7 @@ import '../print.dart';
 import '../rows.dart';
 import '../theme.dart';
 import '../press.dart';
-import '../internal/lettering.dart' show comicLetteringScaler;
+import '../internal/lettering.dart' show ComicPrintGround, comicLetteringScaler;
 import '../knobs.dart' show ComicSpace;
 
 /// The masthead keeps clear of the cover's figure, which stands at the end of the band: the figure's width and its gap.
@@ -662,13 +662,20 @@ class ComicSplash extends StatelessWidget {
                   start: ComicSpace.near,
                   end: ComicSpace.close,
                 ),
-                child: ComicLettering(
-                  title,
-                  size: 36,
-                  fill: t.colors.paper,
-                  style: const ComicLetteringStyle(
-                    outline: 2.2,
-                    layers: [(3, 3.5, 0, 'line')],
+                child: ComicPrintGround(
+                  art != null
+                      ? t.colors.sky
+                      : t.dark
+                      ? t.colors.card
+                      : t.colors.caption,
+                  child: ComicLettering(
+                    title,
+                    size: 36,
+                    fill: t.colors.paper,
+                    style: const ComicLetteringStyle(
+                      outline: 2.2,
+                      layers: [(3, 3.5, 0, 'line')],
+                    ),
                   ),
                 ),
               ),
@@ -725,7 +732,10 @@ class ComicSplash extends StatelessWidget {
                   desk ? 30 : 14,
                   desk ? 26 : 14,
                 ),
-                child: _title(t, t.type.hero.fontSize!),
+                child: ComicPrintGround(
+                  t.colors.sky,
+                  child: _title(t, t.type.hero.fontSize!),
+                ),
               ),
             ],
           ),

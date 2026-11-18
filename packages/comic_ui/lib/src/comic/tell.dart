@@ -447,8 +447,7 @@ class _ComicLinearProgressIndicatorState
   }
 }
 
-/// A quiet placeholder that pulses unless reduced motion is requested: its Ben-Day dots swell and shrink, drawn, not
-/// faded (law 6).
+/// A placeholder with slowly pulsing dots. The dots stay still with reduced motion.
 ///
 /// ```dart
 /// ComicSkeleton(width: 160, height: 20)

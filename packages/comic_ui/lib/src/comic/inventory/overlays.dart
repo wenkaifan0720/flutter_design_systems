@@ -16,6 +16,7 @@ import '../rows.dart';
 import '../styled.dart';
 import '../theme.dart';
 import '../internal/style_guard.dart';
+import '../internal/lettering.dart' show comicDisplayFor;
 import '../knobs.dart' show ComicSpace;
 
 /// Raises [builder]'s [ComicSheet] from the screen's side: the end edge unless [edge] says otherwise. A tap on the
@@ -135,7 +136,13 @@ class ComicSheet extends StatelessWidget {
                                 : Semantics(
                                     header: true,
                                     namesRoute: true,
-                                    child: Text(title!, style: t.type.panel),
+                                    child: Text(
+                                      title!,
+                                      style: comicDisplayFor(
+                                        title!,
+                                        t.type.panel,
+                                      ),
+                                    ),
                                   ),
                           ),
                           if (onClose != null || showClose)

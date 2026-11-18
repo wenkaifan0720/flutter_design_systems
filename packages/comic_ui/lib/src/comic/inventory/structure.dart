@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:flutter/widgets.dart';
 
 import '../controls.dart';
+import '../internal/lettering.dart' show comicDisplayFor;
 import '../glyphs.dart';
 import '../layout.dart';
 import '../localizations.dart';
@@ -121,7 +122,10 @@ class ComicMenuBar extends StatelessWidget {
                 heightFactor: 1,
                 child: Text(
                   entry.label,
-                  style: t.type.button.copyWith(color: ink),
+                  style: comicDisplayFor(
+                    entry.label,
+                    t.type.button,
+                  ).copyWith(color: ink),
                 ),
               ),
             ),

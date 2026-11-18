@@ -475,8 +475,10 @@ List<Widget> _overview() => [
                 children: [
                   Text('COMIC', style: t.type.section),
                   ComicBalancedText(
-                    'A comic page for Flutter: inked panels in tiers, narration captions, speech balloons and one burst a '
-                    'screen. Every part below is live. Open a page from the navigation, or from its card here.',
+                    kitSay(
+                      context,
+                      'A comic page for Flutter: inked panels in tiers, narration captions, speech balloons and one burst a screen. Every part below is live. Open a page from the navigation, or from its card here.',
+                    ),
                     style: t.type.body,
                     textAlign: TextAlign.start,
                   ),
@@ -501,15 +503,17 @@ List<Widget> _overview() => [
               children: [
                 for (final page in livePages.skip(1))
                   ComicCard(
-                    title: page.title,
+                    title: kitSay(context, page.title),
                     // The summary takes the row's slack, so each card's Open stands on its foot, on one line across
                     // the row (ui_core 0e25289dfd read them 27 px apart where a summary wrapped).
                     children: [
-                      ComicGrow(child: Text(page.summary)),
+                      ComicGrow(child: Text(kitSay(context, page.summary))),
                       Align(
                         alignment: AlignmentDirectional.centerStart,
                         child: ComicButton.text(
-                          'Open ${page.title.toLowerCase()}',
+                          KitWords.arabicOf(context)
+                              ? 'افتح ${kitSay(context, page.title)}'
+                              : 'Open ${page.title.toLowerCase()}',
                           style: const ComicStyle(
                             padding: WidgetStatePropertyAll(
                               EdgeInsets.symmetric(vertical: 12),
@@ -636,14 +640,14 @@ Widget _drawer() => Builder(
             context,
             builder: (context) => ComicNavigationDrawer(
               header: ComicLogo(kitSay(context, 'Huzzah!')),
-              destinations: kitTabs,
+              destinations: kitTabs(context),
               selectedIndex: value,
               onDestinationSelected: (i) => Navigator.of(context).pop(i),
             ),
           );
           if (chosen != null && context.mounted) {
             change(chosen);
-            kitFeedback(context, '${kitTabs[chosen].label} chosen.');
+            kitFeedback(context, '${kitTabs(context)[chosen].label} chosen.');
           }
         },
       ),
@@ -658,42 +662,61 @@ Widget _tones() => Wrap(
 );
 
 /// The page frame: tiers of panels on twelve columns, and a head between them, one gutter apart.
-Widget _frame() => const ComicSections(
-  children: [
-    ComicRow(
-      spans: [7, 5],
-      children: [
-        ComicPanel(
-          caption: 'Seven',
-          child: ComicKvRow('Spans', '7 of 12', isFirst: true),
-        ),
-        ComicPanel(
-          caption: 'Five',
-          child: ComicKvRow('Spans', '5 of 12', isFirst: true),
-        ),
-      ],
-    ),
-    ComicSectionHeader('Coming up'),
-    // A third of the gallery's half-width column is about 110 wide: words
-    // that wrap between themselves, not a label beside a value.
-    ComicRow(
-      spans: [4, 4, 4],
-      children: [
-        ComicPanel(caption: 'Four', child: Text('Four of twelve')),
-        ComicPanel(caption: 'Four', child: Text('Four of twelve')),
-        ComicPanel(caption: 'Four', child: Text('Four of twelve')),
-      ],
-    ),
-  ],
+Widget _frame() => Builder(
+  builder: (context) => ComicSections(
+    children: [
+      ComicRow(
+        spans: [7, 5],
+        children: [
+          ComicPanel(
+            caption: kitSay(context, 'Seven'),
+            child: ComicKvRow(
+              kitSay(context, 'Spans'),
+              kitSay(context, '7 of 12'),
+              isFirst: true,
+            ),
+          ),
+          ComicPanel(
+            caption: kitSay(context, 'Five'),
+            child: ComicKvRow(
+              kitSay(context, 'Spans'),
+              kitSay(context, '5 of 12'),
+              isFirst: true,
+            ),
+          ),
+        ],
+      ),
+      ComicSectionHeader(kitSay(context, 'Coming up')),
+      // A third of the gallery's half-width column is about 110 wide: words
+      // that wrap between themselves, not a label beside a value.
+      ComicRow(
+        spans: [4, 4, 4],
+        children: [
+          ComicPanel(
+            caption: kitSay(context, 'Four'),
+            child: Text(kitSay(context, 'Four of twelve')),
+          ),
+          ComicPanel(
+            caption: kitSay(context, 'Four'),
+            child: Text(kitSay(context, 'Four of twelve')),
+          ),
+          ComicPanel(
+            caption: kitSay(context, 'Four'),
+            child: Text(kitSay(context, 'Four of twelve')),
+          ),
+        ],
+      ),
+    ],
+  ),
 );
 
 /// A desktop's app bar under the app's chrome scope: the name, then the app's places, the current one lit; each moves.
 Widget _masthead() => kitState<int>(
   1,
   (context, active, change) => ComicChromeScope(
-    brand: const ComicBrand(name: 'Huzzah!'),
+    brand: ComicBrand(name: kitSay(context, 'Huzzah!')),
     nav: [
-      for (final (i, item) in kitTabs.indexed)
+      for (final (i, item) in kitTabs(context).indexed)
         ComicNavItem(
           label: item.label,
           short: item.short,
@@ -702,7 +725,7 @@ Widget _masthead() => kitState<int>(
         ),
     ],
     active: active,
-    child: ComicAppBar(title: kitTabs[active].label),
+    child: ComicAppBar(title: kitTabs(context)[active].label),
   ),
 );
 
@@ -712,7 +735,11 @@ Widget _easing() => kitState<bool>(
   (context, night, change) => ComicColumn(
     gap: 12,
     children: [
-      ComicSwitch(value: night, label: 'Night', onChanged: change),
+      ComicSwitch(
+        value: night,
+        label: kitSay(context, 'Night'),
+        onChanged: change,
+      ),
       _eased(night, ComicTheme.of(context).colors.nightLine),
     ],
   ),
@@ -720,32 +747,39 @@ Widget _easing() => kitState<bool>(
 
 /// The eased page in small. Its frame is drawn in the line of the page it stands on (black by day, cream at night), so
 /// it closes on either ground; the sample's own line vanished into a night gutter (r4).
-Widget _eased(bool night, Color pageLine) => AnimatedComicTheme(
-  data: kitTheme(night ? Brightness.dark : Brightness.light),
-  child: Builder(
-    builder: (context) {
-      final t = ComicTheme.of(context);
-      // The eased ground is a page in small: by night under a day page and by day under a night one it reads as a
-      // page, not as a slab of the other paper left on this one.
-      return DecoratedBox(
-        decoration: ShapeDecoration(
-          color: t.colors.background,
-          shape: t.shapes.medium.copyWith(
-            side: BorderSide(color: pageLine, width: t.rim(2.5)),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: ComicPanel(
-            caption: night ? 'Night' : 'Day',
-            child: Text(
-              'The ground, the panel and the words turn to the other issue together.',
-              style: t.type.body,
+Widget _eased(bool night, Color pageLine) => Builder(
+  builder: (context) => AnimatedComicTheme(
+    data: kitTheme(night ? Brightness.dark : Brightness.light),
+    child: Builder(
+      builder: (context) {
+        final t = ComicTheme.of(context);
+        // The eased ground is a page in small: by night under a day page and by day under a night one it reads as a
+        // page, not as a slab of the other paper left on this one.
+        return DecoratedBox(
+          decoration: ShapeDecoration(
+            color: t.colors.background,
+            shape: t.shapes.medium.copyWith(
+              side: BorderSide(color: pageLine, width: t.rim(2.5)),
             ),
           ),
-        ),
-      );
-    },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: ComicPanel(
+              caption: night
+                  ? kitSay(context, 'Night')
+                  : kitSay(context, 'Day'),
+              child: Text(
+                kitSay(
+                  context,
+                  'The ground, the panel and the words turn to the other issue together.',
+                ),
+                style: t.type.body,
+              ),
+            ),
+          ),
+        );
+      },
+    ),
   ),
 );
 
@@ -756,14 +790,14 @@ Widget _lines() => Builder(
       gap: 12,
       children: [
         ComicSplit(
-          start: Text('Your issue', style: t.type.title),
-          end: Text('Out on Wednesday', style: t.type.small),
+          start: Text(kitSay(context, 'Your issue'), style: t.type.title),
+          end: Text(kitSay(context, 'Out on Wednesday'), style: t.type.small),
         ),
-        const ComicAutoRow(
+        ComicAutoRow(
           children: [
-            ComicTag('Weekly'),
-            ComicTag('Twelve pages'),
-            ComicTag('In colour'),
+            ComicTag(kitSay(context, 'Weekly')),
+            ComicTag(kitSay(context, 'Twelve pages')),
+            ComicTag(kitSay(context, 'In colour')),
           ],
         ),
         // The words stand on a dotted panel, as the scope says they do.
@@ -773,7 +807,10 @@ Widget _lines() => Builder(
           child: ComicDotsScope(
             child: ComicLetteringScope(
               t.colors.text,
-              child: Text('WORDS ON THE DOTS', style: t.type.item),
+              child: Text(
+                kitSay(context, 'WORDS ON THE TINT'),
+                style: t.type.item,
+              ),
             ),
           ),
         ),

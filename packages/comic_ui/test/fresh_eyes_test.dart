@@ -2,7 +2,7 @@
 // - by night a reply field stood on day paper, its cream rim lost in its fill;
 // - by night a modal's screen of black dots on the black ground screened nothing and cut the cream words into pieces;
 // - at 200% on a phone a tab bar's rim scrolled off with its last tab, and nothing showed there was one;
-// - unavailable was a flat tint of the fill, not the dot screen the look prints every tone and state in.
+// Disabled faces keep their words legible on a single flat ink tint.
 import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';
@@ -10,21 +10,12 @@ import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/src/comic/press.dart'
-    show
-        ComicStateDecoration,
-        comicDisabledDotPitch,
-        comicDisabledDotRadius,
-        comicDisabledWordsContrast;
+    show ComicStateDecoration, comicDisabledWordsContrast;
 
 import 'support.dart';
 
 double _contrast(double a, double b) =>
     ((a > b ? a : b) + .05) / ((a > b ? b : a) + .05);
-
-bool _near(List<int> px, int i, Color c, [int by = 8]) =>
-    (px[i] - (c.r * 255).round()).abs() <= by &&
-    (px[i + 1] - (c.g * 255).round()).abs() <= by &&
-    (px[i + 2] - (c.b * 255).round()).abs() <= by;
 
 void main() {
   setUpAll(loadComicFonts);
@@ -65,7 +56,7 @@ void main() {
 
   for (final dark in [false, true]) {
     testWidgets(
-      'a dialog ${dark ? 'by night screens the page in cream' : 'by day screens the page in black'}',
+      'a dialog dims the page with a flat veil in ${dark ? 'dark' : 'light'} mode',
       (tester) async {
         await tester.pumpWidget(
           comicApp(
@@ -91,12 +82,54 @@ void main() {
         final ink = tester
             .widget<ComicScreenScrim>(find.byType(ComicScreenScrim))
             .ink;
-        // The page's own ink: black dots knock the paper back by day, cream ones the black ground by night, and
-        // neither cuts into words of its own colour.
-        expect(
-          ink.withValues(alpha: 1),
-          dark ? c.nightLine : const Color(0xff000000),
+        expect(ink, c.scrim);
+        expect(ink.r + ink.g + ink.b, 0);
+        expect(ink.a, inExclusiveRange(0, 1));
+      },
+    );
+  }
+
+  for (final axis in Axis.values) {
+    testWidgets(
+      'A fixed tab strip leaves its enclosing ${axis.name} scroll position alone',
+      (tester) async {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(390, 844);
+        addTearDown(tester.view.reset);
+        final outer = ScrollController();
+        addTearDown(outer.dispose);
+        final strip = SizedBox(
+          width: 280,
+          child: ComicTabBar(
+            tabs: const ['All', 'Saved', 'Read'],
+            selectedIndex: 1,
+            onChanged: (_) {},
+          ),
         );
+        const spacer = SizedBox(width: 800, height: 600);
+        await tester.pumpWidget(
+          comicApp(
+            Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: 300,
+                height: 160,
+                child: SingleChildScrollView(
+                  controller: outer,
+                  scrollDirection: axis,
+                  child: Flex(
+                    direction: axis,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [spacer, strip],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(outer.position.maxScrollExtent, greaterThan(0));
+        expect(outer.offset, 0);
       },
     );
   }
@@ -163,15 +196,12 @@ void main() {
     );
   }
 
-  // The coordinator's yes to the fresh-eyes M1: a disabled ink fill is a Ben-Day screen of its own ink on the paper,
-  // never a flat tint (a chosen fill is flat) nor dots of the letters' ink (the pointer's shade), and the words, solid
-  // in one screened ink, keep 3:1 against the paper and the dots as the eye mixes them, by day and by night.
+  // Measure the uniform fill and the actual lettering pixels of every disabled ink face.
   for (final preset in ['offset', 'reprint', 'newsstand', 'pulp', 'sunday']) {
     for (final dark in [false, true]) {
       for (final danger in [false, true]) {
         testWidgets(
-          'a disabled ${danger ? 'danger' : 'filled'} button in $preset ${dark ? 'by night' : 'by day'} is dots of its '
-          'ink on the paper, its words 3:1 on them',
+          'a disabled ${danger ? 'danger' : 'filled'} button in $preset ${dark ? 'by night' : 'by day'} retains flat, legible lettering',
           (tester) async {
             tester.view.devicePixelRatio = 2;
             tester.view.physicalSize = const Size(780, 400);
@@ -194,9 +224,6 @@ void main() {
               ),
             );
             await tester.pumpAndSettle();
-            final c = ComicTheme.of(tester.element(find.byType(ComicButton)))
-                .colors;
-            final ink = danger ? c.tones.danger : c.primary, paper = c.card;
             final boundary = tester.renderObject<RenderRepaintBoundary>(
               find.byKey(shot),
             );
@@ -224,53 +251,38 @@ void main() {
                 .getRect(find.text('PRINT THE WHOLE ISSUE'))
                 .shift(-origin);
             // The fill, clear of the rim and the words.
-            var dots = 0, gaps = 0, letters = 0, all = 0;
-            for (var y = face.top + 6; y < face.bottom - 6; y += .5) {
-              for (var x = face.left + 6; x < face.right - 6; x += .5) {
+            final fill = <int>{};
+            int pixel(int i) => px[i] << 16 | px[i + 1] << 8 | px[i + 2];
+            for (var y = face.top + 7; y < face.bottom - 7; y += .5) {
+              for (var x = face.left + 7; x < face.right - 7; x += .5) {
                 if (words.inflate(3).contains(Offset(x, y))) continue;
-                final i = ((y * 2).floor() * width + (x * 2).floor()) * 4;
-                all++;
-                if (_near(px, i, ink)) dots++;
-                if (_near(px, i, paper)) gaps++;
-                if (_near(px, i, c.text, 4)) letters++;
+                fill.add(
+                  pixel(((y * 2).floor() * width + (x * 2).floor()) * 4),
+                );
               }
             }
-            expect(gaps / all, greaterThan(.5), reason: 'Paper between dots');
-            expect(dots / all, greaterThan(.06), reason: 'Dots of its ink');
             expect(
-              letters / all,
-              lessThan(.01),
-              reason: "Not the letters' ink",
+              fill,
+              hasLength(1),
+              reason: 'One flat ground behind the label',
             );
-            // The words' one ink: the commonest colour of the label that is neither paper nor dot.
-            final seen = <int, int>{};
+            final ground = Color(0xff000000 | fill.single).computeLuminance();
+            var ratio = 1.0;
             for (var y = words.top; y < words.bottom; y += .5) {
               for (var x = words.left; x < words.right; x += .5) {
-                final i = ((y * 2).floor() * width + (x * 2).floor()) * 4;
-                if (_near(px, i, ink, 24) || _near(px, i, paper, 24)) continue;
-                final key = (px[i] << 16) | (px[i + 1] << 8) | px[i + 2];
-                seen[key] = (seen[key] ?? 0) + 1;
+                final value = pixel(
+                  ((y * 2).floor() * width + (x * 2).floor()) * 4,
+                );
+                final contrast = _contrast(
+                  Color(0xff000000 | value).computeLuminance(),
+                  ground,
+                );
+                if (contrast > ratio) ratio = contrast;
               }
             }
-            final top = seen.entries.reduce(
-              (a, b) => a.value >= b.value ? a : b,
-            );
-            final w = Color(0xff000000 | top.key).computeLuminance();
-            final cover =
-                3.14159265 *
-                comicDisabledDotRadius *
-                comicDisabledDotRadius /
-                (comicDisabledDotPitch * comicDisabledDotPitch / 2);
-            final mixed =
-                cover * ink.computeLuminance() +
-                (1 - cover) * paper.computeLuminance();
             expect(
-              _contrast(w, paper.computeLuminance()),
-              greaterThanOrEqualTo(comicDisabledWordsContrast - .05),
-            );
-            expect(
-              _contrast(w, mixed),
-              greaterThanOrEqualTo(comicDisabledWordsContrast - .05),
+              ratio,
+              greaterThanOrEqualTo(comicDisabledWordsContrast - .03),
             );
           },
         );

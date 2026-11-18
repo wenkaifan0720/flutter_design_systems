@@ -38,8 +38,21 @@ void _contours(WidgetTester tester, ComicShapes shapes, Set<String> built) {
     shapes.capsule,
     shapes.full,
     const CircleBorder(),
-    // 7: a menu row or a grouped row (rim 3 + their 4 px inset).
-    for (final inset in [1.0, 2.0, 2.5, 3.0, 4.0, 5.0, 7.0]) ...[
+    // 7: a menu row or a grouped row (rim 3 + their 4 px inset). 10.5: a chosen tag in a field (rim 2.5 + 8). 19 and
+    // 23: a message's action (rim 3 + the message's 16 or, on a desk, 20 padding). Each is concentric with what holds
+    // it, square where the inset uses up the corner.
+    for (final inset in [
+      1.0,
+      2.0,
+      2.5,
+      3.0,
+      4.0,
+      5.0,
+      7.0,
+      10.5,
+      19.0,
+      23.0,
+    ]) ...[
       comicInsetShape(shapes.small, inset),
       comicInsetShape(shapes.medium, inset),
       comicInsetShape(shapes.large, inset),
@@ -85,9 +98,12 @@ void _contours(WidgetTester tester, ComicShapes shapes, Set<String> built) {
           if (ancestor.widget case ComicMedia(bare: true)) barePhoto = true;
           return true;
         });
+        final size = (element.renderObject as RenderBox?)?.size;
         expect(
           barePhoto ||
-              allowed.contains(outline.copyWith(side: BorderSide.none)),
+              allowed.contains(
+                drawnShape(outline, size).copyWith(side: BorderSide.none),
+              ),
           isTrue,
           reason:
               '${widget.toStringShort()} ignored the corner theme: $outline',

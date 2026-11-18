@@ -159,7 +159,7 @@ class ComicPerson extends StatelessWidget {
           on: out,
           amount: c.dark ? .28 : .45,
           // Out of the set, not disabled: the face screened back as it is.
-          dots: false,
+          muteFill: false,
           child: head,
         ),
       ),

@@ -106,6 +106,21 @@ Future<void> settle(WidgetTester tester) async {
   }
 }
 
+/// [shape] as it draws at [size]: a rounded rectangle whose every corner is half the shorter side paints the capsule,
+/// as a segmented trough keeps one row's capsule corner in case its choices stack.
+OutlinedBorder drawnShape(OutlinedBorder shape, Size? size) {
+  if (shape is! RoundedRectangleBorder || size == null) return shape;
+  final r = shape.borderRadius.resolve(TextDirection.ltr),
+      half = size.shortestSide / 2;
+  final capsule = [
+    r.topLeft,
+    r.topRight,
+    r.bottomLeft,
+    r.bottomRight,
+  ].every((c) => (c.x - half).abs() < .01 && (c.y - half).abs() < .01);
+  return capsule ? StadiumBorder(side: shape.side) : shape;
+}
+
 /// Every preset by day and by night.
 Iterable<(String, Brightness)> get presetsAndModes sync* {
   for (final preset in ComicThemeData.presets) {

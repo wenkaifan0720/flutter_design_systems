@@ -18,22 +18,37 @@ Widget kitSpeechDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-Widget kitSpecimenBalloon() => const ComicColumn(
-  gap: 10,
-  children: [
-    ComicBalloon('Short.', by: 'Someone · 21:16'),
-    ComicBalloon(
-      'A longer sentence with a tail that stays on however it wraps, at any width at all.',
-      tail: ComicTail.bottomEnd,
-    ),
-    ComicBalloon('From the side.', tail: ComicTail.side),
-  ],
+Widget kitSpecimenBalloon() => Builder(
+  builder: (context) => ComicColumn(
+    gap: 10,
+    children: [
+      ComicBalloon(
+        kitSay(context, 'Short.'),
+        by: kitSay(context, 'Someone · 21:16'),
+      ),
+      ComicBalloon(
+        kitSay(
+          context,
+          'A longer sentence with a tail that stays on however it wraps, at any width at all.',
+        ),
+        tail: ComicTail.bottomEnd,
+      ),
+      ComicBalloon(kitSay(context, 'From the side.'), tail: ComicTail.side),
+    ],
+  ),
 );
 
-Widget kitSpecimenThought() => const ComicThought('Still thinking it over');
+Widget kitSpecimenThought() => Builder(
+  builder: (context) => ComicThought(kitSay(context, 'Still thinking it over')),
+);
 
-Widget kitSpecimenBurst() =>
-    const ComicBurst(number: '23', over: 'In', under: 'days!');
+Widget kitSpecimenBurst() => Builder(
+  builder: (context) => ComicBurst(
+    number: '23',
+    over: kitSay(context, 'In'),
+    under: kitSay(context, 'days!'),
+  ),
+);
 
 Widget kitSpecimenPop() => const Wrap(
   spacing: 8,
@@ -44,7 +59,12 @@ Widget kitSpecimenPop() => const Wrap(
   ],
 );
 
-Widget kitSpecimenStamp() => const Wrap(
-  spacing: 18,
-  children: [ComicStamp('Paid'), ComicStamp('Leads', tight: true)],
+Widget kitSpecimenStamp() => Builder(
+  builder: (context) => Wrap(
+    spacing: 18,
+    children: [
+      ComicStamp(kitSay(context, 'Paid')),
+      ComicStamp(kitSay(context, 'Leads'), tight: true),
+    ],
+  ),
 );

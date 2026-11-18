@@ -4,9 +4,11 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart' show Bidi;
 
 import '../balloons.dart';
 import '../internal/geometry.dart';
+import '../internal/lettering.dart' show comicDisplayFor;
 import '../heads.dart';
 import '../layout.dart';
 import '../people.dart';
@@ -162,6 +164,7 @@ class ComicBar extends StatelessWidget {
       ),
     );
     if (label != null) {
+      final count = figure ?? '$value';
       return LimitedBox(
         maxWidth: 240,
         child: MergeSemantics(
@@ -186,8 +189,11 @@ class ComicBar extends StatelessWidget {
                   ),
                   const SizedBox(width: ComicSpace.close),
                   Text(
-                    figure ?? '$value',
+                    count,
                     textAlign: TextAlign.end,
+                    textDirection: Bidi.startsWithRtl(count)
+                        ? TextDirection.rtl
+                        : TextDirection.ltr,
                     style: t.type.data,
                   ),
                 ],
@@ -314,6 +320,29 @@ class ComicBarList extends StatelessWidget {
     final whole =
         of ?? entries.map((e) => e.value).reduce((a, b) => a > b ? a : b);
     final hasHead = entries.any((e) => e.leading != null);
+    // Every row's figure stands in one column as wide as the widest: each bar then runs on the same plot width, so a
+    // larger value never draws shorter beside a longer figure.
+    var figureStyle = DefaultTextStyle.of(context).style.merge(t.type.data);
+    if (MediaQuery.boldTextOf(context)) {
+      figureStyle = figureStyle.merge(
+        const TextStyle(fontWeight: FontWeight.bold),
+      );
+    }
+    final direction = Directionality.of(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    final locale = Localizations.maybeLocaleOf(context);
+    var figureWidth = t.desk ? 26.0 : 24.0;
+    for (final e in entries) {
+      final painter = TextPainter(
+        text: TextSpan(text: e.figure ?? '${e.value}', style: figureStyle),
+        textDirection: direction,
+        textScaler: scaler,
+        locale: locale,
+        maxLines: 1,
+      )..layout();
+      figureWidth = math.max(figureWidth, painter.width.ceilToDouble());
+      painter.dispose();
+    }
     return ComicColumn(
       children: [
         for (final e in entries)
@@ -367,11 +396,12 @@ class ComicBarList extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: ComicSpace.close),
-                ConstrainedBox(
-                  constraints: BoxConstraints(minWidth: t.desk ? 26 : 24),
+                SizedBox(
+                  width: figureWidth,
                   child: Text(
                     e.figure ?? '${e.value}',
                     textAlign: TextAlign.end,
+                    maxLines: 1,
                     style: t.type.data,
                   ),
                 ),
@@ -463,7 +493,10 @@ class ComicTally extends StatelessWidget {
         if (question != null)
           Padding(
             padding: const EdgeInsets.only(bottom: ComicSpace.tight),
-            child: ComicLetters(question!, style: t.type.question),
+            child: ComicLetters(
+              question!,
+              style: comicDisplayFor(question!, t.type.question),
+            ),
           ),
         if (subtitle != null)
           Padding(

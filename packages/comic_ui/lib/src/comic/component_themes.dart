@@ -41,7 +41,7 @@ import 'package:ui_core/ui_core.dart';
 /// )
 /// ```
 ///
-/// The design kit's [DesignStyle] under Comic's name: every look's parts take the same style, read the same way.
+/// An alias for [DesignStyle].
 typedef ComicStyle = DesignStyle;
 
 /// Every component theme in one, as `ThemeData` holds Material's: what `ComicThemeData` carries and lerps.

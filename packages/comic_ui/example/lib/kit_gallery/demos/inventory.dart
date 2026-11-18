@@ -179,7 +179,8 @@ Widget kitSpecimenCode() => Builder(
 Widget kitSpecimenMultiSelect() => kitState<List<String>>(
   const ['Noir', 'Western'],
   (context, genres, change) => ComicMultiSelect<String>(
-    label: 'Genres',
+    label: kitSay(context, 'Genres'),
+    labelOf: (genre) => kitSay(context, genre),
     hint: 'Add a genre',
     values: genres,
     options: const ['Noir', 'Western', 'Horror', 'Romance', 'Science fiction'],
@@ -190,7 +191,7 @@ Widget kitSpecimenMultiSelect() => kitState<List<String>>(
 Widget kitSpecimenRangeSlider() => kitState<DesignRangeValues>(
   const DesignRangeValues(.2, .7),
   (context, values, change) => ComicRangeSlider(
-    label: 'Price',
+    label: kitSay(context, 'Price'),
     values: values,
     valueLabel: (value) => '\$${(value * 40).round()}',
     onChanged: change,
@@ -357,10 +358,10 @@ Widget kitSpecimenMenuBar() => Builder(
   builder: (context) => ComicMenuBar(
     menus: [
       DesignMenuEntry(
-        label: 'File',
+        label: kitSay(context, 'File'),
         children: [
           DesignMenuEntry(
-            label: 'New',
+            label: kitSay(context, 'New'),
             shortcut: ComicKbd.labelOf(
               context,
               const SingleActivator(LogicalKeyboardKey.keyN, control: true),
@@ -368,7 +369,7 @@ Widget kitSpecimenMenuBar() => Builder(
             onPressed: () {},
           ),
           DesignMenuEntry(
-            label: 'Open',
+            label: kitSay(context, 'Open'),
             shortcut: ComicKbd.labelOf(
               context,
               const SingleActivator(LogicalKeyboardKey.keyO, control: true),
@@ -377,19 +378,25 @@ Widget kitSpecimenMenuBar() => Builder(
           ),
           const DesignMenuEntry.divider(),
           DesignMenuEntry(
-            label: 'Export',
+            label: kitSay(context, 'Export'),
             children: [
-              DesignMenuEntry(label: 'As PDF', onPressed: () {}),
-              DesignMenuEntry(label: 'As images', onPressed: () {}),
+              DesignMenuEntry(
+                label: kitSay(context, 'As PDF'),
+                onPressed: () {},
+              ),
+              DesignMenuEntry(
+                label: kitSay(context, 'As images'),
+                onPressed: () {},
+              ),
             ],
           ),
         ],
       ),
       DesignMenuEntry(
-        label: 'Edit',
+        label: kitSay(context, 'Edit'),
         children: [
           DesignMenuEntry(
-            label: 'Undo',
+            label: kitSay(context, 'Undo'),
             shortcut: ComicKbd.labelOf(
               context,
               const SingleActivator(LogicalKeyboardKey.keyZ, control: true),
@@ -397,7 +404,7 @@ Widget kitSpecimenMenuBar() => Builder(
             onPressed: () {},
           ),
           DesignMenuEntry(
-            label: 'Redo',
+            label: kitSay(context, 'Redo'),
             shortcut: ComicKbd.labelOf(
               context,
               const SingleActivator(LogicalKeyboardKey.keyY, control: true),
@@ -406,11 +413,15 @@ Widget kitSpecimenMenuBar() => Builder(
         ],
       ),
       DesignMenuEntry(
-        label: 'View',
+        label: kitSay(context, 'View'),
         children: [
-          DesignMenuEntry(label: 'Show grid', checked: true, onPressed: () {}),
           DesignMenuEntry(
-            label: 'Show bleed',
+            label: kitSay(context, 'Show grid'),
+            checked: true,
+            onPressed: () {},
+          ),
+          DesignMenuEntry(
+            label: kitSay(context, 'Show bleed'),
             checked: false,
             onPressed: () {},
           ),
@@ -422,8 +433,8 @@ Widget kitSpecimenMenuBar() => Builder(
 
 List<DesignCommand> _commands(BuildContext context) => [
   DesignCommand(
-    label: 'New issue',
-    group: 'Issues',
+    label: kitSay(context, 'New issue'),
+    group: kitSay(context, 'Issues'),
     shortcut: ComicKbd.labelOf(
       context,
       const SingleActivator(LogicalKeyboardKey.keyN, control: true),
@@ -432,25 +443,29 @@ List<DesignCommand> _commands(BuildContext context) => [
     onPressed: () {},
   ),
   DesignCommand(
-    label: 'Search issues',
-    group: 'Issues',
+    label: kitSay(context, 'Search issues'),
+    group: kitSay(context, 'Issues'),
     data: ComicGlyphs.search,
-    keywords: const ['find'],
+    keywords: [kitSay(context, 'find')],
     onPressed: () {},
   ),
   DesignCommand(
-    label: 'Share the page',
-    group: 'Page',
+    label: kitSay(context, 'Share the page'),
+    group: kitSay(context, 'Page'),
     data: ComicGlyphs.share,
     onPressed: () {},
   ),
   DesignCommand(
-    label: 'Send to the printer',
-    group: 'Page',
+    label: kitSay(context, 'Send to the printer'),
+    group: kitSay(context, 'Page'),
     data: ComicGlyphs.send,
     onPressed: () {},
   ),
-  const DesignCommand(label: 'Archive the run', group: 'Page', enabled: false),
+  DesignCommand(
+    label: kitSay(context, 'Archive the run'),
+    group: kitSay(context, 'Page'),
+    enabled: false,
+  ),
 ];
 
 Widget kitSpecimenCommand() => Builder(
@@ -459,7 +474,7 @@ Widget kitSpecimenCommand() => Builder(
     children: [
       ComicCommand(commands: _commands(context)),
       ComicButton(
-        'Open over the page',
+        kitSay(context, 'Open over the page'),
         onPressed: () =>
             showComicCommand(context, commands: _commands(context)),
       ),
@@ -538,7 +553,11 @@ Widget kitScrollArea() => Builder(
               for (var i = 1; i <= 14; i++)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 8, 16, 8),
-                  child: Text('Letter $i to the editor'),
+                  child: Text(
+                    KitWords.arabicOf(context)
+                        ? 'رسالة رقم $i إلى المحرر'
+                        : 'Letter $i to the editor',
+                  ),
                 ),
             ],
           ),

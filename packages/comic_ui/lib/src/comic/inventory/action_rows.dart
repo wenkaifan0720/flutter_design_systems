@@ -16,6 +16,7 @@ import '../raised.dart';
 import '../styled.dart';
 import '../theme.dart';
 import '../internal/cap_label.dart';
+import '../internal/lettering.dart' show comicDisplayFor;
 import '../internal/menu_rows.dart';
 import '../internal/style_guard.dart';
 import '../knobs.dart' show ComicSpace;
@@ -122,7 +123,7 @@ Widget _words(
   bool iconOnly,
   Color ink,
 ) {
-  final text = t.type.button.copyWith(color: ink);
+  final text = comicDisplayFor(label, t.type.button).copyWith(color: ink);
   return Row(
     mainAxisSize: MainAxisSize.min,
     children: [
@@ -134,10 +135,9 @@ Widget _words(
   );
 }
 
-/// Buttons that stay on: one of them ([multiple] false) or any number. They stand in the segmented control's trough,
-/// and each one on wears the selection fill over its whole cell, concentric with the trough, as the segmented
-/// control's chosen segment does. The behaviour (roving focus,
-/// arrows, Space and Enter, the group's semantics) is the design kit's `DesignToggleGroup`.
+/// A group of toggle buttons with a shared selection track.
+/// Set [multiple] to allow several selections. Arrow keys move focus within
+/// the group. Space and Enter toggle the focused button.
 ///
 /// ```dart
 /// ComicToggleGroup<String>(label: 'Style', values: const ['Bold', 'Italic'], selected: on, multiple: true, labelOf: (v) => v, onChanged: (next) => setState(() => on = next))
@@ -298,9 +298,9 @@ class ComicSplitAction {
   final VoidCallback? onPressed;
 }
 
-/// The primary action with its arrow beside it: the act button's face cut in two by a rule, the words doing the main
-/// thing and the arrow opening the menu's raised face with the [actions] that go with it. The behaviour (the menu's
-/// keys, focus return, the two halves' semantics) is the design kit's `DesignSplitButton`.
+/// A primary action and a menu button in one frame.
+/// The label runs the primary action. The arrow opens [actions] and regains
+/// focus when the menu closes.
 ///
 /// ```dart
 /// ComicSplitButton('Save', onPressed: save, actions: [ComicSplitAction('Save as copy', onPressed: copy)])

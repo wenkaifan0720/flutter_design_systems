@@ -304,11 +304,13 @@ final Map<String, DocExample> _examples = {
 
     return main;
   },
-  'Text': (context) {
-    final t = ComicTheme.of(context);
-    final start = DateTime(2026, 5, 1);
-    final end = DateTime(2026, 5, 4);
-    return Text(ComicFormat.range(start, end), style: t.type.body);
+  'ComicFormat.range': (context) {
+    final hours = ComicFormat.range(
+      DateTime(2026, 3, 14, 9),
+      DateTime(2026, 3, 14, 17),
+    );
+    expect(hours, '09:00–17:00');
+    return Text(hours);
   },
   'ComicCaption': (context) =>
       const ComicCaption('Meanwhile, by the lake', icon: ComicGlyphs.mapPin),
@@ -954,13 +956,7 @@ final Map<String, DocExample> _examples = {
   },
   'ComicBenDay': (context) {
     final t = ComicTheme.of(context);
-    const words = Text('Pow');
-    return ComicBenDay(
-      color: t.colors.dotTint,
-      pitch: 9,
-      radius: 2.4,
-      child: words,
-    );
+    return ComicBenDay(color: t.colors.dotTint, pitch: 9, radius: 2.4);
   },
   'ComicCoverPrint': (context) => const ComicCoverPrint(
     child: ComicLettering('Volume one', style: ComicLetteringStyle.title),
@@ -1457,7 +1453,7 @@ final Map<String, DocExample> _examples = {
     return example;
   },
   'ComicDotsScope': (context) =>
-      const ComicDotsScope(child: Text('Over the halftone')),
+      const ComicDotsScope(child: Text('On the tinted panel')),
   'ComicLetteringScope': (context) =>
       const ComicLetteringScope(Colors.white, child: Text('On the lamp')),
 };

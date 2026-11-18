@@ -163,9 +163,7 @@ class RenderComicOutward extends RenderShiftedBox {
   Rect? describeSemanticsClip(RenderObject? child) => Offset.zero & size;
 }
 
-/// Marks [child] as standing inside a container that clips at its edge (a panel's frame, a swipe row): a focus ring
-/// under it keeps plain corners, since its emanata would reach past the clip (law 3: only the top layer breaks a
-/// border).
+/// Keeps a focus ring inside its clipping ancestor by shortening the corner marks.
 class RingInClip extends InheritedWidget {
   /// Creates a [RingInClip].
   const RingInClip({super.key, required super.child});

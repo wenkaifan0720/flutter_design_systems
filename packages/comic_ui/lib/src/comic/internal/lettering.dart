@@ -23,6 +23,13 @@ TextScaler comicLetteringScaler(BuildContext context, TextStyle style) {
 /// script's last letter: words in such a script are set in the text face.
 bool comicRightToLeftScript(String text) => _rightToLeft.hasMatch(text);
 
+/// Keeps the visual weight of Bangers when a right-to-left word uses a fallback
+/// face. Connected letters use the font's own spacing.
+TextStyle comicDisplayFor(String words, TextStyle style) =>
+    comicRightToLeftScript(words)
+    ? style.copyWith(fontWeight: FontWeight.w700, letterSpacing: 0)
+    : style;
+
 final RegExp _rightToLeft = RegExp('[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]');
 
 double _contrast(Color a, Color b) {
@@ -40,4 +47,21 @@ Color comicInkOn(Color ground, Color wanted, Iterable<Color> inks) {
     if (_contrast(ink, ground) > _contrast(best, ground)) best = ink;
   }
   return best;
+}
+
+/// Supplies the solid colour painted behind each line of display lettering.
+class ComicPrintGround extends InheritedWidget {
+  /// Gives [child] a solid background for its lettering.
+  const ComicPrintGround(this.color, {super.key, required super.child});
+
+  /// The colour behind each line of type.
+  final Color color;
+
+  /// The nearest solid lettering background.
+  static Color? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ComicPrintGround>()?.color;
+
+  @override
+  bool updateShouldNotify(ComicPrintGround oldWidget) =>
+      color != oldWidget.color;
 }

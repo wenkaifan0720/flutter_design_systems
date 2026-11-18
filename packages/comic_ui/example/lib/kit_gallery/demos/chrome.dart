@@ -26,51 +26,57 @@ Widget kitChromeDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-Widget kitSpecimenTopBar() => const ComicAppBar(title: 'A page');
+Widget kitSpecimenTopBar() => Builder(
+  builder: (context) => ComicAppBar(title: kitSay(context, 'A page')),
+);
 
 Widget kitSpecimenTabBar() => kitState(
   0,
   (context, value, change) => ComicNavigationBar(
-    destinations: kitTabs,
+    destinations: kitTabs(context),
     selectedIndex: value,
     onDestinationSelected: change,
   ),
 );
 
-Widget kitSpecimenLogo() => const ComicLogo('Huzzah!');
+Widget kitSpecimenLogo() =>
+    Builder(builder: (context) => ComicLogo(kitSay(context, 'Huzzah!')));
 
 Widget kitSpecimenGroupChip() => Builder(
   builder: (context) => ComicGroupChip(
-    'Our six',
+    kitSay(context, 'Our six'),
     people: const [
       ComicPerson(initials: 'AB', size: 26),
       ComicPerson(initials: 'CD', size: 26, fillIndex: 1),
     ],
-    onPressed: () => kitFeedback(context, 'Our six, all of them.'),
+    onPressed: () =>
+        kitFeedback(context, kitSay(context, 'Our six, all of them.')),
   ),
 );
 
 Widget kitSpecimenPhoto() =>
     const ComicMedia(slotId: 'kit-picture', aspect: 16 / 9, label: 'A picture');
 
-Widget kitSpecimenPictureCard() => const ComicRow(
-  spans: [6, 6],
-  children: [
-    ComicPictureCard(
-      slotId: 'kit-picture',
-      image: ComicArtBand(leading: ComicMark(ComicMarks.mug)),
-      title: 'A piece',
-      subtitle: 'A kind',
-      figure: '42',
-    ),
-    ComicPictureCard(
-      slotId: 'kit-picture-2',
-      image: ComicArtBand(ground: 4, leading: ComicMark(ComicMarks.peak)),
-      title: 'Another',
-      subtitle: 'A kind',
-      figure: '38',
-    ),
-  ],
+Widget kitSpecimenPictureCard() => Builder(
+  builder: (context) => ComicRow(
+    spans: [6, 6],
+    children: [
+      ComicPictureCard(
+        slotId: 'kit-picture',
+        image: ComicArtBand(leading: ComicMark(ComicMarks.mug)),
+        title: kitSay(context, 'A piece'),
+        subtitle: kitSay(context, 'A kind'),
+        figure: '42',
+      ),
+      ComicPictureCard(
+        slotId: 'kit-picture-2',
+        image: ComicArtBand(ground: 4, leading: ComicMark(ComicMarks.peak)),
+        title: kitSay(context, 'Another'),
+        subtitle: kitSay(context, 'A kind'),
+        figure: '38',
+      ),
+    ],
+  ),
 );
 
 Widget kitSpecimenLoadingState() =>
@@ -97,14 +103,20 @@ Widget kitSpecimenInput() => Builder(
   builder: (context) => ComicInput(hint: kitSay(context, 'A plain input')),
 );
 
-Widget kitSpecimenScreen() => const ComicScaffold(
-  topBar: ComicAppBar(title: 'A page'),
-  body: ComicSections(
-    children: [
-      ComicPanel(
-        caption: 'A panel',
-        child: ComicKvRow('A label', 'A value', isFirst: true),
-      ),
-    ],
+Widget kitSpecimenScreen() => Builder(
+  builder: (context) => ComicScaffold(
+    topBar: ComicAppBar(title: 'A page'),
+    body: ComicSections(
+      children: [
+        ComicPanel(
+          caption: kitSay(context, 'A panel'),
+          child: ComicKvRow(
+            kitSay(context, 'A label'),
+            kitSay(context, 'A value'),
+            isFirst: true,
+          ),
+        ),
+      ],
+    ),
   ),
 );

@@ -26,100 +26,143 @@ Widget kitFramesDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-Widget kitSpecimenPanel() => const ComicPanel(
-  caption: 'A caption',
-  child: ComicColumn(
+Widget kitSpecimenPanel() => Builder(
+  builder: (context) => ComicPanel(
+    caption: kitSay(context, 'A caption'),
+    child: ComicColumn(
+      children: [
+        ComicPanelHead(kitSay(context, 'A panel')),
+        ComicKvRow(
+          kitSay(context, 'A label'),
+          kitSay(context, 'A value'),
+          isFirst: true,
+        ),
+        ComicKvRow(kitSay(context, 'Another'), '12'),
+      ],
+    ),
+  ),
+);
+
+Widget kitSpecimenTier() => Builder(
+  builder: (context) => ComicColumn(
+    gap: 12,
     children: [
-      ComicPanelHead('A panel'),
-      ComicKvRow('A label', 'A value', isFirst: true),
-      ComicKvRow('Another', '12'),
+      ComicTier(
+        spans: [8, 4],
+        children: [
+          ComicPanel(
+            caption: kitSay(context, 'Spans 8 and 4'),
+            child: Text(
+              kitSay(context, 'Two thirds on a desktop, half on a phone'),
+            ),
+          ),
+          ComicPanel(
+            child: Text(
+              kitSay(context, 'One third on a desktop, half on a phone'),
+            ),
+          ),
+        ],
+      ),
+      ComicTier(
+        phone: ComicTierLayout.strip,
+        children: [
+          ComicPanel(child: Text(kitSay(context, 'One'))),
+          ComicPanel(child: Text(kitSay(context, 'Two'))),
+          ComicPanel(child: Text(kitSay(context, 'Three'))),
+        ],
+      ),
+      ComicTier(
+        phone: ComicTierLayout.stack,
+        children: [
+          ComicPanel(child: Text(kitSay(context, 'One'))),
+          ComicPanel(child: Text(kitSay(context, 'Two'))),
+          ComicPanel(child: Text(kitSay(context, 'Three'))),
+          ComicPanel(child: Text(kitSay(context, 'Four'))),
+          ComicPanel(child: Text(kitSay(context, 'And five'))),
+        ],
+      ),
     ],
   ),
 );
 
-Widget kitSpecimenTier() => const ComicColumn(
-  gap: 12,
-  children: [
-    ComicTier(
-      spans: [8, 4],
-      children: [
-        ComicPanel(
-          caption: 'Spans 8 and 4',
-          child: Text('Two thirds on a desktop, half on a phone'),
-        ),
-        ComicPanel(child: Text('One third on a desktop, half on a phone')),
-      ],
-    ),
-    ComicTier(
-      phone: ComicTierLayout.strip,
-      children: [
-        ComicPanel(child: Text('One')),
-        ComicPanel(child: Text('Two')),
-        ComicPanel(child: Text('Three')),
-      ],
-    ),
-    ComicTier(
-      phone: ComicTierLayout.stack,
-      children: [
-        ComicPanel(child: Text('One')),
-        ComicPanel(child: Text('Two')),
-        ComicPanel(child: Text('Three')),
-        ComicPanel(child: Text('Four')),
-        ComicPanel(child: Text('And five')),
-      ],
-    ),
-  ],
+Widget kitSpecimenPanelStack() => Builder(
+  builder: (context) => ComicTier(
+    spans: [6, 6],
+    children: [
+      ComicPanel(
+        child: Text(kitSay(context, 'A panel beside a stack, as tall as both')),
+      ),
+      ComicPanelStack(
+        children: [
+          ComicPanel(child: Text(kitSay(context, 'Upper'))),
+          ComicPanel(child: Text(kitSay(context, 'Lower'))),
+        ],
+      ),
+    ],
+  ),
 );
 
-Widget kitSpecimenPanelStack() => const ComicTier(
-  spans: [6, 6],
-  children: [
-    ComicPanel(child: Text('A panel beside a stack, as tall as both')),
-    ComicPanelStack(
-      children: [
-        ComicPanel(child: Text('Upper')),
-        ComicPanel(child: Text('Lower')),
-      ],
-    ),
-  ],
+Widget kitSpecimenCaption() => Builder(
+  builder: (context) => ComicColumn(
+    gap: 8,
+    children: [
+      ComicCaption(kitSay(context, 'Meanwhile, by the lake…')),
+      ComicCaption(
+        kitSay(context, 'A caption in the shade'),
+        tone: ComicSpeaker.group,
+      ),
+      ComicCaption(kitSay(context, 'For you'), tone: ComicSpeaker.currentUser),
+      ComicCaption(
+        kitSay(context, 'Free in the page, under a line of its own'),
+        free: true,
+      ),
+    ],
+  ),
 );
 
-Widget kitSpecimenCaption() => const ComicColumn(
-  gap: 8,
-  children: [
-    ComicCaption('Meanwhile, by the lake…'),
-    ComicCaption('A caption in the shade', tone: ComicSpeaker.group),
-    ComicCaption('For you', tone: ComicSpeaker.currentUser),
-    ComicCaption('Free in the page, under a line of its own', free: true),
-  ],
+Widget kitSpecimenWell() => Builder(
+  builder: (context) => ComicGridOf(
+    columns: 2,
+    children: [
+      ComicWell(child: Text(kitSay(context, 'A quiet well'))),
+      ComicWell(
+        lamp: true,
+        child: Text(kitSay(context, 'The one that matters')),
+      ),
+    ],
+  ),
 );
 
-Widget kitSpecimenWell() => const ComicGridOf(
-  columns: 2,
-  children: [
-    ComicWell(child: Text('A quiet well')),
-    ComicWell(lamp: true, child: Text('The one that matters')),
-  ],
+Widget kitSpecimenSectionHead() => Builder(
+  builder: (context) => ComicSectionHeader(
+    kitSay(context, 'A section'),
+    note: kitSay(context, 'its note'),
+  ),
 );
-
-Widget kitSpecimenSectionHead() =>
-    const ComicSectionHeader('A section', note: 'its note');
 
 Widget kitSpecimenPanelHead() => Builder(
   builder: (context) => ComicPanelHead(
-    'A panel head',
-    sub: 'A line under it',
-    more: 'See all',
+    kitSay(context, 'A panel head'),
+    sub: kitSay(context, 'A line under it'),
+    more: kitSay(context, 'See all'),
     onMore: () => kitFeedback(context, 'Everything under this head.'),
   ),
 );
 
-Widget kitSpecimenLetters() => const ComicLetters('Any words in the lettering');
+Widget kitSpecimenLetters() => Builder(
+  builder: (context) =>
+      ComicLetters(kitSay(context, 'Any words in the lettering')),
+);
 
-Widget kitSpecimenLabel() => const ComicColumn(
-  gap: 6,
-  // Its own words, so the section's head above it isn't printed twice.
-  children: [ComicLabel('Delivery'), ComicLabel('Optional', quiet: true)],
+Widget kitSpecimenLabel() => Builder(
+  builder: (context) => ComicColumn(
+    gap: 6,
+    // Its own words, so the section's head above it isn't printed twice.
+    children: [
+      ComicLabel(kitSay(context, 'Delivery')),
+      ComicLabel(kitSay(context, 'Optional'), quiet: true),
+    ],
+  ),
 );
 
 Widget kitSpecimenTag() => Builder(
@@ -140,14 +183,19 @@ Widget kitSpecimenStars() => const ComicStars(4, size: 20);
 
 Widget kitSpecimenMore() => Builder(
   builder: (context) => ComicMoreLink(
-    'See all of it',
-    onPressed: () => kitFeedback(context, 'The whole list.'),
+    kitSay(context, 'See all of it'),
+    onPressed: () => kitFeedback(context, kitSay(context, 'The whole list.')),
   ),
 );
 
-Widget kitSpecimenIndicia() => const ComicIndicia(
-  'Every issue a neutral sample; nothing here is anyone real.',
-  lead: 'No. 27, this month.',
+Widget kitSpecimenIndicia() => Builder(
+  builder: (context) => ComicIndicia(
+    kitSay(
+      context,
+      'Every issue a neutral sample; nothing here is anyone real.',
+    ),
+    lead: kitSay(context, 'No. 27, this month.'),
+  ),
 );
 
 Widget kitSpecimenRating() => kitState(

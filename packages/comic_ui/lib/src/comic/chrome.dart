@@ -22,6 +22,7 @@ import 'theme.dart';
 import 'localizations.dart';
 import 'press.dart';
 import 'internal/cap_label.dart';
+import 'internal/lettering.dart' show comicDisplayFor;
 import 'knobs.dart' show ComicSpace;
 
 class _NavTap extends StatelessWidget {
@@ -276,11 +277,11 @@ class ComicNavigationBar extends StatelessWidget {
     final t = ComicTheme.of(context);
     final c = t.colors;
     final bottom = MediaQuery.paddingOf(context).bottom;
-    Widget word(String w, Color ink) => FittedBox(
-      fit: BoxFit.scaleDown,
+    Widget word(String w, Color ink) => Padding(
+      padding: const EdgeInsets.symmetric(horizontal: ComicSpace.tight),
       child: Text(
         w.toUpperCase(),
-        maxLines: 1,
+        textAlign: TextAlign.center,
         style: t.type.letter(16, lineHeight: 1, color: ink, tracking: .06),
       ),
     );
@@ -399,7 +400,9 @@ class ComicNavigationBar extends StatelessWidget {
           10 + bottom,
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: action == null
+              ? CrossAxisAlignment.start
+              : CrossAxisAlignment.end,
           children: [
             for (var i = 0; i <= destinations.length; i++) ...[
               if (action != null && i == (destinations.length + 1) ~/ 2)
@@ -488,7 +491,7 @@ class _TabAct extends StatelessWidget {
 
 // --- What the generator's routes, previews and page stubs stand on. ---
 
-/// One tab as a generated app declares it: its glyph, its label and the walkthrough key on its hit target.
+/// A tab with an icon, a label and an optional key for its tap target.
 ///
 /// ```dart
 /// ComicTab(ComicGlyphs.house, 'Home', ValueKey('open-home'))
@@ -576,7 +579,10 @@ class ComicScaffold extends StatelessWidget {
         : ComicColumn(
             gap: 16,
             children: [
-              Text(title.toUpperCase(), style: t.type.section),
+              Text(
+                title.toUpperCase(),
+                style: comicDisplayFor(title, t.type.section),
+              ),
               if (scroll) body else ComicGrow(child: body),
             ],
           );
@@ -848,7 +854,10 @@ class ComicAppBar extends StatelessWidget {
               title!.toUpperCase(),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: t.type.letter(t.desk ? 34 : 26, lineHeight: 1),
+              style: comicDisplayFor(
+                title!,
+                t.type.letter(t.desk ? 34 : 26, lineHeight: 1),
+              ),
             ),
           )
         : name.isNotEmpty

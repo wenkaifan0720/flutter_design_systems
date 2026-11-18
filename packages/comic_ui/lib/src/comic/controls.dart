@@ -318,9 +318,10 @@ class _Filled extends StatelessWidget {
       builder: (context, states) {
         final look = comicStyleOf(layers, states);
         final ink = look.foreground ?? (destructive ? c.card : c.onPrimary);
-        final text = (small ? t.type.buttonSmall : t.type.button)
-            .merge(look.textStyle)
-            .copyWith(color: ink);
+        final text = comicDisplayFor(
+          label,
+          small ? t.type.buttonSmall : t.type.button,
+        ).merge(look.textStyle).copyWith(color: ink);
         final minimum = look.minimumSize;
         // A field's height at every density (ComicTrack.fieldHeight): a button beside a field or a select stands as
         // tall as it (compact had buttons at 40 beside fields at 44).
@@ -466,9 +467,10 @@ class _Outlined extends StatelessWidget {
       builder: (context, states) {
         final look = comicStyleOf(layers, states);
         final ink = look.foreground ?? (c.dark ? c.text : c.onPaper);
-        final text = (small ? t.type.buttonSmall : t.type.button)
-            .merge(look.textStyle)
-            .copyWith(color: ink);
+        final text = comicDisplayFor(
+          label,
+          small ? t.type.buttonSmall : t.type.button,
+        ).merge(look.textStyle).copyWith(color: ink);
         final minimum = look.minimumSize;
         // A field's height at every density (ComicTrack.fieldHeight): a button beside a field or a select stands as
         // tall as it (compact had buttons at 40 beside fields at 44).
@@ -1575,14 +1577,7 @@ class ComicSelectField extends StatelessWidget {
                 gap: 10,
                 fillShare: .3,
                 children: [
-                  CapLabel(
-                    child: Text(
-                      value,
-                      style: text,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
+                  CapLabel(child: Text(value, style: text)),
                   if (note != null)
                     Text(
                       note!,
@@ -3095,10 +3090,10 @@ class _Action extends StatelessWidget {
             look.foreground ??
             (danger ? t.colors.tones.danger : t.colors.shadeText);
         final rim = comicRim(t, look, ink);
-        final letters =
-            (size == ComicButtonSize.small ? t.type.buttonSmall : t.type.button)
-                .merge(look.textStyle)
-                .copyWith(color: ink);
+        final letters = comicDisplayFor(
+          label,
+          size == ComicButtonSize.small ? t.type.buttonSmall : t.type.button,
+        ).merge(look.textStyle).copyWith(color: ink);
         return AnimatedComicShape(
           shape: look.shape ?? t.shapes.small,
           builder: (context, shape) => ComicStateDecoration(

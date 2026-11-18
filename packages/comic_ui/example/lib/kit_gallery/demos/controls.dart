@@ -100,21 +100,24 @@ Widget kitSpecimenSelectField() => kitState(
     matchAnchorWidth: true,
     items: [
       for (final day in const ['Thursday', 'Friday'])
-        ComicMenuItem(day, day, selected: day == value),
+        ComicMenuItem(day, kitSay(context, day), selected: day == value),
     ],
     onSelected: change,
-    builder: (context, open) =>
-        ComicSelectField(value: value, note: 'Delivery day', onPressed: open),
+    builder: (context, open) => ComicSelectField(
+      value: kitSay(context, value),
+      note: kitSay(context, 'Delivery day'),
+      onPressed: open,
+    ),
   ),
 );
 
 Widget kitSpecimenChoices() => kitState(
   'all',
   (context, value, change) => ComicChoices(
-    options: const [
-      ComicChoice('All', value: 'all'),
-      ComicChoice('New', value: 'new'),
-      ComicChoice('In stock', value: 'stock'),
+    options: [
+      ComicChoice(kitSay(context, 'All'), value: 'all'),
+      ComicChoice(kitSay(context, 'New'), value: 'new'),
+      ComicChoice(kitSay(context, 'In stock'), value: 'stock'),
     ],
     value: value,
     onChanged: change,
@@ -128,13 +131,15 @@ Widget kitSpecimenChoiceBox() => kitState(
     alignment: AlignmentDirectional.centerStart,
     child: ComicChoiceBox(
       selected: value,
-      label: 'Your own content',
+      label: kitSay(context, 'Your own content'),
       onPressed: () => change(!value),
       padding: const EdgeInsets.all(12),
       child: Builder(
         // Resolve the title inside the choice's selected/unselected ink scope.
-        builder: (context) =>
-            Text('Your own content', style: ComicTheme.of(context).type.title),
+        builder: (context) => Text(
+          kitSay(context, 'Your own content'),
+          style: ComicTheme.of(context).type.title,
+        ),
       ),
     ),
   ),
@@ -148,7 +153,7 @@ Widget kitSpecimenChip() => kitState(
     children: [
       for (final label in ['Mild', 'Hot'])
         ComicChip(
-          label,
+          kitSay(context, label),
           selected: value == label,
           onPressed: () => change(label),
         ),
@@ -156,34 +161,36 @@ Widget kitSpecimenChip() => kitState(
   ),
 );
 
-Widget kitSpecimenCheck() => Wrap(
-  spacing: 12,
-  children: [
-    kitState(
-      true,
-      (context, value, change) => ComicCheckbox(
-        label: 'Keep this issue',
-        value: value,
-        onChanged: (next) => change(next ?? false),
+Widget kitSpecimenCheck() => Builder(
+  builder: (context) => Wrap(
+    spacing: 12,
+    children: [
+      kitState(
+        true,
+        (context, value, change) => ComicCheckbox(
+          label: kitSay(context, 'Keep this issue'),
+          value: value,
+          onChanged: (next) => change(next ?? false),
+        ),
       ),
-    ),
-    kitState(
-      false,
-      (context, value, change) => ComicCheckbox(
-        label: 'Send updates',
-        value: value,
-        onChanged: (next) => change(next ?? false),
+      kitState(
+        false,
+        (context, value, change) => ComicCheckbox(
+          label: kitSay(context, 'Send updates'),
+          value: value,
+          onChanged: (next) => change(next ?? false),
+        ),
       ),
-    ),
-  ],
+    ],
+  ),
 );
 
 Widget kitSpecimenStepper() => kitState(
   2,
   (context, value, change) => ComicNumberField(
     value: value,
-    unit: 'people',
-    note: 'Up to six',
+    unit: kitSay(context, 'people'),
+    note: kitSay(context, 'Up to six'),
     onChanged: change,
     min: 1,
     max: 6,
@@ -245,10 +252,10 @@ Widget kitSpecimenSearch() => Builder(
 Widget kitSpecimenSelect() => kitState(
   'print',
   (context, value, change) => ComicSelect<String>(
-    label: 'Format',
-    options: const [
-      ComicSelectOption('print', 'Print'),
-      ComicSelectOption('digital', 'Digital'),
+    label: kitSay(context, 'Format'),
+    options: [
+      ComicSelectOption('print', kitSay(context, 'Print')),
+      ComicSelectOption('digital', kitSay(context, 'Digital')),
     ],
     value: value,
     onChanged: change,
@@ -257,10 +264,10 @@ Widget kitSpecimenSelect() => kitState(
 Widget kitSpecimenRadio() => kitState(
   'post',
   (context, value, change) => ComicRadioGroup<String>(
-    label: 'Delivery',
-    options: const [
-      ComicRadio('post', 'By post'),
-      ComicRadio('collect', 'Collect'),
+    label: kitSay(context, 'Delivery'),
+    options: [
+      ComicRadio('post', kitSay(context, 'By post')),
+      ComicRadio(kitSay(context, 'collect'), kitSay(context, 'Collect')),
     ],
     value: value,
     onChanged: change,
@@ -270,9 +277,9 @@ Widget kitSpecimenSegmented() => kitState(
   'all',
   (context, value, change) => ComicSegmentedButton<String>(
     label: 'View',
-    segments: const [
-      ComicButtonSegment('all', 'All'),
-      ComicButtonSegment('saved', 'Saved'),
+    segments: [
+      ComicButtonSegment(kitSay(context, 'all'), kitSay(context, 'All')),
+      ComicButtonSegment(kitSay(context, 'saved'), kitSay(context, 'Saved')),
     ],
     value: value,
     onChanged: change,
@@ -286,8 +293,11 @@ Widget kitSpecimenTextArea() => Builder(
 );
 Widget kitSpecimenCheckRow() => kitState(
   true,
-  (context, value, change) =>
-      ComicCheckRow(label: 'Keep a copy', value: value, onChanged: change),
+  (context, value, change) => ComicCheckRow(
+    label: kitSay(context, 'Keep a copy'),
+    value: value,
+    onChanged: change,
+  ),
 );
 
 Widget kitSpecimenFileDrop() => kitState(
@@ -296,9 +306,17 @@ Widget kitSpecimenFileDrop() => kitState(
     ComicDroppedFile('page-03.jpg', size: '1.1 MB', progress: .6),
   ],
   (context, value, change) => ComicFileUpload(
-    label: 'Cover art',
-    hint: 'PNG or JPG, up to 10\u00A0MB',
-    files: value,
+    label: kitSay(context, 'Cover art'),
+    hint: kitSay(context, 'PNG or JPG, up to 10\u00A0MB'),
+    files: [
+      for (final file in value)
+        ComicDroppedFile(
+          file.name,
+          size: file.size == null ? null : kitSay(context, file.size!),
+          progress: file.progress,
+          error: file.error,
+        ),
+    ],
     onChoose: () => change([
       ...value,
       ComicDroppedFile('page-${value.length + 1}.png', size: '0.8 MB'),

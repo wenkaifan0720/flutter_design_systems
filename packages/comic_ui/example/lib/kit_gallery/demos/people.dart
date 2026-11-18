@@ -51,13 +51,21 @@ Widget kitSpecimenPeople() => const ComicPeople([
   ComicPerson(initials: 'KL', size: 28),
 ]);
 
-Widget kitSpecimenLineup() => const ComicLineup([
-  ComicCast('Sam', portrait: ComicPortrait(ComicBust.bob)),
-  ComicCast(
-    'You',
-    portrait: ComicPortrait(ComicBust.puff),
-    isCurrentUser: true,
-  ),
-  ComicCast('Alex', portrait: ComicPortrait(ComicBust.spikes)),
-  ComicCast('Robin', portrait: ComicPortrait(ComicBust.topknot)),
-]);
+Widget kitSpecimenLineup() => Builder(
+  builder: (context) => ComicLineup([
+    ComicCast(kitSay(context, 'Sam'), portrait: ComicPortrait(ComicBust.bob)),
+    ComicCast(
+      kitSay(context, 'You'),
+      portrait: ComicPortrait(ComicBust.puff),
+      isCurrentUser: true,
+    ),
+    ComicCast(
+      kitSay(context, 'Alex'),
+      portrait: ComicPortrait(ComicBust.spikes),
+    ),
+    ComicCast(
+      kitSay(context, 'Robin'),
+      portrait: ComicPortrait(ComicBust.topknot),
+    ),
+  ]),
+);

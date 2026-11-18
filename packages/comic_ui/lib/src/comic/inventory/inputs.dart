@@ -19,6 +19,7 @@ import '../component_themes.dart';
 import '../controls.dart';
 import '../internal/cap_label.dart';
 import '../internal/field_icon.dart';
+import '../internal/lettering.dart' show comicDisplayFor;
 import '../internal/track.dart';
 import '../editing.dart';
 import '../glyphs.dart';
@@ -333,9 +334,8 @@ mixin _OwnedFocus<W extends StatefulWidget> on State<W> {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-/// A password: the text field's frame with a show and hide control at its end that keeps the caret where it was. The
-/// behaviour is the design kit's `DesignPasswordReveal`; with [hideOnBlur] a shown password hides again when focus
-/// leaves.
+/// A password field with a visibility button that preserves the caret position.
+/// When [hideOnBlur] is true, leaving the field hides the password.
 ///
 /// ```dart
 /// ComicPasswordField(label: 'Password', controller: password, onSubmitted: (_) => signIn())
@@ -516,9 +516,9 @@ class _ComicPasswordFieldState extends State<ComicPasswordField>
   }
 }
 
-/// A field and its add-ons in one inked frame: a glyph or a unit before or after the words, a button at the end. The
-/// frame lights while anything inside has focus, and a tap on it or a plain add-on puts the caret in the field (the
-/// design kit's `DesignInputGroup`).
+/// A text field with optional leading and trailing widgets in a shared frame.
+/// The frame highlights when a child has focus. Tapping the frame or a
+/// noninteractive accessory focuses the text field.
 ///
 /// ```dart
 /// ComicInputGroup(label: 'Weight', leading: const [Icon(ComicGlyphs.search)], trailing: const [Text('kg')], keyboardType: TextInputType.number)
@@ -863,93 +863,105 @@ class _ComicMultiSelectState<T extends Object>
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
     final words = ComicLocalizations.of(context);
-    final input = DesignTagInput<T>(
-      values: widget.values,
-      onChanged: widget.onChanged,
-      options: widget.options,
-      search: widget.search,
-      debounceDuration: widget.debounceDuration,
-      loadingBuilder: widget.search == null
-          ? null
-          : (context) => comicSearchNote(
-              context,
-              DesignLocalizations.of(context).loadingLabel,
-            ),
-      errorBuilder: widget.search == null
-          ? null
-          : (context, failure) => comicSearchFailed(context, failure),
-      displayStringForOption: _words,
-      onCreate: widget.onCreate,
-      maxTags: widget.maxTags,
-      isOptionEnabled: widget.isOptionEnabled,
-      // The pointer's row and the keys' wear the same dots: one place, the pointer moving it.
-      highlightFollowsPointer: true,
-      focusNode: focus,
-      semanticLabel: widget.label,
-      deleteLabel: words.delete,
-      surfaceBuilder: (context, list) => ComicRaisedFrame(child: list),
-      // Its options' words start on the field's words.
-      optionBuilder: (context, option, states) => ComicMenuRowFace(
-        states: states,
-        label: _words(option),
-        start: comicFieldListWords(t),
-      ),
-      tagBuilder: (context, value, tag) => _ComicTag(
-        label: _words(value),
-        focused: tag.focused,
-        onRemove: widget.enabled ? tag.onDeleted : null,
-      ),
-      // The editor spans the face, its words on the field's keyline, so the suggestions open from the face's leading
-      // edge at its width (the list stands under the editor).
-      fieldBuilder: (context, field) => Padding(
-        padding: EdgeInsets.symmetric(horizontal: comicFieldWordsAt(t)),
-        child: ComicBareEditor(
-          focusNode: field.focusNode,
-          autofocus: widget.autofocus,
-          controller: field.controller,
-          label: widget.label,
-          hint: widget.values.isEmpty ? widget.hint : null,
-          semanticHint: widget.error ?? widget.helper,
-          enabled: widget.enabled,
-          // Enter adds a tag and the editor keeps the focus for the next, as a tag input's does. The add runs here, with
-          // no onSubmitted: a field told of a submit that keeps its focus has its text input restarted, and in a
-          // browser the restarted input takes no typing.
-          onEditingComplete: field.submit,
-        ),
-      ),
-      layoutBuilder: (context, tags, field) => ListenableBuilder(
-        listenable: focus,
-        builder: (context, _) => _fieldFrame(
-          context,
-          {
-            if (focus.hasFocus) WidgetState.focused,
-            if (widget.error != null) WidgetState.error,
-            if (!widget.enabled) WidgetState.disabled,
-          },
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (tags.isNotEmpty)
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    comicFieldWordsAt(t),
-                    8,
-                    comicFieldWordsAt(t),
-                    0,
-                  ),
-                  child: Wrap(
-                    spacing: ComicSpace.close,
-                    runSpacing: ComicSpace.close,
-                    children: tags,
-                  ),
+    final input = ListenableBuilder(
+      listenable: focus,
+      builder: (context, _) {
+        final states = <WidgetState>{
+          if (focus.hasFocus) WidgetState.focused,
+          if (widget.error != null) WidgetState.error,
+          if (!widget.enabled) WidgetState.disabled,
+        };
+        final style = comicStyleOf([t.textFieldTheme], states);
+        final tagInset =
+            comicRim(t, style, t.colors.nightLine).strokeInset +
+            ComicSpace.close;
+        final tagShape = comicInsetShape(
+          style.shape ?? t.shapes.small,
+          tagInset,
+        );
+        return DesignTagInput<T>(
+          values: widget.values,
+          onChanged: widget.onChanged,
+          options: widget.options,
+          search: widget.search,
+          debounceDuration: widget.debounceDuration,
+          loadingBuilder: widget.search == null
+              ? null
+              : (context) => comicSearchNote(
+                  context,
+                  DesignLocalizations.of(context).loadingLabel,
                 ),
-              field,
-            ],
+          errorBuilder: widget.search == null
+              ? null
+              : (context, failure) => comicSearchFailed(context, failure),
+          displayStringForOption: _words,
+          onCreate: widget.onCreate,
+          maxTags: widget.maxTags,
+          isOptionEnabled: widget.isOptionEnabled,
+          // Keyboard and pointer share one active option.
+          highlightFollowsPointer: true,
+          focusNode: focus,
+          semanticLabel: widget.label,
+          deleteLabel: words.delete,
+          surfaceBuilder: (context, list) => ComicRaisedFrame(child: list),
+          // Its options' words start on the field's words.
+          optionBuilder: (context, option, states) => ComicMenuRowFace(
+            states: states,
+            label: _words(option),
+            start: comicFieldListWords(t),
           ),
-          bleed: true,
-        ),
-      ),
+          tagBuilder: (context, value, tag) => _ComicTag(
+            shape: tagShape,
+            label: _words(value),
+            focused: tag.focused,
+            onRemove: widget.enabled ? tag.onDeleted : null,
+          ),
+          // The editor spans the face, its words on the field's keyline, so the suggestions open from the face's leading
+          // edge at its width (the list stands under the editor).
+          fieldBuilder: (context, field) => Padding(
+            padding: EdgeInsets.symmetric(horizontal: comicFieldWordsAt(t)),
+            child: ComicBareEditor(
+              focusNode: field.focusNode,
+              autofocus: widget.autofocus,
+              controller: field.controller,
+              label: widget.label,
+              hint: widget.values.isEmpty ? widget.hint : null,
+              semanticHint: widget.error ?? widget.helper,
+              enabled: widget.enabled,
+              // Enter adds a tag and the editor keeps the focus for the next, as a tag input's does. The add runs here, with
+              // no onSubmitted: a field told of a submit that keeps its focus has its text input restarted, and in a
+              // browser the restarted input takes no typing.
+              onEditingComplete: field.submit,
+            ),
+          ),
+          layoutBuilder: (context, tags, field) => _fieldFrame(
+            context,
+            states,
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (tags.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      tagInset,
+                      ComicSpace.close,
+                      tagInset,
+                      0,
+                    ),
+                    child: Wrap(
+                      spacing: ComicSpace.close,
+                      runSpacing: ComicSpace.close,
+                      children: tags,
+                    ),
+                  ),
+                field,
+              ],
+            ),
+            bleed: true,
+          ),
+        );
+      },
     );
     // From 600 up the field keeps to its own width (at most 320) at its column's start.
     return comicDropdownWidth(
@@ -970,7 +982,14 @@ class _ComicMultiSelectState<T extends Object>
 /// One chosen value: the chip's inked tab with a cross the pointer takes (the keyboard's Backspace and the screen
 /// reader's action are the tag input's own).
 class _ComicTag extends StatelessWidget {
-  const _ComicTag({required this.label, required this.focused, this.onRemove});
+  const _ComicTag({
+    required this.shape,
+    required this.label,
+    required this.focused,
+    this.onRemove,
+  });
+
+  final OutlinedBorder shape;
 
   final String label;
   final bool focused;
@@ -979,7 +998,6 @@ class _ComicTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context), c = t.colors;
-    final shape = t.shapes.small;
     return ComicHighlight(
       states: {if (focused) WidgetState.focused},
       shape: shape,
@@ -1036,9 +1054,9 @@ class _ComicTag extends StatelessWidget {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-/// A span between two values on the slider's inked rail: two knobs that never cross, the stretch between them filled.
-/// A press or a drag on the rail moves the nearer knob; each knob is its own labelled slider for the keyboard and a
-/// screen reader (the design kit's `DesignRangeSlider`).
+/// A slider with two handles that select the ends of a range.
+/// Pressing or dragging the track moves the nearest handle. Each handle has
+/// its own keyboard focus and screen-reader label.
 ///
 /// ```dart
 /// ComicRangeSlider(label: 'Price', values: const DesignRangeValues(20, 80), max: 100, onChanged: (next) => setState(() => price = next))
@@ -1155,6 +1173,8 @@ class ComicRangeSlider extends StatelessWidget {
                     ExcludeSemantics(
                       child: Text(
                         '${_words(values.start)} – ${_words(values.end)}',
+                        // A numeric interval reads from its lower to its upper endpoint.
+                        textDirection: TextDirection.ltr,
                         style: t.type.body,
                       ),
                     ),
@@ -1204,7 +1224,7 @@ class ComicRangeSlider extends StatelessWidget {
 }
 
 /// The slider's knob: a caption-filled disc inked round, a size larger while it is dragged, ringed under the
-/// keyboard's focus. For a design kit handle's builder.
+/// keyboard's focus.
 class _Knob extends StatelessWidget {
   /// Creates a [_Knob].
   const _Knob({required this.states, this.enabled = true});
@@ -1305,11 +1325,10 @@ String _locale(BuildContext context) {
   }
 }
 
-/// A month or two of the date picker's caption cells over a calendar the caller holds: one day, a span, or several
-/// days, as the controller's mode says. Its days are the date picker's ([ComicDatePicker.dayWidth] square, a month at
-/// most [ComicDatePicker.maxWidth] wide), and the days of the months either side stay blank, as the date picker's. A span's ends wear the caption fill and the days between the reader's tint.
-/// The keys and the screen reader's grid are the design kit's `DesignCalendar` (arrows by day and week, Page Up and
-/// Down by month, Home and End along the week).
+/// A calendar for selecting a day, a range of dates or several days.
+/// The controller sets the selection mode. Arrow keys move by day or week,
+/// Page Up and Page Down move by month, and Home and End move to the bounds
+/// of the week.
 ///
 /// ```dart
 /// ComicCalendar(controller: calendar, onChanged: (day) => setState(() {}))
@@ -1675,7 +1694,10 @@ class _ComicDateRangePickerState extends State<ComicDateRangePicker> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Semantics(liveRegion: true, child: Text(words, style: t.type.section)),
+        Semantics(
+          liveRegion: true,
+          child: Text(words, style: comicDisplayFor(words, t.type.section)),
+        ),
         const SizedBox(height: ComicSpace.close),
         ComicCalendar(
           controller: _calendar,

@@ -394,7 +394,7 @@ class _GalleryAppState extends State<GalleryApp> with WidgetsBindingObserver {
     ];
     ComicNavigationDrawer drawer(ValueChanged<int> select) =>
         ComicNavigationDrawer(
-          label: 'Pages',
+          label: kitSay(context, 'Pages'),
           header: const Padding(
             padding: EdgeInsetsDirectional.only(start: 4, top: 4),
             child: Align(
@@ -414,7 +414,7 @@ class _GalleryAppState extends State<GalleryApp> with WidgetsBindingObserver {
           : ComicIconButton(
               LucideIcons.menu,
               key: const ValueKey('nav/open'),
-              label: 'Pages',
+              label: kitSay(context, 'Pages'),
               onPressed: () async {
                 final chosen = await showComicNavigationDrawer<int>(
                   context,
@@ -428,7 +428,7 @@ class _GalleryAppState extends State<GalleryApp> with WidgetsBindingObserver {
         ComicIconButton(
           night ? LucideIcons.sun : LucideIcons.moon,
           key: const ValueKey('appearance'),
-          label: night ? 'Day' : 'Night',
+          label: kitSay(context, night ? 'Day' : 'Night'),
           onPressed: () => setState(
             () => _brightness = night ? Brightness.light : Brightness.dark,
           ),
@@ -436,7 +436,7 @@ class _GalleryAppState extends State<GalleryApp> with WidgetsBindingObserver {
         ComicIconButton(
           LucideIcons.slidersHorizontal,
           key: const ValueKey('customize'),
-          label: 'Customize',
+          label: kitSay(context, 'Customize'),
           selected: _customizing,
           onPressed: () => setState(() => _customizing = !_customizing),
         ),
@@ -525,6 +525,7 @@ class CustomizePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String say(String en) => kitSay(context, en);
     final c = custom;
     final chosen = preset;
     final choose = onPreset;
@@ -537,7 +538,7 @@ class CustomizePanel extends StatelessWidget {
           SizedBox(
             width: 220,
             child: ComicSelect<String>(
-              label: 'Preset',
+              label: say('Preset'),
               value: chosen,
               options: [
                 for (final id in ComicThemeData.presets)
@@ -547,63 +548,63 @@ class CustomizePanel extends StatelessWidget {
             ),
           ),
         _Labelled(
-          'Strokes',
+          say('Strokes'),
           ComicSegmentedButton<bool>(
-            label: 'Strokes',
+            label: say('Strokes'),
             value: c.bold,
-            segments: const [
-              ComicButtonSegment(false, 'As drawn'),
-              ComicButtonSegment(true, 'Bold'),
+            segments: [
+              ComicButtonSegment(false, say('As drawn')),
+              ComicButtonSegment(true, say('Bold')),
             ],
             onChanged: (v) => onChanged(c.copyWith(bold: v)),
           ),
         ),
         _Labelled(
-          'Density',
+          say('Density'),
           ComicSegmentedButton<ComicDensity>(
-            label: 'Density',
+            label: say('Density'),
             value: c.density,
-            segments: const [
-              ComicButtonSegment(ComicDensity.standard, 'Standard'),
-              ComicButtonSegment(ComicDensity.comfortable, 'Comfortable'),
-              ComicButtonSegment(ComicDensity.compact, 'Compact'),
+            segments: [
+              ComicButtonSegment(ComicDensity.standard, say('Standard')),
+              ComicButtonSegment(ComicDensity.comfortable, say('Comfortable')),
+              ComicButtonSegment(ComicDensity.compact, say('Compact')),
             ],
             onChanged: (v) => onChanged(c.copyWith(density: v)),
           ),
         ),
         _Labelled(
-          'Families',
+          say('Families'),
           ComicSegmentedButton<bool>(
-            label: 'Families',
+            label: say('Families'),
             value: c.oneFace,
-            segments: const [
-              ComicButtonSegment(false, 'Bangers and Shantell'),
-              ComicButtonSegment(true, 'Shantell alone'),
+            segments: [
+              ComicButtonSegment(false, say('Bangers and Shantell')),
+              ComicButtonSegment(true, say('Shantell alone')),
             ],
             onChanged: (v) => onChanged(c.copyWith(oneFace: v)),
           ),
         ),
         _Labelled(
-          'Direction',
+          say('Direction'),
           ComicSegmentedButton<TextDirection>(
-            label: 'Direction',
+            label: say('Direction'),
             value: c.direction,
-            segments: const [
-              ComicButtonSegment(TextDirection.ltr, 'Left to right'),
-              ComicButtonSegment(TextDirection.rtl, 'Right to left'),
+            segments: [
+              ComicButtonSegment(TextDirection.ltr, say('Left to right')),
+              ComicButtonSegment(TextDirection.rtl, say('Right to left')),
             ],
             onChanged: (v) => onChanged(c.copyWith(direction: v)),
           ),
         ),
         _Labelled(
-          'Text scaling',
+          say('Text scaling'),
           ComicSegmentedButton<double>(
-            label: 'Text scaling',
+            label: say('Text scaling'),
             value: c.textScale,
-            segments: const [
-              ComicButtonSegment(1.0, '100%'),
-              ComicButtonSegment(1.5, '150%'),
-              ComicButtonSegment(2.0, '200%'),
+            segments: [
+              ComicButtonSegment(1.0, say('100%')),
+              ComicButtonSegment(1.5, say('150%')),
+              ComicButtonSegment(2.0, say('200%')),
             ],
             onChanged: (v) => onChanged(c.copyWith(textScale: v)),
           ),
@@ -611,10 +612,10 @@ class CustomizePanel extends StatelessWidget {
         SizedBox(
           width: 220,
           child: ComicSelect<String>(
-            label: 'Your own colours',
+            label: say('Your own colours'),
             value: c.colours?.name ?? '',
             options: [
-              const ComicSelectOption('', "The preset's"),
+              ComicSelectOption('', say("The preset's")),
               for (final pair in galleryColours)
                 ComicSelectOption(pair.name, pair.name),
             ],

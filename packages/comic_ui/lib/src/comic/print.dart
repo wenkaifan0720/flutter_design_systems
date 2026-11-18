@@ -7,7 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/geometry.dart';
-import 'internal/lettering.dart' show comicRightToLeftScript;
+import 'internal/lettering.dart' show ComicPrintGround, comicRightToLeftScript;
 import 'theme.dart';
 import 'knobs.dart';
 
@@ -131,12 +131,13 @@ class _ScreenPainter extends CustomPainter {
       o.rowFactor != rowFactor;
 }
 
-/// Ben-Day dots over a large area, behind a [child]. One colour, one screen, on whole device pixels: read at scale 1, 2 and 3
-/// with no moiré. It stands in a `RepaintBoundary` and draws once. Words on dots must meet the contrast bar against the dots:
-/// a `ComicPanel(ground: ...)` keeps its words to the inks that do.
+/// A dot screen for wordless illustrations.
+///
+/// [pitch] sets the distance between dots and [radius] sets their size.
+/// The pattern aligns to device pixels. Give lettering a solid background.
 ///
 /// ```dart
-/// ComicBenDay(color: t.colors.dotTint, pitch: 9, radius: 2.4, child: words)
+/// ComicBenDay(color: t.colors.dotTint, pitch: 9, radius: 2.4)
 /// ```
 class ComicBenDay extends StatelessWidget {
   /// Creates a [ComicBenDay].
@@ -369,7 +370,9 @@ class ComicCoverPrint extends StatelessWidget {
           const Size(900, 520),
           wedges,
         ),
-        child: child ?? _empty,
+        child: child == null
+            ? _empty
+            : ComicPrintGround(c.cover, child: child!),
       ),
     );
   }
@@ -440,7 +443,12 @@ class ComicActionLines extends StatelessWidget {
         const Size(900, 520),
         wedges,
       ),
-      child: child ?? _empty,
+      child: child == null
+          ? _empty
+          : ComicPrintGround(
+              ground ?? ComicTheme.of(context).colors.card,
+              child: child!,
+            ),
     ),
   );
 
@@ -558,12 +566,13 @@ class ComicLettering extends LeafRenderObjectWidget {
     ComicTheme.of(context).colors,
     Directionality.of(context),
     ComicTheme.of(context).typeface,
-  );
+  ).._printGround = ComicPrintGround.of(context);
   @override
   void updateRenderObject(
     BuildContext context,
     RenderComicLettering renderObject,
   ) {
+    renderObject._printGround = ComicPrintGround.of(context);
     renderObject.update(
       this,
       ComicTheme.of(context).colors,
@@ -617,6 +626,7 @@ class RenderComicLettering extends RenderBox
   ComicColors _c;
   TextDirection _dir;
   ComicTypeface _typeface;
+  Color? _printGround;
   final List<(TextPainter, Offset)> _layers = [];
 
   /// The number of painters laid out: each with the same words and the same width.
@@ -658,8 +668,8 @@ class RenderComicLettering extends RenderBox
         : null,
     fontSize: size,
     height: ((size * _w.lineHeight).roundToDouble() - .01) / size,
-    letterSpacing: size * _w.tracking,
-    fontWeight: FontWeight.w400,
+    letterSpacing: _script ? 0 : size * _w.tracking,
+    fontWeight: _script ? FontWeight.w700 : FontWeight.w400,
     color: foreground == null ? color : null,
     foreground: foreground,
     leadingDistribution: TextLeadingDistribution.even,
@@ -824,6 +834,19 @@ class RenderComicLettering extends RenderBox
     final room = size.width - (reach - lead);
     // At the start (0) nothing moves, as before; at the end the run's far edge meets the box's.
     final shift = room > 0 ? room * _across : 0.0;
+    final ground = _printGround;
+    if (ground != null) {
+      final paint = Paint()..color = ground;
+      for (final line in _layers.last.$1.computeLineMetrics()) {
+        final rect = Rect.fromLTWH(
+          shift + line.left,
+          line.baseline - line.ascent,
+          line.width,
+          line.ascent + line.descent,
+        );
+        context.canvas.drawRect(rect.inflate(1).shift(offset), paint);
+      }
+    }
     for (final (p, at) in _layers) {
       p.paint(context.canvas, offset + at + Offset(shift, 0));
     }

@@ -33,7 +33,7 @@ class ComicNavItem {
   /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
 
-  /// The walkthrough key on its hit target.
+  /// The key assigned to the destination’s tap target.
   final Key? key;
 
   /// Printed count or an empty string for a dot; spoken with the destination.

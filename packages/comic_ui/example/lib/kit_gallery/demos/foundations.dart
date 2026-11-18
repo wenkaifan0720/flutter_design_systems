@@ -34,14 +34,20 @@ Widget kitFoundationsDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-Widget kitSpecimenBeside() => ComicBeside(
-  object: const ComicPerson(initials: 'AC', size: 56),
-  child: const ComicColumn(
-    gap: 4,
-    children: [
-      ComicLabel('A label'),
-      ComicKvRow('A name', 'A value', isFirst: true),
-    ],
+Widget kitSpecimenBeside() => Builder(
+  builder: (context) => ComicBeside(
+    object: const ComicPerson(initials: 'AC', size: 56),
+    child: ComicColumn(
+      gap: 4,
+      children: [
+        ComicLabel(kitSay(context, 'A label')),
+        ComicKvRow(
+          kitSay(context, 'A name'),
+          kitSay(context, 'A value'),
+          isFirst: true,
+        ),
+      ],
+    ),
   ),
 );
 
@@ -55,13 +61,19 @@ class KitTypeScale extends StatelessWidget {
     return ComicColumn(
       gap: 8,
       children: [
-        Text('A SECTION', style: t.section),
-        Text('A PANEL', style: t.panel),
-        Text('A LINE IN THE LETTERING', style: t.item),
-        Text('A title on a row', style: t.title),
-        Text('Body words, for what a person reads.', style: t.body),
-        Text('Small words, the line under a title.', style: t.small),
-        Text('A LABEL', style: t.label),
+        Text(kitSay(context, 'A SECTION'), style: t.section),
+        Text(kitSay(context, 'A PANEL'), style: t.panel),
+        Text(kitSay(context, 'A LINE IN THE LETTERING'), style: t.item),
+        Text(kitSay(context, 'A title on a row'), style: t.title),
+        Text(
+          kitSay(context, 'Body words, for what a person reads.'),
+          style: t.body,
+        ),
+        Text(
+          kitSay(context, 'Small words, the line under a title.'),
+          style: t.small,
+        ),
+        Text(kitSay(context, 'A LABEL'), style: t.label),
       ],
     );
   }
@@ -76,15 +88,15 @@ class KitSwatches extends StatelessWidget {
     final t = ComicTheme.of(context);
     final c = t.colors;
     final colours = <(String, Color)>[
-      ('Lamp', c.caption),
-      ('Act', c.primary),
-      ('Shade', c.shade),
-      ('Drama', c.drama),
-      ('Ground', c.background),
-      ('Panel', c.card),
-      ('Well', c.inset),
+      (kitSay(context, 'Lamp'), c.caption),
+      (kitSay(context, 'Act'), c.primary),
+      (kitSay(context, 'Shade'), c.shade),
+      (kitSay(context, 'Drama'), c.drama),
+      (kitSay(context, 'Ground'), c.background),
+      (kitSay(context, 'Panel'), c.card),
+      (kitSay(context, 'Well'), c.inset),
       // The line every frame is drawn in: black by day, cream at night (the print keeps its black contour).
-      ('Line', c.nightLine),
+      (kitSay(context, 'Line'), c.nightLine),
     ];
     // Large text on a phone takes two columns, so no colour's name breaks inside a word.
     final large = MediaQuery.textScalerOf(context).scale(10) > 15;

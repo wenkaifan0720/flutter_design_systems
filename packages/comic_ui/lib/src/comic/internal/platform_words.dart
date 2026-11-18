@@ -14,11 +14,11 @@ import 'package:material_ui/material_ui.dart'
         GlobalMaterialLocalizations,
         MaterialLocalizations;
 
-/// Material's words in the app's language where material_ui knows it, else English. Kept out of the barrel.
+/// The Material localizations for the current locale, with English as the fallback.
 const LocalizationsDelegate<MaterialLocalizations> comicMaterialWordsDelegate =
     _MaterialWords();
 
-/// Cupertino's words in the app's language where cupertino_ui knows it, else English. Kept out of the barrel.
+/// The Cupertino localizations for the current locale, with English as the fallback.
 const LocalizationsDelegate<CupertinoLocalizations>
 comicCupertinoWordsDelegate = _CupertinoWords();
 

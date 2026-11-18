@@ -1,4 +1,4 @@
-// A pointer over a part lays its Ben-Day dots on it and changes nothing else (0.2.0, the second signature move; 0.1.0
+// A pointer over a part lays its tint on it and changes nothing else (0.2.0, the second signature move; 0.1.0
 // showed nothing, polish3 §1). For every pressable, field and slider on every live page, in every corner family: a
 // press that takes presses changes its own face under the pointer and not one pixel more than a hairline beyond its
 // box (a grouped row's rules stand aside at its edge); a disabled or busy press, a field and a slider change nothing;
@@ -198,7 +198,7 @@ void main() {
     final custom = CornerCustom(corners: corners);
     for (final page in livePages) {
       testWidgets(
-        '${corners.name}: a pointer over ${page.id} lays dots on what it presses and nothing else',
+        '${corners.name}: a pointer over ${page.id} tints what it presses and nothing else',
         (tester) async {
           kitShownTheme = (b) => custom.theme('offset', b);
           addTearDown(() => kitShownTheme = null);
@@ -309,7 +309,7 @@ void main() {
               failures.add('$where: $outside pixels change beyond it');
             }
             if (live && inside == 0) {
-              failures.add('$where: no dots under the pointer');
+              failures.add('$where: no tint under the pointer');
             } else if (!live && inside != 0) {
               failures.add(
                 '$where: $inside pixels change, and it takes no press',

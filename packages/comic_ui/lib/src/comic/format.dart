@@ -1,14 +1,12 @@
-/// Comic's display formatting: the times, ranges, days, sums and counts a printed caption prints, in the shapes Comic's
-/// pages write them: 24-hour times with a colon ("19:30"), ranges with an en dash ("19:30–23:00"), days written out
-/// ("Thursday 14 March", "Thu 14 Mar"), sums with two places and thousands commas ("1,420.00", the unit drawn beside
-/// it), counts with commas ("1,512"), a badge's count capped ("99+") and lengths as "45 min" or "1 h 45 min".
+/// Formats English dates, 24-hour times, durations and numbers for Comic captions.
 ///
-/// PURE AND DETERMINISTIC, no intl: a generated app renders inside walkthroughs and golden frames, and a locale-aware
-/// formatter would make one record read differently on two machines. Nothing here reads the clock: the day words take
-/// the moment to measure against as an argument.
+/// [time] uses `19:30`, [range] uses `19:30–23:00`, and [day] uses
+/// `Thursday 14 March`. [sum] returns a number with two decimal places so
+/// the caller can place a currency symbol or unit alongside it.
+/// [dayWord] takes an explicit reference date.
 ///
 /// ```dart
-/// Text(ComicFormat.range(start, end), style: t.type.body)
+/// final hours = ComicFormat.range(DateTime(2026, 3, 14, 9), DateTime(2026, 3, 14, 17));
 /// ```
 abstract final class ComicFormat {
   /// The en dash a range is joined with.

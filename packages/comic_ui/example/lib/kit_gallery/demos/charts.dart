@@ -31,126 +31,161 @@ Widget kitChartsDemo(Brightness brightness) => kitScreen(
   ],
 );
 
-Widget kitSpecimenBar() => const ComicColumn(
-  gap: 14,
-  children: [
-    ComicBar(value: 2, of: 6, label: 'Pages pencilled', figure: '2 of 6'),
-    ComicBar(
-      value: 5,
-      of: 6,
-      ink: ComicBarFill.leading,
-      height: 28,
-      stamp: 'Leads',
-      label: 'Pages inked',
-      figure: '5 of 6',
-    ),
-    ComicBar(
-      value: 3,
-      of: 6,
-      ink: ComicBarFill.currentUser,
-      height: 18,
-      label: 'Your pages',
-      figure: '3 of 6',
-    ),
-  ],
+Widget kitSpecimenBar() => Builder(
+  builder: (context) => ComicColumn(
+    gap: 14,
+    children: [
+      ComicBar(
+        value: 2,
+        of: 6,
+        label: kitSay(context, 'Pages pencilled'),
+        figure: kitSay(context, '2 of 6'),
+      ),
+      ComicBar(
+        value: 5,
+        of: 6,
+        ink: ComicBarFill.leading,
+        height: 28,
+        stamp: kitSay(context, 'Leads'),
+        label: kitSay(context, 'Pages inked'),
+        figure: kitSay(context, '5 of 6'),
+      ),
+      ComicBar(
+        value: 3,
+        of: 6,
+        ink: ComicBarFill.currentUser,
+        height: 18,
+        label: kitSay(context, 'Your pages'),
+        figure: kitSay(context, '3 of 6'),
+      ),
+    ],
+  ),
 );
 
-Widget kitSpecimenTally() => const ComicTally(
-  question: 'Which of them?',
-  subtitle: 'One pick each · 5 of 6 in',
-  of: 6,
-  options: [
-    ComicVote(
-      'The first',
-      count: 3,
-      isLeading: true,
-      stamp: 'Leads',
-      people: [
-        ComicPerson(initials: 'AB', size: 24),
-        ComicPerson(initials: 'CD', size: 24),
-        ComicPerson(initials: 'EF', size: 24),
-      ],
-    ),
-    ComicVote(
-      'The second',
-      note: 'with a note',
-      count: 1,
-      people: [ComicPerson(initials: 'GH', size: 24)],
-    ),
-    ComicVote(
-      'The third',
-      count: 1,
-      people: [ComicPerson(initials: 'IJ', size: 24)],
-    ),
-  ],
-  waiting: 'Waiting on one',
-  yours: 'You picked 1',
+Widget kitSpecimenTally() => Builder(
+  builder: (context) => ComicTally(
+    question: kitSay(context, 'Which of them?'),
+    subtitle: kitSay(context, 'One pick each · 5 of 6 in'),
+    of: 6,
+    options: [
+      ComicVote(
+        kitSay(context, 'The first'),
+        count: 3,
+        isLeading: true,
+        stamp: kitSay(context, 'Leads'),
+        people: [
+          ComicPerson(initials: 'AB', size: 24),
+          ComicPerson(initials: 'CD', size: 24),
+          ComicPerson(initials: 'EF', size: 24),
+        ],
+      ),
+      ComicVote(
+        kitSay(context, 'The second'),
+        note: kitSay(context, 'with a note'),
+        count: 1,
+        people: [ComicPerson(initials: 'GH', size: 24)],
+      ),
+      ComicVote(
+        kitSay(context, 'The third'),
+        count: 1,
+        people: [ComicPerson(initials: 'IJ', size: 24)],
+      ),
+    ],
+    waiting: kitSay(context, 'Waiting on one'),
+    yours: kitSay(context, 'You picked 1'),
+  ),
 );
 
-Widget kitSpecimenBarList() => const ComicBarList(
-  of: 27,
-  entries: [
-    ComicBarEntry('Sam', 25, isLeading: true),
-    ComicBarEntry('You', 24, isCurrentUser: true),
-    ComicBarEntry('Alex', 19),
-    ComicBarEntry('Robin', 17),
-  ],
+Widget kitSpecimenBarList() => Builder(
+  builder: (context) => ComicBarList(
+    of: 27,
+    entries: [
+      ComicBarEntry(kitSay(context, 'Sam'), 25, isLeading: true),
+      ComicBarEntry(kitSay(context, 'You'), 24, isCurrentUser: true),
+      ComicBarEntry(kitSay(context, 'Alex'), 19),
+      ComicBarEntry(kitSay(context, 'Robin'), 17),
+    ],
+  ),
 );
 
-Widget kitSpecimenFlow() => const ComicFlow(
-  into: 'Sam',
-  intoFigure: '237',
-  intoPerson: ComicPerson(initials: 'SD', size: 56),
-  from: [
-    ComicFlowFrom(
-      'You',
-      19,
-      isCurrentUser: true,
-      person: ComicPerson(initials: 'ME', size: 30),
-    ),
-    ComicFlowFrom(
-      'Alex',
-      85,
-      person: ComicPerson(initials: 'AB', size: 30, fillIndex: 1),
-    ),
-    ComicFlowFrom('Robin', 133, person: ComicPerson(initials: 'RC', size: 30)),
-  ],
+Widget kitSpecimenFlow() => Builder(
+  builder: (context) => ComicFlow(
+    into: kitSay(context, 'Sam'),
+    intoFigure: '237',
+    intoPerson: ComicPerson(initials: 'SD', size: 56),
+    from: [
+      ComicFlowFrom(
+        kitSay(context, 'You'),
+        19,
+        isCurrentUser: true,
+        person: ComicPerson(initials: 'ME', size: 30),
+      ),
+      ComicFlowFrom(
+        kitSay(context, 'Alex'),
+        85,
+        person: ComicPerson(initials: 'AB', size: 30, fillIndex: 1),
+      ),
+      ComicFlowFrom(
+        kitSay(context, 'Robin'),
+        133,
+        person: ComicPerson(initials: 'RC', size: 30),
+      ),
+    ],
+  ),
 );
 
-Widget kitSpecimenShares() => const ComicShares(
-  stamp: 'Done',
-  scaleStart: '540 done',
-  scaleEnd: '330 to go',
-  parts: [
-    ComicShare(
-      'The first',
-      540,
-      note: 'Done on the 10th',
-      ink: ComicShareFill.lamp,
-    ),
-    ComicShare('The second', 156, note: 'An estimate'),
-    ComicShare('The third', 90, ink: ComicShareFill.dramaDots),
-    ComicShare('The fourth', 84, ink: ComicShareFill.denseDots),
-  ],
+Widget kitSpecimenShares() => Builder(
+  builder: (context) => ComicShares(
+    stamp: kitSay(context, 'Done'),
+    scaleStart: kitSay(context, '540 done'),
+    scaleEnd: kitSay(context, '330 to go'),
+    parts: [
+      ComicShare(
+        kitSay(context, 'The first'),
+        540,
+        note: kitSay(context, 'Done on the 10th'),
+        ink: ComicShareFill.lamp,
+      ),
+      ComicShare(
+        kitSay(context, 'The second'),
+        156,
+        note: kitSay(context, 'An estimate'),
+      ),
+      ComicShare(
+        kitSay(context, 'The third'),
+        90,
+        ink: ComicShareFill.dramaDots,
+      ),
+      ComicShare(
+        kitSay(context, 'The fourth'),
+        84,
+        ink: ComicShareFill.denseDots,
+      ),
+    ],
+  ),
 );
 
-Widget kitSpecimenUnits() => const ComicUnits([
-  ComicUnitColumn('Jul', 4),
-  ComicUnitColumn('Aug', 3),
-  ComicUnitColumn('Sep', 2),
-  ComicUnitColumn('Oct', 2),
-  ComicUnitColumn('Nov', 3, now: true),
-]);
+Widget kitSpecimenUnits() => Builder(
+  builder: (context) => ComicUnits([
+    ComicUnitColumn(kitSay(context, 'Jul'), 4),
+    ComicUnitColumn(kitSay(context, 'Aug'), 3),
+    ComicUnitColumn(kitSay(context, 'Sep'), 2),
+    ComicUnitColumn(kitSay(context, 'Oct'), 2),
+    ComicUnitColumn(kitSay(context, 'Nov'), 3, now: true),
+  ]),
+);
 
-Widget kitSpecimenPie() => const ComicPieChart(
-  centre: '417',
-  unit: 'in all',
-  slices: [
-    ComicSlice('The most', 200, share: '48%'),
-    ComicSlice('Next', 99, share: '24%'),
-    ComicSlice('Then', 76, share: '18%'),
-    ComicSlice('The rest', 42, share: '10%'),
-  ],
+Widget kitSpecimenPie() => Builder(
+  builder: (context) => ComicPieChart(
+    centre: '417',
+    unit: kitSay(context, 'in all'),
+    slices: [
+      ComicSlice(kitSay(context, 'The most'), 200, share: '48%'),
+      ComicSlice(kitSay(context, 'Next'), 99, share: '24%'),
+      ComicSlice(kitSay(context, 'Then'), 76, share: '18%'),
+      ComicSlice(kitSay(context, 'The rest'), 42, share: '10%'),
+    ],
+  ),
 );
 
 Widget kitSpecimenSegments() => const ComicSegments(
@@ -166,14 +201,16 @@ Widget kitSpecimenCells() =>
 const _weeks = ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5', 'Wk 6'];
 
 // The three chart forms by their shared names (each a ComicChart of that form).
-Widget kitLineChart() => const ComicLineChart(
-  label: 'Pages read each week',
-  labels: _weeks,
-  series: [
-    ComicChartSeries('You', [12, 18, 16, 24, 21, 27]),
-    ComicChartSeries('The group', [10, 14, 15, 17, 18, 20]),
-  ],
-  band: ComicChartBand(15, 22, label: 'Target 15 to 22'),
+Widget kitLineChart() => Builder(
+  builder: (context) => ComicLineChart(
+    label: kitSay(context, 'Pages read each week'),
+    labels: [for (final week in _weeks) kitSay(context, week)],
+    series: [
+      ComicChartSeries(kitSay(context, 'You'), [12, 18, 16, 24, 21, 27]),
+      ComicChartSeries(kitSay(context, 'The group'), [10, 14, 15, 17, 18, 20]),
+    ],
+    band: ComicChartBand(15, 22, label: kitSay(context, 'Target 15 to 22')),
+  ),
 );
 
 /// Gaps, shown where they are the point: a reading that never came breaks the line rather than guessing.
@@ -182,48 +219,82 @@ Widget kitGapChart() => Builder(
     gap: 8,
     children: [
       Text(
-        'The tracker was off on Wednesday and Thursday: the line breaks there instead of guessing.',
+        kitSay(
+          context,
+          'The tracker was off on Wednesday and Thursday: the line breaks there instead of guessing.',
+        ),
         style: ComicTheme.of(context).type.body,
       ),
-      const ComicChart(
-        label: 'Hours slept each night',
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      ComicChart(
+        label: kitSay(context, 'Hours slept each night'),
+        labels: [
+          kitSay(context, 'Mon'),
+          kitSay(context, 'Tue'),
+          kitSay(context, 'Wed'),
+          kitSay(context, 'Thu'),
+          kitSay(context, 'Fri'),
+          kitSay(context, 'Sat'),
+          kitSay(context, 'Sun'),
+        ],
         series: [
-          ComicChartSeries('Hours slept', [7, 6, null, null, 8, 7, 9]),
+          ComicChartSeries(kitSay(context, 'Hours slept'), [
+            7,
+            6,
+            null,
+            null,
+            8,
+            7,
+            9,
+          ]),
         ],
       ),
     ],
   ),
 );
 
-Widget kitAreaChart() => const ComicAreaChart(
-  label: 'Visitors each week',
-  labels: _weeks,
-  series: [
-    ComicChartSeries('Visitors', [320, 410, 380, 520, 610, 580]),
-  ],
+Widget kitAreaChart() => Builder(
+  builder: (context) => ComicAreaChart(
+    label: kitSay(context, 'Visitors each week'),
+    labels: [for (final week in _weeks) kitSay(context, week)],
+    series: [
+      ComicChartSeries(kitSay(context, 'Visitors'), [
+        320,
+        410,
+        380,
+        520,
+        610,
+        580,
+      ]),
+    ],
+  ),
 );
 
-Widget kitBarChart() => const ComicBarChart(
-  label: 'Orders each week',
-  labels: _weeks,
-  series: [
-    ComicChartSeries('Online', [42, 51, 38, 60, 55, 64]),
-    ComicChartSeries('In store', [30, 28, 35, 32, 40, 37]),
-  ],
+Widget kitBarChart() => Builder(
+  builder: (context) => ComicBarChart(
+    label: kitSay(context, 'Orders each week'),
+    labels: [for (final week in _weeks) kitSay(context, week)],
+    series: [
+      ComicChartSeries(kitSay(context, 'Online'), [42, 51, 38, 60, 55, 64]),
+      ComicChartSeries(kitSay(context, 'In store'), [30, 28, 35, 32, 40, 37]),
+    ],
+  ),
 );
 
-Widget kitEmptyChart() => const ComicChart(
-  label: 'Pages read each week',
-  series: [ComicChartSeries('You', [])],
-  height: 120,
+Widget kitEmptyChart() => Builder(
+  builder: (context) => ComicChart(
+    label: kitSay(context, 'Pages read each week'),
+    series: [ComicChartSeries(kitSay(context, 'You'), [])],
+    height: 120,
+  ),
 );
 
-Widget kitLoadingChart() => const ComicChart(
-  label: 'Pages read each week',
-  series: [ComicChartSeries('You', [])],
-  height: 120,
-  loading: true,
+Widget kitLoadingChart() => Builder(
+  builder: (context) => ComicChart(
+    label: kitSay(context, 'Pages read each week'),
+    series: [ComicChartSeries(kitSay(context, 'You'), [])],
+    height: 120,
+    loading: true,
+  ),
 );
 
 // The complete demo's sparkline specimen, drawn here too: a demo imports only
@@ -250,8 +321,8 @@ Widget _sparklines() => Builder(
     return ComicColumn(
       gap: 12,
       children: [
-        row('Sales this week', [3, 5, 4, 8, 7, 9, 12], '12'),
-        row('Returns this week', [6, 4, 5, 5, 3, 2, 2], '2'),
+        row(kitSay(context, 'Sales this week'), [3, 5, 4, 8, 7, 9, 12], '12'),
+        row(kitSay(context, 'Returns this week'), [6, 4, 5, 5, 3, 2, 2], '2'),
       ],
     );
   },

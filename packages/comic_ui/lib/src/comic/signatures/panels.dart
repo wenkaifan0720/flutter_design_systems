@@ -16,14 +16,16 @@ import '../layout.dart';
 import '../people.dart';
 import '../print.dart';
 import '../component_themes.dart';
+import '../internal/lettering.dart' show ComicPrintGround, comicDisplayFor;
 import '../internal/track.dart';
 import '../theme.dart';
 import '../localizations.dart';
 import '../knobs.dart' show ComicSpace;
 
-/// A coloured band of dots with a drawing on it: where an event's or a memory's picture goes when you have no picture. [ground]
-/// is 1 to 4 (lamp, tint, you, night), the fourth lighting the drawing's loose lines. Give it a [leading], or any [child] such as a
-/// `ComicMedia(bare: true)`, a sound effect if it wants one. It fills what it's given.
+/// An illustrated band with an optional caption and sound effect.
+///
+/// [ground] selects one of four ink colours. Supply [leading] for a centred
+/// graphic or [child] for a full-size illustration. Lettering has a solid ground.
 ///
 /// ```dart
 /// ComicArtBand(ground: 2, leading: Icon(ComicGlyphs.house), sfx: 'Crunch!')
@@ -64,44 +66,57 @@ class ComicArtBand extends StatelessWidget {
     final t = ComicTheme.of(context);
     final c = t.colors;
     final (slantStart, slantEnd) = comicSlantInset(context);
+    final background = c.artGround(ground);
     return ColoredBox(
-      color: c.artGround(ground),
-      child: ComicBenDay(
-        color: ground == 4 ? c.art4Dot : c.artDot,
-        pitch: 10,
-        radius: 2,
-        child: Stack(
-          fit: StackFit.expand,
-          clipBehavior: Clip.hardEdge,
-          children: [
-            ?child,
-            if (leading != null)
-              Center(
-                child: Padding(
-                  padding: markInset,
-                  child: SizedBox(
-                    height: markSize,
-                    child: FittedBox(child: leading!),
+      color: background,
+      child: Stack(
+        fit: StackFit.expand,
+        clipBehavior: Clip.hardEdge,
+        children: [
+          if (child == null)
+            ComicBenDay(
+              color: ground == 4 ? c.art4Dot : c.artDot,
+              pitch: 10,
+              radius: 2,
+            ),
+          ?child,
+          if (leading != null)
+            Center(
+              child: Padding(
+                padding: markInset,
+                child: SizedBox(
+                  height: markSize,
+                  child: FittedBox(
+                    child: ComicPrintGround(
+                      background,
+                      child: DefaultTextStyle.merge(
+                        style: TextStyle(backgroundColor: background),
+                        child: leading!,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            if (caption != null)
-              PositionedDirectional(
-                top: 0,
-                start: slantStart,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 240),
-                  child: ComicCaption(caption!, tight: true),
-                ),
+            ),
+          if (caption != null)
+            PositionedDirectional(
+              top: 0,
+              start: slantStart,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 240),
+                child: ComicCaption(caption!, tight: true),
               ),
-            if (sfx != null)
-              PositionedDirectional(
-                end: (t.desk ? 12 : 7) + slantEnd,
-                bottom: t.desk ? 10 : 6,
+            ),
+          if (sfx != null)
+            PositionedDirectional(
+              end: (t.desk ? 12 : 7) + slantEnd,
+              bottom: t.desk ? 10 : 6,
+              child: ComicPrintGround(
+                background,
                 child: ComicSfx(sfx!, size: sfxSize, fill: c.sfxOn(ground)),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
@@ -127,7 +142,7 @@ class ComicArtBand extends StatelessWidget {
 
 /// Something coming up: a date in its caption, a title, where, who's in, a count. Its drawing or picture stands in a cell at its
 /// end on a phone and a band on top on a desktop. [big] is the one that's the star of the row: it counts down with [count] in
-/// the lettering, and its ground is dotted. Lay them in `ComicTier(phone: ComicTierLayout.stack)`.
+/// the lettering, on a tinted ground. Lay them in `ComicTier(phone: ComicTierLayout.stack)`.
 ///
 /// ```dart
 /// ComicEventPanel(when: 'Sat 14 Nov', title: 'Morning walk', where: 'From the station', leading: Icon(ComicGlyphs.house), people: const [ComicPerson(initials: 'AB', size: 24)], tally: '5 in')
@@ -264,7 +279,10 @@ class ComicEventPanel extends StatelessWidget {
             ),
           ComicLetters(
             title,
-            style: t.type.item.copyWith(fontSize: big ? 28 : null),
+            style: comicDisplayFor(
+              title,
+              t.type.item,
+            ).copyWith(fontSize: big ? 28 : null),
           ),
           if (where != null) Text(where!, style: t.type.meta),
           if (foot != null)
@@ -651,10 +669,13 @@ class ComicStepPanel extends StatelessWidget {
             bottom: long ? 8 : null,
             start: long ? 12 : null,
             end: long ? null : (desk ? 10 : 6),
-            child: ComicSfx(
-              sfx!,
-              size: long ? (desk ? 34 : 26) : (desk ? 26 : 20),
-              fill: c.sfxOn(ground),
+            child: ComicPrintGround(
+              c.artGround(ground),
+              child: ComicSfx(
+                sfx!,
+                size: long ? (desk ? 34 : 26) : (desk ? 26 : 20),
+                fill: c.sfxOn(ground),
+              ),
             ),
           ),
       ],
@@ -764,7 +785,7 @@ class ComicVoicePanel extends StatelessWidget {
   /// An optional caller-supplied portrait widget.
   final Widget? portrait;
 
-  /// The second ground: dots in the act's tint, to alternate down a strip.
+  /// The alternate ground for this panel in a strip.
   final bool warm;
   @override
   Widget build(BuildContext context) {

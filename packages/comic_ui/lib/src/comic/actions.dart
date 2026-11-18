@@ -94,16 +94,24 @@ class ComicLink extends StatelessWidget {
                 side: look.side ?? BorderSide.none,
               ),
             ),
-            child: Text(
-              label,
-              style: (look.textStyle ?? t.type.body).copyWith(
-                color:
-                    look.foreground ??
-                    look.textStyle?.color ??
-                    t.colors.shadeText,
-                decoration: inSentence
-                    ? TextDecoration.underline
-                    : TextDecoration.none,
+            // The pointer's tint darkens the ground by day, so the link's own ink deepens toward the text's under it
+            // and keeps its words at 4.5:1 on a tinted page (its resting ink fell to 4.0:1 there).
+            child: ComicStateLerp<Color?>(
+              value:
+                  look.foreground ??
+                  look.textStyle?.color ??
+                  (states.hovered || states.pressed
+                      ? Color.lerp(t.colors.shadeText, t.colors.text, .3)
+                      : t.colors.shadeText),
+              lerp: Color.lerp,
+              builder: (context, ink, _) => Text(
+                label,
+                style: (look.textStyle ?? t.type.body).copyWith(
+                  color: ink,
+                  decoration: inSentence
+                      ? TextDecoration.underline
+                      : TextDecoration.none,
+                ),
               ),
             ),
           ),

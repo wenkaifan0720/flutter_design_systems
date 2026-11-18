@@ -14,6 +14,7 @@ import 'theme.dart';
 import 'localizations.dart';
 import 'press.dart';
 import 'internal/cap_label.dart';
+import 'internal/lettering.dart' show comicDisplayFor;
 import 'knobs.dart' show ComicSpace;
 
 /// Words in the lettering, in caps, plain: a panel's title. Pass any `t.type` style from the lettering set; `panel` if left out.
@@ -48,7 +49,7 @@ class ComicLetters extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Text(
     words.toUpperCase(),
-    style: style ?? ComicTheme.of(context).type.panel,
+    style: style ?? comicDisplayFor(words, ComicTheme.of(context).type.panel),
     textAlign: textAlign,
     maxLines: maxLines,
     overflow: maxLines == null ? null : TextOverflow.ellipsis,
@@ -83,7 +84,10 @@ class ComicSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
-    final head = Text(title.toUpperCase(), style: t.type.section);
+    final head = Text(
+      title.toUpperCase(),
+      style: comicDisplayFor(title, t.type.section),
+    );
     final small = note == null
         ? null
         : Text(

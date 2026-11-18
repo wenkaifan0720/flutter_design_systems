@@ -1,12 +1,8 @@
-/// Everything `comic_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (balloons.dart, component_themes.dart, frames.dart, internal/cap_label.dart, internal/field_icon.dart, internal/geometry.dart, internal/lettering.dart, internal/menu_open.dart, internal/menu_rows.dart, internal/platform_words.dart, internal/reach.dart, internal/row_frame.dart, internal/style_guard.dart, internal/track.dart, inventory/action_rows.dart, inventory/inputs.dart, layout.dart, press.dart, print.dart, raised.dart, styled.dart, theme.dart).
+/// Helpers for customizing components copied from `comic_ui`.
 ///
-/// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
-/// rest of your app stays on the package:
+/// Import this library in the copied widget to use its theme and component helpers.
 ///
 /// ```dart
-/// // lib/ui/my_card.dart, copied from package:comic_ui/src/comic/... and renamed.
-/// import 'package:flutter/widgets.dart';
 /// import 'package:comic_ui/comic_parts.dart';
 /// ```
 ///

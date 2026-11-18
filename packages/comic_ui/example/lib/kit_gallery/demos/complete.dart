@@ -104,19 +104,25 @@ Widget kitSpecimenLink() => Builder(
 );
 Widget kitSpecimenFilter() => kitState(
   true,
-  (context, value, change) =>
-      ComicChip.filter('In print', selected: value, onSelected: change),
+  (context, value, change) => ComicChip.filter(
+    kitSay(context, 'In print'),
+    selected: value,
+    onSelected: change,
+  ),
 );
 Widget kitSpecimenRemove() => kitState(
   true,
   (context, value, change) => value
-      ? ComicChip('History', onDeleted: () => change(false))
-      : ComicButton.text('Restore History', onPressed: () => change(true)),
+      ? ComicChip(kitSay(context, 'History'), onDeleted: () => change(false))
+      : ComicButton.text(
+          kitSay(context, 'Restore History'),
+          onPressed: () => change(true),
+        ),
 );
 Widget kitSpecimenSlider() => kitState(
   40.0,
   (context, value, change) => ComicSlider(
-    label: 'Pages',
+    label: kitSay(context, 'Pages'),
     value: value,
     max: 100,
     divisions: 10,
@@ -136,7 +142,7 @@ Widget kitSpecimenTime() => kitState(
 Widget kitSpecimenSideNav() => kitState(
   1,
   (context, value, change) => ComicNavigationDrawer(
-    destinations: kitTabs,
+    destinations: kitTabs(context),
     selectedIndex: value,
     onDestinationSelected: change,
   ),
@@ -144,7 +150,11 @@ Widget kitSpecimenSideNav() => kitState(
 Widget kitSpecimenTabs() => kitState(
   1,
   (context, value, change) => ComicTabBar(
-    tabs: const ['All', 'Saved', 'Read'],
+    tabs: [
+      kitSay(context, 'All'),
+      kitSay(context, 'Saved'),
+      kitSay(context, 'Read'),
+    ],
     selectedIndex: value,
     onChanged: change,
   ),
@@ -154,19 +164,23 @@ Widget kitSpecimenDots() => kitState(
   (context, value, change) => ComicPageDots(
     count: 4,
     selectedIndex: value,
-    label: 'Preview pages',
+    label: kitSay(context, 'Preview pages'),
     onChanged: change,
   ),
 );
-Widget kitSpecimenSteps() => const ComicStepProgress(
-  count: 4,
-  currentStep: 1,
-  name: 'Your issue',
-  phase: 'Choose a format',
+Widget kitSpecimenSteps() => Builder(
+  builder: (context) => ComicStepProgress(
+    count: 4,
+    currentStep: 1,
+    name: kitSay(context, 'Your issue'),
+    phase: kitSay(context, 'Choose a format'),
+  ),
 );
-Widget kitSpecimenCard() => const ComicCard(
-  title: 'This issue',
-  children: [Text('Twelve pages, printed in two inks.')],
+Widget kitSpecimenCard() => Builder(
+  builder: (context) => ComicCard(
+    title: kitSay(context, 'This issue'),
+    children: [Text(kitSay(context, 'Twelve pages, printed in two inks.'))],
+  ),
 );
 Widget kitSpecimenGrouped() => Builder(
   builder: (context) => ComicListSection(
@@ -258,13 +272,15 @@ Widget kitSpecimenAvatar() => const Wrap(
     ComicAvatar('AK', name: 'Alex Kim', size: 56, selected: true),
   ],
 );
-Widget kitSpecimenPile() => const ComicAvatarGroup([
-  ComicFace('NW'),
-  ComicFace('AK'),
-  ComicFace('JR'),
-  ComicFace('AM'),
-  ComicFace('LT'),
-], label: 'Five contributors');
+Widget kitSpecimenPile() => Builder(
+  builder: (context) => ComicAvatarGroup(const [
+    ComicFace('NW'),
+    ComicFace('AK'),
+    ComicFace('JR'),
+    ComicFace('AM'),
+    ComicFace('LT'),
+  ], label: kitSay(context, 'Five contributors')),
+);
 Widget kitSpecimenMeter() => Builder(
   builder: (context) => ComicMeter(
     label: kitSay(context, 'Capacity'),
@@ -274,14 +290,18 @@ Widget kitSpecimenMeter() => Builder(
   ),
 );
 
-Widget kitSpecimenChart() => const ComicChart(
-  label: 'Weekly pages',
-  labels: ['M', 'T', 'W', 'T', 'F'],
-  series: [
-    ComicChartSeries('First run', [12, 18, 14, 16, 24]),
-    ComicChartSeries('Reprint', [8, 11, 15, 9, 18]),
-  ],
-  band: ComicChartBand(14, 20, label: 'Target'),
+Widget kitSpecimenChart() => Builder(
+  builder: (context) => ComicChart(
+    label: kitSay(context, 'Weekly pages'),
+    labels: KitWords.arabicOf(context)
+        ? ['ن', 'ث', 'ر', 'خ', 'ج']
+        : ['M', 'T', 'W', 'T', 'F'],
+    series: [
+      ComicChartSeries(kitSay(context, 'First run'), [12, 18, 14, 16, 24]),
+      ComicChartSeries(kitSay(context, 'Reprint'), [8, 11, 15, 9, 18]),
+    ],
+    band: ComicChartBand(14, 20, label: kitSay(context, 'Target')),
+  ),
 );
 
 Widget kitSpecimenRail() => kitState(
@@ -292,14 +312,14 @@ Widget kitSpecimenRail() => kitState(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ComicNavigationRail(
-          destinations: kitTabs,
+          destinations: kitTabs(context),
           selectedIndex: value,
           onDestinationSelected: change,
         ),
         Expanded(
           child: Center(
             child: Text(
-              kitTabs[value].label,
+              kitTabs(context)[value].label,
               style: ComicTheme.of(context).type.section,
             ),
           ),
@@ -311,51 +331,111 @@ Widget kitSpecimenRail() => kitState(
 
 Widget kitSpecimenBreadcrumbs() => Builder(
   builder: (context) => ComicBreadcrumb([
-    ComicCrumb('Shop', onPressed: () => kitFeedback(context, 'Shop opened.')),
     ComicCrumb(
-      'Comics',
-      onPressed: () => kitFeedback(context, 'Comics opened.'),
+      kitSay(context, 'Shop'),
+      onPressed: () => kitFeedback(context, kitSay(context, 'Shop opened.')),
     ),
-    const ComicCrumb('Issue 12'),
+    ComicCrumb(
+      kitSay(context, 'Comics'),
+      onPressed: () => kitFeedback(context, kitSay(context, 'Comics opened.')),
+    ),
+    ComicCrumb(kitSay(context, 'Issue 12')),
   ]),
 );
 
 Widget kitSpecimenPagination() => kitState(
   3,
   (context, value, change) => ComicPagination(
-    label: 'Results pages',
+    label: kitSay(context, 'Results pages'),
     count: 12,
     page: value,
     onChanged: change,
   ),
 );
 
-Widget kitSpecimenCarousel() => Builder(
-  builder: (context) => ComicCarouselView(
-    label: 'This week',
-    // Tall enough for its two lines at any text size: 180 at the reader's own size, growing with larger text.
-    height: math.max(180, MediaQuery.textScalerOf(context).scale(76) + 40),
-    children: [
+Widget kitSpecimenCarousel() => LayoutBuilder(
+  builder: (context, constraints) {
+    final theme = ComicTheme.of(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+    final cards = [
       for (final (title, note) in const [
         ('The night shift', 'Twelve pages'),
         ('Harbour lights', 'A short story'),
         ('The long walk', 'Part two'),
         ('Small hours', 'Four panels'),
       ])
-        ComicPanel(
-          onPressed: () => kitFeedback(context, '$title opened.'),
-          label: title,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(title, style: ComicTheme.of(context).type.panel),
-              Text(note, style: ComicTheme.of(context).type.small),
-            ],
-          ),
+        (kitSay(context, title), kitSay(context, note)),
+    ];
+    final width = constraints.maxWidth;
+    final itemWidth = math.min(
+      width,
+      math.max(width * (theme.desk ? .4 : .86), scaler.scale(170)),
+    );
+    final padding = theme.desk
+        ? const EdgeInsets.fromLTRB(24, 20, 24, 24)
+        : const EdgeInsets.all(16);
+    final rim = 2 * theme.rim(3);
+    final textWidth = math.max(
+      1.0,
+      itemWidth - ComicSpace.close - padding.horizontal - rim,
+    );
+    final titleStyle = KitWords.arabicOf(context)
+        ? theme.type.panel.copyWith(
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0,
+          )
+        : theme.type.panel;
+    double heightOf(String words, TextStyle style) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: words,
+          style: DefaultTextStyle.of(context).style.merge(style),
         ),
-    ],
-  ),
+        textScaler: scaler,
+        textDirection: direction,
+        locale: Localizations.maybeLocaleOf(context),
+      )..layout(maxWidth: textWidth);
+      final height = painter.height;
+      painter.dispose();
+      return height;
+    }
+
+    final contentHeight = cards
+        .map(
+          (card) =>
+              heightOf(card.$1, titleStyle) +
+              heightOf(card.$2, theme.type.small),
+        )
+        .reduce(math.max);
+    return ComicCarouselView(
+      label: kitSay(context, 'This week'),
+      itemWidth: itemWidth,
+      height: math.max(
+        180,
+        (contentHeight + padding.vertical + rim).ceilToDouble(),
+      ),
+      children: [
+        for (final (title, note) in cards)
+          ComicPanel(
+            padding: padding,
+            onPressed: () => kitFeedback(
+              context,
+              KitWords.arabicOf(context) ? 'تم فتح $title.' : '$title opened.',
+            ),
+            label: title,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(title, style: titleStyle),
+                Text(note, style: theme.type.small),
+              ],
+            ),
+          ),
+      ],
+    );
+  },
 );
 
 /// Each sparkline beside the figure it trends, at a size it reads at.
@@ -381,8 +461,8 @@ Widget kitSpecimenSparkline() => Builder(
     return ComicColumn(
       gap: 12,
       children: [
-        row('Sales this week', [3, 5, 4, 8, 7, 9, 12], '12'),
-        row('Returns this week', [6, 4, 5, 5, 3, 2, 2], '2'),
+        row(kitSay(context, 'Sales this week'), [3, 5, 4, 8, 7, 9, 12], '12'),
+        row(kitSay(context, 'Returns this week'), [6, 4, 5, 5, 3, 2, 2], '2'),
       ],
     );
   },
@@ -392,8 +472,11 @@ Widget kitSpecimenSparkline() => Builder(
 // a demo imports only the public surface, never another demo.
 Widget _rating() => kitState(
   3,
-  (context, value, change) =>
-      ComicRating(label: 'Rate this issue', value: value, onChanged: change),
+  (context, value, change) => ComicRating(
+    label: kitSay(context, 'Rate this issue'),
+    value: value,
+    onChanged: change,
+  ),
 );
 
 Widget _files() => kitState(
@@ -402,9 +485,17 @@ Widget _files() => kitState(
     ComicDroppedFile('page-03.jpg', size: '1.1 MB', progress: .6),
   ],
   (context, value, change) => ComicFileUpload(
-    label: 'Cover art',
-    hint: 'PNG or JPG, up to 10\u00A0MB',
-    files: value,
+    label: kitSay(context, 'Cover art'),
+    hint: kitSay(context, 'PNG or JPG, up to 10\u00A0MB'),
+    files: [
+      for (final file in value)
+        ComicDroppedFile(
+          file.name,
+          size: file.size == null ? null : kitSay(context, file.size!),
+          progress: file.progress,
+          error: file.error,
+        ),
+    ],
     onChoose: () => change([
       ...value,
       ComicDroppedFile('page-${value.length + 1}.png', size: '0.8 MB'),
@@ -415,29 +506,42 @@ Widget _files() => kitState(
 
 const _weeks = ['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5', 'Wk 6'];
 
-Widget kitSpecimenLineChart() => const ComicLineChart(
-  label: 'Pages read each week',
-  labels: _weeks,
-  series: [
-    ComicChartSeries('You', [12, 18, 16, 24, 21, 27]),
-    ComicChartSeries('The group', [10, 14, 15, 17, 18, 20]),
-  ],
-  band: ComicChartBand(15, 22, label: 'Target 15 to 22'),
+Widget kitSpecimenLineChart() => Builder(
+  builder: (context) => ComicLineChart(
+    label: kitSay(context, 'Pages read each week'),
+    labels: [for (final week in _weeks) kitSay(context, week)],
+    series: [
+      ComicChartSeries(kitSay(context, 'You'), [12, 18, 16, 24, 21, 27]),
+      ComicChartSeries(kitSay(context, 'The group'), [10, 14, 15, 17, 18, 20]),
+    ],
+    band: ComicChartBand(15, 22, label: kitSay(context, 'Target 15 to 22')),
+  ),
 );
 
-Widget kitSpecimenAreaChart() => const ComicAreaChart(
-  label: 'Visitors each week',
-  labels: _weeks,
-  series: [
-    ComicChartSeries('Visitors', [320, 410, 380, 520, 610, 580]),
-  ],
+Widget kitSpecimenAreaChart() => Builder(
+  builder: (context) => ComicAreaChart(
+    label: kitSay(context, 'Visitors each week'),
+    labels: [for (final week in _weeks) kitSay(context, week)],
+    series: [
+      ComicChartSeries(kitSay(context, 'Visitors'), [
+        320,
+        410,
+        380,
+        520,
+        610,
+        580,
+      ]),
+    ],
+  ),
 );
 
-Widget kitSpecimenBarChart() => const ComicBarChart(
-  label: 'Orders each week',
-  labels: _weeks,
-  series: [
-    ComicChartSeries('Online', [42, 51, 38, 60, 55, 64]),
-    ComicChartSeries('In store', [30, 28, 35, 32, 40, 37]),
-  ],
+Widget kitSpecimenBarChart() => Builder(
+  builder: (context) => ComicBarChart(
+    label: kitSay(context, 'Orders each week'),
+    labels: [for (final week in _weeks) kitSay(context, week)],
+    series: [
+      ComicChartSeries(kitSay(context, 'Online'), [42, 51, 38, 60, 55, 64]),
+      ComicChartSeries(kitSay(context, 'In store'), [30, 28, 35, 32, 40, 37]),
+    ],
+  ),
 );

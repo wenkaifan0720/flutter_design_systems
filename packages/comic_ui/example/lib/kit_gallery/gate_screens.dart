@@ -33,12 +33,82 @@ Widget _act(BuildContext context, String label, String done) {
   final phone = ComicTheme.of(context).width < 600;
   return Align(
     alignment: AlignmentDirectional.centerStart,
-    child: ComicButton.filled(
-      label,
-      wide: phone,
-      onPressed: () => kitFeedback(context, done),
+    child: Builder(
+      builder: (context) => ComicButton.filled(
+        label,
+        wide: phone,
+        onPressed: () {
+          final errors = Form.of(context).validateGranularly();
+          if (errors.isEmpty) {
+            kitFeedback(context, done);
+          } else {
+            final first = errors.first.context;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (first.mounted) {
+                Scrollable.ensureVisible(first, alignment: 0.3);
+              }
+            });
+          }
+        },
+      ),
     ),
   );
+}
+
+Widget _field(
+  BuildContext context, {
+  required String label,
+  required String initialValue,
+  TextInputType? keyboardType,
+  TextDirection? textDirection,
+  String? Function(String)? validate,
+}) => FormField<String>(
+  key: ValueKey(label),
+  initialValue: initialValue,
+  autovalidateMode: AutovalidateMode.onUserInteraction,
+  validator: (value) {
+    final text = (value ?? '').trim();
+    final error = text.isEmpty
+        ? 'This field is required.'
+        : validate?.call(text);
+    return error == null ? null : kitSay(context, error);
+  },
+  builder: (field) => ComicTextField(
+    label: label,
+    initialValue: initialValue,
+    keyboardType: keyboardType,
+    textDirection: textDirection,
+    onChanged: field.didChange,
+    error: field.errorText,
+  ),
+);
+
+String? _cardNumber(String value) {
+  final digits = value.replaceAll(RegExp(r'[ -]'), '');
+  const error = 'Enter a valid card number.';
+  if (!RegExp(r'^[0-9]{12,19}$').hasMatch(digits) ||
+      RegExp(r'^(.)\1+$').hasMatch(digits)) {
+    return error;
+  }
+  var sum = 0;
+  for (var i = 0; i < digits.length; i++) {
+    var digit = digits.codeUnitAt(digits.length - 1 - i) - 48;
+    if (i.isOdd) digit = digit > 4 ? 2 * digit - 9 : 2 * digit;
+    sum += digit;
+  }
+  return sum % 10 == 0 ? null : error;
+}
+
+String? _expiry(String value) {
+  final match = RegExp(r'^(0[1-9]|1[0-2])\s*/\s*([0-9]{2}|[0-9]{4})$')
+      .firstMatch(value);
+  if (match == null) return 'Enter the expiry as MM / YY.';
+  final month = int.parse(match[1]!);
+  final year = int.parse(match[2]!) + (match[2]!.length == 2 ? 2000 : 0);
+  final now = DateTime.now();
+  return DateTime(year, month + 1).isAfter(now)
+      ? null
+      : 'This card has expired.';
 }
 
 /// Two fields side by side from 600 up, stacked on a phone unless they are short ([phone]); short ones stack too
@@ -100,24 +170,31 @@ Widget gateAccount() => kitState(
         children: [
           _pair(
             context,
-            ComicTextField(
+            _field(
+              context,
               label: say('Full name'),
               initialValue: say('Alex Morgan'),
             ),
-            ComicTextField(
+            _field(
+              context,
               label: say('Email address'),
               initialValue: 'alex@example.com',
               keyboardType: TextInputType.emailAddress,
+              validate: (value) =>
+                  RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value)
+                  ? null
+                  : 'Enter a valid email address.',
             ),
           ),
-          ComicTextField(
+          _field(
+            context,
             label: say('Street and number'),
             initialValue: say('12 Harbour Lane'),
           ),
           _pair(
             context,
-            ComicTextField(label: say('Town'), initialValue: say('Brighton')),
-            ComicTextField(label: say('Postcode'), initialValue: 'BN1 4AA'),
+            _field(context, label: say('Town'), initialValue: say('Brighton')),
+            _field(context, label: say('Postcode'), initialValue: 'BN1 4AA'),
           ),
           _firstCell(
             context,
@@ -162,7 +239,10 @@ Widget gateAccount() => kitState(
     return ComicTier(
       spans: const [7, 5],
       phone: ComicTierLayout.stack,
-      children: [form, _hug(help)],
+      children: [
+        Form(child: form),
+        _hug(help),
+      ],
     );
   }),
 );
@@ -382,27 +462,36 @@ Widget gateShop() => kitState(
             ),
           ),
           if (pay == 'Card') ...[
-            ComicTextField(
+            _field(
+              context,
               label: say('Name on the card'),
               initialValue: say('Alex Morgan'),
             ),
-            ComicTextField(
+            _field(
+              context,
               label: say('Card number'),
               initialValue: '4242 4242 4242 4242',
+              validate: _cardNumber,
               keyboardType: TextInputType.number,
               // A card's numbers read left to right in a right-to-left app too.
               textDirection: TextDirection.ltr,
             ),
             _pair(
               context,
-              ComicTextField(
+              _field(
+                context,
                 label: say('Expiry'),
-                initialValue: '08 / 28',
+                initialValue: '08 / ${(DateTime.now().year + 2) % 100}',
+                validate: _expiry,
                 textDirection: TextDirection.ltr,
               ),
-              ComicTextField(
+              _field(
+                context,
                 label: say('Security code'),
                 initialValue: '123',
+                validate: (value) => RegExp(r'^[0-9]{3,4}$').hasMatch(value)
+                    ? null
+                    : 'Enter the 3 or 4 digit security code.',
                 keyboardType: TextInputType.number,
                 textDirection: TextDirection.ltr,
               ),
@@ -420,7 +509,10 @@ Widget gateShop() => kitState(
     return ComicTier(
       spans: const [5, 7],
       phone: ComicTierLayout.stack,
-      children: [_hug(order), payment],
+      children: [
+        _hug(order),
+        Form(child: payment),
+      ],
     );
   }),
 );

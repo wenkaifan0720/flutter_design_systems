@@ -38,14 +38,13 @@ class ComicTrack extends StatelessWidget {
     this.lit,
     this.gap = ComicTrack.inset,
     this.equal = true,
+    this.stackWhenNarrow = false,
     this.cellWidth,
     this.grow = const {},
     this.minHeight,
   });
 
-  /// How far a cell's face and the thumb stand inside the rim: 2, so a chosen cell reads filled, its thumb a hair
-  /// inside the rim (the design kit's checks holds a chosen fill to its cell, short by at most a quarter of its height; the
-  /// user, on Retro: "the highlight doesnt fill the entire tab, is that by design?").
+  /// The gap between the thumb and the inside of the track rim.
   static const double inset = 2;
 
   /// The trough's outline.
@@ -68,6 +67,9 @@ class ComicTrack extends StatelessWidget {
 
   /// Whether every cell takes one width.
   final bool equal;
+
+  /// Whether choices stack when their labels would otherwise shrink.
+  final bool stackWhenNarrow;
 
   /// One cell's width where the row is unbounded; null takes the widest cell's.
   final double? cellWidth;
@@ -115,6 +117,7 @@ class ComicTrack extends StatelessWidget {
           thumb: thumb,
           gap: gap,
           equal: equal,
+          stackWhenNarrow: stackWhenNarrow,
           cellWidth: cellWidth == null
               ? null
               : math.max(0, cellWidth! - 2 * rim.width / cells.length),
@@ -211,6 +214,7 @@ class ComicTrackFace extends StatelessWidget {
     required this.child,
     this.gap = ComicTrack.inset,
     this.padding = const EdgeInsets.symmetric(horizontal: ComicSpace.gap),
+    this.wrap = false,
     this.overlay,
     this.fill,
   });
@@ -233,6 +237,9 @@ class ComicTrackFace extends StatelessWidget {
 
   /// The room between the rim and the face.
   final double gap;
+
+  /// Whether the label can use more than one line.
+  final bool wrap;
 
   /// The room inside the face: by default 14, so with the trough's 2.5 rim and the 2 px [gap] an end cell's words
   /// stand on a text field's keyline ([comicFieldWords]) from the trough's outline.
@@ -257,7 +264,9 @@ class ComicTrackFace extends StatelessWidget {
           child: Center(
             widthFactor: 1,
             heightFactor: 1,
-            child: FittedBox(fit: BoxFit.scaleDown, child: child),
+            child: wrap
+                ? child
+                : FittedBox(fit: BoxFit.scaleDown, child: child),
           ),
         ),
       ),
@@ -272,6 +281,7 @@ class _Cells extends MultiChildRenderObjectWidget {
     required this.thumb,
     required this.gap,
     required this.equal,
+    required this.stackWhenNarrow,
     required this.cellWidth,
     required this.grow,
     required this.height,
@@ -285,6 +295,7 @@ class _Cells extends MultiChildRenderObjectWidget {
   final Color? thumb;
   final double gap;
   final bool equal;
+  final bool stackWhenNarrow;
   final double? cellWidth;
   final Set<int> grow;
   final double height;
@@ -298,6 +309,7 @@ class _Cells extends MultiChildRenderObjectWidget {
     ..thumb = thumb
     ..gap = gap
     ..equal = equal
+    ..stackWhenNarrow = stackWhenNarrow
     ..cellWidth = cellWidth
     ..grow = grow
     ..least = height
@@ -311,6 +323,7 @@ class _Cells extends MultiChildRenderObjectWidget {
     ..thumb = thumb
     ..gap = gap
     ..equal = equal
+    ..stackWhenNarrow = stackWhenNarrow
     ..cellWidth = cellWidth
     ..grow = grow
     ..least = height
@@ -359,6 +372,13 @@ class _RenderCells extends RenderBox
     markNeedsLayout();
   }
 
+  bool _stackWhenNarrow = false;
+  set stackWhenNarrow(bool value) {
+    if (value == _stackWhenNarrow) return;
+    _stackWhenNarrow = value;
+    markNeedsLayout();
+  }
+
   double? _cellWidth;
   set cellWidth(double? v) {
     if (v == _cellWidth) return;
@@ -402,11 +422,12 @@ class _RenderCells extends RenderBox
   List<RenderBox> get _kids => getChildrenAsList();
 
   /// Each cell's width and the row's height under [constraints].
-  (List<double>, double) _measure(BoxConstraints constraints) {
+  (List<double>, double, bool) _measure(BoxConstraints constraints) {
     final kids = _kids;
-    if (kids.isEmpty) return (const [], _least);
+    if (kids.isEmpty) return (const [], _least, false);
     final room = constraints.maxWidth;
     List<double> widths;
+    var stacked = false;
     if (_equal) {
       // [_cellWidth] stands only in an unbounded row; a bounded one hugs the widest cell.
       var one =
@@ -423,7 +444,10 @@ class _RenderCells extends RenderBox
         ];
         final sum = natural.fold<double>(0, (a, b) => a + b);
         final n = kids.length;
-        if (sum <= room) {
+        if (_stackWhenNarrow && sum > room) {
+          stacked = true;
+          widths = List.filled(n, room);
+        } else if (sum <= room) {
           widths = [for (final w in natural) w + (room - sum) / n];
         } else {
           const pad = 2 * (14 + ComicTrack.inset);
@@ -478,7 +502,7 @@ class _RenderCells extends RenderBox
     for (var i = 0; i < kids.length; i++) {
       height = math.max(height, kids[i].getMaxIntrinsicHeight(widths[i]));
     }
-    return (widths, height);
+    return (widths, stacked ? height * kids.length : height, stacked);
   }
 
   @override
@@ -511,9 +535,12 @@ class _RenderCells extends RenderBox
 
   @override
   Size computeDryLayout(BoxConstraints constraints) {
-    final (widths, height) = _measure(constraints);
+    final (widths, height, stacked) = _measure(constraints);
     return constraints.constrain(
-      Size(widths.fold<double>(0, (a, b) => a + b), height),
+      Size(
+        stacked ? widths.first : widths.fold<double>(0, (a, b) => a + b),
+        height,
+      ),
     );
   }
 
@@ -521,18 +548,26 @@ class _RenderCells extends RenderBox
 
   @override
   void performLayout() {
-    final (widths, height) = _measure(constraints);
-    final total = widths.fold<double>(0, (a, b) => a + b);
+    final (widths, height, stacked) = _measure(constraints);
+    final total = stacked
+        ? widths.first
+        : widths.fold<double>(0, (a, b) => a + b);
     size = constraints.constrain(Size(total, height));
     _cells.clear();
     var x = _direction == TextDirection.rtl ? size.width : 0.0;
     final kids = _kids;
     for (var i = 0; i < kids.length; i++) {
       final w = widths[i];
-      kids[i].layout(BoxConstraints.tight(Size(w, size.height)));
-      final left = _direction == TextDirection.rtl ? x - w : x;
-      (kids[i].parentData! as _CellData).offset = Offset(left, 0);
-      _cells.add(Rect.fromLTWH(left, 0, w, size.height));
+      final cellHeight = stacked ? size.height / kids.length : size.height;
+      kids[i].layout(BoxConstraints.tight(Size(w, cellHeight)));
+      final left = stacked
+          ? 0.0
+          : _direction == TextDirection.rtl
+          ? x - w
+          : x;
+      final top = stacked ? i * cellHeight : 0.0;
+      (kids[i].parentData! as _CellData).offset = Offset(left, top);
+      _cells.add(Rect.fromLTWH(left, top, w, cellHeight));
       x = _direction == TextDirection.rtl ? x - w : x + w;
     }
   }
@@ -631,10 +666,8 @@ RenderBox comicAnchorFaceOf(RenderBox root) {
   return root;
 }
 
-/// From 600 wide up a button keeps to its words (the design kit's DesignWidthCheck: a button stretched across its
-/// column reads as a banner). Forced wider than [comicDropdownMost] (a column that stretches its children, a block
-/// button's whole width), it takes its content's width at the start of the room it is given; under that, or on a
-/// phone, it takes what its parent gives it.
+/// Keeps a button at its content width on screens at least 600 pixels wide
+/// when its parent would stretch it beyond [comicDropdownMost].
 class ComicButtonRoom extends SingleChildRenderObjectWidget {
   /// Creates a [ComicButtonRoom].
   const ComicButtonRoom({super.key, required Widget super.child});

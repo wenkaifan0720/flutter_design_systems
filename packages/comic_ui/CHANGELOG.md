@@ -1,3 +1,24 @@
+## 0.3.1
+
+- Hover and press give controls a plain ink tint, and a link's words darken under it to stay readable. Disabled
+  buttons keep readable lettering on one solid fill.
+  Panels, modal backdrops and lettering on illustrated covers keep patterns clear of words.
+- Escape clears the inspected chart point even when another control has keyboard focus. Chart figures keep
+  English and Arabic counts in reading order. A bar list's figures share one column, so a larger value never
+  draws a shorter bar.
+- Opening a page with a fixed tab strip keeps its initial scroll position.
+- On a phone at twice the text size, the date picker shows all seven weekdays. Segments stack when their
+  labels need more room, select values wrap, and bottom navigation leaves space between captions.
+- The checkout and delivery examples validate the fields before confirming an order or saving details.
+- Gallery buttons that open dialogs and sheets leave room for the keyboard focus outline when they wrap.
+- Selected tags and message actions follow the corners of their enclosing field or bar with even spacing.
+- Arabic gallery navigation, examples, chart data and dates use Arabic labels. Headings, card and sheet titles,
+  menu bar items and action labels use a heavier fallback for Arabic and Hebrew lettering. Carousel cards grow to fit translated text.
+- Pressable list tiles include the subtitle in their accessible name. Numeric range captions keep the lower price
+  before the upper price in right-to-left layouts.
+- In copied components, use `ComicScreened(muteFill: false)` in place of `ComicScreened(dots: false)` to retain
+  the original fill colour.
+
 ## 0.3.0
 
 Needs ui_core 0.3.0. Comic's parts take their behaviour from ui_core now and keep their print: the same panels, inks

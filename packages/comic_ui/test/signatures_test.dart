@@ -230,6 +230,69 @@ void main() {
       'all zero',
       () => const ComicBarList(entries: [ComicBarEntry('A', 0)]),
     );
+    // Each row's figure once took its own width, so a 3h 30m bar beside a long figure drew shorter than a 3h one.
+    for (final direction in TextDirection.values) {
+      testWidgets(
+        'ComicBarList: a larger value never draws shorter, ${direction.name}',
+        (tester) async {
+          tester.view.physicalSize = const Size(390, 844);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          const week = [
+            ('Mon', 150, '2h 30m'),
+            ('Tue', 180, '3h'),
+            ('Wed', 210, '3h 30m'),
+            ('Thu', 240, '4h'),
+            ('Fri', 165, '2h 45m'),
+            ('Sat', 0, '0h'),
+            ('Sun', 5, '5m'),
+          ];
+          await tester.pumpWidget(
+            comicApp(
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: ComicBarList(
+                  of: 240,
+                  entries: [
+                    for (final (day, minutes, figure) in week)
+                      ComicBarEntry(day, minutes, figure: figure),
+                  ],
+                ),
+              ),
+              dark: true,
+              direction: direction,
+            ),
+          );
+          final bars = [
+            for (final e in find.byType(ComicBar).evaluate())
+              (e.renderObject! as RenderBox),
+          ];
+          expect(bars, hasLength(week.length));
+          final rects = [
+            for (final b in bars) b.localToGlobal(Offset.zero) & b.size,
+          ];
+          double start(Rect r) =>
+              direction == TextDirection.ltr ? r.left : r.right;
+          for (final r in rects) {
+            expect(r.width, closeTo(rects.first.width, .01));
+            expect(start(r), closeTo(start(rects.first), .01));
+          }
+          double drawn(int i) => rects[i].width * week[i].$2 / 240;
+          for (var i = 0; i < week.length; i++) {
+            for (var j = 0; j < week.length; j++) {
+              if (week[i].$2 > week[j].$2) {
+                expect(
+                  drawn(i),
+                  greaterThan(drawn(j)),
+                  reason: '${week[i].$3} drew no longer than ${week[j].$3}',
+                );
+              }
+            }
+          }
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
   });
 
   group('ComicTally', () {

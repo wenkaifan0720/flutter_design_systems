@@ -1,7 +1,7 @@
 // An open list's chosen option reads at a glance in Comic's own material, and its active row can't be taken for it.
 // Chosen is printed as Comic prints every chosen thing: the caption's flat yellow, its words in the caption's ink, and
 // a check (so it reads without its colour too). The active row, the pointer's or the keyboard's (the one Enter takes),
-// wears the pointer's light Ben-Day shade on the card: dots, never the chosen fill and never a line, so it reads
+// uses a plain pointer tint on the card and a distinct selected fill, so it reads
 // neither as a second choice nor as a divider. Held for a select's list, a menu with a choice and a combobox. A tag
 // input's list holds only the options not yet taken (the taken ones are its tags), so it has no chosen row; its active
 // row is the same dots.
@@ -1020,7 +1020,7 @@ void main() {
   );
 
   testWidgets(
-    "a menu row face: chosen is the caption's yellow and a check; the keys' and the pointer's row is dots on the card",
+    "a menu row face: chosen is the caption's yellow and a check; keyboard and pointer use the same tint",
     (tester) async {
       Widget face(Set<WidgetState> states, {bool checked = false}) =>
           ComicMenuRowFace(states: states, label: 'Row', checked: checked);

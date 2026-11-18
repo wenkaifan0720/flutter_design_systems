@@ -298,11 +298,8 @@ class ComicColors with Diagnosticable {
     required this.highlight,
   });
 
-  /// The ink of the dot screen over the page behind a modal surface: black by day; by night the night's cream line, a
-  /// reverse screen that knocks the black ground back as black dots knock the paper back by day. Black dots on the
-  /// night's black screened nothing but the cream words, and cut those into pieces (the fresh-eyes read, 11-15).
-  Color get scrim =>
-      brightness == Brightness.dark ? nightLine : const Color(0x99000000);
+  /// The backdrop dims the page behind the open surface in either edition.
+  Color get scrim => dark ? const Color(0x88000000) : const Color(0x66000000);
 
   /// Semantic status inks on the current panel ground.
   ComicTones get tones => status ?? (dark ? ComicTones.dark : ComicTones.light);
@@ -1676,7 +1673,7 @@ class ComicThemeData with Diagnosticable {
   /// The width of the page this was set for: the type and the window class follow it.
   final double width;
 
-  /// True on a dotted ground: the quiet words go to full ink there, because small quiet words don't read over dots.
+  /// Whether secondary text uses the full-strength ink on a tinted panel.
   final bool onDots;
 
   /// What's in scope at [context]; the same as [ComicTheme.of].
@@ -1748,7 +1745,7 @@ class ComicThemeData with Diagnosticable {
   /// Whether this is a light page or a dark one: `colors.brightness`, as `ThemeData.brightness`.
   Brightness get brightness => colors.brightness;
 
-  /// The palette for words on dots: quiet words go to full ink.
+  /// A palette with full-strength secondary text for a tinted panel.
   ComicThemeData get dotted {
     if (onDots) return this;
     final c = colors;
@@ -2052,12 +2049,11 @@ class ComicTheme extends InheritedTheme {
   }
 }
 
-/// Marks the control a form field holds as wrong while [error], as a shadcn form item marks its control invalid: the
-/// field-like parts under it draw their rim in the danger tone ([comicFieldInError]). Kept out of the barrel.
+/// Applies an error outline to field controls below [child] while [error] is true.
 Widget comicFieldTrouble({required bool error, required Widget child}) =>
     _FieldTrouble(error: error, child: child);
 
-/// Whether the form field around [context] shows an error (see [comicFieldTrouble]). Kept out of the barrel.
+/// Whether an enclosing form field is showing an error.
 bool comicFieldInError(BuildContext context) =>
     context.dependOnInheritedWidgetOfExactType<_FieldTrouble>()?.error ?? false;
 
@@ -2070,10 +2066,7 @@ class _FieldTrouble extends InheritedWidget {
   bool updateShouldNotify(_FieldTrouble oldWidget) => error != oldWidget.error;
 }
 
-/// Material's and Cupertino's words where [context] has none, for a `Localizations` that raises a surface: Flutter's
-/// text field under a CupertinoApp or a WidgetsApp still asks for them, and so does one under an app in any language
-/// whose words are not those of the libraries Comic is built on (on iOS a field's selection reads Cupertino's). They
-/// never throw for want of a language ([comicMaterialWordsDelegate]). Kept out of the barrel.
+/// Supplies missing Material and Cupertino localizations to an overlay route.
 List<LocalizationsDelegate<dynamic>> comicMaterialWords(BuildContext context) {
   if (Localizations.maybeLocaleOf(context) == null) return const [];
   return [
@@ -2356,16 +2349,16 @@ class ComicThemeDataTween extends Tween<ComicThemeData> {
   ComicThemeData lerp(double t) => begin!.lerp(end, t);
 }
 
-/// Re-scopes everything under it for words on dots: `t.colors.textSecondary` answers with full ink.
+/// Uses the primary text colour for secondary text on a tinted surface.
 ///
 /// ```dart
-/// ComicDotsScope(child: Text('Over the halftone'))
+/// ComicDotsScope(child: Text('On the tinted panel'))
 /// ```
 class ComicDotsScope extends StatelessWidget {
   /// Creates a [ComicDotsScope].
   const ComicDotsScope({super.key, required this.child});
 
-  /// What stands on the dots.
+  /// Content displayed on the tinted surface.
   final Widget child;
   @override
   Widget build(BuildContext context) =>

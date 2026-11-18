@@ -162,7 +162,8 @@ void main() {
                 '(${size.width.toStringAsFixed(0)}x${size.height.toStringAsFixed(0)})';
             if (part != null && _bare(part) != drawn) {
               failures.add('$where: mark $drawn on a part drawn as $part');
-            } else if (part == null && !steps.contains(drawn)) {
+            } else if (part == null &&
+                !steps.contains(_bare(drawnShape(drawn, size)))) {
               failures.add('$where: frameless mark $drawn is no shape step');
             }
             // Focus: the ring is painted, on this outline.
@@ -200,7 +201,7 @@ void main() {
               await mouse.moveTo(centre);
               await tester.pump();
               await tester.pump(const Duration(milliseconds: 400));
-              // The pointer lays a light Ben-Day shade on the part's own outline (0.2.0: states in Comic's ink); an
+              // The pointer lays a uniform tint on the part's own outline (0.2.0: states in Comic's ink); an
               // open menu's active row follows the pointer (polish3 §1).
               if (highlight.mounted) {
                 final dynamic hovered = _mark(highlight);
