@@ -37,6 +37,7 @@ class RoomtoneEpisode {
     this.progress = 0,
     this.downloaded = false,
     this.notes = '',
+    this.chapters = const [(0, 'Introductions')],
   });
 
   /// Its id.
@@ -62,6 +63,9 @@ class RoomtoneEpisode {
 
   /// Its show notes.
   final String notes;
+
+  /// Chapter start times in seconds and their titles, in playback order.
+  final List<(int, String)> chapters;
 
   /// Whether it has been started and not finished.
   bool get started => progress > 0 && progress < 1;
@@ -122,6 +126,12 @@ RoomtoneShow _show(String id) => roomtoneShows.firstWhere((s) => s.id == id);
 final roomtoneEpisodes = [
   RoomtoneEpisode(
     id: 'lc-41',
+    chapters: [
+      (0, 'Introductions'),
+      (312, 'The attic'),
+      (1420, 'Thread and patience'),
+      (2890, 'The drawer of offcuts'),
+    ],
     show: _show('low-ceiling'),
     title: 'The bookbinder who keeps every offcut',
     published: 'Today',
@@ -135,6 +145,11 @@ final roomtoneEpisodes = [
   ),
   RoomtoneEpisode(
     id: 'fn-18',
+    chapters: [
+      (0, 'Introductions'),
+      (265, 'The north quay'),
+      (774, 'The first engine'),
+    ],
     show: _show('field-notes'),
     title: 'A harbour before the boats go out',
     published: 'Yesterday',
@@ -146,6 +161,11 @@ final roomtoneEpisodes = [
   ),
   RoomtoneEpisode(
     id: 'lt-102',
+    chapters: [
+      (0, 'Introductions'),
+      (560, 'Family scenes'),
+      (1675, 'After the interval'),
+    ],
     show: _show('long-take'),
     title: 'A quiet film about a loud family',
     published: '12 Nov',
@@ -157,6 +177,12 @@ final roomtoneEpisodes = [
   ),
   RoomtoneEpisode(
     id: 'sr-7',
+    chapters: [
+      (0, 'Introductions'),
+      (164, 'Four floors of echo'),
+      (458, 'The stairwell take'),
+      (818, 'Last notes'),
+    ],
     show: _show('small-rooms'),
     title: 'Cello in a stairwell',
     published: '10 Nov',
@@ -167,6 +193,11 @@ final roomtoneEpisodes = [
   ),
   RoomtoneEpisode(
     id: 'lc-40',
+    chapters: [
+      (0, 'Introductions'),
+      (410, 'Setting the stone'),
+      (1450, 'The Saturday queue'),
+    ],
     show: _show('low-ceiling'),
     title: 'Sharpening knives for a whole street',
     published: '8 Nov',
@@ -177,6 +208,11 @@ final roomtoneEpisodes = [
   ),
   RoomtoneEpisode(
     id: 'fn-17',
+    chapters: [
+      (0, 'Introductions'),
+      (242, 'The passing shower'),
+      (793, 'When the rain stops'),
+    ],
     show: _show('field-notes'),
     title: 'Rain on a tin roof, then none',
     published: '5 Nov',
@@ -186,6 +222,11 @@ final roomtoneEpisodes = [
   ),
   RoomtoneEpisode(
     id: 'lt-101',
+    chapters: [
+      (0, 'Introductions'),
+      (425, 'A chase in silence'),
+      (1753, 'Checking our phones'),
+    ],
     show: _show('long-take'),
     title: 'The film with no music at all',
     published: '5 Nov',

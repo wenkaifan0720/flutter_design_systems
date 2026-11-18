@@ -216,6 +216,9 @@ class StudioButton extends StatelessWidget {
   StudioFace _face(StudioThemeData theme, Set<WidgetState> states) {
     final c = theme.colors;
     final disabled = states.contains(WidgetState.disabled);
+    final disabledInk = c.brightness == Brightness.light
+        ? c.legendMuted
+        : c.disabled;
     final pressed = states.contains(WidgetState.pressed);
     final focus = states.contains(WidgetState.focused)
         ? c.focusRing
@@ -226,7 +229,7 @@ class StudioButton extends StatelessWidget {
           radius: StudioRadii.key,
           presence: pressed ? 1 : 0,
           foreground: disabled
-              ? c.disabled
+              ? disabledInk
               : isDestructiveAction
               ? c.dangerLegend
               : c.legend,
@@ -236,7 +239,7 @@ class StudioButton extends StatelessWidget {
         return c.keyFace.copyWith(
           travel: pressed ? 1 : 0,
           foreground: disabled
-              ? c.disabled
+              ? disabledInk
               : isDestructiveAction
               ? c.dangerLegend
               : c.onKey,

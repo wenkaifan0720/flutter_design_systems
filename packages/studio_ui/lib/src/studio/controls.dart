@@ -427,7 +427,7 @@ class _FaderPainter extends CustomPainter {
       );
       final rr = RRect.fromRectAndRadius(
         litRect,
-        const Radius.circular(StudioFader.slot / 2),
+        const Radius.circular(StudioFader.slot / 2 - 1),
       );
       final strength = enabled ? 1.0 : 0.3;
       canvas

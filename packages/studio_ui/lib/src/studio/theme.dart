@@ -121,8 +121,8 @@ abstract final class StudioRadii {
   /// A small window: a readout, a toggle's slot.
   static const double small = 5;
 
-  /// A toggle's or a fader's metal cap: [small] less its slot's 3 px lip,
-  /// rounded up so the cap still reads as machined.
+  /// The switch cap follows the 6 px corners of its slot past a 3 px lip.
+  /// A fader uses the same corner on its raised handle.
   static const double cap = 3;
 }
 

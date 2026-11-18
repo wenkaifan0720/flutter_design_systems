@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'internal/focus_light.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -85,33 +86,42 @@ class StudioCheckbox extends StatelessWidget {
         );
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
-        final face = layered.on(
+        final focused = states.contains(WidgetState.focused);
+        var face = layered.on(
           c.keyFace
               .copyWith(
                 radius: StudioRadii.small,
                 travel: value || pressed ? 1 : 0,
                 fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
                 rim: isError ? c.danger : c.danger.withValues(alpha: 0),
-                focus: states.contains(WidgetState.focused)
-                    ? c.focusRing
-                    : c.focusRing.withValues(alpha: 0),
               )
               .backlitIf(c, value && !disabled),
         );
+        // Focused, the light round the key is its one edge: a latched key's
+        // lit rim gives way to it (an error's rim stays).
+        if (focused && !isError) {
+          face = face.copyWith(rim: face.rim.withValues(alpha: 0));
+        }
         final light = layered.foreground ?? c.litLegend;
         return DesignTapTarget(
           child: SizedBox.square(
             dimension: size,
-            child: AnimatedStudioSurface(
-              face: face,
-              child: _Glyph(
-                on: value,
-                painter: (t) => _CheckPainter(
-                  t: t,
-                  lit: disabled ? c.disabled : light,
-                  // Unchecked, the cap is blank: a faint check reads as
-                  // checked at a glance.
-                  unlit: c.onKey.withValues(alpha: 0),
+            // Focused, the key's own edge lights amber: no ring round it.
+            child: StudioFocusLight(
+              edge: focused ? c.focusRing : c.focusRing.withValues(alpha: 0),
+              radius: face.radius,
+              sink: face.travel * StudioMetrics.pressTravel,
+              child: AnimatedStudioSurface(
+                face: face,
+                child: _Glyph(
+                  on: value,
+                  painter: (t) => _CheckPainter(
+                    t: t,
+                    lit: disabled ? c.disabled : light,
+                    // Unchecked, the cap is blank: a faint check reads as
+                    // checked at a glance.
+                    unlit: c.onKey.withValues(alpha: 0),
+                  ),
                 ),
               ),
             ),
@@ -666,8 +676,9 @@ class StudioSegment<T> {
 /// their corners concentric with its own. Arrows move the choice along the
 /// bank, Home and End to its ends.
 ///
-/// Below 600 px wide it spans its column ([expand] decides otherwise); on a
-/// wider screen it hugs its legends while they fit.
+/// Below 600 logical pixels, the bank spans its column unless [expand]
+/// overrides this. Keys make room for the system text size and wrap onto
+/// additional rows when their legends no longer fit side by side.
 ///
 /// Reads [style]'s `fill`, `foreground`, `padding`, `minimumSize` and
 /// `textStyle`, then [StudioThemeData.segmentedButtonStyle].
@@ -746,22 +757,35 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
     });
     final words = frame.text(theme.textTheme.label);
     final height = frame.minimumSize?.height ?? theme.controlHeight;
-    const inset = StudioMetrics.recessInset;
     final scale = MediaQuery.textScalerOf(context);
-    double widest = 0;
-    for (final s in segments) {
+    final direction = Directionality.of(context);
+    final widths = <double>[];
+    final horizontalPadding =
+        frame.padding(direction)?.horizontal ?? 2 * StudioSpacing.small;
+    for (final segment in segments) {
       final painter = TextPainter(
-        text: TextSpan(text: s.label, style: words),
-        textDirection: TextDirection.ltr,
+        text: TextSpan(
+          text: segment.label,
+          style: words.copyWith(fontWeight: FontWeight.w600),
+        ),
+        textDirection: direction,
         textScaler: scale,
         maxLines: 1,
       )..layout();
-      widest = math.max(widest, painter.width + (s.icon == null ? 0 : 28));
+      widths.add(
+        painter.width.ceilToDouble() +
+            horizontalPadding +
+            6 +
+            StudioSpacing.small +
+            2 * StudioSpacing.hair +
+            (segment.icon == null
+                ? 0
+                : (frame.iconSize ?? 18) + StudioSpacing.tight),
+      );
       painter.dispose();
     }
-    // A key: its lamp, its legend, its padding.
-    final key = widest + 2 * StudioSpacing.regular + 14;
-    final hugged = segments.length * key + (segments.length + 1) * inset;
+    final preferred = widths.reduce(math.max) + StudioSpacing.regular;
+    final hugged = segments.length * preferred + 2 * StudioSpacing.hair;
     final index = segments.indexWhere((s) => s.value == widget.value);
     final rtl = Directionality.of(context) == TextDirection.rtl;
 
@@ -780,33 +804,38 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
             (widget.expand ??
                 MediaQuery.sizeOf(context).width < StudioMetrics.tablet) ||
             hugged > constraints.maxWidth;
+        final available = wide && constraints.hasBoundedWidth
+            ? constraints.maxWidth - 2 * StudioSpacing.hair
+            : hugged - 2 * StudioSpacing.hair;
+        final equal = available / segments.length;
+        final total = widths.fold(0.0, (sum, width) => sum + width);
+        final extra = math.max(0.0, available - total) / segments.length;
+        final equalFits = widths.every((width) => width <= equal);
         final bank = Semantics(
           label: widget.semanticLabel,
           container: true,
           child: SizedBox(
-            height: height,
-            // Each key's press reaches the whole bank round it (the
-            // recess's lip and half the gap to its neighbours), so a finger
-            // meets the bank's full height.
+            width: available + 2 * StudioSpacing.hair,
             child: StudioSurface(
               face: c.recessFace,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: StudioSpacing.hair,
                 ),
-                child: Row(
-                  mainAxisSize: wide ? MainAxisSize.max : MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                child: Wrap(
                   children: [
-                    for (final (i, s) in segments.indexed)
+                    for (final (i, segment) in segments.indexed)
                       _key(
                         context,
                         theme,
                         i,
-                        s,
+                        segment,
                         layers,
                         words,
-                        wide ? null : key,
+                        equalFits
+                            ? equal
+                            : math.min(available, widths[i] + extra),
+                        height,
                         move,
                         rtl,
                       ),
@@ -834,7 +863,8 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
     StudioSegment<T> s,
     List<StudioStyle?> layers,
     TextStyle words,
-    double? width,
+    double width,
+    double height,
     void Function(int by) move,
     bool rtl,
   ) {
@@ -909,7 +939,7 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
             top: inset,
             bottom: inset,
           ),
-          child: AnimatedStudioSurface(
+          child: AnimatedStudioSurface.inBank(
             face: face,
             child: Padding(
               padding:
@@ -930,23 +960,17 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
                     ),
                     const SizedBox(width: StudioSpacing.tight),
                   ],
-                  // A legend wider than its key (a figure at large text) is
-                  // set smaller, never cut: a value must be read to be
-                  // chosen.
                   Flexible(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: DesignCapCenter(
-                        capHeightFactor: theme.capHeightFactor,
-                        child: Text(
-                          s.label,
-                          maxLines: 1,
-                          style: words.copyWith(
-                            color: ink,
-                            fontWeight: chosen
-                                ? FontWeight.w600
-                                : FontWeight.w500,
-                          ),
+                    child: DesignCapCenter(
+                      capHeightFactor: theme.capHeightFactor,
+                      child: Text(
+                        s.label,
+                        textAlign: TextAlign.center,
+                        style: words.copyWith(
+                          color: ink,
+                          fontWeight: chosen
+                              ? FontWeight.w600
+                              : FontWeight.w500,
                         ),
                       ),
                     ),
@@ -958,9 +982,14 @@ class _StudioSegmentedButtonState<T> extends State<StudioSegmentedButton<T>> {
         );
       },
     );
-    return width == null
-        ? Expanded(child: child)
-        : SizedBox(width: width + start + end, child: child);
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minWidth: width,
+        maxWidth: width,
+        minHeight: height,
+      ),
+      child: child,
+    );
   }
 }
 

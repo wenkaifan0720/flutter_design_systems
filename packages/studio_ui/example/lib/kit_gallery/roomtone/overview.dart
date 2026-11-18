@@ -26,37 +26,51 @@ class RoomtoneOverview extends StatelessWidget {
     final c = theme.colors;
     final frame = RoomtoneFrame.of(context);
     final wide = MediaQuery.sizeOf(context).width >= 1024;
-    final pitch = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const StudioLegend('A Flutter design system'),
-        const SizedBox(height: StudioSpacing.small),
-        Semantics(
-          header: true,
-          child: Text(
-            'An app as a well-made piece of studio gear.',
-            style: t.display.copyWith(color: c.legend),
-          ),
+    // The look's description is English in both layout directions.
+    final english = Directionality.of(context) == TextDirection.rtl
+        ? TextAlign.right
+        : TextAlign.left;
+    final pitch = StudioSurface(
+      face: c.panelFace.copyWith(brushed: false),
+      child: Padding(
+        padding: const EdgeInsets.all(StudioSpacing.regular),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const StudioLegend('A Flutter design system'),
+            const SizedBox(height: StudioSpacing.small),
+            Semantics(
+              header: true,
+              child: Text(
+                'An app as a well-made piece of studio gear.',
+                textDirection: TextDirection.ltr,
+                textAlign: english,
+                style: t.display.copyWith(color: c.legend),
+              ),
+            ),
+            const SizedBox(height: StudioSpacing.regular),
+            Text(
+              'Brushed anodised panels with machined edges, glass displays set '
+              'into them, keys that latch and light, faders and knobs with a real '
+              'throw. One light falls from the top; by day the gear stands in a '
+              'bright room, by night in low light. The amber lamp is the one '
+              'accent, and it means something is on.',
+              textDirection: TextDirection.ltr,
+              textAlign: english,
+              style: t.body.copyWith(color: c.legendMuted),
+            ),
+            const SizedBox(height: StudioSpacing.large),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: StudioButton.lit(
+                'Open Roomtone',
+                icon: const Icon(LucideIcons.audioLines),
+                onPressed: () => frame.go(RoomtonePlace.home),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: StudioSpacing.regular),
-        Text(
-          'Brushed anodised panels with machined edges, glass displays set '
-          'into them, keys that latch and light, faders and knobs with a real '
-          'throw. One light falls from the top; by day the gear stands in a '
-          'bright room, by night in low light. The amber lamp is the one '
-          'accent, and it means something is on.',
-          style: t.body.copyWith(color: c.legendMuted),
-        ),
-        const SizedBox(height: StudioSpacing.large),
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: StudioButton.lit(
-            'Open Roomtone',
-            icon: const Icon(LucideIcons.audioLines),
-            onPressed: () => frame.go(RoomtonePlace.home),
-          ),
-        ),
-      ],
+      ),
     );
     final live = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

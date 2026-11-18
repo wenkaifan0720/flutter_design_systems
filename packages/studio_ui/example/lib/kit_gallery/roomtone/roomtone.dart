@@ -78,6 +78,9 @@ class RoomtonePrefs extends ChangeNotifier {
   /// How episodes are downloaded.
   String quality = 'high';
 
+  /// Whether the sample account is signed in for this session.
+  bool signedIn = true;
+
   /// Whether downloads may use mobile data.
   bool cellular = false;
 
@@ -128,6 +131,7 @@ class RoomtoneApp extends StatefulWidget {
     super.key,
     this.initialPlace = RoomtonePlace.overview,
     this.initialScene,
+    this.initialEpisodeId,
     this.initialAppearance = RoomtoneAppearance.light,
     this.initialDirection = TextDirection.ltr,
     this.initialDensity,
@@ -141,6 +145,9 @@ class RoomtoneApp extends StatefulWidget {
 
   /// The state of [initialPlace] it opens on; null: as it first stands.
   final RoomtoneScene? initialScene;
+
+  /// The episode selected by a shared link.
+  final String? initialEpisodeId;
 
   /// How it is lit at first. Settings changes it after.
   final RoomtoneAppearance initialAppearance;
@@ -186,6 +193,7 @@ class _RoomtoneAppState extends State<RoomtoneApp> {
         key: _frame,
         initialPlace: widget.initialPlace,
         initialScene: widget.initialScene,
+        initialEpisodeId: widget.initialEpisodeId,
         parts: widget.parts,
         initialPart: widget.initialPart,
       );
@@ -258,6 +266,7 @@ class RoomtoneFrame extends StatefulWidget {
     super.key,
     this.initialPlace = RoomtonePlace.overview,
     this.initialScene,
+    this.initialEpisodeId,
     this.parts = const [],
     this.initialPart,
   });
@@ -267,6 +276,9 @@ class RoomtoneFrame extends StatefulWidget {
 
   /// As [RoomtoneApp.initialScene].
   final RoomtoneScene? initialScene;
+
+  /// The episode selected by a shared link.
+  final String? initialEpisodeId;
 
   /// As [RoomtoneApp.parts].
   final List<RoomtonePart> parts;
@@ -291,6 +303,11 @@ class RoomtoneFrameState extends State<RoomtoneFrame> {
   late RoomtonePlace _place = widget.initialPlace;
   late RoomtoneScene? _scene = widget.initialScene;
   final _desk = GlobalKey<NavigatorState>();
+  RoomtoneEpisode get _linkedEpisode =>
+      roomtoneEpisodes
+          .where((e) => e.id == widget.initialEpisodeId)
+          .firstOrNull ??
+      roomtoneNowPlaying;
 
   @override
   void initState() {
@@ -303,7 +320,7 @@ class RoomtoneFrameState extends State<RoomtoneFrame> {
           // On a desk the Library stands beside its player; below it the
           // episode's page opens over the list.
           case RoomtoneScene.episode:
-            if (!desk) push(RoomtoneEpisodePage(episode: roomtoneNowPlaying));
+            if (!desk) push(RoomtoneEpisodePage(episode: _linkedEpisode));
           case RoomtoneScene.search:
             push(const RoomtoneSearchPage(initialQuery: 'film'));
           case RoomtoneScene.searchEmpty:
@@ -368,11 +385,26 @@ class RoomtoneFrameState extends State<RoomtoneFrame> {
   @override
   Widget build(BuildContext context) {
     final theme = context.studioTheme;
+    final signedIn = RoomtonePrefs.of(context).signedIn;
     final page = switch (_place) {
+      RoomtonePlace.home ||
+      RoomtonePlace.library ||
+      RoomtonePlace.record when !signedIn => RoomtonePage(
+        title: _places[_place.index].label,
+        children: [
+          StudioStatusView(
+            title: 'Sign in to Roomtone',
+            message:
+                'Your library, drafts and recordings belong to your account.',
+            actionLabel: 'Sign in',
+            onAction: () => go(RoomtonePlace.settings),
+          ),
+        ],
+      ),
       RoomtonePlace.overview => RoomtoneOverview(parts: widget.parts),
       RoomtonePlace.home => const RoomtoneHome(),
       RoomtonePlace.library => RoomtoneLibrary(
-        open: _scene == RoomtoneScene.episode ? roomtoneNowPlaying : null,
+        open: _scene == RoomtoneScene.episode ? _linkedEpisode : null,
         downloadedOnly: _scene == RoomtoneScene.downloadsEmpty,
       ),
       RoomtonePlace.record => RoomtoneRecorder(
@@ -402,13 +434,20 @@ class RoomtoneFrameState extends State<RoomtoneFrame> {
           ),
         ],
       ),
-      navigationFooter: StudioListTile(
-        title: roomtoneListener.name,
-        subtitle: roomtoneBreakable(roomtoneListener.email),
-        leading: StudioAvatar(name: roomtoneListener.name, size: 32),
-        onTap: () => go(RoomtonePlace.settings),
-        showChevron: false,
-      ),
+      navigationFooter: !signedIn
+          ? StudioListTile(
+              title: 'Sign in',
+              leading: const Icon(LucideIcons.userRound),
+              onTap: () => go(RoomtonePlace.settings),
+              showChevron: false,
+            )
+          : StudioListTile(
+              title: roomtoneListener.name,
+              subtitle: roomtoneBreakable(roomtoneListener.email),
+              leading: StudioAvatar(name: roomtoneListener.name, size: 32),
+              onTap: () => go(RoomtonePlace.settings),
+              showChevron: false,
+            ),
       body: wide
           ? Navigator(
               key: _desk,

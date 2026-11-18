@@ -1164,80 +1164,89 @@ class StudioTree<T extends Object> extends StatelessWidget {
           ),
           // A row is a little under a key's height, never under a finger's
           // floor where a finger reaches it.
-          child: SizedBox(
-            height: math.max(
-              theme.controlHeight - 4,
-              DesignTapTargets.of(context).floorOn().height,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: math.max(
+                theme.controlHeight - 4,
+                DesignTapTargets.of(context).floorOn().height,
+              ),
             ),
-            child: Row(
-              children: [
-                for (var d = 0; d < item.row.depth; d++)
+            child: IntrinsicHeight(
+              child: Row(
+                children: [
+                  for (var d = 0; d < item.row.depth; d++)
+                    SizedBox(
+                      width: 20,
+                      child: Center(
+                        child: Container(width: 1, color: c.groove),
+                      ),
+                    ),
                   SizedBox(
-                    width: 20,
-                    child: Center(child: Container(width: 1, color: c.groove)),
-                  ),
-                SizedBox(
-                  width: 32,
-                  child: item.hasChildren
-                      ? MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: GestureDetector(
-                            onTap: item.toggle,
-                            behavior: HitTestBehavior.opaque,
-                            child: Center(
-                              child: AnimatedRotation(
-                                turns: item.expanded ? 0.25 : 0,
-                                duration:
-                                    MediaQuery.maybeDisableAnimationsOf(
-                                          context,
-                                        ) ??
-                                        false
-                                    ? Duration.zero
-                                    : const Duration(milliseconds: 140),
-                                child: Transform.flip(
-                                  flipX: rtl,
-                                  child: Icon(
-                                    LucideIcons.chevronRight,
-                                    size: 16,
-                                    color: c.legendMuted,
+                    width: 32,
+                    child: item.hasChildren
+                        ? MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: GestureDetector(
+                              onTap: item.toggle,
+                              behavior: HitTestBehavior.opaque,
+                              child: Center(
+                                child: AnimatedRotation(
+                                  turns: item.expanded ? 0.25 : 0,
+                                  duration:
+                                      MediaQuery.maybeDisableAnimationsOf(
+                                            context,
+                                          ) ??
+                                          false
+                                      ? Duration.zero
+                                      : const Duration(milliseconds: 140),
+                                  child: Transform.flip(
+                                    flipX: rtl,
+                                    child: Icon(
+                                      LucideIcons.chevronRight,
+                                      size: 16,
+                                      color: c.legendMuted,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        )
-                      : null,
-                ),
-                if (icon != null) ...[
-                  IconTheme.merge(
-                    data: IconThemeData(
-                      size: StudioIconSizes.medium,
-                      color: c.legendMuted,
-                    ),
-                    child: icon,
+                          )
+                        : null,
                   ),
-                  const SizedBox(width: StudioSpacing.small),
+                  if (icon != null) ...[
+                    IconTheme.merge(
+                      data: IconThemeData(
+                        size: StudioIconSizes.medium,
+                        color: c.legendMuted,
+                      ),
+                      child: icon,
+                    ),
+                    const SizedBox(width: StudioSpacing.small),
+                  ],
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: StudioSpacing.hair,
+                      ),
+                      child: Text(
+                        labelOf(item.row.node),
+                        style: theme.textTheme.body.copyWith(
+                          color: ink,
+                          fontWeight: item.selected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      end: StudioSpacing.medium,
+                    ),
+                    child: StudioLamp(on: item.selected, size: 6),
+                  ),
                 ],
-                Expanded(
-                  child: Text(
-                    labelOf(item.row.node),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.body.copyWith(
-                      color: ink,
-                      fontWeight: item.selected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(
-                    end: StudioSpacing.medium,
-                  ),
-                  child: StudioLamp(on: item.selected, size: 6),
-                ),
-              ],
+              ),
             ),
           ),
         );

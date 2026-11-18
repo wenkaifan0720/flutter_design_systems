@@ -18,6 +18,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
 import 'controls.dart';
+import 'internal/focus_light.dart';
 import 'select.dart';
 import 'surface.dart';
 import 'text_field.dart';
@@ -191,6 +192,13 @@ class StudioCalendar extends StatefulWidget {
   }
 }
 
+// A day's row grows with its figure at large text, never under 40, nor under
+// a finger's floor where a finger reaches it.
+double _dayHeight(BuildContext context) => math.max(
+  math.max(40.0, DesignTapTargets.of(context).floorOn().height),
+  MediaQuery.textScalerOf(context).scale(15) * 20 / 15 + 12,
+);
+
 class _StudioCalendarState extends State<StudioCalendar> {
   late DesignCalendarController _controller = _make();
 
@@ -260,12 +268,8 @@ class _StudioCalendarState extends State<StudioCalendar> {
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final layers = [widget.style, theme.calendarStyle];
     final frame = DesignStyleOf(layers, const {});
-    // A day's row grows with its figure at large text, never under 40, nor
-    // under a finger's floor where a finger reaches it.
-    final dayHeight = math.max(
-      math.max(40.0, DesignTapTargets.of(context).floorOn().height),
-      MediaQuery.textScalerOf(context).scale(15) * 20 / 15 + 12,
-    );
+    final dayHeight = _dayHeight(context);
+    final night = c.brightness == Brightness.dark;
     Widget turn(IconData icon, String label, VoidCallback? onPressed) =>
         ExcludeSemantics(
           excluding: false,
@@ -275,162 +279,226 @@ class _StudioCalendarState extends State<StudioCalendar> {
             onPressed: onPressed,
           ),
         );
-    return StudioSurface(
-      face: c.displayFace.copyWith(radius: StudioRadii.bank, fill: frame.fill),
-      child: Padding(
-        padding: const EdgeInsets.all(StudioSpacing.small),
-        child: DesignCalendar(
-          controller: _controller,
-          months: widget.months,
-          autofocus: widget.autofocus,
-          onChanged: _changed,
-          headerBuilder: (context, header) => Padding(
-            padding: const EdgeInsets.only(bottom: StudioSpacing.small),
-            child: Row(
-              children: [
-                turn(
-                  LucideIcons.chevronLeft,
-                  words.previousMonthTooltip,
-                  header.previous,
-                ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      header.label,
-                      maxLines: 1,
-                      style: t.label.copyWith(
-                        color: c.onDisplay,
-                        fontWeight: FontWeight.w600,
-                      ),
+    final body = Padding(
+      padding: const EdgeInsets.all(StudioSpacing.small),
+      child: DesignCalendar(
+        controller: _controller,
+        months: widget.months,
+        autofocus: widget.autofocus,
+        onChanged: _changed,
+        headerBuilder: (context, header) => Padding(
+          padding: const EdgeInsets.only(bottom: StudioSpacing.small),
+          child: Row(
+            children: [
+              turn(
+                LucideIcons.chevronLeft,
+                words.previousMonthTooltip,
+                header.previous,
+              ),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    header.label,
+                    maxLines: 1,
+                    style: t.label.copyWith(
+                      color: c.onDisplay,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-                turn(
-                  LucideIcons.chevronRight,
-                  words.nextMonthTooltip,
-                  header.next,
+              ),
+              turn(
+                LucideIcons.chevronRight,
+                words.nextMonthTooltip,
+                header.next,
+              ),
+            ],
+          ),
+        ),
+        weekdayBuilder: (context, weekday, label) => SizedBox(
+          height: 28,
+          child: Center(
+            child: Text(
+              label,
+              maxLines: 1,
+              style: t.caption.copyWith(
+                color: c.onDisplayMuted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        dayBuilder: (context, day, states) {
+          final pressed = states.contains(WidgetState.pressed);
+          final focused = states.contains(WidgetState.focused);
+          final end =
+              day.selected ||
+              day.isRangeStart ||
+              day.isRangeEnd ||
+              day.isPreviewEnd;
+          final middle = !end && (day.inRange || day.inPreview);
+          final layered = DesignStyleOf(layers, {
+            ...states,
+            if (end) WidgetState.selected,
+          });
+          // A chosen day is lit in its slot: by day the slot glows amber
+          // under a dark figure, by night its figure glows amber in the
+          // dark glass. Both read at 4.5:1 and more.
+          final lit = end && day.enabled;
+          final Color figures;
+          if (!day.enabled) {
+            figures = end ? c.onDisplayMuted : c.disabled;
+          } else if (end) {
+            figures = night ? c.indicator : c.onIndicator;
+          } else if (middle) {
+            figures = night
+                ? Color.lerp(c.onDisplay, c.indicator, 0.6)!
+                : c.onDisplay;
+          } else {
+            figures = day.inMonth
+                ? layered.foreground ?? c.onDisplay
+                : c.onDisplayMuted;
+          }
+          final band = ColoredBox(
+            color: Color.lerp(c.displayLow, c.shadow, 0.05)!,
+          );
+          // The span's band runs from one end's slot to the other's: whole
+          // under a day inside it, half under an end, toward the span.
+          final Widget? span = !widget._range || !(day.inRange || day.inPreview)
+              ? null
+              : middle
+              ? band
+              : day.isRangeStart && (day.isRangeEnd || day.isPreviewEnd)
+              ? null
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: day.isRangeStart
+                      ? [const Spacer(), Expanded(child: band)]
+                      : [Expanded(child: band), const Spacer()],
+                );
+          return SizedBox(
+            height: dayHeight,
+            child: Stack(
+              children: [
+                if (span != null)
+                  Positioned.fill(top: 3, bottom: 3, child: span),
+                // A day's slot keeps a key's proportions however wide the
+                // month is spread.
+                Positioned.fill(
+                  child: LayoutBuilder(
+                    builder: (context, room) => Center(
+                      child: SizedBox(
+                        width: math.min(room.maxWidth, dayHeight + 12),
+                        height: room.maxHeight,
+                        child: Padding(
+                          padding: const EdgeInsets.all(StudioSpacing.hair),
+                          child: StudioFocusLight(
+                            edge: focused
+                                ? c.focusRing
+                                : c.focusRing.withValues(alpha: 0),
+                            radius: StudioRadii.small,
+                            child: AnimatedStudioSurface(
+                              stiffness: StudioMotion.lampStiffness,
+                              face: StudioFace(
+                                fill: lit
+                                    ? Color.lerp(
+                                        c.display,
+                                        c.indicator,
+                                        night ? 0.08 : 0.42,
+                                      )!
+                                    : Color.lerp(c.displayLow, c.shadow, 0.06)!,
+                                fillLow: lit
+                                    ? Color.lerp(
+                                        c.displayLow,
+                                        c.indicator,
+                                        night ? 0.04 : 0.3,
+                                      )!
+                                    : Color.lerp(c.display, c.shadow, 0.03)!,
+                                depth: StudioDepth.sunk,
+                                radius: StudioRadii.small,
+                                rim: c.indicator.withValues(
+                                  alpha: lit && !night && !focused ? 0.75 : 0,
+                                ),
+                                presence: end || pressed || focused ? 1 : 0,
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        '${day.date.day}',
+                                        maxLines: 1,
+                                        softWrap: false,
+                                        style: layered
+                                            .text(
+                                              t.readout.copyWith(
+                                                fontSize: 15,
+                                                height: 20 / 15,
+                                              ),
+                                            )
+                                            .copyWith(
+                                              color: figures,
+                                              fontWeight: end || day.isToday
+                                                  ? FontWeight.w700
+                                                  : FontWeight.w500,
+                                              shadows: _glow(
+                                                figures,
+                                                lit && night,
+                                              ),
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 4,
+                                    child: day.isToday
+                                        ? StudioLamp(on: !end, size: 4)
+                                        : null,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-          ),
-          weekdayBuilder: (context, weekday, label) => SizedBox(
-            height: 28,
-            child: Center(
-              child: Text(
-                label,
-                maxLines: 1,
-                style: t.caption.copyWith(
-                  color: c.onDisplayMuted,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-          dayBuilder: (context, day, states) {
-            final pressed = states.contains(WidgetState.pressed);
-            final focused = states.contains(WidgetState.focused);
-            final end =
-                day.selected ||
-                day.isRangeStart ||
-                day.isRangeEnd ||
-                day.isPreviewEnd;
-            final middle = !end && (day.inRange || day.inPreview);
-            final layered = DesignStyleOf(layers, {
-              ...states,
-              if (end) WidgetState.selected,
-            });
-            final Color figures;
-            if (!day.enabled) {
-              figures = end ? c.onDisplayMuted : c.disabled;
-            } else if (end) {
-              figures = c.indicator;
-            } else if (middle) {
-              figures = Color.lerp(c.onDisplay, c.indicator, 0.6)!;
-            } else {
-              figures = day.inMonth
-                  ? layered.foreground ?? c.onDisplay
-                  : c.onDisplayMuted;
-            }
-            final band = Color.lerp(c.displayLow, c.shadow, 0.05)!;
-            return SizedBox(
-              height: dayHeight,
-              child: Stack(
-                children: [
-                  // The span's band, one slot from end to end.
-                  if (middle || (end && widget._range && !day.selected))
-                    Positioned.fill(
-                      top: 3,
-                      bottom: 3,
-                      left: day.isRangeStart != rtl && end ? null : 0,
-                      right: day.isRangeEnd != rtl && end ? null : 0,
-                      child: day.isRangeStart && day.isRangeEnd
-                          ? const SizedBox.shrink()
-                          : ColoredBox(color: band),
-                    ),
-                  Positioned.fill(
-                    child: Padding(
-                      padding: const EdgeInsets.all(StudioSpacing.hair),
-                      child: AnimatedStudioSurface(
-                        stiffness: StudioMotion.lampStiffness,
-                        face: StudioFace(
-                          fill: Color.lerp(c.displayLow, c.shadow, 0.06)!,
-                          fillLow: Color.lerp(c.display, c.shadow, 0.03)!,
-                          depth: StudioDepth.sunk,
-                          radius: StudioRadii.small,
-                          presence: end || pressed ? 1 : 0,
-                          focus: focused
-                              ? c.focusRing
-                              : c.focusRing.withValues(alpha: 0),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  '${day.date.day}',
-                                  maxLines: 1,
-                                  softWrap: false,
-                                  style: layered
-                                      .text(
-                                        t.readout.copyWith(
-                                          fontSize: 15,
-                                          height: 20 / 15,
-                                        ),
-                                      )
-                                      .copyWith(
-                                        color: figures,
-                                        fontWeight: end || day.isToday
-                                            ? FontWeight.w700
-                                            : FontWeight.w500,
-                                        shadows: _glow(
-                                          figures,
-                                          end && day.enabled,
-                                        ),
-                                      ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 4,
-                              child: day.isToday
-                                  ? StudioLamp(on: !end, size: 4)
-                                  : null,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
+          );
+        },
       ),
     );
+    // In a date field's popover the bezel is its glass: one frame.
+    if (context.getInheritedWidgetOfExactType<_InPopover>() != null) {
+      return frame.fill == null
+          ? body
+          : DecoratedBox(
+              decoration: BoxDecoration(
+                color: frame.fill,
+                borderRadius: BorderRadius.circular(
+                  StudioRadii.bank - StudioMetrics.recessInset,
+                ),
+              ),
+              child: body,
+            );
+    }
+    return StudioSurface(
+      face: c.displayFace.copyWith(radius: StudioRadii.bank, fill: frame.fill),
+      child: body,
+    );
   }
+}
+
+// Marks a calendar inside a date field's popover, which frames it.
+class _InPopover extends InheritedWidget {
+  const _InPopover({required super.child});
+
+  @override
+  bool updateShouldNotify(_InPopover old) => false;
 }
 
 // The window a date or time picker shows its value in: StudioSelect's
@@ -466,60 +534,79 @@ class _PickerWindow extends StatelessWidget {
       semanticValue: text,
       excludeSemantics: true,
       builder: (context, states, _) {
+        final pressed = enabled && states.contains(WidgetState.pressed);
+        final hovered = enabled && states.contains(WidgetState.hovered);
         final now = {...states, if (open) WidgetState.focused};
         final layered = DesignStyleOf([theme.textFieldStyle], now);
         final face = layered.on(
           c.displayFace.copyWith(
             radius: StudioRadii.key,
+            // Focused, the light round the window is its one edge.
             rim: error
                 ? c.danger
-                : open
-                ? c.indicator.withValues(alpha: 0.9)
-                : c.indicator.withValues(alpha: 0),
-            focus: _ring(c, states),
-            fill: enabled ? null : Color.lerp(c.display, c.panelLow, 0.4),
+                : c.indicator.withValues(
+                    alpha: states.contains(WidgetState.focused)
+                        ? 0
+                        : open || pressed
+                        ? 0.9
+                        : hovered
+                        ? 0.45
+                        : 0,
+                  ),
+            fill: !enabled
+                ? Color.lerp(c.display, c.panelLow, 0.4)
+                : pressed
+                ? Color.lerp(c.display, c.indicator, 0.18)
+                : hovered
+                ? Color.lerp(c.display, c.indicator, 0.06)
+                : null,
           ),
         );
         return ConstrainedBox(
           constraints: BoxConstraints(minHeight: theme.controlHeight),
-          child: AnimatedStudioSurface(
-            face: face,
-            stiffness: StudioMotion.lampStiffness,
-            child: Padding(
-              padding: const EdgeInsetsDirectional.only(
-                start: StudioSpacing.medium + 2,
-                end: StudioSpacing.medium,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: DesignCapCenter(
-                      capHeightFactor: theme.capHeightFactor,
-                      child: Text(
-                        text ?? hint,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.body.copyWith(
-                          color: !enabled
-                              ? c.onDisplayMuted
-                              : text == null
-                              ? c.onDisplayMuted
-                              : c.onDisplay,
+          // Focused, the window's edge lights amber: no ring round it.
+          child: StudioFocusLight(
+            edge: _ring(c, states),
+            radius: face.radius,
+            child: AnimatedStudioSurface(
+              face: face,
+              stiffness: StudioMotion.lampStiffness,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  start: StudioSpacing.medium + 2,
+                  end: StudioSpacing.medium,
+                  top: StudioSpacing.tight,
+                  bottom: StudioSpacing.tight,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: DesignCapCenter(
+                        capHeightFactor: theme.capHeightFactor,
+                        child: Text(
+                          text ?? hint,
+                          style: theme.textTheme.body.copyWith(
+                            color: !enabled
+                                ? c.onDisplayMuted
+                                : text == null
+                                ? c.onDisplayMuted
+                                : c.onDisplay,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: StudioSpacing.small),
-                  Icon(
-                    icon,
-                    size: StudioIconSizes.medium,
-                    color: !enabled
-                        ? c.disabled
-                        : open
-                        ? c.litLegend
-                        : c.onDisplayMuted,
-                  ),
-                ],
+                    const SizedBox(width: StudioSpacing.small),
+                    Icon(
+                      icon,
+                      size: StudioIconSizes.medium,
+                      color: !enabled
+                          ? c.disabled
+                          : open
+                          ? c.litLegend
+                          : c.onDisplayMuted,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -546,14 +633,41 @@ Widget _labelled(
   ],
 );
 
-Widget _panel(DesignOverlayInfo info, double width, Widget child) =>
-    FadeTransition(
-      opacity: info.animation,
-      child: SizedBox(
-        width: width,
-        child: StudioListBezel(child: child),
-      ),
+// A calendar's popover under its field. It opens on the side with room for
+// a whole month (its header, weekdays and six weeks at the reader's text
+// size) and scrolls when neither side has that much.
+DesignOverlayPlacement _calendarPlacement(BuildContext context) =>
+    DesignOverlayPlacement(
+      gap: StudioSpacing.tight,
+      margin: StudioSpacing.small,
+      matchAnchorWidth: false,
+      preferredExtent:
+          StudioTheme.of(context).controlHeight +
+          28 +
+          6 * _dayHeight(context) +
+          3 * StudioSpacing.small +
+          2 * StudioMetrics.recessInset,
     );
+
+// The least width a month needs: seven 40 px days inside the bezel.
+const double _calendarFloor =
+    7 * 40 + 2 * (StudioSpacing.small + StudioMetrics.recessInset);
+
+// A calendar's popover: as wide as its field, edge to edge; under a field
+// narrower than a month it keeps a month's width from the field's leading
+// edge. Never wider than the screen allows.
+Widget _panel(DesignOverlayInfo info, Widget child) => FadeTransition(
+  opacity: info.animation,
+  child: SizedBox(
+    width: math.min(
+      info.maxSize.width,
+      math.max(info.anchorRect.width, _calendarFloor),
+    ),
+    child: StudioListBezel(
+      child: _InPopover(child: SingleChildScrollView(child: child)),
+    ),
+  ),
+);
 
 /// A date field: a glass window showing the chosen day (or [hint]) with a
 /// calendar glyph at its end; a press opens a [StudioCalendar] under it,
@@ -628,11 +742,7 @@ class StudioDatePicker extends StatelessWidget {
             )
           : DesignAnchoredOverlay(
               semanticLabel: label,
-              placement: const DesignOverlayPlacement(
-                gap: StudioSpacing.tight,
-                margin: StudioSpacing.small,
-                matchAnchorWidth: false,
-              ),
+              placement: _calendarPlacement(context),
               dampingRatio: StudioMotion.dampingRatio,
               stiffness: StudioMotion.overlayStiffness,
               anchorBuilder: (context, anchor) => _PickerWindow(
@@ -646,7 +756,6 @@ class StudioDatePicker extends StatelessWidget {
               ),
               overlayBuilder: (context, info) => _panel(
                 info,
-                328,
                 StudioCalendar(
                   firstDate: firstDate,
                   lastDate: lastDate,
@@ -753,11 +862,7 @@ class StudioDateRangePicker extends StatelessWidget {
             )
           : DesignAnchoredOverlay(
               semanticLabel: label,
-              placement: const DesignOverlayPlacement(
-                gap: StudioSpacing.tight,
-                margin: StudioSpacing.small,
-                matchAnchorWidth: false,
-              ),
+              placement: _calendarPlacement(context),
               dampingRatio: StudioMotion.dampingRatio,
               stiffness: StudioMotion.overlayStiffness,
               anchorBuilder: (context, anchor) => _PickerWindow(
@@ -771,7 +876,6 @@ class StudioDateRangePicker extends StatelessWidget {
               ),
               overlayBuilder: (context, info) => _panel(
                 info,
-                328,
                 StudioCalendar.range(
                   firstDate: firstDate,
                   lastDate: lastDate,

@@ -296,7 +296,7 @@ class _BankFace extends StatelessWidget {
           )
           .backlitIf(c, selected),
     );
-    return AnimatedStudioSurface(
+    return AnimatedStudioSurface.inBank(
       face: face,
       child: Stack(
         children: [
@@ -829,7 +829,7 @@ class _SideFace extends StatelessWidget {
     );
     return SizedBox(
       height: height,
-      child: AnimatedStudioSurface(
+      child: AnimatedStudioSurface.inBank(
         face: face,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: StudioSpacing.medium),

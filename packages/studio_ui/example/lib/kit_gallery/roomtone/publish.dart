@@ -78,7 +78,24 @@ class _RoomtonePublishPageState extends State<RoomtonePublishPage>
     await _upload.animateTo(fails ? 0.64 : 1);
     if (!mounted) return;
     setState(() => _stage = fails ? _Stage.failed : _Stage.done);
-    if (!fails) showStudioToast(context, 'Published to ${_showName()}');
+    if (!fails) {
+      showStudioToast(
+        context,
+        _scheduled
+            ? 'Scheduled for ${_scheduleLabel(context)}'
+            : 'Published to ${_showName()}',
+      );
+    }
+  }
+
+  String _scheduleLabel(BuildContext context) {
+    final strings = MaterialLocalizations.of(context);
+    final date = strings.formatFullDate(_day!);
+    final time = strings.formatTimeOfDay(
+      TimeOfDay(hour: _time.hour, minute: _time.minute),
+      alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
+    );
+    return '$date at $time';
   }
 
   String _showName() => roomtoneShows.firstWhere((s) => s.id == _show).name;
@@ -270,13 +287,19 @@ class _RoomtonePublishPageState extends State<RoomtonePublishPage>
   Widget _done(BuildContext context) => RoomtonePage(
     title: 'Publish',
     children: [
-      _UploadRow(title: _title.text, show: _showName(), done: true),
+      _UploadRow(
+        title: _title.text,
+        show: _showName(),
+        status: _scheduled ? 'Scheduled' : 'On air',
+      ),
       roomtoneGroupGap,
       StudioStatusView(
-        icon: const Icon(LucideIcons.radioTower),
+        icon: Icon(
+          _scheduled ? LucideIcons.calendarClock : LucideIcons.radioTower,
+        ),
         title: _scheduled ? 'Scheduled' : 'On air',
         message: _scheduled
-            ? 'It goes out on the day you set.'
+            ? 'It goes out on ${_scheduleLabel(context)}.'
             : 'Followers of ${_showName()} hear about it now.',
         actionLabel: 'Back to the recorder',
         onAction: () => Navigator.of(context).maybePop(),
@@ -292,13 +315,13 @@ class _UploadRow extends StatelessWidget {
   const _UploadRow({
     required this.title,
     required this.show,
-    this.done = false,
+    this.status = 'Not out',
     this.meter,
   });
 
   final String title;
   final String show;
-  final bool done;
+  final String status;
   final Widget? meter;
 
   @override
@@ -307,9 +330,10 @@ class _UploadRow extends StatelessWidget {
       leading: const Icon(LucideIcons.fileAudio),
       title: title,
       subtitle: show,
-      trailing: done
-          ? const StudioTag('On air', tone: StudioTagTone.lit)
-          : const StudioTag('Not out'),
+      trailing: StudioTag(
+        status,
+        tone: status == 'On air' ? StudioTagTone.lit : StudioTagTone.plain,
+      ),
     );
     if (meter == null) return StudioListGroup(children: [row]);
     return StudioDisplay(

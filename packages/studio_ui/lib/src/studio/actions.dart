@@ -6,6 +6,8 @@
 /// and [StudioKbd] (keyboard keys as small caps).
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -266,7 +268,17 @@ class StudioKeyRow extends StatelessWidget {
     final c = theme.colors;
     const inset = StudioMetrics.recessInset;
     final frame = DesignStyleOf([style, theme.keyRowStyle], const {});
-    final height = frame.minimumSize?.height ?? theme.controlHeight;
+    final minimumHeight = frame.minimumSize?.height ?? theme.controlHeight;
+    final words = frame.text(theme.textTheme.label);
+    final height = items.any((item) => !item.iconOnly)
+        ? math.max(
+            minimumHeight,
+            MediaQuery.textScalerOf(context).scale(words.fontSize!) *
+                    (words.height ?? 1.2) +
+                2 * inset +
+                4,
+          )
+        : minimumHeight;
     return Semantics(
       container: true,
       explicitChildNodes: true,
@@ -305,7 +317,7 @@ class StudioKeyRow extends StatelessWidget {
                             constraints: BoxConstraints(
                               minWidth: height - 2 * inset,
                             ),
-                            child: AnimatedStudioSurface(
+                            child: AnimatedStudioSurface.inBank(
                               face: face,
                               child: Padding(
                                 padding: EdgeInsets.symmetric(
@@ -482,7 +494,7 @@ class StudioToggleBank<T> extends StatelessWidget {
                 ),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minWidth: height - 2 * inset),
-                  child: AnimatedStudioSurface(
+                  child: AnimatedStudioSurface.inBank(
                     face: face,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(

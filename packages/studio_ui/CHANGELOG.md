@@ -1,3 +1,19 @@
+## 0.1.1
+
+- Recorder transport and confirmation buttons show the entire destructive action at large text sizes.
+- Segmented filters and zoom keys follow the system text size. File-tree rows and date fields grow to show long labels and dates, including the year.
+- Count badges reserve space for their digits and surrounding icons. Disabled buttons have stronger daylight contrast.
+- Line, bar and area chart axes follow the system text size and skip tick labels that would overlap. The fader light follows the inner curve of its slot.
+- Tag chips and banner actions sit evenly inside their curved frames. Selected navigation and filter keys keep an even inset as their legends depress. Use `AnimatedStudioSurface.inBank` for a custom key mounted in a recess.
+- Date and date-range fields respond to hover and press. Their calendar opens on the side with room for a whole month and scrolls when neither side has enough, so large text never cuts off its last week.
+- A date field's calendar is as wide as the field and lines up with both its edges; under a field narrower than a month it keeps a month's width from the field's leading edge. It sits in one frame, and its days keep a key's proportions when the month spreads wide.
+- The chosen day, and a range's first and last days, are lit in their slot: by day a pale amber slot under a dark figure, by night an amber figure in dark glass. Days inside a range keep a legible figure by day.
+- A focused checkbox, date field or calendar day lights its own edge in amber with a soft glow, in place of a ring drawn around it.
+- Roomtone's overview uses a smooth surface behind its introduction.
+- Roomtone exports its full-length reference take as MP3 or stereo WAV, with the selected bitrate and optional chapter markers. Share copies a link that opens the episode.
+- Roomtone's player advances at the selected speed. Selecting a chapter seeks to its start, and each episode has its own chapters. Scheduled episodes show their date and time. Signing out hides the listener’s account, drafts and library.
+- The example gallery keeps the punctuation of its English descriptions in right-to-left layouts.
+
 ## 0.1.0
 
 - First release. The theme (a bright room and low light, three densities, a brand factory for the indicator and the

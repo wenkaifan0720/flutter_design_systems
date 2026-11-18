@@ -3,8 +3,8 @@
 // The Overview ends in the index of every part's page. A link opens it as the looks' galleries share:
 // `/#/<page>?theme=dark&dir=rtl&text=200`, where the page is a part's page by its id (`buttons`, `fields`,
 // `choices`...) or a screen by its name (`overview`, `home`, `library`, `record`, `settings`), or a scene of one
-// (`/#/scene/episode`; also `search`, `searchEmpty`, `downloadsEmpty`, `publish`, `uploadFailed`, `discard`,
-// `export`); `theme=dark` at night, `dir=rtl` right to left, `text=200` the words at twice the size,
+// (`/#/scene/episode`, which `id=sr-7` points at one episode, as a shared link does; also `search`, `searchEmpty`,
+// `downloadsEmpty`, `publish`, `uploadFailed`, `discard`, `export`); `theme=dark` at night, `dir=rtl` right to left, `text=200` the words at twice the size,
 // `density=comfortable|compact` that density. `?slow=8` runs every animation eight times slower; `?a11y=1` turns the
 // semantics on from the start; `?keylines=1` draws ui_core's keyline sheet over it.
 import 'package:flutter/scheduler.dart' show timeDilation;
@@ -62,6 +62,7 @@ Future<void> main() async {
           null => RoomtonePlace.overview,
         },
     initialScene: scene,
+    initialEpisodeId: query['id'],
     initialAppearance: query['theme'] == 'dark'
         ? RoomtoneAppearance.dark
         : RoomtoneAppearance.light,

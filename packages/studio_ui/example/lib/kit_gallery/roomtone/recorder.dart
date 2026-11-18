@@ -13,6 +13,10 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'data.dart';
 import 'publish.dart';
 import 'roomtone.dart';
+import 'save_take_stub.dart'
+    if (dart.library.io) 'save_take_io.dart'
+    if (dart.library.js_interop) 'save_take_web.dart';
+import 'take_audio.dart';
 
 /// The recorder, [recording] at first when asked.
 /// What the recorder asks as it opens.
@@ -72,21 +76,33 @@ class _RoomtoneRecorderState extends State<RoomtoneRecorder>
   Future<void> _export() async {
     // A sheet from the foot on a phone; on a desk the same panel stands as a
     // dialog over the rack, clear of its edges.
+    final seconds = _seconds;
+    final markers = List<RoomtoneMarker>.of(_markers);
     final format = roomtoneDesk(context)
-        ? await showStudioDialog<String>(
+        ? await showStudioDialog<TakeFormat>(
             context: context,
             builder: (context) => StudioDialog(
               title: 'Export take',
-              content: _ExportSheet(seconds: _seconds, inDialog: true),
+              content: _ExportSheet(seconds: seconds, inDialog: true),
             ),
           )
-        : await showStudioBottomSheet<String>(
+        : await showStudioBottomSheet<TakeFormat>(
             context: context,
             title: 'Export take',
-            builder: (context) => _ExportSheet(seconds: _seconds),
+            builder: (context) => _ExportSheet(seconds: seconds),
           );
     if (format == null || !mounted) return;
-    showStudioToast(context, 'Exported as $format');
+    try {
+      final result = await saveTake(TakeAudio.render(seconds, format, markers));
+      if (mounted) showStudioToast(context, result);
+    } catch (_) {
+      if (mounted) {
+        showStudioToast(
+          context,
+          'Could not save the take. Try exporting again.',
+        );
+      }
+    }
   }
 
   void _tick(Duration elapsed) {
@@ -299,17 +315,17 @@ class _RoomtoneRecorderState extends State<RoomtoneRecorder>
       ],
     );
     // The deck's transport, under its display.
-    final transport = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    final transport = Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: StudioSpacing.regular,
+      runSpacing: StudioSpacing.small,
       children: [
-        Flexible(
-          child: StudioButton(
-            'Mark',
-            icon: const Icon(LucideIcons.flag),
-            onPressed: _mark,
-          ),
+        StudioButton(
+          'Mark',
+          icon: const Icon(LucideIcons.flag),
+          onPressed: _mark,
         ),
-        const SizedBox(width: StudioSpacing.regular),
         StudioTransportKey(
           icon: Icon(_recording ? LucideIcons.pause : LucideIcons.circle),
           tooltip: _recording ? 'Pause recording' : 'Record',
@@ -318,14 +334,7 @@ class _RoomtoneRecorderState extends State<RoomtoneRecorder>
           size: 76,
           onPressed: _toggle,
         ),
-        const SizedBox(width: StudioSpacing.regular),
-        Flexible(
-          child: StudioButton(
-            'Discard',
-            isDestructiveAction: true,
-            onPressed: _discard,
-          ),
-        ),
+        StudioButton('Discard', isDestructiveAction: true, onPressed: _discard),
       ],
     );
     final markers = StudioListGroup(
@@ -419,9 +428,10 @@ class _ExportSheetState extends State<_ExportSheet> {
   double _quality = 0.5;
   bool _chapters = true;
 
-  String get _rate => _format == 'WAV'
-      ? '48 kHz, 24 bit'
-      : '${[96, 128, 192, 256, 320][(_quality * 4).round()]} kbps';
+  int get _kbps => const [96, 128, 192, 256, 320][(_quality * 4).round()];
+  TakeFormat get _settings => (name: _format, kbps: _kbps, chapters: _chapters);
+
+  String get _rate => _format == 'WAV' ? '48 kHz, 24 bit' : '$_kbps kbps';
 
   @override
   Widget build(BuildContext context) {
@@ -429,9 +439,7 @@ class _ExportSheetState extends State<_ExportSheet> {
     final c = theme.colors;
     final mb = _format == 'WAV'
         ? widget.seconds * 0.288
-        : widget.seconds *
-              [96, 128, 192, 256, 320][(_quality * 4).round()] /
-              8000;
+        : widget.seconds * _kbps / 8000;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -480,7 +488,7 @@ class _ExportSheetState extends State<_ExportSheet> {
         ),
         const SizedBox(height: StudioSpacing.regular),
         Text(
-          'About ${mb.toStringAsFixed(1)} MB',
+          'Reference tone · ${roomtoneClock(widget.seconds)} · About ${mb.toStringAsFixed(1)} MB',
           style: theme.textTheme.secondary.copyWith(color: c.legendMuted),
         ),
         const SizedBox(height: StudioSpacing.large),
@@ -496,7 +504,7 @@ class _ExportSheetState extends State<_ExportSheet> {
               StudioButton.lit(
                 'Export',
                 icon: const Icon(LucideIcons.download),
-                onPressed: () => Navigator.of(context).pop(_format),
+                onPressed: () => Navigator.of(context).pop(_settings),
               ),
             ],
           )
@@ -504,7 +512,7 @@ class _ExportSheetState extends State<_ExportSheet> {
           StudioButton.lit(
             'Export',
             icon: const Icon(LucideIcons.download),
-            onPressed: () => Navigator.of(context).pop(_format),
+            onPressed: () => Navigator.of(context).pop(_settings),
           ),
       ],
     );

@@ -4,6 +4,8 @@
 library;
 
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/scheduler.dart' show Ticker;
+import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:studio_ui/studio_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -85,6 +87,7 @@ class RoomtonePlayer extends StatefulWidget {
     super.key,
     required this.episode,
     this.compact = false,
+    this.showDetails = false,
   });
 
   /// What it plays.
@@ -93,13 +96,54 @@ class RoomtonePlayer extends StatefulWidget {
   /// Whether it stands small (the Overview's live screen): no speed bank.
   final bool compact;
 
+  /// Shows the episode notes and seekable chapter list under the transport.
+  final bool showDetails;
+
   @override
   State<RoomtonePlayer> createState() => _RoomtonePlayerState();
 }
 
-class _RoomtonePlayerState extends State<RoomtonePlayer> {
+class _RoomtonePlayerState extends State<RoomtonePlayer>
+    with SingleTickerProviderStateMixin {
   late double _at = widget.episode.minutes * 60 * widget.episode.progress;
-  bool _playing = false;
+  late final Ticker _ticker = createTicker(_tick);
+  Duration _lastTick = Duration.zero;
+  int _tab = 0;
+  bool get _playing => _ticker.isActive;
+  double get _end => widget.episode.minutes * 60.0;
+
+  void _tick(Duration elapsed) {
+    final delta = elapsed - _lastTick;
+    if (delta.inMilliseconds < 200) return;
+    _lastTick = elapsed;
+    _seek(_at + delta.inMicroseconds / Duration.microsecondsPerSecond * _speed);
+  }
+
+  void _seek(double position) {
+    setState(() {
+      _at = position.clamp(0.0, _end).toDouble();
+      if (_at == _end) _ticker.stop();
+    });
+  }
+
+  void _toggle() {
+    setState(() {
+      if (_playing) {
+        _ticker.stop();
+      } else {
+        if (_at >= _end) _at = 0;
+        _lastTick = Duration.zero;
+        _ticker.start();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
+
   double _speed = 1;
 
   @override
@@ -107,7 +151,7 @@ class _RoomtonePlayerState extends State<RoomtonePlayer> {
     super.didUpdateWidget(old);
     if (old.episode.id != widget.episode.id) {
       _at = widget.episode.minutes * 60 * widget.episode.progress;
-      _playing = false;
+      _ticker.stop();
     }
   }
 
@@ -184,7 +228,7 @@ class _RoomtonePlayerState extends State<RoomtonePlayer> {
         StudioFader(
           value: _at,
           max: total,
-          onChanged: (v) => setState(() => _at = v),
+          onChanged: _seek,
           semanticLabel: 'Position',
           semanticFormatter: (v) => roomtoneClock(v.round()),
           ticks: 12,
@@ -197,7 +241,7 @@ class _RoomtonePlayerState extends State<RoomtonePlayer> {
               icon: const Icon(LucideIcons.rotateCcw),
               tooltip: 'Back 15 seconds',
               size: 52,
-              onPressed: () => setState(() => _at = (_at - 15).clamp(0, total)),
+              onPressed: () => _seek(_at - 15),
             ),
             const SizedBox(width: StudioSpacing.large),
             StudioTransportKey(
@@ -205,14 +249,14 @@ class _RoomtonePlayerState extends State<RoomtonePlayer> {
               tooltip: _playing ? 'Pause' : 'Play',
               lit: _playing,
               size: 72,
-              onPressed: () => setState(() => _playing = !_playing),
+              onPressed: _toggle,
             ),
             const SizedBox(width: StudioSpacing.large),
             StudioTransportKey(
               icon: const Icon(LucideIcons.rotateCw),
               tooltip: 'Forward 30 seconds',
               size: 52,
-              onPressed: () => setState(() => _at = (_at + 30).clamp(0, total)),
+              onPressed: () => _seek(_at + 30),
             ),
           ],
         ),
@@ -231,9 +275,73 @@ class _RoomtonePlayerState extends State<RoomtonePlayer> {
             onChanged: (v) => setState(() => _speed = v),
           ),
         ],
+        if (widget.showDetails) ...[
+          roomtoneGroupGap,
+          StudioTabBar(
+            tabs: const ['Notes', 'Chapters'],
+            selectedIndex: _tab,
+            onChanged: (i) => setState(() => _tab = i),
+          ),
+          const SizedBox(height: StudioSpacing.regular),
+          if (_tab == 0)
+            StudioDisplay(
+              padding: const EdgeInsets.all(StudioSpacing.regular),
+              child: Text(e.notes, style: theme.textTheme.body),
+            )
+          else
+            StudioListGroup(
+              children: [
+                for (final (at, name) in e.chapters)
+                  StudioListTile(
+                    title: name,
+                    trailingText: roomtoneClock(at),
+                    selected:
+                        at ==
+                        e.chapters.lastWhere((chapter) => chapter.$1 <= _at).$1,
+                    onTap: () => _seek(at.toDouble()),
+                    showChevron: false,
+                  ),
+              ],
+            ),
+        ],
       ],
     );
   }
+}
+
+/// Copies a link that opens [episode] on a phone or in the desktop Library.
+Future<void> copyRoomtoneEpisodeLink(
+  BuildContext context,
+  RoomtoneEpisode episode,
+) async {
+  final base = Uri.base;
+  final gallery = base.isScheme('http') || base.isScheme('https')
+      ? base.resolve('.')
+      : Uri.parse(
+          'https://wenkaifan0720.github.io/flutter_design_systems/studio/',
+        );
+  final fragment = Uri(
+    path: '/scene/episode',
+    queryParameters: {'id': episode.id},
+  );
+  final link = gallery.replace(fragment: fragment.toString()).toString();
+  try {
+    await Clipboard.setData(ClipboardData(text: link));
+  } catch (_) {
+    if (!context.mounted) return;
+    await showStudioDialog<void>(
+      context: context,
+      builder: (context) => StudioDialog(
+        title: 'Share episode',
+        content: SelectableText(link),
+        actions: [
+          StudioButton('Done', onPressed: () => Navigator.pop(context)),
+        ],
+      ),
+    );
+    return;
+  }
+  if (context.mounted) showStudioToast(context, 'Link copied');
 }
 
 /// An episode's page: its player, then its notes and chapters.
@@ -256,7 +364,7 @@ class _RoomtoneEpisodePageState extends State<RoomtoneEpisodePage> {
       StudioIconButton(
         icon: const Icon(LucideIcons.share2),
         tooltip: 'Share',
-        onPressed: () => showStudioToast(context, 'Link copied'),
+        onPressed: () => copyRoomtoneEpisodeLink(context, widget.episode),
       ),
     ],
     children: [RoomtoneEpisodeDetail(episode: widget.episode)],
@@ -265,59 +373,14 @@ class _RoomtoneEpisodePageState extends State<RoomtoneEpisodePage> {
 
 /// What an episode's page and the desk's player pane hold: the player, then
 /// the notes and chapters under tabs.
-class RoomtoneEpisodeDetail extends StatefulWidget {
+class RoomtoneEpisodeDetail extends StatelessWidget {
   /// The detail of [episode].
   const RoomtoneEpisodeDetail({super.key, required this.episode});
 
-  /// The episode.
+  /// The episode whose notes and chapters accompany the player.
   final RoomtoneEpisode episode;
 
   @override
-  State<RoomtoneEpisodeDetail> createState() => _RoomtoneEpisodeDetailState();
-}
-
-class _RoomtoneEpisodeDetailState extends State<RoomtoneEpisodeDetail> {
-  int _tab = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.studioTheme;
-    final e = widget.episode;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        RoomtonePlayer(episode: e),
-        roomtoneGroupGap,
-        StudioTabBar(
-          tabs: const ['Notes', 'Chapters'],
-          selectedIndex: _tab,
-          onChanged: (i) => setState(() => _tab = i),
-        ),
-        const SizedBox(height: StudioSpacing.regular),
-        if (_tab == 0)
-          StudioDisplay(
-            padding: const EdgeInsets.all(StudioSpacing.regular),
-            child: Text(e.notes, style: theme.textTheme.body),
-          )
-        else
-          StudioListGroup(
-            children: [
-              for (final (i, (at, name)) in const [
-                (0, 'Introductions'),
-                (312, 'The attic'),
-                (1420, 'Thread and patience'),
-                (2890, 'The drawer of offcuts'),
-              ].indexed)
-                StudioListTile(
-                  title: name,
-                  trailingText: roomtoneClock(at),
-                  selected: i == 2,
-                  onTap: () {},
-                  showChevron: false,
-                ),
-            ],
-          ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) =>
+      RoomtonePlayer(episode: episode, showDetails: true);
 }

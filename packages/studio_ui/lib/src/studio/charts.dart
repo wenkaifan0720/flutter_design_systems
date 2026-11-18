@@ -168,9 +168,11 @@ abstract class _AxesPainter extends CustomPainter {
   /// clears the scale's figures and the last stays inside the glass.
   Rect plot(Size size, {bool between = true}) {
     var gutter = 0.0;
+    var labelHeight = 0.0;
     for (var i = 0; i <= rows; i++) {
       final p = _words(_figure(top * i / rows));
       gutter = math.max(gutter, p.width);
+      labelHeight = math.max(labelHeight, p.height);
       p.dispose();
     }
     var half = 0.0;
@@ -183,12 +185,15 @@ abstract class _AxesPainter extends CustomPainter {
     }
     // The steps' labels stand clear under the base figure ("0"), which is
     // centred on the base line.
-    final under = (text.fontSize ?? 11) * 2.1;
+    final under = 1.5 * labelHeight + StudioSpacing.tight;
+    final start = math.min(size.width, gutter + StudioSpacing.small);
+    half = math.min(half, math.max(0.0, (size.width - start) / 2 - 1));
+    final plotTop = math.min(size.height, labelHeight / 2);
     return Rect.fromLTRB(
-      gutter + StudioSpacing.small + half,
-      4,
+      start + half,
+      plotTop,
       size.width - half,
-      size.height - under,
+      math.max(plotTop, size.height - under),
     );
   }
 
@@ -200,22 +205,33 @@ abstract class _AxesPainter extends CustomPainter {
     final dash = Paint()
       ..color = c.onReadout.withValues(alpha: 0.06)
       ..strokeWidth = 1;
+    var previousTop = double.infinity;
     for (var i = 0; i <= rows; i++) {
       final y = r.bottom - r.height * i / rows;
       canvas.drawLine(Offset(r.left, y), Offset(r.right, y), line);
       final p = _words(_figure(top * i / rows), color: c.onReadoutMuted);
-      p.paint(
-        canvas,
-        Offset(r.left - StudioSpacing.small - p.width, y - p.height / 2),
-      );
+      final labelTop = y - p.height / 2;
+      final left = r.left - StudioSpacing.small - p.width;
+      if (left >= 0 && labelTop >= 0 && labelTop + p.height <= previousTop) {
+        p.paint(canvas, Offset(left, labelTop));
+        previousTop = labelTop - StudioSpacing.hair;
+      }
       p.dispose();
     }
     final n = labels.length;
-    for (var i = 0; i < n; i++) {
+    var occupiedEnd = 0.0;
+    for (var step = 0; step < n; step++) {
+      final i = direction == TextDirection.rtl ? n - 1 - step : step;
       final x = xOf(r, i, between: between);
       canvas.drawLine(Offset(x, r.top), Offset(x, r.bottom), dash);
       final p = _words(labels[i], color: c.onReadoutMuted);
-      p.paint(canvas, Offset(x - p.width / 2, r.bottom + p.height / 2 + 4));
+      final left = (x - p.width / 2)
+          .clamp(0.0, math.max(0.0, size.width - p.width))
+          .toDouble();
+      if (left >= occupiedEnd && p.width <= size.width) {
+        p.paint(canvas, Offset(left, r.bottom + p.height / 2 + 4));
+        occupiedEnd = left + p.width + StudioSpacing.tight;
+      }
       p.dispose();
     }
   }
@@ -392,7 +408,7 @@ abstract class _AxesChart extends StatelessWidget {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
     final text = theme.textTheme.caption.copyWith(
-      fontSize: 11,
+      fontSize: MediaQuery.textScalerOf(context).scale(11),
       fontFeatures: const [FontFeature.tabularFigures()],
     );
     final readOut = [

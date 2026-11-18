@@ -659,7 +659,9 @@ class StudioBanner extends StatelessWidget {
       liveRegion: true,
       child: StudioSurface(
         // Words are read on glass (law 2): the strip is a display's.
-        face: c.displayFace,
+        face: c.displayFace.copyWith(
+          radius: StudioRadii.key + StudioSpacing.small,
+        ),
         child: Padding(
           padding: const EdgeInsetsDirectional.only(
             start: StudioSpacing.regular,

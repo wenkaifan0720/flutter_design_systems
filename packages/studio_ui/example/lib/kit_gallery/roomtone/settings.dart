@@ -26,18 +26,42 @@ class RoomtoneSettings extends StatelessWidget {
           StudioListGroup(
             header: 'Account',
             children: [
-              StudioListTile(
-                leading: StudioAvatar(name: roomtoneListener.name, size: 32),
-                title: roomtoneListener.name,
-                subtitle: roomtoneBreakable(roomtoneListener.email),
-                onTap: () => showStudioToast(context, 'Account opens here'),
-              ),
-              StudioListTile(
-                title: 'Sign out',
-                isDestructiveAction: true,
-                showChevron: false,
-                onTap: () => showStudioToast(context, 'Signed out'),
-              ),
+              if (!prefs.signedIn)
+                StudioListTile(
+                  title: 'Sign in',
+                  subtitle: 'Use the Roomtone demo account',
+                  showChevron: false,
+                  onTap: () => prefs.update((p) => p.signedIn = true),
+                )
+              else ...[
+                StudioListTile(
+                  leading: StudioAvatar(name: roomtoneListener.name, size: 32),
+                  title: roomtoneListener.name,
+                  subtitle: roomtoneBreakable(roomtoneListener.email),
+                  onTap: () => showStudioDialog<void>(
+                    context: context,
+                    builder: (context) => StudioDialog(
+                      title: roomtoneListener.name,
+                      content: SelectableText(roomtoneListener.email),
+                      actions: [
+                        StudioButton(
+                          'Done',
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                StudioListTile(
+                  title: 'Sign out',
+                  isDestructiveAction: true,
+                  showChevron: false,
+                  onTap: () {
+                    prefs.update((p) => p.signedIn = false);
+                    showStudioToast(context, 'Signed out');
+                  },
+                ),
+              ],
             ],
           ),
           roomtoneGroupGap,
@@ -147,7 +171,7 @@ class RoomtoneSettings extends StatelessWidget {
           roomtoneGroupGap,
           const StudioListGroup(
             header: 'About',
-            children: [StudioListTile(title: 'Version', trailingText: '0.1.0')],
+            children: [StudioListTile(title: 'Version', trailingText: '0.1.1')],
           ),
         ],
       ),

@@ -247,7 +247,12 @@ class StudioLight {
 /// ```
 class StudioSurface extends StatelessWidget {
   /// [child] on [face].
-  const StudioSurface({super.key, required this.face, this.child});
+  const StudioSurface({super.key, required this.face, this.child})
+    : _inBank = false;
+
+  const StudioSurface._(this._inBank, {required this.face, this.child});
+
+  final bool _inBank;
 
   /// How it looks.
   final StudioFace face;
@@ -273,7 +278,12 @@ class StudioSurface extends StatelessWidget {
       );
     }
     return CustomPaint(
-      painter: StudioFacePainter(face: face, light: light, ratio: ratio),
+      painter: StudioFacePainter._(
+        _inBank,
+        face: face,
+        light: light,
+        ratio: ratio,
+      ),
       child: content == null
           ? null
           : Transform.translate(offset: Offset(0, sink), child: content),
@@ -291,7 +301,17 @@ class StudioSurface extends StatelessWidget {
 /// public for a part that paints its own face round other paint.
 class StudioFacePainter extends CustomPainter {
   /// [face] in [light], its brush at [ratio] device pixels a logical one.
-  StudioFacePainter({required this.face, required this.light, this.ratio = 1});
+  StudioFacePainter({required this.face, required this.light, this.ratio = 1})
+    : _inBank = false;
+
+  StudioFacePainter._(
+    this._inBank, {
+    required this.face,
+    required this.light,
+    required this.ratio,
+  });
+
+  final bool _inBank;
 
   /// The face.
   final StudioFace face;
@@ -304,11 +324,14 @@ class StudioFacePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) =>
-      paintStudioFace(canvas, Offset.zero & size, face, light, ratio: ratio);
+      _paintFace(canvas, Offset.zero & size, face, light, ratio, _inBank);
 
   @override
   bool shouldRepaint(StudioFacePainter old) =>
-      old.face != face || old.light != light || old.ratio != ratio;
+      old.face != face ||
+      old.light != light ||
+      old.ratio != ratio ||
+      old._inBank != _inBank;
 }
 
 /// Paints [face] in [light] over [rect] on [canvas]: what every Studio
@@ -319,13 +342,24 @@ void paintStudioFace(
   StudioFace face,
   StudioLight light, {
   double ratio = 1,
-}) {
+}) => _paintFace(canvas, rect, face, light, ratio, false);
+
+void _paintFace(
+  Canvas canvas,
+  Rect rect,
+  StudioFace face,
+  StudioLight light,
+  double ratio,
+  bool inBank,
+) {
   final r = Radius.circular(face.radius);
   final sink = face.depth == StudioDepth.raised
       ? face.travel * StudioMetrics.pressTravel
       : 0.0;
-  final body = RRect.fromRectAndRadius(rect.shift(Offset(0, sink)), r);
   final rest = RRect.fromRectAndRadius(rect, r);
+  // A key mounted in a bank travels into its socket. Its outline stays on
+  // the socket's keylines while its legend, edge light and shadow move.
+  final body = inBank ? rest : rest.shift(Offset(0, sink));
   final layered = face.presence < 1;
   if (face.presence > 0) {
     if (layered) {
@@ -571,7 +605,18 @@ class AnimatedStudioSurface extends StatefulWidget {
     required this.face,
     this.stiffness = StudioMotion.pressStiffness,
     this.child,
-  });
+  }) : _inBank = false;
+
+  /// A key mounted in a recessed bank. Its outline stays concentric with
+  /// the surrounding well as the light, shadow and legend respond to a press.
+  const AnimatedStudioSurface.inBank({
+    super.key,
+    required this.face,
+    this.stiffness = StudioMotion.pressStiffness,
+    this.child,
+  }) : _inBank = true;
+
+  final bool _inBank;
 
   /// The face to arrive at.
   final StudioFace face;
@@ -620,7 +665,8 @@ class _AnimatedStudioSurfaceState extends State<AnimatedStudioSurface>
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: _controller,
-    builder: (context, child) => StudioSurface(face: _now, child: child),
+    builder: (context, child) =>
+        StudioSurface._(widget._inBank, face: _now, child: child),
     child: widget.child,
   );
 }

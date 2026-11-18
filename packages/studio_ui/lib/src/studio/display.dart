@@ -6,6 +6,8 @@
 /// small engraved plate) and [StudioMedia] (a picture behind glass).
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -680,9 +682,9 @@ class StudioAvatarGroup extends StatelessWidget {
   }
 }
 
-/// A count on something: a small dark readout at [child]'s top end, its
-/// figures lit (or, with no [count], a lit lamp alone). Over 99 it reads
-/// `99+`.
+/// A count at the top trailing corner of [child], or a lamp when [count]
+/// is null. The badge reserves space for its readout. Counts above 99 show
+/// `99+` visually and retain their full value for screen readers.
 ///
 /// ```dart
 /// StudioBadge(count: 3, child: const Icon(LucideIcons.bell))
@@ -715,46 +717,58 @@ class StudioBadge extends StatelessWidget {
     final c = theme.colors;
     if (!show) return child;
     final n = count;
+    final label = n == null
+        ? ''
+        : n > 99
+        ? '99+'
+        : '$n';
+    final style = theme.textTheme.readout.copyWith(
+      fontSize: 11,
+      height: 1,
+      color: c.indicator,
+      shadows: [
+        Shadow(color: c.indicator.withValues(alpha: 0.5), blurRadius: 4),
+      ],
+    );
+    final painter = TextPainter(
+      text: TextSpan(text: label, style: style),
+      textScaler: MediaQuery.textScalerOf(context),
+      textDirection: Directionality.of(context),
+    )..layout();
+    final width = n == null
+        ? 8.0
+        : math.max(20.0, painter.width.ceilToDouble() + 11);
+    final height = n == null
+        ? 8.0
+        : math.max(18.0, painter.height.ceilToDouble() + 6);
+    painter.dispose();
     return Semantics(
       value: semanticLabel ?? (n == null ? 'New' : '$n'),
       child: Stack(
-        clipBehavior: Clip.none,
         children: [
-          child,
+          Padding(
+            padding: EdgeInsetsDirectional.only(
+              end: n == null ? 2 : math.max(width / 2, width - 12),
+              top: n == null ? 2 : height / 2,
+            ),
+            child: child,
+          ),
           PositionedDirectional(
-            top: n == null ? -2 : -7,
-            end: n == null ? -2 : -10,
+            top: 0,
+            end: 0,
             child: ExcludeSemantics(
               child: n == null
                   ? const StudioLamp(on: true, size: 8)
                   : Container(
-                      constraints: const BoxConstraints(minWidth: 20),
-                      height: 18,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: StudioSpacing.tight,
-                      ),
+                      width: width,
+                      height: height,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: c.readout,
                         borderRadius: BorderRadius.circular(5),
                         border: Border.all(color: c.panel, width: 1.5),
                       ),
-                      child: Center(
-                        widthFactor: 1,
-                        child: Text(
-                          n > 99 ? '99+' : '$n',
-                          style: theme.textTheme.readout.copyWith(
-                            fontSize: 11,
-                            height: 1,
-                            color: c.indicator,
-                            shadows: [
-                              Shadow(
-                                color: c.indicator.withValues(alpha: 0.5),
-                                blurRadius: 4,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      child: Text(label, style: style, maxLines: 1),
                     ),
             ),
           ),

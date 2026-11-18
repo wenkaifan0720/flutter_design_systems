@@ -135,10 +135,10 @@ class _Rise extends StatelessWidget {
   );
 }
 
-/// A dialog: a panel module, brushed metal with its corners and its edge
-/// lit from the top, a [title], what it asks or says ([content]), and its
-/// keys along its foot, all one height. On a phone the keys share the
-/// width; wider they stand at the end.
+/// A brushed-metal dialog with a [title], optional [content], and [actions].
+///
+/// Actions share the space on a phone and align to the trailing edge on a
+/// wider screen. When their labels need more room, the actions stack.
 ///
 /// Reads [style]'s `fill`, `foreground` and `padding`, then
 /// [StudioThemeData.dialogStyle].
@@ -226,30 +226,32 @@ class StudioDialog extends StatelessWidget {
                   ],
                   if (actions.isNotEmpty) ...[
                     const SizedBox(height: StudioSpacing.large),
-                    if (narrow)
-                      Row(
-                        children: [
-                          for (final (i, a) in actions.indexed) ...[
-                            if (i > 0)
-                              const SizedBox(width: StudioSpacing.medium),
-                            Expanded(child: a),
+                    LayoutBuilder(
+                      builder: (context, box) {
+                        final minimum = narrow
+                            ? math.max(
+                                0.0,
+                                (box.maxWidth -
+                                        StudioSpacing.medium *
+                                            (actions.length - 1)) /
+                                    actions.length,
+                              )
+                            : 112.0;
+                        return OverflowBar(
+                          alignment: MainAxisAlignment.end,
+                          overflowAlignment: OverflowBarAlignment.end,
+                          spacing: StudioSpacing.medium,
+                          overflowSpacing: StudioSpacing.small,
+                          children: [
+                            for (final action in actions)
+                              ConstrainedBox(
+                                constraints: BoxConstraints(minWidth: minimum),
+                                child: action,
+                              ),
                           ],
-                        ],
-                      )
-                    else
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          for (final (i, a) in actions.indexed) ...[
-                            if (i > 0)
-                              const SizedBox(width: StudioSpacing.medium),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(minWidth: 112),
-                              child: a,
-                            ),
-                          ],
-                        ],
-                      ),
+                        );
+                      },
+                    ),
                   ],
                 ],
               ),

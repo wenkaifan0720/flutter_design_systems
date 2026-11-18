@@ -159,6 +159,11 @@ class KitSection extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: StudioSpacing.regular),
               child: Text(
                 note!,
+                // The gallery's descriptions are English in both layout directions.
+                textDirection: TextDirection.ltr,
+                textAlign: Directionality.of(context) == TextDirection.rtl
+                    ? TextAlign.right
+                    : TextAlign.left,
                 style: theme.textTheme.secondary.copyWith(
                   color: theme.colors.legendMuted,
                 ),

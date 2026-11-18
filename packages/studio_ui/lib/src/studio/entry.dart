@@ -1403,16 +1403,15 @@ class _StudioTagInputState<T extends Object> extends State<StudioTagInput<T>> {
               onTap: widget.enabled ? _focus.requestFocus : null,
               child: AnimatedStudioSurface(
                 stiffness: StudioMotion.lampStiffness,
-                face: layered.on(_window(theme, states)),
+                face: layered.on(
+                  _window(theme, states).copyWith(
+                    radius: StudioRadii.small + StudioMetrics.recessInset,
+                  ),
+                ),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(minHeight: theme.controlHeight),
                   child: Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: StudioSpacing.small,
-                      end: StudioSpacing.small,
-                      top: StudioSpacing.tight,
-                      bottom: StudioSpacing.tight,
-                    ),
+                    padding: const EdgeInsets.all(StudioMetrics.recessInset),
                     child: Wrap(
                       spacing: StudioSpacing.tight,
                       runSpacing: StudioSpacing.tight,
@@ -1465,10 +1464,8 @@ class _StudioTagInputState<T extends Object> extends State<StudioTagInput<T>> {
   }
 }
 
-// A value in a tag input: a small raised plate with its words engraved and
-// a cross at its end. The plate stands in a row as tall as a finger's floor
-// (its 32 px face centred), and the cross's target is the whole 44 px square
-// at the plate's end, over the cross and the end of its words.
+// The tag face fills its touch target and grows with its label. The remove
+// key uses the trailing end of the plate, including the space around the cross.
 class _Plate extends StatelessWidget {
   const _Plate({
     required this.label,
@@ -1493,8 +1490,18 @@ class _Plate extends StatelessWidget {
     final c = theme.colors;
     final ink = enabled ? c.onKey : c.disabled;
     final floor = DesignTapTargets.of(context).floorOn();
+    final style = theme.textTheme.secondary.copyWith(
+      color: ink,
+      fontWeight: FontWeight.w500,
+    );
+    final faceHeight = math.max(
+      math.max(_face, floor.height),
+      MediaQuery.textScalerOf(context).scale(style.fontSize!) *
+              (style.height ?? 1.2) +
+          2 * StudioSpacing.tight,
+    );
     return SizedBox(
-      height: math.max(_face, floor.height),
+      height: faceHeight,
       child: Stack(
         alignment: AlignmentDirectional.centerStart,
         children: [
@@ -1506,7 +1513,7 @@ class _Plate extends StatelessWidget {
               fill: enabled ? null : Color.lerp(c.key, c.panelLow, 0.5),
             ),
             child: SizedBox(
-              height: _face,
+              height: faceHeight,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -1514,13 +1521,7 @@ class _Plate extends StatelessWidget {
                     padding: const EdgeInsetsDirectional.only(
                       start: StudioSpacing.small + StudioSpacing.hair,
                     ),
-                    child: Text(
-                      label,
-                      style: theme.textTheme.secondary.copyWith(
-                        color: ink,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    child: Text(label, style: style),
                   ),
                   const SizedBox(width: _cross),
                 ],
@@ -1539,7 +1540,7 @@ class _Plate extends StatelessWidget {
                 alignment: AlignmentDirectional.centerEnd,
                 child: SizedBox(
                   width: _cross,
-                  height: _face,
+                  height: faceHeight,
                   child: Icon(
                     LucideIcons.x,
                     size: StudioIconSizes.small,

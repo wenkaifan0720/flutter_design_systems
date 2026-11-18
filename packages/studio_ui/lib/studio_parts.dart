@@ -1,12 +1,8 @@
-/// Everything `studio_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (internal/brush.dart, internal/curved.dart, internal/inventory.dart, internal/list_keys.dart, internal/strip.dart).
+/// Helpers for customizing components copied from `studio_ui`.
 ///
-/// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
-/// rest of your app stays on the package:
+/// Import this library in the copied widget to use its theme and component helpers.
 ///
 /// ```dart
-/// // lib/ui/my_card.dart, copied from package:studio_ui/src/studio/... and renamed.
-/// import 'package:flutter/widgets.dart';
 /// import 'package:studio_ui/studio_parts.dart';
 /// ```
 ///
@@ -20,6 +16,7 @@ export 'studio_ui.dart';
 export 'studio_host.dart';
 export 'src/studio/internal/brush.dart';
 export 'src/studio/internal/curved.dart';
+export 'src/studio/internal/focus_light.dart';
 export 'src/studio/internal/inventory.dart';
 export 'src/studio/internal/list_keys.dart';
 export 'src/studio/internal/strip.dart';
