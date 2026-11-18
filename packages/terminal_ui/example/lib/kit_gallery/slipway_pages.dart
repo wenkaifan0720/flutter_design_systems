@@ -237,7 +237,19 @@ int runTitleCols(Iterable<Run> runs) =>
 /// The projects and how their last runs went, with what runs now.
 class HomePage extends StatelessWidget {
   /// Home; [onOpenRun] opens a run.
-  const HomePage({super.key, required this.onOpenRun, required this.wide});
+  const HomePage({
+    super.key,
+    required this.projects,
+    required this.runs,
+    required this.onOpenRun,
+    required this.wide,
+  });
+
+  /// Projects available in this session.
+  final List<Project> projects;
+
+  /// Current runs, newest first.
+  final List<Run> runs;
 
   /// Opens run number n.
   final ValueChanged<int> onOpenRun;
@@ -249,71 +261,75 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final running = slipwayRuns.firstWhere(
-      (r) => r.status == RunStatus.running,
-    );
-    Run last(String project) =>
-        slipwayRuns.firstWhere((r) => r.project == project);
+    final running = runs
+        .where((r) => r.status == RunStatus.running)
+        .firstOrNull;
+    Run last(String project) => runs.firstWhere((r) => r.project == project);
 
     final now = TermPane(
       title: 'running now',
-      trailing: '1',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(height: grid.lineHeight),
-          Row(
-            children: [
-              const TermSpinner(semanticLabel: 'running'),
-              SizedBox(width: grid.cellWidth),
-              Expanded(
-                child: Text(
-                  '#${running.number} ${running.project} · test',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+      trailing: running == null ? '0' : '1',
+      child: running == null
+          ? Padding(
+              padding: EdgeInsets.symmetric(vertical: grid.lineHeight),
+              child: const Text('no runs in progress'),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(height: grid.lineHeight),
+                Row(
+                  children: [
+                    const TermSpinner(semanticLabel: 'running'),
+                    SizedBox(width: grid.cellWidth),
+                    Expanded(
+                      child: Text(
+                        '#${running.number} ${running.project} · test',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsetsDirectional.only(start: grid.cols(2)),
-            child: Text(
-              '${running.branch} · ${running.author}',
-              style: theme.dimStyle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+                Padding(
+                  padding: EdgeInsetsDirectional.only(start: grid.cols(2)),
+                  child: Text(
+                    '${running.branch} · ${running.author}',
+                    style: theme.dimStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                SizedBox(height: grid.lineHeight),
+                Padding(
+                  padding: EdgeInsetsDirectional.only(start: grid.cols(2)),
+                  child: LayoutBuilder(
+                    builder: (context, c) => TermProgressBar(
+                      value: running.progress,
+                      cols: (grid.colsIn(c.maxWidth) - 5).clamp(8, 40),
+                      semanticLabel: 'run ${running.number}',
+                    ),
+                  ),
+                ),
+                SizedBox(height: grid.lineHeight),
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: TermButton(
+                    label: 'watch',
+                    shortcut: const SingleActivator(LogicalKeyboardKey.keyW),
+                    onPressed: () => onOpenRun(running.number),
+                  ),
+                ),
+                SizedBox(height: grid.lineHeight),
+              ],
             ),
-          ),
-          SizedBox(height: grid.lineHeight),
-          Padding(
-            padding: EdgeInsetsDirectional.only(start: grid.cols(2)),
-            child: LayoutBuilder(
-              builder: (context, c) => TermProgressBar(
-                value: running.progress,
-                cols: (grid.colsIn(c.maxWidth) - 5).clamp(8, 40),
-                semanticLabel: 'run ${running.number}',
-              ),
-            ),
-          ),
-          SizedBox(height: grid.lineHeight),
-          Align(
-            alignment: AlignmentDirectional.centerEnd,
-            child: TermButton(
-              label: 'watch',
-              shortcut: const SingleActivator(LogicalKeyboardKey.keyW),
-              onPressed: () => onOpenRun(running.number),
-            ),
-          ),
-          SizedBox(height: grid.lineHeight),
-        ],
-      ),
     );
 
-    final projects = TermPane.list(
+    final projectPane = TermPane.list(
       title: 'projects',
-      trailing: '${slipwayProjects.length}',
+      trailing: '${projects.length}',
       children: [
-        for (final p in slipwayProjects)
+        for (final p in projects)
           TermListTile(
             leading: StatusGlyph(last(p.name).status),
             title: Text(p.name),
@@ -324,9 +340,7 @@ class HomePage extends StatelessWidget {
       ],
     );
 
-    final failing = slipwayRuns
-        .where((r) => r.status == RunStatus.failed)
-        .toList();
+    final failing = runs.where((r) => r.status == RunStatus.failed).toList();
     final attention = TermPane.list(
       title: 'needs a look',
       trailing: '${failing.length}',
@@ -344,20 +358,20 @@ class HomePage extends StatelessWidget {
       builder: (context, c) {
         // Two columns only where each keeps its words: 90 cells and up.
         if (!wide || grid.colsIn(c.maxWidth) < 90) {
-          return PageScroll(children: [now, attention, projects]);
+          return PageScroll(children: [now, attention, projectPane]);
         }
         // At a desk the screen has room for what ran lately, by its
         // message: a phone keeps to the three panes above.
         final recent = TermPane.list(
           title: 'recent runs',
-          trailing: '${slipwayRuns.length}',
+          trailing: '${runs.length}',
           children: [
-            for (final run in slipwayRuns)
+            for (final run in runs)
               runTile(
                 run,
                 showMessage: true,
                 rtl: Directionality.of(context) == TextDirection.rtl,
-                titleCols: runTitleCols(slipwayRuns),
+                titleCols: runTitleCols(runs),
                 onTap: () => onOpenRun(run.number),
               ),
           ],
@@ -377,7 +391,7 @@ class HomePage extends StatelessWidget {
                 fill: true,
                 start: PaneColumn(
                   children: [
-                    projects,
+                    projectPane,
                     SizedBox(height: grid.lineHeight),
                     recent,
                   ],
@@ -402,7 +416,7 @@ class HomePage extends StatelessWidget {
 
 const _filters = ['all', 'failed', 'running', 'passed'];
 
-List<Run> _filtered(int filter, String? branch, [String query = '']) {
+List<Run> _filtered(List<Run> runs, int filter, String? branch, String query) {
   final q = query.trim().toLowerCase();
   bool found(Run r) =>
       q.isEmpty ||
@@ -415,7 +429,7 @@ List<Run> _filtered(int filter, String? branch, [String query = '']) {
         r.author,
       ].any((words) => words.toLowerCase().contains(q));
   return [
-    for (final r in slipwayRuns)
+    for (final r in runs)
       if ((filter == 0 ||
               (filter == 1 && r.status == RunStatus.failed) ||
               (filter == 2 && r.status == RunStatus.running) ||
@@ -427,15 +441,15 @@ List<Run> _filtered(int filter, String? branch, [String query = '']) {
 }
 
 /// The project a mistyped [query] most likely meant, or null.
-String? _meant(String query) {
+String? _meant(String query, Iterable<String> projects) {
   final q = query.trim();
   if (q.isEmpty) return null;
   String? best;
   int? score;
-  for (final p in slipwayProjects) {
-    final s = designMatchScore(p.name, q);
+  for (final name in projects) {
+    final s = designMatchScore(name, q);
     if (s != null && (score == null || s > score)) {
-      best = p.name;
+      best = name;
       score = s;
     }
   }
@@ -504,7 +518,13 @@ class _RunFilters extends StatelessWidget {
 /// What the runs say when none is left: what to try, and the project a
 /// mistyped search most likely meant.
 class _NoRuns extends StatelessWidget {
-  const _NoRuns({required this.query, required this.onSearch});
+  const _NoRuns({
+    required this.query,
+    required this.onSearch,
+    required this.runs,
+  });
+
+  final List<Run> runs;
 
   final String query;
   final ValueChanged<String> onSearch;
@@ -513,7 +533,7 @@ class _NoRuns extends StatelessWidget {
   Widget build(BuildContext context) {
     final grid = context.termGrid;
     final q = query.trim();
-    final meant = _meant(q);
+    final meant = _meant(q, runs.map((r) => r.project).toSet());
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: grid.cellWidth),
       child: q.isEmpty
@@ -605,6 +625,7 @@ class RunsPage extends StatefulWidget {
   /// The runs; [onOpenRun] opens one.
   const RunsPage({
     super.key,
+    required this.runs,
     required this.onOpenRun,
     this.rtl = false,
     this.query = '',
@@ -622,6 +643,9 @@ class RunsPage extends StatefulWidget {
 
   /// Whether it opens unable to reach the server.
   final bool offline;
+
+  /// Current runs in the session.
+  final List<Run> runs;
 
   @override
   State<RunsPage> createState() => _RunsPageState();
@@ -674,7 +698,7 @@ class _RunsPageState extends State<RunsPage> with _Reconnects {
 
   @override
   Widget build(BuildContext context) {
-    final runs = _filtered(_filter, _branch, _query.text);
+    final runs = _filtered(widget.runs, _filter, _branch, _query.text);
     return PageScroll(
       children: [
         if (_offline) _Offline(retrying: _retrying, onRetry: _retry),
@@ -697,7 +721,11 @@ class _RunsPageState extends State<RunsPage> with _Reconnects {
                 onTap: () => widget.onOpenRun(run.number),
               ),
             if (runs.isEmpty)
-              _NoRuns(query: _query.text, onSearch: (q) => _query.text = q),
+              _NoRuns(
+                runs: widget.runs,
+                query: _query.text,
+                onSearch: (q) => _query.text = q,
+              ),
           ],
         ),
       ],
@@ -710,6 +738,9 @@ class RunsTiled extends StatefulWidget {
   /// The tiled panes, [selected] open.
   const RunsTiled({
     super.key,
+    required this.onCancel,
+    required this.onRerun,
+    required this.runs,
     required this.selected,
     required this.onSelect,
     this.rtl = false,
@@ -720,6 +751,12 @@ class RunsTiled extends StatefulWidget {
     this.query = '',
     this.offline = false,
   });
+
+  /// Stops an active run and updates the session's history.
+  final ValueChanged<Run> onCancel;
+
+  /// Queues another run from this source.
+  final ValueChanged<Run> onRerun;
 
   /// The pane with the keyboard (0 the runs, 1 the run, 2 its log), drawn
   /// in double lines with its chosen row bright; null: none.
@@ -749,6 +786,9 @@ class RunsTiled extends StatefulWidget {
 
   /// Whether the words are the Hebrew ones.
   final bool rtl;
+
+  /// Current runs in the session.
+  final List<Run> runs;
 
   @override
   State<RunsTiled> createState() => _RunsTiledState();
@@ -792,8 +832,8 @@ class _RunsTiledState extends State<RunsTiled> with _Reconnects {
   @override
   Widget build(BuildContext context) {
     final grid = context.termGrid;
-    final runs = _filtered(_filter, _branch, _query.text);
-    final run = slipwayRuns.firstWhere((r) => r.number == widget.selected);
+    final runs = _filtered(widget.runs, _filter, _branch, _query.text);
+    final run = widget.runs.firstWhere((r) => r.number == widget.selected);
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: grid.cellWidth,
@@ -835,6 +875,7 @@ class _RunsTiledState extends State<RunsTiled> with _Reconnects {
                         ),
                       if (runs.isEmpty)
                         _NoRuns(
+                          runs: widget.runs,
                           query: _query.text,
                           onSearch: (q) => _query.text = q,
                         ),
@@ -851,6 +892,8 @@ class _RunsTiledState extends State<RunsTiled> with _Reconnects {
               1,
               RunSummary(
                 run: run,
+                onCancel: widget.onCancel,
+                onRerun: widget.onRerun,
                 rtl: widget.rtl,
                 onDiff: widget.onDiff,
                 focused: _on(1),
@@ -879,12 +922,20 @@ class RunSummary extends StatelessWidget {
   /// The summary of [run].
   const RunSummary({
     super.key,
+    required this.onCancel,
+    required this.onRerun,
     required this.run,
     this.rtl = false,
     this.onDiff,
     this.focused,
     this.fill = false,
   });
+
+  /// Stops an active run and updates the session's history.
+  final ValueChanged<Run> onCancel;
+
+  /// Queues another run from this source.
+  final ValueChanged<Run> onRerun;
 
   /// Whether it is a desk column: its steps reach the column's foot and the
   /// column scrolls on its own ([PaneColumn]); else as tall as it is.
@@ -951,18 +1002,14 @@ class RunSummary extends StatelessWidget {
                 TermButton(
                   label: 'rerun',
                   shortcut: const SingleActivator(LogicalKeyboardKey.keyR),
-                  onPressed: () => TermToaster.show(
-                    context,
-                    message: 'rerunning #${run.number}',
-                    tone: TermTone.info,
-                  ),
+                  onPressed: () => onRerun(run),
                 ),
                 if (run.status == RunStatus.running)
                   TermButton(
                     label: 'cancel',
                     isDestructiveAction: true,
                     shortcut: const SingleActivator(LogicalKeyboardKey.keyC),
-                    onPressed: () {},
+                    onPressed: () => onCancel(run),
                   ),
               ],
             ),
@@ -1269,10 +1316,18 @@ class RunDetailPage extends StatelessWidget {
   /// The page of [run].
   const RunDetailPage({
     super.key,
+    required this.onCancel,
+    required this.onRerun,
     required this.run,
     this.rtl = false,
     this.onDiff,
   });
+
+  /// Stops an active run and updates the session's history.
+  final ValueChanged<Run> onCancel;
+
+  /// Queues another run from this source.
+  final ValueChanged<Run> onRerun;
 
   /// The run.
   final Run run;
@@ -1286,7 +1341,13 @@ class RunDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PageScroll(
     children: [
-      RunSummary(run: run, rtl: rtl, onDiff: onDiff),
+      RunSummary(
+        run: run,
+        rtl: rtl,
+        onDiff: onDiff,
+        onCancel: onCancel,
+        onRerun: onRerun,
+      ),
       LogPane(run: run, expand: false),
     ],
   );
@@ -1297,16 +1358,41 @@ class RunDetailPage extends StatelessWidget {
 /// The new-deploy form: what, where, how, and a y/N before production.
 class DeployPage extends StatefulWidget {
   /// The form.
-  const DeployPage({super.key});
+  const DeployPage({
+    super.key,
+    required this.projects,
+    required this.initialBranch,
+    required this.initialEnvironment,
+    required this.onCancel,
+    required this.onDeploy,
+  });
+
+  /// Available deployment targets.
+  final List<Project> projects;
+
+  /// The most recent branch for the initial project.
+  final String initialBranch;
+
+  /// Target chosen by the command that opened this form.
+  final String initialEnvironment;
+
+  /// Discards the draft and returns to its origin.
+  final VoidCallback onCancel;
+
+  /// Queues a deployment after validation and any production confirmation.
+  final void Function(String project, String branch, String environment)
+  onDeploy;
 
   @override
   State<DeployPage> createState() => _DeployPageState();
 }
 
 class _DeployPageState extends State<DeployPage> {
-  String _project = 'atlas-api';
-  String _env = 'staging';
-  final _branch = TextEditingController(text: 'feat/rate-limits');
+  late String _project = widget.projects.first.name;
+  late String _env = widget.initialEnvironment;
+  final _branchFocus = FocusNode();
+  bool _missingBranch = false;
+  late final _branch = TextEditingController(text: widget.initialBranch);
   String _strategy = 'rolling';
   bool _migrate = true;
   bool _notify = true;
@@ -1314,12 +1400,19 @@ class _DeployPageState extends State<DeployPage> {
 
   @override
   void dispose() {
+    _branchFocus.dispose();
     _branch.dispose();
     super.dispose();
   }
 
   Future<void> _deploy() async {
-    final target = '$_project ${_branch.text} → $_env';
+    final branch = _branch.text.trim();
+    if (branch.isEmpty) {
+      setState(() => _missingBranch = true);
+      _branchFocus.requestFocus();
+      return;
+    }
+    final target = '$_project $branch → $_env';
     if (_env == 'production') {
       final yes = await showTermConfirmDialog(
         context: context,
@@ -1329,14 +1422,7 @@ class _DeployPageState extends State<DeployPage> {
       );
       if (yes != true || !mounted) return;
     }
-    if (!mounted) return;
-    TermToaster.show(
-      context,
-      message: 'deploy #1490 queued: $target',
-      tone: TermTone.success,
-      actionLabel: 'watch',
-      onAction: () {},
-    );
+    widget.onDeploy(_project, branch, _env);
   }
 
   @override
@@ -1355,7 +1441,7 @@ class _DeployPageState extends State<DeployPage> {
         TermButton(
           label: 'cancel',
           shortcut: const SingleActivator(LogicalKeyboardKey.escape),
-          onPressed: () {},
+          onPressed: widget.onCancel,
         ),
         TermButton.filled(
           label: 'deploy',
@@ -1375,7 +1461,7 @@ class _DeployPageState extends State<DeployPage> {
             labelText: 'project',
             value: _project,
             items: [
-              for (final p in slipwayProjects)
+              for (final p in widget.projects)
                 TermSelectItem(value: p.name, label: p.name, detail: p.env),
             ],
             onChanged: (v) => setState(() => _project = v),
@@ -1396,6 +1482,13 @@ class _DeployPageState extends State<DeployPage> {
           TermTextField(
             controller: _branch,
             labelText: 'branch',
+            focusNode: _branchFocus,
+            errorText: _missingBranch ? 'enter a branch or commit' : null,
+            onChanged: (value) {
+              if (_missingBranch && value.trim().isNotEmpty) {
+                setState(() => _missingBranch = false);
+              }
+            },
             prompt: '\u{E0A0}',
             helperText: 'a branch or a commit',
             autocorrect: false,
@@ -1538,7 +1631,22 @@ final _duration = RegExp(r'^\d+(s|m|h)$');
 /// sections, each value checked as it is typed.
 class SettingsPage extends StatefulWidget {
   /// The config file.
-  const SettingsPage({super.key, this.askToDelete = false});
+  const SettingsPage({
+    super.key,
+    required this.project,
+    required this.runCount,
+    required this.onDelete,
+    this.askToDelete = false,
+  });
+
+  /// Project whose settings are open.
+  final Project project;
+
+  /// Archived and current runs belonging to this project.
+  final int runCount;
+
+  /// Removes the project and its runs after confirmation.
+  final ValueChanged<Project> onDelete;
 
   /// Whether it opens asking to delete the project (the typed guard).
   final bool askToDelete;
@@ -1548,7 +1656,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final _name = TextEditingController(text: 'atlas-api');
+  late final _name = TextEditingController(text: widget.project.name);
   final _timeout = TextEditingController(text: '30 min');
   String _env = 'staging';
   bool _autoMerge = true;
@@ -1586,25 +1694,21 @@ class _SettingsPageState extends State<SettingsPage> {
   });
 
   Future<void> _delete() async {
+    final name = widget.project.name;
+    final count = widget.runCount;
     final yes = await showTermConfirmDialog(
       context: context,
       title: 'delete project',
       message: _say(
         context,
-        'atlas-api, its 1482 runs and their logs go for good.',
-        'הפרויקט atlas-api יימחק לתמיד, עם 1482 הריצות שלו והיומנים שלהן.',
+        '$name, its $count runs and their logs go for good.',
+        'הפרויקט $name יימחק לתמיד, עם $count הריצות שלו והיומנים שלהן.',
       ),
       confirmLabel: 'delete',
       isDestructiveAction: true,
-      typedConfirmation: 'atlas-api',
+      typedConfirmation: name,
     );
-    if (yes == true && mounted) {
-      TermToaster.show(
-        context,
-        message: 'atlas-api deleted',
-        tone: TermTone.warning,
-      );
-    }
+    if (yes == true && mounted) widget.onDelete(widget.project);
   }
 
   /// The keys' width: the longest, `require_review`, and a space.

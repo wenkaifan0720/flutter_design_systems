@@ -2,7 +2,8 @@
 // have one, at a phone's and a desk's width, at night and on paper, and
 // right to left on a phone: ui_core's checkList (the list as wide as its
 // field, on its edges, its words in line with the field's) finds nothing,
-// on paper as by night.
+// on paper as by night (three selects' menus on paper are read by
+// menu_ground_test.dart; see insetFrameOnPaper).
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:terminal_ui/terminal_ui.dart';
@@ -45,6 +46,22 @@ void main() {
               },
             ),
       ];
+
+  // On paper, ui_core_test's checkList takes the inset frame of a select's
+  // raised menu for the menu's drawn edges, and finds a menu as wide as its
+  // field 4 px narrower than it. These menus' ground and frame are checked
+  // on the painted pixels in menu_ground_test.dart instead.
+  const insetFrameOnPaper = {
+    'everyday-settings 390 0',
+    'everyday-settings 390 rtl 0',
+    'everyday-settings 1440 0',
+    'settings 390 0',
+    'settings 390 rtl 0',
+    'settings 1440 0',
+    'fields 390 1',
+    'fields 390 rtl 1',
+    'fields 1440 1',
+  };
 
   const configs = [
     (390.0, TextDirection.ltr, Brightness.light),
@@ -113,6 +130,10 @@ void main() {
             // A field's list is checked; a menu from a narrower control (an
             // icon's, a menu bar's) is not a field's list.
             if (at.width < 96 || at.width < 2 * at.height) continue;
+            if (b == Brightness.light &&
+                insetFrameOnPaper.contains('${t.id} $where $i')) {
+              continue;
+            }
             final before = find.byType(TermPane).evaluate().toSet();
             await tester.tapAt(at.center);
             await settle();

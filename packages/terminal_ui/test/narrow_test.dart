@@ -111,7 +111,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('the window list goes by numbers where the names do not fit', (
+  testWidgets('the window list wraps its labeled targets when text grows', (
     tester,
   ) async {
     _phone(tester);
@@ -128,9 +128,19 @@ void main() {
     expect(find.textContaining('2:runs*'), findsOneWidget);
 
     await tester.pumpWidget(_app(bar()));
-    expect(find.text('1'), findsOneWidget);
-    expect(find.text('3'), findsOneWidget);
-    expect(find.text('4'), findsOneWidget);
+    for (final name in ['1:home', '3:deploy', '4:config']) {
+      final text = find.textContaining(name);
+      expect(text, findsOneWidget);
+      final box = tester.renderObject<RenderBox>(text);
+      expect(
+        box.getMaxIntrinsicWidth(double.infinity),
+        lessThanOrEqualTo(box.size.width + 0.5),
+      );
+    }
+    expect(
+      tester.getCenter(find.textContaining('4:config')).dy,
+      greaterThan(tester.getCenter(find.textContaining('1:home')).dy),
+    );
     expect(find.textContaining('2:runs*'), findsOneWidget);
     // Each window keeps its name for a screen reader.
     expect(find.bySemanticsLabel('home'), findsOneWidget);

@@ -18,7 +18,7 @@ dependencies:
   terminal_ui:
     path: ../
   # An example imports the foundation itself too (its inventory, say).
-  ui_core: ^0.3.0
+  ui_core: ^0.3.1
 
 
 dev_dependencies:

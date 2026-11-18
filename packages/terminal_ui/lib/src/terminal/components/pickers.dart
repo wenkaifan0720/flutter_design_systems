@@ -85,13 +85,8 @@ class TermCalendar extends StatelessWidget {
       months: months,
       focusNode: focusNode,
       autofocus: autofocus,
-      // A day's column is the floor itself, not the floor in whole cells:
-      // seven of those (54 px) overrun a phone's month, each day's target
-      // spilling onto its neighbour's.
-      minDayWidth: math.max(
-        grid.cols(4),
-        touch ? DesignTapTargets.of(context).floorOn().width : 0,
-      ),
+      // Each day owns one seventh of the month. Its block and hit area
+      // must stop at that column even when the user's text grows.
       headerBuilder: (context, header) => SizedBox(
         height: floor.height,
         child: Row(
@@ -424,6 +419,9 @@ class _TermDateRangePickerState extends State<TermDateRangePicker> {
       words: value == null || end == null
           ? null
           : '${termDate(value.start)} → ${termDate(end)}',
+      range: value == null || end == null
+          ? null
+          : (termDate(value.start), termDate(end)),
       hintText: widget.hintText,
       enabled: widget.onChanged != null,
       style: widget.style,
@@ -455,6 +453,7 @@ class _DateField extends StatefulWidget {
     required this.helperText,
     required this.errorText,
     required this.words,
+    this.range,
     required this.hintText,
     required this.enabled,
     required this.style,
@@ -466,6 +465,7 @@ class _DateField extends StatefulWidget {
   final String? helperText;
   final String? errorText;
   final String? words;
+  final (String, String)? range;
   final String hintText;
   final bool enabled;
   final TermStyle? style;
@@ -510,90 +510,127 @@ class _DateFieldState extends State<_DateField> {
         margin: grid.cellWidth,
         preferredExtent: grid.lines(12),
       ),
-      anchorBuilder: (context, anchor) => DesignField(
-        labelText: widget.labelText,
-        helperText: widget.helperText,
-        errorText: widget.errorText,
-        enabled: enabled,
-        focusNode: _focus,
-        builder: (context, parts) => MergeSemantics(
-          child: DesignPressable(
-            onPressed: enabled ? termOpener(_focus, anchor) : null,
+      anchorBuilder: (context, anchor) => LayoutBuilder(
+        builder: (context, constraints) {
+          var words = widget.words ?? widget.hintText;
+          final room = math.max(1.0, constraints.maxWidth - grid.cols(6));
+          final range = widget.range;
+          var lines = 1;
+          if (range != null && grid.widthOf(words) > room) {
+            final (start, end) = range;
+            words = grid.widthOf('→ $end') <= room
+                ? '$start\n→ $end'
+                : '$start\n→\n$end';
+            final text = TextPainter(
+              text: TextSpan(text: words, style: theme.textStyle),
+              textScaler: MediaQuery.textScalerOf(context),
+              textDirection: TextDirection.ltr,
+            )..layout(maxWidth: room);
+            lines = text.computeLineMetrics().length;
+            text.dispose();
+          }
+          return DesignField(
+            labelText: widget.labelText,
+            helperText: widget.helperText,
+            errorText: widget.errorText,
+            enabled: enabled,
             focusNode: _focus,
-            expanded: anchor.isOpen,
-            isError: parts.hasError,
-            semanticValue: widget.words,
-            shortcuts: const {
-              SingleActivator(LogicalKeyboardKey.arrowDown): ActivateIntent(),
-            },
-            mouseCursor: enabled
-                ? SystemMouseCursors.click
-                : SystemMouseCursors.basic,
-            builder: (context, states, _) {
-              final own = TermStyleOf([
-                widget.style,
-                theme.selectStyle,
-              ], states);
-              return TermFieldFrame(
-                parts: parts,
-                active: states.contains(WidgetState.focused) || anchor.isOpen,
-                edge: own.edge,
-                child: parts.control,
-              );
-            },
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                widget.words ?? widget.hintText,
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
-                textDirection: TextDirection.ltr,
-                style: widget.words == null
-                    ? theme.dimStyle
-                    : theme.textStyle.copyWith(
-                        color: enabled ? theme.foreground : theme.rule,
-                      ),
+            builder: (context, parts) => MergeSemantics(
+              child: DesignPressable(
+                onPressed: enabled ? termOpener(_focus, anchor) : null,
+                focusNode: _focus,
+                expanded: anchor.isOpen,
+                isError: parts.hasError,
+                semanticValue: widget.words,
+                shortcuts: const {
+                  SingleActivator(LogicalKeyboardKey.arrowDown):
+                      ActivateIntent(),
+                },
+                mouseCursor: enabled
+                    ? SystemMouseCursors.click
+                    : SystemMouseCursors.basic,
+                builder: (context, states, _) {
+                  final own = TermStyleOf([
+                    widget.style,
+                    theme.selectStyle,
+                  ], states);
+                  return TermFieldFrame(
+                    parts: parts,
+                    active:
+                        states.contains(WidgetState.focused) || anchor.isOpen,
+                    edge: own.edge,
+                    lines: lines,
+                    child: parts.control,
+                  );
+                },
               ),
             ),
-            SizedBox(width: grid.cellWidth),
-            ExcludeSemantics(
-              child: Text(
-                '▾',
-                style: theme.textStyle.copyWith(
-                  color: enabled ? theme.accent : theme.rule,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    words,
+                    maxLines: lines,
+                    softWrap: lines > 1,
+                    overflow: TextOverflow.ellipsis,
+                    textDirection: TextDirection.ltr,
+                    style: widget.words == null
+                        ? theme.dimStyle
+                        : theme.textStyle.copyWith(
+                            color: enabled ? theme.foreground : theme.rule,
+                          ),
+                  ),
+                ),
+                SizedBox(width: grid.cellWidth),
+                ExcludeSemantics(
+                  child: Text(
+                    '▾',
+                    style: theme.textStyle.copyWith(
+                      color: enabled ? theme.accent : theme.rule,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      overlayBuilder: (context, info) {
+        final dayWidth = math.max(
+          grid.cols(2),
+          DesignTapTargets.of(context).floorOn().width,
+        );
+        final width = math.min(
+          info.maxSize.width,
+          math.max(info.anchorRect.width, 7 * dayWidth + grid.cols(2)),
+        );
+        return TermMenuReveal(
+          info: info,
+          child: SizedBox(
+            width: width,
+            child: TermPane(
+              padding: width - grid.cols(4) < 7 * dayWidth
+                  ? TermInset.zero
+                  : null,
+              raised: true,
+              focused: true,
+              // The keys on the chosen day (or today) as it opens, not on the
+              // month's arrow the overlay focuses first: the date dialog's
+              // way. Opened by the pointer, the chosen day alone reads current
+              // until a key.
+              child: _FocusOnOpen(
+                node: _days,
+                child: TermMenuMarks(
+                  quietFirst: false,
+                  child: SingleChildScrollView(
+                    child: widget.calendar(info.close, _days),
+                  ),
                 ),
               ),
             ),
-          ],
-        ),
-      ),
-      overlayBuilder: (context, info) => TermMenuReveal(
-        info: info,
-        child: SizedBox(
-          width: info.anchorRect.width,
-          child: TermPane(
-            raised: true,
-            focused: true,
-            // The keys on the chosen day (or today) as it opens, not on the
-            // month's arrow the overlay focuses first: the date dialog's
-            // way. Opened by the pointer, the chosen day alone reads current
-            // until a key.
-            child: _FocusOnOpen(
-              node: _days,
-              child: TermMenuMarks(
-                quietFirst: false,
-                child: SingleChildScrollView(
-                  child: widget.calendar(info.close, _days),
-                ),
-              ),
-            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

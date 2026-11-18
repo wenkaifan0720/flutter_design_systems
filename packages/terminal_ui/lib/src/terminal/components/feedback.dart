@@ -138,7 +138,7 @@ class TermProgressBar extends StatelessWidget {
   /// 0 to 1, or null while the amount is unknown.
   final double? value;
 
-  /// How many cells wide the bar is.
+  /// Preferred track width in cells. The track shortens to leave the percentage visible.
   final int cols;
 
   /// Whether the percentage is written after it.
@@ -160,64 +160,78 @@ class TermProgressBar extends StatelessWidget {
     final track = own.edge ?? theme.rule;
     final v = value;
     final percent = v == null ? null : '${(v.clamp(0, 1) * 100).round()}%';
-    final Widget bar;
-    if (v == null) {
-      bar = TermStepper(
-        period: TermMotion.spinnerFrame * 1.5,
-        builder: (context, step) {
-          final span = cols - 3;
-          final at = span <= 0
-              ? 0
-              : (step % (span * 2) < span ? step % span : span - step % span);
-          return CustomPaint(
-            size: Size(grid.cols(cols), grid.lineHeight),
-            painter: _Bounce(
-              grid: grid,
-              at: at,
-              color: ink,
-              track: track,
-              direction: direction,
-            ),
-          );
-        },
-      );
-    } else {
-      bar = TermSpring(
-        target: v.clamp(0, 1).toDouble(),
-        token: TermMotion.move,
-        spatial: true,
-        builder: (context, t, _) => CustomPaint(
-          size: Size(grid.cols(cols), grid.lineHeight),
-          painter: TermBlocksPainter(
-            grid: grid,
-            value: t.clamp(0, 1),
-            color: ink,
-            track: track,
-            textDirection: direction,
-          ),
-        ),
-      );
-    }
     return Semantics(
       label: semanticLabel,
       value: percent,
       child: ExcludeSemantics(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            bar,
-            if (showPercent && percent != null) ...[
-              SizedBox(width: grid.cellWidth),
-              SizedBox(
-                width: grid.cols(4),
-                child: Text(
-                  percent,
-                  style: theme.dimStyle,
-                  textAlign: TextAlign.end,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final withPercent = showPercent && percent != null;
+            final available = constraints.maxWidth.isFinite
+                ? grid.colsIn(constraints.maxWidth)
+                : cols + 5;
+            final count = (available - (withPercent ? 5 : 0)).clamp(0, cols);
+            if (count == 0 && withPercent) {
+              return Text(percent, style: theme.dimStyle);
+            }
+            final Widget bar;
+            if (v == null) {
+              bar = TermStepper(
+                period: TermMotion.spinnerFrame * 1.5,
+                builder: (context, step) {
+                  final span = count - 3;
+                  final at = span <= 0
+                      ? 0
+                      : (step % (span * 2) < span
+                            ? step % span
+                            : span - step % span);
+                  return CustomPaint(
+                    size: Size(grid.cols(count), grid.lineHeight),
+                    painter: _Bounce(
+                      grid: grid,
+                      at: at,
+                      color: ink,
+                      track: track,
+                      direction: direction,
+                    ),
+                  );
+                },
+              );
+            } else {
+              bar = TermSpring(
+                target: v.clamp(0, 1).toDouble(),
+                token: TermMotion.move,
+                spatial: true,
+                builder: (context, t, _) => CustomPaint(
+                  size: Size(grid.cols(count), grid.lineHeight),
+                  painter: TermBlocksPainter(
+                    grid: grid,
+                    value: t.clamp(0, 1),
+                    color: ink,
+                    track: track,
+                    textDirection: direction,
+                  ),
                 ),
-              ),
-            ],
-          ],
+              );
+            }
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                bar,
+                if (withPercent) ...[
+                  SizedBox(width: grid.cellWidth),
+                  SizedBox(
+                    width: grid.cols(4),
+                    child: Text(
+                      percent,
+                      style: theme.dimStyle,
+                      textAlign: TextAlign.end,
+                    ),
+                  ),
+                ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -254,6 +268,7 @@ class _Bounce extends CustomPainter {
     final top = (size.height - h) / 2;
     // A dot in every cell the blocks are not in, as the bar draws its rest.
     final cells = (size.width / cw + 1e-6).floor();
+    final blockWidth = grid.cols(cells.clamp(0, 3));
     final dot = Paint()..color = track;
     final radius = grid.fontSize / 15 * 1.5;
     for (var i = 0; i < cells; i++) {
@@ -269,8 +284,11 @@ class _Bounce extends CustomPainter {
       );
     }
     var x = at * cw;
-    if (direction == TextDirection.rtl) x = size.width - x - cw * 3;
-    canvas.drawRect(Rect.fromLTWH(x, top, cw * 3, h), Paint()..color = color);
+    if (direction == TextDirection.rtl) x = size.width - x - blockWidth;
+    canvas.drawRect(
+      Rect.fromLTWH(x, top, blockWidth, h),
+      Paint()..color = color,
+    );
   }
 
   @override

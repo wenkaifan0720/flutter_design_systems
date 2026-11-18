@@ -15,10 +15,9 @@ selection and keys beside every action.
 flutter pub add terminal_ui material_ui
 ```
 
-Put `TermTheme` round your app in its builder, and load the faces before the
-first frame so the grid never starts in a fallback font. The app shell is
-Material's, from `material_ui` (Flutter 3.50 deprecates
-`package:flutter/material.dart` for it):
+Load the bundled monospace fonts before the first frame. Wrap the app in
+`TermTheme` to set its palette and grid. This example uses `material_ui`
+for the app shell.
 
 ```dart
 import 'package:material_ui/material_ui.dart';
@@ -55,32 +54,14 @@ class Deploy extends StatelessWidget {
 
 ### Page motion
 
-A screen change is a cut, then the new screen fades up where it stays; going
-back is a cut, and a tab or side-pane switch changes in place. `TermTheme`
-sets this on the Material this package draws on (`material_ui`). A
-`MaterialPageRoute` from Flutter's own `package:flutter/material.dart`
-reads your app's theme instead, so give it the same map,
-`termPageTransitions`, there, as above, or the platform's slide or zoom
-flies each page in:
+Terminal routes open with a brief fade and pop with a cut. Tabs and side
+panes switch in place. Set `pageTransitionsTheme` on the app's
+`ThemeData`, as in the example above, to give routes pushed by its
+navigator the same transition. Alternatively, push a `TermPageRoute`
+to use the transition for one route.
 
-```dart
-theme: ThemeData(
-  pageTransitionsTheme: const PageTransitionsTheme(
-    builders: termPageTransitions,
-  ),
-),
-```
-
-On iOS the map's entry is `ui_core`'s
-`DesignSwipeBackPageTransitionsBuilder` round Terminal's change, so a swipe
-from the screen's leading edge takes the page back, as on every iOS screen
-(a look's own push drops the platform's swipe). Android's back closes an
-open menu, list or popover before it takes the page (`ui_core`'s surfaces
-hold it while they are up).
-
-`TermPageRoute` pushes a screen this way whatever the theme says. The
-example's `test/page_transitions_test.dart` and `test/page_motion_test.dart`
-push and pop a `MaterialPageRoute` on every platform to show it.
+The iOS transition supports the swipe from the leading edge. On Android,
+Back first dismisses an open menu, list or popover.
 
 ## The look
 
@@ -233,13 +214,16 @@ spinners and the caret hold still under Reduce Motion. Every tone has a
 glyph (`✓ ✗ ! i`), so nothing is said by colour alone; the monochrome theme
 proves it.
 
-The keys reach everything, on `ui_core` 0.3.0's behaviours: a tab bar and
-a shell's places are one stop each, the arrows moving along them, and F6
-moves between the places and the page; a dialog or a sheet keeps Tab
-inside and gives the focus back as it closes; a line or area chart is a
-stop whose arrows pick its points, and a screen reader hears the data in a
-sentence or the point picked; a rating takes the arrows and the digits; a
-key drawn `^K` is heard "Ctrl+K".
+Tab visits a tab bar or navigation group once. Use the arrow keys to move
+between destinations and F6 to switch between navigation and the page.
+Dialogs and sheets keep focus inside and return it to the opener on close.
+On line and area charts, the arrows inspect data points. Ratings accept
+arrow and number keys. Screen readers announce shortcuts such as `^K` as
+“Ctrl+K”.
+
+The navigation bar wraps its labeled destinations when space is tight.
+A selected date range uses extra lines when necessary so both dates stay
+visible at larger text sizes.
 
 ## Fonts
 

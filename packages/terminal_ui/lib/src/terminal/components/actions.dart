@@ -152,23 +152,50 @@ class TermToggleGroup<T> extends StatelessWidget {
           ),
         );
       },
-      layoutBuilder: (context, items) => TermBracketBand(
-        edge: TermStyleOf([style, theme.toggleGroupStyle], const {}).edge,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final (i, item) in items.indexed) ...[
-              if (i > 0)
-                ExcludeSemantics(
-                  child: Text(
-                    '│',
-                    style: theme.textStyle.copyWith(color: theme.rule),
-                  ),
+      layoutBuilder: (context, items) => LayoutBuilder(
+        builder: (context, constraints) {
+          final edge = TermStyleOf([
+            style,
+            theme.toggleGroupStyle,
+          ], const {}).edge;
+          final labels = options.fold<double>(
+            0,
+            (sum, option) =>
+                sum +
+                math.max(
+                  grid.cols(3),
+                  grid.widthOf(labelOf(option)) + grid.cols(2),
                 ),
-              item,
-            ],
-          ],
-        ),
+          );
+          final width = labels + grid.cols(2 + math.max(0, items.length - 1));
+          if (width > constraints.maxWidth) {
+            return Wrap(
+              spacing: grid.cellWidth,
+              children: [
+                for (final item in items)
+                  TermBracketBand(edge: edge, child: item),
+              ],
+            );
+          }
+          return TermBracketBand(
+            edge: edge,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final (i, item) in items.indexed) ...[
+                  if (i > 0)
+                    ExcludeSemantics(
+                      child: Text(
+                        '│',
+                        style: theme.textStyle.copyWith(color: theme.rule),
+                      ),
+                    ),
+                  item,
+                ],
+              ],
+            ),
+          );
+        },
       ),
     );
   }

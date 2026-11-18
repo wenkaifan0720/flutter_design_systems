@@ -648,86 +648,68 @@ class TermNavigationBar extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          height: lines,
-          // Every window by its name while the names have the room, each
-          // as wide as its name and the room left over shared evenly round
-          // them, the ends too, so the names stand evenly apart whatever
-          // their lengths. On a line too narrow for that, as a
-          // multiplexer's status line does, the others go by their number
-          // and the current one keeps its name.
-          child: LayoutBuilder(
-            builder: (context, c) {
-              final n = destinations.length;
-              String words(int i) =>
-                  '${i + 1}:${destinations[i].label}${i == selectedIndex ? '*' : ' '}';
-              // A slot's name with the current one's mark, so a slot keeps
-              // its width whichever is current.
-              final wide = [
-                for (var i = 0; i < n; i++)
-                  grid.widthOf('${i + 1}:${destinations[i].label}*') +
-                      grid.cols(2),
-              ];
-              final roomy =
-                  !c.maxWidth.isFinite ||
-                  wide.fold(0.0, (a, w) => a + w) <= c.maxWidth;
-              final floor = grid
-                  .ceil(DesignTapTargets.of(context).floorOn())
-                  .width;
-              double numbered(int i) =>
-                  math.max(floor, grid.cols('${i + 1}'.length + 2));
-              var others = 0.0;
-              for (var i = 0; i < n; i++) {
-                if (i != selectedIndex) others += numbered(i);
+        child: LayoutBuilder(
+          builder: (context, c) {
+            final n = destinations.length;
+            String words(int i) =>
+                '${i + 1}:${destinations[i].label}${i == selectedIndex ? '*' : ' '}';
+            // A slot's name with the current one's mark, so a slot keeps
+            // its width whichever is current.
+            final wide = [
+              for (var i = 0; i < n; i++)
+                grid.widthOf('${i + 1}:${destinations[i].label}*') +
+                    grid.cols(2),
+            ];
+            final roomy =
+                !c.maxWidth.isFinite ||
+                wide.fold(0.0, (a, w) => a + w) <= c.maxWidth;
+            if (roomy) {
+              // The room left over, in whole cells, so every name starts
+              // on the character grid: shared evenly between the two ends
+              // and the names. The odd cells go to the ends first, a pair
+              // at a time, then between the names from the outside in; a
+              // last single one to the middle, or (no middle) the end. So
+              // the first name never stands against the screen's edge
+              // while there is a cell to spare, and the line stays even.
+              final spare = c.maxWidth.isFinite
+                  ? grid.colsIn(c.maxWidth - wide.fold(0.0, (a, w) => a + w))
+                  : 0;
+              // Gap g stands before name g; gap n is the end's.
+              final gaps = List.filled(n + 1, spare ~/ (n + 1));
+              var odd = spare % (n + 1);
+              for (var g = 0; odd >= 2 && g < n - g; g++, odd -= 2) {
+                gaps[g]++;
+                gaps[n - g]++;
               }
-              if (roomy) {
-                // The room left over, in whole cells, so every name starts
-                // on the character grid: shared evenly between the two ends
-                // and the names. The odd cells go to the ends first, a pair
-                // at a time, then between the names from the outside in; a
-                // last single one to the middle, or (no middle) the end. So
-                // the first name never stands against the screen's edge
-                // while there is a cell to spare, and the line stays even.
-                final spare = c.maxWidth.isFinite
-                    ? grid.colsIn(c.maxWidth - wide.fold(0.0, (a, w) => a + w))
-                    : 0;
-                // Gap g stands before name g; gap n is the end's.
-                final gaps = List.filled(n + 1, spare ~/ (n + 1));
-                var odd = spare % (n + 1);
-                for (var g = 0; odd >= 2 && g < n - g; g++, odd -= 2) {
-                  gaps[g]++;
-                  gaps[n - g]++;
-                }
-                if (odd > 0) gaps[n.isEven ? n ~/ 2 : n]++;
-                int gap(int g) => gaps[g];
-                return Row(
-                  children: [
-                    for (var i = 0; i < n; i++) ...[
-                      SizedBox(width: grid.cols(gap(i))),
-                      SizedBox(width: wide[i], child: item(i, words(i))),
-                    ],
-                  ],
-                );
-              }
+              if (odd > 0) gaps[n.isEven ? n ~/ 2 : n]++;
+              int gap(int g) => gaps[g];
               return Row(
                 children: [
-                  for (var i = 0; i < n; i++)
-                    if (i == selectedIndex)
-                      Expanded(
-                        child: item(
-                          i,
-                          grid.fit(
-                            words(i),
-                            c.maxWidth - others - grid.cols(2),
-                          ),
-                        ),
-                      )
-                    else
-                      SizedBox(width: numbered(i), child: item(i, '${i + 1}')),
+                  for (var i = 0; i < n; i++) ...[
+                    SizedBox(width: grid.cols(gap(i))),
+                    SizedBox(
+                      width: wide[i],
+                      height: lines,
+                      child: item(i, words(i)),
+                    ),
+                  ],
                 ],
               );
-            },
-          ),
+            }
+            // Wrap labeled targets onto whole lines as text grows. Keep
+            // their widths stable when a different destination is selected.
+            return Wrap(
+              alignment: WrapAlignment.spaceEvenly,
+              children: [
+                for (var i = 0; i < n; i++)
+                  SizedBox(
+                    width: math.min(wide[i], c.maxWidth),
+                    height: lines,
+                    child: item(i, words(i)),
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );

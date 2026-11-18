@@ -1,3 +1,27 @@
+## 0.2.1
+
+- Navigation destinations keep their names at large text sizes. Calendar
+  highlights stay within their day columns, and date-range fields show both
+  dates even when they need separate lines.
+- Phone confirmation sheets start with the warning visible. Disabled
+  filled buttons have readable labels on both the night and paper palettes.
+- A typed confirmation's field stays whole beside the buttons while a long
+  warning scrolls, and a dialog or sheet whose body is cut shows an arrow
+  for the hidden part. Buttons stacked on a narrow sheet no longer leave a
+  blank line between them.
+- Slipway opens the run selected in the overview. At large text sizes the
+  desk switches to a list with detail navigation when its panes no longer fit.
+  The package title stays on one line on a phone.
+- Deployment commands open the requested environment. The form requires a
+  branch or commit, confirms production deployments, and discards edits on
+  Cancel. Queued runs can be opened from the notification. Canceling an
+  active run updates its status, steps, log and history.
+- Progress bars leave room for the percentage, and toggle groups wrap
+  their choices on narrow screens. Long confirmation titles wrap inside the dialog.
+- Deleting a Slipway project removes it from Home, deployment targets and
+  the run history, including its active run and logs.
+- Requires `ui_core` 0.3.1.
+
 ## 0.2.0
 
 Built on `ui_core` 0.3.0. Terminal's dialogs and sheets, tab bar, shell,
@@ -84,19 +108,8 @@ route's type or held a tab bar's state.
 - `TermMotion.surface`, the spring a dialog, a sheet and a side sheet come
   up on.
 
-### The package page
-
-- The pub.dev page opens as every look's: the description, a hero (a desk
-  by night beside a phone on paper), links to the live gallery, the API
-  reference and all the looks, then the install. The homepage is the live
-  gallery; the issue tracker and the topics (with `terminal`) are listed;
-  five screenshots, the hero first.
-
-### Development
-
-- The review checks come from `package:ui_core_test` (a dev dependency),
-  where `ui_core` 0.3.0 moved them; the light-list misreads the list check
-  set aside are gone with `ui_core`'s fix.
+The package page links to the live gallery, the API reference and the
+source, and includes desktop and phone screenshots of Slipway.
 
 ## 0.1.1
 

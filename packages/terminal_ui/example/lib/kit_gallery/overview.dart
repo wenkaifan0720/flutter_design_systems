@@ -35,11 +35,12 @@ class OverviewPage extends StatelessWidget {
 
   // An ordinary app's push: Flutter's own MaterialPageRoute, which reads the
   // app's theme (kitApp's), so it changes screens as Terminal does.
-  void _study(BuildContext context, SlipwayPlace place) => Navigator.of(context)
-      .push(
+  void _study(BuildContext context, SlipwayPlace place, {int? run}) =>
+      Navigator.of(context).push(
         MaterialPageRoute<void>(
           builder: (route) => SlipwayShell(
             place: place,
+            initialRun: run,
             onExit: () => Navigator.of(route).pop(),
           ),
         ),
@@ -55,17 +56,26 @@ class OverviewPage extends StatelessWidget {
     final head = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(r'$ ', style: theme.displayStyle.copyWith(color: theme.dim)),
-            Flexible(
-              child: Semantics(
-                header: true,
-                child: Text('terminal_ui', style: theme.displayStyle),
-              ),
-            ),
-            const TermCaret(),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            // The display face is two cells wide per character. Keep the
+            // complete shell prompt on one line when large text takes the room.
+            final style = grid.cols(27) <= constraints.maxWidth
+                ? theme.displayStyle
+                : theme.boldStyle;
+            return Row(
+              children: [
+                Text(r'$ ', style: style.copyWith(color: theme.dim)),
+                Flexible(
+                  child: Semantics(
+                    header: true,
+                    child: Text('terminal_ui', style: style),
+                  ),
+                ),
+                const TermCaret(),
+              ],
+            );
+          },
         ),
         SizedBox(height: grid.lineHeight),
         const Text(
@@ -86,7 +96,7 @@ class OverviewPage extends StatelessWidget {
           runTile(
             run,
             selected: run.number == 1481,
-            onTap: () => _study(context, SlipwayPlace.run),
+            onTap: () => _study(context, SlipwayPlace.run, run: run.number),
           ),
         Padding(
           padding: EdgeInsetsDirectional.only(

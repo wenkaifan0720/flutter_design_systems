@@ -65,49 +65,13 @@ class TermDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final grid = context.termGrid;
-    final cw = grid.cellWidth;
-    final lh = grid.lineHeight;
-    final theme = TermTheme.of(context);
-    final pane = TermPane(
+    return _ModalPane(
       title: title,
-      footer: termKeysShown(context) ? footer : null,
-      raised: true,
-      focused: true,
-      style: TermStyle.layered([style, theme.dialogStyle]),
-      child: Padding(
-        padding: EdgeInsets.only(top: lh),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Where the screen is too short for all of it (a phone at
-            // 200% text), the words scroll and the actions stay.
-            if (content != null)
-              Flexible(
-                child: TermWholeLines(
-                  child: SingleChildScrollView(child: content),
-                ),
-              ),
-            if (actions.isNotEmpty) ...[
-              SizedBox(height: lh),
-              Wrap(
-                alignment: WrapAlignment.end,
-                spacing: cw,
-                children: actions,
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-    // The route round it scopes the screen reader's view; the pane names
-    // it by its title.
-    return Semantics(
-      namesRoute: true,
-      explicitChildNodes: true,
-      label: title,
-      child: _OnCells(cols: cols, child: pane),
+      footer: footer,
+      cols: cols,
+      content: content,
+      actions: actions,
+      style: TermStyle.layered([style, TermTheme.of(context).dialogStyle]),
     );
   }
 
@@ -297,23 +261,25 @@ class _TermConfirmDialogState extends State<TermConfirmDialog> {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final typed = widget.typedConfirmation;
+    // Opening the keyboard in a phone sheet can scroll the warning away
+    // before its first line can be read.
+    final focusField = typed != null && !widget.sheet;
     final yes = _ready ? widget.onConfirm : null;
     final footer = !termKeysShown(context)
         ? null
         : typed == null
         ? 'y yes · n no · esc'
         : 'esc cancel';
-    final content = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(widget.message),
-        SizedBox(height: grid.lineHeight),
-        if (typed != null)
-          // What to type is in the field's label while the frame has room
-          // for it; where it would be cut, it is a line of its own above,
-          // so the words to type always show whole.
-          LayoutBuilder(
+    // What to type, and the field it goes in, stand with the buttons, out
+    // of the message's scroll: however long the message runs (twice the
+    // text on a phone, a long name), only the message scrolls, and the
+    // field is whole.
+    final Widget? typedPart = typed == null
+        ? null
+        // What to type is in the field's label while the frame has room
+        // for it; where it would be cut, it is a line of its own above, so
+        // the words to type always show whole.
+        : LayoutBuilder(
             builder: (context, c) {
               final ask = 'type $typed to confirm';
               final fits =
@@ -321,7 +287,7 @@ class _TermConfirmDialogState extends State<TermConfirmDialog> {
                   grid.widthOf(ask) <= c.maxWidth - grid.cols(4);
               final field = TermTextField(
                 controller: _typed,
-                autofocus: true,
+                autofocus: focusField,
                 labelText: fits ? ask : 'confirm',
                 prompt: '>',
                 autocorrect: false,
@@ -345,28 +311,35 @@ class _TermConfirmDialogState extends State<TermConfirmDialog> {
                 ],
               );
             },
-          )
-        else
-          Text.rich(
-            TextSpan(
-              children: [
-                const TextSpan(text: 'proceed? '),
-                TextSpan(text: '[y/', style: theme.dimStyle),
-                TextSpan(text: 'N', style: theme.boldStyle),
-                TextSpan(text: ']', style: theme.dimStyle),
-              ],
-            ),
-            semanticsLabel: 'proceed? yes or no, no by default',
-          ),
-      ],
-    );
+          );
+    final Widget content = typed != null
+        ? Text(widget.message)
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(widget.message),
+              SizedBox(height: grid.lineHeight),
+              Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(text: 'proceed? '),
+                    TextSpan(text: '[y/', style: theme.dimStyle),
+                    TextSpan(text: 'N', style: theme.boldStyle),
+                    TextSpan(text: ']', style: theme.dimStyle),
+                  ],
+                ),
+                semanticsLabel: 'proceed? yes or no, no by default',
+              ),
+            ],
+          );
     final actions = [
       TermButton(
         label: widget.cancelLabel,
         shortcut: typed == null
             ? const SingleActivator(LogicalKeyboardKey.keyN)
             : null,
-        autofocus: typed == null,
+        autofocus: !focusField,
         onPressed: widget.onCancel,
       ),
       TermButton.filled(
@@ -401,9 +374,25 @@ class _TermConfirmDialogState extends State<TermConfirmDialog> {
           const SingleActivator(LogicalKeyboardKey.keyN): widget.onCancel,
         },
       },
-      child: dialog,
+      child: typedPart == null
+          ? dialog
+          : _ModalFixed(part: typedPart, child: dialog),
     );
   }
+}
+
+/// A part a dialog's pane keeps out of its body's scroll, between the body
+/// and the buttons: a typed confirmation's field.
+class _ModalFixed extends InheritedWidget {
+  const _ModalFixed({required this.part, required super.child});
+
+  final Widget part;
+
+  static Widget? of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_ModalFixed>()?.part;
+
+  @override
+  bool updateShouldNotify(_ModalFixed old) => old.part != part;
 }
 
 /// Asks [message] as a y/N question and completes with true for yes, false
@@ -498,48 +487,13 @@ class TermSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final grid = context.termGrid;
-    final lh = grid.lineHeight;
-    final theme = TermTheme.of(context);
-    return Semantics(
-      namesRoute: true,
-      explicitChildNodes: true,
-      label: title,
-      child: _OnCells(
-        cols: cols,
-        child: TermPane(
-          title: title,
-          footer: termKeysShown(context) ? footer : null,
-          raised: true,
-          focused: true,
-          style: TermStyle.layered([style, theme.sheetStyle]),
-          child: Padding(
-            padding: EdgeInsets.only(top: lh),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Where the screen is too short for all of it, the words
-                // scroll and the actions stay.
-                Flexible(
-                  child: TermWholeLines(
-                    child: SingleChildScrollView(child: child),
-                  ),
-                ),
-                if (actions.isNotEmpty) ...[
-                  SizedBox(height: lh),
-                  Wrap(
-                    alignment: WrapAlignment.end,
-                    spacing: grid.cellWidth,
-                    runSpacing: lh,
-                    children: actions,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
+    return _ModalPane(
+      title: title,
+      footer: footer,
+      cols: cols,
+      content: child,
+      actions: actions,
+      style: TermStyle.layered([style, TermTheme.of(context).sheetStyle]),
     );
   }
 
@@ -550,6 +504,160 @@ class TermSheet extends StatelessWidget {
       ..add(StringProperty('title', title, defaultValue: null))
       ..add(IntProperty('actions', actions.length))
       ..add(IntProperty('cols', cols, defaultValue: 64));
+  }
+}
+
+// Dialogs and sheets share their title, scrolling body and fixed actions.
+class _ModalPane extends StatefulWidget {
+  const _ModalPane({
+    this.title,
+    this.footer,
+    required this.cols,
+    this.content,
+    required this.actions,
+    required this.style,
+  });
+  final String? title;
+  final String? footer;
+  final int cols;
+  final Widget? content;
+  final List<Widget> actions;
+  final TermStyle style;
+
+  @override
+  State<_ModalPane> createState() => _ModalPaneState();
+}
+
+class _ModalPaneState extends State<_ModalPane> {
+  // Which way the body has more than it shows: '↓' below, '↑' above only,
+  // null when it shows it all.
+  final _more = ValueNotifier<String?>(null);
+
+  @override
+  void dispose() {
+    _more.dispose();
+    super.dispose();
+  }
+
+  bool _measure(ScrollMetrics m) {
+    if (m.axis == Axis.vertical) {
+      _more.value = m.extentAfter > 0.5
+          ? '↓'
+          : m.extentBefore > 0.5
+          ? '↑'
+          : null;
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final grid = context.termGrid;
+    final theme = TermTheme.of(context);
+    final title = widget.title;
+    final footer = widget.footer;
+    final content = widget.content;
+    final actions = widget.actions;
+    final fixed = _ModalFixed.of(context);
+    // The line after the body. Where the body is cut, its end says which
+    // way the rest is, as a pager's last line does: a cut line reads as a
+    // window onto more, not as a part left open.
+    final cue = SizedBox(
+      height: grid.lineHeight,
+      child: ValueListenableBuilder<String?>(
+        valueListenable: _more,
+        builder: (context, more, _) => more == null
+            ? const SizedBox.shrink()
+            : Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: ExcludeSemantics(
+                  child: Text(more, style: theme.dimStyle),
+                ),
+              ),
+      ),
+    );
+    return Semantics(
+      namesRoute: true,
+      explicitChildNodes: true,
+      label: title,
+      child: _OnCells(
+        cols: widget.cols,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final heading = title;
+            final inside =
+                heading != null &&
+                grid.widthOf(heading) > constraints.maxWidth - grid.cols(4);
+            return TermPane(
+              title: inside ? null : heading,
+              footer: termKeysShown(context) ? footer : null,
+              raised: true,
+              focused: true,
+              style: widget.style,
+              child: Padding(
+                padding: EdgeInsets.only(top: grid.lineHeight),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (content != null || inside)
+                      Flexible(
+                        child: NotificationListener<ScrollMetricsNotification>(
+                          onNotification: (n) => _measure(n.metrics),
+                          child: NotificationListener<ScrollUpdateNotification>(
+                            onNotification: (n) => _measure(n.metrics),
+                            child: TermWholeLines(
+                              child: SingleChildScrollView(
+                                child: inside
+                                    ? Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Semantics(
+                                            header: true,
+                                            child: Text(
+                                              heading,
+                                              style: TermTheme.of(context)
+                                                  .boldStyle,
+                                            ),
+                                          ),
+                                          if (content != null) ...[
+                                            SizedBox(height: grid.lineHeight),
+                                            content,
+                                          ],
+                                        ],
+                                      )
+                                    : content,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (fixed != null) ...[cue, fixed],
+                    if (actions.isNotEmpty) ...[
+                      if (fixed == null)
+                        cue
+                      else
+                        SizedBox(height: grid.lineHeight),
+                      Wrap(
+                        alignment: WrapAlignment.end,
+                        spacing: grid.cellWidth,
+                        // Each button already stands on a whole tap target,
+                        // so buttons stacked on a narrow sheet need no blank
+                        // line between them: at large text that line cut
+                        // the body short of a field's last line.
+                        children: actions,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
 }
 

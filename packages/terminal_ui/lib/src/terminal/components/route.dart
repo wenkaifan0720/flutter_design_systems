@@ -9,18 +9,12 @@ import 'package:ui_core/ui_core.dart';
 
 import '../theme.dart';
 
-/// Terminal's screen change ([TermPageTransitionsBuilder]) on every
-/// platform: the builders for a `PageTransitionsTheme`, Flutter's Material's
-/// and the one this package draws on alike. On iOS it sits inside
-/// `ui_core`'s [DesignSwipeBackPageTransitionsBuilder], so a swipe from the
-/// screen's leading edge takes the page back, as on every iOS screen (a
-/// look's own push drops the platform's swipe).
+/// The platform builders for Terminal page transitions. A route fades in
+/// on push and cuts back on pop. On iOS it also supports swiping back
+/// from the leading edge.
 ///
-/// [TermTheme] sets it in the Material theme it gives the screens under it,
-/// the Material this package draws on. A `MaterialPageRoute` from your app's
-/// own Material, and any route whose navigator sits above the [TermTheme] (a
-/// `MaterialApp`'s), reads your app's theme instead: put it there too, or
-/// the platform's slide or zoom flies the page in:
+/// Set this map on the app's `PageTransitionsTheme` so routes pushed by
+/// its navigator use Terminal's transitions.
 ///
 /// ```dart
 /// MaterialApp(

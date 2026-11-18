@@ -207,6 +207,16 @@ List<RunStep> slipwayStepsOf(Run run) => switch (run.status) {
     for (final s in slipwayFailedSteps)
       (name: s.name, status: RunStatus.queued, duration: '–'),
   ],
+  RunStatus.canceled when run.progress != null => [
+    for (final s in slipwayFailedSteps)
+      (
+        name: s.name,
+        status: s.name == 'test' || s.name == 'deploy'
+            ? RunStatus.canceled
+            : RunStatus.passed,
+        duration: s.name == 'test' ? '6s' : s.duration,
+      ),
+  ],
   RunStatus.canceled => [
     for (final (i, s) in slipwayFailedSteps.indexed)
       (
@@ -254,6 +264,11 @@ List<String> slipwayLogOf(Run run) {
   return switch (run.status) {
     RunStatus.failed => slipwayLog,
     RunStatus.queued => ['waiting for a runner · 2 runs ahead'],
+    RunStatus.canceled when run.progress != null => [
+      ...head,
+      ...slipwayLog.sublist(4, 7),
+      'run canceled during test',
+    ],
     RunStatus.canceled => [
       'the tests never ran: ${run.author} canceled the run during install',
     ],
