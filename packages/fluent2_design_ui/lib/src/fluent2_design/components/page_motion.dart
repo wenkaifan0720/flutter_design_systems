@@ -4,15 +4,9 @@ import 'package:ui_core/ui_core.dart';
 
 import '../theme.dart';
 
-/// Fluent 2's page motion on each platform, as [Fluent2Theme] sets it in the
-/// Material theme it builds: [Fluent2PageTransitionsBuilder] on every
-/// platform, on iOS inside ui_core's [DesignSwipeBackPageTransitionsBuilder],
-/// so a page there still pops with a swipe from the screen's leading edge,
-/// following the finger. A map of widgets-level builders, so either Material's
-/// `PageTransitionsTheme` takes it: an app on Flutter's own `MaterialApp`
-/// pushes Flutter's `MaterialPageRoute`, which reads the app's theme rather
-/// than the look's, so the app puts this map in its own `ThemeData` and its
-/// routes move as the look's do.
+/// The Fluent route transitions for each platform. Supply this map to your
+/// app's `PageTransitionsTheme` so Material page routes use Fluent motion.
+/// On iOS the transition also follows the leading-edge swipe-back gesture.
 ///
 /// ```dart
 /// MaterialApp(theme: ThemeData(pageTransitionsTheme: const PageTransitionsTheme(builders: fluent2PageTransitions)), home: home)
@@ -29,23 +23,14 @@ const Map<TargetPlatform, PageTransitionsBuilder> fluent2PageTransitions = {
   TargetPlatform.windows: Fluent2PageTransitionsBuilder(),
 };
 
-/// Fluent 2's page motion, which a [Fluent2Theme] sets for every platform
-/// (on iOS with the swipe back round it, [fluent2PageTransitions]), so the
-/// page routes that read the look's theme move this way: a
-/// `Fluent2Page`, a sheet's page. A route that reads the app widget's own
-/// theme instead (a `MaterialPageRoute` under the app's `MaterialApp`)
-/// moves this way once that theme carries [fluent2PageTransitions].
+/// Builds the Fluent transition for a pushed or popped page. The incoming
+/// page fades in and travels 20 logical pixels from the trailing edge.
+/// A full-screen dialog rises from below. The underlying page stays still.
+/// Pushes take 250 ms and pops take 200 ms. With reduced motion enabled,
+/// the route switches immediately.
 ///
-/// A page pushed in comes in over the page it leaves, which holds still:
-/// it rises from transparent as it travels [Fluent2PageTransition.travel]
-/// (20) from the reading end, or up from below for a full-screen dialog, on
-/// Fluent's `durationGentle` (250 ms) and `curveDecelerateMid`. Popped, it
-/// runs the same way back on `durationNormal` (200 ms), accelerating out.
-/// A switch between a shell's roots (its nav pane, tab bar or rail) is no
-/// push and does not move. With reduced motion asked for, each way is a cut.
-///
-/// A map of an app's own names it per platform, and on iOS wraps it in
-/// ui_core's [DesignSwipeBackPageTransitionsBuilder] to keep the edge swipe.
+/// [fluent2PageTransitions] installs this builder on each platform and
+/// preserves the iOS swipe-back gesture.
 ///
 /// ```dart
 /// PageTransitionsTheme(builders: {TargetPlatform.android: Fluent2PageTransitionsBuilder(), TargetPlatform.iOS: DesignSwipeBackPageTransitionsBuilder(Fluent2PageTransitionsBuilder())})

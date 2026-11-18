@@ -20,19 +20,18 @@ import '../sheet.dart';
 // The calendar's own idea of a day: midnight, local, as its controller holds one.
 DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
 
-/// Fluent's Calendar (the day picker of `@fluentui/react-calendar-compat`):
-/// the month and year in body1 strong over the previous and next month
-/// buttons, the weekdays' letters, then the month's weeks of days, each a
-/// circle (28 on the desktop, up to 40 on a phone): today on the brand
-/// fill, the chosen day on the brand tint in the brand words, the next and
-/// last months' days in the third ink, days outside [firstDate] and
-/// [lastDate] disabled; a [marks] day carries a dot under its figure (a
-/// meeting, a kept day). A press on a day calls [onChanged]; with none it
-/// is a month that only shows its marks. The grid is one tab stop: the
-/// arrows move a day or a week, Home and End to the week's ends, Page Up
-/// and Down a month (with Shift a year), Enter or Space chooses. The
-/// behaviour is the design kit's DesignCalendar; Fluent 2 paints the
-/// header, the weekdays and the days.
+double _dayGrowth(BuildContext context) {
+  final style = context.fluent2Theme.body1Strong;
+  final size = style.fontSize!;
+  return math.max(0, MediaQuery.textScalerOf(context).scale(size) - size) *
+      (style.height ?? 1);
+}
+
+/// A month calendar with a single selected date and optional marked days.
+///
+/// Arrow keys move by a day or week. Home and End move to the ends of the
+/// week. Page Up and Page Down change the month, or the year with Shift.
+/// Enter or Space selects the focused day.
 ///
 /// ```dart
 /// Fluent2Calendar(value: due, marks: {DateTime(2026, 11, 12)}, onChanged: (d) => setState(() => due = d))
@@ -48,19 +47,20 @@ class Fluent2Calendar extends StatefulWidget {
     this.lastDate,
     this.marks = const {},
     this.showAdjacent = true,
+    this.focusNode,
     super.key,
   });
 
-  /// The chosen day; null chooses none.
+  /// The selected day, or null for an empty selection.
   final DateTime? value;
 
-  /// Called with the day the user picks; null puts it out of use.
+  /// Called when the user selects a day. A null callback disables selection.
   final ValueChanged<DateTime>? onChanged;
 
-  /// The month shown first; null is [value]'s, else [today]'s.
+  /// The initial month. Defaults to the month of [value] or [today].
   final DateTime? month;
 
-  /// Today; null is the clock's.
+  /// The date highlighted as today. Defaults to the current date.
   final DateTime? today;
 
   /// The earliest day that can be picked; null sets no bound.
@@ -69,11 +69,14 @@ class Fluent2Calendar extends StatefulWidget {
   /// The latest day that can be picked; null sets no bound.
   final DateTime? lastDate;
 
-  /// The days that carry a dot.
+  /// Dates shown with a dot below the day number.
   final Set<DateTime> marks;
 
   /// Draw the last and next months' days round the month.
   final bool showAdjacent;
+
+  /// The focus node for the day grid. The calendar supplies one when omitted.
+  final FocusNode? focusNode;
 
   @override
   State<Fluent2Calendar> createState() => _Fluent2CalendarState();
@@ -99,6 +102,13 @@ class Fluent2Calendar extends StatefulWidget {
         DiagnosticsProperty<DateTime>('lastDate', lastDate, defaultValue: null),
       )
       ..add(IterableProperty<DateTime>('marks', marks, defaultValue: const {}))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
       ..add(
         FlagProperty(
           'showAdjacent',
@@ -188,12 +198,17 @@ class _Fluent2CalendarState extends State<Fluent2Calendar> {
         // A whole even number of pixels, so the disc and its day's number
         // sit on whole pixels in it rather than straddling one.
         double even(double v) => (v / 2).floorToDouble() * 2;
-        final cell = touch
+        final growth = _dayGrowth(context);
+        final usualCell = touch
             ? math.min(target, even(room / 7))
             : wide
             ? 32.0
             : even((room / 7).clamp(32.0, 44.0));
-        final disc = wide && !touch ? 28.0 : math.min(cell - 4, 40.0);
+        final cell = even(math.min(room / 7, usualCell + growth));
+        final disc = math.max(
+          0.0,
+          math.min(cell - 4, (wide && !touch ? 28.0 : 40.0) + growth),
+        );
         return FocusTraversalGroup(
           policy: OrderedTraversalPolicy(),
           child: SizedBox(
@@ -202,6 +217,7 @@ class _Fluent2CalendarState extends State<Fluent2Calendar> {
               order: const NumericFocusOrder(1),
               child: DesignCalendar(
                 controller: _cal,
+                focusNode: widget.focusNode,
                 // The week starts where the app's localizations say
                 // (DesignLocalizations.firstDayOfWeek; English is Sunday).
                 showOutsideDays: widget.showAdjacent,
@@ -220,12 +236,7 @@ class _Fluent2CalendarState extends State<Fluent2Calendar> {
                           padding: const EdgeInsetsDirectional.only(
                             start: Fluent2Spacing.xs,
                           ),
-                          child: Text(
-                            h.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: t.body1Strong,
-                          ),
+                          child: Text(h.label, style: t.body1Strong),
                         ),
                       ),
                       first(
@@ -353,7 +364,8 @@ class _Day extends StatelessWidget {
             children: [
               Text(
                 '${date.day}',
-                textScaler: TextScaler.noScaling,
+                maxLines: 1,
+                softWrap: false,
                 style: type.c(ink).tabular,
               ),
               if (marked)
@@ -388,13 +400,13 @@ class _Day extends StatelessWidget {
   }
 }
 
-/// Fluent's DatePicker: a field-faced button saying the chosen date (or
-/// its [hint] in the fourth ink) with the calendar glyph at its
-/// end in the third ink, opening a [Fluent2Calendar]: on a tablet, the
-/// desktop or under a pointer in a popover under the field, on a phone in a
-/// bottom sheet headed by [label]; a day chosen closes it and calls [onChanged]. Null
-/// [onChanged] draws it disabled. Read as a button named [label] saying
-/// the date.
+/// A date field that opens a [Fluent2Calendar].
+///
+/// The field displays the formatted [value] or its [hint] when empty. A
+/// desktop or tablet opens a popover with keyboard focus in the calendar.
+/// Escape closes the popover and returns focus to the field. A touch phone
+/// opens a bottom sheet titled [label]. Selecting a day calls [onChanged]
+/// and closes the calendar. A null callback disables the field.
 ///
 /// ```dart
 /// Fluent2DatePicker(label: 'Due date', value: due, onChanged: (d) => setState(() => due = d))
@@ -528,12 +540,14 @@ class Fluent2DatePicker extends StatefulWidget {
 
 class _Fluent2DatePickerState extends State<Fluent2DatePicker> {
   final _portal = OverlayPortalController();
+  final _gridFocus = FocusNode(debugLabel: 'date picker calendar');
   FocusNode? _ownFocus;
   FocusNode get _focus =>
       widget.focusNode ?? (_ownFocus ??= FocusNode(debugLabel: 'date picker'));
 
   @override
   void dispose() {
+    _gridFocus.dispose();
     _ownFocus?.dispose();
     super.dispose();
   }
@@ -552,7 +566,12 @@ class _Fluent2DatePickerState extends State<Fluent2DatePicker> {
 
   Future<void> _open() async {
     if (Fluent2Layout.popsOver(context)) {
-      setState(_portal.isShowing ? _portal.hide : _portal.show);
+      if (_portal.isShowing) {
+        setState(_portal.hide);
+      } else {
+        setState(_portal.show);
+        _gridFocus.requestFocus();
+      }
       return;
     }
     final picked = await Fluent2Sheet.show<DateTime>(
@@ -606,7 +625,7 @@ class _Fluent2DatePickerState extends State<Fluent2DatePicker> {
       content: content,
       child: Fluent2FieldPopover(
         controller: _portal,
-        width: 7 * 32 + 2 * Fluent2Spacing.m + 2,
+        width: 7 * (32 + _dayGrowth(context)) + 2 * Fluent2Spacing.m + 2,
         onDismiss: () => setState(_portal.hide),
         popover: (context) => Fluent2PopoverSurface(
           padding: const EdgeInsets.all(Fluent2Spacing.m),
@@ -622,6 +641,7 @@ class _Fluent2DatePickerState extends State<Fluent2DatePicker> {
             // than run past the popover.
             child: SingleChildScrollView(
               child: Fluent2Calendar(
+                focusNode: _gridFocus,
                 value: widget.value,
                 today: widget.today,
                 firstDate: widget.firstDate,

@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/key_focus.dart';
+import '../../internal/measure.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
 import 'charts.dart';
@@ -279,26 +280,40 @@ class _Card extends StatelessWidget {
   final String title;
   final List<(Color, String, String)> lines;
 
-  static const double _w = 150;
-
   @override
   Widget build(BuildContext context) {
     final t = context.fluent2Theme;
+    const padding = Fluent2Spacing.s;
+    const swatchAndGaps = 8 + 2 * Fluent2Spacing.xs;
+    final nameStyle = t.caption1.c(t.textSecondary);
+    final valueStyle = t.caption1.tabular;
+    final rowWidths = [
+      for (final (_, name, value) in lines)
+        swatchAndGaps +
+            fluent2WordsWidth(context, [name], nameStyle) +
+            fluent2WordsWidth(context, [value], valueStyle),
+    ];
+    final contentWidth = [
+      fluent2WordsWidth(context, [title], t.caption1Strong),
+      ...rowWidths,
+    ].reduce(math.max);
+    const insets = 2 * (padding + 1); // Padding and the card's border.
+    final cardWidth = math.min(width, math.max(150.0, contentWidth + insets));
     // Beside the crosshair, past it in the reading direction where there is
     // the room (right to left, to its left), else before it.
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final right = x + Fluent2Spacing.s;
-    final left = x - Fluent2Spacing.s - _w;
+    final left = x - Fluent2Spacing.s - cardWidth;
     final at = rtl
         ? (left >= 0 ? left : right)
-        : (right + _w <= width ? right : left);
+        : (right + cardWidth <= width ? right : left);
     return Positioned(
-      left: at.clamp(0.0, math.max(0.0, width - _w)),
+      left: at.clamp(0.0, width - cardWidth),
       top: 0,
-      width: math.min(_w, width),
+      width: cardWidth,
       child: IgnorePointer(
         child: Container(
-          padding: const EdgeInsets.all(Fluent2Spacing.s),
+          padding: const EdgeInsets.all(padding),
           decoration: BoxDecoration(
             color: t.colors.neutralBackground1,
             borderRadius: BorderRadius.circular(Fluent2Radius.medium),
@@ -315,20 +330,21 @@ class _Card extends StatelessWidget {
             spacing: Fluent2Spacing.xxs,
             children: [
               Text(title, style: t.caption1Strong),
-              for (final (color, name, value) in lines)
-                Row(
-                  spacing: Fluent2Spacing.xs,
+              for (final (i, (color, name, value)) in lines.indexed)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _Swatch(color),
-                    Expanded(
-                      child: Text(
-                        name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: t.caption1.c(t.textSecondary),
-                      ),
+                    Row(
+                      spacing: Fluent2Spacing.xs,
+                      children: [
+                        _Swatch(color),
+                        Expanded(child: Text(name, style: nameStyle)),
+                        if (rowWidths[i] <= cardWidth - insets)
+                          Text(value, style: valueStyle),
+                      ],
                     ),
-                    Text(value, style: t.caption1.tabular),
+                    if (rowWidths[i] > cardWidth - insets)
+                      Text(value, style: valueStyle),
                   ],
                 ),
             ],

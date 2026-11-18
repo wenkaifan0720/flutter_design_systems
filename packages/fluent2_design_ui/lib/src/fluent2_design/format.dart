@@ -1,19 +1,8 @@
 import 'package:flutter/widgets.dart' show StringCharacters;
 
-/// Fluent 2's display formatting: the dates, clock times, relative times,
-/// counts, sizes and durations a Fluent 2 row prints, in the shapes Fluent's
-/// own products write them ("Mon, Nov 3", "9:41 AM", "2h ago", "2.4 MB",
-/// "1 h 30 min").
+/// US English formatters for dates, times, durations, counts, and file sizes.
 ///
-/// PURE AND DETERMINISTIC, no intl. A generated app renders inside
-/// walkthroughs and golden frames, and a locale-aware formatter makes the
-/// same record read differently on two machines, which turns a diff into a
-/// false failure. The vocabulary is US English and the shapes are fixed, so
-/// a screen's text is a function of its data and nothing else.
-///
-/// Nothing here touches [DateTime.now]: the relative words take the moment
-/// to measure against as an argument, because a formatter that reads the
-/// clock cannot be tested.
+/// Pass a reference time to [ago] to format a relative date.
 ///
 /// ```dart
 /// Text(Fluent2Format.ago(file.modified, now: now), style: t.caption1)

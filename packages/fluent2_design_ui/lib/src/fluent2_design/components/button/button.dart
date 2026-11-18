@@ -641,11 +641,8 @@ class Fluent2ActsFill extends InheritedWidget {
   bool updateShouldNotify(Fluent2ActsFill oldWidget) => false;
 }
 
-/// [button] at the width it shows wherever its parent would stretch it (a
-/// column that stretches its children, a cell of a row): its face at the
-/// start and centred on the height, the rest of the room empty and not
-/// pressed (the user's review, 11-11: a control spanning a 1440 page reads
-/// as a banner). Under [Fluent2ActsFill] it fills, as before.
+/// Aligns [button] to the leading edge at its natural width.
+/// Under [Fluent2ActsFill] the button expands to fill its cell.
 Widget fluent2OwnWidth(BuildContext context, Widget button) =>
     Fluent2ActsFill.of(context) ? button : _OwnWidth(child: button);
 

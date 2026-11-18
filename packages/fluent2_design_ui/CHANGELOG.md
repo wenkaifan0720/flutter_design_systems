@@ -1,16 +1,26 @@
+## 0.3.2
+
+- The password visibility button now responds to Tab, Space and Enter.
+- The calendar shows the full month and year and scales day numbers with the
+  system text size. Opening a date popover focuses the calendar. Escape closes
+  it and returns focus to the field.
+- Line and area chart callouts size to their series names and values.
+- Data grid cells wrap long values. When the column headings need more space,
+  the table scrolls horizontally.
+- The disabled composer wraps its placeholder and uses a higher-contrast text color.
+- In the gallery, website addresses retain their order in right-to-left layouts,
+  Arabic progress captions keep quantities with their units, and confirmation
+  dialogs cover the gallery controls.
+
 ## 0.3.1
 
-Fixed:
-
-- Under a finger, a list's or a menu's rows stand 48, filling their touch target, so a chosen or active row's fill
-  stands 4 from the list's top and foot as from its sides (it stood 6 down and 4 across).
-- Under a finger, a one-line message bar holds its actions 12 from its top and foot, as from its end; an action's
-  48 target used to stand 1 from the bar's edges.
+- Touch menu and list rows fill their 48 px targets. Selected rows have a
+  consistent 4 px inset on all sides.
+- Actions in a single-line message bar have 12 px of padding on touch devices.
 
 ## 0.3.0
 
-Needs ui_core 0.3.0. Fluent 2's parts take their behaviour from ui_core now and keep Fluent's faces: the same layers,
-inks, rings and timings, with ui_core's keys, screen-reader words, focus and springs under them.
+Requires ui_core 0.3.0 for keyboard navigation, screen reader support, focus handling, and route transitions.
 
 Breaking:
 
@@ -23,7 +33,7 @@ Breaking:
 
 Changes:
 
-- **Dialogs and sheets ride ui_core's routes.** `Fluent2Dialog.show` is a `DesignDialogRoute`: it rises from .95 and
+- **Dialogs and sheets.** `Fluent2Dialog.show` uses a `DesignDialogRoute`: it rises from .95 and
   fades in on a spring that settles in Fluent's 250 ms; focus moves in, Tab stays inside, and the focus goes back where
   it was. `Fluent2Dialog.confirm` is an alert dialog to a screen reader (`show` takes `isAlert`). A phone's bottom
   sheet (`Fluent2Sheet.show`, the router's sheet page, `showFluent2BottomSheet`) is a `DesignBottomSheetRoute`: it
@@ -55,7 +65,7 @@ Changes:
 - **`Fluent2Kbd.shortcut(activator)`** writes an app's shortcut as ui_core does: the platform's order and the reader's
   words ("Ctrl+Shift+N"), Apple's symbols on macOS and iOS.
 - **From ui_core 0.3.0.** A menu opened by a click lights no row until the pointer or the keys move; Enter in a
-  combobox keeps the field's focus on the web too. The review checks come from `ui_core_test`, a dev dependency.
+  combobox keeps the field's focus on the web.
 
 Fixed:
 
@@ -68,9 +78,7 @@ Fixed:
 - `Fluent2Preview`'s app stands in a semantics container of its own: the route under it no longer hides the heading
   an app places above the preview from a screen reader.
 
-The package's page: its homepage is the live gallery, the README opens on a hero picture and links to the gallery,
-the API reference and all the looks, and the quick start stands on material_ui (Flutter 3.50 moves Material out of
-`package:flutter`).
+The package homepage links to the live gallery. The README includes screenshots and a quick start using `material_ui`.
 
 ## 0.2.1
 

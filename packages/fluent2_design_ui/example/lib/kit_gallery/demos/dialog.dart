@@ -21,7 +21,7 @@ Widget kitDialogDemo(Brightness brightness) => kitScreen(
               kitW('Delete file'),
               icon: Fluent2Icons.delete,
               onPressed: () => Fluent2Dialog.confirm(
-                context,
+                KitGalleryNavigator.dialogContext(context),
                 title: kitW('Delete Launch plan.docx?'),
                 message: kitW('It moves to the recycle bin for 30 days.'),
                 confirmLabel: kitW('Delete'),
@@ -31,7 +31,7 @@ Widget kitDialogDemo(Brightness brightness) => kitScreen(
               kitW('Leave meeting'),
               icon: Fluent2Icons.arrowExit,
               onPressed: () => Fluent2Dialog.confirm(
-                context,
+                KitGalleryNavigator.dialogContext(context),
                 title: kitW('Leave Design review?'),
                 message: kitW('The meeting goes on without you.'),
                 confirmLabel: kitW('Leave'),

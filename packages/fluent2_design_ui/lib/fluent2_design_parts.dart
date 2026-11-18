@@ -1,12 +1,8 @@
-/// Everything `fluent2_design_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (colors.dart, component_themes.dart, components/input/field_core.dart, components/list/check_indicator.dart, components/pressable/pressable.dart, internal/arrow.dart, internal/cap_label.dart, internal/chosen.dart, internal/footer_band.dart, internal/hit_slop.dart, internal/icon_fill.dart, internal/in_row.dart, internal/key_focus.dart, internal/layer.dart, internal/list_keys.dart, internal/measure.dart, internal/menu_lead.dart, internal/menu_surface.dart, internal/platform_words.dart, internal/presets.g.dart, internal/report_height.dart, internal/route_motion.dart, internal/search_states.dart, internal/side_inset.dart, internal/well.dart, knobs.dart).
+/// Helpers for customizing components copied from `fluent2_design_ui`.
 ///
-/// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
-/// rest of your app stays on the package:
+/// Import this library in the copied widget to use its theme and component helpers.
 ///
 /// ```dart
-/// // lib/ui/my_card.dart, copied from package:fluent2_design_ui/src/fluent2_design/... and renamed.
-/// import 'package:flutter/widgets.dart';
 /// import 'package:fluent2_design_ui/fluent2_design_parts.dart';
 /// ```
 ///

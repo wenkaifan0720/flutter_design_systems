@@ -14,12 +14,10 @@ import '../theme.dart';
 import 'acrylic.dart';
 import 'pressable/pressable.dart';
 
-/// One destination of the tab bar and the nav pane, as generated apps
-/// declare a tab: its [icon] (Fluent's regular design), the [label]
-/// printed under it (and spoken) and the walkthrough [key] set on its hit
-/// target, positionally. While selected it wears its [selectedIcon]
-/// (Fluent's filled design; null wears [icon]'s filled twin) in the brand; its root
-/// stands on its [ground].
+/// A destination in the tab bar or navigation pane. [label] provides the
+/// visible name and screen reader label. [key] identifies its hit target.
+/// The selected destination uses the brand color and [selectedIcon], or
+/// the filled variant of [icon] when available.
 ///
 /// ```dart
 /// Fluent2NavItem(Fluent2Icons.home, 'Home', ValueKey('open-home'))
@@ -30,7 +28,7 @@ class Fluent2NavItem {
   const Fluent2NavItem(this.icon, this.label, [this.key, this.selectedIcon])
     : ground = ChromeGround.surface;
 
-  /// The item a runtime [NavTab] asks for.
+  /// Creates a destination from the icon, label and placement of a [NavTab].
   Fluent2NavItem.fromTab(NavTab tab)
     : icon = tab.icon,
       label = tab.label,

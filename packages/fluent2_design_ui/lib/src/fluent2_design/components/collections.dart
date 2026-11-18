@@ -8,6 +8,7 @@ import 'package:ui_core/ui_core.dart';
 import '../icons.dart';
 import '../internal/icon_fill.dart';
 import '../internal/layer.dart';
+import '../internal/measure.dart';
 import '../internal/well.dart';
 import '../localizations.dart';
 import '../theme.dart';
@@ -28,12 +29,10 @@ const double _barThickness = 12;
 /// ReOrderDotsVertical glyph, 3 by 3 and 3 apart.
 const double _gripDot = 3;
 
-/// A sortable, selectable table on Fluent's DataGrid faces: a 32 header row in
-/// caption1 strong under its hairline, sort arrows in the brand, rows of 44
-/// with a hairline between and the subtle fill under the pointer or while
-/// chosen; a check box column when [selectable]; Fluent's pager when the
-/// controller pages. The controller holds the rows, the sort, the page and the
-/// selection.
+/// A sortable data grid with optional row selection and pagination.
+///
+/// Cells wrap long values. The grid scrolls horizontally when the column
+/// headings exceed its available width.
 ///
 /// ```dart
 /// Fluent2DataGrid<Map<String, String>>(label: 'Files', controller: files, cell: (row, column) => row[column.id] ?? '')
@@ -52,16 +51,16 @@ class Fluent2DataGrid<R> extends StatelessWidget {
   /// The rows, columns, sort, page and selection.
   final DesignTableController<R> controller;
 
-  /// A cell's words.
+  /// Returns the displayed value for a cell.
   final String Function(R row, DesignTableColumn<R> column) cell;
 
-  /// What a screen reader calls it.
+  /// The grid's accessibility label.
   final String? label;
 
   /// Whether rows can be ticked.
   final bool selectable;
 
-  /// Told a row Enter or a press opens.
+  /// Called when the user opens a row with a pointer or Enter.
   final ValueChanged<R>? onActivate;
 
   @override
@@ -70,8 +69,9 @@ class Fluent2DataGrid<R> extends StatelessWidget {
     final c = t.colors;
     final words = Fluent2Localizations.of(context);
     const space = EdgeInsets.symmetric(horizontal: Fluent2Spacing.m);
+    int flex(DesignTableColumn<R> column) => column.numeric ? 2 : 3;
     Widget box(DesignTableColumn<R> column, Widget child) => Expanded(
-      flex: column.numeric ? 2 : 3,
+      flex: flex(column),
       child: Align(
         alignment: column.numeric
             ? AlignmentDirectional.centerEnd
@@ -82,6 +82,24 @@ class Fluent2DataGrid<R> extends StatelessWidget {
     // Rows, headings and the tick column are targets: 48 under a finger.
     final target = Fluent2Layout.hitTargetOf(context);
     final heading = Fluent2Layout.padded(context) ? target : 32.0;
+    // Keep headers and their sort indicators together. On a narrow screen
+    // the grid scrolls as a whole, keeping the headers aligned with the rows.
+    var unit = 0.0;
+    var totalFlex = 0;
+    for (final column in controller.columns) {
+      final labelWidth = fluent2WordsWidth(context, [
+        column.label,
+      ], t.caption1Strong);
+      final width =
+          labelWidth +
+          space.horizontal +
+          (column.sortable ? 12 + Fluent2Spacing.xs : 0);
+      final fraction = flex(column);
+      if (width / fraction > unit) unit = width / fraction;
+      totalFlex += fraction;
+    }
+    final minWidth =
+        (unit * totalFlex).ceilToDouble() + (selectable ? target : 0);
     Widget tick(bool? value, VoidCallback toggle, String name) => SizedBox(
       width: target,
       child: Center(
@@ -102,144 +120,160 @@ class Fluent2DataGrid<R> extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            DesignDataTable<R>(
-              controller: controller,
-              selectable: selectable,
-              onActivate: onActivate,
-              headerRowBuilder: (context, cells) => DecoratedBox(
-                decoration: BoxDecoration(
-                  border: Border(bottom: BorderSide(color: c.neutralStroke2)),
-                ),
-                child: Row(
-                  children: [
-                    if (selectable)
-                      tick(
-                        switch (controller.pageSelection) {
-                          DesignSelection.all => true,
-                          DesignSelection.none => false,
-                          DesignSelection.some => null,
-                        },
-                        controller.togglePage,
-                        words.selectAllRows,
+            LayoutBuilder(
+              builder: (context, bounds) {
+                final grid = DesignDataTable<R>(
+                  controller: controller,
+                  selectable: selectable,
+                  onActivate: onActivate,
+                  headerRowBuilder: (context, cells) => DecoratedBox(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: c.neutralStroke2),
                       ),
-                    for (final (i, column) in controller.columns.indexed)
-                      box(column, cells[i]),
-                  ],
-                ),
-              ),
-              headerBuilder: (context, column, sort, states) {
-                final press = states.press;
-                return Stack(
-                  fit: StackFit.passthrough,
-                  children: [
-                    Container(
-                      constraints: BoxConstraints(minHeight: heading),
-                      padding: space,
-                      decoration: BoxDecoration(
-                        color: press.pick(
-                          c.subtleBackground,
-                          fluent2Step(t, c.subtleBackgroundHover),
-                          fluent2Step(t, c.subtleBackgroundPressed),
-                        ),
-                        borderRadius: BorderRadius.circular(
-                          Fluent2Radius.medium,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        spacing: Fluent2Spacing.xs,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              column.label,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: t.caption1Strong.c(t.textSecondary),
+                    ),
+                    child: Row(
+                      children: [
+                        if (selectable)
+                          tick(
+                            switch (controller.pageSelection) {
+                              DesignSelection.all => true,
+                              DesignSelection.none => false,
+                              DesignSelection.some => null,
+                            },
+                            controller.togglePage,
+                            words.selectAllRows,
+                          ),
+                        for (final (i, column) in controller.columns.indexed)
+                          box(column, cells[i]),
+                      ],
+                    ),
+                  ),
+                  headerBuilder: (context, column, sort, states) {
+                    final press = states.press;
+                    return Stack(
+                      fit: StackFit.passthrough,
+                      children: [
+                        Container(
+                          constraints: BoxConstraints(minHeight: heading),
+                          padding: space,
+                          decoration: BoxDecoration(
+                            color: press.pick(
+                              c.subtleBackground,
+                              fluent2Step(t, c.subtleBackgroundHover),
+                              fluent2Step(t, c.subtleBackgroundPressed),
+                            ),
+                            borderRadius: BorderRadius.circular(
+                              Fluent2Radius.medium,
                             ),
                           ),
-                          if (sort != null)
-                            Icon(
-                              sort == DesignSortDirection.ascending
-                                  ? Fluent2Icons.arrowUp
-                                  : Fluent2Icons.arrowDown,
-                              size: 12,
-                              color: c.compoundBrandForeground1,
-                            ),
-                        ],
-                      ),
-                    ),
-                    if (states.focused)
-                      const Positioned.fill(
-                        child: IgnorePointer(
-                          child: Fluent2FocusRing(radius: Fluent2Radius.medium),
-                        ),
-                      ),
-                  ],
-                );
-              },
-              cellBuilder: (context, row, column) => Padding(
-                padding: space.copyWith(
-                  top: Fluent2Spacing.mNudge,
-                  bottom: Fluent2Spacing.mNudge,
-                ),
-                // One line, as Fluent's grid cells: words a column can't
-                // hold end in an ellipsis rather than break mid-word; a
-                // screen reader still hears them whole.
-                child: Text(
-                  cell(row, column),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: column.numeric ? t.body1.tabular : t.body1,
-                  textAlign: column.numeric ? TextAlign.end : TextAlign.start,
-                ),
-              ),
-              rowBuilder: (context, row, cells) {
-                final press = row.states.press;
-                final fill = row.selected
-                    ? press.pick(
-                        fluent2Step(t, c.subtleBackgroundSelected),
-                        fluent2Step(t, c.subtleBackgroundHover),
-                        fluent2Step(t, c.subtleBackgroundPressed),
-                      )
-                    : press.pick(
-                        c.subtleBackground,
-                        fluent2Step(t, c.subtleBackgroundHover),
-                        fluent2Step(t, c.subtleBackgroundPressed),
-                      );
-                return Stack(
-                  fit: StackFit.passthrough,
-                  children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: fill,
-                        border: Border(
-                          bottom: BorderSide(color: c.neutralStroke2),
-                        ),
-                      ),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(minHeight: target),
-                        child: Row(
-                          children: [
-                            if (selectable)
-                              tick(
-                                row.selected,
-                                row.toggle,
-                                words.selectRow(words.row),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            spacing: Fluent2Spacing.xs,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  column.label,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: t.caption1Strong.c(t.textSecondary),
+                                ),
                               ),
-                            for (final (i, column)
-                                in controller.columns.indexed)
-                              box(column, cells[i]),
-                          ],
+                              if (sort != null)
+                                Icon(
+                                  sort == DesignSortDirection.ascending
+                                      ? Fluent2Icons.arrowUp
+                                      : Fluent2Icons.arrowDown,
+                                  size: 12,
+                                  color: c.compoundBrandForeground1,
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
+                        if (states.focused)
+                          const Positioned.fill(
+                            child: IgnorePointer(
+                              child: Fluent2FocusRing(
+                                radius: Fluent2Radius.medium,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                  cellBuilder: (context, row, column) => Padding(
+                    padding: space.copyWith(
+                      top: Fluent2Spacing.mNudge,
+                      bottom: Fluent2Spacing.mNudge,
                     ),
-                    if (row.states.focused)
-                      const Positioned.fill(
-                        child: IgnorePointer(
-                          child: Fluent2FocusRing(radius: Fluent2Radius.none),
+                    child: Text(
+                      cell(row, column),
+                      style: column.numeric ? t.body1.tabular : t.body1,
+                      textAlign: column.numeric
+                          ? TextAlign.end
+                          : TextAlign.start,
+                    ),
+                  ),
+                  rowBuilder: (context, row, cells) {
+                    final press = row.states.press;
+                    final fill = row.selected
+                        ? press.pick(
+                            fluent2Step(t, c.subtleBackgroundSelected),
+                            fluent2Step(t, c.subtleBackgroundHover),
+                            fluent2Step(t, c.subtleBackgroundPressed),
+                          )
+                        : press.pick(
+                            c.subtleBackground,
+                            fluent2Step(t, c.subtleBackgroundHover),
+                            fluent2Step(t, c.subtleBackgroundPressed),
+                          );
+                    return Stack(
+                      fit: StackFit.passthrough,
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: fill,
+                            border: Border(
+                              bottom: BorderSide(color: c.neutralStroke2),
+                            ),
+                          ),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(minHeight: target),
+                            child: Row(
+                              children: [
+                                if (selectable)
+                                  tick(
+                                    row.selected,
+                                    row.toggle,
+                                    words.selectRow(words.row),
+                                  ),
+                                for (final (i, column)
+                                    in controller.columns.indexed)
+                                  box(column, cells[i]),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
-                  ],
+                        if (row.states.focused)
+                          const Positioned.fill(
+                            child: IgnorePointer(
+                              child: Fluent2FocusRing(
+                                radius: Fluent2Radius.none,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                );
+                if (bounds.hasBoundedWidth && bounds.maxWidth >= minWidth) {
+                  return grid;
+                }
+                final table = SizedBox(width: minWidth, child: grid);
+                if (!bounds.hasBoundedWidth) return table;
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: table,
                 );
               },
             ),

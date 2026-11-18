@@ -26,6 +26,31 @@ export 'northwind.dart' show KitNorthwind, KitNorthwindRoot;
 export 'photo.dart' show kitPhoto;
 export 'words.dart' show kitArabic, kitW;
 
+/// The navigator that contains both the gallery controls and the demo.
+class KitGalleryNavigator extends InheritedWidget {
+  /// Makes the gallery [navigator] available to its demo pages.
+  const KitGalleryNavigator({
+    required this.navigator,
+    required super.child,
+    super.key,
+  });
+
+  /// The navigator that owns the gallery controls.
+  final NavigatorState navigator;
+
+  /// Returns the context for dialogs that should cover the full gallery.
+  static BuildContext dialogContext(BuildContext context) =>
+      context
+          .getInheritedWidgetOfExactType<KitGalleryNavigator>()
+          ?.navigator
+          .context ??
+      context;
+
+  @override
+  bool updateShouldNotify(KitGalleryNavigator oldWidget) =>
+      oldWidget.navigator != navigator;
+}
+
 /// A demo screen: a scrolling nav root titled [title], with labelled
 /// sections, one per variant or state. [footer] pins a widget under the
 /// scroll; [body] replaces the sections for demos that own their layout.

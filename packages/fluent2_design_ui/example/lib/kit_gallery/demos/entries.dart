@@ -49,11 +49,14 @@ Widget kitSpecimenInputGroup() => const Column(
   crossAxisAlignment: CrossAxisAlignment.stretch,
   spacing: Fluent2Spacing.m,
   children: [
-    Fluent2InputGroup(
-      label: 'Website',
-      prefix: 'https://',
-      suffix: '.com',
-      hint: 'northwind',
+    Directionality(
+      textDirection: TextDirection.ltr,
+      child: Fluent2InputGroup(
+        label: 'Website',
+        prefix: 'https://',
+        suffix: '.com',
+        hint: 'northwind',
+      ),
     ),
     Fluent2InputGroup(
       label: 'Budget',

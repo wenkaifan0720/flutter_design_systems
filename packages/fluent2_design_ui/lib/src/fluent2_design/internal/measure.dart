@@ -1,8 +1,6 @@
-/// How wide a control and a form stand where the window has room (design6
-/// P, 11-11 (a)): from 600 a select, a button that fills, a stepper or a
-/// segmented control keeps its own width, at most [fluent2ControlMax], and
-/// never runs to its column or the page; a form section's measure stops at
-/// [fluent2FormMeasure]. Free text fields and tables may span the form.
+/// Width limits for form controls and sections on larger screens.
+/// From [fluent2RoomyFrom], a select or stepper can grow to
+/// [fluent2ControlMax]. Text fields and tables can span the form.
 library;
 
 import 'package:flutter/widgets.dart';

@@ -266,7 +266,10 @@ class _GalleryAppState extends State<GalleryApp> {
                       '$_page/$_preset/${_brightness.name}/${_direction.name}/'
                       '${custom.density.vertical}/${custom.brand?.name}',
                     ),
-                    child: page.build(_brightness),
+                    child: KitGalleryNavigator(
+                      navigator: Navigator.of(context),
+                      child: page.build(_brightness),
+                    ),
                   ),
                 ),
               ],

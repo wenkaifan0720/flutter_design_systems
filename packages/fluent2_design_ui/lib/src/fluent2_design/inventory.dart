@@ -67,7 +67,7 @@ const Map<String, double> fluent2InventoryHeights = {
 
 Widget _say(String words) => Center(child: Text(words));
 
-/// Fluent 2's inventory: every row of the shared component list, answered.
+/// Component names, availability, and live examples for the Fluent 2 gallery.
 final DesignInventory fluent2Inventory = DesignInventory(
   look: 'Fluent 2',
   entries: [
@@ -799,16 +799,14 @@ final DesignInventory fluent2Inventory = DesignInventory(
   ],
 );
 
-/// Fluent 2's inventory, listed: each group under its heading with how many of
-/// its rows the look carries, then each row in a card, its class and what a
-/// person calls it over its live specimen. It scrolls itself, so it fills a
-/// screen that does not scroll.
+/// A scrollable gallery of Fluent 2 components grouped by purpose.
+/// Each entry shows the widget name and a live example.
 ///
 /// ```dart
 /// Fluent2Scaffold(scroll: false, topBar: const Fluent2AppBar(title: 'Components'), body: const Fluent2InventoryGallery())
 /// ```
 class Fluent2InventoryGallery extends StatelessWidget {
-  /// The inventory, listed.
+  /// Creates a scrollable component gallery.
   const Fluent2InventoryGallery({
     super.key,
     this.controller,

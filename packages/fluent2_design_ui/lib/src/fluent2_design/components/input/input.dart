@@ -85,18 +85,14 @@ class _Editor extends StatelessWidget {
   }
 }
 
-/// Fluent 2's Input: one line of text in a field 32 tall (24 small, 40
-/// large) on the [appearance]'s face, the brand underline growing from
-/// its middle while it holds focus; a [prefixIcon] glyph and a
-/// [suffixIcon] glyph in the third ink, a [trailing] control at its
-/// end; [password] hides the words and puts the reveal button at the end.
-/// The page owns the text through [value] and [onChanged], or a
-/// [controller]; with neither it is disabled. Inside a `Fluent2FormField` it
-/// takes the field's label as its spoken name and its error stroke.
-/// [obscureText] and [validationMessage] are the names a generated app writes: [obscureText]
-/// is [password], and [validationMessage] is a
-/// validation line under the field (as a `Fluent2FormField`'s) with the error
-/// stroke.
+/// A single-line Fluent text field with a brand-colored focus underline.
+/// Manage its text with [value] and [onChanged], or supply a [controller].
+/// The field is disabled when neither a controller nor a callback is supplied.
+///
+/// Use [prefixIcon] and [suffixIcon] for decoration and [trailing] for an
+/// action. Set [password] to obscure the text and show a reveal button.
+/// [validationMessage] adds an error outline and a message below the field.
+/// Inside a `Fluent2FormField`, the parent supplies the label and validation.
 ///
 /// ```dart
 /// Fluent2TextField(label: 'Project name', hint: 'Northwind launch', value: name, onChanged: (v) => setState(() => name = v))
@@ -191,8 +187,8 @@ class Fluent2TextField extends StatefulWidget {
   /// Whether it takes focus when it first appears.
   final bool autofocus;
 
-  /// [password] by the generated app's name for it; with a [trailing]
-  /// control of the caller's (its own reveal), no second button is added.
+  /// Whether to obscure the text. A reveal button appears when [trailing]
+  /// is empty, so a caller can supply its own reveal control.
   final bool obscureText;
 
   /// A validation message under the field, which also draws the error

@@ -8,9 +8,7 @@ import 'package:ui_core/ui_core.dart';
 /// 2048 units (its OS/2 `sCapHeight` and head `unitsPerEm`).
 const double fluent2CapHeight = 1434 / 2048;
 
-/// Whether [fluent2CapCentred] centres by the capitals. A test turns it off
-/// to read the faces as they stood without it (the label sweep's counts
-/// before and after).
+/// Whether [fluent2CapCentred] aligns labels by their capital letters.
 @visibleForTesting
 bool debugFluent2CapCentring = true;
 

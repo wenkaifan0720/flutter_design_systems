@@ -34,6 +34,10 @@ Widget kitWordsScope(BuildContext context, Widget child) => kitArabic
     : child;
 
 const Map<String, String> _arabic = {
+  'Uploading Launch plan.docx': 'جارٍ رفع \u2066Launch plan.docx\u2069',
+  '3 of 5 files': '٣ من ٥ ملفات',
+  'Team storage': 'مساحة تخزين الفريق',
+  '9.4 GB of 10 GB used': 'المستخدم ٩٫٤ غيغابايت من أصل ١٠ غيغابايت',
   // Northwind: its roots and its people.
   'Northwind': 'نورثويند',
   'Home': 'الرئيسية',

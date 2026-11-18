@@ -42,22 +42,22 @@ Widget _progressRings() => kitRow(const [
 ]);
 
 /// An upload under way and the team's storage, each with its field.
-Widget kitSpecimenProgressBars() => const Column(
+Widget kitSpecimenProgressBars() => Column(
   mainAxisSize: MainAxisSize.min,
   crossAxisAlignment: CrossAxisAlignment.stretch,
   spacing: Fluent2Spacing.l,
   children: [
     Fluent2ProgressBar(
       value: 0.62,
-      label: 'Uploading Launch plan.docx',
-      hint: '3 of 5 files',
+      label: kitW('Uploading Launch plan.docx'),
+      hint: kitW('3 of 5 files'),
     ),
     Fluent2ProgressBar(
       value: 9.4,
       max: 10,
       thickness: Fluent2ProgressThickness.large,
-      label: 'Team storage',
-      hint: '9.4 GB of 10 GB used',
+      label: kitW('Team storage'),
+      hint: kitW('9.4 GB of 10 GB used'),
     ),
   ],
 );

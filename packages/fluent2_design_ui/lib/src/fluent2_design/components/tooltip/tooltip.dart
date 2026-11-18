@@ -36,11 +36,8 @@ enum Fluent2TooltipPosition {
   after,
 }
 
-/// The bubble a [Fluent2Tooltip] shows, drawn in place: Fluent's tooltip
-/// surface (at most 240 wide, 4 corners, 5 over and 7 under the words and
-/// 12 at the sides, caption1, `shadow8`) in its [appearance], with its 6
-/// arrow when [placement] says where. Plumbing of the tooltip; a specimen
-/// draws one alone.
+/// The bubble displayed by [Fluent2Tooltip]. Set [placement] to draw an
+/// arrow toward the control that owns the tooltip.
 ///
 /// ```dart
 /// Fluent2TooltipBubble(message: 'Share', appearance: Fluent2TooltipAppearance.inverted)

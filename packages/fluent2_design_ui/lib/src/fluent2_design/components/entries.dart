@@ -23,8 +23,9 @@ import 'input/input.dart';
 import 'pressable/pressable.dart';
 import 'raised.dart';
 
-/// Fluent's Input with its words hidden and the eye that shows them at its
-/// end. The eye keeps the keyboard in the field.
+/// A password field with a button to show or hide the entered text.
+///
+/// Tab moves from the field to the button. Space or Enter toggles visibility.
 ///
 /// ```dart
 /// Fluent2PasswordField(label: 'Password', onChanged: (v) => setState(() => password = v))
@@ -51,7 +52,7 @@ class Fluent2PasswordField extends StatelessWidget {
   /// The field's name.
   final String? label;
 
-  /// Its empty words.
+  /// Placeholder text shown when the field is empty.
   final String? hint;
 
   /// The text, when the page holds it with [onChanged].
@@ -63,10 +64,10 @@ class Fluent2PasswordField extends StatelessWidget {
   /// Its focus node.
   final FocusNode? focusNode;
 
-  /// Told each edit.
+  /// Called when the user edits the password.
   final ValueChanged<String>? onChanged;
 
-  /// Told the words on the keyboard's action.
+  /// Called when the user submits the password.
   final ValueChanged<String>? onSubmitted;
 
   /// Whether it takes focus when it first shows.
@@ -108,14 +109,12 @@ class Fluent2PasswordField extends StatelessWidget {
         appearance: appearance,
         size: size,
         obscureText: s.obscured,
-        trailing: ExcludeFocus(
-          child: Fluent2IconButton(
-            s.obscured ? Fluent2Icons.eye : Fluent2Icons.eyeOff,
-            label: s.toggleLabel,
-            size: Fluent2ButtonSize.small,
-            appearance: Fluent2ButtonAppearance.transparent,
-            onPressed: s.toggle,
-          ),
+        trailing: Fluent2IconButton(
+          s.obscured ? Fluent2Icons.eye : Fluent2Icons.eyeOff,
+          label: s.toggleLabel,
+          size: Fluent2ButtonSize.small,
+          appearance: Fluent2ButtonAppearance.transparent,
+          onPressed: onChanged != null || controller != null ? s.toggle : null,
         ),
       ),
     );
@@ -184,11 +183,10 @@ class Fluent2PasswordField extends StatelessWidget {
   }
 }
 
-/// A field with fixed words or glyphs at its ends (`https://`, `.com`): the
-/// [prefix] and [suffix] in the third ink, or [leading] and [trailing]
-/// controls, inside Fluent's field frame. A press anywhere on the frame
-/// focuses the field; the frame draws the underline while focus is anywhere
-/// inside.
+/// A text field with fixed [prefix] and [suffix] text or custom [leading]
+/// and [trailing] widgets. The contents follow the enclosing [Directionality].
+/// For a URL, wrap the group in a left-to-right [Directionality] so the
+/// scheme, hostname, and suffix stay in address order.
 ///
 /// ```dart
 /// Fluent2InputGroup(label: 'Website', prefix: 'https://', suffix: '.com', onChanged: setSite)

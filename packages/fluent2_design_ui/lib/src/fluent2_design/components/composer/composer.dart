@@ -21,19 +21,12 @@ enum Fluent2ComposerAppearance {
   assistant,
 }
 
-/// A message composer in the Fluent 2 family, a chat's compose box (Fluent
-/// ships none of its own): an outline field (the brand underline while it
-/// holds focus) whose text grows from one line to [maxLines] and then
-/// scrolls, the attach and emoji commands ([onAttach], [onEmoji]; hidden
-/// when null) and [actions] at its end (under the words, the send at the
-/// row's end, once a draft runs past one line beside them, as Teams moves
-/// them), then the send command, its glyph
-/// filled in the brand ink once there is a draft and disabled while
-/// there is none. [Fluent2ComposerAppearance.assistant] is an assistant's prompt
-/// box: 8 rounded, two lines at least, the commands on a row under the
-/// words and a brand-filled round send. Enter sends on a desktop
-/// (Shift+Enter breaks the line); a send clears the draft. Null [onSend]
-/// draws it disabled.
+/// A multiline message field with a send button and optional attachment,
+/// emoji, and custom actions. Enter sends on desktop and Shift+Enter
+/// inserts a new line. Sending clears the draft.
+///
+/// Set [onSend] to null to disable the composer. Use [hint] to explain
+/// why the user cannot send a message.
 ///
 /// ```dart
 /// Fluent2Composer(onSend: (text) => post(text), hint: 'Message Design team', onAttach: attach)
@@ -56,7 +49,7 @@ class Fluent2Composer extends StatefulWidget {
     super.key,
   });
 
-  /// Told the draft (trimmed) on a send; null disables the composer.
+  /// Called with the trimmed message when the user sends it.
   final ValueChanged<String>? onSend;
 
   /// {@template fluent2.textController}
@@ -64,7 +57,7 @@ class Fluent2Composer extends StatefulWidget {
   /// {@endtemplate}
   final TextEditingController? controller;
 
-  /// The empty words; null is "Type a message" in the app's language.
+  /// Placeholder text. Defaults to the localized equivalent of “Type a message”.
   final String? hint;
 
   /// The text field's spoken name; null is "Message" in the app's language.
@@ -79,7 +72,7 @@ class Fluent2Composer extends StatefulWidget {
   /// More commands before send (small subtle icon buttons).
   final List<Widget> actions;
 
-  /// Overrides its component theme and Fluent's own, slot by slot.
+  /// The message or assistant layout.
   final Fluent2ComposerAppearance style;
 
   /// The most lines the words grow to before they scroll.
@@ -217,13 +210,12 @@ class _Fluent2ComposerState extends State<Fluent2Composer> {
           live ? c.neutralForeground1 : c.neutralForegroundDisabled,
         ),
         hint: widget.hint ?? own.typeAMessage,
-        hintStyle: type.c(
-          live ? c.neutralForeground4 : c.neutralForegroundDisabled,
-        ),
-        // The hint keeps to the lines the field starts with: a long one
-        // ends in an ellipsis rather than growing an empty composer, or
-        // moving its commands under the words.
-        hintMaxLines: assistant ? 2 : 1,
+        hintStyle: type.c(live ? c.neutralForeground4 : c.neutralForeground2),
+        hintMaxLines: !live && widget.hint != null
+            ? widget.maxLines
+            : assistant
+            ? 2
+            : 1,
       ),
     );
     final field = !wide
