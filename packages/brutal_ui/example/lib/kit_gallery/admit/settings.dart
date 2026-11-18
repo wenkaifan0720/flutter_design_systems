@@ -17,6 +17,7 @@ class AdmitSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prefs = AdmitPrefs.of(context);
+    if (!prefs.signedIn) return const AdmitSignIn(title: 'Settings');
     final t = context.brutalTheme.textTheme;
     final c = context.brutalTheme.colors;
     return AdmitPage(
@@ -32,11 +33,8 @@ class AdmitSettings extends StatelessWidget {
             children: [
               Text('SIGNED IN AS', style: t.caption.copyWith(color: c.onBlock)),
               const SizedBox(height: BrutalSpacing.small),
-              Text(
-                admitOwner.name,
-                style: t.headline.copyWith(color: c.onBlock),
-              ),
-              Text(admitOwner.email, style: t.body.copyWith(color: c.onBlock)),
+              Text(prefs.name, style: t.headline.copyWith(color: c.onBlock)),
+              Text(prefs.email, style: t.body.copyWith(color: c.onBlock)),
             ],
           ),
         ),
@@ -53,7 +51,7 @@ class AdmitSettings extends StatelessWidget {
             BrutalListTile(
               leading: const Icon(LucideIcons.creditCard),
               title: 'Payment',
-              subtitle: 'Card ending ${admitOwner.card}',
+              subtitle: 'Card ending ${prefs.cardEnding}',
               onTap: () =>
                   AdmitFrame.of(context).push(const AdmitPaymentPage()),
             ),
@@ -152,13 +150,13 @@ class AdmitSettings extends StatelessWidget {
   }
 
   static Future<void> _signOut(BuildContext context) async {
+    final email = AdmitPrefs.of(context).email;
     final sure = await showBrutalDialog<bool>(
       context: context,
       builder: (context) => BrutalDialog(
         title: 'Sign out?',
         content: Text(
-          'Your tickets stay with ${admitOwner.email}; sign in again to '
-          'see them on this device.',
+          'Your tickets stay with $email. Sign in again to see them on this device.',
         ),
         actions: [
           BrutalDialogAction(
@@ -175,6 +173,7 @@ class AdmitSettings extends StatelessWidget {
       ),
     );
     if (sure != true || !context.mounted) return;
+    AdmitFrame.of(context).signOut();
     showBrutalToast(context, 'Signed out on this device.');
   }
 
@@ -195,8 +194,17 @@ class AdmitAccountPage extends StatefulWidget {
 }
 
 class _AdmitAccountPageState extends State<AdmitAccountPage> {
-  final _name = TextEditingController(text: admitOwner.name);
-  final _email = TextEditingController(text: admitOwner.email);
+  late final TextEditingController _name;
+  late final TextEditingController _email;
+  bool _submitted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final account = AdmitPrefs.read(context);
+    _name = TextEditingController(text: account.name);
+    _email = TextEditingController(text: account.email);
+  }
 
   @override
   void dispose() {
@@ -206,6 +214,14 @@ class _AdmitAccountPageState extends State<AdmitAccountPage> {
   }
 
   void _save() {
+    if (_name.text.trim().isEmpty || !admitValidEmail(_email.text)) {
+      setState(() => _submitted = true);
+      return;
+    }
+    AdmitPrefs.of(context).update((account) {
+      account.name = _name.text.trim();
+      account.email = _email.text.trim();
+    });
     final frame = AdmitFrame.of(context);
     Navigator.of(context).maybePop();
     showBrutalToast(frame.context, 'Name and email saved.');
@@ -220,6 +236,12 @@ class _AdmitAccountPageState extends State<AdmitAccountPage> {
         BrutalTextField(
           controller: _name,
           label: 'Name',
+          error: _submitted && _name.text.trim().isEmpty
+              ? 'Enter your name.'
+              : null,
+          onChanged: (_) {
+            if (_submitted) setState(() {});
+          },
           textCapitalization: TextCapitalization.words,
           autofillHints: const [AutofillHints.name],
         ),
@@ -227,6 +249,12 @@ class _AdmitAccountPageState extends State<AdmitAccountPage> {
         BrutalTextField(
           controller: _email,
           label: 'Email',
+          error: _submitted && !admitValidEmail(_email.text)
+              ? 'Enter a valid email address.'
+              : null,
+          onChanged: (_) {
+            if (_submitted) setState(() {});
+          },
           helper: 'Tickets and receipts go here.',
           keyboardType: TextInputType.emailAddress,
           autofillHints: const [AutofillHints.email],
@@ -259,11 +287,16 @@ class _AdmitPaymentPageState extends State<AdmitPaymentPage> {
   }
 
   bool get _complete =>
-      _card.text.replaceAll(' ', '').length >= 12 &&
-      _expiry.text.length >= 4 &&
-      _code.text.length >= 3;
+      admitValidCard(_card.text) &&
+      admitValidExpiry(_expiry.text) &&
+      admitValidSecurityCode(_code.text);
 
   void _save() {
+    final digits = _card.text.replaceAll(RegExp('[ -]'), '');
+    AdmitPrefs.of(context).update((account) {
+      account.cardEnding = digits.substring(digits.length - 4);
+      account.expiry = _expiry.text.trim();
+    });
     final frame = AdmitFrame.of(context);
     Navigator.of(context).maybePop();
     showBrutalToast(frame.context, 'New card saved.');
@@ -271,6 +304,7 @@ class _AdmitPaymentPageState extends State<AdmitPaymentPage> {
 
   @override
   Widget build(BuildContext context) {
+    final account = AdmitPrefs.of(context);
     void changed(String _) => setState(() {});
     final expiry = BrutalTextField(
       controller: _expiry,
@@ -301,8 +335,8 @@ class _AdmitPaymentPageState extends State<AdmitPaymentPage> {
           children: [
             BrutalListTile(
               leading: const Icon(LucideIcons.creditCard),
-              title: 'Card ending ${admitOwner.card}',
-              subtitle: 'Expires 08/28',
+              title: 'Card ending ${account.cardEnding}',
+              subtitle: 'Expires ${account.expiry}',
             ),
           ],
         ),

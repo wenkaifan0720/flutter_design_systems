@@ -2,11 +2,10 @@
 /// and the question before cancelling one.
 library;
 
-import 'dart:math' as math;
-
 import 'package:material_ui/material_ui.dart';
 import 'package:brutal_ui/brutal_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:qr/qr.dart';
 
 import 'admit.dart';
 import 'data.dart';
@@ -31,11 +30,14 @@ class _AdmitTicketsState extends State<AdmitTickets> {
   @override
   Widget build(BuildContext context) {
     final frame = AdmitFrame.of(context);
+    final account = AdmitPrefs.of(context);
+    if (!account.signedIn) return const AdmitSignIn(title: 'Tickets');
+    final upcoming = account.upcoming;
     // On a desk the list stands beside the chosen ticket, as Events stands
     // beside its event; below it a ticket opens over the list.
     final split = MediaQuery.sizeOf(context).width >= AdmitHome.deskWidth;
-    final open = split && admitHeld.isNotEmpty
-        ? (admitHeld.contains(_open) ? _open! : admitHeld.first)
+    final open = split && upcoming.isNotEmpty
+        ? (upcoming.contains(_open) ? _open! : upcoming.first)
         : null;
     final list = AdmitPage(
       title: 'Tickets',
@@ -46,10 +48,15 @@ class _AdmitTicketsState extends State<AdmitTickets> {
           onSelected: (i) => setState(() => _tab = i),
         ),
         const SizedBox(height: BrutalSpacing.large),
-        if (_tab == 0)
+        if (_tab == 0 && upcoming.isEmpty)
+          Text(
+            'No upcoming tickets.',
+            style: context.brutalTheme.textTheme.body,
+          )
+        else if (_tab == 0)
           BrutalListGroup(
             children: [
-              for (final held in admitHeld)
+              for (final held in upcoming)
                 Builder(
                   builder: (context) {
                     final e = admitEvent(held.eventId);
@@ -58,7 +65,7 @@ class _AdmitTicketsState extends State<AdmitTickets> {
                       title: e.title,
                       subtitle:
                           '${admitDay(e.starts)}, ${admitTime(e.starts)} · '
-                          '${held.count} × ${held.type}',
+                          '${held.description}',
                       selected: identical(held, open),
                       onTap: split
                           ? () => setState(() => _open = held)
@@ -131,7 +138,8 @@ class _AdmitTicketPageState extends State<AdmitTicketPage> {
 
   Future<void> _cancel() async {
     final e = admitEvent(widget.held.eventId);
-    final total = widget.held.count * widget.held.eachCents;
+    final held = widget.held;
+    final total = held.subtotal;
     final sure = await showBrutalDialog<bool>(
       context: context,
       builder: (context) => BrutalDialog(
@@ -139,9 +147,8 @@ class _AdmitTicketPageState extends State<AdmitTicketPage> {
             'Cancel ${widget.held.count == 1 ? 'this ticket' : 'these tickets'}?',
         content: Text(
           '${e.title}, ${admitDay(e.starts)}. '
-          '${widget.held.count} × ${widget.held.type} go back on sale and '
-          '${admitMoney(total)} comes back to your card ending '
-          '${admitOwner.card} in 3 to 5 days.',
+          '${held.description} ${held.count == 1 ? 'goes' : 'go'} back on sale'
+          '${total == 0 ? '.' : ' and ${admitMoney(total)} comes back to your card ending ${held.cardEnding} in 3 to 5 days.'}',
         ),
         actions: [
           BrutalDialogAction(
@@ -159,13 +166,20 @@ class _AdmitTicketPageState extends State<AdmitTicketPage> {
     );
     if (sure != true || !mounted) return;
     final frame = AdmitFrame.of(context);
-    Navigator.of(context).maybePop();
+    final account = AdmitPrefs.of(context);
+    final index = account.upcoming.indexOf(held);
+    if (!account.signedIn || index < 0) return;
+    account.cancel(held);
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    frame.go(AdmitPlace.tickets);
     showBrutalToast(
       frame.context,
-      '${e.title}: ${admitMoney(total)} is on its way back.',
+      total == 0
+          ? '${e.title} tickets released.'
+          : '${e.title}: ${admitMoney(total)} is on its way back.',
       title: 'Tickets cancelled',
       actionLabel: 'Undo',
-      onAction: () {},
+      onAction: () => account.restore(held, index),
     );
   }
 
@@ -175,6 +189,14 @@ class _AdmitTicketPageState extends State<AdmitTicketPage> {
     final t = theme.textTheme;
     final c = theme.colors;
     final held = widget.held;
+    final account = AdmitPrefs.of(context);
+    if (!account.signedIn) return const AdmitSignIn(title: 'Ticket');
+    if (!account.upcoming.contains(held)) {
+      return const AdmitPage(
+        title: 'Ticket',
+        children: [Text('This order was cancelled.')],
+      );
+    }
     final e = admitEvent(held.eventId);
     return AdmitPage(
       title: 'Ticket',
@@ -195,7 +217,7 @@ class _AdmitTicketPageState extends State<AdmitTicketPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                '${held.count} × ${held.type.toUpperCase()}',
+                held.description.toUpperCase(),
                 style: t.caption.copyWith(color: c.onBlock),
               ),
               const SizedBox(height: BrutalSpacing.medium),
@@ -239,9 +261,17 @@ class _AdmitTicketPageState extends State<AdmitTicketPage> {
             ),
             BrutalListTile(
               leading: const Icon(LucideIcons.receiptEuro),
-              title:
-                  'Paid ${admitMoney(held.count * held.eachCents + admitFee(held.count, held.eachCents))}',
-              subtitle: 'Card ending ${admitOwner.card}',
+              title: held.total == 0
+                  ? 'Free ticket'
+                  : 'Paid ${admitMoney(held.total)}',
+              subtitle: held.total == 0
+                  ? null
+                  : 'Card ending ${held.cardEnding}',
+            ),
+            BrutalListTile(
+              leading: const Icon(LucideIcons.mail),
+              title: 'Ticket recipient',
+              subtitle: held.recipient,
             ),
           ],
         ),
@@ -259,47 +289,36 @@ class _AdmitTicketPageState extends State<AdmitTicketPage> {
   }
 }
 
-/// A square grid of modules seeded by the order number, with the three
-/// corner marks a door scanner looks for: a picture of a code, drawn for the
-/// example.
+/// The order identifier, encoded with a four-module quiet zone on each side.
 class _CodePainter extends CustomPainter {
-  _CodePainter(this.seed);
+  _CodePainter(this.order);
 
-  final String seed;
+  final String order;
+  late final _code = QrImage(
+    QrCode.fromData(data: order, errorCorrectLevel: QrErrorCorrectLevel.M),
+  );
 
   @override
   void paint(Canvas canvas, Size size) {
-    const n = 25;
-    final m = size.shortestSide / n;
-    final ink = Paint()..color = const Color(0xFF000000);
-    final random = math.Random(
-      seed.codeUnits.fold<int>(7, (a, b) => (a * 31 + b) & 0x7fffffff),
-    );
-    bool corner(int x, int y) =>
-        (x < 8 && y < 8) || (x >= n - 8 && y < 8) || (x < 8 && y >= n - 8);
-    for (var y = 0; y < n; y++) {
-      for (var x = 0; x < n; x++) {
-        if (corner(x, y)) continue;
-        if (random.nextBool()) {
-          canvas.drawRect(Rect.fromLTWH(x * m, y * m, m, m), ink);
+    final modules = _code.moduleCount;
+    final cell = size.shortestSide / (modules + 8);
+    final left = (size.width - cell * modules) / 2;
+    final top = (size.height - cell * modules) / 2;
+    final ink = Paint()
+      ..color = const Color(0xFF000000)
+      ..isAntiAlias = false;
+    for (var row = 0; row < modules; row++) {
+      for (var column = 0; column < modules; column++) {
+        if (_code.isDark(row, column)) {
+          canvas.drawRect(
+            Rect.fromLTWH(left + column * cell, top + row * cell, cell, cell),
+            ink,
+          );
         }
       }
     }
-    void finder(double ox, double oy) {
-      canvas
-        ..drawRect(Rect.fromLTWH(ox, oy, 7 * m, 7 * m), ink)
-        ..drawRect(
-          Rect.fromLTWH(ox + m, oy + m, 5 * m, 5 * m),
-          Paint()..color = const Color(0xFFFFFFFF),
-        )
-        ..drawRect(Rect.fromLTWH(ox + 2 * m, oy + 2 * m, 3 * m, 3 * m), ink);
-    }
-
-    finder(0, 0);
-    finder((n - 7) * m, 0);
-    finder(0, (n - 7) * m);
   }
 
   @override
-  bool shouldRepaint(_CodePainter old) => old.seed != seed;
+  bool shouldRepaint(_CodePainter old) => old.order != order;
 }

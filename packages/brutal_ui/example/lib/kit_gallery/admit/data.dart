@@ -160,33 +160,52 @@ final List<AdmitEvent> admitEvents = [
 /// The event called [id].
 AdmitEvent admitEvent(String id) => admitEvents.firstWhere((e) => e.id == id);
 
-/// A held ticket: an order for one event.
-typedef AdmitHeld = ({
-  String order,
-  String eventId,
-  String type,
-  int count,
-  int eachCents,
-  bool past,
-});
+/// The ticket types, quantities and payment recorded on one order.
+class AdmitHeld {
+  const AdmitHeld({
+    required this.order,
+    required this.eventId,
+    required this.counts,
+    required this.cardEnding,
+    this.recipient = 'ada.park@example.com',
+  });
 
-/// The tickets the owner holds, upcoming then past.
-final List<AdmitHeld> admitHeld = [
-  (
+  final String order;
+  final String eventId;
+  final Map<String, int> counts;
+  final String cardEnding;
+  final String recipient;
+
+  int get count => counts.values.fold(0, (a, b) => a + b);
+
+  String get description =>
+      counts.entries.map((line) => '${line.value} × ${line.key}').join(', ');
+
+  int get subtotal =>
+      admitEvent(eventId).types
+          .fold(0, (sum, type) => sum + (counts[type.name] ?? 0) * type.cents);
+
+  int get total =>
+      subtotal +
+      admitEvent(eventId).types.fold<int>(
+        0,
+        (sum, type) => sum + admitFee(counts[type.name] ?? 0, type.cents),
+      );
+}
+
+/// The two orders already in the demo account when Admit opens.
+const admitSampleOrders = [
+  AdmitHeld(
     order: 'A-2291',
     eventId: 'short-film-night',
-    type: 'General',
-    count: 1,
-    eachCents: 1200,
-    past: false,
+    counts: {'General': 1},
+    cardEnding: '4417',
   ),
-  (
+  AdmitHeld(
     order: 'A-2318',
     eventId: 'low-tide',
-    type: 'Standing',
-    count: 2,
-    eachCents: 3200,
-    past: false,
+    counts: {'Standing': 2},
+    cardEnding: '4417',
   ),
 ];
 
@@ -219,6 +238,42 @@ const admitOwner = (
   email: 'ada.park@example.com',
   card: '4417',
 );
+
+/// Whether an address can receive the example's ticket receipt.
+bool admitValidEmail(String value) =>
+    RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(value.trim());
+
+/// Checks the length and checksum of an entered payment card number.
+bool admitValidCard(String value) {
+  final digits = value.replaceAll(RegExp(r'[ -]'), '');
+  if (!RegExp(r'^[0-9]{13,19}$').hasMatch(digits)) return false;
+  var sum = 0;
+  for (var i = 0; i < digits.length; i++) {
+    var digit = digits.codeUnitAt(digits.length - 1 - i) - 48;
+    if (i.isOdd) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+  }
+  return sum > 0 && sum % 10 == 0;
+}
+
+/// Whether an MM/YY expiry is still valid, including its last month.
+bool admitValidExpiry(String value) {
+  final match = RegExp(r'^(0[1-9]|1[0-2])/([0-9]{2})$')
+      .firstMatch(value.trim());
+  if (match == null) return false;
+  final monthAfter = DateTime(
+    2000 + int.parse(match[2]!),
+    int.parse(match[1]!) + 1,
+  );
+  return DateTime.now().isBefore(monthAfter);
+}
+
+/// The three digits printed on the back of a card.
+bool admitValidSecurityCode(String value) =>
+    RegExp(r'^[0-9]{3}$').hasMatch(value);
 
 const _days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const _months = [

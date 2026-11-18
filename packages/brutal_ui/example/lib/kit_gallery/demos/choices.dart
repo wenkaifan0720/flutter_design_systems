@@ -31,13 +31,21 @@ class _ChoicesState extends State<_Choices> {
   @override
   Widget build(BuildContext context) {
     final t = context.brutalTheme.textTheme;
-    Widget line(Widget control, String words) => Row(
-      children: [
-        control,
-        const SizedBox(width: BrutalSpacing.medium),
-        Expanded(child: Text(words, style: t.body)),
-      ],
-    );
+    Widget line(Widget control, String words, [VoidCallback? onTap]) =>
+        GestureDetector(
+          onTap: onTap,
+          excludeFromSemantics: true,
+          behavior: HitTestBehavior.opaque,
+          child: Row(
+            children: [
+              control,
+              const SizedBox(width: BrutalSpacing.medium),
+              Expanded(
+                child: ExcludeSemantics(child: Text(words, style: t.body)),
+              ),
+            ],
+          ),
+        );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -53,6 +61,7 @@ class _ChoicesState extends State<_Choices> {
                 semanticLabel: 'I agree to the terms',
               ),
               'I agree to the terms',
+              () => setState(() => _terms = !_terms),
             ),
             line(
               BrutalCheckbox(
@@ -61,6 +70,7 @@ class _ChoicesState extends State<_Choices> {
                 semanticLabel: 'Send me the weekly listings',
               ),
               'Send me the weekly listings',
+              () => setState(() => _news = !_news),
             ),
             line(
               const BrutalCheckbox(
@@ -94,6 +104,7 @@ class _ChoicesState extends State<_Choices> {
                   semanticLabel: label,
                 ),
                 label,
+                v == 'invoice' ? null : () => setState(() => _pay = v),
               ),
           ],
         ),
@@ -110,6 +121,7 @@ class _ChoicesState extends State<_Choices> {
                 semanticLabel: 'Reminders',
               ),
               'Reminders',
+              () => setState(() => _remind = !_remind),
             ),
             line(
               BrutalSwitch(
@@ -118,6 +130,7 @@ class _ChoicesState extends State<_Choices> {
                 semanticLabel: 'Sounds',
               ),
               'Sounds',
+              () => setState(() => _sound = !_sound),
             ),
             line(
               const BrutalSwitch(

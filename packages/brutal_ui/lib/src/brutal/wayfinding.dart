@@ -11,6 +11,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'actions.dart';
+import 'lists.dart';
 import 'menu.dart';
 import 'surface.dart';
 import 'text_field.dart';
@@ -426,6 +427,7 @@ class BrutalStepProgress extends StatelessWidget {
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.stepProgressStyle], const {});
     final rule = layered.side?.color ?? layered.edge ?? c.ink;
+    if (steps.isEmpty) return const SizedBox.shrink();
     return Semantics(
       container: true,
       label: 'Step ${(current + 1).clamp(1, steps.length)} of ${steps.length}',
@@ -435,32 +437,77 @@ class BrutalStepProgress extends StatelessWidget {
           border: rule,
           foreground: c.ink,
         ),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final (i, step) in steps.indexed) ...[
-                if (i > 0)
-                  SizedBox(
-                    width: theme.borderWidth,
-                    child: ColoredBox(color: rule),
-                  ),
-                Expanded(child: _step(context, theme, layered, i, step)),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final direction = Directionality.of(context);
+            final padding =
+                layered.padding(direction)?.horizontal ??
+                2 * BrutalSpacing.medium;
+            final width =
+                (constraints.maxWidth -
+                        theme.borderWidth * (steps.length - 1)) /
+                    steps.length -
+                padding;
+            final painter = TextPainter(
+              textDirection: direction,
+              textScaler: MediaQuery.textScalerOf(context),
+            );
+            final stack = steps.indexed.any((entry) {
+              painter.text = TextSpan(
+                text: entry.$2,
+                style: _nameStyle(theme, layered, entry.$1 == current),
+              );
+              painter.layout();
+              return painter.width > width;
+            });
+            painter.dispose();
+            final cells = <Widget>[
+              for (final (i, name) in steps.indexed) ...[
+                if (i > 0) BrutalRule(vertical: !stack, color: rule),
+                if (stack)
+                  _step(context, theme, layered, i, name, stacked: true)
+                else
+                  Expanded(child: _step(context, theme, layered, i, name)),
               ],
-            ],
-          ),
+            ];
+            if (stack) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: cells,
+              );
+            }
+            return IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: cells,
+              ),
+            );
+          },
         ),
       ),
     );
   }
+
+  TextStyle _nameStyle(
+    BrutalThemeData theme,
+    DesignStyleOf layered,
+    bool current,
+  ) => layered.text(
+    theme.textTheme.label.copyWith(
+      fontSize: 14,
+      height: 20 / 14,
+      fontWeight: current ? FontWeight.w700 : FontWeight.w600,
+    ),
+  );
 
   Widget _step(
     BuildContext context,
     BrutalThemeData theme,
     DesignStyleOf layered,
     int i,
-    String name,
-  ) {
+    String name, {
+    bool stacked = false,
+  }) {
     final c = theme.colors;
     final done = i < current;
     final now = i == current;
@@ -469,6 +516,23 @@ class BrutalStepProgress extends StatelessWidget {
         : now
         ? (layered.foreground ?? c.ink)
         : c.inkMuted;
+    final number = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '${i + 1}'.padLeft(2, '0'),
+          style: theme.textTheme.caption.copyWith(color: ink),
+        ),
+        if (done) ...[
+          const SizedBox(width: BrutalSpacing.tight),
+          Icon(LucideIcons.check, size: 14, color: ink),
+        ],
+      ],
+    );
+    final label = Text(
+      name,
+      style: _nameStyle(theme, layered, now).copyWith(color: ink),
+    );
     return Semantics(
       label:
           '$name, ${done
@@ -490,38 +554,22 @@ class BrutalStepProgress extends StatelessWidget {
                     BrutalSpacing.medium,
                     BrutalSpacing.medium,
                   ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        '${i + 1}'.padLeft(2, '0'),
-                        style: theme.textTheme.caption.copyWith(color: ink),
-                      ),
-                      if (done) ...[
-                        const SizedBox(width: BrutalSpacing.tight),
-                        Icon(LucideIcons.check, size: 14, color: ink),
+              child: stacked
+                  ? Row(
+                      children: [
+                        number,
+                        const SizedBox(width: BrutalSpacing.medium),
+                        Expanded(child: label),
                       ],
-                    ],
-                  ),
-                  const SizedBox(height: BrutalSpacing.tight),
-                  Text(
-                    name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: layered
-                        .text(
-                          theme.textTheme.label.copyWith(
-                            fontSize: 14,
-                            height: 20 / 14,
-                            fontWeight: now ? FontWeight.w700 : FontWeight.w600,
-                          ),
-                        )
-                        .copyWith(color: ink),
-                  ),
-                ],
-              ),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        number,
+                        const SizedBox(height: BrutalSpacing.tight),
+                        label,
+                      ],
+                    ),
             ),
             if (now)
               Positioned(

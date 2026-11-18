@@ -309,7 +309,7 @@ class BrutalAppBar extends StatelessWidget implements PreferredSizeWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              row,
+              if (large) Flexible(child: row) else row,
               if (large)
                 Padding(
                   padding: EdgeInsetsDirectional.only(
@@ -319,8 +319,10 @@ class BrutalAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                   child: Semantics(
                     header: true,
-                    child: SizedBox(
-                      height: 56 - BrutalSpacing.medium,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: 56 - BrutalSpacing.medium,
+                      ),
                       child: Align(
                         alignment: AlignmentDirectional.bottomStart,
                         child: Text(
@@ -1271,18 +1273,21 @@ class _BrutalTabBarState extends State<BrutalTabBar>
                       constraints: BoxConstraints(minWidth: boldRoom(i)),
                       child: Center(
                         widthFactor: 1,
-                        child: DesignCapCenter(
-                          capHeightFactor: theme.capHeightFactor,
-                          child: Text(
-                            tabs[i],
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: layered.text(
-                              theme.textTheme.label.copyWith(
-                                color: words,
-                                fontWeight: chosen
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: DesignCapCenter(
+                            capHeightFactor: theme.capHeightFactor,
+                            child: Text(
+                              tabs[i],
+                              maxLines: 1,
+                              softWrap: false,
+                              style: layered.text(
+                                theme.textTheme.label.copyWith(
+                                  color: words,
+                                  fontWeight: chosen
+                                      ? FontWeight.w700
+                                      : FontWeight.w500,
+                                ),
                               ),
                             ),
                           ),

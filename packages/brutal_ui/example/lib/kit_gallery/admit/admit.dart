@@ -54,7 +54,7 @@ enum AdmitScene {
 /// How the app is lit.
 enum AdmitAppearance { light, dark, system }
 
-/// What Settings sets for the whole app.
+/// Appearance, account details and ticket orders for this demo session.
 class AdmitPrefs extends ChangeNotifier {
   /// Prefs as given.
   AdmitPrefs({
@@ -80,6 +80,48 @@ class AdmitPrefs extends ChangeNotifier {
 
   /// Sounds on the door scanner's beep, in the app.
   bool sounds = false;
+
+  /// Account details and orders for this demo session.
+  String name = admitOwner.name;
+  String email = admitOwner.email;
+  String cardEnding = admitOwner.card;
+  String expiry = '08/28';
+  bool signedIn = true;
+  final upcoming = [...admitSampleOrders];
+  int _nextOrder = 2319;
+
+  void book(
+    AdmitEvent event,
+    Map<String, int> counts, {
+    required String cardEnding,
+    required String recipient,
+  }) {
+    final order = AdmitHeld(
+      order: 'A-${_nextOrder++}',
+      eventId: event.id,
+      counts: Map.unmodifiable(
+        Map.fromEntries(counts.entries.where((line) => line.value > 0)),
+      ),
+      cardEnding: cardEnding,
+      recipient: recipient,
+    );
+    upcoming.insert(0, order);
+    notifyListeners();
+  }
+
+  void cancel(AdmitHeld order) {
+    if (upcoming.remove(order)) notifyListeners();
+  }
+
+  void restore(AdmitHeld order, int index) {
+    if (!signedIn || upcoming.contains(order)) return;
+    upcoming.insert(index.clamp(0, upcoming.length), order);
+    notifyListeners();
+  }
+
+  /// Reads initial values for a form without subscribing during initState.
+  static AdmitPrefs read(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<_AdmitScope>()!.notifier!;
 
   /// Changes the prefs and tells the app.
   void update(void Function(AdmitPrefs prefs) change) {
@@ -300,9 +342,11 @@ class AdmitFrameState extends State<AdmitFrame> {
               ),
             );
           case AdmitScene.ticket:
-            if (!desk) push(AdmitTicketPage(held: admitHeld.last));
+            if (!desk) push(AdmitTicketPage(held: admitSampleOrders.last));
           case AdmitScene.cancel:
-            push(AdmitTicketPage(held: admitHeld.last, askCancel: true));
+            push(
+              AdmitTicketPage(held: admitSampleOrders.last, askCancel: true),
+            );
           case AdmitScene.filter:
             break;
           case AdmitScene.search:
@@ -354,6 +398,14 @@ class AdmitFrameState extends State<AdmitFrame> {
     _scene = null;
   });
 
+  /// Ends the session and closes any open account or ticket detail.
+  void signOut() {
+    Navigator.of(context).popUntil((r) => r.isFirst);
+    _desk.currentState?.popUntil((r) => r.isFirst);
+    AdmitPrefs.of(context).update((p) => p.signedIn = false);
+    go(AdmitPlace.settings);
+  }
+
   static const _places = [
     BrutalDestination(icon: LucideIcons.square, label: 'Brutal'),
     BrutalDestination(icon: LucideIcons.house, label: 'Home'),
@@ -365,6 +417,7 @@ class AdmitFrameState extends State<AdmitFrame> {
   @override
   Widget build(BuildContext context) {
     final theme = context.brutalTheme;
+    final prefs = AdmitPrefs.of(context);
     final page = switch (_place) {
       AdmitPlace.overview => AdmitOverview(parts: widget.parts),
       AdmitPlace.home => const AdmitHome(),
@@ -373,7 +426,7 @@ class AdmitFrameState extends State<AdmitFrame> {
         openFirst: _scene == AdmitScene.event,
       ),
       AdmitPlace.tickets => AdmitTickets(
-        open: _scene == AdmitScene.ticket ? admitHeld.last : null,
+        open: _scene == AdmitScene.ticket ? admitSampleOrders.last : null,
       ),
       AdmitPlace.settings => const AdmitSettings(),
     };
@@ -386,8 +439,8 @@ class AdmitFrameState extends State<AdmitFrame> {
         style: theme.textTheme.title,
       ),
       sideFooter: BrutalListTile(
-        title: admitOwner.name,
-        subtitle: admitOwner.email,
+        title: prefs.signedIn ? prefs.name : 'Sign in',
+        subtitle: prefs.signedIn ? prefs.email : null,
         onTap: () => go(AdmitPlace.settings),
       ),
       body: wide
@@ -406,6 +459,33 @@ class AdmitFrameState extends State<AdmitFrame> {
           : KeyedSubtree(key: ValueKey(_place), child: page),
     );
   }
+}
+
+/// Opens the example account after an explicit sign-in.
+class AdmitSignIn extends StatelessWidget {
+  const AdmitSignIn({super.key, required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => AdmitPage(
+    title: title,
+    children: [
+      Text(
+        'Sign in to the Admit demo account to see your tickets and account details.',
+        style: context.brutalTheme.textTheme.body,
+      ),
+      const SizedBox(height: BrutalSpacing.large),
+      Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: BrutalButton.filled(
+          'Sign in',
+          onPressed: () =>
+              AdmitPrefs.of(context).update((p) => p.signedIn = true),
+        ),
+      ),
+    ],
+  );
 }
 
 /// One of Admit's pages: its top bar, then its content down one column that

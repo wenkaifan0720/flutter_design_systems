@@ -1,3 +1,16 @@
+## 0.2.1
+
+- Calendar popovers scroll when the available height is short. The last day of the month stays reachable at large text sizes.
+- Step progress displays the steps in a vertical list when their names would be cut off.
+- Line, area and bar charts scale the axis labels with the system text size. Category labels stay within the frame and leave space between neighbouring labels.
+- Large app bar titles use the available height above the bottom rule. Equal-width tabs and segments keep their full labels when text is enlarged.
+- The stepper's number cell fits its widest value at the current text size, and its step cells match its height. Date fields wrap a long date onto a second line instead of cutting it off.
+- In Admit, event dates keep both day digits together, the English event count reads in order in right-to-left layouts, and the purchase footer stacks when its price and button cannot share a line.
+- In the selection gallery, tapping a checkbox, radio or switch label activates its control.
+- Admit validates checkout details and brings the first field that needs attention into view. The saved card is shown by its last four digits.
+- Purchased tickets appear in Upcoming with their quantities, prices and a scannable order code. Cancelling removes the order and its code. Undo restores it.
+- Account edits carry through to checkout. Signing out hides the account and its tickets until the demo account is opened again.
+
 ## 0.2.0
 
 Built on ui_core 0.3.0. Brutal's tooltip, menus, dialog, sheets, tab bar, places, wheels, stepper, rating and chart
@@ -57,16 +70,7 @@ part for a `StatefulWidget` or a `StatelessWidget`.
 - `BrutalKbd.shortcut(activator)` prints a keyboard shortcut's keys in the platform's order and the reader's words,
   and `BrutalMenuItem.activator` shows one at a menu row's end (`⌘S` on a Mac, `Ctrl+S` elsewhere).
 
-### The package page
-
-- The description is one sentence (148 characters; it was 181, past pub.dev's bound). The homepage is the live
-  gallery, the issues are linked, the topics add `neobrutalism`, and the page shows six screenshots of Admit by day
-  and by night, on a desk and a phone. The README opens on the gallery, the API reference and every look.
-
-### Development
-
-- The review checks come from `package:ui_core_test` (a dev dependency, 0.1.0), where ui_core 0.3.0 moved them.
-- `dart doc` reports no warnings: the host library is the documented home of its names.
+The package gallery includes six screenshots of the Admit example on desktop and mobile.
 
 ## 0.1.1
 
@@ -85,8 +89,6 @@ Needs ui_core 0.2.1.
   `LocalizationsDelegate<BrutalLocalizations>`.
 - From ui_core 0.2.1: a menu or popover its anchor opened gives the focus back to the anchor as it closes, and Home and
   End in a list keep the row they reach in view.
-- The tests run in tiers. `flutter test --exclude-tags goldens,sweep` is the everyday run and keeps a case of every
-  matrix; `flutter test` runs every tier.
 
 ## 0.1.0
 

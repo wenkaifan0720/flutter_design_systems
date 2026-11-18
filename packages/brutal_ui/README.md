@@ -1,11 +1,12 @@
 # brutal_ui
 
-A neo-brutalist Flutter design system: heavy black rules, square corners, a hard shadow under what you can press and one
-flat colour block a screen. Plain on the surface, exact underneath: everything sits on one 4 px grid and one 2 px rule.
+A neo-brutalist Flutter design system with square controls, a 4-pixel grid, 2-pixel borders and hard shadows. It includes adaptive navigation, accessible forms, data displays and light and dark themes.
 
 ![Admit, a ticketing app on Brutal, at 1440 px by day beside the same app on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/brutal_ui/screenshots/hero_admit.png)
 
 **[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/brutal/)** · [API reference](https://pub.dev/documentation/brutal_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
+
+The gallery includes Admit, a ticketing demo. Try checkout with the saved demo card and any three-digit security code. Bookings, cancellations and account edits last for the current gallery session.
 
 ## Install
 
@@ -18,9 +19,7 @@ deprecates `package:flutter/material.dart` for it.
 
 ## Use
 
-`BrutalTheme` is the install. Put it in your app's `builder:`, under a `MaterialApp`, a `CupertinoApp` or a
-`WidgetsApp`; Brutal has no app widget of its own. On a `MaterialApp`, give its theme `brutalPageTransitions` too, so
-its pages change in Brutal's way.
+Place `BrutalTheme` in the app’s `builder` so routes and overlays inherit the theme. It supports `MaterialApp`, `CupertinoApp` and `WidgetsApp`. Use `brutalPageTransitions` in the Material theme to apply the same transition to pushed routes.
 
 ```dart
 import 'package:brutal_ui/brutal_ui.dart';
@@ -46,9 +45,7 @@ Future<void> main() async {
 
 `brutalLoadFonts()` loads the face before the first frame, so the web never shows a fallback.
 
-An app with places can take the frame whole: `BrutalHost` in the `builder:` (the theme by day and night, the toaster and
-the paper), `BrutalAppShell` round the root with its `BrutalTab`s and one `BrutalShellAction`, and one `BrutalScreen` a
-page, which lays the margins, the column, the bar, the footer and the keyboard.
+For a multi-page app, use `BrutalHost` in the app builder, `BrutalAppShell` for top-level destinations, and `BrutalScreen` for a page’s content, app bar and optional footer.
 
 ```dart
 BrutalAppShell(
@@ -63,48 +60,24 @@ BrutalAppShell(
 );
 ```
 
-Pages change in Brutal's way: a page pushed over another slides a short way (24 px) in from the end side over the page
-it covers, which stays put, and stops dead; going back is the reverse; switching between places changes nothing but the
-place. On iOS a swipe from the screen's leading edge pops the page too: iOS keeps that swipe in Cupertino's own page
-change, which Brutal's push replaces, so `brutalPageTransitions` wraps its iOS entry in ui_core's
-`DesignSwipeBackPageTransitionsBuilder`: while a finger drives the swipe the page follows it and the one under it
-shows; otherwise Brutal's push and pop play. `BrutalPage` does this for a router's pages, and with `BrutalTheme`
-(or `BrutalHost`) in the app's `builder:` so does a `MaterialPageRoute` from `material_ui`, the material library Brutal
-is built on. An app on Flutter's own `MaterialApp`, whose `MaterialPageRoute` reads only the app's theme, gives Brutal's
-change to that theme with `brutalPageTransitions`, as in Use above: one map fits Flutter's `ThemeData` and material_ui's.
+## Navigation and accessibility
 
-Back closes what stands over a page before it goes back a page: Android's system back takes an open menu, a select's
-or a combobox's list, a popover or a date picker away first, the innermost first, as it does a dialog or a sheet (focus
-goes back to what opened it; a field's list leaves the keyboard in the field), and the next back goes back a page.
-Under a pointer the controls stand
-at the platform's density (40 px on a desktop, 48 on a phone), and everything a pointer presses takes the keyboard too.
+Pushed pages slide 24 logical pixels from the trailing edge and support the native iOS swipe-back gesture. Switching between top-level destinations replaces the page in place. Android system back dismisses the innermost open overlay before leaving the page.
 
-The behaviour under the paint is ui_core's: a tab bar and an app's places are one stop for Tab with the arrows along
-them, F6 moves between the places and the page, a tooltip shows on focus as well as hover and Escape hides it, a sheet
-follows a drag down, a dialog keeps Tab inside it, and a combobox's `search` may take time and fail, with "Loading"
-and "Try again" in its list. Brutal draws each in its rules.
+- Tab moves between controls. A tab bar or navigation menu is a single tab stop, with arrow keys to move between destinations. F6 switches focus between navigation and content.
+- Tooltips open on focus or hover and close with Escape. Dialogs keep focus inside and restore it to their opener when dismissed. Bottom sheets support drag-to-dismiss.
+- Add `DesignLocalizations.delegate` to the app’s localization delegates for shared control labels. A `LocalizationsDelegate<BrutalLocalizations>` can override package-specific text, including table row counts.
+- Controls follow platform density. The theme respects the system’s reduced-motion setting.
 
-Brutal speaks the app's language through ui_core's `DesignLocalizations` (add `DesignLocalizations.delegate` to the
-app's `localizationsDelegates`). The few words of its own, such as a data table's count of rows, come from
-`BrutalLocalizations`: English, unless the app gives its own subclass with a
-`LocalizationsDelegate<BrutalLocalizations>`. Every count is given its number, so a language picks its plural form.
-Under Reduce Motion (Android's Remove animations, the web's `prefers-reduced-motion` or iOS's Reduce Motion) a
-press, a change of colour or theme and a list's arrow settle at once or in a short fade, and nothing loops.
+Date pickers scroll within the space available around their field. Step progress stacks its cells when the names need more room. Line, bar and area charts scale their axes with the reader’s text settings and include the full data series in their screen-reader descriptions.
 
-## The look
+## Controls
 
-Take away the colour and the font and a settings form is still Brutal's: every control is drawn in the same 2 px
-rule with square corners; what you can press stands on the same hard 4 px shadow and slides into it when pressed;
-rows, segments, tabs and navigation are cells that share their rules; keyboard focus is a second square rule 2 px
-outside the face and its shadow.
-
-The parts take the parameters a Flutter developer expects: a press is `onPressed`, a row's tap `onTap`, a control is
-`value` with `onChanged`, a destination is `selectedIndex` with `onSelected`, a null callback disables.
+Buttons take `onPressed`, rows take `onTap`, and controlled inputs take `value` and `onChanged`. A null callback disables the control. The selected state uses the theme’s ink fill. Focus uses an additional square outline. Radio buttons are circular so they remain distinct from checkboxes.
 
 ## Make it yours
 
-Three layers, each over the last: the brand, a kind of part across the app, one part. Each takes only what keeps the
-look: colours, padding, sizes and type, never a radius, a blur or a soft shadow.
+Set the theme’s palette, border width, shadow offset and typography. Supply a component style on `BrutalThemeData` for defaults across your app or use the component’s `style` for a local override.
 
 ```dart
 // The brand: your signal colour (its words picked black or white at 4.5:1),
@@ -151,5 +124,4 @@ platform shows no keyboard focus after a touch.
 
 ## Licence
 
-The code is MIT. Space Grotesk is under the SIL Open Font License 1.1, and Lucide's icons under ISC and MIT
-(THIRD_PARTY_NOTICES).
+The package uses the BSD 3-Clause License. Space Grotesk uses the SIL Open Font License 1.1. Lucide and Feather icons are covered by the notices in `THIRD_PARTY_NOTICES/`.

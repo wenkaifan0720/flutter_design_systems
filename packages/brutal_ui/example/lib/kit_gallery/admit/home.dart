@@ -26,56 +26,69 @@ class AdmitHome extends StatelessWidget {
     final theme = context.brutalTheme;
     final c = theme.colors;
     final t = theme.textTheme;
-    final next = admitHeld.first;
-    final event = admitEvent(next.eventId);
+    final account = AdmitPrefs.of(context);
+    final upcoming = account.signedIn ? account.upcoming : const <AdmitHeld>[];
+    final next = upcoming.isEmpty
+        ? null
+        : upcoming.reduce(
+            (a, b) =>
+                admitEvent(b.eventId).starts
+                    .isBefore(admitEvent(a.eventId).starts)
+                ? b
+                : a,
+          );
+    final event = next == null ? null : admitEvent(next.eventId);
     final frame = AdmitFrame.of(context);
     final desk = MediaQuery.sizeOf(context).width >= deskWidth;
     final night = <Widget>[
-      const BrutalSectionHeader('Your next night out'),
-      BrutalBlock(
-        lead: true,
-        color: c.lime,
-        padding: const EdgeInsets.all(BrutalSpacing.large),
-        onTap: () => frame.push(AdmitTicketPage(held: next)),
-        semanticLabel: 'Show ticket for ${event.title}',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${admitDay(event.starts).toUpperCase()} · ${admitTime(event.starts)}',
-              style: t.caption.copyWith(color: c.onBlock),
-            ),
-            const SizedBox(height: BrutalSpacing.small),
-            Text(event.title, style: t.display.copyWith(color: c.onBlock)),
-            const SizedBox(height: BrutalSpacing.tight),
-            Text(
-              '${event.venue}, ${event.address}',
-              style: t.body.copyWith(color: c.onBlock),
-            ),
-            const SizedBox(height: BrutalSpacing.large),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Show ticket',
-                  style: t.label.copyWith(
-                    color: c.onBlock,
-                    fontWeight: FontWeight.w700,
+      if (next != null && event != null) ...[
+        const BrutalSectionHeader('Your next night out'),
+        BrutalBlock(
+          lead: true,
+          color: c.lime,
+          padding: const EdgeInsets.all(BrutalSpacing.large),
+          onTap: () => frame.push(AdmitTicketPage(held: next)),
+          semanticLabel: 'Show ticket for ${event.title}',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${admitDay(event.starts).toUpperCase()} · ${admitTime(event.starts)}',
+                style: t.caption.copyWith(color: c.onBlock),
+              ),
+              const SizedBox(height: BrutalSpacing.small),
+              Text(event.title, style: t.display.copyWith(color: c.onBlock)),
+              const SizedBox(height: BrutalSpacing.tight),
+              Text(
+                '${event.venue}, ${event.address}',
+                style: t.body.copyWith(color: c.onBlock),
+              ),
+              const SizedBox(height: BrutalSpacing.large),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Show ticket',
+                    style: t.label.copyWith(
+                      color: c.onBlock,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                const SizedBox(width: BrutalSpacing.tight),
-                Icon(
-                  Directionality.of(context) == TextDirection.rtl
-                      ? LucideIcons.arrowLeft
-                      : LucideIcons.arrowRight,
-                  size: 18,
-                  color: c.onBlock,
-                ),
-              ],
-            ),
-          ],
+                  const SizedBox(width: BrutalSpacing.tight),
+                  Icon(
+                    Directionality.of(context) == TextDirection.rtl
+                        ? LucideIcons.arrowLeft
+                        : LucideIcons.arrowRight,
+                    size: 18,
+                    color: c.onBlock,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
+        admitGroupGap,
+      ],
     ];
     final week = <Widget>[
       BrutalSectionHeader(
@@ -97,19 +110,15 @@ class AdmitHome extends StatelessWidget {
         onPressed: () => frame.push(const AdmitSearchPage()),
       ),
     ];
-    if (!desk) {
+    if (!desk || !account.signedIn) {
       return AdmitPage(
         title: 'Home',
         actions: actions,
-        children: [...night, admitGroupGap, ...week],
+        children: [...night, ...week],
       );
     }
-    final upcoming = admitHeld.where((h) => !h.past).toList();
     final tickets = upcoming.fold(0, (n, h) => n + h.count);
-    final paid = upcoming.fold(
-      0,
-      (n, h) => n + h.count * h.eachCents + admitFee(h.count, h.eachCents),
-    );
+    final paid = upcoming.fold(0, (n, h) => n + h.total);
     return AdmitPage(
       title: 'Home',
       actions: actions,
@@ -122,7 +131,7 @@ class AdmitHome extends StatelessWidget {
               flex: 3,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [...night, admitGroupGap, ...week],
+                children: [...night, ...week],
               ),
             ),
             const SizedBox(width: BrutalSpacing.extraLarge),
@@ -140,7 +149,7 @@ class AdmitHome extends StatelessWidget {
                           title: admitEvent(held.eventId).title,
                           subtitle:
                               '${admitDay(admitEvent(held.eventId).starts)} · '
-                              '${held.count} × ${held.type}',
+                              '${held.description}',
                           onTap: () => frame.push(AdmitTicketPage(held: held)),
                         ),
                     ],

@@ -99,8 +99,8 @@ class _EventRow extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(
-                    width: 64,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(minWidth: 64),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -110,6 +110,8 @@ class _EventRow extends StatelessWidget {
                         ),
                         Text(
                           '${event.starts.day}',
+                          maxLines: 1,
+                          softWrap: false,
                           style: t.headline.copyWith(
                             color: ink,
                             fontFeatures: const [FontFeature.tabularFigures()],
@@ -298,6 +300,10 @@ class _AdmitEventsState extends State<AdmitEvents> {
         Text(
           '${shown.length} ${shown.length == 1 ? 'event' : 'events'}, '
           '${_when == 'weekend' ? 'Fri 20 to Sun 22 Nov' : 'Tue 17 to Sun 22 Nov'}',
+          textDirection: TextDirection.ltr,
+          textAlign: Directionality.of(context) == TextDirection.rtl
+              ? TextAlign.right
+              : TextAlign.left,
           style: context.brutalTheme.textTheme.secondary,
         ),
         const SizedBox(height: BrutalSpacing.small),
@@ -368,17 +374,19 @@ class AdmitEventPage extends StatelessWidget {
         ),
       ],
       bottom: narrow
-          ? Row(
+          ? OverflowBar(
+              alignment: MainAxisAlignment.spaceBetween,
+              spacing: BrutalSpacing.small,
+              overflowSpacing: BrutalSpacing.small,
+              overflowAlignment: OverflowBarAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(admitFrom(event), style: t.title),
-                      Text(admitDay(event.starts), style: t.secondary),
-                    ],
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(admitFrom(event), style: t.title),
+                    Text(admitDay(event.starts), style: t.secondary),
+                  ],
                 ),
                 buyButton,
               ],
@@ -478,15 +486,38 @@ class AdmitCheckoutPage extends StatefulWidget {
   State<AdmitCheckoutPage> createState() => _AdmitCheckoutPageState();
 }
 
+class _CheckoutField {
+  _CheckoutField(String initial)
+    : controller = TextEditingController(text: initial);
+
+  final TextEditingController controller;
+  final focus = FocusNode();
+  final key = GlobalKey();
+  String? error;
+
+  String get text => controller.text.trim();
+
+  void dispose() {
+    controller.dispose();
+    focus.dispose();
+  }
+}
+
 class _AdmitCheckoutPageState extends State<AdmitCheckoutPage> {
   late final Map<String, int> _counts = {...widget.counts};
-  final _email = TextEditingController(text: admitOwner.email);
-  final _card = TextEditingController(text: '4242 4242 4242 4417');
-  final _expiry = TextEditingController(text: '08/28');
-  late final _code = TextEditingController(text: widget.declined ? '123' : '');
-  String? _codeError;
-  late bool _declined = widget.declined;
+  late final AdmitPrefs _account;
+  late final _savedCard = '•••• •••• •••• ${_account.cardEnding}';
+  late final _email = _CheckoutField(_account.email);
+  late final _card = _CheckoutField(_savedCard);
+  late final _expiry = _CheckoutField(_account.expiry);
+  late final _code = _CheckoutField(widget.declined ? '123' : '');
   bool _paying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _account = AdmitPrefs.read(context);
+  }
 
   @override
   void dispose() {
@@ -507,36 +538,87 @@ class _AdmitCheckoutPageState extends State<AdmitCheckoutPage> {
     for (final t in widget.event.types) admitFee(_counts[t.name] ?? 0, t.cents),
   ].fold(0, (a, b) => a + b);
 
-  Future<void> _pay() async {
-    if (_paying) return;
-    if (_code.text.trim().length < 3) {
-      setState(
-        () => _codeError = 'Enter the 3 digits on the back of the card.',
-      );
-      return;
+  void _clearError(_CheckoutField field) {
+    if (field.error != null) setState(() => field.error = null);
+  }
+
+  bool _validate() {
+    final charge = _subtotal > 0;
+    setState(() {
+      _email.error = admitValidEmail(_email.text)
+          ? null
+          : 'Enter a valid email address.';
+      _card.error =
+          !charge || _card.text == _savedCard || admitValidCard(_card.text)
+          ? null
+          : 'Enter a valid card number.';
+      _expiry.error = !charge || admitValidExpiry(_expiry.text)
+          ? null
+          : 'Enter a current expiry as MM/YY.';
+      _code.error = !charge || admitValidSecurityCode(_code.text)
+          ? null
+          : 'Enter the 3 digits on the back of the card.';
+    });
+    for (final field in [_email, _card, _expiry, _code]) {
+      if (field.error == null) continue;
+      field.focus.requestFocus();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // EditableText also reveals its caret on focus. Once that frame has
+        // run, bring the entire field, including its error line, into view.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final target = field.key.currentContext;
+          if (target != null && field.focus.hasFocus) {
+            Scrollable.ensureVisible(target, alignment: 0.2);
+          }
+        });
+        WidgetsBinding.instance.scheduleFrame();
+      });
+      return false;
     }
+    return true;
+  }
+
+  Future<void> _pay() async {
+    if (_paying || _count == 0 || !_account.signedIn || !_validate()) return;
+    final counts = Map<String, int>.of(_counts);
+    final count = _count;
+    final recipient = _email.text;
+    final total = _subtotal + _fee;
+    final digits = _card.text.replaceAll(RegExp('[ -]'), '');
+    final lastFour = total == 0 || _card.text == _savedCard
+        ? _account.cardEnding
+        : digits.substring(digits.length - 4);
     setState(() => _paying = true);
     // The bank's answer.
     await Future<void>.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
-    setState(() {
-      _paying = false;
-      _declined = false;
-    });
+    if (!_account.signedIn || ModalRoute.of(context)?.isCurrent != true) {
+      setState(() => _paying = false);
+      return;
+    }
+    _account.book(
+      widget.event,
+      counts,
+      cardEnding: lastFour,
+      recipient: recipient,
+    );
     final frame = AdmitFrame.of(context);
     // The frame outlives this page: it goes to Tickets and says so.
     Navigator.of(context).popUntil((r) => r.isFirst);
     frame.go(AdmitPlace.tickets);
     showBrutalToast(
       frame.context,
-      '$_count ${_count == 1 ? 'ticket' : 'tickets'} for ${widget.event.title} '
-      'are in Tickets.',
-      title: 'Paid ${admitMoney(_subtotal + _fee)}',
+      '$count ${count == 1 ? 'ticket' : 'tickets'} for ${widget.event.title} '
+      '${count == 1 ? 'is' : 'are'} in Tickets.',
+      title: total == 0 ? 'Tickets booked' : 'Paid ${admitMoney(total)}',
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!AdmitPrefs.of(context).signedIn) {
+      return const AdmitSignIn(title: 'Checkout');
+    }
     final theme = context.brutalTheme;
     final t = theme.textTheme;
     final e = widget.event;
@@ -564,8 +646,10 @@ class _AdmitCheckoutPageState extends State<AdmitCheckoutPage> {
       child: BrutalButton.filled(
         _paying
             ? 'Paying ${admitMoney(total)}…'
-            : _declined
+            : widget.declined
             ? 'Try again · ${admitMoney(total)}'
+            : total == 0 && _count > 0
+            ? 'Book tickets'
             : 'Pay ${admitMoney(total)}',
         onPressed: _count == 0 ? null : _pay,
         icon: _paying ? const BrutalSpinner(size: 20) : null,
@@ -577,36 +661,40 @@ class _AdmitCheckoutPageState extends State<AdmitCheckoutPage> {
         '${admitDay(e.starts)}, ${admitTime(e.starts)} · ${e.venue}',
         style: t.secondary,
       ),
-      if (_declined) ...[
+      if (widget.declined) ...[
         const SizedBox(height: BrutalSpacing.large),
         BrutalNotice(
           tone: BrutalNoticeTone.danger,
           title: 'Your bank declined the card',
           message:
               'Nothing was charged. Check the card ending '
-              '${admitOwner.card} and its expiry, or use another card, then '
+              '${_account.cardEnding} and its expiry, or use another card, then '
               'try again.',
         ),
       ],
     ];
     final expiry = BrutalTextField(
-      controller: _expiry,
+      key: _expiry.key,
+      controller: _expiry.controller,
+      focusNode: _expiry.focus,
+      error: _expiry.error,
+      onChanged: (_) => _clearError(_expiry),
       label: 'Expiry',
       hint: 'MM/YY',
       keyboardType: TextInputType.datetime,
       textDirection: TextDirection.ltr,
     );
     final code = BrutalTextField(
-      controller: _code,
+      key: _code.key,
+      controller: _code.controller,
+      focusNode: _code.focus,
       label: 'Security code',
       hint: '3 digits',
-      error: _codeError,
+      error: _code.error,
       keyboardType: TextInputType.number,
       textDirection: TextDirection.ltr,
       obscureText: true,
-      onChanged: (_) {
-        if (_codeError != null) setState(() => _codeError = null);
-      },
+      onChanged: (_) => _clearError(_code),
     );
     final order = <Widget>[
       BrutalListGroup(
@@ -619,7 +707,9 @@ class _AdmitCheckoutPageState extends State<AdmitCheckoutPage> {
               trailing: BrutalStepper(
                 value: _counts[type.name] ?? 0,
                 max: 8,
-                onChanged: (v) => setState(() => _counts[type.name] = v),
+                onChanged: _paying
+                    ? null
+                    : (v) => setState(() => _counts[type.name] = v),
                 semanticLabel: '${type.name} tickets',
               ),
             ),
@@ -628,35 +718,45 @@ class _AdmitCheckoutPageState extends State<AdmitCheckoutPage> {
       admitGroupGap,
       const BrutalSectionHeader('Payment'),
       BrutalTextField(
-        controller: _email,
+        key: _email.key,
+        controller: _email.controller,
+        focusNode: _email.focus,
+        error: _email.error,
+        onChanged: (_) => _clearError(_email),
         label: 'Email for the tickets',
         keyboardType: TextInputType.emailAddress,
         autofillHints: const [AutofillHints.email],
       ),
-      const SizedBox(height: BrutalSpacing.large),
-      BrutalTextField(
-        controller: _card,
-        label: 'Card number',
-        keyboardType: TextInputType.number,
-        textDirection: TextDirection.ltr,
-        autofillHints: const [AutofillHints.creditCardNumber],
-      ),
-      const SizedBox(height: BrutalSpacing.large),
-      // Side by side at the reader's text up to 1.5; beyond, a label wraps and
-      // the two boxes would stand at different heights, so they stack.
-      if (MediaQuery.textScalerOf(context).scale(1) > 1.5) ...[
-        expiry,
+      if (e.types.any((type) => !type.soldOut && type.cents > 0)) ...[
         const SizedBox(height: BrutalSpacing.large),
-        code,
-      ] else
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: expiry),
-            const SizedBox(width: BrutalSpacing.regular),
-            Expanded(child: code),
-          ],
+        BrutalTextField(
+          key: _card.key,
+          controller: _card.controller,
+          focusNode: _card.focus,
+          error: _card.error,
+          onChanged: (_) => _clearError(_card),
+          label: 'Card number',
+          keyboardType: TextInputType.number,
+          textDirection: TextDirection.ltr,
+          autofillHints: const [AutofillHints.creditCardNumber],
         ),
+        const SizedBox(height: BrutalSpacing.large),
+        // Side by side at the reader's text up to 1.5; beyond, a label wraps and
+        // the two boxes would stand at different heights, so they stack.
+        if (MediaQuery.textScalerOf(context).scale(1) > 1.5) ...[
+          expiry,
+          const SizedBox(height: BrutalSpacing.large),
+          code,
+        ] else
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: expiry),
+              const SizedBox(width: BrutalSpacing.regular),
+              Expanded(child: code),
+            ],
+          ),
+      ],
     ];
     final summary = <Widget>[
       const BrutalSectionHeader('Summary'),

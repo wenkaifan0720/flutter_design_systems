@@ -1,12 +1,8 @@
-/// Everything `brutal_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (internal/dialog_foot.dart, internal/inventory.dart, internal/keep_in_view.dart, internal/ruled_column.dart, internal/type_ahead.dart).
+/// Helpers for customizing components copied from `brutal_ui`.
 ///
-/// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
-/// rest of your app stays on the package:
+/// Import this library in the copied widget to use its theme and component helpers.
 ///
 /// ```dart
-/// // lib/ui/my_card.dart, copied from package:brutal_ui/src/brutal/... and renamed.
-/// import 'package:flutter/widgets.dart';
 /// import 'package:brutal_ui/brutal_parts.dart';
 /// ```
 ///

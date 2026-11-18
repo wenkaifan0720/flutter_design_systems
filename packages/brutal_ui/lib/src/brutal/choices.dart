@@ -779,14 +779,17 @@ class BrutalSegmentedButton<T> extends StatelessWidget {
                       const SizedBox(width: BrutalSpacing.small),
                     ],
                     Flexible(
-                      child: DesignCapCenter(
-                        capHeightFactor: BrutalTheme.of(context)
-                            .capHeightFactor,
-                        child: Text(
-                          s.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: style.copyWith(color: words),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: DesignCapCenter(
+                          capHeightFactor: BrutalTheme.of(context)
+                              .capHeightFactor,
+                          child: Text(
+                            s.label,
+                            maxLines: 1,
+                            softWrap: false,
+                            style: style.copyWith(color: words),
+                          ),
                         ),
                       ),
                     ),
@@ -877,9 +880,37 @@ class BrutalStepper extends StatelessWidget {
     final off = onChanged == null;
     final layers = [style, theme.stepperStyle];
     final frame = DesignStyleOf(layers, {if (off) WidgetState.disabled});
-    final h = frame.minimumSize?.height ?? theme.controlHeight;
     final ruleColor =
         frame.side?.color ?? frame.edge ?? (off ? c.disabled : c.ink);
+    final numberStyle = frame.text(
+      theme.textTheme.label.copyWith(
+        color: off ? c.disabled : c.ink,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+    );
+    // The number's cell is as wide as its widest value at the reader's text
+    // size, its figures a small space clear of the rules at either side,
+    // and the row grows with the figures' line: the cells stay squares as
+    // tall as the number's cell.
+    final digits = math.max('${max.abs()}'.length, '${min.abs()}'.length);
+    final widest = TextPainter(
+      text: TextSpan(
+        text: '${min < 0 ? '-' : ''}${'0' * digits}',
+        style: numberStyle,
+      ),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final numberWidth = math.max(
+      _numberWidth,
+      (widest.width + 2 * BrutalSpacing.small).ceilToDouble(),
+    );
+    final h = math.max(
+      frame.minimumSize?.height ?? theme.controlHeight,
+      (widest.height + 2 * BrutalSpacing.small).ceilToDouble(),
+    );
+    widest.dispose();
     Widget cell(DesignNumberFieldButtonDetails button) {
       final states = button.states;
       final layered = DesignStyleOf(layers, states);
@@ -945,7 +976,7 @@ class BrutalStepper extends StatelessWidget {
               words = field.controller.text;
               final focused = field.states.contains(WidgetState.focused);
               return SizedBox(
-                width: 48,
+                width: numberWidth,
                 child: CustomPaint(
                   foregroundPainter: focused
                       ? BrutalInsetFocusPainter(c.ink)
@@ -967,14 +998,7 @@ class BrutalStepper extends StatelessWidget {
                           textAlign: TextAlign.center,
                           cursorColor: c.ink,
                           cursorWidth: 2,
-                          style: frame.text(
-                            theme.textTheme.label.copyWith(
-                              color: off ? c.disabled : c.ink,
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
-                            ),
-                          ),
+                          style: numberStyle,
                         ),
                       ),
                     ),
@@ -1008,4 +1032,7 @@ class BrutalStepper extends StatelessWidget {
       ..add(IntProperty('min', min))
       ..add(IntProperty('max', max));
   }
+
+  // The number's cell at its narrowest: a square of the control's height.
+  static const double _numberWidth = 48;
 }

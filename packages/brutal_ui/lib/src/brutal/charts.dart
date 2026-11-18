@@ -152,10 +152,12 @@ abstract class _AxesPainter extends CustomPainter {
     required this.width,
     required this.words,
     required this.numbers,
+    required this.textScaler,
   });
 
   final BrutalColors colors;
   final TextStyle text;
+  final TextScaler textScaler;
   final List<String> labels;
   final List<BrutalSeries> series;
   final TextDirection direction;
@@ -214,6 +216,7 @@ abstract class _AxesPainter extends CustomPainter {
       ),
     ),
     textDirection: direction,
+    textScaler: textScaler,
   )..layout();
 
   /// Paints the grid and the axes and returns the plot's rectangle, left to
@@ -270,11 +273,33 @@ abstract class _AxesPainter extends CustomPainter {
     return plot;
   }
 
-  /// [s] centred under the left-to-right [x].
-  void paintXLabel(Canvas canvas, Rect plot, String s, double x) {
-    final p = _label(s);
-    p.paint(canvas, Offset(flip(x) - p.width / 2, plot.bottom + 6));
-    p.dispose();
+  /// Paints category names inside the frame, keeping the two end labels
+  /// when there is too little room to show all of them.
+  void paintXLabels(
+    Canvas canvas,
+    Rect plot,
+    int count,
+    double Function(int) position,
+  ) {
+    final n = math.min(labels.length, count);
+    if (n == 0) return;
+    final last = _label(labels[n - 1]);
+    double start(int i, TextPainter p) => (position(i) - p.width / 2)
+        .clamp(0, math.max(0, _width - p.width))
+        .toDouble();
+    final endStart = start(n - 1, last);
+    var previousEnd = -double.infinity;
+    for (var i = 0; i < n; i++) {
+      final p = i == n - 1 ? last : _label(labels[i]);
+      final left = start(i, p);
+      if (left >= previousEnd + 4 &&
+          (i == 0 || i == n - 1 || left + p.width + 4 <= endStart)) {
+        final x = _rtl ? _width - left - p.width : left;
+        p.paint(canvas, Offset(x, plot.bottom + 6));
+        previousEnd = left + p.width;
+      }
+      p.dispose();
+    }
   }
 
   @override
@@ -287,6 +312,7 @@ abstract class _AxesPainter extends CustomPainter {
       old.words != words ||
       old.numbers != numbers ||
       old.direction != direction ||
+      old.textScaler != textScaler ||
       old.text != text;
 }
 
@@ -301,6 +327,7 @@ class _LinePainter extends _AxesPainter {
     required super.width,
     required super.words,
     required super.numbers,
+    required super.textScaler,
     required this.area,
   });
 
@@ -316,9 +343,7 @@ class _LinePainter extends _AxesPainter {
         : plot.left + 8 + (plot.width - 16) * i / (n - 1);
     double x(int i) => flip(ltr(i));
     double y(double v) => plot.bottom - plot.height * v / top;
-    for (final (i, label) in labels.indexed) {
-      if (i < n) paintXLabel(canvas, plot, label, ltr(i));
-    }
+    paintXLabels(canvas, plot, n, ltr);
     for (final (si, s) in series.indexed) {
       final color = _colorOf(colors, series, si);
       final line = Path();
@@ -377,6 +402,7 @@ class _BarPainter extends _AxesPainter {
     required super.width,
     required super.words,
     required super.numbers,
+    required super.textScaler,
   });
 
   @override
@@ -403,10 +429,8 @@ class _BarPainter extends _AxesPainter {
           ..drawRect(r, Paint()..color = _colorOf(colors, series, si))
           ..drawRect(r.deflate(width / 2), rule);
       }
-      if (i < labels.length) {
-        paintXLabel(canvas, plot, labels[i], plot.left + slot * (i + 0.5));
-      }
     }
+    paintXLabels(canvas, plot, n, (i) => plot.left + slot * (i + 0.5));
   }
 }
 
@@ -434,8 +458,9 @@ abstract class _AxesChart extends StatelessWidget {
     BrutalThemeData theme,
     DesignStyleOf layered,
     TextDirection direction,
-    DesignLocalizations numbers,
-  );
+    DesignLocalizations numbers, [
+    TextScaler textScaler = TextScaler.noScaling,
+  ]);
 
   @override
   Widget build(BuildContext context) {
@@ -457,6 +482,7 @@ abstract class _AxesChart extends StatelessWidget {
             layered,
             Directionality.of(context),
             DesignLocalizations.of(context),
+            MediaQuery.textScalerOf(context),
           ),
           size: Size.infinite,
         ),
@@ -494,8 +520,9 @@ class BrutalLineChart extends _AxesChart {
     BrutalThemeData theme,
     DesignStyleOf layered,
     TextDirection direction,
-    DesignLocalizations numbers,
-  ) => _LinePainter(
+    DesignLocalizations numbers, [
+    TextScaler textScaler = TextScaler.noScaling,
+  ]) => _LinePainter(
     colors: theme.colors,
     text: layered.text(theme.textTheme.caption),
     labels: labels,
@@ -505,6 +532,7 @@ class BrutalLineChart extends _AxesChart {
     width: theme.borderWidth,
     words: layered.foreground ?? theme.colors.inkMuted,
     numbers: numbers,
+    textScaler: textScaler,
     area: false,
   );
 }
@@ -530,8 +558,9 @@ class BrutalAreaChart extends _AxesChart {
     BrutalThemeData theme,
     DesignStyleOf layered,
     TextDirection direction,
-    DesignLocalizations numbers,
-  ) => _LinePainter(
+    DesignLocalizations numbers, [
+    TextScaler textScaler = TextScaler.noScaling,
+  ]) => _LinePainter(
     colors: theme.colors,
     text: layered.text(theme.textTheme.caption),
     labels: labels,
@@ -541,6 +570,7 @@ class BrutalAreaChart extends _AxesChart {
     width: theme.borderWidth,
     words: layered.foreground ?? theme.colors.inkMuted,
     numbers: numbers,
+    textScaler: textScaler,
     area: true,
   );
 }
@@ -566,8 +596,9 @@ class BrutalBarChart extends _AxesChart {
     BrutalThemeData theme,
     DesignStyleOf layered,
     TextDirection direction,
-    DesignLocalizations numbers,
-  ) => _BarPainter(
+    DesignLocalizations numbers, [
+    TextScaler textScaler = TextScaler.noScaling,
+  ]) => _BarPainter(
     colors: theme.colors,
     text: layered.text(theme.textTheme.caption),
     labels: labels,
@@ -577,6 +608,7 @@ class BrutalBarChart extends _AxesChart {
     width: theme.borderWidth,
     words: layered.foreground ?? theme.colors.inkMuted,
     numbers: numbers,
+    textScaler: textScaler,
   );
 }
 

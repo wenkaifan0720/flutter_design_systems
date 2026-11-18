@@ -561,8 +561,11 @@ class _PickerField extends StatelessWidget {
                 ? c.danger
                 : c.ink);
         final ink = layered.foreground ?? (enabled ? c.ink : c.disabled);
-        return SizedBox(
-          height: height,
+        // A value longer than the field at a large text size (a full date
+        // at 200%) takes a second line and the field grows with it, rather
+        // than cutting the date short.
+        return ConstrainedBox(
+          constraints: BoxConstraints(minHeight: height),
           child: AnimatedBrutalSurface(
             stiffness: BrutalMotion.colorStiffness,
             face: BrutalFace(
@@ -581,12 +584,13 @@ class _PickerField extends StatelessWidget {
                         layered.padding(Directionality.of(context)) ??
                         const EdgeInsets.symmetric(
                           horizontal: BrutalSpacing.medium,
+                          vertical: BrutalSpacing.small,
                         ),
                     child: DesignCapCenter(
                       capHeightFactor: theme.capHeightFactor,
                       child: Text(
                         text ?? hint ?? '',
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: layered
                             .text(theme.textTheme.body)
@@ -631,16 +635,20 @@ Widget _panel(
   final layered = DesignStyleOf(layers, const {});
   return FadeTransition(
     opacity: info.animation,
-    child: BrutalSurface(
-      face: BrutalFace(
-        fill: layered.fill ?? c.surface,
-        border: layered.side?.color ?? layered.edge ?? c.ink,
-        foreground: c.ink,
-        shadow: c.ink,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(BrutalSpacing.medium),
-        child: child,
+    child: ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: info.maxSize.height),
+      child: BrutalSurface(
+        face: BrutalFace(
+          fill: layered.fill ?? c.surface,
+          border: layered.side?.color ?? layered.edge ?? c.ink,
+          foreground: c.ink,
+          shadow: c.ink,
+        ),
+        child: SingleChildScrollView(
+          primary: false,
+          padding: const EdgeInsets.all(BrutalSpacing.medium),
+          child: child,
+        ),
       ),
     ),
   );
