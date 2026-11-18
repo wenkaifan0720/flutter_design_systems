@@ -7,6 +7,8 @@
 /// always a latched key with its lamp lit, never a tint.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -15,6 +17,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'actions.dart';
 import 'button.dart';
+import 'internal/glyphs.dart';
 import 'material.dart';
 import 'theme.dart';
 
@@ -376,17 +379,22 @@ class ApplianceNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final layers = [style, ApplianceTheme.of(context).navigationStyle];
-    return _barFrame(context, [
-      for (final (i, d) in destinations.indexed)
-        _NavKey(
-          destination: d,
-          current: i == selectedIndex,
-          onPressed: () => onSelected(i),
-          layers: layers,
-          builder: (context, face, layered) =>
-              _stackedKey(context, d, i == selectedIndex, face, layered),
-        ),
-    ], trailing: trailing);
+    return _barFrame(
+      context,
+      [
+        for (final (i, d) in destinations.indexed)
+          _NavKey(
+            destination: d,
+            current: i == selectedIndex,
+            onPressed: () => onSelected(i),
+            layers: layers,
+            builder: (context, face, layered) =>
+                _stackedKey(context, d, i == selectedIndex, face, layered),
+          ),
+      ],
+      minWidth: _navigationKeyWidth(context, destinations, layers),
+      trailing: trailing,
+    );
   }
 
   @override
@@ -518,6 +526,32 @@ Widget _navKeyPaint(
   );
 }
 
+TextStyle _navLabel(BuildContext context, DesignStyleOf style) => style.text(
+  ApplianceTheme.of(context).textTheme.secondary
+      .copyWith(fontSize: 12, height: 16 / 12, fontWeight: FontWeight.w500),
+);
+
+double _navigationKeyWidth(
+  BuildContext context,
+  List<ApplianceDestination> destinations,
+  List<ApplianceStyle?> layers,
+) {
+  var width = 48.0;
+  for (final states in [
+    <WidgetState>{},
+    {WidgetState.selected},
+  ]) {
+    final label = _navLabel(context, DesignStyleOf(layers, states));
+    for (final d in destinations) {
+      width = math.max(
+        width,
+        applianceLabelSize(context, d.label, label).width.ceilToDouble() + 8,
+      );
+    }
+  }
+  return width;
+}
+
 /// A strip's or a rail's key: its glyph over its name, its lamp in its
 /// corner.
 Widget _stackedKey(
@@ -528,23 +562,17 @@ Widget _stackedKey(
   DesignStyleOf layered, {
   bool rail = false,
 }) {
-  final theme = ApplianceTheme.of(context);
   final name = Text(
     d.label,
-    maxLines: 1,
-    overflow: TextOverflow.ellipsis,
-    style: layered.text(
-      theme.textTheme.secondary.copyWith(
-        fontSize: 12,
-        height: 16 / 12,
-        fontWeight: FontWeight.w500,
-        color: face.foreground,
-      ),
-    ),
+    textAlign: TextAlign.center,
+    style: _navLabel(context, layered).copyWith(color: face.foreground),
   );
-  return SizedBox(
-    height: rail ? 60 : ApplianceNavigationBar.keyHeight,
+  return ConstrainedBox(
+    constraints: BoxConstraints(
+      minHeight: rail ? 60 : ApplianceNavigationBar.keyHeight,
+    ),
     child: Stack(
+      alignment: Alignment.center,
       children: [
         Center(
           child: Column(
@@ -628,7 +656,12 @@ Widget _rowKey(
 
 /// A phone's key strip round [keys], sharing its width, [trailing] at its
 /// end.
-Widget _barFrame(BuildContext context, List<Widget> keys, {Widget? trailing}) {
+Widget _barFrame(
+  BuildContext context,
+  List<Widget> keys, {
+  required double minWidth,
+  Widget? trailing,
+}) {
   final bottom = MediaQuery.paddingOf(context).bottom;
   return Semantics(
     container: true,
@@ -644,10 +677,29 @@ Widget _barFrame(BuildContext context, List<Widget> keys, {Widget? trailing}) {
         ),
         child: Row(
           children: [
-            for (final (i, k) in keys.indexed) ...[
-              if (i > 0) const SizedBox(width: ApplianceSpacing.small),
-              Expanded(child: k),
-            ],
+            if (keys.isNotEmpty)
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, box) {
+                    const gap = ApplianceSpacing.small;
+                    final count = ((box.maxWidth + gap) / (minWidth + gap))
+                        .floor()
+                        .clamp(1, keys.length);
+                    final width = math.max(
+                      0.0,
+                      (box.maxWidth - gap * (count - 1)) / count,
+                    );
+                    return Wrap(
+                      spacing: gap,
+                      runSpacing: gap,
+                      children: [
+                        for (final key in keys)
+                          SizedBox(width: width, child: key),
+                      ],
+                    );
+                  },
+                ),
+              ),
             if (trailing != null) ...[
               const SizedBox(width: ApplianceSpacing.small),
               trailing,
@@ -660,13 +712,26 @@ Widget _barFrame(BuildContext context, List<Widget> keys, {Widget? trailing}) {
 }
 
 /// A tablet's rail of [keys] down the housing, [leading] at its top.
-Widget _railFrame(BuildContext context, List<Widget> keys, {Widget? leading}) {
+Widget _railFrame(
+  BuildContext context,
+  List<Widget> keys, {
+  required double keyWidth,
+  Widget? leading,
+}) {
   final media = MediaQuery.of(context);
+  final availableWidth = math.max(
+    ApplianceNavigationRail.width,
+    media.size.width / 3,
+  );
+  final railWidth = (keyWidth + 2 * ApplianceSpacing.medium + 2).clamp(
+    ApplianceNavigationRail.width,
+    availableWidth,
+  );
   return Semantics(
     container: true,
     explicitChildNodes: true,
     child: SizedBox(
-      width: ApplianceNavigationRail.width + media.padding.left,
+      width: railWidth + media.padding.left,
       child: ApplianceHousing(
         seam: AxisDirection.right,
         child: Padding(
@@ -676,18 +741,21 @@ Widget _railFrame(BuildContext context, List<Widget> keys, {Widget? leading}) {
             ApplianceSpacing.medium + 2,
             ApplianceSpacing.medium,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (leading != null) ...[
-                Center(child: leading),
-                const SizedBox(height: ApplianceSpacing.large),
+          child: SingleChildScrollView(
+            primary: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (leading != null) ...[
+                  Center(child: leading),
+                  const SizedBox(height: ApplianceSpacing.large),
+                ],
+                for (final (i, k) in keys.indexed) ...[
+                  if (i > 0) const SizedBox(height: ApplianceSpacing.small),
+                  k,
+                ],
               ],
-              for (final (i, k) in keys.indexed) ...[
-                if (i > 0) const SizedBox(height: ApplianceSpacing.small),
-                k,
-              ],
-            ],
+            ),
           ),
         ),
       ),
@@ -779,9 +847,9 @@ class ApplianceNavigationRail extends StatelessWidget {
   // The rail of ApplianceScaffold's shell, round the keys ui_core built.
   const ApplianceNavigationRail._shell({
     required List<Widget> this._keys,
+    required this.destinations,
     this.leading,
-  }) : destinations = const [],
-       selectedIndex = 0,
+  }) : selectedIndex = 0,
        onSelected = _ignore,
        style = null;
 
@@ -808,25 +876,33 @@ class ApplianceNavigationRail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final keys = _keys;
-    if (keys != null) return _railFrame(context, keys, leading: leading);
     final layers = [style, ApplianceTheme.of(context).navigationStyle];
-    return _railFrame(context, [
-      for (final (i, d) in destinations.indexed)
-        _NavKey(
-          destination: d,
-          current: i == selectedIndex,
-          onPressed: () => onSelected(i),
-          layers: layers,
-          builder: (context, face, layered) => _stackedKey(
-            context,
-            d,
-            i == selectedIndex,
-            face,
-            layered,
-            rail: true,
+    final keyWidth = _navigationKeyWidth(context, destinations, layers);
+    if (keys != null) {
+      return _railFrame(context, keys, keyWidth: keyWidth, leading: leading);
+    }
+    return _railFrame(
+      context,
+      [
+        for (final (i, d) in destinations.indexed)
+          _NavKey(
+            destination: d,
+            current: i == selectedIndex,
+            onPressed: () => onSelected(i),
+            layers: layers,
+            builder: (context, face, layered) => _stackedKey(
+              context,
+              d,
+              i == selectedIndex,
+              face,
+              layered,
+              rail: true,
+            ),
           ),
-        ),
-    ], leading: leading);
+      ],
+      keyWidth: keyWidth,
+      leading: leading,
+    );
   }
 
   @override
@@ -1078,6 +1154,7 @@ class ApplianceScaffold extends StatelessWidget {
       navigationBuilder: (context, details) => switch (details.mode) {
         DesignNavigationMode.rail ||
         DesignNavigationMode.bar => ApplianceNavigationRail._shell(
+          destinations: destinations,
           keys: details.destinations,
           leading: act == null
               ? railTop

@@ -47,10 +47,10 @@ class LarderFilter {
   final int? under;
 
   /// Whether [p] passes.
-  bool admits(LarderProduct p) =>
+  bool admits(LarderProduct p, {bool withTax = true}) =>
       (!inStock || p.inStock) &&
       (!newOnly || p.isNew) &&
-      (under == null || p.pence < under!);
+      (under == null || (withTax ? p.pence : larderNetPence(p.pence)) < under!);
 
   /// How many settings narrow the goods.
   int get count =>
@@ -86,9 +86,12 @@ class _LarderShopState extends State<LarderShop> {
   }
 
   List<LarderProduct> get _shown {
+    final withTax = LarderPrefs.pricesWithTax(context);
     final list = [
       for (final p in larderProducts)
-        if ((_shelf == null || p.category == _shelf) && _filter.admits(p)) p,
+        if ((_shelf == null || p.category == _shelf) &&
+            _filter.admits(p, withTax: withTax))
+          p,
     ];
     switch (_sort) {
       case LarderSort.featured:
@@ -152,6 +155,10 @@ class _LarderShopState extends State<LarderShop> {
         ),
       ],
       children: [
+        if (!LarderPrefs.pricesWithTax(context)) ...[
+          Text('Prices exclude tax', style: theme.textTheme.secondary),
+          const SizedBox(height: ApplianceSpacing.small),
+        ],
         if (wide)
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -227,7 +234,7 @@ class _LarderShopState extends State<LarderShop> {
                   leading: Icon(p.icon),
                   title: p.name,
                   subtitle: p.inStock ? p.blurb : 'Back next week',
-                  trailingText: p.price,
+                  trailingText: LarderPrefs.price(context, p.pence),
                   onTap: () =>
                       LarderFrame.of(context)
                           .push(LarderProductPage(product: p)),
@@ -258,7 +265,10 @@ class _FilterSheetState extends State<_FilterSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final count = larderProducts.where(_filter.admits).length;
+    final withTax = LarderPrefs.pricesWithTax(context);
+    final count = larderProducts
+        .where((p) => _filter.admits(p, withTax: withTax))
+        .length;
     return ApplianceSheet(
       title: 'Filter',
       onClose: () => Navigator.of(context).pop(),
@@ -377,7 +387,7 @@ class LarderProductCard extends StatelessWidget {
     return AppliancePanel(
       padding: const EdgeInsets.all(ApplianceSpacing.small + 2),
       semanticLabel:
-          '${product.name}, ${product.price}'
+          '${product.name}, ${LarderPrefs.price(context, product.pence)}'
           '${product.inStock ? '' : ', out of stock'}',
       onTap: () =>
           LarderFrame.of(context).push(LarderProductPage(product: product)),
@@ -401,26 +411,41 @@ class LarderProductCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Text(product.price, style: t.figure),
-                    const Spacer(),
-                    if (product.isNew || !product.inStock) ...[
-                      ApplianceLamp(
-                        lit: product.isNew,
-                        color: product.inStock ? null : c.printDisabled,
-                      ),
-                      const SizedBox(width: 6),
+                SizedBox(
+                  width: double.infinity,
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: ApplianceSpacing.small,
+                    runSpacing: ApplianceSpacing.tight,
+                    children: [
                       Text(
-                        product.inStock ? 'NEW' : 'SOLD OUT',
-                        style: t.legend.copyWith(
-                          fontSize: 11,
-                          height: 14 / 11,
-                          letterSpacing: 1,
-                        ),
+                        LarderPrefs.price(context, product.pence),
+                        style: t.figure,
                       ),
+                      if (product.isNew || !product.inStock)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ApplianceLamp(
+                              lit: product.isNew,
+                              color: product.inStock ? null : c.printDisabled,
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                product.inStock ? 'NEW' : 'SOLD OUT',
+                                style: t.legend.copyWith(
+                                  fontSize: 11,
+                                  height: 14 / 11,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -472,7 +497,12 @@ class _LarderProductPageState extends State<LarderProductPage> {
       children: [
         Text(p.name, style: t.title),
         const SizedBox(height: ApplianceSpacing.small),
-        Text(p.price, style: t.figure.copyWith(fontSize: 22, height: 28 / 22)),
+        Text(
+          LarderPrefs.price(context, p.pence),
+          style: t.figure.copyWith(fontSize: 22, height: 28 / 22),
+        ),
+        if (!LarderPrefs.pricesWithTax(context))
+          Text('Price excludes tax', style: t.secondary),
         const SizedBox(height: ApplianceSpacing.regular),
         Text(p.blurb, style: t.body.copyWith(color: c.printMuted)),
         const SizedBox(height: ApplianceSpacing.large),

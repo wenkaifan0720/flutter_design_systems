@@ -1,5 +1,4 @@
-/// The look's small line glyphs, drawn with one stroke: a lens, a cross, and
-/// the widget that paints one in the ambient icon colour.
+/// Text measurements and small line icons used by Appliance controls.
 library;
 
 import 'package:flutter/widgets.dart';
@@ -71,4 +70,16 @@ class ApplianceGlyph extends StatelessWidget {
       painter: painter(icon.color ?? const Color(0xFF000000)),
     );
   }
+}
+
+/// The size of a single unwrapped label at the current text scale.
+Size applianceLabelSize(BuildContext context, String value, TextStyle style) {
+  final painter = TextPainter(
+    text: TextSpan(text: value, style: style),
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+  )..layout();
+  final size = painter.size;
+  painter.dispose();
+  return size;
 }

@@ -223,6 +223,9 @@ class LarderLine {
 
   /// The line's total in pence.
   int get pence => product.pence * count;
+
+  /// The rounded price before tax for each unit on this line.
+  int get netPence => larderNetPence(product.pence) * count;
 }
 
 /// The basket the example opens with.
@@ -235,11 +238,43 @@ final larderBasket = <LarderLine>[
 /// Delivery's price in pence: free over £40.
 int larderDelivery(int subtotal) => subtotal >= 4000 ? 0 : 450;
 
-/// The shopper.
-const larderShopper = (
+/// The shop's sample catalog prices include 20% tax. Round a unit to pence.
+int larderNetPence(int gross) => (gross * 5 / 6).round();
+
+/// Delivery details and the last four digits used for an order.
+@immutable
+class LarderDetails {
+  const LarderDetails({
+    required this.name,
+    required this.address,
+    required this.postcode,
+    required this.cardLast4,
+  });
+
+  final String name;
+  final String address;
+  final String postcode;
+  final String cardLast4;
+
+  LarderDetails copyWith({
+    String? name,
+    String? address,
+    String? postcode,
+    String? cardLast4,
+  }) => LarderDetails(
+    name: name ?? this.name,
+    address: address ?? this.address,
+    postcode: postcode ?? this.postcode,
+    cardLast4: cardLast4 ?? this.cardLast4,
+  );
+}
+
+/// The sample account used to open the shop.
+const larderShopper = LarderDetails(
   name: 'Rosa Lind',
-  email: 'rosa.lind@example.com',
   address: '14 Orchard Row, Leith',
+  postcode: 'EH6 4QT',
+  cardLast4: '4421',
 );
 
 /// Where an order stands.
@@ -278,7 +313,8 @@ class LarderOrder {
     this.tracking = const [],
     this.delivery = 0,
     this.method = 'Standard',
-    this.card = 'Card ending 4421',
+    this.details = larderShopper,
+    this.gift = false,
   });
 
   /// Its number.
@@ -305,8 +341,14 @@ class LarderOrder {
   /// How it is delivered.
   final String method;
 
-  /// What paid for it.
-  final String card;
+  /// The delivery and payment details captured when the order was placed.
+  final LarderDetails details;
+
+  /// Whether the shopper requested gift wrapping.
+  final bool gift;
+
+  /// The masked payment method on the receipt.
+  String get card => 'Card ending ${details.cardLast4}';
 
   /// Whether it is still to arrive.
   bool get current => stage != LarderOrderStage.delivered;

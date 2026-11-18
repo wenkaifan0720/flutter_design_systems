@@ -1360,6 +1360,7 @@ class ApplianceTimeline extends StatelessWidget {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
     final t = theme.textTheme;
+    final headingStrut = StrutStyle.fromTextStyle(look.text(t.body));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1444,13 +1445,16 @@ class ApplianceTimeline extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: [
-                                Expanded(
-                                  child: Text(
+                            SizedBox(
+                              width: double.infinity,
+                              child: Wrap(
+                                alignment: WrapAlignment.spaceBetween,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: ApplianceSpacing.small,
+                                children: [
+                                  Text(
                                     e.title,
+                                    strutStyle: headingStrut,
                                     style: look
                                         .text(t.body)
                                         .copyWith(
@@ -1467,15 +1471,16 @@ class ApplianceTimeline extends StatelessWidget {
                                               : FontWeight.w400,
                                         ),
                                   ),
-                                ),
-                                if (e.time != null)
-                                  Text(
-                                    e.time!,
-                                    style: t.secondary.copyWith(
-                                      color: c.printMuted,
+                                  if (e.time != null)
+                                    Text(
+                                      e.time!,
+                                      strutStyle: headingStrut,
+                                      style: t.secondary.copyWith(
+                                        color: c.printMuted,
+                                      ),
                                     ),
-                                  ),
-                              ],
+                                ],
+                              ),
                             ),
                             if (e.detail != null)
                               Text(

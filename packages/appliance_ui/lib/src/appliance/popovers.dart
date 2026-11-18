@@ -503,6 +503,9 @@ class ApplianceBanner extends StatelessWidget {
       ApplianceBannerTone.danger => c.danger,
     };
     final close = onClose;
+    const keyInset = ApplianceSpacing.small;
+    final verticalInset = close == null ? ApplianceSpacing.medium : keyInset;
+    final singleLine = close != null && message == null && action == null;
     return Semantics(
       container: true,
       liveRegion: tone == ApplianceBannerTone.danger,
@@ -519,22 +522,27 @@ class ApplianceBanner extends StatelessWidget {
         child: Padding(
           padding:
               layered.padding(Directionality.of(context)) ??
-              const EdgeInsetsDirectional.fromSTEB(
+              EdgeInsetsDirectional.fromSTEB(
                 ApplianceSpacing.regular,
-                ApplianceSpacing.medium,
-                ApplianceSpacing.small,
-                ApplianceSpacing.medium,
+                verticalInset,
+                keyInset,
+                verticalInset,
               ),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: singleLine
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: ApplianceSpacing.tight),
+                padding: EdgeInsets.only(
+                  top: singleLine ? 0 : ApplianceSpacing.tight,
+                ),
                 child: ApplianceLamp(lit: true, color: lamp, size: 10),
               ),
               const SizedBox(width: ApplianceSpacing.medium),
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -563,36 +571,44 @@ class ApplianceBanner extends StatelessWidget {
                   onPressed: close,
                   semanticLabel: closeLabel,
                   excludeSemantics: true,
-                  builder: (context, states, _) => DesignTapTarget(
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(
-                          ApplianceMetrics.smallKeyRadius,
+                  builder: (context, states, _) {
+                    final pressed = states.contains(WidgetState.pressed);
+                    return AnimatedApplianceSurface(
+                      face: ApplianceFace(
+                        top: pressed
+                            ? c.keyDownTop
+                            : c.keyDownTop.withValues(alpha: 0),
+                        bottom: pressed
+                            ? c.keyDownBottom
+                            : c.keyDownBottom.withValues(alpha: 0),
+                        radius: BorderRadius.circular(
+                          ApplianceMetrics.troughRadius - keyInset,
                         ),
-                        border: Border.all(
-                          color: states.contains(WidgetState.focused)
-                              ? c.focus
-                              : c.focus.withValues(alpha: 0),
-                          width: ApplianceMetrics.focusWidth,
+                        lift: pressed ? -.6 : 0,
+                        focus: states.contains(WidgetState.focused)
+                            ? c.focus
+                            : c.focus.withValues(alpha: 0),
+                      ),
+                      child: DesignTapTarget(
+                        child: SizedBox.square(
+                          dimension: 32,
+                          child: Center(
+                            child: IconTheme(
+                              data: IconThemeData(
+                                size: 16,
+                                color: states.contains(WidgetState.pressed)
+                                    ? c.print
+                                    : c.printMuted,
+                              ),
+                              child: const ApplianceGlyph(
+                                ApplianceCrossPainter.new,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      child: Center(
-                        child: IconTheme(
-                          data: IconThemeData(
-                            size: 16,
-                            color: states.contains(WidgetState.pressed)
-                                ? c.print
-                                : c.printMuted,
-                          ),
-                          child: const ApplianceGlyph(
-                            ApplianceCrossPainter.new,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
             ],
           ),

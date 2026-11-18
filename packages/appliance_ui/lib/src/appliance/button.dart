@@ -220,8 +220,9 @@ ApplianceFace _keyFace(
   final focus = states.contains(WidgetState.focused)
       ? c.focus
       : c.focus.withValues(alpha: 0);
+  final disabledInk = Color.lerp(c.printDisabled, c.print, 0.5)!;
   final legend = disabled
-      ? c.printDisabled
+      ? disabledInk
       : destructive
       ? c.danger
       : c.print;
@@ -233,7 +234,7 @@ ApplianceFace _keyFace(
         radius: BorderRadius.circular(ApplianceMetrics.smallKeyRadius),
         travel: pressed ? 0.7 : 0,
         foreground: disabled
-            ? c.printDisabled
+            ? disabledInk
             : destructive
             ? c.danger
             : pressed

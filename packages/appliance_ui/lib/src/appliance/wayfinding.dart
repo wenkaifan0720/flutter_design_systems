@@ -444,6 +444,57 @@ class ApplianceStepProgress extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, box) {
             final cell = box.maxWidth / n;
+            TextStyle labelStyle(int i) => theme.textTheme.secondary.copyWith(
+              color: i == current ? c.print : c.printMuted,
+              fontWeight: i == current ? FontWeight.w600 : FontWeight.w400,
+            );
+            Widget lamp(int i) => SizedBox.square(
+              dimension: _ring,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: c.face,
+                  border: Border.all(
+                    color: i == current
+                        ? c.signal
+                        : c.signal.withValues(alpha: 0),
+                    width: 1.5,
+                  ),
+                ),
+                child: Center(
+                  child: ApplianceLamp(lit: i <= current, size: _lamp),
+                ),
+              ),
+            );
+            if (steps.indexed.any(
+              (step) =>
+                  applianceLabelSize(
+                        context,
+                        step.$2,
+                        labelStyle(step.$1),
+                      ).width +
+                      4 >
+                  cell,
+            )) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final (i, step) in steps.indexed)
+                    Padding(
+                      padding: EdgeInsets.only(
+                        bottom: i == n - 1 ? 0 : ApplianceSpacing.small,
+                      ),
+                      child: Row(
+                        children: [
+                          lamp(i),
+                          const SizedBox(width: ApplianceSpacing.small),
+                          Expanded(child: Text(step, style: labelStyle(i))),
+                        ],
+                      ),
+                    ),
+                ],
+              );
+            }
             return Stack(
               children: [
                 // The seam the lamps sit on, lit as far as the current step.
@@ -469,39 +520,14 @@ class ApplianceStepProgress extends StatelessWidget {
                       Expanded(
                         child: Column(
                           children: [
-                            SizedBox.square(
-                              dimension: _ring,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: c.face,
-                                  border: Border.all(
-                                    color: i == current
-                                        ? c.signal
-                                        : c.signal.withValues(alpha: 0),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: ApplianceLamp(
-                                    lit: i <= current,
-                                    size: _lamp,
-                                  ),
-                                ),
-                              ),
-                            ),
+                            lamp(i),
                             const SizedBox(height: ApplianceSpacing.small),
                             Text(
                               step,
                               textAlign: TextAlign.center,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.secondary.copyWith(
-                                color: i == current ? c.print : c.printMuted,
-                                fontWeight: i == current
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                              ),
+                              style: labelStyle(i),
                             ),
                           ],
                         ),

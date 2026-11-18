@@ -576,8 +576,11 @@ class _TagKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = ApplianceTheme.of(context);
     final c = theme.colors;
-    final face = ApplianceFace.key(c, radius: ApplianceMetrics.smallKeyRadius)
-        .copyWith(
+    final face =
+        ApplianceFace.key(
+          c,
+          radius: ApplianceMetrics.wellRadius - ApplianceSpacing.small,
+        ).copyWith(
           lift: enabled ? 0.8 : 0.35,
           foreground: enabled ? c.print : c.printDisabled,
           focus: focused ? c.focus : c.focus.withValues(alpha: 0),

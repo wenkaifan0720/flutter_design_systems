@@ -3,10 +3,10 @@
 library;
 
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:appliance_ui/appliance_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import 'data.dart';
 import 'larder.dart';
 
 /// Settings.
@@ -17,6 +17,9 @@ class LarderSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final prefs = LarderPrefs.of(context);
+    final frame = LarderFrame.of(context);
+    final shopper = prefs.account;
+    void edit(_Setting setting) => frame.push(_SettingsPage(setting: setting));
     const gap = SizedBox(height: ApplianceSpacing.extraLarge);
     Widget toggle(
       String title,
@@ -156,30 +159,38 @@ class LarderSettings extends StatelessWidget {
     final account = ApplianceListGroup(
       header: 'Account',
       children: [
-        ApplianceListTile(
-          leading: const Icon(LucideIcons.user),
-          title: 'Name',
-          trailingText: larderShopper.name,
-          onTap: () {},
-        ),
-        ApplianceListTile(
-          leading: const Icon(LucideIcons.mapPin),
-          title: 'Address',
-          trailingText: larderShopper.address,
-          onTap: () {},
-        ),
-        ApplianceListTile(
-          leading: const Icon(LucideIcons.creditCard),
-          title: 'Cards',
-          trailingText: 'One saved',
-          onTap: () {},
-        ),
-        ApplianceListTile(
-          title: 'Sign out',
-          destructive: true,
-          showChevron: false,
-          onTap: () => showApplianceToast(context, 'Signed out'),
-        ),
+        if (shopper == null)
+          ApplianceListTile(
+            leading: const Icon(LucideIcons.user),
+            title: 'Sign in to demo account',
+            onTap: prefs.signIn,
+          )
+        else ...[
+          ApplianceListTile(
+            leading: const Icon(LucideIcons.user),
+            title: 'Name',
+            trailingText: shopper.name,
+            onTap: () => edit(_Setting.name),
+          ),
+          ApplianceListTile(
+            leading: const Icon(LucideIcons.mapPin),
+            title: 'Address',
+            trailingText: shopper.address,
+            onTap: () => edit(_Setting.address),
+          ),
+          ApplianceListTile(
+            leading: const Icon(LucideIcons.creditCard),
+            title: 'Cards',
+            trailingText: 'One saved',
+            onTap: () => edit(_Setting.cards),
+          ),
+          ApplianceListTile(
+            title: 'Sign out',
+            destructive: true,
+            showChevron: false,
+            onTap: frame.signOut,
+          ),
+        ],
       ],
     );
     final help = ApplianceListGroup(
@@ -188,12 +199,12 @@ class LarderSettings extends StatelessWidget {
         ApplianceListTile(
           leading: const Icon(LucideIcons.packageCheck),
           title: 'Delivery and returns',
-          onTap: () {},
+          onTap: () => edit(_Setting.delivery),
         ),
         ApplianceListTile(
           leading: const Icon(LucideIcons.mail),
           title: 'Write to the shop',
-          onTap: () {},
+          onTap: () => edit(_Setting.contact),
         ),
         ApplianceListTile(
           leading: const Icon(LucideIcons.info),
@@ -254,6 +265,212 @@ class LarderSettings extends StatelessWidget {
                   ),
                 ),
         ),
+      ],
+    );
+  }
+}
+
+enum _Setting {
+  name('Name'),
+  address('Address'),
+  cards('Cards'),
+  delivery('Delivery and returns'),
+  contact('Write to the shop');
+
+  const _Setting(this.title);
+  final String title;
+}
+
+class _SettingsPage extends StatefulWidget {
+  const _SettingsPage({required this.setting});
+  final _Setting setting;
+
+  @override
+  State<_SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<_SettingsPage> {
+  final _value = TextEditingController();
+  final _postcode = TextEditingController();
+  bool _initialized = false;
+  bool _submitted = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_initialized) return;
+    _initialized = true;
+    final account = LarderPrefs.of(context).account;
+    if (account == null) return;
+    switch (widget.setting) {
+      case _Setting.name:
+        _value.text = account.name;
+      case _Setting.address:
+        _value.text = account.address;
+        _postcode.text = account.postcode;
+      case _Setting.cards:
+      case _Setting.delivery:
+      case _Setting.contact:
+        break;
+    }
+  }
+
+  @override
+  void dispose() {
+    _value.dispose();
+    _postcode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final prefs = LarderPrefs.of(context);
+    final account = prefs.account;
+    final setting = widget.setting;
+    if (setting == _Setting.delivery) {
+      return LarderPage(
+        title: setting.title,
+        children: [
+          const AppliancePanel(
+            child: ApplianceDescriptionList(
+              items: [
+                (
+                  'Standard delivery',
+                  '3 to 5 days. £4.50, or free on orders of £40 or more.',
+                ),
+                ('Next-day delivery', '£6.50 when you order by 8 pm.'),
+                (
+                  'Returns',
+                  'Write to the shop with the order number and the items you would like to return.',
+                ),
+              ],
+            ),
+          ),
+          larderGroupGap,
+          ApplianceButton(
+            'Write to the shop',
+            onPressed: () =>
+                LarderFrame.of(context)
+                    .push(const _SettingsPage(setting: _Setting.contact)),
+          ),
+        ],
+      );
+    }
+    final contact = setting == _Setting.contact;
+    if (account == null && !contact) {
+      return LarderPage(
+        title: setting.title,
+        children: [
+          ApplianceButton('Sign in to demo account', onPressed: prefs.signIn),
+        ],
+      );
+    }
+    final label = switch (setting) {
+      _Setting.name => 'Full name',
+      _Setting.address => 'Street address',
+      _Setting.cards => 'Card number',
+      _Setting.contact => 'Message',
+      _Setting.delivery => throw StateError('Delivery has no form'),
+    };
+    String? error() {
+      if (_value.text.trim().isEmpty) {
+        return 'Enter a ${label.toLowerCase()}.';
+      }
+      if (setting == _Setting.cards &&
+          (_value.text.length < 12 || _value.text.length > 19)) {
+        return 'Enter 12 to 19 digits.';
+      }
+      return null;
+    }
+
+    void save() {
+      final value = _value.text.trim();
+      if (error() != null ||
+          setting == _Setting.address && _postcode.text.trim().isEmpty) {
+        setState(() => _submitted = true);
+        return;
+      }
+      if (contact) {
+        prefs.update((p) => p.messages.insert(0, value));
+        _value.clear();
+        setState(() => _submitted = false);
+        showApplianceToast(context, 'Message saved');
+        return;
+      }
+      final changed = switch (setting) {
+        _Setting.name => account!.copyWith(name: value),
+        _Setting.address => account!.copyWith(
+          address: value,
+          postcode: _postcode.text.trim().toUpperCase(),
+        ),
+        _Setting.cards => account!.copyWith(
+          cardLast4: value.substring(value.length - 4),
+        ),
+        _ => throw StateError('This page has no saved account field'),
+      };
+      prefs.saveAccount(changed);
+      Navigator.of(context).pop();
+    }
+
+    void revalidate(String _) {
+      if (_submitted) setState(() {});
+    }
+
+    return LarderPage(
+      title: setting.title,
+      children: [
+        AppliancePanel(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (setting == _Setting.cards) ...[
+                Text('Saved card ending ${account!.cardLast4}'),
+                const SizedBox(height: ApplianceSpacing.regular),
+              ],
+              ApplianceTextField(
+                label: label,
+                controller: _value,
+                helper: contact ? 'Messages are saved in this demo.' : null,
+                maxLines: contact ? 4 : 1,
+                keyboardType: setting == _Setting.cards
+                    ? TextInputType.number
+                    : null,
+                inputFormatters: setting == _Setting.cards
+                    ? [FilteringTextInputFormatter.digitsOnly]
+                    : null,
+                error: _submitted ? error() : null,
+                onChanged: revalidate,
+              ),
+              if (setting == _Setting.address) ...[
+                const SizedBox(height: ApplianceSpacing.regular),
+                ApplianceTextField(
+                  label: 'Postcode',
+                  controller: _postcode,
+                  textCapitalization: TextCapitalization.characters,
+                  error: _submitted && _postcode.text.trim().isEmpty
+                      ? 'Enter a postcode.'
+                      : null,
+                  onChanged: revalidate,
+                ),
+              ],
+              const SizedBox(height: ApplianceSpacing.large),
+              ApplianceButton.filled(
+                contact ? 'Save message' : 'Save changes',
+                onPressed: save,
+              ),
+            ],
+          ),
+        ),
+        if (contact && prefs.messages.isNotEmpty) ...[
+          larderGroupGap,
+          const ApplianceSectionHeader('Saved messages'),
+          ApplianceListGroup(
+            children: [
+              for (final message in prefs.messages)
+                ApplianceListTile(title: message, showChevron: false),
+            ],
+          ),
+        ],
       ],
     );
   }

@@ -74,7 +74,13 @@ class ApplianceToolbar extends StatelessWidget {
       label: semanticLabel,
       explicitChildNodes: true,
       child: ApplianceSurface(
-        face: _strip(c).copyWith(top: look.fill, bottom: look.fill),
+        face: _strip(c).copyWith(
+          radius: BorderRadius.circular(
+            ApplianceMetrics.keyRadius + ApplianceMetrics.capInset,
+          ),
+          top: look.fill,
+          bottom: look.fill,
+        ),
         child: Padding(
           padding: const EdgeInsets.all(ApplianceMetrics.capInset),
           child: Flex(

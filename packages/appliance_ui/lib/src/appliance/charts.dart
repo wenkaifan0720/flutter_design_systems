@@ -16,6 +16,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'feedback.dart';
+import 'internal/glyphs.dart';
 import 'material.dart';
 import 'theme.dart';
 
@@ -247,7 +248,32 @@ class _SeriesChartState extends State<_SeriesChart> {
         ),
       );
     }
-    const foot = 18.0;
+    final scale = MediaQuery.textScalerOf(context);
+    final axisStyle = theme.textTheme.legend.copyWith(
+      color: c.onDisplay.withValues(alpha: 0.6),
+    );
+    final line = applianceLabelSize(context, '0', axisStyle).height;
+    final factor = scale.scale(axisStyle.fontSize!) / axisStyle.fontSize!;
+    final foot = math.max(18.0, line + 2);
+    final values = widget.series.expand((s) => s.values.take(_count));
+    final gutter = math.max(
+      34 * factor,
+      [
+        for (final value in [
+          values.reduce(math.min),
+          values.reduce(math.max),
+          0.0,
+        ])
+          applianceLabelSize(context, _text(value), axisStyle).width + 8,
+      ].reduce(math.max),
+    );
+    final labelSpacing = widget.labels.fold<double>(
+      44 * factor,
+      (width, label) => math.max(
+        width,
+        applianceLabelSize(context, label, axisStyle).width + 8,
+      ),
+    );
     final chart = DesignChart(
       semanticLabel: widget.semanticLabel,
       series: [
@@ -271,9 +297,9 @@ class _SeriesChartState extends State<_SeriesChart> {
       formatY: _text,
       tickCount: 4,
       // The scale's figures at the start, the labels at the foot.
-      padding: const EdgeInsetsDirectional.only(
-        start: 34,
-        top: 4,
+      padding: EdgeInsetsDirectional.only(
+        start: gutter,
+        top: 4 + (line - 16).clamp(0.0, double.infinity) / 2,
         bottom: foot,
       ),
       focusNode: _focus,
@@ -288,9 +314,10 @@ class _SeriesChartState extends State<_SeriesChart> {
                   chart: chart,
                   colours: colours,
                   grid: c.onDisplay.withValues(alpha: 0.14),
-                  scale: theme.textTheme.legend.copyWith(
-                    color: c.onDisplay.withValues(alpha: 0.6),
-                  ),
+                  scale: axisStyle,
+                  textScaler: scale,
+                  direction: Directionality.of(context),
+                  labelSpacing: labelSpacing,
                   labels: widget.labels,
                   foot: foot,
                   glass: c.display,
@@ -426,6 +453,9 @@ class _SeriesPainter extends CustomPainter {
     required this.colours,
     required this.grid,
     required this.scale,
+    required this.textScaler,
+    required this.direction,
+    required this.labelSpacing,
     required this.labels,
     required this.foot,
     required this.glass,
@@ -438,6 +468,9 @@ class _SeriesPainter extends CustomPainter {
   final List<Color> colours;
   final Color grid;
   final TextStyle scale;
+  final TextScaler textScaler;
+  final TextDirection direction;
+  final double labelSpacing;
   final List<String> labels;
   final double foot;
   final Color glass;
@@ -453,7 +486,8 @@ class _SeriesPainter extends CustomPainter {
   }) {
     final tp = TextPainter(
       text: TextSpan(text: s, style: scale),
-      textDirection: TextDirection.ltr,
+      textDirection: direction,
+      textScaler: textScaler,
     )..layout();
     var left = at.dx - tp.width * align;
     if (within != null) {
@@ -490,7 +524,10 @@ class _SeriesPainter extends CustomPainter {
       );
     }
     // The labels under it: every one that fits.
-    final every = math.max(1, (count * 44 / math.max(plot.width, 1)).ceil());
+    final every = math.max(
+      1,
+      (count * labelSpacing / math.max(plot.width, 1)).ceil(),
+    );
     for (var i = 0; i < count; i += every) {
       _text(
         canvas,

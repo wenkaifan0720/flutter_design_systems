@@ -1,12 +1,8 @@
-/// Everything `appliance_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (internal/bare_field.dart, internal/glyphs.dart, internal/keep_in_view.dart, internal/menu_paint.dart, internal/spring_value.dart, internal/type_ahead.dart).
+/// Helpers for customizing components copied from `appliance_ui`.
 ///
-/// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
-/// rest of your app stays on the package:
+/// Import this library in the copied widget to use its theme and component helpers.
 ///
 /// ```dart
-/// // lib/ui/my_card.dart, copied from package:appliance_ui/src/appliance/... and renamed.
-/// import 'package:flutter/widgets.dart';
 /// import 'package:appliance_ui/appliance_parts.dart';
 /// ```
 ///

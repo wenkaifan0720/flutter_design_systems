@@ -46,7 +46,9 @@ class _LarderOrdersState extends State<LarderOrders> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || _desk) return;
         final frame = LarderFrame.of(context);
-        frame.push(LarderOrderPage(order: frame.orders.first));
+        if (frame.orders.isNotEmpty) {
+          frame.push(LarderOrderPage(order: frame.orders.first));
+        }
       });
     }
   }
@@ -61,7 +63,24 @@ class _LarderOrdersState extends State<LarderOrders> {
 
   Widget _build(BuildContext context) {
     final frame = LarderFrame.of(context);
+    final prefs = LarderPrefs.of(context);
+    if (prefs.account == null) {
+      return LarderPage(
+        title: 'Orders',
+        children: [
+          ApplianceEmptyState(
+            title: 'Sign in to see your orders',
+            message: 'Your order history and delivery details are available in your account.',
+            action: ApplianceButton(
+              'Sign in to demo account',
+              onPressed: prefs.signIn,
+            ),
+          ),
+        ],
+      );
+    }
     final orders = frame.orders;
+    if (orders.isEmpty) return const SizedBox.shrink();
     if (_desk) {
       final chosen = orders.firstWhere(
         (o) => o.number == _chosen,
@@ -361,7 +380,11 @@ class LarderOrderDetail extends StatelessWidget {
         AppliancePanel(
           child: ApplianceDescriptionList(
             items: [
-              ('To', '${larderShopper.name}, ${larderShopper.address}'),
+              (
+                'To',
+                '${order.details.name}, ${order.details.address}, ${order.details.postcode}',
+              ),
+              if (order.gift) ('Gift wrap', 'Requested'),
               ('By', order.method),
               ('Paid with', order.card),
             ],

@@ -24,7 +24,8 @@ Color _none(Color c) => c.withValues(alpha: 0);
 /// A dialog: a lid of smooth plastic raised over the dimmed housing, its
 /// [title], its [content] and its [actions] (keys: [ApplianceButton], the
 /// main one [ApplianceButton.filled]) at its foot, the main one last. On a
-/// phone the keys share the lid's width; wider they stand at its end.
+/// phone the keys share the available width. Actions wrap onto separate rows
+/// when their labels need more room.
 ///
 /// Reads [style]'s `fill`, `padding` and `textStyle` (the title), then
 /// [ApplianceThemeData.dialogStyle]'s.
@@ -110,27 +111,33 @@ class ApplianceDialog extends StatelessWidget {
                 ],
                 if (actions.isNotEmpty) ...[
                   const SizedBox(height: ApplianceSpacing.large),
-                  if (narrow)
-                    Row(
-                      children: [
-                        for (final (i, a) in actions.indexed) ...[
-                          if (i > 0)
-                            const SizedBox(width: ApplianceSpacing.small),
-                          Expanded(child: a),
+                  LayoutBuilder(
+                    builder: (context, box) {
+                      const gap = ApplianceSpacing.small;
+                      final share = narrow
+                          ? math.max(
+                              0.0,
+                              (box.maxWidth - gap * (actions.length - 1)) /
+                                  actions.length,
+                            )
+                          : 0.0;
+                      return OverflowBar(
+                        alignment: narrow
+                            ? MainAxisAlignment.spaceBetween
+                            : MainAxisAlignment.end,
+                        overflowAlignment: OverflowBarAlignment.end,
+                        spacing: gap,
+                        overflowSpacing: gap,
+                        children: [
+                          for (final action in actions)
+                            ConstrainedBox(
+                              constraints: BoxConstraints(minWidth: share),
+                              child: action,
+                            ),
                         ],
-                      ],
-                    )
-                  else
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        for (final (i, a) in actions.indexed) ...[
-                          if (i > 0)
-                            const SizedBox(width: ApplianceSpacing.small),
-                          a,
-                        ],
-                      ],
-                    ),
+                      );
+                    },
+                  ),
                 ],
               ],
             ),
@@ -648,6 +655,9 @@ class _Toast extends StatelessWidget {
     final legend = layered.foreground ?? c.onDisplay;
     final words = DesignLocalizations.of(context);
     final glow = c.signalTop;
+    const glassRadius =
+        ApplianceMetrics.lidRadius - ApplianceMetrics.windowInset;
+    const keyInset = ApplianceSpacing.tight;
     Widget key({
       required String label,
       required VoidCallback onPressed,
@@ -658,20 +668,20 @@ class _Toast extends StatelessWidget {
       excludeSemantics: true,
       builder: (context, states, _) {
         final pressed = states.contains(WidgetState.pressed);
-        return DesignTapTarget(
-          child: ApplianceSurface(
-            face: ApplianceFace(
-              top: pressed ? legend.withValues(alpha: 0.12) : _none(legend),
-              bottom: pressed ? legend.withValues(alpha: 0.12) : _none(legend),
-              radius: BorderRadius.circular(6),
-              travel: pressed ? 0.6 : 0,
-              foreground: legend,
-              focus: states.contains(WidgetState.focused)
-                  ? c.focus
-                  : _none(c.focus),
-            ),
-            child: SizedBox(
-              height: 36,
+        return AnimatedApplianceSurface(
+          face: ApplianceFace(
+            top: pressed ? legend.withValues(alpha: 0.12) : _none(legend),
+            bottom: pressed ? legend.withValues(alpha: 0.12) : _none(legend),
+            radius: BorderRadius.circular(glassRadius - keyInset),
+            travel: pressed ? 0.6 : 0,
+            foreground: legend,
+            focus: states.contains(WidgetState.focused)
+                ? c.focus
+                : _none(c.focus),
+          ),
+          child: DesignTapTarget(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: ApplianceSpacing.small,
@@ -698,62 +708,67 @@ class _Toast extends StatelessWidget {
               face: ApplianceFace.well(
                 c,
                 fill: glass,
-                radius: ApplianceMetrics.lidRadius - 6,
+                radius: glassRadius,
               ).copyWith(focus: details.focused ? c.focus : _none(c.focus)),
               child: Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(
                   ApplianceSpacing.medium,
-                  ApplianceSpacing.small,
-                  ApplianceSpacing.tight,
-                  ApplianceSpacing.small,
+                  keyInset,
+                  keyInset,
+                  keyInset,
                 ),
-                child: Row(
-                  children: [
-                    ApplianceLamp(lit: true, color: glow),
-                    const SizedBox(width: ApplianceSpacing.medium),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (t.title != null)
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(child: ApplianceLamp(lit: true, color: glow)),
+                      const SizedBox(width: ApplianceSpacing.medium),
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (t.title != null)
+                              Text(
+                                t.title!,
+                                style: theme.textTheme.label.copyWith(
+                                  color: legend,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             Text(
-                              t.title!,
-                              style: theme.textTheme.label.copyWith(
-                                color: legend,
-                                fontWeight: FontWeight.w600,
+                              t.message,
+                              style: layered.text(
+                                theme.textTheme.body.copyWith(
+                                  color: legend,
+                                  fontSize: 15,
+                                ),
                               ),
                             ),
-                          Text(
-                            t.message,
-                            style: layered.text(
-                              theme.textTheme.body.copyWith(
-                                color: legend,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (t.actionLabel != null && details.runAction != null)
-                      key(
-                        label: t.actionLabel!,
-                        onPressed: details.runAction!,
-                        child: (ink) => Text(
-                          t.actionLabel!.toUpperCase(),
-                          style: theme.textTheme.legend.copyWith(
-                            color: glow,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          ],
                         ),
                       ),
-                    key(
-                      label: words.closeButtonLabel,
-                      onPressed: details.dismiss,
-                      child: (ink) => Icon(LucideIcons.x, size: 18, color: ink),
-                    ),
-                  ],
+                      if (t.actionLabel != null && details.runAction != null)
+                        key(
+                          label: t.actionLabel!,
+                          onPressed: details.runAction!,
+                          child: (ink) => Text(
+                            t.actionLabel!.toUpperCase(),
+                            style: theme.textTheme.legend.copyWith(
+                              color: glow,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      key(
+                        label: words.closeButtonLabel,
+                        onPressed: details.dismiss,
+                        child: (ink) =>
+                            Icon(LucideIcons.x, size: 18, color: ink),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

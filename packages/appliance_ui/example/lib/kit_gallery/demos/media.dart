@@ -83,6 +83,7 @@ class _Media extends StatelessWidget {
       KitSection(
         title: 'Nothing yet',
         note: 'A dark display with only dashes lit.',
+        plate: false,
         children: [
           ApplianceEmptyState(
             title: 'Your basket is empty',

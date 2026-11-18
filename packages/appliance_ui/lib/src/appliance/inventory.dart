@@ -394,8 +394,12 @@ final DesignInventory applianceInventory = DesignInventory(
       'Slider',
       (_) => _Held<double>(
         0.4,
-        (context, v, set) =>
-            ApplianceSlider(value: v, onChanged: set, semanticLabel: 'Volume'),
+        (context, v, set) => ApplianceSlider(
+          value: v,
+          onChanged: set,
+          semanticLabel: 'Volume',
+          valueText: (value) => '${(value * 100).round()}%',
+        ),
       ),
     ),
     DesignInventoryEntry.present(
@@ -408,6 +412,7 @@ final DesignInventory applianceInventory = DesignInventory(
           max: 100,
           startLabel: 'Lowest price',
           endLabel: 'Highest price',
+          semanticFormatterCallback: (value) => '\$${value.round()}',
         ),
       ),
     ),

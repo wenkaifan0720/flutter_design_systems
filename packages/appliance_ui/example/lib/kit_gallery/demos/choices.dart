@@ -191,6 +191,7 @@ class _FadersState extends State<_Faders> {
             value: _volume,
             onChanged: (v) => setState(() => _volume = v),
             semanticLabel: 'Volume',
+            valueText: (v) => '${(v * 100).round()}%',
           ),
           ApplianceSlider(
             value: _steps,
@@ -206,6 +207,7 @@ class _FadersState extends State<_Faders> {
             onChanged: (v) => setState(() => _price = v),
             startLabel: 'Lowest price',
             endLabel: 'Highest price',
+            semanticFormatterCallback: (v) => '\$${v.round()}',
           ),
           const ApplianceSlider(
             value: 0.6,

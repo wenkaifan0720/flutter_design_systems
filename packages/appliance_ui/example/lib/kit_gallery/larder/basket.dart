@@ -99,25 +99,27 @@ class _LarderBasketState extends State<LarderBasket> {
               onPressed: () => frame.go(LarderPlace.shop),
             ),
           ),
-          larderGroupGap,
-          ApplianceListGroup(
-            header: 'Bought before',
-            children: [
-              for (final o in frame.orders.where((o) => !o.current).take(2))
-                ApplianceListTile(
-                  leading: const Icon(LucideIcons.rotateCcw),
-                  title: 'Order ${o.number}',
-                  subtitle: [for (final l in o.lines) l.product.name]
-                      .join(', '),
-                  trailingText: 'Buy again',
-                  onTap: () {
-                    for (final l in o.lines) {
-                      frame.add(l.product, finish: l.finish, count: l.count);
-                    }
-                  },
-                ),
-            ],
-          ),
+          if (frame.orders.isNotEmpty) ...[
+            larderGroupGap,
+            ApplianceListGroup(
+              header: 'Bought before',
+              children: [
+                for (final o in frame.orders.where((o) => !o.current).take(2))
+                  ApplianceListTile(
+                    leading: const Icon(LucideIcons.rotateCcw),
+                    title: 'Order ${o.number}',
+                    subtitle: [for (final l in o.lines) l.product.name]
+                        .join(', '),
+                    trailingText: 'Buy again',
+                    onTap: () {
+                      for (final l in o.lines) {
+                        frame.add(l.product, finish: l.finish, count: l.count);
+                      }
+                    },
+                  ),
+              ],
+            ),
+          ],
         ],
       );
     }
@@ -141,7 +143,11 @@ class _LarderBasketState extends State<LarderBasket> {
         ),
       ],
     ];
-    final totals = LarderTotals(subtotal: subtotal, delivery: delivery);
+    final totals = LarderTotals(
+      subtotal: subtotal,
+      netSubtotal: frame.basketNetPence,
+      delivery: delivery,
+    );
     // On a desk the lines and, beside them, the totals with the checkout key
     // under them: the key stays by the sum it pays.
     if (MediaQuery.sizeOf(context).width >= 1024) {
@@ -275,7 +281,7 @@ class _LineCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${line.finish} · ${p.price} each',
+                      '${line.finish} · ${LarderPrefs.price(context, p.pence)} each',
                       style: t.secondary,
                     ),
                   ],
@@ -302,7 +308,14 @@ class _LineCard extends StatelessWidget {
                 onChanged: onCount,
               ),
               const Spacer(),
-              Text(larderPrice(line.pence), style: t.figure),
+              Text(
+                larderPrice(
+                  LarderPrefs.pricesWithTax(context)
+                      ? line.pence
+                      : line.netPence,
+                ),
+                style: t.figure,
+              ),
             ],
           ),
         ],
@@ -318,11 +331,15 @@ class LarderTotals extends StatelessWidget {
   const LarderTotals({
     super.key,
     required this.subtotal,
+    required this.netSubtotal,
     required this.delivery,
   });
 
   /// The goods' total.
   final int subtotal;
+
+  /// The goods' total using the displayed unit prices before tax.
+  final int netSubtotal;
 
   /// Delivery's price.
   final int delivery;
@@ -345,7 +362,14 @@ class LarderTotals extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          line('Subtotal', larderPrice(subtotal)),
+          line(
+            'Subtotal',
+            larderPrice(
+              LarderPrefs.pricesWithTax(context) ? subtotal : netSubtotal,
+            ),
+          ),
+          if (!LarderPrefs.pricesWithTax(context))
+            line('Tax', larderPrice(subtotal - netSubtotal)),
           line('Delivery', delivery == 0 ? 'Free' : larderPrice(delivery)),
           const SizedBox(height: ApplianceSpacing.medium),
           Semantics(
@@ -394,9 +418,24 @@ class LarderCheckoutPage extends StatefulWidget {
 class _LarderCheckoutPageState extends State<LarderCheckoutPage> {
   String _delivery = 'standard';
   bool _gift = false;
-  final _name = TextEditingController(text: larderShopper.name);
-  final _address = TextEditingController(text: larderShopper.address);
-  final _postcode = TextEditingController(text: 'EH6 4QT');
+  final _name = TextEditingController();
+  final _address = TextEditingController();
+  final _postcode = TextEditingController();
+  LarderDetails? _initial;
+  bool _submitted = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final account = LarderPrefs.of(context).account;
+    if (account != null && _initial == null) {
+      _initial = account;
+      _name.text = account.name;
+      _address.text = account.address;
+      _postcode.text = account.postcode;
+    }
+  }
+
   final _card = TextEditingController();
 
   @override
@@ -411,15 +450,62 @@ class _LarderCheckoutPageState extends State<LarderCheckoutPage> {
   @override
   Widget build(BuildContext context) {
     final frame = LarderFrame.of(context);
+    final prefs = LarderPrefs.of(context);
+    final account = prefs.account;
+    if (account == null) {
+      return LarderPage(
+        title: 'Checkout',
+        children: [
+          ApplianceEmptyState(
+            title: 'Sign in to check out',
+            message: 'Use the demo account to place an order.',
+            action: ApplianceButton(
+              'Sign in to demo account',
+              onPressed: prefs.signIn,
+            ),
+          ),
+        ],
+      );
+    }
     final subtotal = frame.basket.fold(0, (n, l) => n + l.pence);
     final delivery = _delivery == 'next' ? 650 : larderDelivery(subtotal);
     const gap = SizedBox(height: ApplianceSpacing.large);
     final method = _delivery == 'next' ? 'Next day' : 'Standard';
+    final digits = _card.text.trim();
+    final invalidCard =
+        digits.isNotEmpty && (digits.length < 12 || digits.length > 19);
     void placeOrder() {
+      if (_name.text.trim().isEmpty ||
+          _address.text.trim().isEmpty ||
+          _postcode.text.trim().isEmpty ||
+          invalidCard) {
+        setState(() => _submitted = true);
+        return;
+      }
+      final details = LarderDetails(
+        name: _name.text.trim(),
+        address: _address.text.trim(),
+        postcode: _postcode.text.trim().toUpperCase(),
+        cardLast4: digits.isEmpty
+            ? account.cardLast4
+            : digits.substring(digits.length - 4),
+      );
       if (frame.tryPayment()) {
-        frame.placeOrder(delivery: delivery, method: method);
+        frame.placeOrder(
+          delivery: delivery,
+          method: method,
+          details: details,
+          gift: _gift,
+        );
       } else {
-        frame.push(LarderPaymentFailedPage(delivery: delivery, method: method));
+        frame.push(
+          LarderPaymentFailedPage(
+            delivery: delivery,
+            method: method,
+            details: details,
+            gift: _gift,
+          ),
+        );
       }
     }
 
@@ -457,18 +543,36 @@ class _LarderCheckoutPageState extends State<LarderCheckoutPage> {
             ApplianceTextField(
               label: 'Full name',
               controller: _name,
+              error: _submitted && _name.text.trim().isEmpty
+                  ? 'Enter the recipient’s name.'
+                  : null,
+              onChanged: (_) {
+                if (_submitted) setState(() {});
+              },
               autofillHints: const [AutofillHints.name],
             ),
             gap,
             ApplianceTextField(
               label: 'Address',
               controller: _address,
+              error: _submitted && _address.text.trim().isEmpty
+                  ? 'Enter a street address.'
+                  : null,
+              onChanged: (_) {
+                if (_submitted) setState(() {});
+              },
               autofillHints: const [AutofillHints.streetAddressLine1],
             ),
             gap,
             ApplianceTextField(
               label: 'Postcode',
               controller: _postcode,
+              error: _submitted && _postcode.text.trim().isEmpty
+                  ? 'Enter a postcode.'
+                  : null,
+              onChanged: (_) {
+                if (_submitted) setState(() {});
+              },
               autofillHints: const [AutofillHints.postalCode],
               textCapitalization: TextCapitalization.characters,
             ),
@@ -483,7 +587,11 @@ class _LarderCheckoutPageState extends State<LarderCheckoutPage> {
           children: [
             ApplianceTextField(
               label: 'Card number',
-              hint: '1234 5678 9012 3456',
+              hint: 'Use saved card ending ${account.cardLast4}',
+              error: _submitted && invalidCard
+                  ? 'Enter 12 to 19 digits.'
+                  : null,
+              onChanged: (_) => setState(() {}),
               controller: _card,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -510,7 +618,11 @@ class _LarderCheckoutPageState extends State<LarderCheckoutPage> {
         ),
       ),
     ];
-    final totals = LarderTotals(subtotal: subtotal, delivery: delivery);
+    final totals = LarderTotals(
+      subtotal: subtotal,
+      netSubtotal: frame.basketNetPence,
+      delivery: delivery,
+    );
     // On a desk the form and, beside it, the sum with the key that pays it.
     if (MediaQuery.sizeOf(context).width >= 1024) {
       return LarderPage(
@@ -569,6 +681,8 @@ class LarderPaymentFailedPage extends StatelessWidget {
     super.key,
     required this.delivery,
     this.method = 'Standard',
+    this.details = larderShopper,
+    this.gift = false,
   });
 
   /// What delivery adds, in pence.
@@ -576,6 +690,9 @@ class LarderPaymentFailedPage extends StatelessWidget {
 
   /// How the order would come.
   final String method;
+
+  final LarderDetails details;
+  final bool gift;
 
   @override
   Widget build(BuildContext context) {
@@ -589,7 +706,7 @@ class LarderPaymentFailedPage extends StatelessWidget {
           status: ApplianceStatus.error,
           title: 'The payment did not go through',
           message:
-              'Your bank declined $amount on the card ending 4421. Nothing '
+              'Your bank declined $amount on the card ending ${details.cardLast4}. Nothing '
               'was taken, and the basket is as you left it.',
           actions: [
             ApplianceButton.filled(
@@ -597,7 +714,12 @@ class LarderPaymentFailedPage extends StatelessWidget {
               icon: const Icon(LucideIcons.rotateCw),
               onPressed: () {
                 if (frame.tryPayment()) {
-                  frame.placeOrder(delivery: delivery, method: method);
+                  frame.placeOrder(
+                    delivery: delivery,
+                    method: method,
+                    details: details,
+                    gift: gift,
+                  );
                 }
               },
             ),

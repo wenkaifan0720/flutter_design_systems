@@ -242,6 +242,9 @@ class ApplianceRadio<T> extends StatelessWidget {
         if (disabled) face = face.copyWith(lift: face.lift * 0.4);
         face = layered.on(
           face.copyWith(
+            // The lens is moulded into the circular key; the rim and its
+            // depth change together while the lens stays on its axis.
+            travel: 0,
             focus: states.contains(WidgetState.focused)
                 ? c.focus
                 : _none(c.focus),
@@ -523,7 +526,8 @@ class ApplianceSegment<T> {
 /// slides to the chosen one and snaps into its detent. Every position is
 /// the same width, and a label never moves; the chosen one reads in the
 /// print's full weight, the rest muted. Below 600 px it spans its column;
-/// wider, each position takes the widest label's width.
+/// wider, each position takes the widest label's width. In a narrow space,
+/// each icon moves above its label. Longer labels can wrap onto another line.
 ///
 /// A null [onChanged] disables it. Left and Right move the choice, Home and
 /// End to the ends.
@@ -589,32 +593,60 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
       theme.textTheme.label.copyWith(fontSize: 15, height: 20 / 15),
     );
     final scale = MediaQuery.textScalerOf(context);
-    double widest = 0;
-    for (final s in segments) {
+    final direction = Directionality.of(context);
+    final legendStyle = words.copyWith(fontWeight: FontWeight.w600);
+    final iconSize = frame.iconSize ?? 18.0;
+    final iconGap = math.max(28.0, iconSize + ApplianceSpacing.small);
+    var widest = 0.0;
+    var lineHeight = 0.0;
+    for (final segment in segments) {
       final painter = TextPainter(
-        text: TextSpan(
-          text: s.label,
-          style: words.copyWith(fontWeight: FontWeight.w600),
-        ),
-        textDirection: TextDirection.ltr,
+        text: TextSpan(text: segment.label, style: legendStyle),
+        textDirection: direction,
         textScaler: scale,
         maxLines: 1,
       )..layout();
-      widest = math.max(widest, painter.width + (s.icon == null ? 0 : 28));
+      widest = math.max(
+        widest,
+        painter.width + (segment.icon == null ? 0 : iconGap),
+      );
+      lineHeight = math.max(lineHeight, painter.height);
       painter.dispose();
     }
     const inset = ApplianceMetrics.troughInset;
     final cell = widest + 2 * ApplianceSpacing.regular;
     final hugged = segments.length * cell + 2 * inset;
-    final height = frame.minimumSize?.height ?? theme.controlHeight;
+    final minimumHeight = frame.minimumSize?.height ?? theme.controlHeight;
     final index = math.max(0, segments.indexWhere((s) => s.value == value));
     return LayoutBuilder(
       builder: (context, constraints) {
         final wide =
             (expand ?? MediaQuery.sizeOf(context).width < 600) ||
             hugged > constraints.maxWidth;
-        final width = wide ? constraints.maxWidth : hugged;
-        final each = (width - 2 * inset) / segments.length;
+        final width = wide && constraints.hasBoundedWidth
+            ? constraints.maxWidth
+            : hugged;
+        final each = math.max(0.0, width - 2 * inset) / segments.length;
+        final room = math.max(0.0, each - 2 * ApplianceSpacing.small);
+        final stacked = widest > room;
+        var height = math.max(minimumHeight, lineHeight + 2 * inset + 4);
+        if (stacked) {
+          for (final segment in segments) {
+            final painter =
+                TextPainter(
+                  text: TextSpan(text: segment.label, style: legendStyle),
+                  textDirection: direction,
+                  textScaler: scale,
+                )..layout(
+                  maxWidth: math.max(0.0, each - 2 * ApplianceSpacing.hair),
+                );
+            final extra = segment.icon == null
+                ? 0.0
+                : iconSize + ApplianceSpacing.tight;
+            height = math.max(height, painter.height + extra + 2 * inset + 4);
+            painter.dispose();
+          }
+        }
         final rtl = Directionality.of(context) == TextDirection.rtl;
 
         void move(int by) {
@@ -684,6 +716,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
                           states,
                           words,
                           layers,
+                          stacked,
                         ),
                       )
                     : Stack(
@@ -715,6 +748,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
                                     layers,
                                     move,
                                     rtl,
+                                    stacked,
                                   ),
                                 ),
                             ],
@@ -755,6 +789,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
     List<ApplianceStyle?> layers,
     void Function(int by) move,
     bool rtl,
+    bool stacked,
   ) {
     return DesignPressable(
       onPressed: onChanged == null ? null : () => onChanged!(s.value),
@@ -786,7 +821,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
         ),
       },
       builder: (context, states, _) =>
-          _legend(context, theme, s, chosen, states, words, layers),
+          _legend(context, theme, s, chosen, states, words, layers, stacked),
     );
   }
 
@@ -799,6 +834,7 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
     Set<WidgetState> states,
     TextStyle words,
     List<ApplianceStyle?> layers,
+    bool stacked,
   ) {
     final c = theme.colors;
     final layered = DesignStyleOf(layers, states);
@@ -811,6 +847,20 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
             ? c.print
             : c.printMuted);
     final radius = ApplianceMetrics.troughRadius - ApplianceMetrics.troughInset;
+    final label = DesignCapCenter(
+      capHeightFactor: theme.capHeightFactor,
+      child: Text(
+        s.label,
+        textAlign: TextAlign.center,
+        style: words.copyWith(color: ink, fontWeight: FontWeight.w600),
+      ),
+    );
+    final icon = s.icon == null
+        ? null
+        : IconTheme.merge(
+            data: IconThemeData(size: layered.iconSize ?? 18),
+            child: s.icon!,
+          );
     return Padding(
       padding: const EdgeInsets.symmetric(
         vertical: ApplianceMetrics.troughInset,
@@ -827,36 +877,32 @@ class ApplianceSegmentedButton<T> extends StatelessWidget {
               : _none(c.focus),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: ApplianceSpacing.small,
+          padding: EdgeInsets.symmetric(
+            horizontal: stacked
+                ? ApplianceSpacing.hair
+                : ApplianceSpacing.small,
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (s.icon != null) ...[
-                IconTheme.merge(
-                  data: IconThemeData(size: layered.iconSize ?? 18),
-                  child: s.icon!,
+          child: stacked
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (icon != null) ...[
+                      icon,
+                      const SizedBox(height: ApplianceSpacing.tight),
+                    ],
+                    label,
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (icon != null) ...[
+                      icon,
+                      const SizedBox(width: ApplianceSpacing.small),
+                    ],
+                    Flexible(child: label),
+                  ],
                 ),
-                const SizedBox(width: ApplianceSpacing.small),
-              ],
-              Flexible(
-                child: DesignCapCenter(
-                  capHeightFactor: theme.capHeightFactor,
-                  child: Text(
-                    s.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    // The weight stays: a chosen label never shifts.
-                    style: words.copyWith(
-                      color: ink,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

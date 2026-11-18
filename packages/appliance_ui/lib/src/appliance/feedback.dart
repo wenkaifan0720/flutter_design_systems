@@ -158,17 +158,29 @@ class _SlotBarPainter extends CustomPainter {
           ..color = shade.withValues(alpha: 0.5)
           ..strokeWidth = 1,
       );
-    final a = from.clamp(0.0, 1.0) * size.width;
-    final b = to.clamp(0.0, 1.0) * size.width;
+    final inset = math.min(1.0, size.shortestSide / 2);
+    final inside = (Offset.zero & size).deflate(inset);
+    final a = from.clamp(0.0, 1.0) * inside.width;
+    final b = to.clamp(0.0, 1.0) * inside.width;
     if (b - a <= 0) return;
     final lit = rtl
-        ? Rect.fromLTRB(size.width - b, 1, size.width - a, size.height - 1)
-        : Rect.fromLTRB(a, 1, b, size.height - 1);
+        ? Rect.fromLTRB(
+            inside.right - b,
+            inside.top,
+            inside.right - a,
+            inside.bottom,
+          )
+        : Rect.fromLTRB(
+            inside.left + a,
+            inside.top,
+            inside.left + b,
+            inside.bottom,
+          );
     canvas
       ..save()
       ..clipRRect(whole)
       ..drawRRect(
-        RRect.fromRectAndRadius(lit, Radius.circular(size.height / 2 - 1)),
+        RRect.fromRectAndRadius(lit, Radius.circular(inside.height / 2)),
         Paint()..color = light,
       )
       ..restore();

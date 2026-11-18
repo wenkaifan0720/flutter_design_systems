@@ -56,7 +56,13 @@ class _SlotPainter extends CustomPainter {
         Paint()..color = colors.seamLight,
       )
       ..drawRRect(slot, Paint()..color = colors.slot);
-    double at(double f) => (rtl ? 1 - f : f) * size.width;
+    // The rounded end of the two-pixel light sits two pixels into the
+    // six-pixel slot, just as it does along the top and bottom.
+    final endRadius = math.min(h / 2, size.width / 2);
+    double at(double f) => ((rtl ? 1 - f : f) * size.width).clamp(
+      endRadius,
+      size.width - endRadius,
+    );
     final a = at(start);
     final b = at(end);
     canvas.drawLine(
@@ -374,6 +380,7 @@ class ApplianceRangeSlider extends StatelessWidget {
     this.minGap = 0,
     this.startLabel,
     this.endLabel,
+    this.semanticFormatterCallback,
     this.onChangeStart,
     this.onChangeEnd,
     this.style,
@@ -403,6 +410,10 @@ class ApplianceRangeSlider extends StatelessWidget {
   /// The upper cap's name for a screen reader.
   final String? endLabel;
 
+  /// Formats the value of each thumb for assistive technologies.
+  /// For a price, include the currency in the returned string.
+  final String Function(double value)? semanticFormatterCallback;
+
   /// Called as a drag starts.
   final ValueChanged<DesignRangeValues>? onChangeStart;
 
@@ -427,6 +438,7 @@ class ApplianceRangeSlider extends StatelessWidget {
         minGap: minGap,
         startLabel: startLabel,
         endLabel: endLabel,
+        semanticFormatterCallback: semanticFormatterCallback,
         onChangeStart: onChangeStart,
         onChangeEnd: onChangeEnd,
         thumbSize: Size(_capReach, theme.controlHeight),

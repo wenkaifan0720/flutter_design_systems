@@ -90,6 +90,37 @@ class LarderPrefs extends ChangeNotifier {
   /// Prices shown with tax.
   bool withTax = true;
 
+  LarderDetails _savedDetails = larderShopper;
+  bool _signedIn = true;
+
+  /// The active demo account, or null after signing out.
+  LarderDetails? get account => _signedIn ? _savedDetails : null;
+
+  /// Messages kept in this example for the current session.
+  final messages = <String>[];
+
+  void saveAccount(LarderDetails details) {
+    if (_signedIn) update((p) => p._savedDetails = details);
+  }
+
+  void signIn() => update((p) => p._signedIn = true);
+
+  void signOut() => update((p) {
+    p._signedIn = false;
+    p.messages.clear();
+  });
+
+  /// Catalog prices include tax by default, also for a standalone product card.
+  static bool pricesWithTax(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<_LarderScope>()
+          ?.notifier
+          ?.withTax ??
+      true;
+
+  static String price(BuildContext context, int gross) =>
+      larderPrice(pricesWithTax(context) ? gross : larderNetPence(gross));
+
   /// Changes the prefs and tells the app.
   void update(void Function(LarderPrefs prefs) change) {
     change(this);
@@ -303,7 +334,9 @@ class LarderFrameState extends State<LarderFrame> {
   final ValueNotifier<int> basketChanges = ValueNotifier(0);
 
   /// The shopper's orders, newest first.
-  final List<LarderOrder> orders = [...larderOrders];
+  List<LarderOrder> get orders =>
+      LarderPrefs.of(context).account == null ? const [] : _orders;
+  final List<LarderOrder> _orders = [...larderOrders];
 
   /// Payments tried so far.
   int _tries = 0;
@@ -361,6 +394,9 @@ class LarderFrameState extends State<LarderFrame> {
   /// How many things are in the basket.
   int get basketCount => basket.fold(0, (n, l) => n + l.count);
 
+  /// The subtotal before tax, using the price shown for each unit.
+  int get basketNetPence => basket.fold(0, (sum, line) => sum + line.netPence);
+
   /// Changes the basket and redraws the frame (its count).
   void changeBasket(void Function(List<LarderLine> lines) change) =>
       setState(() {
@@ -393,7 +429,13 @@ class LarderFrameState extends State<LarderFrame> {
 
   /// Turns the basket into a new order with [delivery] by [method]: closes
   /// what was open over the place, empties the basket and opens Orders.
-  void placeOrder({required int delivery, required String method}) {
+  void placeOrder({
+    required int delivery,
+    required String method,
+    required LarderDetails details,
+    required bool gift,
+  }) {
+    if (LarderPrefs.of(context).account == null || basket.isEmpty) return;
     final next = method == 'Next day';
     final order = LarderOrder(
       number: orders.first.number + 1,
@@ -403,17 +445,29 @@ class LarderFrameState extends State<LarderFrame> {
       lines: [...basket],
       delivery: delivery,
       method: method,
+      details: details,
+      gift: gift,
       tracking: const [(what: 'Ordered', where: null, when: 'Just now')],
     );
     (_desk.currentState ?? Navigator.of(context)).popUntil((r) => r.isFirst);
     setState(() {
-      orders.insert(0, order);
+      _orders.insert(0, order);
       basket.clear();
       basketChanges.value++;
       _place = LarderPlace.orders;
       _scene = null;
     });
     showApplianceToast(context, 'Order ${order.number} placed. Thank you.');
+  }
+
+  /// Ends the demo session and removes the shopper's basket and open detail pages.
+  void signOut() {
+    final prefs = LarderPrefs.of(context);
+    (_desk.currentState ?? Navigator.of(context)).popUntil((r) => r.isFirst);
+    changeBasket((lines) => lines.clear());
+    _tries = 0;
+    prefs.signOut();
+    showApplianceToast(context, 'Signed out');
   }
 
   /// Opens [page] over the current place: in the frame from 600, over the
@@ -438,6 +492,7 @@ class LarderFrameState extends State<LarderFrame> {
   Widget build(BuildContext context) {
     final theme = context.applianceTheme;
     final count = basketCount;
+    final prefs = LarderPrefs.of(context);
     // About stands last; on a phone it leaves the key strip (five keys, not
     // six) and Settings' Help opens it.
     final places = [
@@ -475,8 +530,8 @@ class LarderFrameState extends State<LarderFrame> {
         children: [
           ApplianceListTile(
             leading: const Icon(LucideIcons.user),
-            title: larderShopper.name,
-            subtitle: 'Account',
+            title: prefs.account?.name ?? 'Guest',
+            subtitle: prefs.account == null ? 'Signed out' : 'Account',
             onTap: () => go(LarderPlace.settings),
           ),
         ],

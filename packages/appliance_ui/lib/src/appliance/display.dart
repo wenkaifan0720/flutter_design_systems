@@ -10,6 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'lists.dart';
 import 'material.dart';
 import 'theme.dart';
 
@@ -430,55 +431,64 @@ class ApplianceEmptyState extends StatelessWidget {
     final t = theme.textTheme;
     return Semantics(
       container: true,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ExcludeSemantics(
-            child: SizedBox(
-              width: 120,
-              height: 56,
-              child: ApplianceSurface(
-                face: ApplianceFace.well(c, fill: look.fill ?? c.display),
-                child: Center(
-                  child: Text(
-                    reading,
-                    style: t.display.copyWith(
-                      color: c.onDisplay.withValues(alpha: 0.55),
+      child: AppliancePanel(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ExcludeSemantics(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 120, minHeight: 56),
+                child: ApplianceSurface(
+                  face: ApplianceFace.well(c, fill: look.fill ?? c.display),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    child: Center(
+                      widthFactor: 1,
+                      heightFactor: 1,
+                      child: Text(
+                        reading,
+                        style: t.display.copyWith(
+                          color: c.onDisplay.withValues(alpha: 0.55),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: ApplianceSpacing.regular),
-          Semantics(
-            header: true,
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: look
-                  .text(t.heading)
-                  .copyWith(color: look.foreground ?? c.print),
-            ),
-          ),
-          if (message != null) ...[
-            const SizedBox(height: ApplianceSpacing.small),
-            ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: ApplianceMetrics.readingWidth,
-              ),
+            const SizedBox(height: ApplianceSpacing.regular),
+            Semantics(
+              header: true,
               child: Text(
-                message!,
+                title,
                 textAlign: TextAlign.center,
-                style: t.body.copyWith(color: c.printMuted),
+                style: look
+                    .text(t.heading)
+                    .copyWith(color: look.foreground ?? c.print),
               ),
             ),
+            if (message != null) ...[
+              const SizedBox(height: ApplianceSpacing.small),
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: ApplianceMetrics.readingWidth,
+                ),
+                child: Text(
+                  message!,
+                  textAlign: TextAlign.center,
+                  style: t.body.copyWith(color: c.printMuted),
+                ),
+              ),
+            ],
+            if (action != null) ...[
+              const SizedBox(height: ApplianceSpacing.large),
+              action!,
+            ],
           ],
-          if (action != null) ...[
-            const SizedBox(height: ApplianceSpacing.large),
-            action!,
-          ],
-        ],
+        ),
       ),
     );
   }
