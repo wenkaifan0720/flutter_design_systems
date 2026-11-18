@@ -19,7 +19,7 @@ import 'package:material_ui/material_ui.dart'
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
 

@@ -1,11 +1,10 @@
-// Material Expressive's push on an app built on Flutter's own MaterialApp,
-// as most apps that take the look are (and this example). The look's
-// library is on material_ui, so the PageTransitionsTheme its host installs
-// in the Material theme it builds is material_ui's: Flutter's
-// MaterialPageRoute never reads it, and on a Mac plays the Cupertino slide.
-// The look exposes its transitions as a map of widgets-level
-// PageTransitionsBuilders instead, expressivePageTransitions, one map for
-// both Materials, and the app puts it in its own ThemeData.
+// Material Expressive's push on an app's own MaterialApp: Flutter's, as most
+// apps that take the look are, or material_ui's, as this example is once
+// exported (its imports become material_ui's and cupertino_ui's). Neither
+// reads the theme the look's host builds, so the look exposes its
+// transitions as a map of widgets-level PageTransitionsBuilders,
+// expressivePageTransitions, one map for both Materials, and the app puts it
+// in its own ThemeData. Without it, a Mac plays the Cupertino slide.
 //
 // ui_core's example/test/page_transitions_test.dart, with the look's map in
 // place of its stand-in. The map's push: the look's fade-forwards (96dp of
@@ -13,9 +12,9 @@
 // predictive back on Android, whose push is Flutter's fade-forwards (a
 // quarter of the window's travel); the Cupertino slide on iOS, which carries
 // the edge swipe-back.
-import 'package:flutter/cupertino.dart' show CupertinoPageTransition;
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransition;
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 
@@ -44,9 +43,8 @@ Widget _app({Map<TargetPlatform, PageTransitionsBuilder>? transitions}) =>
     );
 
 // How far the pushed page stands from where it comes to rest, 50 ms into the
-// push (the travel still ahead of it), and whether Flutter's Cupertino slide,
-// its default on a Mac, carries it then. (The look's iOS slide is
-// cupertino_ui's, as the look's library stands on it; its travel shows it.)
+// push (the travel still ahead of it), and whether the Cupertino slide, the
+// default on a Mac, carries it then.
 Future<({double ahead, bool slide})> _push(WidgetTester tester) async {
   await tester.tap(find.text('Open'));
   await tester.pump();
@@ -73,17 +71,19 @@ void main() {
       final window = _window(tester);
       await tester.pumpWidget(_app(transitions: expressivePageTransitions));
       final (:ahead, :slide) = await _push(tester);
-      expect(slide, isFalse);
       switch (defaultTargetPlatform) {
         case TargetPlatform.iOS:
           // The Cupertino slide, across the window.
+          expect(slide, isTrue);
           expect(ahead, greaterThan(window / 2));
         case TargetPlatform.android:
           // Flutter's fade-forwards: a quarter of the window at most.
+          expect(slide, isFalse);
           expect(ahead, greaterThan(0));
           expect(ahead, lessThanOrEqualTo(window / 4));
         case _:
           // The look's fade-forwards: 96dp at most, never across the window.
+          expect(slide, isFalse);
           expect(ahead, greaterThan(0));
           expect(ahead, lessThanOrEqualTo(_fadeForwardsTravel));
       }

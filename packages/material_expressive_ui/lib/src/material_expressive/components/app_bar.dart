@@ -1452,7 +1452,7 @@ typedef ExpressiveSearchResultsBuilder = Widget Function(
 
 /// The search bar (Compose's `SearchBar` with its `InputField`): a 56dp
 /// pill on `surfaceContainerHigh` — the search glyph (or [leading]), the
-/// query or [placeholder], [trailing] icons and an [avatar] — that opens
+/// query or `placeholder`, [trailing] icons and an [avatar] — that opens
 /// the full-screen search view when tapped. The view (Compose's
 /// `ExpandedFullScreenSearchBar`, or with [contained] its
 /// `ExpandedFullScreenContainedSearchBar`) grows out of the bar: the field
@@ -1992,7 +1992,7 @@ class _SearchFieldRow extends StatelessWidget {
 
 /// The search input field (Compose's `SearchBarDefaults.InputField`): a
 /// 56dp pill on `surfaceContainerHigh` that edits the query — a leading
-/// search glyph ([leading]), [placeholder], a clear control ([clearable],
+/// search glyph ([leading]), `placeholder`, a clear control ([clearable],
 /// "Clear search": empties the query and keeps focus), [trailing] icons —
 /// and, with [onCancel], a leading back arrow ("Cancel search": empties
 /// the query, lets go of focus and tells [onCancel]). It is the search

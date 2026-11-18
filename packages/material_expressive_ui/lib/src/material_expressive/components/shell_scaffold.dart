@@ -25,6 +25,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 
 import '../chrome_metrics.dart';
@@ -203,9 +204,10 @@ class _ExpressiveShellScaffoldState extends State<ExpressiveShellScaffold> {
       for (final tab in widget.tabs) ExpressiveNavItem.fromTab(tab),
     ];
     final select = widget.onDestinationSelected;
-    final rail =
-        MediaQuery.sizeOf(context).width >=
-        ExpressiveChromeMetrics.railMinWindowWidth;
+    // ui_core's window classes: the bar while compact, the rail from
+    // medium, standing expanded from large.
+    final size = DesignWindowSizeClass.of(context);
+    final rail = size != DesignWindowSizeClass.compact;
     final index = widget.selectedIndex;
     final media =
         index < widget.tabs.length &&
@@ -318,8 +320,8 @@ class _ExpressiveShellScaffoldState extends State<ExpressiveShellScaffold> {
             selectedIndex: widget.selectedIndex,
             onDestinationSelected: select,
             expanded:
-                MediaQuery.sizeOf(context).width >=
-                ExpressiveChromeMetrics.expandedRailMinWindowWidth,
+                DesignWindowSizeClass.of(context).index >=
+                DesignWindowSizeClass.large.index,
             header: action == null
                 ? null
                 : SizedBox(

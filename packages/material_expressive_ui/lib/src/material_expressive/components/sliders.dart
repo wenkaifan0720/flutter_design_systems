@@ -2272,7 +2272,9 @@ class _QuantityStepperState extends State<ExpressiveNumberField> {
     final next = (from + direction * widget.step).clamp(widget.min, widget.max);
     if (next == from) return false;
     _held = next;
-    HapticFeedback.selectionClick();
+    // ui_core's step moment: an app swaps or silences it in a
+    // DesignHapticsScope.
+    DesignHaptics.of(context).selectionChanged?.call();
     widget.onChanged!(next);
     return true;
   }

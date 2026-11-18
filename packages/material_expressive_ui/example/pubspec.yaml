@@ -8,15 +8,17 @@ environment:
 resolution: workspace
 
 dependencies:
+  cupertino_ui: ^1.0.0
+  material_ui: ^1.9.0
   flutter:
     sdk: flutter
-  # The gallery is an app on Flutter's Material: its delegates for the 30 locales (the README's line).
+  # The gallery's delegates for the 30 locales (the README's line): the widgets' from here, Material's from material_ui.
   flutter_localizations:
     sdk: flutter
   material_expressive_ui:
     path: ../
-  # An example imports the foundation itself too (its alignment sheet, say).
-  ui_core: ^0.2.1
+  # An example imports the foundation itself too (its inventory, say).
+  ui_core: ^0.3.0
 
 
 dev_dependencies:

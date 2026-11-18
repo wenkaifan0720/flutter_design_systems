@@ -218,7 +218,7 @@ class ExpressivePolygonMorph {
   /// shape, and any value in between results in a shape which is a linear
   /// interpolation between those two shapes.
   ///
-  /// The range is generally [0..1] and values outside could result in
+  /// The range is generally `[0..1]` and values outside could result in
   /// undefined shapes, but values close to (but outside) the range can be used
   /// to get an exaggerated effect (e.g., for a bounce or overshoot animation).
   List<ExpressiveShapeCubic> asCubics(double progress) {

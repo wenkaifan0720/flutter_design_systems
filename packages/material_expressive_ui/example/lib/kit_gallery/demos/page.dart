@@ -5,7 +5,7 @@
 /// fade-forwards push (and on Android predictive back).
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../kit.dart';
 import '../kit_stack.dart';

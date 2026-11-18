@@ -37,7 +37,6 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart' show GestureBinding;
 // Material's words where ui_core has none: a popup menu's name, which an app
 // without Material's localizations goes without.
 import 'package:material_ui/material_ui.dart' show MaterialLocalizations;
@@ -71,6 +70,7 @@ import 'hero.dart';
 import 'overlays.dart';
 import '../internal/style_layers.dart';
 import 'chips.dart' show ExpressiveChip;
+import 'progress.dart' show ExpressiveCircularProgressIndicator;
 import 'select.dart' show ExpressiveSelectOption;
 
 // ---------------------------------------------------------------------------
@@ -841,13 +841,8 @@ _ItemColors _tokenItemColors(
 // ---------------------------------------------------------------------------
 // One lit row.
 
-/// What last moved an open menu's highlight: nothing yet, the pointer, or
-/// the keys.
+/// What last moved an open menu's highlight: the pointer or the keys.
 enum _Lead {
-  /// Nothing yet: a menu ui_core opened at the pointer, whose first row it
-  /// focused unseen (the menu bar's).
-  none,
-
   /// The pointer, moving over a row.
   pointer,
 
@@ -892,7 +887,6 @@ class _MenuLead extends ValueNotifier<_Lead> {
   /// The light of a row [focused] and [hovered] as it is.
   _Light lightOf({required bool focused, required bool hovered}) =>
       switch (value) {
-        _Lead.none => _Light.off,
         _Lead.pointer =>
           (followsPointer ? focused : hovered) ? _Light.plate : _Light.off,
         _Lead.keys => focused ? _Light.ring : _Light.off,
@@ -959,7 +953,6 @@ class _LeadHost extends StatefulWidget {
     required this.initial,
     required this.followsPointer,
     required this.child,
-    this.firstKeyLights = false,
   });
 
   /// The lead as the menu appears.
@@ -967,11 +960,6 @@ class _LeadHost extends StatefulWidget {
 
   /// [_MenuLead.followsPointer].
   final bool followsPointer;
-
-  /// Whether, before anything moved ([_Lead.none]), Down lights the row
-  /// that already holds the focus unseen and Up goes to the last: the menu
-  /// bar's menus, whose first row ui_core focuses as they open.
-  final bool firstKeyLights;
 
   final Widget child;
 
@@ -1017,22 +1005,7 @@ class _LeadHostState extends State<_LeadHost> {
     if (event is KeyUpEvent || _modifierKeys.contains(event.logicalKey)) {
       return KeyEventResult.ignored;
     }
-    final was = _lead.value;
     _lead.value = _Lead.keys;
-    if (!widget.firstKeyLights || was != _Lead.none) {
-      return KeyEventResult.ignored;
-    }
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.arrowDown) return KeyEventResult.handled;
-    if (key == LogicalKeyboardKey.arrowUp) {
-      final rows =
-          (node.nearestScope?.traversalDescendants ?? const <FocusNode>[])
-              .where((row) => row.canRequestFocus && !row.skipTraversal)
-              .toList()
-            ..sort((a, b) => a.rect.top.compareTo(b.rect.top));
-      if (rows.isNotEmpty) rows.last.requestFocus();
-      return KeyEventResult.handled;
-    }
     return KeyEventResult.ignored;
   }
 
@@ -1046,71 +1019,6 @@ class _LeadHostState extends State<_LeadHost> {
       child: widget.child,
     ),
   );
-}
-
-/// Whether the last press was a key's rather than a pointer's. ui_core's
-/// menu bar focuses a menu's first row as it opens either way; the row shows
-/// only when a key opened it.
-abstract final class _LastInput {
-  static bool _watching = false;
-
-  /// Whether a key was pressed since the last pointer went down.
-  static bool wasKey = false;
-
-  /// Starts listening, once.
-  static void watch() {
-    if (_watching) return;
-    _watching = true;
-    HardwareKeyboard.instance.addHandler(_onKey);
-    GestureBinding.instance.pointerRouter.addGlobalRoute(_onPointer);
-  }
-
-  static bool _onKey(KeyEvent event) {
-    if (event is KeyDownEvent && !_modifierKeys.contains(event.logicalKey)) {
-      wasKey = true;
-    }
-    return false;
-  }
-
-  static void _onPointer(PointerEvent event) {
-    if (event is PointerDownEvent) wasKey = false;
-  }
-}
-
-/// A row of a menu ui_core lays out (the menu bar's), under ui_core's
-/// pressable: its [states] shown as its menu's one lit row ([_MenuLead]),
-/// the pointer moving over it lighting it.
-class _LeadRow extends StatelessWidget {
-  const _LeadRow({required this.states, required this.builder});
-
-  /// ui_core's states for the row.
-  final Set<WidgetState> states;
-
-  /// The row's face for the states it shows.
-  final Widget Function(Set<WidgetState> shown) builder;
-
-  @override
-  Widget build(BuildContext context) {
-    final lead = _LeadScope.of(context);
-    // Under ui_core's pressable, this is its own focus.
-    final focus = Focus.maybeOf(context);
-    final enabled = !states.contains(WidgetState.disabled);
-    final focused = focus?.hasPrimaryFocus ?? false;
-    final hovered = states.contains(WidgetState.hovered);
-    final light =
-        lead?.lightOf(focused: focused, hovered: hovered) ??
-        _lightAlone(focused: focused, hovered: hovered);
-    final shown = <WidgetState>{
-      for (final state in states)
-        if (state != WidgetState.focused && state != WidgetState.hovered) state,
-      if (enabled && light == _Light.plate) WidgetState.hovered,
-      if (enabled && light == _Light.ring) WidgetState.focused,
-    };
-    return MouseRegion(
-      onHover: enabled && lead != null ? (_) => lead.pointerOver(focus) : null,
-      child: builder(shown),
-    );
-  }
 }
 
 /// One entry laid out as its item, wired to the popup it is in.
@@ -3546,6 +3454,13 @@ Widget _entering(Animation<double> presence, Widget child) => AnimatedBuilder(
 /// or Delete removes one. With [onCreate] the typed words make a value of
 /// their own.
 ///
+/// With [search] the suggestions are found for what is typed (a server's,
+/// say) in place of filtering [options], once typing rests for
+/// [debounceDuration]: the panel says it is loading (a menu row with a
+/// spinner) while the search runs, and, when it fails, says so with a
+/// "Try again" row the arrows reach. [options] still name the chosen values
+/// a search has not found.
+///
 /// ```dart
 /// ExpressiveMultiSelect<String>(label: 'Tags', options: const [ExpressiveSelectOption('red', 'Red'), ExpressiveSelectOption('blue', 'Blue')], values: tags, onChanged: setTags)
 /// ```
@@ -3562,14 +3477,25 @@ class ExpressiveMultiSelect<T extends Object> extends StatefulWidget {
     this.isError = false,
     this.focusNode,
     this.autofocus = false,
+    this.search,
+    this.debounceDuration,
     super.key,
   }) : assert(
          maxValues == null || maxValues > 0,
          'maxValues allows at least one value',
        );
 
-  /// What can be chosen.
+  /// What can be chosen (with [search], what names the chosen values).
   final List<ExpressiveSelectOption<T>> options;
+
+  /// Finds the suggestions for what is typed, in place of filtering
+  /// [options] (ui_core's `DesignTagInput.search`).
+  final FutureOr<Iterable<ExpressiveSelectOption<T>>> Function(String query)?
+  search;
+
+  /// How long typing rests before [search] runs; null runs it at every
+  /// change.
+  final Duration? debounceDuration;
 
   /// The focus node of the field's text; null makes and disposes its own.
   final FocusNode? focusNode;
@@ -3625,7 +3551,19 @@ class ExpressiveMultiSelect<T extends Object> extends StatefulWidget {
       ..add(
         ObjectFlagProperty<T? Function(String text)?>.has('onCreate', onCreate),
       )
-      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'));
+      ..add(FlagProperty('isError', value: isError, ifTrue: 'isError'))
+      ..add(
+        ObjectFlagProperty<
+          FutureOr<Iterable<ExpressiveSelectOption<T>>> Function(String)?
+        >.has('search', search),
+      )
+      ..add(
+        DiagnosticsProperty<Duration?>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
+        ),
+      );
   }
 }
 
@@ -3655,20 +3593,39 @@ class _ExpressiveMultiSelectState<T extends Object>
     super.dispose();
   }
 
-  String _label(T value) {
+  /// The options [ExpressiveMultiSelect.search] found, by value: their
+  /// labels name the suggestions, and the chips chosen from them.
+  final Map<T, ExpressiveSelectOption<T>> _found =
+      <T, ExpressiveSelectOption<T>>{};
+
+  ExpressiveSelectOption<T>? _option(T value) {
     for (final option in widget.options) {
-      if (option.value == value) return option.label;
+      if (option.value == value) return option;
     }
-    return value.toString();
+    return _found[value];
   }
+
+  String _label(T value) => _option(value)?.label ?? value.toString();
 
   /// Whether [value]'s option can be chosen: a disabled one is offered
   /// dimmed, as a select offers it, and passed over.
-  bool _enabled(T value) {
-    for (final option in widget.options) {
-      if (option.value == value) return option.enabled;
+  bool _enabled(T value) => _option(value)?.enabled ?? true;
+
+  /// [ExpressiveMultiSelect.search] as ui_core's tag input asks it: the
+  /// values found, their options kept for their labels.
+  FutureOr<Iterable<T>> _search(String query) {
+    Iterable<T> keep(Iterable<ExpressiveSelectOption<T>> found) {
+      final list = found.toList();
+      for (final option in list) {
+        _found[option.value] = option;
+      }
+      return <T>[for (final option in list) option.value];
     }
-    return true;
+
+    final found = widget.search!(query);
+    return found is Future<Iterable<ExpressiveSelectOption<T>>>
+        ? found.then(keep)
+        : keep(found);
   }
 
   @override
@@ -3697,6 +3654,38 @@ class _ExpressiveMultiSelectState<T extends Object>
           onChanged: onChanged ?? (_) {},
           focusNode: _node,
           options: <T>[for (final option in widget.options) option.value],
+          search: widget.search == null ? null : _search,
+          debounceDuration: widget.debounceDuration,
+          // The search's states as menu rows on the same panel: a spinner
+          // while it runs, and a failure the arrows can reach to try again.
+          loadingBuilder: (context) => _optionFace(
+            context,
+            states: const <WidgetState>{},
+            label: DesignLocalizations.of(context).loadingLabel,
+            selectable: false,
+            trailing: const SizedBox.square(
+              dimension: ExpressiveSpacing.s20,
+              child: FittedBox(child: ExpressiveCircularProgressIndicator()),
+            ),
+          ),
+          // Pressed as the options above it are (ui_core's pressable), and
+          // lit when the arrows reach it.
+          errorBuilder: (context, error) => DesignPressable(
+            onPressed: error.retry,
+            builder: (context, states, _) => _optionFace(
+              context,
+              states: <WidgetState>{
+                ...states,
+                if (error.focused) WidgetState.focused,
+              },
+              // What to do, over what went wrong: a two-line row, wrapping
+              // as a narrow panel needs.
+              label: DesignLocalizations.of(context).retryButtonLabel,
+              supporting: DesignLocalizations.of(context).searchFailedMessage,
+              icon: ExpressiveSymbols.refresh,
+              selectable: false,
+            ),
+          ),
           isOptionEnabled: _enabled,
           // One place: the pointer moves ui_core's highlight. After a pointer
           // opens the list, the highlight draws as the hover layer
@@ -3846,7 +3835,6 @@ class ExpressiveMenuBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.expressiveTheme;
-    _LastInput.watch();
     return DesignMenuBar(
       menus: <DesignMenuEntry>[for (final menu in menus) menu._design()],
       semanticLabel: DesignLocalizations.of(context).menuBarLabel,
@@ -3863,30 +3851,25 @@ class ExpressiveMenuBar extends StatelessWidget {
         ),
       ),
       dividerBuilder: (context) => const _MenuDivider(),
-      // One lit row per menu. ui_core focuses a menu's first row as it opens;
-      // it shows only when a key opened the menu, and the pointer moving
-      // over a row takes the focus (and the light) there.
+      // One lit row per menu, ui_core's (highlightFollowsPointer): a menu
+      // the pointer opened lights none until a key or the pointer moves, a
+      // key-opened one its first row.
       surfaceBuilder: (context, info, items) => _entering(
         info.animation,
-        _LeadHost(
-          initial: _LastInput.wasKey ? _Lead.keys : _Lead.none,
-          followsPointer: true,
-          firstKeyLights: true,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: MenuBehavior.itemMinWidth,
-              maxWidth: MenuBehavior.itemMaxWidth,
-              maxHeight: info.maxSize.height,
-            ),
-            child: _panel(
-              SingleChildScrollView(
-                primary: false,
-                child: IntrinsicWidth(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: items,
-                  ),
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: MenuBehavior.itemMinWidth,
+            maxWidth: MenuBehavior.itemMaxWidth,
+            maxHeight: info.maxSize.height,
+          ),
+          child: _panel(
+            SingleChildScrollView(
+              primary: false,
+              child: IntrinsicWidth(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: items,
                 ),
               ),
             ),
@@ -3930,38 +3913,41 @@ class ExpressiveMenuBar extends StatelessWidget {
           );
         }
         final shortcut = entry.shortcut;
-        return _LeadRow(
-          states: states,
-          builder: (shown) => _optionFace(
-            context,
-            // A check item's check is its own glyph; an open submenu wears
-            // the selected item's container.
-            states: <WidgetState>{
-              ...shown,
-              if (entry.checked ?? false) WidgetState.selected,
-            },
-            resolved: true,
-            label: entry.label,
-            selectable: entry.checked != null || entry.isSubmenu,
-            icon: entry.checked == null
-                ? null
-                : entry.checked!
-                ? ExpressiveSymbols.check
-                : null,
-            trailing: entry.isSubmenu
-                ? Icon(
-                    Directionality.of(context) == TextDirection.ltr
-                        ? ExpressiveSymbols.chevronRight
-                        : ExpressiveSymbols.chevronLeft,
-                    size: ExpressiveSpacing.s20,
-                  )
-                : shortcut == null
-                ? null
-                : expressiveFaceLabel(
-                    // Its keys on the row's middle, by their capitals.
-                    Text(shortcut, style: t.type.labelMedium),
+        return _optionFace(
+          context,
+          // A check item's check is its own glyph; an open submenu wears
+          // the selected item's container.
+          states: <WidgetState>{
+            ...states,
+            if (entry.checked ?? false) WidgetState.selected,
+          },
+          resolved: true,
+          label: entry.label,
+          selectable: entry.checked != null || entry.isSubmenu,
+          icon: entry.checked == null
+              ? null
+              : entry.checked!
+              ? ExpressiveSymbols.check
+              : null,
+          trailing: entry.isSubmenu
+              ? Icon(
+                  Directionality.of(context) == TextDirection.ltr
+                      ? ExpressiveSymbols.chevronRight
+                      : ExpressiveSymbols.chevronLeft,
+                  size: ExpressiveSpacing.s20,
+                )
+              : shortcut == null
+              ? null
+              : expressiveFaceLabel(
+                  // Its keys on the row's middle, by their capitals, in the
+                  // order they are pressed in either direction: right to
+                  // left, "⌘ N" would otherwise read "N ⌘".
+                  Text(
+                    shortcut,
+                    style: t.type.labelMedium,
+                    textDirection: TextDirection.ltr,
                   ),
-          ),
+                ),
         );
       },
     );

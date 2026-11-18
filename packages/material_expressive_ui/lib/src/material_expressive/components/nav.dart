@@ -146,7 +146,7 @@ enum ExpressiveNavigationBarArrangement {
 /// `surfaceContainer` band of [destinations] — 3 to 5 — over the system's bottom
 /// and side insets, the [selectedIndex] item wearing the active indicator
 /// (a `secondaryContainer` pill, the icon filled, the label in
-/// `secondary`). Selecting an item calls [onSelected].
+/// `secondary`). Selecting an item calls `onSelected`.
 ///
 /// [itemPosition] top is the phone's vertical item; start the horizontal
 /// item of a wider window, usually with [arrangement] centered.

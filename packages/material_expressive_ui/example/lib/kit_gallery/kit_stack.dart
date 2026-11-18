@@ -5,7 +5,7 @@
 /// keyed by it.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
 
 import 'kit.dart';
@@ -88,23 +88,28 @@ class _KitStackState extends State<KitStack> with WidgetsBindingObserver {
   Widget build(BuildContext context) => PreviewFrame(
     platform: kitPlatform,
     brightness: widget.brightness,
-    child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: kitAppTheme,
-      // The stack's own app reads in the page's direction (its English
-      // locale would turn a right-to-left page's demo left to right).
-      builder: (inner, _) => Directionality(
-        textDirection:
-            Directionality.maybeOf(context) ?? Directionality.of(inner),
-        child: kitHost(
-          brightness: widget.brightness,
-          child: Navigator(
-            key: _navigator,
-            pages: <Page<void>>[
-              for (final location in _locations)
-                widget.page(location, ValueKey<String>(location)),
-            ],
-            onDidRemovePage: _removed,
+    // Its own screen to assistive technology: its first route's barrier hides
+    // only what it paints, never the gallery around it.
+    child: Semantics(
+      container: true,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: kitAppTheme,
+        // The stack's own app reads in the page's direction (its English
+        // locale would turn a right-to-left page's demo left to right).
+        builder: (inner, _) => Directionality(
+          textDirection:
+              Directionality.maybeOf(context) ?? Directionality.of(inner),
+          child: kitHost(
+            brightness: widget.brightness,
+            child: Navigator(
+              key: _navigator,
+              pages: <Page<void>>[
+                for (final location in _locations)
+                  widget.page(location, ValueKey<String>(location)),
+              ],
+              onDidRemovePage: _removed,
+            ),
           ),
         ),
       ),

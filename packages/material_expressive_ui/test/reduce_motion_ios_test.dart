@@ -109,9 +109,7 @@ void main() {
       expect(
         await _moving(tester),
         isFalse,
-        reason:
-            'it moves under Reduce '
-            'Motion',
+        reason: 'it moves under Reduce Motion',
       );
       _iosReduceMotion(tester, false);
       expect(await _moving(tester), isTrue, reason: 'still once it is off');
@@ -119,9 +117,7 @@ void main() {
       expect(
         await _moving(tester),
         isFalse,
-        reason:
-            'it kept moving once '
-            'Reduce Motion came on',
+        reason: 'it kept moving once Reduce Motion came on',
       );
     });
   }

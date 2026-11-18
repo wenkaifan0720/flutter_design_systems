@@ -160,42 +160,6 @@ class ExpressiveStateLayers with Diagnosticable {
   }
 }
 
-/// Material's window size classes by the width a layout is given: compact
-/// under 600dp, medium under 840, expanded under 1200, large under 1600,
-/// extra-large from there (the `WindowSizeClass` breakpoints of Compose's
-/// adaptive library, `androidx.window` 1.4). Every Expressive layout that
-/// changes with width reads them here — the shell's rail, the table's
-/// stacking — so a page and its parts agree on where a phone ends.
-enum ExpressiveWindowSizeClass {
-  /// Under 600dp: a phone held upright.
-  compact(0),
-
-  /// 600 to 840dp: a phone held across, a small tablet, a foldable open.
-  medium(600),
-
-  /// 840 to 1200dp: a tablet, a small desktop window.
-  expanded(840),
-
-  /// 1200 to 1600dp: a desktop window.
-  large(1200),
-
-  /// 1600dp and over: a wide desktop window.
-  extraLarge(1600);
-
-  const ExpressiveWindowSizeClass(this.minWidth);
-
-  /// The least width of the class, in dp.
-  final double minWidth;
-
-  /// The class of a layout [width] wide.
-  static ExpressiveWindowSizeClass ofWidth(double width) =>
-      values.lastWhere((c) => width >= c.minWidth);
-
-  /// The class of the window at [context].
-  static ExpressiveWindowSizeClass of(BuildContext context) =>
-      ofWidth(MediaQuery.sizeOf(context).width);
-}
-
 /// The expression budget: how many hero moments an app may spend
 /// (CONTRACT §3), at most one per page.
 enum ExpressiveExpression {
@@ -401,7 +365,7 @@ class ExpressiveStatusColors {
   /// Status tones of the given groups.
   const ExpressiveStatusColors({required this.success, required this.warning});
 
-  /// [light] or [dark] (`BakedColors.statusLight`), by name; null when the
+  /// `light` or `dark` (`BakedColors.statusLight`), by name; null when the
   /// map holds none.
   static ExpressiveStatusColors? fromMap(Map<String, int> tones) {
     if (tones.isEmpty) return null;

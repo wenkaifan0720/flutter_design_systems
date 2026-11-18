@@ -12,7 +12,7 @@ library;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 // ignore_for_file: avoid_relative_lib_imports
 import '../example/lib/main.dart';

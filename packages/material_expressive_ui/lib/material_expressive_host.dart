@@ -5,6 +5,38 @@
 /// beside that one.
 ///
 /// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
+///
+/// {@canonicalFor artwork}
+/// {@canonicalFor artwork.ExpressiveArtwork}
+/// {@canonicalFor artwork.ExpressiveArtworkScheme}
+/// {@canonicalFor chrome_metrics}
+/// {@canonicalFor chrome_metrics.ExpressiveChromeMetrics}
+/// {@canonicalFor host}
+/// {@canonicalFor host.ExpressiveHost}
+/// {@canonicalFor host.ExpressiveMediaGround}
+/// {@canonicalFor page}
+/// {@canonicalFor page.ExpressivePage}
+/// {@canonicalFor page.ExpressivePageTransitionsBuilder}
+/// {@canonicalFor page.ExpressivePredictiveBackRoute}
+/// {@canonicalFor page.ExpressivePredictiveBackTransition}
+/// {@canonicalFor page.predictiveBackGeometry}
+/// {@canonicalFor preview}
+/// {@canonicalFor preview.ExpressiveNavigationMode}
+/// {@canonicalFor preview.ExpressivePreview}
+/// {@canonicalFor sheet_page}
+/// {@canonicalFor sheet_page.ExpressiveFullScreenDialogPage}
+/// {@canonicalFor sheet_page.ExpressiveSheetPage}
+/// {@canonicalFor shell_action}
+/// {@canonicalFor shell_action.ExpressiveShellAction}
+/// {@canonicalFor shell_insets}
+/// {@canonicalFor shell_insets.ExpressiveShellInsets}
+/// {@canonicalFor shell_scaffold}
+/// {@canonicalFor shell_scaffold.ExpressiveShellScaffold}
+/// {@canonicalFor format}
+/// {@canonicalFor format.ExpressiveFormat}
+/// {@canonicalFor inventory}
+/// {@canonicalFor inventory.ExpressiveInventoryGallery}
+/// {@canonicalFor inventory.expressiveInventory}
 library;
 
 export 'package:ui_core/host.dart';

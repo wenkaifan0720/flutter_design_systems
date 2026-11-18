@@ -152,16 +152,16 @@ class ExpressiveMeasuredPolygon {
   /// For example, given outline progress 0.4f and measured cubics on these
   /// outline progress ranges:
   ///
-  /// c1 [0 -> 0.2] c2 [0.2 -> 0.5] c3 [0.5 -> 1.0]
+  /// c1 `[0 -> 0.2]` c2 `[0.2 -> 0.5]` c3 `[0.5 -> 1.0]`
   ///
   /// c2 will be cut in two, at the given outline progress, we can name these
-  /// c2a [0.2 -> 0.4] and c2b [0.4 -> 0.5]
+  /// c2a `[0.2 -> 0.4]` and c2b `[0.4 -> 0.5]`
   ///
-  /// The return then will have measured cubics [c2b, c3, c1, c2a], and they
+  /// The return then will have measured cubics `[c2b, c3, c1, c2a]`, and they
   /// will have their outline progress ranges adjusted so the new list starts
   /// at 0.
   ///
-  /// c2b [0 -> 0.1] c3 [0.1 -> 0.6] c1 [0.6 -> 0.8] c2a [0.8 -> 1.0]
+  /// c2b `[0 -> 0.1]` c3 `[0.1 -> 0.6]` c1 `[0.6 -> 0.8]` c2a `[0.8 -> 1.0]`
   ExpressiveMeasuredPolygon cutAndShift(double cuttingPoint) {
     if (cuttingPoint < 0 && cuttingPoint > 1) {
       throw ArgumentError('Cutting point is expected to be between 0 and 1');

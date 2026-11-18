@@ -1533,7 +1533,7 @@ class ExpressiveToolbarScrollExpansion extends StatefulWidget {
     super.key,
   });
 
-  /// Lays out the scrolling child and the toolbar, [expanded] or not.
+  /// Lays out the scrolling child and the toolbar, `expanded` or not.
   final Widget Function(BuildContext context, bool expanded, Widget child)
   builder;
 

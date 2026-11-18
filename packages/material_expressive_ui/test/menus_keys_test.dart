@@ -7,6 +7,8 @@
 /// lights two; a menu the pointer opened lights none until something moves.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart' show SemanticsNode;
@@ -432,6 +434,86 @@ void main() {
       await tester.testTextInput.receiveAction(TextInputAction.done);
       await tester.pumpAndSettle();
       expect(chosen, ['black']);
+    });
+
+    testWidgets('with a search: a spinner row while it runs, its finds as '
+        'options, and a failure says so with a Try again the keys reach', (
+      tester,
+    ) async {
+      keyboard();
+      var runs = 0;
+      var chosen = <String>[];
+      final pending = <Completer<Iterable<ExpressiveSelectOption<String>>>>[];
+      await tester.pumpWidget(
+        host(
+          SizedBox(
+            width: 320,
+            child: StatefulBuilder(
+              builder: (context, update) => ExpressiveMultiSelect<String>(
+                label: 'Colours',
+                options: const [],
+                values: chosen,
+                debounceDuration: const Duration(milliseconds: 300),
+                search: (query) {
+                  runs++;
+                  final c =
+                      Completer<Iterable<ExpressiveSelectOption<String>>>();
+                  pending.add(c);
+                  return c.future;
+                },
+                onChanged: (next) => update(() => chosen = next),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byType(EditableText));
+      await tester.enterText(find.byType(EditableText), 'bl');
+      await tester.pump();
+      expect(find.text('Loading'), findsOneWidget, reason: 'while it rests');
+      expect(find.byType(ExpressiveCircularProgressIndicator), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(runs, 1, reason: 'one search per pause');
+
+      pending.removeLast().completeError(StateError('offline'));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text("Couldn't load results"), findsOneWidget);
+      expect(find.text('Try again'), findsOneWidget);
+      await press(tester, LogicalKeyboardKey.arrowDown);
+      expect(lit('Try again'), isTrue, reason: 'Down reaches it');
+      // The spinner turns while the search runs: pumped, not settled.
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(runs, 2, reason: 'Enter on it searches again');
+
+      pending.removeLast().complete(const [
+        ExpressiveSelectOption('blue', 'Blue'),
+        ExpressiveSelectOption('black', 'Black'),
+      ]);
+      await tester.pump();
+      await tester.pump();
+      expect(runs, 2, reason: 'no search after the retry');
+      expect(find.byType(ExpressiveCircularProgressIndicator), findsNothing);
+      await tester.pumpAndSettle();
+      expect(listed(), ['Blue', 'Black']);
+      await tester.tap(find.text('Black'));
+      await tester.pump();
+      expect(chosen, ['black']);
+      // Choosing clears the words, which searches again: answered, settled.
+      await tester.pump(const Duration(milliseconds: 300));
+      for (final search in pending) {
+        search.complete(const []);
+      }
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byType(ExpressiveChip),
+          matching: find.text('Black'),
+        ),
+        findsOneWidget,
+        reason: 'the chip takes the found option\'s label',
+      );
     });
   });
 

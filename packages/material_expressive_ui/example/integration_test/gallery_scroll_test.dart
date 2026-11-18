@@ -5,7 +5,7 @@
 // wait for the display: a window the display isn't showing (behind another app, on another Space) gets no vsync, and
 // a test that pumps through vsync would wait for ever. Each frame is a warm-up frame, the one kind the engine renders
 // without a vsync, so its raster time is real.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_expressive_ui_example/main.dart'
     show galleryBuildPage, galleryExamplePages;

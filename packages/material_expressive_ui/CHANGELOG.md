@@ -1,3 +1,37 @@
+## 0.3.0
+
+Expressive moves onto ui_core 0.3.0 and hands it the behaviours ui_core now owns, keeping its own paint and motion.
+Needs `ui_core: ^0.3.0`; the review checks the tests run come from the new dev package `ui_core_test: ^0.1.0`.
+
+- **Breaking** `ExpressiveWindowSizeClass` is gone: use ui_core's `DesignWindowSizeClass`, the same five classes at the
+  same breakpoints (600, 840, 1200, 1600). `ExpressiveWindowSizeClass.ofWidth(w)` is
+  `DesignWindowSizeClass.fromWidth(w)`, `.of(context)` is unchanged, and `minWidth` has no counterpart (compare
+  classes by `index`).
+  `ExpressiveTable.stackBelow` takes a `DesignWindowSizeClass`; the shell scaffold chooses its bar and rail by them.
+- `showExpressiveDialog` raises ui_core's `DesignDialogRoute`, on the same spring: focus moves into the dialog and
+  stays there (Tab from its last control comes round to its first), goes back to what held it when the dialog closes,
+  and Escape closes it even where a tap on the scrim does not. A screen reader hears a dialog, named by its title.
+- `ExpressiveMultiSelect` searches: `search` finds the suggestions for what is typed (a server's, say), once typing
+  rests for `debounceDuration`. While a search runs the panel shows a menu row with a spinner, and a failed one shows a
+  Try again row the arrows reach and Enter runs. Its words are ui_core's (`loadingLabel`, `searchFailedMessage`,
+  `retryButtonLabel`).
+- The menu bar's menus light their rows through ui_core 0.3.0's own highlight: a menu the pointer opened lights no
+  row until a key or the pointer moves (Down lights the first, Up the last), as before, now without the look's own
+  bookkeeping.
+- A number field's step plays ui_core's `selectionChanged` haptic, which an app swaps or silences in a
+  `DesignHapticsScope`.
+- The example's menus write their shortcuts with ui_core's `designShortcutLabel`: ⌘ on macOS and iOS, Ctrl elsewhere,
+  in the reader's words.
+- A full-screen dialog swiped down on iOS and let go open, and a page or full-screen dialog whose Android predictive back
+  is cancelled, keep the keyboard focus they had: Flutter's route lets go of it while the gesture runs and nothing gave
+  it back, so Escape and the keys went to the page under it. ui_core 0.3.0 gives it back on its own routes; the look's
+  own routes now do the same.
+- A menu bar entry's `shortcut` reads in the order its keys are pressed in a right-to-left layout too ("⌘ N", not
+  "N ⌘"). A menu row's `trailingText` is free text and keeps the row's direction, as Material's does.
+- `ExpressiveInventoryGallery` names a ui_core behaviour under a part only when the part paints it ("ExpressiveDialog
+  · on DesignDialogRoute"). It named one for every behaviour row, so thirteen parts that keep Expressive's own (the
+  split button, combobox, range slider, date range picker, command palette and others) read as built on ui_core's.
+
 ## 0.2.1
 
 - Reduce Motion includes iOS's: Expressive stands on ui_core 0.2.1, whose `designReduceMotionOf` reads iOS's Reduce

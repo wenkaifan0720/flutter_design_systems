@@ -53,6 +53,7 @@ import 'package:material_ui/material_ui.dart' show Theme;
 import 'package:flutter/services.dart' show PredictiveBackEvent, SwipeEdge;
 import 'package:flutter/widgets.dart';
 
+import '../internal/gesture_focus.dart';
 import '../motion.dart';
 import '../theme.dart';
 import 'overlays.dart' show ExpressiveBackHandleRoute;
@@ -234,6 +235,7 @@ class _ExpressivePageRoute<T> extends PageRoute<T>
 /// a hidden branch's page would pop with the visible one.
 mixin ExpressivePredictiveBackRoute<T> on PageRoute<T> {
   late final _BackGestureObserver _observer = _BackGestureObserver(this);
+  final GestureFocus _gestureFocus = GestureFocus();
 
   /// The predictive back gesture in flight: the event it started with and
   /// the latest; null outside one.
@@ -274,6 +276,9 @@ mixin ExpressivePredictiveBackRoute<T> on PageRoute<T> {
     }
     _startEvent = _currentEvent = event;
     _committedAt = null;
+    // The gesture takes the focus out of the route; cancelled, the route
+    // has it back.
+    _gestureFocus.hold(this);
     handleStartBackGesture(progress: 1 - event.progress);
     return true;
   }

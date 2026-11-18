@@ -1865,7 +1865,7 @@ class ExpressiveCarouselView extends StatefulWidget {
   /// How many items there are.
   final int itemCount;
 
-  /// Builds item [index]'s content, laid out at the focal size and masked.
+  /// Builds item `index`'s content, laid out at the focal size and masked.
   final IndexedWidgetBuilder itemBuilder;
 
   /// The variant's item length: multi-browse's preferred width,
@@ -1889,7 +1889,7 @@ class ExpressiveCarouselView extends StatefulWidget {
   /// Drives the carousel and reports its current item.
   final ExpressiveCarouselController? controller;
 
-  /// What a tap on item [index] does; items take no taps when null (their
+  /// What a tap on item `index` does; items take no taps when null (their
   /// content may).
   final ValueChanged<int>? onItemTap;
 

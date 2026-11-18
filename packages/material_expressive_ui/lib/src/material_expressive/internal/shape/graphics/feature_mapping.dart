@@ -1,7 +1,7 @@
 part of 'graphics.dart';
 
 /// MeasuredFeatures contains a list of all features in a polygon along with
-/// the [0..1] progress at that feature.
+/// the `[0..1]` progress at that feature.
 typedef ExpressiveMeasuredFeatures = List<ExpressiveProgressableFeature>;
 
 /// A feature and the outline progress it stands at.

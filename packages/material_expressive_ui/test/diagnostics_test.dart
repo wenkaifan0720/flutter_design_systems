@@ -36,7 +36,12 @@ void main() {
     final missing = <String>[];
     var widgets = 0;
     for (final file in _look().listSync(recursive: true).whereType<File>()) {
-      if (!file.path.endsWith('.dart') || file.path.contains('/internal/')) {
+      // Not internal/, and not the kit parts (kit_parts/), which the catalog
+      // lays beside the look in its compositions only and kit-parts/test
+      // covers.
+      if (!file.path.endsWith('.dart') ||
+          file.path.contains('/internal/') ||
+          file.path.contains('/kit_parts/')) {
         continue;
       }
       final source = file.readAsStringSync();

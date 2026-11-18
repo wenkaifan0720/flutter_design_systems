@@ -1,40 +1,33 @@
 # material_expressive_ui
 
-An independent Flutter implementation of Material 3 Expressive; not affiliated with or endorsed by Google.
+Material 3 Expressive for Flutter, ported from Jetpack Compose: shapes that morph on springs, a library of thirty-five
+shapes, tonal colour and motion that overshoots and settles. An independent implementation, not affiliated with or
+endorsed by Google.
 
-Material 3 Expressive is Material's newest look, and its loudest: shapes that morph on springs, a library of
-thirty-five shapes (cookies, clovers, bursts, a heart) for avatars, pictures and indicators, emphasized type, colour
-used in large tonal fields, and motion that overshoots and settles. This package ports it from Jetpack Compose's
-`material3` 1.5.0-alpha29 (the tokens, the motion springs, the shape library and the components: the button group that
-widens the pressed button, the loading indicator's seven shapes, wavy progress, the floating toolbar, the FAB menu, the
-carousel's masks), each checked against Compose's own renders on an Android emulator. Five presets ship, each light and
-dark at standard and high contrast, and any seed colour makes a scheme at either.
+![The overview at 1440 px by day beside the trip planner on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/material_expressive_ui/screenshots/hero.png)
 
-| Desktop, by day | Phone, by night |
-| --- | --- |
-| ![The overview at 1440 px: the title beside a mark of three library shapes, and the trip planner](screenshots/overview_1440_light.png) | ![The trip planner on a 390 px phone, by night](screenshots/trip_390_dark.png) |
-| ![Charts at 1440 px: round-capped lines, shape points and a rounded target band](screenshots/chart_1440_light.png) | ![Cards on a phone, by night, their pictures made of library shapes](screenshots/cards_390_dark.png) |
-
-The components carry the names Material gives them (`ExpressiveButton`, `ExpressiveTextField`,
-`ExpressiveNavigationBar`, `ExpressiveSnackBar`, `ExpressiveLinearProgressIndicator`, ...) and the parameters a Flutter
-developer expects: a press is `onPressed`, a control is `value` with `onChanged`, a destination is `selectedIndex`.
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/material_expressive/)** ·
+[API reference](https://pub.dev/documentation/material_expressive_ui/latest/) ·
+[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
-```yaml
-dependencies:
-  material_expressive_ui: ^0.1.0
+```sh
+flutter pub add material_expressive_ui material_ui
 ```
 
-## Set up
+`material_ui` is Flutter's Material as a package (Flutter 3.50 deprecates `package:flutter/material.dart` for it; it
+runs on 3.47 too): the quick start's `MaterialApp` comes from there.
 
-`ExpressiveTheme` is the whole install. Put it in your app's `builder:`, under a `MaterialApp`, a `CupertinoApp` or a
+## Quick start
+
+`ExpressiveTheme` is the whole set-up. Put it in your app's `builder:`, under a `MaterialApp`, a `CupertinoApp` or a
 `WidgetsApp`; there is no app widget of Expressive's own. Load the bundled faces (Roboto Flex, Jost and the Material
 Symbols subset) before the first frame:
 
 ```dart
-import 'package:flutter/material.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,10 +72,28 @@ class App extends StatelessWidget {
 the web, Flutter's predictive back on Android, the Cupertino slide on iOS). The look's own theme carries it, but
 Flutter's `MaterialPageRoute` reads only the app's `ThemeData`: without it there, a page pushed on a Mac slides in
 across the whole window. A `CupertinoApp` or a `WidgetsApp` takes the same `builder:`. The text fields are Flutter's `EditableText` under
-Material's `TextField`, so such an app lists `DefaultMaterialLocalizations.delegate` (or `GlobalMaterialLocalizations`)
+Material's `TextField`, so such an app lists `DefaultMaterialLocalizations.delegate` (or material_ui's `GlobalMaterialLocalizations`)
 among its `localizationsDelegates`, as for any Material widget. `ExpressiveTheme` sets the text-selection colours below
 it as Compose's `MaterialTheme` does (handles and caret in `primary`, the selection at 40%), whatever Material theme the
 app wears.
+
+## What Material 3 Expressive is
+
+Material 3 Expressive is Material's newest look, and its loudest: shapes that morph on springs, a library of
+thirty-five shapes (cookies, clovers, bursts, a heart) for avatars, pictures and indicators, emphasized type, colour
+used in large tonal fields, and motion that overshoots and settles. This package ports it from Jetpack Compose's
+`material3` 1.5.0-alpha29 (the tokens, the motion springs, the shape library and the components: the button group that
+widens the pressed button, the loading indicator's seven shapes, wavy progress, the floating toolbar, the FAB menu, the
+carousel's masks), each checked against Compose's own renders on an Android emulator. Five presets ship, each light and
+dark at standard and high contrast, and any seed colour makes a scheme at either.
+
+| Desktop, by day | Phone, by night |
+| --- | --- |
+| ![Charts at 1440 px: round-capped lines, shape points and a rounded target band](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/material_expressive_ui/screenshots/chart_1440_light.png) | ![Cards on a phone, by night, their pictures made of library shapes](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/material_expressive_ui/screenshots/cards_390_dark.png) |
+
+The components carry the names Material gives them (`ExpressiveButton`, `ExpressiveTextField`,
+`ExpressiveNavigationBar`, `ExpressiveSnackBar`, `ExpressiveLinearProgressIndicator`, ...) and the parameters a Flutter
+developer expects: a press is `onPressed`, a control is `value` with `onChanged`, a destination is `selectedIndex`.
 
 ## Everyday parts
 
@@ -271,10 +282,10 @@ curve.
   out every gallery page at 2.0 with no overflow. Dialogs and sheets scroll.
 - **Other scripts.** Roboto Flex and Jost cover Latin, Greek and Cyrillic. Other scripts (Arabic, Hebrew, Chinese,
   Japanese, Devanagari, Thai) draw in the platform's fallback fonts, and on the web Flutter fetches Noto for them.
-- **Words.** A component says 98 words by itself, English until you give others. 26 of them (Back, Close, Cancel,
-  OK, Today, Next month, Clear, Search, "Slide 2 of 5", ...) come from ui_core's `DesignLocalizations`, the one set
-  every look shares, under `MaterialLocalizations`' names; the other 72 (the pickers' titles and modes, a chat
-  bubble's status, the toolbar's and FAB menu's actions, ...) are `ExpressiveLocalizations`' parameters. Another
+- **Words.** A component says 100 words by itself, English until you give others. 28 of them (Back, Close, Cancel,
+  OK, Today, Next month, Clear, Search, Try again, "Slide 2 of 5", ...) come from ui_core's `DesignLocalizations`,
+  the one set every look shares, under `MaterialLocalizations`' names; the other 72 (the pickers' titles and modes, a
+  chat bubble's status, the toolbar's and FAB menu's actions, ...) are `ExpressiveLocalizations`' parameters. Another
   language gives both, each through a delegate (`ExpressiveLocalizationsScope` gives a subtree its own):
 
   ```dart
@@ -310,8 +321,9 @@ curve.
   expanded, disabled), and decorative paint is excluded. Every control takes focus and the keyboard (Enter and Space
   press it, and keyboard focus draws Material's 3 dp focus ring in `secondary`, 2 dp out from the edge and concentric
   with the part's corners; a tab draws it inside, as Material's tabs do, so a neighbour never clips it). Focus follows
-  reading order, right to left too. Every target is at least 48 dp, Compose's `minimumInteractiveComponentSize`: the
-  face keeps its size and the room around it takes the touch.
+  reading order, right to left too. A dialog holds the focus while it is up (Tab comes round inside it), Escape
+  closes it, and the focus goes back to what opened it. Every target is at least 48 dp, Compose's
+  `minimumInteractiveComponentSize`: the face keeps its size and the room around it takes the touch.
 - **Contrast and motion.** Text and controls take their colours from Material's tone pairs, which hold 4.5:1 for
   words. Under Reduce Motion springs settle without overshoot and the indeterminate indicators hold still; state
   colours still ease rather than switch at once.

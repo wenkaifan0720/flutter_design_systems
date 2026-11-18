@@ -5,6 +5,8 @@
 /// context menu, a controlled menu and the popover.
 library;
 
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 
@@ -43,18 +45,18 @@ class _Standard extends StatelessWidget {
               ExpressiveMenuItem(
                 'Copy',
                 icon: ExpressiveSymbols.contentCopy,
-                trailingText: 'Ctrl+C',
+                trailingText: _shortcut(context, LogicalKeyboardKey.keyC),
                 onPressed: () {},
               ),
-              const ExpressiveMenuItem(
+              ExpressiveMenuItem(
                 'Paste',
                 icon: ExpressiveSymbols.draft,
-                trailingText: 'Ctrl+V',
+                trailingText: _shortcut(context, LogicalKeyboardKey.keyV),
               ),
               ExpressiveMenuItem(
                 'Select all',
                 icon: ExpressiveSymbols.checklist,
-                trailingText: 'Ctrl+A',
+                trailingText: _shortcut(context, LogicalKeyboardKey.keyA),
                 onPressed: () {},
               ),
             ], label: 'Edit'),
@@ -390,29 +392,31 @@ class _PopoverBody extends StatelessWidget {
 // Catalog specimens (docs/architecture/component-catalog.md).
 
 /// An open menu: edit actions with their shortcuts, one disabled.
-Widget kitSpecimenMenuEdit() => Center(
-  child: ExpressiveMenuSurface(
-    groups: <ExpressiveMenuGroup>[
-      ExpressiveMenuGroup(<ExpressiveMenuEntry>[
-        ExpressiveMenuItem(
-          'Copy',
-          icon: ExpressiveSymbols.contentCopy,
-          trailingText: 'Ctrl+C',
-          onPressed: () {},
-        ),
-        const ExpressiveMenuItem(
-          'Paste',
-          icon: ExpressiveSymbols.draft,
-          trailingText: 'Ctrl+V',
-        ),
-        ExpressiveMenuItem(
-          'Select all',
-          icon: ExpressiveSymbols.checklist,
-          trailingText: 'Ctrl+A',
-          onPressed: () {},
-        ),
-      ]),
-    ],
+Widget kitSpecimenMenuEdit() => Builder(
+  builder: (context) => Center(
+    child: ExpressiveMenuSurface(
+      groups: <ExpressiveMenuGroup>[
+        ExpressiveMenuGroup(<ExpressiveMenuEntry>[
+          ExpressiveMenuItem(
+            'Copy',
+            icon: ExpressiveSymbols.contentCopy,
+            trailingText: _shortcut(context, LogicalKeyboardKey.keyC),
+            onPressed: () {},
+          ),
+          ExpressiveMenuItem(
+            'Paste',
+            icon: ExpressiveSymbols.draft,
+            trailingText: _shortcut(context, LogicalKeyboardKey.keyV),
+          ),
+          ExpressiveMenuItem(
+            'Select all',
+            icon: ExpressiveSymbols.checklist,
+            trailingText: _shortcut(context, LogicalKeyboardKey.keyA),
+            onPressed: () {},
+          ),
+        ]),
+      ],
+    ),
   ),
 );
 
@@ -476,33 +480,67 @@ class _MenuBars extends StatelessWidget {
 }
 
 /// File, Edit and View, closed.
-Widget kitSpecimenMenuBar() => Align(
-  alignment: AlignmentDirectional.centerStart,
-  child: ExpressiveMenuBar(
-    menus: <ExpressiveMenuBarEntry>[
-      ExpressiveMenuBarEntry(
-        'File',
-        children: <ExpressiveMenuBarEntry>[
-          ExpressiveMenuBarEntry('New', shortcut: 'Ctrl N', onPressed: () {}),
-          ExpressiveMenuBarEntry('Open…', shortcut: 'Ctrl O', onPressed: () {}),
-          const ExpressiveMenuBarEntry.divider(),
-          ExpressiveMenuBarEntry('Close', onPressed: () {}),
-        ],
-      ),
-      ExpressiveMenuBarEntry(
-        'Edit',
-        children: <ExpressiveMenuBarEntry>[
-          ExpressiveMenuBarEntry('Undo', shortcut: 'Ctrl Z', onPressed: () {}),
-          ExpressiveMenuBarEntry('Redo', onPressed: () {}),
-        ],
-      ),
-      ExpressiveMenuBarEntry(
-        'View',
-        children: <ExpressiveMenuBarEntry>[
-          ExpressiveMenuBarEntry('Show ruler', checked: true, onPressed: () {}),
-          ExpressiveMenuBarEntry('Show grid', checked: false, onPressed: () {}),
-        ],
-      ),
-    ],
+Widget kitSpecimenMenuBar() => Builder(
+  builder: (context) => Align(
+    alignment: AlignmentDirectional.centerStart,
+    child: ExpressiveMenuBar(
+      menus: <ExpressiveMenuBarEntry>[
+        ExpressiveMenuBarEntry(
+          'File',
+          children: <ExpressiveMenuBarEntry>[
+            ExpressiveMenuBarEntry(
+              'New',
+              shortcut: _shortcut(context, LogicalKeyboardKey.keyN),
+              onPressed: () {},
+            ),
+            ExpressiveMenuBarEntry(
+              'Open…',
+              shortcut: _shortcut(context, LogicalKeyboardKey.keyO),
+              onPressed: () {},
+            ),
+            const ExpressiveMenuBarEntry.divider(),
+            ExpressiveMenuBarEntry('Close', onPressed: () {}),
+          ],
+        ),
+        ExpressiveMenuBarEntry(
+          'Edit',
+          children: <ExpressiveMenuBarEntry>[
+            ExpressiveMenuBarEntry(
+              'Undo',
+              shortcut: _shortcut(context, LogicalKeyboardKey.keyZ),
+              onPressed: () {},
+            ),
+            ExpressiveMenuBarEntry('Redo', onPressed: () {}),
+          ],
+        ),
+        ExpressiveMenuBarEntry(
+          'View',
+          children: <ExpressiveMenuBarEntry>[
+            ExpressiveMenuBarEntry(
+              'Show ruler',
+              checked: true,
+              onPressed: () {},
+            ),
+            ExpressiveMenuBarEntry(
+              'Show grid',
+              checked: false,
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ],
+    ),
   ),
 );
+
+/// [key] with the platform's command modifier (⌘ on macOS and iOS, Ctrl
+/// elsewhere), labelled as the platform's menus label it.
+String _shortcut(BuildContext context, LogicalKeyboardKey key) {
+  final apple =
+      defaultTargetPlatform == TargetPlatform.macOS ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+  return designShortcutLabel(
+    context,
+    SingleActivator(key, meta: apple, control: !apple),
+  );
+}

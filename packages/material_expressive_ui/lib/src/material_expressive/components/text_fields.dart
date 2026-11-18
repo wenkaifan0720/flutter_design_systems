@@ -74,7 +74,7 @@ enum ExpressiveLabelPosition {
 }
 
 /// A single-line text field (Compose's `TextField` and `OutlinedTextField`;
-/// `SecureTextField` and `OutlinedSecureTextField` when [secure]).
+/// `SecureTextField` and `OutlinedSecureTextField` when `secure`).
 ///
 /// [style] picks the container, [rounded] Expressive's rounded shape
 /// (`TextFieldDefaults.roundedShape`) and [tonal] its tonal colours

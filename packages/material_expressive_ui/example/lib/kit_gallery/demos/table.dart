@@ -14,7 +14,7 @@ Widget kitTableDemo(Brightness brightness) => kitScreen(
   sections: <Widget>[
     kitSection(
       'At width',
-      children: <Widget>[_watering(ExpressiveWindowSizeClass.compact)],
+      children: <Widget>[_watering(DesignWindowSizeClass.compact)],
     ),
     kitSection(
       'Stacked under 600',
@@ -41,7 +41,7 @@ Widget kitSpecimenTable() => ExpressiveTable(
 );
 
 /// The specimen's table, ruled from [stackBelow] wide.
-Widget _watering(ExpressiveWindowSizeClass stackBelow) => ExpressiveTable(
+Widget _watering(DesignWindowSizeClass stackBelow) => ExpressiveTable(
   semanticLabel: 'Watering',
   stackBelow: stackBelow,
   columns: _columns,

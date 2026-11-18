@@ -372,13 +372,13 @@ class ExpressiveLocalizations {
   /// Who sent an outgoing chat message.
   final String messageFromYou;
 
-  /// An input chip's remove button, for the chip's [label].
+  /// An input chip's remove button, for the chip's `label`.
   final String Function(String label) removeChip;
 
-  /// A read-only rating: [value] (already formatted) of [max].
+  /// A read-only rating: `value` (already formatted) of [max].
   final String Function(String value, int max) rated;
 
-  /// A rating's star [index] of [max].
+  /// A rating's star `index` of [max].
   final String Function(int index, int max) rate;
 
   /// A carousel's page indicator: page [page] (1-based) of [count]
@@ -386,17 +386,17 @@ class ExpressiveLocalizations {
   String carouselPage(int page, int count) =>
       _shared.carouselSlideLabel(page - 1, count);
 
-  /// A code input of [length] characters. Given the count, so a language
+  /// A code input of `length` characters. Given the count, so a language
   /// picks its plural form (English: 1 character, 2 characters).
   final String Function(int length) codeInput;
 
-  /// A quantity stepper's minus button, for what it counts ([label]).
+  /// A quantity stepper's minus button, for what it counts (`label`).
   final String Function(String label) decrease;
 
-  /// A quantity stepper's plus button, for what it counts ([label]).
+  /// A quantity stepper's plus button, for what it counts (`label`).
   final String Function(String label) increase;
 
-  /// A step indicator on step [step] (1-based) of [count].
+  /// A step indicator on step `step` (1-based) of [count].
   final String Function(int step, int count) stepOf;
 
   /// A step indicator past its last of [count] steps. Given the count, so a
@@ -474,7 +474,7 @@ class ExpressiveLocalizations {
   /// A typed range that ends before it starts.
   final String endBeforeStart;
 
-  /// A typed date outside [first]–[last].
+  /// A typed date outside `first`–`last`.
   final String Function(int first, int last) outOfYears;
 
   /// A year in the year grid.
@@ -579,7 +579,7 @@ class ExpressiveLocalizations {
   /// A file input's button that opens the platform's picker.
   final String chooseFiles;
 
-  /// A chosen file's remove button, for its [name].
+  /// A chosen file's remove button, for its `name`.
   final String Function(String name) removeFile;
 
   // Behaviours from ui_core.

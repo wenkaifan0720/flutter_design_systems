@@ -233,14 +233,14 @@ void main() {
       );
       expect(surface.color, bloom.colors.surfaceContainerHigh);
       final route = ModalRoute.of(tester.element(dialog))!;
-      expect(route, isA<ExpressivePopupRoute<Object?>>());
-      expect(
-        route.transitionDuration,
-        expressiveSettleTime(
-          ExpressiveMotion(scheme: bloom.motion.scheme)
-              .spring(ExpressiveMotionKey.defaultEffects),
-        ),
-      );
+      // ui_core's dialog route, on the theme's default effects token.
+      expect(route, isA<DesignDialogRoute<Object?>>());
+      final token = ExpressiveMotion(scheme: bloom.motion.scheme)
+          .tokenOf(ExpressiveMotionKey.defaultEffects);
+      final dialogRoute = route as DesignDialogRoute<Object?>;
+      expect(dialogRoute.dampingRatio, token.dampingRatio);
+      expect(dialogRoute.stiffness, token.stiffness);
+      expect(dialogRoute.isAlert, isFalse);
       await tester.tap(
         find
             .ancestor(

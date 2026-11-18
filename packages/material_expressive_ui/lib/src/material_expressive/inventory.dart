@@ -5,8 +5,10 @@
 library;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/inventory.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'components/app_bar.dart';
 import 'components/badge.dart';
@@ -424,23 +426,47 @@ Widget _stepProgress(BuildContext context) => const ExpressiveStepProgress(
 Widget _pageDots(BuildContext context) =>
     const ExpressivePageDots(count: 5, selectedIndex: 1, onChanged: _drop);
 
-Widget _menuBar(BuildContext context) => const ExpressiveMenuBar(
+Widget _menuBar(BuildContext context) => ExpressiveMenuBar(
   menus: <ExpressiveMenuBarEntry>[
     ExpressiveMenuBarEntry(
       'File',
       children: <ExpressiveMenuBarEntry>[
-        ExpressiveMenuBarEntry('New', shortcut: 'Ctrl N', onPressed: _none),
-        ExpressiveMenuBarEntry('Open…', shortcut: 'Ctrl O', onPressed: _none),
+        ExpressiveMenuBarEntry(
+          'New',
+          shortcut: _shortcut(context, LogicalKeyboardKey.keyN),
+          onPressed: _none,
+        ),
+        ExpressiveMenuBarEntry(
+          'Open…',
+          shortcut: _shortcut(context, LogicalKeyboardKey.keyO),
+          onPressed: _none,
+        ),
       ],
     ),
     ExpressiveMenuBarEntry(
       'Edit',
       children: <ExpressiveMenuBarEntry>[
-        ExpressiveMenuBarEntry('Undo', shortcut: 'Ctrl Z', onPressed: _none),
+        ExpressiveMenuBarEntry(
+          'Undo',
+          shortcut: _shortcut(context, LogicalKeyboardKey.keyZ),
+          onPressed: _none,
+        ),
       ],
     ),
   ],
 );
+
+/// [key] with the platform's command modifier (⌘ on macOS and iOS, Ctrl
+/// elsewhere), labelled as the platform's menus label it.
+String _shortcut(BuildContext context, LogicalKeyboardKey key) {
+  final apple =
+      defaultTargetPlatform == TargetPlatform.macOS ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+  return designShortcutLabel(
+    context,
+    SingleActivator(key, meta: apple, control: !apple),
+  );
+}
 
 Widget _scaffold(BuildContext context) =>
     const ExpressiveScaffold(title: 'Trips', body: Text('Three upcoming'));
@@ -755,11 +781,36 @@ Widget _sparkline(BuildContext context) =>
 /// the docked date picker, the tallest.
 const double _specimenExtent = 560;
 
+/// The behaviour rows whose part paints ui_core's behaviour (the row's
+/// [DesignInventoryRow.behaviour]). The other behaviour rows keep
+/// Expressive's own (the split button, combobox, range slider, date range
+/// picker, command palette, carousel, reorderable list, swipe actions, pull
+/// to refresh, tree, popover, hover card and snackbar; and of the rows
+/// ui_core 0.3.0 adds, the number field, rating, time and wheel pickers,
+/// navigation, tabs, scaffold, bottom sheet, tooltip, menu and charts), so
+/// the gallery names no behaviour for them.
+const Set<String> _onBehaviour = {
+  'ToggleGroup',
+  'PasswordField',
+  'InputGroup',
+  'InputOtp',
+  'MultiSelect',
+  'Calendar',
+  'ColorPicker',
+  'FormField',
+  'MenuBar',
+  'DataTable',
+  'ScrollArea',
+  'Resizable',
+  'Dialog',
+  'Sheet',
+};
+
 /// The inventory as one scrolling list, group by group: each group's
 /// heading in `titleLarge` with how many rows it carries, each row its
-/// name in `titleSmall`, its class in `labelMedium` (and, for a behaviour
-/// row, the ui_core behaviour it paints), then its specimen, live, in a
-/// card's column: at most 560dp wide and 560dp tall.
+/// name in `titleSmall`, its class in `labelMedium` (and, for a part that
+/// paints a ui_core behaviour, that behaviour), then its specimen, live, in
+/// a card's column: at most 560dp wide and 560dp tall.
 ///
 /// ```dart
 /// const ExpressiveInventoryGallery()
@@ -799,7 +850,7 @@ class ExpressiveInventoryGallery extends StatelessWidget {
       ),
       rowBuilder: (context, row, entry, specimen) {
         final reason = entry?.absentReason;
-        final code = row.isBehaviour
+        final code = row.isBehaviour && _onBehaviour.contains(row.id)
             ? 'Expressive${row.id} · on ${row.behaviour}'
             : 'Expressive${row.id}';
         return KeyedSubtree(

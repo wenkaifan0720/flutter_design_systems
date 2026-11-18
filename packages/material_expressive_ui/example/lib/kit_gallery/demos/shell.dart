@@ -7,7 +7,7 @@
 /// under go_router stands the same scaffold as `ExpressiveShell`.
 library;
 
-import 'package:flutter/material.dart' show MaterialPage;
+import 'package:material_ui/material_ui.dart' show MaterialPage;
 import 'package:flutter/widgets.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
@@ -120,16 +120,22 @@ class _ShellState extends State<_Shell> {
         sizing: StackFit.expand,
         children: <Widget>[
           for (var i = 0; i < _tabs.length; i++)
-            Navigator(
-              key: _navigators[i],
-              pages: <Page<void>>[
-                for (final location in _stacks[i])
-                  ExpressivePage<void>(
-                    key: ValueKey<String>(location),
-                    child: _branchPage(location),
-                  ),
-              ],
-              onDidRemovePage: (page) => _removed(i, page),
+            // Each tab's stack is its own screen to assistive technology:
+            // its first route's barrier hides only what the stack paints,
+            // never the demo's bars around it.
+            Semantics(
+              container: true,
+              child: Navigator(
+                key: _navigators[i],
+                pages: <Page<void>>[
+                  for (final location in _stacks[i])
+                    ExpressivePage<void>(
+                      key: ValueKey<String>(location),
+                      child: _branchPage(location),
+                    ),
+                ],
+                onDidRemovePage: (page) => _removed(i, page),
+              ),
             ),
         ],
       ),

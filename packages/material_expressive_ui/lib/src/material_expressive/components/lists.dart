@@ -295,8 +295,8 @@ class _Palette {
 enum _ItemKind { click, select, toggle }
 
 /// A Material 3 Expressive list item (Compose's interactive `ListItem`, and
-/// `SegmentedListItem` inside an [ExpressiveListSection]): a [headline]
-/// with an optional [overline] above and [supporting] text below, between
+/// `SegmentedListItem` inside an [ExpressiveListSection]): a `headline`
+/// with an optional [overline] above and `supporting` text below, between
 /// [leading] content (an icon, avatar, image or checkbox) and [trailing]
 /// content (text, an icon, a switch or a checkbox).
 ///
@@ -306,7 +306,7 @@ enum _ItemKind { click, select, toggle }
 /// `bodyLarge`, supporting in `bodyMedium`, overline and trailing text in
 /// `labelSmall`, leading text in `titleMedium`; icons 24dp.
 ///
-/// With [onPressed] it is a button: state layers, the ripple, and corners that
+/// With `onPressed` it is a button: state layers, the ripple, and corners that
 /// spring from 4dp to 16dp pressed or focused (12dp hovered). Without it
 /// the item is static. [ExpressiveListTile.selectable] is one of a set
 /// (radio semantics) and [ExpressiveListTile.toggleable] a check (checkbox
@@ -1516,7 +1516,7 @@ class ExpressiveReorderableListView extends StatelessWidget {
   /// How many items.
   final int itemCount;
 
-  /// Builds item [index]; the widget must have a key.
+  /// Builds item `index`; the widget must have a key.
   final IndexedWidgetBuilder itemBuilder;
 
   /// Told `(from, to)`: the moved item's index before and after.
@@ -2473,7 +2473,7 @@ class ExpressiveGrid extends StatelessWidget {
   /// How many cells.
   final int itemCount;
 
-  /// Builds cell [index].
+  /// Builds cell `index`.
   final IndexedWidgetBuilder itemBuilder;
 
   /// The column count, when [minItemWidth] is null.

@@ -4,7 +4,7 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
 import 'package:material_expressive_ui/material_expressive_host.dart';
 
@@ -73,37 +73,42 @@ class _EverydayHost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: kitAppTheme,
-      localizationsDelegates: const [
-        DesignLocalizations.delegate,
-        DefaultMaterialLocalizations.delegate,
-        DefaultWidgetsLocalizations.delegate,
-      ],
-      // The trip planner reads in the page's direction (its own app's
-      // English locale would turn a right-to-left page left to right).
-      builder: (inner, _) => Directionality(
-        textDirection:
-            Directionality.maybeOf(context) ?? Directionality.of(inner),
-        child: ExpressiveHost(
-          light: kitTheme(Brightness.light),
-          dark: kitTheme(Brightness.dark),
-          brightness: brightness,
-          // Its own navigator, not its app's: on the web an app's navigator
-          // lets Tab leave the window at the page's last control, and the
-          // gallery's bars and rail around it were never reached.
-          child: Navigator(
-            clipBehavior: Clip.none,
-            routeTraversalEdgeBehavior: TraversalEdgeBehavior.parentScope,
-            // The page stands in its route without a transition: a pushed
-            // route's Cupertino slide (iOS) keeps its edge shadow
-            // painted beside the page, a grey band over the gallery's rail.
-            onGenerateRoute: (settings) => PageRouteBuilder<void>(
-              settings: settings,
-              transitionDuration: Duration.zero,
-              reverseTransitionDuration: Duration.zero,
-              pageBuilder: (_, _, _) => child,
+    // Its own screen to assistive technology: its first route's barrier hides
+    // only what it paints, never the gallery around it.
+    return Semantics(
+      container: true,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: kitAppTheme,
+        localizationsDelegates: const [
+          DesignLocalizations.delegate,
+          DefaultMaterialLocalizations.delegate,
+          DefaultWidgetsLocalizations.delegate,
+        ],
+        // The trip planner reads in the page's direction (its own app's
+        // English locale would turn a right-to-left page left to right).
+        builder: (inner, _) => Directionality(
+          textDirection:
+              Directionality.maybeOf(context) ?? Directionality.of(inner),
+          child: ExpressiveHost(
+            light: kitTheme(Brightness.light),
+            dark: kitTheme(Brightness.dark),
+            brightness: brightness,
+            // Its own navigator, not its app's: on the web an app's navigator
+            // lets Tab leave the window at the page's last control, and the
+            // gallery's bars and rail around it were never reached.
+            child: Navigator(
+              clipBehavior: Clip.none,
+              routeTraversalEdgeBehavior: TraversalEdgeBehavior.parentScope,
+              // The page stands in its route without a transition: a pushed
+              // route's Cupertino slide (iOS) keeps its edge shadow
+              // painted beside the page, a grey band over the gallery's rail.
+              onGenerateRoute: (settings) => PageRouteBuilder<void>(
+                settings: settings,
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero,
+                pageBuilder: (_, _, _) => child,
+              ),
             ),
           ),
         ),

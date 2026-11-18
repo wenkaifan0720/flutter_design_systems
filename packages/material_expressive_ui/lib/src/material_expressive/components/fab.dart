@@ -718,7 +718,7 @@ class ExpressiveFabScrollExpansion extends StatefulWidget {
     super.key,
   });
 
-  /// Lays out the scrolling child and the FAB, [expanded] or not.
+  /// Lays out the scrolling child and the FAB, `expanded` or not.
   final Widget Function(BuildContext context, bool expanded, Widget child)
   builder;
 

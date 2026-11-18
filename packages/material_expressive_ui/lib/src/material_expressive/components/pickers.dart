@@ -384,9 +384,9 @@ enum ExpressiveDatePickerMode {
 ///
 /// [selected] is the chosen day; a tap on an enabled day (or a valid typed
 /// date) calls [onChanged]. Days before [firstDate], after [lastDate], or
-/// refused by [selectableDay] are disabled; the calendar spans [firstYear]
+/// refused by `selectableDay` are disabled; the calendar spans [firstYear]
 /// to [lastYear] (1900–2100 by default, `DatePickerDefaults.YearRange`).
-/// [today] is outlined (the current day when null).
+/// `today` is outlined (the current day when null).
 ///
 /// Laid out in place it is the picker alone on its container colour; raise
 /// it in a dialog with [showExpressiveDatePicker], or dock it under a field

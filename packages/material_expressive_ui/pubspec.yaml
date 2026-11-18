@@ -1,19 +1,19 @@
 name: material_expressive_ui
 description: >-
-  Unofficial Material 3 Expressive widgets for Flutter: morphing shapes, springs, dynamic colour, accessible controls and five light and dark presets.
-version: 0.2.1
-homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/material_expressive_ui
+  Unofficial Material 3 Expressive for Flutter, ported from Compose: shapes that morph on springs, a 35-shape library, tonal colour and motion that overshoots.
+version: 0.3.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/material_expressive/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/material_expressive_ui
+issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
 topics:
   - design-system
   - widgets
   - ui
   - theme
+  - material-design
 screenshots:
-  - description: "The example's overview at 1440 px by day: a mark of three library shapes, the parts Flutter's Material lacks, and the trip planner."
-    path: screenshots/overview_1440_light.png
-  - description: "The trip planner on a 390 px phone by night: the next trip on a tonal card, wavy progress, list rows and the navigation bar."
-    path: screenshots/trip_390_dark.png
+  - description: "The overview at 1440 px by day beside the trip planner on a 390 px phone by night: library shapes, wavy progress, tonal cards."
+    path: screenshots/hero.png
   - description: "A paired line chart by day: round-capped 4 dp lines, shape points and a target band on the extra-large corner."
     path: screenshots/chart_1440_light.png
   - description: "Cards on a phone by night, their unloaded pictures drawn from the look's library shapes."
@@ -32,7 +32,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.2.1
+  ui_core: ^0.3.0
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
 
@@ -42,6 +42,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
+  ui_core_test: ^0.1.0
 
 flutter:
   fonts:

@@ -56,6 +56,7 @@ import 'package:flutter/scheduler.dart' show SchedulerBinding, SchedulerPhase;
 import 'package:flutter/services.dart'
     show HardwareKeyboard, KeyDownEvent, KeyEvent, LogicalKeyboardKey;
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../elevation.dart';
@@ -519,8 +520,11 @@ class ExpressiveDialog extends StatelessWidget {
         minWidth: AlertDialogBehavior.minWidth,
         maxWidth: AlertDialogBehavior.maxWidth,
       ),
+      // Raised by showExpressiveDialog, the route's node is the dialog (its
+      // role, and the title names it); laid out in place, the dialog scopes
+      // its own words.
       child: Semantics(
-        scopesRoute: true,
+        scopesRoute: ModalRoute.of(context) is DesignDialogRoute ? null : true,
         explicitChildNodes: true,
         child: ExpressiveSurface(
           style: style,
@@ -750,7 +754,12 @@ class _TextAction extends StatelessWidget {
 /// on the root navigator, centred over the scrim, fading in and out on the
 /// default effects spring. Resolves to what the dialog closes with. A tap on
 /// the scrim or the system back closes it unless [barrierDismissible] is
-/// false.
+/// false; Escape closes it either way.
+///
+/// It rides ui_core's [DesignDialogRoute]: focus moves into the dialog and
+/// stays there (Tab from its last control comes round to its first), goes
+/// back to what held it as the dialog closes, and a screen reader hears a
+/// dialog.
 Future<T?> showExpressiveDialog<T>({
   required BuildContext context,
   required WidgetBuilder builder,
@@ -759,17 +768,18 @@ Future<T?> showExpressiveDialog<T>({
 }) {
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
   final colors = context.expressiveTheme.colors;
+  // Compose's dialog rides the platform window's fade; the default effects
+  // spring is Expressive's rendition of it (Compose names no motion key for
+  // a dialog). The route runs the token through ui_core's motion policy, as
+  // ExpressiveMotion.spring does: the same spring, and the same short fade
+  // under Reduce Motion.
+  final spring = ExpressiveMotion.of(context)
+      .tokenOf(ExpressiveMotionKey.defaultEffects);
+  final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push<T>(
-    ExpressivePopupRoute<T>(
-      // Compose's dialog rides the platform window's fade; the default
-      // effects spring is Expressive's rendition of it (Compose names no
-      // motion key for a dialog).
-      spring: ExpressiveMotion.of(context)
-          .spring(ExpressiveMotionKey.defaultEffects),
-      capturedThemes: InheritedTheme.capture(
-        from: context,
-        to: navigator.context,
-      ),
+    _ExpressiveDialogRoute<T>(
+      dampingRatio: spring.dampingRatio,
+      stiffness: spring.stiffness,
       barrierColor: colors
           .role(ScrimTokens.containerColor)
           .withValues(alpha: ScrimTokens.containerOpacity),
@@ -778,18 +788,49 @@ Future<T?> showExpressiveDialog<T>({
         context,
         MaterialLocalizations,
       )?.modalBarrierDismissLabel,
-      transitionBuilder: (context, animation, child) =>
-          FadeTransition(opacity: animation, child: child),
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding:
-              MediaQuery.viewInsetsOf(context) +
-              const EdgeInsets.all(AlertDialogBehavior.padding),
-          child: Center(child: builder(context)),
+      // The fade over the whole safe area, as 0.2 had it: the dialog is drawn
+      // in the same layer, so its pixels are 0.2's.
+      builder: (context, details) => themes.wrap(
+        FadeTransition(
+          opacity: _Unit(details.animation),
+          child: SafeArea(
+            child: Padding(
+              padding:
+                  MediaQuery.viewInsetsOf(context) +
+                  const EdgeInsets.all(AlertDialogBehavior.padding),
+              child: Center(child: Builder(builder: builder)),
+            ),
+          ),
         ),
       ),
     ),
   );
+}
+
+/// ui_core's dialog route with Expressive's back: a pop that an overlay
+/// held open in the dialog takes ([ExpressiveBackHandle]) leaves the dialog
+/// up.
+class _ExpressiveDialogRoute<T> extends DesignDialogRoute<T>
+    with ExpressiveBackHandleRoute<T> {
+  _ExpressiveDialogRoute({
+    required super.builder,
+    required super.dampingRatio,
+    required super.stiffness,
+    required super.barrierColor,
+    required super.barrierDismissible,
+    super.barrierLabel,
+  });
+}
+
+/// [parent] kept to 0–1: an opacity may not follow a spring past its rest.
+class _Unit extends Animation<double> with AnimationWithParentMixin<double> {
+  _Unit(this.parent);
+
+  @override
+  final Animation<double> parent;
+
+  @override
+  double get value => clampDouble(parent.value, 0, 1);
 }
 
 // ---------------------------------------------------------------------------

@@ -81,12 +81,16 @@ String bareCode(String code) => code
     .replaceAll(RegExp(r',(?=[)\]}])'), '');
 
 /// Each example in [lib]: a `/// Example:` line, or a fenced dart block; files
-/// named in [skip] aside.
+/// named in [skip] aside, and the kit parts (`kit_parts/`), which the catalog
+/// lays beside the look in its compositions only, never in the package, and
+/// which kit-parts/test covers.
 List<String> libExamples(String lib, {Set<String> skip = const {}}) {
   final out = <String>[];
   final files = Directory(lib).listSync(recursive: true).whereType<File>();
   for (final file in files) {
-    if (!file.path.endsWith('.dart')) continue;
+    if (!file.path.endsWith('.dart') || file.path.contains('/kit_parts/')) {
+      continue;
+    }
     if (skip.contains(file.uri.pathSegments.last)) continue;
     final lines = file.readAsLinesSync().map((l) => l.trim()).toList();
     for (var i = 0; i < lines.length; i++) {

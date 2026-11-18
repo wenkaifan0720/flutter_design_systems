@@ -16,6 +16,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../internal/cap_label.dart';
 import '../internal/tokens/behavior.g.dart';
@@ -97,7 +98,7 @@ class ExpressiveTable extends StatelessWidget {
     required this.rows,
     this.semanticLabel,
     this.style,
-    this.stackBelow = ExpressiveWindowSizeClass.medium,
+    this.stackBelow = DesignWindowSizeClass.medium,
     super.key,
   });
 
@@ -115,7 +116,7 @@ class ExpressiveTable extends StatelessWidget {
 
   /// The window class from which rows stand as rows: narrower than its
   /// least width, each row stacks as a list item.
-  final ExpressiveWindowSizeClass stackBelow;
+  final DesignWindowSizeClass stackBelow;
 
   String _spoken(ExpressiveTableRow row) => <String>[
     for (var i = 0; i < row.cells.length && i < columns.length; i++)
@@ -126,7 +127,8 @@ class ExpressiveTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget table = LayoutBuilder(
       builder: (context, box) =>
-          box.maxWidth < stackBelow.minWidth ||
+          DesignWindowSizeClass.fromWidth(box.maxWidth).index <
+                  stackBelow.index ||
               !_wordsFit(context, box.maxWidth)
           ? _stacked(context)
           : _ruled(context),
@@ -323,10 +325,10 @@ class ExpressiveTable extends StatelessWidget {
       ..add(IterableProperty<ExpressiveTableRow>('rows', rows))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
-        EnumProperty<ExpressiveWindowSizeClass>(
+        EnumProperty<DesignWindowSizeClass>(
           'stackBelow',
           stackBelow,
-          defaultValue: ExpressiveWindowSizeClass.medium,
+          defaultValue: DesignWindowSizeClass.medium,
         ),
       );
   }

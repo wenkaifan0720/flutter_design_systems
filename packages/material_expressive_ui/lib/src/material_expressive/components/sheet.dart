@@ -53,6 +53,7 @@ import 'package:ui_core/host.dart';
 
 import '../elevation.dart';
 import '../component_themes.dart';
+import '../internal/gesture_focus.dart';
 import '../internal/tokens/tokens.g.dart';
 import '../motion.dart';
 import '../states.dart';
@@ -1608,6 +1609,8 @@ class _FullScreenDialogRoute<T> extends PageRoute<T>
   /// Whether a swipe down is following the finger.
   bool _dragging = false;
 
+  final GestureFocus _gestureFocus = GestureFocus();
+
   void _dragStart(DragStartDetails details) {
     final navigator = this.navigator;
     if (navigator == null ||
@@ -1618,6 +1621,9 @@ class _FullScreenDialogRoute<T> extends PageRoute<T>
     }
     _dragging = true;
     controller!.stop();
+    // The gesture takes the focus out of the route; let go open, the route
+    // has it back.
+    _gestureFocus.hold(this);
     navigator.didStartUserGesture();
   }
 

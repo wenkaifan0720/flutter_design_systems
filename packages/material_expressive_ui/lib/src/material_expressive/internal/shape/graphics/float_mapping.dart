@@ -62,12 +62,12 @@ double _linearMap(List<double> xValues, List<double> yValues, double x) {
 ///
 /// As a more complete example, if we use x to represent a value in the source
 /// space and y for the target space, and given as input the mappings 0 to 0,
-/// 0.5 to 0.25, this will create a mapping that: { if x in [0 .. 0.5] }
-/// y = x / 2 { if x in [0.5 .. 1] } y = 0.25 + (x - 0.5) * 1.5 = x * 1.5 - 0.5
+/// 0.5 to 0.25, this will create a mapping that: { if x in `[0 .. 0.5]` }
+/// y = x / 2 { if x in `[0.5 .. 1]` } y = 0.25 + (x - 0.5) * 1.5 = x * 1.5 - 0.5
 ///
 /// The mapping can also be used the other way around (using the [mapBack]
-/// function), resulting in: { if y in [0 .. 0.25] } x = y * 2 { if y in
-/// [0.25 .. 1] } x = (y + 0.5) / 1.5 This is used to create mappings of
+/// function), resulting in: { if y in `[0 .. 0.25]` } x = y * 2 { if y in
+/// `[0.25 .. 1]` } x = (y + 0.5) / 1.5 This is used to create mappings of
 /// progress values between the start and end shape, which is then used to
 /// insert new curves and match curves overall.
 class ExpressiveDoubleMapper {

@@ -232,6 +232,19 @@ Future<void> _backGesture(
   await tester.pump();
 }
 
+/// Whether the primary focus is in [finder]'s subtree.
+bool _holdsFocus(Finder finder) {
+  final context = FocusManager.instance.primaryFocus?.context;
+  return context != null &&
+      find
+          .descendant(
+            of: finder,
+            matching: find.byElementPredicate((e) => identical(e, context)),
+          )
+          .evaluate()
+          .isNotEmpty;
+}
+
 Map<String, Object?> _backEvent(double progress) => <String, Object?>{
   'touchOffset': <double>[4, 400],
   'progress': progress,
@@ -1031,6 +1044,52 @@ void main() {
     } finally {
       debugDefaultTargetPlatformOverride = null;
     }
+  });
+
+  testWidgets('iOS: a full-screen dialog swiped down and let go open keeps '
+      'its focus', (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    try {
+      final router = await _mount(tester);
+      router.go('/form');
+      await tester.pumpAndSettle();
+      final form = find.byKey(_formKey);
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pumpAndSettle();
+      expect(_holdsFocus(form), isTrue);
+
+      // Flutter's route lets go of its focus while the swipe runs; short of
+      // the threshold the dialog springs home with it back, so Escape and
+      // the keys still reach it.
+      await tester.timedDragFrom(
+        tester.getCenter(form) + const Offset(0, 120),
+        const Offset(0, 40),
+        const Duration(seconds: 2),
+      );
+      await tester.pumpAndSettle();
+      expect(router.path, '/form');
+      expect(_holdsFocus(form), isTrue);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  });
+
+  testWidgets('Android: a cancelled predictive back leaves the full-screen '
+      'dialog its focus', (tester) async {
+    final router = await _mount(tester);
+    router.go('/form');
+    await tester.pumpAndSettle();
+    final form = find.byKey(_formKey);
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+    expect(_holdsFocus(form), isTrue);
+
+    await _backGesture(tester, 'startBackGesture', _backEvent(0));
+    await _backGesture(tester, 'updateBackGestureProgress', _backEvent(0.5));
+    await _backGesture(tester, 'cancelBackGesture');
+    await tester.pumpAndSettle();
+    expect(router.path, '/form');
+    expect(_holdsFocus(form), isTrue);
   });
 
   test('the controller of an unbuilt sheet waits to show it', () {

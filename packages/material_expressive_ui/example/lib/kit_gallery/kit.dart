@@ -32,7 +32,7 @@
 library;
 
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show RenderProxyBox, ScrollCacheExtent;
 import 'package:material_expressive_ui/material_expressive_host.dart';
 import 'package:material_expressive_ui/material_expressive_ui.dart';
@@ -569,20 +569,25 @@ Widget kitSpecimenStage({
 }) => Builder(
   builder: (outer) => PreviewFrame(
     brightness: brightness,
-    child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: kitAppTheme,
-      // The stage reads in its page's direction, not its English locale's.
-      builder: (context, home) => Directionality(
-        textDirection: Directionality.maybeOf(outer) ?? TextDirection.ltr,
-        child: ExpressiveHost(
-          light: ExpressiveThemeData.preset(style, Brightness.light),
-          dark: ExpressiveThemeData.preset(style, Brightness.dark),
-          brightness: brightness,
-          child: home ?? const SizedBox.shrink(),
+    // Its own screen to assistive technology: its first route's barrier hides
+    // only what it paints, never the gallery around it.
+    child: Semantics(
+      container: true,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: kitAppTheme,
+        // The stage reads in its page's direction, not its English locale's.
+        builder: (context, home) => Directionality(
+          textDirection: Directionality.maybeOf(outer) ?? TextDirection.ltr,
+          child: ExpressiveHost(
+            light: ExpressiveThemeData.preset(style, Brightness.light),
+            dark: ExpressiveThemeData.preset(style, Brightness.dark),
+            brightness: brightness,
+            child: home ?? const SizedBox.shrink(),
+          ),
         ),
+        home: _KitStage(frame: frame, child: child),
       ),
-      home: _KitStage(frame: frame, child: child),
     ),
   ),
 );

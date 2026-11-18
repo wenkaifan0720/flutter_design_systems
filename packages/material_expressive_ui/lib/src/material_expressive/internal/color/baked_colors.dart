@@ -11,7 +11,7 @@ import '../../color.dart';
 import '../themes/baked_theme.dart';
 
 /// Every colour role of one theme, light and dark, by role name
-/// ([ExpressiveColorRole.name], `onSurfaceVariant`), as ARGB.
+/// (`ExpressiveColorRole.name`, `onSurfaceVariant`), as ARGB.
 @immutable
 class ExpressiveBakedColors {
   /// Baked colours of the [light] and [dark] roles, with variants [atContrast].
@@ -38,10 +38,10 @@ class ExpressiveBakedColors {
   final Map<String, int> statusDark;
 
   /// The same seed and variant baked at each other contrast level the
-  /// baker allows, keyed by [_contrastKey(] (`'0'`, `'0.5'`, `'1'`); the
+  /// baker allows, keyed by `_contrastKey` (`'0'`, `'0.5'`, `'1'`); the
   /// theme's own contrast is [light] and [dark]. Empty for Compose's
   /// baseline, which has no contrast variants. The oracle captures a
-  /// baked theme at contrast 0 and 1 through [expressiveResolveColors(]' `contrast`.
+  /// baked theme at contrast 0 and 1 through `expressiveResolveColors`' `contrast`.
   final Map<String, ExpressiveBakedColors> atContrast;
 }
 

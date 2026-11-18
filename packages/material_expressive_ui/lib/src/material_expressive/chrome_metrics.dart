@@ -46,7 +46,7 @@ abstract final class ExpressiveChromeMetrics {
   /// breakpoint, so it is typed here, cited.
   static const double railMinWindowWidth = 600;
 
-  /// The narrowest window the shell stands the rail expanded in, labels
+  /// The narrowest window the shell shows the rail expanded in, labels
   /// beside the icons: Material's large window class (1200dp,
   /// m3.material.io, "Window size classes": "expanded navigation rail" for
   /// large and extra-large windows). Below it the rail stays collapsed, so
