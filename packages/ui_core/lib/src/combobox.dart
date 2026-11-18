@@ -20,7 +20,7 @@ import 'internal/option_list.dart';
 
 /// The field, as [DesignCombobox.fieldBuilder] gets it: wire [controller]
 /// and [focusNode] to the look's text input, and [submit] to its
-/// `onSubmitted`.
+/// `onEditingComplete` (and give it no `onSubmitted`; see [submit]).
 @immutable
 class DesignComboboxField {
   /// The field's wiring.
@@ -37,7 +37,16 @@ class DesignComboboxField {
   /// The field's focus, owned as [controller] is.
   final FocusNode focusNode;
 
-  /// Takes the highlighted option: call it from the input's `onSubmitted`.
+  /// Takes the highlighted option (a tag input adds the words as a tag too,
+  /// a command palette runs the highlighted command): the input's
+  /// `onEditingComplete`, as `onEditingComplete: field.submit`, with no
+  /// `onSubmitted`.
+  ///
+  /// The field keeps the focus after Enter that way, ready for the next
+  /// words. With `onSubmitted`, Flutter restarts the text input's
+  /// connection after Enter; on the web the restarted input never takes the
+  /// browser's focus, and letters stop reaching a field that still looks
+  /// focused.
   final VoidCallback submit;
 }
 
@@ -66,6 +75,44 @@ typedef DesignListSurfaceBuilder = Widget Function(
 /// Searches for the options matching [query].
 typedef DesignOptionSearch<T> = FutureOr<Iterable<T>> Function(String query);
 
+/// A search that failed, as a combobox's or a tag input's `errorBuilder`
+/// gets it: paint a message and a "Try again"
+/// ([DesignLocalizations.retryButtonLabel]) that calls [retry], lit while
+/// [focused].
+///
+/// ```dart
+/// DesignSearchError(error: StateError('offline'), retry: () {})
+/// ```
+@immutable
+class DesignSearchError {
+  /// A search that threw [error].
+  const DesignSearchError({
+    required this.error,
+    this.stackTrace,
+    required this.retry,
+    this.focused = false,
+  });
+
+  /// What the search threw.
+  final Object error;
+
+  /// Where it threw, when known.
+  final StackTrace? stackTrace;
+
+  /// Runs the search again for the same words.
+  final VoidCallback retry;
+
+  /// Whether the keys are on "Try again" (Down from the field moves there,
+  /// Enter then runs [retry]): paint it as a highlighted option.
+  final bool focused;
+}
+
+/// Paints a failed search ([error]) in the list's surface.
+typedef DesignSearchErrorBuilder = Widget Function(
+  BuildContext context,
+  DesignSearchError error,
+);
+
 String _string(Object option) => option.toString();
 
 /// Stands in the options while nothing matches, so the list stays open to say so.
@@ -74,6 +121,14 @@ class _NoMatch {
 }
 
 const Object _noMatch = _NoMatch();
+
+/// Stands in the options while a search's states show (loading, failed,
+/// found): the list stays open and paints them itself.
+class _Searching {
+  const _Searching();
+}
+
+const Object _searching = _Searching();
 
 /// A text field that suggests options as you type.
 ///
@@ -85,7 +140,7 @@ const Object _noMatch = _NoMatch();
 /// view, takes a choice, and announces.
 ///
 /// ```dart
-/// DesignCombobox<String>(options: const ['Apple', 'Pear'], fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onSubmitted: (_) => field.submit()), optionBuilder: (context, option, states) => Text(option))
+/// DesignCombobox<String>(options: const ['Apple', 'Pear'], fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onEditingComplete: field.submit), optionBuilder: (context, option, states) => Text(option))
 /// ```
 class DesignCombobox<T extends Object> extends StatefulWidget {
   /// A combobox over [options] or [search].
@@ -108,6 +163,9 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
     this.optionsMaxHeight = 300,
     this.semanticLabel,
     this.emptyBuilder,
+    this.debounceDuration,
+    this.loadingBuilder,
+    this.errorBuilder,
   }) : assert(optionsMaxHeight > 0);
 
   /// Paints the field.
@@ -176,6 +234,25 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
   /// Says that nothing matches, in the list's surface, while the field holds
   /// text no option fits. Null: the list just closes.
   final WidgetBuilder? emptyBuilder;
+
+  /// How long typing rests before [search] runs: a search per pause, not
+  /// per letter. Null (the default) runs it at every change. Filtering
+  /// [options] never waits.
+  final Duration? debounceDuration;
+
+  /// Says that [search] is finding options, in the list's surface, while its
+  /// future is pending (and while [debounceDuration] runs); a screen reader
+  /// hears [DesignLocalizations.loadingLabel] as it appears. Null (the
+  /// default): the options found last stay until the new ones come.
+  final WidgetBuilder? loadingBuilder;
+
+  /// Says that [search] failed, in the list's surface, with a way to try
+  /// again ([DesignSearchError.retry]; Down moves the keys there, Enter
+  /// runs it); a screen reader hears
+  /// [DesignLocalizations.searchFailedMessage] as it appears, and the focus
+  /// stays in the field. Null (the default): the list closes and the error
+  /// goes to [FlutterError.reportError].
+  final DesignSearchErrorBuilder? errorBuilder;
 
   @override
   State<DesignCombobox<T>> createState() => _DesignComboboxState<T>();
@@ -261,8 +338,22 @@ class DesignCombobox<T extends Object> extends StatefulWidget {
         DoubleProperty('optionsMaxHeight', optionsMaxHeight, defaultValue: 300),
       )
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(ObjectFlagProperty<WidgetBuilder>.has('emptyBuilder', emptyBuilder))
       ..add(
-        ObjectFlagProperty<WidgetBuilder>.has('emptyBuilder', emptyBuilder),
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<WidgetBuilder>.has('loadingBuilder', loadingBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<DesignSearchErrorBuilder>.has(
+          'errorBuilder',
+          errorBuilder,
+        ),
       );
   }
 }
@@ -277,6 +368,8 @@ class _DesignComboboxState<T extends Object> extends State<DesignCombobox<T>> {
   String _query = '';
   // What a search finds for no query: every option, as it says.
   List<T>? _all;
+  // The search's states, when the list shows them.
+  final DesignSearchRun<T> _run = DesignSearchRun<T>();
 
   TextEditingController get _controller =>
       widget.controller ?? (_ownController ??= TextEditingController());
@@ -312,6 +405,7 @@ class _DesignComboboxState<T extends Object> extends State<DesignCombobox<T>> {
   @override
   void dispose() {
     _focus.removeListener(_focusChanged);
+    _run.dispose();
     _ownController?.dispose();
     _ownFocus?.dispose();
     super.dispose();
@@ -334,9 +428,7 @@ class _DesignComboboxState<T extends Object> extends State<DesignCombobox<T>> {
         (value == null || text != widget.displayStringForOption(value));
   }
 
-  FutureOr<Iterable<T>> _find(String text) {
-    final search = widget.search;
-    if (search != null) return search(text);
+  Iterable<T> _filter(String text) {
     final query = text.trim().toLowerCase();
     if (query.isEmpty) return widget.options;
     return widget.options.where(
@@ -344,22 +436,41 @@ class _DesignComboboxState<T extends Object> extends State<DesignCombobox<T>> {
     );
   }
 
+  // Whether the list shows the search's states itself: loading or failed.
+  bool get _live =>
+      widget.search != null &&
+      (widget.loadingBuilder != null || widget.errorBuilder != null);
+
+  Iterable<Object> _orNoMatch(String query, Iterable<T> found) {
+    if (query.isEmpty && widget.search != null) _all = found.toList();
+    return found.isEmpty &&
+            widget.emptyBuilder != null &&
+            query.trim().isNotEmpty
+        ? const [_noMatch]
+        : found;
+  }
+
   FutureOr<Iterable<Object>> _matches(TextEditingValue value) {
     final query = _edited ? value.text : '';
     _query = query;
-    Iterable<Object> orNoMatch(Iterable<T> found) {
-      if (query.isEmpty && widget.search != null) _all = found.toList();
-      return found.isEmpty &&
-              widget.emptyBuilder != null &&
-              query.trim().isNotEmpty
-          ? const [_noMatch]
-          : found;
+    final search = widget.search;
+    if (search == null) return _orNoMatch(query, _filter(query));
+    final debounce = widget.debounceDuration;
+    if (_live) {
+      // A failure the list cannot show is reported.
+      unawaited(
+        _run.run(
+          query,
+          search,
+          debounce: debounce,
+          report: widget.errorBuilder == null,
+        ),
+      );
+      return const [_searching];
     }
-
-    final found = _find(query);
-    return found is Future<Iterable<T>>
-        ? found.then(orNoMatch)
-        : orNoMatch(found);
+    return _run
+        .run(query, search, debounce: debounce, report: true)
+        .then((found) => _orNoMatch(query, found ?? const []));
   }
 
   // What the open list shows: every option until the words are edited (the
@@ -400,13 +511,16 @@ class _DesignComboboxState<T extends Object> extends State<DesignCombobox<T>> {
       // Enter on "no matches" leaves the words as they are and takes nothing.
       displayStringForOption: (option) => switch (option) {
         DesignPick(:final option) => widget.displayStringForOption(option as T),
-        _ when identical(option, _noMatch) => _controller.text,
+        _ when identical(option, _noMatch) || identical(option, _searching) =>
+          _controller.text,
         _ => widget.displayStringForOption(option as T),
       },
       optionsViewOpenDirection: widget.optionsViewOpenDirection,
       onSelected: (option) {
         final taken = option is DesignPick ? option.option : option;
-        if (!identical(taken, _noMatch)) widget.onSelected?.call(taken as T);
+        if (!identical(taken, _noMatch) && !identical(taken, _searching)) {
+          widget.onSelected?.call(taken as T);
+        }
       },
       // The field's nodes as the look builds them: RawAutocomplete's
       // OverlayPortal annotates its child, and without explicit child nodes
@@ -431,30 +545,90 @@ class _DesignComboboxState<T extends Object> extends State<DesignCombobox<T>> {
             ),
           ),
       optionsViewBuilder: (context, onSelected, options) {
-        if (options.length == 1 && identical(options.single, _noMatch)) {
-          final said = Semantics(
-            container: true,
-            liveRegion: true,
-            child: widget.emptyBuilder!(context),
+        if (options.length == 1 && identical(options.single, _searching)) {
+          return DesignSearchScope(
+            run: _run,
+            child: ListenableBuilder(
+              listenable: _run,
+              builder: (context, _) => _searchView(context, onSelected),
+            ),
           );
-          return widget.surfaceBuilder?.call(context, said) ?? said;
         }
-        final shown = _shown(options);
-        return DesignOptionList<T>(
-          keys: _keys,
-          options: shown,
-          start: _start(shown),
-          onSelected: (option) => _take(option, onSelected),
-          value: widget.value,
-          isOptionEnabled: widget.isOptionEnabled,
-          highlightFollowsPointer: widget.highlightFollowsPointer,
-          displayStringForOption: widget.displayStringForOption,
-          optionBuilder: widget.optionBuilder,
-          surfaceBuilder: widget.surfaceBuilder,
-          maxHeight: widget.optionsMaxHeight,
-          semanticLabel: widget.semanticLabel,
-        );
+        return _list(context, onSelected, options);
       },
+    );
+  }
+
+  // A search's states, as the list shows them.
+  Widget _searchView(
+    BuildContext context,
+    AutocompleteOnSelected<Object> onSelected,
+  ) {
+    // A search the list's closing dropped runs again as it opens: pending.
+    final pending = _run.loading || _run.dropped;
+    final loading = widget.loadingBuilder;
+    if (pending && loading != null) {
+      return designSearchLoading(context, loading, widget.surfaceBuilder);
+    }
+    final error = _run.error;
+    final failed = widget.errorBuilder;
+    if (error != null && failed != null && !pending) {
+      return DesignSearchFailure(
+        keys: _keys,
+        error: error,
+        stackTrace: _run.stackTrace,
+        retry: _run.retry,
+        builder: failed,
+        surfaceBuilder: widget.surfaceBuilder,
+      );
+    }
+    final options = error != null && !pending
+        ? const <Object>[]
+        : _orNoMatch(_run.query, _run.found).toList();
+    if (options.isEmpty) {
+      // Nothing to show: the list closes, after this frame (a failure with
+      // no errorBuilder was reported).
+      if (!pending) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          // Unless a search started since.
+          if (context.mounted && !_run.loading && !_run.dropped) {
+            _keys.hide();
+          }
+        });
+      }
+      return const SizedBox.shrink();
+    }
+    return _list(context, onSelected, options);
+  }
+
+  // The list of [options] (or the words that none match).
+  Widget _list(
+    BuildContext context,
+    AutocompleteOnSelected<Object> onSelected,
+    Iterable<Object> options,
+  ) {
+    if (options.length == 1 && identical(options.single, _noMatch)) {
+      final said = Semantics(
+        container: true,
+        liveRegion: true,
+        child: widget.emptyBuilder!(context),
+      );
+      return widget.surfaceBuilder?.call(context, said) ?? said;
+    }
+    final shown = _shown(options);
+    return DesignOptionList<T>(
+      keys: _keys,
+      options: shown,
+      start: _start(shown),
+      onSelected: (option) => _take(option, onSelected),
+      value: widget.value,
+      isOptionEnabled: widget.isOptionEnabled,
+      highlightFollowsPointer: widget.highlightFollowsPointer,
+      displayStringForOption: widget.displayStringForOption,
+      optionBuilder: widget.optionBuilder,
+      surfaceBuilder: widget.surfaceBuilder,
+      maxHeight: widget.optionsMaxHeight,
+      semanticLabel: widget.semanticLabel,
     );
   }
 }

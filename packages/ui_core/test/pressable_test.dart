@@ -1,7 +1,7 @@
 import 'dart:ui' show Tristate;
 
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart' show MaterialApp;
+import 'package:material_ui/material_ui.dart' show MaterialApp;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';

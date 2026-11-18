@@ -48,7 +48,8 @@ void main() {
             if (data.flagsCollection.isFocused == Tristate.none) {
               unreached.add(data.label.isEmpty ? '$data' : data.label);
             } else {
-              reached.add(data.label);
+              // A place says its name, then "Tab 2 of 5".
+              reached.add(data.label.split('\n').first);
             }
           }
           node.visitChildren((child) {

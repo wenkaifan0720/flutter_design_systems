@@ -6,10 +6,15 @@ repository: https://github.com/wenkaifan0720/flutter_design_systems
 environment:
   sdk: ">=3.13.0 <4.0.0"
 
-# Every package, and every package's example app.
+# Every package, and every package's example app. While the looks move to ui_core 0.3.0 (11-17), a look joins this
+# list as its release goes out (a look still on ui_core ^0.2.x can't resolve beside 0.3.0); then back to the globs.
 workspace:
-  - packages/*
-  - packages/*/example
+  - packages/ui_core
+  - packages/ui_core/example
+  - packages/ui_core_test
+  - packages/ui_core_test/example
+  - packages/brutal_ui
+  - packages/brutal_ui/example
 
 dev_dependencies:
   flutter_lints: ^6.0.0

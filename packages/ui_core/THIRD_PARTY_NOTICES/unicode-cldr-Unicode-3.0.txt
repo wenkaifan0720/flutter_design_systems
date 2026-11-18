@@ -1,4 +1,4 @@
-Unicode CLDR, through package:intl and flutter_localizations: the date data (month and weekday names, first day of the week, digits, date patterns) in internal/localizations_data.dart.
+Unicode CLDR, through package:intl and flutter_localizations: the date data (month and weekday names, first day of the week, digits, date and time patterns) and the number symbols (separators, signs, patterns) in internal/localizations_data.dart; and the date and time field names (Year, Month, Day, Second, AM/PM) in l10n/design_<locale>.arb, from CLDR 47's field display names.
 
 UNICODE LICENSE V3
 

@@ -1,0 +1,29 @@
+# ui_core's analysis options, and the ones a look's package copies (to its catalog module's
+# package/analysis_options.yaml, which look:package then writes for it). pana and pub.dev read a package's own
+# options, never a workspace root's, so they repeat the strict modes. The excludes are the ones Flutter's pub get
+# writes into options that lack them: written here, a fresh workspace's pub get leaves the file as it is.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    public_member_api_docs: true
+    implementation_imports: true
+    avoid_dynamic_calls: true
+    missing_code_block_language_in_doc_comment: true
+    prefer_const_constructors: true
+    unawaited_futures: true
+    use_named_constants: true

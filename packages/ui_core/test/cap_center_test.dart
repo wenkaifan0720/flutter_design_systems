@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart'
+import 'package:material_ui/material_ui.dart'
     show
         DefaultMaterialLocalizations,
         InputBorder,
@@ -13,7 +13,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/alignment.dart';
 import 'package:ui_core/ui_core.dart';
 
 // Roboto, from the SDK: its OS/2 cap height is 1456 of 2048 units.
@@ -458,94 +457,6 @@ void main() {
     );
     await tester.tap(find.text('Hello'));
     expect(taps, 1);
-  });
-
-  testWidgets('DesignLabelCheck(drawnTolerance:) holds the capitals and a '
-      'glyph beside them', (tester) async {
-    Widget control(String name, Widget content, {double height = 56}) =>
-        Semantics(
-          button: true,
-          label: name,
-          child: DecoratedBox(
-            decoration: const BoxDecoration(color: Color(0xFFDDDDDD)),
-            child: SizedBox(
-              width: 160,
-              height: height,
-              child: Center(child: content),
-            ),
-          ),
-        );
-    Future<List<String>> problems(List<Widget> screen) async {
-      await tester.pumpWidget(
-        RepaintBoundary(
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: ColoredBox(
-              color: _white,
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Wrap(spacing: 8, runSpacing: 8, children: screen),
-              ),
-            ),
-          ),
-        ),
-      );
-      final report = await const DesignLabelCheck(
-        look: 'Bare',
-        drawnTolerance: 0.5,
-      ).check(tester.binding.rootElement!, runAsync: tester.runAsync);
-      return report.problems;
-    }
-
-    const icon = Icon(_chevron, size: 24, color: _black);
-    expect(
-      await problems([
-        control('Edit', _label('Edit', _style(16, 24))),
-        control('Share', _label('Share', _style(16, 24))),
-        control('Shipping', _label('Shipping', _style(16, 24))),
-        control('more', _label('more', _style(16, 24))),
-        control(
-          'Next',
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [_label('Next', _style(14, 20)), icon],
-          ),
-          height: 40,
-        ),
-      ]),
-      isEmpty,
-    );
-    // A line box centred, and an icon 0.7 px low.
-    expect(
-      await problems([
-        control('Done', _label('Done', _style(16, 24), centred: false)),
-        control(
-          'Next',
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _label('Next', _style(14, 20)),
-              Transform.translate(offset: const Offset(0, 0.7), child: icon),
-            ],
-          ),
-          height: 40,
-        ),
-      ]),
-      [
-        matches(
-          RegExp(
-            r'^a button "Done": the capitals of "Done" are drawn '
-            r'[0-9.]+ device px (above|below) the middle of its face$',
-          ),
-        ),
-        matches(
-          RegExp(
-            r'^a button "Next": its icon is drawn [0-9.]+ device px '
-            r'below the capitals of "Next"$',
-          ),
-        ),
-      ],
-    );
   });
 
   testWidgets('around a text field: its capitals on the middle, typed or '

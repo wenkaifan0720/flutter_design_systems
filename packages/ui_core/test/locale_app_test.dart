@@ -5,8 +5,7 @@
 // names both: the README's line, which a look's gallery writes too
 // (flutter_localizations, a dev dependency here, as ui_core stays on the
 // widgets layer). A look loads its own material_ui and cupertino_ui words.
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';
 

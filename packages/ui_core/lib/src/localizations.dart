@@ -3,7 +3,10 @@ import 'package:flutter/widgets.dart';
 
 import 'color_picker.dart' show DesignColorChannel;
 import 'data_table.dart' show DesignSortDirection;
+import 'date_field.dart' show DesignTimeOfDay;
+import 'internal/decimal.dart' as decimal;
 import 'internal/localizations_data.dart';
+import 'internal/segments.dart';
 
 /// The words a design system says on its own. The behaviours' words: the
 /// names a screen reader hears for a part with no text of its own (a
@@ -315,6 +318,229 @@ abstract class DesignLocalizations {
   /// A tree row's hint: [level] (from 1), and [position] (from 1) of the
   /// [count] rows beside it (`DesignTree.levelHint`).
   String treeLevelHint(int level, int position, int count);
+
+  // 0.3.0 overlays: a shortcut's keys (designShortcutKeys).
+
+  /// The Alt key, in a shortcut's label (Material's `keyboardKeyAlt`).
+  String get keyboardKeyAlt;
+
+  /// The Control key, in a shortcut's label (Material's `keyboardKeyControl`).
+  String get keyboardKeyControl;
+
+  /// The Shift key, in a shortcut's label (Material's `keyboardKeyShift`).
+  String get keyboardKeyShift;
+
+  /// The Meta key (Android, Linux), in a shortcut's label (Material's `keyboardKeyMeta`).
+  String get keyboardKeyMeta;
+
+  /// The Windows key, in a shortcut's label (Material's `keyboardKeyMetaWindows`).
+  String get keyboardKeyMetaWindows;
+
+  /// The Command key, spelled out, in a shortcut's label (Material's `keyboardKeyMetaMacOs`).
+  String get keyboardKeyMetaMacOs;
+
+  /// The Backspace key, in a shortcut's label (Material's `keyboardKeyBackspace`).
+  String get keyboardKeyBackspace;
+
+  /// The Delete key, in a shortcut's label (Material's `keyboardKeyDelete`).
+  String get keyboardKeyDelete;
+
+  /// The End key, in a shortcut's label (Material's `keyboardKeyEnd`).
+  String get keyboardKeyEnd;
+
+  /// The Escape key, in a shortcut's label (Material's `keyboardKeyEscape`).
+  String get keyboardKeyEscape;
+
+  /// The Home key, in a shortcut's label (Material's `keyboardKeyHome`).
+  String get keyboardKeyHome;
+
+  /// The Insert key, in a shortcut's label (Material's `keyboardKeyInsert`).
+  String get keyboardKeyInsert;
+
+  /// The Page Down key, in a shortcut's label (Material's `keyboardKeyPageDown`).
+  String get keyboardKeyPageDown;
+
+  /// The Page Up key, in a shortcut's label (Material's `keyboardKeyPageUp`).
+  String get keyboardKeyPageUp;
+
+  /// The Space bar, in a shortcut's label (Material's `keyboardKeySpace`).
+  String get keyboardKeySpace;
+
+  /// The Option key (⌥), spelled out on macOS and iOS: Material has no word for it, in a shortcut's label (ui_core's own).
+  String get keyboardKeyOption;
+
+  /// The Enter (Return) key, spelled out where its symbol (↵) is not drawn, in a shortcut's label (ui_core's own).
+  String get keyboardKeyEnter;
+
+  /// The Tab key, in a shortcut's label (ui_core's own).
+  String get keyboardKeyTab;
+
+  // 0.3.0 overlays: a search that failed (DesignCombobox.errorBuilder).
+
+  /// What a screen reader hears as a combobox's or a tag input's search fails (DesignCombobox.errorBuilder), in a shortcut's label (ui_core's own).
+  String get searchFailedMessage;
+
+  // 0.3.0 routes: the words ui_core's routes, tabs and shell say, under
+  // MaterialLocalizations' names.
+
+  /// What a screen reader calls an alert that names itself no other way
+  /// (`DesignDialogRoute` with `isAlert`) ("Alert").
+  String get alertDialogLabel;
+
+  /// What a screen reader calls a bottom sheet that names itself no other
+  /// way (`DesignBottomSheetRoute.semanticLabel`) ("Bottom Sheet").
+  String get bottomSheetLabel;
+
+  /// What a screen reader calls a dialog that names itself no other way
+  /// (`DesignDialogRoute`) ("Dialog").
+  String get dialogLabel;
+
+  /// What a screen reader calls a side navigation
+  /// (`DesignAdaptiveShell`'s sidebar) ("Navigation menu").
+  String get drawerLabel;
+
+  /// What a screen reader calls a bottom sheet's drag handle
+  /// (`DesignBottomSheetDragHandle`) ("Drag handle"). ui_core's own word.
+  String get dragHandleLabel;
+
+  /// Where a tab stands among [tabCount], [tabIndex] from 1 ("Tab 2 of 5"):
+  /// a tab's, and a navigation destination's, place as a screen reader
+  /// reads it.
+  String tabLabel({required int tabIndex, required int tabCount});
+
+  // 0.3.0 routes end
+
+  // 0.3.0 values: the value behaviours' words, and numbers, dates and times
+  // in the reader's symbols, digits and patterns (CLDR's).
+
+  /// The abbreviation for a time before noon ("AM"), as
+  /// `MaterialLocalizations`' (a time field's day period).
+  String get anteMeridiemAbbreviation;
+
+  /// The abbreviation for a time after noon ("PM").
+  String get postMeridiemAbbreviation;
+
+  /// A time field's hour segment, as a screen reader names it ("Hour"), as
+  /// `MaterialLocalizations`'.
+  String get timePickerHourLabel;
+
+  /// A time field's minute segment ("Minute").
+  String get timePickerMinuteLabel;
+
+  /// A date field's year segment ("Year").
+  String get dateFieldYearLabel;
+
+  /// A date field's month segment ("Month").
+  String get dateFieldMonthLabel;
+
+  /// A date field's day segment ("Day").
+  String get dateFieldDayLabel;
+
+  /// A time field's seconds segment ("Second").
+  String get timeFieldSecondLabel;
+
+  /// A time field's day-period segment ("AM/PM").
+  String get timeFieldDayPeriodLabel;
+
+  /// An empty year segment's text ("yyyy").
+  String get dateFieldYearPlaceholder;
+
+  /// An empty month segment's text ("mm").
+  String get dateFieldMonthPlaceholder;
+
+  /// An empty day segment's text ("dd").
+  String get dateFieldDayPlaceholder;
+
+  /// A date outside the field's first and last dates ("Out of range."), as
+  /// `MaterialLocalizations`'.
+  String get dateOutOfRangeLabel;
+
+  /// What a screen reader says for a field or segment with no value
+  /// ("Empty").
+  String get emptyValueLabel;
+
+  /// A rating's name when its caller gives none ("Rating").
+  String get ratingLabel;
+
+  /// A rating's value: [value] of [count] items ("3.5 of 5").
+  String ratingValueLabel(double value, int count);
+
+  /// How many series a chart draws ("2 series").
+  String chartSeriesCountLabel(int count);
+
+  /// How many data points a chart draws ("12 points").
+  String chartPointCountLabel(int count);
+
+  /// How many slices a pie chart draws ("4 slices").
+  String chartSliceCountLabel(int count);
+
+  /// A chart's x axis from [from] to [to], both formatted ("Jan to Dec").
+  String chartRangeLabel(String from, String to);
+
+  /// A chart's least and greatest values, formatted ("lowest 820, highest
+  /// 1,640").
+  String chartExtremesLabel(String lowest, String highest);
+
+  /// One data point: [x], its [series]' name and its value [y], formatted
+  /// ("Mar 2026, Revenue: 1,240").
+  String chartPointLabel(String x, String series, String y);
+
+  /// A chart's screen-reader action that shows its data as a table ("Show
+  /// data table").
+  String get chartShowTableLabel;
+
+  /// Joins the parts of a spoken summary (", ").
+  String get listSeparator;
+
+  /// [value] in the reader's digits and separators ("1,240.5"; German's
+  /// "1.240,5"; Arabic's in Arabic-Indic digits, U+0660 to U+0669, grouped
+  /// by U+066C with U+066B for the point), with [fractionDigits] decimals,
+  /// or as many as it has up to three when null.
+  String formatDecimal(num value, {int? fractionDigits});
+
+  /// [text] read as a number the reader wrote, in their digits and
+  /// separators (or ASCII digits); null when it does not read.
+  double? parseDecimal(String text);
+
+  /// [fraction] as a percentage ("40%"; French's "40 %").
+  String formatPercent(double fraction, {int fractionDigits = 0});
+
+  /// [date]'s year on its own ("2026"; Japanese's 2026 and its year mark,
+  /// U+5E74).
+  String formatYear(DateTime date);
+
+  /// [date]'s month's short name on its own ("Nov").
+  String formatShortMonth(DateTime date);
+
+  /// [date]'s month's name on its own ("November"), as a date field's month
+  /// segment is read.
+  String formatMonth(DateTime date);
+
+  /// [date]'s month and day, short ("Nov 16"; German's "16. Nov.").
+  String formatShortMonthDay(DateTime date);
+
+  /// [time] on the locale's clock ("3:05 PM"; German's "15:05"), on a
+  /// 24-hour clock when [alwaysUse24HourFormat], with its seconds when
+  /// [showSeconds].
+  String formatTimeOfDay(
+    DesignTimeOfDay time, {
+    bool alwaysUse24HourFormat = false,
+    bool showSeconds = false,
+  });
+
+  /// A date field's order and the text between its segments (CLDR's yMd:
+  /// "M/d/y"; German's "d.M.y"; Japanese's "y/M/d").
+  String get dateFieldPattern;
+
+  /// A time field's segments and the text between (CLDR's jm: "h:mm a";
+  /// Korean's "a h:mm"; or Hm, "HH:mm", when [alwaysUse24HourFormat]),
+  /// with seconds when [showSeconds].
+  String timeFieldPattern({
+    bool alwaysUse24HourFormat = false,
+    bool showSeconds = false,
+  });
+
+  // 0.3.0 values end
 }
 
 /// The words in English, with no localizations package.
@@ -553,6 +779,240 @@ class DefaultDesignLocalizations implements DesignLocalizations {
   @override
   String treeLevelHint(int level, int position, int count) =>
       'level $level, $position of $count';
+
+  // 0.3.0 overlays: a shortcut's keys (designShortcutKeys).
+
+  @override
+  String get keyboardKeyAlt => 'Alt';
+
+  @override
+  String get keyboardKeyControl => 'Ctrl';
+
+  @override
+  String get keyboardKeyShift => 'Shift';
+
+  @override
+  String get keyboardKeyMeta => 'Meta';
+
+  @override
+  String get keyboardKeyMetaWindows => 'Win';
+
+  @override
+  String get keyboardKeyMetaMacOs => 'Command';
+
+  @override
+  String get keyboardKeyBackspace => 'Backspace';
+
+  @override
+  String get keyboardKeyDelete => 'Del';
+
+  @override
+  String get keyboardKeyEnd => 'End';
+
+  @override
+  String get keyboardKeyEscape => 'Esc';
+
+  @override
+  String get keyboardKeyHome => 'Home';
+
+  @override
+  String get keyboardKeyInsert => 'Insert';
+
+  @override
+  String get keyboardKeyPageDown => 'PgDown';
+
+  @override
+  String get keyboardKeyPageUp => 'PgUp';
+
+  @override
+  String get keyboardKeySpace => 'Space';
+
+  @override
+  String get keyboardKeyOption => 'Option';
+
+  @override
+  String get keyboardKeyEnter => 'Enter';
+
+  @override
+  String get keyboardKeyTab => 'Tab';
+
+  // 0.3.0 overlays: a search that failed (DesignCombobox.errorBuilder).
+
+  @override
+  String get searchFailedMessage => "Couldn't load results";
+
+  // 0.3.0 routes
+
+  @override
+  String get alertDialogLabel => 'Alert';
+
+  @override
+  String get bottomSheetLabel => 'Bottom Sheet';
+
+  @override
+  String get dialogLabel => 'Dialog';
+
+  @override
+  String get drawerLabel => 'Navigation menu';
+
+  @override
+  String get dragHandleLabel => 'Drag handle';
+
+  @override
+  String tabLabel({required int tabIndex, required int tabCount}) =>
+      'Tab $tabIndex of $tabCount';
+
+  // 0.3.0 routes end
+
+  // 0.3.0 values
+
+  // The data the numbers, dates and times read: English's here, a
+  // translation's own in _TranslatedDesignLocalizations.
+  DesignLocaleData get _valueData => designLocaleData['en']!;
+
+  decimal.DecimalSymbols get _symbols => decimal.DecimalSymbols.of(_valueData);
+
+  String _pattern(String pattern, DateTime when) => formatPattern(
+    pattern,
+    when,
+    data: _valueData,
+    am: anteMeridiemAbbreviation,
+    pm: postMeridiemAbbreviation,
+  );
+
+  @override
+  String get anteMeridiemAbbreviation => 'AM';
+
+  @override
+  String get postMeridiemAbbreviation => 'PM';
+
+  @override
+  String get timePickerHourLabel => 'Hour';
+
+  @override
+  String get timePickerMinuteLabel => 'Minute';
+
+  @override
+  String get dateFieldYearLabel => 'Year';
+
+  @override
+  String get dateFieldMonthLabel => 'Month';
+
+  @override
+  String get dateFieldDayLabel => 'Day';
+
+  @override
+  String get timeFieldSecondLabel => 'Second';
+
+  @override
+  String get timeFieldDayPeriodLabel => 'AM/PM';
+
+  @override
+  String get dateFieldYearPlaceholder => 'yyyy';
+
+  @override
+  String get dateFieldMonthPlaceholder => 'mm';
+
+  @override
+  String get dateFieldDayPlaceholder => 'dd';
+
+  @override
+  String get dateOutOfRangeLabel => 'Out of range.';
+
+  @override
+  String get emptyValueLabel => 'Empty';
+
+  @override
+  String get ratingLabel => 'Rating';
+
+  @override
+  String ratingValueLabel(double value, int count) =>
+      '${formatDecimal(value)} of ${formatDecimal(count)}';
+
+  @override
+  String chartSeriesCountLabel(int count) => '${formatDecimal(count)} series';
+
+  @override
+  String chartPointCountLabel(int count) =>
+      '${formatDecimal(count)} ${count == 1 ? 'point' : 'points'}';
+
+  @override
+  String chartSliceCountLabel(int count) =>
+      '${formatDecimal(count)} ${count == 1 ? 'slice' : 'slices'}';
+
+  @override
+  String chartRangeLabel(String from, String to) => '$from to $to';
+
+  @override
+  String chartExtremesLabel(String lowest, String highest) =>
+      'lowest $lowest, highest $highest';
+
+  @override
+  String chartPointLabel(String x, String series, String y) =>
+      '$x, $series: $y';
+
+  @override
+  String get chartShowTableLabel => 'Show data table';
+
+  @override
+  String get listSeparator => ', ';
+
+  @override
+  String formatDecimal(num value, {int? fractionDigits}) =>
+      decimal.formatDecimal(value, _symbols, fractionDigits: fractionDigits);
+
+  @override
+  double? parseDecimal(String text) => decimal.parseDecimal(text, _symbols);
+
+  @override
+  String formatPercent(double fraction, {int fractionDigits = 0}) =>
+      decimal.formatPercent(fraction, _symbols, fractionDigits: fractionDigits);
+
+  @override
+  String formatYear(DateTime date) => _pattern(_valueData.year, date);
+
+  @override
+  String formatShortMonth(DateTime date) =>
+      _pattern(_valueData.shortMonth, date);
+
+  @override
+  String formatMonth(DateTime date) => _pattern('LLLL', date);
+
+  @override
+  String formatShortMonthDay(DateTime date) =>
+      _pattern(_valueData.monthDay, date);
+
+  @override
+  String formatTimeOfDay(
+    DesignTimeOfDay time, {
+    bool alwaysUse24HourFormat = false,
+    bool showSeconds = false,
+  }) => _pattern(
+    timeFieldPattern(
+      alwaysUse24HourFormat: alwaysUse24HourFormat,
+      showSeconds: showSeconds,
+    ),
+    DateTime(2000, 1, 1, time.hour, time.minute, time.second),
+  );
+
+  @override
+  String get dateFieldPattern => _valueData.shortDate;
+
+  @override
+  String timeFieldPattern({
+    bool alwaysUse24HourFormat = false,
+    bool showSeconds = false,
+  }) {
+    final data = _valueData;
+    return switch ((alwaysUse24HourFormat, showSeconds)) {
+      (true, true) => data.time24WithSeconds,
+      (true, false) => data.time24,
+      (false, true) => data.timeWithSeconds,
+      (false, false) => data.time,
+    };
+  }
+
+  // 0.3.0 values end
 }
 
 class _DesignLocalizationsDelegate
@@ -902,6 +1362,241 @@ class _TranslatedDesignLocalizations extends DefaultDesignLocalizations {
     super.treeLevelHint(level, position, count),
     {'level': level, 'position': position, 'count': count},
   );
+
+  // 0.3.0 overlays: a shortcut's keys (designShortcutKeys).
+
+  @override
+  String get keyboardKeyAlt => _word('keyboardKeyAlt', super.keyboardKeyAlt);
+
+  @override
+  String get keyboardKeyControl =>
+      _word('keyboardKeyControl', super.keyboardKeyControl);
+
+  @override
+  String get keyboardKeyShift =>
+      _word('keyboardKeyShift', super.keyboardKeyShift);
+
+  @override
+  String get keyboardKeyMeta => _word('keyboardKeyMeta', super.keyboardKeyMeta);
+
+  @override
+  String get keyboardKeyMetaWindows =>
+      _word('keyboardKeyMetaWindows', super.keyboardKeyMetaWindows);
+
+  @override
+  String get keyboardKeyMetaMacOs =>
+      _word('keyboardKeyMetaMacOs', super.keyboardKeyMetaMacOs);
+
+  @override
+  String get keyboardKeyBackspace =>
+      _word('keyboardKeyBackspace', super.keyboardKeyBackspace);
+
+  @override
+  String get keyboardKeyDelete =>
+      _word('keyboardKeyDelete', super.keyboardKeyDelete);
+
+  @override
+  String get keyboardKeyEnd => _word('keyboardKeyEnd', super.keyboardKeyEnd);
+
+  @override
+  String get keyboardKeyEscape =>
+      _word('keyboardKeyEscape', super.keyboardKeyEscape);
+
+  @override
+  String get keyboardKeyHome => _word('keyboardKeyHome', super.keyboardKeyHome);
+
+  @override
+  String get keyboardKeyInsert =>
+      _word('keyboardKeyInsert', super.keyboardKeyInsert);
+
+  @override
+  String get keyboardKeyPageDown =>
+      _word('keyboardKeyPageDown', super.keyboardKeyPageDown);
+
+  @override
+  String get keyboardKeyPageUp =>
+      _word('keyboardKeyPageUp', super.keyboardKeyPageUp);
+
+  @override
+  String get keyboardKeySpace =>
+      _word('keyboardKeySpace', super.keyboardKeySpace);
+
+  @override
+  String get keyboardKeyOption =>
+      _word('keyboardKeyOption', super.keyboardKeyOption);
+
+  @override
+  String get keyboardKeyEnter =>
+      _word('keyboardKeyEnter', super.keyboardKeyEnter);
+
+  @override
+  String get keyboardKeyTab => _word('keyboardKeyTab', super.keyboardKeyTab);
+
+  // 0.3.0 overlays: a search that failed (DesignCombobox.errorBuilder).
+
+  @override
+  String get searchFailedMessage =>
+      _word('searchFailedMessage', super.searchFailedMessage);
+
+  // 0.3.0 routes
+
+  @override
+  String get alertDialogLabel =>
+      _word('alertDialogLabel', super.alertDialogLabel);
+
+  @override
+  String get bottomSheetLabel =>
+      _word('bottomSheetLabel', super.bottomSheetLabel);
+
+  @override
+  String get dialogLabel => _word('dialogLabel', super.dialogLabel);
+
+  @override
+  String get drawerLabel => _word('drawerLabel', super.drawerLabel);
+
+  @override
+  String get dragHandleLabel => _word('dragHandleLabel', super.dragHandleLabel);
+
+  @override
+  String tabLabel({required int tabIndex, required int tabCount}) => _message(
+    'tabLabel',
+    super.tabLabel(tabIndex: tabIndex, tabCount: tabCount),
+    {'tabIndex': tabIndex, 'tabCount': tabCount},
+  );
+
+  // 0.3.0 routes end
+
+  // 0.3.0 values
+
+  @override
+  DesignLocaleData get _valueData => _data;
+
+  // A counted value message: as _plural, its count grouped as a number.
+  String _countedValue(String key, int count, String english) {
+    final forms = _data.plurals[key];
+    if (forms == null) return english;
+    final form =
+        forms['=$count'] ??
+        forms[_pluralCategory(_data.plural, count)] ??
+        forms['other']!;
+    return _fill(form, {'count': formatDecimal(count)});
+  }
+
+  @override
+  String get anteMeridiemAbbreviation =>
+      _word('anteMeridiemAbbreviation', super.anteMeridiemAbbreviation);
+
+  @override
+  String get postMeridiemAbbreviation =>
+      _word('postMeridiemAbbreviation', super.postMeridiemAbbreviation);
+
+  @override
+  String get timePickerHourLabel =>
+      _word('timePickerHourLabel', super.timePickerHourLabel);
+
+  @override
+  String get timePickerMinuteLabel =>
+      _word('timePickerMinuteLabel', super.timePickerMinuteLabel);
+
+  @override
+  String get dateFieldYearLabel =>
+      _word('dateFieldYearLabel', super.dateFieldYearLabel);
+
+  @override
+  String get dateFieldMonthLabel =>
+      _word('dateFieldMonthLabel', super.dateFieldMonthLabel);
+
+  @override
+  String get dateFieldDayLabel =>
+      _word('dateFieldDayLabel', super.dateFieldDayLabel);
+
+  @override
+  String get timeFieldSecondLabel =>
+      _word('timeFieldSecondLabel', super.timeFieldSecondLabel);
+
+  @override
+  String get timeFieldDayPeriodLabel =>
+      _word('timeFieldDayPeriodLabel', super.timeFieldDayPeriodLabel);
+
+  @override
+  String get dateFieldYearPlaceholder =>
+      _word('dateFieldYearPlaceholder', super.dateFieldYearPlaceholder);
+
+  @override
+  String get dateFieldMonthPlaceholder =>
+      _word('dateFieldMonthPlaceholder', super.dateFieldMonthPlaceholder);
+
+  @override
+  String get dateFieldDayPlaceholder =>
+      _word('dateFieldDayPlaceholder', super.dateFieldDayPlaceholder);
+
+  @override
+  String get dateOutOfRangeLabel =>
+      _word('dateOutOfRangeLabel', super.dateOutOfRangeLabel);
+
+  @override
+  String get emptyValueLabel => _word('emptyValueLabel', super.emptyValueLabel);
+
+  @override
+  String get ratingLabel => _word('ratingLabel', super.ratingLabel);
+
+  @override
+  String ratingValueLabel(double value, int count) => _message(
+    'ratingValueLabel',
+    super.ratingValueLabel(value, count),
+    {'value': formatDecimal(value), 'count': formatDecimal(count)},
+  );
+
+  @override
+  String chartSeriesCountLabel(int count) => _countedValue(
+    'chartSeriesCountLabel',
+    count,
+    super.chartSeriesCountLabel(count),
+  );
+
+  @override
+  String chartPointCountLabel(int count) => _countedValue(
+    'chartPointCountLabel',
+    count,
+    super.chartPointCountLabel(count),
+  );
+
+  @override
+  String chartSliceCountLabel(int count) => _countedValue(
+    'chartSliceCountLabel',
+    count,
+    super.chartSliceCountLabel(count),
+  );
+
+  @override
+  String chartRangeLabel(String from, String to) => _message(
+    'chartRangeLabel',
+    super.chartRangeLabel(from, to),
+    {'from': from, 'to': to},
+  );
+
+  @override
+  String chartExtremesLabel(String lowest, String highest) => _message(
+    'chartExtremesLabel',
+    super.chartExtremesLabel(lowest, highest),
+    {'lowest': lowest, 'highest': highest},
+  );
+
+  @override
+  String chartPointLabel(String x, String series, String y) => _message(
+    'chartPointLabel',
+    super.chartPointLabel(x, series, y),
+    {'x': x, 'series': series, 'y': y},
+  );
+
+  @override
+  String get chartShowTableLabel =>
+      _word('chartShowTableLabel', super.chartShowTableLabel);
+
+  @override
+  String get listSeparator => _word('listSeparator', super.listSeparator);
+
+  // 0.3.0 values end
 }
 
 // The plural category of the whole number [n] under [rule] (CLDR's rules,

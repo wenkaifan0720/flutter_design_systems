@@ -9,6 +9,8 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
+import 'internal/gesture_focus.dart';
+
 /// [builders] with the entries for [platforms] (iOS, by default) wrapped in
 /// [DesignSwipeBackPageTransitionsBuilder], so a page there pops with a
 /// swipe from the screen's leading edge and otherwise plays the look's push.
@@ -121,8 +123,13 @@ class _SwipeBack<T> extends StatefulWidget {
 
 class _SwipeBackState<T> extends State<_SwipeBack<T>>
     with SingleTickerProviderStateMixin {
+  // From where the finger went down: where the page paints nothing at its
+  // edge, the route's barrier is hit too and holds the gesture until the
+  // drag passes its slop, which a drag from where it was accepted would
+  // drop, the page trailing the finger by it.
   late final HorizontalDragGestureRecognizer _drag =
       HorizontalDragGestureRecognizer(debugOwner: this)
+        ..dragStartBehavior = DragStartBehavior.down
         ..onStart = _start
         ..onUpdate = _update
         ..onEnd = _end
@@ -133,6 +140,8 @@ class _SwipeBackState<T> extends State<_SwipeBack<T>>
   )..addListener(_settled);
   // From this page's swipe starting until the route is told it ended.
   NavigatorState? _gesture;
+  // A swipe takes the focus out of the page; left there, it has it back.
+  final GestureFocus _gestureFocus = GestureFocus();
   bool _dragging = false;
 
   PageRoute<T> get _route => widget.route;
@@ -171,6 +180,7 @@ class _SwipeBackState<T> extends State<_SwipeBack<T>>
     if (!_canSwipe) return;
     _gesture = _route.navigator;
     _dragging = true;
+    _gestureFocus.hold(_route);
     _route.handleStartBackGesture(progress: _route.animation!.value);
   }
 

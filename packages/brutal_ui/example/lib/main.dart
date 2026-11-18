@@ -10,7 +10,7 @@
 import 'package:brutal_ui/brutal_ui.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 import 'gallery_pages.dart';
 import 'kit_gallery/admit/admit.dart';

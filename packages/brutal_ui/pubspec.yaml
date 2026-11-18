@@ -1,14 +1,29 @@
 name: brutal_ui
 description: >-
-  A Flutter design system with its make-up off: heavy black rules, square corners, a hard offset shadow under what you press, cells on shared rules and one flat colour block a screen.
-version: 0.1.1
-homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/brutal_ui
+  A neo-brutalist Flutter design system: heavy black rules, square corners, a hard shadow under what you can press and one flat colour block a screen.
+version: 0.2.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/brutal/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/brutal_ui
+issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
 topics:
   - design-system
   - widgets
   - ui
   - theme
+  - neobrutalism
+screenshots:
+  - description: "Admit, a ticketing app on Brutal, at 1440 px by day beside the same app on a 390 px phone by night."
+    path: screenshots/hero_admit.png
+  - description: "Admit on Brutal at 1440 px by day: the week as cells on shared rules beside one event, its colour block and its tickets."
+    path: screenshots/event_1440_light.png
+  - description: "The same week on a 390 px phone by night, the bar of places and the filter segments."
+    path: screenshots/events_390_dark.png
+  - description: "A ticket at 1440 px by night: the tickets list beside one ticket, its door code and order on a pink block."
+    path: screenshots/ticket_1440_dark.png
+  - description: "Checkout on a phone by day: steppers in ruled cells, plain fields and one orange action standing on its hard shadow."
+    path: screenshots/checkout_390_light.png
+  - description: "Brutal's own page: heavy rules, square corners, one flat colour block and a hard shadow under what you can press."
+    path: screenshots/overview_1440_light.png
 
 environment:
   sdk: ">=3.13.0 <4.0.0"
@@ -19,7 +34,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.2.1
+  ui_core: ^0.3.0
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -29,6 +44,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
+  ui_core_test: ^0.1.0
 
 flutter:
   fonts:

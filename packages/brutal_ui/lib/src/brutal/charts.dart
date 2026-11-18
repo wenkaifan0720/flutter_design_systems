@@ -7,6 +7,11 @@
 /// bars, wedges and legend squares), `foreground` (the axis labels, and a
 /// sparkline's line) and `textStyle` (the labels and the legend), then
 /// [BrutalThemeData.chartStyle]'s.
+///
+/// Right to left they are mirrored, as the text reads: the categories and
+/// time run from the right, the value axis and its numbers stand on the
+/// right, a sparkline runs from the right and a pie's slices go round the
+/// other way from the top.
 library;
 
 import 'dart:math' as math;
@@ -45,22 +50,17 @@ List<Color> _palette(BrutalColors c) => [
 Color _colorOf(BrutalColors c, List<BrutalSeries> series, int i) =>
     series[i].color ?? _palette(c)[i % 5];
 
-String _number(double v) =>
-    v == v.roundToDouble() ? v.round().toString() : v.toStringAsFixed(1);
+// A value in the reader's digits: whole, or to one decimal.
+String _number(DesignLocalizations numbers, double v) =>
+    numbers.formatDecimal(v, fractionDigits: v == v.roundToDouble() ? 0 : 1);
 
-/// A round top for the axis: 1, 2, 2.5 or 5 times a power of ten.
-double _niceTop(double max) {
-  if (max <= 0) return 1;
-  final power = math.pow(10, (math.log(max) / math.ln10).floor()).toDouble();
-  for (final step in const [1.0, 2.0, 2.5, 5.0, 10.0]) {
-    if (step * power >= max) return step * power;
-  }
-  return 10 * power;
-}
-
-String _readOut(List<String> labels, List<BrutalSeries> series) => [
+String _readOut(
+  List<String> labels,
+  List<BrutalSeries> series,
+  DesignLocalizations numbers,
+) => [
   for (final s in series)
-    '${s.label}: ${[for (final (i, v) in s.values.indexed) '${i < labels.length ? labels[i] : i + 1} ${_number(v)}'].join(', ')}',
+    '${s.label}: ${[for (final (i, v) in s.values.indexed) '${i < labels.length ? labels[i] : i + 1} ${_number(numbers, v)}'].join(', ')}',
 ].join('; ');
 
 /// The chart and its legend under it.
@@ -151,6 +151,7 @@ abstract class _AxesPainter extends CustomPainter {
     required this.edge,
     required this.width,
     required this.words,
+    required this.numbers,
   });
 
   final BrutalColors colors;
@@ -168,9 +169,41 @@ abstract class _AxesPainter extends CustomPainter {
   /// The labels' colour.
   final Color words;
 
-  late final double top = _niceTop(
-    series.expand((s) => s.values).fold<double>(0, math.max),
+  /// The reader's numbers, for the ticks' labels.
+  final DesignLocalizations numbers;
+
+  // The value axis: from 0 to a whole tick over the largest value, about
+  // four steps of 1, 2 or 5 × 10ⁿ (ui_core's nice scale), mapped 0 to 1;
+  // 0 to 1 when nothing is above 0.
+  late final DesignLinearScale scale = DesignLinearScale.nice(
+    min: 0,
+    max: switch (series.expand((s) => s.values).fold<double>(0, math.max)) {
+      > 0 && final most => most,
+      _ => 1,
+    },
+    start: 0,
+    end: 1,
+    tickCount: 4,
+    includeZero: true,
   );
+
+  /// The value axis's top.
+  double get top => scale.max;
+
+  /// Right to left: the chart mirrored, as the text reads (the categories
+  /// and time from the right, the value axis and its numbers on the right).
+  /// The painters place everything left to right and draw through [flip].
+  bool get _rtl => direction == TextDirection.rtl;
+
+  double _width = 0;
+
+  /// A left-to-right x where it is drawn.
+  double flip(double x) => _rtl ? _width - x : x;
+
+  /// A left-to-right rectangle where it is drawn.
+  Rect flipRect(Rect r) => _rtl
+      ? Rect.fromLTRB(_width - r.right, r.top, _width - r.left, r.bottom)
+      : r;
 
   TextPainter _label(String s) => TextPainter(
     text: TextSpan(
@@ -183,10 +216,13 @@ abstract class _AxesPainter extends CustomPainter {
     textDirection: direction,
   )..layout();
 
-  /// Paints the grid and the axes and returns the plot's rectangle.
+  /// Paints the grid and the axes and returns the plot's rectangle, left to
+  /// right (draw it through [flip]).
   Rect paintAxes(Canvas canvas, Size size) {
-    final ticks = [for (var i = 0; i <= 4; i++) top * i / 4];
-    final tickLabels = [for (final t in ticks) _label(_number(t))];
+    _width = size.width;
+    final scaled = scale.ticks(numbers, count: 4);
+    final ticks = [for (final t in scaled) t.value];
+    final tickLabels = [for (final t in scaled) _label(t.label)];
     final gutter = tickLabels.map((p) => p.width).fold<double>(0, math.max) + 8;
     final zero = _label('0');
     final xHeight = labels.isEmpty ? 0.0 : zero.height + 8;
@@ -203,10 +239,16 @@ abstract class _AxesPainter extends CustomPainter {
     for (final (i, t) in ticks.indexed) {
       final y = plot.bottom - plot.height * t / top;
       if (i > 0) {
-        canvas.drawLine(Offset(plot.left, y), Offset(plot.right, y), grid);
+        canvas.drawLine(
+          Offset(flip(plot.left), y),
+          Offset(flip(plot.right), y),
+          grid,
+        );
       }
+      // The numbers end 8 px before the value axis: flush to it.
       final p = tickLabels[i];
-      p.paint(canvas, Offset(gutter - 8 - p.width, y - p.height / 2));
+      final x = _rtl ? flip(gutter - 8) : gutter - 8 - p.width;
+      p.paint(canvas, Offset(x, y - p.height / 2));
     }
     for (final p in tickLabels) {
       p.dispose();
@@ -215,14 +257,23 @@ abstract class _AxesPainter extends CustomPainter {
       ..color = edge
       ..strokeWidth = width;
     canvas
-      ..drawLine(plot.bottomLeft, plot.bottomRight, axis)
-      ..drawLine(plot.topLeft, plot.bottomLeft, axis);
+      ..drawLine(
+        Offset(flip(plot.left), plot.bottom),
+        Offset(flip(plot.right), plot.bottom),
+        axis,
+      )
+      ..drawLine(
+        Offset(flip(plot.left), plot.top),
+        Offset(flip(plot.left), plot.bottom),
+        axis,
+      );
     return plot;
   }
 
+  /// [s] centred under the left-to-right [x].
   void paintXLabel(Canvas canvas, Rect plot, String s, double x) {
     final p = _label(s);
-    p.paint(canvas, Offset(x - p.width / 2, plot.bottom + 6));
+    p.paint(canvas, Offset(flip(x) - p.width / 2, plot.bottom + 6));
     p.dispose();
   }
 
@@ -234,6 +285,8 @@ abstract class _AxesPainter extends CustomPainter {
       old.edge != edge ||
       old.width != width ||
       old.words != words ||
+      old.numbers != numbers ||
+      old.direction != direction ||
       old.text != text;
 }
 
@@ -247,6 +300,7 @@ class _LinePainter extends _AxesPainter {
     required super.edge,
     required super.width,
     required super.words,
+    required super.numbers,
     required this.area,
   });
 
@@ -257,12 +311,13 @@ class _LinePainter extends _AxesPainter {
     final plot = paintAxes(canvas, size);
     final n = series.fold<int>(0, (a, s) => math.max(a, s.values.length));
     if (n == 0) return;
-    double x(int i) => n == 1
+    double ltr(int i) => n == 1
         ? plot.center.dx
         : plot.left + 8 + (plot.width - 16) * i / (n - 1);
+    double x(int i) => flip(ltr(i));
     double y(double v) => plot.bottom - plot.height * v / top;
     for (final (i, label) in labels.indexed) {
-      if (i < n) paintXLabel(canvas, plot, label, x(i));
+      if (i < n) paintXLabel(canvas, plot, label, ltr(i));
     }
     for (final (si, s) in series.indexed) {
       final color = _colorOf(colors, series, si);
@@ -321,6 +376,7 @@ class _BarPainter extends _AxesPainter {
     required super.edge,
     required super.width,
     required super.words,
+    required super.numbers,
   });
 
   @override
@@ -340,7 +396,9 @@ class _BarPainter extends _AxesPainter {
       for (final (si, s) in series.indexed) {
         if (i >= s.values.length) continue;
         final h = plot.height * s.values[i] / top;
-        final r = Rect.fromLTWH(start + bar * si, plot.bottom - h, bar, h);
+        final r = flipRect(
+          Rect.fromLTWH(start + bar * si, plot.bottom - h, bar, h),
+        );
         canvas
           ..drawRect(r, Paint()..color = _colorOf(colors, series, si))
           ..drawRect(r.deflate(width / 2), rule);
@@ -376,6 +434,7 @@ abstract class _AxesChart extends StatelessWidget {
     BrutalThemeData theme,
     DesignStyleOf layered,
     TextDirection direction,
+    DesignLocalizations numbers,
   );
 
   @override
@@ -385,7 +444,7 @@ abstract class _AxesChart extends StatelessWidget {
     return _Framed(
       layered: layered,
       semanticLabel: semanticLabel,
-      readOut: _readOut(labels, series),
+      readOut: _readOut(labels, series, DesignLocalizations.of(context)),
       legend: [
         for (final (i, s) in series.indexed)
           (s.label, _colorOf(theme.colors, series, i)),
@@ -393,7 +452,12 @@ abstract class _AxesChart extends StatelessWidget {
       chart: SizedBox(
         height: height,
         child: CustomPaint(
-          painter: painter(theme, layered, Directionality.of(context)),
+          painter: painter(
+            theme,
+            layered,
+            Directionality.of(context),
+            DesignLocalizations.of(context),
+          ),
           size: Size.infinite,
         ),
       ),
@@ -430,6 +494,7 @@ class BrutalLineChart extends _AxesChart {
     BrutalThemeData theme,
     DesignStyleOf layered,
     TextDirection direction,
+    DesignLocalizations numbers,
   ) => _LinePainter(
     colors: theme.colors,
     text: layered.text(theme.textTheme.caption),
@@ -439,6 +504,7 @@ class BrutalLineChart extends _AxesChart {
     edge: layered.side?.color ?? layered.edge ?? theme.colors.ink,
     width: theme.borderWidth,
     words: layered.foreground ?? theme.colors.inkMuted,
+    numbers: numbers,
     area: false,
   );
 }
@@ -464,6 +530,7 @@ class BrutalAreaChart extends _AxesChart {
     BrutalThemeData theme,
     DesignStyleOf layered,
     TextDirection direction,
+    DesignLocalizations numbers,
   ) => _LinePainter(
     colors: theme.colors,
     text: layered.text(theme.textTheme.caption),
@@ -473,6 +540,7 @@ class BrutalAreaChart extends _AxesChart {
     edge: layered.side?.color ?? layered.edge ?? theme.colors.ink,
     width: theme.borderWidth,
     words: layered.foreground ?? theme.colors.inkMuted,
+    numbers: numbers,
     area: true,
   );
 }
@@ -498,6 +566,7 @@ class BrutalBarChart extends _AxesChart {
     BrutalThemeData theme,
     DesignStyleOf layered,
     TextDirection direction,
+    DesignLocalizations numbers,
   ) => _BarPainter(
     colors: theme.colors,
     text: layered.text(theme.textTheme.caption),
@@ -507,6 +576,7 @@ class BrutalBarChart extends _AxesChart {
     edge: layered.side?.color ?? layered.edge ?? theme.colors.ink,
     width: theme.borderWidth,
     words: layered.foreground ?? theme.colors.inkMuted,
+    numbers: numbers,
   );
 }
 
@@ -575,6 +645,7 @@ class BrutalPieChart extends StatelessWidget {
       dimension: size,
       child: CustomPaint(
         painter: _PiePainter(
+          direction: Directionality.of(context),
           values: [for (final s in slices) s.value],
           colors: colors,
           ink: rule,
@@ -653,6 +724,7 @@ class BrutalPieChart extends StatelessWidget {
 
 class _PiePainter extends CustomPainter {
   const _PiePainter({
+    required this.direction,
     required this.values,
     required this.colors,
     required this.ink,
@@ -666,8 +738,16 @@ class _PiePainter extends CustomPainter {
   final double width;
   final Color? hole;
 
+  /// Right to left, the slices go round the other way from the top.
+  final TextDirection direction;
+
   @override
   void paint(Canvas canvas, Size size) {
+    if (direction == TextDirection.rtl) {
+      canvas
+        ..translate(size.width, 0)
+        ..scale(-1, 1);
+    }
     final total = values.fold<double>(0, (a, v) => a + v);
     final rect = (Offset.zero & size).deflate(width / 2);
     final rule = Paint()
@@ -704,6 +784,7 @@ class _PiePainter extends CustomPainter {
       !listEquals(old.colors, colors) ||
       old.ink != ink ||
       old.width != width ||
+      old.direction != direction ||
       old.hole != hole;
 }
 
@@ -726,7 +807,8 @@ class BrutalSparkline extends StatelessWidget {
     this.style,
   });
 
-  /// The values, left to right.
+  /// The values, in reading order: left to right, right to left in
+  /// right-to-left text.
   final List<double> values;
 
   /// What it shows, for a screen reader.
@@ -753,13 +835,15 @@ class BrutalSparkline extends StatelessWidget {
       label: semanticLabel,
       value: values.isEmpty
           ? null
-          : 'from ${_number(values.first)} to ${_number(values.last)}',
+          : 'from ${_number(DesignLocalizations.of(context), values.first)} '
+                'to ${_number(DesignLocalizations.of(context), values.last)}',
       excludeSemantics: true,
       child: SizedBox(
         width: width,
         height: height,
         child: CustomPaint(
           painter: _SparkPainter(
+            direction: Directionality.of(context),
             values: values,
             color: color ?? layered.foreground ?? c.ink,
             width: theme.borderWidth,
@@ -786,6 +870,7 @@ class BrutalSparkline extends StatelessWidget {
 
 class _SparkPainter extends CustomPainter {
   const _SparkPainter({
+    required this.direction,
     required this.values,
     required this.color,
     required this.width,
@@ -795,9 +880,17 @@ class _SparkPainter extends CustomPainter {
   final Color color;
   final double width;
 
+  /// Right to left, the line runs from the right.
+  final TextDirection direction;
+
   @override
   void paint(Canvas canvas, Size size) {
     if (values.isEmpty) return;
+    if (direction == TextDirection.rtl) {
+      canvas
+        ..translate(size.width, 0)
+        ..scale(-1, 1);
+    }
     final lo = values.reduce(math.min);
     final hi = values.reduce(math.max);
     final span = hi == lo ? 1 : hi - lo;
@@ -829,5 +922,6 @@ class _SparkPainter extends CustomPainter {
   bool shouldRepaint(_SparkPainter old) =>
       !listEquals(old.values, values) ||
       old.color != color ||
+      old.direction != direction ||
       old.width != width;
 }

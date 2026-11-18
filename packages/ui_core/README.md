@@ -87,6 +87,22 @@ class InkButton extends StatelessWidget {
 | Toasts | `DesignToaster` | `ScaffoldMessenger` |
 | Toggle group | `DesignToggleGroup` | `SegmentedButton` |
 | Tree | `DesignTree`, `DesignTreeController` | `TreeSliver` |
+| Haptics | `DesignHaptics`, `DesignHapticsScope` | `HapticFeedback` |
+| Overlay padding (a look's chrome a surface keeps clear of) | `DesignOverlayPadding` | `MediaQuery.padding` |
+| Context menu | `DesignContextMenu` | `ContextMenuController` |
+| Tooltip | `DesignTooltip` | `RawTooltip` |
+| Shortcut label (a menu row's keys) | `designShortcutLabel`, `designShortcutKeys` | `MenuItemButton`'s |
+| Bottom sheet | `DesignBottomSheetRoute`, `DesignBottomSheetController`, `DesignBottomSheetDragHandle` | `ModalBottomSheetRoute`, `DraggableScrollableSheet` |
+| Dialog and alert | `DesignDialogRoute`, `DesignDialog` | `DialogRoute`, `AlertDialog` |
+| Swipe actions, from outside | `DesignSwipeActionsController` | |
+| Tabs | `DesignTabController`, `DesignTabBar`, `DesignTabView` | `TabController`, `TabBar`, `TabBarView` |
+| Adaptive shell | `DesignAdaptiveShell`, `DesignWindowSizeClass`, `DesignNavigationMode` | `NavigationBar`, `NavigationRail`, `NavigationDrawer` |
+| List and detail | `DesignListDetail` | |
+| Wheel picker | `DesignWheelPicker`, `DesignWheelColumn` | `CupertinoPicker` |
+| Date and time fields | `DesignDateField`, `DesignTimeField`, `DesignTimeOfDay` | `InputDatePickerFormField`, `TimeOfDay` |
+| Number field | `DesignNumberField` | `TextField` with `keyboardType: number` |
+| Rating | `DesignRating` | (none) |
+| Charts | `DesignChart`, `DesignPieChart`, `DesignChartTable`; `DesignLinearScale`, `DesignTimeScale`, `DesignBandScale` | (none) |
 
 They are built from `DesignPressable` (a press, focus, hover and semantics on any widget) and `DesignValueHandle`
 (a value dragged or stepped with the keys). Each class's documentation has an example.
@@ -183,6 +199,15 @@ MaterialApp(
 push on every platform, and without it a Mac's plays the Cupertino slide; on iOS, a swipe from the left edge past half
 way pops the page, and one let go short of it settles back. A look's example copies the test with its own map.
 
+## Haptics
+
+The moments a behaviour marks with a haptic are one table, `DesignHaptics`: `selectionChanged` (a wheel's row crossing
+its centre, a slider's thumb crossing a division, a rating's step while dragged), `longPress` (a long press that opened
+something) and `thresholdCrossed` (a drag passing the point where letting go acts). Each is a callback that defaults
+to the platform's own feedback; null plays nothing. A `DesignHapticsScope` swaps the table for its subtree:
+`DesignHaptics.silent()` for none, or your own callbacks. Under flutter_test nothing plays; a test that checks a
+haptic gives a scope a table that records.
+
 ## Styling a part
 
 A look's parts take a `style:` of one shape, `DesignStyle`, as Material's buttons take a `ButtonStyle`: ten slots
@@ -228,15 +253,33 @@ your subclass to `localizationsDelegates`; a word added in a later minor version
 translate it. `DesignLocalizations` also says the day a week starts on (`firstDayOfWeek`), which a calendar follows unless told
 otherwise.
 
-Seventeen words are Material's own translations. The other 38 messages are ui_core's own, translated for 0.2.0, and
-in every language but English they await a native speaker's check; a correction is a patch version. They are
-`clearButtonTooltip`, `showMoreLabel`, `showLessLabel`, `selectedLabel`, `loadingLabel`, `noResultsLabel`,
+42 words are Material's own translations: 0.2.0's seventeen, the overlays' 15 key names (`keyboardKeyAlt`,
+`keyboardKeyControl` and the rest, under Material's names), the routes' five (`dialogLabel`, `alertDialogLabel`,
+`bottomSheetLabel`, `drawerLabel`, `tabLabel`) and the values' five (below). Eight more are the date and time fields'
+segment names and empty segments' letters, from CLDR and Material's date data (below). The other 54 messages are
+ui_core's own, and in every language but English they await a native speaker's check; a correction is a patch
+version: 0.3.0's `keyboardKeyOption`, `keyboardKeyEnter`, `keyboardKeyTab` and `searchFailedMessage` (overlays),
+`dragHandleLabel` (routes) and the values' 11 (below), and 0.2.0's 38, `clearButtonTooltip`, `showMoreLabel`, `showLessLabel`, `selectedLabel`, `loadingLabel`, `noResultsLabel`,
 `retryButtonLabel`, `doneButtonLabel`, `confirmButtonLabel`, `positionLabel`, `carouselLabel`, `carouselSlideLabel`,
 `colorAreaLabel`, the four `colorChannel` names, `commandPaletteLabel`, `commandPaletteBarrierLabel`,
 `commandPaletteResultsMessage`, `sortedAscendingHint`, `sortedDescendingHint`, `requiredHint`, `formProblemsMessage`,
 `showPasswordLabel`, `hidePasswordLabel`, `menuBarLabel`, `refreshingMessage`, `refreshedMessage`,
 `rangeSliderStartLabel`, `rangeSliderEndLabel`, `reorderableListMovedMessage`, `sideSheetBarrierLabel`,
 `splitButtonMenuLabel`, `splitViewHandleLabel`, `tagInputDeleteLabel`, `toasterRegionLabel` and `treeLevelHint`.
+
+<!-- 0.3.0 values -->
+The value behaviours (0.3.0) add five more of Material's words (`anteMeridiemAbbreviation`,
+`postMeridiemAbbreviation`, `timePickerHourLabel`, `timePickerMinuteLabel`, `dateOutOfRangeLabel`); the date and time
+fields' segment names, CLDR's own (`dateFieldYearLabel`, `dateFieldMonthLabel`, `dateFieldDayLabel`,
+`timeFieldSecondLabel`, `timeFieldDayPeriodLabel`); an empty segment's letters, split from Material's date hint
+(`dateFieldYearPlaceholder`, `dateFieldMonthPlaceholder`, `dateFieldDayPlaceholder`); and 11 messages of ui_core's
+own that await a native speaker's check: `emptyValueLabel`, `ratingLabel`, `ratingValueLabel`,
+`chartSeriesCountLabel`, `chartPointCountLabel`, `chartSliceCountLabel`, `chartRangeLabel`, `chartExtremesLabel`,
+`chartPointLabel`, `chartShowTableLabel` and `listSeparator`. Numbers go through `formatDecimal`, `parseDecimal` and
+`formatPercent`, dates and times through `formatYear`, `formatShortMonth`, `formatShortMonthDay` and `formatTimeOfDay`,
+in the reader's separators, digits and patterns: CLDR's, through package:intl's data, read when the translations are
+generated, so ui_core carries no dependency on intl.
+<!-- 0.3.0 values end -->
 
 ## Tap targets, density and spacing
 
@@ -249,24 +292,18 @@ reaches the controls is `DesignInput`, by platform unless the look decides. `Des
 face in steps (-4 to 4), never its target: a compact face stands in the same target, with more room round it.
 
 `DesignSpacingScope` declares the grid a look's spacing stands on (`DesignSpacing`, 4 pt by default; a look whose values
-sit on 2 pt declares 2), read by `DesignSpacing.of` and by the spacing check below.
+sit on 2 pt declares 2), read by `DesignSpacing.of` and by ui_core_test's spacing check.
 
 ## The checks a look is held to
+<!-- 0.3.0 tooling -->
 
-Beside the alignment checks, four read any screen, each from its root (a gallery page, an app screen), and say what
-they find in words:
-- `DesignTapTargetCheck`: every control's tap target reaches the look's floor for the input (a phone's screen is
-  read for a finger, a desk's for a pointer), and its target is where it is drawn; a text field's own keys (a clear
-  or reveal key whose node lies in the field's) are part of the field's reach.
-- `DesignCursorCheck`: a pointer over a live control shows the click cursor over its whole hit area, or one that
-  says more (a text field's text cursor, a handle's grab, a divider's resize), and over an off control nothing of
-  its own.
-- `DesignShadowClipCheck`: no shadow, glow or rim is cut flat by a clip round it, and none shows square behind a
-  round face. A scroll view's edge along its scroll, with more content past it, is scrolling, not a cut; at the end
-  of its content, and across its scroll, the cut counts. Given `near:` (a control's rect), it reads only the casts
-  that reach it, as a test of one control's press, hover or focus needs.
-- `DesignSpacingCheck`: a page's margin, the insets of shapes set in shapes (concentric corners), and gaps on the
-  grid; `literals` reads a look's sources for spacing off the grid its `DesignSpacingScope` declares.
+The checks a look's tests run (controls that line up row by row, labels on their faces' middles, keylines, widths,
+word breaks and clips, tap targets, cursors, cut shadows and spacing), and the sheets that draw them for review, are a
+package of their own since 0.3.0: [ui_core_test](https://pub.dev/packages/ui_core_test), which a look takes as a dev
+dependency, as an app takes `flutter_test`. An app never compiles them. What a look's widgets wear for them is here:
+`DesignCapCenter`, `DesignKeylineRegion` and `DesignKeylineFace`, and the floors and the grid they hold a look to
+(`DesignTapTargetScope`, `DesignSpacingScope`).
+<!-- 0.3.0 tooling end -->
 
 `test/moving_states.dart` (beside ui_core's other tests; copy it into your package's `test/`) holds the moments
 between a look's states still, so a test can capture and check them: a press held halfway, a hover, a keyboard
@@ -304,9 +341,8 @@ ui_core holds itself to these; a look's package copies them:
 ## Lining controls up
 
 Controls that share a line drift apart in ways no one control's test sees: two controls of "the same size" a few
-pixels apart, a label a pixel low, a field that shrinks on desktop. `package:ui_core/alignment.dart` checks a design
-system's controls row by row, as Android, iOS and macOS, from their drawn pixels, and draws them four times their
-size for review; `DesignTextEntryCheck` checks each text entry the same way. What keeps a line straight:
+pixels apart, a label a pixel low, a field that shrinks on desktop. ui_core_test's checks find them from the drawn
+pixels (its README says how each reads a screen). What keeps a line straight:
 - one control height per size and density, taken by every control that can share a line;
 - content centred in a box of that height, rather than padding added to a line height;
 - even leading (`TextLeadingDistribution.even`) on control labels, so a label's line box is centred on its glyphs;
@@ -335,81 +371,16 @@ the label is not moved. Around a one-line `TextField` (or `DesignTextEntryBox`) 
 text and the hint, and the caret, the selection and taps move with them.
 
 What the eye compares in a row is the capitals: a 13 px button label and a 14 px field's text look level when their
-capitals' middles are, whatever their baselines. So the alignment matrix holds baselines only among labels of one size
-and style, and every label's and text entry's capitals on the row's centre line, as drawn, to half a device pixel; a
-design system whose labels and entries are wrapped in `DesignCapCenter` passes.
+capitals' middles are, whatever their baselines. A design system whose labels and entries are wrapped in
+`DesignCapCenter` holds them on a row's centre line to half a device pixel.
 
 A card's contents drift the same way across rows: a title at 16, rows' words at 26, a checkbox at 22, a chevron that
 stops short of the switches above it. A keyline is the line what starts a row (or ends one) sits on. A design
 system's card and section widgets put `DesignKeylineRegion` around their content (it lays out and paints nothing,
-and names any nested level the card means, such as words after an avatar); `DesignKeylineCheck` then checks every
-such card on a screen: each row's first edge on the leading keyline, its last on the trailing one, and the controls a
-row holds one height on one centre line. Words are read by their line boxes, a control by its drawn face (not its
-tap box or its shadow), an icon that ends a row by its ink; what lies inside a face or a well (a field's, a table's)
-is not an item of the card around it. A look marks a face its pixels cannot show (one the colour of the ground, a
-pane of glass) or a picture with things placed on it with `DesignKeylineFace`, which both checks take as it is.
-A gallery marks each section's column of examples with `startAligned: true`, and runs the check on each gallery page
-too: there every row starts on the leading keyline, so a stepper, a sum or a line of words centred in the column (or
-set at its end) is named, where a card may centre an empty state. `DesignKeylineSheet` draws the keylines over a
-screen.
-
-`DesignLabelCheck` needs no list of controls: on any screen (each gallery page, each app screen) it reads every control
-that draws a face around one line of words or an icon, and checks that the label sits on the middle of the face (words
-by their capitals, so descenders do not count; an icon by its ink), giving the offset as laid out and as drawn. A
-label beside a text entry of more than one line (a note field) stands on the entry's first line and is held to that
-line's capitals instead. A painted mark that starts the row of a control's words (a way back's triangle, drawn by a
-custom paint holding no words) is read by its ink, as an icon is. Its `checkDensities` runs a screen under each
-density the look ships. Given a `drawnTolerance` (a look that wraps its labels in `DesignCapCenter` gives 0.5), it
-holds each label's capitals, as drawn, to the middle of its face in device pixels, and an icon or a painted mark
-beside a label to the label's capitals.
-
-A control's box is not always what a person sees as its outline: a glass button whose outer ring barely stands off a
-light dialog reads smaller than the filled button beside it, though their boxes match. `DesignRowCheck` reads each
-control in a row (a dialog's actions, a split button's halves, a field and its button) by its drawn outline: inside
-its face's shape, so a shadow never counts, the outermost pixels whose contrast with the surface reaches
-`contrastFloor` (1.25 to 1). It holds one top and one bottom across the row, and equal sides where the row is laid
-out with equal sides on its surface, to half a device pixel, and each control's capitals (a label's, or a text
-entry's typed text or hint) on the row's centre line, and gives each problem as laid out and as drawn. A control with
-no face of its own (an icon button drawn as a bare glyph, a text button, a navigation destination whose indicator
-holds only its icon, an icon whose only face is its badge, a tab whose face shows only the line under it) has no
-outline to compare and is read by its capitals, or its icon's middle, on that line. Words and icons drawn over a face
-are never read as it, whichever control holds them; a card's title over its body is placed, not centred; a text
-field's own parts (its entry and the toggle or switch inside its face) are one field, not a row. A row inside a
-`DesignKeylineRegion` whose `mixedHeights` says why its controls differ (a gallery's ladder of one control per
-size) is not held. The chips of a `Wrap` are read run by run, each run a row; a control a clip partly hides (a
-week scrolled in its strip, its weekend past the strip's edge) is not held, as what shows of it is not its outline.
-Run on a screen's root, so its bars (an app bar, a gallery's own bar) are read with the rest.
-
-On a wide screen a control stretched across its column reads as a banner: a dropdown's closed face spanning a desktop
-page is the common case. From 600 logical pixels wide, `DesignWidthCheck` holds each select, button, stepper and
-segmented control to the width its content and its own padding take, or to 320 (a form grid's cell), whichever is
-larger, as drawn; a group of choices apart (choice chips, choice cards, icon tiles, by their chosen state) and a tab
-bar are held to 320 or the room their items take, each its content and padding and 40 px more, so three words spread
-over a 1440 column are named and tabs or chips that keep to their words pass. A button whose words wrap onto two lines
-though on one line they would fit 320 is named however wide it is. Free text entries, search, tables and
-list rows may span (as may a header: two buttons round a heading marked `Semantics(header: true)`), and a design
-system can give a kind of control another limit with its reason. A list's rows are read from Flutter's own semantics (`SemanticsRole.list` and
-`listItem`) or from how they stand (a stack of rows as wide as each other, touching or a heading apart, a section's
-one row edge to edge, a row
-between paragraphs with its words leading and a glyph or value trailing), and a search bar from
-`SemanticsInputType.search`. Its `checkList`, run with a list open, holds a list opened from a field to at least the
-field's width, on its leading edge, with its words on the field's words, whatever paints the list's surface, a popup
-over the field's page (a menu's route, an overlay portal's child) holding one row or only a "no matches" note
-included; a combobox's field is the face
-round its entry and toggle, and a disabled field has nothing to check. `DesignAnchoredOverlay` lays a
-surface above or below its anchor at least as wide as the anchor by default.
-
-Two checks read words and clips. `DesignWordBreakCheck` names a word broken across two lines ("Groce" over
-"ries"): a box too narrow for its longest word. `DesignClipCheck` names a control a clip round it cuts (a month's
-Saturday cut by the room it is in), giving how much of it shows, and words cut by a clip or by their box (a line past
-its end, words past their last line with no ellipsis); what scrolls is read only against the clips inside its
-viewport, so the rest of a list is not cut, and a control wholly past a clip is hidden, not cut.
-
-These checks read what is painted, and only that: not an `IndexedStack`'s other children, nor what `Offstage` or
-`Visibility` keeps laid out, nor what a transform scales to nothing (an empty checkbox's check), nor a list's rows
-laid out past what it shows (its cache extent); the rest of the screen is read without them. Before any of them, a test loads every font family in the package's FontManifest.json and
-lets the screen's images decode (each check's documentation shows how); text drawn in the test's own font fails the
-label check once, with that reason, and a screen repainted since its last frame stops a check with that reason.
+and names any nested level the card means, such as words after an avatar), so ui_core_test's keyline check can read
+every card on a screen; a face its pixels cannot show (one the colour of the ground, a pane of glass), or a picture
+with things placed on it, wears `DesignKeylineFace`. A gallery marks each section's column of examples with
+`startAligned: true`.
 
 ## Who disposes what
 
@@ -426,15 +397,8 @@ parameter's documentation says what the behaviour does given none (most make the
 - `package:ui_core/inventory.dart`: the checklist of components an ordinary app expects from a design system, and
   `DesignInventoryGallery`, which lists a design system's answers to it. A design system's own tests and gallery
   use it; an app does not.
-- `package:ui_core/alignment.dart`: `DesignAlignmentMatrix`, which checks that a design system's controls line
-  up where they share a line, `DesignTextEntryCheck`, which checks its text entries, `DesignAlignmentSheet`,
-  which draws them for review, `DesignKeylineCheck` and `DesignKeylineSheet`, which check and draw a screen's
-  keylines, `DesignLabelCheck`, which checks that every control's label sits on the middle of its face, and
-  `DesignRowCheck`, which checks that controls sharing a row line up as drawn, `DesignWidthCheck`, which
-  checks that controls keep to their content's width on a wide screen and that a list opened from a field matches
-  it, `DesignWordBreakCheck`, which checks that no word breaks across lines, `DesignClipCheck`, which checks
-  that nothing is cut, and the four checks above (`DesignTapTargetCheck`, `DesignCursorCheck`,
-  `DesignShadowClipCheck`, `DesignSpacingCheck`). Tests and review pages use it; an app does not.
+- The checks (`package:ui_core/alignment.dart` until 0.2) are `package:ui_core_test/ui_core_test.dart`, a package
+  of their own (0.3.0 tooling).
 
 ## Requirements and versions
 
@@ -444,7 +408,7 @@ Before 1.0, a minor version (0.1 to 0.2) may change the API, and the CHANGELOG s
 patch version (0.1.0 to 0.1.1) never does. A rename keeps its old name, deprecated, for one minor version, with a
 `dart fix`.
 
-`host.dart`, `inventory.dart` and `alignment.dart`, and a look's `<look>_parts.dart` and `<look>_host.dart`, are
-outside semver: they are tooling for looks, not an app's API, and may change in any version, a patch included (each
-says so in its library doc, and the CHANGELOG says how to move). Before 1.0 the review and test tooling (the checks,
-the inventory, the preview) is meant to leave `lib/` for a package of its own, so an app never compiles it.
+`host.dart` and `inventory.dart`, and a look's `<look>_parts.dart` and `<look>_host.dart`, are outside semver: they
+are tooling for looks, not an app's API, and may change in any version, a patch included (each says so in its library
+doc, and the CHANGELOG says how to move). The checks left `lib/` for ui_core_test in 0.3.0, so an app never compiles
+them; before 1.0 the rest of the review tooling (the inventory, the preview) is meant to follow.

@@ -271,10 +271,13 @@ class BrutalDialog extends StatelessWidget {
 }
 
 /// Shows [builder]'s dialog (usually a [BrutalDialog]) over a scrim, in the
-/// middle of the screen; it arrives by sliding up out of its shadow's
-/// direction and fading in, quickly. Tapping the scrim closes it when
-/// [barrierDismissible]; Escape and Back always do. It stands clear of the
-/// keyboard.
+/// middle of the screen, on ui_core's [DesignDialogRoute]: it arrives on a
+/// spring, sliding up out of its shadow's direction and fading in, quickly
+/// (a fade alone under Reduce Motion). Tapping the scrim closes it when
+/// [barrierDismissible]; Escape and Back always do, and a `PopScope` in it
+/// may refuse them. It keeps Tab inside it and gives the focus back to what
+/// opened it as it closes; a screen reader hears a dialog named by its
+/// title. It stands clear of the keyboard.
 ///
 /// ```dart
 /// final cancel = await showBrutalDialog<bool>(context: context, builder: (context) => const BrutalDialog(title: 'Cancel this ticket?'));
@@ -286,69 +289,30 @@ Future<T?> showBrutalDialog<T>({
 }) {
   final theme = BrutalTheme.of(context);
   return Navigator.of(context, rootNavigator: true).push<T>(
-    _ModalRoute<T>(
-      scrimCloses: barrierDismissible,
+    DesignDialogRoute<T>(
+      barrierDismissible: barrierDismissible,
       barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
       barrierColor: theme.colors.scrim,
-      transitionDuration: const Duration(milliseconds: 200),
-      pageBuilder: (context, _, _) => BrutalTheme(
+      dampingRatio: BrutalMotion.dampingRatio,
+      stiffness: BrutalMotion.overlayStiffness,
+      builder: (context, details) => BrutalTheme(
         data: theme,
         child: _ClearOfKeyboard(
           child: SafeArea(
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.all(BrutalSpacing.large),
-                child: Builder(builder: builder),
+                child: _Arrive(
+                  animation: details.animation,
+                  child: Builder(builder: builder),
+                ),
               ),
             ),
           ),
         ),
       ),
-      transitionBuilder: (context, animation, _, child) =>
-          _Arrive(animation: animation, child: child),
     ),
   );
-}
-
-/// A dialog's or a sheet's route. A tap on the scrim closes it only when
-/// [scrimCloses]; Escape and Back always do, as a modal of the platform's
-/// own.
-class _ModalRoute<T> extends RawDialogRoute<T> {
-  _ModalRoute({
-    required this.scrimCloses,
-    required super.pageBuilder,
-    required String super.barrierLabel,
-    required super.barrierColor,
-    super.transitionDuration,
-    super.transitionBuilder,
-    super.settings,
-  }) : super(barrierDismissible: true);
-
-  /// Whether a tap on the scrim closes it.
-  final bool scrimCloses;
-
-  @override
-  Widget buildModalBarrier() {
-    final color = barrierColor;
-    if (color == null || color.a == 0 || offstage) {
-      return ModalBarrier(
-        dismissible: scrimCloses,
-        semanticsLabel: barrierLabel,
-        barrierSemanticsDismissible: semanticsDismissible,
-      );
-    }
-    return AnimatedModalBarrier(
-      color: animation!.drive(
-        ColorTween(
-          begin: color.withValues(alpha: 0),
-          end: color,
-        ).chain(CurveTween(curve: barrierCurve)),
-      ),
-      dismissible: scrimCloses,
-      semanticsLabel: barrierLabel,
-      barrierSemanticsDismissible: semanticsDismissible,
-    );
-  }
 }
 
 /// Stands [child] clear of the keyboard: what is under it is padded away,
@@ -367,6 +331,14 @@ class _ClearOfKeyboard extends StatelessWidget {
       child: child,
     ),
   );
+}
+
+// A curve that holds a spring's overshoot to 0..1, for an opacity.
+class _Clamp extends Curve {
+  const _Clamp();
+
+  @override
+  double transformInternal(double t) => t.clamp(0.0, 1.0);
 }
 
 class _Arrive extends StatefulWidget {
@@ -392,9 +364,12 @@ class _ArriveState extends State<_Arrive> {
 
   // A flat face is never see-through for long: it is solid within the first
   // part of its move in and stays solid until the last part of its move out,
-  // so the words beneath never show through it on the way.
-  CurvedAnimation _solidCurve() =>
-      CurvedAnimation(parent: widget.animation, curve: const Interval(0, 0.3));
+  // so the words beneath never show through it on the way. The spring can
+  // pass 1 on its way; the fade holds there.
+  CurvedAnimation _solidCurve() => CurvedAnimation(
+    parent: widget.animation,
+    curve: const Interval(0, 0.3, curve: _Clamp()),
+  );
 
   @override
   void didUpdateWidget(_Arrive old) {
@@ -436,7 +411,10 @@ class _ArriveState extends State<_Arrive> {
 /// heavy rule over it, a header row of the [title] and a square close cell
 /// on a shared rule. On a phone it spans the screen; wider, it stands 560 px
 /// wide, framed. Tapping the scrim (when [barrierDismissible]), the close
-/// cell or Escape closes it.
+/// cell or Escape closes it, and so does a drag down: the sheet follows the
+/// finger, and let go low enough or flung down it closes (its content,
+/// scrolled to its top, hands the drag on). The route is ui_core's
+/// ([DesignBottomSheetRoute]).
 ///
 /// Its panel reads [style]'s `fill`, `edge` (its rules), `foreground` (its
 /// words), `padding` (round the content) and `textStyle` (the title), then
@@ -464,9 +442,11 @@ Future<T?> showBrutalBottomSheet<T>({
 
 /// Raises [builder]'s sheet (a [BrutalSheet] of your own: with a footer, a
 /// body of slivers, no close) from the bottom edge, as
-/// [showBrutalBottomSheet] raises its own. Tapping the scrim closes it when
-/// [barrierDismissible]; Escape and Back always do. It rises clear of the
-/// keyboard.
+/// [showBrutalBottomSheet] raises its own, on ui_core's
+/// [DesignBottomSheetRoute]: it rises on a spring, a drag moves it with the
+/// finger, and let go low enough or flung down it closes. Tapping the scrim
+/// closes it when [barrierDismissible]; Escape and Back always do. It rises
+/// clear of the keyboard, and the focus goes back to what raised it.
 ///
 /// ```dart
 /// showBrutalSheet<void>(context: context, builder: (context) => BrutalSheet(title: 'Filter', onClose: () => Navigator.pop(context), footer: [BrutalButton.filled('Show 12', onPressed: apply)], child: const Text('Tonight')))
@@ -480,45 +460,56 @@ Future<T?> showBrutalSheet<T>({
   final words = DesignLocalizations.of(context);
   final navigator = Navigator.of(context, rootNavigator: true);
   return navigator.push<T>(
-    _SheetRoute<T>(
+    _sheetRoute<T>(
+      theme: theme,
       barrierLabel: words.modalBarrierDismissLabel,
-      barrierColor: theme.colors.scrim,
-      scrimCloses: barrierDismissible,
-      pageBuilder: (context, _, _) => BrutalTheme(
-        data: theme,
-        child: _ClearOfKeyboard(
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Builder(builder: builder),
-          ),
-        ),
+      barrierDismissible: barrierDismissible,
+      builder: (context) => Align(
+        alignment: Alignment.bottomCenter,
+        heightFactor: 1,
+        child: Builder(builder: builder),
       ),
     ),
   );
 }
 
-/// The sheet's route: a tap on the scrim (when [scrimCloses]) or Escape
-/// dismisses it, but the scrim is not a target a screen reader outlines (it
-/// would outline the whole window while a tap reaches only the part above
-/// the sheet); the sheet's close cell is the reader's way out.
-class _SheetRoute<T> extends _ModalRoute<T> {
-  _SheetRoute({
-    required super.pageBuilder,
-    required super.barrierLabel,
-    required super.barrierColor,
-    required super.scrimCloses,
-    super.settings,
-  }) : super(
-         transitionDuration: const Duration(milliseconds: 240),
-         transitionBuilder: (context, animation, _, child) => _Arrive(
-           animation: animation,
-           from: const Offset(0, 0.25),
-           child: child,
-         ),
-       );
+// A sheet's route: ui_core's, on the overlays' spring (ζ 1, k 700: the
+// 240 ms the sheet rose in before), over the look's scrim. A [BrutalSheet]
+// in it takes the route's scroll controller, so its body hands drags over.
+DesignBottomSheetRoute<T> _sheetRoute<T>({
+  required BrutalThemeData theme,
+  required String barrierLabel,
+  required WidgetBuilder builder,
+  bool barrierDismissible = true,
+  RouteSettings? settings,
+}) => DesignBottomSheetRoute<T>(
+  settings: settings,
+  barrierColor: theme.colors.scrim,
+  barrierLabel: barrierLabel,
+  barrierDismissible: barrierDismissible,
+  dampingRatio: BrutalMotion.dampingRatio,
+  stiffness: BrutalMotion.overlayStiffness,
+  builder: (context, details) => BrutalTheme(
+    data: theme,
+    child: _SheetScroll(
+      controller: details.scrollController,
+      child: Builder(builder: builder),
+    ),
+  ),
+);
+
+// The scroll controller of the sheet route a [BrutalSheet] stands in.
+class _SheetScroll extends InheritedWidget {
+  const _SheetScroll({required this.controller, required super.child});
+
+  final ScrollController controller;
+
+  static ScrollController? maybeOf(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<_SheetScroll>()?.controller;
 
   @override
-  bool get semanticsDismissible => false;
+  bool updateShouldNotify(_SheetScroll oldWidget) =>
+      controller != oldWidget.controller;
 }
 
 /// The router's page for a sheet raised over the shell: from a phone's
@@ -527,7 +518,8 @@ class _SheetRoute<T> extends _ModalRoute<T> {
 /// screen tall, or as tall as its content when [drawer]; [fullScreen]
 /// raises a whole page instead. Its screen reads the route as a sheet
 /// ([RoutePresentation.sheet]), so the bar's way out is a close. Tapping
-/// the scrim or Escape closes it. A go_router route's `pageBuilder` returns
+/// the scrim, Escape or a drag down closes it (ui_core's
+/// [DesignBottomSheetRoute]). A go_router route's `pageBuilder` returns
 /// it with the route's `state.pageKey`.
 ///
 /// ```dart
@@ -588,14 +580,14 @@ class BrutalSheetPage<T> extends Page<T> {
         ),
       );
     }
-    return _SheetRoute<T>(
+    return _sheetRoute<T>(
+      theme: theme,
       settings: this,
       barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
-      barrierColor: theme.colors.scrim,
-      scrimCloses: true,
-      pageBuilder: (context, _, _) => scoped(
+      builder: (context) => scoped(
         Align(
           alignment: Alignment.bottomCenter,
+          heightFactor: 1,
           child: _SheetFrame(drawer: drawer, child: current(context)),
         ),
       ),
@@ -714,7 +706,7 @@ class BrutalSheet extends StatelessWidget {
   final String? closeLabel;
 
   /// The body's scroll controller (a presenter's, which a drag on the body
-  /// moves).
+  /// moves); null: the sheet route's, when it stands in one.
   final ScrollController? controller;
 
   /// The body as one widget; not with [slivers].
@@ -749,6 +741,7 @@ class BrutalSheet extends StatelessWidget {
     final direction = Directionality.of(context);
     final padding =
         layered.padding(direction) ?? const EdgeInsets.all(BrutalSpacing.large);
+    final controller = this.controller ?? _SheetScroll.maybeOf(context);
     final body = DefaultTextStyle.merge(
       style: theme.textTheme.body.copyWith(color: face.foreground),
       child: slivers != null

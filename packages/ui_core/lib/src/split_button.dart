@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'anchored_overlay.dart';
+import 'internal/menu_items.dart';
 import 'localizations.dart';
 import 'pressable.dart';
 
@@ -66,6 +67,7 @@ class DesignSplitButton extends StatelessWidget {
     this.layoutBuilder,
     this.minimumSize = const Size(44, 44),
     this.controller,
+    this.highlightFollowsPointer = true,
   });
 
   /// The main action's name.
@@ -116,6 +118,13 @@ class DesignSplitButton extends StatelessWidget {
 
   /// The menu's controller; null: its own.
   final MenuController? controller;
+
+  /// Whether a pointer over a menu item moves the keys there; true by
+  /// default, as `DesignMenuBar.highlightFollowsPointer`: one item lit, the
+  /// current one (hovered when the pointer moved last, focused when the keys
+  /// did), and none once the pointer leaves the menu. A menu a click opened
+  /// lights none until the pointer or a key picks one.
+  final bool highlightFollowsPointer;
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +180,8 @@ class DesignSplitButton extends StatelessWidget {
       },
       overlayBuilder: (context, info) => surfaceBuilder(context, info, [
         for (final a in actions)
-          DesignPressable(
+          DesignMenuRow(
+            highlightFollowsPointer: highlightFollowsPointer,
             onPressed: a.enabled
                 ? () {
                     info.close();
@@ -179,8 +189,7 @@ class DesignSplitButton extends StatelessWidget {
                   }
                 : null,
             semanticLabel: a.label,
-            excludeSemantics: true,
-            builder: (context, states, _) => itemBuilder(context, a, states),
+            builder: (context, states) => itemBuilder(context, a, states),
           ),
       ]),
     );
@@ -239,6 +248,13 @@ class DesignSplitButton extends StatelessWidget {
           'controller',
           controller,
           defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'highlightFollowsPointer',
+          value: highlightFollowsPointer,
+          ifFalse: 'highlight stays with the keys',
         ),
       );
   }

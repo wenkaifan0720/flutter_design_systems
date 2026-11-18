@@ -6,15 +6,12 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/alignment.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 import 'package:ui_core/inventory.dart';
 
 // What each part, built with what it requires alone, says of itself.
 final Map<String, List<Object>> _expected = {
-  'DesignAlignmentSheet': ['matrix: Instance of \'DesignAlignmentMatrix\''],
-  'DesignKeylineSheet': [],
   'DesignAnchoredOverlay': ['has anchorBuilder', 'has overlayBuilder'],
   'DesignCalendar': [
     'controller: Instance of \'DesignCalendarController\'',
@@ -315,10 +312,6 @@ void main() {
         optionBuilder: _b3,
         optionsMaxHeight: 0,
       ),
-      'an alignment sheet at no zoom': () => DesignAlignmentSheet(
-        matrix: const DesignAlignmentMatrix(look: 'Test', themes: {}, rows: []),
-        zoom: 0,
-      ),
     };
     for (final MapEntry(key: what, value: build) in cases.entries) {
       test(what, () => expect(build, throwsAssertionError));
@@ -412,10 +405,6 @@ Map<String, Widget> _parts() {
   }
 
   return {
-    'DesignAlignmentSheet': const DesignAlignmentSheet(
-      matrix: DesignAlignmentMatrix(look: 'Test', themes: {}, rows: []),
-    ),
-    'DesignKeylineSheet': const DesignKeylineSheet(child: _box),
     'DesignAnchoredOverlay': const DesignAnchoredOverlay(
       anchorBuilder: _b2,
       overlayBuilder: _b2,

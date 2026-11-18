@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'feedback.dart';
 import 'lists.dart';
 import 'menu.dart';
 import 'surface.dart';
@@ -1179,10 +1180,79 @@ Widget _nothing(BuildContext context, String words) {
   );
 }
 
+// A search's line where the rows would stand: [lead], then [words].
+Widget _searchLine(BuildContext context, Widget lead, String words) {
+  final theme = BrutalTheme.of(context);
+  return SizedBox(
+    width: double.infinity,
+    child: Padding(
+      padding: const EdgeInsets.all(BrutalSpacing.medium),
+      child: Row(
+        children: [
+          lead,
+          const SizedBox(width: BrutalSpacing.medium),
+          Expanded(child: Text(words, style: theme.textTheme.secondary)),
+        ],
+      ),
+    ),
+  );
+}
+
+/// What the suggestions say while a search runs: a small spinner and
+/// "Loading".
+Widget _searching(BuildContext context) => _searchLine(
+  context,
+  const BrutalSpinner(size: 16),
+  DesignLocalizations.of(context).loadingLabel,
+);
+
+/// What the suggestions say when a search failed: the failure, then "Try
+/// again" as a row, lit while the keys are on it (ui_core moves them there on
+/// Down), run by Enter or a press.
+Widget _failed(BuildContext context, DesignSearchError failed) {
+  final theme = BrutalTheme.of(context);
+  final words = DesignLocalizations.of(context);
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      _searchLine(
+        context,
+        Icon(LucideIcons.circleAlert, size: 16, color: theme.colors.danger),
+        words.searchFailedMessage,
+      ),
+      SizedBox(
+        height: theme.borderWidth,
+        child: ColoredBox(color: theme.colors.ink),
+      ),
+      MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          excludeFromSemantics: true,
+          onTap: failed.retry,
+          child: BrutalMenuRow(
+            label: words.retryButtonLabel,
+            icon: LucideIcons.rotateCw,
+            states: {if (failed.focused) WidgetState.focused},
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
 /// A field that suggests: typing narrows a list of [options] dropped under
 /// it; the arrows move through it and Enter takes one. With
 /// [requireSelection] the words go back to the chosen option when the field
 /// is left.
+///
+/// With [search] the options come from a search that may take time and
+/// fail (a server's): it runs once typing rests for [debounceDuration], the
+/// list says "Loading" by a small spinner while it runs, and a failed one
+/// says so over a "Try again" row that Down reaches and Enter or a press
+/// runs, the keyboard staying in the field; only the latest words' result
+/// shows. The behaviour is ui_core's ([DesignCombobox]).
 ///
 /// The box reads [style] as [BrutalTextField] does, then
 /// [BrutalThemeData.textFieldStyle]; the list reads
@@ -1195,7 +1265,9 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
   /// A combobox over [options].
   const BrutalCombobox({
     super.key,
-    required this.options,
+    this.options = const [],
+    this.search,
+    this.debounceDuration,
     required this.labelOf,
     this.value,
     this.onSelected,
@@ -1210,13 +1282,21 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
     this.style,
   });
 
-  /// What may be chosen.
+  /// What may be chosen, when there is no [search].
   final Iterable<T> options;
+
+  /// Finds the options for the words typed, in place of filtering
+  /// [options]: a future for a search that takes time, which may fail.
+  final DesignOptionSearch<T>? search;
+
+  /// How long typing rests before [search] runs; null runs it at every
+  /// letter.
+  final Duration? debounceDuration;
 
   /// Each option's words.
   final String Function(T option) labelOf;
 
-  /// Whether [option] may be taken; a disabled option stands grey in the
+  /// Whether an option may be taken; a disabled option stands grey in the
   /// list, the keys pass it by and neither a press nor Enter takes it.
   final bool Function(T option)? isOptionEnabled;
 
@@ -1259,6 +1339,8 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
         ExcludeSemantics(child: BrutalFieldLabel(label!, enabled: enabled)),
       DesignCombobox<T>(
         options: options,
+        search: search,
+        debounceDuration: debounceDuration,
         displayStringForOption: labelOf,
         value: value,
         onSelected: onSelected,
@@ -1297,6 +1379,8 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
         ),
         surfaceBuilder: _suggestions,
         emptyBuilder: (context) => _nothing(context, emptyText),
+        loadingBuilder: _searching,
+        errorBuilder: _failed,
       ),
       BrutalFieldMessage(helper: helper, error: error),
     ],
@@ -1307,6 +1391,7 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
+      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
       ..add(StringProperty('label', label, defaultValue: null));
   }
 }
@@ -1315,6 +1400,10 @@ class BrutalCombobox<T extends Object> extends StatelessWidget {
 /// [options] (and, given [onCreate], makes a new value of its words on
 /// Enter or a comma). Each tag is a ruled cell with a cross that removes
 /// it; Backspace in the empty field takes the last.
+///
+/// With [search] the suggestions come from a search that may take time and
+/// fail, as [BrutalCombobox]'s: "Loading" while it runs, a failure with
+/// "Try again" when it fails.
 ///
 /// The box reads [style]'s `fill`, `edge`, `foreground` (the field's words)
 /// and `textStyle` in its states, then [BrutalThemeData.textFieldStyle]'s;
@@ -1330,7 +1419,9 @@ class BrutalTagInput<T extends Object> extends StatefulWidget {
     super.key,
     required this.values,
     required this.onChanged,
-    required this.options,
+    this.options = const [],
+    this.search,
+    this.debounceDuration,
     required this.labelOf,
     this.onCreate,
     this.label,
@@ -1343,7 +1434,7 @@ class BrutalTagInput<T extends Object> extends StatefulWidget {
     this.style,
   });
 
-  /// Whether [option] may be taken; a disabled option stands grey among the
+  /// Whether an option may be taken; a disabled option stands grey among the
   /// suggestions, the keys pass it by and neither a press nor Enter takes it.
   final bool Function(T option)? isOptionEnabled;
 
@@ -1353,8 +1444,16 @@ class BrutalTagInput<T extends Object> extends StatefulWidget {
   /// Called with the new list.
   final ValueChanged<List<T>> onChanged;
 
-  /// What the field suggests.
+  /// What the field suggests, when there is no [search].
   final Iterable<T> options;
+
+  /// Finds the suggestions for the words typed, in place of filtering
+  /// [options]: a future for a search that takes time, which may fail.
+  final DesignOptionSearch<T>? search;
+
+  /// How long typing rests before [search] runs; null runs it at every
+  /// letter.
+  final Duration? debounceDuration;
 
   /// Each value's words.
   final String Function(T value) labelOf;
@@ -1395,6 +1494,14 @@ class BrutalTagInput<T extends Object> extends StatefulWidget {
         ObjectFlagProperty<ValueChanged<List<T>>>.has('onChanged', onChanged),
       )
       ..add(IterableProperty<T>('options', options))
+      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
+        ),
+      )
       ..add(
         ObjectFlagProperty<String Function(T value)>.has('labelOf', labelOf),
       )
@@ -1462,6 +1569,8 @@ class _BrutalTagInputState<T extends Object> extends State<BrutalTagInput<T>> {
           values: widget.values,
           onChanged: widget.onChanged,
           options: widget.options,
+          search: widget.search,
+          debounceDuration: widget.debounceDuration,
           displayStringForOption: widget.labelOf,
           onCreate: widget.onCreate,
           maxTags: widget.maxTags,
@@ -1540,6 +1649,8 @@ class _BrutalTagInputState<T extends Object> extends State<BrutalTagInput<T>> {
             checked: states.contains(WidgetState.selected),
           ),
           surfaceBuilder: _suggestions,
+          loadingBuilder: _searching,
+          errorBuilder: _failed,
         ),
         BrutalFieldMessage(helper: widget.helper, error: widget.error),
       ],

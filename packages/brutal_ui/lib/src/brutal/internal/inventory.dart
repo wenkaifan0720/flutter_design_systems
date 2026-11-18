@@ -3,6 +3,7 @@
 /// what an inventory gallery lists.
 library;
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/inventory.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -100,7 +101,12 @@ DesignInventory _registry() => DesignInventory(
       ),
     ),
     _row('Link', (_) => const BrutalLink('Terms', onPressed: _none)),
-    _row('Kbd', (_) => const BrutalKbd(['Ctrl', 'K'])),
+    _row(
+      'Kbd',
+      (_) => const BrutalKbd.shortcut(
+        SingleActivator(LogicalKeyboardKey.keyK, control: true),
+      ),
+    ),
     // Inputs.
     _row('TextField', (_) => const BrutalTextField(label: 'Name')),
     _row(

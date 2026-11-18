@@ -557,38 +557,44 @@ class BrutalPreview extends StatelessWidget {
     return PreviewFrame(
       platform: platform,
       brightness: brightness,
-      child: MaterialApp(
-        key: ValueKey<Object>((presentation, drawer)),
-        debugShowCheckedModeBanner: false,
-        localizationsDelegates: const [
-          DesignLocalizations.delegate,
-          DefaultMaterialLocalizations.delegate,
-          DefaultWidgetsLocalizations.delegate,
-        ],
-        builder: (context, app) => BrutalHost(
-          light: light,
-          dark: dark,
-          brightness: brightness,
-          child: app ?? const SizedBox.shrink(),
+      // The app inside, a semantics container of its own: its routes'
+      // barriers would hide from a screen reader what the page around it
+      // paints before it.
+      child: Semantics(
+        container: true,
+        child: MaterialApp(
+          key: ValueKey<Object>((presentation, drawer)),
+          debugShowCheckedModeBanner: false,
+          localizationsDelegates: const [
+            DesignLocalizations.delegate,
+            DefaultMaterialLocalizations.delegate,
+            DefaultWidgetsLocalizations.delegate,
+          ],
+          builder: (context, app) => BrutalHost(
+            light: light,
+            dark: dark,
+            brightness: brightness,
+            child: app ?? const SizedBox.shrink(),
+          ),
+          home: switch (presentation) {
+            BrutalPresentation.root => rooted(child),
+            BrutalPresentation.pushed => PreviewStage(
+              route: (context, page) => BrutalPage<void>(
+                key: const ValueKey<String>('brutal-preview'),
+                child: page,
+              ).createRoute(context),
+              child: child,
+            ),
+            BrutalPresentation.sheet => PreviewStage(
+              route: (context, page) => BrutalSheetPage<void>(
+                key: const ValueKey<String>('brutal-preview'),
+                drawer: drawer,
+                child: page,
+              ).createRoute(context),
+              child: child,
+            ),
+          },
         ),
-        home: switch (presentation) {
-          BrutalPresentation.root => rooted(child),
-          BrutalPresentation.pushed => PreviewStage(
-            route: (context, page) => BrutalPage<void>(
-              key: const ValueKey<String>('brutal-preview'),
-              child: page,
-            ).createRoute(context),
-            child: child,
-          ),
-          BrutalPresentation.sheet => PreviewStage(
-            route: (context, page) => BrutalSheetPage<void>(
-              key: const ValueKey<String>('brutal-preview'),
-              drawer: drawer,
-              child: page,
-            ).createRoute(context),
-            child: child,
-          ),
-        },
       ),
     );
   }
@@ -674,16 +680,12 @@ class BrutalAppShell extends StatelessWidget {
     final act = places ? action : null;
     final name = brand;
     return BrutalScaffold(
-      destinations: places
-          ? [
-              for (final tab in tabs)
-                BrutalDestination(
-                  icon: tab.icon,
-                  label: tab.label,
-                  key: tab.key,
-                ),
-            ]
-          : const [],
+      destinations: [
+        for (final tab in tabs)
+          BrutalDestination(icon: tab.icon, label: tab.label, key: tab.key),
+      ],
+      // A phone's bar springs away under a page pushed over the root.
+      showNavigation: showPlaces,
       selectedIndex: selectedIndex,
       onSelected: onSelected,
       brand: name == null || name.isEmpty ? null : _Brand(name),

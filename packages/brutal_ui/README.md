@@ -1,23 +1,20 @@
 # brutal_ui
 
-A Flutter design system with its make-up off. Heavy black rules, square corners, a hard offset shadow under what you
-can press, cells that share their rules like a table you can see, and one flat colour block a screen. Plain on the
-surface, exact underneath: everything sits on one 4 px grid and one 2 px rule.
+A neo-brutalist Flutter design system: heavy black rules, square corners, a hard shadow under what you can press and one
+flat colour block a screen. Plain on the surface, exact underneath: everything sits on one 4 px grid and one 2 px rule.
 
-Take away the colour and the font and a settings form is still Brutal's: every control is drawn in the same 2 px
-rule with square corners; what you can press stands on the same hard 4 px shadow and slides into it when pressed;
-rows, segments, tabs and navigation are cells that share their rules; keyboard focus is a second square rule 2 px
-outside the face and its shadow.
+![Admit, a ticketing app on Brutal, at 1440 px by day beside the same app on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/brutal_ui/screenshots/hero_admit.png)
 
-The parts take the parameters a Flutter developer expects: a press is `onPressed`, a row's tap `onTap`, a control is
-`value` with `onChanged`, a destination is `selectedIndex` with `onSelected`, a null callback disables.
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/brutal/)** · [API reference](https://pub.dev/documentation/brutal_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
-```yaml
-dependencies:
-  brutal_ui: ^{{version}}
+```sh
+flutter pub add brutal_ui material_ui
 ```
+
+`material_ui` is the material library Brutal is built on; an app takes its `MaterialApp` from it, as Flutter 3.50
+deprecates `package:flutter/material.dart` for it.
 
 ## Use
 
@@ -26,19 +23,28 @@ dependencies:
 its pages change in Brutal's way.
 
 ```dart
-MaterialApp(
-  theme: ThemeData(
-    pageTransitionsTheme: const PageTransitionsTheme(builders: brutalPageTransitions),
-  ),
-  builder: (context, child) => BrutalTheme(
-    data: BrutalThemeData.light(),
-    child: BrutalToaster(child: child!),
-  ),
-  home: const MyHome(),
-);
+import 'package:brutal_ui/brutal_ui.dart';
+import 'package:material_ui/material_ui.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await brutalLoadFonts();
+  runApp(
+    MaterialApp(
+      theme: ThemeData(
+        pageTransitionsTheme: const PageTransitionsTheme(builders: brutalPageTransitions),
+      ),
+      builder: (context, child) => BrutalTheme(
+        data: BrutalThemeData.light(),
+        child: BrutalToaster(child: child!),
+      ),
+      home: const Center(child: Text('Low Tide, doors at 19:00.')),
+    ),
+  );
+}
 ```
 
-Load the face before the first frame so the web never shows a fallback: `await brutalLoadFonts();` in `main`.
+`brutalLoadFonts()` loads the face before the first frame, so the web never shows a fallback.
 
 An app with places can take the frame whole: `BrutalHost` in the `builder:` (the theme by day and night, the toaster and
 the paper), `BrutalAppShell` round the root with its `BrutalTab`s and one `BrutalShellAction`, and one `BrutalScreen` a
@@ -73,12 +79,27 @@ goes back to what opened it; a field's list leaves the keyboard in the field), a
 Under a pointer the controls stand
 at the platform's density (40 px on a desktop, 48 on a phone), and everything a pointer presses takes the keyboard too.
 
+The behaviour under the paint is ui_core's: a tab bar and an app's places are one stop for Tab with the arrows along
+them, F6 moves between the places and the page, a tooltip shows on focus as well as hover and Escape hides it, a sheet
+follows a drag down, a dialog keeps Tab inside it, and a combobox's `search` may take time and fail, with "Loading"
+and "Try again" in its list. Brutal draws each in its rules.
+
 Brutal speaks the app's language through ui_core's `DesignLocalizations` (add `DesignLocalizations.delegate` to the
 app's `localizationsDelegates`). The few words of its own, such as a data table's count of rows, come from
 `BrutalLocalizations`: English, unless the app gives its own subclass with a
 `LocalizationsDelegate<BrutalLocalizations>`. Every count is given its number, so a language picks its plural form.
 Under Reduce Motion (Android's Remove animations, the web's `prefers-reduced-motion` or iOS's Reduce Motion) a
 press, a change of colour or theme and a list's arrow settle at once or in a short fade, and nothing loops.
+
+## The look
+
+Take away the colour and the font and a settings form is still Brutal's: every control is drawn in the same 2 px
+rule with square corners; what you can press stands on the same hard 4 px shadow and slides into it when pressed;
+rows, segments, tabs and navigation are cells that share their rules; keyboard focus is a second square rule 2 px
+outside the face and its shadow.
+
+The parts take the parameters a Flutter developer expects: a press is `onPressed`, a row's tap `onTap`, a control is
+`value` with `onChanged`, a destination is `selectedIndex` with `onSelected`, a null callback disables.
 
 ## Make it yours
 

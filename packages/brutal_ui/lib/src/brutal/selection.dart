@@ -550,8 +550,15 @@ class BrutalChip extends StatelessWidget {
 }
 
 /// A score out of [max]: cells on shared rules in one flat strip, a star in
-/// each; the cells up to [value] are ink with a paper star. Each cell is a
-/// button that sets the score; a null [onChanged] greys it.
+/// each; the cells up to [value] are ink with a paper star. A null
+/// [onChanged] greys it.
+///
+/// The behaviour is ui_core's ([DesignRating]): a tap sets the cell tapped,
+/// a drag sweeps along the strip, and a pointer resting over it inks the
+/// cells up to it, the score it would set. It is one tab stop: Right and Up
+/// raise the score, Left and Down lower it (mirrored right to left), End
+/// fills it, Home or 0 clears it, a digit sets that many. A screen reader
+/// hears a slider, "Your rating, 3 of 5", and steps it.
 ///
 /// Reads [style]'s `fill` (the strip's ground at rest, a lit cell's when
 /// scored or pressed), `edge` (the rules), `foreground` (a star at rest),
@@ -575,13 +582,13 @@ class BrutalRating extends StatelessWidget {
   /// The score, 0 to [max].
   final int value;
 
-  /// Called with the score a cell sets; null disables it.
+  /// Called with the score set; null disables it.
   final ValueChanged<int>? onChanged;
 
   /// The most it can be.
   final int max;
 
-  /// What a screen reader calls the group.
+  /// What a screen reader calls it.
   final String? semanticLabel;
 
   /// Its style, over [BrutalThemeData.ratingStyle].
@@ -597,73 +604,80 @@ class BrutalRating extends StatelessWidget {
     final rule =
         strip.side?.color ?? strip.edge ?? (enabled ? c.ink : c.disabled);
     final side = strip.minimumSize?.height ?? 40.0;
-    return Semantics(
-      container: true,
-      label: semanticLabel,
-      value: '$value of $max',
-      child: Align(
-        alignment: AlignmentDirectional.centerStart,
-        widthFactor: 1,
-        heightFactor: 1,
-        child: BrutalSurface(
+    // The strip's states, the same for every cell (the strip is one stop).
+    var focused = false;
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      widthFactor: 1,
+      heightFactor: 1,
+      child: DesignRating(
+        value: value.toDouble(),
+        itemCount: max,
+        onChanged: enabled
+            ? (to) {
+                if (to.round() != value) onChanged!(to.round());
+              }
+            : null,
+        semanticLabel: semanticLabel,
+        itemBuilder: (context, item) {
+          focused = item.states.contains(WidgetState.focused);
+          final on = item.fill >= 0.5;
+          final cell = DesignStyleOf(layers, {
+            ...item.states.difference(const {WidgetState.focused}),
+            if (on) WidgetState.selected,
+          });
+          final glyph =
+              cell.foreground ??
+              (!enabled
+                  ? (on ? c.surface : c.disabled)
+                  : on
+                  ? c.onColor(cell.fill ?? c.ink)
+                  : c.ink);
+          // Each cell stands in its own target (48 under a finger), so a
+          // lit cell is a block inside its rules.
+          return DesignTapTarget(
+            child: SizedBox.square(
+              dimension: side,
+              child: ColoredBox(
+                color: on
+                    ? (cell.fill ?? (enabled ? c.ink : c.disabled))
+                    : c.ink.withValues(alpha: 0),
+                child: Center(
+                  child: Icon(
+                    LucideIcons.star,
+                    size: cell.iconSize ?? 20,
+                    color: glyph,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+        // The keyboard's focus on the strip: the second square rule outside
+        // its frame, as on every Brutal control.
+        layoutBuilder: (context, items) => BrutalSurface(
           face: BrutalFace(
             fill: strip.fill ?? c.surface,
             border: rule,
             foreground: c.ink,
+            focus:
+                focused &&
+                    FocusManager.instance.highlightMode ==
+                        FocusHighlightMode.traditional
+                ? c.ink
+                : c.ink.withValues(alpha: 0),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (var i = 1; i <= max; i++) ...[
-                if (i > 1)
+              for (final (i, item) in items.indexed) ...[
+                if (i > 0)
                   SizedBox(
                     width: theme.borderWidth,
                     height: side,
                     child: ColoredBox(color: rule),
                   ),
-                DesignTapTarget(
-                  child: DesignPressable(
-                    onPressed: enabled ? () => onChanged!(i) : null,
-                    selected: i <= value,
-                    semanticLabel: '$i of $max',
-                    builder: (context, states, _) {
-                      final on =
-                          i <= value || states.contains(WidgetState.pressed);
-                      final cell = DesignStyleOf(layers, {
-                        ...states,
-                        if (i <= value) WidgetState.selected,
-                      });
-                      final glyph =
-                          cell.foreground ??
-                          (!enabled
-                              ? (on ? c.surface : c.disabled)
-                              : on
-                              ? c.onColor(cell.fill ?? c.ink)
-                              : c.ink);
-                      return SizedBox.square(
-                        dimension: side,
-                        child: CustomPaint(
-                          foregroundPainter:
-                              states.contains(WidgetState.focused)
-                              ? BrutalInsetFocusPainter(on ? c.paper : c.ink)
-                              : null,
-                          child: ColoredBox(
-                            color: on
-                                ? (cell.fill ?? (enabled ? c.ink : c.disabled))
-                                : c.ink.withValues(alpha: 0),
-                            child: Center(
-                              child: Icon(
-                                LucideIcons.star,
-                                size: cell.iconSize ?? 20,
-                                color: glyph,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                item,
               ],
             ],
           ),

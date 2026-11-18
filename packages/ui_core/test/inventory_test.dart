@@ -53,7 +53,11 @@ void main() {
         rows.every((r) => DesignInventoryRow.groups.contains(r.group)),
         isTrue,
       );
-      expect(rows.where((r) => r.isBehaviour), hasLength(26));
+      // 0.3.0: 26, and the overlays' tooltip and context menu; the routes'
+      // dialog, bottom sheet, tab bar and the shell's navigation bar, rail,
+      // drawer and scaffold; the values' number field, rating, wheel and
+      // time pickers and five charts.
+      expect(rows.where((r) => r.isBehaviour), hasLength(44));
       // Material's names where Material has the thing, shadcn's where only
       // shadcn does.
       for (final id in [
@@ -91,8 +95,9 @@ void main() {
     final inventory = _bare(_complete());
     expect(inventory.problems, isEmpty);
     inventory.verify();
-    expect(inventory.presentCount, 26);
-    expect(inventory.absentCount, 63);
+    // 0.3.0: overlays 2, routes 7, values 9.
+    expect(inventory.presentCount, 44);
+    expect(inventory.absentCount, 45);
   });
 
   test('it names every way an inventory is wrong', () {

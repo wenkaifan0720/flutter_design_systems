@@ -67,7 +67,9 @@ void main() {
           );
           await tester.pumpAndSettle();
           final twice = <String>[];
-          final buttons = <String>{};
+          // What a reader can press, by its name (a place says its name,
+          // then "Tab 2 of 5").
+          final presses = <String>{};
           void visit(SemanticsNode node) {
             final data = node.getSemanticsData();
             final lines = data.label
@@ -76,7 +78,9 @@ void main() {
                 .where((l) => l.isNotEmpty)
                 .toList();
             if (lines.toSet().length < lines.length) twice.add(data.label);
-            if (data.flagsCollection.isButton) buttons.add(data.label);
+            if (data.hasAction(SemanticsAction.tap)) {
+              presses.add(data.label.split('\n').first);
+            }
             node.visitChildren((child) {
               visit(child);
               return true;
@@ -98,7 +102,7 @@ void main() {
           if (width >= 1024 &&
               !const {'filter', 'cancel'}.contains(screen.id)) {
             expect(
-              buttons,
+              presses,
               containsAll(const ['Home', 'Events', 'Tickets', 'Settings']),
               reason: "the side list's places, beside the body's navigator",
             );

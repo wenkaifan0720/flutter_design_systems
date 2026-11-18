@@ -1,10 +1,11 @@
 name: ui_core
 description: >-
-  Headless behaviours for Flutter design systems: the state, keyboard, focus and semantics of 24 controls, with
-  every pixel left to the design system.
-version: 0.2.2
-homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/ui_core
+  Headless behaviours for Flutter design systems: the state, keyboard, focus and semantics of 40 controls, routes
+  and overlays, with every pixel left to the design system.
+version: 0.3.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/ui_core
+issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
 
 environment:
   sdk: ">=3.13.0 <4.0.0"
@@ -18,6 +19,8 @@ dependencies:
 
 
 dev_dependencies:
+  cupertino_ui: ^1.0.0
+  material_ui: ^1.9.0
   flutter_lints: ^6.0.0
   flutter_localizations:
     sdk: flutter

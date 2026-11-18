@@ -8,7 +8,8 @@
 /// run spell the start), Right opens a submenu (Left closes it) or else
 /// moves to the next menu, Left the previous one, and Escape closes it,
 /// focus back on the bar. While a menu is open, a pointer over another top
-/// item opens that one.
+/// item opens that one. A menu a click opened lights no item until the
+/// pointer or a key picks one.
 library;
 
 import 'dart:async';
@@ -18,6 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'anchored_overlay.dart';
+import 'internal/menu_items.dart';
 import 'localizations.dart';
 import 'pressable.dart';
 
@@ -55,7 +57,8 @@ class DesignMenuEntry {
   /// Its submenu's items; null: it is a command.
   final List<DesignMenuEntry>? children;
 
-  /// Its key, for the look to show ("Ctrl+S").
+  /// Its key, for the look to show ("Ctrl+S"). `designShortcutLabel` spells
+  /// a [SingleActivator] as the platform's own menus do ("⌘ S" on macOS).
   final String? shortcut;
 
   /// Its check, for an item that toggles; null: none.
@@ -88,12 +91,22 @@ enum DesignMenuLevel {
 
 /// Paints an item for its [states] ([WidgetState.focused] while the
 /// keyboard is on it, [WidgetState.selected] while its menu is open,
-/// hovered, pressed, disabled).
+/// hovered, pressed, disabled). In a menu whose highlight follows the
+/// pointer, one item at most is focused or hovered: the current one.
 typedef DesignMenuItemBuilder = Widget Function(
   BuildContext context,
   DesignMenuEntry entry,
   DesignMenuLevel level,
   Set<WidgetState> states,
+);
+
+/// Paints a menu's panel round its `items` (scroll them when
+/// [DesignOverlayInfo.maxSize] is short): a menubar's menus, a context
+/// menu's.
+typedef DesignMenuSurfaceBuilder = Widget Function(
+  BuildContext context,
+  DesignOverlayInfo info,
+  List<Widget> items,
 );
 
 /// A row of menus.
@@ -111,6 +124,7 @@ class DesignMenuBar extends StatefulWidget {
     this.dividerBuilder,
     this.barBuilder,
     this.semanticLabel,
+    this.highlightFollowsPointer = true,
   });
 
   /// The top menus.
@@ -121,12 +135,7 @@ class DesignMenuBar extends StatefulWidget {
 
   /// Paints a menu's panel around its `items` (scroll them when
   /// [DesignOverlayInfo.maxSize] is short).
-  final Widget Function(
-    BuildContext context,
-    DesignOverlayInfo info,
-    List<Widget> items,
-  )
-  surfaceBuilder;
+  final DesignMenuSurfaceBuilder surfaceBuilder;
 
   /// Paints a divider; null: a 1 px gap.
   final WidgetBuilder? dividerBuilder;
@@ -137,6 +146,16 @@ class DesignMenuBar extends StatefulWidget {
   /// What a screen reader calls the bar; null:
   /// [DesignLocalizations.menuBarLabel].
   final String? semanticLabel;
+
+  /// Whether a pointer over a menu item moves the keys there; true by
+  /// default, as on every desktop.
+  ///
+  /// Then one item is lit, the current one: [WidgetState.hovered] when the
+  /// pointer moved last, [WidgetState.focused] when the keys did, and no
+  /// other item is hovered or focused; the pointer leaving the menu lights
+  /// none. False: each item's states are its own (the pointer's hover and
+  /// the keys' focus can light two).
+  final bool highlightFollowsPointer;
 
   @override
   State<DesignMenuBar> createState() => _DesignMenuBarState();
@@ -153,13 +172,10 @@ class DesignMenuBar extends StatefulWidget {
         ),
       )
       ..add(
-        ObjectFlagProperty<
-          Widget Function(
-            BuildContext context,
-            DesignOverlayInfo info,
-            List<Widget> items,
-          )
-        >.has('surfaceBuilder', surfaceBuilder),
+        ObjectFlagProperty<DesignMenuSurfaceBuilder>.has(
+          'surfaceBuilder',
+          surfaceBuilder,
+        ),
       )
       ..add(
         ObjectFlagProperty<WidgetBuilder>.has('dividerBuilder', dividerBuilder),
@@ -169,7 +185,14 @@ class DesignMenuBar extends StatefulWidget {
           Widget Function(BuildContext context, List<Widget> items)
         >.has('barBuilder', barBuilder),
       )
-      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        FlagProperty(
+          'highlightFollowsPointer',
+          value: highlightFollowsPointer,
+          ifFalse: 'highlight stays with the keys',
+        ),
+      );
   }
 }
 
@@ -310,240 +333,18 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
                 widget.itemBuilder(context, entry, DesignMenuLevel.bar, states),
           ),
         ),
-        overlayBuilder: (context, info) => _TypeAhead(
+        overlayBuilder: (context, info) => DesignMenuItems(
+          info: info,
           entries: entry.children ?? const [],
-          builder: (context, nodes) => widget.surfaceBuilder(
-            context,
-            info,
-            _items(context, entry.children ?? const [], _menus[i], nodes),
+          root: _menus[i],
+          painters: DesignMenuPainters(
+            itemBuilder: widget.itemBuilder,
+            surfaceBuilder: widget.surfaceBuilder,
+            dividerBuilder: widget.dividerBuilder,
+            highlightFollowsPointer: widget.highlightFollowsPointer,
           ),
         ),
       ),
-    );
-  }
-
-  List<Widget> _items(
-    BuildContext context,
-    List<DesignMenuEntry> entries,
-    MenuController root,
-    List<FocusNode> nodes,
-  ) => [
-    for (final (i, e) in entries.indexed)
-      if (e.divider)
-        ExcludeSemantics(
-          child:
-              widget.dividerBuilder?.call(context) ?? const SizedBox(height: 1),
-        )
-      else if (e.isSubmenu)
-        _Submenu(entry: e, menubar: this, root: root, focusNode: nodes[i])
-      else
-        DesignPressable(
-          focusNode: nodes[i],
-          onPressed: e.enabled
-              ? () {
-                  root.close();
-                  e.onPressed?.call();
-                }
-              : null,
-          checked: e.checked,
-          semanticLabel: e.label,
-          semanticHint: e.shortcut,
-          excludeSemantics: true,
-          builder: (context, states, _) =>
-              widget.itemBuilder(context, e, DesignMenuLevel.menu, states),
-        ),
-  ];
-}
-
-// A submenu's item: Right (Left in right to left), Enter, Space and a press
-// open it at its first item; Left, or Escape, closes it and focus comes
-// back here. A pointer resting on it opens it.
-class _Submenu extends StatefulWidget {
-  const _Submenu({
-    required this.entry,
-    required this.menubar,
-    required this.root,
-    required this.focusNode,
-  });
-
-  final DesignMenuEntry entry;
-  final _DesignMenuBarState menubar;
-  final MenuController root;
-
-  // Its item's focus, its menu's (for the typed letters).
-  final FocusNode focusNode;
-
-  @override
-  State<_Submenu> createState() => _SubmenuState();
-}
-
-class _SubmenuState extends State<_Submenu> {
-  final MenuController _menu = MenuController();
-
-  FocusNode get _node => widget.focusNode;
-
-  KeyEventResult _key(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final opens = rtl
-        ? LogicalKeyboardKey.arrowLeft
-        : LogicalKeyboardKey.arrowRight;
-    final closes = rtl
-        ? LogicalKeyboardKey.arrowRight
-        : LogicalKeyboardKey.arrowLeft;
-    final key = event.logicalKey;
-    if (_node.hasPrimaryFocus && key == opens && widget.entry.enabled) {
-      _menu.open();
-      return KeyEventResult.handled;
-    }
-    if (!_node.hasPrimaryFocus && _menu.isOpen && key == closes) {
-      _menu.close();
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bar = widget.menubar;
-    final e = widget.entry;
-    return Focus(
-      canRequestFocus: false,
-      skipTraversal: true,
-      includeSemantics: false,
-      onKeyEvent: _key,
-      child: DesignAnchoredOverlay(
-        controller: _menu,
-        trigger: DesignOverlayTrigger.manual,
-        arrowKeyNavigation: true,
-        semanticLabel: e.label,
-        placement: const DesignOverlayPlacement(
-          side: DesignOverlaySide.end,
-          gap: 0,
-        ),
-        onOpenChanged: (_) => setState(() {}),
-        anchorBuilder: (context, anchor) => MouseRegion(
-          onEnter: (_) {
-            if (e.enabled && !anchor.isOpen) {
-              _node.requestFocus();
-              scheduleMicrotask(() {
-                if (mounted) _menu.open();
-              });
-            }
-          },
-          child: DesignPressable(
-            focusNode: _node,
-            onPressed: e.enabled ? anchor.toggle : null,
-            selected: anchor.isOpen,
-            expanded: anchor.isOpen,
-            semanticLabel: e.label,
-            excludeSemantics: true,
-            builder: (context, states, _) => bar.widget.itemBuilder(
-              context,
-              e,
-              DesignMenuLevel.menu,
-              states,
-            ),
-          ),
-        ),
-        overlayBuilder: (context, info) => _TypeAhead(
-          entries: e.children ?? const [],
-          builder: (context, nodes) => bar.widget.surfaceBuilder(
-            context,
-            info,
-            bar._items(context, e.children ?? const [], widget.root, nodes),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// A menu's items' focus, and its typed letters: a letter goes to the next
-// item its label starts with, round past the end, so the same letter steps
-// through the items it starts; letters typed in a run (each within
-// [_run] of the last) spell the start, the item on it kept while it fits.
-class _TypeAhead extends StatefulWidget {
-  const _TypeAhead({required this.entries, required this.builder});
-
-  final List<DesignMenuEntry> entries;
-  final Widget Function(BuildContext context, List<FocusNode> nodes) builder;
-
-  @override
-  State<_TypeAhead> createState() => _TypeAheadState();
-}
-
-class _TypeAheadState extends State<_TypeAhead> {
-  final List<FocusNode> _nodes = [];
-  String _typed = '';
-  Timer? _pause;
-
-  static const Duration _run = Duration(milliseconds: 700);
-
-  @override
-  void dispose() {
-    _pause?.cancel();
-    for (final n in _nodes) {
-      n.dispose();
-    }
-    super.dispose();
-  }
-
-  void _sync() {
-    while (_nodes.length < widget.entries.length) {
-      _nodes.add(FocusNode(debugLabel: 'DesignMenuBar item ${_nodes.length}'));
-    }
-    while (_nodes.length > widget.entries.length) {
-      _nodes.removeLast().dispose();
-    }
-  }
-
-  // The letter a key types, lower case; null for a key that types none (a
-  // space presses the item) or one held with Ctrl, Alt or Cmd.
-  static String? _letter(KeyEvent event) {
-    final c = event.character;
-    if (c == null || c.trim().isEmpty || c.codeUnitAt(0) < 0x20) return null;
-    final keys = HardwareKeyboard.instance;
-    if (keys.isControlPressed || keys.isAltPressed || keys.isMetaPressed) {
-      return null;
-    }
-    return c.toLowerCase();
-  }
-
-  KeyEventResult _key(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
-    final letter = _letter(event);
-    if (letter == null) return KeyEventResult.ignored;
-    _typed += letter;
-    _pause?.cancel();
-    _pause = Timer(_run, () => _typed = '');
-    final entries = widget.entries;
-    final from = _nodes.indexWhere((n) => n.hasPrimaryFocus);
-    final start = from < 0 ? 0 : from + (_typed.length == 1 ? 1 : 0);
-    for (var k = 0; k < entries.length; k++) {
-      final i = (start + k) % entries.length;
-      final e = entries[i];
-      if (!e.divider && e.enabled && e.label.toLowerCase().startsWith(_typed)) {
-        _nodes[i].requestFocus();
-        break;
-      }
-    }
-    return KeyEventResult.handled;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    _sync();
-    return Focus(
-      canRequestFocus: false,
-      skipTraversal: true,
-      includeSemantics: false,
-      onKeyEvent: _key,
-      child: widget.builder(context, _nodes),
     );
   }
 }

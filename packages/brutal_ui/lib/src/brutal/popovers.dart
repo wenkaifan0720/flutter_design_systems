@@ -1,6 +1,7 @@
 /// Brutal's anchored and edge surfaces: a popover, a hover card and a
-/// tooltip on the foundation's anchored overlay; a side sheet on its side
-/// sheet route; and an action sheet on the look's bottom sheet.
+/// on the foundation's anchored overlay, a tooltip on its tooltip; a side
+/// sheet on its side sheet route; and an action sheet on the look's bottom
+/// sheet.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -190,9 +191,13 @@ class BrutalHoverCard extends StatelessWidget {
   }
 }
 
-/// A short label on an ink slab over [child], shown while the pointer
-/// rests on it, the keyboard is on it, or after a long press. A screen
-/// reader hears [message] as [child]'s tooltip.
+/// A short label on an ink slab over [child] (below it where there is no
+/// room above), over ui_core's [DesignTooltip]: it shows after a pointer
+/// rests on [child] half a second, at once when the keys bring the focus
+/// there, or after a long press. The pointer may move onto it, Escape hides
+/// it, and it goes as the pointer or the focus leaves; running the pointer
+/// along a row of controls shows each one's at once. A screen reader hears
+/// [message] as [child]'s tooltip.
 ///
 /// Reads [style]'s `fill` (the slab), `foreground`, `padding` and
 /// `textStyle`, then [BrutalThemeData.tooltipStyle]'s.
@@ -223,23 +228,10 @@ class BrutalTooltip extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.tooltipStyle], const {});
-    return DesignAnchoredOverlay(
-      trigger: DesignOverlayTrigger.hover,
-      focusOnOpen: false,
-      hoverOpenDelay: const Duration(milliseconds: 500),
-      hoverCloseDelay: const Duration(milliseconds: 100),
-      placement: const DesignOverlayPlacement(
-        side: DesignOverlaySide.above,
-        align: DesignOverlayAlign.center,
-        gap: 6,
-        margin: BrutalSpacing.small,
-        matchAnchorWidth: false,
-      ),
-      dampingRatio: BrutalMotion.dampingRatio,
-      stiffness: BrutalMotion.colorStiffness,
-      anchorBuilder: (context, anchor) =>
-          Semantics(tooltip: message, child: child),
-      overlayBuilder: (context, info) => FadeTransition(
+    return DesignTooltip(
+      message: message,
+      placement: _placement,
+      tooltipBuilder: (context, info) => FadeTransition(
         opacity: info.animation,
         child: ExcludeSemantics(
           child: ConstrainedBox(
@@ -268,8 +260,20 @@ class BrutalTooltip extends StatelessWidget {
           ),
         ),
       ),
+      child: child,
     );
   }
+
+  // Above the child and centred on it, 6 from it, a gutter in from the
+  // screen's edges; below it where two lines of a tip do not fit above.
+  static const DesignOverlayPlacement _placement = DesignOverlayPlacement(
+    side: DesignOverlaySide.above,
+    align: DesignOverlayAlign.center,
+    gap: 6,
+    margin: BrutalSpacing.small,
+    preferredExtent: 48,
+    matchAnchorWidth: false,
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {

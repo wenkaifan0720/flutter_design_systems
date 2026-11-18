@@ -1,13 +1,16 @@
 /// A side sheet, headless: a modal route whose panel slides in from the
 /// start or end edge, under a barrier. Focus moves into it and back to the
-/// opener when it closes; Escape, a barrier tap and a drag toward its edge
-/// close it; under Reduce Motion it fades instead of sliding.
+/// opener when it closes; Escape (wherever the focus is in it, and when its
+/// barrier does not dismiss), a barrier tap and a drag toward its edge close
+/// it; under Reduce Motion it fades instead of sliding.
 library;
 
 import 'package:flutter/widgets.dart';
 
 import 'barrier.dart';
+import 'internal/gesture_focus.dart';
 import 'internal/painted_barrier.dart';
+import 'internal/route_spring.dart';
 import 'localizations.dart';
 import 'motion.dart';
 
@@ -49,9 +52,12 @@ class DesignSheetInfo {
 /// [builder]'s, sized to [width] (at most the screen less [minGap]) and the
 /// full height.
 ///
-/// It opens and closes eased. A drag moves it with the finger from where it
-/// is drawn, and let go, it settles from there (back open, or closed past a
-/// third of its width or on a fling), so no frame jumps.
+/// It opens, settles and closes on a spring ([dampingRatio], [stiffness]),
+/// or closes on its own ([closeDampingRatio], [closeStiffness]), from
+/// wherever it is when it turns. A drag moves it with the finger from
+/// where it is drawn, and let go, it settles from there with the drag's
+/// speed (back open, or closed past a third of its width or on a fling), so
+/// no frame jumps.
 ///
 /// ```dart
 /// DesignSideSheetRoute<void>(builder: (context, sheet) => const SizedBox(width: 320))
@@ -69,12 +75,31 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
     bool barrierDismissible = true,
     this.dragToClose = true,
     this.semanticLabel,
-    Duration transitionDuration = const Duration(milliseconds: 300),
+    this.dampingRatio = 1,
+    this.stiffness = 700,
+    this.closeDampingRatio,
+    this.closeStiffness,
     super.settings,
   }) : _scrim = barrierColor,
        _givenBarrierLabel = barrierLabel,
-       _dismissOnBarrier = barrierDismissible,
-       _transition = transitionDuration;
+       _dismissOnBarrier = barrierDismissible;
+
+  /// The spring's damping ratio (ζ): it opens and settles on it, and
+  /// closes on it unless [closeDampingRatio] is given. Defaults to 1,
+  /// critically damped.
+  final double dampingRatio;
+
+  /// The spring's stiffness (k), and the close spring's unless
+  /// [closeStiffness] is given. Defaults to 700.
+  final double stiffness;
+
+  /// The close spring's damping ratio (ζ); null: [dampingRatio]. A look
+  /// whose sheet falls away on a spring of its own sets it with
+  /// [closeStiffness].
+  final double? closeDampingRatio;
+
+  /// The close spring's stiffness (k); null: [stiffness].
+  final double? closeStiffness;
 
   /// Paints the panel.
   final Widget Function(BuildContext context, DesignSheetInfo sheet) builder;
@@ -100,13 +125,14 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
 
   final Color _scrim;
   final bool _dismissOnBarrier;
-  final Duration _transition;
   final ValueNotifier<double?> _drag = ValueNotifier(null);
-
-  // Whether the panel is where the route's animation says, unchanged (a
-  // finger's drag, and the settle after it), rather than eased.
-  bool _linear = false;
-  CurvedAnimation? _eased;
+  final GestureFocus _gestureFocus = GestureFocus();
+  late final RouteSpring _spring = RouteSpring(
+    dampingRatio: dampingRatio,
+    stiffness: stiffness,
+    closeDampingRatio: closeDampingRatio,
+    closeStiffness: closeStiffness,
+  );
 
   final String? _givenBarrierLabel;
 
@@ -135,24 +161,24 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
   @override
   bool get barrierDismissible => _dismissOnBarrier;
 
+  /// Nominal: the spring decides how long it takes ([createSimulation]).
   @override
-  Duration get transitionDuration => _transition;
+  Duration get transitionDuration => const Duration(milliseconds: 300);
 
   @override
   void install() {
     super.install();
-    controller!.addStatusListener(_settled);
+    _spring.attach(controller!);
   }
 
-  // A settle after a drag has ended: eased again from here, where eased
-  // and unchanged agree (open or gone).
-  void _settled(AnimationStatus status) {
-    if (_drag.value == null && !status.isAnimating) _linear = false;
-  }
+  /// The spring from where the sheet is to open or gone, carrying a drag's
+  /// speed.
+  @override
+  Simulation createSimulation({required bool forward}) =>
+      _spring.simulation(navigator!.context, to: forward ? 1 : 0);
 
   @override
   void dispose() {
-    _eased?.dispose();
     _drag.dispose();
     super.dispose();
   }
@@ -160,10 +186,11 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
   void _dragStart() {
     // The finger takes the panel from where it is drawn, even part way
     // through opening.
-    final eased = _eased;
-    if (!_linear && eased != null) controller!.value = eased.value;
-    _linear = true;
+    controller!.stop();
     _drag.value = 0;
+    // A user gesture takes the focus out of the route; let go open, the
+    // route has it back.
+    _gestureFocus.hold(this);
     navigator?.didStartUserGesture();
   }
 
@@ -182,16 +209,14 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
     _drag.value = null;
     final close =
         !settle && (fling > 1 || (fling > -1 && controller!.value < 2 / 3));
-    final c = controller!;
-    // It settles from where it was let go, over the whole transition, slowing
-    // as it arrives.
+    // It settles from where it was let go, on the spring, at the drag's
+    // speed (sheet widths a second toward open).
     if (close) {
+      _spring.carry = -fling;
       navigator?.pop();
-      if (c.status == AnimationStatus.reverse) {
-        c.animateBack(0, duration: _transition, curve: Curves.easeOutCubic);
-      }
+      _spring.carry = null;
     } else {
-      c.animateTo(1, duration: _transition, curve: Curves.easeOutCubic);
+      _spring.settle(navigator!.context, 1, velocity: -fling);
     }
     navigator?.didStopUserGesture();
   }
@@ -232,15 +257,18 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
             enabled: dragToClose,
             side: side,
             width: w,
-            child: ValueListenableBuilder<double?>(
-              valueListenable: _drag,
-              builder: (context, drag, _) => builder(
-                context,
-                DesignSheetInfo(
-                  side: side,
-                  animation: animation,
-                  dragging: drag != null,
-                  close: () => Navigator.of(context).maybePop(),
+            child: escapeCloses(
+              context,
+              ValueListenableBuilder<double?>(
+                valueListenable: _drag,
+                builder: (context, drag, _) => builder(
+                  context,
+                  DesignSheetInfo(
+                    side: side,
+                    animation: animation,
+                    dragging: drag != null,
+                    close: () => Navigator.of(context).maybePop(),
+                  ),
                 ),
               ),
             ),
@@ -265,36 +293,15 @@ class DesignSideSheetRoute<T> extends PopupRoute<T> {
     final screen = MediaQuery.sizeOf(context).width;
     final panel = screen == 0 ? 1.0 : _panelWidth(context) / screen;
     final from = (_side(context) == AxisDirection.left ? -1.0 : 1.0) * panel;
-    final eased = _eased ??= CurvedAnimation(
-      parent: animation,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    );
+    // The spring is the curve: the panel is where the route's value says.
     return SlideTransition(
       position: Tween(
         begin: Offset(from, 0),
         end: Offset.zero,
-      ).animate(_SheetPlace(this, eased)),
+      ).animate(animation),
       child: child,
     );
   }
-}
-
-// Where the panel is drawn, 0 (gone) to 1 (open): eased while the route
-// opens or closes on its own, the route's own value from a drag's start
-// until the settle after it ends.
-class _SheetPlace extends Animation<double>
-    with AnimationWithParentMixin<double> {
-  _SheetPlace(this.route, this.eased);
-
-  final DesignSideSheetRoute<Object?> route;
-  final CurvedAnimation eased;
-
-  @override
-  Animation<double> get parent => eased.parent;
-
-  @override
-  double get value => route._linear ? parent.value : eased.value;
 }
 
 // A drag toward the sheet's edge moves it with the finger; past a third of

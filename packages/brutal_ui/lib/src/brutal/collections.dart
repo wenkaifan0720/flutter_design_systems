@@ -778,11 +778,10 @@ class BrutalReorderableList<T extends Object> extends StatelessWidget {
         shrinkWrap: shrinkWrap,
         proxyDecorator: (child, index, animation) => AnimatedBuilder(
           animation: animation,
+          // Lifted against its shadow: up, and back from the end side.
           builder: (context, _) => Transform.translate(
-            offset: Offset(
-              -theme.shadowOffset * animation.value,
-              -theme.shadowOffset * animation.value,
-            ),
+            offset:
+                -theme.shadowIn(Directionality.of(context)) * animation.value,
             child: BrutalSurface(
               face: BrutalFace(
                 fill: fill,

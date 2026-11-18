@@ -74,12 +74,15 @@ class DesignCapCenter extends SingleChildRenderObjectWidget {
   final double capHeightFactor;
 
   @override
-  RenderObject createRenderObject(BuildContext context) =>
-      _RenderCapCenter(capHeightFactor);
+  RenderDesignCapCenter createRenderObject(BuildContext context) =>
+      RenderDesignCapCenter(capHeightFactor);
 
   @override
-  void updateRenderObject(BuildContext context, RenderObject renderObject) {
-    (renderObject as _RenderCapCenter).capHeightFactor = capHeightFactor;
+  void updateRenderObject(
+    BuildContext context,
+    RenderDesignCapCenter renderObject,
+  ) {
+    renderObject.capHeightFactor = capHeightFactor;
   }
 
   @override
@@ -89,21 +92,40 @@ class DesignCapCenter extends SingleChildRenderObjectWidget {
   }
 }
 
-// Paints its child moved by [_shift], worked out where it is used (paint,
-// hit testing, transforms), after any layout of the label below it: a label
-// whose text changes inside a box of fixed size lays out again without this
-// one.
-class _RenderCapCenter extends RenderProxyBox implements CapCentred {
-  _RenderCapCenter(this._capHeightFactor);
+/// The render object of [DesignCapCenter]: keeps its child's size and
+/// paints it moved up or down so that its one-line label's capitals sit on
+/// the box's middle.
+///
+/// Public, as [RenderBaseline] is [Baseline]'s, so that a check reading the
+/// drawn pixels (`DesignLabelCheck` and `DesignRowCheck` in
+/// `package:ui_core_test`) can find the cap center a label is drawn in and
+/// read the [capHeightFactor] it was given. A look writes [DesignCapCenter],
+/// never this.
+///
+/// The move is worked out where it is used (paint, hit testing, transforms),
+/// after any layout of the label below it: a label whose text changes inside
+/// a box of fixed size lays out again without this one.
+class RenderDesignCapCenter extends RenderProxyBox {
+  /// Draws its child's label with its capitals on its middle, at
+  /// [capHeightFactor] of its font size.
+  RenderDesignCapCenter(this._capHeightFactor);
 
   double _capHeightFactor;
-  @override
+
+  /// The label's cap height as a fraction of its font size
+  /// ([DesignCapCenter.capHeightFactor]).
   double get capHeightFactor => _capHeightFactor;
   set capHeightFactor(double value) {
     if (value == _capHeightFactor) return;
     _capHeightFactor = value;
     markNeedsPaint();
     markNeedsSemanticsUpdate();
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DoubleProperty('capHeightFactor', capHeightFactor));
   }
 
   // How far down to draw the child: the box's middle less the middle of the

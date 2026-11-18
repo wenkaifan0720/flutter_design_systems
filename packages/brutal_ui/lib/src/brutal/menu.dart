@@ -5,7 +5,8 @@
 /// bar, the palette, the combobox and the tag input draw their lists with
 /// them. In a menu the pointer and the keyboard are one: the pointer's move
 /// takes the keyboard to its row, so one row is lit; a menu a pointer opened
-/// lights none until the pointer moves onto one or a key is pressed.
+/// lights none until the pointer moves onto one or a key is pressed (ui_core
+/// keeps the keys on the menu's surface until then).
 library;
 
 import 'package:flutter/foundation.dart';
@@ -14,7 +15,6 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'internal/keep_in_view.dart';
-import 'internal/menu_input.dart';
 import 'internal/type_ahead.dart';
 import 'surface.dart';
 import 'theme.dart';
@@ -32,6 +32,7 @@ class BrutalMenuItem {
     required this.onPressed,
     this.icon,
     this.shortcut,
+    this.activator,
     this.isDestructiveAction = false,
   });
 
@@ -44,8 +45,22 @@ class BrutalMenuItem {
   /// A glyph before the words.
   final IconData? icon;
 
-  /// The keys that run it, shown at the row's end (`⌘S`).
+  /// The keys that run it, shown at the row's end as written (`⌘S`); see
+  /// [activator].
   final String? shortcut;
+
+  /// The shortcut that runs it, shown at the row's end in the platform's
+  /// order and the reader's words when there is no [shortcut] (ui_core's
+  /// [designShortcutLabel]: `⌘S` on a Mac, `Ctrl+S` elsewhere). It only
+  /// shows the keys: binding them is the app's.
+  final MenuSerializableShortcut? activator;
+
+  /// What its row shows at its end: [shortcut], else [activator]'s keys.
+  String? shortcutLabel(BuildContext context) {
+    final keys = activator;
+    return shortcut ??
+        (keys == null ? null : designShortcutLabel(context, keys));
+  }
 
   /// Whether it destroys something: its words in the danger colour.
   final bool isDestructiveAction;
@@ -57,8 +72,9 @@ class BrutalMenuItem {
 ///
 /// Its [BrutalMenuRow]s light one row, the keyboard's: a pointer moving onto
 /// a row takes the keyboard there. Opened by a pointer's press, it lights no
-/// row until the pointer moves onto one or a key is pressed; the first Down,
-/// Enter or Space then lights the keyboard's row and does nothing more.
+/// row until the pointer moves onto one or a key is pressed: ui_core's
+/// surface holds the keys until then, Down going to the first row and Up to
+/// the last.
 ///
 /// Reads [style]'s `fill` and `edge` (the box and the rules between rows),
 /// then [BrutalThemeData.menuStyle]'s.
@@ -66,7 +82,7 @@ class BrutalMenuItem {
 /// ```dart
 /// BrutalMenuPanel(children: [for (final item in items) row(item)])
 /// ```
-class BrutalMenuPanel extends StatefulWidget {
+class BrutalMenuPanel extends StatelessWidget {
   /// A panel round [children].
   const BrutalMenuPanel({
     super.key,
@@ -89,7 +105,46 @@ class BrutalMenuPanel extends StatefulWidget {
   final BrutalStyle? style;
 
   @override
-  State<BrutalMenuPanel> createState() => _BrutalMenuPanelState();
+  Widget build(BuildContext context) {
+    final theme = BrutalTheme.of(context);
+    final c = theme.colors;
+    final layered = DesignStyleOf([style, theme.menuStyle], const {});
+    final rule = layered.side?.color ?? layered.edge ?? c.ink;
+    return _OnPanel(
+      child: BrutalSurface(
+        face: BrutalFace(
+          fill: layered.fill ?? c.surface,
+          border: rule,
+          foreground: c.ink,
+          shadow: c.ink,
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minWidth: minWidth - 2 * theme.borderWidth,
+            maxHeight: maxHeight,
+          ),
+          child: SingleChildScrollView(
+            child: IntrinsicWidth(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final (i, row) in children.indexed) ...[
+                    if (i > 0)
+                      SizedBox(
+                        height: theme.borderWidth,
+                        child: ColoredBox(color: rule),
+                      ),
+                    row,
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -103,99 +158,16 @@ class BrutalMenuPanel extends StatefulWidget {
   }
 }
 
-// Whether a menu's rows are quiet: opened by a pointer's press, no row lit yet.
-class _MenuQuiet extends InheritedNotifier<ValueNotifier<bool>> {
-  const _MenuQuiet({required super.notifier, required super.child});
+// Marks a menu's panel: its rows light the keyboard's row only, as the
+// pointer's move takes the keyboard there.
+class _OnPanel extends InheritedWidget {
+  const _OnPanel({required super.child});
 
-  static ValueNotifier<bool>? maybeOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<_MenuQuiet>()?.notifier;
-}
-
-class _BrutalMenuPanelState extends State<BrutalMenuPanel> {
-  late final ValueNotifier<bool> _quiet = ValueNotifier(
-    brutalPointerPressedLast,
-  );
+  static bool on(BuildContext context) =>
+      context.getInheritedWidgetOfExactType<_OnPanel>() != null;
 
   @override
-  void dispose() {
-    _quiet.dispose();
-    super.dispose();
-  }
-
-  // Quiet, the first key wakes it: Down, Enter or Space only shows the row
-  // the keyboard is on; any other key goes on as usual.
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (!_quiet.value || event is! KeyDownEvent) return KeyEventResult.ignored;
-    _quiet.value = false;
-    final key = event.logicalKey;
-    return key == LogicalKeyboardKey.arrowDown ||
-            key == LogicalKeyboardKey.enter ||
-            key == LogicalKeyboardKey.numpadEnter ||
-            key == LogicalKeyboardKey.space
-        ? KeyEventResult.handled
-        : KeyEventResult.ignored;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = BrutalTheme.of(context);
-    final c = theme.colors;
-    final layered = DesignStyleOf([widget.style, theme.menuStyle], const {});
-    final rule = layered.side?.color ?? layered.edge ?? c.ink;
-    return _MenuQuiet(
-      notifier: _quiet,
-      child: Focus(
-        canRequestFocus: false,
-        skipTraversal: true,
-        includeSemantics: false,
-        onKeyEvent: _onKey,
-        child: _panel(theme, c, layered, rule),
-      ),
-    );
-  }
-
-  Widget _panel(
-    BrutalThemeData theme,
-    BrutalColors c,
-    DesignStyleOf layered,
-    Color rule,
-  ) {
-    final children = widget.children;
-    final maxHeight = widget.maxHeight;
-    final minWidth = widget.minWidth;
-    return BrutalSurface(
-      face: BrutalFace(
-        fill: layered.fill ?? c.surface,
-        border: rule,
-        foreground: c.ink,
-        shadow: c.ink,
-      ),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minWidth: minWidth - 2 * theme.borderWidth,
-          maxHeight: maxHeight,
-        ),
-        child: SingleChildScrollView(
-          child: IntrinsicWidth(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                for (final (i, row) in children.indexed) ...[
-                  if (i > 0)
-                    SizedBox(
-                      height: theme.borderWidth,
-                      child: ColoredBox(color: rule),
-                    ),
-                  row,
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  bool updateShouldNotify(_OnPanel oldWidget) => false;
 }
 
 /// One row of a menu as it stands in [states]: its words (and [icon], and
@@ -258,17 +230,14 @@ class BrutalMenuRow extends StatelessWidget {
         (states.contains(WidgetState.selected) ||
             states.contains(WidgetState.pressed));
     // On a menu's panel the pointer moves the keyboard: one row is lit, the
-    // keyboard's (whether or not the platform shows focus after a touch), and
-    // none while the panel is quiet.
-    final quiet = _MenuQuiet.maybeOf(context);
+    // keyboard's, whether or not the platform shows focus after a touch.
+    final onPanel = _OnPanel.on(context);
     final here =
         !disabled &&
-        (quiet == null
-            ? states.contains(WidgetState.focused) ||
-                  states.contains(WidgetState.hovered)
-            : !quiet.value &&
-                  (states.contains(WidgetState.focused) ||
-                      (Focus.maybeOf(context)?.hasPrimaryFocus ?? false)));
+        (states.contains(WidgetState.focused) ||
+            (onPanel
+                ? Focus.maybeOf(context)?.hasPrimaryFocus ?? false
+                : states.contains(WidgetState.hovered)));
     final bar = isDestructiveAction ? c.danger : c.ink;
     final words =
         layered.foreground ??
@@ -343,11 +312,10 @@ class BrutalMenuRow extends StatelessWidget {
         ),
       ),
     );
-    if (quiet == null || disabled) return row;
+    if (!onPanel || disabled) return row;
     // A move, not a row scrolled under a resting pointer, takes the keyboard.
     return MouseRegion(
       onHover: (_) {
-        quiet.value = false;
         final node = Focus.maybeOf(context, createDependency: false);
         if (node != null && node.canRequestFocus && !node.hasPrimaryFocus) {
           node.requestFocus();
@@ -424,10 +392,7 @@ class BrutalMenu extends StatelessWidget {
   final BrutalStyle? style;
 
   @override
-  Widget build(BuildContext context) {
-    brutalWatchPresses();
-    return _overlay(context);
-  }
+  Widget build(BuildContext context) => _overlay(context);
 
   Widget _overlay(BuildContext context) => DesignAnchoredOverlay(
     arrowKeyNavigation: true,
@@ -531,7 +496,10 @@ class _MenuListState extends State<_MenuList> {
                 icon: item.icon,
                 states: states,
                 isDestructiveAction: item.isDestructiveAction,
-                trailing: item.shortcut == null ? null : Text(item.shortcut!),
+                trailing: switch (item.shortcutLabel(context)) {
+                  final keys? => Text(keys),
+                  null => null,
+                },
                 style: widget.style,
               ),
             ),

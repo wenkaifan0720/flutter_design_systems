@@ -9,6 +9,8 @@ environment:
 resolution: workspace
 
 dependencies:
+  cupertino_ui: ^1.0.0
+  material_ui: ^1.9.0
   flutter:
     sdk: flutter
   ui_core:

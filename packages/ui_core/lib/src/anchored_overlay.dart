@@ -1,9 +1,9 @@
 /// A surface anchored to a widget, headless: popovers, hover cards and menu
-/// anchors. Placement beside the anchor that flips to the side with room
-/// and shifts to stay on screen (right to left aware), outside taps and
-/// Escape to close, focus moved in on open and returned on close, arrow
-/// keys through a menu, hover intent with delays. The look paints the
-/// anchor and the surface.
+/// anchors. Placement beside the anchor (or at a point in it) that flips to
+/// the side with room and shifts to stay on screen, clear of the on-screen
+/// keyboard (right to left aware), outside taps and Escape to close, focus
+/// moved in on open and returned on close, arrow keys through a menu, hover
+/// intent with delays. The look paints the anchor and the surface.
 ///
 /// Built on the widgets layer's [RawMenuAnchor] and [MenuController], so a
 /// surface nested in another closes with it and a menubar's menus share one
@@ -11,15 +11,15 @@
 library;
 
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/back.dart';
+import 'internal/placement.dart';
 import 'internal/quiet_focus.dart';
+import 'internal/surface_focus.dart';
 import 'motion.dart';
 
 /// Which side of the anchor a surface sits on. [start] and [end] follow the
@@ -193,13 +193,17 @@ class DesignOverlayAnchor {
 /// What [DesignAnchoredOverlay.overlayBuilder] paints the surface from.
 @immutable
 class DesignOverlayInfo {
-  /// Info for a surface on [side] of [anchorRect].
+  /// Info for a surface on [side] of [anchorRect], opened at [position] when
+  /// it opened at a point, whose place is told to [surfaceRect] (none, by
+  /// default).
   const DesignOverlayInfo({
     required this.side,
     required this.anchorRect,
     required this.maxSize,
     required this.animation,
     required this.close,
+    this.position,
+    this.surfaceRect = const _NoSurfaceRect(),
   });
 
   /// The side it sits on, after any flip: where an arrow points from, the
@@ -220,6 +224,86 @@ class DesignOverlayInfo {
 
   /// Closes it, focus going back to where it was: for an item's press.
   final VoidCallback close;
+
+  /// The point it opened at, in the anchor's coordinates, as given to
+  /// `MenuController.open(position:)` (a context menu at the pointer); null
+  /// when it opened from the anchor. A surface opened at a point draws no
+  /// arrow: [side] is the side of the point it took.
+  final Offset? position;
+
+  /// The surface's rectangle in the overlay once it is laid out, after any
+  /// flip and shift; null before its first layout.
+  ///
+  /// It is set as the surface is laid out, before it is painted. So a
+  /// `CustomPainter` given it as its `repaint` listenable, which reads it in
+  /// `paint`, points a tail or an arrow at the anchor from the first frame
+  /// and follows the surface as it moves: the anchor's middle in the
+  /// surface's own coordinates is `anchorRect.center - surfaceRect.value!
+  /// .topLeft` (or [position] less the surface's offset from the anchor, for
+  /// a surface opened at a point). A widget that reads it while it builds (a
+  /// `ValueListenableBuilder`) is one frame late: paint the tail instead.
+  final ValueListenable<Rect?> surfaceRect;
+}
+
+// A surface rectangle no one tells: [DesignOverlayInfo]'s default.
+class _NoSurfaceRect implements ValueListenable<Rect?> {
+  const _NoSurfaceRect();
+
+  @override
+  Rect? get value => null;
+
+  @override
+  void addListener(VoidCallback listener) {}
+
+  @override
+  void removeListener(VoidCallback listener) {}
+}
+
+/// The edges a surface opened under it keeps clear of, beyond the screen's
+/// safe area and the on-screen keyboard: a look's own chrome over its pages,
+/// such as a desktop side bar a page's overlay runs under.
+///
+/// Every [DesignAnchoredOverlay] below it (and so every menu, list, popover,
+/// context menu and tooltip of ui_core's) keeps its surface inside the
+/// overlay less [padding], as it keeps clear of a notch. Put it round the
+/// pages the chrome stands over: a side bar 280 wide at the start of the
+/// screen, say.
+///
+/// ```dart
+/// DesignOverlayPadding(padding: const EdgeInsetsDirectional.only(start: 280), child: const Text('A page beside the side bar'))
+/// ```
+class DesignOverlayPadding extends InheritedWidget {
+  /// Keeps the surfaces opened in [child] [padding] clear of the overlay's
+  /// edges.
+  const DesignOverlayPadding({
+    super.key,
+    required this.padding,
+    required super.child,
+  });
+
+  /// How far in from each edge of the overlay a surface stays, resolved by
+  /// the reading direction where it is directional.
+  final EdgeInsetsGeometry padding;
+
+  /// The padding above [context], resolved by its reading direction; none
+  /// ([EdgeInsets.zero]) when there is none above it.
+  static EdgeInsets of(BuildContext context) {
+    final padding = context
+        .dependOnInheritedWidgetOfExactType<DesignOverlayPadding>()
+        ?.padding;
+    if (padding == null) return EdgeInsets.zero;
+    return padding.resolve(Directionality.maybeOf(context));
+  }
+
+  @override
+  bool updateShouldNotify(DesignOverlayPadding oldWidget) =>
+      padding != oldWidget.padding;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<EdgeInsetsGeometry>('padding', padding));
+  }
 }
 
 /// Paints the anchor.
@@ -233,219 +317,6 @@ typedef DesignOverlaySurfaceBuilder = Widget Function(
   BuildContext context,
   DesignOverlayInfo info,
 );
-
-/// The side a surface takes: [placement]'s own, unless it has less room
-/// than [DesignOverlayPlacement.preferredExtent] and the opposite side has
-/// more. [bounds] is the overlay less its margins and safe area.
-DesignOverlaySide _resolveSide(
-  Rect anchor,
-  Rect bounds,
-  DesignOverlayPlacement placement,
-  TextDirection textDirection,
-) {
-  final side = placement.side;
-  if (!placement.flip) return side;
-  final gap = placement.gap;
-  final room = _room(anchor, bounds, side, gap, textDirection);
-  final other = _room(anchor, bounds, side.opposite, gap, textDirection);
-  return room < placement.preferredExtent && other > room
-      ? side.opposite
-      : side;
-}
-
-// The room on [side] of [anchor] inside [bounds], along the side's axis.
-double _room(
-  Rect anchor,
-  Rect bounds,
-  DesignOverlaySide side,
-  double gap,
-  TextDirection direction,
-) {
-  final left = direction == TextDirection.ltr;
-  return switch (side) {
-    DesignOverlaySide.below => bounds.bottom - anchor.bottom - gap,
-    DesignOverlaySide.above => anchor.top - bounds.top - gap,
-    DesignOverlaySide.start =>
-      left
-          ? anchor.left - bounds.left - gap
-          : bounds.right - anchor.right - gap,
-    DesignOverlaySide.end =>
-      left
-          ? bounds.right - anchor.right - gap
-          : anchor.left - bounds.left - gap,
-  }.clamp(0.0, double.infinity);
-}
-
-/// Where a surface of [size] goes on [side] of [anchor], lined up by
-/// [align] and shifted to stay inside [bounds].
-Offset _placeOverlay({
-  required Rect anchor,
-  required Rect bounds,
-  required Size size,
-  required DesignOverlaySide side,
-  required DesignOverlayAlign align,
-  required double gap,
-  required TextDirection textDirection,
-}) {
-  final ltr = textDirection == TextDirection.ltr;
-  double x;
-  double y;
-  if (side.isVertical) {
-    y = side == DesignOverlaySide.below
-        ? anchor.bottom + gap
-        : anchor.top - gap - size.height;
-    final startX = ltr ? anchor.left : anchor.right - size.width;
-    final endX = ltr ? anchor.right - size.width : anchor.left;
-    x = switch (align) {
-      DesignOverlayAlign.start => startX,
-      DesignOverlayAlign.center => anchor.center.dx - size.width / 2,
-      DesignOverlayAlign.end => endX,
-    };
-  } else {
-    final onLeft = (side == DesignOverlaySide.start) == ltr;
-    x = onLeft ? anchor.left - gap - size.width : anchor.right + gap;
-    y = switch (align) {
-      DesignOverlayAlign.start => anchor.top,
-      DesignOverlayAlign.center => anchor.center.dy - size.height / 2,
-      DesignOverlayAlign.end => anchor.bottom - size.height,
-    };
-  }
-  // Shift to stay on screen; a surface larger than the bounds keeps its
-  // start edge on screen.
-  final maxX = bounds.right - size.width;
-  final maxY = bounds.bottom - size.height;
-  x = maxX < bounds.left
-      ? (ltr ? bounds.left : maxX)
-      : x.clamp(bounds.left, maxX);
-  y = maxY < bounds.top ? bounds.top : y.clamp(bounds.top, maxY);
-  return Offset(x, y);
-}
-
-/// Its child as wide as the child's widest line (its intrinsic width) within
-/// the width it is given: a list from a field, the field's width at least
-/// and its cap at most, from its first frame. A child that can't say its
-/// width ahead (a viewport: a lazy `ListView`, a `CustomScrollView`; a
-/// `LayoutBuilder`) takes the least.
-class _ListWidth extends SingleChildRenderObjectWidget {
-  const _ListWidth({required Widget super.child});
-
-  @override
-  RenderObject createRenderObject(BuildContext context) => _RenderListWidth();
-}
-
-class _RenderListWidth extends RenderProxyBox {
-  // The width within [constraints] for [child]: its widest line, else the
-  // least.
-  static double _widthFor(RenderBox child, BoxConstraints constraints) {
-    if (constraints.hasTightWidth) return constraints.minWidth;
-    double? natural;
-    if (_saysItsWidth(child)) {
-      try {
-        natural = child.getMaxIntrinsicWidth(constraints.maxHeight);
-      } on Object {
-        natural = null;
-      }
-    }
-    return constraints.constrainWidth(
-      natural == null || !natural.isFinite ? constraints.minWidth : natural,
-    );
-  }
-
-  // Whether nothing under [node] is a viewport, which answers its intrinsic
-  // width with 0 (and asserts in a debug build) rather than its items'.
-  static bool _saysItsWidth(RenderObject node) {
-    var says = true;
-    void visit(RenderObject child) {
-      if (!says) return;
-      if (child is RenderViewportBase) {
-        says = false;
-        return;
-      }
-      child.visitChildren(visit);
-    }
-
-    node.visitChildren(visit);
-    return says && node is! RenderViewportBase;
-  }
-
-  @override
-  void performLayout() {
-    final child = this.child;
-    if (child == null) {
-      size = constraints.smallest;
-      return;
-    }
-    final width = _widthFor(child, constraints);
-    child.layout(constraints.tighten(width: width), parentUsesSize: true);
-    size = constraints.constrain(child.size);
-  }
-
-  @override
-  Size computeDryLayout(covariant BoxConstraints constraints) {
-    final child = this.child;
-    if (child == null) return constraints.smallest;
-    final width = _widthFor(child, constraints);
-    return constraints.constrain(
-      child.getDryLayout(constraints.tighten(width: width)),
-    );
-  }
-}
-
-class _PlacementDelegate extends SingleChildLayoutDelegate {
-  _PlacementDelegate({
-    required this.anchor,
-    required this.bounds,
-    required this.side,
-    required this.placement,
-    required this.textDirection,
-    required this.maxSize,
-  });
-
-  final Rect anchor;
-  final Rect bounds;
-  final DesignOverlaySide side;
-  final DesignOverlayPlacement placement;
-  final TextDirection textDirection;
-  final Size maxSize;
-
-  @override
-  BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
-    if (!(placement.matchAnchorWidth && side.isVertical)) {
-      return BoxConstraints(maxWidth: maxSize.width, maxHeight: maxSize.height);
-    }
-    // A list from a field: the field's width, wider only to its cap
-    // (_ListWidth picks within), never past the room on screen.
-    final least = anchor.width.clamp(0.0, maxSize.width);
-    final most = math
-        .max(anchor.width, placement.maxWidth)
-        .clamp(least, maxSize.width);
-    return BoxConstraints(
-      minWidth: least,
-      maxWidth: most,
-      maxHeight: maxSize.height,
-    );
-  }
-
-  @override
-  Offset getPositionForChild(Size size, Size childSize) => _placeOverlay(
-    anchor: anchor,
-    bounds: bounds,
-    size: childSize,
-    side: side,
-    align: placement.align,
-    gap: placement.gap,
-    textDirection: textDirection,
-  );
-
-  @override
-  bool shouldRelayout(_PlacementDelegate old) =>
-      anchor != old.anchor ||
-      bounds != old.bounds ||
-      side != old.side ||
-      placement != old.placement ||
-      textDirection != old.textDirection ||
-      maxSize != old.maxSize;
-}
 
 /// Hover intent: open after the pointer rests, close after it leaves, so a
 /// surface does not flash as a pointer crosses its anchor and a pointer can
@@ -514,6 +385,13 @@ class _FirstIntent extends Intent {
   const _FirstIntent();
 }
 
+// Down (forward) or Up in a menu.
+class _StepIntent extends Intent {
+  const _StepIntent({required this.forward});
+
+  final bool forward;
+}
+
 class _LastIntent extends Intent {
   const _LastIntent();
 }
@@ -533,11 +411,18 @@ class _LeaveArrows extends Action<DirectionalFocusIntent> {
 /// ([DesignOverlayTrigger.press], [focusOnOpen]), a hover card
 /// ([DesignOverlayTrigger.hover]) or a menu ([arrowKeyNavigation] on).
 ///
-/// On open, focus moves to the surface's first focusable widget (when
-/// [focusOnOpen]) and Tab stays inside it; Escape or a tap outside closes
-/// it, and focus goes back to where it was (the anchor). The surface takes
-/// the side with room ([DesignOverlayPlacement]) and [DesignOverlayInfo.side]
-/// says which.
+/// On open, focus moves into the surface (when [focusOnOpen]) and Tab stays
+/// inside it; Escape, a tap outside or Android's back closes it, and focus
+/// goes back to where it was (the anchor). The surface takes the side with
+/// room ([DesignOverlayPlacement]) and [DesignOverlayInfo.side] says which;
+/// it keeps clear of the screen's safe area, the on-screen keyboard and a
+/// [DesignOverlayPadding] above it. [DesignOverlayInfo.surfaceRect] says
+/// where it landed, for a tail or an arrow.
+///
+/// `controller.open(position: offset)` (an offset in the anchor) opens it at
+/// that point, as a context menu opens at the pointer: below the point and
+/// from its start in reading order, above it or towards its other end where
+/// there is no room. [DesignOverlayInfo.position] says so.
 ///
 /// ```dart
 /// DesignAnchoredOverlay(anchorBuilder: (context, anchor) => GestureDetector(onTap: anchor.toggle, child: const Text('More')), overlayBuilder: (context, info) => const Text('Details'))
@@ -569,7 +454,8 @@ class DesignAnchoredOverlay extends StatefulWidget {
   /// Paints the surface.
   final DesignOverlaySurfaceBuilder overlayBuilder;
 
-  /// Opens and closes it from outside; one is made when null.
+  /// Opens and closes it from outside, and opens it at a point
+  /// (`open(position:)`); null: it makes its own.
   final MenuController? controller;
 
   /// What opens it.
@@ -579,13 +465,20 @@ class DesignAnchoredOverlay extends StatefulWidget {
   final DesignOverlayPlacement placement;
 
   /// Whether focus moves into the surface when it opens (a popover, a menu)
-  /// and Tab stays inside it. A hover card leaves focus on its anchor.
+  /// and Tab stays inside it; true by default. A hover card leaves focus on
+  /// its anchor.
+  ///
+  /// It goes to the surface's first focusable widget, except in a menu
+  /// ([arrowKeyNavigation]) a pointer opened: there it goes to the surface
+  /// itself and no item is lit, as a menu opened with a click shows none;
+  /// Down then focuses the first item and Up the last. A menu opened from
+  /// the keys, or by a screen reader, starts on its first item.
   final bool focusOnOpen;
 
   /// Whether Up and Down move focus through the surface's items, wrapping,
-  /// and Home and End go to the first and last: a menu. The arrows on the
-  /// anchor are then the anchor's own and its ancestors' (a menubar moves
-  /// along on them), never a move by geometry.
+  /// and Home and End go to the first and last: a menu; false by default.
+  /// The arrows on the anchor are then the anchor's own and its ancestors'
+  /// (a menubar moves along on them), never a move by geometry.
   final bool arrowKeyNavigation;
 
   /// What a screen reader calls the surface.
@@ -719,9 +612,30 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
   late final FocusScopeNode _scope = FocusScopeNode(
     debugLabel: 'DesignAnchoredOverlay',
   );
+  // The surface itself, inside [_scope]: a menu a pointer opened holds the
+  // keys here, no item lit.
+  final FocusNode _surfaceNode = FocusNode(
+    debugLabel: 'DesignAnchoredOverlay surface',
+    skipTraversal: true,
+  );
+  // Where the surface landed, for the look's tail.
+  final DesignSurfaceRect _placed = DesignSurfaceRect();
+  // Whether the pointer moved last in the surface, else the keys.
+  final ValueNotifier<bool> _byPointer = ValueNotifier(false);
+  // The keys of a surface no item holds (a menu's typed letters).
+  final ValueNotifier<FocusOnKeyEventCallback?> _surfaceKeys = ValueNotifier(
+    null,
+  );
   _HoverIntent? _intent;
   FocusNode? _returnTo;
   bool _open = false;
+  // Closing: its spring running down. Focus has gone back; nothing in it
+  // takes it again.
+  bool _closing = false;
+  DesignOpenedBy _openedBy = DesignOpenedBy.other;
+  // A pointer resting on the anchor (any trigger): a click that arrives as a
+  // semantics tap with no press (the web, semantics on) is the pointer's.
+  bool _anchorHovered = false;
 
   // Round the anchor, taking no focus itself: the anchor's own node is the
   // first one in it that can take focus.
@@ -742,11 +656,14 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
   }
 
   // Where focus goes when the surface closes: to the anchor, when the anchor
-  // opened it (pressed, or from the keys while focused), even after a tap,
-  // as a menu button's menu gives it back; else where it was.
+  // opened it (pressed, clicked, or from the keys while focused), even after
+  // a tap, as a menu button's menu gives it back; else where it was.
   FocusNode? _returnFor(FocusNode current) {
     if (_anchorArea.hasFocus) return current;
-    if (_anchorPressed) {
+    // A region's (a context menu's): where it was, as a right click there
+    // moves no focus.
+    if (widget.key is DesignRegionAnchorKey) return current;
+    if (_anchorPressed || _openedBy == DesignOpenedBy.pointer) {
       for (final node in _anchorArea.descendants) {
         if (node.canRequestFocus && !node.skipTraversal) return node;
       }
@@ -886,6 +803,10 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
     _intent?.dispose();
     _presence.dispose();
     _scope.dispose();
+    _surfaceNode.dispose();
+    _placed.dispose();
+    _byPointer.dispose();
+    _surfaceKeys.dispose();
     _anchorArea.dispose();
     super.dispose();
   }
@@ -894,6 +815,13 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
       .spatial(dampingRatio: widget.dampingRatio, stiffness: widget.stiffness);
 
   void _onOpenRequested(Offset? position, VoidCallback showOverlay) {
+    _closing = false;
+    _openedBy = designOpenedBy(
+      pressed: _anchorPressed,
+      hovered: _anchorHovered,
+    );
+    _byPointer.value = _openedBy == DesignOpenedBy.pointer;
+    _placed.value = null;
     final current = FocusManager.instance.primaryFocus;
     if (current != null && !_scope.hasFocus && !_scope.hasPrimaryFocus) {
       _returnTo = _returnFor(current);
@@ -914,15 +842,37 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
       // The surface mounts in this frame; focus it once it has.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !_controller.isOpen) return;
-        _focusEdge(first: true);
+        if (widget.arrowKeyNavigation && _openedBy == DesignOpenedBy.pointer) {
+          _focusSurface();
+        } else {
+          _focusEdge(first: true);
+        }
       });
     }
+  }
+
+  // The keys on the surface itself, no item lit.
+  void _focusSurface() {
+    if (_closing || !_controller.isOpen) return;
+    if (_surfaceNode.context != null) _surfaceNode.requestFocus();
+  }
+
+  // Down or Up in a menu: from the surface itself, to the first or last
+  // item; from an item, on to the next or previous, round past the ends.
+  void _step({required bool forward}) {
+    if (_surfaceNode.hasPrimaryFocus) {
+      _focusEdge(first: forward);
+      return;
+    }
+    final primary = FocusManager.instance.primaryFocus;
+    forward ? primary?.nextFocus() : primary?.previousFocus();
   }
 
   void _onCloseRequested(VoidCallback hideOverlay) {
     // A menu that opens asks all its group's menus to close, itself among
     // them, before it shows: that request is not a close.
     if (!_controller.isOpen) return;
+    _closing = true;
     // A back while it closes is the page's.
     _holdBack(false);
     _restoreFocus();
@@ -937,6 +887,7 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
   }
 
   void _onClose() {
+    _closing = false;
     _watchFocus(false);
     _holdBack(false);
     _presence.value = 0;
@@ -1045,29 +996,63 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
 
   void _close() => _controller.close();
 
+  // The overlay's own view, which the surface keeps clear of: the anchor's
+  // may have had the keyboard's inset or the status bar's padding taken out
+  // by a page's scaffold round it. A dependency on it, so a keyboard that
+  // opens or a window that turns moves an open surface.
+  MediaQueryData? _overlayView(BuildContext context) {
+    final overlay = Overlay.maybeOf(
+      context,
+      rootOverlay: widget.useRootOverlay,
+    )?.context;
+    final view = overlay?.getElementForInheritedWidgetOfExactType<MediaQuery>();
+    if (view == null) return MediaQuery.maybeOf(context);
+    context.dependOnInheritedElement(view);
+    return (view.widget as MediaQuery).data;
+  }
+
+  // The surface's keys while it holds them itself (no item lit): Tab goes to
+  // the first item (Shift+Tab the last), anything else to [_surfaceKeys].
+  KeyEventResult _onSurfaceKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyUpEvent) _byPointer.value = false;
+    if (!_surfaceNode.hasPrimaryFocus) return KeyEventResult.ignored;
+    if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.tab) {
+      _focusEdge(first: !HardwareKeyboard.instance.isShiftPressed);
+      return KeyEventResult.handled;
+    }
+    return _surfaceKeys.value?.call(node, event) ?? KeyEventResult.ignored;
+  }
+
   Widget _surface(BuildContext context, RawMenuOverlayInfo raw) {
     final direction = Directionality.of(context);
-    final padding = MediaQuery.paddingOf(context);
-    final m = widget.placement.margin;
-    final overlay = Offset.zero & raw.overlaySize;
-    final bounds = Rect.fromLTRB(
-      overlay.left + padding.left + m,
-      overlay.top + padding.top + m,
-      overlay.right - padding.right - m,
-      overlay.bottom - padding.bottom - m,
+    final bounds = designOverlayBounds(
+      overlaySize: raw.overlaySize,
+      view: _overlayView(context),
+      padding: DesignOverlayPadding.of(context),
+      margin: widget.placement.margin,
     );
-    final anchor = raw.anchorRect;
-    final side = _resolveSide(anchor, bounds, widget.placement, direction);
-    final room = _room(anchor, bounds, side, widget.placement.gap, direction);
-    final maxSize = side.isVertical
-        ? Size(bounds.width.clamp(0.0, double.infinity), room)
-        : Size(room, bounds.height.clamp(0.0, double.infinity));
+    // Opened at a point (a context menu at the pointer): placed round the
+    // point, in the anchor's coordinates.
+    final position = raw.position;
+    final anchor = position == null
+        ? raw.anchorRect
+        : Rect.fromLTWH(
+            raw.anchorRect.left + position.dx,
+            raw.anchorRect.top + position.dy,
+            0,
+            0,
+          );
+    final gap = widget.placement.gap;
+    final side = designResolveSide(anchor, bounds, widget.placement, direction);
+    final maxSize = designOverlayMaxSize(anchor, bounds, side, gap, direction);
     final info = DesignOverlayInfo(
       side: side,
-      anchorRect: anchor,
+      anchorRect: raw.anchorRect,
       maxSize: maxSize,
       animation: _presence,
       close: _close,
+      position: position,
+      surfaceRect: _placed,
     );
     Widget surface = Semantics(
       container: true,
@@ -1075,20 +1060,43 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
       label: widget.semanticLabel,
       child: widget.overlayBuilder(context, info),
     );
+    surface = DesignSurfaceFocus(
+      focusSurface: _focusSurface,
+      byPointer: _byPointer,
+      onKey: _surfaceKeys,
+      child: surface,
+    );
+    if (widget.arrowKeyNavigation) {
+      // The pointer moved: the rows follow it again, not the keys.
+      surface = Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerHover: (_) => _byPointer.value = true,
+        onPointerMove: (_) => _byPointer.value = true,
+        onPointerDown: (_) => _byPointer.value = true,
+        child: surface,
+      );
+    }
     surface = FocusScope(
       node: _scope,
       skipTraversal: true,
       canRequestFocus: widget.focusOnOpen || widget.arrowKeyNavigation,
-      child: FocusTraversalGroup(child: surface),
+      child: Focus(
+        focusNode: _surfaceNode,
+        includeSemantics: false,
+        onKeyEvent: _onSurfaceKey,
+        child: FocusTraversalGroup(child: surface),
+      ),
     );
     // Above the scope, so a key from the scope itself bubbles through them.
     final shortcuts = <ShortcutActivator, Intent>{
       const SingleActivator(LogicalKeyboardKey.escape): const DismissIntent(),
       if (widget.arrowKeyNavigation) ...{
-        const SingleActivator(LogicalKeyboardKey.arrowDown):
-            const NextFocusIntent(),
-        const SingleActivator(LogicalKeyboardKey.arrowUp):
-            const PreviousFocusIntent(),
+        const SingleActivator(LogicalKeyboardKey.arrowDown): const _StepIntent(
+          forward: true,
+        ),
+        const SingleActivator(LogicalKeyboardKey.arrowUp): const _StepIntent(
+          forward: false,
+        ),
         const SingleActivator(LogicalKeyboardKey.home): const _FirstIntent(),
         const SingleActivator(LogicalKeyboardKey.end): const _LastIntent(),
       },
@@ -1105,6 +1113,9 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
           ),
           _LastIntent: CallbackAction<_LastIntent>(
             onInvoke: (_) => _focusEdge(first: false, run: true),
+          ),
+          _StepIntent: CallbackAction<_StepIntent>(
+            onInvoke: (intent) => _step(forward: intent.forward),
           ),
         },
         child: surface,
@@ -1125,22 +1136,24 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
       onTapOutside: (_) => _close(),
       child: surface,
     );
+    final layout = DesignOverlayLayout(
+      anchor: anchor,
+      bounds: bounds,
+      side: side,
+      placement: widget.placement,
+      textDirection: direction,
+      maxSize: maxSize,
+      placed: _placed,
+    );
     return ConstrainedBox(
       constraints: BoxConstraints.loose(raw.overlaySize),
       child: CustomSingleChildLayout(
-        delegate: _PlacementDelegate(
-          anchor: anchor,
-          bounds: bounds,
-          side: side,
-          placement: widget.placement,
-          textDirection: direction,
-          maxSize: maxSize,
-        ),
+        delegate: layout,
         // Its own layer: a surface over the page repaints on its own, and
         // the alignment checks read its pixels. A list from a field is as
         // wide as its widest item within the delegate's least and most.
-        child: widget.placement.matchAnchorWidth && side.isVertical
-            ? _ListWidth(child: RepaintBoundary(child: surface))
+        child: layout.matchesAnchor
+            ? DesignListWidth(child: RepaintBoundary(child: surface))
             : RepaintBoundary(child: surface),
       ),
     );
@@ -1174,10 +1187,14 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
           onPointerDown: (_) => _anchorPressed = true,
           onPointerUp: (_) => _anchorReleased(),
           onPointerCancel: (_) => _anchorReleased(),
-          child: Focus(
-            focusNode: _anchorArea,
-            includeSemantics: false,
-            child: anchor,
+          child: MouseRegion(
+            onEnter: (_) => _anchorHovered = true,
+            onExit: (_) => _anchorHovered = false,
+            child: Focus(
+              focusNode: _anchorArea,
+              includeSemantics: false,
+              child: anchor,
+            ),
           ),
         );
         if (widget.arrowKeyNavigation) {

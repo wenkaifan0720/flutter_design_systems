@@ -3,7 +3,8 @@
 /// the edge. The keyboard opens a side with the arrows (the arrow toward
 /// the start shows the end's actions, mirrored right to left) and focuses
 /// its first action; Escape closes it, focus back in the row. A screen
-/// reader gets every action as a custom action on the row.
+/// reader gets every action as a custom action on the row. Rows in one
+/// scroll view open one at a time, and its scrolling closes them.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -11,8 +12,45 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'haptics.dart';
 import 'motion.dart';
 import 'pressable.dart';
+
+/// Opens and closes a [DesignSwipeActions] row from outside, and says
+/// whether it is open, as `flutter_slidable`'s controller does. The caller
+/// makes it, gives it to one row, and disposes it; with no row it does
+/// nothing.
+///
+/// ```dart
+/// DesignSwipeActions(controller: controller, endActions: [DesignSwipeAction(label: 'Archive', onPressed: controller.close)], actionBuilder: (context, action, details) => Text(action.label), child: const Text('Message'))
+/// ```
+class DesignSwipeActionsController extends ChangeNotifier {
+  _DesignSwipeActionsState? _row;
+  bool _open = false;
+
+  /// Whether a side of the row is open (or opening).
+  bool get isOpen => _open;
+
+  /// Opens the start side's actions, on the row's spring.
+  void openStartActions() => _row?._openSide(true);
+
+  /// Opens the end side's actions, on the row's spring.
+  void openEndActions() => _row?._openSide(false);
+
+  /// Closes the row, on its spring.
+  void close() => _row?.close();
+
+  void _set(bool open) {
+    if (open == _open) return;
+    _open = open;
+    notifyListeners();
+  }
+}
+
+// The rows in one Scrollable: one open at a time.
+final Expando<Set<_DesignSwipeActionsState>> _groups = Expando(
+  'DesignSwipeActions groups',
+);
 
 /// An action behind a row.
 @immutable
@@ -106,7 +144,14 @@ class DesignSwipeActions extends StatefulWidget {
     this.onOpenChanged,
     this.initiallyOpen = false,
     this.underlap = 0,
-  }) : assert(actionExtent > 0 && underlap >= 0);
+    // 0.3.0 routes
+    this.controller,
+    this.closeOnScroll = true,
+    this.dampingRatio = 1,
+    this.stiffness = 700,
+    // 0.3.0 routes end
+  }) : assert(actionExtent > 0 && underlap >= 0),
+       assert(dampingRatio > 0 && stiffness > 0);
 
   /// The row.
   final Widget child;
@@ -142,6 +187,24 @@ class DesignSwipeActions extends StatefulWidget {
   /// the innermost action's slot is that much wider (see
   /// [DesignSwipeActionDetails.underlap]). 0: the strip stops at the row.
   final double underlap;
+
+  // 0.3.0 routes
+
+  /// Opens and closes it from outside; the caller's, never disposed here.
+  final DesignSwipeActionsController? controller;
+
+  /// Whether the scroll view it is in scrolling closes it. Defaults to true.
+  /// Rows in one scroll view open one at a time either way: opening one
+  /// closes the others.
+  final bool closeOnScroll;
+
+  /// The slide's spring damping ratio (ζ). Defaults to 1.
+  final double dampingRatio;
+
+  /// The slide's spring stiffness (k). Defaults to 700.
+  final double stiffness;
+
+  // 0.3.0 routes end
 
   @override
   State<DesignSwipeActions> createState() => _DesignSwipeActionsState();
@@ -200,7 +263,26 @@ class DesignSwipeActions extends StatefulWidget {
           defaultValue: false,
         ),
       )
-      ..add(DoubleProperty('underlap', underlap, defaultValue: 0));
+      ..add(DoubleProperty('underlap', underlap, defaultValue: 0))
+      // 0.3.0 routes
+      ..add(
+        DiagnosticsProperty<DesignSwipeActionsController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        FlagProperty(
+          'closeOnScroll',
+          value: closeOnScroll,
+          ifFalse: 'closeOnScroll: false',
+          defaultValue: true,
+        ),
+      )
+      ..add(DoubleProperty('dampingRatio', dampingRatio, defaultValue: 1))
+      ..add(DoubleProperty('stiffness', stiffness, defaultValue: 700));
+    // 0.3.0 routes end
   }
 }
 
@@ -227,18 +309,70 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
   double _width = 0;
   bool _open = false;
 
+  Set<_DesignSwipeActionsState>? _group;
+  ValueListenable<bool>? _scrolling;
+  bool _dragging = false;
+
   @override
   void initState() {
     super.initState();
+    widget.controller?._row = this;
     if (!widget.initiallyOpen) return;
     final start = widget.endActions.isEmpty;
     if ((start ? widget.startActions : widget.endActions).isEmpty) return;
     _offset.value = start ? _rest(true) : -_rest(false);
     _open = true;
+    widget.controller?._set(true);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The scroll view it is in: its group, and its scrolling.
+    final scrollable = Scrollable.maybeOf(context);
+    _group?.remove(this);
+    _group = scrollable == null
+        ? null
+        : (_groups[scrollable] ??= <_DesignSwipeActionsState>{});
+    _group?.add(this);
+    final scrolling = scrollable?.position.isScrollingNotifier;
+    if (scrolling != _scrolling) {
+      _scrolling?.removeListener(_scrolled);
+      _scrolling = scrolling?..addListener(_scrolled);
+    }
+  }
+
+  @override
+  void didUpdateWidget(DesignSwipeActions oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      if (oldWidget.controller?._row == this) oldWidget.controller!._row = null;
+      widget.controller?._row = this;
+      widget.controller?._set(_open);
+    }
+  }
+
+  void _scrolled() {
+    if (widget.closeOnScroll &&
+        (_scrolling?.value ?? false) &&
+        !_dragging &&
+        _offset.value != 0) {
+      close();
+    }
+  }
+
+  // Opening this row closes the others in its scroll view.
+  void _closeOthers() {
+    for (final row in [...?_group]) {
+      if (row != this && row._offset.value != 0) row.close();
+    }
   }
 
   @override
   void dispose() {
+    _group?.remove(this);
+    _scrolling?.removeListener(_scrolled);
+    if (widget.controller?._row == this) widget.controller!._row = null;
     _offset.dispose();
     _arm.dispose();
     _actionsScope.dispose();
@@ -250,38 +384,49 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
       (start ? widget.startActions : widget.endActions).length *
       widget.actionExtent;
 
+  // Runs [controller] to [to] on the row's spring, at [velocity]; under
+  // Reduce Motion it is there at once. The arm widens a slot, a shorter
+  // way than the slide: twice as stiff ([quick]).
+  TickerFuture _spring(
+    AnimationController controller,
+    double to, {
+    double velocity = 0,
+    bool quick = false,
+  }) {
+    if (designReduceMotionOf(context)) {
+      controller.value = to;
+      return TickerFuture.complete();
+    }
+    return controller.animateWith(
+      designSpringSimulation(
+        const DesignMotionPolicy().spatial(
+          dampingRatio: widget.dampingRatio,
+          stiffness: widget.stiffness * (quick ? 2 : 1),
+        ),
+        from: controller.value,
+        to: to,
+        velocity: velocity,
+      ),
+    );
+  }
+
   // Widens the edge action's slot as it arms, and narrows it back.
   void _arming(bool armed) {
     if (armed == _armedNow) return;
     _armedNow = armed;
-    final to = armed ? 1.0 : 0.0;
-    if (designReduceMotionOf(context)) {
-      _arm.value = to;
-    } else {
-      _arm.animateTo(
-        to,
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutCubic,
-      );
-    }
+    _spring(_arm, armed ? 1.0 : 0.0, quick: true);
   }
 
-  void _settle(double to) {
+  void _settle(double to, {double velocity = 0}) {
     _arming(false);
     final open = to != 0;
+    if (open) _closeOthers();
     if (open != _open) {
       _open = open;
       widget.onOpenChanged?.call(open);
+      widget.controller?._set(open);
     }
-    if (designReduceMotionOf(context)) {
-      _offset.value = to;
-    } else {
-      _offset.animateTo(
-        to,
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-      );
-    }
+    _spring(_offset, to, velocity: velocity);
     setState(() {});
   }
 
@@ -331,6 +476,11 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
 
   bool get _rtl => Directionality.of(context) == TextDirection.rtl;
 
+  void _dragStart(DragStartDetails d) {
+    _dragging = true;
+    _closeOthers();
+  }
+
   void _dragUpdate(DragUpdateDetails d) {
     var delta = d.primaryDelta ?? 0;
     if (_rtl) delta = -delta;
@@ -340,10 +490,15 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
     final full = widget.fullSwipe ? _width : _rest(next > 0);
     next = next.clamp(-full, full);
     _offset.value = next;
-    _arming(_armed(next));
+    final armed = _armed(next);
+    if (armed && !_armedNow) {
+      DesignHaptics.of(context).thresholdCrossed?.call();
+    }
+    _arming(armed);
   }
 
   void _dragEnd(DragEndDetails d) {
+    _dragging = false;
     var v = d.primaryVelocity ?? 0;
     if (_rtl) v = -v;
     final x = _offset.value;
@@ -354,15 +509,14 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
     if (_armed(x)) {
       final edge = actions.first;
       if (edge.destructive) {
-        _offset
-            .animateTo(
-              start ? _width : -_width,
-              duration: designReduceMotionOf(context)
-                  ? Duration.zero
-                  : const Duration(milliseconds: 180),
-            )
-            .whenComplete(edge.onPressed);
+        // Slid away at the fling's speed, then run.
+        _spring(
+          _offset,
+          start ? _width : -_width,
+          velocity: v,
+        ).whenComplete(edge.onPressed);
         _open = false;
+        widget.controller?._set(false);
       } else {
         close();
         edge.onPressed();
@@ -372,9 +526,9 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
     final outward = start ? v > 300 : v < -300;
     final inward = start ? v < -300 : v > 300;
     if (outward || (!inward && x.abs() >= rest / 2)) {
-      _openSide(start);
+      _settle(start ? rest : -rest, velocity: v);
     } else {
-      close();
+      _settle(0, velocity: v);
     }
   }
 
@@ -488,8 +642,10 @@ class _DesignSwipeActionsState extends State<DesignSwipeActions>
           return GestureDetector(
             behavior: HitTestBehavior.translucent,
             excludeFromSemantics: true,
+            onHorizontalDragStart: _dragStart,
             onHorizontalDragUpdate: _dragUpdate,
             onHorizontalDragEnd: _dragEnd,
+            onHorizontalDragCancel: () => _dragging = false,
             child: AnimatedBuilder(
               animation: Listenable.merge([_offset, _arm]),
               builder: (context, child) {

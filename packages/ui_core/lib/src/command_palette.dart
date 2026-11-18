@@ -94,7 +94,7 @@ typedef DesignPaletteLayoutBuilder = Widget Function(
 /// [showDesignCommandPalette], or anywhere (a sidebar's search).
 ///
 /// ```dart
-/// DesignCommandPalette(commands: const [DesignCommand(label: 'New file')], fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080)), itemBuilder: (context, command, states) => Text(command.label))
+/// DesignCommandPalette(commands: const [DesignCommand(label: 'New file')], fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onEditingComplete: field.submit), itemBuilder: (context, command, states) => Text(command.label))
 /// ```
 class DesignCommandPalette extends StatefulWidget {
   /// A palette of [commands].
@@ -119,8 +119,8 @@ class DesignCommandPalette extends StatefulWidget {
   /// The commands, in the order they list with no query.
   final List<DesignCommand> commands;
 
-  /// Paints the search field ([DesignComboboxField.submit] runs the
-  /// highlighted command).
+  /// Paints the search field ([DesignComboboxField.submit], its input's
+  /// `onEditingComplete`, runs the highlighted command).
   final DesignComboboxFieldBuilder fieldBuilder;
 
   /// Paints a command; [WidgetState.focused] marks the highlighted one.
@@ -549,10 +549,9 @@ Future<void> showDesignCommandPalette({
 }
 
 // showGeneralDialog's route, its barrier painted by a look when it gives a
-// builder.
-// The field is not named barrierBuilder: Flutter 3.50 gave RawDialogRoute a
-// barrierBuilder of its own type, and a field of that name here stops
-// ui_core compiling there.
+// builder. The field is not named barrierBuilder: Flutter 3.50 gave
+// RawDialogRoute a barrierBuilder of its own type, and a field of that name
+// here stops ui_core compiling there.
 class _PaletteRoute<T> extends RawDialogRoute<T> {
   _PaletteRoute({
     required this.barrierPaint,

@@ -48,6 +48,44 @@ Widget _app({
   reduceMotion: reduceMotion,
 );
 
+// An opener pushing a side sheet with a text field on [field] in it.
+Widget _fieldApp(WidgetTester tester, FocusNode field) {
+  final text = TextEditingController(text: 'Blue');
+  addTearDown(text.dispose);
+  return harness(
+    Builder(
+      builder: (context) => Center(
+        child: DesignPressable(
+          semanticLabel: 'Open',
+          onPressed: () => Navigator.of(context).push(
+            DesignSideSheetRoute<void>(
+              builder: (context, sheet) => Container(
+                key: _panel,
+                color: const Color(0xFFEEEEEE),
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  width: 200,
+                  child: EditableText(
+                    controller: text,
+                    focusNode: field,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF000000),
+                    ),
+                    cursorColor: const Color(0xFF000000),
+                    backgroundCursorColor: const Color(0xFF888888),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          builder: (context, states, _) => const Text('open'),
+        ),
+      ),
+    ),
+  );
+}
+
 void main() {
   behaviourContract(
     'DesignSideSheetRoute',
@@ -353,4 +391,106 @@ void main() {
       },
     );
   }
+
+  // 0.3.0 routes
+  test('it moves on a spring: critically damped by default, or the one '
+      'given', () {
+    final sheet = DesignSideSheetRoute<void>(
+      builder: (context, sheet) => const SizedBox(),
+    );
+    expect(sheet.dampingRatio, 1);
+    expect(sheet.stiffness, 700);
+    final given = DesignSideSheetRoute<void>(
+      dampingRatio: 0.5,
+      stiffness: 400,
+      builder: (context, sheet) => const SizedBox(),
+    );
+    expect(given.dampingRatio, 0.5);
+    expect(given.stiffness, 400);
+  });
+
+  testWidgets('an underdamped token: the route stays within 0 and 1', (
+    tester,
+  ) async {
+    late DesignSideSheetRoute<void> route;
+    await tester.pumpWidget(
+      harness(
+        Builder(
+          builder: (context) => Center(
+            child: DesignPressable(
+              semanticLabel: 'Open',
+              minimumSize: const Size(44, 44),
+              onPressed: () => Navigator.of(context).push(
+                route = DesignSideSheetRoute<void>(
+                  dampingRatio: 0.3,
+                  stiffness: 900,
+                  builder: (context, sheet) => const SizedBox(key: _panel),
+                ),
+              ),
+              builder: (context, states, _) => const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    final values = <double>[];
+    for (var i = 0; i < 40; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      values.add(route.animation!.value);
+    }
+    expect(values.every((v) => v >= 0 && v <= 1), isTrue);
+    await tester.pumpAndSettle();
+    expect(tester.getRect(find.byKey(_panel)).right, 800);
+  });
+  // 0.3.0 routes end
+
+  testWidgets('a drag that leaves it open keeps the focus in it, and Escape '
+      'still closes it', (tester) async {
+    final field = FocusNode(debugLabel: 'field');
+    addTearDown(field.dispose);
+    await tester.pumpWidget(_fieldApp(tester, field));
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    field.requestFocus();
+    await tester.pump();
+    await tester.timedDrag(
+      find.byKey(_panel),
+      const Offset(60, 0),
+      const Duration(milliseconds: 600),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.getRect(find.byKey(_panel)).right, 800, reason: 'went back');
+    expect(field.hasPrimaryFocus, isTrue, reason: 'kept through the drag');
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(find.byKey(_panel), findsNothing, reason: 'Escape closes it');
+    expect(
+      Focus.of(tester.element(find.text('open'))).hasPrimaryFocus,
+      isTrue,
+      reason: 'focus returned',
+    );
+  });
+
+  testWidgets('a drag that closes it gives the focus back to the opener', (
+    tester,
+  ) async {
+    final field = FocusNode(debugLabel: 'field');
+    addTearDown(field.dispose);
+    await tester.pumpWidget(_fieldApp(tester, field));
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    field.requestFocus();
+    await tester.pump();
+    await tester.drag(find.byKey(_panel), const Offset(200, 0));
+    await tester.pumpAndSettle();
+    expect(find.byKey(_panel), findsNothing);
+    expect(
+      Focus.of(tester.element(find.text('open'))).hasPrimaryFocus,
+      isTrue,
+      reason: 'focus returned',
+    );
+  });
 }

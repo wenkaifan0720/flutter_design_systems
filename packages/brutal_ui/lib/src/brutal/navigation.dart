@@ -5,8 +5,6 @@
 /// width.
 library;
 
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -51,44 +49,73 @@ class _Cell extends StatelessWidget {
   builder;
 
   @override
+  Widget build(BuildContext context) => DesignPressable(
+    onPressed: onPressed,
+    selected: chosen,
+    semanticSelected: chosen ? true : null,
+    semanticLabel: semanticLabel,
+    excludeSemantics: true,
+    builder: (context, states, _) => _CellFace(
+      states: states,
+      chosen: chosen,
+      layers: layers,
+      builder: builder,
+    ),
+  );
+}
+
+/// A navigation cell's paint for its [states]: ink while pressed or
+/// [chosen], a square line inside it while it has the keyboard's focus. A
+/// [_Cell]'s, and a [BrutalScaffold]'s destinations' in ui_core's shell.
+class _CellFace extends StatelessWidget {
+  const _CellFace({
+    required this.states,
+    required this.chosen,
+    required this.layers,
+    required this.builder,
+  });
+
+  final Set<WidgetState> states;
+  final bool chosen;
+  final List<BrutalStyle?> layers;
+  final Widget Function(
+    BuildContext context,
+    Color words,
+    bool lit,
+    DesignStyleOf layered,
+  )
+  builder;
+
+  @override
   Widget build(BuildContext context) {
     final c = BrutalTheme.of(context).colors;
-    return DesignPressable(
-      onPressed: onPressed,
-      selected: chosen,
-      semanticSelected: chosen ? true : null,
-      semanticLabel: semanticLabel,
-      excludeSemantics: true,
-      builder: (context, states, _) {
-        final layered = DesignStyleOf(layers, {
-          ...states,
-          if (chosen) WidgetState.selected,
-        });
-        final lit = chosen || states.contains(WidgetState.pressed);
-        final disabled = states.contains(WidgetState.disabled);
-        final words =
-            layered.foreground ??
-            (disabled
-                ? c.disabled
-                : lit
-                ? c.onColor(layered.fill ?? c.ink)
-                : c.ink);
-        return AnimatedBrutalSurface(
-          stiffness: BrutalMotion.colorStiffness,
-          face: BrutalFace(
-            fill: lit ? (layered.fill ?? c.ink) : c.ink.withValues(alpha: 0),
-            border: c.ink.withValues(alpha: 0),
-            foreground: words,
-            borderWidth: 0,
-          ),
-          child: CustomPaint(
-            foregroundPainter: states.contains(WidgetState.focused)
-                ? BrutalInsetFocusPainter(lit ? c.paper : c.ink)
-                : null,
-            child: builder(context, words, lit, layered),
-          ),
-        );
-      },
+    final layered = DesignStyleOf(layers, {
+      ...states,
+      if (chosen) WidgetState.selected,
+    });
+    final lit = chosen || states.contains(WidgetState.pressed);
+    final disabled = states.contains(WidgetState.disabled);
+    final words =
+        layered.foreground ??
+        (disabled
+            ? c.disabled
+            : lit
+            ? c.onColor(layered.fill ?? c.ink)
+            : c.ink);
+    return AnimatedBrutalSurface(
+      stiffness: BrutalMotion.colorStiffness,
+      face: BrutalFace(
+        fill: lit ? (layered.fill ?? c.ink) : c.ink.withValues(alpha: 0),
+        border: c.ink.withValues(alpha: 0),
+        foreground: words,
+        borderWidth: 0,
+      ),
+      child: CustomPaint(
+        foregroundPainter: states.contains(WidgetState.focused)
+            ? BrutalInsetFocusPainter(lit ? c.paper : c.ink)
+            : null,
+        child: builder(context, words, lit, layered),
+      ),
     );
   }
 }
@@ -434,9 +461,55 @@ class BrutalNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final layers = [style, BrutalTheme.of(context).navigationBarStyle];
+    return _barLayout(context, layers, [
+      for (final (i, d) in destinations.indexed)
+        _Cell(
+          key: d.key,
+          onPressed: () => onSelected(i),
+          chosen: i == selectedIndex,
+          semanticLabel: d.label,
+          layers: layers,
+          builder: (context, words, _, layered) =>
+              _barContent(context, d, words, layered),
+        ),
+    ]);
+  }
+
+  // A bar's cell's glyph over its name in capitals.
+  static Widget _barContent(
+    BuildContext context,
+    BrutalDestination d,
+    Color words,
+    DesignStyleOf layered,
+  ) => Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Icon(d.icon, size: layered.iconSize ?? 24, color: words),
+      const SizedBox(height: BrutalSpacing.tight),
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          d.label.toUpperCase(),
+          textScaler: _labelScaler(context),
+          maxLines: 1,
+          style: layered.text(
+            BrutalTheme.of(context).textTheme.caption.copyWith(color: words),
+          ),
+        ),
+      ),
+    ],
+  );
+
+  // The bar round its [cells]: all the same width on full-height rules,
+  // under a rule across, over the safe area's foot.
+  static Widget _barLayout(
+    BuildContext context,
+    List<BrutalStyle?> layers,
+    List<Widget> cells,
+  ) {
     final theme = BrutalTheme.of(context);
     final bottom = MediaQuery.paddingOf(context).bottom;
-    final layers = [style, theme.navigationBarStyle];
     final bar = DesignStyleOf(layers, const {});
     final rule = bar.side?.color ?? bar.edge;
     return ColoredBox(
@@ -451,39 +524,9 @@ class BrutalNavigationBar extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                for (final (i, d) in destinations.indexed) ...[
+                for (final (i, cell) in cells.indexed) ...[
                   if (i > 0) BrutalRule(vertical: true, color: rule),
-                  Expanded(
-                    child: _Cell(
-                      key: d.key,
-                      onPressed: () => onSelected(i),
-                      chosen: i == selectedIndex,
-                      semanticLabel: d.label,
-                      layers: layers,
-                      builder: (context, words, _, layered) => Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            d.icon,
-                            size: layered.iconSize ?? 24,
-                            color: words,
-                          ),
-                          const SizedBox(height: BrutalSpacing.tight),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              d.label.toUpperCase(),
-                              textScaler: _labelScaler(context),
-                              maxLines: 1,
-                              style: layered.text(
-                                theme.textTheme.caption.copyWith(color: words),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  Expanded(child: cell),
                 ],
               ],
             ),
@@ -551,9 +594,59 @@ class BrutalNavigationRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final layers = [style, BrutalTheme.of(context).navigationRailStyle];
+    return _railLayout(context, layers, leading, [
+      for (final (i, d) in destinations.indexed)
+        _Cell(
+          key: d.key,
+          onPressed: () => onSelected(i),
+          chosen: i == selectedIndex,
+          semanticLabel: d.label,
+          layers: layers,
+          builder: (context, words, _, layered) =>
+              _railContent(context, d, words, layered),
+        ),
+    ]);
+  }
+
+  // A rail's cell's glyph over its name in capitals.
+  static Widget _railContent(
+    BuildContext context,
+    BrutalDestination d,
+    Color words,
+    DesignStyleOf layered,
+  ) => Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Icon(d.icon, size: layered.iconSize ?? 24, color: words),
+      const SizedBox(height: BrutalSpacing.tight),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            d.label.toUpperCase(),
+            textScaler: _labelScaler(context),
+            maxLines: 1,
+            style: layered.text(
+              BrutalTheme.of(context).textTheme.caption.copyWith(color: words),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+
+  // The rail round its [cells]: [leading] over them, each 72 tall on a
+  // shared rule, a rule down its end.
+  static Widget _railLayout(
+    BuildContext context,
+    List<BrutalStyle?> layers,
+    Widget? leading,
+    List<Widget> cells,
+  ) {
     final theme = BrutalTheme.of(context);
     final pad = MediaQuery.paddingOf(context);
-    final layers = [style, theme.navigationRailStyle];
     final frame = DesignStyleOf(layers, const {});
     final rule = frame.side?.color ?? frame.edge;
     return ColoredBox(
@@ -576,46 +669,8 @@ class BrutalNavigationRail extends StatelessWidget {
                     child: Center(child: leading),
                   ),
                   BrutalRule(color: rule),
-                  for (final (i, d) in destinations.indexed) ...[
-                    SizedBox(
-                      height: 72,
-                      child: _Cell(
-                        key: d.key,
-                        onPressed: () => onSelected(i),
-                        chosen: i == selectedIndex,
-                        semanticLabel: d.label,
-                        layers: layers,
-                        builder: (context, words, _, layered) => Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              d.icon,
-                              size: layered.iconSize ?? 24,
-                              color: words,
-                            ),
-                            const SizedBox(height: BrutalSpacing.tight),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                              ),
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  d.label.toUpperCase(),
-                                  textScaler: _labelScaler(context),
-                                  maxLines: 1,
-                                  style: layered.text(
-                                    theme.textTheme.caption.copyWith(
-                                      color: words,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                  for (final cell in cells) ...[
+                    SizedBox(height: 72, child: cell),
                     BrutalRule(color: rule),
                   ],
                 ],
@@ -689,9 +744,64 @@ class BrutalSideNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final layers = [style, BrutalTheme.of(context).sideNavigationStyle];
+    return _sideLayout(context, layers, header, footer, [
+      for (final (i, d) in destinations.indexed)
+        _Cell(
+          key: d.key,
+          onPressed: () => onSelected(i),
+          chosen: i == selectedIndex,
+          semanticLabel: d.label,
+          layers: layers,
+          builder: (context, words, _, layered) =>
+              _sideContent(context, d, words, layered),
+        ),
+    ]);
+  }
+
+  // A side row's glyph beside its name.
+  static Widget _sideContent(
+    BuildContext context,
+    BrutalDestination d,
+    Color words,
+    DesignStyleOf layered,
+  ) {
+    final theme = BrutalTheme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: BrutalSpacing.regular),
+      child: Row(
+        children: [
+          Icon(d.icon, size: layered.iconSize ?? 20, color: words),
+          const SizedBox(width: BrutalSpacing.medium),
+          Expanded(
+            child: DesignCapCenter(
+              capHeightFactor: theme.capHeightFactor,
+              child: Text(
+                d.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: layered.text(
+                  theme.textTheme.label.copyWith(color: words),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // The side list round its [cells]: [header]'s cell, the rows 52 tall on
+  // shared rules, [footer] at the foot, a rule down its end.
+  static Widget _sideLayout(
+    BuildContext context,
+    List<BrutalStyle?> layers,
+    Widget? header,
+    Widget? footer,
+    List<Widget> cells,
+  ) {
     final theme = BrutalTheme.of(context);
     final pad = MediaQuery.paddingOf(context);
-    final layers = [style, theme.sideNavigationStyle];
     final frame = DesignStyleOf(layers, const {});
     final rule = frame.side?.color ?? frame.edge;
     return ColoredBox(
@@ -727,48 +837,8 @@ class BrutalSideNavigation extends StatelessWidget {
                         ),
                       ),
                       BrutalRule(color: rule),
-                      for (final (i, d) in destinations.indexed) ...[
-                        SizedBox(
-                          height: 52,
-                          child: _Cell(
-                            key: d.key,
-                            onPressed: () => onSelected(i),
-                            chosen: i == selectedIndex,
-                            semanticLabel: d.label,
-                            layers: layers,
-                            builder: (context, words, _, layered) => Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: BrutalSpacing.regular,
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    d.icon,
-                                    size: layered.iconSize ?? 20,
-                                    color: words,
-                                  ),
-                                  const SizedBox(width: BrutalSpacing.medium),
-                                  Expanded(
-                                    child: DesignCapCenter(
-                                      capHeightFactor: BrutalTheme.of(context)
-                                          .capHeightFactor,
-                                      child: Text(
-                                        d.label,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: layered.text(
-                                          theme.textTheme.label.copyWith(
-                                            color: words,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+                      for (final cell in cells) ...[
+                        SizedBox(height: 52, child: cell),
                         BrutalRule(color: rule),
                       ],
                     ],
@@ -784,7 +854,7 @@ class BrutalSideNavigation extends StatelessWidget {
                       children: [
                         if (footer != null) ...[
                           BrutalRule(color: rule),
-                          footer!,
+                          footer,
                         ],
                       ],
                     ),
@@ -819,6 +889,14 @@ class BrutalSideNavigation extends StatelessWidget {
 /// [BrutalSideNavigation]; [appBar] over [body] beside or above them, and
 /// the screen's one [floatingButton] over the body's bottom end.
 ///
+/// The frame is ui_core's ([DesignAdaptiveShell]): the places are one tab
+/// stop, on the chosen one; the arrows along them move the keyboard
+/// (wrapping, Home and End to the ends) and Enter or Space chooses; F6 moves
+/// between the places and the body. A screen reader hears each place as a
+/// tab ("Tickets, tab 2 of 3"), the bar as a tab bar and the side list as
+/// the navigation menu. With [showNavigation] false the phone's bar springs
+/// away and the body takes its room.
+///
 /// ```dart
 /// BrutalScaffold(appBar: const BrutalAppBar(title: 'Home'), destinations: places, selectedIndex: 0, onSelected: (i) {}, body: const SizedBox.expand())
 /// ```
@@ -834,10 +912,15 @@ class BrutalScaffold extends StatelessWidget {
     this.brand,
     this.sideFooter,
     this.floatingButton,
+    this.showNavigation = true,
   });
 
   /// The screen's content.
   final Widget body;
+
+  /// Whether a phone's bar stands; false springs it away (a page pushed over
+  /// the root covers it). A rail or a side list stays.
+  final bool showNavigation;
 
   /// The screen's one act, held over [body] at its bottom end the page's
   /// margin in (above the bar on a phone): usually a [BrutalFloatingButton].
@@ -866,7 +949,8 @@ class BrutalScaffold extends StatelessWidget {
     final theme = BrutalTheme.of(context);
     final width = MediaQuery.sizeOf(context).width;
     final places = destinations.isNotEmpty && onSelected != null;
-    final under = places && width < 600;
+    // The bar stands under the body, which leaves it the safe area's foot.
+    final under = places && width < 600 && showNavigation;
     // The body is a semantics container of its own, so a navigator in it (a
     // router's shell) hides only what lies under its page, never the places
     // beside it or the bar over it.
@@ -901,51 +985,85 @@ class BrutalScaffold extends StatelessWidget {
         ),
       ],
     );
-    Widget content;
-    if (!places) {
-      content = column;
-    } else if (width < 600) {
-      content = Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(child: column),
-          BrutalNavigationBar(
-            destinations: destinations,
-            selectedIndex: selectedIndex,
-            onSelected: onSelected!,
+    if (!places) return ColoredBox(color: theme.colors.paper, child: column);
+    // Brutal's widths: the bar under 600, the rail to 1024, the side list
+    // past it.
+    final mode = width < 600
+        ? DesignNavigationMode.bar
+        : width < 1024
+        ? DesignNavigationMode.rail
+        : DesignNavigationMode.sidebar;
+    List<BrutalStyle?> layers(DesignNavigationMode mode) => [
+      switch (mode) {
+        DesignNavigationMode.bar => theme.navigationBarStyle,
+        DesignNavigationMode.rail => theme.navigationRailStyle,
+        DesignNavigationMode.sidebar => theme.sideNavigationStyle,
+      },
+    ];
+    final content = DesignAdaptiveShell(
+      mode: mode,
+      showNavigation: showNavigation,
+      dampingRatio: BrutalMotion.dampingRatio,
+      stiffness: BrutalMotion.overlayStiffness,
+      destinations: [
+        for (final d in destinations)
+          DesignNavigationDestination(label: d.label, icon: d.icon, data: d),
+      ],
+      selectedIndex: selectedIndex,
+      onDestinationSelected: onSelected!,
+      destinationBuilder: (context, destination, details) {
+        final d = destination.data! as BrutalDestination;
+        return KeyedSubtree(
+          key: d.key,
+          child: _CellFace(
+            states: details.states,
+            chosen: details.states.contains(WidgetState.selected),
+            layers: layers(details.mode),
+            builder: (context, words, _, layered) => switch (details.mode) {
+              DesignNavigationMode.bar => BrutalNavigationBar._barContent(
+                context,
+                d,
+                words,
+                layered,
+              ),
+              DesignNavigationMode.rail => BrutalNavigationRail._railContent(
+                context,
+                d,
+                words,
+                layered,
+              ),
+              DesignNavigationMode.sidebar => BrutalSideNavigation._sideContent(
+                context,
+                d,
+                words,
+                layered,
+              ),
+            },
           ),
-        ],
-      );
-    } else {
-      final side = width >= 1024
-          ? BrutalSideNavigation(
-              header: brand,
-              footer: sideFooter,
-              destinations: destinations,
-              selectedIndex: selectedIndex,
-              onSelected: onSelected!,
-            )
-          : BrutalNavigationRail(
-              leading: brand,
-              destinations: destinations,
-              selectedIndex: selectedIndex,
-              onSelected: onSelected!,
-            );
-      content = Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          side,
-          Expanded(
-            child: MediaQuery.removePadding(
-              context: context,
-              removeLeft: true,
-              removeRight: true,
-              child: column,
-            ),
-          ),
-        ],
-      );
-    }
+        );
+      },
+      navigationBuilder: (context, details) => switch (details.mode) {
+        DesignNavigationMode.bar => BrutalNavigationBar._barLayout(
+          context,
+          layers(details.mode),
+          details.destinations,
+        ),
+        DesignNavigationMode.rail => BrutalNavigationRail._railLayout(
+          context,
+          layers(details.mode),
+          brand,
+          details.destinations,
+        ),
+        DesignNavigationMode.sidebar => BrutalSideNavigation._sideLayout(
+          context,
+          layers(details.mode),
+          brand,
+          sideFooter,
+          details.destinations,
+        ),
+      },
+      body: column,
+    );
     return ColoredBox(color: theme.colors.paper, child: content);
   }
 
@@ -955,8 +1073,13 @@ class BrutalScaffold extends StatelessWidget {
     properties
       ..add(IterableProperty<BrutalDestination>('destinations', destinations))
       ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
       ..add(
-        ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected),
+        FlagProperty(
+          'showNavigation',
+          value: showNavigation,
+          ifFalse: 'navigation hidden',
+        ),
       );
   }
 }
@@ -964,9 +1087,13 @@ class BrutalScaffold extends StatelessWidget {
 /// A row of tabs over a view: cells on full-height rules over a rule across.
 /// The chosen tab stands on a heavy ink bar and reads in bold ink; the
 /// others are muted. Below 600 px the cells span the row; wider, each takes
-/// its words' width and the rule runs on.
+/// its words' width and the rule runs on, scrolling sideways when more tabs
+/// than fit.
 ///
-/// Left and Right move the choice.
+/// The bar is ui_core's ([DesignTabBar]): one tab stop, on the chosen tab;
+/// the arrows move the choice along it (mirrored right to left), wrapping
+/// round, Home and End to the ends. A screen reader hears a tab bar, "Past,
+/// tab 2 of 2". The chosen tab's bar grows from the rule on the tabs' spring.
 ///
 /// Reads [style]'s `fill` (a pressed tab's), `foreground` (in each tab's
 /// states: selected while chosen), `edge` (the rules and the chosen tab's
@@ -975,7 +1102,7 @@ class BrutalScaffold extends StatelessWidget {
 /// ```dart
 /// BrutalTabBar(tabs: const ['Upcoming', 'Past'], selectedIndex: index, onSelected: (i) => setState(() => index = i))
 /// ```
-class BrutalTabBar extends StatelessWidget {
+class BrutalTabBar extends StatefulWidget {
   /// Tabs reading [tabs].
   const BrutalTabBar({
     super.key,
@@ -1005,86 +1132,147 @@ class BrutalTabBar extends StatelessWidget {
   static const double barHeight = 6;
 
   @override
+  State<BrutalTabBar> createState() => _BrutalTabBarState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(
+        DiagnosticsProperty<BrutalStyle>('style', style, defaultValue: null),
+      )
+      ..add(IterableProperty<String>('tabs', tabs))
+      ..add(IntProperty('selectedIndex', selectedIndex))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
+      ..add(DiagnosticsProperty<bool>('expand', expand, defaultValue: null));
+  }
+}
+
+class _BrutalTabBarState extends State<BrutalTabBar>
+    with TickerProviderStateMixin {
+  late DesignTabController _controller = _make();
+
+  DesignTabController _make() => DesignTabController(
+    length: widget.tabs.length,
+    initialIndex: widget.tabs.isEmpty
+        ? 0
+        : widget.selectedIndex.clamp(0, widget.tabs.length - 1),
+    vsync: this,
+    dampingRatio: BrutalMotion.dampingRatio,
+    stiffness: BrutalMotion.moveStiffness,
+  )..addListener(_chosen);
+
+  // A tab the person chose: the caller's to take.
+  void _chosen() {
+    final at = _controller.index;
+    if (at != widget.selectedIndex) widget.onSelected(at);
+  }
+
+  @override
+  void didUpdateWidget(BrutalTabBar old) {
+    super.didUpdateWidget(old);
+    if (old.tabs.length != widget.tabs.length) {
+      _controller.dispose();
+      _controller = _make();
+    } else if (widget.selectedIndex != _controller.index &&
+        widget.selectedIndex >= 0 &&
+        widget.selectedIndex < widget.tabs.length) {
+      _controller.animateTo(widget.selectedIndex);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
-    final wide = expand ?? MediaQuery.sizeOf(context).width < 600;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final layers = [style, theme.tabBarStyle];
+    final tabs = widget.tabs;
+    final wide = widget.expand ?? MediaQuery.sizeOf(context).width < 600;
+    final layers = [widget.style, theme.tabBarStyle];
     final frame = DesignStyleOf(layers, const {});
     final rule = frame.side?.color ?? frame.edge;
-    void move(int by) {
-      final next = (selectedIndex + by).clamp(0, tabs.length - 1);
-      if (next != selectedIndex) onSelected(next);
+    final boldLayer = DesignStyleOf(layers, const {WidgetState.selected});
+    final textScaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+    final base = DefaultTextStyle.of(context).style;
+    // The width of tab [i]'s words chosen (in bold), to the whole pixel.
+    double boldRoom(int i) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: tabs[i],
+          style: base.merge(
+            boldLayer.text(
+              theme.textTheme.label.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+        textDirection: direction,
+        textScaler: textScaler,
+        maxLines: 1,
+      )..layout();
+      final room = painter.width.ceilToDouble();
+      painter.dispose();
+      return room;
     }
 
-    Widget cell(int i) {
-      final chosen = i == selectedIndex;
-      return DesignPressable(
-        onPressed: () => onSelected(i),
-        tab: true,
-        selected: chosen,
-        semanticSelected: chosen,
-        semanticLabel: tabs[i],
-        excludeSemantics: true,
-        shortcuts: {
-          const SingleActivator(LogicalKeyboardKey.arrowLeft): _TabMove(
-            rtl ? 1 : -1,
-          ),
-          const SingleActivator(LogicalKeyboardKey.arrowRight): _TabMove(
-            rtl ? -1 : 1,
-          ),
-        },
-        actions: {
-          _TabMove: CallbackAction<_TabMove>(
-            onInvoke: (intent) {
-              move(intent.by);
-              return null;
-            },
-          ),
-        },
-        builder: (context, states, _) {
-          final layered = DesignStyleOf(layers, {
-            ...states,
-            if (chosen) WidgetState.selected,
-          });
-          final pressed = states.contains(WidgetState.pressed);
-          final words =
-              layered.foreground ??
-              (pressed
-                  ? c.onColor(layered.fill ?? c.ink)
-                  : chosen
-                  ? c.ink
-                  : c.inkMuted);
-          return AnimatedBrutalSurface(
-            stiffness: BrutalMotion.colorStiffness,
-            face: BrutalFace(
-              fill: pressed
-                  ? (layered.fill ?? c.ink)
-                  : c.ink.withValues(alpha: 0),
-              border: c.ink.withValues(alpha: 0),
-              foreground: words,
-              borderWidth: 0,
-            ),
-            child: CustomPaint(
-              foregroundPainter: states.contains(WidgetState.focused)
-                  ? BrutalInsetFocusPainter(pressed ? c.paper : c.ink)
-                  : null,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding:
-                          layered.padding(Directionality.of(context)) ??
-                          const EdgeInsets.symmetric(
-                            horizontal: BrutalSpacing.regular,
-                          ),
+    Widget cell(DesignTabDetails details) {
+      final i = details.index;
+      final chosen = details.selection >= 0.5;
+      final states = details.states;
+      final layered = DesignStyleOf(layers, {
+        ...states,
+        if (chosen) WidgetState.selected,
+      });
+      final pressed = states.contains(WidgetState.pressed);
+      final words =
+          layered.foreground ??
+          (pressed
+              ? c.onColor(layered.fill ?? c.ink)
+              : chosen
+              ? c.ink
+              : c.inkMuted);
+      final bar =
+          theme.borderWidth +
+          (BrutalTabBar.barHeight - theme.borderWidth) *
+              details.selection.clamp(0.0, 1.0);
+      final face = AnimatedBrutalSurface(
+        stiffness: BrutalMotion.colorStiffness,
+        face: BrutalFace(
+          fill: pressed ? (layered.fill ?? c.ink) : c.ink.withValues(alpha: 0),
+          border: c.ink.withValues(alpha: 0),
+          foreground: words,
+          borderWidth: 0,
+        ),
+        child: CustomPaint(
+          foregroundPainter: states.contains(WidgetState.focused)
+              ? BrutalInsetFocusPainter(pressed ? c.paper : c.ink)
+              : null,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding:
+                      layered.padding(Directionality.of(context)) ??
+                      const EdgeInsets.symmetric(
+                        horizontal: BrutalSpacing.regular,
+                      ),
+                  child: Center(
+                    widthFactor: 1,
+                    // Every tab keeps the room of its words in bold, so
+                    // choosing one moves nothing: ui_core measures a tab
+                    // once and holds it to that width.
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minWidth: boldRoom(i)),
                       child: Center(
                         widthFactor: 1,
                         child: DesignCapCenter(
-                          capHeightFactor: BrutalTheme.of(context)
-                              .capHeightFactor,
+                          capHeightFactor: theme.capHeightFactor,
                           child: Text(
                             tabs[i],
                             maxLines: 1,
@@ -1102,43 +1290,47 @@ class BrutalTabBar extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Every tab keeps the bar's room, so the labels share a
-                  // line whichever is chosen.
-                  SizedBox(
-                    height: BrutalTabBar.barHeight,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _TabBar(
-                          on: chosen,
-                          color: rule ?? c.ink,
-                          rest: theme.borderWidth,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          );
-        },
+              // Every tab keeps the bar's room, so the labels share a line
+              // whichever is chosen; the chosen tab's grows from the rule.
+              SizedBox(
+                height: BrutalTabBar.barHeight,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: SizedBox(
+                    height: bar,
+                    width: double.infinity,
+                    child: ColoredBox(color: rule ?? c.ink),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      // A tab that hugs its words is as wide as they are (a scrolling bar
+      // gives it no width of its own).
+      final sized = wide ? face : IntrinsicWidth(child: face);
+      if (i == 0) return sized;
+      // The rule it shares with the tab before, on its start side. Not a
+      // row: ui_core sizes a tab to its words to the fraction of a pixel.
+      return Stack(
+        children: [
+          Padding(
+            padding: EdgeInsetsDirectional.only(start: theme.borderWidth),
+            child: sized,
+          ),
+          PositionedDirectional(
+            start: 0,
+            top: 0,
+            bottom: 0,
+            child: BrutalRule(vertical: true, color: rule),
+          ),
+        ],
       );
     }
 
-    final row = Row(
-      mainAxisSize: wide ? MainAxisSize.max : MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (var i = 0; i < tabs.length; i++) ...[
-          if (i > 0) BrutalRule(vertical: true, color: rule),
-          if (wide)
-            Expanded(child: cell(i))
-          else
-            IntrinsicWidth(child: cell(i)),
-        ],
-      ],
-    );
     return SizedBox(
       height: 48 + theme.borderWidth,
       child: Stack(
@@ -1151,54 +1343,15 @@ class BrutalTabBar extends StatelessWidget {
           ),
           // Tabs that hug their words scroll sideways when more of them
           // than fit; tabs that fill share the width.
-          if (wide)
-            row
-          else
-            SingleChildScrollView(scrollDirection: Axis.horizontal, child: row),
+          Positioned.fill(
+            child: DesignTabBar(
+              controller: _controller,
+              isScrollable: !wide,
+              tabs: [for (final tab in tabs) DesignTab(label: tab)],
+              tabBuilder: (context, tab, details) => cell(details),
+            ),
+          ),
         ],
-      ),
-    );
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(
-        DiagnosticsProperty<BrutalStyle>('style', style, defaultValue: null),
-      )
-      ..add(IterableProperty<String>('tabs', tabs))
-      ..add(IntProperty('selectedIndex', selectedIndex))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
-      ..add(DiagnosticsProperty<bool>('expand', expand, defaultValue: null));
-  }
-}
-
-class _TabMove extends Intent {
-  const _TabMove(this.by);
-
-  final int by;
-}
-
-/// The chosen tab's heavy bar, growing from the rule's height on the move
-/// spring; an unchosen tab keeps the plain rule.
-class _TabBar extends StatelessWidget {
-  const _TabBar({required this.on, required this.color, required this.rest});
-
-  final bool on;
-  final Color color;
-  final double rest;
-
-  @override
-  Widget build(BuildContext context) {
-    final reduce = designReduceMotionOf(context);
-    return TweenAnimationBuilder<double>(
-      tween: Tween(end: on ? BrutalTabBar.barHeight : rest),
-      duration: reduce ? Duration.zero : const Duration(milliseconds: 160),
-      curve: Curves.easeOut,
-      builder: (context, h, _) => SizedBox(
-        height: math.max(h, rest),
-        child: ColoredBox(color: color),
       ),
     );
   }

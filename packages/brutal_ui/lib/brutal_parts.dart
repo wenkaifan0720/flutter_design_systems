@@ -1,5 +1,5 @@
 /// Everything `brutal_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (internal/dialog_foot.dart, internal/inventory.dart, internal/keep_in_view.dart, internal/menu_input.dart, internal/ruled_column.dart, internal/type_ahead.dart).
+/// keeps back (internal/dialog_foot.dart, internal/inventory.dart, internal/keep_in_view.dart, internal/ruled_column.dart, internal/type_ahead.dart).
 ///
 /// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
 /// rest of your app stays on the package:
@@ -14,7 +14,6 @@
 library;
 
 export 'package:ui_core/ui_core.dart';
-export 'package:ui_core/alignment.dart';
 export 'package:ui_core/inventory.dart';
 
 export 'brutal_ui.dart';
@@ -22,6 +21,5 @@ export 'brutal_host.dart';
 export 'src/brutal/internal/dialog_foot.dart';
 export 'src/brutal/internal/inventory.dart';
 export 'src/brutal/internal/keep_in_view.dart';
-export 'src/brutal/internal/menu_input.dart';
 export 'src/brutal/internal/ruled_column.dart';
 export 'src/brutal/internal/type_ahead.dart';

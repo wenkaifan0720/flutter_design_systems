@@ -7,7 +7,7 @@
 /// so every screen shows them as they are set.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:brutal_ui/brutal_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -391,11 +391,17 @@ class AdmitFrameState extends State<AdmitFrame> {
         onTap: () => go(AdmitPlace.settings),
       ),
       body: wide
-          ? Navigator(
-              key: _desk,
-              // A place is swapped in place: no page change.
-              pages: [_PlacePage(key: ValueKey(_place), child: page)],
-              onDidRemovePage: (_) {},
+          // A semantics container of its own: its route's barrier would hide
+          // from a screen reader what the shell paints before it (the top
+          // bar, the side list), as material_ui's app adds none round it.
+          ? Semantics(
+              container: true,
+              child: Navigator(
+                key: _desk,
+                // A place is swapped in place: no page change.
+                pages: [_PlacePage(key: ValueKey(_place), child: page)],
+                onDidRemovePage: (_) {},
+              ),
             )
           : KeyedSubtree(key: ValueKey(_place), child: page),
     );

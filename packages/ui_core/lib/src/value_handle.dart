@@ -11,6 +11,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import 'haptics.dart';
+
 /// Builds a handle's face for its [states] (focused while the keyboard is
 /// on it, hovered, pressed while dragged, disabled).
 typedef DesignHandleBuilder = Widget Function(
@@ -233,6 +235,19 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
   double get _page {
     final p = widget.pageStep ?? _range / 10;
     return p < _step ? _step : p;
+  }
+
+  // 0.3.0 values: a dragged thumb crossing a division plays the haptic
+  // table's step (DesignHaptics.selectionChanged).
+  @override
+  void didUpdateWidget(DesignValueHandle oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final d = widget.divisions;
+    if (!widget.dragging || d == null || _range == 0) return;
+    int division(double v) => ((v - widget.min) / (_range / d)).round();
+    if (division(widget.value) != division(oldWidget.value)) {
+      DesignHaptics.of(context).selectionChanged?.call();
+    }
   }
 
   double _snap(double v) {

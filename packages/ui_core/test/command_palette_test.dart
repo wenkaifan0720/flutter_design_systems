@@ -369,6 +369,38 @@ void main() {
     });
   }
 
+  testWidgets('modal: Escape closes it with nothing in it focused, the '
+      "focus on the route's own scope", (tester) async {
+    late BuildContext app;
+    await tester.pumpWidget(
+      harness(
+        Builder(
+          builder: (context) {
+            app = context;
+            return const SizedBox.expand();
+          },
+        ),
+      ),
+    );
+    unawaited(
+      showDesignCommandPalette(
+        context: app,
+        palette: (run) => _palette(onSelected: run),
+        surfaceBuilder: (context, palette) =>
+            SizedBox(width: 400, child: palette),
+      ),
+    );
+    await tester.pumpAndSettle();
+    FocusManager.instance.primaryFocus!.unfocus();
+    await tester.pump();
+    final focus = FocusManager.instance.primaryFocus;
+    expect(focus, isA<FocusScopeNode>());
+    expect(focus!.debugLabel, contains('ModalScopeState'));
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(find.text('New file'), findsNothing);
+  });
+
   testWidgets('modal: Ctrl+K opens it, Escape closes it and focus returns; '
       'a chosen command runs after it closed', (tester) async {
     late BuildContext app;

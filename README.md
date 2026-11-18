@@ -6,7 +6,8 @@ works under a `MaterialApp`, a `CupertinoApp` or a `WidgetsApp`, at phone and de
 | Package | What it is |
 | --- | --- |
 | [`ui_core`](packages/ui_core) | Headless behaviours for Flutter design systems: the state, keyboard, focus and semantics of 24 controls, with every pixel left to the design system. |
-| [`brutal_ui`](packages/brutal_ui) | A Flutter design system with its make-up off: heavy black rules, square corners, a hard offset shadow under what you press, cells on shared rules and one flat colour block a screen. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/brutal/) |
+| [`ui_core_test`](packages/ui_core_test) | Checks for design systems built on `ui_core`, read from what is drawn: rows that line up, labels on their faces' middles, shared keylines, tap targets, cut words and shadows. A dev dependency, as `flutter_test` is. |
+| [`brutal_ui`](packages/brutal_ui) | A neo-brutalist Flutter design system: heavy black rules, square corners, a hard shadow under what you can press and one flat colour block a screen. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/brutal/) |
 | [`civic_ui`](packages/civic_ui) | A Flutter design system for public services: one thing per page, large type, a heavy yellow focus, errors said in words, answers checked before they are sent. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/civic/) |
 | [`comic_ui`](packages/comic_ui) | A Flutter design system drawn as a printed comic: inked panels, speech balloons and everyday controls, five editions by day and night, with state motion. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/comic/) |
 | [`fluent2_design_ui`](packages/fluent2_design_ui) | Unofficial Fluent 2 widgets for Flutter: Fluent's tokens, type ramp and components, seven brand presets in light and dark, accessible controls. [Try the gallery](https://wenkaifan0720.github.io/flutter_design_systems/fluent2/) |
@@ -31,7 +32,7 @@ Most apps add a look, which brings `ui_core` with it. To build a look of your ow
 
 ```yaml
 dependencies:
-  ui_core: ^0.2.0
+  ui_core: ^0.3.0
 ```
 
 `ui_core`'s README shows a button of your own, the behaviours, and who disposes what.

@@ -80,6 +80,56 @@ final Map<String, Widget Function(FocusNode node, bool autofocus)> _stops = {
     focusNode: node,
     autofocus: autofocus,
   ),
+  // 0.3.0 values
+  'DesignNumberField': (node, autofocus) => DesignNumberField(
+    value: 2,
+    onChanged: (value) {},
+    fieldBuilder: (context, field) => SizedBox(
+      width: 120,
+      child: EditableText(
+        controller: field.controller,
+        focusNode: field.focusNode,
+        style: const TextStyle(),
+        cursorColor: const Color(0xFF000000),
+        backgroundCursorColor: const Color(0xFF808080),
+      ),
+    ),
+    buttonBuilder: (context, button) => const SizedBox(width: 44, height: 44),
+    focusNode: node,
+    autofocus: autofocus,
+  ),
+  'DesignRating': (node, autofocus) => DesignRating(
+    value: 3,
+    onChanged: (value) {},
+    itemBuilder: (context, item) => const SizedBox(width: 24, height: 24),
+    focusNode: node,
+    autofocus: autofocus,
+  ),
+  'DesignChart': (node, autofocus) => SizedBox(
+    width: 200,
+    height: 100,
+    child: DesignChart(
+      semanticLabel: 'Chart',
+      series: const [
+        DesignChartSeries(label: 'A', points: [DesignChartPoint(0, 1)]),
+      ],
+      builder: (context, chart) => const SizedBox.expand(),
+      focusNode: node,
+      autofocus: autofocus,
+    ),
+  ),
+  'DesignPieChart': (node, autofocus) => SizedBox(
+    width: 100,
+    height: 100,
+    child: DesignPieChart(
+      semanticLabel: 'Pie',
+      slices: const [DesignPieSlice(label: 'A', value: 1)],
+      builder: (context, pie) => const SizedBox.expand(),
+      focusNode: node,
+      autofocus: autofocus,
+    ),
+  ),
+  // 0.3.0 values end
 };
 
 class _ScrollHost extends StatefulWidget {

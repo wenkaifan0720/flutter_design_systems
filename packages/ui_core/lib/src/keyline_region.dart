@@ -1,5 +1,5 @@
 /// A card or a section whose contents share keylines, and a face the
-/// checks in `alignment.dart` cannot read from its pixels.
+/// checks in `package:ui_core_test` cannot read from its pixels.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -12,7 +12,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// It lays out and paints nothing. A look's own card and section widgets put
 /// it around their content once, so every screen built from them is
-/// checked; `DesignKeylineCheck` in `alignment.dart` reads it, and
+/// checked; `DesignKeylineCheck` in `package:ui_core_test` reads it, and
 /// `DesignKeylineSheet` draws it for review.
 ///
 /// A gallery marks each section's column of examples too, with
@@ -96,7 +96,7 @@ class DesignKeylineRegion extends StatelessWidget {
   }
 }
 
-/// Marks [child] as one face for the checks in `alignment.dart`: a
+/// Marks [child] as one face for the checks in `package:ui_core_test`: a
 /// control's face or a well (a field's, a list's, a table's) whose pixels
 /// may not show it, or a picture with things placed on it.
 ///

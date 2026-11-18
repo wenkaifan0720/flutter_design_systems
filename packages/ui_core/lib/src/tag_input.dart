@@ -6,6 +6,8 @@
 /// to step onto the tags, Backspace or Delete on a tag to remove it.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -59,7 +61,7 @@ typedef DesignTagLayoutBuilder = Widget Function(
 /// edge, not from the field after the tags.
 ///
 /// ```dart
-/// DesignTagInput<String>(values: const ['red'], onChanged: (values) {}, onCreate: (text) => text, fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onSubmitted: (_) => field.submit()), optionBuilder: (context, option, states) => Text(option), tagBuilder: (context, value, tag) => Text(value))
+/// DesignTagInput<String>(values: const ['red'], onChanged: (values) {}, onCreate: (text) => text, fieldBuilder: (context, field) => EditableText(controller: field.controller, focusNode: field.focusNode, style: const TextStyle(), cursorColor: const Color(0xFF000000), backgroundCursorColor: const Color(0xFF808080), onEditingComplete: field.submit), optionBuilder: (context, option, states) => Text(option), tagBuilder: (context, value, tag) => Text(value))
 /// ```
 class DesignTagInput<T extends Object> extends StatefulWidget {
   /// A tag input over [values].
@@ -85,6 +87,9 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
     this.optionsMaxHeight = 300,
     this.semanticLabel,
     this.deleteLabel,
+    this.debounceDuration,
+    this.loadingBuilder,
+    this.errorBuilder,
   }) : assert(maxTags == null || maxTags > 0),
        assert(optionsMaxHeight > 0);
 
@@ -157,6 +162,25 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
   /// The screen reader's action that removes a tag; null:
   /// [DesignLocalizations.tagInputDeleteLabel].
   final String? deleteLabel;
+
+  /// How long typing rests before [search] runs: a search per pause, not
+  /// per letter. Null (the default) runs it at every change. Filtering
+  /// [options] never waits.
+  final Duration? debounceDuration;
+
+  /// Says that [search] is finding options, in the list's surface, while its
+  /// future is pending (and while [debounceDuration] runs); a screen reader
+  /// hears [DesignLocalizations.loadingLabel] as it appears. Null (the
+  /// default): the options found last stay until the new ones come.
+  final WidgetBuilder? loadingBuilder;
+
+  /// Says that [search] failed, in the list's surface, with a way to try
+  /// again ([DesignSearchError.retry]; Down moves the keys there, Enter
+  /// runs it); a screen reader hears
+  /// [DesignLocalizations.searchFailedMessage] as it appears, and the focus
+  /// stays in the field. Null (the default): the list closes and the error
+  /// goes to [FlutterError.reportError].
+  final DesignSearchErrorBuilder? errorBuilder;
 
   @override
   State<DesignTagInput<T>> createState() => _DesignTagInputState<T>();
@@ -249,11 +273,35 @@ class DesignTagInput<T extends Object> extends StatefulWidget {
         DoubleProperty('optionsMaxHeight', optionsMaxHeight, defaultValue: 300),
       )
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
-      ..add(StringProperty('deleteLabel', deleteLabel, defaultValue: null));
+      ..add(StringProperty('deleteLabel', deleteLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<WidgetBuilder>.has('loadingBuilder', loadingBuilder),
+      )
+      ..add(
+        ObjectFlagProperty<DesignSearchErrorBuilder>.has(
+          'errorBuilder',
+          errorBuilder,
+        ),
+      );
   }
 }
 
 String _string(Object value) => value.toString();
+
+/// Stands in the suggestions while a search's states show (loading, failed,
+/// found): the list stays open and paints them itself.
+class _Searching {
+  const _Searching();
+}
+
+const Object _searching = _Searching();
 
 class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
   TextEditingController? _ownController;
@@ -262,6 +310,8 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
   final DesignListKeys _keys = DesignListKeys();
   int? _focusedTag;
   bool _picked = false;
+  // The search's states, when the list shows them.
+  final DesignSearchRun<T> _run = DesignSearchRun<T>();
 
   TextEditingController get _controller =>
       widget.controller ?? (_ownController ??= TextEditingController());
@@ -293,6 +343,7 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
   @override
   void dispose() {
     _controller.removeListener(_textChanged);
+    _run.dispose();
     for (final node in _tagNodes) {
       node.dispose();
     }
@@ -388,8 +439,10 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
 
   void _submit(VoidCallback pick) {
     _picked = false;
+    final retries = _run.retries;
     if (!_keys.submit()) pick();
-    if (_picked) return;
+    // An option taken, or a failed search run again: no tag from the words.
+    if (_picked || _run.retries != retries) return;
     final value = _valueOf(_controller.text);
     if (value != null && !_has(value) && !_full) {
       _add(value);
@@ -491,15 +544,17 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
     );
   }
 
-  Future<Iterable<T>> _find(TextEditingValue value) async {
+  // Whether the list shows the search's states itself: loading or failed.
+  bool get _live =>
+      widget.search != null &&
+      (widget.loadingBuilder != null || widget.errorBuilder != null);
+
+  FutureOr<Iterable<Object>> _find(TextEditingValue value) {
     if (_full) return const [];
     final search = widget.search;
-    final Iterable<T> found;
-    if (search != null) {
-      found = await search(value.text);
-    } else {
+    if (search == null) {
       final query = value.text.trim().toLowerCase();
-      found = query.isEmpty
+      final found = query.isEmpty
           ? widget.options
           : widget.options.where(
               (o) => widget
@@ -507,8 +562,24 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
                   .toLowerCase()
                   .contains(query),
             );
+      return found.where((o) => !_has(o));
     }
-    return found.where((o) => !_has(o));
+    final debounce = widget.debounceDuration;
+    if (_live) {
+      // A failure the list cannot show is reported.
+      unawaited(
+        _run.run(
+          value.text,
+          search,
+          debounce: debounce,
+          report: widget.errorBuilder == null,
+        ),
+      );
+      return const [_searching];
+    }
+    return _run
+        .run(value.text, search, debounce: debounce, report: true)
+        .then((found) => (found ?? const []).where((o) => !_has(o)));
   }
 
   bool _enabled(T option) => widget.isOptionEnabled?.call(option) ?? true;
@@ -519,10 +590,13 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
       textEditingController: _controller,
       focusNode: _field,
       optionsBuilder: _find,
-      displayStringForOption: (option) => widget.displayStringForOption(
-        (option is DesignPick ? option.option : option) as T,
-      ),
+      displayStringForOption: (option) => identical(option, _searching)
+          ? _controller.text
+          : widget.displayStringForOption(
+              (option is DesignPick ? option.option : option) as T,
+            ),
       onSelected: (picked) {
+        if (identical(picked, _searching)) return;
         final option = (picked is DesignPick ? picked.option : picked) as T;
         if (!_enabled(option)) return;
         _picked = true;
@@ -571,27 +645,81 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
         );
       },
       optionsViewBuilder: (context, onSelected, options) {
-        final shown = options.cast<T>().toList();
-        return DesignOptionList<T>(
-          keys: _keys,
-          options: shown,
-          start: shown.indexWhere(_enabled),
-          onSelected: (option) {
-            if (!_enabled(option)) return;
-            _keys.closed();
-            onSelected(DesignPick(option));
-          },
-          value: null,
-          isOptionEnabled: widget.isOptionEnabled,
-          highlightFollowsPointer: widget.highlightFollowsPointer,
-          displayStringForOption: widget.displayStringForOption,
-          optionBuilder: widget.optionBuilder,
-          surfaceBuilder: widget.surfaceBuilder,
-          maxHeight: widget.optionsMaxHeight,
-          semanticLabel: widget.semanticLabel,
-        );
+        if (options.length == 1 && identical(options.single, _searching)) {
+          return DesignSearchScope(
+            run: _run,
+            child: ListenableBuilder(
+              listenable: _run,
+              builder: (context, _) => _searchView(context, onSelected),
+            ),
+          );
+        }
+        return _list(options.cast<T>().toList(), onSelected);
       },
     );
     return field;
+  }
+
+  // A search's states, as the list shows them.
+  Widget _searchView(
+    BuildContext context,
+    AutocompleteOnSelected<Object> onSelected,
+  ) {
+    // A search the list's closing dropped runs again as it opens: pending.
+    final pending = _run.loading || _run.dropped;
+    final loading = widget.loadingBuilder;
+    if (pending && loading != null) {
+      return designSearchLoading(context, loading, widget.surfaceBuilder);
+    }
+    final error = _run.error;
+    final failed = widget.errorBuilder;
+    if (error != null && failed != null && !pending) {
+      return DesignSearchFailure(
+        keys: _keys,
+        error: error,
+        stackTrace: _run.stackTrace,
+        retry: _run.retry,
+        builder: failed,
+        surfaceBuilder: widget.surfaceBuilder,
+      );
+    }
+    final shown = error != null && !pending
+        ? <T>[]
+        : _run.found.where((o) => !_has(o)).toList();
+    if (shown.isEmpty || _full) {
+      // Nothing to show: the list closes, after this frame (a failure with
+      // no errorBuilder was reported).
+      if (!pending) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          // Unless a search started since.
+          if (context.mounted && !_run.loading && !_run.dropped) {
+            _keys.hide();
+          }
+        });
+      }
+      return const SizedBox.shrink();
+    }
+    return _list(shown, onSelected);
+  }
+
+  Widget _list(List<T> shown, AutocompleteOnSelected<Object> onSelected) {
+    return DesignOptionList<T>(
+      keys: _keys,
+      options: shown,
+      start: shown.indexWhere(_enabled),
+      onSelected: (option) {
+        if (!_enabled(option)) return;
+        _keys.closed();
+        onSelected(DesignPick(option));
+      },
+      value: null,
+      isOptionEnabled: widget.isOptionEnabled,
+      highlightFollowsPointer: widget.highlightFollowsPointer,
+      displayStringForOption: widget.displayStringForOption,
+      optionBuilder: widget.optionBuilder,
+      surfaceBuilder: widget.surfaceBuilder,
+      maxHeight: widget.optionsMaxHeight,
+      semanticLabel: widget.semanticLabel,
+    );
   }
 }

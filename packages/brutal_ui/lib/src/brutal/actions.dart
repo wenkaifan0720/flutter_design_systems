@@ -500,21 +500,37 @@ class BrutalLink extends StatelessWidget {
 }
 
 /// Keys to press together, each a small raised cap in the rule over its
-/// hard shadow: `BrutalKbd(['⌘', 'K'])`. A screen reader hears
-/// [semanticLabel], or the keys one after another.
+/// hard shadow. [BrutalKbd.shortcut] prints a keyboard shortcut's keys in
+/// the platform's order and the reader's words (ui_core's
+/// [designShortcutKeys]: `⇧ ⌘ N` on a Mac, `Ctrl Shift N` elsewhere); the
+/// plain constructor prints the [keys] it is given. A screen reader hears
+/// [semanticLabel], or the shortcut in words, or the keys one after another.
 ///
 /// Reads [style]'s `fill`, `foreground`, `edge`, `padding`, `minimumSize`
 /// and `textStyle` for each cap, then [BrutalThemeData.kbdStyle]'s.
 ///
 /// ```dart
-/// const BrutalKbd(['Ctrl', 'K'], semanticLabel: 'Control K')
+/// const BrutalKbd.shortcut(SingleActivator(LogicalKeyboardKey.keyK, control: true))
 /// ```
 class BrutalKbd extends StatelessWidget {
   /// The caps for [keys].
-  const BrutalKbd(this.keys, {super.key, this.semanticLabel, this.style});
+  const BrutalKbd(this.keys, {super.key, this.semanticLabel, this.style})
+    : activator = null;
 
-  /// The keys, in the order they are held.
+  /// The caps of [activator]'s keys (a [SingleActivator] or a
+  /// [CharacterActivator]), as Flutter's own menus print them.
+  const BrutalKbd.shortcut(
+    MenuSerializableShortcut this.activator, {
+    super.key,
+    this.semanticLabel,
+    this.style,
+  }) : keys = const [];
+
+  /// The keys, in the order they are held; empty for [BrutalKbd.shortcut].
   final List<String> keys;
+
+  /// The shortcut whose keys it prints, for [BrutalKbd.shortcut].
+  final MenuSerializableShortcut? activator;
 
   /// What a screen reader hears.
   final String? semanticLabel;
@@ -528,8 +544,16 @@ class BrutalKbd extends StatelessWidget {
     final c = theme.colors;
     final layered = DesignStyleOf([style, theme.kbdStyle], const {});
     final minimum = layered.minimumSize ?? const Size(28, 28);
+    final activator = this.activator;
+    final keys = activator == null
+        ? this.keys
+        : designShortcutKeys(context, activator);
     return Semantics(
-      label: semanticLabel ?? keys.join(' '),
+      label:
+          semanticLabel ??
+          (activator == null
+              ? keys.join(' ')
+              : designShortcutLabel(context, activator, appleSymbols: false)),
       excludeSemantics: true,
       child: Padding(
         // The shadows' room, so a line under the caps does not run into them.
@@ -594,6 +618,14 @@ class BrutalKbd extends StatelessWidget {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
-    properties.add(IterableProperty<String>('keys', keys));
+    properties
+      ..add(IterableProperty<String>('keys', keys))
+      ..add(
+        DiagnosticsProperty<MenuSerializableShortcut>(
+          'activator',
+          activator,
+          defaultValue: null,
+        ),
+      );
   }
 }

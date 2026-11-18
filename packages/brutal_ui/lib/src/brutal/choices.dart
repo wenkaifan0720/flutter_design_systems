@@ -6,6 +6,8 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart'
+    show Material, MaterialType, TextField;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -823,6 +825,13 @@ class _MoveIntent extends Intent {
 /// cell, butted on shared rules. A cell at its bound is off. A null
 /// [onChanged] disables it.
 ///
+/// The behaviour is ui_core's ([DesignNumberField]): the number is a field
+/// that takes typing (in the reader's digits), read as Enter is pressed or
+/// the keyboard leaves, clamped to [min] and [max]; Up and Down step it,
+/// Page Up and Down by ten. The cells step on a press and repeat while
+/// held; they are no tab stops, and a screen reader hears one adjustable
+/// number, named [semanticLabel], that it steps.
+///
 /// Reads [style]'s `fill` and `edge` for the frame; `foreground` and
 /// `iconSize` for the cells in their states; `textStyle` for the number;
 /// and `minimumSize` (its height), then [BrutalThemeData.stepperStyle]'s.
@@ -839,8 +848,6 @@ class BrutalStepper extends StatelessWidget {
     this.min = 0,
     this.max = 99,
     this.semanticLabel,
-    this.decreaseLabel = 'Decrease',
-    this.increaseLabel = 'Increase',
     this.style,
   }) : assert(min <= max),
        assert(value >= min && value <= max);
@@ -860,18 +867,8 @@ class BrutalStepper extends StatelessWidget {
   /// What a screen reader calls the number ("Standing tickets").
   final String? semanticLabel;
 
-  /// What a screen reader calls the minus cell, before [semanticLabel]
-  /// ("Decrease Standing tickets").
-  final String decreaseLabel;
-
-  /// What a screen reader calls the plus cell, before [semanticLabel].
-  final String increaseLabel;
-
   /// Its style, over [BrutalThemeData.stepperStyle].
   final BrutalStyle? style;
-
-  String _name(String verb) =>
-      semanticLabel == null ? verb : '$verb $semanticLabel';
 
   @override
   Widget build(BuildContext context) {
@@ -883,36 +880,30 @@ class BrutalStepper extends StatelessWidget {
     final h = frame.minimumSize?.height ?? theme.controlHeight;
     final ruleColor =
         frame.side?.color ?? frame.edge ?? (off ? c.disabled : c.ink);
-    Widget step(IconData glyph, String label, int to) {
-      final can = !off && to >= min && to <= max;
-      return DesignPressable(
-        onPressed: can ? () => onChanged!(to) : null,
-        semanticLabel: label,
-        builder: (context, states, _) {
-          final layered = DesignStyleOf(layers, states);
-          final disabled = states.contains(WidgetState.disabled);
-          final lit = states.contains(WidgetState.pressed);
-          return SizedBox(
-            width: h - theme.borderWidth,
-            child: AnimatedBrutalSurface(
-              stiffness: BrutalMotion.colorStiffness,
-              face: BrutalFace(
-                fill: lit ? c.ink : c.ink.withValues(alpha: 0),
-                border: c.ink.withValues(alpha: 0),
-                foreground:
-                    layered.foreground ??
-                    (disabled ? c.disabled : (lit ? c.paper : c.ink)),
-                borderWidth: 0,
-              ),
-              child: CustomPaint(
-                foregroundPainter: states.contains(WidgetState.focused)
-                    ? BrutalInsetFocusPainter(lit ? c.paper : c.ink)
-                    : null,
-                child: Center(child: Icon(glyph, size: layered.iconSize ?? 20)),
-              ),
+    Widget cell(DesignNumberFieldButtonDetails button) {
+      final states = button.states;
+      final layered = DesignStyleOf(layers, states);
+      final disabled = states.contains(WidgetState.disabled);
+      final lit = states.contains(WidgetState.pressed);
+      return SizedBox(
+        width: h - theme.borderWidth,
+        child: AnimatedBrutalSurface(
+          stiffness: BrutalMotion.colorStiffness,
+          face: BrutalFace(
+            fill: lit ? c.ink : c.ink.withValues(alpha: 0),
+            border: c.ink.withValues(alpha: 0),
+            foreground:
+                layered.foreground ??
+                (disabled ? c.disabled : (lit ? c.paper : c.ink)),
+            borderWidth: 0,
+          ),
+          child: Center(
+            child: Icon(
+              button.isIncrement ? LucideIcons.plus : LucideIcons.minus,
+              size: layered.iconSize ?? 20,
             ),
-          );
-        },
+          ),
+        ),
       );
     }
 
@@ -921,6 +912,8 @@ class BrutalStepper extends StatelessWidget {
       child: ColoredBox(color: ruleColor),
     );
 
+    // The field's words, for ui_core's node (below).
+    var words = '';
     return Align(
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,
@@ -933,36 +926,74 @@ class BrutalStepper extends StatelessWidget {
             border: ruleColor,
             foreground: c.ink,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              step(LucideIcons.minus, _name(decreaseLabel), value - 1),
-              rule(),
-              Semantics(
-                label: semanticLabel,
-                value: '$value',
-                child: SizedBox(
-                  width: 48,
+          child: DesignNumberField(
+            value: value.toDouble(),
+            onChanged: off
+                ? null
+                : (to) {
+                    if (to != null && to.round() != value) {
+                      onChanged!(to.round());
+                    }
+                  },
+            min: min.toDouble(),
+            max: max.toDouble(),
+            pageStep: 10,
+            fractionDigits: 0,
+            semanticLabel: semanticLabel,
+            buttonBuilder: (context, button) => cell(button),
+            fieldBuilder: (context, field) {
+              words = field.controller.text;
+              final focused = field.states.contains(WidgetState.focused);
+              return SizedBox(
+                width: 48,
+                child: CustomPaint(
+                  foregroundPainter: focused
+                      ? BrutalInsetFocusPainter(c.ink)
+                      : null,
                   child: Center(
                     child: DesignCapCenter(
-                      capHeightFactor: BrutalTheme.of(context).capHeightFactor,
-                      child: Text(
-                        '$value',
-                        style: frame.text(
-                          theme.textTheme.label.copyWith(
-                            color: off ? c.disabled : c.ink,
-                            fontFeatures: const [FontFeature.tabularFigures()],
+                      capHeightFactor: theme.capHeightFactor,
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: TextField(
+                          controller: field.controller,
+                          focusNode: field.focusNode,
+                          keyboardType: field.keyboardType,
+                          inputFormatters: field.inputFormatters,
+                          onEditingComplete: field.onEditingComplete,
+                          readOnly: off,
+                          enableInteractiveSelection: !off,
+                          decoration: null,
+                          textAlign: TextAlign.center,
+                          cursorColor: c.ink,
+                          cursorWidth: 2,
+                          style: frame.text(
+                            theme.textTheme.label.copyWith(
+                              color: off ? c.disabled : c.ink,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
+              );
+            },
+            // ui_core's node steps the number, so it says the number too,
+            // beside its next values. A Material text field and that node
+            // both say whether they are enabled, which Flutter does not
+            // merge: the field stands in a node of its own under it.
+            layoutBuilder: (context, field, decrement, increment) => Semantics(
+              value: words,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [decrement, rule(), field, rule(), increment],
               ),
-              rule(),
-              step(LucideIcons.plus, _name(increaseLabel), value + 1),
-            ],
+            ),
           ),
         ),
       ),

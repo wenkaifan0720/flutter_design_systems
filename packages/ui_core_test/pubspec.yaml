@@ -1,0 +1,30 @@
+name: ui_core_test
+description: >-
+  Checks for Flutter design systems on ui_core, read from the drawn pixels: rows in line, labels centred,
+  keylines, widths, tap targets, cursors, cut shadows and spacing.
+version: 0.1.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/ui_core_test
+issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
+topics:
+  - design-system
+  - testing
+  - widgets
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.3.0
+
+dev_dependencies:
+  material_ui: ^1.9.0
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  leak_tracker_flutter_testing: any

@@ -1,3 +1,73 @@
+## 0.2.0
+
+Built on ui_core 0.3.0. Brutal's tooltip, menus, dialog, sheets, tab bar, places, wheels, stepper, rating and chart
+axis now take their behaviour from ui_core (its focus, keys, semantics, gestures and springs) and keep Brutal's paint:
+they look as they did, and they do more. The breaks below touch only code that named a stepper's cell labels or took a
+part for a `StatefulWidget` or a `StatelessWidget`.
+
+### Breaking
+
+- `BrutalStepper.decreaseLabel` and `increaseLabel` are gone. The minus and plus cells are no longer tab stops or
+  screen reader nodes: the number is one adjustable field a screen reader steps and names by `semanticLabel`.
+- `BrutalTabBar` is a `StatefulWidget` (it holds ui_core's tab controller) and `BrutalMenuPanel` a `StatelessWidget`;
+  their constructors are unchanged.
+- `showBrutalDialog` pushes ui_core's `DesignDialogRoute` and `showBrutalSheet`, `showBrutalBottomSheet`, the action
+  sheet and `BrutalSheetPage` its `DesignBottomSheetRoute`, no longer a `RawDialogRoute`: code that tells them apart by
+  the route's type checks for those.
+
+### Behaviour that changes
+
+- `BrutalTooltip` shows at once when the keys bring the focus to its control, the pointer may move onto it, Escape
+  hides it, and running the pointer along a row of controls shows each one's at once.
+- A menu a pointer opened lights no row, as before, and its surface holds the keys: Down goes to the first row, Up to
+  the last.
+- A dialog keeps Tab inside it and gives the focus back to what opened it; it and the sheets move on springs with the
+  speeds they had (ζ 1, k 700, about 240 ms). A sheet follows a drag down and closes when let go low or flung, its
+  body handing the drag over once scrolled to its top.
+- `BrutalTabBar` and the places of `BrutalScaffold` and `BrutalAppShell` are each one stop for Tab, on the chosen
+  one; the arrows move round them (mirrored right to left), Home and End go to the ends; a tab chooses as the keys
+  reach it, a place on Enter or Space. A screen reader hears tabs, and places, with their place ("Past, Tab 2 of 2";
+  "Home, Tab 2 of 5", where a place was a button); a desk's side list is the navigation menu. F6 moves between the
+  places and the page. The chosen tab's bar grows on the tabs' spring and follows a swipe. A tab that hugs its words
+  keeps the room of its words in bold whether chosen or not, so choosing one no longer moves the rules by a pixel.
+- A phone's bar of places springs away under a page pushed over the root (`BrutalScaffold.showNavigation`), where it
+  was taken out at once.
+- `BrutalWheelPicker` and `BrutalTimePicker` take Page Up and Down, Home and End and a typed name, and Left and Right
+  move between the time's two wheels; a key, or a tap on a row, turns a wheel to it on a spring. A drag that starts
+  on the rule between the time's wheels turns a wheel, where it scrolled the page, and a mouse drag turns them too.
+- `BrutalStepper`'s number takes typing in the reader's digits, read on Enter or as the keyboard leaves, clamped to
+  `min` and `max`; Up and Down step it, Page Up and Down by ten, and a held cell repeats.
+- `BrutalRating` is one tab stop: the arrows step it, End fills it, Home or 0 clears it, a digit sets that many; a
+  drag sweeps along it, and a resting pointer inks the cells up to it; a press on the strip's end rule or shadow
+  fills it, where it did nothing. A screen reader hears a slider.
+- A chart's value axis stands on whole steps of 1, 2 or 5 × 10ⁿ (an axis to 250 is marked every 50, where it was
+  62.5), labelled in the reader's numbers, as is the read-out a screen reader hears.
+- Right to left the charts are mirrored: the categories and time run from the right, the value axis and its numbers
+  stand on the right, a sparkline runs from the right and a pie's slices go round the other way from the top.
+- `BrutalPreview`'s app is a semantics container of its own, so a screen reader still meets what the page paints
+  before it (its routes' barriers hid it).
+- Right to left every hard shadow falls the same way, down and to the left: the kits' raised and floating shadows
+  (they fell to the right) and a reordered row's lift, now up and to the right, against its shadow.
+
+### New
+
+- `BrutalCombobox` and `BrutalTagInput` take a `search` that may take time and fail, with `debounceDuration`: the list
+  says "Loading" by a small spinner while it runs, and a failed one says so over a "Try again" row that Down reaches.
+  `options` is no longer required.
+- `BrutalKbd.shortcut(activator)` prints a keyboard shortcut's keys in the platform's order and the reader's words,
+  and `BrutalMenuItem.activator` shows one at a menu row's end (`⌘S` on a Mac, `Ctrl+S` elsewhere).
+
+### The package page
+
+- The description is one sentence (148 characters; it was 181, past pub.dev's bound). The homepage is the live
+  gallery, the issues are linked, the topics add `neobrutalism`, and the page shows six screenshots of Admit by day
+  and by night, on a desk and a phone. The README opens on the gallery, the API reference and every look.
+
+### Development
+
+- The review checks come from `package:ui_core_test` (a dev dependency, 0.1.0), where ui_core 0.3.0 moved them.
+- `dart doc` reports no warnings: the host library is the documented home of its names.
+
 ## 0.1.1
 
 Needs ui_core 0.2.1.

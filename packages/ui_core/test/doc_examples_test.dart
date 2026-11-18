@@ -6,16 +6,16 @@
 //
 // An example may name `controller` or `focusNode`: the caller's own, which
 // its entry makes first, as the docs say the caller does.
-import 'dart:io';
-
-import 'package:flutter/material.dart'
+import 'package:material_ui/material_ui.dart'
     show DefaultMaterialLocalizations, Material, TextField;
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/alignment.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/host.dart';
 import 'package:ui_core/inventory.dart';
+// 0.3.0 routes
+// 0.3.0 routes end
 
 import 'behaviour_harness.dart';
 import 'doc_examples.dart';
@@ -55,6 +55,30 @@ final Map<String, DocExample> _examples = {
     anchorBuilder: (context, anchor) =>
         GestureDetector(onTap: anchor.toggle, child: const Text('More')),
     overlayBuilder: (context, info) => const Text('Details'),
+  ),
+  'DesignContextMenu': (context) => DesignContextMenu(
+    menuChildren: [DesignMenuEntry(label: 'Copy', onPressed: () {})],
+    itemBuilder: (context, entry, level, states) => Text(entry.label),
+    surfaceBuilder: (context, info, items) =>
+        Column(mainAxisSize: MainAxisSize.min, children: items),
+    child: const Text('Report.pdf'),
+  ),
+  'DesignTooltip': (context) => DesignTooltip(
+    message: 'Save the report',
+    tooltipBuilder: (context, info) => const Text('Save the report'),
+    child: const Text('Save'),
+  ),
+  'designShortcutKeys': (context) => designShortcutKeys(
+    context,
+    const SingleActivator(LogicalKeyboardKey.keyN, meta: true, shift: true),
+  ),
+  'designShortcutLabel': (context) => designShortcutLabel(
+    context,
+    const SingleActivator(LogicalKeyboardKey.keyS, control: true),
+  ),
+  'DesignOverlayPadding': (context) => const DesignOverlayPadding(
+    padding: EdgeInsetsDirectional.only(start: 280),
+    child: Text('A page beside the side bar'),
   ),
   'DesignCalendar': (context) {
     final controller = _own(
@@ -116,10 +140,12 @@ final Map<String, DocExample> _examples = {
       style: const TextStyle(),
       cursorColor: const Color(0xFF000000),
       backgroundCursorColor: const Color(0xFF808080),
-      onSubmitted: (_) => field.submit(),
+      onEditingComplete: field.submit,
     ),
     optionBuilder: (context, option, states) => Text(option),
   ),
+  'DesignSearchError': (context) =>
+      DesignSearchError(error: StateError('offline'), retry: () {}),
   'DesignCommandPalette': (context) => DesignCommandPalette(
     commands: const [DesignCommand(label: 'New file')],
     fieldBuilder: (context, field) => EditableText(
@@ -128,6 +154,7 @@ final Map<String, DocExample> _examples = {
       style: const TextStyle(),
       cursorColor: const Color(0xFF000000),
       backgroundCursorColor: const Color(0xFF808080),
+      onEditingComplete: field.submit,
     ),
     itemBuilder: (context, command, states) => Text(command.label),
   ),
@@ -363,7 +390,7 @@ final Map<String, DocExample> _examples = {
       style: const TextStyle(),
       cursorColor: const Color(0xFF000000),
       backgroundCursorColor: const Color(0xFF808080),
-      onSubmitted: (_) => field.submit(),
+      onEditingComplete: field.submit,
     ),
     optionBuilder: (context, option, states) => Text(option),
     tagBuilder: (context, value, tag) => Text(value),
@@ -449,158 +476,231 @@ final Map<String, DocExample> _examples = {
       const DesignKeylineFace(child: SizedBox(width: 120, height: 40)),
   'DesignCapCenter': (context) =>
       const DesignCapCenter(capHeightFactor: 0.711, child: Text('Save')),
+  // 0.3.0 values
+  'DesignHaptics': (context) {
+    DesignHaptics.of(context).selectionChanged?.call();
+    return null;
+  },
+  'DesignHapticsScope': (context) => const DesignHapticsScope(
+    haptics: DesignHaptics.silent(),
+    child: Text('Quiet'),
+  ),
+  'DesignWheelColumn': (context) => DesignWheelColumn(
+    itemCount: 12,
+    itemLabel: (index) => 'Month ${index + 1}',
+    semanticLabel: 'Month',
+  ),
+  'DesignWheelPicker': (context) => DesignWheelPicker(
+    columns: (selection) => [
+      DesignWheelColumn(
+        itemCount: 24,
+        itemLabel: (index) => '$index',
+        semanticLabel: 'Hour',
+        looping: true,
+      ),
+    ],
+    selection: const [9],
+    onChanged: (selection) {},
+    itemExtent: 40,
+    itemBuilder: (context, details) => Center(child: Text(details.label)),
+  ),
+  'DesignTimeOfDay': (context) => Text(
+    DesignLocalizations.of(context)
+        .formatTimeOfDay(const DesignTimeOfDay(hour: 15, minute: 5)),
+  ),
+  'DesignDateField': (context) => DesignDateField(
+    value: DateTime(2026, 11, 16),
+    onChanged: (day) {},
+    segmentBuilder: (context, details) => Text(details.text),
+  ),
+  'DesignTimeField': (context) => DesignTimeField(
+    value: const DesignTimeOfDay(hour: 9, minute: 30),
+    onChanged: (time) {},
+    segmentBuilder: (context, details) => Text(details.text),
+  ),
+  'DesignNumberField': (context) => DesignNumberField(
+    value: 2,
+    onChanged: (value) {},
+    min: 0,
+    fieldBuilder: (context, field) => EditableText(
+      controller: field.controller,
+      focusNode: field.focusNode,
+      keyboardType: field.keyboardType,
+      inputFormatters: field.inputFormatters,
+      onEditingComplete: field.onEditingComplete,
+      style: const TextStyle(),
+      cursorColor: const Color(0xFF000000),
+      backgroundCursorColor: const Color(0xFF808080),
+    ),
+    buttonBuilder: (context, button) => Text(button.isIncrement ? '+' : '−'),
+  ),
+  'DesignRating': (context) => DesignRating(
+    value: 3,
+    onChanged: (value) {},
+    itemBuilder: (context, item) => Text(item.fill >= 1 ? '★' : '☆'),
+  ),
+  'DesignScale': (context) =>
+      const DesignLinearScale(min: 0, max: 100, start: 0, end: 300).map(50),
+  'DesignLinearScale': (context) =>
+      DesignLinearScale.nice(min: 3, max: 97, start: 300, end: 0),
+  'DesignTimeScale': (context) => DesignTimeScale(
+    min: DateTime(2026),
+    max: DateTime(2026, 12),
+    start: 0,
+    end: 300,
+  ),
+  'DesignBandScale': (context) => const DesignBandScale(
+    count: 4,
+    start: 0,
+    end: 400,
+    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+  ).map(2),
+  'DesignChart': (context) => DesignChart(
+    semanticLabel: 'Revenue',
+    series: const [
+      DesignChartSeries(
+        label: 'Revenue',
+        points: [DesignChartPoint(0, 820), DesignChartPoint(1, 1240)],
+      ),
+    ],
+    builder: (context, chart) => CustomPaint(size: chart.size),
+  ),
+  'DesignPieChart': (context) => DesignPieChart(
+    semanticLabel: 'Spending',
+    slices: const [
+      DesignPieSlice(label: 'Rent', value: 1200),
+      DesignPieSlice(label: 'Food', value: 600),
+    ],
+    builder: (context, pie) => CustomPaint(size: pie.size),
+  ),
+  'DesignChartTable': (context) => DesignChartTable(
+    series: const [
+      DesignChartSeries(label: 'Revenue', points: [DesignChartPoint(0, 820)]),
+    ],
+    cellBuilder: (context, cell) => Text(cell.text),
+  ),
+  // 0.3.0 values end
+  // 0.3.0 routes
+  'DesignDialogRoute': (context) => DesignDialogRoute<bool>(
+    isAlert: true,
+    builder: (context, details) => DesignDialog(
+      title: 'Delete the draft?',
+      content: const Text('It cannot be brought back.'),
+      actions: [
+        DesignDialogAction(
+          label: 'Cancel',
+          onPressed: () => Navigator.of(context).pop(false),
+        ),
+        DesignDialogAction(
+          label: 'Delete',
+          isDestructiveAction: true,
+          onPressed: () => Navigator.of(context).pop(true),
+        ),
+      ],
+      actionBuilder: (context, action, details) => Text(action.label),
+    ),
+  ),
+  'DesignDialog': (context) => DesignDialog(
+    title: 'Discard changes?',
+    content: const Text('Your edits to this note will be lost.'),
+    actions: [
+      DesignDialogAction(label: 'Keep editing', onPressed: () {}),
+      DesignDialogAction(
+        label: 'Discard',
+        isDestructiveAction: true,
+        onPressed: () {},
+      ),
+    ],
+    actionBuilder: (context, action, details) => Text(action.label),
+    frameBuilder: (context, details, child) => DecoratedBox(
+      decoration: const BoxDecoration(color: Color(0xFFFFFFFF)),
+      child: child,
+    ),
+  ),
+  'DesignBottomSheetRoute': (context) => DesignBottomSheetRoute<void>(
+    snapSizes: const [0.5, 1],
+    builder: (context, details) => ListView(
+      controller: details.scrollController,
+      children: [for (var i = 0; i < 30; i++) Text('Row $i')],
+    ),
+  ),
+  'DesignBottomSheetDragHandle': (context) => DesignBottomSheetDragHandle(
+    builder: (context, states) => const SizedBox(width: 32, height: 4),
+  ),
+  'DesignSwipeActionsController': (context) {
+    final controller = _own(DesignSwipeActionsController());
+    return DesignSwipeActions(
+      controller: controller,
+      endActions: [
+        DesignSwipeAction(label: 'Archive', onPressed: controller.close),
+      ],
+      actionBuilder: (context, action, details) => Text(action.label),
+      child: const Text('Message'),
+    );
+  },
+  'DesignTabBar': (context) {
+    const vsync = TestVSync();
+    final controller = _own(DesignTabController(length: 2, vsync: vsync));
+    return Column(
+      children: [
+        DesignTabBar(
+          controller: controller,
+          tabs: const [
+            DesignTab(label: 'Inbox'),
+            DesignTab(label: 'Sent'),
+          ],
+          tabBuilder: (context, tab, details) => Text(tab.label),
+        ),
+        Expanded(
+          child: DesignTabView(
+            controller: controller,
+            children: const [Text('Inbox'), Text('Sent')],
+          ),
+        ),
+      ],
+    );
+  },
+  'DesignWindowSizeClass': (context) => DesignWindowSizeClass.fromWidth(900),
+  'DesignAdaptiveShell': (context) => DesignAdaptiveShell(
+    destinations: const [
+      DesignNavigationDestination(label: 'Home', icon: IconData(0xe318)),
+      DesignNavigationDestination(label: 'Mail', icon: IconData(0xe158)),
+    ],
+    selectedIndex: 0,
+    onDestinationSelected: (index) {},
+    destinationBuilder: (context, destination, details) =>
+        Text(destination.label),
+    navigationBuilder: (context, details) =>
+        Row(children: details.destinations),
+    body: const Text('Home'),
+  ),
+  'DesignAdaptiveShell.branches': (context) => DesignAdaptiveShell.branches(
+    destinations: const [
+      DesignNavigationDestination(label: 'Home', icon: IconData(0xe318)),
+      DesignNavigationDestination(label: 'Mail', icon: IconData(0xe158)),
+    ],
+    selectedIndex: 0,
+    onDestinationSelected: (index) {},
+    destinationBuilder: (context, destination, details) =>
+        Text(destination.label),
+    navigationBuilder: (context, details) =>
+        Row(children: details.destinations),
+    branches: [
+      (context) => const Text('Home'),
+      (context) => const Text('Mail'),
+    ],
+  ),
+  'DesignListDetail': (context) => DesignListDetail<String>(
+    selectedItem: null,
+    onSelectedItemChanged: (item) {},
+    listBuilder: (context) => const Text('Inbox'),
+    detailBuilder: (context, item) => Text(item),
+    detailRouteBuilder: (builder) => PageRouteBuilder<void>(
+      pageBuilder: (context, _, _) => builder(context),
+    ),
+  ),
+  // 0.3.0 routes end
 };
-
-/// [DesignAlignmentMatrix.check]'s example: it takes a tester, so it is
-/// compiled here and run by alignment_test.dart.
-Future<void> _alignmentCheck(
-  WidgetTester tester,
-  DesignAlignmentMatrix matrix,
-) async {
-  final report = await matrix.check(
-    pump: tester.pumpWidget,
-    runAsync: tester.runAsync,
-  );
-  report.verify();
-}
-
-/// The screen [DesignKeylineCheck]'s example checks.
-class SettingsScreen extends StatelessWidget {
-  /// A screen.
-  const SettingsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) => const SizedBox();
-}
-
-/// [DesignKeylineCheck]'s example: it takes a tester, so it is compiled
-/// here and run by keyline_test.dart.
-Future<void> _keylineCheck(WidgetTester tester) async {
-  final report = await const DesignKeylineCheck(look: 'Comic').check(
-    tester.element(find.byType(SettingsScreen)),
-    runAsync: tester.runAsync,
-  );
-  report.verify();
-}
-
-/// [DesignLabelCheck]'s example: it takes a tester, so it is compiled
-/// here and run by label_check_test.dart.
-Future<void> _labelCheck(WidgetTester tester) async {
-  final report = await const DesignLabelCheck(look: 'Comic').check(
-    tester.element(find.byType(SettingsScreen)),
-    runAsync: tester.runAsync,
-  );
-  report.verify();
-}
-
-/// [DesignRowCheck]'s example, run by row_check_test.dart's shape.
-Future<void> _rowCheck(WidgetTester tester) async {
-  final report = await const DesignRowCheck(look: 'Comic').check(
-    tester.element(find.byType(SettingsScreen)),
-    runAsync: tester.runAsync,
-  );
-  report.verify();
-}
-
-/// [DesignWidthCheck]'s example, run by width_check_test.dart's shape.
-Future<void> _widthCheck(WidgetTester tester, Key fieldKey) async {
-  const widths = DesignWidthCheck(look: 'Comic');
-  (await widths.check(
-    tester.element(find.byType(SettingsScreen)),
-    runAsync: tester.runAsync,
-  )).verify();
-  (await widths.checkList(
-    tester.element(find.byKey(fieldKey)),
-    runAsync: tester.runAsync,
-  )).verify();
-}
-
-/// [DesignWordBreakCheck]'s and [DesignClipCheck]'s examples, run by
-/// fit_check_test.dart's shape.
-void _fitChecks(WidgetTester tester) {
-  const DesignWordBreakCheck(look: 'Comic')
-      .check(tester.element(find.byType(SettingsScreen)))
-      .verify();
-  const DesignClipCheck(look: 'Comic')
-      .check(tester.element(find.byType(SettingsScreen)))
-      .verify();
-}
-
-/// [DesignCursorCheck]'s, [DesignTapTargetCheck]'s, [DesignSpacingCheck]'s
-/// and [DesignShadowClipCheck]'s examples, run by their own tests' shapes
-/// (cursor_check_test.dart and its neighbours).
-Future<void> _screenChecks(WidgetTester tester) async {
-  const DesignCursorCheck(look: 'Comic')
-      .check(tester.element(find.byType(SettingsScreen)))
-      .verify();
-  const DesignTapTargetCheck(look: 'Comic')
-      .check(tester.element(find.byType(SettingsScreen)))
-      .verify();
-  const DesignTapTargetCheck(
-    look: 'Comic',
-    input: DesignInput.pointer,
-  ).check(tester.element(find.byType(SettingsScreen))).verify();
-  await _spacingCheck(tester);
-  final report = await const DesignShadowClipCheck(look: 'Comic').check(
-    tester.element(find.byType(SettingsScreen)),
-    runAsync: tester.runAsync,
-  );
-  report.verify();
-}
-
-/// [DesignSpacingCheck]'s example.
-Future<void> _spacingCheck(WidgetTester tester) async {
-  final report = await const DesignSpacingCheck(look: 'Comic').check(
-    tester.element(find.byType(SettingsScreen)),
-    runAsync: tester.runAsync,
-  );
-  report.verify();
-}
-
-/// [DesignSpacingCheck.literals]' example: a look's sources read from its
-/// lib folder.
-void _spacingLiterals() {
-  final lib = Directory('lib');
-  final sources = {
-    for (final f in lib.listSync(recursive: true).whereType<File>())
-      if (f.path.endsWith('.dart')) f.path: f.readAsStringSync(),
-  };
-  const DesignSpacingCheck(look: 'Comic').literals(sources).verify();
-}
-
-/// [DesignSpacingCheck.literals]' example on the look's own grid.
-void _spacingLiteralsOnGrid(WidgetTester tester, Map<String, String> sources) {
-  const DesignSpacingCheck(look: 'Retro')
-      .literals(sources, context: tester.element(find.byType(SettingsScreen)))
-      .verify();
-}
-
-/// [DesignLabelCheck.checkDensities]'s example, run by
-/// label_check_test.dart.
-Future<void> _labelDensities(
-  WidgetTester tester,
-  Map<String, DesignAlignmentTheme> densities,
-) async {
-  final report = await const DesignLabelCheck(look: 'Comic').checkDensities(
-    densities: densities,
-    screen: (context) => const SettingsScreen(),
-    pump: tester.pumpWidget,
-    runAsync: tester.runAsync,
-  );
-  report.verify();
-}
-
-/// The image settling that [DesignLabelCheck]'s and [DesignKeylineCheck]'s
-/// docs ask for before a check, run by keyline_test.dart.
-Future<void> _settleImages(WidgetTester tester) async {
-  await tester.runAsync(
-    () => Future.wait([
-      for (final e in find.byType(Image).evaluate())
-        precacheImage((e.widget as Image).image, e),
-    ]),
-  );
-  await tester.pump();
-}
 
 /// The host app's own layer (its router, its app chrome and its
 /// manifest's annotations), which the package leaves out with its examples.
@@ -608,6 +708,19 @@ const Set<String> _hostAppOnly = {
   'routing.dart',
   'chrome.dart',
   'annotations.dart',
+  // 0.3.0 tooling: the checks' examples are ui_core_test's
+  // (checks_doc_examples_test.dart); drip's kit still holds the files.
+  ..._checksFiles,
+};
+
+/// The checks' files, which ui_core_test carries.
+const Set<String> _checksFiles = {
+  'alignment.dart',
+  'cursor_check.dart',
+  'shadow_clip_check.dart',
+  'spacing_check.dart',
+  'tap_target_check.dart',
+  'drawn_pixels.dart',
 };
 
 void main() {
@@ -616,20 +729,6 @@ void main() {
       dispose();
     }
     _disposers.clear();
-  });
-
-  test('the checks the examples call are compiled here', () {
-    expect(_alignmentCheck, isNotNull);
-    expect(_keylineCheck, isNotNull);
-    expect(_labelCheck, isNotNull);
-    expect(_labelDensities, isNotNull);
-    expect(_settleImages, isNotNull);
-    expect(_rowCheck, isNotNull);
-    expect(_widthCheck, isNotNull);
-    expect(_fitChecks, isNotNull);
-    expect(_screenChecks, isNotNull);
-    expect(_spacingLiterals, isNotNull);
-    expect(_spacingLiteralsOnGrid, isNotNull);
   });
 
   testDocExamples(

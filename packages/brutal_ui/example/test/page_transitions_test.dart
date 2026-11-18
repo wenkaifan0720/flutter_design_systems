@@ -11,8 +11,8 @@
 // back from the screen's leading edge round it.
 import 'package:brutal_ui/brutal_ui.dart'
     show BrutalPageTransitionsBuilder, brutalPageTransitions;
-import 'package:flutter/cupertino.dart' show CupertinoPageTransition;
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransition;
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // An app on Flutter's MaterialApp, its ThemeData carrying [transitions], with

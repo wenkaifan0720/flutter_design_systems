@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/alignment.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'behaviour_harness.dart';
@@ -160,80 +159,6 @@ void main() {
       visualDensity: VisualDensity.standard,
       constraints: const BoxConstraints(),
     );
-
-    testWidgets('both forms pass the text entry check on every platform, '
-        'density, Material 2 and 3, text size and under a host theme', (
-      tester,
-    ) async {
-      const host = InputDecorationTheme(
-        contentPadding: EdgeInsets.fromLTRB(20, 24, 20, 8),
-        isDense: true,
-        constraints: BoxConstraints(minHeight: 56),
-      );
-      final report = await DesignTextEntryCheck(
-        look: 'Bare',
-        themes: {
-          for (final (name, density) in [
-            ('compact', VisualDensity.compact),
-            ('standard', VisualDensity.standard),
-            ('comfortable', VisualDensity.comfortable),
-          ])
-            for (final m3 in [true, false])
-              for (final scale in [1.0, 1.5])
-                '$name M${m3 ? 3 : 2} ×$scale': (context, child) => MaterialApp(
-                  theme: ThemeData(
-                    useMaterial3: m3,
-                    visualDensity: density,
-                    inputDecorationTheme: host,
-                  ),
-                  home: Material(
-                    child: Builder(
-                      builder: (context) => MediaQuery(
-                        data: MediaQuery.of(context)
-                            .copyWith(textScaler: TextScaler.linear(scale)),
-                        child: child,
-                      ),
-                    ),
-                  ),
-                ),
-        },
-        entries: {
-          // Each wrapped in a cap center (the test font's capitals stand
-          // 0.75 em high), as a look puts its line's capitals on the middle.
-          'Bare': (context, controller, hint) => SizedBox(
-            width: 200,
-            child: DesignCapCenter(
-              capHeightFactor: 0.75,
-              child: DesignTextEntryBox(
-                minHeight: 40,
-                controller: controller,
-                hint: Text(hint, style: _field),
-                child: TextField(
-                  controller: controller,
-                  style: _field,
-                  decoration: null,
-                ),
-              ),
-            ),
-          ),
-          'Pinned': (context, controller, hint) => SizedBox(
-            width: 200,
-            child: DesignCapCenter(
-              capHeightFactor: 0.75,
-              child: DesignTextEntryBox(
-                minHeight: 40,
-                child: TextField(
-                  controller: controller,
-                  style: _field,
-                  decoration: pinned(hint),
-                ),
-              ),
-            ),
-          ),
-        },
-      ).check(pump: tester.pumpWidget);
-      expect(report.problems, isEmpty);
-    });
 
     testWidgets('is its minimum height with one line centred', (tester) async {
       await tester.pumpWidget(_app(bare()));

@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import '../combobox.dart';
+import '../localizations.dart';
 import '../pressable.dart';
 import 'announce.dart';
 import 'back.dart';
@@ -35,7 +36,7 @@ class DesignPick {
 /// without moving, and its highlight starts where the list's `start` says (a
 /// combobox's value). Home, End and letters stay with the text.
 class DesignListKeys {
-  _OptionListState<Object>? _list;
+  _KeyedRows? _list;
   bool _shown = false;
   BuildContext? _field;
   ModalRoute<Object?>? _route;
@@ -111,6 +112,17 @@ class DesignListKeys {
     _syncBack();
   }
 
+  /// Closes the list the autocomplete shows, from inside it: a search found
+  /// nothing to show. Call it only while the list is built (else the
+  /// autocomplete passes the dismissal on to the page).
+  void hide() {
+    final field = _field;
+    if (field == null || !field.mounted) return;
+    _shown = false;
+    _syncBack();
+    Actions.maybeInvoke<Intent>(field, const DismissIntent());
+  }
+
   late final Map<Type, Action<Intent>> _actions = {
     AutocompleteNextOptionIntent: _ListKeyAction<AutocompleteNextOptionIntent>(
       this,
@@ -153,13 +165,13 @@ class DesignListKeys {
     return Actions.maybeFind<Intent>(field, intent: intent);
   }
 
-  void _attach(_OptionListState<Object> list) {
+  void _attach(_KeyedRows list) {
     _list = list;
     _shown = true;
     _syncBack();
   }
 
-  void _detach(_OptionListState<Object> list) {
+  void _detach(_KeyedRows list) {
     if (identical(_list, list)) _list = null;
     _syncBack();
   }
@@ -169,7 +181,7 @@ class _ListKeyAction<I extends Intent> extends ContextAction<I> {
   _ListKeyAction(this.keys, this.move);
 
   final DesignListKeys keys;
-  final void Function(_OptionListState<Object> list) move;
+  final void Function(_KeyedRows list) move;
 
   // Open: these keys move it. Closed: as the autocomplete's, which opens it
   // when it has options.
@@ -290,7 +302,18 @@ class DesignOptionList<T extends Object> extends StatefulWidget {
   State<DesignOptionList<T>> createState() => _OptionListState<T>();
 }
 
-class _OptionListState<T extends Object> extends State<DesignOptionList<T>> {
+// What the keys move through: a list's options, or a failed search's one
+// row ("Try again").
+abstract class _KeyedRows {
+  void _step(int by);
+  void _edge({required bool last});
+  void _page(int by);
+  void _takeHighlighted();
+  void _restart();
+}
+
+class _OptionListState<T extends Object> extends State<DesignOptionList<T>>
+    implements _KeyedRows {
   late int _highlighted = widget.start;
   int? _announced;
 
@@ -337,9 +360,11 @@ class _OptionListState<T extends Object> extends State<DesignOptionList<T>> {
     if (index != _highlighted) setState(() => _highlighted = index);
   }
 
+  @override
   void _restart() => _moveTo(widget.start);
 
   // Up and Down: the next enabled option that way, round past the ends.
+  @override
   void _step(int by) {
     var i = _highlighted;
     for (var k = 0; k < _count; k++) {
@@ -349,6 +374,7 @@ class _OptionListState<T extends Object> extends State<DesignOptionList<T>> {
   }
 
   // Ctrl or Cmd with an arrow: the first or the last enabled option.
+  @override
   void _edge({required bool last}) {
     for (var k = 0; k < _count; k++) {
       final i = last ? _count - 1 - k : k;
@@ -358,6 +384,7 @@ class _OptionListState<T extends Object> extends State<DesignOptionList<T>> {
 
   // Page Up and Down: [by] options on, stopping at the ends, onto the
   // nearest enabled option (on past it, else back).
+  @override
   void _page(int by) {
     if (_count == 0) return;
     final to = (_highlighted < 0 ? 0 : _highlighted + by).clamp(0, _count - 1);
@@ -370,6 +397,7 @@ class _OptionListState<T extends Object> extends State<DesignOptionList<T>> {
     }
   }
 
+  @override
   void _takeHighlighted() {
     final i = _highlighted;
     if (i >= 0 && i < _count && _enabled(i)) {
@@ -560,6 +588,323 @@ class _RevealRowState extends State<_RevealRow> {
     if (identical(row.reveal._rows[row.index], this)) {
       row.reveal._rows.remove(row.index);
     }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+// 0.3.0 overlays: a search's states (debounced, loading, failed).
+
+/// A search as a combobox or a tag input runs it: after its debounce, the
+/// latest query's result only (an earlier one that arrives late is
+/// dropped), and a failure kept for the list to show.
+class DesignSearchRun<T extends Object> extends ChangeNotifier {
+  String _query = '';
+  bool _loading = false;
+  List<T> _found = const [];
+  Object? _error;
+  StackTrace? _stackTrace;
+  int _ticket = 0;
+  int _retries = 0;
+  Timer? _wait;
+  Completer<void>? _waiting;
+  DesignOptionSearch<T>? _search;
+  bool _dropped = false;
+  bool _disposed = false;
+
+  /// The words of the latest search.
+  String get query => _query;
+
+  /// Whether the latest search is pending (waiting out its debounce, or
+  /// searching).
+  bool get loading => _loading;
+
+  /// What the last search that finished found; kept while the next loads.
+  List<T> get found => _found;
+
+  /// What the latest search threw, if it failed.
+  Object? get error => _error;
+
+  /// Where it threw.
+  StackTrace? get stackTrace => _stackTrace;
+
+  /// How many times [retry] ran a search again.
+  int get retries => _retries;
+
+  /// Whether a search the list's closing dropped ([drop]) waits to run again
+  /// as it opens ([resume]).
+  bool get dropped => _dropped;
+
+  /// Searches [query] with [search], after [debounce] when it is given; a
+  /// later run, or [drop], drops this one. What it found, or null when it
+  /// was dropped or failed (then [error]; with [report] also
+  /// [FlutterError.reportError]).
+  Future<List<T>?> run(
+    String query,
+    DesignOptionSearch<T> search, {
+    Duration? debounce,
+    bool report = false,
+  }) async {
+    final ticket = ++_ticket;
+    _search = search;
+    _dropped = false;
+    _cancelWait();
+    _query = query;
+    _loading = true;
+    _error = null;
+    _stackTrace = null;
+    _notify();
+    if (debounce != null && debounce > Duration.zero) {
+      final waiting = _waiting = Completer<void>();
+      _wait = Timer(debounce, () {
+        if (!waiting.isCompleted) waiting.complete();
+      });
+      await waiting.future;
+      if (ticket != _ticket) return null;
+    }
+    try {
+      final found = (await search(query)).toList();
+      if (ticket != _ticket) return null;
+      _found = found;
+      _loading = false;
+      _notify();
+      return found;
+    } catch (error, stackTrace) {
+      if (ticket != _ticket) return null;
+      _error = error;
+      _stackTrace = stackTrace;
+      _loading = false;
+      _notify();
+      if (report) _report(error, stackTrace);
+      return null;
+    }
+  }
+
+  /// Runs the latest search again for the same words, at once.
+  void retry() {
+    final search = _search;
+    if (search == null || _disposed) return;
+    _retries++;
+    unawaited(run(_query, search));
+  }
+
+  /// Drops a pending search: the list closed. Nothing is said.
+  void drop() {
+    _ticket++;
+    _cancelWait();
+    if (_loading) _dropped = true;
+    _loading = false;
+  }
+
+  /// Runs a search [drop] dropped again: the list opened again on the same
+  /// words.
+  void resume() {
+    final search = _search;
+    if (!_dropped || search == null || _disposed) return;
+    unawaited(run(_query, search));
+  }
+
+  void _cancelWait() {
+    _wait?.cancel();
+    _wait = null;
+    final waiting = _waiting;
+    _waiting = null;
+    // A dropped wait ends, so its run returns.
+    if (waiting != null && !waiting.isCompleted) waiting.complete();
+  }
+
+  void _notify() {
+    if (!_disposed) notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    drop();
+    super.dispose();
+  }
+}
+
+/// Reports a search's failure where Flutter reports errors: a list with no
+/// way to show it closes.
+void _report(Object error, StackTrace stackTrace) => FlutterError.reportError(
+  FlutterErrorDetails(
+    exception: error,
+    stack: stackTrace,
+    library: 'ui_core',
+    context: ErrorDescription('while searching for options'),
+  ),
+);
+
+/// The list's surface while a search is pending: [builder]'s painting, read
+/// as [DesignLocalizations.loadingLabel], as it appears.
+Widget designSearchLoading(
+  BuildContext context,
+  WidgetBuilder builder,
+  DesignListSurfaceBuilder? surfaceBuilder,
+) {
+  final painted = builder(context);
+  return Semantics(
+    container: true,
+    liveRegion: true,
+    label: DesignLocalizations.of(context).loadingLabel,
+    child: ExcludeSemantics(
+      child: surfaceBuilder?.call(context, painted) ?? painted,
+    ),
+  );
+}
+
+/// The list's surface after a search failed: the look's [builder] with a
+/// way to try again, which the keys reach as the list's one row (Down moves
+/// there, Enter runs [retry]); a screen reader hears
+/// [DesignLocalizations.searchFailedMessage] as it appears, and the focus
+/// stays in the field.
+class DesignSearchFailure extends StatefulWidget {
+  /// A failure of [error], with [retry].
+  const DesignSearchFailure({
+    super.key,
+    required this.keys,
+    required this.error,
+    required this.stackTrace,
+    required this.retry,
+    required this.builder,
+    required this.surfaceBuilder,
+  });
+
+  /// The keys that reach "Try again".
+  final DesignListKeys keys;
+
+  /// What the search threw.
+  final Object error;
+
+  /// Where it threw.
+  final StackTrace? stackTrace;
+
+  /// Runs the search again.
+  final VoidCallback retry;
+
+  /// Paints the failure.
+  final DesignSearchErrorBuilder builder;
+
+  /// Paints the list's surface around it.
+  final DesignListSurfaceBuilder? surfaceBuilder;
+
+  @override
+  State<DesignSearchFailure> createState() => _SearchFailureState();
+}
+
+class _SearchFailureState extends State<DesignSearchFailure>
+    implements _KeyedRows {
+  bool _lit = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.keys._attach(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        designAnnounce(
+          context,
+          DesignLocalizations.of(context).searchFailedMessage,
+        );
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(DesignSearchFailure oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.keys, widget.keys)) {
+      oldWidget.keys._detach(this);
+      widget.keys._attach(this);
+    }
+    if (!identical(oldWidget.error, widget.error)) _lit = false;
+  }
+
+  @override
+  void dispose() {
+    widget.keys._detach(this);
+    super.dispose();
+  }
+
+  // One row: every move lights it.
+  void _light() {
+    if (_lit) return;
+    setState(() => _lit = true);
+    designAnnounce(context, DesignLocalizations.of(context).retryButtonLabel);
+  }
+
+  @override
+  void _step(int by) => _light();
+
+  @override
+  void _edge({required bool last}) => _light();
+
+  @override
+  void _page(int by) => _light();
+
+  @override
+  void _restart() {
+    if (_lit) setState(() => _lit = false);
+  }
+
+  @override
+  void _takeHighlighted() {
+    if (_lit) widget.retry();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final painted = widget.builder(
+      context,
+      DesignSearchError(
+        error: widget.error,
+        stackTrace: widget.stackTrace,
+        retry: widget.retry,
+        focused: _lit,
+      ),
+    );
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      liveRegion: true,
+      label: DesignLocalizations.of(context).searchFailedMessage,
+      child: widget.surfaceBuilder?.call(context, painted) ?? painted,
+    );
+  }
+}
+
+/// Keeps a live list's search while it shows, and drops a pending one when
+/// it closes.
+class DesignSearchScope extends StatefulWidget {
+  /// [child], over [run].
+  const DesignSearchScope({super.key, required this.run, required this.child});
+
+  /// The search.
+  final DesignSearchRun<Object> run;
+
+  /// The list.
+  final Widget child;
+
+  @override
+  State<DesignSearchScope> createState() => _SearchScopeState();
+}
+
+class _SearchScopeState extends State<DesignSearchScope> {
+  @override
+  void initState() {
+    super.initState();
+    // After the frame that builds the list: a search notifies as it starts.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.run.resume();
+    });
+  }
+
+  @override
+  void dispose() {
+    widget.run.drop();
+    super.dispose();
   }
 
   @override

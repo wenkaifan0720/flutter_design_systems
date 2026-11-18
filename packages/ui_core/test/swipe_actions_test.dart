@@ -366,4 +366,206 @@ void main() {
     await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
     semantics.dispose();
   });
+
+  // 0.3.0 routes
+  group('0.3.0', () {
+    Widget row(
+      String label, {
+      DesignSwipeActionsController? controller,
+      bool closeOnScroll = true,
+      double dampingRatio = 1,
+    }) => DesignSwipeActions(
+      key: ValueKey(label),
+      controller: controller,
+      closeOnScroll: closeOnScroll,
+      dampingRatio: dampingRatio,
+      startActions: [DesignSwipeAction(label: 'Pin', onPressed: () {})],
+      endActions: [
+        DesignSwipeAction(
+          label: 'Delete',
+          destructive: true,
+          onPressed: () => _ran.add('delete $label'),
+        ),
+      ],
+      actionBuilder: (context, action, details) =>
+          Center(child: Text(action.label)),
+      child: SizedBox(height: 60, child: Text(label)),
+    );
+
+    double left(WidgetTester tester, String label) =>
+        tester.getTopLeft(find.text(label)).dx;
+
+    Widget list({
+      bool closeOnScroll = true,
+      ScrollController? scroll,
+      List<String> played = const [],
+    }) => harness(
+      DesignHapticsScope(
+        haptics: DesignHaptics(
+          selectionChanged: () => played.add('selectionChanged'),
+          longPress: () => played.add('longPress'),
+          thresholdCrossed: () => played.add('thresholdCrossed'),
+        ),
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: SizedBox(
+            width: 300,
+            child: ListView(
+              controller: scroll,
+              children: [
+                for (var i = 0; i < 30; i++)
+                  row('Row $i', closeOnScroll: closeOnScroll),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    testWidgets('the controller opens either side, closes it, and says so', (
+      tester,
+    ) async {
+      final controller = DesignSwipeActionsController();
+      addTearDown(controller.dispose);
+      var told = 0;
+      controller
+        ..addListener(() => told++)
+        ..openEndActions();
+      expect(controller.isOpen, isFalse, reason: 'no row: nothing');
+      await tester.pumpWidget(
+        harness(
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 300,
+              child: row('Message', controller: controller),
+            ),
+          ),
+        ),
+      );
+      controller.openEndActions();
+      await tester.pumpAndSettle();
+      expect(controller.isOpen, isTrue);
+      expect(left(tester, 'Message'), -80);
+      controller.openStartActions();
+      await tester.pumpAndSettle();
+      expect(left(tester, 'Message'), 80);
+      controller.close();
+      await tester.pumpAndSettle();
+      expect(controller.isOpen, isFalse);
+      expect(left(tester, 'Message'), 0);
+      expect(told, 2);
+
+      // A new controller takes over; the old one lets go.
+      final next = DesignSwipeActionsController();
+      addTearDown(next.dispose);
+      await tester.pumpWidget(
+        harness(
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 300,
+              child: row('Message', controller: next),
+            ),
+          ),
+        ),
+      );
+      controller.openEndActions();
+      next.openEndActions();
+      await tester.pumpAndSettle();
+      expect(left(tester, 'Message'), -80);
+      expect(controller.isOpen, isFalse);
+      expect(next.isOpen, isTrue);
+    });
+
+    testWidgets('rows in one scroll view open one at a time', (tester) async {
+      await tester.pumpWidget(list());
+      await tester.drag(find.text('Row 1'), const Offset(-60, 0));
+      await tester.pumpAndSettle();
+      expect(left(tester, 'Row 1'), -80);
+      await tester.drag(find.text('Row 3'), const Offset(60, 0));
+      await tester.pumpAndSettle();
+      expect(left(tester, 'Row 3'), 80);
+      expect(left(tester, 'Row 1'), 0, reason: 'the other closed');
+    });
+
+    testWidgets('its scroll view scrolling closes it, unless told not to', (
+      tester,
+    ) async {
+      for (final closes in [true, false]) {
+        final scroll = ScrollController();
+        addTearDown(scroll.dispose);
+        await tester.pumpWidget(list(closeOnScroll: closes, scroll: scroll));
+        await tester.drag(find.text('Row 1'), const Offset(-60, 0));
+        await tester.pumpAndSettle();
+        expect(left(tester, 'Row 1'), -80);
+        await tester.drag(find.text('Row 4'), const Offset(0, -40));
+        await tester.pumpAndSettle();
+        expect(scroll.offset, greaterThan(0));
+        expect(left(tester, 'Row 1'), closes ? 0 : -80);
+        await tester.pumpWidget(const SizedBox());
+      }
+    });
+
+    testWidgets('a full swipe plays the threshold as it arms, and runs the '
+        'edge action once slid away', (tester) async {
+      final played = <String>[];
+      await tester.pumpWidget(list(played: played));
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('Row 0')),
+      );
+      await gesture.moveBy(const Offset(-20, 0));
+      await gesture.moveBy(const Offset(-100, 0));
+      await tester.pump();
+      expect(played, isEmpty);
+      await gesture.moveBy(const Offset(-100, 0));
+      await tester.pump();
+      expect(played, ['thresholdCrossed']);
+      await gesture.moveBy(const Offset(-10, 0));
+      await tester.pump();
+      expect(played, ['thresholdCrossed'], reason: 'once as it arms');
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(_ran, ['delete Row 0']);
+    });
+
+    testWidgets('an underdamped token springs past its rest and back', (
+      tester,
+    ) async {
+      final controller = DesignSwipeActionsController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        harness(
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: 300,
+              child: row('Message', controller: controller, dampingRatio: 0.3),
+            ),
+          ),
+        ),
+      );
+      controller.openEndActions();
+      final xs = <double>[];
+      for (var i = 0; i < 40; i++) {
+        await tester.pump(const Duration(milliseconds: 16));
+        xs.add(left(tester, 'Message'));
+      }
+      expect(xs.reduce((a, b) => a < b ? a : b), lessThan(-82));
+      await tester.pumpAndSettle();
+      expect(left(tester, 'Message'), -80);
+    });
+
+    test('its new fields, for the inspector', () {
+      final text = DesignSwipeActions(
+        closeOnScroll: false,
+        dampingRatio: 0.5,
+        actionBuilder: (context, action, details) => const SizedBox(),
+        child: const SizedBox(),
+      ).toDiagnosticsNode().toStringDeep();
+      expect(text, contains('closeOnScroll: false'));
+      expect(text, contains('dampingRatio: 0.5'));
+    });
+  });
+  // 0.3.0 routes end
 }

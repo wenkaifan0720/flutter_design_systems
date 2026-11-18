@@ -8,7 +8,6 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'feedback.dart' show BrutalSpinner;
-import 'internal/menu_input.dart';
 import 'menu.dart';
 import 'surface.dart';
 import 'theme.dart';
@@ -600,7 +599,6 @@ class BrutalSplitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    brutalWatchPresses();
     final theme = BrutalTheme.of(context);
     final kind = filled ? _ButtonKind.filled : _ButtonKind.framed;
     final layers = _buttonLayers(theme, kind, false, style);
@@ -698,7 +696,10 @@ class BrutalSplitButton extends StatelessWidget {
           icon: item.icon,
           states: states,
           isDestructiveAction: item.isDestructiveAction,
-          trailing: item.shortcut == null ? null : Text(item.shortcut!),
+          trailing: switch (item.shortcutLabel(context)) {
+            final keys? => Text(keys),
+            null => null,
+          },
         );
       },
     );

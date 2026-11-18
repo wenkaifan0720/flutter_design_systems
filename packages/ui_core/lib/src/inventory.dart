@@ -174,6 +174,9 @@ class DesignInventoryRow {
     'NumberField',
     'Inputs',
     'Number field / quantity stepper',
+    // 0.3.0 values
+    behaviour: 'DesignNumberField',
+    // 0.3.0 values end
   );
 
   /// Select or dropdown.
@@ -259,7 +262,14 @@ class DesignInventoryRow {
   );
 
   /// Rating.
-  static const rating = DesignInventoryRow._('Rating', 'Inputs', 'Rating');
+  static const rating = DesignInventoryRow._(
+    'Rating',
+    'Inputs',
+    'Rating',
+    // 0.3.0 values
+    behaviour: 'DesignRating',
+    // 0.3.0 values end
+  );
 
   /// File upload or drop zone.
   static const fileUpload = DesignInventoryRow._(
@@ -291,6 +301,9 @@ class DesignInventoryRow {
     'Inputs',
     'Time picker',
     refs: 'MCS',
+    // 0.3.0 values
+    behaviour: 'DesignTimeField',
+    // 0.3.0 values end
   );
 
   /// Inline calendar.
@@ -308,6 +321,9 @@ class DesignInventoryRow {
     'Inputs',
     'Wheel picker',
     refs: 'C',
+    // 0.3.0 values
+    behaviour: 'DesignWheelPicker',
+    // 0.3.0 values end
   );
 
   /// Color picker.
@@ -341,6 +357,8 @@ class DesignInventoryRow {
     'Navigation',
     'Bottom navigation bar',
     refs: 'MC',
+    // 0.3.0 routes
+    behaviour: 'DesignAdaptiveShell',
   );
 
   /// Navigation rail.
@@ -349,6 +367,8 @@ class DesignInventoryRow {
     'Navigation',
     'Navigation rail',
     refs: 'M',
+    // 0.3.0 routes
+    behaviour: 'DesignAdaptiveShell',
   );
 
   /// Navigation drawer or sidebar.
@@ -357,6 +377,8 @@ class DesignInventoryRow {
     'Navigation',
     'Navigation drawer / sidebar',
     refs: 'MS',
+    // 0.3.0 routes
+    behaviour: 'DesignAdaptiveShell',
   );
 
   /// Tabs.
@@ -365,6 +387,8 @@ class DesignInventoryRow {
     'Navigation',
     'Tabs',
     refs: 'MCS',
+    // 0.3.0 routes
+    behaviour: 'DesignTabBar',
   );
 
   /// Breadcrumbs.
@@ -422,6 +446,8 @@ class DesignInventoryRow {
     'Navigation',
     'Adaptive app shell / scaffold',
     refs: 'MC',
+    // 0.3.0 routes
+    behaviour: 'DesignAdaptiveShell',
   );
 
   /// Card.
@@ -617,6 +643,8 @@ class DesignInventoryRow {
     'Overlays',
     'Dialog / alert dialog',
     refs: 'MCS',
+    // 0.3.0 routes
+    behaviour: 'DesignDialogRoute',
   );
 
   /// Bottom sheet or modal sheet.
@@ -625,6 +653,8 @@ class DesignInventoryRow {
     'Overlays',
     'Bottom sheet / modal sheet',
     refs: 'MCS',
+    // 0.3.0 routes
+    behaviour: 'DesignBottomSheetRoute',
   );
 
   /// Side sheet or drawer overlay.
@@ -668,6 +698,7 @@ class DesignInventoryRow {
     'Overlays',
     'Tooltip',
     refs: 'MS',
+    behaviour: 'DesignTooltip',
   );
 
   /// Menu or context menu.
@@ -676,6 +707,7 @@ class DesignInventoryRow {
     'Overlays',
     'Menu / context menu',
     refs: 'MCS',
+    behaviour: 'DesignContextMenu',
   );
 
   /// Toast or snackbar, stacking.
@@ -738,6 +770,9 @@ class DesignInventoryRow {
     'LineChart',
     'Charts',
     'Line chart',
+    // 0.3.0 values
+    behaviour: 'DesignChart',
+    // 0.3.0 values end
   );
 
   /// Bar chart.
@@ -745,6 +780,9 @@ class DesignInventoryRow {
     'BarChart',
     'Charts',
     'Bar chart',
+    // 0.3.0 values
+    behaviour: 'DesignChart',
+    // 0.3.0 values end
   );
 
   /// Area chart.
@@ -752,6 +790,9 @@ class DesignInventoryRow {
     'AreaChart',
     'Charts',
     'Area chart',
+    // 0.3.0 values
+    behaviour: 'DesignChart',
+    // 0.3.0 values end
   );
 
   /// Donut or pie.
@@ -759,6 +800,9 @@ class DesignInventoryRow {
     'PieChart',
     'Charts',
     'Donut / pie',
+    // 0.3.0 values
+    behaviour: 'DesignPieChart',
+    // 0.3.0 values end
   );
 
   /// Sparkline.
@@ -766,6 +810,9 @@ class DesignInventoryRow {
     'Sparkline',
     'Charts',
     'Sparkline',
+    // 0.3.0 values
+    behaviour: 'DesignChart',
+    // 0.3.0 values end
   );
 
   /// Every row, group by group in [groups]' order.

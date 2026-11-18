@@ -9,6 +9,7 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -956,185 +957,171 @@ class BrutalDateRangePicker extends StatelessWidget {
   }
 }
 
-/// One flat wheel: rows of [labels] that scroll and snap, the middle one
-/// heavy; its own focus and keys (Up and Down), and a screen reader's
-/// adjustable value.
-class _Wheel extends StatefulWidget {
-  const _Wheel({
-    required this.labels,
-    required this.index,
-    required this.onChanged,
-    required this.semanticLabel,
-    required this.rows,
-    required this.layers,
-  });
+// A wheel's row.
+const double _wheelRow = 40;
 
-  final List<String> labels;
-  final int index;
-  final ValueChanged<int>? onChanged;
-  final String? semanticLabel;
-  final int rows;
-  final List<BrutalStyle?> layers;
-
-  static const double rowHeight = 40;
-
-  @override
-  State<_Wheel> createState() => _WheelState();
-}
-
-class _WheelState extends State<_Wheel> {
-  late final FixedExtentScrollController _scroll = FixedExtentScrollController(
-    initialItem: widget.index,
+/// Flat wheels, a column of each of [labels]' rows, on shared rules: rows
+/// that scroll and snap, the middle one heavy between two rules. ui_core's
+/// [DesignWheelPicker] turns them and gives each column its keys (Up and
+/// Down, Page Up and Down, Home and End, a typed name, Left and Right to the
+/// next column) and a screen reader's adjustable value, named [names]. A
+/// column [widths] gives none of shares the room left.
+///
+/// The wheels win a drag that starts on them, the page under them keeps
+/// still: the rule between two columns is shared, half of it in each
+/// column's reach (the later column draws it whole), and a mouse turns them
+/// as a finger does.
+Widget _wheels(
+  BuildContext context, {
+  required List<List<String>> labels,
+  required List<String?> names,
+  required List<double?> widths,
+  required List<int> selection,
+  required ValueChanged<List<int>>? onChanged,
+  required List<BrutalStyle?> layers,
+  required int rows,
+  String? semanticLabel,
+}) {
+  final theme = BrutalTheme.of(context);
+  final c = theme.colors;
+  final enabled = onChanged != null;
+  final box = DesignStyleOf(layers, const {});
+  final rule = enabled ? box.side?.color ?? box.edge ?? c.ink : c.disabled;
+  final half = theme.borderWidth / 2;
+  final last = labels.length - 1;
+  // What of a column the rules stand over: half a rule at a side with a
+  // neighbour.
+  EdgeInsetsDirectional ruled(int i) => EdgeInsetsDirectional.only(
+    start: i > 0 ? half : 0,
+    end: i < last ? half : 0,
   );
-  late int _at = widget.index;
-  bool _focused = false;
-
-  @override
-  void didUpdateWidget(_Wheel old) {
-    super.didUpdateWidget(old);
-    if (widget.index != _at && _scroll.hasClients) {
-      _at = widget.index;
-      _scroll.jumpToItem(widget.index);
-    }
-  }
-
-  @override
-  void dispose() {
-    _scroll.dispose();
-    super.dispose();
-  }
-
-  void _go(int i) {
-    if (i < 0 || i >= widget.labels.length || widget.onChanged == null) return;
-    final reduce = designReduceMotionOf(context);
-    if (reduce) {
-      _scroll.jumpToItem(i);
-    } else {
-      _scroll.animateToItem(
-        i,
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutCubic,
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = BrutalTheme.of(context);
-    final c = theme.colors;
-    final enabled = widget.onChanged != null;
-    final labels = widget.labels;
-    final layered = DesignStyleOf(widget.layers, {
-      if (!enabled) WidgetState.disabled,
-      if (_focused) WidgetState.focused,
-    });
-    final band = enabled
-        ? layered.side?.color ?? layered.edge ?? c.ink
-        : c.disabled;
-    return Semantics(
-      container: true,
-      label: widget.semanticLabel,
-      value: labels[_at],
-      increasedValue: _at + 1 < labels.length ? labels[_at + 1] : null,
-      decreasedValue: _at > 0 ? labels[_at - 1] : null,
-      onIncrease: enabled && _at + 1 < labels.length
-          ? () => _go(_at + 1)
-          : null,
-      onDecrease: enabled && _at > 0 ? () => _go(_at - 1) : null,
-      child: Focus(
-        canRequestFocus: enabled,
-        onFocusChange: (f) => setState(() => _focused = f),
-        onKeyEvent: (node, event) {
-          if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-            return KeyEventResult.ignored;
-          }
-          if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-            _go(_at + 1);
-            return KeyEventResult.handled;
-          }
-          if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-            _go(_at - 1);
-            return KeyEventResult.handled;
-          }
-          return KeyEventResult.ignored;
-        },
-        child: ExcludeSemantics(
-          child: SizedBox(
-            height: _Wheel.rowHeight * widget.rows,
-            child: CustomPaint(
-              foregroundPainter:
-                  _focused &&
-                      FocusManager.instance.highlightMode ==
-                          FocusHighlightMode.traditional
-                  ? BrutalInsetFocusPainter(c.ink)
-                  : null,
-              child: Stack(
-                children: [
-                  // The chosen row's band: two heavy rules.
-                  Positioned.fill(
-                    child: Center(
-                      child: SizedBox(
-                        height: _Wheel.rowHeight,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            border: Border.symmetric(
-                              horizontal: BorderSide(
-                                color: band,
-                                width: theme.borderWidth,
-                              ),
-                            ),
+  // A mouse drag turns a wheel too (a scrollable takes none by default).
+  final behavior = ScrollConfiguration.of(context);
+  return ScrollConfiguration(
+    behavior: behavior.copyWith(
+      dragDevices: {...behavior.dragDevices, PointerDeviceKind.mouse},
+    ),
+    child: DesignWheelPicker(
+      columns: (_) => [
+        for (final (i, column) in labels.indexed)
+          DesignWheelColumn(
+            itemCount: column.length,
+            itemLabel: (row) => column[row],
+            semanticLabel: names[i],
+          ),
+      ],
+      selection: selection,
+      onChanged: onChanged,
+      itemExtent: _wheelRow,
+      visibleItemCount: rows,
+      // Flat: no lean and no squeeze, as a list of rows on a page.
+      diameterRatio: 1000,
+      squeeze: 1,
+      semanticLabel: semanticLabel,
+      dampingRatio: BrutalMotion.dampingRatio,
+      stiffness: BrutalMotion.moveStiffness,
+      itemBuilder: (context, row) {
+        final layered = DesignStyleOf(layers, {
+          if (!enabled) WidgetState.disabled,
+        });
+        return Padding(
+          // Clear of the rules beside the column.
+          padding: ruled(row.column),
+          child: Center(
+            child: Text(
+              row.label,
+              maxLines: 1,
+              style: layered
+                  .text(theme.textTheme.label)
+                  .copyWith(
+                    fontSize: row.selected ? 20 : 16,
+                    fontWeight: row.selected
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                    color: !enabled
+                        ? c.disabled
+                        : row.selected
+                        ? layered.foreground ?? c.ink
+                        : c.inkMuted,
+                  ),
+            ),
+          ),
+        );
+      },
+      columnBuilder: (context, column, wheel) {
+        final layered = DesignStyleOf(layers, column.states);
+        final band = enabled
+            ? layered.side?.color ?? layered.edge ?? c.ink
+            : c.disabled;
+        // A rule between two columns is half in each one's reach, so a drag
+        // on it turns a wheel; the later column draws it whole, over the
+        // half before its start. What a column paints stands clear of it.
+        final inset = ruled(column.column);
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // The chosen row's band: two heavy rules.
+            Positioned.fill(
+              child: Padding(
+                padding: inset,
+                child: Center(
+                  child: SizedBox(
+                    height: column.itemExtent,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border.symmetric(
+                          horizontal: BorderSide(
+                            color: band,
+                            width: theme.borderWidth,
                           ),
                         ),
                       ),
                     ),
                   ),
-                  ListWheelScrollView.useDelegate(
-                    controller: _scroll,
-                    itemExtent: _Wheel.rowHeight,
-                    diameterRatio: 1000,
-                    physics: enabled
-                        ? const FixedExtentScrollPhysics()
-                        : const NeverScrollableScrollPhysics(),
-                    onSelectedItemChanged: (i) {
-                      setState(() => _at = i);
-                      widget.onChanged?.call(i);
-                    },
-                    childDelegate: ListWheelChildBuilderDelegate(
-                      childCount: labels.length,
-                      builder: (context, i) => Center(
-                        child: Text(
-                          labels[i],
-                          maxLines: 1,
-                          style: layered
-                              .text(theme.textTheme.label)
-                              .copyWith(
-                                fontSize: i == _at ? 20 : 16,
-                                fontWeight: i == _at
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                                color: !enabled
-                                    ? c.disabled
-                                    : i == _at
-                                    ? layered.foreground ?? c.ink
-                                    : c.inkMuted,
-                              ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
+            wheel,
+            if (column.column > 0)
+              PositionedDirectional(
+                start: -half,
+                top: 0,
+                bottom: 0,
+                width: theme.borderWidth,
+                child: IgnorePointer(child: ColoredBox(color: rule)),
+              ),
+            if (column.states.contains(WidgetState.focused))
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Padding(
+                    padding: inset,
+                    child: CustomPaint(painter: BrutalInsetFocusPainter(c.ink)),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+      layoutBuilder: (context, columns) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final (i, column) in columns.indexed)
+            if (widths[i] case final width?)
+              SizedBox(width: width + ruled(i).horizontal, child: column)
+            else
+              Expanded(child: column),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }
 
 /// A flat wheel of [items] in a ruled box: rows that scroll and snap, the
-/// chosen one heavy between two rules. Up and Down move it from the
-/// keyboard; a screen reader hears an adjustable value.
+/// chosen one heavy between two rules. The wheel is ui_core's
+/// ([DesignWheelPicker]): Up and Down move it from the keyboard, Page Up and
+/// Down by five, Home and End to the ends, and typing goes to the next item
+/// starting with the letters; a key or a new [value] turns it on a spring. A
+/// screen reader hears an adjustable value.
 ///
 /// Reads [style]'s `fill` (the box), `edge` (its rule and the band's),
 /// `foreground` (the chosen row) and `textStyle` (the rows' family and
@@ -1201,11 +1188,17 @@ class BrutalWheelPicker<T> extends StatelessWidget {
                 : box.side?.color ?? box.edge ?? c.ink,
             foreground: c.ink,
           ),
-          child: _Wheel(
-            labels: [for (final i in items) labelOf(i)],
-            index: items.indexOf(value).clamp(0, items.length - 1),
-            onChanged: onChanged == null ? null : (i) => onChanged!(items[i]),
-            semanticLabel: semanticLabel,
+          child: _wheels(
+            context,
+            labels: [
+              [for (final i in items) labelOf(i)],
+            ],
+            names: [semanticLabel],
+            widths: const [null],
+            selection: [items.indexOf(value).clamp(0, items.length - 1)],
+            onChanged: onChanged == null
+                ? null
+                : (picked) => onChanged!(items[picked.first]),
             rows: visibleRows,
             layers: layers,
           ),
@@ -1293,46 +1286,22 @@ class BrutalTimePicker extends StatelessWidget {
             border: rule,
             foreground: c.ink,
           ),
-          child: IntrinsicHeight(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(
-                  width: 88,
-                  child: _Wheel(
-                    labels: [for (var h = 0; h < 24; h++) two(h)],
-                    index: value.hour,
-                    rows: 5,
-                    layers: layers,
-                    semanticLabel: 'Hour',
-                    onChanged: enabled
-                        ? (h) =>
-                              onChanged!(BrutalTime(hour: h, minute: nearest))
-                        : null,
-                  ),
-                ),
-                SizedBox(
-                  width: theme.borderWidth,
-                  child: ColoredBox(color: rule),
-                ),
-                SizedBox(
-                  width: 88,
-                  child: _Wheel(
-                    labels: [for (final m in minutes) two(m)],
-                    index: minutes.indexOf(nearest),
-                    rows: 5,
-                    layers: layers,
-                    semanticLabel: 'Minute',
-                    onChanged: enabled
-                        ? (i) => onChanged!(
-                            BrutalTime(hour: value.hour, minute: minutes[i]),
-                          )
-                        : null,
-                  ),
-                ),
-              ],
-            ),
+          child: _wheels(
+            context,
+            labels: [
+              [for (var h = 0; h < 24; h++) two(h)],
+              [for (final m in minutes) two(m)],
+            ],
+            names: const ['Hour', 'Minute'],
+            widths: const [88, 88],
+            selection: [value.hour, minutes.indexOf(nearest)],
+            onChanged: enabled
+                ? (picked) => onChanged!(
+                    BrutalTime(hour: picked[0], minute: minutes[picked[1]]),
+                  )
+                : null,
+            rows: 5,
+            layers: layers,
           ),
         ),
       ),

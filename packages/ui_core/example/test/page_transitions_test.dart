@@ -8,8 +8,8 @@
 //
 // The example's own pages stay Material-free; this test stands in for a
 // look's example, which copies it with the look's own map.
-import 'package:flutter/cupertino.dart' show CupertinoPageTransition;
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransition;
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ui_core/ui_core.dart';
 

@@ -10,6 +10,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+// 0.3.0 routes
+import 'internal/panes.dart';
+// 0.3.0 routes end
 import 'localizations.dart';
 import 'motion.dart';
 
@@ -383,6 +386,10 @@ class DesignToasterState extends State<DesignToaster>
   bool _hovered = false;
   bool _focused = false;
   FocusNode? _returnFocus;
+  // 0.3.0 routes
+  // The F6 cycle the toaster's toasts are a pane of.
+  final GlobalKey<PaneCycleState> _cycle = GlobalKey();
+  // 0.3.0 routes end
 
   /// How many toasts are shown, leaving ones included.
   int get shownCount => _shown.length;
@@ -559,13 +566,27 @@ class DesignToasterState extends State<DesignToaster>
   }
 
   Object? _jump(_JumpToToastIntent intent) {
+    // 0.3.0 routes
+    // With other panes about (a shell's), F6 cycles through them all.
+    final cycle = _cycle.currentState;
+    if (cycle != null && cycle.cycles) {
+      cycle.move(forward: true);
+      return null;
+    }
+    _focusNewest();
+    return null;
+  }
+
+  // Focuses the newest toast, remembering where focus was; false with none.
+  bool _focusNewest() {
+    // 0.3.0 routes end
     final live = _shown.where((r) => !r.exiting).toList();
-    if (live.isEmpty) return null;
+    if (live.isEmpty) return false;
     final current = FocusManager.instance.primaryFocus;
     final inside = live.any((r) => r.focusNode.hasFocus);
     if (!inside) _returnFocus = current;
     live.last.focusNode.requestFocus();
-    return null;
+    return true;
   }
 
   @override
@@ -718,9 +739,17 @@ class DesignToasterState extends State<DesignToaster>
         ),
       );
     }
+    // 0.3.0 routes
+    // Shown, the toasts are one of F6's panes, entered at the newest.
+    stack = Pane(
+      debugLabel: 'DesignToaster',
+      enter: _focusNewest,
+      child: stack,
+    );
+    // 0.3.0 routes end
     // The region stays mounted when empty: an unmounted MouseRegion never
     // reports its exit, and the next toast would wait out a stale hover.
-    return Stack(
+    final toaster = Stack(
       children: [
         app,
         Positioned.fill(
@@ -739,6 +768,10 @@ class DesignToasterState extends State<DesignToaster>
         ),
       ],
     );
+    // 0.3.0 routes
+    // F6 and Shift+F6 cycle the panes: the toasts, and a shell's below.
+    return PaneCycle(key: _cycle, child: toaster);
+    // 0.3.0 routes end
   }
 }
 

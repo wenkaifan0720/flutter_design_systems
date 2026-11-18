@@ -64,18 +64,118 @@ final Map<String, String Function(DesignLocalizations l)> _words = {
   'tagInputDeleteLabel': (l) => l.tagInputDeleteLabel,
   'toasterRegionLabel': (l) => l.toasterRegionLabel,
   'treeLevelHint': (l) => l.treeLevelHint(3, 2, 5),
+  // 0.3.0 overlays: a shortcut's keys (designShortcutKeys).
+  'keyboardKeyAlt': (l) => l.keyboardKeyAlt,
+  'keyboardKeyControl': (l) => l.keyboardKeyControl,
+  'keyboardKeyShift': (l) => l.keyboardKeyShift,
+  'keyboardKeyMeta': (l) => l.keyboardKeyMeta,
+  'keyboardKeyMetaWindows': (l) => l.keyboardKeyMetaWindows,
+  'keyboardKeyMetaMacOs': (l) => l.keyboardKeyMetaMacOs,
+  'keyboardKeyBackspace': (l) => l.keyboardKeyBackspace,
+  'keyboardKeyDelete': (l) => l.keyboardKeyDelete,
+  'keyboardKeyEnd': (l) => l.keyboardKeyEnd,
+  'keyboardKeyEscape': (l) => l.keyboardKeyEscape,
+  'keyboardKeyHome': (l) => l.keyboardKeyHome,
+  'keyboardKeyInsert': (l) => l.keyboardKeyInsert,
+  'keyboardKeyPageDown': (l) => l.keyboardKeyPageDown,
+  'keyboardKeyPageUp': (l) => l.keyboardKeyPageUp,
+  'keyboardKeySpace': (l) => l.keyboardKeySpace,
+  'keyboardKeyOption': (l) => l.keyboardKeyOption,
+  'keyboardKeyEnter': (l) => l.keyboardKeyEnter,
+  'keyboardKeyTab': (l) => l.keyboardKeyTab,
+  // 0.3.0 overlays: a search that failed (DesignCombobox.errorBuilder).
+  'searchFailedMessage': (l) => l.searchFailedMessage,
+  // 0.3.0 routes
+  'alertDialogLabel': (l) => l.alertDialogLabel,
+  'bottomSheetLabel': (l) => l.bottomSheetLabel,
+  'dialogLabel': (l) => l.dialogLabel,
+  'drawerLabel': (l) => l.drawerLabel,
+  'dragHandleLabel': (l) => l.dragHandleLabel,
+  'tabLabel': (l) => l.tabLabel(tabIndex: 2, tabCount: 5),
+  // 0.3.0 routes end
+  ..._valueWords,
 };
+
+// 0.3.0 values
+final Map<String, String Function(DesignLocalizations l)> _valueWords = {
+  'anteMeridiemAbbreviation': (l) => l.anteMeridiemAbbreviation,
+  'postMeridiemAbbreviation': (l) => l.postMeridiemAbbreviation,
+  'timePickerHourLabel': (l) => l.timePickerHourLabel,
+  'timePickerMinuteLabel': (l) => l.timePickerMinuteLabel,
+  'dateFieldYearLabel': (l) => l.dateFieldYearLabel,
+  'dateFieldMonthLabel': (l) => l.dateFieldMonthLabel,
+  'dateFieldDayLabel': (l) => l.dateFieldDayLabel,
+  'timeFieldSecondLabel': (l) => l.timeFieldSecondLabel,
+  'timeFieldDayPeriodLabel': (l) => l.timeFieldDayPeriodLabel,
+  'dateFieldYearPlaceholder': (l) => l.dateFieldYearPlaceholder,
+  'dateFieldMonthPlaceholder': (l) => l.dateFieldMonthPlaceholder,
+  'dateFieldDayPlaceholder': (l) => l.dateFieldDayPlaceholder,
+  'dateOutOfRangeLabel': (l) => l.dateOutOfRangeLabel,
+  'emptyValueLabel': (l) => l.emptyValueLabel,
+  'ratingLabel': (l) => l.ratingLabel,
+  'ratingValueLabel': (l) => l.ratingValueLabel(3, 5),
+  'chartRangeLabel': (l) => l.chartRangeLabel('1', '9'),
+  'chartExtremesLabel': (l) => l.chartExtremesLabel('2', '8'),
+  'chartPointLabel': (l) => l.chartPointLabel('3', 'Milk', '4'),
+  'chartShowTableLabel': (l) => l.chartShowTableLabel,
+  'listSeparator': (l) => l.listSeparator,
+};
+
+// Words a right-to-left locale writes in Latin letters, as Flutter's
+// Material translations do (its AM and PM, its date hint's letters) or as
+// the language punctuates.
+const Map<String, Set<String>> _latinInRtl = {
+  'ar': {
+    'dateFieldYearPlaceholder',
+    'dateFieldMonthPlaceholder',
+    'dateFieldDayPlaceholder',
+  },
+  'he': {
+    'anteMeridiemAbbreviation',
+    'postMeridiemAbbreviation',
+    'dateFieldYearPlaceholder',
+    'dateFieldMonthPlaceholder',
+    'dateFieldDayPlaceholder',
+    'chartPointLabel',
+    'listSeparator',
+  },
+  'ur': {
+    'anteMeridiemAbbreviation',
+    'postMeridiemAbbreviation',
+    'dateFieldYearPlaceholder',
+    'dateFieldMonthPlaceholder',
+    'dateFieldDayPlaceholder',
+  },
+};
+// 0.3.0 values end
 const _filled = {
   'position': 2,
   'count': 5,
   'slide': 2,
   'label': 'Milk',
   'level': 3,
+  // 0.3.0 routes
+  'tabIndex': 2,
+  'tabCount': 5,
+  // 0.3.0 routes end
+  // 0.3.0 values
+  'value': 3,
+  'from': '1',
+  'to': '9',
+  'lowest': '2',
+  'highest': '8',
+  'x': '3',
+  'series': 'Milk',
+  'y': '4',
 };
 final Map<String, String Function(DesignLocalizations l, int n)> _counted = {
   'selectedRowCountTitle': (l, n) => l.selectedRowCountTitle(n),
   'commandPaletteResultsMessage': (l, n) => l.commandPaletteResultsMessage(n),
   'formProblemsMessage': (l, n) => l.formProblemsMessage(n),
+  // 0.3.0 values
+  'chartSeriesCountLabel': (l, n) => l.chartSeriesCountLabel(n),
+  'chartPointCountLabel': (l, n) => l.chartPointCountLabel(n),
+  'chartSliceCountLabel': (l, n) => l.chartSliceCountLabel(n),
 };
 
 String _key(Locale l) => l.countryCode == null
@@ -338,7 +438,11 @@ void main() {
         'in a right-to-left app', (tester) async {
       final l = DesignLocalizations.forLocale(Locale(language));
       for (final MapEntry(:key, :value) in _words.entries) {
+        if (_latinInRtl[language]?.contains(key) ?? false) continue;
         // Every message is in its script (Milk, a label, aside).
+        // Key caps' names stay in Latin letters, as Material's own
+        // translations keep them (Alt, Ctrl, Shift).
+        if (key.startsWith('keyboardKey')) continue;
         final text = value(l).replaceAll('Milk', '');
         expect(text.runes.any(_rtl), isTrue, reason: '$language $key: $text');
       }

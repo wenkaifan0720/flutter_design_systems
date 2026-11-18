@@ -11,7 +11,6 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'actions.dart';
-import 'internal/menu_input.dart';
 import 'menu.dart';
 import 'surface.dart';
 import 'text_field.dart';
@@ -685,7 +684,6 @@ class BrutalMenuBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    brutalWatchPresses();
     final theme = BrutalTheme.of(context);
     final c = theme.colors;
     final layers = [style, theme.menuBarStyle];
@@ -701,7 +699,7 @@ class BrutalMenuBar extends StatelessWidget {
                 DesignMenuEntry(
                   label: item.label,
                   onPressed: item.onPressed,
-                  shortcut: item.shortcut,
+                  shortcut: item.shortcutLabel(context),
                   data: item,
                 ),
             ],

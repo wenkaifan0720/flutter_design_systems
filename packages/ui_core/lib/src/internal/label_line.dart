@@ -1,18 +1,13 @@
 /// Where the engine draws a one-line label's or text entry's capitals: what
-/// `DesignCapCenter` places and the alignment checks read. A line is a
-/// [RenderParagraph] or a [RenderEditable]. Inside ui_core; not exported.
+/// `DesignCapCenter` places and the checks in ui_core_test read. A line is a
+/// [RenderParagraph] or a [RenderEditable]. Internal; not exported.
+///
+/// ui_core and ui_core_test each carry a copy of this file, written from one
+/// source (the design kit's `lib/design_kit/internal/label_line.dart`) and
+/// held equal when the two are exported: change the source, never a copy.
 library;
 
 import 'package:flutter/rendering.dart';
-
-import 'drawn_pixels.dart' show isIconGlyph;
-
-/// A box that draws its label with the capitals on its middle
-/// (`DesignCapCenter`'s), and the cap height it was given.
-abstract interface class CapCentred {
-  /// The label's cap height as a fraction of its font size.
-  double get capHeightFactor;
-}
 
 /// The line [root] shows: its text entry's editable when it holds one (its
 /// typed text, and the hint drawn on its baseline), else its first
@@ -168,4 +163,13 @@ double? _fontSize(InlineSpan span) {
 
   visit(span, null);
   return found ?? span.style?.fontSize;
+}
+
+/// Whether [text] is an icon's glyph: one character from a private-use
+/// code point.
+bool isIconGlyph(String text) {
+  final runes = text.runes.toList();
+  if (runes.length != 1) return false;
+  final r = runes.single;
+  return (r >= 0xE000 && r <= 0xF8FF) || r >= 0xF0000;
 }
