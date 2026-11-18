@@ -1337,8 +1337,8 @@ class _MenuRowRelief extends CustomPainter {
       light: (const Offset(-1, -1), 3),
       dark: (const Offset(1, 1), 3),
       face: LinearGradient(colors: [tint, tint]).createShader(box),
+      tone: neumorphicIsColourFace(fill, colors) ? fill : null,
       elevation: elevation,
-      contentBounds: box.deflate(6),
     );
   }
 

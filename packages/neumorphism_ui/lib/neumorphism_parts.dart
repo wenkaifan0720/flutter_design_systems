@@ -1,12 +1,8 @@
-/// Everything `neumorphism_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (chart.dart, controls.dart, frames.dart, internal/beside.dart, internal/cap_label.dart, internal/cell_bank.dart, internal/day_face.dart, internal/error_line.dart, internal/geometry.dart, internal/group_rows.dart, internal/moulded.dart, internal/out_of_use.dart, internal/page_motion.dart, internal/panel.dart, internal/platform_words.dart, internal/reach.dart, internal/text_entry.dart, internal/veil.dart, internal/whole_words.dart, layout.dart, ornaments.dart, theme.dart).
+/// Helpers for customizing components copied from `neumorphism_ui`.
 ///
-/// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
-/// rest of your app stays on the package:
+/// Import this library in the copied widget to use its theme and component helpers.
 ///
 /// ```dart
-/// // lib/ui/my_card.dart, copied from package:neumorphism_ui/src/neumorphism/... and renamed.
-/// import 'package:flutter/widgets.dart';
 /// import 'package:neumorphism_ui/neumorphism_parts.dart';
 /// ```
 ///

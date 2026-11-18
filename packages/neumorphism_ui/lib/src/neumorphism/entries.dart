@@ -1228,11 +1228,17 @@ class _CheckMark extends StatelessWidget {
     // unless the widget's style or the checkbox theme sets a fill of its own (those win, in that order). A box in error
     // still shows its value: its well stays bare and its edge and tick take the ink; the message goes under it.
     final pigmented = value != false && !error && look.fill == null;
-    final inked = error && look.edge == null && look.side == null;
+    final needsEdge = look.edge == null && look.side == null;
+    final empty = value == false && enabled && look.fill == null;
     final filled = pigmented
         ? NeumorphicStyle(fill: WidgetStatePropertyAll(t.colors.pigment))
-        : inked
+        : error && needsEdge
         ? NeumorphicStyle(edge: WidgetStatePropertyAll(t.colors.ink))
+        : empty && needsEdge && !t.highContrast
+        // With no tick or fill, the rim identifies the control against the wall.
+        ? NeumorphicStyle(
+            side: WidgetStatePropertyAll(BorderSide(color: t.colors.quiet)),
+          )
         : null;
     return NeumorphicOutOfUse(
       off: !enabled,
@@ -1247,11 +1253,7 @@ class _CheckMark extends StatelessWidget {
           round: false,
           outlined: true,
           boundary: true,
-          // The empty light well has no mark to protect. Let its existing
-          // inset shadow extend inward instead of clipping it to a thin edge.
-          padding: value == false && !t.colors.dark
-              ? const EdgeInsets.all(3)
-              : EdgeInsets.zero,
+          padding: EdgeInsets.zero,
           child: Center(
             child: AnimatedSwitcher(
               duration: NeumorphicMotion.of(context).state,

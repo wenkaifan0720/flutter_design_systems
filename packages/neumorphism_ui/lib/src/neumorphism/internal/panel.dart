@@ -208,6 +208,7 @@ class NeumorphicPanelRow extends StatelessWidget {
     this.inset = 8,
     this.panelInset = 12,
     this.checkAtEnd = false,
+    this.reserveIconSpace = true,
   });
 
   /// Its own inset round its words.
@@ -219,6 +220,9 @@ class NeumorphicPanelRow extends StatelessWidget {
   /// Whether its check stands at its end (a field's list, whose words start on the field's value) instead of in a
   /// column before its words.
   final bool checkAtEnd;
+
+  /// Keeps the labels in a column when another row has a leading icon.
+  final bool reserveIconSpace;
 
   /// Its words.
   final String label;
@@ -317,7 +321,8 @@ class NeumorphicPanelRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            if (!checkAtEnd || glyph != null) ...[
+            if (glyph != null ||
+                (!checkAtEnd && (reserveIconSpace || checked))) ...[
               SizedBox(
                 width: iconSize,
                 child: checked && !checkAtEnd
@@ -542,8 +547,8 @@ class NeumorphicPanelRowRelief extends CustomPainter {
       light: (const Offset(-1, -1), 3),
       dark: (const Offset(1, 1), 3),
       face: LinearGradient(colors: [tint, tint]).createShader(box),
+      tone: neumorphicIsColourFace(fill, colors) ? fill : null,
       elevation: elevation,
-      contentBounds: box.deflate(6),
     );
   }
 

@@ -435,7 +435,7 @@ class NeumorphicSplitButton extends StatelessWidget {
     final height = t.density.height(48);
     // One capsule (or the theme's small frame) cut in two: the main half keeps the start's corners, the key the end's.
     final whole = t.shapes.corner(NeumorphicRadii.control);
-    final source = {for (final a in actions) a.label: a};
+    final hasIcons = actions.any((action) => action.icon != null);
     // The button keeps its own width in a stretching column: its menu takes the button's width as its least, and a
     // column-wide button opened a column-wide menu for two short acts.
     final button = DesignSplitButton(
@@ -477,7 +477,11 @@ class NeumorphicSplitButton extends StatelessWidget {
       ),
       buttonBuilder: (context, part, states, open) {
         final isMain = part == DesignSplitPart.main;
-        final look = neumorphicStyleOf([style, themeStyle], states);
+        final faceStates = {
+          ...states,
+          if (!isMain && open) WidgetState.pressed,
+        };
+        final look = neumorphicStyleOf([style, themeStyle], faceStates);
         final enabled = !states.contains(WidgetState.disabled);
         final dir = Directionality.of(context);
         final shape = NeumorphicCellBorder(
@@ -521,37 +525,37 @@ class NeumorphicSplitButton extends StatelessWidget {
                   ),
                 ),
               );
-        return NeumorphicTapFace(
-          states: {...states, if (open) WidgetState.pressed},
-          style: style,
-          themeStyle: themeStyle,
-          shape: shape,
-          child: NeumorphicOutOfUse(
-            off: !enabled,
-            // Each half sinks on its own when pressed, into the body's one face.
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(
-                end: states.contains(WidgetState.pressed) || open ? 1 : 0,
-              ),
-              duration: NeumorphicMotion.of(context).press,
-              curve: NeumorphicMotion.of(context).standard,
+        return NeumorphicOutOfUse(
+          off: !enabled,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(end: faceStates.contains(WidgetState.pressed) ? 1 : 0),
+            duration: NeumorphicMotion.of(context).press,
+            curve: NeumorphicMotion.of(context).standard,
+            child: NeumorphicTapFace(
+              states: faceStates,
+              style: style,
+              themeStyle: themeStyle,
+              shape: shape,
+              pressRelief: false,
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: height),
                 child: content,
               ),
-              builder: (context, down, child) => CustomPaint(
-                painter: _SplitHalf(
-                  c,
-                  shape,
-                  look.fill,
-                  t.elevation,
-                  NeumorphicFlatScope.of(context),
-                  isMain,
-                  dir,
-                  down,
-                ),
-                child: child,
+            ),
+            // Paint to the whole hit target. Only the words or chevron move
+            // down inside it, so the body never shows through beside a key.
+            builder: (context, down, child) => CustomPaint(
+              painter: _SplitHalf(
+                c,
+                shape,
+                look.fill,
+                t.elevation,
+                NeumorphicFlatScope.of(context),
+                isMain,
+                dir,
+                down,
               ),
+              child: child,
             ),
           ),
         );
@@ -561,7 +565,6 @@ class NeumorphicSplitButton extends StatelessWidget {
       surfaceBuilder: (context, info, items) => NeumorphicPanel(
         presence: info.animation,
         side: info.side,
-        width: 264,
         maxHeight: info.maxSize.height,
         padding: EdgeInsets.zero,
         menu: true,
@@ -576,7 +579,8 @@ class NeumorphicSplitButton extends StatelessWidget {
       ),
       itemBuilder: (context, action, states) => NeumorphicPanelRow(
         label: action.label,
-        icon: (action.data as IconData?) ?? source[action.label]?.icon,
+        icon: action.data as IconData?,
+        reserveIconSpace: hasIcons,
         states: states,
       ),
     );

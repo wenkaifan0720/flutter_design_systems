@@ -8,6 +8,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
+import 'package:neumorphism_ui/src/neumorphism/controls.dart'
+    show NeumorphicTapFace;
 import 'package:neumorphism_ui/src/neumorphism/internal/panel.dart';
 
 import 'support.dart';
@@ -190,6 +192,71 @@ Widget _split() => Padding(
 );
 
 void main() {
+  for (final withIcon in [false, true]) {
+    testWidgets('split menu fits its contents and reserves an icon column only '
+        'when a row has an icon (icons: $withIcon)', (tester) async {
+      tester.view.physicalSize = const Size(2880, 1800);
+      tester.view.devicePixelRatio = 2;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        neumorphicApp(
+          Center(
+            child: NeumorphicSplitButton(
+              'Save',
+              onPressed: () {},
+              actions: [
+                NeumorphicSplitAction('Save a copy', onPressed: () {}),
+                if (withIcon)
+                  NeumorphicSplitAction(
+                    'Save a copy in another folder',
+                    icon: NeumorphicGlyphs.check,
+                    onPressed: () {},
+                  ),
+              ],
+            ),
+          ),
+          width: 1440,
+        ),
+      );
+      await tester.pumpAndSettle();
+      final halves = find.byType(NeumorphicTapFace);
+      final button = tester
+          .getRect(halves.first)
+          .expandToInclude(tester.getRect(halves.last));
+      final mouse = await _mouse(tester);
+      await _click(tester, mouse, find.byIcon(NeumorphicGlyphs.chevronDown));
+      final panel = tester.getRect(find.byType(NeumorphicPanel));
+      expect(panel.width, greaterThanOrEqualTo(button.width - .5));
+      if (withIcon) {
+        expect(panel.width, greaterThan(button.width));
+        expect(
+          tester.getRect(find.text('Save a copy in another folder')).left,
+          closeTo(tester.getRect(find.text('Save a copy')).left, .5),
+        );
+      } else {
+        final words = tester.getSize(find.text('Save a copy')).width;
+        expect(
+          panel.width,
+          lessThanOrEqualTo(
+            button.width > words + 70 ? button.width + 1 : words + 70,
+          ),
+        );
+      }
+      final row = tester.getRect(_row('Save a copy'));
+      final label = tester.getRect(find.text('Save a copy'));
+      expect(label.left - row.left, closeTo(withIcon ? 38 : 8, .5));
+      final main = tester.widget<NeumorphicTapFace>(halves.first);
+      final toggle = tester.widget<NeumorphicTapFace>(halves.last);
+      expect(main.states, isNot(contains(WidgetState.pressed)));
+      expect(toggle.states, contains(WidgetState.pressed));
+      expect(
+        toggle.pressRelief,
+        isFalse,
+        reason: 'the key paints its own coloured inset',
+      );
+    });
+  }
+
   testWidgets('the look\'s menu: opened by the pointer nothing is lit; the '
       'pointer\'s row, then the keys\' going on from it, then the pointer\'s '
       'again, one at a time; its rows stand its inset inside its scroll', (

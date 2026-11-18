@@ -18,7 +18,6 @@ import 'component_themes.dart';
 import 'knobs.dart';
 import 'styled.dart';
 import 'internal/moulded.dart';
-import 'shapes.dart';
 
 /// The levels of the material, named for what they are.
 enum NeumorphicSurfaceLevel {
@@ -191,9 +190,7 @@ Path _outside(Path shape, Rect box, Offset by, double pad) => Path()
   ..addRect(box.inflate(pad))
   ..addPath(shape, by);
 
-/// Presses [shape] in: the pressed face, a light inset, a dark inset. The inset keeps out of [contentBounds], cut along a
-/// curve parallel to the outline: each of the room's corners rounds by [outlineRadius] (the outline's corner) less the
-/// room's inset at that corner.
+/// Paints the pressed face and its two inset shadows. Each shadow fades across the face beneath its content.
 void neumorphicPaintPressed(
   Canvas canvas,
   Path shape,
@@ -207,8 +204,6 @@ void neumorphicPaintPressed(
   double faceDeg = 145,
   bool flat = false,
   NeumorphicElevation elevation = const NeumorphicElevation(),
-  Rect? contentBounds,
-  double outlineRadius = 0,
 }) {
   final box = shape.getBounds();
   canvas.drawPath(shape, _facePaint(c.ground, face));
@@ -224,34 +219,6 @@ void neumorphicPaintPressed(
   }
   canvas.save();
   canvas.clipPath(shape);
-  if (contentBounds != null && !contentBounds.isEmpty) {
-    // The room stands the inset's reach in from the outline all round, so the inset has faded where it is cut. Cut
-    // as a plain rectangle, its corners came nearer a round outline than that: a square showed inside a round well
-    // and a box inside a field's round ends.
-    final l = contentBounds.left - box.left, t = contentBounds.top - box.top;
-    final r = box.right - contentBounds.right;
-    final b = box.bottom - contentBounds.bottom;
-    Radius corner(double x, double y) => Radius.elliptical(
-      math.max(0, outlineRadius - x),
-      math.max(0, outlineRadius - y),
-    );
-    final room = RRect.fromRectAndCorners(
-      contentBounds,
-      topLeft: corner(l, t),
-      topRight: corner(r, t),
-      bottomRight: corner(r, b),
-      bottomLeft: corner(l, b),
-    );
-    // The shape less the room, as the outline and the room filled even-odd (the room lies inside the outline): a
-    // browser fills a Path.combine difference with a hole whole, so cut that way the inset ran on across the room on
-    // the web.
-    canvas.clipPath(
-      Path()
-        ..fillType = PathFillType.evenOdd
-        ..addPath(shape, Offset.zero)
-        ..addRRect(room),
-    );
-  }
   final pad =
       (light.$2 + dark.$2 + light.$1.distance + dark.$1.distance) *
           elevation.depth +
@@ -308,8 +275,6 @@ void neumorphicPaintCast(
   Shader? face,
   Color? tone,
   NeumorphicElevation elevation = const NeumorphicElevation(),
-  Rect? contentBounds,
-  double outlineRadius = 0,
 }) {
   switch (draw) {
     case NeumorphicDraw.part:
@@ -367,8 +332,6 @@ void neumorphicPaintCast(
         shape,
         c,
         tone: tone,
-        contentBounds: contentBounds,
-        outlineRadius: outlineRadius,
         light: (const Offset(-3, -3), 7),
         dark: (const Offset(3, 3), 7),
         face: face,
@@ -381,8 +344,6 @@ void neumorphicPaintCast(
         shape,
         c,
         tone: tone,
-        contentBounds: contentBounds,
-        outlineRadius: outlineRadius,
         light: (const Offset(-6, -6), 14),
         dark: (const Offset(6, 6), 14),
         face: face,
@@ -400,8 +361,6 @@ void neumorphicPaintCast(
         face: face,
         flat: flat,
         elevation: elevation,
-        contentBounds: contentBounds,
-        outlineRadius: outlineRadius,
       );
   }
 }
@@ -468,9 +427,6 @@ class _FaceTween extends Tween<(double, double, double)> {
   }
 }
 
-/// How far a pressed inset reads into its face: the groove's offset and half its blur.
-const double _insetReach = 6;
-
 class _CastPainter extends CustomPainter {
   _CastPainter(
     this.draw,
@@ -486,7 +442,6 @@ class _CastPainter extends CustomPainter {
     this.border,
     this.fill,
     this.side,
-    this.safePadding = EdgeInsets.zero,
     this.elevation = const NeumorphicElevation(),
     this.focus = 0,
   });
@@ -502,7 +457,6 @@ class _CastPainter extends CustomPainter {
   final OutlinedBorder? border;
   final Color? fill;
   final BorderSide? side;
-  final EdgeInsets safePadding;
   final NeumorphicElevation elevation;
 
   /// How far a focused groove or well has deepened, 0 to 1.
@@ -521,32 +475,6 @@ class _CastPainter extends CustomPainter {
     // A colour face (the pigment on a checked box, a filled key) keeps its colour when it sinks.
     final tone = neumorphicIsColourFace(fill, c) ? fill : null;
     final face = fill == null ? null : cssLinear(box, 145, [fill!, fill!]);
-    final cut = (round ? size.shortestSide / 2 : radius) * (1 - math.sqrt(.5));
-    // A pressed shadow keeps out of the content rectangle, but always keeps a
-    // band at every edge, at least the corner's cut and the inset's own reach:
-    // that band is the edge. A one-line field's content spans
-    // its whole height, so without the band its inset showed at the ends alone.
-    final band = math.max(cut, _insetReach);
-    final protected = EdgeInsets.fromLTRB(
-      math.max(safePadding.left, band),
-      math.max(safePadding.top, band),
-      math.max(safePadding.right, band),
-      math.max(safePadding.bottom, band),
-    );
-    final safe = protected.deflateRect(box);
-    final outlineRadius = switch (border) {
-      null => round ? size.shortestSide / 2 : radius,
-      NeumorphicRoundedBorder(radius: final r) => math.min(
-        r,
-        size.shortestSide / 2,
-      ),
-      NeumorphicStadiumBorder(maxRadius: final r) => math.min(
-        r,
-        size.shortestSide / 2,
-      ),
-      NeumorphicCircleBorder() => size.shortestSide / 2,
-      _ => 0.0,
-    };
     if (depression == 0 && boundary && draw == NeumorphicDraw.groove) {
       // A control found by its edge, with no line to find it by: a tighter, darker inset, so the well's rim reads
       // as an edge at a glance, day and night.
@@ -569,8 +497,6 @@ class _CastPainter extends CustomPainter {
         tone: tone,
         flat: flat,
         elevation: elevation,
-        contentBounds: safe,
-        outlineRadius: outlineRadius,
       );
     } else if (depression == 0 &&
         focus > 0 &&
@@ -591,8 +517,6 @@ class _CastPainter extends CustomPainter {
         tone: tone,
         flat: flat,
         elevation: elevation,
-        contentBounds: safe,
-        outlineRadius: outlineRadius,
       );
     } else if (depression == 0) {
       neumorphicPaintCast(
@@ -604,8 +528,6 @@ class _CastPainter extends CustomPainter {
         face: face,
         tone: tone,
         elevation: elevation,
-        contentBounds: safe,
-        outlineRadius: outlineRadius,
       );
     } else if (depression == 1) {
       neumorphicPaintCast(
@@ -617,8 +539,6 @@ class _CastPainter extends CustomPainter {
         face: face,
         tone: tone,
         elevation: elevation,
-        contentBounds: safe,
-        outlineRadius: outlineRadius,
       );
     } else {
       // One depth from raised through flat to pressed: the raised pair shrinks to nothing by the middle, where the
@@ -653,8 +573,6 @@ class _CastPainter extends CustomPainter {
           strength: elevation.strength * down,
         ),
         flat: flat || pressedDraw == NeumorphicDraw.floor || down == 0,
-        contentBounds: safe,
-        outlineRadius: outlineRadius,
       );
     }
     if (live > 0) {
@@ -708,7 +626,6 @@ class _CastPainter extends CustomPainter {
       o.border != border ||
       o.fill != fill ||
       o.side != side ||
-      o.safePadding != safePadding ||
       o.elevation != elevation;
 }
 
@@ -987,7 +904,6 @@ class NeumorphicSurface extends StatelessWidget {
                 border: border,
                 fill: look.fill,
                 side: edge,
-                safePadding: safePadding,
                 elevation: elevation,
                 focus: focus.clamp(0.0, 1.0),
               ),

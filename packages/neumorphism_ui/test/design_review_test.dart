@@ -56,6 +56,44 @@ Future<void> _pump(
 void main() {
   setUpAll(loadNeumorphicFonts);
   for (final mode in Brightness.values) {
+    testWidgets('the empty checkbox rim reaches 3:1 in ${mode.name}', (
+      tester,
+    ) async {
+      final stage = GlobalKey();
+      final theme = NeumorphicThemeData.porcelain(mode);
+      await _pump(
+        tester,
+        theme,
+        NeumorphicCheckbox(
+          value: false,
+          label: 'Include a receipt',
+          onChanged: (_) {},
+        ),
+        stage,
+      );
+      final face = tester
+          .getRect(find.byType(NeumorphicSurface))
+          .shift(-tester.getTopLeft(find.byKey(stage)));
+      const scale = 2.0;
+      final (bytes, width, _) = await _shot(tester, stage, pixelRatio: scale);
+      // Sample three points on each straight side of the empty mark itself.
+      for (final fraction in [.25, .5, .75]) {
+        final y = ((face.top + face.height * fraction) * scale).floor();
+        for (final left in [true, false]) {
+          final x = left
+              ? (face.left * scale).floor()
+              : (face.right * scale).ceil() - 1;
+          final contrast = [
+            for (var i = 0; i < 3; i++)
+              _contrast(
+                _pixel(bytes, width, x + (left ? i : -i), y),
+                theme.colors.ground,
+              ),
+          ].reduce(math.max);
+          expect(contrast, greaterThanOrEqualTo(3), reason: 'rim at ($x, $y)');
+        }
+      }
+    });
     testWidgets(
       'menu presses its chosen row in under the wash, with a small keyboard-only lift, in ${mode.name}',
       (tester) async {
@@ -580,11 +618,17 @@ void main() {
 const _cueFloor = 8;
 
 /// The stage's pixels: bytes, width, height.
-Future<(ByteData, int, int)> _shot(WidgetTester tester, GlobalKey stage) async {
+Future<(ByteData, int, int)> _shot(
+  WidgetTester tester,
+  GlobalKey stage, {
+  double pixelRatio = 1,
+}) async {
   final boundary = tester.renderObject<RenderRepaintBoundary>(
     find.byKey(stage),
   );
-  final image = await tester.runAsync(() => boundary.toImage());
+  final image = await tester.runAsync(
+    () => boundary.toImage(pixelRatio: pixelRatio),
+  );
   final bytes = await tester.runAsync(
     () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
   );

@@ -643,6 +643,7 @@ class NeumorphicTapFace extends StatelessWidget {
                 : _PressRelief(
                     theme.colors,
                     theme.elevation,
+                    look.fill,
                     depth,
                     radius,
                     round,
@@ -875,6 +876,7 @@ class _PressRelief extends CustomPainter {
   const _PressRelief(
     this.c,
     this.elevation,
+    this.fill,
     this.depth,
     this.radius,
     this.round,
@@ -886,6 +888,7 @@ class _PressRelief extends CustomPainter {
   });
   final NeumorphicColors c;
   final NeumorphicElevation elevation;
+  final Color? fill;
   final Alignment place;
   final double depth, radius, inset;
   final bool round;
@@ -906,6 +909,9 @@ class _PressRelief extends CustomPainter {
       place,
     );
     final box = shape.getBounds();
+    final (light, dark) = neumorphicIsColourFace(fill, c)
+        ? neumorphicTones(fill!, c)
+        : (c.highlight, c.shadowInset);
     Paint blurred(Color color) => Paint()
       ..isAntiAlias = true
       ..color = color.withValues(alpha: color.a * depth * elevation.strength)
@@ -916,8 +922,8 @@ class _PressRelief extends CustomPainter {
       ..addPath(shape, by * elevation.depth);
     canvas.save();
     canvas.clipPath(shape);
-    canvas.drawPath(outside(const Offset(-3, -3)), blurred(c.highlight));
-    canvas.drawPath(outside(const Offset(3, 3)), blurred(c.shadowInset));
+    canvas.drawPath(outside(const Offset(-3, -3)), blurred(light));
+    canvas.drawPath(outside(const Offset(3, 3)), blurred(dark));
     canvas.restore();
   }
 
@@ -925,6 +931,7 @@ class _PressRelief extends CustomPainter {
   bool shouldRepaint(_PressRelief old) =>
       old.c != c ||
       old.elevation != elevation ||
+      old.fill != fill ||
       old.depth != depth ||
       old.radius != radius ||
       old.round != round ||
@@ -1087,6 +1094,7 @@ class _ActPainter extends CustomPainter {
         dark: (const Offset(3, 3), 7),
         lightColor: c.pigmentHi.withValues(alpha: .6),
         darkColor: c.pigmentDk,
+        tone: neumorphicIsColourFace(fill, c) ? fill : null,
         face: face,
         elevation: elevation.copyWith(
           depth: elevation.depth * pressed,
@@ -5037,6 +5045,7 @@ class _SwitchPainter extends CustomPainter {
       light: (const Offset(-2, -2), 4),
       dark: (const Offset(2, 2), 4),
       lightColor: on ? c.pigmentHi.withValues(alpha: .35) : null,
+      tone: neumorphicIsColourFace(fill, c) ? fill : null,
       darkColor: on
           ? c.pigmentDk.withValues(alpha: .7)
           : c.shadowInset.withValues(alpha: c.dark ? .9 : .55),
@@ -6059,6 +6068,9 @@ class NeumorphicRoundCheckbox extends StatelessWidget {
                                 dark: (const Offset(2, 2), 5),
                                 flat: flat,
                                 elevation: t.elevation,
+                                tone: neumorphicIsColourFace(look.fill, c)
+                                    ? look.fill
+                                    : null,
                                 face: look.fill == null
                                     ? null
                                     : cssLinear(Offset.zero & s, 145, [

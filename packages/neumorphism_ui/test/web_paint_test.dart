@@ -1,8 +1,5 @@
-// What Neumorphism paints must look the same in a browser. Flutter 3.47's web renderer fills a Path.combine whose
-// result has a hole as its whole first path: the inset of a pressed well, clipped to the outline less the room it
-// holds, ran on across a field's words, a calendar's days and a list's rows in a browser, while the tests' renderer
-// and every other platform cut it at the room. A shape less a hole is the two outlines filled even-odd instead. An
-// intersection of two outlines has no hole, so it stays.
+// Flutter 3.47's web renderer can fill a hole made by Path.combine. The inset painter
+// uses an even-odd path for the outside of a face on every renderer.
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';

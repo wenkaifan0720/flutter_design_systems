@@ -1,3 +1,12 @@
+## 0.3.1
+
+### Fixed
+
+- Fixed the flat, square-edged rectangle inside text fields, Hearth’s stat tiles and other pressed wells. The inset shadow now fades smoothly from the rim underneath the content, including when a field has focus.
+- Opening a split button now sinks only its chevron in the button’s own colour. Its menu fits the button and its actions, and text-only actions no longer start after an empty icon slot. Pressed keys and menu rows with custom fills keep their own colour at the rim.
+- Unchecked checkboxes now have a visible rim in day and night, including the gallery’s “Include a receipt” option.
+- If you call `neumorphicPaintPressed` or `neumorphicPaintCast` directly through `neumorphism_parts.dart`, remove the former `contentBounds` and `outlineRadius` arguments.
+
 ## 0.3.0
 
 Built on ui_core 0.3.0. Neumorphism's dialog, sheet pages, tabs, tooltip, number field, wheel picker, rating and

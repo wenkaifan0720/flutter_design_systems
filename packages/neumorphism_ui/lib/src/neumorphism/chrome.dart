@@ -1147,6 +1147,9 @@ class _ActKey extends StatelessWidget {
       round: true,
       // A plain key sinks through one depth under a press, as every moulded part does.
       pressRelief: action.accent,
+      style: action.accent
+          ? NeumorphicStyle(fill: WidgetStatePropertyAll(c.pigment))
+          : null,
       child: action.accent
           ? neumorphicOwnSize(
               width: 44,
