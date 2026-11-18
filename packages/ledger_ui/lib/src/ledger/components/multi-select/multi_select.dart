@@ -144,22 +144,25 @@ class _LedgerMultiSelectState<T extends Object>
       focusNode: _focus,
       semanticLabel: widget.label,
       optionsMaxHeight: _paper,
-      fieldBuilder: (context, field) => Material(
-        type: MaterialType.transparency,
-        child: TextField(
-          controller: field.controller,
-          focusNode: field.focusNode,
-          decoration: null,
-          enabled: enabled,
-          style: words.colored(t.textPrimary),
-          cursorColor: t.textPrimary,
-          cursorWidth: 1.5,
-          maxLines: 1,
-          // Enter adds the lit tag and the field keeps the focus for the
-          // next: in onEditingComplete, never onSubmitted, whose submit
-          // restarts the text input of a field that keeps the focus (a
-          // browser's then takes no typing).
-          onEditingComplete: field.submit,
+      fieldBuilder: (context, field) => Semantics(
+        label: widget.label,
+        child: Material(
+          type: MaterialType.transparency,
+          child: TextField(
+            controller: field.controller,
+            focusNode: field.focusNode,
+            decoration: null,
+            enabled: enabled,
+            style: words.colored(t.textPrimary),
+            cursorColor: t.textPrimary,
+            cursorWidth: 1.5,
+            maxLines: 1,
+            // Enter adds the lit tag and the field keeps the focus for the
+            // next: in onEditingComplete, never onSubmitted, whose submit
+            // restarts the text input of a field that keeps the focus (a
+            // browser's then takes no typing).
+            onEditingComplete: field.submit,
+          ),
         ),
       ),
       optionBuilder: (context, option, states) =>
@@ -216,13 +219,14 @@ class _LedgerMultiSelectState<T extends Object>
       ),
     );
     return DesignField(
-      labelText: widget.label,
+      mergeSemantics: false,
       helperText: widget.helper,
       errorText: widget.error,
       enabled: enabled,
       focusNode: _focus,
       builder: (context, parts) => LedgerFieldFrame(
         parts: parts,
+        displayLabel: widget.label,
         focusNode: _focus,
         labelCursor: SystemMouseCursors.text,
         line: parts.control,

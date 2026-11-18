@@ -1,12 +1,8 @@
-/// Everything `ledger_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (components/pressable/pressable.dart, components/structure/structure.dart, internal/bar_slot.dart, internal/button_ends.dart, internal/cap_center.dart, internal/css_shadow.dart, internal/dashed.dart, internal/end_glyph.dart, internal/engraving.dart, internal/even_acts.dart, internal/face.dart, internal/field_frame.dart, internal/footer_band.dart, internal/grabber.dart, internal/hatch.dart, internal/hit_slop.dart, internal/key_focus.dart, internal/leader.dart, internal/menu_marks.dart, internal/narrow.dart, internal/on_cheque.dart, internal/option_paper.dart, internal/per_line.dart, internal/platform_words.dart, internal/plot.dart, internal/presence.dart, internal/report_height.dart, internal/shell_faces.dart, internal/side_inset.dart, internal/state_face.dart, internal/styled.dart, internal/text_input.dart, internal/themes/frost.g.dart, internal/themes/gallery.g.dart, internal/themes/paper.g.dart, internal/themes/signal.g.dart, internal/whole_pixel.dart, tokens.dart).
+/// Helpers for customizing components copied from `ledger_ui`.
 ///
-/// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
-/// rest of your app stays on the package:
+/// Import this library in the copied widget to use its theme and component helpers.
 ///
 /// ```dart
-/// // lib/ui/my_card.dart, copied from package:ledger_ui/src/ledger/... and renamed.
-/// import 'package:flutter/widgets.dart';
 /// import 'package:ledger_ui/ledger_parts.dart';
 /// ```
 ///

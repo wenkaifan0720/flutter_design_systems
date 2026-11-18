@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/face.dart';
@@ -458,18 +459,18 @@ class _Tab extends StatelessWidget {
         child: face,
       );
     }
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
+    return DesignPressable(
+      onPressed: onTap,
+      semanticSelected: selected,
+      semanticLabel: label,
       excludeSemantics: true,
-      onTap: onTap,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        // A pointer over a tab shows the click cursor.
-        child: MouseRegion(cursor: SystemMouseCursors.click, child: face),
+      builder: (context, states, child) => LedgerStateFace(
+        states: states,
+        radius: t.smallRadius,
+        sinks: false,
+        child: child!,
       ),
+      child: face,
     );
   }
 }

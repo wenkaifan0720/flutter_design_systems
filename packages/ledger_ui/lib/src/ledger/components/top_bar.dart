@@ -598,7 +598,7 @@ class LedgerTopBar extends StatelessWidget {
                   ),
                 ),
           trailing: actions.isEmpty
-              ? const SizedBox(width: LedgerChromeMetrics.topBarSlot)
+              ? null
               : Row(mainAxisSize: MainAxisSize.min, children: actions),
           middleSpacing: LedgerChromeMetrics.toolsGap,
         ),

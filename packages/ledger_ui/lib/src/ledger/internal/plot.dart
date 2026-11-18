@@ -239,11 +239,16 @@ class LedgerDayRulerLabels extends StatelessWidget {
     final scaler = MediaQuery.textScalerOf(context);
     TextStyle style(LedgerRulerMark m) =>
         m.today ? base.medium.colored(t.textPrimary) : base;
-    final shown = _uncrowded(scaler, style, base.fontSize ?? _fallbackSize);
+    final (shown, secondLine) = _uncrowded(
+      scaler,
+      style,
+      base.fontSize ?? _fallbackSize,
+    );
+    final lineHeight = scaler.scale(_height);
     return Padding(
       padding: const EdgeInsets.only(top: _top),
       child: SizedBox(
-        height: scaler.scale(_height),
+        height: lineHeight * (secondLine == null ? 1 : 2),
         width: width,
         // Under its plot, which reads left to right in any page.
         child: Directionality(
@@ -253,7 +258,7 @@ class LedgerDayRulerLabels extends StatelessWidget {
               for (final m in shown)
                 LedgerPlotLabel(
                   left: m.x,
-                  top: 0,
+                  top: m == secondLine ? lineHeight : 0,
                   shift: m.first ? Offset.zero : const Offset(-.5, 0),
                   child: const SizedBox.shrink(),
                 ),
@@ -279,13 +284,14 @@ class LedgerDayRulerLabels extends StatelessWidget {
   // of each other: the month's first and today always, then each other in
   // order. At a large text size a day that would close up on its
   // neighbour gives way ("Oct 1 8" would read as the 18th).
-  List<LedgerRulerMark> _uncrowded(
+  (List<LedgerRulerMark>, LedgerRulerMark?) _uncrowded(
     TextScaler scaler,
     TextStyle Function(LedgerRulerMark) style,
     double size,
   ) {
     final gap = scaler.scale(size);
     final spans = <int, (double, double)>{};
+    LedgerRulerMark? secondLine;
     bool fixed(LedgerRulerMark m) => m.first || m.today;
     for (final i in [
       for (var i = 0; i < marks.length; i++)
@@ -307,13 +313,19 @@ class LedgerDayRulerLabels extends StatelessWidget {
       final crowded = spans.values.any(
         (s) => left < s.$2 + gap && right > s.$1 - gap,
       );
-      if (crowded && !fixed(m)) continue;
+      if (crowded) {
+        if (!fixed(m)) continue;
+        secondLine = m;
+      }
       spans[i] = (left, right);
     }
-    return [
-      for (var i = 0; i < marks.length; i++)
-        if (spans.containsKey(i)) marks[i],
-    ];
+    return (
+      [
+        for (var i = 0; i < marks.length; i++)
+          if (spans.containsKey(i)) marks[i],
+      ],
+      secondLine,
+    );
   }
 
   static const double _top = 4;

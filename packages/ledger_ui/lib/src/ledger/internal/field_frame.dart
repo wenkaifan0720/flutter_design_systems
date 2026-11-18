@@ -20,6 +20,7 @@ class LedgerFieldFrame extends StatelessWidget {
     required this.parts,
     required this.line,
     this.focusNode,
+    this.displayLabel,
     this.labelCursor = SystemMouseCursors.click,
     this.ruled = true,
     this.style,
@@ -32,6 +33,9 @@ class LedgerFieldFrame extends StatelessWidget {
 
   /// What [DesignField] made: the words, the state, the control's node.
   final DesignFieldParts parts;
+
+  /// The visible caption when the control supplies its own accessible name.
+  final String? displayLabel;
 
   /// The written line: the control, in its box.
   final Widget line;
@@ -54,6 +58,7 @@ class LedgerFieldFrame extends StatelessWidget {
     properties
       ..add(FlagProperty('ruled', value: ruled, ifTrue: 'ruled'))
       ..add(DiagnosticsProperty<DesignFieldParts>('parts', parts))
+      ..add(StringProperty('displayLabel', displayLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
           'focusNode',
@@ -91,7 +96,7 @@ class LedgerFieldFrame extends StatelessWidget {
     Widget line = this.line;
     if (room != null) line = Padding(padding: room, child: line);
     if (paper != null) line = ColoredBox(color: paper, child: line);
-    final label = parts.labelText;
+    final label = displayLabel ?? parts.labelText;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -114,14 +119,10 @@ class LedgerFieldFrame extends StatelessWidget {
                         if (parts.required)
                           TextSpan(
                             text: ' *',
-                            style: TextStyle(
-                              color: wrong ? t.danger : t.accent,
-                            ),
+                            style: TextStyle(color: wrong ? t.over : t.accent),
                           ),
                       ],
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: t.label.colored(
                       parts.enabled ? t.textSecondary : t.textTertiary,
                     ),
@@ -176,7 +177,7 @@ class LedgerFieldFrame extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: _noteGap),
               child: DefaultTextStyle(
-                style: t.bodySmall.sized(12).line(16).colored(t.danger),
+                style: t.bodySmall.sized(12).line(16).colored(t.over),
                 child: error,
               ),
             ),

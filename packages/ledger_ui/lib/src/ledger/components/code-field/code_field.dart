@@ -223,13 +223,13 @@ class _LedgerCodeFieldState extends State<LedgerCodeField> {
       },
     );
     return DesignField(
-      labelText: widget.label,
       helperText: widget.helper,
       errorText: widget.error,
       enabled: widget.enabled,
       focusNode: _focus,
       builder: (context, parts) => LedgerFieldFrame(
         parts: parts,
+        displayLabel: widget.label,
         focusNode: _focus,
         labelCursor: SystemMouseCursors.text,
         ruled: false,

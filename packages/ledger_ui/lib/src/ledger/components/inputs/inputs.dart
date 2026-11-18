@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart'
+    show InputBorder, InputDecoration, Material, MaterialType, TextField;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -92,6 +94,7 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
     // above and under it, so its chosen ink fills the slot it is given.
     final floor = DesignTapTargets.of(context).floorOn();
     final chip = math.max(height, floor.height - 2 * _pad);
+    final innerRadius = math.max(0.0, t.controlRadius - _pad);
     // The ring is drawn behind the strip, not padded round it: 3 inside its
     // outer edge (its 1 rule, then 2 of paper) at the ends, and the chips'
     // own 3 above and under them.
@@ -119,7 +122,7 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
                       : () => onChanged!(o),
                   label: _say(o),
                   selected: o == value,
-                  radius: t.controlRadius,
+                  radius: innerRadius,
                   ringInsets: const EdgeInsets.symmetric(vertical: _pad),
                   // The ink fill leaves the old choice and inks in under the new
                   // one in Ledger's one motion.
@@ -142,7 +145,7 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
                               ground: BoxDecoration(
                                 color: o == value ? t.textPrimary : null,
                                 borderRadius: BorderRadius.circular(
-                                  t.controlRadius,
+                                  innerRadius,
                                 ),
                               ),
                             ),
@@ -973,8 +976,11 @@ class LedgerSearchField extends StatelessWidget {
     );
     Widget box(Widget child) => Container(
       height: LedgerChromeMetrics.searchHeight,
-      padding: const EdgeInsets.symmetric(
-        horizontal: LedgerChromeMetrics.searchPad,
+      padding: EdgeInsetsDirectional.only(
+        start: LedgerChromeMetrics.searchPad,
+        end: live && controller != null && onCleared != null
+            ? (LedgerChromeMetrics.searchHeight - _clear) / 2 - 1
+            : LedgerChromeMetrics.searchPad,
       ),
       decoration: BoxDecoration(
         color: t.surface,
@@ -1008,58 +1014,80 @@ class LedgerSearchField extends StatelessWidget {
         ),
       );
     }
-    final field = LedgerTextInput(
-      controller: controller,
-      placeholder: hint,
-      style: t.search.medium.colored(t.textPrimary),
-      placeholderStyle: t.search,
-      onChanged: onChanged,
-      onSubmitted: onSubmitted,
-      focusNode: focusNode,
-      autofocus: autofocus,
-      textInputAction: TextInputAction.search,
+    final field = Material(
+      type: MaterialType.transparency,
+      child: MergeSemantics(
+        child: Semantics(
+          label: semanticLabel ?? hint,
+          child: TextField(
+            controller: controller,
+            focusNode: focusNode,
+            autofocus: autofocus,
+            style: t.search.medium.colored(t.textPrimary),
+            cursorColor: t.textPrimary,
+            decoration: InputDecoration(
+              isCollapsed: true,
+              maintainHintSize: false,
+              hintFadeDuration: Duration.zero,
+              border: InputBorder.none,
+              hint: ExcludeSemantics(
+                child: Text(
+                  hint,
+                  style: t.search,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            onChanged: onChanged,
+            onSubmitted: onSubmitted,
+            textInputAction: TextInputAction.search,
+          ),
+        ),
+      ),
     );
-    return Semantics(
-      textField: true,
-      label: semanticLabel ?? hint,
-      child: box(
-        Row(
-          spacing: LedgerChromeMetrics.searchGap,
-          children: [
-            Expanded(child: field),
-            if (onCleared != null && controller != null)
-              ValueListenableBuilder<TextEditingValue>(
-                valueListenable: controller!,
-                builder: (context, v, _) => v.text.isEmpty
-                    ? const SizedBox.shrink()
-                    // The 24 disc laid out at the tap floor round it, on
-                    // the field's end.
-                    : DesignTapTarget(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: LedgerPressable(
-                          key: clearKey,
-                          onTap: onCleared,
-                          label: clearLabel ?? words.clearButtonTooltip,
-                          radius: _clear / 2,
-                          child: Container(
-                            width: _clear,
-                            height: _clear,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: t.surfaceAlt,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              LucideIcons.x,
-                              size: _clearGlyph,
-                              color: t.textSecondary,
-                            ),
+    return box(
+      Row(
+        spacing: LedgerChromeMetrics.searchGap,
+        children: [
+          Expanded(
+            child: DesignTapTarget(
+              minSize: const Size(0, LedgerChromeMetrics.searchHeight - 2),
+              child: Center(child: field),
+            ),
+          ),
+          if (onCleared != null && controller != null)
+            ValueListenableBuilder<TextEditingValue>(
+              valueListenable: controller!,
+              builder: (context, v, _) => v.text.isEmpty
+                  ? const SizedBox.shrink()
+                  // The 24 disc laid out at the tap floor round it, on
+                  // the field's end.
+                  : DesignTapTarget(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: LedgerPressable(
+                        key: clearKey,
+                        onTap: onCleared,
+                        label: clearLabel ?? words.clearButtonTooltip,
+                        radius: _clear / 2,
+                        child: Container(
+                          width: _clear,
+                          height: _clear,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: t.surfaceAlt,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            LucideIcons.x,
+                            size: _clearGlyph,
+                            color: t.textSecondary,
                           ),
                         ),
                       ),
-              ),
-          ],
-        ),
+                    ),
+            ),
+        ],
       ),
     );
   }
@@ -1822,6 +1850,7 @@ class LedgerStepper extends StatelessWidget {
     required this.label,
     this.step = 5,
     this.min = 0,
+    this.format,
     this.lowerLabel,
     this.raiseLabel,
     this.onChanged,
@@ -1840,6 +1869,10 @@ class LedgerStepper extends StatelessWidget {
 
   /// The lowest the sum goes.
   final num min;
+
+  /// Formats the displayed value and the values announced to screen readers.
+  /// Defaults to whole dollars. For quantities, pass `(value) => '$value'`.
+  final String Function(num value)? format;
 
   /// The lower ring's words; null reads 'Lower' and the [label].
   final String? lowerLabel;
@@ -1861,6 +1894,7 @@ class LedgerStepper extends StatelessWidget {
       ..add(StringProperty('label', label))
       ..add(DiagnosticsProperty<num>('step', step))
       ..add(DiagnosticsProperty<num>('min', min))
+      ..add(ObjectFlagProperty<Object?>.has('format', format))
       ..add(StringProperty('lowerLabel', lowerLabel, defaultValue: null))
       ..add(StringProperty('raiseLabel', raiseLabel, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<num>>.has('onChanged', onChanged))
@@ -1871,7 +1905,9 @@ class LedgerStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
-    final words = LedgerFormat.money(value, showCents: false);
+    String display(num amount) =>
+        format?.call(amount) ?? LedgerFormat.money(amount, showCents: false);
+    final words = display(value);
     final canLower = onChanged != null && value - step >= min;
     final size = wide ? _sizeWide : _size;
     // The input's box is its line (75.6 in Chrome), held to the whole
@@ -1923,12 +1959,8 @@ class LedgerStepper extends StatelessWidget {
       container: true,
       label: label,
       value: words,
-      increasedValue: onChanged == null
-          ? null
-          : LedgerFormat.money(value + step, showCents: false),
-      decreasedValue: canLower
-          ? LedgerFormat.money(value - step, showCents: false)
-          : null,
+      increasedValue: onChanged == null ? null : display(value + step),
+      decreasedValue: canLower ? display(value - step) : null,
       onIncrease: onChanged == null ? null : () => onChanged!(value + step),
       onDecrease: canLower ? () => onChanged!(value - step) : null,
       child: showRings

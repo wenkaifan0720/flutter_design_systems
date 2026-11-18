@@ -1,3 +1,15 @@
+## 0.3.1
+
+- `LedgerTabs.children` displays swipeable pages and gives each panel its tab's accessible name. The Selection example includes Entries, Notes and Files panels.
+- `LedgerStepper.format` formats quantities and their screen-reader values. The default still displays whole dollars. The Copies example counts in single units.
+- Inline search accepts taps across the field’s height and supports keyboard and screen-reader input. One-time codes and selects announce their label once, and a multi-select's tags can be reached separately from its text field.
+- Standalone navigation destinations can be focused and activated with the keyboard.
+- Field captions and compact date pickers make room for long labels. Step counts keep the current step first in right-to-left layouts.
+- Month charts place overlapping first-day and current-day labels on separate lines. Pie chart legends wrap their amounts and percentages below the labels when space is tight.
+- The refresh prompt stays inside its visible area during short drags. Segmented controls follow their outer corners when the theme uses a small radius. The clear button sits evenly inside the search field.
+- Tables keep amounts and whole words readable. When columns are too narrow, each record shows its remaining fields below the name with their column labels. Swipe actions size their solid backgrounds to fit their labels. Calendar dates and weekday labels grow with the system text size.
+- Validation messages use higher-contrast red text. Page titles can use the full width beside the back button when there are no actions.
+
 ## 0.3.0
 
 Needs ui_core 0.3.0. Ledger's behaviours move onto ui_core's: Ledger keeps its paper, its ink and its motion, and
@@ -35,11 +47,7 @@ the changes in behaviour are listed at the end.
   reading start; it stands at the start now.
 - **Symbols in a figure**: Instrument Serif has no ±, arrows, fractions, ≈ ≤ ≥ or ₹ ₩ ₽; a figure, a title or a
   monogram now sets them in Inter Tight, which ships with Ledger, rather than in the platform's fallback face.
-- The review checks come from ui_core_test 0.1.0 (`package:ui_core_test/ui_core_test.dart`), a dev dependency.
-- **The package page** opens on a hero (home on a desktop by day beside a phone by night) and links to the live
-  gallery, the API reference and the other looks; the install is `flutter pub add ledger_ui material_ui`, and the
-  quick start, the example and the tests import `material_ui` and `cupertino_ui`, not `package:flutter/material.dart`
-  (deprecated in Flutter 3.50).
+- Updated the installation example to use `material_ui` and `cupertino_ui` on Flutter 3.50.
 
 Changes in behaviour:
 
@@ -74,13 +82,6 @@ Needs ui_core 0.2.1.
   its own layout, an assertion in debug builds, on Android's Remove animations as on iOS's Reduce Motion.
 - From ui_core 0.2.1: a menu or popover its anchor opened gives the focus back to the anchor as it closes, and Home
   and End in a menu keep the row they reach in view.
-- The tests run in tiers. `flutter test --exclude-tags goldens,sweep` is the everyday run, and
-  `flutter test --tags goldens --exclude-tags sweep` the pixel checks' (on macOS). Each keeps a case of every
-  matrix: every gallery page and screen once, with the width, the appearance and the density turning over them, so
-  each size, appearance, density, right to left and 200% text is still read on every run. The rest of each matrix is
-  tagged `sweep` (`flutter test --tags sweep`), and `flutter test` runs every tier. The pixel checks' sweep runs in
-  five files side by side, a test per density, and the tests that read page after page keep no creation stack per
-  object in leak tracking: the largest test process is 3.3 GB, from 4.0 GB.
 
 ## 0.2.0
 

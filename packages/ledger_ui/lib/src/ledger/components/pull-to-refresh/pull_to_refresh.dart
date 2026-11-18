@@ -51,7 +51,9 @@ class LedgerPullToRefresh extends StatelessWidget {
         return ClipRect(
           child: SizedBox(
             height: details.extent,
-            child: Center(
+            child: OverflowBox(
+              minHeight: 0,
+              maxHeight: double.infinity,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 spacing: LedgerSpacing.s6,

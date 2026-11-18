@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -307,15 +309,9 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
       padding: const EdgeInsets.symmetric(vertical: _lineGap),
       child: LedgerLeaderLine(
         centred: true,
-        start: Text(
-          widget.label,
-          maxLines: 1,
-          softWrap: false,
-          overflow: TextOverflow.ellipsis,
-          style: t.rowTitle.colored(t.textPrimary),
-        ),
-        end: Row(
-          mainAxisSize: MainAxisSize.min,
+        start: Text(widget.label, style: t.rowTitle.colored(t.textPrimary)),
+        end: Wrap(
+          alignment: WrapAlignment.end,
           spacing: _gap / 2,
           children: [
             if (_hasDate)
@@ -366,19 +362,21 @@ class _Pill extends StatelessWidget {
         value: text,
         radius: t.controlRadius,
         child: Container(
-          height: _height,
+          constraints: const BoxConstraints(minHeight: _height),
           padding: const EdgeInsets.symmetric(horizontal: _pad),
-          alignment: Alignment.center,
           decoration: BoxDecoration(
             color: t.surface,
             borderRadius: BorderRadius.circular(t.controlRadius),
             border: Border.all(color: t.border),
           ),
-          child: Text(
-            text,
-            maxLines: 1,
-            softWrap: false,
-            style: t.pill.sized(_words).colored(t.textPrimary),
+          child: Center(
+            widthFactor: 1,
+            heightFactor: 1,
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: t.pill.sized(_words).colored(t.textPrimary),
+            ),
           ),
         ),
       ),
@@ -485,19 +483,19 @@ class _CalendarState extends State<_Calendar> {
           ],
         ),
         const SizedBox(height: _headFoot),
-        // The weekdays keep their size with a large text, as the day figures
-        // under them do in their marks: a grid of the month, each day spoken
-        // whole by its date.
         ExcludeSemantics(
           child: Row(
             children: [
               for (final head in _heads)
                 Expanded(
                   child: Center(
-                    child: Text(
-                      head,
-                      textScaler: TextScaler.noScaling,
-                      style: t.tag.colored(t.textTertiary),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        head,
+                        maxLines: 1,
+                        style: t.tag.colored(t.textTertiary),
+                      ),
                     ),
                   ),
                 ),
@@ -534,48 +532,58 @@ class _CalendarState extends State<_Calendar> {
     final chosen = _same(d, widget.value);
     final ringed = widget.today != null && _same(d, widget.today!);
     final open = _inRange(d);
-    return SizedBox(
-      height: _cell44,
-      child: Center(
-        child: DesignTapTarget(
-          child: LedgerPressable(
-            onTap: open ? () => widget.onPick(d) : null,
-            label: LedgerFormat.longDate(d),
-            selected: chosen,
-            radius: _mark / 2,
-            child: Container(
-              width: _mark,
-              height: _mark,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: chosen ? t.surfaceInverse : null,
-                border: ringed && !chosen
-                    ? Border.all(color: t.textPrimary, width: _ring)
-                    : null,
-              ),
-              child: Text(
-                '$n',
-                textScaler: TextScaler.noScaling,
-                style: t.amount.colored(
-                  chosen
-                      ? t.textInverse
-                      : open
-                      ? t.textPrimary
-                      : t.textFaint,
+    return LayoutBuilder(
+      builder: (context, box) {
+        final mark = LedgerChromeMetrics.calendarDayDiameter(
+          box.maxWidth,
+          MediaQuery.textScalerOf(context).scale(t.amount.fontSize!),
+        );
+        return SizedBox(
+          height: math.max(_cell44, mark + 4),
+          child: Center(
+            child: DesignTapTarget(
+              child: LedgerPressable(
+                onTap: open ? () => widget.onPick(d) : null,
+                label: LedgerFormat.longDate(d),
+                selected: chosen,
+                radius: mark / 2,
+                child: Container(
+                  width: mark,
+                  height: mark,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: chosen ? t.surfaceInverse : null,
+                    border: ringed && !chosen
+                        ? Border.all(color: t.textPrimary, width: _ring)
+                        : null,
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '$n',
+                      maxLines: 1,
+                      style: t.amount.colored(
+                        chosen
+                            ? t.textInverse
+                            : open
+                            ? t.textPrimary
+                            : t.textFaint,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   // DERIVED (the source lists dates, it does not pick them): a day's cell is
   // the 44 point target round a 36 mark, the head 12 over the weekdays.
   static const double _cell44 = LedgerLayout.minHitTarget;
-  static const double _mark = 36;
   static const double _ring = 1.25;
   static const double _arrowGap = 8;
   static const double _headFoot = 12;

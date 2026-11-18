@@ -21,7 +21,8 @@ import '../../theme.dart';
 /// runs edge to edge. A null [onSelected] shows the strip without letting
 /// it change. A screen reader hears a tab bar, each tab its label, its
 /// count and its place ("Entries, 12, Tab 2 of 3"), and whether it is
-/// chosen.
+/// chosen. Supply [children] to show a named, swipeable tab panel below the
+/// strip. Give the widget a bounded height when showing panels.
 ///
 /// ```dart
 /// LedgerTabs(tabs: const ['Overview', 'Entries', 'Notes'], counts: const [null, 12, 3], selectedIndex: tab, onSelected: (i) => setState(() => tab = i))
@@ -33,12 +34,14 @@ class LedgerTabs extends StatefulWidget {
     required this.selectedIndex,
     this.onSelected,
     this.counts,
+    this.children,
     this.padding = EdgeInsets.zero,
     super.key,
   }) : assert(
          counts == null || counts.length == tabs.length,
          'one count (or null) for each tab',
-       );
+       ),
+       assert(children == null || children.length == tabs.length);
 
   /// The tabs' words, in order.
   final List<String> tabs;
@@ -54,6 +57,9 @@ class LedgerTabs extends StatefulWidget {
   /// after its label.
   final List<int?>? counts;
 
+  /// A page for each tab, in the same order as [tabs]. Omit to show only the strip.
+  final List<Widget>? children;
+
   /// The strip's inset for its labels; the hairline under them ignores it.
   final EdgeInsetsGeometry padding;
 
@@ -65,6 +71,7 @@ class LedgerTabs extends StatefulWidget {
       ..add(IntProperty('selectedIndex', selectedIndex))
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onSelected', onSelected))
       ..add(IterableProperty<int?>('counts', counts, defaultValue: null))
+      ..add(IterableProperty<Widget>('children', children, defaultValue: null))
       ..add(DiagnosticsProperty<EdgeInsetsGeometry>('padding', padding));
   }
 
@@ -117,7 +124,7 @@ class _LedgerTabsState extends State<LedgerTabs> with TickerProviderStateMixin {
     final (start, end) = dir == TextDirection.rtl
         ? (inset.right, inset.left)
         : (inset.left, inset.right);
-    return DecoratedBox(
+    final strip = DecoratedBox(
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: t.hairline)),
       ),
@@ -149,6 +156,30 @@ class _LedgerTabsState extends State<LedgerTabs> with TickerProviderStateMixin {
           ),
         ),
       ),
+    );
+    final pages = widget.children;
+    if (pages == null || pages.isEmpty) return strip;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        strip,
+        Expanded(
+          child: DesignTabView(
+            controller: _controller,
+            physics: widget.onSelected == null
+                ? const NeverScrollableScrollPhysics()
+                : null,
+            children: [
+              for (var i = 0; i < pages.length; i++)
+                Semantics(
+                  label: widget.tabs[i],
+                  explicitChildNodes: true,
+                  child: pages[i],
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

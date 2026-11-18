@@ -88,11 +88,35 @@ class _LiveState extends State<_Live> {
         unit: 'gsm',
         onChanged: (v) => setState(() => _weight = v),
       ),
-      LedgerTabs(
-        tabs: _sections,
-        selectedIndex: _tab,
-        counts: const [12, 3, null],
-        onSelected: (i) => setState(() => _tab = i),
+      SizedBox(
+        height: 52 + MediaQuery.textScalerOf(context).scale(76),
+        child: LedgerTabs(
+          tabs: _sections,
+          selectedIndex: _tab,
+          counts: const [12, 3, null],
+          onSelected: (i) => setState(() => _tab = i),
+          children: const [
+            Align(
+              alignment: AlignmentDirectional.topStart,
+              child: LedgerRow(
+                title: 'Cotton paper',
+                subtitle: 'Latest entry',
+                value: LedgerAmount(24.50),
+              ),
+            ),
+            Align(
+              alignment: AlignmentDirectional.topStart,
+              child: LedgerRow(
+                title: 'Reorder cotton paper',
+                subtitle: 'Latest note',
+              ),
+            ),
+            Align(
+              alignment: AlignmentDirectional.topStart,
+              child: LedgerRow(title: 'No files attached'),
+            ),
+          ],
+        ),
       ),
     ],
   );

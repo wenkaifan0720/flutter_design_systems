@@ -190,10 +190,13 @@ class _LedgerDateRangePickerState extends State<LedgerDateRangePicker> {
           weekdayBuilder: (context, weekday, label) => Padding(
             padding: const EdgeInsets.only(bottom: LedgerSpacing.s4),
             child: Center(
-              child: Text(
-                label.toUpperCase(),
-                textScaler: TextScaler.noScaling,
-                style: t.tag.colored(t.textTertiary),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label.toUpperCase(),
+                  maxLines: 1,
+                  style: t.tag.colored(t.textTertiary),
+                ),
               ),
             ),
           ),
@@ -279,7 +282,7 @@ class _Day extends StatelessWidget {
     final banded = day.inRange || day.inPreview;
     final bandColor = day.inRange ? t.selectedFill : t.hairline;
     final single = day.isRangeStart && day.isRangeEnd;
-    Widget band() {
+    Widget band(double mark) {
       if (!banded || single || !day.inMonth) return const SizedBox.shrink();
       final startHalf = day.isRangeStart;
       final endHalf = day.isRangeEnd || day.isPreviewEnd;
@@ -291,7 +294,7 @@ class _Day extends StatelessWidget {
             : Alignment.center,
         child: FractionallySizedBox(
           widthFactor: startHalf || endHalf ? .5 : 1,
-          child: Container(height: _mark, color: bandColor),
+          child: Container(height: mark, color: bandColor),
         ),
       );
     }
@@ -303,46 +306,56 @@ class _Day extends StatelessWidget {
         : day.inMonth
         ? t.textPrimary
         : t.textTertiary;
-    return SizedBox(
-      height: LedgerLayout.minHitTarget,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          band(),
-          LedgerFace(
-            style: LedgerFaceStyle(
-              ink: ink,
-              ground: BoxDecoration(
-                shape: BoxShape.circle,
-                color: end
-                    ? t.surfaceInverse
-                    : hovered && day.enabled
-                    ? t.selectedFill
-                    : null,
-                border: focused
-                    ? Border.all(color: t.textPrimary, width: _ring)
-                    : day.isToday && !end
-                    ? Border.all(color: t.textPrimary, width: _ring)
-                    : null,
+    return LayoutBuilder(
+      builder: (context, box) {
+        final mark = LedgerChromeMetrics.calendarDayDiameter(
+          box.maxWidth,
+          MediaQuery.textScalerOf(context).scale(t.amount.fontSize!),
+        );
+        return SizedBox(
+          height: (mark + 4).clamp(LedgerLayout.minHitTarget, double.infinity),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              band(mark),
+              LedgerFace(
+                style: LedgerFaceStyle(
+                  ink: ink,
+                  ground: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: end
+                        ? t.surfaceInverse
+                        : hovered && day.enabled
+                        ? t.selectedFill
+                        : null,
+                    border: focused
+                        ? Border.all(color: t.textPrimary, width: _ring)
+                        : day.isToday && !end
+                        ? Border.all(color: t.textPrimary, width: _ring)
+                        : null,
+                  ),
+                ),
+                builder: (context, s, _) => Container(
+                  width: mark,
+                  height: mark,
+                  alignment: Alignment.center,
+                  decoration: s.ground,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      '${day.date.day}',
+                      maxLines: 1,
+                      style: t.amount.colored(s.ink),
+                    ),
+                  ),
+                ),
               ),
-            ),
-            builder: (context, s, _) => Container(
-              width: _mark,
-              height: _mark,
-              alignment: Alignment.center,
-              decoration: s.ground,
-              child: Text(
-                '${day.date.day}',
-                textScaler: TextScaler.noScaling,
-                style: t.amount.colored(s.ink),
-              ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  static const double _mark = 36;
   static const double _ring = LedgerChromeMetrics.focusRing;
 }

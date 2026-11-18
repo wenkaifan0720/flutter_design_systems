@@ -187,7 +187,7 @@ class _LedgerSelectState<T> extends State<LedgerSelect<T>> {
               onTap: enabled ? anchor.toggle : null,
               focusNode: _focus,
               autofocus: widget.autofocus,
-              label: widget.label ?? hint,
+              label: widget.label == null ? hint : null,
               value: chosen?.label,
               expanded: anchor.isOpen,
               isError: widget.error != null,

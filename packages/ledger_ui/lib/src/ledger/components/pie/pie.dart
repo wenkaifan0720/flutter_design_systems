@@ -118,31 +118,52 @@ class LedgerPieChart extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: t.hairline)),
             ),
-            child: Row(
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
               spacing: LedgerSpacing.s10,
+              runSpacing: LedgerSpacing.s4,
               children: [
-                Container(
-                  width: _swatch,
-                  height: _swatch,
-                  decoration: BoxDecoration(
-                    color: inks[i],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: LedgerSpacing.s10,
+                  children: [
+                    Container(
+                      width: _swatch,
+                      height: _swatch,
+                      decoration: BoxDecoration(
+                        color: inks[i],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Flexible(
+                      child: Text(
+                        s.label,
+                        style: t.rowTitle.colored(t.textPrimary),
+                      ),
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: Text(
-                    s.label,
-                    style: t.rowTitle.colored(t.textPrimary),
-                  ),
-                ),
-                Text(_print(s.value), style: t.amount.colored(t.textPrimary)),
-                SizedBox(
-                  width: _partWidth,
-                  child: Text(
-                    part(s.value),
-                    textAlign: TextAlign.end,
-                    style: t.meta.colored(t.textSecondary),
-                  ),
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: LedgerSpacing.s10,
+                  children: [
+                    Text(
+                      _print(s.value),
+                      style: t.amount.colored(t.textPrimary),
+                    ),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(minWidth: _partWidth),
+                      child: Text(
+                        part(s.value),
+                        maxLines: 1,
+                        softWrap: false,
+                        textAlign: TextAlign.end,
+                        style: t.meta.colored(t.textSecondary),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -158,7 +179,8 @@ class LedgerPieChart extends StatelessWidget {
       ].join('; '),
       excludeSemantics: true,
       child: LayoutBuilder(
-        builder: (context, box) => box.maxWidth >= _beside
+        builder: (context, box) =>
+            box.maxWidth >= MediaQuery.textScalerOf(context).scale(_beside)
             ? Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 spacing: LedgerSpacing.s24,

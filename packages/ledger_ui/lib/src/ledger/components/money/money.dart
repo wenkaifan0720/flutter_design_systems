@@ -640,9 +640,8 @@ class _RenderLeaderLine extends RenderBox
         ? math.max(0.0, maxWidth - end.width - 2 * _inset - _min)
         : double.infinity;
     final ltr = _textDirection == TextDirection.ltr;
-    if (!_centred &&
-        maxWidth.isFinite &&
-        (room < _start.getMinIntrinsicWidth(double.infinity) ||
+    if (maxWidth.isFinite &&
+        ((!_centred && room < _start.getMinIntrinsicWidth(double.infinity)) ||
             (_larger && room < _start.getMaxIntrinsicWidth(double.infinity)))) {
       // The turnover: the start whole on its own line, the leader under it
       // from the line's start to the end, which stands on that line.

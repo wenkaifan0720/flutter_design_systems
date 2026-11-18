@@ -6,10 +6,16 @@
 /// [LedgerSpacing]'s, its type the theme's).
 library;
 
+import 'dart:math' as math;
+
 import 'theme.dart';
 
 /// The chrome's measures, by the part that draws them.
 abstract final class LedgerChromeMetrics {
+  /// Diameter of the selected day, with room for two digits and a gap between adjacent days.
+  static double calendarDayDiameter(double cellWidth, double digitSize) => math
+      .max(0.0, math.min(cellWidth - 2, math.max(36.0, digitSize * 1.5 + 6)));
+
   // ---- the page ------------------------------------------------------------
 
   /// `--pad`: the page gutter, 24 on a phone and 56 from 1024.

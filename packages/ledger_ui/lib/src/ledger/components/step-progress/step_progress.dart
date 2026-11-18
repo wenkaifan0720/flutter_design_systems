@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../format.dart';
 import '../../internal/face.dart';
 import '../../theme.dart';
 
@@ -122,7 +123,7 @@ class LedgerStepProgress extends StatelessWidget {
                 )
               else
                 Text(
-                  '${current + 1} / ${steps.length} · ${steps[current]}'
+                  '${LedgerFormat.isolated('${current + 1} / ${steps.length}')} · ${steps[current]}'
                       .toUpperCase(),
                   textAlign: TextAlign.center,
                   style: t.meta.medium.colored(t.textPrimary),
