@@ -1,0 +1,964 @@
+/// Gloss's charts, drawn in its material: a shallow tray with lines
+/// engraved across it, bars standing up as gel tubes, lines of gel with a
+/// soft glow under them, the donut a ring of gel in a groove, and the
+/// sparkline a thread of jade ending in a bead.
+library;
+
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
+
+import 'surface.dart';
+import 'theme.dart';
+
+/// One series of figures in a chart.
+@immutable
+class GlossSeries {
+  /// A series named [label] of [values], one per x label.
+  const GlossSeries(this.label, this.values, {this.color});
+
+  /// Its name, in the legend and for a screen reader.
+  final String label;
+
+  /// Its figures.
+  final List<double> values;
+
+  /// Its gel; null: the next in Gloss's set (jade, lagoon, amber, plum).
+  final Color? color;
+}
+
+/// One slice of a [GlossPieChart].
+@immutable
+class GlossSlice {
+  /// A slice named [label] worth [value].
+  const GlossSlice(this.label, this.value, {this.color});
+
+  /// Its name.
+  final String label;
+
+  /// Its share, against the others' sum.
+  final double value;
+
+  /// Its gel; null: the next in Gloss's set.
+  final Color? color;
+}
+
+/// Gloss's set of gels for series, by day and by night.
+List<Color> _gels(GlossColors c) => c.brightness == Brightness.light
+    ? const [
+        Color(0xFF1FA77A),
+        Color(0xFF2F86C8),
+        Color(0xFFE09A22),
+        Color(0xFF9A5AB8),
+      ]
+    : const [
+        Color(0xFF3CC596),
+        Color(0xFF55A6E2),
+        Color(0xFFEDB04A),
+        Color(0xFFB57DD0),
+      ];
+
+Color _gelAt(GlossColors c, Color? given, int i) =>
+    given ?? _gels(c)[i % _gels(c).length];
+
+/// A gel face for [color]: lighter at the top, deeper at the foot, the
+/// lens's sheen on it.
+GlossFace _gelOf(Color color, {double? radius}) {
+  final hsl = HSLColor.fromColor(color);
+  Color by(double d) =>
+      hsl.withLightness((hsl.lightness + d).clamp(0.0, 1.0)).toColor();
+  return GlossFace(
+    top: by(0.16),
+    middle: color,
+    bottom: by(-0.06),
+    edge: by(-0.22),
+    glow: by(0.3).withValues(alpha: 0.45),
+    foreground: const Color(0xFFFFFFFF),
+    lens: 0.7,
+    lift: 0.4,
+    radius: radius,
+  );
+}
+
+String _figure(double v) {
+  if (v.abs() >= 1000) {
+    return '${(v / 1000).toStringAsFixed(v % 1000 == 0 ? 0 : 1)}k';
+  }
+  return v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
+}
+
+class _Legend extends StatelessWidget {
+  const _Legend(this.entries);
+
+  final List<(String, Color)> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = GlossTheme.of(context);
+    return ExcludeSemantics(
+      child: Wrap(
+        spacing: GlossSpacing.regular,
+        runSpacing: GlossSpacing.tight,
+        children: [
+          for (final (label, color) in entries)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox.square(
+                  dimension: 12,
+                  child: GlossSurface(face: _gelOf(color)),
+                ),
+                const SizedBox(width: GlossSpacing.small),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.caption,
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The frame every axes chart shares: the tray, the legend under it when
+/// there is more than one series, and one sentence for a screen reader.
+class _Framed extends StatelessWidget {
+  const _Framed({
+    required this.semanticLabel,
+    required this.readOut,
+    required this.legend,
+    required this.height,
+    required this.painter,
+    required this.fill,
+  });
+
+  final String semanticLabel;
+  final String readOut;
+  final List<(String, Color)> legend;
+  final double height;
+  final CustomPainter painter;
+  final Color? fill;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = GlossTheme.of(context).colors;
+    var tray = GlossFace.well(c, radius: 16).copyWith(lift: -0.55);
+    if (fill != null) tray = tray.glazed(fill!);
+    return Semantics(
+      label: semanticLabel,
+      value: readOut,
+      excludeSemantics: true,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            height: height,
+            child: GlossSurface(
+              face: tray,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  GlossSpacing.small,
+                  GlossSpacing.regular - GlossMetrics.rimRoom,
+                  GlossSpacing.regular - GlossMetrics.rimRoom,
+                  GlossSpacing.small,
+                ),
+                child: CustomPaint(painter: painter, size: Size.infinite),
+              ),
+            ),
+          ),
+          if (legend.length > 1) ...[
+            const SizedBox(height: GlossSpacing.small),
+            _Legend(legend),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+String _readOut(List<String> labels, List<GlossSeries> series) => [
+  for (final s in series)
+    '${s.label}: ${[for (final (i, v) in s.values.indexed) '${i < labels.length ? labels[i] : i + 1} ${_figure(v)}'].join(', ')}',
+].join('. ');
+
+/// What the axes charts share: the engraved grid, the figures up the start
+/// and the labels along the foot.
+abstract class _AxesPainter extends CustomPainter {
+  _AxesPainter({
+    required this.c,
+    required this.text,
+    required this.labels,
+    required this.series,
+    required this.direction,
+    required this.t,
+    required this.words,
+  });
+
+  final GlossColors c;
+  final TextStyle text;
+  final List<String> labels;
+  final List<GlossSeries> series;
+  final TextDirection direction;
+  final double t;
+
+  /// The reader's words, for ui_core's ticks.
+  final DesignLocalizations words;
+
+  static const double _foot = 20;
+
+  /// ui_core's scale up the start, from 0 to a whole tick over the most:
+  /// each step a round figure (1, 2 or 5 times a power of ten), never 1.3
+  /// or 3.8.
+  late final DesignLinearScale _scale = () {
+    final most = series
+        .expand((s) => s.values)
+        .fold(0.0, (a, b) => math.max(a, b));
+    return DesignLinearScale.nice(
+      // An empty or all-zero chart still climbs to 1.
+      min: 0,
+      max: most > 0 ? most : 1,
+      start: 0,
+      end: 1,
+      includeZero: true,
+    );
+  }();
+
+  /// The axis's top.
+  double get top => _scale.max;
+
+  TextPainter _words(String s, {TextAlign align = TextAlign.start}) =>
+      TextPainter(
+        text: TextSpan(text: s, style: text),
+        textDirection: direction,
+        textAlign: align,
+        maxLines: 1,
+      )..layout();
+
+  /// Paints the grid and the labels, and gives the plot's rectangle.
+  Rect paintAxes(Canvas canvas, Size size) {
+    final ticks = _scale.ticks(words);
+    // Gloss's figures: compact past a thousand (1.2k).
+    final figures = [for (final tick in ticks) _words(_figure(tick.value))];
+    final gutter = figures.map((f) => f.width).fold(0.0, math.max) + 8;
+    final rtl = direction == TextDirection.rtl;
+    final plot = Rect.fromLTRB(
+      rtl ? 0 : gutter,
+      0,
+      rtl ? size.width - gutter : size.width,
+      size.height - _foot,
+    );
+    for (final (i, tick) in ticks.indexed) {
+      final y = plot.bottom - plot.height * tick.position;
+      // An engraved line: a dark cut, light on its lower lip.
+      canvas
+        ..drawLine(
+          Offset(plot.left, y),
+          Offset(plot.right, y),
+          Paint()
+            ..color = c.hairline
+            ..strokeWidth = 1,
+        )
+        ..drawLine(
+          Offset(plot.left, y + 1),
+          Offset(plot.right, y + 1),
+          Paint()
+            ..color = c.lip.withValues(alpha: c.lip.a * 0.6)
+            ..strokeWidth = 1,
+        );
+      final f = figures[i];
+      f.paint(
+        canvas,
+        Offset(
+          rtl ? plot.right + 8 : plot.left - 8 - f.width,
+          y - f.height / 2,
+        ),
+      );
+    }
+    for (final f in figures) {
+      f.dispose();
+    }
+    final n = labels.length;
+    if (n > 0) {
+      final every = math.max(1, (n * 44 / plot.width).ceil());
+      for (var i = 0; i < n; i += every) {
+        final x = xAt(plot, i, n);
+        final w = _words(labels[i]);
+        w.paint(canvas, Offset(x - w.width / 2, plot.bottom + 5));
+        w.dispose();
+      }
+    }
+    return plot;
+  }
+
+  /// Where the [i]th of [n] points sits along [plot].
+  double xAt(Rect plot, int i, int n);
+
+  @override
+  bool shouldRepaint(_AxesPainter old) =>
+      old.t != t ||
+      old.c != c ||
+      !listEquals(old.labels, labels) ||
+      !listEquals(
+        [for (final s in old.series) ...s.values],
+        [for (final s in series) ...s.values],
+      );
+}
+
+class _LinePainter extends _AxesPainter {
+  _LinePainter({
+    required super.c,
+    required super.text,
+    required super.labels,
+    required super.series,
+    required super.direction,
+    required super.t,
+    required super.words,
+    required this.area,
+  });
+
+  final bool area;
+
+  // The first and last points stand in from the plot's ends, so a day's
+  // name centred under them stays inside the well.
+  static const double _edge = 20;
+
+  @override
+  double xAt(Rect plot, int i, int n) {
+    final f = n <= 1 ? 0.5 : i / (n - 1);
+    final run = plot.width - 2 * _edge;
+    return direction == TextDirection.rtl
+        ? plot.right - _edge - run * f
+        : plot.left + _edge + run * f;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final plot = paintAxes(canvas, size);
+    final top = this.top;
+    for (final (si, s) in series.indexed) {
+      if (s.values.isEmpty) continue;
+      final color = _gelAt(c, s.color, si);
+      final n = s.values.length;
+      final points = [
+        for (final (i, v) in s.values.indexed)
+          Offset(xAt(plot, i, n), plot.bottom - plot.height * (v / top) * t),
+      ];
+      final line = Path()..moveTo(points.first.dx, points.first.dy);
+      for (var i = 1; i < points.length; i++) {
+        final a = points[i - 1];
+        final b = points[i];
+        final mid = (b.dx - a.dx) / 2;
+        line.cubicTo(a.dx + mid, a.dy, b.dx - mid, b.dy, b.dx, b.dy);
+      }
+      if (area) {
+        final fill = Path.from(line)
+          ..lineTo(points.last.dx, plot.bottom)
+          ..lineTo(points.first.dx, plot.bottom)
+          ..close();
+        canvas.drawPath(
+          fill,
+          Paint()
+            ..shader = LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                color.withValues(alpha: 0.42),
+                color.withValues(alpha: 0.04),
+              ],
+            ).createShader(plot),
+        );
+      }
+      // The glow under the line, then the gel line, then its sheen.
+      canvas
+        ..drawPath(
+          line.shift(const Offset(0, 2)),
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 5
+            ..color = color.withValues(alpha: 0.18)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+        )
+        ..drawPath(
+          line,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 3
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round
+            ..color = color,
+        )
+        ..drawPath(
+          line.shift(const Offset(0, -0.8)),
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 0.9
+            ..color = const Color(0x8CFFFFFF),
+        );
+      if (n <= 14) {
+        for (final p in points) {
+          paintGlossFace(
+            canvas,
+            Rect.fromCircle(center: p, radius: 4.5),
+            _gelOf(color),
+          );
+        }
+      }
+    }
+  }
+}
+
+class _BarPainter extends _AxesPainter {
+  _BarPainter({
+    required super.c,
+    required super.text,
+    required super.labels,
+    required super.series,
+    required super.direction,
+    required super.t,
+    required super.words,
+  });
+
+  @override
+  double xAt(Rect plot, int i, int n) {
+    final slot = plot.width / math.max(1, n);
+    final f = (i + 0.5) * slot;
+    return direction == TextDirection.rtl ? plot.right - f : plot.left + f;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final plot = paintAxes(canvas, size);
+    final top = this.top;
+    final n = labels.isEmpty
+        ? series.fold(0, (a, s) => math.max(a, s.values.length))
+        : labels.length;
+    if (n == 0 || series.isEmpty) return;
+    final slot = plot.width / n;
+    final group = math.min(slot * 0.68, 22.0 * series.length + 4);
+    final bar = (group - 3 * (series.length - 1)) / series.length;
+    for (var i = 0; i < n; i++) {
+      final centre = xAt(plot, i, n);
+      for (final (si, s) in series.indexed) {
+        if (i >= s.values.length) continue;
+        final h = plot.height * (s.values[i] / top) * t;
+        if (h <= 0.5) continue;
+        final offset = -group / 2 + si * (bar + 3);
+        final x = direction == TextDirection.rtl
+            ? centre - offset - bar
+            : centre + offset;
+        final rect = Rect.fromLTWH(x, plot.bottom - h, bar, h + 3);
+        paintGlossFace(
+          canvas,
+          rect,
+          _gelOf(_gelAt(c, s.color, si)).copyWith(
+            corners: BorderRadius.vertical(
+              top: Radius.circular(math.min(bar / 2, 8)),
+              bottom: const Radius.circular(2),
+            ),
+          ),
+        );
+      }
+    }
+  }
+}
+
+/// Grows a chart's figures in from nothing once, as it first shows (at once
+/// under Reduce Motion).
+class _Grow extends StatelessWidget {
+  const _Grow({required this.builder});
+
+  final Widget Function(BuildContext context, double t) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    final still = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    if (still) return builder(context, 1);
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 650),
+      curve: Curves.easeOutCubic,
+      builder: (context, t, _) => builder(context, t),
+    );
+  }
+}
+
+/// A line chart: each series a line of gel over the engraved tray, its
+/// figures at their labels.
+///
+/// ```dart
+/// GlossLineChart(labels: const ['Mon', 'Tue', 'Wed'], series: const [GlossSeries('Minutes', [35, 20, 45])], semanticLabel: 'Cooking time this week')
+/// ```
+class GlossLineChart extends StatelessWidget {
+  /// A line chart of [series] over [labels].
+  const GlossLineChart({
+    super.key,
+    required this.labels,
+    required this.series,
+    required this.semanticLabel,
+    this.height = 200,
+    this.style,
+  });
+
+  /// The x labels.
+  final List<String> labels;
+
+  /// The lines.
+  final List<GlossSeries> series;
+
+  /// What it shows, for a screen reader (which also hears the figures).
+  final String semanticLabel;
+
+  /// Its height.
+  final double height;
+
+  /// Its own style, over [GlossThemeData.chartStyle].
+  final GlossStyle? style;
+
+  @override
+  Widget build(BuildContext context) => _axes(context, area: false);
+
+  Widget _axes(BuildContext context, {required bool area}) {
+    final theme = GlossTheme.of(context);
+    final c = theme.colors;
+    final layered = DesignStyleOf([style, theme.chartStyle], const {});
+    return _Grow(
+      builder: (context, t) => _Framed(
+        semanticLabel: semanticLabel,
+        readOut: _readOut(labels, series),
+        legend: [
+          for (final (i, s) in series.indexed) (s.label, _gelAt(c, s.color, i)),
+        ],
+        height: height,
+        fill: layered.fill,
+        painter: _LinePainter(
+          c: c,
+          text: theme.textTheme.caption.copyWith(color: c.inkSecondary),
+          labels: labels,
+          series: series,
+          direction: Directionality.of(context),
+          words: DesignLocalizations.of(context),
+          t: t,
+          area: area,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('labels', labels))
+      ..add(IntProperty('series', series.length));
+  }
+}
+
+/// An area chart: a line chart whose lines are glazed down to the tray's
+/// floor.
+///
+/// ```dart
+/// GlossAreaChart(labels: const ['Mon', 'Tue', 'Wed'], series: const [GlossSeries('Meals', [2, 3, 2])], semanticLabel: 'Meals cooked')
+/// ```
+class GlossAreaChart extends GlossLineChart {
+  /// An area chart of [series] over [labels].
+  const GlossAreaChart({
+    super.key,
+    required super.labels,
+    required super.series,
+    required super.semanticLabel,
+    super.height,
+    super.style,
+  });
+
+  @override
+  Widget build(BuildContext context) => _axes(context, area: true);
+}
+
+/// A bar chart: each figure a gel tube standing up from the tray's floor,
+/// a group of tubes at each label when there are several series.
+///
+/// ```dart
+/// GlossBarChart(labels: const ['Mon', 'Tue', 'Wed'], series: const [GlossSeries('Recipes', [3, 1, 4])], semanticLabel: 'Recipes cooked each day')
+/// ```
+class GlossBarChart extends StatelessWidget {
+  /// A bar chart of [series] over [labels].
+  const GlossBarChart({
+    super.key,
+    required this.labels,
+    required this.series,
+    required this.semanticLabel,
+    this.height = 200,
+    this.style,
+  });
+
+  /// The x labels.
+  final List<String> labels;
+
+  /// The series.
+  final List<GlossSeries> series;
+
+  /// What it shows, for a screen reader.
+  final String semanticLabel;
+
+  /// Its height.
+  final double height;
+
+  /// Its own style, over [GlossThemeData.chartStyle].
+  final GlossStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = GlossTheme.of(context);
+    final c = theme.colors;
+    final layered = DesignStyleOf([style, theme.chartStyle], const {});
+    return _Grow(
+      builder: (context, t) => _Framed(
+        semanticLabel: semanticLabel,
+        readOut: _readOut(labels, series),
+        legend: [
+          for (final (i, s) in series.indexed) (s.label, _gelAt(c, s.color, i)),
+        ],
+        height: height,
+        fill: layered.fill,
+        painter: _BarPainter(
+          c: c,
+          text: theme.textTheme.caption.copyWith(color: c.inkSecondary),
+          labels: labels,
+          series: series,
+          direction: Directionality.of(context),
+          words: DesignLocalizations.of(context),
+          t: t,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<String>('labels', labels))
+      ..add(IntProperty('series', series.length));
+  }
+}
+
+/// A donut: the slices as arcs of gel laid in a ring groove, the total in
+/// its middle, a legend beside it (under it when narrow).
+///
+/// ```dart
+/// GlossPieChart(slices: const [GlossSlice('Dinners', 7), GlossSlice('Lunches', 4)], semanticLabel: 'Meals this week')
+/// ```
+class GlossPieChart extends StatelessWidget {
+  /// A donut of [slices].
+  const GlossPieChart({
+    super.key,
+    required this.slices,
+    required this.semanticLabel,
+    this.size = 168,
+    this.centerLabel,
+  });
+
+  /// The slices.
+  final List<GlossSlice> slices;
+
+  /// What it shows, for a screen reader.
+  final String semanticLabel;
+
+  /// Its width and height.
+  final double size;
+
+  /// What its middle says under the total; null: nothing.
+  final String? centerLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = GlossTheme.of(context);
+    final c = theme.colors;
+    final total = slices.fold(0.0, (a, s) => a + math.max(0, s.value));
+    final colors = [for (final (i, s) in slices.indexed) _gelAt(c, s.color, i)];
+    final ring = SizedBox.square(
+      dimension: size,
+      child: _Grow(
+        builder: (context, t) => CustomPaint(
+          painter: _DonutPainter(
+            c: c,
+            values: [for (final s in slices) math.max(0.0, s.value)],
+            colors: colors,
+            t: t,
+          ),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _figure(total),
+                  style: theme.textTheme.title.copyWith(
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+                if (centerLabel != null)
+                  Text(centerLabel!, style: theme.textTheme.caption),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    final legend = _Legend([
+      for (final (i, s) in slices.indexed)
+        ('${s.label} ${_figure(s.value)}', colors[i]),
+    ]);
+    return Semantics(
+      label: semanticLabel,
+      value: [for (final s in slices) '${s.label} ${_figure(s.value)}']
+          .join(', '),
+      excludeSemantics: true,
+      child: LayoutBuilder(
+        builder: (context, box) => box.maxWidth >= size + 180
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ring,
+                  const SizedBox(width: GlossSpacing.large),
+                  Flexible(child: legend),
+                ],
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ring,
+                  const SizedBox(height: GlossSpacing.regular),
+                  legend,
+                ],
+              ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('slices', slices.length));
+  }
+}
+
+class _DonutPainter extends CustomPainter {
+  _DonutPainter({
+    required this.c,
+    required this.values,
+    required this.colors,
+    required this.t,
+  });
+
+  final GlossColors c;
+  final List<double> values;
+  final List<Color> colors;
+  final double t;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.shortestSide;
+    final band = s * 0.17;
+    final centre = size.center(Offset.zero);
+    final r = (s - band) / 2;
+    final ring = Rect.fromCircle(center: centre, radius: r);
+    // The groove.
+    canvas
+      ..drawCircle(
+        centre,
+        r,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = band + 4
+          ..color = c.well,
+      )
+      ..drawArc(
+        Rect.fromCircle(center: centre, radius: r + band / 2 + 1.5),
+        math.pi * 0.1,
+        math.pi * 0.8,
+        false,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1
+          ..color = c.lip.withValues(alpha: c.lip.a * 0.8),
+      );
+    final total = values.fold(0.0, (a, b) => a + b);
+    if (total <= 0) return;
+    const gap = 0.035;
+    var start = -math.pi / 2;
+    final whole = math.pi * 2 * t;
+    for (final (i, v) in values.indexed) {
+      final sweep = whole * v / total;
+      if (sweep > gap) {
+        final color = colors[i];
+        final hsl = HSLColor.fromColor(color);
+        final deep = hsl
+            .withLightness((hsl.lightness - 0.08).clamp(0.0, 1.0))
+            .toColor();
+        canvas
+          ..drawArc(
+            ring,
+            start + gap / 2,
+            sweep - gap,
+            false,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = band
+              ..shader =
+                  RadialGradient(
+                    colors: [deep, color, deep],
+                    stops: const [0.72, 0.86, 1],
+                  ).createShader(
+                    Rect.fromCircle(center: centre, radius: r + band / 2),
+                  ),
+          )
+          // The sheen: a thin bright arc along the gel's outer top.
+          ..drawArc(
+            Rect.fromCircle(center: centre, radius: r + band * 0.22),
+            start + gap,
+            math.max(0, sweep - gap * 2),
+            false,
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = band * 0.18
+              ..strokeCap = StrokeCap.round
+              ..color = const Color(0x52FFFFFF),
+          );
+      }
+      start += sweep;
+    }
+  }
+
+  @override
+  bool shouldRepaint(_DonutPainter old) =>
+      old.t != t ||
+      old.c != c ||
+      !listEquals(old.values, values) ||
+      !listEquals(old.colors, colors);
+}
+
+/// A sparkline: a small thread of jade gel tracing [values], a bead at its
+/// last figure. For a trend beside a number.
+///
+/// ```dart
+/// const GlossSparkline(values: [3, 5, 4, 6, 8], semanticLabel: 'Recipes saved, rising')
+/// ```
+class GlossSparkline extends StatelessWidget {
+  /// A sparkline of [values].
+  const GlossSparkline({
+    super.key,
+    required this.values,
+    required this.semanticLabel,
+    this.width = 96,
+    this.height = 28,
+    this.color,
+  });
+
+  /// The figures.
+  final List<double> values;
+
+  /// What it shows, for a screen reader.
+  final String semanticLabel;
+
+  /// Its width.
+  final double width;
+
+  /// Its height.
+  final double height;
+
+  /// Its gel; null: jade.
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = GlossTheme.of(context).colors;
+    return Semantics(
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: CustomPaint(
+          painter: _SparkPainter(
+            values,
+            color ?? _gels(c).first,
+            Directionality.of(context),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IterableProperty<double>('values', values));
+  }
+}
+
+class _SparkPainter extends CustomPainter {
+  _SparkPainter(this.values, this.color, this.direction);
+
+  final List<double> values;
+  final Color color;
+  final TextDirection direction;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.length < 2) return;
+    final lo = values.reduce(math.min);
+    final hi = values.reduce(math.max);
+    final span = hi - lo == 0 ? 1 : hi - lo;
+    const pad = GlossSpacing.tight;
+    final rtl = direction == TextDirection.rtl;
+    Offset at(int i) {
+      final f = i / (values.length - 1);
+      final x = pad + (size.width - 2 * pad) * (rtl ? 1 - f : f);
+      final y = pad + (size.height - 2 * pad) * (1 - (values[i] - lo) / span);
+      return Offset(x, y);
+    }
+
+    final line = Path()..moveTo(at(0).dx, at(0).dy);
+    for (var i = 1; i < values.length; i++) {
+      final a = at(i - 1);
+      final b = at(i);
+      final mid = (b.dx - a.dx) / 2;
+      line.cubicTo(a.dx + mid, a.dy, b.dx - mid, b.dy, b.dx, b.dy);
+    }
+    canvas
+      ..drawPath(
+        line.shift(const Offset(0, 1.5)),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4
+          ..color = color.withValues(alpha: 0.18)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+      )
+      ..drawPath(
+        line,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.2
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..color = color,
+      );
+    paintGlossFace(
+      canvas,
+      Rect.fromCircle(center: at(values.length - 1), radius: 4),
+      _gelOf(color),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_SparkPainter old) =>
+      old.color != color || !listEquals(old.values, values);
+}
