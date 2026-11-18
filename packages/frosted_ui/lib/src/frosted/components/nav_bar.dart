@@ -165,8 +165,9 @@ class FrostedNavigationBar extends StatelessWidget {
       FrostedChromeMetrics.slabHeight +
       math.max(FrostedChromeMetrics.tabBarBottom, inset);
 
-  /// The fade the bar stands on: nothing at its top, most of the canvas at
-  /// 48%, the canvas from 80%.
+  /// The fade the bar stands on, 104 up from the screen's foot
+  /// ([FrostedChromeMetrics.tabBarFade]) across the window: nothing at its
+  /// top, most of the canvas at 48%, the canvas from 80%.
   static LinearGradient fade(FrostedThemeData t) => LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -245,8 +246,8 @@ class FrostedNavigationBar extends StatelessWidget {
     );
     final slab = SizedBox(
       height: FrostedChromeMetrics.slabHeight,
-      // The bar's glass: the page passes under it, blurred, with nothing
-      // fading it out above.
+      // The bar's glass: the page passes under it, blurred, over the fade
+      // that dissolves it into the canvas (the build's foot).
       child: FrostedFace(
         material: solid ? FrostedMaterial.paint : FrostedMaterial.bar,
         radius: BorderRadius.circular(radius),
@@ -310,7 +311,26 @@ class FrostedNavigationBar extends StatelessWidget {
     if (solid) {
       return ColoredBox(color: t.colorScheme.background, child: hugged);
     }
-    return hugged;
+    // The fade runs 104 up from the screen's foot, past the slab's top and
+    // across the window, so what passes under the glass dissolves into the
+    // canvas: no card's edge or rounded foot frames the slab (the user,
+    // 11-17: a day's card on the same gutter ran 1 outside the slab's sides
+    // and rounded off 9 under it while the bar drew no fade).
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: FrostedChromeMetrics.tabBarFade,
+          child: IgnorePointer(
+            child: DecoratedBox(decoration: BoxDecoration(gradient: fade(t))),
+          ),
+        ),
+        hugged,
+      ],
+    );
   }
 
   @override

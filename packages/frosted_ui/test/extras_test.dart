@@ -300,8 +300,14 @@ void main() {
           ],
         ),
       );
-      expect(_node(t, 'Overview'), isSemantics(isSelected: true));
-      expect(_node(t, 'Activity'), isSemantics(isSelected: false));
+      // Each tab says its place after its name (ui_core's DesignTabBar).
+      SemanticsNode tab(String name) =>
+          t.getSemantics(find.bySemanticsLabel(RegExp('^$name\n')));
+      expect(
+        tab('Overview'),
+        isSemantics(label: 'Overview\nTab 1 of 3', isSelected: true),
+      );
+      expect(tab('Activity'), isSemantics(isSelected: false));
       expect(find.bySemanticsLabel('Sections'), findsOneWidget);
       expect(find.bySemanticsLabel('More sections'), findsOneWidget);
       final tabs = t.getRect(find.byType(FrostedTabBar).first);
@@ -316,7 +322,7 @@ void main() {
       await t.tap(find.text('Activity'));
       await t.pump();
       expect(seen, [1]);
-      expect(_node(t, 'Activity'), isSemantics(isSelected: true));
+      expect(tab('Activity'), isSemantics(isSelected: true));
     },
   );
 

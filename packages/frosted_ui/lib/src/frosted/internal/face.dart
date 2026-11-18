@@ -21,8 +21,27 @@ export '../materials.dart' show FrostedMaterial;
 Color frostedLitEdge(FrostedThemeData t, Color night) =>
     t.isDark ? night : FrostedChromeMetrics.litEdge;
 
-/// A field holding focus by day: the light its lit rim gives off, a soft
-/// white glow round the well.
+/// The ink the keyboard's focus is drawn in: the theme's ring ink
+/// ([FrostedColorScheme.ringOuter], the accent at 70%) by night, where it is
+/// light, and by day where it has a hue; where by day it is the words' ink
+/// (opal's, near black) the theme's cool blue ([FrostedColorScheme.cold]) at
+/// the same strength. Glass shows focus as light, never as a dark line (the
+/// user, 11-17: "a black focus border on a glass field: is this something a
+/// glass would have?").
+Color frostedFocusInk(FrostedThemeData t) {
+  final ring = t.colorScheme.ringOuter;
+  // Its hue's strength: the spread of its channels (opal's ink 0.03, every
+  // coloured accent of the presets over 0.5).
+  final chroma =
+      [ring.r, ring.g, ring.b].reduce(math.max) -
+      [ring.r, ring.g, ring.b].reduce(math.min);
+  if (t.isDark || chroma >= .15) return ring;
+  return t.colorScheme.cold.withValues(alpha: ring.a);
+}
+
+/// A field holding focus by day: the light its rim gives off, a soft
+/// white glow round the well. White, not the focus ink: a tinted glow read
+/// as a grey shadow on the dawn backdrop.
 const List<BoxShadow> frostedFocusGlow = [
   BoxShadow(color: Color(0xF2FFFFFF), blurRadius: 12, spreadRadius: 1),
 ];

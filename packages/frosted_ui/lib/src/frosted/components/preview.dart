@@ -123,39 +123,30 @@ class FrostedPreview extends StatelessWidget {
     platform: platform,
     brightness: brightness,
     device: device,
-    child: MaterialApp(
-      // A new presentation is a new stack: raise it afresh.
-      key: ValueKey<Object>((presentation, drawer, fullScreen, back)),
-      debugShowCheckedModeBanner: false,
-      // The page reads in the direction around the preview: the app's own
-      // localizations would set left to right.
-      builder: (_, app) => Directionality(
-        textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
-        child: FrostedHost(
-          light: light,
-          dark: dark,
-          brightness: brightness,
-          child: app ?? const SizedBox.shrink(),
+    // Its own semantics container: the route under a nested app or
+    // navigator stands a modal barrier, which hides from a screen reader
+    // whatever painted before it in its container (the gallery bar above a
+    // page, a heading above a preview). material_ui's MaterialApp holds no
+    // container of its own, as Flutter 3.47's did.
+    child: Semantics(
+      container: true,
+      child: MaterialApp(
+        // A new presentation is a new stack: raise it afresh.
+        key: ValueKey<Object>((presentation, drawer, fullScreen, back)),
+        debugShowCheckedModeBanner: false,
+        // The page reads in the direction around the preview: the app's own
+        // localizations would set left to right.
+        builder: (_, app) => Directionality(
+          textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
+          child: FrostedHost(
+            light: light,
+            dark: dark,
+            brightness: brightness,
+            child: app ?? const SizedBox.shrink(),
+          ),
         ),
-      ),
-      home: switch (presentation) {
-        FrostedPresentation.root => _Root(
-          tabs: tabs,
-          activeIndex: activeIndex,
-          action: action,
-          brand: brand,
-          location: location,
-          child: child,
-        ),
-        // The sidebar stands in the pushed page's own route, as the shell
-        // stands it over the branch the page is pushed on: under a sheet
-        // raised from the page, over the page.
-        FrostedPresentation.pushed => PreviewStage(
-          route: (context, page) => FrostedPage<void>(
-            key: const ValueKey<String>('frosted-preview'),
-            child: page,
-          ).createRoute(context),
-          child: _Beside(
+        home: switch (presentation) {
+          FrostedPresentation.root => _Root(
             tabs: tabs,
             activeIndex: activeIndex,
             action: action,
@@ -163,18 +154,35 @@ class FrostedPreview extends StatelessWidget {
             location: location,
             child: child,
           ),
-        ),
-        FrostedPresentation.sheet => PreviewStage(
-          route: (context, page) => FrostedSheetPage<void>(
-            key: const ValueKey<String>('frosted-preview'),
-            drawer: drawer,
-            fullScreen: fullScreen,
-            back: back,
-            child: page,
-          ).createRoute(context),
-          child: child,
-        ),
-      },
+          // The sidebar stands in the pushed page's own route, as the shell
+          // stands it over the branch the page is pushed on: under a sheet
+          // raised from the page, over the page.
+          FrostedPresentation.pushed => PreviewStage(
+            route: (context, page) => FrostedPage<void>(
+              key: const ValueKey<String>('frosted-preview'),
+              child: page,
+            ).createRoute(context),
+            child: _Beside(
+              tabs: tabs,
+              activeIndex: activeIndex,
+              action: action,
+              brand: brand,
+              location: location,
+              child: child,
+            ),
+          ),
+          FrostedPresentation.sheet => PreviewStage(
+            route: (context, page) => FrostedSheetPage<void>(
+              key: const ValueKey<String>('frosted-preview'),
+              drawer: drawer,
+              fullScreen: fullScreen,
+              back: back,
+              child: page,
+            ).createRoute(context),
+            child: child,
+          ),
+        },
+      ),
     ),
   );
 

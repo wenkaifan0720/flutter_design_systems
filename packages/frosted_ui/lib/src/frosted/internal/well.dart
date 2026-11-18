@@ -139,24 +139,25 @@ class FrostedWell extends StatelessWidget {
           : error
           ? frostedErrorEdge(t)
           : s.edge ??
-                // Holding focus the edge takes the ring's ink by day (a lit
-                // edge brightening on a pale backdrop read as no change)
-                // and the accent by night.
+                // Holding focus the well shows light, never a dark line: by
+                // day its edge takes the focus ink (frostedFocusInk: the
+                // accent at 70%, opal's cool blue) and it glows white
+                // (below); by night its edge takes the accent.
                 (focused
-                    ? (day ? t.colorScheme.ringOuter : t.colorScheme.accent)
+                    ? (day ? frostedFocusInk(t) : t.colorScheme.accent)
                     : day
                     ? FrostedChromeMetrics.litEdge
                     : t.controlEdge),
-      // By night a focused well also wears a ring of the focus ink 2 past
-      // its edge: its accent edge alone read as barely brighter than the
-      // light edge every well has by night (self-review round 2).
+      // A focused well glows white by day; by night it wears a ring of the
+      // focus ink 2 past its edge: its edge alone read as barely brighter
+      // than the light edge every well has by night (self-review round 2).
       shadows: !focused || error
           ? const <BoxShadow>[]
           : day
           ? frostedFocusGlow
           : [
               frostedShadow(
-                color: t.colorScheme.ringOuter,
+                color: frostedFocusInk(t),
                 spread: FrostedChromeMetrics.focusRingWidth,
               ),
             ],

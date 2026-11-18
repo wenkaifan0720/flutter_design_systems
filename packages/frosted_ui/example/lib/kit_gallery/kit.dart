@@ -11,7 +11,7 @@
 /// Frosted depends on.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -117,37 +117,45 @@ final ThemeData kitAppTheme = ThemeData(
 );
 
 Widget _kitApp({required Brightness brightness, required Widget home}) =>
-    MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Frosted',
-      // Its pushes (Top bar's page) move as Frosted's pages do, whichever
-      // Material the app is on.
-      theme: kitAppTheme,
-      // Frosted's own words and the ones every design system shares (ui_core
-      // speaks 30 languages): an app in another language installs them for
-      // it, beside GlobalMaterialLocalizations.
-      localizationsDelegates: const [
-        FrostedLocalizations.delegate,
-        DesignLocalizations.delegate,
-      ],
-      navigatorObservers:
-          kitNavigatorObservers?.call() ?? const <NavigatorObserver>[],
-      builder: (context, child) => kitWords(
-        context,
-        Directionality(
-          textDirection: kitShownDirection,
-          child: FrostedHost(
-            light: kitTheme(Brightness.light),
-            dark: kitTheme(Brightness.dark),
-            brightness: brightness,
-            child: FrostedAccountScope(
-              account: kitMaren,
-              child: child ?? const SizedBox.shrink(),
+    // Its own semantics container: the route under a nested app or
+    // navigator stands a modal barrier, which hides from a screen reader
+    // whatever painted before it in its container (the gallery bar above a
+    // page, a heading above a preview). material_ui's MaterialApp holds no
+    // container of its own, as Flutter 3.47's did.
+    Semantics(
+      container: true,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Frosted',
+        // Its pushes (Top bar's page) move as Frosted's pages do, whichever
+        // Material the app is on.
+        theme: kitAppTheme,
+        // Frosted's own words and the ones every design system shares (ui_core
+        // speaks 30 languages): an app in another language installs them for
+        // it, beside GlobalMaterialLocalizations.
+        localizationsDelegates: const [
+          FrostedLocalizations.delegate,
+          DesignLocalizations.delegate,
+        ],
+        navigatorObservers:
+            kitNavigatorObservers?.call() ?? const <NavigatorObserver>[],
+        builder: (context, child) => kitWords(
+          context,
+          Directionality(
+            textDirection: kitShownDirection,
+            child: FrostedHost(
+              light: kitTheme(Brightness.light),
+              dark: kitTheme(Brightness.dark),
+              brightness: brightness,
+              child: FrostedAccountScope(
+                account: kitMaren,
+                child: child ?? const SizedBox.shrink(),
+              ),
             ),
           ),
         ),
+        home: home,
       ),
-      home: home,
     );
 
 /// One labelled variant band inside a demo screen.
@@ -185,21 +193,25 @@ Widget kitRow(List<Widget> children) => Wrap(
 Widget kitRouterApp({
   required Brightness brightness,
   required RouterConfig<Object> router,
-}) => MaterialApp.router(
-  debugShowCheckedModeBanner: false,
-  title: 'Frosted',
-  routerConfig: router,
-  builder: (context, child) => kitWords(
-    context,
-    Directionality(
-      textDirection: kitShownDirection,
-      child: FrostedHost(
-        light: kitTheme(Brightness.light),
-        dark: kitTheme(Brightness.dark),
-        brightness: brightness,
-        child: FrostedAccountScope(
-          account: kitMaren,
-          child: child ?? const SizedBox.shrink(),
+}) => Semantics(
+  // A nested app: its own semantics container, as _kitApp's.
+  container: true,
+  child: MaterialApp.router(
+    debugShowCheckedModeBanner: false,
+    title: 'Frosted',
+    routerConfig: router,
+    builder: (context, child) => kitWords(
+      context,
+      Directionality(
+        textDirection: kitShownDirection,
+        child: FrostedHost(
+          light: kitTheme(Brightness.light),
+          dark: kitTheme(Brightness.dark),
+          brightness: brightness,
+          child: FrostedAccountScope(
+            account: kitMaren,
+            child: child ?? const SizedBox.shrink(),
+          ),
         ),
       ),
     ),
@@ -266,26 +278,30 @@ Widget kitSpecimenStage({
   required Brightness brightness,
   required KitFrame frame,
   required Widget child,
-}) => MaterialApp(
-  debugShowCheckedModeBanner: false,
-  title: 'Frosted',
-  theme: kitAppTheme,
-  builder: (context, home) => kitWords(
-    context,
-    Directionality(
-      textDirection: kitShownDirection,
-      child: FrostedHost(
-        light: FrostedThemeData.preset(style, Brightness.light),
-        dark: FrostedThemeData.preset(style, Brightness.dark),
-        brightness: brightness,
-        child: FrostedAccountScope(
-          account: kitMaren,
-          child: home ?? const SizedBox.shrink(),
+}) => Semantics(
+  // A nested app: its own semantics container, as _kitApp's.
+  container: true,
+  child: MaterialApp(
+    debugShowCheckedModeBanner: false,
+    title: 'Frosted',
+    theme: kitAppTheme,
+    builder: (context, home) => kitWords(
+      context,
+      Directionality(
+        textDirection: kitShownDirection,
+        child: FrostedHost(
+          light: FrostedThemeData.preset(style, Brightness.light),
+          dark: FrostedThemeData.preset(style, Brightness.dark),
+          brightness: brightness,
+          child: FrostedAccountScope(
+            account: kitMaren,
+            child: home ?? const SizedBox.shrink(),
+          ),
         ),
       ),
     ),
+    home: _KitStage(frame: frame, child: child),
   ),
-  home: _KitStage(frame: frame, child: child),
 );
 
 class _KitStage extends StatelessWidget {

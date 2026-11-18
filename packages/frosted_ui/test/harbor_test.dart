@@ -8,13 +8,15 @@
 // written there with its keylines drawn over it.
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 import 'keylines.dart';
 import 'tiers.dart';
@@ -195,7 +197,29 @@ Future<void> _guidelines(WidgetTester tester) async {
 /// as a golden does, so the tests that read it carry the goldens tag.
 Future<void> _contrast(WidgetTester tester) async {
   final handle = tester.ensureSemantics();
+  // Words on show: the guideline reads every paragraph on screen, and on a
+  // phone the words resting under the tab bar dissolve into the canvas with
+  // the fade it stands on, by design, until they are scrolled up to. So the
+  // view grows first to the page's whole height, every word standing above
+  // the fade as it does once scrolled to (the page's foot keeps the last
+  // card 96 over the screen's foot, clear of the fade's 104 and its faint
+  // top), then comes back.
+  final size = tester.view.physicalSize;
+  final grow = find.byType(FrostedNavigationBar).evaluate().isEmpty
+      ? 0.0
+      : tester
+            .stateList<ScrollableState>(find.byType(Scrollable))
+            .where((s) => s.position.axis == Axis.vertical)
+            .fold(0.0, (m, s) => math.max(m, s.position.maxScrollExtent));
+  if (grow > 0) {
+    tester.view.physicalSize = Size(size.width, size.height + grow);
+    await _settle(tester);
+  }
   await expectLater(tester, meetsGuideline(textContrastGuideline));
+  if (grow > 0) {
+    tester.view.physicalSize = size;
+    await _settle(tester);
+  }
   handle.dispose();
 }
 
@@ -544,5 +568,97 @@ void main() {
         expect(faults, isEmpty, reason: faults.join('\n'));
       }, tags: const ['goldens']);
     }
+  }
+
+  // The phone's tab bar stands on a fade into the canvas (the source's
+  // .tabbar, 104 up from the foot), so the day's card running on under it at
+  // rest frames it with no edge: neither its rim, 1 outside the slab's sides on
+  // the same gutter, nor its rounded foot under the slab (the user, 11-17:
+  // while the bar drew no fade the card framed it, 1 at the sides and 9 under,
+  // and the plate inside looked off-centre). Read on the painted pixels at 2x,
+  // as the pub page's pictures are: no two neighbouring pixels beside the
+  // slab's lower half (where the fade is most of the canvas) or under the slab
+  // stand more than 1.05:1 apart (the card's rim read 1.15 to 1.24:1 there
+  // with no fade; with it, at most 1.04 by day at the slab's middle). Above
+  // that the rim fades out as it nears the bar.
+  for (final (look, brightness) in [
+    ('day', Brightness.light),
+    ('night', Brightness.dark),
+  ]) {
+    testWidgets('no card edge frames the tab bar at rest on a phone by $look', (
+      tester,
+    ) async {
+      const ratio = 2.0;
+      tester.view.physicalSize = const Size(390, 844) * ratio;
+      tester.view.devicePixelRatio = ratio;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        _Harness(brightness: brightness, backdrop: FrostedBackdropKind.dawn),
+      );
+      await _settle(tester);
+      final bar = tester.getRect(find.byType(FrostedNavigationBar));
+      final slab = Rect.fromLTRB(
+        bar.left + FrostedChromeMetrics.tabBarSide,
+        bar.bottom -
+            FrostedChromeMetrics.tabBarBottom -
+            FrostedChromeMetrics.slabHeight,
+        bar.right - FrostedChromeMetrics.tabBarSide,
+        bar.bottom - FrostedChromeMetrics.tabBarBottom,
+      );
+      final boundary = tester.renderObject<RenderRepaintBoundary>(
+        find.byKey(_screen),
+      );
+      final image = await tester.runAsync(
+        () => boundary.toImage(pixelRatio: ratio),
+      );
+      final bytes = (await tester.runAsync(
+        () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
+      ))!;
+      final w = image!.width;
+      final h = image.height;
+      image.dispose();
+      // WCAG's relative luminance of a pixel.
+      double lum(int x, int y) {
+        final i = (y * w + x) * 4;
+        double lin(int c) {
+          final v = c / 255;
+          return v <= 0.04045
+              ? v / 12.92
+              : math.pow((v + 0.055) / 1.055, 2.4).toDouble();
+        }
+
+        return 0.2126 * lin(bytes.getUint8(i)) +
+            0.7152 * lin(bytes.getUint8(i + 1)) +
+            0.0722 * lin(bytes.getUint8(i + 2));
+      }
+
+      // The most two neighbours along a row, x0 to x1, stand apart.
+      double step(int y, int x0, int x1) {
+        var most = 1.0;
+        for (var x = x0 + 1; x < x1; x++) {
+          final a = lum(x, y) + 0.05;
+          final b = lum(x - 1, y) + 0.05;
+          most = math.max(most, math.max(a, b) / math.min(a, b));
+        }
+        return most;
+      }
+
+      final left = (slab.left * ratio).round();
+      final right = (slab.right * ratio).round();
+      final bottom = (slab.bottom * ratio).round();
+      var beside = 1.0;
+      for (var y = (slab.center.dy * ratio).round(); y < bottom; y++) {
+        beside = math.max(
+          beside,
+          math.max(step(y, 0, left - 1), step(y, right + 1, w)),
+        );
+      }
+      var under = 1.0;
+      for (var y = bottom + 1; y < h; y++) {
+        under = math.max(under, step(y, 0, w));
+      }
+      expect(beside, lessThanOrEqualTo(1.05), reason: 'beside the slab');
+      expect(under, lessThanOrEqualTo(1.05), reason: 'under the slab');
+    });
   }
 }

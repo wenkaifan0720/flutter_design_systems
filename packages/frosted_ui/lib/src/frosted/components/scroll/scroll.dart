@@ -362,7 +362,7 @@ class FrostedCarouselView extends StatelessWidget {
   /// How many slides.
   final int? itemCount;
 
-  /// Builds slide [index].
+  /// Builds the slide at the index it is given.
   final IndexedWidgetBuilder? itemBuilder;
 
   /// The slides' height.

@@ -1,33 +1,24 @@
 # frosted_ui
 
-Frosted glass widgets for Flutter. Panes of glass rimmed with light stand on a pale canvas lit by soft washes of colour;
-one ink act carries the page's action, money is set in a display face with its dollars carrying the weight, and a
-spectrum of pastel hues names the categories and objects an app keeps. Seven presets (opal, quartz, garnet, glacier,
-cobalt, jade and copper), each designed by day and by night, from a phone to a desktop.
+Frosted glass for Flutter: panes rimmed with light stand on a canvas lit by soft washes of colour, and one ink act
+carries each page, by day and by night.
 
-| | |
-|---|---|
-| ![Harbor's Activity on a desktop by day](screenshots/harbor-activity-desktop-day.png) | ![Harbor's Activity on a phone by night](screenshots/harbor-activity-phone-night.png) |
-| ![Harbor's Settings on a desktop by night](screenshots/harbor-settings-desktop-night.png) | ![Harbor's Settings on a phone by day](screenshots/harbor-settings-phone-day.png) |
-| ![The pearl credit card, live and frozen, on a desktop by day](screenshots/gallery-cards-desktop-day.png) | ![Segmented buttons, chips and switches on a phone by night](screenshots/gallery-selection-phone-night.png) |
+![Harbor, the gallery's sample app, on its Activity page at 1440 wide and on a phone, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/frosted_ui/screenshots/hero.webp)
 
-The components carry the names Material gives them (`FrostedButton`, `FrostedTextField`, `FrostedAppBar`,
-`FrostedNavigationBar`, `FrostedListTile`, `FrostedCheckbox`, `FrostedSwitch`, `FrostedSlider`,
-`FrostedSegmentedButton`, `FrostedTabBar`, `FrostedDialog`, `FrostedSnackBar`, ...) and the parameters a Flutter
-developer expects: a press is `onPressed`, a control is `value` with `onChanged`, a destination is `selectedIndex`. The
-theme is shaped like Material's: `FrostedThemeData` holds a `colorScheme`, a `textTheme` and `shadows`, beside the look's
-own `glass`, `pearl` and `toast`.
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/frosted/)** · [API reference](https://pub.dev/documentation/frosted_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
-```yaml
-dependencies:
-  frosted_ui: ^0.2.1
+```sh
+flutter pub add frosted_ui material_ui
 ```
 
 ```dart
 import 'package:frosted_ui/frosted_ui.dart';
 ```
+
+`material_ui` is for the app's `MaterialApp`, as in the set-up below; under a `CupertinoApp` (from `cupertino_ui`) or a
+bare `WidgetsApp`, `frosted_ui` is all an app adds.
 
 ## Set up
 
@@ -36,8 +27,8 @@ import 'package:frosted_ui/frosted_ui.dart';
 in the bundled faces (on the web a font otherwise arrives after it).
 
 ```dart
-import 'package:flutter/material.dart';
 import 'package:frosted_ui/frosted_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,16 +41,16 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    // Pushed pages move as Frosted's do (see Motion below).
-    theme: ThemeData(
-      pageTransitionsTheme: const PageTransitionsTheme(builders: frostedPageTransitions),
-    ),
+    // FrostedTheme's Material theme reaches the app's page routes: pushed pages move as Frosted's do (see Motion).
     builder: (context, child) => FrostedTheme(
       data: FrostedThemeData.opal(),
       darkData: FrostedThemeData.opal(Brightness.dark),
       child: child!,
     ),
-    home: const TodayPage(),
+    home: const FrostedScaffold(
+      topBar: FrostedAppBar(title: 'Today', caption: 'Tuesday'),
+      body: FrostedListTile(title: 'Blue Fern Café', meta: 'Dining out · 8:12 AM'),
+    ),
   );
 }
 ```
@@ -88,6 +79,25 @@ WidgetsApp(
 `darkData:` is the theme for the platform's dark appearance; leave it out and every brightness takes `data`. Nothing of
 Material shows under Frosted: no ink, and the text field's caret, selection, handles and menu, and the scroll bar, are
 Frosted's. No Material or Cupertino type appears in Frosted's API.
+
+## The look
+
+Panes of glass rimmed with light stand on a pale canvas lit by soft washes of colour; one ink act carries the page's
+action, money is set in a display face with its dollars carrying the weight, and a spectrum of pastel hues names the
+categories and objects an app keeps. Seven presets (opal, quartz, garnet, glacier, cobalt, jade and copper), each
+designed by day and by night, from a phone to a desktop.
+
+| | |
+|---|---|
+| ![Harbor's Settings on a desktop by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/frosted_ui/screenshots/harbor-settings-desktop-night.webp) | ![Harbor's Activity on a phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/frosted_ui/screenshots/harbor-activity-phone-night.webp) |
+| ![The pearl credit card, live and frozen, on a desktop by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/frosted_ui/screenshots/gallery-cards-desktop-day.webp) | ![Segmented buttons, chips and switches on a phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/frosted_ui/screenshots/gallery-selection-phone-night.webp) |
+
+The components carry the names Material gives them (`FrostedButton`, `FrostedTextField`, `FrostedAppBar`,
+`FrostedNavigationBar`, `FrostedListTile`, `FrostedCheckbox`, `FrostedSwitch`, `FrostedSlider`,
+`FrostedSegmentedButton`, `FrostedTabBar`, `FrostedDialog`, `FrostedSnackBar`, ...) and the parameters a Flutter
+developer expects: a press is `onPressed`, a control is `value` with `onChanged`, a destination is `selectedIndex`. The
+theme is shaped like Material's: `FrostedThemeData` holds a `colorScheme`, a `textTheme` and `shadows`, beside the look's
+own `glass`, `pearl` and `toast`.
 
 ## Everyday parts
 
@@ -269,12 +279,15 @@ costs no blur at all. The canvas's washes are painted once and cached.
 - **Contrast.** Words hold 4.5:1 on their glass (3:1 when large), by day and by night, over any backdrop. Known limit: by
   day a field's rim and the focus light are white light on pale glass, under 3:1 against the page (about 1.1 to 1.3:1);
   a field is found by its well and its label, and focus also changes the well itself.
-- **Motion.** Every change of state eases from where it is; Reduce Motion makes each one a cut. A page pushed over
+- **Motion.** Every change of state eases from where it is; Reduce Motion makes each one a cut. The dialog and the
+  sheets ride ui_core's critically damped springs: nothing overshoots, and a sheet let go mid-drag carries the finger's
+  speed. A page pushed over
   another clears in as it settles 24 px toward the end, the page under it standing still, and pops back the way it
   came, on every platform. A `FrostedPage` moves so wherever it is pushed, and `FrostedTheme` hands the motion to the
-  page routes of an app on `material_ui`, the Material Frosted is built on. Flutter's own `MaterialApp` keeps its theme
-  above `FrostedTheme`, out of its reach: give that theme `frostedPageTransitions`, as the set-up above does, and
-  its `MaterialPageRoute`s and go_router's pages match (a `CupertinoPageRoute` keeps iOS's own slide). On iOS a drag
+  page routes of an app on `material_ui`, the Material Frosted is built on, as the set-up above is. Flutter's own
+  `MaterialApp` (`package:flutter/material.dart`, which Flutter 3.50 deprecates) keeps its theme above `FrostedTheme`,
+  out of its reach: give that theme `pageTransitionsTheme: const PageTransitionsTheme(builders:
+  frostedPageTransitions)`, and its `MaterialPageRoute`s and go_router's pages match (a `CupertinoPageRoute` keeps iOS's own slide). On iOS a drag
   from the leading edge still takes a page back: the map's iOS entry stands Frosted's motion inside ui_core's
   `DesignSwipeBackPageTransitionsBuilder`. Tabs and sidebar destinations change the page in place.
 - **Large text.** Pages lay out up to 200% text (the host caps a larger size there); controls grow taller rather than

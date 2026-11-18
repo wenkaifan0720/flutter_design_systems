@@ -21,6 +21,34 @@ export 'package:ui_core/ui_core.dart' show DesignCommand;
 export 'package:ui_core/ui_core.dart' show DesignMenuEntry;
 
 // ---------------------------------------------------------------------------
+// Shortcuts
+// ---------------------------------------------------------------------------
+
+/// [shortcut]'s keys as Frosted's menus and palette write them, for a
+/// [DesignMenuEntry.shortcut] or a [DesignCommand.shortcut]: ui_core's keys
+/// ([designShortcutKeys]) in the platform's order and the reader's words,
+/// close together with Apple's symbols ("⇧⌘Z", each symbol drawn as the
+/// look's glyph) on macOS and iOS, and joined by "+" elsewhere
+/// ("Ctrl+Shift+Z"). [platform] is [defaultTargetPlatform] when null.
+///
+/// ```dart
+/// DesignMenuEntry(label: 'Redo', shortcut: frostedShortcutLabel(context, const SingleActivator(LogicalKeyboardKey.keyZ, meta: true, shift: true)), onPressed: redo)
+/// ```
+String frostedShortcutLabel(
+  BuildContext context,
+  MenuSerializableShortcut shortcut, {
+  TargetPlatform? platform,
+}) {
+  final on = platform ?? defaultTargetPlatform;
+  final apple = on == TargetPlatform.macOS || on == TargetPlatform.iOS;
+  return designShortcutKeys(
+    context,
+    shortcut,
+    platform: on,
+  ).join(apple ? '' : '+');
+}
+
+// ---------------------------------------------------------------------------
 // Menu bar
 // ---------------------------------------------------------------------------
 
@@ -29,7 +57,8 @@ export 'package:ui_core/ui_core.dart' show DesignMenuEntry;
 /// under it, a submenu beside its row. Once one menu is open the pointer
 /// moving along the bar opens the next; the arrows walk the bar and the
 /// menus, Return runs an item, Escape closes the menu and goes back to its
-/// name. Each item may show its [DesignMenuEntry.shortcut] and a check.
+/// name. Each item may show its [DesignMenuEntry.shortcut] (written by
+/// [frostedShortcutLabel]) and a check.
 /// ui_core's [DesignMenuBar] is the behaviour.
 ///
 /// ```dart
@@ -57,6 +86,11 @@ class FrostedMenuBar extends StatelessWidget {
     final reach = math.max(item + 2 * inset, target);
     return DesignMenuBar(
       menus: menus,
+      // Frosted's rows follow a moving pointer (FrostedPanelRow.followsPointer,
+      // woken by FrostedMenuWake); ui_core's follow lights the row a menu
+      // opens under a resting pointer, so a menu the keys open would light
+      // that row rather than the first.
+      highlightFollowsPointer: false,
       semanticLabel: label ?? DesignLocalizations.of(context).menuBarLabel,
       barBuilder: (context, items) => SizedBox(
         height: reach,
@@ -123,52 +157,10 @@ class FrostedMenuBar extends StatelessWidget {
             ),
           );
         }
-        final shortcut = entry.shortcut;
-        return SizedBox(
-          width: 240 - 2 * FrostedChromeMetrics.menuInset,
-          child: FrostedPanelRow(
-            label: entry.label,
-            followsPointer: true,
-            states: {
-              ...states,
-              if (entry.checked ?? false) WidgetState.selected,
-            },
-            checkable: entry.checked != null,
-            trailing: entry.isSubmenu
-                ? Icon(
-                    FrostedGlyphs.forward,
-                    size: FrostedChromeMetrics.menuItemGlyph,
-                    color: t.colorScheme.textTertiary,
-                  )
-                : shortcut == null
-                ? null
-                : FrostedKeys(shortcut),
-          ),
-        );
+        return _menuRow(context, entry, states);
       },
-      dividerBuilder: (context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: FrostedSpacing.s4),
-        child: SizedBox(
-          height: FrostedStrokes.hairline,
-          child: ColoredBox(color: t.colorScheme.border),
-        ),
-      ),
-      surfaceBuilder: (context, info, items) => FrostedPanel(
-        presence: info.animation,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: info.maxSize.height),
-          child: SingleChildScrollView(
-            child: FrostedMenuWake(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: FrostedChromeMetrics.menuItemsGap,
-                children: items,
-              ),
-            ),
-          ),
-        ),
-      ),
+      dividerBuilder: _menuDivider,
+      surfaceBuilder: _menuSurface,
     );
   }
 
@@ -181,12 +173,143 @@ class FrostedMenuBar extends StatelessWidget {
   }
 }
 
+/// A row of a Frosted menu (the menu bar's, a context menu's): the panel's
+/// row, 240 wide with the panel's inset, its check, and its submenu's arrow
+/// or its shortcut at the end.
+Widget _menuRow(
+  BuildContext context,
+  DesignMenuEntry entry,
+  Set<WidgetState> states,
+) {
+  final t = context.frostedTheme;
+  final shortcut = entry.shortcut;
+  return SizedBox(
+    width: 240 - 2 * FrostedChromeMetrics.menuInset,
+    child: FrostedPanelRow(
+      label: entry.label,
+      followsPointer: true,
+      states: {...states, if (entry.checked ?? false) WidgetState.selected},
+      checkable: entry.checked != null,
+      trailing: entry.isSubmenu
+          ? Icon(
+              FrostedGlyphs.forward,
+              size: FrostedChromeMetrics.menuItemGlyph,
+              color: t.colorScheme.textTertiary,
+            )
+          : shortcut == null
+          ? null
+          : FrostedKeys(shortcut),
+    ),
+  );
+}
+
+/// A Frosted menu's divider: a hairline with 4 above and below.
+Widget _menuDivider(BuildContext context) => Padding(
+  padding: const EdgeInsets.symmetric(vertical: FrostedSpacing.s4),
+  child: SizedBox(
+    height: FrostedStrokes.hairline,
+    child: ColoredBox(color: context.frostedTheme.colorScheme.border),
+  ),
+);
+
+/// A Frosted menu's panel round its [items], scrolling them when the room
+/// is short.
+Widget _menuSurface(
+  BuildContext context,
+  DesignOverlayInfo info,
+  List<Widget> items,
+) => FrostedPanel(
+  presence: info.animation,
+  // As wide as its rows: a context menu's overlay offers the window's
+  // width, which a stretched column would take.
+  child: IntrinsicWidth(
+    child: ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: info.maxSize.height),
+      child: SingleChildScrollView(
+        child: FrostedMenuWake(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            spacing: FrostedChromeMetrics.menuItemsGap,
+            children: items,
+          ),
+        ),
+      ),
+    ),
+  ),
+);
+
+// ---------------------------------------------------------------------------
+// Context menu
+// ---------------------------------------------------------------------------
+
+/// A menu of [items] over [child], opened where the user asks for it
+/// (Material's context menu, shadcn's Context Menu): a right click or a long
+/// press opens it at the pointer, Shift+F10 or the Menu key at the focused
+/// control, and a screen reader finds "Show menu" among [child]'s actions.
+/// Its rows are the menu bar's on the look's panel (commands, submenus,
+/// dividers, checks, shortcuts), the light following the pointer. Escape, a
+/// tap outside or the system back closes it and the focus goes back; on the
+/// web the browser's own menu stays shut over [child]. ui_core's
+/// [DesignContextMenu] is the behaviour.
+///
+/// ```dart
+/// FrostedContextMenu(items: [DesignMenuEntry(label: 'Copy', onPressed: copy), DesignMenuEntry.divider(), DesignMenuEntry(label: 'Delete', onPressed: delete)], child: card)
+/// ```
+class FrostedContextMenu extends StatelessWidget {
+  /// A context menu of [items] over [child].
+  const FrostedContextMenu({
+    required this.items,
+    required this.child,
+    this.label,
+    super.key,
+  });
+
+  /// The menu's rows, in order: commands, submenus and dividers. Empty: no
+  /// menu.
+  final List<DesignMenuEntry> items;
+
+  /// The region that opens it.
+  final Widget child;
+
+  /// What a screen reader calls the menu; null: none.
+  final String? label;
+
+  @override
+  Widget build(BuildContext context) {
+    // Its menu tells a key's opening from a pointer's (FrostedMenuWake).
+    FrostedLastInput.watch();
+    return DesignContextMenu(
+      menuChildren: items,
+      // Frosted's rows follow a moving pointer (FrostedPanelRow.followsPointer,
+      // woken by FrostedMenuWake); ui_core's follow lights the row a menu
+      // opens under a resting pointer, so a menu the keys open would light
+      // that row rather than the first.
+      highlightFollowsPointer: false,
+      semanticLabel: label,
+      itemBuilder: (context, entry, level, states) =>
+          _menuRow(context, entry, states),
+      dividerBuilder: _menuDivider,
+      surfaceBuilder: _menuSurface,
+      child: child,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<DesignMenuEntry>('items', items))
+      ..add(StringProperty('label', label, defaultValue: null));
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Command palette
 // ---------------------------------------------------------------------------
 
 /// A palette of [commands] found by typing (shadcn's Command, a desktop's
-/// ⌘K): a search field over the matches, grouped under their [group]
+/// ⌘K): a search field over the matches, grouped under their [DesignCommand.group]
 /// names, the best match lit; the arrows move the light, Return runs it,
 /// Escape closes. A screen reader hears how many match as the query
 /// changes. Build it in place, or raise it over the app with [show] (and

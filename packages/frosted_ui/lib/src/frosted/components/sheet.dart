@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
-    show Material, MaterialLocalizations, MaterialType, ModalBottomSheetRoute;
+    show Material, MaterialLocalizations, MaterialType;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
@@ -399,7 +399,6 @@ class FrostedSheet extends StatelessWidget {
         barrierColor: scrim,
         barrierLabel: MaterialLocalizations.of(context).scrimLabel,
         semanticLabel: title,
-        transitionDuration: motionOf(context).duration ?? Duration.zero,
         builder: (sheetContext, sheet) => themes.wrap(
           RoutePresentationScope(
             presentation: RoutePresentation.sheet,
@@ -494,8 +493,10 @@ class FrostedSheet extends StatelessWidget {
     return (m.scrim, frostedOpaqueAt(context) ? 0.0 : m.soften);
   }
 
-  /// The rise and the fall at [context]: none at all under Reduce Motion
-  /// ([FrostedMotion.of]).
+  /// The rise and the fall at [context] of the routes Frosted times itself
+  /// (the action sheet's): none at all under Reduce Motion
+  /// ([FrostedMotion.of]). The dialog and the sheets ride ui_core's springs
+  /// ([frostedRouteStiffness]).
   static AnimationStyle motionOf(BuildContext context) =>
       FrostedMotion.of(context).moves
       ? const AnimationStyle(
@@ -506,7 +507,7 @@ class FrostedSheet extends StatelessWidget {
         )
       : AnimationStyle.noAnimation;
 
-  /// The tallest a sheet stands on [screen]: 88% of it on a phone, the
+  /// The tallest a sheet stands on the screen: 88% of it on a phone, the
   /// window less 64 on a tablet or the desktop.
   static double maxHeight(BuildContext context) {
     final screen = MediaQuery.sizeOf(context).height;
@@ -536,6 +537,7 @@ class FrostedSheet extends StatelessWidget {
         foot: foot?.call(sheetContext) ?? const [],
         children: builder(sheetContext),
       ),
+      semanticLabel: title.isEmpty ? null : title,
     );
   }
 
@@ -543,9 +545,15 @@ class FrostedSheet extends StatelessWidget {
   /// [FrostedHost.navigatorOf]) as a sheet raises one: off the bottom edge
   /// over the scrim on a phone, centred as a dialog on a tablet or the desktop, the
   /// keyboard riding outside the card. Completes with the value the route
-  /// pops with: null when dismissed. [FrostedSheet.show] and
-  /// [showFrostedBottomSheet] raise through it.
-  static Future<T?> raise<T>(BuildContext context, WidgetBuilder builder) {
+  /// pops with: null when dismissed. A screen reader calls it
+  /// [semanticLabel] (null: a sheet, or a dialog on a tablet or the
+  /// desktop). [FrostedSheet.show] and [showFrostedBottomSheet] raise
+  /// through it.
+  static Future<T?> raise<T>(
+    BuildContext context,
+    WidgetBuilder builder, {
+    String? semanticLabel,
+  }) {
     final (scrim, soften) = _below(context);
     final navigator = FrostedHost.navigatorOf(context);
     final words = MaterialLocalizations.of(context);
@@ -563,8 +571,8 @@ class FrostedSheet extends StatelessWidget {
           barrierDismissible: true,
           barrierLabel: words.scrimLabel,
           barrierColor: scrim,
-          transitionDuration: motionOf(context).duration ?? Duration.zero,
-          pageBuilder: (sheetContext, _, _) => themes.wrap(
+          semanticLabel: semanticLabel,
+          builder: (sheetContext) => themes.wrap(
             Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
@@ -578,26 +586,19 @@ class FrostedSheet extends StatelessWidget {
         ),
       );
     }
+    // The room the route gives the panel is the screen less the keyboard; the
+    // card stands at most [most] with the keyboard below it, as before.
+    final gap = MediaQuery.sizeOf(context).height - most;
     return navigator.push(
-      _FrostedSoftSheetRoute<T>(
+      FrostedSoftBottomSheetRoute<T>(
         soften: soften,
-        capturedThemes: themes,
         barrierLabel: words.scrimLabel,
-        barrierOnTapHint: words.scrimOnTapHint(words.bottomSheetLabel),
-        backgroundColor: const Color(0x00000000),
-        modalBarrierColor: scrim,
-        elevation: 0,
-        isScrollControlled: true,
-        sheetAnimationStyle: motionOf(context),
-        constraints: BoxConstraints(maxHeight: most),
-        builder: (sheetContext) => Padding(
-          // The keyboard rides outside the card: the card keeps its geometry
-          // and simply sits higher.
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
-          ),
-          child: shell(sheetContext),
-        ),
+        barrierColor: scrim,
+        semanticLabel: semanticLabel,
+        // The keyboard rides outside the card (the route lifts the panel over
+        // it): the card keeps its geometry and simply sits higher.
+        builder: (sheetContext, _) =>
+            themes.wrap(_SheetPanel(gap: gap, child: shell(sheetContext))),
       ),
     );
   }
@@ -627,8 +628,7 @@ class FrostedSheet extends StatelessWidget {
         barrierDismissible: true,
         barrierLabel: MaterialLocalizations.of(context).scrimLabel,
         barrierColor: scrim,
-        transitionDuration: motionOf(context).duration ?? Duration.zero,
-        pageBuilder: (sheetContext, _, _) => Center(
+        builder: (sheetContext) => Center(
           child: SizedBox(
             width: FrostedChromeMetrics.sheetWideWidth,
             height: drawer ? null : most,
@@ -640,24 +640,14 @@ class FrostedSheet extends StatelessWidget {
         ),
       );
     }
-    return _FrostedSoftSheetRoute<T>(
+    final gap = MediaQuery.sizeOf(context).height - most;
+    return FrostedSoftBottomSheetRoute<T>(
       soften: soften,
       settings: settings,
-      backgroundColor: const Color(0x00000000),
-      modalBarrierColor: scrim,
-      elevation: 0,
-      isScrollControlled: true,
-      sheetAnimationStyle: motionOf(context),
-      constraints: BoxConstraints(maxHeight: most),
-      builder: (sheetContext) {
-        final keyboard = MediaQuery.viewInsetsOf(sheetContext).bottom;
-        return Padding(
-          padding: EdgeInsets.only(bottom: keyboard),
-          child: drawer
-              ? card(sheetContext)
-              : SizedBox(height: most - keyboard, child: card(sheetContext)),
-        );
-      },
+      barrierLabel: MaterialLocalizations.of(context).scrimLabel,
+      barrierColor: scrim,
+      builder: (sheetContext, _) =>
+          _SheetPanel(gap: gap, fill: !drawer, child: card(sheetContext)),
     );
   }
 
@@ -777,8 +767,8 @@ class FrostedBottomSheet extends StatelessWidget {
 /// phone, centred as a dialog on a tablet or the desktop; a tap on the scrim, the
 /// system back, Escape or a drag down dismisses it, and focus returns to
 /// what opened it. Completes with the value the sheet pops with: null when
-/// dismissed. Rises in [FrostedSheet.motionOf]'s time (a cut under Reduce
-/// Motion).
+/// dismissed. Rises on ui_core's sheet spring, carrying a drag's speed as
+/// it lets go (the card cuts in under Reduce Motion).
 ///
 /// ```dart
 /// final choice = await showFrostedBottomSheet<String>(context, builder: (context) => FrostedBottomSheet(title: 'Sort by', child: options));
@@ -788,25 +778,39 @@ Future<T?> showFrostedBottomSheet<T>(
   required WidgetBuilder builder,
 }) => FrostedSheet.raise<T>(context, builder);
 
-/// The phone's sheet route, softening the page below.
-class _FrostedSoftSheetRoute<T> extends ModalBottomSheetRoute<T>
-    with FrostedSoftensBelow<T> {
-  /// A sheet route softening the page below by [soften].
-  _FrostedSoftSheetRoute({
-    required this.soften,
-    required super.builder,
-    required super.isScrollControlled,
-    super.capturedThemes,
-    super.barrierLabel,
-    super.barrierOnTapHint,
-    super.backgroundColor,
-    super.modalBarrierColor,
-    super.elevation,
-    super.constraints,
-    super.sheetAnimationStyle,
-    super.settings,
+/// A phone sheet's panel in the room ui_core's route gives it (the screen
+/// less the keyboard): at most that room less [gap] (so the card stands at
+/// most [FrostedSheet.maxHeight] with the keyboard below it), and all of it
+/// when [fill]; on a transparent Material, as Material's sheet route gave it.
+class _SheetPanel extends StatelessWidget {
+  const _SheetPanel({
+    required this.gap,
+    required this.child,
+    this.fill = false,
   });
 
+  /// The screen's height above the tallest card.
+  final double gap;
+
+  /// Whether the card takes the whole height it may.
+  final bool fill;
+
+  /// The card.
+  final Widget child;
+
   @override
-  final double soften;
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, room) {
+      final most = (room.maxHeight - gap).clamp(0.0, room.maxHeight);
+      return Material(
+        type: MaterialType.transparency,
+        child: fill
+            ? SizedBox(height: most, child: child)
+            : ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: most),
+                child: child,
+              ),
+      );
+    },
+  );
 }

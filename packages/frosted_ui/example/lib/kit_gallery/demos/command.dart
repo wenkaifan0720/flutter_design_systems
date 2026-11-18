@@ -1,42 +1,93 @@
-/// [FrostedMenuBar]: a desktop's menus along a strip of glass, and
+/// [FrostedMenuBar]: a desktop's menus along a strip of glass,
+/// [FrostedContextMenu]: a menu where a right click or a long press asks for
+/// one, and
 /// [FrostedCommand]: a palette of commands found by typing, in place or
 /// raised over the app with [FrostedCommand.show].
 library;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 
 import '../kit.dart';
 
 void _none() {}
 
-final _menus = [
-  const DesignMenuEntry(
+/// A shortcut of the platform's main modifier (⌘ on a Mac, Ctrl elsewhere)
+/// and [key], as Frosted writes it ([frostedShortcutLabel]).
+String _keys(
+  BuildContext context,
+  LogicalKeyboardKey key, {
+  bool shift = false,
+}) {
+  final apple =
+      defaultTargetPlatform == TargetPlatform.macOS ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+  return frostedShortcutLabel(
+    context,
+    SingleActivator(key, meta: apple, control: !apple, shift: shift),
+  );
+}
+
+List<DesignMenuEntry> _menus(BuildContext context) => [
+  DesignMenuEntry(
     label: 'File',
     children: [
-      DesignMenuEntry(label: 'New', shortcut: '⌘N', onPressed: _none),
-      DesignMenuEntry(label: 'Open…', shortcut: '⌘O', onPressed: _none),
       DesignMenuEntry(
+        label: 'New',
+        shortcut: _keys(context, LogicalKeyboardKey.keyN),
+        onPressed: _none,
+      ),
+      DesignMenuEntry(
+        label: 'Open…',
+        shortcut: _keys(context, LogicalKeyboardKey.keyO),
+        onPressed: _none,
+      ),
+      const DesignMenuEntry(
         label: 'Open recent',
         children: [
           DesignMenuEntry(label: 'Notes', onPressed: _none),
           DesignMenuEntry(label: 'Roadmap', onPressed: _none),
         ],
       ),
-      DesignMenuEntry.divider(),
-      DesignMenuEntry(label: 'Close', shortcut: '⌘W', onPressed: _none),
+      const DesignMenuEntry.divider(),
+      DesignMenuEntry(
+        label: 'Close',
+        shortcut: _keys(context, LogicalKeyboardKey.keyW),
+        onPressed: _none,
+      ),
     ],
   ),
-  const DesignMenuEntry(
+  DesignMenuEntry(
     label: 'Edit',
     children: [
-      DesignMenuEntry(label: 'Undo', shortcut: '⌘Z', onPressed: _none),
+      DesignMenuEntry(
+        label: 'Undo',
+        shortcut: _keys(context, LogicalKeyboardKey.keyZ),
+        onPressed: _none,
+      ),
       // No onPressed: disabled.
-      DesignMenuEntry(label: 'Redo', shortcut: '⇧⌘Z'),
-      DesignMenuEntry.divider(),
-      DesignMenuEntry(label: 'Cut', shortcut: '⌘X', onPressed: _none),
-      DesignMenuEntry(label: 'Copy', shortcut: '⌘C', onPressed: _none),
-      DesignMenuEntry(label: 'Paste', shortcut: '⌘V', onPressed: _none),
+      DesignMenuEntry(
+        label: 'Redo',
+        shortcut: _keys(context, LogicalKeyboardKey.keyZ, shift: true),
+      ),
+      const DesignMenuEntry.divider(),
+      DesignMenuEntry(
+        label: 'Cut',
+        shortcut: _keys(context, LogicalKeyboardKey.keyX),
+        onPressed: _none,
+      ),
+      DesignMenuEntry(
+        label: 'Copy',
+        shortcut: _keys(context, LogicalKeyboardKey.keyC),
+        onPressed: _none,
+      ),
+      DesignMenuEntry(
+        label: 'Paste',
+        shortcut: _keys(context, LogicalKeyboardKey.keyV),
+        onPressed: _none,
+      ),
     ],
   ),
   const DesignMenuEntry(
@@ -48,23 +99,23 @@ final _menus = [
   ),
 ];
 
-const _commands = [
+List<DesignCommand> _commands(BuildContext context) => [
   DesignCommand(
     label: 'New document',
     group: 'Create',
-    shortcut: '⌘N',
+    shortcut: _keys(context, LogicalKeyboardKey.keyN),
     onPressed: _none,
   ),
-  DesignCommand(label: 'New folder', group: 'Create', onPressed: _none),
+  const DesignCommand(label: 'New folder', group: 'Create', onPressed: _none),
   DesignCommand(
     label: 'Search files',
     group: 'Go to',
-    keywords: ['find'],
-    shortcut: '⌘P',
+    keywords: const ['find'],
+    shortcut: _keys(context, LogicalKeyboardKey.keyP),
     onPressed: _none,
   ),
-  DesignCommand(label: 'Settings', group: 'Go to', onPressed: _none),
-  DesignCommand(
+  const DesignCommand(label: 'Settings', group: 'Go to', onPressed: _none),
+  const DesignCommand(
     label: 'Sign out',
     group: 'Account',
     keywords: ['log out'],
@@ -80,19 +131,48 @@ Widget kitCommandDemo(Brightness brightness) => kitScreen(
     kitSection(
       'Menu bar',
       children: [
-        kitRow([FrostedMenuBar(menus: _menus)]),
+        Builder(
+          builder: (context) =>
+              kitRow([FrostedMenuBar(menus: _menus(context))]),
+        ),
+      ],
+    ),
+    kitSection(
+      'Context menu',
+      children: [
+        Builder(
+          builder: (context) => FrostedContextMenu(
+            label: 'Note',
+            items: [
+              DesignMenuEntry(
+                label: 'Copy',
+                shortcut: _keys(context, LogicalKeyboardKey.keyC),
+                onPressed: _none,
+              ),
+              const DesignMenuEntry(label: 'Duplicate', onPressed: _none),
+              const DesignMenuEntry.divider(),
+              const DesignMenuEntry(label: 'Delete', onPressed: _none),
+            ],
+            child: const FrostedCard(
+              child: Text('Right-click or long-press this note'),
+            ),
+          ),
+        ),
       ],
     ),
     kitSection(
       'Command palette',
       children: [
-        const FrostedCommand(commands: _commands, maxHeight: 280),
+        Builder(
+          builder: (context) =>
+              FrostedCommand(commands: _commands(context), maxHeight: 280),
+        ),
         Builder(
           builder: (context) => kitRow([
             FrostedButton.glass(
               'Open the palette',
               onPressed: () =>
-                  FrostedCommand.show(context, commands: _commands),
+                  FrostedCommand.show(context, commands: _commands(context)),
             ),
           ]),
         ),

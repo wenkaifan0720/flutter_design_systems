@@ -209,7 +209,7 @@ Paint frostedBarPaint(
 /// step (1, 2, 2.5 or 5 times a power of ten) that wastes the least of the
 /// plot, two to [lines] + 1 of them; the floor a fifth of the span under
 /// the lowest line, or zero when [zero] (then the zero line is left out of
-/// [grid]); a top within 8% of a step of the highest value gets half a step
+/// `grid`); a top within 8% of a step of the highest value gets half a step
 /// of headroom for its end dot. Plumbing of the charts.
 ({double lo, double hi, List<double> grid, double step}) frostedValueRange(
   List<num> vals, {

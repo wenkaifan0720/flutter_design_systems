@@ -2,7 +2,7 @@
 /// with a part laid over it in the night's ink and one in a tile's corner.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 

@@ -10,6 +10,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
 import '../../internal/face.dart';
+import '../../internal/soft_routes.dart';
 import '../../internal/styled.dart';
 import '../../theme.dart';
 import '../host.dart';
@@ -23,8 +24,8 @@ import '../toast.dart';
 /// the caller's themes riding along; a tap on the scrim (when
 /// [barrierDismissible]), the system back or Escape dismisses it, and focus
 /// returns to what opened it. Completes with the value the dialog pops
-/// with: null when dismissed. Fades in [FrostedSheet.motionOf]'s time (a
-/// cut under Reduce Motion).
+/// with: null when dismissed. Grows in on ui_core's dialog spring (a cut
+/// under Reduce Motion), as [FrostedDialog.show]'s does.
 ///
 /// ```dart
 /// final ok = await showFrostedDialog<bool>(context, builder: (context) => FrostedDialog(title: 'Delete this note?', confirmLabel: 'Delete', cancelLabel: 'Cancel', destructive: true, onConfirm: () => Navigator.pop(context, true), onCancel: () => Navigator.pop(context, false)));
@@ -38,13 +39,12 @@ Future<T?> showFrostedDialog<T>(
   final navigator = FrostedHost.navigatorOf(context);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   return navigator.push(
-    RawDialogRoute<T>(
+    FrostedSoftDialogRoute<T>(
+      soften: 0,
       barrierDismissible: barrierDismissible,
       barrierLabel: MaterialLocalizations.of(context).scrimLabel,
       barrierColor: t.colorScheme.overlay,
-      transitionDuration:
-          FrostedSheet.motionOf(context).duration ?? Duration.zero,
-      pageBuilder: (dialogContext, _, _) => themes.wrap(
+      builder: (dialogContext) => themes.wrap(
         RoutePresentationScope(
           presentation: RoutePresentation.sheet,
           child: SafeArea(
@@ -364,15 +364,17 @@ Future<T?> showFrostedActionSheet<T>(
 
 /// A few words about [child], raised over it: the toast's ink slab, 8
 /// round, the [message] in the inverse caption, standing 8 over the child
-/// (under it when there is no room above). It shows while a pointer rests
-/// on the child, after a long press (for a moment past the lift), and
-/// while the keyboard's focus is on it; Escape hides it. A screen reader
-/// hears [message] as the child's tooltip.
+/// (under it when there is no room above). ui_core's [DesignTooltip] runs
+/// it: it shows while a pointer rests on the child (and on the tip itself),
+/// after a long press (for a moment past the lift), and while the
+/// keyboard's focus is on it; Escape hides it; one shows at a time, and
+/// along a toolbar the next shows at once. A screen reader hears [message]
+/// as the child's tooltip.
 ///
 /// ```dart
 /// FrostedTooltip(message: 'Copy link', child: FrostedIconButton(FrostedGlyphs.share, label: 'Copy link', onPressed: copy))
 /// ```
-class FrostedTooltip extends StatefulWidget {
+class FrostedTooltip extends StatelessWidget {
   /// [message] over [child].
   const FrostedTooltip({
     required this.message,
@@ -410,8 +412,45 @@ class FrostedTooltip extends StatefulWidget {
   /// ```
   final FrostedStyle? style;
 
+  /// Above the child, centred on it, 8 from it; below it when there are 48
+  /// or fewer above.
+  static const DesignOverlayPlacement _placement = DesignOverlayPlacement(
+    side: DesignOverlaySide.above,
+    align: DesignOverlayAlign.center,
+    gap: 8,
+    preferredExtent: 48,
+    matchAnchorWidth: false,
+  );
+
   @override
-  State<FrostedTooltip> createState() => _FrostedTooltipState();
+  Widget build(BuildContext context) {
+    final t = context.frostedTheme;
+    final bubble = FrostedStyleLayers(style, t.components.tooltip);
+    final (cut, corner) = bubble.surface(
+      FrostedCorners.medium,
+      FrostedStyleLayers.stockMedium,
+      8,
+    );
+    return DesignTooltip(
+      message: message,
+      hoverDelay: waitDuration,
+      touchDelay: showDuration,
+      placement: _placement,
+      tooltipBuilder: (context, info) => _TooltipBubble(
+        presence: info.animation,
+        message: message,
+        slab: bubble.fill ?? t.colorScheme.surfaceInverse,
+        style: bubble.words(
+          t.textTheme.labelMedium.c(t.colorScheme.textInverse),
+        ),
+        shadows: t.shadows.menu,
+        shape: cut,
+        radius: corner,
+        padding: bubble.padding,
+      ),
+      child: child,
+    );
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -438,125 +477,11 @@ class FrostedTooltip extends StatefulWidget {
   }
 }
 
-class _FrostedTooltipState extends State<FrostedTooltip> {
-  final OverlayPortalController _portal = OverlayPortalController();
-  final LayerLink _link = LayerLink();
-  Timer? _timer;
-  bool _focused = false;
-
-  void _show() {
-    _timer?.cancel();
-    if (!_portal.isShowing) setState(_portal.show);
-  }
-
-  void _hide() {
-    _timer?.cancel();
-    if (_portal.isShowing && !_focused) setState(_portal.hide);
-  }
-
-  void _showSoon() {
-    _timer?.cancel();
-    _timer = Timer(widget.waitDuration, _show);
-  }
-
-  void _hideLater() {
-    _timer?.cancel();
-    _timer = Timer(widget.showDuration, _hide);
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  /// Whether the bubble has room over the child, under the window's top
-  /// inset; else it stands under it.
-  bool _roomAbove(BuildContext overlayContext) {
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null || !box.attached) return true;
-    final top = box.localToGlobal(Offset.zero).dy;
-    return top - MediaQuery.paddingOf(overlayContext).top > 48;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.frostedTheme;
-    final motion = FrostedMotion.of(context);
-    final bubble = FrostedStyleLayers(widget.style, t.components.tooltip);
-    final (cut, corner) = bubble.surface(
-      FrostedCorners.medium,
-      FrostedStyleLayers.stockMedium,
-      8,
-    );
-    return Semantics(
-      tooltip: widget.message,
-      child: Focus(
-        canRequestFocus: false,
-        skipTraversal: true,
-        onFocusChange: (focused) {
-          final keyboard =
-              FocusManager.instance.highlightMode ==
-              FocusHighlightMode.traditional;
-          _focused = focused && keyboard;
-          if (_focused) {
-            _show();
-          } else {
-            _hide();
-          }
-        },
-        onKeyEvent: (node, event) {
-          if (event is KeyDownEvent &&
-              event.logicalKey == LogicalKeyboardKey.escape &&
-              _portal.isShowing) {
-            _focused = false;
-            _hide();
-            return KeyEventResult.handled;
-          }
-          return KeyEventResult.ignored;
-        },
-        child: MouseRegion(
-          onEnter: (_) => _showSoon(),
-          onExit: (_) => _hide(),
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onLongPress: _show,
-            onLongPressUp: _hideLater,
-            excludeFromSemantics: true,
-            child: CompositedTransformTarget(
-              link: _link,
-              child: OverlayPortal(
-                controller: _portal,
-                overlayChildBuilder: (overlayContext) => _TooltipBubble(
-                  link: _link,
-                  above: _roomAbove(overlayContext),
-                  message: widget.message,
-                  duration: motion.fast,
-                  slab: bubble.fill ?? t.colorScheme.surfaceInverse,
-                  style: bubble.words(
-                    t.textTheme.labelMedium.c(t.colorScheme.textInverse),
-                  ),
-                  shadows: t.shadows.menu,
-                  shape: cut,
-                  radius: corner,
-                  padding: bubble.padding,
-                ),
-                child: widget.child,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
+/// The tip's paint: the ink slab and its words, fading with [presence].
 class _TooltipBubble extends StatelessWidget {
   const _TooltipBubble({
-    required this.link,
-    required this.above,
+    required this.presence,
     required this.message,
-    required this.duration,
     required this.slab,
     required this.style,
     required this.shadows,
@@ -565,10 +490,8 @@ class _TooltipBubble extends StatelessWidget {
     required this.padding,
   });
 
-  final LayerLink link;
-  final bool above;
+  final Animation<double> presence;
   final String message;
-  final Duration duration;
   final Color slab;
   final TextStyle style;
   final List<BoxShadow> shadows;
@@ -577,54 +500,37 @@ class _TooltipBubble extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
 
   @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: 0,
-      top: 0,
-      child: CompositedTransformFollower(
-        link: link,
-        showWhenUnlinked: false,
-        targetAnchor: above ? Alignment.topCenter : Alignment.bottomCenter,
-        followerAnchor: above ? Alignment.bottomCenter : Alignment.topCenter,
-        offset: Offset(0, above ? -8 : 8),
-        child: IgnorePointer(
-          child: ExcludeSemantics(
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: 1),
-              duration: duration,
-              builder: (context, v, child) => Opacity(opacity: v, child: child),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 240),
-                child: DecoratedBox(
-                  decoration: switch (shape) {
-                    final shape? => ShapeDecoration(
-                      shape: shape,
-                      color: slab,
-                      shadows: shadows,
-                    ),
-                    null => BoxDecoration(
-                      color: slab,
-                      borderRadius: BorderRadius.circular(radius),
-                      boxShadow: shadows,
-                    ),
-                  },
-                  child: Padding(
-                    padding:
-                        padding ??
-                        const EdgeInsets.symmetric(
-                          horizontal: FrostedSpacing.s10,
-                          vertical: FrostedSpacing.s6,
-                        ),
-                    child: Text(message, style: style),
-                  ),
-                ),
-              ),
-            ),
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: presence,
+    builder: (context, child) =>
+        Opacity(opacity: presence.value.clamp(0.0, 1.0), child: child),
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 240),
+      child: DecoratedBox(
+        decoration: switch (shape) {
+          final shape? => ShapeDecoration(
+            shape: shape,
+            color: slab,
+            shadows: shadows,
           ),
+          null => BoxDecoration(
+            color: slab,
+            borderRadius: BorderRadius.circular(radius),
+            boxShadow: shadows,
+          ),
+        },
+        child: Padding(
+          padding:
+              padding ??
+              const EdgeInsets.symmetric(
+                horizontal: FrostedSpacing.s10,
+                vertical: FrostedSpacing.s6,
+              ),
+          child: Text(message, style: style),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 // A sheet rising from the screen's foot along its curves; it owns its curved

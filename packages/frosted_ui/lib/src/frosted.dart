@@ -27,7 +27,8 @@ export 'frosted/components/forms/forms.dart';
 export 'frosted/components/forms/settings.dart';
 export 'frosted/components/glass.dart' hide FrostedOnGlass, frostedOpaqueAt;
 export 'frosted/components/hold/hold.dart';
-export 'frosted/components/icon-button/round_button.dart';
+export 'frosted/components/icon-button/round_button.dart'
+    hide frostedIconButtonFace;
 export 'frosted/components/image/image.dart';
 export 'frosted/components/lights.dart';
 export 'frosted/components/marks/marks.dart';
@@ -65,11 +66,5 @@ export 'frosted/editing.dart';
 export 'frosted/format.dart';
 export 'frosted/glyphs.dart';
 export 'frosted/localizations.dart';
-export 'frosted/materials.dart';
-export 'frosted/theme.dart'
-    hide
-        FrostedTokenColors,
-        FrostedTokenShadow,
-        FrostedTokenShape,
-        FrostedTokenType,
-        FrostedTokens;
+export 'frosted/materials.dart' hide frostedMaterialsOf;
+export 'frosted/theme.dart';

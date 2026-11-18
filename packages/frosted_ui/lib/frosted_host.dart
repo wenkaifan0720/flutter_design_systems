@@ -5,6 +5,27 @@
 /// beside that one.
 ///
 /// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
+///
+/// {@canonicalFor chrome_metrics}
+/// {@canonicalFor chrome_metrics.FrostedChromeMetrics}
+/// {@canonicalFor account}
+/// {@canonicalFor account.FrostedAccount}
+/// {@canonicalFor account.FrostedAccountMarks}
+/// {@canonicalFor account.FrostedAccountScope}
+/// {@canonicalFor account.FrostedBell}
+/// {@canonicalFor host}
+/// {@canonicalFor host.FrostedHost}
+/// {@canonicalFor host.FrostedMediaGround}
+/// {@canonicalFor preview}
+/// {@canonicalFor preview.FrostedPresentation}
+/// {@canonicalFor preview.FrostedPreview}
+/// {@canonicalFor routes}
+/// {@canonicalFor routes.FrostedPage}
+/// {@canonicalFor sheet_page}
+/// {@canonicalFor sheet_page.FrostedSheetPage}
+/// {@canonicalFor inventory}
+/// {@canonicalFor inventory.FrostedInventoryGallery}
+/// {@canonicalFor inventory.frostedInventory}
 library;
 
 export 'package:ui_core/host.dart';

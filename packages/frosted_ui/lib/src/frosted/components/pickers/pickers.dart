@@ -8,7 +8,7 @@ import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
 import '../../internal/face.dart';
 import '../../internal/styled.dart';
-import '../../internal/key_focus.dart';
+import '../../internal/panel.dart' show frostedRingFor;
 import '../../localizations.dart';
 import '../../theme.dart';
 import '../button/button.dart';
@@ -94,7 +94,10 @@ const int _wheelRows = 5;
 /// with its hairline edge and rim, the rows above and below it receding and
 /// fading to nothing. It settles on a row and hands over that row's value.
 /// Read aloud as an adjustable value named [label]: a swipe up or down
-/// turns it a row. A disabled option stands faded and is never handed over.
+/// turns it a row. A disabled option stands faded and the wheel turns past
+/// it. ui_core's [DesignWheelPicker] is the behaviour: the arrows, Page Up
+/// and Down, Home and End, and typing a row's first letters turn it on a
+/// spring, and a row crossing the band ticks.
 ///
 /// ```dart
 /// FrostedWheelPicker<int>(label: 'Guests', options: [for (var n = 1; n <= 12; n++) FrostedSelectOption(n, '$n')], value: guests, onChanged: (v) => setState(() => guests = v))
@@ -139,16 +142,34 @@ class FrostedWheelPicker<T> extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           _WheelBand(t: t),
-          _Wheel<T>(
-            options: options,
-            value: value,
-            label: label,
-            onChanged: onChanged,
-            looping: looping,
+          _wheels(
+            context,
+            live: onChanged != null,
+            columns: [
+              DesignWheelColumn(
+                itemCount: options.length,
+                itemLabel: (i) => options[i].label,
+                semanticLabel: label,
+                isItemEnabled: (i) => options[i].enabled,
+                looping: looping,
+              ),
+            ],
+            selection: [_indexOf(value)],
+            onChanged: (picked) {
+              final option = options[picked.first];
+              if (option.enabled && option.value != value) {
+                onChanged?.call(option.value);
+              }
+            },
           ),
         ],
       ),
     );
+  }
+
+  int _indexOf(T value) {
+    final i = options.indexWhere((o) => o.value == value);
+    return i < 0 ? 0 : i;
   }
 
   @override
@@ -199,184 +220,78 @@ class _WheelBand extends StatelessWidget {
   );
 }
 
-class _Wheel<T> extends StatefulWidget {
-  const _Wheel({
-    required this.options,
-    required this.value,
-    required this.label,
-    required this.onChanged,
-    required this.looping,
-    this.align = Alignment.center,
-  });
-
-  final List<FrostedSelectOption<T>> options;
-  final T value;
-  final String label;
-  final ValueChanged<T>? onChanged;
-  final bool looping;
-  final Alignment align;
-
-  @override
-  State<_Wheel<T>> createState() => _WheelState<T>();
-}
-
-class _WheelState<T> extends State<_Wheel<T>> {
-  late final FixedExtentScrollController _controller =
-      FixedExtentScrollController(initialItem: _indexOf(widget.value));
-  late int _index = _indexOf(widget.value);
-
-  int _indexOf(T value) {
-    final i = widget.options.indexWhere((o) => o.value == value);
-    return i < 0 ? 0 : i;
-  }
-
-  int get _count => widget.options.length;
-
-  @override
-  void didUpdateWidget(_Wheel<T> old) {
-    super.didUpdateWidget(old);
-    final want = _indexOf(widget.value);
-    if (want != _index % _count) {
-      _index = want;
-      if (_controller.hasClients) _controller.jumpToItem(want);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _settle(int raw) {
-    final i = raw % _count;
-    setState(() => _index = i);
-    final option = widget.options[i];
-    if (option.enabled && option.value != widget.value) {
-      widget.onChanged?.call(option.value);
-    }
-  }
-
-  int? _step(int by) {
-    final next = _index + by;
-    if (widget.looping) return next % _count;
-    if (next < 0 || next >= _count) return null;
-    return next;
-  }
-
-  void _turn(int by) {
-    final next = _step(by);
-    if (next == null) return;
-    final motion = FrostedMotion.of(context);
-    if (motion.moves) {
-      _controller.animateToItem(
-        _controller.selectedItem + by,
-        duration: motion.fast,
-        curve: motion.curve,
-      );
-    } else {
-      _controller.jumpToItem(_controller.selectedItem + by);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.frostedTheme;
-    final live = widget.onChanged != null && _count > 0;
-    final up = _step(-1);
-    final down = _step(1);
-    final style = t.textTheme.bodyLarge.line(_wheelRow / 2);
-    Widget row(int i) {
-      final option = widget.options[i];
-      final chosen = i == _index;
-      Widget words = Text(
-        option.label,
-        maxLines: 1,
-        softWrap: false,
-        overflow: TextOverflow.ellipsis,
-        style: chosen
-            ? style.semibold.c(t.colorScheme.textPrimary)
-            : style.c(t.colorScheme.textSecondary),
-      );
-      words = FrostedDim(off: !option.enabled, child: words);
-      return Align(
-        alignment: widget.align,
+/// Frosted's wheels on ui_core's [DesignWheelPicker] (the turning, its
+/// settling and its spring, the keys, a screen reader's steps, the haptic
+/// tick): [columns] standing on [selection], each row in the body type (the
+/// chosen one in the 600 ink), the rows above and below receding and fading
+/// to nothing on Frosted's drum, a column's focus ring at the band's
+/// radius. [align] places a column's rows (centred when null); [layout]
+/// lays the columns out (a row of equal ones when null). Inert, and dimmed,
+/// unless [live].
+Widget _wheels(
+  BuildContext context, {
+  required bool live,
+  required List<DesignWheelColumn> columns,
+  required List<int> selection,
+  required ValueChanged<List<int>> onChanged,
+  Alignment Function(int column)? align,
+  Widget Function(BuildContext context, List<Widget> columns)? layout,
+}) {
+  final t = context.frostedTheme;
+  final style = t.textTheme.bodyLarge.line(_wheelRow / 2);
+  return FrostedDim(
+    off: !live,
+    child: DesignWheelPicker(
+      columns: (_) => columns,
+      selection: selection,
+      onChanged: live && columns.every((c) => c.itemCount > 0)
+          ? onChanged
+          : null,
+      itemExtent: _wheelRow,
+      visibleItemCount: _wheelRows,
+      diameterRatio: 1.6,
+      perspective: 0.004,
+      squeeze: 1,
+      layoutBuilder: layout,
+      itemBuilder: (context, row) => Align(
+        alignment: align?.call(row.column) ?? Alignment.center,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: FrostedSpacing.s12),
-          child: words,
-        ),
-      );
-    }
-
-    final wheel = ShaderMask(
-      blendMode: BlendMode.dstIn,
-      shaderCallback: (bounds) => const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Color(0x00000000),
-          Color(0xFF000000),
-          Color(0xFF000000),
-          Color(0x00000000),
-        ],
-        stops: [0, 0.3, 0.7, 1],
-      ).createShader(bounds),
-      // A wheel shows where it stands by its band: no scrollbar, which a
-      // desktop's scroll behaviour would raise under a resting pointer.
-      child: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-        child: ListWheelScrollView.useDelegate(
-          controller: _controller,
-          itemExtent: _wheelRow,
-          diameterRatio: 1.6,
-          perspective: 0.004,
-          squeeze: 1,
-          physics: live
-              ? const FixedExtentScrollPhysics()
-              : const NeverScrollableScrollPhysics(),
-          onSelectedItemChanged: (i) => setState(() => _index = i % _count),
-          childDelegate: widget.looping
-              ? ListWheelChildLoopingListDelegate(
-                  children: [for (var i = 0; i < _count; i++) row(i)],
-                )
-              : ListWheelChildBuilderDelegate(
-                  childCount: _count,
-                  builder: (context, i) => row(i),
-                ),
+          child: FrostedDim(
+            off: !row.enabled && live,
+            child: Text(
+              row.label,
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.ellipsis,
+              style: row.selected
+                  ? style.semibold.c(t.colorScheme.textPrimary)
+                  : style.c(t.colorScheme.textSecondary),
+            ),
+          ),
         ),
       ),
-    );
-
-    final settled = NotificationListener<ScrollEndNotification>(
-      onNotification: (_) {
-        _settle(_controller.selectedItem);
-        return false;
-      },
-      child: wheel,
-    );
-
-    final current = _count == 0 ? '' : widget.options[_index].label;
-    return Semantics(
-      container: true,
-      label: widget.label,
-      value: current,
-      increasedValue: down == null ? null : widget.options[down].label,
-      decreasedValue: up == null ? null : widget.options[up].label,
-      onIncrease: live && down != null ? () => _turn(1) : null,
-      onDecrease: live && up != null ? () => _turn(-1) : null,
-      child: ExcludeSemantics(
-        child: FrostedKeyFocus(
-          enabled: live,
-          radius: FrostedCorners.r12,
-          keys: {
-            if (up != null) LogicalKeyboardKey.arrowUp: () => _turn(-1),
-            if (down != null) LogicalKeyboardKey.arrowDown: () => _turn(1),
-          },
-          child: FrostedDim(off: widget.onChanged == null, child: settled),
+      columnBuilder: (context, column, wheel) => frostedRingFor(
+        column.states,
+        ShaderMask(
+          blendMode: BlendMode.dstIn,
+          shaderCallback: (bounds) => const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0x00000000),
+              Color(0xFF000000),
+              Color(0xFF000000),
+              Color(0x00000000),
+            ],
+            stops: [0, 0.3, 0.7, 1],
+          ).createShader(bounds),
+          child: wheel,
         ),
+        radius: FrostedCorners.r12,
       ),
-    );
-  }
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -436,45 +351,73 @@ class FrostedTimePicker extends StatelessWidget {
     final minute = now.minute - now.minute % minuteInterval;
     void set(FrostedTime next) => change?.call(next);
 
-    final hours = h24
-        ? [for (var h = 0; h < 24; h++) FrostedSelectOption(h, _two(h))]
-        : [for (var h = 1; h <= 12; h++) FrostedSelectOption(h % 12, '$h')];
-    final hourWheel = _Wheel<int>(
-      label: words.hour,
-      looping: true,
-      align: AlignmentDirectional.centerEnd.resolve(Directionality.of(context)),
-      options: hours,
-      value: h24 ? now.hour : now.hour % 12,
-      onChanged: change == null
-          ? null
-          : (h) => set(
-              now.copyWith(hour: h24 ? h : h + (now.hour >= 12 ? 12 : 0)),
+    // The hour's row i: 1 to 12 on the 12-hour clock (12 first is midnight
+    // and noon), 00 to 23 on the 24-hour one.
+    final hourIndex = h24 ? now.hour : (now.hour % 12 + 11) % 12;
+    final halves = [words.am, words.pm];
+    final wheels = _wheels(
+      context,
+      live: change != null,
+      columns: [
+        DesignWheelColumn(
+          itemCount: h24 ? 24 : 12,
+          itemLabel: (i) => h24 ? _two(i) : '${i + 1}',
+          semanticLabel: words.hour,
+          looping: true,
+        ),
+        DesignWheelColumn(
+          itemCount: 60 ~/ minuteInterval,
+          itemLabel: (i) => _two(i * minuteInterval),
+          semanticLabel: words.minute,
+          looping: true,
+        ),
+        if (!h24)
+          DesignWheelColumn(
+            itemCount: 2,
+            itemLabel: (i) => halves[i],
+            semanticLabel: '${words.am} / ${words.pm}',
+          ),
+      ],
+      selection: [
+        hourIndex,
+        minute ~/ minuteInterval,
+        if (!h24) now.hour >= 12 ? 1 : 0,
+      ],
+      onChanged: (picked) {
+        final pm = h24 ? false : picked[2] == 1;
+        final hour = h24 ? picked[0] : (picked[0] + 1) % 12 + (pm ? 12 : 0);
+        final next = FrostedTime(
+          hour: hour,
+          minute: picked[1] * minuteInterval,
+        );
+        if (next != now) set(next);
+      },
+      // The hour's figures end at the colon and the minute's start after it.
+      align: (column) => switch (column) {
+        0 => Alignment.centerRight,
+        1 => Alignment.centerLeft,
+        _ => Alignment.center,
+      },
+      layout: (context, columns) => Row(
+        children: [
+          Expanded(child: columns[0]),
+          SizedBox(
+            width: FrostedSpacing.s8,
+            child: Center(
+              child: ExcludeSemantics(
+                child: Text(
+                  ':',
+                  style: t.textTheme.bodyLarge.semibold.c(
+                    t.colorScheme.textPrimary,
+                  ),
+                ),
+              ),
             ),
-    );
-    final minuteWheel = _Wheel<int>(
-      label: words.minute,
-      looping: true,
-      align: AlignmentDirectional.centerStart.resolve(
-        Directionality.of(context),
+          ),
+          Expanded(child: columns[1]),
+          if (columns.length > 2) Expanded(child: columns[2]),
+        ],
       ),
-      options: [
-        for (var m = 0; m < 60; m += minuteInterval)
-          FrostedSelectOption(m, _two(m)),
-      ],
-      value: minute,
-      onChanged: change == null ? null : (m) => set(now.copyWith(minute: m)),
-    );
-    final halfWheel = _Wheel<bool>(
-      label: '${words.am} / ${words.pm}',
-      looping: false,
-      options: [
-        FrostedSelectOption(false, words.am),
-        FrostedSelectOption(true, words.pm),
-      ],
-      value: now.hour >= 12,
-      onChanged: change == null
-          ? null
-          : (pm) => set(now.copyWith(hour: now.hour % 12 + (pm ? 12 : 0))),
     );
     // At most 360 wide, at the start of a wider field: the hour, the minute
     // and the half of the day stay together on one short band.
@@ -484,26 +427,7 @@ class FrostedTimePicker extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           _WheelBand(t: t),
-          Row(
-            children: [
-              Expanded(child: hourWheel),
-              SizedBox(
-                width: FrostedSpacing.s8,
-                child: Center(
-                  child: ExcludeSemantics(
-                    child: Text(
-                      ':',
-                      style: t.textTheme.bodyLarge.semibold.c(
-                        t.colorScheme.textPrimary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(child: minuteWheel),
-              if (!h24) Expanded(child: halfWheel),
-            ],
-          ),
+          wheels,
         ],
       ),
     );

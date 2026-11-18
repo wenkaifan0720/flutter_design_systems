@@ -170,9 +170,26 @@ void main() {
                 _acts.where(d.hasAction).toSet().difference({
                   SemanticsAction.tap,
                 }).isEmpty;
+            // A node whose one act is a long press, beside a custom action
+            // that names it, is a context menu's region (ui_core's
+            // `DesignContextMenu`, Android's long-press menu): it is what it
+            // wraps, read by its own words, and the action ("Show menu") says
+            // what holding it does.
+            final named = [
+              for (final id in d.customSemanticsActionIds ?? const <int>[])
+                if (CustomSemanticsAction.getAction(id)?.label?.isNotEmpty ??
+                    false)
+                  id,
+            ];
+            final region =
+                named.isNotEmpty &&
+                _acts.where(d.hasAction).toSet().difference({
+                  SemanticsAction.longPress,
+                }).isEmpty;
             final role =
                 anchor ||
                 barrier ||
+                region ||
                 d.hasAction(SemanticsAction.increase) ||
                 d.hasAction(SemanticsAction.decrease) ||
                 f.isButton ||

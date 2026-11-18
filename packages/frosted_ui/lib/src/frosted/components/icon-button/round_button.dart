@@ -114,66 +114,6 @@ class FrostedIconButton extends StatelessWidget {
     final t = context.frostedTheme;
     final d = size.diameter;
     final layers = FrostedStyleLayers(style, t.components.iconButton);
-    Widget draw(Set<WidgetState> states) {
-      final s = layers.at(states);
-      final on = selected ?? false;
-      final cut = s.cut(FrostedCorners.full);
-      final fill = s.fill;
-      final side = s.side;
-      final (edge, edges) = side == null
-          ? (null, EdgeInsets.zero)
-          : s.edgeOf(null, FrostedStrokes.regular);
-      Widget disc = SizedBox.square(
-        dimension: d,
-        // A disc of glass; lit, it is the ink's paint.
-        child: FrostedFace(
-          material: on ? FrostedMaterial.paint : FrostedMaterial.pane,
-          radius: BorderRadius.circular(d / 2),
-          shape: cut,
-          color: fill,
-          gradients: on && fill == null ? [t.colorScheme.buttonFill] : const [],
-          wash: s.overlay,
-          edge: edge,
-          edges: edges,
-          sheen: on ? t.colorScheme.buttonSheen : t.glass.rim,
-          // The disc is its box: its edge a ring inside it, never one
-          // outside that stands it a pixel wider than the buttons beside it.
-          ring: side == null ? (s.edge ?? t.glass.edge) : null,
-          child: Center(
-            child: _cutForDot(
-              badge,
-              Directionality.of(context) == TextDirection.rtl,
-              d,
-              s.iconSize ?? size.glyph,
-              Icon(
-                icon,
-                size: s.iconSize ?? size.glyph,
-                color:
-                    s.foreground ??
-                    (on ? t.colorScheme.onButton : t.colorScheme.textPrimary),
-              ),
-            ),
-          ),
-        ),
-      );
-      disc = s.least(disc);
-      if (badge) {
-        disc = Stack(
-          clipBehavior: Clip.none,
-          children: [
-            disc,
-            const PositionedDirectional(
-              top: FrostedChromeMetrics.bellDotTop,
-              end: FrostedChromeMetrics.bellDotRight,
-              child: FrostedBadgeDot(),
-            ),
-          ],
-        );
-      }
-      disc = FrostedDim(off: onPressed == null, child: disc);
-      return disc;
-    }
-
     final cut = layers.cut(FrostedCorners.full);
     return FrostedPressable(
       focusNode: focusNode,
@@ -183,7 +123,16 @@ class FrostedIconButton extends StatelessWidget {
       toggled: selected,
       radius: FrostedStyleLayers.radiusOf(cut, d, d / 2),
       shape: cut,
-      builder: (context, states, _) => draw(states),
+      builder: (context, states, _) => frostedIconButtonFace(
+        context,
+        icon,
+        states: states,
+        enabled: onPressed != null,
+        size: size,
+        selected: selected,
+        badge: badge,
+        style: style,
+      ),
     );
   }
 
@@ -215,6 +164,81 @@ class FrostedIconButton extends StatelessWidget {
         DiagnosticsProperty<FrostedStyle>('style', style, defaultValue: null),
       );
   }
+}
+
+/// An icon button's disc as [FrostedIconButton] draws it in [states], with
+/// no press of its own: for a part whose behaviour presses it (a number
+/// field's steps). Kept back from the package's barrel.
+Widget frostedIconButtonFace(
+  BuildContext context,
+  IconData icon, {
+  required Set<WidgetState> states,
+  required bool enabled,
+  FrostedIconButtonSize size = FrostedIconButtonSize.regular,
+  bool? selected,
+  bool badge = false,
+  FrostedStyle? style,
+}) {
+  final t = context.frostedTheme;
+  final d = size.diameter;
+  final layers = FrostedStyleLayers(style, t.components.iconButton);
+  final s = layers.at(states);
+  final on = selected ?? false;
+  final cut = s.cut(FrostedCorners.full);
+  final fill = s.fill;
+  final side = s.side;
+  final (edge, edges) = side == null
+      ? (null, EdgeInsets.zero)
+      : s.edgeOf(null, FrostedStrokes.regular);
+  Widget disc = SizedBox.square(
+    dimension: d,
+    // A disc of glass; lit, it is the ink's paint.
+    child: FrostedFace(
+      material: on ? FrostedMaterial.paint : FrostedMaterial.pane,
+      radius: BorderRadius.circular(d / 2),
+      shape: cut,
+      color: fill,
+      gradients: on && fill == null ? [t.colorScheme.buttonFill] : const [],
+      wash: s.overlay,
+      edge: edge,
+      edges: edges,
+      sheen: on ? t.colorScheme.buttonSheen : t.glass.rim,
+      // The disc is its box: its edge a ring inside it, never one
+      // outside that stands it a pixel wider than the buttons beside it.
+      ring: side == null ? (s.edge ?? t.glass.edge) : null,
+      child: Center(
+        child: _cutForDot(
+          badge,
+          Directionality.of(context) == TextDirection.rtl,
+          d,
+          s.iconSize ?? size.glyph,
+          Icon(
+            icon,
+            size: s.iconSize ?? size.glyph,
+            color:
+                s.foreground ??
+                (on ? t.colorScheme.onButton : t.colorScheme.textPrimary),
+          ),
+        ),
+      ),
+    ),
+  );
+  disc = s.least(disc);
+  if (badge) {
+    disc = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        disc,
+        const PositionedDirectional(
+          top: FrostedChromeMetrics.bellDotTop,
+          end: FrostedChromeMetrics.bellDotRight,
+          child: FrostedBadgeDot(),
+        ),
+      ],
+    );
+  }
+  disc = FrostedDim(off: !enabled, child: disc);
+  return disc;
 }
 
 /// The glyph of a round [diameter] across, its [glyph] box centred, cut clear

@@ -23,7 +23,7 @@ enum FrostedWordmarkForm {
 
 /// The app's name as its mark: lower case in the wordmark type, with its
 /// form's company. The sidebar heads itself with it, and a nav root's head
-/// takes it where its title would stand ([FrostedPageHeader.wordmark]). It
+/// takes it where its title would stand (`FrostedPageHeader.wordmark`). It
 /// shrinks to the room it is given rather than overflowing. Read aloud as
 /// the name alone. One to a page; the page's title still says where it is.
 ///

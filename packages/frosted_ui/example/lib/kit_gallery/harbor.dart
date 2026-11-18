@@ -6,7 +6,7 @@
 /// carries it too.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -72,10 +72,15 @@ class _HarborAppState extends State<HarborApp> {
   @override
   Widget build(BuildContext context) => _HarborScope(
     host: widget.host,
-    child: Navigator(
-      onGenerateRoute: (settings) => PageRouteBuilder<void>(
-        settings: settings,
-        pageBuilder: (_, _, _) => _HarborShell(widget.opening),
+    // A nested navigator: its own semantics container, as the gallery's
+    // nested apps are (kit.dart's _kitApp).
+    child: Semantics(
+      container: true,
+      child: Navigator(
+        onGenerateRoute: (settings) => PageRouteBuilder<void>(
+          settings: settings,
+          pageBuilder: (_, _, _) => _HarborShell(widget.opening),
+        ),
       ),
     ),
   );

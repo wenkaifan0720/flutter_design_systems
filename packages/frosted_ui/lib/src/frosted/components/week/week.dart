@@ -32,7 +32,7 @@ enum FrostedDayStatus {
 /// is a round of the hue's light wearing a check in the hue's deep ink; a
 /// missed one prints its date on the wash in a hairline; today prints its
 /// date on white in the strip's ring of the hue; a day to come prints its
-/// date on the wash, faint. With [onDayTap] the days that have happened are
+/// date on the wash, faint. With [onChanged] the days that have happened are
 /// controls (kept ones toggled); the days to come never are, since a day
 /// that has not happened cannot be kept. [start] is the first day (a
 /// Monday, as a rule), [days] the seven states from it and [hue] the light

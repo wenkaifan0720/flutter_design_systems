@@ -26,6 +26,62 @@ String _plain(Object option) => '$option';
 // Combobox
 // ---------------------------------------------------------------------------
 
+/// A search's list while it runs, on the panel: the words that it is
+/// loading, where the empty list says nothing matches.
+Widget _searching(BuildContext context) {
+  final t = context.frostedTheme;
+  return Padding(
+    padding: const EdgeInsets.all(FrostedSpacing.s24),
+    child: Text(
+      DesignLocalizations.of(context).loadingLabel,
+      textAlign: TextAlign.center,
+      style: t.textTheme.titleMedium.c(t.colorScheme.textTertiary),
+    ),
+  );
+}
+
+/// A failed search's list, on the panel: what went wrong, in the empty
+/// list's words, over a Try again row, under the wash while the keys hold
+/// it.
+Widget _searchFailed(BuildContext context, DesignSearchError failure) {
+  final t = context.frostedTheme;
+  final words = DesignLocalizations.of(context);
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(
+          FrostedSpacing.s24,
+          FrostedSpacing.s24,
+          FrostedSpacing.s24,
+          FrostedSpacing.s12,
+        ),
+        child: Text(
+          words.searchFailedMessage,
+          textAlign: TextAlign.center,
+          style: t.textTheme.titleMedium.c(t.colorScheme.textTertiary),
+        ),
+      ),
+      Semantics(
+        button: true,
+        label: words.retryButtonLabel,
+        onTap: failure.retry,
+        excludeSemantics: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: failure.retry,
+          child: FrostedPanelRow(
+            label: words.retryButtonLabel,
+            checkable: false,
+            states: {if (failure.focused) WidgetState.focused},
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
 /// A text field that narrows a list as you type and takes one of its
 /// [options] (Material's Autocomplete, shadcn's Combobox): the field in
 /// [FrostedTextField]'s well with a chevron at its end, the options on the
@@ -50,6 +106,7 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
     required this.label,
     this.options = const [],
     this.search,
+    this.debounceDuration,
     this.value,
     this.onSelected,
     this.isOptionEnabled,
@@ -71,8 +128,18 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
   /// What it offers.
   final Iterable<T> options;
 
+  /// {@template frosted.search}
   /// Fetches the matches for a query, in place of filtering [options].
+  /// While it runs the list says it is loading; when it fails, it says so
+  /// over a Try again row (Down moves the keys there, Return runs it).
+  /// {@endtemplate}
   final FutureOr<Iterable<T>> Function(String query)? search;
+
+  /// {@template frosted.debounceDuration}
+  /// How long typing rests before [search] runs: a search per pause, not
+  /// per letter. Null runs it at every change.
+  /// {@endtemplate}
+  final Duration? debounceDuration;
 
   /// The chosen option.
   final T? value;
@@ -126,6 +193,9 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
       child: DesignCombobox<T>(
         options: options,
         search: search,
+        debounceDuration: debounceDuration,
+        loadingBuilder: _searching,
+        errorBuilder: _searchFailed,
         value: value,
         onSelected: onSelected,
         isOptionEnabled: isOptionEnabled,
@@ -186,6 +256,13 @@ class FrostedCombobox<T extends Object> extends StatelessWidget {
         ObjectFlagProperty<FutureOr<Iterable<T>> Function(String query)>.has(
           'search',
           search,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
         ),
       )
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
@@ -255,6 +332,7 @@ class FrostedMultiSelect<T extends Object> extends StatefulWidget {
     required this.onChanged,
     this.options = const [],
     this.search,
+    this.debounceDuration,
     this.isOptionEnabled,
     this.displayString = _plain,
     this.onCreate,
@@ -283,8 +361,11 @@ class FrostedMultiSelect<T extends Object> extends StatefulWidget {
   /// What it offers.
   final Iterable<T> options;
 
-  /// Fetches the matches for a query, in place of filtering [options].
+  /// {@macro frosted.search}
   final FutureOr<Iterable<T>> Function(String query)? search;
+
+  /// {@macro frosted.debounceDuration}
+  final Duration? debounceDuration;
 
   /// {@macro frosted.isOptionEnabled}
   final bool Function(T option)? isOptionEnabled;
@@ -331,6 +412,13 @@ class FrostedMultiSelect<T extends Object> extends StatefulWidget {
         ObjectFlagProperty<FutureOr<Iterable<T>> Function(String query)>.has(
           'search',
           search,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
         ),
       )
       ..add(
@@ -413,6 +501,9 @@ class _FrostedMultiSelectState<T extends Object>
             onChanged: widget.onChanged,
             options: widget.options,
             search: widget.search,
+            debounceDuration: widget.debounceDuration,
+            loadingBuilder: _searching,
+            errorBuilder: _searchFailed,
             isOptionEnabled: widget.isOptionEnabled,
             // One held row, as the combobox's.
             highlightFollowsPointer: true,

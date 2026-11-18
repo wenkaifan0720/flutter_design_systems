@@ -2091,7 +2091,7 @@ class FrostedRecordHero extends StatelessWidget {
 /// [chart], 10 apart, the chart's axis words 10 further under the plot
 /// than a lone chart's, as the source's column lays its axis out as an
 /// item of its own (`.rec-chart { gap: 10px }`, `.rec-chart .chart {
-/// margin-top: 0 }`). The [child] of a [FrostedRecordHero], or a tile's own.
+/// margin-top: 0 }`). A [FrostedRecordHero.child], or a tile's own.
 ///
 /// ```dart
 /// FrostedRecordChart(head: Text('Balance through October', style: t.textTheme.bodySmall), chart: FrostedTrailChart.steps(values: balance, start: opening, daysInMonth: 31, marks: axis, label: 'Everyday balance through October'))

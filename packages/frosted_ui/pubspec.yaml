@@ -1,27 +1,29 @@
 name: frosted_ui
 description: >-
-  Frosted glass widgets for Flutter: frosted panes on a canvas lit by soft washes of colour, seven light and dark palettes, accessible controls and a complete theme.
-version: 0.2.1
-homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/frosted_ui
+  Frosted glass for Flutter: panes rimmed with light stand on a canvas lit by soft washes of colour, and one ink act carries each page, by day and by night.
+version: 0.3.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/frosted/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/frosted_ui
+issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
 topics:
   - design-system
   - widgets
   - ui
   - theme
+  - glassmorphism
 screenshots:
-  - description: "Harbor, the gallery's sample app, on its Activity page at 1440 wide by day."
-    path: screenshots/harbor-activity-desktop-day.png
-  - description: "Harbor's Activity page on a 390 wide phone by night."
-    path: screenshots/harbor-activity-phone-night.png
+  - description: "Harbor, the gallery's sample app, on its Activity page at 1440 wide and on a 390 wide phone, by day."
+    path: screenshots/hero.webp
   - description: "Harbor's Settings page at 1440 wide by night."
-    path: screenshots/harbor-settings-desktop-night.png
+    path: screenshots/harbor-settings-desktop-night.webp
+  - description: "Harbor's Activity page on a 390 wide phone by night."
+    path: screenshots/harbor-activity-phone-night.webp
   - description: "Harbor's Settings page on a 390 wide phone by day."
-    path: screenshots/harbor-settings-phone-day.png
-  - description: "The pearl credit card, live and frozen, at 1440 wide by day."
-    path: screenshots/gallery-cards-desktop-day.png
+    path: screenshots/harbor-settings-phone-day.webp
+  - description: "The pearl credit card, Frosted's own, live and frozen, at 1440 wide by day."
+    path: screenshots/gallery-cards-desktop-day.webp
   - description: "Segmented buttons, chips and switches on a 390 wide phone by night."
-    path: screenshots/gallery-selection-phone-night.png
+    path: screenshots/gallery-selection-phone-night.webp
 
 environment:
   sdk: ">=3.13.0 <4.0.0"
@@ -32,7 +34,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.2.1
+  ui_core: ^0.3.0
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -42,6 +44,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
+  ui_core_test: ^0.1.0
 
 flutter:
   fonts:

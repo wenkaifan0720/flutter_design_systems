@@ -38,6 +38,18 @@ Future<void> _pump(WidgetTester t, Widget child, {double gutter = 16}) async {
 SemanticsNode _node(WidgetTester t, String label) =>
     t.getSemantics(find.bySemanticsLabel(label));
 
+/// The node that steps (a number field's) named [label] first (the field's
+/// sign follows its name), if one does.
+SemanticsNode? _stepper(WidgetTester t, String label) {
+  final nodes = find.semantics.byPredicate((node) {
+    final data = node.getSemanticsData();
+    return data.label.startsWith(label) &&
+        (data.hasAction(SemanticsAction.increase) ||
+            data.hasAction(SemanticsAction.decrease));
+  }).evaluate();
+  return nodes.isEmpty ? null : nodes.first;
+}
+
 /// A control that keeps the value its callback hands back, as a page does.
 class _Owner<T> extends StatefulWidget {
   const _Owner(this.initial, this.builder, {this.seen});
@@ -1107,8 +1119,8 @@ void main() {
     },
   );
 
-  testWidgets('FrostedNumberField steps by its step, stops at its floor and '
-      'ceiling, and takes a typed figure', (t) async {
+  testWidgets('FrostedNumberField steps to its step, stops at its floor and '
+      'ceiling, and takes a typed figure as Return takes it', (t) async {
     final seen = <int>[];
     await _pump(
       t,
@@ -1126,8 +1138,24 @@ void main() {
     );
     expect(find.text('a month'), findsOneWidget);
     expect(find.text('250'), findsOneWidget);
-    expect(_node(t, 'the budget'), isSemantics(isTextField: true));
-    expect(t.getSize(find.byType(FrostedIconButton).first), const Size(48, 48));
+    // The steps are the field's node's (ui_core's DesignNumberField); the
+    // rounds are for the eye and the finger.
+    expect(
+      _stepper(t, 'the budget'),
+      isSemantics(label: 'the budget\n\$', value: '250'),
+    );
+    expect(find.bySemanticsLabel('Raise the budget'), findsNothing);
+    expect(
+      t.getSize(
+        find
+            .ancestor(
+              of: find.byIcon(FrostedGlyphs.add),
+              matching: find.byType(SizedBox),
+            )
+            .first,
+      ),
+      const Size(48, 48),
+    );
     // `.stepper .inp--amt { width: 3ch }`: three zeros' own advance, the
     // figure's tracking and tabular figures left out, as a ch is.
     final figure = t.widget<TextField>(find.byType(TextField)).style!;
@@ -1143,29 +1171,46 @@ void main() {
       moreOrLessEquals(room.width, epsilon: 0.01),
     );
     room.dispose();
-    await t.tap(find.bySemanticsLabel('Raise the budget'));
-    await t.pump();
+    await t.tap(find.byIcon(FrostedGlyphs.add));
+    await t.pump(const Duration(milliseconds: 500));
     expect(
-      _node(t, 'Raise the budget'),
-      isSemantics(isEnabled: false, hasTapAction: false),
+      _stepper(
+        t,
+        'the budget',
+      )!.getSemanticsData().hasAction(SemanticsAction.increase),
+      isFalse,
+      reason: 'at the ceiling',
     );
-    await t.tap(find.bySemanticsLabel('Lower the budget'));
-    await t.pump();
-    await t.tap(find.bySemanticsLabel('Lower the budget'));
-    await t.pump();
+    await t.tap(find.byIcon(FrostedGlyphs.remove));
+    await t.pump(const Duration(milliseconds: 500));
+    await t.tap(find.byIcon(FrostedGlyphs.remove));
+    await t.pump(const Duration(milliseconds: 500));
     expect(seen, [260, 250, 240]);
     await t.enterText(find.byType(TextField), '9000');
     await t.pump();
-    expect(seen.last, 260);
+    expect(
+      seen.last,
+      240,
+      reason: 'over the ceiling: taken as Return takes it',
+    );
+    await t.testTextInput.receiveAction(TextInputAction.done);
+    await t.pump();
+    expect(seen.last, 260, reason: 'clamped to the ceiling');
+    // Within the bounds a figure goes back as it is typed, so a Save that
+    // takes no focus reads it.
+    await t.enterText(find.byType(TextField), '25');
+    await t.pump();
+    expect(seen.last, 25, reason: 'within the bounds: as it is typed');
+    await t.testTextInput.receiveAction(TextInputAction.done);
+    await t.pump();
+    expect(seen.last, 25);
     await _pump(
       t,
       FrostedNumberField(value: 0, label: 'the budget', onChanged: seen.add),
     );
-    expect(
-      _node(t, 'Lower the budget'),
-      isSemantics(isEnabled: false, hasTapAction: false),
-    );
-    expect(_node(t, 'Raise the budget'), isSemantics(isEnabled: true));
+    final floor = _stepper(t, 'the budget')!.getSemanticsData();
+    expect(floor.hasAction(SemanticsAction.decrease), isFalse);
+    expect(floor.hasAction(SemanticsAction.increase), isTrue);
   });
 
   testWidgets('FrostedFormRow: a value and chevron make one link; a control '

@@ -8,7 +8,7 @@ import '../../internal/panel.dart';
 import '../../theme.dart';
 
 /// What a [FrostedSwipeAction] is lit as: [quiet] the wash in a hairline,
-/// [accent] the ink act of something worth doing (Pin, Pay), [danger] the
+/// [accent] the ink act of something worth doing (Pin, Pay), [destructive] the
 /// danger fill of a loss (Delete).
 enum FrostedSwipeTone {
   /// The wash in a hairline.

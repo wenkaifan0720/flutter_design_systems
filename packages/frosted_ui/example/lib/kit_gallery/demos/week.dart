@@ -2,7 +2,7 @@
 /// light, pressed to toggle, and a report that takes no press.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 
 import '../kit.dart';

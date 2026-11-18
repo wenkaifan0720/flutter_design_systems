@@ -256,6 +256,10 @@ class FrostedSplitButton extends StatelessWidget {
       label: label,
       onPressed: onPressed,
       menuLabel: DesignLocalizations.of(context).moreButtonTooltip,
+      // Frosted's rows follow a moving pointer (FrostedPanelRow, woken by
+      // FrostedMenuWake), as the menu bar's: ui_core's follow would light the
+      // row a key-opened menu appears under.
+      highlightFollowsPointer: false,
       minimumSize: Size(height, height),
       actions: [
         for (final a in actions)

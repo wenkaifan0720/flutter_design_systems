@@ -268,10 +268,6 @@ class FrostedMaterials {
   /// boundary keep on glass.
   static const double quietContrast = 3;
 
-  static final Expando<FrostedMaterials> _derived = Expando<FrostedMaterials>(
-    'frosted materials',
-  );
-
   /// [theme]'s glass. Each glass has a tint of the preset's glass colour,
   /// thin enough that the backdrop shows through (thicker glass, more
   /// tint), and the range what is behind it is drawn into: the least lift
@@ -281,7 +277,18 @@ class FrostedMaterials {
   /// over black, white and saturated colours, and over the glass raised on
   /// another. So the guarantee is the glass's, not a backdrop's.
   static FrostedMaterials derive(FrostedThemeData theme) =>
-      _derived[theme] ??= _derive(theme);
+      _derived[theme] ??= _derive(
+        dark: theme.isDark,
+        background: theme.colorScheme.background,
+        textPrimary: theme.colorScheme.textPrimary,
+        textSecondary: theme.colorScheme.textSecondary,
+        textTertiary: theme.colorScheme.textTertiary,
+        glassFill: theme.glass.fill,
+      );
+
+  static final Expando<FrostedMaterials> _derived = Expando<FrostedMaterials>(
+    'frosted materials',
+  );
 
   /// What a page can put behind glass: the extremes and the saturated hues.
   static const List<Color> _behind = [
@@ -295,20 +302,22 @@ class FrostedMaterials {
     Color(0xFF00FFFF),
   ];
 
-  static FrostedMaterials _derive(FrostedThemeData t) {
-    final dark = t.isDark;
-    final body = [
-      t.colorScheme.textPrimary,
-      t.colorScheme.textSecondary,
-      t.colorScheme.textTertiary,
-    ];
-    final tintColour = t.glass.fill.withValues(alpha: 1);
+  static FrostedMaterials _derive({
+    required bool dark,
+    required Color background,
+    required Color textPrimary,
+    required Color textSecondary,
+    required Color textTertiary,
+    required Color glassFill,
+  }) {
+    final body = [textPrimary, textSecondary, textTertiary];
+    final tintColour = glassFill.withValues(alpha: 1);
     final wellColour = dark
         ? Color.lerp(tintColour, const Color(0xFF000000), .35)!
-        : Color.lerp(tintColour, t.colorScheme.background, .55)!;
+        : Color.lerp(tintColour, background, .55)!;
     const white = Color(0xFFFFFFFF);
     const black = Color(0xFF000000);
-    final ink = t.colorScheme.textPrimary;
+    final ink = textPrimary;
     final rim = dark
         ? white.withValues(alpha: .10)
         : ink.withValues(alpha: .07);
@@ -355,7 +364,7 @@ class FrostedMaterials {
       var lo = 0.0, hi = 1.0;
       for (var i = 0; i < 24; i++) {
         final mid = (lo + hi) / 2;
-        final reads = _reads(at(mid, black), body, t.colorScheme.textTertiary);
+        final reads = _reads(at(mid, black), body, textTertiary);
         if (dark == reads) {
           lo = mid;
         } else {
@@ -364,7 +373,7 @@ class FrostedMaterials {
       }
       final range = dark ? math.min(lo, span) : math.max(hi, 1 - span);
       final probe = at(range, black);
-      return at(range, probe.groundOver(t.colorScheme.background));
+      return at(range, probe.groundOver(background));
     }
 
     Color tint(Color c, double a) => c.withValues(alpha: a);
@@ -428,7 +437,7 @@ class FrostedMaterials {
       ),
       scrim: dark
           ? black.withValues(alpha: .42)
-          : t.colorScheme.textPrimary.withValues(alpha: .18),
+          : textPrimary.withValues(alpha: .18),
       soften: 6,
     );
   }
@@ -462,8 +471,29 @@ class FrostedMaterials {
   }
 }
 
+/// [FrostedMaterials.derive] from the colours it reads: whether the theme is
+/// [dark], its page's [background], its inks [textPrimary], [textSecondary]
+/// and [textTertiary], and its glass colour [glassFill].
+/// [FrostedThemeData.materials] keeps it per theme, so a copy of the theme
+/// draws its glass with no theme of the package's. Plumbing of the theme.
+FrostedMaterials frostedMaterialsOf({
+  required bool dark,
+  required Color background,
+  required Color textPrimary,
+  required Color textSecondary,
+  required Color textTertiary,
+  required Color glassFill,
+}) => FrostedMaterials._derive(
+  dark: dark,
+  background: background,
+  textPrimary: textPrimary,
+  textSecondary: textSecondary,
+  textTertiary: textTertiary,
+  glassFill: glassFill,
+);
+
 /// What stands behind every page, for the glass to show: the preset's
-/// [light], a [night] sky, an [image], or a [plain] colour. A theme carries
+/// light at [dawn], a [night] sky, an [image], or a [plain] colour. A theme carries
 /// one ([FrostedThemeData.backdrop]); `FrostedScaffold` paints it, still,
 /// behind the page as the page scrolls over it.
 @immutable

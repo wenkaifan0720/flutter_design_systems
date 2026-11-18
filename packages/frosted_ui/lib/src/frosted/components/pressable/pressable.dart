@@ -4,6 +4,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
 import '../../internal/dim.dart';
+import '../../internal/face.dart';
 import '../../internal/hit_slop.dart';
 import '../../internal/styled.dart';
 import '../../theme.dart';
@@ -263,7 +264,9 @@ class FrostedPressable extends StatelessWidget {
 /// a face whose corner is [radius] (or [shape], which wins), a band
 /// [FrostedChromeMetrics.focusRingGap] wide (white by day, the page's ground
 /// by night) and beyond it a line [FrostedChromeMetrics.focusRingWidth] wide
-/// in the ring ink, so focus reads on a pale backdrop and round the pale ink
+/// in the focus ink (the accent at 70%; for a theme whose accent is its
+/// words' ink, the cool blue by day and the pale ink by night: light, never
+/// a dark line), so focus reads on a pale backdrop and round the pale ink
 /// pill by night. The layers run concentric. Drawn while the keyboard holds
 /// focus: with [shown] it fades in, and out when focus leaves (a cut under
 /// Reduce Motion).
@@ -339,12 +342,14 @@ class FrostedFocusRing extends StatelessWidget {
     const gap = FrostedChromeMetrics.focusRingGap;
     const width = FrostedChromeMetrics.focusRingWidth;
     // The source's ring round its act, on every focusable part: a band of
-    // white, then a line of its ring ink (by day the ink at 70%, by night
-    // the pale ink at 70%). A band of light alone read as the glass's own
-    // rim on a pale backdrop, and merged with the pale ink pill by night,
-    // so by night the band is the page's ground. Self-review round 1.
+    // white, then a line of the focus ink (frostedFocusInk: the accent at
+    // 70%, or where the accent is the words' ink, by day the cool blue and
+    // by night the pale ink): light, never a dark line round glass (the
+    // user, 11-17). A band of light alone read as the glass's own rim on a
+    // pale backdrop, and merged with the pale ink pill by night, so by night
+    // the band is the page's ground. Self-review round 1.
     final light = t.isDark ? t.colorScheme.background : t.colorScheme.ringInner;
-    final line = t.colorScheme.ringOuter;
+    final line = frostedFocusInk(t);
     OutlinedBorder outline(double out, [BorderSide side = BorderSide.none]) =>
         FrostedStyleLayers.around(shape, out)?.copyWith(side: side) ??
         RoundedRectangleBorder(

@@ -3,7 +3,7 @@
 
 import 'package:flutter/painting.dart' show Color;
 
-import '../../theme.dart';
+import 'tokens.dart';
 
 /// The `frost` catalog theme, baked: both appearances, the type slots and
 /// the shape, as ThemeTokens v2 records them.

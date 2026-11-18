@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/inventory.dart';
 
+import 'chrome_metrics.dart';
 import 'components/actions/actions.dart';
 import 'components/avatar/avatar.dart';
 import 'components/button/button.dart';
@@ -763,7 +764,9 @@ class FrostedInventoryGallery extends StatelessWidget {
                     child: Align(
                       alignment: AlignmentDirectional.centerStart,
                       heightFactor: 1,
-                      child: specimen,
+                      child: row.id == 'NavigationBar'
+                          ? _CanvasStage(child: specimen)
+                          : specimen,
                     ),
                   )
                 else
@@ -803,6 +806,35 @@ class FrostedInventoryGallery extends StatelessWidget {
         ),
       );
   }
+}
+
+// The navigation bar stands at a screen's foot on its fade into the canvas:
+// on the card it stands on a stage of the canvas the fade's height, so the
+// fade meets the canvas as at a screen's foot rather than drawing a box on
+// the card.
+class _CanvasStage extends StatelessWidget {
+  const _CanvasStage({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(
+      FrostedBreakpoints.innerRadius(context),
+    ),
+    child: ColoredBox(
+      color: context.frostedTheme.colorScheme.background,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          top:
+              FrostedChromeMetrics.tabBarFade -
+              FrostedChromeMetrics.slabHeight -
+              FrostedChromeMetrics.tabBarBottom,
+        ),
+        child: child,
+      ),
+    ),
+  );
 }
 
 // A specimen's controller, made once and disposed of with the specimen, as

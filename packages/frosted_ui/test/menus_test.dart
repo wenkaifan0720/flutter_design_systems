@@ -272,6 +272,63 @@ void main() {
       semantics.dispose();
     });
 
+    testWidgets('$night: a context menu opens where it was asked for, as '
+        'wide as its rows', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          t,
+          FrostedContextMenu(
+            items: [
+              DesignMenuEntry(label: 'Copy', onPressed: () {}),
+              DesignMenuEntry(label: 'Delete', onPressed: () {}),
+            ],
+            child: const SizedBox(height: 160),
+          ),
+        ),
+      );
+      final at =
+          tester.getTopLeft(find.byType(FrostedContextMenu)) +
+          const Offset(120, 60);
+      final right = await tester.startGesture(
+        at,
+        kind: PointerDeviceKind.mouse,
+        buttons: kSecondaryMouseButton,
+      );
+      await right.up();
+      await tester.pumpAndSettle();
+      expect(find.text('Copy'), findsOneWidget, reason: 'open');
+      final panel = tester.getRect(
+        find
+            .ancestor(
+              of: find.text('Copy'),
+              matching: find.byType(FrostedPanel),
+            )
+            .first,
+      );
+      final row = tester.getRect(
+        find
+            .ancestor(
+              of: find.text('Copy'),
+              matching: find.byType(FrostedPanelRow),
+            )
+            .first,
+      );
+      expect(
+        panel.width,
+        moreOrLessEquals(row.width + 2 * FrostedChromeMetrics.menuInset),
+        reason: 'as wide as its rows, not the window',
+      );
+      expect(
+        (panel.left - at.dx).abs(),
+        lessThanOrEqualTo(4),
+        reason: 'at the pointer',
+      );
+      expect((panel.top - at.dy).abs(), lessThanOrEqualTo(4));
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.text('Copy'), findsNothing);
+    });
+
     testWidgets('$night: a panel row: held, the wash; a resting pointer '
         'alone, nothing', (tester) async {
       Future<void> row(Set<WidgetState> states) => tester.pumpWidget(

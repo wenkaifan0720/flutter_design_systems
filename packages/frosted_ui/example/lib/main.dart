@@ -7,9 +7,8 @@
 // page under the bar is the gallery's own screen, as the catalog renders it.
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
 
@@ -571,8 +570,19 @@ class _RaisedWatch extends NavigatorObserver {
   final ValueNotifier<ModalRoute<Object?>?> raised;
   final _stack = <ModalRoute<Object?>>[];
 
+  /// The barrier a ui_core route paints itself (Frosted's dialog and sheets,
+  /// softening the page as they dim it): such a route gives no
+  /// [ModalRoute.barrierColor].
+  static DesignBarrierBuilder? painted(Route<Object?> route) => switch (route) {
+    DesignDialogRoute<Object?>(:final barrierBuilder) => barrierBuilder,
+    DesignBottomSheetRoute<Object?>(:final barrierBuilder) => barrierBuilder,
+    DesignSideSheetRoute<Object?>(:final barrierBuilder) => barrierBuilder,
+    _ => null,
+  };
+
   static bool _dims(Route<Object?> route) =>
-      route is PopupRoute<Object?> && (route.barrierColor?.a ?? 0) > 0;
+      route is PopupRoute<Object?> &&
+      ((route.barrierColor?.a ?? 0) > 0 || painted(route) != null);
 
   void _show() => raised.value = _stack.isEmpty ? null : _stack.last;
 
@@ -604,10 +614,11 @@ class _RaisedWatch extends NavigatorObserver {
       _forget(route);
 }
 
-/// The raised route's barrier, carried over the gallery's bar: the same
-/// colour along the same curve, the same softening when the route softens
-/// the page (a dialog's or a sheet's scrim), and a tap on it dismisses the
-/// route as a tap on the page's barrier does.
+/// The raised route's barrier, carried over the gallery's bar: the one the
+/// route paints itself (a dialog's or a sheet's softened scrim), else the
+/// same colour along the same curve, softened when the route softens the
+/// page; and a tap on it dismisses the route as a tap on the page's barrier
+/// does.
 class _RaisedOver extends StatelessWidget {
   const _RaisedOver(this.raised);
 
@@ -620,17 +631,25 @@ class _RaisedOver extends StatelessWidget {
       valueListenable: raised,
       builder: (context, route, _) {
         final rise = route?.animation;
-        final color = route?.barrierColor;
-        if (route == null || rise == null || color == null) {
-          return const SizedBox.shrink();
+        if (route == null || rise == null) return const SizedBox.shrink();
+        final dismiss = route.barrierDismissible
+            ? () => route.navigator?.maybePop()
+            : null;
+        final paint = _RaisedWatch.painted(route);
+        if (paint != null) {
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: dismiss,
+            child: paint(context, rise),
+          );
         }
+        final color = route.barrierColor;
+        if (color == null) return const SizedBox.shrink();
         final soften = color == t.materials.scrim ? t.materials.soften : 0.0;
         final curve = route.barrierCurve;
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: route.barrierDismissible
-              ? () => route.navigator?.maybePop()
-              : null,
+          onTap: dismiss,
           child: AnimatedBuilder(
             animation: rise,
             builder: (context, _) {

@@ -3,13 +3,13 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../../chrome_metrics.dart';
 import '../../glyphs.dart';
 import '../../internal/face.dart';
 import '../../internal/hit_slop.dart';
 import '../../internal/well.dart';
-import '../../internal/key_focus.dart';
 import '../../internal/styled.dart';
 import '../../localizations.dart';
 import '../../theme.dart';
@@ -532,8 +532,10 @@ class FrostedChip extends StatelessWidget {
 /// A score out of [max] stars: each star drawn in the signature band when
 /// it is reached (half a star with [allowHalf]), a ring of the strong
 /// hairline when it is not. With [onChanged] a press or a drag along the
-/// row sets it and the arrow keys step it; without, it only states. Read
-/// aloud as [label] and "3 of 5".
+/// row sets it (a pointer resting over it shows what a press would set),
+/// the arrow keys step it, Home or 0 clears it, End fills it and a digit
+/// sets that many; without, it only states. Read aloud as [label] and
+/// "3 of 5". ui_core's [DesignRating] is the behaviour.
 ///
 /// ```dart
 /// FrostedRating(value: stars, label: 'Your rating', onChanged: (v) => setState(() => stars = v))
@@ -580,103 +582,56 @@ class FrostedRating extends StatelessWidget {
   /// A star's size.
   final double size;
 
-  double _snap(double v) {
-    final step = allowHalf ? .5 : 1.0;
-    return ((v / step).ceil() * step).clamp(step, max.toDouble());
-  }
-
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final words = FrostedLocalizations.of(context);
     final live = onChanged != null;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final step = allowHalf ? .5 : 1.0;
-    final gap = size * .2;
-    final up = !live || value >= max
-        ? null
-        : () => onChanged!(math.min(max.toDouble(), value + step));
-    final down = !live || value <= step
-        ? null
-        : () => onChanged!(math.max(step, value - step));
-    final toward = rtl ? down : up;
-    final away = rtl ? up : down;
     String spoken(double v) =>
         words.rating(v == v.roundToDouble() ? v.round() : v, max);
-    double at(double dx, double width) {
-      final x = rtl ? width - dx : dx;
-      return _snap(x / (size + gap) + (allowHalf ? 0 : .0001));
-    }
-
-    Widget stars = Row(
-      mainAxisSize: MainAxisSize.min,
-      spacing: gap,
-      children: [
-        for (var i = 0; i < max; i++)
-          CustomPaint(
-            size: Size.square(size),
-            painter: _StarPainter(
-              fill: (value - i).clamp(0.0, 1.0),
-              band: t.hues.iris.band,
-              ring: frostedRestRing(t),
-              rtl: rtl,
-            ),
-          ),
-      ],
+    Widget rating(FocusNode? node) => DesignRating(
+      value: value,
+      onChanged: onChanged,
+      readOnly: !live,
+      itemCount: max,
+      allowHalf: allowHalf,
+      focusNode: node,
+      autofocus: autofocus,
+      semanticLabel: label,
+      semanticFormatterCallback: spoken,
+      itemBuilder: (context, item) => CustomPaint(
+        size: Size.square(size),
+        painter: _StarPainter(
+          fill: item.fill,
+          band: t.hues.iris.band,
+          ring: frostedRestRing(t),
+          rtl: rtl,
+        ),
+      ),
+      layoutBuilder: (context, items) => Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: size * .2,
+        children: items,
+      ),
     );
-    if (live) {
-      // The builder runs later, when `stars` has become what it builds.
-      final drawn = stars;
-      stars = LayoutBuilder(
-        builder: (context, _) => GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (d) {
-            final w = (context.findRenderObject()! as RenderBox).size.width;
-            onChanged!(at(d.localPosition.dx, w));
-          },
-          onHorizontalDragUpdate: (d) {
-            final w = (context.findRenderObject()! as RenderBox).size.width;
-            onChanged!(at(d.localPosition.dx, w));
-          },
-          child: MouseRegion(cursor: SystemMouseCursors.click, child: drawn),
+    if (!live) return rating(null);
+    return _KeyRing(
+      focusNode: focusNode,
+      radius: FrostedSpacing.s6,
+      builder: (node) => ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: FrostedBreakpoints.hitTargetOf(context),
         ),
-      );
-      stars = FrostedKeyFocus(
-        focusNode: focusNode,
-        autofocus: autofocus,
-        enabled: true,
-        radius: FrostedSpacing.s6,
-        keys: {
-          LogicalKeyboardKey.arrowRight: ?toward,
-          LogicalKeyboardKey.arrowLeft: ?away,
-          LogicalKeyboardKey.arrowUp: ?up,
-          LogicalKeyboardKey.arrowDown: ?down,
-        },
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: FrostedBreakpoints.hitTargetOf(context),
-          ),
-          // At the line's start, as the read-only stars stand, when the
-          // page stretches it; as tall as the touch target, never the page.
-          child: Align(
-            alignment: AlignmentDirectional.centerStart,
-            widthFactor: 1,
-            heightFactor: 1,
-            child: stars,
-          ),
+        // At the line's start, as the read-only stars stand, when the page
+        // stretches it; as tall as the touch target, never the page.
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          widthFactor: 1,
+          heightFactor: 1,
+          child: rating(node),
         ),
-      );
-    }
-    return Semantics(
-      label: label,
-      enabled: live ? true : null,
-      value: spoken(value),
-      increasedValue: up == null ? null : spoken(value + step),
-      decreasedValue: down == null ? null : spoken(value - step),
-      onIncrease: up,
-      onDecrease: down,
-      excludeSemantics: true,
-      child: stars,
+      ),
     );
   }
 
@@ -701,6 +656,70 @@ class FrostedRating extends StatelessWidget {
       ..add(FlagProperty('allowHalf', value: allowHalf, ifTrue: 'allowHalf'))
       ..add(DoubleProperty('size', size, defaultValue: 28));
   }
+}
+
+/// The focus ring round [builder]'s control while the keyboard, not a
+/// pointer, holds [focusNode] (its own when null).
+class _KeyRing extends StatefulWidget {
+  const _KeyRing({
+    required this.focusNode,
+    required this.radius,
+    required this.builder,
+  });
+
+  final FocusNode? focusNode;
+  final double radius;
+  final Widget Function(FocusNode node) builder;
+
+  @override
+  State<_KeyRing> createState() => _KeyRingState();
+}
+
+class _KeyRingState extends State<_KeyRing> {
+  FocusNode? _own;
+
+  FocusNode get _node => widget.focusNode ?? (_own ??= FocusNode());
+
+  bool get _keyboard =>
+      FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
+
+  void _changed() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _node.addListener(_changed);
+    FocusManager.instance.addHighlightModeListener(_moded);
+  }
+
+  void _moded(FocusHighlightMode _) => _changed();
+
+  @override
+  void didUpdateWidget(_KeyRing old) {
+    super.didUpdateWidget(old);
+    final was = old.focusNode ?? _own;
+    if (!identical(was, _node)) {
+      was?.removeListener(_changed);
+      _node.addListener(_changed);
+    }
+  }
+
+  @override
+  void dispose() {
+    _node.removeListener(_changed);
+    FocusManager.instance.removeHighlightModeListener(_moded);
+    _own?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FrostedFocusRing(
+    shown: _node.hasFocus && _keyboard,
+    radius: widget.radius,
+    child: widget.builder(_node),
+  );
 }
 
 class _StarPainter extends CustomPainter {

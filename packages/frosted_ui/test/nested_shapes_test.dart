@@ -507,10 +507,10 @@ double? _edge(Path path, Offset from, Offset dir, double reach) {
 /// they do draw is still measured, but none is required.
 const nestedAlone = {
   'Text field':
-      'focus turns the well\'s own edge to the accent; no second '
+      'focus lights the well\'s own edge (by night the accent); no second '
       'line',
   'Text area':
-      'focus turns the well\'s own edge to the accent; no second '
+      'focus lights the well\'s own edge (by night the accent); no second '
       'line',
   'Slider thumb':
       'the thumb stands over a thinner track, and the keyboard ring rings '

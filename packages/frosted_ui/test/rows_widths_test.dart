@@ -18,7 +18,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 import 'gallery_support.dart';
 import 'tiers.dart';
@@ -47,22 +47,29 @@ final _widths = DesignWidthCheck(
 
 // The row, width and list checks read drawn pixels, which depend on the
 // rasterizer as a golden does: they carry the goldens tag. Where they still
-// misread on macOS on ui_core 0.2.0 they are skipped: the rows and widths
-// below, which ui_core's own sweep of the gallery does not report, and the
-// lists, which wait on ui_core's lists series.
+// misread on macOS on ui_core_test 0.1.0 they are skipped: the rows and
+// widths below, which ui_core's own sweep of the gallery does not report, and
+// the lists, which wait on ui_core's lists series. Each was read again on
+// 0.1.0 with its skip lifted: inputs' and inventory's rows and combobox's
+// lists read right now and run; actions' and week's rows, which 0.2.1's
+// reader read level, are misread by 0.1.0's (their pixels are 0.2.1's,
+// golden for golden).
 const _misreadRows = {
+  // Night: 0.1.0 reads a two-tone raised face to its dark edge, which puts
+  // the row's middle 1.5 device px under the segments' words, laid 0.2 px
+  // from it.
+  'actions': 'ui_core_test 0.1.0 misread: a night face read to its edge',
   'controls': 'ui_core misread, 0.2.0 design-sweep reads: row tops',
-  'inputs': 'ui_core misread, 0.2.0 design-sweep reads: row tops',
-  'inventory': 'ui_core misread, 0.2.0 design-sweep reads: row tops',
   'top-bar': 'ui_core misread, 0.2.0 design-sweep reads: row tops',
+  // Today's day is a ring round a pale fill, as large as the other days'
+  // discs; 0.1.0 reads it 8 device px short at each end.
+  'week': "ui_core_test 0.1.0 misread: today's ring read inside it",
 };
 const _misreadWidths = {
   'selection': 'ui_core misread, 0.2.0 design-sweep reads: widths from 600',
   'tabs': 'ui_core misread, 0.2.0 design-sweep reads: widths from 600',
 };
 const _misreadLists = {
-  'combobox 390': 'ui_core misread, 0.2.0 design-sweep reads: list widths',
-  'combobox 1440': 'ui_core misread, 0.2.0 design-sweep reads: list widths',
   'inventory 390': 'ui_core misread, 0.2.0 design-sweep reads: list widths',
   'inventory 1440': 'ui_core misread, 0.2.0 design-sweep reads: list widths',
   'pickers 1440': 'ui_core misread, 0.2.0 design-sweep reads: list widths',

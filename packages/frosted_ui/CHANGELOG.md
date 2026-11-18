@@ -1,3 +1,77 @@
+## 0.3.0
+
+Frosted 0.3.0 stands on ui_core 0.3.0: its dialog, sheets, tooltip, tab bar, wheels, number field and rating keep
+their paint and take their behaviour from ui_core's parts, and it gains a context menu.
+
+**Breaking**
+
+- `FrostedNumberField` hands back a typed figure at each key only while it stands between `min` and `max`; one
+  outside waits until it is taken (Return, or the focus leaving) and is clamped then: with a floor of 5, typing 12 no
+  longer snaps to 5 at the 1. A round moves the value to the next multiple of `step` from `min`, so a round at 5 of a
+  step of 10 lowers it to 0. A screen reader hears one field that steps up and down, not two buttons beside it.
+- `FrostedRating` can be cleared: Home or 0 sets none, where the arrows stopped at one step.
+- `FrostedTooltip` is a `StatelessWidget` and `FrostedTabBar` a `StatefulWidget`.
+- In `package:frosted_ui/frosted_parts.dart`: `FrostedSoftDialogRoute` is a ui_core `DesignDialogRoute` (its page is
+  `builder: WidgetBuilder`, not `pageBuilder`, and it has no `transitionDuration`); `FrostedSoftSideSheetRoute` has no
+  `transitionDuration` (ui_core's side sheet moves on a spring); `FrostedSoftensBelow` is gone, the routes softening
+  the page below through `frostedSoftBarrier`, their `barrierBuilder`.
+- The checks Frosted's own tests ran from `ui_core` are in `ui_core_test` (a dev dependency).
+
+**Moves**
+
+- The dialog and the sheets open and close on a spring (ui_core's sheet spring, which settles in about a quarter of a
+  second), from wherever they are when they turn; a sheet let go mid-drag carries the finger's speed. Under Reduce
+  Motion the panel cuts in while the page below dims, rather than fading: glass under a fade reads clear.
+- `showFrostedDialog` grows its card in over the page as `FrostedDialog.show` does, rather than fading it.
+
+**Added**
+
+- `FrostedContextMenu`: a menu of `DesignMenuEntry`s opened where the user asks for it, by a right click, a long
+  press, Shift+F10 or the Menu key, its rows the menu bar's.
+- `frostedShortcutLabel(context, activator)`: a shortcut written as Frosted's menus write it, "⇧⌘Z" on a Mac (each
+  symbol its glyph) and "Ctrl+Shift+Z" elsewhere. The gallery's menus and palette write theirs with it.
+- `FrostedCombobox` and `FrostedMultiSelect` say a `search` is loading, and say when it failed with a Try again row
+  that Down reaches and Return runs; `debounceDuration` waits for typing to rest.
+- `FrostedAmountField` takes `onEditingComplete`, `inputFormatters` and `keyboardType`; `FrostedSheet.raise` takes a
+  `semanticLabel`, and `FrostedSheet.show` names its sheet by its title.
+- In `package:frosted_ui/frosted_parts.dart`: `theme.dart` copied out of the package analyzes on its own. The baked
+  token records (`FrostedTokens` and its parts) are a library of their own, and the theme's glass and control edge
+  are drawn from its colours (`frostedMaterialsOf`, `frostedRestRingOn`), not from a theme of the package's.
+  `frostedFocusInk` gives the ink focus is drawn in.
+
+**Flutter 3.50**
+
+- The example and the tests stand on `material_ui` and `cupertino_ui`, which Flutter 3.50 asks for in place of
+  `package:flutter/material.dart` and `cupertino.dart`. The README's set-up starts an app on `material_ui`'s
+  `MaterialApp`, whose page routes take Frosted's motion from `FrostedTheme` with no `ThemeData` of their own.
+- `FrostedPreview`'s app stands in a semantics container of its own. The route under a nested app stands a modal
+  barrier, which hides from a screen reader whatever painted before it in its container, and `material_ui`'s
+  `MaterialApp` holds none of its own as Flutter's did: a heading above a preview left the page's semantics. The
+  gallery's demo apps and Harbor's navigator stand in containers of their own too.
+- `FrostedNavigationBar` stands on its fade into the canvas again, 104 up from the screen's foot, as the source's
+  tab bar does: a card scrolling on under the glass dissolves into the canvas there, so its rim no longer runs beside
+  the slab's sides on the same gutter and its rounded foot no longer frames the slab from under it. The inventory
+  stands the bar on a stage of the canvas the fade's height, so the fade meets the canvas rather than drawing a box
+  on the card.
+- Keyboard focus shows as light, never a dark line round glass. By day a theme whose accent is its words' ink (opal)
+  draws focus in its cool blue, not near black: the focus ring's line and a focused field's edge (still under its
+  white glow). Themes with a coloured accent draw focus as before, and by night focus is as it was.
+
+**From ui_core 0.3.0**
+
+- The tooltip stays while the pointer moves onto it, one shows at a time, and along a toolbar the next shows at once.
+- The tab bar is one Tab stop; the arrows move along it (mirrored right to left), Home and End to its ends, and a
+  screen reader hears a tab bar, each tab with its place ("Income, tab 2 of 3").
+- The wheels take Page Up and Page Down, Home and End, and a row's first letters; Left and Right move between the time
+  picker's wheels; a row crossing the band ticks.
+- The rating shows where a press would set it while a pointer rests over it, and takes End and the digits.
+- The dialog tells a screen reader it is a dialog, `FrostedDialog.show`'s an alert; the dialog and the sheets keep
+  focus inside them and give it back as they close, and a sheet, a side sheet or a page dragged and let go where it
+  was holds the focus again. Escape closes a dialog or a sheet whose barrier a tap does not dismiss, however the focus
+  sits (a `PopScope` still refuses it).
+- A tab whose words grow where it stands (larger text, the chosen tab's words turning bold) lays the tab bar out
+  again rather than cutting its words.
+
 ## 0.2.1
 
 Frosted 0.2.1 stands on ui_core 0.2.1. Nothing is renamed or removed.

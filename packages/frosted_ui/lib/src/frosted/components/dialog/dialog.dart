@@ -23,7 +23,7 @@ import '../../internal/act_row.dart';
 /// face (its white falling to the canvas, corners of 20, its edge and rim,
 /// the dialog's shadow), centred over the scrim at most 320 wide, 24 in at
 /// every side. Its [title] (the h1) and [message] stand centred; under them
-/// [cancel] (a glass act) and [confirm] (the ink act, or the danger fill
+/// [cancelLabel] (a glass act) and [confirmLabel] (the ink act, or the danger fill
 /// when the act is [destructive]: Delete, Remove) share the row as the
 /// sheet's foot sets them; words too long for half the width, or text set
 /// large, stack them as wide acts instead, the confirm first. Without a
@@ -63,7 +63,7 @@ class FrostedDialog extends StatelessWidget {
   /// A part of the page's own between the words and the acts.
   final Widget? content;
 
-  /// The page's own acts, in place of [cancel] and [confirm].
+  /// The page's own acts, in place of [cancelLabel] and [confirmLabel].
   final List<Widget>? actions;
 
   /// The confirming act's word.
@@ -118,9 +118,9 @@ class FrostedDialog extends StatelessWidget {
         barrierDismissible: true,
         barrierLabel: words.scrimLabel,
         barrierColor: t.materials.scrim,
-        transitionDuration:
-            FrostedSheet.motionOf(context).duration ?? Duration.zero,
-        pageBuilder: (dialogContext, _, _) => themes.wrap(
+        semanticLabel: title,
+        isAlert: true,
+        builder: (dialogContext) => themes.wrap(
           RoutePresentationScope(
             presentation: RoutePresentation.sheet,
             child: Center(

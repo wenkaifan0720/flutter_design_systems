@@ -12,7 +12,7 @@ import 'package:flutter/widgets.dart';
 import 'package:frosted_ui/frosted_parts.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart' show FontLoader;
+import 'package:flutter/services.dart' show FontLoader, LogicalKeyboardKey;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/frosted_ui.dart';
@@ -508,6 +508,26 @@ void main() {
             ],
           ),
         ],
+      ),
+      'FrostedContextMenu': (context) => FrostedContextMenu(
+        items: [
+          DesignMenuEntry(label: 'Copy', onPressed: copy),
+          DesignMenuEntry.divider(),
+          DesignMenuEntry(label: 'Delete', onPressed: delete),
+        ],
+        child: card,
+      ),
+      'frostedShortcutLabel': (context) => DesignMenuEntry(
+        label: 'Redo',
+        shortcut: frostedShortcutLabel(
+          context,
+          const SingleActivator(
+            LogicalKeyboardKey.keyZ,
+            meta: true,
+            shift: true,
+          ),
+        ),
+        onPressed: redo,
       ),
       'FrostedCommand.show': (context) {
         WidgetsBinding.instance.addPostFrameCallback((_) {

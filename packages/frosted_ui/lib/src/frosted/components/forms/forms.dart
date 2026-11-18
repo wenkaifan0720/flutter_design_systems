@@ -598,8 +598,11 @@ class FrostedAmountField extends StatefulWidget {
     this.value,
     this.onChanged,
     this.onSubmitted,
+    this.onEditingComplete,
     this.controller,
     this.focusNode,
+    this.inputFormatters,
+    this.keyboardType,
     this.hint = '0',
     this.helper,
     this.size = FrostedAmountFieldSize.regular,
@@ -620,6 +623,16 @@ class FrostedAmountField extends StatefulWidget {
 
   /// Called with the figure when the keyboard's done key is pressed.
   final ValueChanged<String>? onSubmitted;
+
+  /// Called as Enter takes what is typed, the focus staying in the field
+  /// (a number field's commit); null: none.
+  final VoidCallback? onEditingComplete;
+
+  /// What may be typed; null: figures and the decimal point.
+  final List<TextInputFormatter>? inputFormatters;
+
+  /// The keyboard it asks for; null: figures with a decimal point.
+  final TextInputType? keyboardType;
 
   /// The figure's controller, when the page keeps one.
   final TextEditingController? controller;
@@ -676,6 +689,26 @@ class FrostedAmountField extends StatefulWidget {
         DiagnosticsProperty<FocusNode>(
           'focusNode',
           focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<VoidCallback>.has(
+          'onEditingComplete',
+          onEditingComplete,
+        ),
+      )
+      ..add(
+        IterableProperty<TextInputFormatter>(
+          'inputFormatters',
+          inputFormatters,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<TextInputType>(
+          'keyboardType',
+          keyboardType,
           defaultValue: null,
         ),
       )
@@ -755,8 +788,11 @@ class _FrostedAmountFieldState extends State<FrostedAmountField>
             readOnly: readOnly,
             onChanged: widget.onChanged,
             onSubmitted: widget.onSubmitted,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [_allowed],
+            onEditingComplete: widget.onEditingComplete,
+            keyboardType:
+                widget.keyboardType ??
+                const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: widget.inputFormatters ?? [_allowed],
             style: style,
             cursorColor: t.colorScheme.textPrimary,
             decoration: _bareDecoration(
@@ -931,14 +967,15 @@ class _SearchPill extends StatelessWidget {
             ? t.glass.plane.withValues(alpha: _searchTypedOpacity)
             : null,
         // By day the well wears one even lit rim all round, and holding
-        // focus it brightens, glows and its edge takes the ring's ink; by
-        // night its edge is the night glass's rim (the accent while it
-        // holds focus).
+        // focus it brightens, glows white and its edge takes the focus ink
+        // (the accent at 70%, opal's cool blue); by night its edge is the
+        // night glass's rim (the accent while it holds focus). Never a dark
+        // line.
         sheen: t.isDark ? t.glass.rim : null,
         ring: t.isDark
             ? null
             : focused
-            ? t.colorScheme.ringOuter
+            ? frostedFocusInk(t)
             : FrostedChromeMetrics.litEdge,
         shadows: [
           if (t.isDark && focused)
@@ -1031,7 +1068,7 @@ class FrostedSearchField extends StatefulWidget {
   /// The field's focus, when the page keeps one.
   final FocusNode? focusNode;
 
-  /// The field's spoken name; null speaks [placeholder].
+  /// The field's spoken name; null speaks [hint].
   final String? label;
 
   /// Whether it takes focus when it first shows.
@@ -1193,7 +1230,7 @@ class _FrostedSearchFieldState extends State<FrostedSearchField>
 }
 
 /// The search pill as a way in (`<a class="search">`): the same face and
-/// glyph with [placeholder] in the tertiary ink, or [value], a query the
+/// glyph with [hint] in the tertiary ink, or [value], a query the
 /// page already holds, in the ink on the brightened pill; one link that
 /// opens the search. A null [onPressed] leaves it inert.
 ///
@@ -1227,7 +1264,7 @@ class FrostedSearchLink extends StatelessWidget {
   /// A query the page already holds, shown in the ink.
   final String? value;
 
-  /// The link's spoken name; null speaks [placeholder].
+  /// The link's spoken name; null speaks [hint].
   final String? label;
 
   @override
@@ -1545,11 +1582,16 @@ class FrostedSwapButton extends StatelessWidget {
 /// A budget's stepper (`.stepper`): a 48 glass round with a minus, the
 /// amount well with the sign and figure on its centre, and a 48 round
 /// with a plus, 12 apart; an optional [note] centred 8 under (a month).
-/// The page owns [value]; each round moves it by [step], never under [min]
-/// or over [max] (a round with nowhere to go is disabled), and the figure
-/// typed into the well is handed back whole. A null [onChanged] leaves it
-/// inert. A screen reader hears two buttons, Lower [label] and Raise
-/// [label], round a text field named [label].
+/// The page owns [value]; each round moves it to the next multiple of
+/// [step] from [min] that way (repeating while held), never under [min] or
+/// over [max] (a round with nowhere to go is disabled). A figure typed
+/// into the well is handed back as it is typed while it stands between
+/// [min] and [max] (so a Save beside it reads it), and as it is taken
+/// (Return, or the focus leaving) clamped to them; one that does not read
+/// puts the value back. Up and Down in the well step too. A null [onChanged]
+/// leaves it inert. A screen reader hears a text field named [label] that
+/// steps up and down; the rounds are for the eye and the finger. ui_core's
+/// [DesignNumberField] is the behaviour.
 ///
 /// ```dart
 /// FrostedNumberField(value: budget, onChanged: (v) => setState(() => budget = v), label: 'the budget', step: 10, note: 'a month')
@@ -1608,50 +1650,84 @@ class FrostedNumberField extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final live = onChanged != null;
-    final canLower = live && value - step >= min;
-    final canRaise = live && (max == null || value + step <= max!);
-    void typed(String text) {
-      final n = int.tryParse(text);
-      if (n == null) return;
-      var next = n < min ? min : n;
-      if (max case final max? when next > max) next = max;
-      onChanged!(next);
-    }
-
     // .stepper { gap: 12px }  .step-b { width: 48px; height: 48px }
     // .stepper .amount-in { flex: 1; justify-content: center }
     // .stepper-c { text-align: center; margin-top: -8px }
-    final well = FrostedAmountField(
+    final row = DesignNumberField(
+      value: value.toDouble(),
+      // An emptied well takes no number: the value stands.
+      onChanged: live
+          ? (v) {
+              if (v != null) onChanged!(v.round());
+            }
+          : null,
+      min: min.toDouble(),
+      max: max?.toDouble(),
+      step: step.toDouble(),
+      fractionDigits: 0,
       focusNode: focusNode,
       autofocus: autofocus,
-      label: label,
-      value: '$value',
-      onChanged: live ? typed : null,
-      centered: true,
-      showLabel: false,
-    );
-    final row = Row(
-      spacing: FrostedChromeMetrics.stepperGap,
-      children: [
-        FrostedIconButton(
-          FrostedGlyphs.remove,
-          label: FrostedLocalizations.of(context).lower(label),
-          size: FrostedIconButtonSize.large,
-          onPressed: canLower ? () => onChanged!(value - step) : null,
-          style: t.components.numberField,
+      semanticLabel: label,
+      // Inert, the well dims with its rounds, as a disabled field does, and
+      // shows its value alone.
+      // The figure is the stepping node's value too. ui_core's field merges
+      // its words into that node; Frosted's well is a node of its own (what
+      // a screen reader outlines is the well), so the node is handed the
+      // figure here, as Flutter asks of a node that names its next values.
+      fieldBuilder: (context, field) => ListenableBuilder(
+        listenable: field.controller,
+        builder: (context, child) => Semantics(
+          value: live ? field.controller.text : '$value',
+          child: child,
         ),
-        // Inert, the well dims with its rounds, as a disabled field does.
-        Expanded(
-          child: FrostedDim(off: !live, child: well),
+        child: FrostedDim(
+          off: !live,
+          child: FrostedAmountField(
+            focusNode: field.focusNode,
+            label: label,
+            controller: live ? field.controller : null,
+            value: live ? null : '$value',
+            onEditingComplete: field.onEditingComplete,
+            // ui_core hands a typed figure back as it is taken; a page
+            // whose Save takes no focus (a sheet's) would read the last
+            // one. A whole figure within the bounds goes back as it is
+            // typed too; one outside waits to be clamped as it is taken,
+            // so typing 12 over a floor of 5 never snaps at the 1.
+            onChanged: live
+                ? (text) {
+                    final read = DesignLocalizations.of(context)
+                        .parseDecimal(text);
+                    if (read == null || read != read.roundToDouble()) return;
+                    final n = read.round();
+                    if (n == value || n < min || (max != null && n > max!)) {
+                      return;
+                    }
+                    onChanged!(n);
+                  }
+                : null,
+            inputFormatters: field.inputFormatters,
+            keyboardType: field.keyboardType,
+            centered: true,
+            showLabel: false,
+          ),
         ),
-        FrostedIconButton(
-          FrostedGlyphs.add,
-          label: FrostedLocalizations.of(context).raise(label),
-          size: FrostedIconButtonSize.large,
-          onPressed: canRaise ? () => onChanged!(value + step) : null,
-          style: t.components.numberField,
-        ),
-      ],
+      ),
+      buttonBuilder: (context, button) => frostedIconButtonFace(
+        context,
+        button.isIncrement ? FrostedGlyphs.add : FrostedGlyphs.remove,
+        states: button.states,
+        enabled: !button.states.contains(WidgetState.disabled),
+        size: FrostedIconButtonSize.large,
+        style: t.components.numberField,
+      ),
+      layoutBuilder: (context, field, lower, raise) => Row(
+        spacing: FrostedChromeMetrics.stepperGap,
+        children: [
+          lower,
+          Expanded(child: field),
+          raise,
+        ],
+      ),
     );
     if (note == null) return row;
     return Column(
