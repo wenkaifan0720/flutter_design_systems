@@ -1,7 +1,7 @@
 /// What an active window opens on: an object or a big figure, with what it means.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
 import '../kit.dart';

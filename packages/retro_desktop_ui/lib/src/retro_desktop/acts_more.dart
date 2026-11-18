@@ -52,6 +52,39 @@ Widget _joined(BuildContext context, List<Widget> segments) {
   final c = t.colors;
   final inset = _stripInset(context);
   final rim = retroDesktopFaceRim(t);
+  // The frame's outline, for the segments at its ends: a held one's well meets
+  // it there concentric (Platinum's rounded frame; Chisel's is square).
+  final frame =
+      RetroDesktopStyle.first<OutlinedBorder>(
+        [t.buttonTheme],
+        (s) => s.shape,
+        const {},
+      ) ??
+      t.shapes.button;
+  final rtl = Directionality.of(context) == TextDirection.rtl;
+  Widget placed(int i) {
+    final first = i == 0, last = i == segments.length - 1;
+    final left = rtl ? last : first, right = rtl ? first : last;
+    if (t.chisel || frame is! RoundedRectangleBorder || !(left || right)) {
+      return segments[i];
+    }
+    final r = frame.borderRadius.resolve(TextDirection.ltr);
+    return _JoinedEnd(
+      outline: RoundedRectangleBorder(
+        side: BorderSide(width: t.strokes.regular),
+        borderRadius: BorderRadius.only(
+          topLeft: left ? r.topLeft : Radius.zero,
+          bottomLeft: left ? r.bottomLeft : Radius.zero,
+          topRight: right ? r.topRight : Radius.zero,
+          bottomRight: right ? r.bottomRight : Radius.zero,
+        ),
+      ),
+      left: left,
+      right: right,
+      child: segments[i],
+    );
+  }
+
   // In a column too narrow for it, the strip shrinks whole: its segments stay
   // joined, on one line.
   return FittedBox(
@@ -99,7 +132,7 @@ Widget _joined(BuildContext context, List<Widget> segments) {
                         child: ColoredBox(color: c.outline),
                       ),
                     ),
-                  segments[i],
+                  placed(i),
                 ],
               ],
             ),
@@ -127,47 +160,83 @@ Widget _segment(
   // The segment fills its cell inside the frame (a button's height less the
   // rim), so a held or chosen ground covers the whole cell between the rules.
   final least = RetroDesktopReach.least(context);
-  return retroDesktopHeldGround(
-    t,
-    held: chosen || states.contains(WidgetState.pressed),
-    // Over the frame's bevel, to its outline.
-    bleed: t.strokes.hairline,
-    child: ConstrainedBox(
-      constraints: BoxConstraints(
-        minHeight:
-            retroDesktopButtonFaceHeight(context) - 2 * retroDesktopFaceRim(t),
-        minWidth: least,
+  final held = chosen || states.contains(WidgetState.pressed);
+  final shown = ConstrainedBox(
+    constraints: BoxConstraints(
+      minHeight:
+          retroDesktopButtonFaceHeight(context) - 2 * retroDesktopFaceRim(t),
+      minWidth: least,
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: RetroDesktopSpacing.s10,
+        vertical: RetroDesktopSpacing.s4,
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: RetroDesktopSpacing.s10,
-          vertical: RetroDesktopSpacing.s4,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) Icon(icon, size: 16, color: ink),
-            if (icon != null && label != null)
-              const SizedBox(width: RetroDesktopSpacing.s6),
-            if (label != null)
-              Flexible(
-                child: RetroDesktopCaps(
-                  style: t.type.chrome,
-                  Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: t.type.chrome.copyWith(color: ink),
-                  ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (icon != null) Icon(icon, size: 16, color: ink),
+          if (icon != null && label != null)
+            const SizedBox(width: RetroDesktopSpacing.s6),
+          if (label != null)
+            Flexible(
+              child: RetroDesktopCaps(
+                style: t.type.chrome,
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: t.type.chrome.copyWith(color: ink),
                 ),
               ),
-            ?trailing,
-          ],
-        ),
+            ),
+          ?trailing,
+        ],
       ),
     ),
   );
+  // Read where the segment stands once it is placed in its strip: at an end,
+  // its well runs over the frame's bevel to the outline on that side too, and
+  // takes the frame's corner less the outline (concentric, as a cell of a
+  // segmented button), not a square corner inside a rounded one.
+  return Builder(
+    builder: (context) {
+      final end = context.dependOnInheritedWidgetOfExactType<_JoinedEnd>();
+      final bleed = t.strokes.hairline;
+      return retroDesktopHeldGround(
+        t,
+        held: held,
+        // Over the frame's bevel, to its outline.
+        bleed: bleed,
+        outline: end?.outline,
+        reach: EdgeInsets.fromLTRB(
+          end?.left ?? false ? bleed : 0,
+          bleed,
+          end?.right ?? false ? bleed : 0,
+          bleed,
+        ),
+        child: shown,
+      );
+    },
+  );
+}
+
+/// Where a segment of a joined strip meets the frame's rounded ends: the
+/// frame's [outline] on its corners there, square elsewhere, and which sides
+/// (in painting order, left to right) are the strip's ends.
+class _JoinedEnd extends InheritedWidget {
+  const _JoinedEnd({
+    required this.outline,
+    required this.left,
+    required this.right,
+    required super.child,
+  });
+  final OutlinedBorder outline;
+  final bool left, right;
+  @override
+  bool updateShouldNotify(_JoinedEnd old) =>
+      old.outline != outline || old.left != left || old.right != right;
 }
 
 /// One action of a [RetroDesktopButtonGroup]: words, a glyph, or both.
@@ -410,6 +479,8 @@ class RetroDesktopSplitButton extends StatelessWidget {
       actions: onPressed == null ? const [] : actions,
       menuLabel:
           menuLabel ?? DesignLocalizations.of(context).splitButtonMenuLabel,
+      // The look's own highlight (see RetroDesktopMenuBar): only a moving pointer takes the keys.
+      highlightFollowsPointer: false,
       minimumSize: Size(least, least),
       layoutBuilder: (context, main, toggle) =>
           _joined(context, [main, toggle]),

@@ -2325,8 +2325,8 @@ class RetroDesktopBarNote {
   final String words;
 }
 
-/// Hatched bars over an axis, one for each number. The first is now, in the highlight; a value of 0 is a thin line; a [span] of
-/// bars can carry words (dry from here to here), a [divider] marks a turn in the run. It brings its well.
+/// Hatched bars over an axis, one for each number. The first is now, in the highlight; a value of 0 is a thin line; a span of
+/// bars ([spanFrom] to [spanTo]) can carry [spanWords] (dry from here to here), a [divider] marks a turn in the run. It brings its well.
 ///
 /// ```dart
 /// RetroDesktopHatchBars(values: const [.8, 1.4, 0, 0], max: 1.5, axis: const ['1.5', '1.0', '0.5', '0'], labels: const ['09', '', '', '12'], notes: const [RetroDesktopBarNote(1, '1.4 at 10:00')])

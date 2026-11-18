@@ -1,4 +1,6 @@
+import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
@@ -274,20 +276,82 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.bySemanticsLabel('More'));
+      final more = find.byIcon(RetroDesktopGlyphs.plus);
+      final less = find.byIcon(RetroDesktopGlyphs.minus);
+      // The field's one node steps, and says where it can't.
+      bool can(SemanticsAction action) => tester
+          .getSemantics(find.byType(EditableText))
+          .getSemanticsData()
+          .hasAction(action);
+      await tester.tap(more);
       await tester.pump();
       expect(value, 6);
-      await tester.tap(find.bySemanticsLabel('More'));
+      expect(can(SemanticsAction.increase), isFalse, reason: 'at the most');
+      await tester.tap(more, warnIfMissed: false);
       expect(value, 6);
-      await tester.tap(find.bySemanticsLabel('Less'));
+      await tester.tap(less);
       await tester.pump();
-      await tester.tap(find.bySemanticsLabel('Less'));
+      await tester.tap(less);
       await tester.pump();
       expect(value, 4);
+      expect(can(SemanticsAction.decrease), isFalse, reason: 'at the least');
+      expect(can(SemanticsAction.increase), isTrue);
       expect(tester.takeException(), isNull);
     } finally {
       semantics.dispose();
     }
+  });
+
+  testWidgets('a rating: a tap on the stars given clears them; a resting '
+      'pointer lights none', (tester) async {
+    var value = 0;
+    await tester.pumpWidget(
+      _host(
+        StatefulBuilder(
+          builder: (context, change) => RetroDesktopRating(
+            label: 'Rating',
+            value: value.toDouble(),
+            onChanged: (next) => change(() => value = next),
+          ),
+        ),
+      ),
+    );
+    final stars = find.descendant(
+      of: find.byType(RetroDesktopRating),
+      matching: find.byType(RetroDesktopPixelPaint),
+    );
+    expect(stars, findsNWidgets(5));
+    await tester.tap(stars.at(2));
+    await tester.pump();
+    expect(value, 3, reason: 'a tap gives that many');
+    await tester.tap(stars.at(2));
+    await tester.pump();
+    expect(value, 0, reason: 'a tap on the stars given clears them');
+
+    // Hovering the fifth star lights nothing: the stars show the value.
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer(location: Offset.zero);
+    addTearDown(mouse.removePointer);
+    await tester.tap(stars.at(1));
+    await tester.pump();
+    final before = await tester.binding.runAsync(
+      () => captureImage(find.byType(RetroDesktopRating).evaluate().single),
+    );
+    await mouse.moveTo(tester.getCenter(stars.at(4)));
+    await tester.pump();
+    final after = await tester.binding.runAsync(
+      () => captureImage(find.byType(RetroDesktopRating).evaluate().single),
+    );
+    final a = await tester.binding.runAsync(() => before!.toByteData());
+    final b = await tester.binding.runAsync(() => after!.toByteData());
+    expect(
+      a!.buffer.asUint8List(),
+      b!.buffer.asUint8List(),
+      reason: 'no preview under the pointer',
+    );
+    before!.dispose();
+    after!.dispose();
+    expect(value, 2);
   });
 
   for (final direction in TextDirection.values) {

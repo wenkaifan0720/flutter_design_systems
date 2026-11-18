@@ -899,36 +899,14 @@ class _BevelPainter extends RetroDesktopPixelPainter {
     double width,
     Color light,
     Color shade,
-  ) {
-    // Keep the hole explicit. CanvasKit's path-operation result can carry a
-    // different winding rule; restoring the input rule fills that hole and
-    // paints the foreground bevel over the entire child on the web.
-    final band = Path()
-      ..fillType = PathFillType.evenOdd
-      ..addPath(outer, Offset.zero)
-      ..addPath(inner, Offset.zero);
-    canvas.save();
-    canvas.clipPath(band);
-    canvas.drawPath(
-      band,
-      Paint()
-        ..color = shade
-        ..isAntiAlias = false,
-    );
-    canvas.drawPath(
-      // This difference has no hole, so it keeps the input winding rule.
-      // Preserve its exact edge coverage at fractional layout positions.
-      Path.combine(
-        PathOperation.difference,
-        outer,
-        outer.shift(Offset(width, width)),
-      ),
-      Paint()
-        ..color = light
-        ..isAntiAlias = false,
-    );
-    canvas.restore();
-  }
+  ) => retroDesktopBevelStep(
+    canvas,
+    outer,
+    inner,
+    Offset(width, width),
+    light,
+    shade,
+  );
 
   @override
   void paint(RetroDesktopPixelGrid px, Size size) {
@@ -1102,4 +1080,41 @@ class RetroDesktopArrowButtonPainter extends RetroDesktopPixelPainter {
       down != old.down ||
       outer != old.outer ||
       inner != old.inner;
+}
+
+/// One step of a bevel: the band between [outer] and [inner], [light] where it
+/// faces up and left (the band less [outer] moved by [width]), [shade] where it
+/// faces down and right. A turned-in well passes the two the other way round.
+void retroDesktopBevelStep(
+  Canvas canvas,
+  Path outer,
+  Path inner,
+  Offset width,
+  Color light,
+  Color shade,
+) {
+  // Keep the hole explicit. CanvasKit's path-operation result can carry a
+  // different winding rule; restoring the input rule fills that hole and
+  // paints the foreground bevel over the entire child on the web.
+  final band = Path()
+    ..fillType = PathFillType.evenOdd
+    ..addPath(outer, Offset.zero)
+    ..addPath(inner, Offset.zero);
+  canvas.save();
+  canvas.clipPath(band);
+  canvas.drawPath(
+    band,
+    Paint()
+      ..color = shade
+      ..isAntiAlias = false,
+  );
+  canvas.drawPath(
+    // This difference has no hole, so it keeps the input winding rule.
+    // Preserve its exact edge coverage at fractional layout positions.
+    Path.combine(PathOperation.difference, outer, outer.shift(width)),
+    Paint()
+      ..color = light
+      ..isAntiAlias = false,
+  );
+  canvas.restore();
 }

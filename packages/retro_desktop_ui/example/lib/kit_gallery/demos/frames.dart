@@ -1,7 +1,7 @@
 /// The one frame: every section a window on a desktop, one of them active, with heads and marks inside them.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 

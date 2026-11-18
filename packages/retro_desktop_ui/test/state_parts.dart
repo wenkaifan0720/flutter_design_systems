@@ -592,14 +592,29 @@ Future<GlobalKey> pumpStateHost(
   return key;
 }
 
+/// Where the pointer goes on a part whose first control is not where a press
+/// shows: the stepper's field takes no press look (its step buttons do), and
+/// the rating's stars are ui_core's DesignRating, not pressables (a held star
+/// darkens).
+final Map<String, Finder Function()> statePressTargets = {
+  'Stepper': () => find.byIcon(RetroDesktopGlyphs.plus),
+  'Rating': () => find
+      .descendant(
+        of: find.byType(RetroDesktopRating),
+        matching: find.byType(RetroDesktopPixelPaint),
+      )
+      .at(1),
+};
+
 /// Puts what is on screen into [state]: the pointer over or down on the part's
-/// first control, or the Tab key's focus. The other states are in the widget.
-/// Returns the gesture to lift afterwards, if one is down.
+/// first control (or on [on]), or the Tab key's focus. The other states are in
+/// the widget. Returns the gesture to lift afterwards, if one is down.
 Future<TestGesture?> enterState(
   WidgetTester tester,
   String state,
-  TestGesture mouse,
-) async {
+  TestGesture mouse, {
+  Finder? on,
+}) async {
   final field = find.byType(EditableText);
   final press = find.byWidgetPredicate(
     (w) =>
@@ -611,13 +626,15 @@ Future<TestGesture?> enterState(
         w is DesignPressable &&
         (w.enabled ?? (w.onPressed != null || w.onLongPress != null)),
   );
-  final target = field.evaluate().isNotEmpty
-      ? field.first
-      : press.evaluate().isNotEmpty
-      ? press.first
-      : raw.evaluate().isNotEmpty
-      ? raw.first
-      : null;
+  final target =
+      on ??
+      (field.evaluate().isNotEmpty
+          ? field.first
+          : press.evaluate().isNotEmpty
+          ? press.first
+          : raw.evaluate().isNotEmpty
+          ? raw.first
+          : null);
   if (state == 'focused') {
     // Keyboard focus as a person gets it: the Tab key, which moves to the
     // part's first stop and turns the traditional highlight on.

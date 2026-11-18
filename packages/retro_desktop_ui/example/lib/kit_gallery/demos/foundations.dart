@@ -1,7 +1,7 @@
 /// The theme's type and colours and the page frame: a desktop of windows, tiled from 1024 wide and stacked on a phone.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
 import '../kit.dart';

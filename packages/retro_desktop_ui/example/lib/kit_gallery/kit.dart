@@ -9,7 +9,7 @@
 /// depends on.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -138,26 +138,34 @@ List<LocalizationsDelegate<dynamic>> kitWords([
 /// the gallery's sample bar of places stays out. [words] load the look's own
 /// words in the app's language; [direction], when given, is the way it reads
 /// (else the example's choice, [kitShownDirection]).
+///
+/// Each of the gallery's nested apps stands in a semantics container of its
+/// own: a nested app's modal barrier hides what was painted before it in the
+/// same container (material_ui's MaterialApp draws none), which silenced the
+/// gallery's side navigation round a page (nested_semantics_test).
 Widget kitAppScreen({
   required Brightness brightness,
   required Widget home,
   List<LocalizationsDelegate<Object>>? words,
   TextDirection? direction,
-}) => MaterialApp(
-  debugShowCheckedModeBanner: false,
-  title: 'Retro Desktop',
-  localizationsDelegates: kitWords(words),
-  supportedLocales: DesignLocalizations.supportedLocales,
-  builder: (context, child) => _kitDirected(
-    RetroDesktopHost(
-      light: kitTheme(Brightness.light),
-      dark: kitTheme(Brightness.dark),
-      brightness: brightness,
-      child: child ?? const SizedBox.shrink(),
+}) => Semantics(
+  container: true,
+  child: MaterialApp(
+    debugShowCheckedModeBanner: false,
+    title: 'Retro Desktop',
+    localizationsDelegates: kitWords(words),
+    supportedLocales: DesignLocalizations.supportedLocales,
+    builder: (context, child) => _kitDirected(
+      RetroDesktopHost(
+        light: kitTheme(Brightness.light),
+        dark: kitTheme(Brightness.dark),
+        brightness: brightness,
+        child: child ?? const SizedBox.shrink(),
+      ),
+      direction,
     ),
-    direction,
+    home: home,
   ),
-  home: home,
 );
 
 /// A screen whose [body] scrolls itself and fills what the bars leave.
@@ -265,27 +273,30 @@ bool kitShownChrome = true;
 Widget _kitApp({required Brightness brightness, required Widget home}) =>
     kitValue(
       0,
-      (active, change) => MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Retro Desktop',
-        localizationsDelegates: kitWords(),
-        supportedLocales: DesignLocalizations.supportedLocales,
-        builder: (context, child) => _kitDirected(
-          RetroDesktopHost(
-            light: kitTheme(Brightness.light),
-            dark: kitTheme(Brightness.dark),
-            brightness: brightness,
-            child: kitShownChrome
-                ? RetroDesktopChromeScope(
-                    brand: _kitBrand,
-                    nav: _kitPlaces(change),
-                    active: active,
-                    child: child ?? const SizedBox.shrink(),
-                  )
-                : child ?? const SizedBox.shrink(),
+      (active, change) => Semantics(
+        container: true,
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Retro Desktop',
+          localizationsDelegates: kitWords(),
+          supportedLocales: DesignLocalizations.supportedLocales,
+          builder: (context, child) => _kitDirected(
+            RetroDesktopHost(
+              light: kitTheme(Brightness.light),
+              dark: kitTheme(Brightness.dark),
+              brightness: brightness,
+              child: kitShownChrome
+                  ? RetroDesktopChromeScope(
+                      brand: _kitBrand,
+                      nav: _kitPlaces(change),
+                      active: active,
+                      child: child ?? const SizedBox.shrink(),
+                    )
+                  : child ?? const SizedBox.shrink(),
+            ),
           ),
+          home: home,
         ),
-        home: home,
       ),
     );
 
@@ -354,23 +365,26 @@ Widget kitSpecimenStage({
   required Widget child,
 }) => kitValue(
   0,
-  (active, change) => MaterialApp(
-    debugShowCheckedModeBanner: false,
-    title: 'Retro Desktop',
-    localizationsDelegates: kitWords(),
-    supportedLocales: DesignLocalizations.supportedLocales,
-    builder: (context, home) => RetroDesktopHost(
-      light: RetroDesktopThemeData.preset(style, Brightness.light),
-      dark: RetroDesktopThemeData.preset(style, Brightness.dark),
-      brightness: brightness,
-      child: RetroDesktopChromeScope(
-        brand: _kitBrand,
-        nav: _kitPlaces(change),
-        active: active,
-        child: home ?? const SizedBox.shrink(),
+  (active, change) => Semantics(
+    container: true,
+    child: MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Retro Desktop',
+      localizationsDelegates: kitWords(),
+      supportedLocales: DesignLocalizations.supportedLocales,
+      builder: (context, home) => RetroDesktopHost(
+        light: RetroDesktopThemeData.preset(style, Brightness.light),
+        dark: RetroDesktopThemeData.preset(style, Brightness.dark),
+        brightness: brightness,
+        child: RetroDesktopChromeScope(
+          brand: _kitBrand,
+          nav: _kitPlaces(change),
+          active: active,
+          child: home ?? const SizedBox.shrink(),
+        ),
       ),
+      home: _KitStage(frame: frame, child: child),
     ),
-    home: _KitStage(frame: frame, child: child),
   ),
 );
 

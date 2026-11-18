@@ -69,6 +69,13 @@ const _onCore = {
 /// the next row. Their rows are places to press, not presses, so hover changes nothing.
 const _oneStop = {'RetroDesktopListTable'};
 
+/// Parts that are one tab stop ui_core steps (its DesignNumberField, its DesignRating): Tab reaches it and Up and Down
+/// step it; the pointer presses what each names (a step button, a star), which are no tab stops of their own.
+final _stepper = <String, Finder Function()>{
+  'RetroDesktopNumberField': () => find.byIcon(RetroDesktopGlyphs.plus),
+  'RetroDesktopRating': () => find.byType(RetroDesktopRating),
+};
+
 /// The widths of the 2x type and RTL check, each with the platform it runs on every day (four platforms, once each).
 final _everydayAt = <double, TargetPlatform>{
   390.0: TargetPlatform.android,
@@ -94,6 +101,7 @@ void behaviourTests({required int part, required int parts}) {
     ].contains(entry.key);
     final onCore = _onCore.contains(entry.key);
     final oneStop = _oneStop.contains(entry.key);
+    final stepper = _stepper.containsKey(entry.key);
     final menuTrigger =
         entry.key == 'RetroDesktopSelect' ||
         entry.key == 'RetroDesktopMenuAnchor' ||
@@ -146,6 +154,17 @@ void behaviourTests({required int part, required int parts}) {
           expect(tester.takeException(), isNull);
           return;
         }
+        if (stepper) {
+          await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+          await tester.pump();
+          expect(hits, greaterThan(0), reason: 'Up steps it');
+          final afterUp = hits;
+          await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+          await tester.pump();
+          expect(hits, greaterThan(afterUp), reason: 'Down steps it');
+          expect(tester.takeException(), isNull);
+          return;
+        }
         if (oneStop) {
           await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
           await tester.pump();
@@ -166,8 +185,10 @@ void behaviourTests({required int part, required int parts}) {
                 .any((state) => state.states.contains(WidgetState.focused)),
             isTrue,
           );
+          // Choices of one value (a tab bar's on ui_core's DesignTabBar): the chosen one again is no change.
           if (entry.key == 'RetroDesktopRadioGroup' ||
-              entry.key == 'RetroDesktopSegmentedButton') {
+              entry.key == 'RetroDesktopSegmentedButton' ||
+              entry.key == 'RetroDesktopTabBar') {
             await tester.sendKeyEvent(LogicalKeyboardKey.enter);
             await tester.sendKeyEvent(LogicalKeyboardKey.space);
             await tester.pumpAndSettle();
@@ -225,7 +246,26 @@ void behaviourTests({required int part, required int parts}) {
           'hover reaches the face and reduced motion stays still',
           (tester) async {
             _size(tester, 390);
-            await tester.pumpWidget(_host(entry.value(() {})));
+            var hits = 0;
+            await tester.pumpWidget(_host(entry.value(() => hits++)));
+            if (stepper) {
+              // What ui_core's part takes the pointer on: a press steps.
+              final more = _stepper[entry.key]!();
+              final mouse = await tester.createGesture(
+                kind: PointerDeviceKind.mouse,
+              );
+              await mouse.addPointer(location: Offset.zero);
+              addTearDown(mouse.removePointer);
+              await mouse.moveTo(tester.getCenter(more));
+              await tester.pump();
+              await tester.tap(more);
+              await tester.pump();
+              await tester.pump();
+              expect(hits, 1, reason: 'a press steps');
+              expect(tester.hasRunningAnimations, isFalse);
+              expect(tester.takeException(), isNull);
+              return;
+            }
             final first = find
                 .byWidgetPredicate(
                   (widget) =>

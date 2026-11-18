@@ -7,34 +7,6 @@ import 'package:ui_core/ui_core.dart';
 
 import 'theme.dart';
 
-/// Window classes independent of the desktop tiling threshold.
-enum RetroDesktopWindowSizeClass {
-  /// Under 600 logical pixels.
-  compact,
-
-  /// From 600 up to 840 logical pixels.
-  medium,
-
-  /// From 840 up to 1200 logical pixels.
-  expanded,
-
-  /// At least 1200 logical pixels.
-  large;
-
-  /// Classifies the available [width].
-  static RetroDesktopWindowSizeClass ofWidth(double width) => width < 600
-      ? compact
-      : width < 840
-      ? medium
-      : width < 1200
-      ? expanded
-      : large;
-
-  /// Classifies the window at [context].
-  static RetroDesktopWindowSizeClass of(BuildContext context) =>
-      ofWidth(MediaQuery.sizeOf(context).width);
-}
-
 /// Retro Desktop changes state instantly by default, as its desktop grammar did.
 /// Apps can choose timing without replacing any component.
 ///

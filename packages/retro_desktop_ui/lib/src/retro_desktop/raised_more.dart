@@ -95,6 +95,11 @@ class RetroDesktopMenuBar extends StatelessWidget {
   ) {
     return DesignMenuBar(
       menus: menus,
+      // One row lit, the keys' or the pointer's, whichever moved last, as 0.2.1 drew it (retroDesktopMenuRowLit,
+      // RetroDesktopPointerFocus): ui_core's own highlight also hands the keys to a row that comes to stand under a
+      // resting pointer, so a menu opened from the keys lit the row under the mouse, not its first; the period's menus
+      // (and a Mac's today) wait for the pointer to move.
+      highlightFollowsPointer: false,
       semanticLabel: label ?? DesignLocalizations.of(context).menuBarLabel,
       // An alert stands below the bar, however many rows it wraps to.
       barBuilder: (context, items) => RetroDesktopBarFoot(
@@ -362,7 +367,7 @@ Future<T?> showRetroDesktopSheet<T>(
     semanticLabel: title,
     // Nothing behind a window is dimmed (the look's stacking law).
     barrierColor: const Color(0x00000000),
-    transitionDuration: RetroDesktopMotion.of(context).travel,
+    time: RetroDesktopMotion.of(context).travel,
     // A window standing on the desk, 8 off the screen's edges and the bar above it, its shadow showing: against the
     // top bar its top line doubled the bar's into one heavy rule. On a desk it is as tall as what it holds, from the
     // top, up to the screen's height (stretched to the foot, a short form stood over a tall empty grey window); on a
@@ -397,17 +402,22 @@ Future<T?> showRetroDesktopSheet<T>(
   ),
 );
 
-// A side sheet is one of the look's modal windows: the window under it is no longer the front one.
+// A side sheet is one of the look's modal windows: the window under it is no longer the front one. It stands at once,
+// or with a travel set, moves on ui_core's spring within it.
 class _SideSheetRoute<T> extends DesignSideSheetRoute<T>
-    with RetroDesktopModalRoute<T> {
+    with RetroDesktopModalRoute<T>, RetroDesktopRouteStill<T> {
   _SideSheetRoute({
     required super.builder,
     super.edge,
     super.width,
     super.barrierColor,
     super.semanticLabel,
-    super.transitionDuration,
-  });
+    required Duration time,
+  }) : retroDesktopTime = time,
+       super(stiffness: retroDesktopRouteStiffness(time));
+
+  @override
+  final Duration retroDesktopTime;
 }
 
 /// One choice of a [RetroDesktopActionSheet].

@@ -93,8 +93,11 @@ final _tabs = Misread(
       r'All components: a button "(General|Sharing)" beside a button '
       r'"(General|Sharing)"|'
       // The label check: the chosen tab's words stay on the row of tabs' line,
-      // not on the middle of its taller face.
-      r'(controls|everyday|tabs): a button "(Today|Recent)": the capitals of '
+      // not on the middle of its taller face. Since 0.3.0 a tab is ui_core's
+      // DesignTab, named "Today 3, Tab 1 of 3" with no button role: the same
+      // pixels as 0.2.1's, read under the new name.
+      r'(controls|everyday|tabs): a (button "(Today|Recent)"|control '
+      r'"(Today|Recent)( \d+)?\nTab \d+ of \d+"): the capitals of '
       r'"(Today|Recent|\d+)" are drawn \d+(\.\d+)? device px below)',
 );
 
@@ -189,7 +192,8 @@ final _ruledRow = Misread(
 /// The row check's misreads ([DesignRowCheck]).
 // The gallery's desk at 1024: the documents window stands in front of the document window and reaches past its foot,
 // so the document's "Order copies…" (531 to 579 down) is covered and no tap reaches it; the documents window's own
-// Open (475 to 523) is the one in sight. The row check reads every box, covered or not, and pairs the two.
+// Open (475 to 523) is the one in sight. The row check reads every box, covered or not, and pairs the two (ui_core_test
+// 0.1.0 too: walk_test 2026-11-17).
 final _coveredWindow = Misread(
   'covered window',
   'a window behind another: the row check reads the button the front window '
@@ -209,8 +213,21 @@ final rowMisreads = [
   _coveredWindow,
 ];
 
+// A phone's table head: its sort heads Name and Changed. ui_core_test 0.1.0 reads them in Chisel by night as two
+// buttons, Changed's bottom 1 px above Name's (ui_core 0.2.1's check read them as one group of choices). Probe
+// 2026-11-17 (Overview and List at 390): both heads are laid out on the same rows in each appearance by day and by
+// night (Chisel 213 to 261, their capitals 226 to 248), and 0.2.1's own library on ui_core_test 0.1.0 is read the
+// same, to the pixel.
+final _sortHeads = Misread(
+  'Chisel sort heads by night',
+  'a phone table\'s two sort heads stand on the same rows; the check reads '
+      'Changed\'s bottom a pixel high in Chisel by night',
+  r'(Overview|List): a button "Changed" beside a button "Name": its bottom '
+      r'is 1 px above',
+);
+
 /// The row check's misreads in Chisel alone, after [rowMisreads].
-final chiselRowMisreads = <Misread>[];
+final chiselRowMisreads = <Misread>[_sortHeads];
 
 // Platinum by night (since 6fdc3279aa) lights a button's top and left with a pale rim and keeps its bottom and right
 // black: two tones round one face, against a dark ground. The check reads a button's drawn bottom short (and so its
@@ -218,7 +235,8 @@ final chiselRowMisreads = <Misread>[];
 // 390): every probed button is drawn on the same device rows by night as by day (Small and Add 24 to 119 from the box
 // top, the others 12 to 131, Cancel level with Place order), and ui_core's own DrawnPixels.outline reads the same
 // outline by night as by day against every surface round the row. A row's layout does not change with the time of
-// day, and the same rows by day hold.
+// day, and the same rows by day hold. ui_core_test 0.1.0's contrast reading still reads it so (rows run 2026-11-17:
+// by day 0, by night 24 pairs, all this pattern, on Overview, List, Pickers, Gauges and calendars and All components).
 final _nightRim = Misread(
   'Platinum night rim',
   'by night Platinum lights a button\'s top and left and keeps its bottom and '

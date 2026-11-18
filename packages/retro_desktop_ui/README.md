@@ -1,26 +1,23 @@
 # retro_desktop_ui
 
-A desktop UI from the pixel era for Flutter: square windows on a woven desktop, fine one-pixel bevels, a pixel face for
-the chrome and a clear reading face for the content, and one accent colour that means "the act and now". It comes in
-two appearances, Platinum (the classic Mac, the default) and Chisel (the 95-era PC), and five presets (classic,
-lagoon, berry, marmalade and slate), each designed for day and night. It is a desktop look that also stands on a
-phone: its title bars, rows and day cells are sized for a finger there. Each state speaks in the era's own material:
-an alert opens with its picture (the note, the caution triangle, the stop sign), work in progress shows the busy
-pointer (Platinum's wristwatch, Chisel's hourglass), a placeholder is the 50% checkerboard, focus is Platinum's
-ring round the focused thing or Chisel's dotted rectangle, and a selection takes the highlight, its words inverted.
+Retro Desktop for Flutter: the pixel-era desktop of square windows, one-pixel bevels and striped title bars, in two
+appearances and five presets, by day and night.
 
-| | |
-|---|---|
-| ![Papers by day: a document list and an open note, at 1440 wide](screenshots/desktop_day.png) | ![A workspace window by night, at 1440 wide](screenshots/workspace_night.png) |
-| ![Buttons by day, at 1440 wide](screenshots/buttons_day.png) | ![Windows by night, at 1440 wide](screenshots/windows_night.png) |
-| ![An order form on a phone, by day](screenshots/checkout_phone_day.png) | ![Settings on a phone, by night](screenshots/settings_phone_night.png) |
+![Papers by day at 1440 wide: a document list and an open note in windows on the desktop, under the menu bar](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/desktop_day.png)
+
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/retro_desktop/)** ·
+[API reference](https://pub.dev/documentation/retro_desktop_ui/latest/) ·
+[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
-```yaml
-dependencies:
-  retro_desktop_ui: ^0.2.0
+```sh
+flutter pub add retro_desktop_ui material_ui
 ```
+
+`material_ui` is Flutter's Material library as a package, where Flutter 3.50 moves it; the setup below imports it, so
+an app starts without a deprecation. A `CupertinoApp` takes `cupertino_ui` (`flutter pub add cupertino_ui`) in its
+place, and a bare `WidgetsApp` needs neither.
 
 The package bundles its faces (Jersey 15, Atkinson Hyperlegible Next and Mono) and its icon font; an app needs no
 font setup of its own. Load them before the first frame so nothing draws in a fallback face:
@@ -39,7 +36,7 @@ Put `RetroDesktopTheme` above your pages with the app's `builder`. The look's pa
 same setup works under a `MaterialApp`, a `CupertinoApp` or a bare `WidgetsApp`.
 
 ```dart
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
 class MyApp extends StatelessWidget {
@@ -60,7 +57,7 @@ class MyApp extends StatelessWidget {
 ```
 
 ```dart
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 CupertinoApp(
   builder: (context, child) => RetroDesktopTheme(
@@ -127,6 +124,23 @@ MaterialApp(
 // From a page:
 Navigator.of(context).push(RetroDesktopPageRoute<void>(builder: (context) => const DocumentPage()));
 ```
+
+## The look
+
+A desktop UI from the pixel era for Flutter: square windows on a woven desktop, fine one-pixel bevels, a pixel face for
+the chrome and a clear reading face for the content, and one accent colour that means "the act and now". It comes in
+two appearances, Platinum (the classic Mac, the default) and Chisel (the 95-era PC), and five presets (classic,
+lagoon, berry, marmalade and slate), each designed for day and night. It is a desktop look that also stands on a
+phone: its title bars, rows and day cells are sized for a finger there. Each state speaks in the era's own material:
+an alert opens with its picture (the note, the caution triangle, the stop sign), work in progress shows the busy
+pointer (Platinum's wristwatch, Chisel's hourglass), a placeholder is the 50% checkerboard, focus is Platinum's
+ring round the focused thing or Chisel's dotted rectangle, and a selection takes the highlight, its words inverted.
+
+| | |
+|---|---|
+| ![Papers by day: a document list and an open note, at 1440 wide](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/desktop_day.png) | ![A workspace window by night, at 1440 wide](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/workspace_night.png) |
+| ![Buttons by day, at 1440 wide](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/buttons_day.png) | ![Windows by night, at 1440 wide](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/windows_night.png) |
+| ![An order form on a phone, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/checkout_phone_day.png) | ![Settings on a phone, by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/settings_phone_night.png) |
 
 ## Everyday parts
 
@@ -259,7 +273,7 @@ part of your own can follow them the same way.
 - **Touch.** A phone keeps the desktop's materials: windows stack, and every control is a finger's reach. A gesture the
   desktop never had (a swipe, a pull) has no part of its own; its job goes to a button or a menu.
 
-So some parts other kits have are made differently here, and some aren't in 0.2.0:
+So some parts other kits have are made differently here, and some aren't in 0.3.0:
 
 | Elsewhere | In Retro Desktop |
 | --- | --- |
@@ -271,6 +285,15 @@ So some parts other kits have are made differently here, and some aren't in 0.2.
 | Toasts | one notice window at a time (`RetroDesktopSnackBar`) |
 | A hover card | `RetroDesktopTooltip` (Balloon Help showed words), or a `RetroDesktopPopover` on a press |
 | A tag-style multi-select | check rows in a sunken list (`RetroDesktopCheckRow` in a `RetroDesktopWell`) |
+
+### On ui_core
+
+The look draws; ui_core behaves. Under the pixels, ui_core gives the parts their keys, focus, screen-reader words and
+placement: the tooltip (`DesignTooltip`), the menus' rows and shortcut labels, the combobox's search, the number field
+(`DesignNumberField`), the rating (`DesignRating`), the tab bar (`DesignTabBar`), a chart's scale, the dialog and sheet
+routes, the side sheet and the page transitions. Retro keeps its own where the period did something ui_core doesn't:
+the menu bar across the top of every page, a chart that reads a whole column at once, and a lit menu row that only a
+moving pointer or the keys can light. Its motion stays the period's, at once, unless an app sets a time.
 
 ## Presets
 
@@ -382,7 +405,7 @@ What keeps the look:
   To translate them, extend `DefaultDesignLocalizations`, override the words you translate, and add a delegate for
   your subclass to `localizationsDelegates`; every ui_core look then speaks your language. The words only this look
   says (a pager's name, a time picker's wheels, a stepper's More and Less, a file drop's invitation) are
-  `RetroDesktopLocalizations`, English in 0.2.0.
+  `RetroDesktopLocalizations`, English in 0.3.0.
 - **Dates and numbers.** Month and weekday names, dates, numbers and percentages use `intl` in the locale
   `RetroDesktopLocalizations.delegate` loads (add it for a locale other than US English); the calendar starts its week
   on the day `DesignLocalizations.firstDayOfWeek` names, and times are 12- or 24-hour as the platform says.
@@ -390,12 +413,12 @@ What keeps the look:
   rest) cover the Latin alphabet. Other scripts (Arabic, Hebrew, Chinese, Japanese, Devanagari, Thai) are drawn in the
   platform's fallback fonts (on the web, the Noto fonts Flutter fetches), so they read, but without the pixel face.
 
-Known limits in 0.2.0: the look's own words ship in English only, and a title in another script loses the period's
+Known limits in 0.3.0: the look's own words ship in English only, and a title in another script loses the period's
 pixel type. The glyphs on buttons, rows and fields (`RetroDesktopGlyphs`) are Lucide's line icons, smooth strokes beside
 the pixel art: a pixel set on a 24 px grid stays sharp only at 24 and 48, and the parts draw their glyphs at 13 to 18,
 so a later version brings pixel glyphs drawn for those sizes behind the same `RetroDesktopGlyphs` names. Where a menu
-bar's titles outrun a narrow screen (a phone, large text, a long language), the bar wraps them onto a second row; 0.3.0
-gathers the titles that don't fit into a "…" menu at the bar's end.
+bar's titles outrun a narrow screen (a phone, large text, a long language), the bar wraps them onto a second row; a later
+version gathers the titles that don't fit into a "…" menu at the bar's end.
 
 ## API notes
 

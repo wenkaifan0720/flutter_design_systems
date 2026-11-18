@@ -115,7 +115,7 @@ void main() {
     );
   });
 
-  test('window classes have shared boundaries', () {
+  test("a theme's window class is ui_core's, at Material's boundaries", () {
     expect(
       [
         599.0,
@@ -124,14 +124,18 @@ void main() {
         840.0,
         1199.0,
         1200.0,
-      ].map(RetroDesktopWindowSizeClass.ofWidth),
+        1599.0,
+        1600.0,
+      ].map((width) => RetroDesktopThemeData.classic().atWidth(width).window),
       [
-        RetroDesktopWindowSizeClass.compact,
-        RetroDesktopWindowSizeClass.medium,
-        RetroDesktopWindowSizeClass.medium,
-        RetroDesktopWindowSizeClass.expanded,
-        RetroDesktopWindowSizeClass.expanded,
-        RetroDesktopWindowSizeClass.large,
+        DesignWindowSizeClass.compact,
+        DesignWindowSizeClass.medium,
+        DesignWindowSizeClass.medium,
+        DesignWindowSizeClass.expanded,
+        DesignWindowSizeClass.expanded,
+        DesignWindowSizeClass.large,
+        DesignWindowSizeClass.large,
+        DesignWindowSizeClass.extraLarge,
       ],
     );
   });

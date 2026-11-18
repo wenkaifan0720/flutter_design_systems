@@ -1,7 +1,7 @@
 /// Figures through time and against a limit: the sky and its hours, a range of days, hatched bars, gauges, a month.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 

@@ -72,7 +72,12 @@ void main() {
             // A new tree: a state must not carry over from the cell before.
             await tester.pumpWidget(const SizedBox.shrink());
             final key = await pumpStateHost(tester, theme, widget);
-            final down = await enterState(tester, state, mouse);
+            final down = await enterState(
+              tester,
+              state,
+              mouse,
+              on: statePressTargets[part.key]?.call(),
+            );
             final shot = await _take(tester, key);
             await down?.cancel();
             await tester.pump();

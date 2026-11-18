@@ -184,6 +184,44 @@ mixin RetroDesktopModalRoute<T> on Route<T> {
   }
 }
 
+/// A ui_core route the look raises (a dialog, a sheet), in its place in its first frame and gone in one while
+/// [retroDesktopTime] is zero, the look's default and its Reduce Motion: its windows stand at once, as the period's
+/// did. With a time, the route's own spring (ζ 1), stiff enough to settle within it ([retroDesktopRouteStiffness]).
+/// ui_core's routes move on springs alone (each gives a simulation); a still route is the look's.
+mixin RetroDesktopRouteStill<T> on TransitionRoute<T> {
+  /// The time the theme's motion gives the route, read where it was pushed; zero: none.
+  Duration get retroDesktopTime;
+
+  @override
+  Simulation createSimulation({required bool forward}) =>
+      retroDesktopTime == Duration.zero
+      ? _AtOnce(forward ? 1 : 0)
+      : super.createSimulation(forward: forward)!;
+}
+
+/// The stiffness of a critically damped spring that settles within [time] (to ui_core's tolerance, a thousandth):
+/// (1 + ωt)·e^(−ωt) = 0.001 at ωt ≈ 9.23, and k = ω². ui_core's default (700) for no time.
+double retroDesktopRouteStiffness(Duration time) {
+  final seconds = time.inMicroseconds / Duration.microsecondsPerSecond;
+  return seconds <= 0 ? 700 : math.pow(9.233 / seconds, 2).toDouble();
+}
+
+// A route's motion that is already where it goes.
+class _AtOnce extends Simulation {
+  _AtOnce(this._to);
+
+  final double _to;
+
+  @override
+  double x(double time) => _to;
+
+  @override
+  double dx(double time) => 0;
+
+  @override
+  bool isDone(double time) => true;
+}
+
 /// Whether one of the look's modal windows stands over the place [context] is built in: a window there isn't the
 /// front one. A modal stands over a route of its own navigator that isn't the current one, and over every route of a
 /// navigator nested under the root when it stands in the root. Depends on the context's route, so a part that asks

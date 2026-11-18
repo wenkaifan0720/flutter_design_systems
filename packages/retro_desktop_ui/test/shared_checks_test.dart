@@ -12,7 +12,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/main.dart';
@@ -160,13 +160,16 @@ void main() {
 
   for (final appearance in RetroDesktopAppearance.values) {
     for (final brightness in Brightness.values) {
-      testWidgets(
-        'rows: ${appearance.name} ${brightness.name}, every page '
-        'shows one top and one bottom across each row',
-        (tester) async {
-          addTearDown(tester.view.reset);
-          final problems = <String>[];
-          for (final width in const [390.0, 1440.0]) {
+      // One test a width: ui_core_test 0.1.0's row check reads a page four or five times as long as ui_core 0.2.1's
+      // did (Pickers at 1440, 54 s; 0.2.1's own library is read as slowly), and both widths in one test ran past half
+      // an hour on a busy machine.
+      for (final width in const [390.0, 1440.0]) {
+        testWidgets(
+          'rows: ${appearance.name} ${brightness.name} at ${width.toInt()}, '
+          'every page shows one top and one bottom across each row',
+          (tester) async {
+            addTearDown(tester.view.reset);
+            final problems = <String>[];
             for (final density in RetroDesktopDensity.values) {
               var count = 0;
               for (final page in examplePages) {
@@ -199,21 +202,21 @@ void main() {
                 '${density.name}: $count',
               );
             }
-          }
-          final real = withoutMisreads('rows', problems, [
-            ...rowMisreads,
-            if (appearance == RetroDesktopAppearance.chisel)
-              ...chiselRowMisreads,
-            if (appearance == RetroDesktopAppearance.platinum &&
-                brightness == Brightness.dark)
-              ...platinumNightRowMisreads,
-          ]);
-          expect(real, isEmpty, reason: real.join('\n'));
-        },
-        tags: const ['goldens'],
-        // Every example page at two widths and three densities: past the default ten minutes on a busy machine.
-        timeout: const Timeout(Duration(minutes: 30)),
-      );
+            final real = withoutMisreads('rows', problems, [
+              ...rowMisreads,
+              if (appearance == RetroDesktopAppearance.chisel)
+                ...chiselRowMisreads,
+              if (appearance == RetroDesktopAppearance.platinum &&
+                  brightness == Brightness.dark)
+                ...platinumNightRowMisreads,
+            ]);
+            expect(real, isEmpty, reason: real.join('\n'));
+          },
+          tags: const ['goldens'],
+          // Every example page at three densities: past the default ten minutes on a busy machine.
+          timeout: const Timeout(Duration(minutes: 30)),
+        );
+      }
     }
 
     testWidgets(

@@ -218,7 +218,7 @@ class _ChartState extends State<RetroDesktopChart> {
     }
     // The scale widens to the round values that hold the data, and every
     // gridline stands on one and is named in the gutter.
-    final ticks = _roundTicks(low, high);
+    final ticks = _roundTicks(DesignLocalizations.of(context), low, high);
     low = ticks.first;
     high = ticks.last;
     String fmt(double value) =>
@@ -1062,37 +1062,21 @@ class _ChartPainter extends CustomPainter {
       rtl != old.rtl;
 }
 
-/// Round gridline values holding [low] to [high]: a step of 1, 2, 2.5 or 5
-/// times a power of ten, about four steps to a chart, from the last round value
-/// at or under [low] to the first at or over [high]. A range too wide to
-/// subtract keeps its two ends.
-List<double> _roundTicks(double low, double high) {
+/// Round gridline values holding [low] to [high], on ui_core's scale ([DesignLinearScale.nice]): a step of 1, 2 or 5
+/// times a power of ten, about four steps to a chart, from the last round value at or under [low] to the first at or
+/// over [high]. A range too wide to subtract keeps its two ends.
+List<double> _roundTicks(DesignLocalizations words, double low, double high) {
   final range = high - low;
   if (!range.isFinite || range <= 0) return [low, high];
-  final raw = range / 4;
-  final power = math.pow(10, (math.log(raw) / math.ln10).floor()).toDouble();
-  final step = [
-    1.0,
-    2.0,
-    2.5,
-    5.0,
-    10.0,
-  ].map((m) => m * power).firstWhere((s) => s >= raw * (1 - 1e-9));
-  final from = (low / step + 1e-9).floor() * step;
-  final to = (high / step - 1e-9).ceil() * step;
-  final count = ((to - from) / step).round();
-  if (!from.isFinite || !to.isFinite || count < 1 || count > 12) {
-    return [low, high];
-  }
-  // Enough decimals to name the step exactly (2.5 needs one more than 2).
-  final decimals =
-      (-(math.log(step) / math.ln10).floor() +
-              ((step / power - 2.5).abs() < 1e-9 ? 1 : 0))
-          .clamp(0, 15);
-  return [
-    for (var i = 0; i <= count; i++)
-      double.parse((from + i * step).toStringAsFixed(decimals)),
-  ];
+  final scale = DesignLinearScale.nice(
+    min: low,
+    max: high,
+    start: 0,
+    end: 1,
+    tickCount: 4,
+  );
+  final ticks = [for (final t in scale.ticks(words, count: 4)) t.value];
+  return ticks.length < 2 || ticks.length > 13 ? [low, high] : ticks;
 }
 
 void _paintLine(Canvas canvas, Path path, Paint stroke, int index) {

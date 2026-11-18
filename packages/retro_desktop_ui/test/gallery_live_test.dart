@@ -119,7 +119,7 @@ void main() {
   });
   testWidgets('example stepper increments', (tester) async {
     await pump(tester, kitSpecimenStepper());
-    await tap(tester, find.bySemanticsLabel('More'));
+    await tap(tester, find.byIcon(RetroDesktopGlyphs.plus));
     expect(
       tester
           .widget<RetroDesktopNumberField>(find.byType(RetroDesktopNumberField))

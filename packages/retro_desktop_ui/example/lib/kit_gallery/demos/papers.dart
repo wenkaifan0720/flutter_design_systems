@@ -5,7 +5,8 @@
 /// a phone.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
@@ -1038,6 +1039,20 @@ class _KitPapersState extends State<KitPapers> {
       checked: _view.sort == k,
       onPressed: () => setState(() => _view.sortBy(k)),
     );
+    // A command's keys as ui_core spells them, in the platform's words: Command on Apple's, Ctrl elsewhere. Words,
+    // not Apple's symbols: the look's typefaces draw none of ⌘ ⌥ ⇧ ⌃.
+    String keys(LogicalKeyboardKey key) {
+      final apple = switch (defaultTargetPlatform) {
+        TargetPlatform.macOS || TargetPlatform.iOS => true,
+        _ => false,
+      };
+      return designShortcutLabel(
+        context,
+        SingleActivator(key, meta: apple, control: !apple),
+        appleSymbols: false,
+      );
+    }
+
     return [
       DesignMenuEntry(
         label: say('Papers'),
@@ -1056,7 +1071,7 @@ class _KitPapersState extends State<KitPapers> {
           ),
           DesignMenuEntry(
             label: say('Settings…'),
-            shortcut: 'Ctrl+,',
+            shortcut: keys(LogicalKeyboardKey.comma),
             onPressed: () => _front(KitPapersWindow.settings),
           ),
         ],
@@ -1066,24 +1081,24 @@ class _KitPapersState extends State<KitPapers> {
         children: [
           DesignMenuEntry(
             label: say('Open'),
-            shortcut: 'Ctrl+O',
+            shortcut: keys(LogicalKeyboardKey.keyO),
             onPressed: () => _openDocument(_view.selected),
           ),
           DesignMenuEntry(
             label: say('Close window'),
-            shortcut: 'Ctrl+W',
+            shortcut: keys(LogicalKeyboardKey.keyW),
             onPressed: front == null ? null : () => _close(front),
           ),
           const DesignMenuEntry.divider(),
           DesignMenuEntry(
             label: say('Find…'),
-            shortcut: 'Ctrl+F',
+            shortcut: keys(LogicalKeyboardKey.keyF),
             onPressed: _find,
           ),
           const DesignMenuEntry.divider(),
           DesignMenuEntry(
             label: say('Order printed copies…'),
-            shortcut: 'Ctrl+P',
+            shortcut: keys(LogicalKeyboardKey.keyP),
             onPressed: () => _order(_view.selected),
           ),
         ],
@@ -1092,11 +1107,23 @@ class _KitPapersState extends State<KitPapers> {
         label: say('Edit'),
         // Nothing is chosen, so the edit commands have no onPressed: unavailable.
         children: [
-          DesignMenuEntry(label: say('Undo'), shortcut: 'Ctrl+Z'),
+          DesignMenuEntry(
+            label: say('Undo'),
+            shortcut: keys(LogicalKeyboardKey.keyZ),
+          ),
           const DesignMenuEntry.divider(),
-          DesignMenuEntry(label: say('Cut'), shortcut: 'Ctrl+X'),
-          DesignMenuEntry(label: say('Copy'), shortcut: 'Ctrl+C'),
-          DesignMenuEntry(label: say('Paste'), shortcut: 'Ctrl+V'),
+          DesignMenuEntry(
+            label: say('Cut'),
+            shortcut: keys(LogicalKeyboardKey.keyX),
+          ),
+          DesignMenuEntry(
+            label: say('Copy'),
+            shortcut: keys(LogicalKeyboardKey.keyC),
+          ),
+          DesignMenuEntry(
+            label: say('Paste'),
+            shortcut: keys(LogicalKeyboardKey.keyV),
+          ),
         ],
       ),
       DesignMenuEntry(

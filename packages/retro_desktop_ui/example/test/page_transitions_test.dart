@@ -5,8 +5,8 @@
 // puts it in its own ThemeData (the README's setup). Copied from ui_core's example/test/page_transitions_test.dart,
 // with the look's map in place of its stand-in: Retro Desktop's page change stands in place at once, so the test
 // reads where the page stands in each frame.
-import 'package:flutter/cupertino.dart' show CupertinoPageTransition;
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransition;
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart'
     show retroDesktopPageTransitions;

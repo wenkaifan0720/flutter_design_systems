@@ -1,7 +1,7 @@
 /// A window full of things: a list view with its scroll bar, a table, folders and files, a tree with its shares, a checklist, a document.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 

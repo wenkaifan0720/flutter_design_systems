@@ -38,7 +38,7 @@ export 'retro_desktop/signatures/objects.dart';
 export 'retro_desktop/theme.dart' hide RetroDesktopOffHighlight;
 
 export 'retro_desktop/behavior.dart';
-export 'retro_desktop/press.dart';
+export 'retro_desktop/press.dart' hide retroDesktopPressChrome;
 export 'retro_desktop/component_themes.dart'
     hide RetroDesktopComponentThemes, RetroDesktopStyleLayers;
 

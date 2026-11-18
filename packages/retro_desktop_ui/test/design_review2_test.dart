@@ -295,14 +295,10 @@ void main() {
               ),
             );
             await tester.pumpAndSettle();
+            // A tab's own face: the nearest one round its words (ui_core's DesignTabBar draws no pressables).
             Finder face(String label) => find
-                .descendant(
-                  of: find
-                      .ancestor(
-                        of: find.text(label),
-                        matching: find.byType(RetroDesktopPressable),
-                      )
-                      .first,
+                .ancestor(
+                  of: find.text(label),
                   matching: find.byWidgetPredicate(
                     (w) => w.runtimeType.toString() == '_Face',
                   ),

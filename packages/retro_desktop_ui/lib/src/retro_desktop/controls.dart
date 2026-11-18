@@ -16,6 +16,7 @@ import 'behavior.dart';
 import 'localizations.dart';
 import 'component_themes.dart';
 import 'internal/face.dart';
+import 'internal/modal.dart' show retroDesktopRouteStiffness;
 import 'shapes.dart';
 
 import 'glyphs.dart';
@@ -1967,7 +1968,7 @@ class _DisclosureState extends State<RetroDesktopDisclosure> {
   }
 }
 
-/// The shared box of every option: raised, or pressed in and lit when [chosen], with everything in it reading on the
+/// The shared box of every option: raised, or pressed in and lit when [selected], with everything in it reading on the
 /// highlight by itself: `t.colors.text` and `t.type` answer for the surface.
 ///
 /// ```dart
@@ -2268,12 +2269,15 @@ class RetroDesktopChoices extends StatelessWidget {
   }
 }
 
-/// A number stepper: a small button each side of a sunk value and its unit, and a note under it.
+/// A number stepper: a small button each side of a sunk value and its unit, and a note under it. ui_core's
+/// [DesignNumberField] carries it: the value types as well as steps, Up and Down step it and Page Up and Page Down ten
+/// steps, a held button repeats, a number typed is kept within [min] and [max], and a screen reader hears one field it
+/// can step, with its unit.
 ///
 /// ```dart
 /// RetroDesktopNumberField(value: 2, unit: 'coats', onChanged: (_) { (() {})(); })
 /// ```
-class RetroDesktopNumberField extends StatelessWidget {
+class RetroDesktopNumberField extends StatefulWidget {
   /// Creates a [RetroDesktopNumberField].
   const RetroDesktopNumberField({
     super.key,
@@ -2316,179 +2320,9 @@ class RetroDesktopNumberField extends StatelessWidget {
 
   /// Supporting text shown with the main content.
   final String? note;
+
   @override
-  Widget build(BuildContext context) {
-    final t = RetroDesktopTheme.of(context);
-    final words = RetroDesktopLocalizations.of(context);
-    final less = onChanged == null || value <= min
-        ? null
-        : () => onChanged!((value - step).clamp(min, max));
-    final more = onChanged == null || value >= max
-        ? null
-        : () => onChanged!((value + step).clamp(min, max));
-    // One row, one height: the two buttons and the value between them all show a button's face height, the buttons
-    // square, so the stepper stands level with a button or a field beside it.
-    final faceHeight = retroDesktopButtonFaceHeight(context);
-    // The keys stand on the stepper's two ends; where a target is wider than its key it grows toward the value.
-    Widget press(
-      IconData icon,
-      String name,
-      VoidCallback? action, {
-      required AlignmentGeometry at,
-    }) => RetroDesktopPressable(
-      alignment: at,
-      onPressed: action,
-      label: name,
-      builder: (context, states) => retroDesktopFace(
-        states: states,
-        component: t.stepperTheme.over(
-          RetroDesktopStyle(
-            minimumSize: WidgetStatePropertyAll(Size.square(faceHeight)),
-          ),
-        ),
-        style: style,
-        padding: const EdgeInsets.all(RetroDesktopSpacing.s6),
-        child: Icon(icon),
-      ),
-    );
-    final row = Focus(
-      canRequestFocus: false,
-      skipTraversal: true,
-      includeSemantics: false,
-      onKeyEvent: (_, event) {
-        if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-          return KeyEventResult.ignored;
-        }
-        final key = event.logicalKey;
-        final rtl = Directionality.of(context) == TextDirection.rtl;
-        final increase =
-            key == LogicalKeyboardKey.arrowUp ||
-            key ==
-                (rtl
-                    ? LogicalKeyboardKey.arrowLeft
-                    : LogicalKeyboardKey.arrowRight);
-        final decrease =
-            key == LogicalKeyboardKey.arrowDown ||
-            key ==
-                (rtl
-                    ? LogicalKeyboardKey.arrowRight
-                    : LogicalKeyboardKey.arrowLeft);
-        if (!increase && !decrease) return KeyEventResult.ignored;
-        (increase ? more : less)?.call();
-        return KeyEventResult.handled;
-      },
-      child: Semantics(
-        container: true,
-        label: label,
-        value:
-            '${RetroDesktopLocalizations.of(context).formatNumber(value)}${unit.isEmpty ? '' : ' $unit'}',
-        // As wide as its value needs, whatever room it is given: the box holds
-        // the widest value the range allows, so it stays put as it counts.
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            press(
-              RetroDesktopGlyphs.minus,
-              words.less,
-              less,
-              at: AlignmentDirectional.centerStart,
-            ),
-            Flexible(
-              child: ExcludeSemantics(
-                // Disabled, the value and its box dim with the buttons.
-                child: AnimatedOpacity(
-                  duration: RetroDesktopMotion.of(context).state,
-                  curve: RetroDesktopMotion.of(context).standard,
-                  opacity: onChanged == null ? .5 : 1,
-                  child: retroDesktopFace(
-                    states: {if (onChanged == null) WidgetState.disabled},
-                    component: t.stepperTheme.over(
-                      RetroDesktopStyle(
-                        fill: WidgetStatePropertyAll(t.colors.paper),
-                        minimumSize: WidgetStatePropertyAll(
-                          Size(0, faceHeight),
-                        ),
-                      ),
-                    ),
-                    style: style,
-                    sunken: true,
-                    padding: EdgeInsets.zero,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: RetroDesktopSpacing.s8,
-                      ),
-                      // A one-digit value still gets a box about as wide as
-                      // the buttons beside it, its figures on its middle; the
-                      // box as wide as they need, not the row's room.
-                      child: Center(
-                        widthFactor: 1,
-                        heightFactor: 1,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(minWidth: 24),
-                          child: Wrap(
-                            alignment: WrapAlignment.center,
-                            spacing: RetroDesktopSpacing.s6,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  // The longest value the range allows, in its
-                                  // widest figures, whatever the face's digits.
-                                  for (final end in {min, max})
-                                    for (final figure in ['0', '8'])
-                                      Visibility.maintain(
-                                        visible: false,
-                                        child: Text(
-                                          words
-                                              .formatNumber(end)
-                                              .replaceAll(
-                                                RegExp('[0-9]'),
-                                                figure,
-                                              ),
-                                          style: t.type.small,
-                                        ),
-                                      ),
-                                  Text(
-                                    words.formatNumber(value),
-                                    style: t.type.small,
-                                  ),
-                                ],
-                              ),
-                              if (unit.isNotEmpty)
-                                Text(unit, style: t.type.note),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            press(
-              RetroDesktopGlyphs.plus,
-              words.more,
-              more,
-              at: AlignmentDirectional.centerEnd,
-            ),
-          ],
-        ),
-      ),
-    );
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        row,
-        if (note != null)
-          Padding(
-            padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
-            child: Text(note!, style: t.type.note),
-          ),
-      ],
-    );
-  }
+  State<RetroDesktopNumberField> createState() => _NumberFieldState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -2509,6 +2343,271 @@ class RetroDesktopNumberField extends StatelessWidget {
       ..add(StringProperty('unit', unit, defaultValue: ''))
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(StringProperty('note', note, defaultValue: null));
+  }
+}
+
+class _NumberFieldState extends State<RetroDesktopNumberField> {
+  final _text = TextEditingController();
+
+  @override
+  void dispose() {
+    _text.dispose();
+    super.dispose();
+  }
+
+  // A number taken. Cleared, the box shows the value again: a stepper always holds one.
+  void _changed(double? taken) {
+    if (taken == null) {
+      _text.text = DesignLocalizations.of(context)
+          .formatDecimal(widget.value.toDouble());
+      return;
+    }
+    widget.onChanged?.call(taken.round());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = RetroDesktopTheme.of(context);
+    final w = widget;
+    final digits = DesignLocalizations.of(context);
+    // One row, one height: the two buttons and the value between them all show a button's face height, the buttons
+    // square, so the stepper stands level with a button or a field beside it.
+    final faceHeight = retroDesktopButtonFaceHeight(context);
+    final field = DesignNumberField(
+      value: w.value.toDouble(),
+      onChanged: w.onChanged == null ? null : _changed,
+      min: w.min.toDouble(),
+      max: w.max.toDouble(),
+      step: w.step.toDouble(),
+      fractionDigits: 0,
+      controller: _text,
+      semanticLabel: w.label,
+      semanticFormatterCallback: digits.formatDecimal,
+      // The keys stand on the stepper's two ends; where a target is wider than its key it grows toward the value.
+      buttonBuilder: (context, button) {
+        final off = button.states.contains(WidgetState.disabled);
+        return RetroDesktopReach(
+          alignment: button.isIncrement
+              ? AlignmentDirectional.centerEnd
+              : AlignmentDirectional.centerStart,
+          child: MouseRegion(
+            cursor: off ? SystemMouseCursors.basic : SystemMouseCursors.click,
+            child: AnimatedOpacity(
+              duration: RetroDesktopMotion.of(context).state,
+              curve: RetroDesktopMotion.of(context).standard,
+              opacity: off ? .5 : 1,
+              child: retroDesktopFace(
+                states: button.states,
+                component: t.stepperTheme.over(
+                  RetroDesktopStyle(
+                    minimumSize: WidgetStatePropertyAll(
+                      Size.square(faceHeight),
+                    ),
+                  ),
+                ),
+                style: w.style,
+                padding: const EdgeInsets.all(RetroDesktopSpacing.s6),
+                child: Icon(
+                  button.isIncrement
+                      ? RetroDesktopGlyphs.plus
+                      : RetroDesktopGlyphs.minus,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      fieldBuilder: (context, input) => _box(context, t, input, faceHeight),
+    );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        field,
+        if (w.note != null)
+          Padding(
+            padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
+            child: Text(w.note!, style: t.type.note),
+          ),
+      ],
+    );
+  }
+
+  // The sunk box with the value and its unit, ringed while the keys are in it: inside its outline, as rows flush in a
+  // group are, since the buttons stand flush on both sides and one drawn after would cover a ring outside. As wide as
+  // its value needs, whatever room it is given: it holds the widest value the range allows, so it stays put as it
+  // counts. A finger or a pointer anywhere on it, its unit or its reach puts the keys in it, as on a text field.
+  Widget _box(
+    BuildContext context,
+    RetroDesktopThemeData t,
+    DesignNumberFieldDetails input,
+    double faceHeight,
+  ) {
+    final c = t.colors;
+    final w = widget;
+    final digits = DesignLocalizations.of(context);
+    final enabled = !input.states.contains(WidgetState.disabled);
+    final style = t.type.small.copyWith(color: c.text);
+    return _NumberInput(
+      input: input,
+      enabled: enabled,
+      style: style,
+      box: (editable) => RetroDesktopHighlight(
+        shape: t.shapes.small,
+        focused: input.states.contains(WidgetState.focused),
+        inside: true,
+        // Disabled, the value and its box dim with the buttons.
+        child: AnimatedOpacity(
+          duration: RetroDesktopMotion.of(context).state,
+          curve: RetroDesktopMotion.of(context).standard,
+          opacity: enabled ? 1 : .5,
+          child: retroDesktopFace(
+            states: {if (!enabled) WidgetState.disabled},
+            component: t.stepperTheme.over(
+              RetroDesktopStyle(
+                fill: WidgetStatePropertyAll(c.paper),
+                minimumSize: WidgetStatePropertyAll(Size(0, faceHeight)),
+              ),
+            ),
+            style: w.style,
+            sunken: true,
+            padding: EdgeInsets.zero,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: RetroDesktopSpacing.s8,
+              ),
+              // A one-digit value still gets a box about as wide as the buttons beside it, its figures on its middle;
+              // the box as wide as they need, not the row's room.
+              child: Center(
+                widthFactor: 1,
+                heightFactor: 1,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 24),
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: RetroDesktopSpacing.s6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // The longest value the range allows, in its widest figures, whatever the face's digits.
+                          for (final end in {w.min, w.max})
+                            for (final figure in ['0', '8'])
+                              Visibility.maintain(
+                                visible: false,
+                                child: ExcludeSemantics(
+                                  child: Text(
+                                    digits
+                                        .formatDecimal(end.toDouble())
+                                        .replaceAll(RegExp('[0-9]'), figure),
+                                    style: t.type.small,
+                                  ),
+                                ),
+                              ),
+                          Positioned.fill(child: editable),
+                        ],
+                      ),
+                      if (w.unit.isNotEmpty) Text(w.unit, style: t.type.note),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// The number's own text input: an EditableText with the platform's selection gestures, as a text field's, but no
+// field's own node: its value joins the number field's node, which steps it (a Material text field says it is enabled
+// on its own node, so it stood apart and the steps had no value to step).
+class _NumberInput extends StatefulWidget {
+  const _NumberInput({
+    required this.input,
+    required this.enabled,
+    required this.style,
+    required this.box,
+  });
+
+  final DesignNumberFieldDetails input;
+  final bool enabled;
+  final TextStyle style;
+
+  /// The box drawn round the input, given the input: the gestures take the whole box and its reach.
+  final Widget Function(Widget editable) box;
+
+  @override
+  State<_NumberInput> createState() => _NumberInputState();
+}
+
+class _NumberInputState extends State<_NumberInput>
+    implements TextSelectionGestureDetectorBuilderDelegate {
+  @override
+  final GlobalKey<EditableTextState> editableTextKey =
+      GlobalKey<EditableTextState>();
+
+  @override
+  bool get forcePressEnabled => false;
+
+  @override
+  bool get selectionEnabled => widget.enabled;
+
+  late final _gestures = TextSelectionGestureDetectorBuilder(delegate: this);
+
+  @override
+  Widget build(BuildContext context) {
+    final t = RetroDesktopTheme.of(context);
+    final c = t.colors;
+    final input = widget.input;
+    final platform = Theme.of(context).platform;
+    return _gestures.buildGestureDetector(
+      behavior: HitTestBehavior.translucent,
+      child: MouseRegion(
+        cursor: widget.enabled
+            ? SystemMouseCursors.text
+            : SystemMouseCursors.basic,
+        // The look's own reach, as a text field's: a press past the box puts the caret at its nearest point.
+        child: RetroDesktopReach(
+          keepsPoint: true,
+          child: widget.box(
+            // A screen reader's tap puts the keys in it, to type.
+            Semantics(
+              onTap: widget.enabled ? input.focusNode.requestFocus : null,
+              child: EditableText(
+                key: editableTextKey,
+                controller: input.controller,
+                focusNode: input.focusNode,
+                // Disabled, it reads but takes no typing (ui_core keeps the focus out).
+                readOnly: !widget.enabled,
+                keyboardType: input.keyboardType,
+                inputFormatters: input.inputFormatters,
+                // Enter takes the number and keeps the focus (not onSubmitted, which restarts the text input in a browser).
+                onEditingComplete: input.onEditingComplete,
+                style: widget.style,
+                textAlign: TextAlign.center,
+                selectionColor: c.highlightContainer,
+                selectionControls: RetroDesktopTextSelectionControls.of(
+                  platform,
+                ),
+                contextMenuBuilder: RetroDesktopTextContextMenu.editable,
+                rendererIgnoresPointer: true,
+                cursorColor: c.text,
+                backgroundCursorColor: c.textTertiary,
+                cursorWidth: t.strokes.regular == 0 ? 1 : t.strokes.regular,
+                cursorRadius: Radius.zero,
+                cursorOpacityAnimates: false,
+                mouseCursor: widget.enabled
+                    ? SystemMouseCursors.text
+                    : SystemMouseCursors.basic,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -2948,33 +3047,81 @@ class _WholeTabs extends CustomClipper<Rect> {
   bool shouldReclip(_WholeTabs oldClipper) => true;
 }
 
-class _TabBarState extends State<RetroDesktopTabBar> {
-  final List<FocusNode> _nodes = [];
-  final _strip = ScrollController();
+// The tabs on ui_core's DesignTabBar: one tab stop on the open tab, the arrows along the row (mirrored right to left,
+// wrapping), Home and End, a tab chosen as the keys reach it, a screen reader's tab bar of tabs ("Tab 1 of 3"), and
+// the open tab brought whole into view. The look paints each folder tab, and keeps its own arrows and its strip of
+// whole tabs when they overflow. The bar is controlled: the open tab is [RetroDesktopTabBar.selectedIndex].
+class _TabBarState extends State<RetroDesktopTabBar>
+    with TickerProviderStateMixin {
+  DesignTabController? _controller;
   final _metrics = ValueNotifier(0);
   // The scroller keeps its place when the arrows come and go around it.
   final _scroller = GlobalKey();
+  final List<GlobalKey> _tabKeys = [];
+
+  // A change of tab, and the strip brought to it, are at once while the theme's move is zero (the default and Reduce
+  // Motion), else on ui_core's spring within it.
+  DesignTabController _controllerFor(BuildContext context) {
+    final length = widget.tabs.length;
+    final at = length == 0 ? 0 : widget.selectedIndex.clamp(0, length - 1);
+    final current = _controller;
+    if (current != null && current.length == length) {
+      if (current.index != at) current.index = at;
+      return current;
+    }
+    current?.removeListener(_chosen);
+    // Disposed after this frame: the bar still listens until it rebuilds.
+    if (current != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => current.dispose());
+    }
+    final move = RetroDesktopMotion.of(context).move;
+    return _controller = DesignTabController(
+      length: length,
+      initialIndex: at,
+      vsync: this,
+      stiffness: move == Duration.zero ? 1e8 : retroDesktopRouteStiffness(move),
+    )..addListener(_chosen);
+  }
+
+  // ui_core chose a tab (a press, the keys): reported, and the bar held at the caller's choice until it changes it.
+  void _chosen() {
+    final c = _controller!;
+    if (c.index == widget.selectedIndex) return;
+    widget.onChanged?.call(c.index);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _controller != c) return;
+      final at = widget.selectedIndex;
+      if (c.index != at && at < c.length) c.index = at;
+    });
+  }
+
   @override
   void dispose() {
-    for (final node in _nodes) {
-      node.dispose();
-    }
-    _strip.dispose();
+    _controller
+      ?..removeListener(_chosen)
+      ..dispose();
     _metrics.dispose();
     super.dispose();
   }
 
-  final List<GlobalKey> _tabKeys = [];
+  // The strip's scroll, ui_core's bar's own: found from the notes its scroll view sends (after layout, or as it
+  // moves), never looked up while the tree builds.
+  ScrollPosition? _strip;
+  ScrollPosition? get _position {
+    final p = _strip;
+    return p != null && p.hasContentDimensions && p.hasPixels ? p : null;
+  }
 
   // Each tab's run along the strip, start edge to end edge, in scroll offsets.
   List<(double, double)> _spans() {
     final view = _scroller.currentContext?.findRenderObject();
-    if (view is! RenderBox || !view.hasSize || !_strip.hasClients) {
+    final p = _position;
+    if (view is! RenderBox || !view.hasSize || p == null) {
       return const [];
     }
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final w = view.size.width;
-    final at = _strip.position.pixels;
+    final at = p.pixels;
     final spans = <(double, double)>[];
     for (final key in _tabKeys.take(widget.tabs.length)) {
       final box = key.currentContext?.findRenderObject();
@@ -2991,7 +3138,8 @@ class _TabBarState extends State<RetroDesktopTabBar> {
   // An arrow brings the next tab cut at the edge whole into view at the strip's start (or, back, the run of tabs
   // before the first whole one to its end).
   void _step(int by) {
-    final p = _strip.position;
+    final p = _position;
+    if (p == null) return;
     final spans = _spans();
     final room = p.viewportDimension;
     double to;
@@ -3007,14 +3155,14 @@ class _TabBarState extends State<RetroDesktopTabBar> {
       );
       to = spans.firstWhere((s) => s.$1 >= first.$1 - room - .5).$1;
     }
-    _strip.jumpTo(to.clamp(0, p.maxScrollExtent));
+    p.jumpTo(to.clamp(0, p.maxScrollExtent));
   }
 
   // The strip shows whole tabs only: a tab cut at the edge would leave a sliver of one stroke of its words before the
   // arrows, read as broken.
   Rect? _wholeTabs(Size size) {
-    if (!_strip.hasClients) return null;
-    final p = _strip.position;
+    final p = _position;
+    if (p == null) return null;
     final whole = [
       for (final s in _spans())
         if (s.$1 >= p.pixels - .5 &&
@@ -3029,37 +3177,6 @@ class _TabBarState extends State<RetroDesktopTabBar> {
         : Rect.fromLTRB(from, 0, to, size.height);
   }
 
-  KeyEventResult _keys(int index, KeyEvent event) {
-    if (widget.onChanged == null ||
-        (event is! KeyDownEvent && event is! KeyRepeatEvent)) {
-      return KeyEventResult.ignored;
-    }
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final key = event.logicalKey;
-    final int target;
-    if (key == LogicalKeyboardKey.home) {
-      target = 0;
-    } else if (key == LogicalKeyboardKey.end) {
-      target = widget.tabs.length - 1;
-    } else if (key == LogicalKeyboardKey.arrowRight) {
-      target = (index + (rtl ? -1 : 1)) % widget.tabs.length;
-    } else if (key == LogicalKeyboardKey.arrowLeft) {
-      target = (index + (rtl ? 1 : -1)) % widget.tabs.length;
-    } else {
-      return KeyEventResult.ignored;
-    }
-    _nodes[target].requestFocus();
-    final targetContext = _nodes[target].context;
-    if (targetContext != null) {
-      Scrollable.ensureVisible(
-        targetContext,
-        duration: RetroDesktopMotion.of(targetContext).move,
-      );
-    }
-    widget.onChanged!(target);
-    return KeyEventResult.handled;
-  }
-
   @override
   Widget build(BuildContext context) {
     assert(
@@ -3067,13 +3184,12 @@ class _TabBarState extends State<RetroDesktopTabBar> {
           (widget.selectedIndex >= 0 &&
               widget.selectedIndex < widget.tabs.length),
     );
-    while (_nodes.length < widget.tabs.length) {
-      _nodes.add(FocusNode());
-    }
     while (_tabKeys.length < widget.tabs.length) {
       _tabKeys.add(GlobalKey());
     }
+    final controller = _controllerFor(context);
     final t = RetroDesktopTheme.of(context);
+    final words = RetroDesktopLocalizations.of(context);
     final selectedFill =
         RetroDesktopStyle.first<Color>(
           [widget.style, t.tabBarTheme, t.cardTheme],
@@ -3120,125 +3236,97 @@ class _TabBarState extends State<RetroDesktopTabBar> {
     final rule = math
         .min(tabSide.strokeInset, panelSide.strokeInset)
         .ceilToDouble();
-    final scroller = SingleChildScrollView(
-      controller: _strip,
-      scrollDirection: Axis.horizontal,
-      // A tab bar to assistive technology and each tab a tab: the role on
-      // the tab's merged node, its selected state and its tap the press's.
-      child: Semantics(
-        role: SemanticsRole.tabBar,
-        container: true,
-        explicitChildNodes: true,
-        label: widget.label ?? RetroDesktopLocalizations.of(context).tabs,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            for (var i = 0; i < widget.tabs.length; i++)
-              Builder(
-                key: _tabKeys[i],
-                builder: (context) {
-                  final selected = i == widget.selectedIndex;
-                  _nodes[i].skipTraversal = !selected;
-                  final count = i < widget.counts.length
-                      ? widget.counts[i]
-                      : null;
-                  return MergeSemantics(
-                    child: Semantics(
-                      role: SemanticsRole.tab,
-                      child: Focus(
-                        canRequestFocus: false,
-                        skipTraversal: true,
-                        includeSemantics: false,
-                        onKeyEvent: (_, event) => _keys(i, event),
-                        child: RetroDesktopPressable(
-                          focusNode: _nodes[i],
-                          alignment: Alignment.bottomCenter,
-                          selected: selected,
-                          label: widget.tabs[i],
-                          value: count,
-                          onPressed: widget.onChanged == null
-                              ? null
-                              : () => widget.onChanged!(i),
-                          builder: (context, states) => Padding(
-                            padding: EdgeInsets.only(
-                              bottom: !selected && widget.child != null
-                                  ? join - rule
-                                  : 0,
-                            ),
-                            // The tab's own face, not the panel's rule that shows
-                            // under a closed tab, is what its label is centred on.
-                            child: DesignKeylineFace(
-                              child: retroDesktopFace(
-                                openBottom: selected && widget.child != null,
-                                openDepth: join - rule,
-                                states: states,
-                                component: t.tabBarTheme.over(
-                                  RetroDesktopStyle(
-                                    fill: WidgetStatePropertyAll(
-                                      selected
-                                          ? selectedFill
-                                          : t.colors.platinumDark,
-                                    ),
-                                    shape: tabShape == null
-                                        ? null
-                                        : WidgetStatePropertyAll(tabShape),
-                                    // A closed tab's words in full ink, as the
-                                    // period's were: grey type means
-                                    // unavailable (the state law).
-                                    foreground: WidgetStatePropertyAll(
-                                      t.colors.text,
-                                    ),
-                                    textStyle: WidgetStatePropertyAll(
-                                      t.type.chrome,
-                                    ),
-                                  ),
-                                ),
-                                style: widget.style,
-                                // The chosen tab stands 4 taller, all of it above
-                                // its words: every label keeps one centre line.
-                                padding: EdgeInsets.fromLTRB(
-                                  12,
-                                  selected ? 10 : 6,
-                                  12,
-                                  selected && widget.child != null
-                                      ? 6 + join
-                                      : 6,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    RetroDesktopCaps(Text(widget.tabs[i])),
-                                    if (count != null) ...[
-                                      const SizedBox(
-                                        width: RetroDesktopSpacing.s6,
-                                      ),
-                                      RetroDesktopCaps(Text(count)),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
+    String? countOf(int i) =>
+        i < widget.counts.length ? widget.counts[i] : null;
+    final bar = DesignTabBar(
+      controller: controller,
+      isScrollable: true,
+      semanticLabel: widget.label ?? words.tabs,
+      tabs: [
+        for (var i = 0; i < widget.tabs.length; i++)
+          DesignTab(
+            // A screen reader hears the count after the name, as it reads.
+            label: countOf(i) == null
+                ? widget.tabs[i]
+                : '${widget.tabs[i]} ${countOf(i)}',
+            enabled: widget.onChanged != null,
+          ),
+      ],
+      // Every tab stands as tall as the open one: a closed tab's face stands at its foot, on the panel's rule.
+      tabBuilder: (context, tab, details) {
+        final i = details.index;
+        final selected = details.states.contains(WidgetState.selected);
+        final count = countOf(i);
+        return KeyedSubtree(
+          key: _tabKeys[i],
+          child: retroDesktopPressChrome(
+            context,
+            details.states,
+            alignment: Alignment.bottomCenter,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: !selected && widget.child != null ? join - rule : 0,
+                ),
+                // The tab's own face, not the panel's rule that shows
+                // under a closed tab, is what its label is centred on.
+                child: DesignKeylineFace(
+                  child: retroDesktopFace(
+                    openBottom: selected && widget.child != null,
+                    openDepth: join - rule,
+                    states: details.states,
+                    component: t.tabBarTheme.over(
+                      RetroDesktopStyle(
+                        fill: WidgetStatePropertyAll(
+                          selected ? selectedFill : t.colors.platinumDark,
                         ),
+                        shape: tabShape == null
+                            ? null
+                            : WidgetStatePropertyAll(tabShape),
+                        // A closed tab's words in full ink, as the
+                        // period's were: grey type means
+                        // unavailable (the state law).
+                        foreground: WidgetStatePropertyAll(t.colors.text),
+                        textStyle: WidgetStatePropertyAll(t.type.chrome),
                       ),
                     ),
-                  );
-                },
+                    style: widget.style,
+                    // The chosen tab stands 4 taller, all of it above
+                    // its words: every label keeps one centre line.
+                    padding: EdgeInsets.fromLTRB(
+                      12,
+                      selected ? 10 : 6,
+                      12,
+                      selected && widget.child != null ? 6 + join : 6,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        RetroDesktopCaps(Text(widget.tabs[i])),
+                        if (count != null) ...[
+                          const SizedBox(width: RetroDesktopSpacing.s6),
+                          RetroDesktopCaps(Text(count)),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
               ),
-          ],
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
     // Tabs too wide for their room scroll sideways, and then show it: a pair of
     // arrows at the row's end, as a tab control did when its tabs overflowed
     // (a tab cut at the edge, alone, read as broken).
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final words = RetroDesktopLocalizations.of(context);
     final tabs = ListenableBuilder(
-      listenable: Listenable.merge([_strip, _metrics]),
+      listenable: _metrics,
       builder: (context, child) {
-        final p = _strip.hasClients ? _strip.position : null;
-        if (p == null || !p.hasContentDimensions || p.maxScrollExtent <= 0) {
+        final p = _position;
+        if (p == null || p.maxScrollExtent <= 0) {
           return child!;
         }
         return Row(
@@ -3246,10 +3334,7 @@ class _TabBarState extends State<RetroDesktopTabBar> {
           children: [
             Flexible(
               child: ClipRect(
-                clipper: _WholeTabs(
-                  _wholeTabs,
-                  Listenable.merge([_strip, _metrics]),
-                ),
+                clipper: _WholeTabs(_wholeTabs, _metrics),
                 child: child!,
               ),
             ),
@@ -3286,13 +3371,22 @@ class _TabBarState extends State<RetroDesktopTabBar> {
           ],
         );
       },
-      child: NotificationListener<ScrollMetricsNotification>(
+      // The strip's moves and measures, heard from ui_core's scroll view.
+      child: NotificationListener<Notification>(
         key: _scroller,
-        onNotification: (_) {
-          _metrics.value++;
+        onNotification: (note) {
+          final from = switch (note) {
+            ScrollMetricsNotification(:final context) => context,
+            ScrollUpdateNotification(:final context?) => context,
+            _ => null,
+          };
+          if (from != null && from.mounted) {
+            _strip = Scrollable.maybeOf(from)?.position;
+            _metrics.value++;
+          }
           return false;
         },
-        child: scroller,
+        child: bar,
       ),
     );
     // For ui_core's keyline check: the row of tabs is one item to what holds it, and the panel is a section of its own.

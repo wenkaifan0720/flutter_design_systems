@@ -152,11 +152,19 @@ Widget retroDesktopLitRow(
 /// Chisel's sunken face over its held grey. Null draws nothing extra. Its words
 /// sink a pixel with the face unless [sink] is false (a list's chosen row,
 /// whose words stay on the list's one line).
+///
+/// Platinum's well is a rectangle [bleed] taller than [child] above and below;
+/// given an [outline] (a frame's, square where the well meets no corner of it)
+/// it fills that outline's inner path instead, over [child] grown by [reach]:
+/// concentric with the frame, its corners the frame's less the outline's width,
+/// its turned-in bevel following them.
 Widget retroDesktopHeldGround(
   RetroDesktopThemeData t, {
   required bool held,
   required Widget child,
   double bleed = 0,
+  OutlinedBorder? outline,
+  EdgeInsets reach = EdgeInsets.zero,
   bool sink = true,
 }) {
   final c = t.colors;
@@ -179,11 +187,15 @@ Widget retroDesktopHeldGround(
         shade: c.bevelDarker,
         light: c.bevelLight,
         bleed: bleed,
+        outline: outline,
+        reach: reach,
       ),
       child: RetroDesktopPixelPaint(
         painter: _GroundPainter(
           c.dark ? c.bevelDark : c.platinumDark,
           bleed: bleed,
+          outline: outline,
+          reach: reach,
         ),
         // The words sink a pixel with the face; the segment keeps its size.
         child: words,
@@ -237,16 +249,45 @@ class RetroDesktopPointerFocus extends StatelessWidget {
 }
 
 class _GroundPainter extends RetroDesktopPixelPainter {
-  const _GroundPainter(this.color, {this.bleed = 0});
+  const _GroundPainter(
+    this.color, {
+    this.bleed = 0,
+    this.outline,
+    this.reach = EdgeInsets.zero,
+  });
   final Color color;
   final double bleed;
+  final OutlinedBorder? outline;
+  final EdgeInsets reach;
   @override
-  void paint(RetroDesktopPixelGrid px, Size size) =>
+  void paint(RetroDesktopPixelGrid px, Size size) {
+    final well = _wellOutline(px, outline);
+    if (well == null) {
       px.fill(Rect.fromLTRB(0, -bleed, size.width, size.height + bleed), color);
+      return;
+    }
+    px.canvas.drawPath(
+      well.getOuterPath(px.snap(reach.inflateRect(Offset.zero & size))),
+      Paint()..color = color,
+    );
+  }
+
   @override
   bool shouldRepaint(_GroundPainter old) =>
-      old.color != color || old.bleed != bleed;
+      old.color != color ||
+      old.bleed != bleed ||
+      old.outline != outline ||
+      old.reach != reach;
 }
+
+/// The well's own outline inside a frame's [outline]: its inner path, the
+/// outline's width taken on whole device pixels as the frame draws it.
+OutlinedBorder? _wellOutline(
+  RetroDesktopPixelGrid px,
+  OutlinedBorder? outline,
+) => outline == null
+    ? null
+    : RetroDesktopShapes.inset(outline, px.extent(outline.side.width));
 
 /// Platinum's turned-in bevel inside a held or chosen segment: one pixel of [shade] along the top and left, one of
 /// [light] along the bottom and right, on whole device pixels. The light stays at the top left in either reading
@@ -256,15 +297,36 @@ class _TurnedInPainter extends RetroDesktopPixelPainter {
     required this.shade,
     required this.light,
     this.bleed = 0,
+    this.outline,
+    this.reach = EdgeInsets.zero,
   });
   final Color shade, light;
   final double bleed;
+  final OutlinedBorder? outline;
+  final EdgeInsets reach;
   @override
   void paint(RetroDesktopPixelGrid px, Size size) {
+    final h = px.hair, w = px.hairX;
+    final well = _wellOutline(px, outline);
+    if (well != null) {
+      // Concentric in a frame's corner: the band one pixel in, the shade along
+      // its top and left (round the corner between them), the light the rest.
+      final r = px.snap(reach.inflateRect(Offset.zero & size));
+      retroDesktopBevelStep(
+        px.canvas,
+        well.getOuterPath(r),
+        RetroDesktopShapes.inset(well, h).getOuterPath(
+          Rect.fromLTRB(r.left + w, r.top + h, r.right - w, r.bottom - h),
+        ),
+        Offset(w, h),
+        shade,
+        light,
+      );
+      return;
+    }
     final r = px.snap(
       Rect.fromLTRB(0, -bleed, size.width, size.height + bleed),
     );
-    final h = px.hair, w = px.hairX;
     px.fillExact(r.left, r.top, r.right, r.top + h, shade);
     px.fillExact(r.left, r.top + h, r.left + w, r.bottom, shade);
     px.fillExact(r.left + w, r.bottom - h, r.right, r.bottom, light);
@@ -273,7 +335,11 @@ class _TurnedInPainter extends RetroDesktopPixelPainter {
 
   @override
   bool shouldRepaint(_TurnedInPainter old) =>
-      old.shade != shade || old.light != light || old.bleed != bleed;
+      old.shade != shade ||
+      old.light != light ||
+      old.bleed != bleed ||
+      old.outline != outline ||
+      old.reach != reach;
 }
 
 class _SunkenBevelPainter extends RetroDesktopPixelPainter {

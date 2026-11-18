@@ -1,3 +1,56 @@
+## 0.3.0
+
+Needs ui_core 0.3.0. Retro Desktop's parts take more of their behaviour from ui_core now and keep their pixels: the
+same windows, bevels and faces, with ui_core's keys, screen-reader words and focus under them. Its motion is still
+the period's: everything stands at once unless an app sets a time.
+
+Breaking:
+
+- `RetroDesktopWindowSizeClass` is gone. `RetroDesktopThemeData.window` is ui_core's `DesignWindowSizeClass`, on the
+  same Material breakpoints, except that from 1600 wide it is `extraLarge` (Retro's `large` ran from 1200 up).
+- `RetroDesktopTabBar` calls `onChanged` only when the tab changes. A press (or Enter) on the open tab, which called
+  it again with the same index, does nothing now: ui_core's `DesignTabBar` reports changes only.
+- `RetroDesktopNumberField` is a field you type in (ui_core's `DesignNumberField`). Up and Down step it, Page Up and
+  Page Down step ten, and a held step button repeats; Left and Right move the caret in the number now, where they
+  stepped it before. Its two step buttons are pressed, not tabbed to: the field is the one tab stop, its focus ring
+  drawn inside its box so the buttons flush beside it never cover it.
+- `RetroDesktopTooltip` is a `StatelessWidget` (ui_core's `DesignTooltip` holds the state).
+
+Changes:
+
+- `RetroDesktopTooltip` is ui_core's `DesignTooltip` in Retro's tooltip face. It still waits for the pointer to rest
+  and stands at once. It now stays while the pointer moves onto it, closes on Escape, shows one at a time, and opens
+  at once along a toolbar after the first.
+- The gallery's menus spell their shortcuts with ui_core's `designShortcutLabel`, in the platform's order and the
+  reader's words; in words on a Mac too ("Command+N"), since none of Retro's faces draws ⌘ ⌥ ⇧ ⌃.
+- Menus light one row, as before: the row the keys moved to, or the one a moving pointer last crossed, never the row
+  that happens to sit under a resting pointer as a menu opens from the keys.
+- `RetroDesktopCombobox` takes `search` and `debounceDuration`. While an app's search is on its way the list says
+  "Loading"; when it fails it says "Couldn't load results" and offers Try again, which the arrow keys reach and Enter
+  runs. `options` may be left out with a `search`. "Loading" and "No results" stand as wide as the list, as its
+  options do ("No results" shrank the list to its words before).
+- `RetroDesktopRating` is ui_core's `DesignRating` under Retro's pixel stars: one tab stop instead of a button a star,
+  the arrows a star at a time, Home none, End all, a digit that many, and a drag that sweeps across; a screen reader
+  hears a slider it can step. Its focus ring stands round the stars. A tap on the stars already given still clears
+  them, and the pointer resting on them still lights nothing.
+- A chart's gridlines stand on ui_core's nice scale (`DesignLinearScale.nice`): round values of 1, 2 or 5 times a
+  power of ten that hold the data.
+- Dialogs (`showRetroDesktopDialog`) and the router's sheet pages ride ui_core's routes (`DesignDialogRoute`, and
+  `DesignBottomSheetRoute` on a phone). A screen reader hears a dialog, Tab stays inside it, and focus returns to what
+  opened it. A sheet page on a phone follows a finger that drags it down and goes with a fling, above the keyboard.
+  They still stand at once, dim nothing behind them, and Escape still follows `escapeDismissible`.
+- `RetroDesktopTabBar` is ui_core's `DesignTabBar` with Retro's folder tabs: one tab stop on the open tab, the arrows
+  (mirrored right to left), Home and End, and a screen reader hears "Today 3, Tab 1 of 3". Tabs too wide for their
+  room still scroll and show the look's arrows.
+- In Platinum, a held or chosen segment at either end of a joined strip (`RetroDesktopToggleGroup`,
+  `RetroDesktopButtonGroup`, `RetroDesktopSplitButton`) sinks into a well concentric with the strip's rounded frame:
+  it meets the outline at the end as it does above and below, and its corners are the frame's less the outline. It
+  was a square well that stopped a pixel short at the end. `retroDesktopHeldGround` takes the frame's `outline` and
+  the well's `reach` for this; `retroDesktopBevelStep` paints one step of a bevel round any outline.
+- Each gallery page, and `RetroDesktopPreview`, is its own semantics container, so a screen reader hears the gallery's
+  side navigation and every section heading around a nested app.
+- The review checks come from `ui_core_test`, a dev dependency.
+
 ## 0.2.1
 
 Retro Desktop on ui_core 0.2.1.

@@ -1,5 +1,5 @@
 /// Everything `retro_desktop_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (component_themes.dart, controls.dart, frames.dart, internal/caps.dart, internal/face.dart, internal/marks.dart, internal/modal.dart, internal/parts.dart, internal/platform_words.dart, internal/presence.dart, layout.dart, pixels.dart, theme.dart).
+/// keeps back (component_themes.dart, controls.dart, frames.dart, internal/caps.dart, internal/face.dart, internal/marks.dart, internal/modal.dart, internal/parts.dart, internal/platform_words.dart, internal/presence.dart, layout.dart, pixels.dart, press.dart, theme.dart).
 ///
 /// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
 /// rest of your app stays on the package:
@@ -14,7 +14,6 @@
 library;
 
 export 'package:ui_core/ui_core.dart';
-export 'package:ui_core/alignment.dart';
 export 'package:ui_core/inventory.dart';
 
 export 'retro_desktop_ui.dart';
@@ -31,4 +30,5 @@ export 'src/retro_desktop/internal/platform_words.dart';
 export 'src/retro_desktop/internal/presence.dart';
 export 'src/retro_desktop/layout.dart';
 export 'src/retro_desktop/pixels.dart';
+export 'src/retro_desktop/press.dart';
 export 'src/retro_desktop/theme.dart';

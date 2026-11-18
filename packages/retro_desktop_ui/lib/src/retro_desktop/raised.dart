@@ -159,6 +159,7 @@ mixin _EscapeCloses<T> on PopupRoute<T> {
   }
 }
 
+// The look's menus and its bottom sheet: timed by the theme's raise and leave (zero, at once).
 class _RaisedRoute<T> extends PopupRoute<T>
     with _EscapeCloses<T>, RetroDesktopModalRoute<T> {
   _RaisedRoute({
@@ -234,6 +235,56 @@ class _RaisedRoute<T> extends PopupRoute<T>
   }
 }
 
+// A dialog the look raises (showRetroDesktopDialog), on ui_core's DesignDialogRoute: its focus taken and given back,
+// Tab kept inside, a screen reader's dialog. It stands at once while the theme's raise is zero (the default and Reduce
+// Motion), else fades and rises its 2 % on ui_core's spring within that time. Nothing behind it is dimmed; Escape
+// closes it when [escapeDismissible] says so, apart from a press outside ([barrierDismissible]).
+class _RaisedDialogRoute<T> extends DesignDialogRoute<T>
+    with
+        _EscapeCloses<T>,
+        RetroDesktopModalRoute<T>,
+        RetroDesktopRouteStill<T> {
+  _RaisedDialogRoute({
+    required _Carried carried,
+    required WidgetBuilder builder,
+    required super.barrierDismissible,
+    required this.escapeDismissible,
+    required super.barrierLabel,
+  }) : retroDesktopTime = carried.motion.raise,
+       super(
+         barrierColor: const Color(0x00000000),
+         stiffness: retroDesktopRouteStiffness(carried.motion.raise),
+         builder: (context, details) {
+           final page = carried.wrap(
+             FocusTraversalGroup(child: Builder(builder: builder)),
+           );
+           if (carried.motion.raise == Duration.zero) return page;
+           return FadeTransition(
+             opacity: details.animation,
+             child: SlideTransition(
+               position: Tween<Offset>(
+                 begin: const Offset(0, .02),
+                 end: Offset.zero,
+               ).animate(details.animation),
+               child: page,
+             ),
+           );
+         },
+       );
+
+  @override
+  final Duration retroDesktopTime;
+
+  @override
+  final bool escapeDismissible;
+}
+
+// Whether [context] stands in a window the look raised on its own (a dialog, a bottom sheet), not one a page draws.
+bool _inRaisedWindow(BuildContext context) => switch (ModalRoute.of(context)) {
+  _RaisedRoute() || _RaisedDialogRoute() => true,
+  _ => false,
+};
+
 Future<T?> _show<T>(
   BuildContext context,
   WidgetBuilder builder, {
@@ -247,15 +298,23 @@ Future<T?> _show<T>(
   final navigator = Navigator.of(context, rootNavigator: root);
   final focus = FocusManager.instance.primaryFocus;
   final carried = _Carried(context, navigator.context);
-  final route = _RaisedRoute<T>(
-    carried: carried,
-    builder: builder,
-    dismissible: dismissible,
-    escapeDismissible: escapeDismissible ?? dismissible,
-    sheet: sheet,
-    modal: modal,
-    label: label ?? carried.shared.closeButtonLabel,
-  );
+  final RetroDesktopModalRoute<T> route = modal && !sheet
+      ? _RaisedDialogRoute<T>(
+          carried: carried,
+          builder: builder,
+          barrierDismissible: dismissible,
+          escapeDismissible: escapeDismissible ?? dismissible,
+          barrierLabel: label ?? carried.shared.closeButtonLabel,
+        )
+      : _RaisedRoute<T>(
+          carried: carried,
+          builder: builder,
+          dismissible: dismissible,
+          escapeDismissible: escapeDismissible ?? dismissible,
+          sheet: sheet,
+          modal: modal,
+          label: label ?? carried.shared.closeButtonLabel,
+        );
   try {
     return await navigator.push<T>(route);
   } finally {
@@ -401,7 +460,7 @@ class RetroDesktopDialog extends StatelessWidget {
     // Where the window's room starts down the screen (its route stands on the whole screen): it stands centred in that
     // room, but never over the menu bar (at twice the text size on a phone, a tall alert cut the bar's last row).
     // Only a window raised on its own (showRetroDesktopDialog): one written into a page stands where the page puts it.
-    final raised = ModalRoute.of(context) is _RaisedRoute;
+    final raised = _inRaisedWindow(context);
     final top =
         MediaQuery.paddingOf(context).top +
         MediaQuery.viewInsetsOf(context).top +
@@ -629,7 +688,7 @@ class RetroDesktopBottomSheet extends StatelessWidget {
     // sheet), it is a panel whose own choices, Cancel among them, are its way out.
     final close =
         onClose ??
-        (title != null && !inPlace && ModalRoute.of(context) is _RaisedRoute
+        (title != null && !inPlace && _inRaisedWindow(context)
             ? () => Navigator.maybePop(context)
             : null);
     // A sheet with a title or a close is a window, as the side sheet is, at every width: its title bar carries both,
@@ -1780,12 +1839,15 @@ RetroDesktopRaised showRetroDesktopTooltip(
   return handle;
 }
 
-/// Pointer hover, keyboard focus and long press reveal the same tooltip.
+/// Pointer hover, keyboard focus and long press reveal the same tooltip: ui_core's [DesignTooltip] (the pointer may
+/// rest on the tip, Escape hides it, one shows at a time and the next at once), drawn as the look's paper label. It
+/// stands at once and goes at once, as the look's windows do; with a raise or a leave set in the theme's motion it
+/// fades on ui_core's spring.
 ///
 /// ```dart
 /// RetroDesktopTooltip(message: 'Save this document', child: RetroDesktopButton('Save', isDefaultAction: true, onPressed: () {}))
 /// ```
-class RetroDesktopTooltip extends StatefulWidget {
+class RetroDesktopTooltip extends StatelessWidget {
   /// Creates a [RetroDesktopTooltip].
   const RetroDesktopTooltip({
     super.key,
@@ -1806,8 +1868,17 @@ class RetroDesktopTooltip extends StatefulWidget {
 
   /// {@macro retro_desktop.style}
   final RetroDesktopStyle? style;
+
   @override
-  State<RetroDesktopTooltip> createState() => _TooltipState();
+  Widget build(BuildContext context) => DesignTooltip(
+    message: message,
+    hoverDelay: wait,
+    tooltipBuilder: (context, tip) => _RaisedPresence(
+      presence: tip.animation,
+      child: RetroDesktopTooltipFace(message: message, style: style),
+    ),
+    child: child,
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -1831,76 +1902,35 @@ class RetroDesktopTooltip extends StatefulWidget {
   }
 }
 
-class _TooltipState extends State<RetroDesktopTooltip> {
-  Timer? _timer;
-  RetroDesktopRaised? _up;
-  void _show() {
-    _timer?.cancel();
-    if (!mounted || _up != null) return;
-    final box = context.findRenderObject();
-    if (box is! RenderBox || !box.hasSize) return;
-    final handle = showRetroDesktopTooltip(
-      context,
-      message: widget.message,
-      anchor: box.localToGlobal(Offset.zero) & box.size,
-      style: widget.style,
-    );
-    _up = handle;
-    handle.closed.whenComplete(() {
-      if (identical(_up, handle)) _up = null;
-    });
-  }
+// A surface ui_core shows and hides on its own spring ([presence]), as the look raises it: whole from the moment it
+// shows and gone from the moment it hides while the theme's raise and leave are zero (the default and Reduce Motion),
+// else fading with the spring. Gone, it takes no pointer.
+class _RaisedPresence extends StatelessWidget {
+  const _RaisedPresence({required this.presence, required this.child});
 
-  void _hide() {
-    _timer?.cancel();
-    _up?.dismiss();
-  }
+  final Animation<double> presence;
+  final Widget child;
 
   @override
-  void didUpdateWidget(RetroDesktopTooltip old) {
-    super.didUpdateWidget(old);
-    if (old.message != widget.message || old.style != widget.style) _hide();
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _up?.dismiss();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    tooltip: widget.message,
-    child: MouseRegion(
-      onEnter: (_) {
-        _timer?.cancel();
-        _timer = Timer(widget.wait, _show);
+  Widget build(BuildContext context) {
+    final motion = RetroDesktopMotion.of(context);
+    if (motion.raise != Duration.zero || motion.leave != Duration.zero) {
+      return FadeTransition(opacity: presence, child: child);
+    }
+    return AnimatedBuilder(
+      animation: presence,
+      child: child,
+      builder: (context, child) {
+        final shown =
+            presence.status == AnimationStatus.forward ||
+            presence.status == AnimationStatus.completed;
+        return IgnorePointer(
+          ignoring: !shown,
+          child: Opacity(opacity: shown ? 1 : 0, child: child),
+        );
       },
-      onExit: (_) => _hide(),
-      child: Focus(
-        canRequestFocus: false,
-        skipTraversal: true,
-        includeSemantics: false,
-        onFocusChange: (focused) {
-          if (focused &&
-              FocusManager.instance.highlightMode ==
-                  FocusHighlightMode.traditional) {
-            _show();
-          } else if (!focused) {
-            _hide();
-          }
-        },
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          excludeFromSemantics: true,
-          onLongPress: _show,
-          onLongPressUp: _hide,
-          child: widget.child,
-        ),
-      ),
-    ),
-  );
+    );
+  }
 }
 
 /// A notice window with optional action and dismissal controls.

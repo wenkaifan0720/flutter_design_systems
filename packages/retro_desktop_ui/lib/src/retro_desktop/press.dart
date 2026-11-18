@@ -141,27 +141,15 @@ class RetroDesktopPressable extends StatelessWidget {
       toggled: toggled,
       expanded: expanded,
       inMutuallyExclusiveGroup: inGroup,
-      builder: (context, states, _) {
-        final claim = RetroDesktopHighlightClaim._(states);
-        return RetroDesktopReach(
-          alignment: alignment,
-          inside: inside,
-          child: _ClaimedHighlight(
-            claim: claim,
-            inside: ringInside,
-            shape: focusShape ?? RetroDesktopTheme.of(context).shapes.small,
-            child: _HighlightScope(
-              claim: claim,
-              child: AnimatedOpacity(
-                duration: RetroDesktopMotion.of(context).state,
-                curve: RetroDesktopMotion.of(context).standard,
-                opacity: states.contains(WidgetState.disabled) ? .5 : 1,
-                child: builder?.call(context, states) ?? child!,
-              ),
-            ),
-          ),
-        );
-      },
+      builder: (context, states, _) => retroDesktopPressChrome(
+        context,
+        states,
+        alignment: alignment,
+        inside: inside,
+        ringInside: ringInside,
+        focusShape: focusShape,
+        child: builder?.call(context, states) ?? child!,
+      ),
     );
   }
 
@@ -225,6 +213,39 @@ class RetroDesktopPressable extends StatelessWidget {
       )
       ..add(FlagProperty('inside', value: inside, ifTrue: 'inside'));
   }
+}
+
+/// What a [RetroDesktopPressable] stands round its face, for a press ui_core builds (a tab of its DesignTabBar): the
+/// reach a finger needs, the focus ring a face under it claims (else round [child] in [focusShape]), and the dimming
+/// while [states] is disabled. Not exported: the look's own.
+Widget retroDesktopPressChrome(
+  BuildContext context,
+  Set<WidgetState> states, {
+  required Widget child,
+  AlignmentGeometry alignment = Alignment.center,
+  bool inside = false,
+  bool ringInside = false,
+  OutlinedBorder? focusShape,
+}) {
+  final claim = RetroDesktopHighlightClaim._(states);
+  return RetroDesktopReach(
+    alignment: alignment,
+    inside: inside,
+    child: _ClaimedHighlight(
+      claim: claim,
+      inside: ringInside,
+      shape: focusShape ?? RetroDesktopTheme.of(context).shapes.small,
+      child: _HighlightScope(
+        claim: claim,
+        child: AnimatedOpacity(
+          duration: RetroDesktopMotion.of(context).state,
+          curve: RetroDesktopMotion.of(context).standard,
+          opacity: states.contains(WidgetState.disabled) ? .5 : 1,
+          child: child,
+        ),
+      ),
+    ),
+  );
 }
 
 /// Which part under a [RetroDesktopPressable] draws its focus feedback.

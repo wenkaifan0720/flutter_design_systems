@@ -5,6 +5,22 @@
 /// beside that one.
 ///
 /// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
+///
+/// {@canonicalFor chrome_metrics}
+/// {@canonicalFor chrome_metrics.RetroDesktopChromeMetrics}
+/// {@canonicalFor host}
+/// {@canonicalFor host.RetroDesktopChromeScope}
+/// {@canonicalFor host.RetroDesktopHost}
+/// {@canonicalFor host.RetroDesktopPage}
+/// {@canonicalFor host.RetroDesktopPresentation}
+/// {@canonicalFor host.RetroDesktopPreview}
+/// {@canonicalFor host.RetroDesktopSheetPage}
+/// {@canonicalFor host.RetroDesktopShellAction}
+/// {@canonicalFor host.RetroDesktopUtility}
+/// {@canonicalFor inventory}
+/// {@canonicalFor inventory.RetroDesktopInventoryGallery}
+/// {@canonicalFor inventory.retroDesktopInventory}
+/// {@canonicalFor inventory.retroDesktopInventoryHeights}
 library;
 
 export 'package:ui_core/host.dart';

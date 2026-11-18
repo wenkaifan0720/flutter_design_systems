@@ -236,7 +236,15 @@ void main() {
         );
         expect(offSize, onSize);
         expect(listEquals(on, off), isFalse, reason: 'disabled not dimmed');
-        await tester.tap(find.byType(RetroDesktopPressable).first);
+        // A press on a disabled star (ui_core's DesignRating draws no pressables) does nothing, and throws nothing.
+        await tester.tap(
+          find
+              .descendant(
+                of: find.byType(RetroDesktopRating),
+                matching: find.byType(RetroDesktopPixelPaint),
+              )
+              .first,
+        );
         await tester.pump();
         expect(tester.takeException(), isNull);
       }, tags: const ['goldens']);
@@ -313,10 +321,12 @@ void main() {
         tester,
       ) async {
         for (final (kind, values, names) in [
+          // ui_core's nice scale (0.3.0): steps of 1, 2 or 5 times a power of ten
+          // that hold the data, so 12 tops out at 12 by twos (0.2.1: 15 by fives).
           (
             RetroDesktopChartType.bar,
             <double>[3, 12, 7, 9],
-            ['0', '5', '10', '15'],
+            ['0', '2', '4', '6', '8', '10', '12'],
           ),
           (
             RetroDesktopChartType.line,

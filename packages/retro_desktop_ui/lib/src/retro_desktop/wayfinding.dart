@@ -2,11 +2,13 @@ import 'package:flutter/foundation.dart';
 
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart' show kTouchSlop;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'acts.dart';
+import 'behavior.dart' show RetroDesktopMotion;
 import 'component_themes.dart';
 import 'controls.dart';
 import 'glyphs.dart';
@@ -341,16 +343,17 @@ class RetroDesktopPagination extends StatelessWidget {
   }
 }
 
-/// A row of pixel stars: filled up to the value, outlined after it. Each star
-/// is a button; arrows move by one; [onChanged] null shows a still reading, a
-/// compact row for a review or a product. [enabled] false keeps the stars at
-/// their chosen size and spacing, dimmed, and takes no input.
-/// The filled stars take the highlight: they are the chosen value.
+/// A row of pixel stars: filled up to the value, outlined after it. ui_core's [DesignRating] carries it: one tab stop,
+/// the arrows a star at a time, Home or 0 none, End all, a digit that many; a drag sweeps across; a screen reader hears
+/// a slider it can step. A tap on the stars already given clears them, as before. [onChanged] null shows a still
+/// reading, a compact row for a review or a product. [enabled] false keeps the stars at their chosen size and spacing,
+/// dimmed, and takes no input. The filled stars take the highlight: they are the chosen value. The pointer resting on
+/// them lights nothing, as on the period's desktop.
 ///
 /// ```dart
 /// RetroDesktopRating(label: 'Your rating', value: 4, onChanged: (_) {})
 /// ```
-class RetroDesktopRating extends StatelessWidget {
+class RetroDesktopRating extends StatefulWidget {
   /// Creates a [RetroDesktopRating].
   const RetroDesktopRating({
     super.key,
@@ -379,19 +382,71 @@ class RetroDesktopRating extends StatelessWidget {
   final ValueChanged<int>? onChanged;
 
   @override
+  State<RetroDesktopRating> createState() => _RatingState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
+      ..add(StringProperty('label', label))
+      ..add(DoubleProperty('value', value))
+      ..add(IntProperty('max', max, defaultValue: 5))
+      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged));
+  }
+}
+
+class _RatingState extends State<RetroDesktopRating> {
+  final _focus = FocusNode(debugLabel: 'rating');
+  List<GlobalKey> _stars = const [];
+  // The star a pointer went down on, from 1, while it is down; and where.
+  int? _held;
+  Offset? _downAt;
+
+  @override
+  void dispose() {
+    _focus.dispose();
+    super.dispose();
+  }
+
+  // The star under [global], from 1; null, none.
+  int? _starAt(Offset global) {
+    for (var i = 0; i < _stars.length; i++) {
+      final box = _stars[i].currentContext?.findRenderObject();
+      if (box is RenderBox &&
+          box.hasSize &&
+          (Offset.zero & box.size).contains(box.globalToLocal(global))) {
+        return i + 1;
+      }
+    }
+    return null;
+  }
+
+  bool get _takes => widget.onChanged != null && widget.enabled;
+
+  @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
+    final w = widget;
     final words = RetroDesktopLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    Widget star(int i, Set<WidgetState> states) {
-      final share = (value - i).clamp(0.0, 1.0);
-      // Held, a star shows its press as the appearance's buttons do: Platinum's
-      // body darkens; Chisel's greys and sinks a pixel down and right.
-      final held = states.contains(WidgetState.pressed);
-      return retroDesktopOwnSize(
-        width: 22,
-        height: 22,
+    final still = w.onChanged == null;
+    final chosen = w.value.round();
+    if (_stars.length != w.max) {
+      _stars = [for (var i = 0; i < w.max; i++) GlobalKey()];
+    }
+    Widget star(DesignRatingItemDetails item) {
+      // The value's own fill: a hovering pointer's preview lights nothing.
+      final share = item.isPreview
+          ? (w.value - item.index).clamp(0.0, 1.0)
+          : item.fill;
+      // Held, a star shows its press as the appearance's buttons do: Platinum's body darkens; Chisel's greys and
+      // sinks a pixel down and right.
+      final held = _held == item.index + 1;
+      final face = retroDesktopOwnSize(
+        width: _starSide,
+        height: _starSide,
         child: RetroDesktopPixelPaint(
           painter: _StarPainter(
             share: share,
@@ -410,91 +465,115 @@ class RetroDesktopRating extends StatelessWidget {
           ),
         ),
       );
-    }
-
-    if (onChanged == null) {
-      return Semantics(
-        label: label,
-        value: words.ratingOf(value, max),
-        excludeSemantics: true,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (var i = 0; i < max; i++) ...[
-              if (i > 0) const SizedBox(width: RetroDesktopSpacing.s2),
-              star(i, const {}),
-            ],
-          ],
+      if (still) {
+        return Padding(
+          padding: EdgeInsetsDirectional.only(
+            start: item.index == 0 ? 0 : RetroDesktopSpacing.s2,
+          ),
+          child: face,
+        );
+      }
+      // Each star keeps its full touch target; disabled, it dims in place.
+      return KeyedSubtree(
+        key: _stars[item.index],
+        child: RetroDesktopReach(
+          child: AnimatedOpacity(
+            duration: RetroDesktopMotion.of(context).state,
+            curve: RetroDesktopMotion.of(context).standard,
+            opacity: item.states.contains(WidgetState.disabled) ? .5 : 1,
+            child: Padding(
+              padding: const EdgeInsets.all(RetroDesktopSpacing.px),
+              child: face,
+            ),
+          ),
         ),
       );
     }
-    final chosen = value.round();
-    return Semantics(
-      container: true,
-      label: label,
-      value: words.ratingOf(chosen, max),
-      explicitChildNodes: true,
-      child: Focus(
-        canRequestFocus: false,
-        skipTraversal: true,
-        onKeyEvent: (_, event) {
-          if (!enabled ||
-              (event is! KeyDownEvent && event is! KeyRepeatEvent)) {
-            return KeyEventResult.ignored;
-          }
-          final key = event.logicalKey;
-          final up = rtl
-              ? LogicalKeyboardKey.arrowLeft
-              : LogicalKeyboardKey.arrowRight;
-          final down = rtl
-              ? LogicalKeyboardKey.arrowRight
-              : LogicalKeyboardKey.arrowLeft;
-          if (key == up || key == LogicalKeyboardKey.arrowUp) {
-            onChanged!(math.min(max, chosen + 1));
-          } else if (key == down || key == LogicalKeyboardKey.arrowDown) {
-            onChanged!(math.max(0, chosen - 1));
-          } else {
-            return KeyEventResult.ignored;
-          }
-          return KeyEventResult.handled;
-        },
-        // Each star keeps its full touch target; in a slot too narrow for
-        // the row they wrap rather than overflow.
-        child: Wrap(
-          children: [
-            for (var i = 0; i < max; i++)
-              RetroDesktopPressable(
-                label: words.ratingOf(i + 1, max),
-                inGroup: true,
-                checked: i + 1 == chosen,
-                // Choosing the stars already given clears them. Disabled,
-                // the press dims each star in place.
-                onPressed: enabled
-                    ? () => onChanged!(i + 1 == chosen ? 0 : i + 1)
-                    : null,
-                focusShape: t.shapes.small,
-                builder: (context, states) => Padding(
-                  padding: const EdgeInsets.all(RetroDesktopSpacing.px),
-                  child: star(i, states),
-                ),
+
+    final rating = DesignRating(
+      value: still ? w.value : chosen.toDouble(),
+      itemCount: w.max,
+      readOnly: still,
+      onChanged: _takes ? (value) => w.onChanged!(value.round()) : null,
+      semanticLabel: w.label,
+      semanticFormatterCallback: (value) => words.ratingOf(value, w.max),
+      focusNode: _focus,
+      // In a slot narrower than the stars the row scales down: ui_core reads a pointer along one line. In a wider one
+      // it stands at the start, as the look's rows do.
+      layoutBuilder: (context, items) => FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: AlignmentDirectional.centerStart,
+        child: still
+            ? Row(mainAxisSize: MainAxisSize.min, children: items)
+            : Stack(
+                // The ring stands outside the stars where their reach is no wider than they are (a desk's).
+                clipBehavior: Clip.none,
+                children: [
+                  Row(mainAxisSize: MainAxisSize.min, children: items),
+                  Positioned.fill(child: _ring(t, items.length)),
+                ],
               ),
-          ],
-        ),
       ),
+      itemBuilder: (context, item) => star(item),
+    );
+    if (still) return rating;
+    // A press on a star: held while down, and on the stars already given, clearing them (ui_core leaves the value as it
+    // is). Heard beside ui_core's own gestures, not against them.
+    return Listener(
+      onPointerDown: (event) {
+        if (!_takes) return;
+        _downAt = event.position;
+        setState(() => _held = _starAt(event.position));
+      },
+      onPointerMove: (event) {
+        final from = _downAt;
+        if (_held == null || from == null) return;
+        if ((event.position - from).distance > kTouchSlop) {
+          setState(() => _held = null);
+        }
+      },
+      onPointerUp: (event) {
+        final held = _held;
+        if (held == null) return;
+        setState(() => _held = null);
+        if (_takes && held == chosen && _starAt(event.position) == held) {
+          w.onChanged!(0);
+        }
+      },
+      onPointerCancel: (_) => setState(() => _held = null),
+      child: rating,
     );
   }
 
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(FlagProperty('enabled', value: enabled, ifFalse: 'enabled: false'))
-      ..add(StringProperty('label', label))
-      ..add(DoubleProperty('value', value))
-      ..add(IntProperty('max', max, defaultValue: 5))
-      ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged));
-  }
+  // The keys' ring round the row (one tab stop), on the stars' own faces, not their reach: each star stands on the
+  // middle of a reach as wide and tall as a pointer or a finger needs, so the ring keeps clear of that room.
+  Widget _ring(RetroDesktopThemeData t, int count) => IgnorePointer(
+    child: LayoutBuilder(
+      builder: (context, room) {
+        const face = _starSide + 2 * RetroDesktopSpacing.px;
+        final across = count == 0 ? 0.0 : (room.maxWidth / count - face) / 2;
+        final down = (room.maxHeight - face) / 2;
+        return Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: math.max(0, across),
+            vertical: math.max(0, down),
+          ),
+          child: ListenableBuilder(
+            listenable: _focus,
+            builder: (context, _) => RetroDesktopHighlight(
+              shape: t.shapes.small,
+              focused: _focus.hasFocus,
+              child: const SizedBox.expand(),
+            ),
+          ),
+        );
+      },
+    ),
+  );
 }
+
+// A star's side, in logical pixels: eleven cells of two.
+const double _starSide = 22;
 
 // An eleven-cell star on the device's grid, two pixels a cell: filled to
 // [share] from the start edge in the highlight, outlined in the ink.

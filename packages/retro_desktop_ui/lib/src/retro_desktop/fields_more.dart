@@ -678,7 +678,9 @@ Widget _listPanel(BuildContext context, Widget list) => retroDesktopPanel(
 
 /// A box that suggests as you type: the options that match open under it, the
 /// arrows move along them, Enter takes one. ui_core's combobox carries the
-/// list, its keys and its announcements.
+/// list, its keys and its announcements. With a [search] (options that take
+/// time to find, from a server), the list says it is looking while the search
+/// runs and, should it fail, says so with a row that tries again.
 ///
 /// ```dart
 /// RetroDesktopCombobox<String>(label: 'Country', options: const ['Austria', 'Belgium', 'Chile'], onSelected: (_) {})
@@ -687,7 +689,9 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
   /// Creates a [RetroDesktopCombobox].
   const RetroDesktopCombobox({
     super.key,
-    required this.options,
+    this.options = const [],
+    this.search,
+    this.debounceDuration,
     this.displayString,
     this.value,
     this.onSelected,
@@ -704,6 +708,16 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
 
   /// The options in their order.
   final List<T> options;
+
+  /// Finds the options for the words typed, in place of [options]; it may
+  /// take time (a future) and fail. While it runs the list says it is
+  /// loading; a failure says so in the list, with a "Try again" row the
+  /// arrows reach and Enter runs.
+  final DesignOptionSearch<T>? search;
+
+  /// How long typing rests before [search] runs; null (the default) runs it
+  /// at every change.
+  final Duration? debounceDuration;
 
   /// Each option's words; null uses its `toString`.
   final String Function(T option)? displayString;
@@ -740,6 +754,8 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
     final words = displayString ?? (T option) => '$option';
     final box = DesignCombobox<T>(
       options: options,
+      search: search,
+      debounceDuration: debounceDuration,
       displayStringForOption: words,
       value: value,
       onSelected: onSelected,
@@ -773,6 +789,8 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
           _optionRow(context, words(option), states),
       surfaceBuilder: _listPanel,
       emptyBuilder: _noMatchesRow,
+      loadingBuilder: _searchingRow,
+      errorBuilder: _failedRows,
     );
     return _Labelled(
       label: label,
@@ -788,6 +806,14 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('options', options))
+      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
+        ),
+      )
       ..add(
         ObjectFlagProperty<String Function(T option)>.has(
           'displayString',
@@ -829,12 +855,78 @@ class RetroDesktopCombobox<T extends Object> extends StatelessWidget {
 /// Says in the list that no option fits, on the line an option's words take.
 Widget _noMatchesRow(BuildContext context) {
   final t = RetroDesktopTheme.of(context);
-  return Padding(
-    padding: _optionPadding(t),
-    child: Text(
-      DesignLocalizations.of(context).noResultsLabel,
-      style: t.type.body.copyWith(color: t.colors.textSecondary),
+  return _listWide(
+    Padding(
+      padding: _optionPadding(t),
+      child: Text(
+        DesignLocalizations.of(context).noResultsLabel,
+        style: t.type.body.copyWith(color: t.colors.textSecondary),
+      ),
     ),
+  );
+}
+
+// A line said in the list stands as wide as the list's options would, the field's width, at its start; not just as wide
+// as its words.
+Widget _listWide(Widget line) => Align(
+  alignment: AlignmentDirectional.centerStart,
+  heightFactor: 1,
+  child: line,
+);
+
+/// Says in the list that the search is still finding options, as the words
+/// that none match are said.
+Widget _searchingRow(BuildContext context) {
+  final t = RetroDesktopTheme.of(context);
+  return _listWide(
+    Padding(
+      padding: _optionPadding(t),
+      child: Text(
+        DesignLocalizations.of(context).loadingLabel,
+        style: t.type.body.copyWith(color: t.colors.textSecondary),
+      ),
+    ),
+  );
+}
+
+/// Says in the list that the search failed, then a "Try again" row drawn as an
+/// option is: lit while the keys are on it, run by Enter or a press.
+Widget _failedRows(BuildContext context, DesignSearchError failed) {
+  final t = RetroDesktopTheme.of(context);
+  final words = DesignLocalizations.of(context);
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Padding(
+        padding: _optionPadding(t),
+        child: ExcludeSemantics(
+          child: Text(
+            words.searchFailedMessage,
+            style: t.type.body.copyWith(color: t.colors.textSecondary),
+          ),
+        ),
+      ),
+      Semantics(
+        button: true,
+        onTap: failed.retry,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
+            onTap: failed.retry,
+            child: retroDesktopLitRow(
+              context,
+              lit: failed.focused,
+              shape: const RoundedRectangleBorder(),
+              padding: _optionPadding(t),
+              child: RetroDesktopCaps(Text(words.retryButtonLabel)),
+            ),
+          ),
+        ),
+      ),
+    ],
   );
 }
 

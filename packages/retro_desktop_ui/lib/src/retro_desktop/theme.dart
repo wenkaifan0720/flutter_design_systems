@@ -1695,9 +1695,9 @@ class RetroDesktopThemeData with Diagnosticable {
         ),
       };
 
-  /// Responsive class of the available window width.
-  RetroDesktopWindowSizeClass get window =>
-      RetroDesktopWindowSizeClass.ofWidth(width);
+  /// The class of the available window width, ui_core's (Material's breakpoints: compact under 600, medium to 840,
+  /// expanded to 1200, large to 1600, extra large beyond).
+  DesignWindowSizeClass get window => DesignWindowSizeClass.fromWidth(width);
 
   /// Returns a theme with the requested values replaced.
   RetroDesktopThemeData copyWith({

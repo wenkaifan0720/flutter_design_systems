@@ -8,8 +8,8 @@ import 'package:material_ui/material_ui.dart';
 import 'internal/face.dart';
 import 'internal/modal.dart';
 
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
+import 'package:ui_core/host.dart';
 
 import 'theme.dart';
 import 'behavior.dart';
@@ -306,15 +306,13 @@ class RetroDesktopSheetPage<T> extends Page<T> {
         ),
       );
     }
+    final motion = RetroDesktopMotion.of(context);
     if (t.desk) {
       return _SheetWindowRoute<T>(
         settings: this,
-        barrierDismissible: true,
         barrierLabel: DesignLocalizations.of(context).closeButtonLabel,
-        transitionDuration: RetroDesktopMotion.of(context).raise,
-        // Nothing behind is dimmed (the look's stacking law).
-        barrierColor: const Color(0x00000000),
-        pageBuilder: (sheetContext, _, _) => Center(
+        time: motion.raise,
+        builder: (sheetContext, _) => Center(
           child: SizedBox(
             width: 560,
             height: drawer ? null : most(sheetContext),
@@ -326,58 +324,59 @@ class RetroDesktopSheetPage<T> extends Page<T> {
         ),
       );
     }
+    // ui_core's sheet keeps the panel above the on-screen keyboard and follows a finger that drags it closed.
     return _SheetFootRoute<T>(
       settings: this,
       barrierLabel: DesignLocalizations.of(context).closeButtonLabel,
-      sheetAnimationStyle: AnimationStyle(
-        duration: RetroDesktopMotion.of(context).travel,
-        reverseDuration: RetroDesktopMotion.of(context).leave,
-      ),
-      backgroundColor: const Color(0x00000000),
-      modalBarrierColor: const Color(0x00000000),
-      elevation: 0,
-      isScrollControlled: true,
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
-        ),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: most(sheetContext)),
-          child: SizedBox(
-            height: drawer ? null : most(sheetContext),
-            child: card(sheetContext),
-          ),
+      time: motion.travel,
+      builder: (sheetContext, _) => ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: most(sheetContext)),
+        child: SizedBox(
+          height: drawer ? null : most(sheetContext),
+          child: card(sheetContext),
         ),
       ),
     );
   }
 }
 
-// A sheet page's window on a desk and its panel on a phone take the front from the window under them.
-class _SheetWindowRoute<T> extends RawDialogRoute<T>
-    with RetroDesktopModalRoute<T> {
+// A sheet page's window on a desk and its panel on a phone take the front from the window under them, on ui_core's
+// routes: focus taken and given back, Tab kept inside, Escape and a press outside closing it. Each stands at once while
+// the theme's time is zero (the default and Reduce Motion), else moves on ui_core's spring within it. Nothing behind
+// is dimmed (the look's stacking law).
+class _SheetWindowRoute<T> extends DesignDialogRoute<T>
+    with RetroDesktopModalRoute<T>, RetroDesktopRouteStill<T> {
   _SheetWindowRoute({
-    required super.pageBuilder,
+    required super.builder,
+    required Duration time,
     super.settings,
-    super.barrierDismissible,
     super.barrierLabel,
-    super.transitionDuration,
-    super.barrierColor,
-  });
+  }) : retroDesktopTime = time,
+       super(
+         barrierDismissible: true,
+         barrierColor: const Color(0x00000000),
+         stiffness: retroDesktopRouteStiffness(time),
+       );
+
+  @override
+  final Duration retroDesktopTime;
 }
 
-class _SheetFootRoute<T> extends ModalBottomSheetRoute<T>
-    with RetroDesktopModalRoute<T> {
+class _SheetFootRoute<T> extends DesignBottomSheetRoute<T>
+    with RetroDesktopModalRoute<T>, RetroDesktopRouteStill<T> {
   _SheetFootRoute({
     required super.builder,
-    required super.isScrollControlled,
+    required Duration time,
     super.settings,
     super.barrierLabel,
-    super.sheetAnimationStyle,
-    super.backgroundColor,
-    super.modalBarrierColor,
-    super.elevation,
-  });
+  }) : retroDesktopTime = time,
+       super(
+         barrierColor: const Color(0x00000000),
+         stiffness: retroDesktopRouteStiffness(time),
+       );
+
+  @override
+  final Duration retroDesktopTime;
 }
 
 /// How a page stands in its preview.
@@ -471,52 +470,57 @@ class RetroDesktopPreview extends StatelessWidget {
     return PreviewFrame(
       platform: platform,
       brightness: brightness,
-      child: MaterialApp(
-        key: ValueKey<Object>((presentation, drawer)),
-        debugShowCheckedModeBanner: false,
-        // The page reads in the direction of the screen it is shown on: the nested app's own locale turned a right-to-left
-        // gallery's preview back to left to right.
-        builder: (context, app) => Directionality(
-          textDirection: direction,
-          child: RetroDesktopHost(
-            light: light,
-            dark: dark,
-            brightness: brightness,
-            child: app ?? const SizedBox.shrink(),
+      // Its own semantics container: a nested app's modal barrier hides what was painted before it in the same
+      // container (material_ui's MaterialApp draws none of its own), so the page round a preview went silent.
+      child: Semantics(
+        container: true,
+        child: MaterialApp(
+          key: ValueKey<Object>((presentation, drawer)),
+          debugShowCheckedModeBanner: false,
+          // The page reads in the direction of the screen it is shown on: the nested app's own locale turned a right-to-left
+          // gallery's preview back to left to right.
+          builder: (context, app) => Directionality(
+            textDirection: direction,
+            child: RetroDesktopHost(
+              light: light,
+              dark: dark,
+              brightness: brightness,
+              child: app ?? const SizedBox.shrink(),
+            ),
           ),
+          home: switch (presentation) {
+            RetroDesktopPresentation.root => Builder(
+              builder: (context) => tabs.isEmpty
+                  ? child
+                  : Column(
+                      children: [
+                        Expanded(child: scoped(child)),
+                        if (!RetroDesktopTheme.of(context).desk)
+                          RetroDesktopNavigationBar(
+                            items: nav,
+                            selectedIndex: activeIndex,
+                            action: action,
+                          ),
+                      ],
+                    ),
+            ),
+            RetroDesktopPresentation.pushed => PreviewStage(
+              route: (context, page) => RetroDesktopPage<void>(
+                key: const ValueKey<String>('platinum-preview'),
+                child: page,
+              ).createRoute(context),
+              child: scoped(child),
+            ),
+            RetroDesktopPresentation.sheet => PreviewStage(
+              route: (context, page) => RetroDesktopSheetPage<void>(
+                key: const ValueKey<String>('platinum-preview'),
+                drawer: drawer,
+                child: page,
+              ).createRoute(context),
+              child: child,
+            ),
+          },
         ),
-        home: switch (presentation) {
-          RetroDesktopPresentation.root => Builder(
-            builder: (context) => tabs.isEmpty
-                ? child
-                : Column(
-                    children: [
-                      Expanded(child: scoped(child)),
-                      if (!RetroDesktopTheme.of(context).desk)
-                        RetroDesktopNavigationBar(
-                          items: nav,
-                          selectedIndex: activeIndex,
-                          action: action,
-                        ),
-                    ],
-                  ),
-          ),
-          RetroDesktopPresentation.pushed => PreviewStage(
-            route: (context, page) => RetroDesktopPage<void>(
-              key: const ValueKey<String>('platinum-preview'),
-              child: page,
-            ).createRoute(context),
-            child: scoped(child),
-          ),
-          RetroDesktopPresentation.sheet => PreviewStage(
-            route: (context, page) => RetroDesktopSheetPage<void>(
-              key: const ValueKey<String>('platinum-preview'),
-              drawer: drawer,
-              child: page,
-            ).createRoute(context),
-            child: child,
-          ),
-        },
       ),
     );
   }

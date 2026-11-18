@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_host.dart';

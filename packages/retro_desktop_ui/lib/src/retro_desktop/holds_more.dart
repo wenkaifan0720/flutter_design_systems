@@ -559,7 +559,7 @@ class RetroDesktopReorderableListView<T extends Object> extends StatefulWidget {
   /// The rows' values, in order.
   final List<T> items;
 
-  /// Reports a move from one place to another; [to] counts the places after
+  /// Reports a move from one place to another; `to` counts the places after
   /// the row has left its own.
   final void Function(int from, int to) onReorder;
 
