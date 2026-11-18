@@ -1,0 +1,57 @@
+name: appliance_ui
+description: >-
+  A Flutter design system shaped like a calm household device: warm moulded plastic under one light, crisp seams, one signal orange and lamps that say what is on.
+version: 0.1.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/appliance/
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/appliance_ui
+issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+screenshots:
+  - description: "Larder, Appliance's example shop, by day - its home page at 1440 px beside the same page on a 390 px phone."
+    path: screenshots/hero_home_day.webp
+  - description: "Larder's orders at 1440 px by night, the list beside the open order and its lamp-lit progress."
+    path: screenshots/orders_1440_night.webp
+  - description: "The basket on a 390 px phone by night, its steppers and the key strip under the page."
+    path: screenshots/basket_390_night.webp
+  - description: "The shop at 1440 px by day, its selects and the slide selector over the goods."
+    path: screenshots/shop_1440_day.webp
+  - description: "Settings on a phone by day - a latched key with its lamp lit, slide switches on at the end with lamps."
+    path: screenshots/settings_390_day.webp
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.3.0
+  material_ui: ^1.9.0
+  cupertino_ui: ^1.0.0
+  lucide_icons_flutter: ">=3.1.25 <5.0.0"
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  leak_tracker_flutter_testing: any
+  ui_core_test: ^0.1.0
+
+flutter:
+  fonts:
+
+
+    - family: Barlow
+      fonts:
+        - asset: assets/fonts/Barlow-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Barlow-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Barlow-SemiBold.ttf
+          weight: 600
