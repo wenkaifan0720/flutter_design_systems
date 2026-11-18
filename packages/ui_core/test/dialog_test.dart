@@ -101,6 +101,46 @@ bool _focusedOn(String label) {
 }
 
 void main() {
+  testWidgets(
+    'widget actions share a phone row, keep their own semantics, and stack when their words grow',
+    (tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(390, 844);
+      addTearDown(tester.view.reset);
+      var pressed = 0;
+      final actions = [
+        for (final text in ['Keep', 'Discard'])
+          DesignPressable(
+            key: ValueKey(text),
+            semanticLabel: text,
+            onPressed: () => pressed++,
+            autofocus: text == 'Keep',
+            builder: (_, _, _) =>
+                Padding(padding: const EdgeInsets.all(8), child: Text(text)),
+          ),
+      ];
+      Future<void> show(double scale) => tester.pumpWidget(
+        harness(
+          DesignDialog(title: 'Changes', actionWidgets: actions),
+          textDirection: TextDirection.rtl,
+          textScale: scale,
+        ),
+      );
+      await show(1);
+      await tester.pumpAndSettle();
+      Rect box(String label) => tester.getRect(find.byKey(ValueKey(label)));
+      expect(box('Keep').width, box('Discard').width);
+      expect(box('Keep').left, greaterThan(box('Discard').left));
+      expect(box('Keep').center.dy, box('Discard').center.dy);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      expect(pressed, 1);
+      await show(2);
+      await tester.pumpAndSettle();
+      expect(box('Discard').bottom, lessThanOrEqualTo(box('Keep').top));
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   behaviourContract(
     'DesignDialogRoute',
     build: (c) => _opener(

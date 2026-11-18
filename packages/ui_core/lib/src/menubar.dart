@@ -8,8 +8,8 @@
 /// run spell the start), Right opens a submenu (Left closes it) or else
 /// moves to the next menu, Left the previous one, and Escape closes it,
 /// focus back on the bar. While a menu is open, a pointer over another top
-/// item opens that one. A menu a click opened lights no item until the
-/// pointer or a key picks one.
+/// item opens that one. Moving away clears the highlight and leaves the
+/// menu open for the keyboard. A click outside, Escape or a choice closes it.
 library;
 
 import 'dart:async';
@@ -90,7 +90,7 @@ enum DesignMenuLevel {
 }
 
 /// Paints an item for its [states] ([WidgetState.focused] while the
-/// keyboard is on it, [WidgetState.selected] while its menu is open,
+/// keyboard is on it, [WidgetState.selected] for the active menu title,
 /// hovered, pressed, disabled). In a menu whose highlight follows the
 /// pointer, one item at most is focused or hovered: the current one.
 typedef DesignMenuItemBuilder = Widget Function(
@@ -201,6 +201,8 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
   final List<MenuController> _menus = [];
   final List<FocusNode> _nodes = [];
   int _current = 0;
+  int? _openIndex;
+  bool _showOpenTitle = true;
 
   @override
   void dispose() {
@@ -221,19 +223,20 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
       _nodes.removeLast().dispose();
     }
     if (_current >= n) _current = n == 0 ? 0 : n - 1;
+    if ((_openIndex ?? -1) >= n) _openIndex = null;
     for (var i = 0; i < n; i++) {
       _nodes[i].skipTraversal = i != _current;
     }
   }
 
-  int? get _openIndex {
-    for (var i = 0; i < _menus.length; i++) {
-      if (_menus[i].isOpen) return i;
-    }
-    return null;
-  }
-
   int _wrap(int i) => i % widget.menus.length;
+
+  // Leaving the title and its panels clears their pointer highlight. The menu
+  // stays expanded, ready for a key or for the pointer to return.
+  void _highlightTitle(int i, bool show) {
+    if (_openIndex != i || _showOpenTitle == show) return;
+    setState(() => _showOpenTitle = show);
+  }
 
   // Moves to top item [i]; [open] opens its menu once focus is on it, so
   // the menu gives focus back there when it closes.
@@ -242,10 +245,10 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
     if (was != null && was != i) _menus[was].close();
     setState(() => _current = i);
     _nodes[i].requestFocus();
-    if (open && !_menus[i].isOpen) {
+    if (open && _openIndex != i) {
       // The focus change applies in a microtask queued before this one.
       scheduleMicrotask(() {
-        if (mounted) _menus[i].open();
+        if (mounted && _current == i && i < _menus.length) _menus[i].open();
       });
     }
   }
@@ -311,12 +314,23 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
         trigger: DesignOverlayTrigger.manual,
         arrowKeyNavigation: true,
         semanticLabel: entry.label,
-        onOpenChanged: (_) => setState(() {}),
+        onOpenChanged: (open) {
+          if (open) {
+            _openIndex = i;
+            _showOpenTitle = true;
+          } else if (_openIndex == i) {
+            _openIndex = null;
+          }
+        },
         anchorBuilder: (context, anchor) => MouseRegion(
           onEnter: (_) {
             final open = _openIndex;
-            if (open != null && open != i) _goTo(i, open: true);
+            _highlightTitle(i, true);
+            if (entry.enabled && open != null && open != i) {
+              _goTo(i, open: true);
+            }
           },
+          onExit: (_) => _highlightTitle(i, false),
           child: DesignPressable(
             focusNode: _nodes[i],
             onPressed: entry.enabled
@@ -325,7 +339,7 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
                     anchor.toggle();
                   }
                 : null,
-            selected: anchor.isOpen,
+            selected: anchor.isOpen && _showOpenTitle,
             expanded: anchor.isOpen,
             semanticLabel: entry.label,
             excludeSemantics: true,
@@ -339,7 +353,12 @@ class _DesignMenuBarState extends State<DesignMenuBar> {
           root: _menus[i],
           painters: DesignMenuPainters(
             itemBuilder: widget.itemBuilder,
-            surfaceBuilder: widget.surfaceBuilder,
+            surfaceBuilder: (context, info, items) => MouseRegion(
+              onEnter: (_) => _highlightTitle(i, true),
+              onExit: (_) => _highlightTitle(i, false),
+              child: widget.surfaceBuilder(context, info, items),
+            ),
+            onKeyNavigation: () => _highlightTitle(i, true),
             dividerBuilder: widget.dividerBuilder,
             highlightFollowsPointer: widget.highlightFollowsPointer,
           ),

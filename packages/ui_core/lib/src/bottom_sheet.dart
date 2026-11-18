@@ -6,6 +6,7 @@
 /// back and a barrier tap close it.
 library;
 
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -145,7 +146,9 @@ abstract interface class _SheetHost {
 /// barrier tap ([barrierDismissible]), a drag and
 /// [DesignBottomSheetDetails.close], so a `PopScope` may refuse any of them;
 /// refused, a dragged sheet springs back. Focus moves into it and stays
-/// there, and goes back to what held it as it closes. A screen reader hears
+/// there, and goes back to what held it as it closes. When opened from a
+/// focused control, keyboard focus starts at the first stop unless the
+/// content supplies its own autofocus. A screen reader hears
 /// it named by [semanticLabel], and can dismiss it.
 ///
 /// The haptics table ([DesignHaptics]) plays `thresholdCrossed` as a drag
@@ -351,8 +354,24 @@ class DesignBottomSheetRoute<T> extends PopupRoute<T> {
 
   @override
   void install() {
+    final opener = FocusManager.instance.primaryFocus;
+    final fromFocusedControl =
+        opener != null &&
+        opener is! FocusScopeNode &&
+        FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
     _focus.capture();
     super.install();
+    if (fromFocusedControl) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Let the navigator and an explicit autofocus in the panel settle.
+        scheduleMicrotask(() {
+          final page = subtreeContext;
+          if (_disposed || !isCurrent || page == null) return;
+          final scope = FocusScope.of(page);
+          if (scope.hasPrimaryFocus) scope.nextFocus();
+        });
+      });
+    }
     _spring.attach(controller!);
     controller!.addStatusListener(_rested);
     _size = AnimationController.unbounded(
@@ -653,6 +672,104 @@ class DesignBottomSheetRoute<T> extends PopupRoute<T> {
   ) => _spring.reduced && !_dragged
       ? FadeTransition(opacity: animation, child: child)
       : child;
+}
+
+/// A full-screen sheet presented as an opaque page of the navigator. The
+/// whole page rises on a spring and returns along the same path. With
+/// Reduce Motion it fades. Escape and Back respect the page's [PopScope].
+///
+/// ```dart
+/// DesignSheetPageRoute<void>(builder: (context) => const Text('Edit recording'))
+/// ```
+class DesignSheetPageRoute<T> extends PageRoute<T> {
+  /// A full-screen page drawn by [builder]. The spring defaults match a
+  /// [DesignBottomSheetRoute]; a separate closing spring is optional.
+  DesignSheetPageRoute({
+    required this.builder,
+    this.semanticLabel,
+    double dampingRatio = 1,
+    double stiffness = 700,
+    double? closeDampingRatio,
+    double? closeStiffness,
+    super.settings,
+  }) : assert(dampingRatio > 0 && stiffness > 0),
+       assert((closeDampingRatio ?? 1) > 0 && (closeStiffness ?? 1) > 0),
+       _spring = RouteSpring(
+         dampingRatio: dampingRatio,
+         stiffness: stiffness,
+         closeDampingRatio: closeDampingRatio,
+         closeStiffness: closeStiffness,
+       ),
+       super(fullscreenDialog: true);
+
+  /// Paints the full page, including its surface.
+  final WidgetBuilder builder;
+
+  /// The name announced when the page opens. Defaults to the localized
+  /// bottom sheet label.
+  final String? semanticLabel;
+
+  final RouteSpring _spring;
+  final RouteFocusReturn _focus = RouteFocusReturn();
+
+  @override
+  bool get maintainState => true;
+  @override
+  Color? get barrierColor => null;
+  @override
+  String? get barrierLabel => null;
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 300);
+
+  @override
+  void install() {
+    _focus.capture();
+    super.install();
+    _spring.attach(controller!);
+  }
+
+  @override
+  Simulation createSimulation({required bool forward}) =>
+      _spring.simulation(navigator!.context, to: forward ? 1 : 0);
+
+  @override
+  bool didPop(T? result) {
+    final popped = super.didPop(result);
+    if (popped) _focus.giveBack();
+    return popped;
+  }
+
+  @override
+  Widget buildPage(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) => escapeCloses(
+    context,
+    Semantics(
+      scopesRoute: true,
+      namesRoute: true,
+      explicitChildNodes: true,
+      label: semanticLabel ?? DesignLocalizations.of(context).bottomSheetLabel,
+      child: SizedBox.expand(child: Builder(builder: builder)),
+    ),
+  );
+
+  @override
+  Widget buildTransitions(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => _spring.reduced
+      ? FadeTransition(opacity: animation, child: child)
+      : SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(_spring.presence),
+          child: child,
+        );
 }
 
 // The panel's height as a share of the room.

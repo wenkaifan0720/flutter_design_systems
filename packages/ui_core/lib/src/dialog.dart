@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
+import 'adaptive_shell.dart' show DesignWindowSizeClass;
 import 'barrier.dart';
 import 'internal/painted_barrier.dart';
 import 'internal/route_spring.dart';
@@ -377,6 +378,12 @@ typedef DesignDialogActionBuilder = Widget Function(
   DesignDialogActionDetails details,
 );
 
+Widget _actionLabel(
+  BuildContext context,
+  DesignDialogAction action,
+  DesignDialogActionDetails details,
+) => Text(action.label);
+
 /// Wraps a part of a [DesignDialog] (its frame or its action bar) in the
 /// look's paint.
 typedef DesignDialogPartBuilder = Widget Function(
@@ -387,7 +394,8 @@ typedef DesignDialogPartBuilder = Widget Function(
 
 /// An alert's or a simple dialog's layout: [title] and [content] scroll
 /// together over [actions], which stay put. The actions sit side by side,
-/// at the end, while they fit; on a narrow screen or at a large text size
+/// sharing the row on a compact screen and aligned at the end on a larger
+/// screen. When their labels do not fit, including at a large text size,
 /// they stack, one to a line, the last given (the confirm) on top and the
 /// first (the dismissive one) at the bottom, as Material and iOS stack
 /// them.
@@ -425,7 +433,8 @@ class DesignDialog extends StatefulWidget {
     this.title,
     this.content,
     this.actions = const [],
-    required this.actionBuilder,
+    this.actionWidgets = const [],
+    this.actionBuilder = _actionLabel,
     this.titleBuilder,
     this.actionsBuilder,
     this.frameBuilder,
@@ -449,7 +458,12 @@ class DesignDialog extends StatefulWidget {
   /// The actions at the foot, in reading order (the dismissive one first).
   final List<DesignDialogAction> actions;
 
-  /// Paints an action.
+  /// Complete action controls in reading order, as an alternative to
+  /// [actions]. Each keeps its own semantics, focus and activation. Set
+  /// autofocus on the safe action when the dialog opens.
+  final List<Widget> actionWidgets;
+
+  /// Paints an action from [actions]. Defaults to its label.
   final DesignDialogActionBuilder actionBuilder;
 
   /// Paints the title; null: a plain `Text`.
@@ -638,14 +652,21 @@ class _DesignDialogState extends State<DesignDialog> {
       ),
     );
     final actions = widget.actions;
+    assert(
+      actions.isEmpty || widget.actionWidgets.isEmpty,
+      'Give either actions or actionWidgets.',
+    );
     final safe = DesignDialog.safeActionIndex(actions);
     Widget? bar;
-    if (actions.isNotEmpty) {
+    if (actions.isNotEmpty || widget.actionWidgets.isNotEmpty) {
       bar = _ActionBar(
         spacing: widget.actionSpacing,
         stackedSpacing: widget.stackedActionSpacing,
+        shareWidth:
+            DesignWindowSizeClass.of(context) == DesignWindowSizeClass.compact,
         onStacked: _onStacked,
         children: [
+          ...widget.actionWidgets,
           for (final (i, a) in actions.indexed)
             DesignPressable(
               onPressed: a.onPressed,
@@ -727,18 +748,21 @@ class _ActionBar extends MultiChildRenderObjectWidget {
   const _ActionBar({
     required this.spacing,
     required this.stackedSpacing,
+    required this.shareWidth,
     required this.onStacked,
     required super.children,
   });
 
   final double spacing;
   final double stackedSpacing;
+  final bool shareWidth;
   final ValueChanged<bool> onStacked;
 
   @override
   _RenderActionBar createRenderObject(BuildContext context) => _RenderActionBar(
     spacing: spacing,
     stackedSpacing: stackedSpacing,
+    shareWidth: shareWidth,
     onStacked: onStacked,
     textDirection: Directionality.of(context),
   );
@@ -748,6 +772,7 @@ class _ActionBar extends MultiChildRenderObjectWidget {
     render
       ..spacing = spacing
       ..stackedSpacing = stackedSpacing
+      ..shareWidth = shareWidth
       ..onStacked = onStacked
       ..textDirection = Directionality.of(context);
   }
@@ -762,11 +787,19 @@ class _RenderActionBar extends RenderBox
   _RenderActionBar({
     required this._spacing,
     required this._stackedSpacing,
+    required this._shareWidth,
     required this.onStacked,
     required this._textDirection,
   });
 
   double _spacing;
+  bool _shareWidth;
+  set shareWidth(bool value) {
+    if (_shareWidth == value) return;
+    _shareWidth = value;
+    markNeedsLayout();
+  }
+
   set spacing(double value) {
     if (value == _spacing) return;
     _spacing = value;
@@ -803,11 +836,15 @@ class _RenderActionBar extends RenderBox
   double get _rowWidth {
     final children = _children;
     if (children.isEmpty) return 0;
-    var width = _spacing * (children.length - 1);
+    var width = 0.0;
+    var widest = 0.0;
     for (final c in children) {
-      width += c.getMaxIntrinsicWidth(double.infinity);
+      final natural = c.getMaxIntrinsicWidth(double.infinity);
+      width += natural;
+      if (natural > widest) widest = natural;
     }
-    return width;
+    return (_shareWidth ? widest * children.length : width) +
+        _spacing * (children.length - 1);
   }
 
   @override
@@ -863,9 +900,15 @@ class _RenderActionBar extends RenderBox
     final stacked = row > room;
     // Side by side, each at its own content's width (an action that fills
     // what it is given stays its size); stacked, each up to the bar's width.
-    BoxConstraints loose(RenderBox c) => BoxConstraints(
-      maxWidth: stacked ? room : c.getMaxIntrinsicWidth(double.infinity),
-    );
+    final share =
+        _shareWidth && !stacked && room.isFinite && children.isNotEmpty
+        ? (room - _spacing * (children.length - 1)) / children.length
+        : null;
+    BoxConstraints loose(RenderBox c) => share != null
+        ? BoxConstraints.tightFor(width: share)
+        : BoxConstraints(
+            maxWidth: stacked ? room : c.getMaxIntrinsicWidth(double.infinity),
+          );
     Size sizeOf(RenderBox c) => dry
         ? c.getDryLayout(loose(c))
         : (c..layout(loose(c), parentUsesSize: true)).size;

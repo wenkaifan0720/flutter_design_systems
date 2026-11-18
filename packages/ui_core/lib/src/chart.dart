@@ -423,7 +423,36 @@ mixin _Picking<W extends StatefulWidget> on State<W> {
   bool _held = false;
   // A finger (or a mouse button) scrubbing.
   bool _dragging = false;
-  PointerDeviceKind? _activeBy;
+  PointerDeviceKind? _pointer;
+  PointerDeviceKind? get _activeBy => _pointer;
+  set _activeBy(PointerDeviceKind? value) {
+    if ((_pointer == null) != (value == null)) {
+      if (value == null) {
+        FocusManager.instance.removeLateKeyEventHandler(_dismissPointerPick);
+      } else {
+        FocusManager.instance.addLateKeyEventHandler(_dismissPointerPick);
+      }
+    }
+    _pointer = value;
+  }
+
+  // A focused control or a menu gets first use of Escape. A pointer pick
+  // can then be dismissed without sending keyboard focus to the chart.
+  KeyEventResult _dismissPointerPick(KeyEvent event) {
+    if (event is! KeyDownEvent ||
+        event.logicalKey != LogicalKeyboardKey.escape ||
+        _activeBy == null ||
+        !mounted) {
+      return KeyEventResult.ignored;
+    }
+    for (var route = ModalRoute.of(context); route != null;) {
+      if (!route.isCurrent) return KeyEventResult.ignored;
+      final navigator = route.navigator;
+      route = navigator == null ? null : ModalRoute.of(navigator.context);
+    }
+    clearPick();
+    return KeyEventResult.handled;
+  }
 
   FocusNode? get givenNode;
   FocusNode get _node => givenNode ?? (_ownNode ??= FocusNode());
@@ -441,6 +470,7 @@ mixin _Picking<W extends StatefulWidget> on State<W> {
   }
 
   void disposePicking() {
+    _activeBy = null;
     _node.removeListener(_focusChanged);
     _ownNode?.dispose();
   }

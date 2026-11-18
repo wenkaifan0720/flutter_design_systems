@@ -274,6 +274,33 @@ class DesignTapTarget extends SingleChildRenderObjectWidget {
 /// least [minSize], the child placed by [alignment], a hit anywhere in it
 /// sent to the child's centre.
 class RenderDesignTapTarget extends RenderShiftedBox {
+  /// The visible face inside a laid-out [box], in its local coordinates.
+  /// Follows single-child wrappers to their tap target, using layout
+  /// offsets so an animated press transform does not move the indicator.
+  /// A box without such a target is its own face.
+  static Rect faceRectOf(RenderBox box) {
+    RenderObject node = box;
+    var offset = Offset.zero;
+    while (true) {
+      RenderObject? next;
+      var count = 0;
+      node.visitChildren((child) {
+        next = child;
+        count++;
+      });
+      final child = next;
+      if (count != 1 || child == null) return Offset.zero & box.size;
+      final data = child.parentData;
+      if (data is BoxParentData) offset += data.offset;
+      if (node is RenderDesignTapTarget &&
+          child is RenderBox &&
+          child.hasSize) {
+        return offset & child.size;
+      }
+      node = child;
+    }
+  }
+
   /// A target at least [minSize], [child] placed by [alignment] (resolved
   /// for [textDirection]) on whole pixels at [devicePixelRatio].
   RenderDesignTapTarget(

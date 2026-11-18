@@ -135,6 +135,30 @@ void main() {
     expect(_host.items.first, 'two');
   });
 
+  testWidgets('a plain drag grip is keyboard reachable and keeps focus '
+      'when its item moves', (tester) async {
+    final items = ['Park', 'Market'];
+    await tester.pumpWidget(
+      harness(
+        StatefulBuilder(
+          builder: (context, update) => DesignReorderableList<String>(
+            items: List.of(items),
+            labelOf: (v) => v,
+            onReorder: (from, to) =>
+                update(() => items.insert(to, items.removeAt(from))),
+            itemBuilder: (_, item, details) => details.handle(Text(item)),
+          ),
+        ),
+      ),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pump();
+    expect(Focus.of(tester.element(find.text('Park'))).hasPrimaryFocus, isTrue);
+    await _alt(tester, LogicalKeyboardKey.arrowDown);
+    expect(items, ['Market', 'Park']);
+    expect(Focus.of(tester.element(find.text('Park'))).hasPrimaryFocus, isTrue);
+  });
+
   testWidgets('a drag on the handle moves the item', (tester) async {
     await tester.pumpWidget(harness(const _Host()));
     final gesture = await tester.startGesture(

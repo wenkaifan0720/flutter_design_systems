@@ -177,6 +177,31 @@ void main() {
     expect(_lit('File'), isFalse, reason: 'Tab leaves the bar');
   });
 
+  testWidgets('only the active menu is selected during overlapping fades', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_bar());
+    await _key(tester, LogicalKeyboardKey.tab);
+    await _key(tester, LogicalKeyboardKey.arrowDown);
+    for (final (key, active) in [
+      (LogicalKeyboardKey.arrowRight, 'Edit'),
+      (LogicalKeyboardKey.arrowLeft, 'File'),
+      (LogicalKeyboardKey.escape, ''),
+    ]) {
+      await tester.sendKeyEvent(key);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 20));
+      for (final name in ['File', 'Edit', 'View']) {
+        expect(
+          _states[name]!.contains(WidgetState.selected),
+          name == active,
+          reason: '$name while $active is open',
+        );
+      }
+    }
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('in a menu, a typed letter goes to the next item it starts; '
       'letters typed in a run spell the start', (tester) async {
     _keyboard();
@@ -249,6 +274,39 @@ void main() {
     await tester.tapAt(const Offset(700, 500));
     await tester.pumpAndSettle();
     expect(find.text('Ruler'), findsNothing);
+  });
+
+  testWidgets('pointer handoff selects one title, leaving clears the '
+      'highlight, and the open menu still takes keys', (tester) async {
+    _keyboard();
+    await tester.pumpWidget(_bar());
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(mouse.removePointer);
+    await mouse.addPointer(location: tester.getCenter(find.text('File')));
+    await tester.tap(find.text('File'));
+    await tester.pumpAndSettle();
+    await mouse.moveTo(tester.getCenter(find.text('Edit')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(_states['File'], isNot(contains(WidgetState.selected)));
+    expect(_states['Edit'], contains(WidgetState.selected));
+    await mouse.moveTo(tester.getCenter(find.text('Undo')));
+    await tester.pumpAndSettle();
+    expect(_states['Edit'], contains(WidgetState.selected));
+    await mouse.moveTo(const Offset(700, 500));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(_states['Edit'], isNot(contains(WidgetState.selected)));
+    await tester.pumpAndSettle();
+    expect(find.text('Undo'), findsOneWidget);
+    expect(item(tester, 'Edit').flagsCollection.isExpanded, Tristate.isTrue);
+    expect(_states['Undo'], isNot(contains(WidgetState.hovered)));
+    expect(_states['Undo'], isNot(contains(WidgetState.focused)));
+    await _key(tester, LogicalKeyboardKey.arrowDown);
+    expect(_lit('Undo'), isTrue);
+    expect(_states['Edit'], contains(WidgetState.selected));
+    await _key(tester, LogicalKeyboardKey.escape);
+    expect(find.text('Undo'), findsNothing);
   });
 
   testWidgets('right to left: Left moves along the bar; a screen reader '

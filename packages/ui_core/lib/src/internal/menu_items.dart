@@ -22,6 +22,7 @@ class DesignMenuPainters {
     required this.itemBuilder,
     required this.surfaceBuilder,
     this.dividerBuilder,
+    this.onKeyNavigation,
     this.highlightFollowsPointer = true,
   });
 
@@ -33,6 +34,9 @@ class DesignMenuPainters {
 
   /// Paints a divider; null: a 1 px gap.
   final WidgetBuilder? dividerBuilder;
+
+  /// Restores the active menu title when the keyboard takes over.
+  final VoidCallback? onKeyNavigation;
 
   /// Whether a pointer over a row moves the keys there.
   final bool highlightFollowsPointer;
@@ -283,6 +287,7 @@ class _DesignMenuItemsState extends State<DesignMenuItems> {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
     }
+    widget.painters.onKeyNavigation?.call();
     final letter = _letter(event);
     if (letter == null) return KeyEventResult.ignored;
     _typed += letter;

@@ -263,19 +263,25 @@ void main() {
       );
     });
 
-    test('from an anchor, it shifts; one wider than the bounds keeps its '
-        'start edge on screen', () {
+    test('a menu at the screen edge aligns with the opposite edge of the '
+        'anchor before shifting into view', () {
       const bounds = Rect.fromLTRB(8, 8, 792, 592);
-      Offset place(Size size, TextDirection direction) => designPlaceOverlay(
-        anchor: const Rect.fromLTWH(700, 100, 80, 40),
-        bounds: bounds,
-        size: size,
-        side: DesignOverlaySide.below,
-        align: DesignOverlayAlign.start,
-        gap: 4,
-        textDirection: direction,
+      Offset place(Size size, TextDirection direction, {bool flip = true}) =>
+          designPlaceOverlay(
+            anchor: const Rect.fromLTWH(700, 100, 80, 40),
+            flipAlignment: flip,
+            bounds: bounds,
+            size: size,
+            side: DesignOverlaySide.below,
+            align: DesignOverlayAlign.start,
+            gap: 4,
+            textDirection: direction,
+          );
+      expect(place(const Size(120, 90), TextDirection.ltr).dx, 660);
+      expect(
+        place(const Size(120, 90), TextDirection.ltr, flip: false).dx,
+        672,
       );
-      expect(place(const Size(120, 90), TextDirection.ltr).dx, 672);
       expect(place(const Size(900, 90), TextDirection.ltr).dx, 8);
       expect(place(const Size(900, 90), TextDirection.rtl).dx, 792 - 900);
     });

@@ -1,15 +1,13 @@
 # ui_core_test
 
-Checks for Flutter design systems built on [ui_core](https://pub.dev/packages/ui_core), read from what is
-drawn: controls that line up where they share a row, labels on their faces' middles, cards on shared keylines, widths
-on a wide screen, words that break and controls that are cut, tap targets, cursors, cut shadows and spacing. Each check
-says what it finds in words, as laid out and as drawn, and the sheets draw the same for a review page.
+Widget-test helpers for design systems built on ui_core. Compare painted control edges, label alignment,
+spacing, touch targets and clipping. Reports give the control name and the measured difference.
 
 A design system's tests take it as a dev dependency, as an app takes `flutter_test`:
 
 ```yaml
 dev_dependencies:
-  ui_core_test: ^0.1.0
+  ui_core_test: ^0.1.1
 ```
 
 ```dart
@@ -144,10 +142,6 @@ a look declares in its theme.
 
 ## Versions
 
-ui_core_test has versions of its own, apart from ui_core's. 0.1 supports ui_core ^0.3.0: it uses only
-ui_core's public libraries, so any ui_core 0.3 release works with it. It needs Flutter 3.47 or later
-(Dart 3.13).
+Version 0.1.1 supports ui_core ^0.3.1 and requires Flutter 3.47 or later (Dart 3.13).
 
-Before 1.0, a minor version (0.1 to 0.2) may change what a check reports or how it is called, and the CHANGELOG says
-what changed and how to move; a patch version never does. A check that starts to name something it passed before (a
-misreading fixed, a new kind of control read) comes in a minor version.
+See the CHANGELOG for changes to measurements and migration instructions.

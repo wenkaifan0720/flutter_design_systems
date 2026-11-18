@@ -1,3 +1,6 @@
+import 'dart:ui' as ui;
+
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,26 +13,39 @@ final List<String> _ran = [];
 final Map<String, Set<WidgetState>> _states = {};
 
 // The bare reference painter: "Save" and "v" side by side; a grey menu.
-Widget _button({TextDirection direction = TextDirection.ltr}) => harness(
-  Center(
-    child: DesignSplitButton(
-      label: 'Save',
-      onPressed: () => _ran.add('save'),
-      actions: [
-        DesignSplitAction(label: 'Save as', onPressed: () => _ran.add('as')),
-        DesignSplitAction(label: 'Save all', onPressed: () => _ran.add('all')),
-      ],
-      buttonBuilder: (context, part, states, open) {
-        _states[part.name] = states;
-        return Text(part == DesignSplitPart.main ? 'Save' : (open ? '^' : 'v'));
-      },
-      itemBuilder: (context, action, states) {
-        _states[action.label] = states;
-        return SizedBox(width: 120, height: 44, child: Text(action.label));
-      },
-      surfaceBuilder: (context, info, items) => ColoredBox(
-        color: const Color(0xFFEEEEEE),
-        child: Column(mainAxisSize: MainAxisSize.min, children: items),
+Widget _button({
+  TextDirection direction = TextDirection.ltr,
+  AlignmentGeometry alignment = Alignment.center,
+}) => harness(
+  Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 24),
+    child: Align(
+      alignment: alignment,
+      child: DesignSplitButton(
+        label: 'Save',
+        onPressed: () => _ran.add('save'),
+        actions: [
+          DesignSplitAction(label: 'Save as', onPressed: () => _ran.add('as')),
+          DesignSplitAction(
+            label: 'Save all',
+            onPressed: () => _ran.add('all'),
+          ),
+        ],
+        buttonBuilder: (context, part, states, open) {
+          _states[part.name] = states;
+          return Text(
+            part == DesignSplitPart.main ? 'Save' : (open ? '^' : 'v'),
+          );
+        },
+        itemBuilder: (context, action, states) {
+          _states[action.label] = states;
+          return SizedBox(width: 120, height: 44, child: Text(action.label));
+        },
+        surfaceBuilder: (context, info, items) => ColoredBox(
+          key: const ValueKey('menu surface'),
+          color: const Color(0xFFEEEEEE),
+          child: Column(mainAxisSize: MainAxisSize.min, children: items),
+        ),
       ),
     ),
   ),
@@ -112,6 +128,173 @@ void main() {
     _ran.clear();
     _states.clear();
   });
+
+  for (final direction in TextDirection.values) {
+    testWidgets(
+      'the default menu shifts to the screen margin in ${direction.name}',
+      (tester) async {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(390, 600);
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+          _button(
+            direction: direction,
+            alignment: AlignmentDirectional.centerStart,
+          ),
+        );
+        final button = tester.getRect(find.byType(DesignSplitButton));
+        await tester.tap(find.text('v'));
+        await tester.pumpAndSettle();
+        final menu = tester.getRect(find.byKey(const ValueKey('menu surface')));
+        const margin = 8.0;
+        if (direction == TextDirection.ltr) {
+          expect(button.right - menu.width, lessThan(margin));
+          expect(menu.left, margin);
+        } else {
+          expect(button.left + menu.width, greaterThan(390 - margin));
+          expect(menu.right, 390 - margin);
+        }
+      },
+    );
+
+    testWidgets(
+      'the default menu meets the trailing edge in ${direction.name}',
+      (tester) async {
+        await tester.pumpWidget(_button(direction: direction));
+        final button = tester.getRect(find.byType(DesignSplitButton));
+        await tester.tap(find.text('v'));
+        await tester.pumpAndSettle();
+        final menu = tester.getRect(find.byKey(const ValueKey('menu surface')));
+        expect(menu.width, greaterThan(button.width));
+        if (direction == TextDirection.ltr) {
+          expect(menu.right, button.right);
+        } else {
+          expect(menu.left, button.left);
+        }
+      },
+    );
+
+    testWidgets(
+      'the split menu meets the painted button edge in ${direction.name}',
+      (tester) async {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(390, 600);
+        addTearDown(tester.view.reset);
+        const capture = ValueKey('split capture');
+        const button = ValueKey('button outline');
+        const panel = ValueKey('menu outline');
+        const border = Color(0xffed2734);
+        const decoration = BoxDecoration(
+          color: Color(0xfffafafa),
+          border: Border.fromBorderSide(BorderSide(color: border, width: 2)),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x88444444),
+              offset: Offset(5, 2),
+              blurRadius: 4,
+            ),
+          ],
+        );
+        // A centred button has space on both sides. At the trailing margin a
+        // wide list fits only if its trailing outline touches the button's.
+        for (final (position, align, itemWidth, leading) in [
+          (AlignmentDirectional.center, DesignOverlayAlign.start, 174.0, true),
+          (
+            AlignmentDirectional.centerEnd,
+            DesignOverlayAlign.start,
+            174.0,
+            false,
+          ),
+          (AlignmentDirectional.center, DesignOverlayAlign.end, 174.0, false),
+          (AlignmentDirectional.center, DesignOverlayAlign.start, 35.0, true),
+        ]) {
+          await tester.pumpWidget(
+            harness(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Align(
+                  alignment: position,
+                  child: DesignSplitButton(
+                    label: 'Save',
+                    onPressed: () {},
+                    actions: [
+                      DesignSplitAction(label: 'Copy', onPressed: () {}),
+                    ],
+                    placement: DesignOverlayPlacement(
+                      align: align,
+                      matchAnchorWidth: itemWidth >= 44,
+                    ),
+                    layoutBuilder: (_, main, toggle) => DecoratedBox(
+                      key: button,
+                      decoration: decoration,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [main, toggle],
+                        ),
+                      ),
+                    ),
+                    buttonBuilder: (_, part, states, open) =>
+                        Text(part == DesignSplitPart.main ? 'Save' : 'v'),
+                    itemBuilder: (_, action, states) => SizedBox(
+                      width: itemWidth,
+                      height: 44,
+                      child: Text(action.label),
+                    ),
+                    surfaceBuilder: (_, info, items) => DecoratedBox(
+                      key: panel,
+                      decoration: decoration,
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: items,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              textDirection: direction,
+              wrap: (_, nav) => RepaintBoundary(key: capture, child: nav),
+            ),
+          );
+          await tester.tap(find.text('v'));
+          await tester.pumpAndSettle();
+          final anchor = tester.getRect(find.byKey(button));
+          final menu = tester.getRect(find.byKey(panel));
+          final left = (direction == TextDirection.ltr) == leading;
+          final edge = left ? anchor.left : anchor.right;
+          expect(left ? menu.left : menu.right, edge);
+          expect(menu.width, greaterThanOrEqualTo(anchor.width));
+          if (itemWidth < anchor.width) expect(menu.width, anchor.width);
+          await tester.runAsync(() async {
+            final image = await tester
+                .renderObject<RenderRepaintBoundary>(find.byKey(capture))
+                .toImage();
+            final rgba = (await image.toByteData(
+              format: ui.ImageByteFormat.rawRgba,
+            ))!;
+            final width = image.width;
+            image.dispose();
+            final x = edge.round() - (left ? 0 : 1);
+            int pixel(int dx, int y) => rgba.getUint32((y * width + dx) * 4);
+            for (final outline in [anchor, menu]) {
+              final y = outline.top.round() + 5;
+              expect(
+                pixel(x, y),
+                0xed2734ff,
+                reason: '$position • $outline • $x, $y',
+              );
+              expect(pixel(x + (left ? -1 : 1), y), isNot(0xed2734ff));
+            }
+          });
+          await _key(tester, LogicalKeyboardKey.escape);
+        }
+      },
+    );
+  }
 
   testWidgets('two tab stops; the main half runs; the toggle opens the menu; '
       'an item runs after it closes', (tester) async {

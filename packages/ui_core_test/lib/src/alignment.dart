@@ -2052,7 +2052,9 @@ class DesignLabelCheck {
 /// whose contrast with what is just around the face reaches
 /// [contrastFloor], words and icons left out (its own, and any drawn over
 /// it from beside it: a navigation item's icon over its pressed-state
-/// layer). A face no pixel of which
+/// layer). For a rectangular bevel, the check also compares its light and
+/// dark rim colours. This preserves the full outline when one rim is close
+/// to the background. A face no pixel of which
 /// reaches the floor (a fill a hue apart from its ground, a pane of glass)
 /// is read by its box, as is one a look marks with [DesignKeylineFace].
 /// Controls of one kind touching side by side in one track drawn round
@@ -2166,15 +2168,21 @@ class DesignRowCheck {
     final rows = <(RenderObject, List<RenderBox>)>[];
     void visit(RenderObject node) {
       if (_isControl(node)) return;
+      final children = <RenderObject>[];
+      _visitShown(node, children.add);
+      if (children.length < 2) {
+        if (children.isNotEmpty) visit(children.first);
+        return;
+      }
       final held = <RenderBox>[];
       var groups = 0;
-      _visitShown(node, (child) {
+      for (final child in children) {
         final under = child is RenderBox && child.hasSize && _isControl(child)
             ? [child]
             : finder._controlsUnder(child);
         if (under.isNotEmpty) groups++;
         held.addAll(under);
-      });
+      }
       if (groups >= 2 && _sideBySide(held)) {
         rows.add((node, held));
         return;
@@ -2193,13 +2201,20 @@ class DesignRowCheck {
           return;
         }
       }
-      _visitShown(node, visit);
+      children.forEach(visit);
     }
 
     visit(root);
     final regions = _regionBoxes(context);
     final viewId = View.maybeOf(context)?.viewId;
-    final pixels = <RenderRepaintBoundary, DrawnPixels>{};
+    final readers = <RenderRepaintBoundary, _RowReader>{};
+    Future<_RowReader> read(RenderRepaintBoundary boundary) async =>
+        readers[boundary] ??= _RowReader(
+          this,
+          boundary,
+          await DrawnPixels.read(boundary, pixelRatio, runAsync),
+          marked,
+        );
     final found = <String>[];
     final fallback = <String>[];
     final toDo = <DesignKeylineRegion>{};
@@ -2219,14 +2234,22 @@ class DesignRowCheck {
       if (boundary == null) continue;
       // A control another surface covers (a window in front of it, a later
       // layer of a stack) shows that surface where it lies: not read.
+      // A check can also start above the app's View (the binding's root).
+      // Resolve the view which actually paints this row in that case.
+      int? rowView = viewId;
+      for (
+        RenderObject? up = node;
+        rowView == null && up != null;
+        up = up.parent
+      ) {
+        if (up is RenderView) rowView = up.flutterView.viewId;
+      }
       final shown = [
         for (final c in controls)
-          if (viewId == null || !_covered(c, viewId)) c,
+          if (rowView == null || !_covered(c, rowView)) c,
       ];
       if (shown.length < 2) continue;
-      Future<DrawnPixels> read(RenderRepaintBoundary b) async =>
-          pixels[b] ??= await DrawnPixels.read(b, pixelRatio, runAsync);
-      var reader = _RowReader(this, boundary, await read(boundary), marked);
+      var reader = await read(boundary);
       // A row drawn in a layer of its own, clear where it stands (a section
       // in a repaint boundary over the page), is read in the layer round
       // it, where what lies under it is drawn too: what a person sees. Read
@@ -2235,10 +2258,11 @@ class DesignRowCheck {
         final parent = reader.boundary!.parent;
         final up = parent == null ? null : _drawnIn(parent);
         if (up == null) break;
-        reader = _RowReader(this, up, await read(up), marked);
+        reader = await read(up);
       }
       found.addAll(reader.problems(node, shown));
       fallback.addAll(reader.fallback);
+      reader.fallback.clear();
     }
     if (fallback.isNotEmpty) {
       return DesignAlignmentReport(look, [_testFontProblem(fallback)]);
@@ -2757,7 +2781,15 @@ class DesignWidthCheck {
             r.bottom >= ring.bottom;
       }
 
-      if (own.boundary case final b? when holds(b)) return null;
+      int? opaqueGround(_RowReader reader) {
+        final color = reader.pixels?.groundAround(reader._toBoundary(laid), 2);
+        return color != null && (color & 0xFF) == 0xFF ? color : null;
+      }
+
+      if (own.boundary case final b? when holds(b)) {
+        final ground = opaqueGround(own);
+        if (ground != null) return ground;
+      }
       for (
         RenderObject? up = fieldReader.boundary;
         up != null;
@@ -2767,10 +2799,9 @@ class DesignWidthCheck {
           continue;
         }
         final page = await readerFor(up);
-        if (page?.pixels case final p?) {
-          return p.groundAround(page!._toBoundary(laid), 2);
-        }
-        return null;
+        if (page == null) continue;
+        final ground = opaqueGround(page);
+        if (ground != null) return ground;
       }
       return null;
     }
@@ -4212,17 +4243,38 @@ class _DrawnReader {
   final Set<RenderBox> marked;
 
   // Every word, icon and text entry drawn in the boundary, global.
-  late final List<Rect> _shownRects = [
+  late final List<(RenderBox, Rect)> _shownRects = [
     if (boundary case final b?)
-      for (final p in _shownIn(b)) _global(p),
+      for (final p in _shownIn(b))
+        if (p is RenderParagraph)
+          for (final line in p.getBoxesForSelection(
+            TextSelection(
+              baseOffset: 0,
+              extentOffset: p.text.toPlainText().length,
+            ),
+          ))
+            (
+              p,
+              MatrixUtils.transformRect(p.getTransformTo(null), line.toRect()),
+            )
+        else
+          (p, _global(p)),
   ];
 
   // The words, icons and text entries drawn over [r] (or under it): none of
   // them a face's own ink, whichever control holds them (a navigation
   // item's icon beside its pressable layer, not in it).
-  List<Rect> _shownOver(Rect r) => [
-    for (final s in _shownRects)
-      if (s.overlaps(r)) s,
+  List<Rect> _shownOver(Rect r, RenderObject holder) => [
+    for (final (box, bounds) in _shownRects)
+      if (bounds.overlaps(r) &&
+          (_isWithin(box, holder) ||
+              !_paintedOver(
+                box,
+                holder,
+                bounds.intersect(r).center,
+                separatePanels: true,
+              )))
+        bounds,
   ];
 
   Rect _toBoundary(Rect global) {
@@ -4727,11 +4779,7 @@ class _DrawnReader {
   // surface, a face the colour of what is around it).
   ({Rect rect, bool read})? _ownInk(Rect r, RenderObject holder) {
     if (pixels == null || boundary == null) return (rect: r, read: false);
-    final own = _ink(
-      r,
-      except: [for (final p in _shownIn(holder)) _global(p), ..._shownOver(r)],
-      floor: _inkFloor,
-    );
+    final own = _ink(r, except: _shownOver(r, holder), floor: _inkFloor);
     return own == null ? null : (rect: own, read: true);
   }
 }
@@ -4948,7 +4996,12 @@ bool _coveredAt(RenderBox control, Offset at, int viewId) {
 // Whether [front] is painted after [control] (the nearest box round both
 // paints its branch later) and fills at [at], itself or a box round it on
 // its branch.
-bool _paintedOver(RenderBox control, RenderObject front, Offset at) {
+bool _paintedOver(
+  RenderBox control,
+  RenderObject front,
+  Offset at, {
+  bool separatePanels = false,
+}) {
   final round = <RenderObject>[];
   for (RenderObject? up = control; up != null; up = up.parent) {
     round.add(up);
@@ -4973,7 +5026,19 @@ bool _paintedOver(RenderBox control, RenderObject front, Offset at) {
     if (identical(child, frontTop) && seenControl) later = true;
   });
   if (!later || !_isShown(front)) return false;
+  // Named, independently painted panes can paint their own backgrounds in
+  // custom render boxes. Text from a pane behind one is not a label in
+  // the pane in front, even when their text boxes overlap on screen.
+  bool namedPanel(RenderObject n) =>
+      n is RenderSemanticsAnnotations &&
+      n.container &&
+      (n.properties.label?.isNotEmpty ?? false) &&
+      !_isControl(n);
+  final backPanel =
+      separatePanels &&
+      round.takeWhile((n) => !identical(n, common)).any(namedPanel);
   for (RenderObject? up = front; up != null; up = up.parent) {
+    if (backPanel && namedPanel(up)) return true;
     if (up is RenderBox && up.hasSize && _fills(up)) {
       if (_global(up).contains(at)) return true;
     }
@@ -5936,7 +6001,14 @@ class _LabelReader extends _DrawnReader {
     visit(slot);
     if (words.isEmpty) return const [];
     final p = pixels!;
-    final cell = _toBoundary(_global(slot));
+    final cell = _toBoundary(
+      _semanticsOf(control).tab
+          ? MatrixUtils.transformRect(
+              slot.getTransformTo(null),
+              RenderDesignTapTarget.faceRectOf(slot),
+            )
+          : _global(slot),
+    );
     final on = _toBoundary(words.reduce((a, b) => a.expandToInclude(b)));
     // What the words stand on: the commonest colour in their own box (a
     // marker may be no taller than their line).
@@ -6181,9 +6253,14 @@ class _RowReader extends _DrawnReader {
         faceless.add(c);
         continue;
       }
+      final box = face.read ? _global(face.box) : face.rect;
+      if (face.read && _hasBevel(box, ground)) {
+        faces.add((control: c, laid: box, drawn: box));
+        continue;
+      }
       final drawn = marked.contains(face.box)
           ? null
-          : _outline(face.rect, c, face.read ? null : face.box, ground);
+          : _outline(box, c, face.read ? null : face.box, ground);
       // What shows of it is a mark on it, its middle left out (a tab's
       // indicator line, a badge, a sliver of a state layer): no face.
       if (drawn != null && !drawn.inflate(1).contains(face.rect.center)) {
@@ -6579,13 +6656,24 @@ class _RowReader extends _DrawnReader {
       // control's own and any drawn over the face.
       except: [
         for (final t in _shownIn(control)) _toBoundary(_global(t)).inflate(2),
-        for (final t in _shownOver(face)) _toBoundary(t).inflate(2),
+        for (final t in _shownOver(face, control)) _toBoundary(t).inflate(2),
       ],
       shape: shape?.transform(box!.getTransformTo(b).storage),
     );
     return o == null
         ? null
         : MatrixUtils.transformRect(b.getTransformTo(null), o);
+  }
+
+  bool _hasBevel(Rect box, int? ground) {
+    final p = pixels;
+    if (p == null || boundary == null) return false;
+    final local = _toBoundary(box);
+    return p.hasBevel(
+      local,
+      over: ground ?? p.groundAround(local, 2),
+      floor: check.contrastFloor,
+    );
   }
 
   // [drawn], the outline read inside [face] (both global), out to [face]'s

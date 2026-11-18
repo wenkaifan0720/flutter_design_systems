@@ -587,6 +587,7 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
   @override
   Widget build(BuildContext context) {
     final field = RawAutocomplete<Object>(
+      optionsViewOpenDirection: OptionsViewOpenDirection.mostSpace,
       textEditingController: _controller,
       focusNode: _field,
       optionsBuilder: _find,
@@ -617,6 +618,7 @@ class _DesignTagInputState<T extends Object> extends State<DesignTagInput<T>> {
           onKeyEvent: _fieldKey,
           // ui_core's keys over the autocomplete's, as DesignCombobox's.
           child: _keys.field(
+            controller,
             widget.fieldBuilder(
               context,
               DesignComboboxField(

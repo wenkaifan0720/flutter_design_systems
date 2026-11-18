@@ -1,3 +1,18 @@
+## 0.3.1
+
+- Escape dismisses a chart's hovered or touch-selected point while keyboard focus stays in place. A dialog or menu above the chart handles Escape first.
+- Combobox and tag suggestions open on the side of the field with more space. Enter selects the highlighted suggestion on a hardware keyboard, including when the field already contains tags.
+- Split-button menus keep their trailing alignment. Use `placement` to align the menu with the leading edge or choose a different side.
+- Moving the pointer away from a menu bar clears its highlight immediately. The open menu still accepts keyboard input. Switching menus highlights the new title as soon as it opens.
+- Buttons announce matching visible and supplied labels or values once. Additional text, such as a row subtitle, remains available to screen readers.
+- Plain reorder handles accept keyboard focus. Press Alt+Up or Alt+Down to move the item and keep its focus.
+- Number fields expose their configured minimum and maximum in Flutter semantics.
+- Wheel pickers support mouse dragging. Ratings expose the pressed state on the item under the pointer.
+- On compact screens, dialog actions share the row equally and stack when their labels need more space. Use `DesignDialog.actionWidgets` to supply custom actions.
+- Use `DesignSheetPageRoute` for a full-screen sheet with native back navigation and reduced-motion support.
+- Opening a bottom sheet from a focused control puts keyboard focus on its first action, or on the control with autofocus.
+- Pass `divisions` to `DesignLinearScale.nice` for an exact number of chart intervals with a rounded domain.
+
 ## 0.3.0
 
 Forty behaviours, up from 24. Overlays open at a point and keep clear of the on-screen keyboard, menus light one row,

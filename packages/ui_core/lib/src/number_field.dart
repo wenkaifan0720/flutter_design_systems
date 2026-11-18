@@ -567,6 +567,8 @@ class _DesignNumberFieldState extends State<DesignNumberField> {
       container: true,
       label: widget.semanticLabel,
       enabled: _enabled,
+      minValue: widget.min?.toString(),
+      maxValue: widget.max?.toString(),
       // The next values beside the text's; an empty field has neither.
       increasedValue: up == null || empty ? null : say(up),
       decreasedValue: down == null || empty ? null : say(down),

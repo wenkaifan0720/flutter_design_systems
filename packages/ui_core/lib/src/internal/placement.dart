@@ -105,10 +105,9 @@ Size designOverlayMaxSize(
 /// Where a surface of [size] goes on [side] of [anchor], lined up by
 /// [align] and shifted to stay inside [bounds].
 ///
-/// At a point ([anchor] of no size: a context menu at the pointer), a surface
-/// short of room at its aligned end turns across the point to the other end
-/// before it shifts, as a desktop menu does, so it never lands under the
-/// pointer.
+/// A vertical menu that would cross the screen edge aligns its opposite
+/// edge with the anchor when it fits there and [flipAlignment] allows it.
+/// A context menu tries the other side of its pointer before shifting.
 Offset designPlaceOverlay({
   required Rect anchor,
   required Rect bounds,
@@ -117,6 +116,7 @@ Offset designPlaceOverlay({
   required DesignOverlayAlign align,
   required double gap,
   required TextDirection textDirection,
+  bool flipAlignment = true,
 }) {
   final ltr = textDirection == TextDirection.ltr;
   final point = anchor.size == Size.zero;
@@ -133,7 +133,7 @@ Offset designPlaceOverlay({
       DesignOverlayAlign.center => anchor.center.dx - size.width / 2,
       DesignOverlayAlign.end => endX,
     };
-    if (point && align != DesignOverlayAlign.center) {
+    if ((point || flipAlignment) && align != DesignOverlayAlign.center) {
       final fits = x >= bounds.left && x + size.width <= bounds.right;
       final other = x == startX ? endX : startX;
       if (!fits && other >= bounds.left && other + size.width <= bounds.right) {
@@ -249,6 +249,10 @@ class DesignOverlayLayout extends SingleChildLayoutDelegate {
   @override
   Offset getPositionForChild(Size size, Size childSize) {
     final offset = designPlaceOverlay(
+      flipAlignment:
+          placement.flip &&
+          placement.matchAnchorWidth &&
+          placement.align == DesignOverlayAlign.start,
       anchor: anchor,
       bounds: bounds,
       size: childSize,

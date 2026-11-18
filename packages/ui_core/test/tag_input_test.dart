@@ -135,6 +135,35 @@ bool _fieldFocused(WidgetTester tester) => tester
     .hasFocus;
 
 void main() {
+  testWidgets('suggestions open above the whole field near the bottom', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      harness(
+        const Align(
+          alignment: Alignment.bottomLeft,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 48),
+            child: SizedBox(width: 280, child: _Host(initial: ['Red'])),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.byKey(_fieldKey));
+    await tester.enterText(find.byKey(_fieldKey), 'blu');
+    await tester.pumpAndSettle();
+    final field = tester.getRect(find.byType(RawAutocomplete<Object>));
+    expect(
+      tester.getRect(find.byKey(_listKey)).bottom,
+      closeTo(field.top, 0.1),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(_host.values, ['Red', 'Blue']);
+  });
+
   behaviourContract(
     'DesignTagInput',
     build: (c) => const Align(

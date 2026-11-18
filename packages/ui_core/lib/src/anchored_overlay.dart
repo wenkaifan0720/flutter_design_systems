@@ -105,6 +105,9 @@ class DesignOverlayPlacement {
   final double margin;
 
   /// Whether it may move to the opposite side when its own lacks room.
+  /// A leading-aligned menu with [matchAnchorWidth] can also align its
+  /// trailing edge with the anchor to fit the screen. A trailing-aligned
+  /// menu shifts only as far as the screen margin requires.
   final bool flip;
 
   /// The room it wants on its side before it flips: it flips when its side
@@ -176,8 +179,8 @@ class DesignOverlayAnchor {
   /// The overlay's controller: what [open], [close] and [toggle] call.
   final MenuController controller;
 
-  /// Whether the surface shows: give it to the anchor's `expanded`
-  /// semantics.
+  /// Whether the surface is open. It becomes false as dismissal starts,
+  /// so the anchor's expanded state follows the active menu.
   final bool isOpen;
 
   /// Opens it.
@@ -871,8 +874,12 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
   void _onCloseRequested(VoidCallback hideOverlay) {
     // A menu that opens asks all its group's menus to close, itself among
     // them, before it shows: that request is not a close.
-    if (!_controller.isOpen) return;
+    if (!_controller.isOpen || _closing) return;
     _closing = true;
+    if (_open) {
+      setState(() => _open = false);
+      widget.onOpenChanged?.call(false);
+    }
     // A back while it closes is the page's.
     _holdBack(false);
     _restoreFocus();
@@ -1171,13 +1178,12 @@ class _DesignAnchoredOverlayState extends State<DesignAnchoredOverlay>
       onClose: _onClose,
       overlayBuilder: _surface,
       builder: (context, controller, _) {
-        void toggle() =>
-            controller.isOpen ? controller.close() : controller.open();
+        void toggle() => _open ? controller.close() : controller.open();
         Widget anchor = widget.anchorBuilder(
           context,
           DesignOverlayAnchor(
             controller: controller,
-            isOpen: controller.isOpen,
+            isOpen: _open,
             open: controller.open,
             close: controller.close,
             toggle: toggle,
