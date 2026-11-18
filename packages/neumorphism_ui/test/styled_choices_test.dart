@@ -153,12 +153,7 @@ void main() {
     ),
     (
       'stepper',
-      (s) => NeumorphicNumberField(
-        style: s,
-        value: '2',
-        onDecrease: () {},
-        onIncrease: () {},
-      ),
+      (s) => NeumorphicNumberField(style: s, value: 2, onChanged: (_) {}),
       (t, s) => t.copyWith(stepperTheme: s),
     ),
   ];

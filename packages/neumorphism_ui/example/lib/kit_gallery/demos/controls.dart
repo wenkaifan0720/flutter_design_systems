@@ -1,7 +1,7 @@
 /// What a person presses, types or picks. The ones you can latch say so three ways, so they read with no shadow: a pigment mark, bold words, a pressed face.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 import '../kit.dart';
@@ -115,11 +115,12 @@ Widget kitSpecimenChoices() => NeumorphicChoices(
 );
 
 Widget kitSpecimenStepper() => NeumorphicNumberField(
-  value: '2',
+  value: 2,
+  min: 1,
+  max: 12,
   unit: 'people',
   note: 'Up to 12',
-  onDecrease: () {},
-  onIncrease: () {},
+  onChanged: (_) {},
 );
 
 Widget kitSpecimenSwitch() {

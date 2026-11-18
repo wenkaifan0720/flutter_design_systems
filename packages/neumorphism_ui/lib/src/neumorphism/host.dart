@@ -3,8 +3,8 @@
 // main library, not in it: an app built on the package draws its screens without it.
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
+import 'package:ui_core/host.dart';
 
 import 'chrome_metrics.dart';
 
@@ -225,6 +225,9 @@ class _NeumorphicPageRoute<T> extends PageRouteBuilder<T> {
 
 /// The router's page for a sheet, raised on the root navigator over the shell: from a phone's foot, as a slab in the middle of a desktop.
 /// [drawer] stands it as tall as its content. The screen inside derives its close.
+/// Its routes are ui_core's, on springs as long as the theme's move: on a phone a [DesignBottomSheetRoute] (a finger
+/// drags it down and away, the screen's scroll view handing the drag over at its top), on a desktop a
+/// [DesignDialogRoute]; both close on Escape and back, and give the focus back as they close.
 class NeumorphicSheetPage<T> extends Page<T> {
   /// Creates a [NeumorphicSheetPage].
   const NeumorphicSheetPage({
@@ -306,39 +309,37 @@ class NeumorphicSheetPage<T> extends Page<T> {
       );
     }
     final barrier = neumorphicVeil(t.colors);
+    final stiffness = neumorphicRouteStiffness(t.motion.move);
+    final close = NeumorphicLocalizations.of(context).close;
     if (t.desk) {
-      return RawDialogRoute<T>(
+      return DesignDialogRoute<T>(
         settings: this,
-        transitionDuration: motion.move,
+        stiffness: stiffness,
         barrierDismissible: true,
-        barrierLabel: NeumorphicLocalizations.of(context).close,
+        barrierLabel: close,
         barrierColor: barrier,
-        pageBuilder: (sheetContext, _, _) => Center(
-          child: SizedBox(
-            width: 560,
-            height: drawer ? null : most(sheetContext),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: most(sheetContext)),
-              child: card(sheetContext, desk: true),
+        builder: (sheetContext, details) => FadeTransition(
+          opacity: details.animation,
+          child: Center(
+            child: SizedBox(
+              width: 560,
+              height: drawer ? null : most(sheetContext),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: most(sheetContext)),
+                child: card(sheetContext, desk: true),
+              ),
             ),
           ),
         ),
       );
     }
-    return ModalBottomSheetRoute<T>(
+    return DesignBottomSheetRoute<T>(
       settings: this,
-      sheetAnimationStyle: AnimationStyle(
-        duration: motion.move,
-        reverseDuration: motion.leave,
-      ),
-      backgroundColor: const Color(0x00000000),
-      modalBarrierColor: barrier,
-      elevation: 0,
-      isScrollControlled: true,
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
-        ),
+      stiffness: stiffness,
+      barrierColor: barrier,
+      barrierLabel: close,
+      builder: (sheetContext, details) => PrimaryScrollController(
+        controller: details.scrollController,
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: most(sheetContext)),
           child: SizedBox(
@@ -441,47 +442,53 @@ class NeumorphicPreview extends StatelessWidget {
     return PreviewFrame(
       platform: platform,
       brightness: brightness,
-      child: MaterialApp(
-        key: ValueKey<Object>((presentation, drawer)),
-        debugShowCheckedModeBanner: false,
-        builder: (context, app) => NeumorphicHost(
-          light: light,
-          darkData: darkData,
-          brightness: brightness,
-          child: app ?? const SizedBox.shrink(),
+      // The preview's app in a semantics container of its own: its first route's modal barrier hides from a screen
+      // reader whatever was painted before it in the same container, so a preview on a page took the page above it
+      // (material_ui's MaterialApp has none of the containers Flutter's own MaterialApp had).
+      child: Semantics(
+        container: true,
+        child: MaterialApp(
+          key: ValueKey<Object>((presentation, drawer)),
+          debugShowCheckedModeBanner: false,
+          builder: (context, app) => NeumorphicHost(
+            light: light,
+            darkData: darkData,
+            brightness: brightness,
+            child: app ?? const SizedBox.shrink(),
+          ),
+          home: switch (presentation) {
+            NeumorphicPresentation.root => Builder(
+              builder: (context) => tabs.isEmpty
+                  ? child
+                  : Column(
+                      children: [
+                        Expanded(child: scoped(child)),
+                        if (!NeumorphicTheme.of(context).desk)
+                          NeumorphicNavigationBar(
+                            items: nav,
+                            selectedIndex: activeIndex,
+                            action: action,
+                          ),
+                      ],
+                    ),
+            ),
+            NeumorphicPresentation.pushed => PreviewStage(
+              route: (context, page) => NeumorphicPage<void>(
+                key: const ValueKey<String>('neumorphism-preview'),
+                child: page,
+              ).createRoute(context),
+              child: scoped(child),
+            ),
+            NeumorphicPresentation.sheet => PreviewStage(
+              route: (context, page) => NeumorphicSheetPage<void>(
+                key: const ValueKey<String>('neumorphism-preview'),
+                drawer: drawer,
+                child: page,
+              ).createRoute(context),
+              child: child,
+            ),
+          },
         ),
-        home: switch (presentation) {
-          NeumorphicPresentation.root => Builder(
-            builder: (context) => tabs.isEmpty
-                ? child
-                : Column(
-                    children: [
-                      Expanded(child: scoped(child)),
-                      if (!NeumorphicTheme.of(context).desk)
-                        NeumorphicNavigationBar(
-                          items: nav,
-                          selectedIndex: activeIndex,
-                          action: action,
-                        ),
-                    ],
-                  ),
-          ),
-          NeumorphicPresentation.pushed => PreviewStage(
-            route: (context, page) => NeumorphicPage<void>(
-              key: const ValueKey<String>('neumorphism-preview'),
-              child: page,
-            ).createRoute(context),
-            child: scoped(child),
-          ),
-          NeumorphicPresentation.sheet => PreviewStage(
-            route: (context, page) => NeumorphicSheetPage<void>(
-              key: const ValueKey<String>('neumorphism-preview'),
-              drawer: drawer,
-              child: page,
-            ).createRoute(context),
-            child: child,
-          ),
-        },
       ),
     );
   }

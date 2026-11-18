@@ -10,6 +10,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
+import 'package:neumorphism_ui/src/neumorphism/internal/cell_bank.dart'
+    show NeumorphicCellScope;
 
 import 'support.dart';
 
@@ -119,7 +121,8 @@ void main() {
 
             // Every cell the same width.
             final cells = [
-              for (final e in find.byType(NeumorphicTap).evaluate())
+              // A cell is what its bank's outline scope holds: a pressable cell, or a tab ui_core's bar presses.
+              for (final e in find.byType(NeumorphicCellScope).evaluate())
                 if (e.findAncestorWidgetOfExactType<NeumorphicTextField>() ==
                     null)
                   () {

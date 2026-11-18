@@ -478,23 +478,6 @@ class NeumorphicTwoWayBars extends StatelessWidget {
   }
 }
 
-/// A round step for about [raw] a gridline: 1, 2, 2.5 or 5 times a power of ten.
-double _roundStep(double raw) {
-  if (!raw.isFinite || raw <= 0) return 1;
-  final power = math.pow(10, (math.log(raw) / math.ln10).floor()).toDouble();
-  final f = raw / power;
-  final nice = f <= 1
-      ? 1.0
-      : f <= 2
-      ? 2.0
-      : f <= 2.5
-      ? 2.5
-      : f <= 5
-      ? 5.0
-      : 10.0;
-  return nice * power;
-}
-
 /// The column bars' plot: 280 by 150 units, the base at 146 and [_columnTop] at the top gridline.
 const double _columnBase = 146, _columnTop = 10;
 
@@ -646,7 +629,7 @@ class NeumorphicColumnBars extends StatelessWidget {
     final c = t.colors;
     // About four round steps from zero over the tallest column or cap; the top gridline is the scale's top.
     final most = [...values, ?forecast].fold<double>(0, math.max);
-    final step = _roundStep(math.max(most, 1e-9) / 4);
+    final step = neumorphicRoundStep(math.max(most, 1e-9) / 4);
     final count = math.max(1, (most / step - 1e-9).ceil());
     final high = count * step;
     final ticks = [for (var i = 0; i <= count; i++) i * step];

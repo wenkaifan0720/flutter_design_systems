@@ -273,3 +273,21 @@ class NeumorphicOneAxisClipper extends CustomClipper<Rect> {
   bool shouldReclip(NeumorphicOneAxisClipper oldClipper) =>
       oldClipper.axis != axis;
 }
+
+/// A round step at least [raw], for a chart's gridlines: 1, 2, 2.5 or 5 times a power of ten. The look's grid, four
+/// intervals at most, takes quarters (0, 2.5, 5, 7.5, 10); ui_core's nice scales step by 1, 2 and 5 only.
+double neumorphicRoundStep(double raw) {
+  if (!raw.isFinite || raw <= 0) return 1;
+  final power = math.pow(10, (math.log(raw) / math.ln10).floor()).toDouble();
+  final f = raw / power;
+  final nice = f <= 1
+      ? 1.0
+      : f <= 2
+      ? 2.0
+      : f <= 2.5
+      ? 2.5
+      : f <= 5
+      ? 5.0
+      : 10.0;
+  return nice * power;
+}

@@ -23,10 +23,9 @@ void main() {
               children: [
                 const NeumorphicMonogram('NW'),
                 NeumorphicNumberField(
-                  value: '2',
+                  value: 2,
                   unit: 'people',
-                  onDecrease: () {},
-                  onIncrease: () {},
+                  onChanged: (_) {},
                 ),
                 const NeumorphicStats([
                   NeumorphicStat('Energy', '12.4', 'kWh'),
@@ -51,7 +50,11 @@ void main() {
     );
     await tester.pumpAndSettle();
     for (final label in ['NW', '2', 'people', '09:00', '30%']) {
-      final paragraph = tester.renderObject<RenderParagraph>(find.text(label));
+      // The number field's figure is an editable: its text is laid out by the RenderEditable under it.
+      final found = find.text(label);
+      final paragraph = tester.widget(found) is EditableText
+          ? tester.state<EditableTextState>(found).renderEditable
+          : tester.renderObject<RenderParagraph>(found);
       final painted = MatrixUtils.transformRect(
         paragraph.getTransformTo(null),
         Offset.zero & paragraph.size,
@@ -61,7 +64,9 @@ void main() {
         closeTo(paragraph.size.height, .01),
         reason: '$label must not be scaled back down',
       );
-      expect(paragraph.didExceedMaxLines, isFalse, reason: label);
+      if (paragraph is RenderParagraph) {
+        expect(paragraph.didExceedMaxLines, isFalse, reason: label);
+      }
     }
     expect(tester.takeException(), isNull);
   });
@@ -101,12 +106,8 @@ void main() {
   }
   check(
     'long stepper units',
-    () => NeumorphicNumberField(
-      value: '12345',
-      unit: longLine,
-      onDecrease: () {},
-      onIncrease: () {},
-    ),
+    () =>
+        NeumorphicNumberField(value: 12345, unit: longLine, onChanged: (_) {}),
   );
   check(
     'long stat figure',

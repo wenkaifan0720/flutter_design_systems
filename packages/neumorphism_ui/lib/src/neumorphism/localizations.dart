@@ -275,11 +275,20 @@ abstract class NeumorphicLocalizations {
   /// A message's send button.
   String get send;
 
-  /// A stepper's two buttons.
-  String get less;
+  /// A stepper's less button. Unused: the number field's keys are the steps of its one node, which a screen reader
+  /// hears as increase and decrease, with no words of their own.
+  @Deprecated(
+    'The number field\'s keys are its node\'s steps, with no words; '
+    'unused since 0.3.0',
+  )
+  String get less => 'Less';
 
-  /// A stepper's more button.
-  String get more;
+  /// A stepper's more button. Unused, as [less] is.
+  @Deprecated(
+    'The number field\'s keys are its node\'s steps, with no words; '
+    'unused since 0.3.0',
+  )
+  String get more => 'More';
 
   /// A search field's clear button.
   String get clearSearch;
@@ -385,10 +394,6 @@ class NeumorphicLocalizationsEn extends NeumorphicLocalizations {
   String get tryAgain => 'Try again';
   @override
   String get send => 'Send';
-  @override
-  String get less => 'Less';
-  @override
-  String get more => 'More';
   @override
   String get clearSearch => 'Clear search';
   @override

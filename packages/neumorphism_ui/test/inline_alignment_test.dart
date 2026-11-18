@@ -6,7 +6,7 @@
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui/neumorphism_host.dart';
 
@@ -127,11 +127,8 @@ final neumorphicAlignment = DesignAlignmentMatrix(
         ),
         DesignAlignmentEntry(
           DesignInlineControl.numberField,
-          (context, label) => NeumorphicNumberField(
-            value: label,
-            onDecrease: _tap,
-            onIncrease: _tap,
-          ),
+          (context, label) =>
+              NeumorphicNumberField(value: 2, onChanged: (_) => _tap()),
         ),
         DesignAlignmentEntry(
           DesignInlineControl.labeledCheckbox,

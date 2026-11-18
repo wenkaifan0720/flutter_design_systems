@@ -5,16 +5,19 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'frames.dart';
 import 'format.dart';
 import 'layout.dart';
+import 'controls.dart' show NeumorphicTapFace;
 import 'localizations.dart';
 import 'raised.dart';
 import 'rows.dart';
 import 'tell.dart';
 import 'styled.dart';
 import 'theme.dart';
+import 'internal/geometry.dart' show neumorphicRoundStep;
 import 'internal/moulded.dart';
 
 /// A continuous line with gaps, the same line over a filled area, or grouped columns.
@@ -156,7 +159,7 @@ class NeumorphicChart extends StatelessWidget {
     );
     // The gridlines stand on a round step, four of them at most across the data, and the plot runs from whole step to
     // whole step, so every gridline is labelled with a round value in the gutter.
-    final step = _niceStep((most - least) / 4);
+    final step = neumorphicRoundStep((most - least) / 4);
     final low = (least / step).floor() * step;
     final steps = math.max(1, ((most - low) / step - 1e-9).ceil());
     final high = low + steps * step;
@@ -197,138 +200,173 @@ class NeumorphicChart extends StatelessWidget {
         (wellLook.shape?.dimensions.resolve(direction) ?? EdgeInsets.zero);
     final count = series.fold<int>(0, (n, s) => math.max(n, s.values.length));
     const barRadius = 2.0;
-    return Semantics(
-      container: true,
-      label: label,
-      value: read,
-      child: ExcludeSemantics(
-        child: NeumorphicFill(
-          maxWidth: 680,
-          alignment: AlignmentDirectional.topStart,
-          child: NeumorphicColumn(
-            gap: 8,
-            children: [
-              NeumorphicWell(
-                style: style,
-                padding: const EdgeInsets.all(14),
-                // The top and bottom labels stand centred on their gridlines, half a line past the plot's 4 px margin.
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    vertical: math.max(0.0, tickHeight / 2 - 4),
+    String readAt(int i) => [
+      if (i < labels.length) labels[i],
+      for (final s in series)
+        if (i < s.values.length && s.values[i] != null && s.values[i]!.isFinite)
+          '${s.label} ${fmt(s.values[i]!)}',
+    ].join('\n');
+    // The plot's picking is ui_core's (DesignChart): a mouse over it, a finger drawn across it or a tap on it, the
+    // keys (one tab stop: Left and Right, Home and End, Escape) and a screen reader's steps choose a sample; the look
+    // draws the plot, marks the sample and raises its values above it. The chart's one node is DesignChart's: its
+    // name, the summary, and the sample the keys or a screen reader step to. The words round the plot are drawn only.
+    final plot = Directionality(
+      // The plot reads left to right in every language, as its gutter and its labels do.
+      textDirection: TextDirection.ltr,
+      child: DesignChart(
+        semanticLabel: label,
+        semanticSummary: read,
+        series: [
+          for (final s in series)
+            DesignChartSeries(
+              label: s.label,
+              points: [
+                for (final (i, value) in s.values.indexed)
+                  DesignChartPoint(
+                    i.toDouble(),
+                    value != null && value.isFinite ? value : null,
                   ),
-                  child: Row(
-                    textDirection: TextDirection.ltr,
+              ],
+            ),
+        ],
+        xAxis: kind == NeumorphicChartKind.bar
+            ? DesignChartXAxis.band
+            : DesignChartXAxis.linear,
+        categories: kind == NeumorphicChartKind.bar
+            ? [
+                for (var i = 0; i < count; i++)
+                  i < labels.length ? labels[i] : '${i + 1}',
+              ]
+            : null,
+        // The plot's own 4 px margin (_plotArea): ui_core's columns are the look's, sample for sample.
+        padding: const EdgeInsets.all(4),
+        formatX: (x) {
+          final i = x.round();
+          return i >= 0 && i < labels.length ? labels[i] : '${i + 1}';
+        },
+        formatY: fmt,
+        builder: (context, chart) => _Readout(
+          selected: chart.active?.index,
+          focused: chart.states.contains(WidgetState.focused),
+          count: count,
+          kind: kind,
+          read: readAt,
+          child: CustomPaint(
+            painter: _ChartPainter(
+              series,
+              kind,
+              band,
+              low,
+              high,
+              step,
+              t.colors,
+              barRadius,
+              chart.active?.index,
+            ),
+          ),
+        ),
+      ),
+    );
+    return NeumorphicFill(
+      maxWidth: 680,
+      alignment: AlignmentDirectional.topStart,
+      child: NeumorphicColumn(
+        gap: 8,
+        children: [
+          NeumorphicWell(
+            style: style,
+            padding: const EdgeInsets.all(14),
+            // The top and bottom labels stand centred on their gridlines, half a line past the plot's 4 px margin.
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: math.max(0.0, tickHeight / 2 - 4),
+              ),
+              child: Row(
+                textDirection: TextDirection.ltr,
+                children: [
+                  ExcludeSemantics(
+                    child: neumorphicOwnSize(
+                      width: gutter,
+                      height: height,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          for (final value in ticks)
+                            Positioned(
+                              right: 0,
+                              top:
+                                  4 +
+                                  (high - value) /
+                                      (high - low) *
+                                      math.max(0.0, height - 8) -
+                                  tickHeight / 2,
+                              child: Text(
+                                fmt(value),
+                                style: t.textTheme.micro.tabular,
+                                textDirection: TextDirection.ltr,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: gutterGap),
+                  Expanded(
+                    child: SizedBox(height: height, child: plot),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (labels.isNotEmpty)
+            ExcludeSemantics(
+              child: _AxisLabels(
+                labels: labels,
+                kind: kind,
+                count: count,
+                // The well's inset, the gutter and the plot's own 4 px margin: the labels sit under the bars and
+                // points.
+                left: inset.left + gutter + gutterGap,
+                right: inset.right,
+                style: t.textTheme.micro,
+              ),
+            ),
+          ExcludeSemantics(
+            child: Wrap(
+              spacing: 16,
+              runSpacing: 8,
+              children: [
+                for (final (i, s) in series.indexed)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       neumorphicOwnSize(
-                        width: gutter,
-                        height: height,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            for (final value in ticks)
-                              Positioned(
-                                right: 0,
-                                top:
-                                    4 +
-                                    (high - value) /
-                                        (high - low) *
-                                        math.max(0.0, height - 8) -
-                                    tickHeight / 2,
-                                child: Text(
-                                  fmt(value),
-                                  style: t.textTheme.micro.tabular,
-                                  textDirection: TextDirection.ltr,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: gutterGap),
-                      Expanded(
-                        child: SizedBox(
-                          height: height,
-                          child: _Readout(
-                            count: series.fold<int>(
-                              0,
-                              (n, s) => math.max(n, s.values.length),
-                            ),
-                            kind: kind,
-                            groups: series.length,
-                            read: (i) => [
-                              if (i < labels.length) labels[i],
-                              for (final s in series)
-                                if (i < s.values.length &&
-                                    s.values[i] != null &&
-                                    s.values[i]!.isFinite)
-                                  '${s.label} ${fmt(s.values[i]!)}',
-                            ].join('\n'),
-                            builder: (selected) => CustomPaint(
-                              painter: _ChartPainter(
-                                series,
-                                kind,
-                                band,
-                                low,
-                                high,
-                                step,
-                                t.colors,
-                                barRadius,
-                                selected,
-                              ),
-                            ),
+                        width: 24,
+                        height: 12,
+                        child: CustomPaint(
+                          painter: _SeriesKeyPainter(
+                            i,
+                            t.colors,
+                            bar: kind == NeumorphicChartKind.bar,
+                            radius: barRadius,
                           ),
                         ),
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(s.label, style: t.textTheme.caption),
                       ),
                     ],
                   ),
-                ),
-              ),
-              if (labels.isNotEmpty)
-                _AxisLabels(
-                  labels: labels,
-                  kind: kind,
-                  count: count,
-                  // The well's inset, the gutter and the plot's own 4 px margin: the labels sit under the bars and
-                  // points.
-                  left: inset.left + gutter + gutterGap,
-                  right: inset.right,
-                  style: t.textTheme.micro,
-                ),
-              Wrap(
-                spacing: 16,
-                runSpacing: 8,
-                children: [
-                  for (final (i, s) in series.indexed)
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        neumorphicOwnSize(
-                          width: 24,
-                          height: 12,
-                          child: CustomPaint(
-                            painter: _SeriesKeyPainter(
-                              i,
-                              t.colors,
-                              bar: kind == NeumorphicChartKind.bar,
-                              radius: barRadius,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(s.label, style: t.textTheme.caption),
-                        ),
-                      ],
-                    ),
-                  if (band != null)
-                    Text(
-                      '${band!.label ?? ''} ${fmt(band!.low)}–${fmt(band!.high)}',
-                      style: t.textTheme.caption,
-                    ),
-                ],
-              ),
-            ],
+                if (band != null)
+                  Text(
+                    '${band!.label ?? ''} ${fmt(band!.low)}–${fmt(band!.high)}',
+                    style: t.textTheme.caption,
+                  ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -769,23 +807,6 @@ class _ChartPainter extends CustomPainter {
 
 Rect _plotArea(Size size) => (Offset.zero & size).deflate(4);
 
-/// A round step at least [raw]: 1, 2, 2.5 or 5 times a power of ten.
-double _niceStep(double raw) {
-  if (!raw.isFinite || raw <= 0) return 1;
-  final power = math.pow(10, (math.log(raw) / math.ln10).floor()).toDouble();
-  final f = raw / power;
-  final nice = f <= 1
-      ? 1.0
-      : f <= 2
-      ? 2.0
-      : f <= 2.5
-      ? 2.5
-      : f <= 5
-      ? 5.0
-      : 10.0;
-  return nice * power;
-}
-
 /// Where sample [i] of [count] sits across the plot: on the line's points, or at the middle of its bar group.
 double _plotX(Rect area, int i, int count, NeumorphicChartKind kind) {
   if (kind == NeumorphicChartKind.bar) {
@@ -795,103 +816,56 @@ double _plotX(Rect area, int i, int count, NeumorphicChartKind kind) {
   return count <= 1 ? area.center.dx : area.left + area.width * i / (count - 1);
 }
 
-/// The sample nearest [x] across the plot.
-int _plotIndex(Rect area, double x, int count, NeumorphicChartKind kind) {
-  if (kind == NeumorphicChartKind.bar) {
-    final group = area.width / math.max(count, 1);
-    return ((x - area.left) / group).floor().clamp(0, count - 1);
-  }
-  if (count <= 1) return 0;
-  return ((x - area.left) / area.width * (count - 1)).round().clamp(
-    0,
-    count - 1,
-  );
-}
-
-/// The plot with a readout: a mouse over it or a touch on it marks the nearest sample and raises its values above
-/// the plot. The values are in the chart's semantics already, so the readout itself is not announced.
-class _Readout extends StatefulWidget {
+/// The plot with its readout: the sample ui_core's DesignChart picked is marked and its values raised above the
+/// plot, following the sample and staying inside the plot. The values are the chart's node's already, so the readout
+/// itself is not announced. Keyboard focus lifts the plot, as it lifts every face of the look.
+class _Readout extends StatelessWidget {
   const _Readout({
+    required this.selected,
+    required this.focused,
     required this.count,
     required this.kind,
-    required this.groups,
     required this.read,
-    required this.builder,
+    required this.child,
   });
-  final int count, groups;
+  final int? selected;
+  final bool focused;
+  final int count;
   final NeumorphicChartKind kind;
   final String Function(int index) read;
-  final Widget Function(int? selected) builder;
-  @override
-  State<_Readout> createState() => _ReadoutState();
-}
-
-class _ReadoutState extends State<_Readout> {
-  int? _selected;
-
-  void _at(Offset local) {
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null || !box.hasSize || widget.count == 0) return;
-    final index = _plotIndex(
-      _plotArea(box.size),
-      local.dx,
-      widget.count,
-      widget.kind,
-    );
-    if (index != _selected) setState(() => _selected = index);
-  }
-
-  void _clear() {
-    if (_selected != null) setState(() => _selected = null);
-  }
+  final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    final selected = _selected != null && _selected! < widget.count
-        ? _selected
-        : null;
-    return MouseRegion(
-      onHover: (event) => _at(event.localPosition),
-      onExit: (_) => _clear(),
-      child: Listener(
-        onPointerDown: (event) => _at(event.localPosition),
-        onPointerMove: (event) => _at(event.localPosition),
-        behavior: HitTestBehavior.opaque,
-        child: LayoutBuilder(
-          builder: (context, box) {
-            final text = selected == null ? '' : widget.read(selected);
-            return Stack(
-              clipBehavior: Clip.none,
-              fit: StackFit.expand,
-              children: [
-                widget.builder(selected),
-                if (text.isNotEmpty)
-                  Align(
-                    // The readout follows the sample and stays inside the plot.
-                    alignment: Alignment(
-                      (_plotX(
-                                    _plotArea(box.biggest),
-                                    selected!,
-                                    widget.count,
-                                    widget.kind,
-                                  ) /
-                                  math.max(box.maxWidth, 1) *
-                                  2 -
-                              1)
-                          .clamp(-1.0, 1.0),
-                      -1,
-                    ),
-                    child: IgnorePointer(
-                      child: NeumorphicTooltipFace(message: text),
-                    ),
-                  ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => NeumorphicTapFace(
+    states: {if (focused) WidgetState.focused},
+    child: LayoutBuilder(
+      builder: (context, box) {
+        final at = selected != null && selected! < count ? selected : null;
+        final text = at == null ? '' : read(at);
+        return Stack(
+          clipBehavior: Clip.none,
+          fit: StackFit.expand,
+          children: [
+            child,
+            if (text.isNotEmpty)
+              Align(
+                alignment: Alignment(
+                  (_plotX(_plotArea(box.biggest), at!, count, kind) /
+                              math.max(box.maxWidth, 1) *
+                              2 -
+                          1)
+                      .clamp(-1.0, 1.0),
+                  -1,
+                ),
+                child: IgnorePointer(
+                  child: NeumorphicTooltipFace(message: text),
+                ),
+              ),
+          ],
+        );
+      },
+    ),
+  );
 }
 
 /// A chart's well while its values load: the frame the plot will fill, with the look's skeleton in it.
@@ -1023,21 +997,6 @@ class NeumorphicPieChart extends StatefulWidget {
 class _NeumorphicDonutState extends State<NeumorphicPieChart> {
   int? _selected;
 
-  int? _sliceAt(Offset local, double sum) {
-    final size = widget.size, ring = size * .15;
-    final centre = Offset(size / 2, size / 2), delta = local - centre;
-    final radius = (size - ring) / 2 - 4;
-    if ((delta.distance - radius).abs() > ring / 2 + 6) return null;
-    var turn = math.atan2(delta.dy, delta.dx) + math.pi / 2;
-    if (turn < 0) turn += 2 * math.pi;
-    var at = 0.0;
-    for (final (i, slice) in widget.slices.indexed) {
-      at += slice.value / sum * 2 * math.pi;
-      if (turn <= at) return i;
-    }
-    return widget.slices.length - 1;
-  }
-
   @override
   Widget build(BuildContext context) {
     assert(
@@ -1076,51 +1035,69 @@ class _NeumorphicDonutState extends State<NeumorphicPieChart> {
             fmt(widget.slices[selected].value),
             '${widget.slices[selected].label}, ${share(widget.slices[selected])}',
           );
-    void at(Offset local) {
-      final index = _sliceAt(local, sum);
-      if (index != _selected) setState(() => _selected = index);
-    }
-
-    final ring = MouseRegion(
-      onHover: (event) => at(event.localPosition),
-      onExit: (_) => setState(() => _selected = null),
-      child: Listener(
-        onPointerDown: (event) => at(event.localPosition),
-        child: SizedBox.square(
-          dimension: widget.size,
-          child: CustomPaint(
-            painter: _DonutPainter(widget.slices, sum, selected, t.colors),
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(widget.size * .2),
-                // The hole's width for the words to wrap in; under large text the readout scales down to the hole
-                // rather than spill out of it. Its words grow only so far (1.3), as an instrument face's do: at twice
-                // the text the caption broke over three lines and its corners grazed the ring.
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: SizedBox(
-                    width: widget.size * .6,
-                    child: MediaQuery.withClampedTextScaling(
-                      maxScaleFactor: 1.3,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            middle.$1,
-                            style: t.textTheme.value,
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (middle.$2 != null)
+    // The ring's picking is ui_core's (DesignPieChart): a mouse over a slice, a finger on it, the keys (one tab stop:
+    // the arrows, Home and End) and a screen reader's steps choose one; the look raises it, names it in the hole and
+    // brings its row in the key up to the ink. A pointer picks on the ring and 6 px either side of it, never in the
+    // hole. The chart's one node is DesignPieChart's.
+    final ringWidth = widget.size * .15;
+    final ringRadius = (widget.size - ringWidth) / 2 - 4;
+    final ring = Directionality(
+      // Clockwise from twelve in every language, as the key beside it reads.
+      textDirection: TextDirection.ltr,
+      child: SizedBox.square(
+        dimension: widget.size,
+        child: DesignPieChart(
+          semanticLabel: widget.label,
+          semanticSummary: read,
+          slices: [
+            for (final s in widget.slices)
+              DesignPieSlice(label: s.label, value: s.value),
+          ],
+          formatValue: fmt,
+          holeRadius: math.max(
+            0.0,
+            (ringRadius - ringWidth / 2 - 6) / (widget.size / 2),
+          ),
+          onActiveSliceChanged: (index) => setState(() => _selected = index),
+          builder: (context, pie) => NeumorphicTapFace(
+            states: {
+              if (pie.states.contains(WidgetState.focused)) WidgetState.focused,
+            },
+            round: true,
+            child: CustomPaint(
+              painter: _DonutPainter(widget.slices, sum, selected, t.colors),
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.all(widget.size * .2),
+                  // The hole's width for the words to wrap in; under large text the readout scales down to the hole
+                  // rather than spill out of it. Its words grow only so far (1.3), as an instrument face's do: at twice
+                  // the text the caption broke over three lines and its corners grazed the ring.
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: SizedBox(
+                      width: widget.size * .6,
+                      child: MediaQuery.withClampedTextScaling(
+                        maxScaleFactor: 1.3,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
                             Text(
-                              middle.$2!,
-                              style: t.textTheme.micro,
+                              middle.$1,
+                              style: t.textTheme.value,
                               textAlign: TextAlign.center,
-                              maxLines: 2,
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                        ],
+                            if (middle.$2 != null)
+                              Text(
+                                middle.$2!,
+                                style: t.textTheme.micro,
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -1131,92 +1108,88 @@ class _NeumorphicDonutState extends State<NeumorphicPieChart> {
         ),
       ),
     );
-    final key = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final (i, s) in widget.slices.indexed)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox.square(
-                  dimension: 14,
-                  child: CustomPaint(painter: _SliceKeyPainter(i, t.colors)),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    s.label,
-                    style: t.textTheme.caption.copyWith(
-                      color: i == selected ? t.colors.ink : null,
+    // The key is drawn only: the slices are the chart's node's.
+    final key = ExcludeSemantics(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final (i, s) in widget.slices.indexed)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox.square(
+                    dimension: 14,
+                    child: CustomPaint(painter: _SliceKeyPainter(i, t.colors)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      s.label,
+                      style: t.textTheme.caption.copyWith(
+                        color: i == selected ? t.colors.ink : null,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Text(fmt(s.value), style: t.textTheme.caption.tabular),
-                // The share's column grows with the text, a gap before it: a fixed 52 ran '9.2' into '57%' at
-                // twice the text ('9.257%').
-                const SizedBox(width: 10),
-                SizedBox(
-                  width: MediaQuery.textScalerOf(context).scale(44),
-                  child: Text(
-                    share(s),
-                    style: t.textTheme.micro.tabular,
-                    textAlign: TextAlign.end,
+                  const SizedBox(width: 12),
+                  Text(fmt(s.value), style: t.textTheme.caption.tabular),
+                  // The share's column grows with the text, a gap before it: a fixed 52 ran '9.2' into '57%' at
+                  // twice the text ('9.257%').
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    width: MediaQuery.textScalerOf(context).scale(44),
+                    child: Text(
+                      share(s),
+                      style: t.textTheme.micro.tabular,
+                      textAlign: TextAlign.end,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
-    return Semantics(
-      container: true,
-      label: widget.label,
-      value: read,
-      child: ExcludeSemantics(
-        child: NeumorphicFill(
-          maxWidth: 680,
-          alignment: AlignmentDirectional.topStart,
-          child: NeumorphicWell(
-            style: widget.style,
-            padding: const EdgeInsets.all(16),
-            child: LayoutBuilder(
-              builder: (context, box) =>
-                  !box.hasBoundedWidth || box.maxWidth >= widget.size + 220
-                  ? Row(
-                      children: [
-                        ring,
-                        const SizedBox(width: 24),
-                        // A key as wide as a key reads, beside the ring: run across a wide well, each slice's
-                        // figures stood 300 px from its name, and the eye lost the row between them.
-                        Expanded(
-                          child: Align(
-                            alignment: AlignmentDirectional.centerStart,
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: MediaQuery.textScalerOf(context)
-                                    .scale(320),
-                              ),
-                              child: key,
-                            ),
+    return NeumorphicFill(
+      maxWidth: 680,
+      alignment: AlignmentDirectional.topStart,
+      child: NeumorphicWell(
+        style: widget.style,
+        padding: const EdgeInsets.all(16),
+        child: LayoutBuilder(
+          builder: (context, box) =>
+              !box.hasBoundedWidth || box.maxWidth >= widget.size + 220
+              ? Row(
+                  children: [
+                    ring,
+                    const SizedBox(width: 24),
+                    // A key as wide as a key reads, beside the ring: run across a wide well, each slice's
+                    // figures stood 300 px from its name, and the eye lost the row between them.
+                    Expanded(
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.textScalerOf(context)
+                                .scale(320),
                           ),
+                          child: key,
                         ),
-                      ],
-                    )
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Center(child: ring),
-                        const SizedBox(height: 16),
-                        key,
-                      ],
+                      ),
                     ),
-            ),
-          ),
+                  ],
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(child: ring),
+                    const SizedBox(height: 16),
+                    key,
+                  ],
+                ),
         ),
       ),
     );

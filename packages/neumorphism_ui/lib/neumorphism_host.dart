@@ -5,6 +5,21 @@
 /// beside that one.
 ///
 /// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
+///
+/// {@canonicalFor chrome_metrics}
+/// {@canonicalFor chrome_metrics.NeumorphicChromeMetrics}
+/// {@canonicalFor host}
+/// {@canonicalFor host.NeumorphicChromeScope}
+/// {@canonicalFor host.NeumorphicHost}
+/// {@canonicalFor host.NeumorphicPage}
+/// {@canonicalFor host.NeumorphicPresentation}
+/// {@canonicalFor host.NeumorphicPreview}
+/// {@canonicalFor host.NeumorphicSheetPage}
+/// {@canonicalFor host.NeumorphicShellAction}
+/// {@canonicalFor inventory}
+/// {@canonicalFor inventory.NeumorphicInventoryGallery}
+/// {@canonicalFor inventory.neumorphicInventory}
+/// {@canonicalFor inventory.neumorphicInventoryHeights}
 library;
 
 export 'package:ui_core/host.dart';

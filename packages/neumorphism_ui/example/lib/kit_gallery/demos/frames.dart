@@ -1,7 +1,7 @@
 /// The material: a slab raised out of the wall, a well pressed into it, and what happens when one stands inside the other. One painter draws them all, and a state still reads with its shadows gone.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 import '../kit.dart';

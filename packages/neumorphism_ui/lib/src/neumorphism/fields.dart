@@ -34,6 +34,7 @@ import 'internal/text_entry.dart';
 import 'knobs.dart';
 import 'localizations.dart';
 import 'shapes.dart';
+import 'tell.dart' show NeumorphicCircularProgressIndicator;
 import 'theme.dart';
 import 'internal/out_of_use.dart';
 import 'internal/moulded.dart';
@@ -707,6 +708,8 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
   const NeumorphicCombobox({
     super.key,
     required this.options,
+    this.search,
+    this.debounceDuration,
     this.label,
     this.hint,
     this.value,
@@ -722,6 +725,14 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
 
   /// Everything it may suggest.
   final List<T> options;
+
+  /// Finds the options for what is typed, in place of filtering [options]: a search over the network or a database.
+  /// While it runs the list says it is loading; when it fails, the list says so and offers Try again (Down moves the
+  /// keys there, Enter runs it), and the focus stays in the field.
+  final DesignOptionSearch<T>? search;
+
+  /// How long typing rests before [search] runs; null runs it at every change.
+  final Duration? debounceDuration;
 
   /// The words above the field, and its spoken name.
   final String? label;
@@ -772,6 +783,11 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
           if (label != null) _Label(label!),
           DesignCombobox<T>(
             options: options,
+            search: search,
+            debounceDuration: debounceDuration,
+            loadingBuilder: _searching,
+            errorBuilder: (context, failure) =>
+                _SearchFailed(failure: failure, list: list),
             value: value,
             onSelected: onSelected,
             displayStringForOption: words,
@@ -834,6 +850,14 @@ class NeumorphicCombobox<T extends Object> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('options', options))
+      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
+        ),
+      )
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(StringProperty('hint', hint, defaultValue: null))
       ..add(DiagnosticsProperty<T>('value', value, defaultValue: null))
@@ -883,6 +907,8 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
     required this.values,
     required this.onChanged,
     this.options = const [],
+    this.search,
+    this.debounceDuration,
     this.label,
     this.hint,
     this.displayString,
@@ -902,6 +928,14 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
 
   /// What it may suggest.
   final List<T> options;
+
+  /// Finds the options for what is typed, in place of filtering [options]: a search over the network or a database.
+  /// While it runs the list says it is loading; when it fails, the list says so and offers Try again (Down moves the
+  /// keys there, Enter runs it), and the focus stays in the field.
+  final DesignOptionSearch<T>? search;
+
+  /// How long typing rests before [search] runs; null runs it at every change.
+  final Duration? debounceDuration;
 
   /// The words above the groove, and its spoken name.
   final String? label;
@@ -944,6 +978,14 @@ class NeumorphicMultiSelect<T extends Object> extends StatefulWidget {
       )
       ..add(
         IterableProperty<T>('options', options, defaultValue: const <Never>[]),
+      )
+      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
+        ),
       )
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(StringProperty('hint', hint, defaultValue: null))
@@ -1003,6 +1045,11 @@ class _NeumorphicMultiSelectState<T extends Object>
             values: widget.values,
             onChanged: widget.onChanged,
             options: widget.options,
+            search: widget.search,
+            debounceDuration: widget.debounceDuration,
+            loadingBuilder: _searching,
+            errorBuilder: (context, failure) =>
+                _SearchFailed(failure: failure, list: list),
             displayStringForOption: words,
             isOptionEnabled: widget.isOptionEnabled,
             // One place for the pointer and the keys, as the combobox's.
@@ -1044,7 +1091,9 @@ class _NeumorphicMultiSelectState<T extends Object>
                 if (_editing) WidgetState.focused,
                 if (widget.error != null) WidgetState.error,
               },
-              padding: const EdgeInsets.symmetric(vertical: 6),
+              // The first chip stands as far in from the well's top as from its side, so it sits square in the well's
+              // corner: 6 over the chips stood it 3 lower than in.
+              padding: EdgeInsets.only(top: tags.isEmpty ? 6 : 3, bottom: 6),
               // The chips start where the words of any field start, on their own lines over the words line.
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -1095,6 +1144,86 @@ class _NeumorphicMultiSelectState<T extends Object>
           _Under(error: widget.error, helper: widget.helper),
         ],
       ),
+    );
+  }
+}
+
+// A search on its way, in the list's panel: the look's turning ring and its word. ui_core announces it as it
+// appears.
+Widget _searching(BuildContext context) => Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+  child: Row(
+    children: [
+      const ExcludeSemantics(
+        child: NeumorphicCircularProgressIndicator(size: 18),
+      ),
+      const SizedBox(width: 10),
+      Flexible(
+        child: Text(
+          NeumorphicLocalizations.of(context).loading,
+          style: NeumorphicTheme.of(context).textTheme.caption,
+        ),
+      ),
+    ],
+  ),
+);
+
+// A search that failed, in the list's panel: what happened, and Try again as the list's one row. The keys light it from
+// the field (ui_core's [DesignSearchError.focused]) and it never takes the focus itself, as an option row does not; the
+// pointer raises it and a press runs the search again.
+class _SearchFailed extends StatefulWidget {
+  const _SearchFailed({required this.failure, required this.list});
+
+  final DesignSearchError failure;
+  final ({double panel, double row}) list;
+
+  @override
+  State<_SearchFailed> createState() => _SearchFailedState();
+}
+
+class _SearchFailedState extends State<_SearchFailed> {
+  final _unfocusable = FocusNode(
+    debugLabel: 'Try again',
+    canRequestFocus: false,
+    skipTraversal: true,
+  );
+
+  @override
+  void dispose() {
+    _unfocusable.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NeumorphicTheme.of(context);
+    final label = NeumorphicLocalizations.of(context).tryAgain;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Text(
+            DesignLocalizations.of(context).searchFailedMessage,
+            style: t.textTheme.caption,
+          ),
+        ),
+        DesignPressable(
+          onPressed: widget.failure.retry,
+          focusNode: _unfocusable,
+          semanticLabel: label,
+          builder: (context, states, _) => NeumorphicPanelRow(
+            label: label,
+            states: {
+              ...states,
+              if (widget.failure.focused) WidgetState.focused,
+            },
+            inset: widget.list.row,
+            panelInset: widget.list.panel,
+          ),
+        ),
+      ],
     );
   }
 }

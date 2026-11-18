@@ -83,7 +83,8 @@ void main() {
           ),
         );
         final data = tester
-            .getSemantics(find.bySemanticsLabel('Activity'))
+            // Its name, then its place ("Tab 2 of 2"), as Material's tab says it.
+            .getSemantics(find.bySemanticsLabel(RegExp('^Activity')))
             .getSemanticsData();
         expect(data.role, SemanticsRole.tab);
         expect(data.flagsCollection.isSelected, Tristate.isTrue);
@@ -117,24 +118,26 @@ void main() {
     testWidgets(
       'view tabs rove, wrap and retain one Tab stop in ${direction.name}',
       (tester) async {
-        var selected = 0;
+        var selected = 0, after = 0;
         await tester.pumpWidget(
           neumorphicApp(
-            StatefulBuilder(
-              builder: (context, setState) => NeumorphicTabBar(
-                tabs: const ['Overview', 'Activity', 'Details'],
-                selectedIndex: selected,
-                onChanged: (v) => setState(() => selected = v),
-              ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                StatefulBuilder(
+                  builder: (context, setState) => NeumorphicTabBar(
+                    tabs: const ['Overview', 'Activity', 'Details'],
+                    selectedIndex: selected,
+                    onChanged: (v) => setState(() => selected = v),
+                  ),
+                ),
+                NeumorphicButton('After', onPressed: () => after++),
+              ],
             ),
             direction: direction,
           ),
         );
-        tester
-            .widgetList<NeumorphicTap>(find.byType(NeumorphicTap))
-            .first
-            .focusNode!
-            .requestFocus();
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await tester.pump();
         await tester.sendKeyEvent(
           direction == TextDirection.ltr
@@ -143,13 +146,6 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(selected, 1);
-        expect(
-          tester
-              .widgetList<NeumorphicTap>(find.byType(NeumorphicTap))
-              .where((w) => !w.focusNode!.skipTraversal)
-              .length,
-          1,
-        );
         await tester.sendKeyEvent(LogicalKeyboardKey.end);
         await tester.pumpAndSettle();
         expect(selected, 2);
@@ -160,10 +156,62 @@ void main() {
         );
         await tester.pumpAndSettle();
         expect(selected, 0);
+        // One stop: the next Tab leaves the bar for the button after it.
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+        await tester.pump();
+        expect(after, 1);
         expect(tester.takeException(), isNull);
       },
     );
   }
+  testWidgets(
+    'the arrows show a cut tab whole by scrolling the bar, never the page',
+    (tester) async {
+      var selected = 0;
+      final page = ScrollController(initialScrollOffset: 300);
+      addTearDown(page.dispose);
+      const tabs = ['Overview', 'Activity', 'Details', 'Members', 'Billing'];
+      await tester.pumpWidget(
+        neumorphicApp(
+          ListView(
+            controller: page,
+            children: [
+              const SizedBox(height: 600),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: SizedBox(
+                  width: 240,
+                  child: StatefulBuilder(
+                    builder: (context, setState) => NeumorphicTabBar(
+                      tabs: tabs,
+                      selectedIndex: selected,
+                      onChanged: (v) => setState(() => selected = v),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 1200),
+            ],
+          ),
+        ),
+      );
+      // The bar is in view from the start: neither the focus arriving nor the arrows move the page.
+      final before = page.offset;
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pumpAndSettle();
+      expect(page.offset, before, reason: 'focus arriving leaves the page');
+      final bar = tester.getRect(find.byType(NeumorphicTabBar));
+      await tester.sendKeyEvent(LogicalKeyboardKey.end);
+      await tester.pumpAndSettle();
+      expect(selected, tabs.length - 1);
+      expect(page.offset, before, reason: 'the page stays where it was');
+      final last = tester.getRect(find.text('Billing'));
+      expect(last.left, greaterThanOrEqualTo(bar.left));
+      expect(last.right, lessThanOrEqualTo(bar.right));
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets('drawer destination callbacks and short large-text layout', (
     tester,
   ) async {

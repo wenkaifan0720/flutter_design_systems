@@ -3,7 +3,7 @@
 /// door), Account and Settings. Its own navigation: a bar on a phone, a rail on a tablet, the pilaster on a desk.
 library;
 
-import 'package:flutter/material.dart' show MaterialPageRoute;
+import 'package:material_ui/material_ui.dart' show MaterialPageRoute;
 import 'package:flutter/widgets.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui/neumorphism_host.dart';
@@ -1186,13 +1186,12 @@ class _Order extends StatelessWidget {
           trailing: price(home.bulbs * home.bulbPrice),
           action: NeumorphicNumberField(
             key: const Key('hearth-bulbs'),
-            value: '${home.bulbs}',
-            onDecrease: home.bulbs == 1
-                ? null
-                : () => home.change(() => home.bulbs--),
-            onIncrease: home.bulbs == 9
-                ? null
-                : () => home.change(() => home.bulbs++),
+            value: home.bulbs.toDouble(),
+            min: 1,
+            max: 9,
+            label: kitSay(context, 'Bulbs'),
+            onChanged: (value) =>
+                home.change(() => home.bulbs = (value ?? 1).round()),
           ),
         ),
         NeumorphicKvRow(

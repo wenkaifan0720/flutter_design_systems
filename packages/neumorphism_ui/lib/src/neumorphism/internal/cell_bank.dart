@@ -90,7 +90,7 @@ class NeumorphicCellBank extends StatelessWidget {
   /// A bank of [children], [selected] chosen.
   const NeumorphicCellBank({
     super.key,
-    required this.children,
+    this.children = const [],
     required this.selected,
     required this.minCellWidth,
     required this.contentHeight,
@@ -99,10 +99,21 @@ class NeumorphicCellBank extends StatelessWidget {
     this.edge,
     this.naturalWidth,
     this.group,
-  });
+    this.count,
+    this.strip,
+  }) : assert(strip == null || (scroll && count != null));
 
-  /// The cells, in reading order.
+  /// The cells, in reading order; not read with [strip].
   final List<Widget> children;
+
+  /// How many cells a [strip] lays out; null: as many as [children].
+  final int? count;
+
+  /// Lays the cells out itself, one row of equal cells in reading order, in place of the bank placing [children]: for
+  /// ui_core's tab bar, whose tabs it lays out and drives. It is given `cell`, which wraps the face of the cell at an
+  /// index in its outline ([NeumorphicCellScope]), and stands where the cells would, their reach with them. A scrolling
+  /// bank's ([scroll]) only.
+  final Widget Function(Widget Function(int index, Widget face) cell)? strip;
 
   /// The chosen cell's index, or -1 for none.
   final int selected;
@@ -131,10 +142,10 @@ class NeumorphicCellBank extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (children.isEmpty) return const SizedBox.shrink();
+    final count = this.count ?? children.length;
+    if (count == 0) return const SizedBox.shrink();
     final t = NeumorphicTheme.of(context);
     final dir = Directionality.of(context);
-    final count = children.length;
     return LayoutBuilder(
       builder: (context, box) {
         final least = count * minCellWidth;
@@ -220,6 +231,28 @@ class NeumorphicCellBank extends StatelessWidget {
         }
 
         final bank = Offset.zero & size;
+        // A cell's face in its outline, concentric with the bank and its reach past the face with it.
+        Widget cellOf(int i, Widget face) {
+          final r = reachRect(i);
+          return NeumorphicCellScope(
+            border: NeumorphicCellBorder(
+              bank: bankShape,
+              frame: rim,
+              reach: EdgeInsets.fromLTRB(
+                r.left - bank.left,
+                r.top - bank.top,
+                bank.right - r.right,
+                bank.bottom - r.bottom,
+              ),
+              // A chosen cell rounds as a control where it meets its neighbour: at the least round
+              // its inner end read as a square cut (Day | Night, Card | Bank | Later).
+              joins: NeumorphicRadii.control,
+            ),
+            chosen: i == selected,
+            child: face,
+          );
+        }
+
         Widget bankBody = SizedBox.fromSize(
           size: size,
           // The seams over the cells, a foreground paint that takes no taps.
@@ -248,32 +281,22 @@ class NeumorphicCellBank extends StatelessWidget {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  for (var i = 0; i < count; i++)
+                  if (strip case final strip?)
                     Positioned.fromRect(
-                      rect: reachRect(i),
-                      child: Builder(
-                        builder: (context) {
-                          final r = reachRect(i);
-                          return NeumorphicCellScope(
-                            border: NeumorphicCellBorder(
-                              bank: bankShape,
-                              frame: rim,
-                              reach: EdgeInsets.fromLTRB(
-                                r.left - bank.left,
-                                r.top - bank.top,
-                                bank.right - r.right,
-                                bank.bottom - r.bottom,
-                              ),
-                              // A chosen cell rounds as a control where it meets its neighbour: at the least round
-                              // its inner end read as a square cut (Day | Night, Card | Bank | Later).
-                              joins: NeumorphicRadii.control,
-                            ),
-                            chosen: i == selected,
-                            child: children[i],
-                          );
-                        },
+                      rect: Rect.fromLTRB(
+                        0,
+                        reachRect(0).top,
+                        width,
+                        reachRect(0).bottom,
                       ),
-                    ),
+                      child: strip(cellOf),
+                    )
+                  else
+                    for (var i = 0; i < count; i++)
+                      Positioned.fromRect(
+                        rect: reachRect(i),
+                        child: cellOf(i, children[i]),
+                      ),
                 ],
               ),
             ),

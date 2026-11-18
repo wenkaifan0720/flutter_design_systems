@@ -42,7 +42,11 @@ void main() {
           key.currentContext!.findRenderObject() as RenderRepaintBoundary;
       final plot = tester
           .renderObjectList<RenderCustomPaint>(find.byType(CustomPaint))
-          .singleWhere((r) => r.size.height == 180 && r.size.width > 100);
+          // The plot's painter, not the empty wrappers its focus face keeps in the tree at its size.
+          .singleWhere(
+            (r) =>
+                r.painter != null && r.size.height == 180 && r.size.width > 100,
+          );
       final origin = plot.localToGlobal(Offset.zero, ancestor: boundary);
       return (await tester.runAsync(() async {
         final image = await boundary.toImage();

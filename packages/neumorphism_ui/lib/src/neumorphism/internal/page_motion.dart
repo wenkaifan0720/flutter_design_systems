@@ -139,3 +139,12 @@ PageTransitionsBuilder neumorphicPageMotionHere(NeumorphicMotion motion) =>
     defaultTargetPlatform == TargetPlatform.iOS
     ? DesignSwipeBackPageTransitionsBuilder(NeumorphicPageMotion(motion))
     : NeumorphicPageMotion(motion);
+
+/// The stiffness (k) of a critically damped spring that comes within 2% of rest in [settle], as the look's timed move
+/// of that length did (ω = 6 / [settle], k = ω²): ui_core's routes move on springs, the look's motion keeps durations,
+/// so a theme that slows its moves slows its routes too. Under Reduce Motion ui_core's routes fade on their own.
+double neumorphicRouteStiffness(Duration settle) {
+  final seconds = settle.inMicroseconds / Duration.microsecondsPerSecond;
+  final omega = 6 / (seconds < .001 ? .001 : seconds);
+  return omega * omega;
+}

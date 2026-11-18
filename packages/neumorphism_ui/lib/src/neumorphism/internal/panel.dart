@@ -357,6 +357,9 @@ class NeumorphicPanelRow extends StatelessWidget {
               neumorphicLabel(
                 Text(
                   trailing!,
+                  // Keys read in the order they are held, at either end of a row: right to left, the modifier's sign
+                  // (a neutral, as ⌘ is) went to the paragraph's side, "N ⌘".
+                  textDirection: TextDirection.ltr,
                   style: t.textTheme.micro.tabular.copyWith(
                     color: enabled ? c.inkTertiary : c.quiet,
                   ),

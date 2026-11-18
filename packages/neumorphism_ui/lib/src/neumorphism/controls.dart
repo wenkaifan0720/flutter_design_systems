@@ -306,7 +306,18 @@ class _NeumorphicTapState extends State<NeumorphicTap> {
 
   @override
   Widget build(BuildContext context) {
-    return DesignPressable(
+    // A face that runs past the target (a grouped list's band of its card) is the control a person sees, so the
+    // pressable is laid out round it: keyboard focus, a screen reader's outline and the scroll to a focused row are the
+    // band, while the row keeps its room in its column. Laid out at the row's words, a group's first row lifted 14 out
+    // of the box its focus was measured on, and its focus read as none there.
+    final outset = widget.faceOutset.resolve(Directionality.of(context));
+    final band = EdgeInsets.fromLTRB(
+      math.max(0, outset.left),
+      math.max(0, outset.top),
+      math.max(0, outset.right),
+      math.max(0, outset.bottom),
+    );
+    final pressable = DesignPressable(
       onPressed: widget.onPressed,
       semanticLabel: widget.label,
       semanticValue: widget.semanticValue,
@@ -333,24 +344,135 @@ class _NeumorphicTapState extends State<NeumorphicTap> {
       onStatesChanged: widget.onDown == null && widget.onStatesChanged == null
           ? null
           : _states,
-      builder: (context, states, child) => NeumorphicTapFace(
-        states: states,
-        style: widget.style,
-        themeStyle: widget.themeStyle,
-        shape: widget.shape,
-        radius: widget.radius,
-        round: widget.round,
-        focusInset: widget.focusInset,
-        focusSize: widget.focusSize,
-        faceAlignment: widget.faceAlignment,
-        faceOutset: widget.faceOutset,
-        focusReach: widget.focusReach,
-        showFocus: widget.showFocus,
-        pressRelief: widget.pressRelief,
-        child: child,
-      ),
+      builder: (context, states, child) {
+        final face = NeumorphicTapFace(
+          states: states,
+          style: widget.style,
+          themeStyle: widget.themeStyle,
+          shape: widget.shape,
+          radius: widget.radius,
+          round: widget.round,
+          focusInset: widget.focusInset,
+          focusSize: widget.focusSize,
+          faceAlignment: widget.faceAlignment,
+          faceOutset: widget.faceOutset,
+          focusReach: widget.focusReach,
+          showFocus: widget.showFocus,
+          pressRelief: widget.pressRelief,
+          child: child,
+        );
+        return band == EdgeInsets.zero
+            ? face
+            : Padding(padding: band, child: face);
+      },
       child: widget.child,
     );
+    return band == EdgeInsets.zero
+        ? pressable
+        : _BandReach(band: band, child: pressable);
+  }
+}
+
+/// A pressable laid out [band] past the room it takes: its parent lays it out, places it and takes presses on it as on
+/// a box of that room, and it stands out over the room by [band] on each side.
+class _BandReach extends SingleChildRenderObjectWidget {
+  const _BandReach({required this.band, super.child});
+
+  final EdgeInsets band;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderBandReach(band);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderBandReach renderObject) {
+    renderObject.band = band;
+  }
+}
+
+class _RenderBandReach extends RenderShiftedBox {
+  _RenderBandReach(this._band) : super(null);
+
+  EdgeInsets _band;
+  set band(EdgeInsets value) {
+    if (value == _band) return;
+    _band = value;
+    markNeedsLayout();
+  }
+
+  BoxConstraints _grown(BoxConstraints c) => BoxConstraints(
+    minWidth: c.minWidth + _band.horizontal,
+    maxWidth: c.maxWidth + _band.horizontal,
+    minHeight: c.minHeight + _band.vertical,
+    maxHeight: c.maxHeight + _band.vertical,
+  );
+
+  Size _room(Size grown, BoxConstraints c) => c.constrain(
+    Size(
+      math.max(0, grown.width - _band.horizontal),
+      math.max(0, grown.height - _band.vertical),
+    ),
+  );
+
+  double _less(double grown, double by) => math.max(0, grown - by);
+
+  @override
+  double computeMinIntrinsicWidth(double height) => _less(
+    child?.getMinIntrinsicWidth(height + _band.vertical) ?? 0,
+    _band.horizontal,
+  );
+
+  @override
+  double computeMaxIntrinsicWidth(double height) => _less(
+    child?.getMaxIntrinsicWidth(height + _band.vertical) ?? 0,
+    _band.horizontal,
+  );
+
+  @override
+  double computeMinIntrinsicHeight(double width) => _less(
+    child?.getMinIntrinsicHeight(width + _band.horizontal) ?? 0,
+    _band.vertical,
+  );
+
+  @override
+  double computeMaxIntrinsicHeight(double width) => _less(
+    child?.getMaxIntrinsicHeight(width + _band.horizontal) ?? 0,
+    _band.vertical,
+  );
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) => child == null
+      ? constraints.smallest
+      : _room(child!.getDryLayout(_grown(constraints)), constraints);
+
+  @override
+  double? computeDryBaseline(
+    BoxConstraints constraints,
+    TextBaseline baseline,
+  ) {
+    final line = child?.getDryBaseline(_grown(constraints), baseline);
+    return line == null ? null : line - _band.top;
+  }
+
+  @override
+  void performLayout() {
+    final child = this.child;
+    if (child == null) {
+      size = constraints.smallest;
+      return;
+    }
+    child.layout(_grown(constraints), parentUsesSize: true);
+    size = _room(child.size, constraints);
+    (child.parentData! as BoxParentData).offset = Offset(
+      -_band.left,
+      -_band.top,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<EdgeInsets>('band', _band));
   }
 }
 
@@ -379,6 +501,7 @@ class NeumorphicTapFace extends StatelessWidget {
     this.focusReach = 1,
     this.showFocus = true,
     this.pressRelief = true,
+    this.padToTarget = true,
   });
 
   /// The control's states: pressed sinks it, keyboard focus lifts it.
@@ -422,6 +545,11 @@ class NeumorphicTapFace extends StatelessWidget {
 
   /// See [NeumorphicTap.pressRelief].
   final bool pressRelief;
+
+  /// Whether the face's box grows to a 48 target (the platform's least), its child centred in it. A face whose
+  /// neighbours are the row's targets turns it off: the number field's figure between its two keys, where the target
+  /// pushed the unit under the figure away from it.
+  final bool padToTarget;
 
   @override
   Widget build(BuildContext context) {
@@ -532,7 +660,9 @@ class NeumorphicTapFace extends StatelessWidget {
         return NeumorphicStatesScope(
           states: states,
           child: _TapTarget(
-            minSize: Size.square(NeumorphicChromeMetrics.targetSize),
+            minSize: padToTarget
+                ? Size.square(NeumorphicChromeMetrics.targetSize)
+                : Size.zero,
             child: face,
           ),
         );
@@ -592,6 +722,13 @@ class NeumorphicTapFace extends StatelessWidget {
         DiagnosticsProperty<bool>(
           'pressRelief',
           pressRelief,
+          defaultValue: true,
+        ),
+      )
+      ..add(
+        DiagnosticsProperty<bool>(
+          'padToTarget',
+          padToTarget,
           defaultValue: true,
         ),
       );
@@ -2174,7 +2311,26 @@ class NeumorphicRoundButton extends StatelessWidget {
     this.style,
   }) : assert(size > 0),
        assert((iconSize ?? 1) > 0),
-       _filled = false;
+       _filled = false,
+       _states = null;
+
+  /// The plain key's face for a ui_core behaviour that holds the press itself (a number field's step keys): no
+  /// pressable, no focus and no node of its own; [states] are the behaviour's, pressed sinking it and disabled laying
+  /// it flat.
+  const NeumorphicRoundButton._driven(
+    this.icon,
+    Set<WidgetState> this._states, {
+    this.style,
+  }) : _filled = false,
+       badge = null,
+       badgeLabel = null,
+       focusNode = null,
+       autofocus = false,
+       size = 44,
+       iconSize = null,
+       label = null,
+       selected = false,
+       onPressed = null;
 
   /// The act as a round key: the pigment-filled cap with [icon] alone, for a phone's top or a row with no room for the
   /// word; [label] is read out, never drawn. [size] is the face's diameter: 36, 48 or 56.
@@ -2196,9 +2352,15 @@ class NeumorphicRoundButton extends StatelessWidget {
        badgeLabel = null,
        iconSize = null,
        selected = false,
-       _filled = true;
+       _filled = true,
+       _states = null;
 
   final bool _filled;
+
+  /// The driven face's states ([NeumorphicRoundButton._driven]); null for a key that is its own pressable.
+  final Set<WidgetState>? _states;
+
+  bool get _off => _states?.contains(WidgetState.disabled) ?? onPressed == null;
 
   /// State-resolved visual overrides before the component theme.
   final NeumorphicStyle? style;
@@ -2255,10 +2417,7 @@ class NeumorphicRoundButton extends StatelessWidget {
     final c = t.colors;
     final rest = neumorphicStyleOf(
       [style, t.iconButtonTheme],
-      {
-        if (selected) WidgetState.selected,
-        if (onPressed == null) WidgetState.disabled,
-      },
+      {if (selected) WidgetState.selected, if (_off) WidgetState.disabled},
     );
     double faceMinimum(NeumorphicStyleOf look) => math.max(
       t.density.height(size),
@@ -2275,6 +2434,171 @@ class NeumorphicRoundButton extends StatelessWidget {
     // Laid out at its target: the press, the spoken node and the box are one. The face stands on the start keyline
     // unless its slot says otherwise (NeumorphicFacePlace).
     final place = NeumorphicFacePlace.of(context);
+    final driven = _states;
+    final face = Builder(
+      builder: (context) {
+        final states = {
+          ...NeumorphicStatesScope.of(context),
+          if (selected) WidgetState.selected,
+        };
+        final look = neumorphicStyleOf([style, t.iconButtonTheme], states);
+        final faceSize = faceMinimum(look);
+        var shape = look.shape ?? t.shapes.circle();
+        if (shape is NeumorphicBorder) {
+          shape = shape.fit(Size.square(faceSize));
+        }
+        final glyph = Center(
+          child: Icon(
+            icon,
+            size:
+                look.iconSize ??
+                iconSize ??
+                (faceSize * .46).clamp(18, 28).toDouble(),
+            color: look.foreground ?? (selected ? c.pigmentInkLit : c.ink),
+          ),
+        );
+        // Out of use it reads as the buttons do: flat, flush with the ground, its ink quiet.
+        final body = NeumorphicOutOfUse(
+          off: _off,
+          child: SizedBox.square(
+            dimension: faceSize,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(
+                end: !selected && states.contains(WidgetState.pressed) ? 1 : 0,
+              ),
+              duration: NeumorphicMotion.of(context).press,
+              curve: NeumorphicMotion.of(context).enter,
+              builder: (context, depression, child) => NeumorphicSurface(
+                cast: selected
+                    ? NeumorphicSurfaceLevel.groove
+                    : NeumorphicSurfaceLevel.part,
+                style: style,
+                themeStyle: t.iconButtonTheme,
+                shape: shape,
+                states: states,
+                outlined: true,
+                round: true,
+                live: selected,
+                depression: depression,
+                child: child,
+              ),
+              child: glyph,
+            ),
+          ),
+        );
+        // The bead keeps its place on the face wherever the face stands in its target.
+        final beadEnd =
+            -6 - place.start * (_targetSize(faceSize) - faceSize) / 2;
+        return neumorphicOwnSize(
+          width: _targetSize(faceSize),
+          height: _targetSize(faceSize),
+          child: badge == null
+              ? Align(alignment: place, child: body)
+              : Stack(
+                  clipBehavior: Clip.none,
+                  fit: StackFit.expand,
+                  children: [
+                    // The count is a bead of the plaster with its figure in the ink, as NeumorphicBadge's:
+                    // pigment is never a body of its own (law 5). It is cast in one piece with its key (law 4):
+                    // its shadow lies under the key, so it never falls on the key's face, and its face comes
+                    // over the key's. Large text grows it only so far, so it never swallows the key it counts
+                    // for.
+                    PositionedDirectional(
+                      top: -4,
+                      end: beadEnd,
+                      child: MediaQuery.withClampedTextScaling(
+                        maxScaleFactor: 1.4,
+                        child: CustomPaint(
+                          painter: _KeyBeadPainter(
+                            under: true,
+                            t.shapes.capsule,
+                            c,
+                            t.elevation,
+                            NeumorphicFlatScope.of(context),
+                          ),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minWidth: 18,
+                              minHeight: 18,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                              ),
+                              child: Center(
+                                widthFactor: 1,
+                                heightFactor: 1,
+                                child: ExcludeSemantics(
+                                  child: Opacity(
+                                    opacity: 0,
+                                    child: neumorphicLabel(
+                                      Text(
+                                        badge!,
+                                        style: t.textTheme.micro.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          height: 18 / 12,
+                                          color: c.ink,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Align(alignment: place, child: body),
+                    // Its face over the key's, its figure in the ink.
+                    PositionedDirectional(
+                      top: -4,
+                      end: beadEnd,
+                      child: MediaQuery.withClampedTextScaling(
+                        maxScaleFactor: 1.4,
+                        child: CustomPaint(
+                          painter: _KeyBeadPainter(
+                            under: false,
+                            t.shapes.capsule,
+                            c,
+                            t.elevation,
+                            NeumorphicFlatScope.of(context),
+                          ),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minWidth: 18,
+                              minHeight: 18,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 5,
+                              ),
+                              child: Center(
+                                widthFactor: 1,
+                                heightFactor: 1,
+                                child: ExcludeSemantics(
+                                  child: neumorphicLabel(
+                                    Text(
+                                      badge!,
+                                      style: t.textTheme.micro.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                        height: 18 / 12,
+                                        color: c.ink,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+        );
+      },
+    );
     return _padded(
       faceMinimum(rest),
       alignment: place,
@@ -2283,195 +2607,29 @@ class NeumorphicRoundButton extends StatelessWidget {
           alignment: AlignmentDirectional.topStart,
           widthFactor: 1,
           heightFactor: 1,
-          child: NeumorphicTap(
-            focusNode: focusNode,
-            autofocus: autofocus,
-            // The face draws its own depression.
-            pressRelief: false,
-            style: style,
-            themeStyle: t.iconButtonTheme,
-            shape: t.shapes.circle(),
-            onPressed: onPressed,
-            label: label,
-            semanticValue: badgeLabel ?? badge,
-            focusSize: Size.square(faceMinimum(rest)),
-            faceAlignment: place,
-            selected: selected ? true : null,
-            round: true,
-            child: Builder(
-              builder: (context) {
-                final states = {
-                  ...NeumorphicStatesScope.of(context),
-                  if (selected) WidgetState.selected,
-                };
-                final look = neumorphicStyleOf([
-                  style,
-                  t.iconButtonTheme,
-                ], states);
-                final faceSize = faceMinimum(look);
-                var shape = look.shape ?? t.shapes.circle();
-                if (shape is NeumorphicBorder) {
-                  shape = shape.fit(Size.square(faceSize));
-                }
-                final glyph = Center(
-                  child: Icon(
-                    icon,
-                    size:
-                        look.iconSize ??
-                        iconSize ??
-                        (faceSize * .46).clamp(18, 28).toDouble(),
-                    color:
-                        look.foreground ?? (selected ? c.pigmentInkLit : c.ink),
-                  ),
-                );
-                // Out of use it reads as the buttons do: flat, flush with the ground, its ink quiet.
-                final body = NeumorphicOutOfUse(
-                  off: onPressed == null,
-                  child: SizedBox.square(
-                    dimension: faceSize,
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(
-                        end: !selected && states.contains(WidgetState.pressed)
-                            ? 1
-                            : 0,
-                      ),
-                      duration: NeumorphicMotion.of(context).press,
-                      curve: NeumorphicMotion.of(context).enter,
-                      builder: (context, depression, child) =>
-                          NeumorphicSurface(
-                            cast: selected
-                                ? NeumorphicSurfaceLevel.groove
-                                : NeumorphicSurfaceLevel.part,
-                            style: style,
-                            themeStyle: t.iconButtonTheme,
-                            shape: shape,
-                            states: states,
-                            outlined: true,
-                            round: true,
-                            live: selected,
-                            depression: depression,
-                            child: child,
-                          ),
-                      child: glyph,
-                    ),
-                  ),
-                );
-                // The bead keeps its place on the face wherever the face stands in its target.
-                final beadEnd =
-                    -6 - place.start * (_targetSize(faceSize) - faceSize) / 2;
-                return neumorphicOwnSize(
-                  width: _targetSize(faceSize),
-                  height: _targetSize(faceSize),
-                  child: badge == null
-                      ? Align(alignment: place, child: body)
-                      : Stack(
-                          clipBehavior: Clip.none,
-                          fit: StackFit.expand,
-                          children: [
-                            // The count is a bead of the plaster with its figure in the ink, as NeumorphicBadge's:
-                            // pigment is never a body of its own (law 5). It is cast in one piece with its key (law 4):
-                            // its shadow lies under the key, so it never falls on the key's face, and its face comes
-                            // over the key's. Large text grows it only so far, so it never swallows the key it counts
-                            // for.
-                            PositionedDirectional(
-                              top: -4,
-                              end: beadEnd,
-                              child: MediaQuery.withClampedTextScaling(
-                                maxScaleFactor: 1.4,
-                                child: CustomPaint(
-                                  painter: _KeyBeadPainter(
-                                    under: true,
-                                    t.shapes.capsule,
-                                    c,
-                                    t.elevation,
-                                    NeumorphicFlatScope.of(context),
-                                  ),
-                                  child: ConstrainedBox(
-                                    constraints: const BoxConstraints(
-                                      minWidth: 18,
-                                      minHeight: 18,
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 5,
-                                      ),
-                                      child: Center(
-                                        widthFactor: 1,
-                                        heightFactor: 1,
-                                        child: ExcludeSemantics(
-                                          child: Opacity(
-                                            opacity: 0,
-                                            child: neumorphicLabel(
-                                              Text(
-                                                badge!,
-                                                style: t.textTheme.micro
-                                                    .copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                      height: 18 / 12,
-                                                      color: c.ink,
-                                                    ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Align(alignment: place, child: body),
-                            // Its face over the key's, its figure in the ink.
-                            PositionedDirectional(
-                              top: -4,
-                              end: beadEnd,
-                              child: MediaQuery.withClampedTextScaling(
-                                maxScaleFactor: 1.4,
-                                child: CustomPaint(
-                                  painter: _KeyBeadPainter(
-                                    under: false,
-                                    t.shapes.capsule,
-                                    c,
-                                    t.elevation,
-                                    NeumorphicFlatScope.of(context),
-                                  ),
-                                  child: ConstrainedBox(
-                                    constraints: const BoxConstraints(
-                                      minWidth: 18,
-                                      minHeight: 18,
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 5,
-                                      ),
-                                      child: Center(
-                                        widthFactor: 1,
-                                        heightFactor: 1,
-                                        child: ExcludeSemantics(
-                                          child: neumorphicLabel(
-                                            Text(
-                                              badge!,
-                                              style: t.textTheme.micro.copyWith(
-                                                fontWeight: FontWeight.w700,
-                                                height: 18 / 12,
-                                                color: c.ink,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                );
-              },
-            ),
-          ),
+          child: driven == null
+              ? NeumorphicTap(
+                  focusNode: focusNode,
+                  autofocus: autofocus,
+                  // The face draws its own depression.
+                  pressRelief: false,
+                  style: style,
+                  themeStyle: t.iconButtonTheme,
+                  shape: t.shapes.circle(),
+                  onPressed: onPressed,
+                  label: label,
+                  semanticValue: badgeLabel ?? badge,
+                  focusSize: Size.square(faceMinimum(rest)),
+                  faceAlignment: place,
+                  selected: selected ? true : null,
+                  round: true,
+                  child: face,
+                )
+              // ui_core's step key says nothing to the pointer: the face says it acts, as the look's own keys do.
+              : MouseRegion(
+                  cursor: _off ? MouseCursor.defer : SystemMouseCursors.click,
+                  child: NeumorphicStatesScope(states: driven, child: face),
+                ),
         ),
       ),
     );
@@ -4548,47 +4706,78 @@ class NeumorphicChoices extends StatelessWidget {
   }
 }
 
-/// A count you change: two round keys and a figure between them, the figure in the title's tabular figures so it
-/// stands on the baseline of the labels and fields beside it.
+/// A number you type or step: two round keys and the figure between them, the figure in the title's tabular figures so
+/// it stands on the baseline of the labels and fields beside it.
+///
+/// On ui_core's [DesignNumberField]. The figure is the one tab stop and takes typing, in the reader's digits and
+/// separators, taken on Enter or as the focus leaves; Up and Down step it, Page Up and Page Down ten steps. A key steps
+/// once on a press and repeats while held, and goes out of use at its bound ([min], [max]). A screen reader hears one
+/// field with the next and previous values.
 ///
 /// ```dart
-/// NeumorphicNumberField(value: '2', unit: 'people', onDecrease: () {}, onIncrease: () {})
+/// NeumorphicNumberField(value: 2, min: 1, unit: 'people', onChanged: (value) {})
 /// ```
 class NeumorphicNumberField extends StatelessWidget {
   /// Creates a [NeumorphicNumberField].
   const NeumorphicNumberField({
     super.key,
     required this.value,
+    required this.onChanged,
+    this.min,
+    this.max,
+    this.step = 1,
     this.unit,
     this.note,
-    this.onDecrease,
-    this.onIncrease,
+    this.label,
+    this.focusNode,
+    this.autofocus = false,
     this.style,
-  });
+  }) : assert(step > 0),
+       assert(min == null || max == null || min <= max);
 
   /// Key faces and the central value, before the stepper component theme.
   final NeumorphicStyle? style;
 
-  /// The formatted value between the decrease and increase keys.
-  final String value;
+  /// The number shown; null, an empty field.
+  final double? value;
 
-  /// A unit displayed alongside the value.
+  /// Called with the number as it is taken (a step, Enter, the focus leaving), or null when the field is emptied;
+  /// null puts the whole field out of use.
+  final ValueChanged<double?>? onChanged;
+
+  /// The least number; its key goes out of use there. Null, none.
+  final double? min;
+
+  /// The greatest number; its key goes out of use there. Null, none.
+  final double? max;
+
+  /// What a key or an arrow moves the number by: whole numbers by default.
+  final double step;
+
+  /// A unit displayed under the figure; read out as the field's name when there is no [label].
   final String? unit;
 
   /// Supporting text displayed with the primary content.
   final String? note;
 
-  /// Called when the decrease key is activated; null disables that key.
-  final VoidCallback? onDecrease;
+  /// What a screen reader calls the field; null, the [unit].
+  final String? label;
 
-  /// Called when the increase key is activated; null disables that key.
-  final VoidCallback? onIncrease;
+  /// The figure's focus; null, its own.
+  final FocusNode? focusNode;
+
+  /// Whether the figure takes focus when it first shows.
+  final bool autofocus;
+
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final layers = NeumorphicStyle.layered([style, t.stepperTheme]);
     final look = neumorphicStyleOf([layers], const {});
     final scaler = MediaQuery.textScalerOf(context);
+    final figure = t.textTheme.title.tabular
+        .merge(look.textStyle)
+        .copyWith(color: look.foreground);
     // As wide as its keys and its widest word: at a floor of 200 a one-figure count stood 160 px between keys that no
     // longer read as one stepper.
     final width = math.max(
@@ -4596,8 +4785,10 @@ class NeumorphicNumberField extends StatelessWidget {
       120 +
           math.max(
             neumorphicWidestWord(
-              value,
-              t.textTheme.title.tabular,
+              value == null
+                  ? ''
+                  : DesignLocalizations.of(context).formatDecimal(value!),
+              figure,
               textScaler: scaler,
             ),
             neumorphicWidestWord(
@@ -4610,55 +4801,48 @@ class NeumorphicNumberField extends StatelessWidget {
     return NeumorphicColumn(
       gap: 6,
       children: [
-        // The keys stand at their targets at the row's ends, their faces centred in them.
+        // The field is its row, not the column's width: ui_core's field node (a screen reader's frame, and on the web
+        // the element a click focuses) is as wide as the field.
         Align(
           alignment: AlignmentDirectional.centerStart,
           heightFactor: 1,
-          child: SizedBox(
-            width: width.toDouble(),
-            child: Row(
-              children: [
-                NeumorphicRoundButton(
-                  NeumorphicGlyphs.minus,
-                  style: layers,
-                  label: NeumorphicLocalizations.of(context).less,
-                  onPressed: onDecrease,
-                ),
-                Expanded(
-                  // With both keys out of use the field is: its figure goes quiet with them. One key out (at a bound) is not.
-                  child: NeumorphicOutOfUse(
-                    off: onDecrease == null && onIncrease == null,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          value,
-                          textAlign: TextAlign.center,
-                          style: t.textTheme.title.tabular
-                              .merge(look.textStyle)
-                              .copyWith(color: look.foreground),
-                        ),
-                        if (unit != null)
-                          Text(
-                            unit!,
-                            textAlign: TextAlign.center,
-                            style: t.textTheme.micro,
-                          ),
-                      ],
-                    ),
+          child: DesignNumberField(
+            value: value,
+            onChanged: onChanged,
+            min: min,
+            max: max,
+            step: step,
+            focusNode: focusNode,
+            autofocus: autofocus,
+            semanticLabel: label ?? unit,
+            fieldBuilder: (context, field) => _NumberFigure(
+              field: field,
+              style: figure,
+              unit: unit,
+              unitSpoken: label == null,
+              // With both keys out of use the field is: its figure goes quiet with them. One key out (at a bound) is
+              // not.
+              off: onChanged == null,
+            ),
+            buttonBuilder: (context, key) => NeumorphicRoundButton._driven(
+              key.isIncrement ? NeumorphicGlyphs.plus : NeumorphicGlyphs.minus,
+              key.states,
+              style: layers,
+            ),
+            // The keys stand at their targets at the row's ends, their faces centred in them.
+            layoutBuilder: (context, figure, less, more) => SizedBox(
+              width: width.toDouble(),
+              child: Row(
+                children: [
+                  less,
+                  Expanded(child: figure),
+                  // The last key's face stands on the row's end, as the first's on its start.
+                  NeumorphicFacePlace(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: more,
                   ),
-                ),
-                // The last key's face stands on the row's end, as the first's on its start.
-                NeumorphicFacePlace(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: NeumorphicRoundButton(
-                    NeumorphicGlyphs.plus,
-                    style: layers,
-                    label: NeumorphicLocalizations.of(context).more,
-                    onPressed: onIncrease,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -4678,11 +4862,139 @@ class NeumorphicNumberField extends StatelessWidget {
           defaultValue: null,
         ),
       )
-      ..add(StringProperty('value', value))
+      ..add(DoubleProperty('value', value))
+      ..add(DoubleProperty('min', min, defaultValue: null))
+      ..add(DoubleProperty('max', max, defaultValue: null))
+      ..add(DoubleProperty('step', step, defaultValue: 1))
       ..add(StringProperty('unit', unit, defaultValue: null))
       ..add(StringProperty('note', note, defaultValue: null))
-      ..add(ObjectFlagProperty<VoidCallback>.has('onDecrease', onDecrease))
-      ..add(ObjectFlagProperty<VoidCallback>.has('onIncrease', onIncrease));
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<FocusNode>(
+          'focusNode',
+          focusNode,
+          defaultValue: null,
+        ),
+      )
+      ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(
+        ObjectFlagProperty<ValueChanged<double?>>.has('onChanged', onChanged),
+      );
+  }
+}
+
+// The number field's figure: a bare editable in the title's figures, the unit under it. Focus sinks it into a well, as
+// a field's groove is pressed in (a place to put something; lifted, it read as a key), and the caret does the rest.
+// Bare, not a Material TextField: a TextField says whether it is enabled, as ui_core's field does, so its text stood as
+// a node of its own and the field's steps on one with no value. It takes a text field's gestures (a tap places the
+// caret, a double tap and a drag select, the look's menu).
+class _NumberFigure extends StatefulWidget {
+  const _NumberFigure({
+    required this.field,
+    required this.style,
+    required this.unit,
+    required this.unitSpoken,
+    required this.off,
+  });
+
+  final DesignNumberFieldDetails field;
+  final TextStyle style;
+  final String? unit;
+  final bool unitSpoken;
+  final bool off;
+
+  @override
+  State<_NumberFigure> createState() => _NumberFigureState();
+}
+
+class _NumberFigureState extends State<_NumberFigure>
+    implements TextSelectionGestureDetectorBuilderDelegate {
+  @override
+  final GlobalKey<EditableTextState> editableTextKey =
+      GlobalKey<EditableTextState>();
+
+  @override
+  bool get forcePressEnabled => false;
+
+  @override
+  bool get selectionEnabled => !_disabled;
+
+  late final _gestures = TextSelectionGestureDetectorBuilder(delegate: this);
+
+  bool get _disabled => widget.field.states.contains(WidgetState.disabled);
+
+  @override
+  Widget build(BuildContext context) {
+    final t = NeumorphicTheme.of(context);
+    final field = widget.field;
+    final platform = Theme.of(context).platform;
+    final touch =
+        platform == TargetPlatform.iOS || platform == TargetPlatform.android;
+    final selection = DefaultSelectionStyle.of(context);
+    // The figure and its unit are one target between the keys, as a text field's padding is part of the field: a press
+    // anywhere on them places the caret (on the web, a click at the field's node, which spans the row, lands here).
+    return NeumorphicOutOfUse(
+      off: widget.off,
+      child: MouseRegion(
+        cursor: _disabled ? MouseCursor.defer : SystemMouseCursors.text,
+        child: _gestures.buildGestureDetector(
+          behavior: HitTestBehavior.translucent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              NeumorphicTapFace(
+                states: {
+                  if (field.states.contains(WidgetState.focused))
+                    WidgetState.pressed,
+                },
+                // The keys are the row's targets; the figure stays as tall as its words, the unit right under it, and
+                // its well is its line's box: grown past it, the well's foot cut into the unit's letters.
+                padToTarget: false,
+                // Its capitals on the row's middle, as every field's one line stands (ui_core's DesignCapCenter): an
+                // editable's strut sat it half a pixel off the plain figure it replaced.
+                child: neumorphicLabel(
+                  EditableText(
+                    key: editableTextKey,
+                    controller: field.controller,
+                    focusNode: field.focusNode,
+                    readOnly: _disabled,
+                    keyboardType: field.keyboardType,
+                    inputFormatters: field.inputFormatters,
+                    onEditingComplete: field.onEditingComplete,
+                    // Text that does not read yet ("-", "1.") stays in the ink: it goes back to the number when it is
+                    // taken, and the look keeps colour for pigment, never for a warning.
+                    style: widget.style,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    cursorColor: t.colors.ink,
+                    backgroundCursorColor: t.colors.quiet,
+                    cursorWidth: 1.5,
+                    selectionColor: field.focusNode.hasFocus
+                        ? selection.selectionColor
+                        : null,
+                    selectionControls: NeumorphicTextSelectionControls.of(
+                      platform,
+                    ),
+                    contextMenuBuilder: NeumorphicTextContextMenu.editable,
+                    showSelectionHandles: touch,
+                    rendererIgnoresPointer: true,
+                  ),
+                ),
+              ),
+              if (widget.unit != null)
+                ExcludeSemantics(
+                  excluding: widget.unitSpoken,
+                  child: Text(
+                    widget.unit!,
+                    textAlign: TextAlign.center,
+                    style: t.textTheme.micro,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

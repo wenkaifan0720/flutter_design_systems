@@ -457,6 +457,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(NeumorphicTooltipFace), findsOneWidget);
     await hold.up();
+    await tester.pump();
+    // It stays a moment after the finger lifts (ui_core's touch delay), time to read it, then goes.
+    expect(find.byType(NeumorphicTooltipFace), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 1600));
     await tester.pumpAndSettle();
     expect(find.byType(NeumorphicTooltipFace), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
@@ -558,53 +562,72 @@ void main() {
     },
   );
 
-  testWidgets('reduce motion cuts opening and closing all five surfaces', (
+  testWidgets('reduce motion: a dialog dissolves in place, never rising', (
     tester,
   ) async {
     final host = await _mount(tester, reduce: true);
-    for (final open in <VoidCallback>[
-      () {
-        showNeumorphicDialog<void>(
-          host,
-          builder: (_) => const NeumorphicDialog(title: 'Dialog'),
-        );
-      },
-      () {
-        showNeumorphicBottomSheet<void>(
-          host,
-          builder: (_) =>
-              const NeumorphicBottomSheet(title: 'Sheet', child: Text('Body')),
-        );
-      },
-      () {
-        showNeumorphicMenu<String>(
-          host,
-          anchor: const Rect.fromLTWH(20, 50, 120, 48),
-          items: _items,
-        );
-      },
-      () {
-        showNeumorphicTooltip(
-          host,
-          message: 'Help',
-          anchor: const Rect.fromLTWH(20, 50, 120, 48),
-        );
-      },
-      () {
-        showNeumorphicSnackBar(host, message: 'Saved');
-      },
-    ]) {
-      open();
-      await tester.pump();
-      await tester.pump();
-      expect(tester.hasRunningAnimations, isFalse);
-      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-      await tester.pump();
-      await tester.pump();
-      expect(tester.hasRunningAnimations, isFalse);
-    }
-    expect(tester.takeException(), isNull);
+    unawaited(
+      showNeumorphicDialog<void>(
+        host,
+        builder: (_) => const NeumorphicDialog(title: 'Dialog'),
+      ),
+    );
+    await tester.pump();
+    final at = tester.getTopLeft(find.text('Dialog'));
+    // ui_core's route: under Reduce Motion a short fade where it stands, no spring and no rise.
+    await tester.pump(const Duration(milliseconds: 40));
+    expect(tester.getTopLeft(find.text('Dialog')), at);
+    await tester.pumpAndSettle();
+    expect(tester.getTopLeft(find.text('Dialog')), at);
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await tester.pumpAndSettle();
+    expect(find.text('Dialog'), findsNothing);
   });
+
+  testWidgets(
+    'reduce motion cuts opening and closing the other four surfaces',
+    (tester) async {
+      final host = await _mount(tester, reduce: true);
+      for (final open in <VoidCallback>[
+        () {
+          showNeumorphicBottomSheet<void>(
+            host,
+            builder: (_) => const NeumorphicBottomSheet(
+              title: 'Sheet',
+              child: Text('Body'),
+            ),
+          );
+        },
+        () {
+          showNeumorphicMenu<String>(
+            host,
+            anchor: const Rect.fromLTWH(20, 50, 120, 48),
+            items: _items,
+          );
+        },
+        () {
+          showNeumorphicTooltip(
+            host,
+            message: 'Help',
+            anchor: const Rect.fromLTWH(20, 50, 120, 48),
+          );
+        },
+        () {
+          showNeumorphicSnackBar(host, message: 'Saved');
+        },
+      ]) {
+        open();
+        await tester.pump();
+        await tester.pump();
+        expect(tester.hasRunningAnimations, isFalse);
+        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        await tester.pump();
+        await tester.pump();
+        expect(tester.hasRunningAnimations, isFalse);
+      }
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   for (final preset in ['porcelain', 'pompeii', 'verona', 'siena', 'tyrian']) {
     for (final brightness in Brightness.values) {

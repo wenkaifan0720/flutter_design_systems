@@ -1,7 +1,7 @@
 // A wheel of choices turned in a well: the chosen one stands on a raised lens across the middle.
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'component_themes.dart';
 import 'frames.dart';
@@ -11,13 +11,14 @@ import 'theme.dart';
 import 'internal/out_of_use.dart';
 
 /// One value from a short ordered list, turned on a wheel in a well: the chosen row stands on a raised lens across
-/// the middle, in the ink and bold; the rest curve away in the quiet ink. Drag or flick it, or focus it and use the
-/// arrow keys; a screen reader adjusts it up and down. For a date or a time, use the date and time pickers.
+/// the middle, in the ink and bold; the rest curve away in the quiet ink. On ui_core's [DesignWheelPicker]: drag or
+/// flick it, tap a row, or focus it and use Up and Down, Page Up and Page Down, Home and End, or type a row's first
+/// letters; a screen reader adjusts it up and down. For a date or a time, use the date and time pickers.
 ///
 /// ```dart
 /// NeumorphicWheelPicker<int>(label: 'Guests', items: const [1, 2, 3, 4, 5, 6], value: guests, onChanged: setGuests)
 /// ```
-class NeumorphicWheelPicker<T> extends StatefulWidget {
+class NeumorphicWheelPicker<T> extends StatelessWidget {
   /// A wheel of [items] at [value].
   const NeumorphicWheelPicker({
     super.key,
@@ -60,9 +61,123 @@ class NeumorphicWheelPicker<T> extends StatefulWidget {
   /// The well's own style, before the text-field theme.
   final NeumorphicStyle? style;
 
+  String _words(T value) => itemLabel?.call(value) ?? '$value';
+
   @override
-  State<NeumorphicWheelPicker<T>> createState() =>
-      _NeumorphicWheelPickerState<T>();
+  Widget build(BuildContext context) {
+    final t = NeumorphicTheme.of(context);
+    final c = t.colors;
+    final n = items.length;
+    final enabled = onChanged != null && n > 0;
+    final scaler = MediaQuery.textScalerOf(context);
+    final extent = scaler.scale(t.textTheme.body.fontSize ?? 16) * 1.25 + 20;
+    final well = t.shapes.corner(NeumorphicRadii.well);
+    const inset = 6.0;
+    final lens = NeumorphicShapes.inset(
+      well,
+      inset + well.dimensions.resolve(Directionality.of(context)).left,
+    );
+    // With focus the well deepens round its lens; the lens says which row the keys move.
+    Widget frame(Set<WidgetState> states, Widget wheel) => NeumorphicSurface(
+      cast: NeumorphicSurfaceLevel.well,
+      style: style,
+      shape: well,
+      states: {if (states.contains(WidgetState.focused)) WidgetState.focused},
+      padding: const EdgeInsets.all(inset),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // The lens: one row's height, raised, concentric with the well.
+          SizedBox(
+            height: extent,
+            width: double.infinity,
+            child: NeumorphicSurface(
+              cast: NeumorphicSurfaceLevel.part,
+              shape: lens,
+              outlined: true,
+            ),
+          ),
+          Positioned.fill(child: wheel),
+        ],
+      ),
+    );
+    // Its own height, and its width when given: a stretching column can't balloon the well, a narrow one scales it down.
+    Widget sized(Widget child) => neumorphicOwnSize(
+      width: width,
+      height: extent * rows + inset * 2,
+      child: child,
+    );
+    if (n == 0) {
+      // Nothing to choose: the empty well, out of use.
+      return Semantics(
+        label: label,
+        enabled: false,
+        child: NeumorphicOutOfUse(
+          off: true,
+          child: sized(frame(const {}, const SizedBox.shrink())),
+        ),
+      );
+    }
+    final index = items.indexOf(value).clamp(0, n - 1);
+    return NeumorphicOutOfUse(
+      off: !enabled,
+      child: sized(
+        DesignWheelPicker(
+          columns: (_) => [
+            DesignWheelColumn(
+              itemCount: n,
+              itemLabel: (i) => _words(items[i]),
+              semanticLabel: label,
+              looping: looping,
+            ),
+          ],
+          selection: [index],
+          onChanged: enabled
+              ? (selection) {
+                  final chosen = items[selection.first];
+                  if (chosen != value) onChanged!(chosen);
+                }
+              : null,
+          itemExtent: extent,
+          visibleItemCount: rows,
+          // The look's wheel: flatter than iOS's, its rows at their own pitch, the far ones faded.
+          diameterRatio: 1.6,
+          squeeze: 1,
+          overAndUnderCenterOpacity: .45,
+          itemBuilder: (context, row) => Center(
+            child: Text(
+              row.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: t.textTheme.body.tabular.copyWith(
+                color: c.ink,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          // The well takes the picker's whole height: ui_core's row would size it to its lens.
+          layoutBuilder: (context, columns) => Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [for (final c in columns) Expanded(child: c)],
+          ),
+          columnBuilder: (context, column, wheel) => frame(
+            column.states,
+            // A finger or a click on the wheel gives it the keys, without joining the gesture arena its drag is in:
+            // ui_core's column takes focus from the keyboard only.
+            Builder(
+              builder: (context) => Listener(
+                behavior: HitTestBehavior.translucent,
+                onPointerDown: enabled
+                    ? (_) => Focus.of(context).requestFocus()
+                    : null,
+                child: wheel,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -88,179 +203,5 @@ class NeumorphicWheelPicker<T> extends StatefulWidget {
           defaultValue: null,
         ),
       );
-  }
-}
-
-class _NeumorphicWheelPickerState<T> extends State<NeumorphicWheelPicker<T>> {
-  late final FixedExtentScrollController _scroll = FixedExtentScrollController(
-    initialItem: _index,
-  );
-  final FocusNode _focus = FocusNode(debugLabel: 'NeumorphicWheelPicker');
-  bool _focused = false;
-
-  int get _index =>
-      widget.items.indexOf(widget.value).clamp(0, widget.items.length - 1);
-
-  String _words(T value) => widget.itemLabel?.call(value) ?? '$value';
-
-  @override
-  void didUpdateWidget(NeumorphicWheelPicker<T> old) {
-    super.didUpdateWidget(old);
-    if (!_scroll.hasClients) return;
-    final n = widget.items.length;
-    final at = _scroll.selectedItem;
-    if (n > 0 && ((at % n) + n) % n != _index) {
-      // Turn the shortest way to the value the caller now holds.
-      _scroll.jumpToItem(at - (((at % n) + n) % n) + _index);
-    }
-  }
-
-  @override
-  void dispose() {
-    _scroll.dispose();
-    _focus.dispose();
-    super.dispose();
-  }
-
-  void _step(int by) {
-    final n = widget.items.length;
-    if (widget.onChanged == null || n == 0) return;
-    final next = _scroll.selectedItem + by;
-    if (!widget.looping && (next < 0 || next >= n)) return;
-    _scroll.animateToItem(
-      next,
-      duration: NeumorphicTheme.of(context).motion.move,
-      curve: Curves.easeOutCubic,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final t = NeumorphicTheme.of(context);
-    final c = t.colors;
-    final n = widget.items.length;
-    final enabled = widget.onChanged != null && n > 0;
-    final scaler = MediaQuery.textScalerOf(context);
-    final extent = scaler.scale(t.textTheme.body.fontSize ?? 16) * 1.25 + 20;
-    final well = t.shapes.corner(NeumorphicRadii.well);
-    const inset = 6.0;
-    final lens = NeumorphicShapes.inset(
-      well,
-      inset + well.dimensions.resolve(Directionality.of(context)).left,
-    );
-    final index = _index;
-    String? near(int by) {
-      final i = index + by;
-      if (n == 0) return null;
-      if (widget.looping) return _words(widget.items[((i % n) + n) % n]);
-      return i < 0 || i >= n ? null : _words(widget.items[i]);
-    }
-
-    Widget row(int i) {
-      final item = widget.items[((i % n) + n) % n];
-      return Center(
-        child: Text(
-          _words(item),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: t.textTheme.body.tabular.copyWith(
-            color: c.ink,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      );
-    }
-
-    final wheel = ListWheelScrollView.useDelegate(
-      controller: _scroll,
-      itemExtent: extent,
-      physics: const FixedExtentScrollPhysics(),
-      diameterRatio: 1.6,
-      perspective: .003,
-      overAndUnderCenterOpacity: .45,
-      onSelectedItemChanged: (i) {
-        if (n == 0) return;
-        final value = widget.items[((i % n) + n) % n];
-        if (value != widget.value) widget.onChanged?.call(value);
-      },
-      childDelegate: widget.looping
-          ? ListWheelChildLoopingListDelegate(
-              children: [for (var i = 0; i < n; i++) row(i)],
-            )
-          : ListWheelChildBuilderDelegate(
-              childCount: n,
-              builder: (context, i) => row(i),
-            ),
-    );
-    // Its own height, and its width when given: a stretching column can't balloon the well, a narrow one scales it down.
-    final body = neumorphicOwnSize(
-      width: widget.width,
-      height: extent * widget.rows + inset * 2,
-      // With focus the well deepens round its lens; the lens says which row the keys move.
-      child: NeumorphicSurface(
-        cast: NeumorphicSurfaceLevel.well,
-        style: widget.style,
-        shape: well,
-        states: {if (_focused) WidgetState.focused},
-        padding: const EdgeInsets.all(inset),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // The lens: one row's height, raised, concentric with the well.
-            SizedBox(
-              height: extent,
-              width: double.infinity,
-              child: NeumorphicSurface(
-                cast: NeumorphicSurfaceLevel.part,
-                shape: lens,
-                outlined: true,
-              ),
-            ),
-            Positioned.fill(child: wheel),
-          ],
-        ),
-      ),
-    );
-    return Semantics(
-      container: true,
-      label: widget.label,
-      value: n == 0 ? null : _words(widget.items[index]),
-      increasedValue: enabled ? near(1) : null,
-      decreasedValue: enabled ? near(-1) : null,
-      onIncrease: enabled && near(1) != null ? () => _step(1) : null,
-      onDecrease: enabled && near(-1) != null ? () => _step(-1) : null,
-      enabled: enabled,
-      child: ExcludeSemantics(
-        child: Focus(
-          focusNode: _focus,
-          canRequestFocus: enabled,
-          skipTraversal: !enabled,
-          onFocusChange: (on) => setState(() => _focused = on),
-          onKeyEvent: (node, event) {
-            if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-              return KeyEventResult.ignored;
-            }
-            if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-              _step(1);
-              return KeyEventResult.handled;
-            }
-            if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-              _step(-1);
-              return KeyEventResult.handled;
-            }
-            return KeyEventResult.ignored;
-          },
-          // A finger on the wheel gives it the keys, without joining the gesture arena its drag is in.
-          child: Listener(
-            behavior: HitTestBehavior.translucent,
-            onPointerDown: enabled ? (_) => _focus.requestFocus() : null,
-            child: IgnorePointer(
-              ignoring: !enabled,
-              child: NeumorphicOutOfUse(off: !enabled, child: body),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

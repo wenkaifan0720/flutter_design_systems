@@ -105,6 +105,43 @@ void main() {
       );
     }
 
+    // A nested app or Navigator (a demo app, a preview) puts up a modal barrier whose semantics hide what was painted
+    // before it in the same container: the page above it goes silent. Every heading must be in the tree.
+    testWidgets('${page.id}: a screen reader finds every section heading', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      try {
+        await pumpGalleryPage(tester, page, 'porcelain', Brightness.light);
+        final labels = <String>[];
+        bool visit(SemanticsNode node) {
+          labels.addAll(node.getSemanticsData().label.split('\n'));
+          node.visitChildren(visit);
+          return true;
+        }
+
+        visit(
+          RendererBinding
+              .instance
+              .renderViews
+              .first
+              .owner!
+              .semanticsOwner!
+              .rootSemanticsNode!,
+        );
+        for (final (label, _) in sections()) {
+          expect(
+            labels,
+            contains(label),
+            reason:
+                '${page.id}: the heading "$label" is not in the semantics tree',
+          );
+        }
+      } finally {
+        handle.dispose();
+      }
+    });
+
     testWidgets(
       '${page.id}: each section says what it is, and every control its role and name',
       (tester) async {
@@ -140,8 +177,18 @@ void main() {
             for (final d in inside) {
               if (!_acts.any(d.hasAction)) continue;
               final f = d.flagsCollection;
+              // A region that offers its menu (NeumorphicContextMenu) is content, not a control: its only acts are the
+              // long press and the custom action that show the menu, as a row or a picture with a menu is read. What
+              // it holds keeps its own roles (the Hall lamp's switch).
+              final menuOnly =
+                  d.hasAction(SemanticsAction.longPress) &&
+                  d.hasAction(SemanticsAction.customAction) &&
+                  !d.hasAction(SemanticsAction.tap) &&
+                  !d.hasAction(SemanticsAction.increase) &&
+                  !d.hasAction(SemanticsAction.decrease);
               // A node that steps up and down is adjustable: that is its role, as a page control's is.
               final role =
+                  menuOnly ||
                   d.hasAction(SemanticsAction.increase) ||
                   d.hasAction(SemanticsAction.decrease) ||
                   f.isButton ||

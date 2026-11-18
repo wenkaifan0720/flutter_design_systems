@@ -1,7 +1,7 @@
 /// Time as things to touch: a day as a pressed tray of raised tiles, a month in a well, a bank of round push buttons.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 import '../kit.dart';

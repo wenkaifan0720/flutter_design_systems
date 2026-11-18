@@ -1,7 +1,7 @@
 /// Pressed wells with raised marks, on plain numbers. Marks are ink; the pigment is for now, by now: and only for that, so none of them takes a colour. A figure means what the page says it means.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 import '../kit.dart';

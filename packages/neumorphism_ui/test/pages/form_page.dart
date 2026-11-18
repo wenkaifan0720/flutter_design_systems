@@ -54,11 +54,10 @@ class FormPage extends StatelessWidget {
         NeumorphicFormGroup(
           label: 'How many',
           child: NeumorphicNumberField(
-            value: '3',
+            value: 3,
             unit: 'people',
             note: 'Up to 12',
-            onDecrease: () {},
-            onIncrease: () {},
+            onChanged: (_) {},
           ),
         ),
         NeumorphicSwitchRow(

@@ -4,6 +4,7 @@
 // reads as a second choice or a rule between rows (the user's walk, 11-15).
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
@@ -119,6 +120,89 @@ void main() {
       expect(drawn, isNot(contains('_MenuRowRelief')));
       expect(_painters(tester, _row('First choice')), contains(_chosen));
     });
+
+    testWidgets(
+      'a palette: one lit row, its active one, which the moving pointer takes, $mode',
+      (tester) async {
+        tester.view.physicalSize = const Size(1440, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+          neumorphicApp(
+            const Align(
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                width: 480,
+                child: NeumorphicCommand(
+                  commands: [
+                    DesignCommand(label: 'New scene'),
+                    DesignCommand(label: 'Dim every room'),
+                    DesignCommand(label: 'Find a room'),
+                  ],
+                ),
+              ),
+            ),
+            width: 1440,
+            dark: dark,
+          ),
+        );
+        await tester.pumpAndSettle();
+        Finder row(String label) => find.ancestor(
+          of: find.text(label),
+          matching: find.byType(NeumorphicPanelRow),
+        );
+        List<String> lit() => [
+          for (final label in ['New scene', 'Dim every room', 'Find a room'])
+            if (_painters(tester, row(label)).any({_raise, '_Lift'}.contains))
+              label,
+        ];
+        expect(lit(), ['New scene']);
+        // A row arrives under a still pointer (the page scrolled it there): it does not stand up beside the active one.
+        final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+        addTearDown(mouse.removePointer);
+        await mouse.addPointer(
+          location: tester.getCenter(row('Dim every room')),
+        );
+        await tester.pumpAndSettle();
+        expect(lit(), ['New scene']);
+        await mouse.moveBy(const Offset(4, 0));
+        await tester.pumpAndSettle();
+        expect(lit(), ['Dim every room']);
+      },
+    );
+
+    testWidgets(
+      "right to left, a row's keys read in the order they are held, $mode",
+      (tester) async {
+        await tester.pumpWidget(
+          neumorphicApp(
+            const Directionality(
+              textDirection: TextDirection.rtl,
+              child: SizedBox(
+                width: 480,
+                child: NeumorphicCommand(
+                  commands: [
+                    DesignCommand(label: 'New scene', shortcut: '⌘ N'),
+                  ],
+                ),
+              ),
+            ),
+            dark: dark,
+          ),
+        );
+        await tester.pumpAndSettle();
+        final keys = tester.getRect(find.text('⌘ N'));
+        final paragraph = tester.renderObject<RenderParagraph>(
+          find.text('⌘ N'),
+        );
+        expect(paragraph.textDirection, TextDirection.ltr);
+        expect(
+          keys.left,
+          lessThan(tester.getRect(find.text('New scene')).left),
+          reason: "the keys at the row's end",
+        );
+      },
+    );
 
     // The row every ui_core list draws: a combobox's, a multi-select's, a menu bar's menu, a split button's, the
     // command palette's.

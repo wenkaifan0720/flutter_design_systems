@@ -56,7 +56,7 @@ final _parts = <String, _Build>{
     onDestinationSelected: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicTabBar': (hit) => NeumorphicTabBar(
-    tabs: const ['Overview'],
+    tabs: const ['Overview', 'Activity'],
     onChanged: hit == null ? null : (_) => hit(),
   ),
   'NeumorphicPageDots': (hit) => NeumorphicPageDots(
@@ -152,8 +152,10 @@ final _parts = <String, _Build>{
     options: const [NeumorphicChoice('One')],
     onChanged: hit == null ? null : (_) => hit(),
   ),
-  'NeumorphicNumberField': (hit) =>
-      NeumorphicNumberField(value: '2', onDecrease: hit, onIncrease: hit),
+  'NeumorphicNumberField': (hit) => NeumorphicNumberField(
+    value: 2,
+    onChanged: hit == null ? null : (_) => hit(),
+  ),
   'NeumorphicSwitch': (hit) => NeumorphicSwitch(
     value: false,
     onChanged: hit == null ? null : (_) => hit(),
@@ -310,6 +312,11 @@ final _parts = <String, _Build>{
     options: const ['Bedroom', 'Study'],
     onSelected: hit == null ? null : (_) => hit(),
   ),
+  // The menu over a control: Shift+F10 from the control opens it, its first command lit.
+  'NeumorphicContextMenu': (hit) => NeumorphicContextMenu(
+    menuChildren: [DesignMenuEntry(label: 'Rename', onPressed: hit)],
+    child: NeumorphicButton('Hall lamp', onPressed: () {}),
+  ),
   'NeumorphicCommand': (hit) => NeumorphicCommand(
     commands: const [DesignCommand(label: 'New scene')],
     onRun: hit == null ? null : (_) => hit(),
@@ -436,6 +443,20 @@ final _drives = <String, _Drive>{
     await _key(tester, LogicalKeyboardKey.space);
     expect(count(), 2);
   },
+  // Shift+F10 opens the menu at the focused control, its first command lit; Enter runs it.
+  'NeumorphicContextMenu': (tester, count) async {
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.f10);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.shiftLeft);
+    await tester.pumpAndSettle();
+    await _key(tester, LogicalKeyboardKey.enter);
+    expect(count(), 1);
+  },
+  // The bar's one stop is the chosen tab; the arrow chooses the next.
+  'NeumorphicTabBar': (tester, count) async {
+    await _key(tester, LogicalKeyboardKey.arrowRight);
+    expect(count(), 1);
+  },
   // The palette's field has the focus; Enter runs the highlighted command.
   'NeumorphicCommand': (tester, count) async {
     await _key(tester, LogicalKeyboardKey.enter);
@@ -460,7 +481,10 @@ final _drives = <String, _Drive>{
 };
 
 /// Parts with no pressable target of their own: a handle, a wheel, a groove between panes.
+// No pressable of their own: rating_test and number_field_test hold their targets and hover.
 const _noPressable = {
+  'NeumorphicRating',
+  'NeumorphicNumberField',
   'NeumorphicRangeSlider',
   'NeumorphicWheelPicker',
   'NeumorphicResizable',
@@ -496,7 +520,7 @@ void main() {
   test('every callback-bearing part is covered by the interaction table', () {
     expect(_interactive(), _parts.keys.toSet());
   });
-  test('raw gestures only read control positions or handle sheet drag and tooltip hold', () {
+  test('raw gestures only read control positions or handle sheet drag', () {
     for (final file in Directory(
       'lib/src/neumorphism',
     ).listSync(recursive: true).whereType<File>()) {
@@ -506,14 +530,16 @@ void main() {
           .length;
       expect(
         count,
+        // The number field's figure takes a text field's own gestures (TextSelectionGestureDetectorBuilder).
         file.path.endsWith('/controls.dart')
-            ? 1
+            ? 2
             // Compact page dots use tap position to move backward or forward;
             // their enclosing NeumorphicTap still owns focus and keyboard input.
             : file.path.endsWith('/moves.dart')
             ? 1
+            // The sheet's drag; the tooltip's hold is ui_core's (DesignTooltip).
             : file.path.endsWith('/raised.dart')
-            ? 2
+            ? 1
             // A press on a field's padding, off its text, focuses the text, as a Material field's decorator does.
             : file.path.endsWith('/text_entry.dart')
             ? 1
@@ -574,17 +600,24 @@ void main() {
             (w) =>
                 w is CustomPaint &&
                 // The slider lifts its thumb, the part that moves; the parts on
-                // ui_core's behaviours lift their region (`neumorphicFocusLift`).
-                {
-                  '_FocusLift',
-                  '_ThumbLift',
-                  '_Lift',
-                }.contains(w.foregroundPainter.runtimeType.toString()),
+                // ui_core's behaviours lift their region (`neumorphicFocusLift`);
+                // the number field's bare figure, a field, sinks into a well.
+                (name == 'NeumorphicNumberField'
+                        ? {'_PressRelief'}
+                        : {'_FocusLift', '_ThumbLift', '_Lift'})
+                    .contains(w.foregroundPainter.runtimeType.toString()),
           ),
           findsOneWidget,
         );
-        if (name == 'NeumorphicSlider') {
-          await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+        // The slider, the rating and the number field (one stop each on ui_core) step by the arrows.
+        if (name == 'NeumorphicSlider' ||
+            name == 'NeumorphicRating' ||
+            name == 'NeumorphicNumberField') {
+          await tester.sendKeyEvent(
+            name == 'NeumorphicNumberField'
+                ? LogicalKeyboardKey.arrowUp
+                : LogicalKeyboardKey.arrowRight,
+          );
           await tester.pump();
           expect(count, 1);
         } else if (name == 'NeumorphicCarouselView') {

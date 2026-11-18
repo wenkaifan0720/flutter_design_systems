@@ -489,10 +489,10 @@ void main() {
         onChanged: (v) {},
       ),
       'NeumorphicNumberField': (context) => NeumorphicNumberField(
-        value: '2',
+        value: 2,
+        min: 1,
         unit: 'people',
-        onDecrease: () {},
-        onIncrease: () {},
+        onChanged: (value) {},
       ),
       'NeumorphicSwitch': (context) =>
           NeumorphicSwitch(value: true, onChanged: (v) {}),
@@ -952,6 +952,13 @@ void main() {
               children: [DesignMenuEntry(label: 'New', onPressed: create)],
             ),
           ],
+        );
+      },
+      'NeumorphicContextMenu': (context) {
+        void rename() {}
+        return NeumorphicContextMenu(
+          menuChildren: [DesignMenuEntry(label: 'Rename', onPressed: rename)],
+          child: const Text('Hall lamp'),
         );
       },
       'NeumorphicToaster': (context) {

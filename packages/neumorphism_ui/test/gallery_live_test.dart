@@ -236,7 +236,7 @@ void main() {
           .descendant(of: control, matching: find.byType(NeumorphicRoundButton))
           .last,
     );
-    expect(tester.widget<NeumorphicNumberField>(control).value, '3');
+    expect(tester.widget<NeumorphicNumberField>(control).value, 3);
   });
   testWidgets('example page dots select', (tester) async {
     await pumpLive(tester, 'navigation');

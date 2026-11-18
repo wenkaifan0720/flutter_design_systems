@@ -1,3 +1,89 @@
+## 0.3.0
+
+Built on ui_core 0.3.0. Neumorphism's dialog, sheet pages, tabs, tooltip, number field, wheel picker, rating and
+charts now take their behaviour from ui_core (focus, keys, meaning to a screen reader, gestures and springs) and keep
+the look's paint: they look as they did, and they do more. A context menu is new, and a combobox can search.
+
+### Breaking
+
+- `NeumorphicNumberField` is a number field on ui_core's `DesignNumberField`: `value` is a `double?` and `onChanged`
+  a `ValueChanged<double?>` (null when the field is emptied), with `min`, `max`, `step`, `label`, `focusNode` and
+  `autofocus`; `onDecrease` and `onIncrease` are gone. The figure is written in the reader's digits and separators
+  (Arabic-Indic under `ar`, where 0.2.1 wrote ASCII) and takes typing in them or in ASCII (taken on Enter or as the
+  focus leaves), Up and Down step it, Page Up and Page Down ten steps, and a held key repeats and stops at `min` or
+  `max`. With focus the figure sinks into a well, as a field's groove is pressed in; at rest it is the bare figure it
+  was.
+- `NeumorphicRating`'s `onChanged` can report 0: Home clears the score.
+- `NeumorphicTooltip` and `NeumorphicWheelPicker` are `StatelessWidget`s, on ui_core's `DesignTooltip` and
+  `DesignWheelPicker` (a `GlobalKey<State<...>>` no longer fits them). Their constructors are unchanged.
+- `NeumorphicSheetPage` raises ui_core's `DesignBottomSheetRoute` on a phone and `DesignDialogRoute` on a desktop,
+  no longer Flutter's `ModalBottomSheetRoute` and `RawDialogRoute`: code that tells a sheet by its route's type
+  checks for these.
+
+### Behaviour that changes
+
+- A dialog rises a step and fades in on a spring as long as the theme's `raise`; Tab stays inside it, its title names
+  it for a screen reader, and the focus goes back to what opened it. Under Reduce Motion it dissolves where it
+  stands, where it cut.
+- A sheet page on a phone follows a finger down and away, its screen's list handing the drag over at its top; on
+  both a phone and a desktop it closes on Escape and gives the focus back.
+- `NeumorphicTabBar` is heard as a tab bar of tabs, each with its place ("Week, Tab 2 of 3"), where each was a
+  button; it is still one stop for Tab, on the chosen tab, and the arrows, Home and End still choose. A press on the
+  chosen tab no longer reports `onChanged` again.
+- The rating is one stop: a tap or a drag across the stars sets it, hovering shows the score a tap would give, the
+  arrows, Home, End and the digits set it, and a screen reader hears a slider.
+- The wheel picker turns by Page Up and Page Down, Home and End and a typed letter as well as the arrows, a tap on a
+  row turns it there, and it ticks as rows pass on a phone. A press on it gives it the keys; its well deepens with
+  the keyboard's focus only.
+- A chart is one stop: the arrows walk its samples (a donut's slices), Escape lets go, a finger scrubs or holds, and a
+  screen reader steps the samples. The look's plot still reads left to right and its donut runs clockwise in every
+  language.
+- A tooltip stays while the pointer moves onto it, Escape puts it away, one shows at a time, and a pointer run along a
+  row of keys reads each tip at once; after a long press it stays 1.5 s. A screen reader hears the tip on its
+  control's own node, where it was a node of its own.
+- The catalog's and the example's menu and palette keys are spelled by ui_core: `⌘ N` on Apple's platforms,
+  `Ctrl+N` elsewhere, where they were written "Ctrl N". A row's keys read left to right, in the order they are held,
+  in a right-to-left page too.
+- `NeumorphicCommand` lights one row, its active one: the pointer moving onto a row makes it the active row, and a row
+  the page scrolls under a still pointer no longer stands up beside it.
+
+### New
+
+- `NeumorphicContextMenu`: a menu over any region, opened at the pointer by a right click or a long press, at the
+  focused control by Shift+F10 or the Menu key, and by a screen reader's Show menu; its rows, checks, submenus and
+  dividers are the menu bar's.
+- `NeumorphicCombobox` and `NeumorphicMultiSelect` take `search` and `debounceDuration`: options found over the
+  network or in a database. While a search runs the list says it is loading; when one fails it says so and offers
+  Try again, which Down then Enter, or a press, runs, the focus staying in the field.
+
+### Fixes
+
+- A tab the keys reach in a `NeumorphicTabBar` no longer scrolls the page until the bar sits on the window's top edge;
+  when the bar is too long for its width, the bar alone scrolls, the least way that shows the tab whole.
+- `NeumorphicRating` and `NeumorphicNumberField` in a stretching column are as wide as their stars and their row: a tap
+  in the empty space beside the stars sets nothing, and a screen reader frames the field, not the column.
+- A row in a `NeumorphicListSection` is focused and framed as the band of its card that it draws: keyboard focus, a
+  screen reader's outline and the scroll to a focused row take the band, not just its words. The row takes the same
+  room as before and draws the same pixels.
+- `NeumorphicNavigationBar`'s chosen plate is concentric in the bar: 12 in from the bar's shoulders at the top and the
+  ends alike, rounded by the shoulders' 20 less that inset. It stood 16 in from the ends under 12 from the top, a
+  control's 12 corner out of round with the shoulders.
+- `NeumorphicMultiSelect`'s first chip stands as far in from the well's top as from its side (it stood 3 lower).
+
+### Deprecated
+
+- `NeumorphicLocalizations.less` and `.more`: the number field's keys are the steps of its one node, with no words.
+
+### Docs
+
+- The package's homepage is the live gallery, and the README opens on Hearth by day at 1440 beside the same home by
+  night on a phone, with links to the gallery, the API reference and all the looks. Every picture is linked by its
+  full address, so pub.dev shows them all.
+
+### Development
+
+- The review checks come from `package:ui_core_test` (a dev dependency, 0.1.0), where ui_core 0.3.0 moved them.
+
 ## 0.2.1
 
 - On iOS, Reduce Motion stills the look as Android's Remove animations and a browser's reduced motion do: a page

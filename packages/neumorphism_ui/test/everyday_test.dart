@@ -190,7 +190,8 @@ void main() {
     check(
       'stepper',
       () => const NeumorphicNumberField(
-        value: '1,204',
+        value: 1204,
+        onChanged: null,
         unit: 'people',
         note: longLine,
       ),

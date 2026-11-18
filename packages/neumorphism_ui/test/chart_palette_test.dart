@@ -120,8 +120,9 @@ void main() {
         expect(color!.a, 1);
         inks.add(color);
       }
+      // The plot's painter, not the empty wrappers its focus face keeps in the tree at its size.
       final plot = painters.singleWhere(
-        (r) => r.size.height == 180 && r.size.width > 100,
+        (r) => r.painter != null && r.size.height == 180 && r.size.width > 100,
       );
       final band = (await tester.runAsync(
         () => _pixel(plot, const Offset(20, 20)),

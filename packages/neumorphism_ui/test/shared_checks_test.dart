@@ -15,7 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 import 'package:neumorphism_ui/src/neumorphism/internal/panel.dart'
     show NeumorphicPanel, NeumorphicPanelRow;
-import 'package:ui_core/alignment.dart'
+import 'package:ui_core_test/ui_core_test.dart'
     show
         DesignAlignmentReport,
         DesignRowCheck,
@@ -370,11 +370,12 @@ String? _named(String problem) {
   }
   // Two fields side by side in a form's grid (Town and Postcode, first and last name), each its label over its groove:
   // they lay out alike (grooves 314 to 362, words centred at 337.8 on both; shapes/log/probe-field.out), yet the
-  // reading flips from 2.9 px above by night to 5 px below by day, its "as laid out" taken from the grooves' inset
+  // reading flips from 5.9 px above by night to 1.1 px below by day (2.9 and 5 under ui_core 0.2's checks, before
+  // ui_core_test read capitals from the ground under the words), its "as laid out" taken from the grooves' inset
   // shading. wide_walk_test holds the pair's grooves and words level as laid out.
   if (RegExp(
     r'^(standard|compact) (dark|light) · a text field beside a text field: '
-    r'(the capitals of "(Bristol|BS1 4DJ|Alex|Morgan)" are (2\.9 px above|5 px below) the row|its bottom is 1\.3 px above theirs)',
+    r'(the capitals of "(Bristol|BS1 4DJ|Alex|Morgan)" are (5\.9 px above|1\.1 px below) the row|its bottom is 1\.3 px above theirs)',
   ).hasMatch(problem)) {
     return "a field pair's grooves read by their inset shading";
   }
@@ -389,9 +390,9 @@ String? _named(String problem) {
   // strip): its unchosen cells' faces are the wall's own colour, so by night its trailing end shows by its rim and its
   // cast alone (design_review_test holds that edge at 1.2 or more by night), and the check reads the bank to its last
   // seam: right side in by one trailing cell (86.5 to 175 at 390), left side on the row's. By day the same banks read
-  // true.
+  // true. A tab's name carries its place on a second line ("Overview\nTab 1 of 3"), so the row's names may break.
   if (RegExp(
-    r'^(standard|compact) dark · a row of .+: its sides are 0 px in as laid out, 0 px on the left and '
+    r'^(standard|compact) dark · a row of [\s\S]+: its sides are 0 px in as laid out, 0 px on the left and '
     r'(86\.5|102\.3|103|115\.7|175) px on the right as drawn$',
   ).hasMatch(problem)) {
     return 'a bank by night read to its last seam';
@@ -451,5 +452,30 @@ String? _named(String problem) {
   ).hasMatch(problem)) {
     return "a bay of the house: window over words";
   }
+  // A month's days are figures on its holder, one line a row (only the chosen day is a well, a chosen span one channel,
+  // today underlined). Every day of a row reads the same offset, to a tenth, against the day the check holds the row
+  // to (the chosen day, a span's end): what is off is that day's centre line as ui_core_test 0.1.0 reads it, below the
+  // figures by day and above them by night, not a day. Drawn, the figures and the chosen well stand level (goldens
+  // pickers/a_month_laid_open, unchanged since 0.2.1, when ui_core 0.2's checks read these rows level).
+  const day = '"$_weekday, [^"]*"';
+  if (RegExp(
+    '^(standard|compact) (dark|light) · a button $day beside a button $day: the capitals of "\\d{1,2}" are '
+    '((2\\.3|4\\.1|4\\.2|8\\.4|8\\.5|9\\.2) px above|(1\\.1|1\\.3|3|3\\.1|3\\.3) px below) the row.s centre line as '
+    'laid out',
+  ).hasMatch(problem)) {
+    return "a month's days read against one day's mark";
+  }
+  // A row's actions slid out by night: Delete, a key of the wall's colour, beside Archive, the pigment's. Drawn their
+  // faces stand level (goldens collections/slide_a_row_for_its_actions, unchanged since 0.2.1); by night only,
+  // ui_core_test 0.1.0 reads Delete's foot 8 px above Archive's.
+  if (RegExp(
+    r'^(standard|compact) dark · a button "Delete" beside a button "Archive": its bottom is 4 px above theirs as laid '
+    r'out, 24 device px above as drawn$',
+  ).hasMatch(problem)) {
+    return "a dark key's foot read high by night";
+  }
   return null;
 }
+
+// A day of the week, as a calendar's day names its button.
+const _weekday = '(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)';

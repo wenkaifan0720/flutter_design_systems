@@ -2072,9 +2072,12 @@ class _ChoiceSetState extends State<_ChoiceSet> {
   }
 }
 
-/// A score out of [count] stars. With [onChanged], each star is a target that sets the score to its place and the
-/// stars up to the score fill in ink; without it, the rating only shows, and a fraction fills part of a star. The
-/// empty stars are engraved outlines. [enabled] false keeps a rating's targets where they are, faded and still.
+/// A score out of [count] stars, on ui_core's [DesignRating]. With [onChanged] it is one control, one tab stop: a tap
+/// or a drag across the stars sets the score, hovering shows the score a tap would give, Right and Left (mirrored right
+/// to left) step it, Home clears it, End and a digit set it, and a screen reader hears a slider. The stars up to the
+/// score stand raised in the pigment; the rest are engraved outlines, and the star at the score wears the focus.
+/// Without [onChanged] the rating only shows, and a fraction fills part of a star. [enabled] false keeps a rating
+/// where it is, faded and still.
 ///
 /// ```dart
 /// NeumorphicRating(label: 'Your rating', value: 4, onChanged: (stars) => setState(() => rating = stars))
@@ -2102,7 +2105,7 @@ class NeumorphicRating extends StatelessWidget {
   /// How many stars make the scale.
   final int count;
 
-  /// Reports the stars chosen, from 1 to [count]. Null shows the score only.
+  /// Reports the stars chosen, from 0 (Home clears the score) to [count]. Null shows the score only.
   final ValueChanged<int>? onChanged;
 
   /// Whether a rating with [onChanged] takes a choice now. False keeps its size and lays it flat: a form that is
@@ -2111,6 +2114,7 @@ class NeumorphicRating extends StatelessWidget {
 
   /// Each star's size.
   final double size;
+
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
@@ -2128,60 +2132,74 @@ class NeumorphicRating extends StatelessWidget {
         ),
       ),
     );
+    String say(double score) => words.ratingOf(score, count);
+    // As wide as its stars wherever it stands: ui_core's rating takes a tap or a hover anywhere in its box (past the
+    // last star, all of them), and a stretching column would make its box the column's width.
+    Widget own(Widget rating) => Align(
+      alignment: AlignmentDirectional.centerStart,
+      widthFactor: 1,
+      heightFactor: 1,
+      child: rating,
+    );
     if (onChanged == null) {
-      return Semantics(
-        container: true,
-        label: label,
-        value: words.ratingOf(value, count),
-        child: ExcludeSemantics(
-          child: Row(
+      return own(
+        DesignRating(
+          value: value,
+          onChanged: null,
+          readOnly: true,
+          itemCount: count,
+          semanticLabel: label,
+          semanticFormatterCallback: say,
+          layoutBuilder: (context, items) => Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (var i = 0; i < count; i++) ...[
+              for (final (i, item) in items.indexed) ...[
                 if (i > 0) SizedBox(width: size / 6),
-                star((value - i).clamp(0.0, 1.0)),
+                item,
               ],
             ],
           ),
+          itemBuilder: (context, item) => star(item.fill),
         ),
       );
     }
     final chosen = value.round();
     final target = math.max(size + 16, NeumorphicChromeMetrics.targetSize);
     final place = NeumorphicFacePlace.of(context);
-    return Semantics(
-      container: true,
-      label: label,
-      explicitChildNodes: true,
-      child: NeumorphicOutOfUse(
+    // The star at the score (the first while there is none) wears the rating's focus and its press, as a slider's
+    // thumb would: the keys move the score from there.
+    final wearer = math.max(chosen - 1, 0);
+    return own(
+      NeumorphicOutOfUse(
         off: !enabled,
         // Each star stands at its target, the targets edge to edge, so a press anywhere on the row is one star's; its
         // face stands at the target's start (NeumorphicFacePlace), so the first star's face is on the row's edge.
-        // Before 0.2.0 the targets' margins past the row were hit-tested only.
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (var i = 0; i < count; i++)
-              NeumorphicTap(
-                round: true,
-                shape: t.shapes.circle(),
-                label: '$label, ${words.ratingOf(i + 1, count)}',
-                selected: i + 1 == chosen,
-                inMutuallyExclusiveGroup: true,
-                // The focus disc stands 6 round the star wherever the star stands in its target.
-                focusInset: (target - size) / 2,
-                faceOutset: const EdgeInsets.all(6),
-                faceAlignment: place,
-                onPressed: enabled ? () => onChanged!(i + 1) : null,
-                child: SizedBox.square(
-                  dimension: target,
-                  child: Align(
-                    alignment: place,
-                    child: star(i < chosen ? 1 : 0),
-                  ),
+        child: DesignRating(
+          value: chosen.toDouble(),
+          onChanged: enabled ? (score) => onChanged!(score.round()) : null,
+          itemCount: count,
+          semanticLabel: label,
+          semanticFormatterCallback: say,
+          itemBuilder: (context, item) => _StarTarget(
+            item: item,
+            wearer: wearer,
+            builder: (context, states) => NeumorphicTapFace(
+              states: states,
+              shape: t.shapes.circle(),
+              round: true,
+              // The focus disc stands 6 round the star wherever the star stands in its target.
+              focusInset: (target - size) / 2,
+              faceOutset: const EdgeInsets.all(6),
+              faceAlignment: place,
+              child: SizedBox.square(
+                dimension: target,
+                child: Align(
+                  alignment: place,
+                  child: star(item.fill >= 1 ? 1 : 0),
                 ),
               ),
-          ],
+            ),
+          ),
         ),
       ),
     );
@@ -2197,6 +2215,52 @@ class NeumorphicRating extends StatelessWidget {
       ..add(ObjectFlagProperty<ValueChanged<int>>.has('onChanged', onChanged))
       ..add(DiagnosticsProperty<bool>('enabled', enabled, defaultValue: true))
       ..add(DoubleProperty('size', size, defaultValue: 24));
+  }
+}
+
+/// One star's target in a [NeumorphicRating]: the face's states for it. The star at the score ([wearer]) wears the
+/// rating's focus and a drag's press; a finger or a button held down on a star sinks that star, as each star's own
+/// press did before the rating moved onto [DesignRating] (which reports a press only once it drags).
+class _StarTarget extends StatefulWidget {
+  const _StarTarget({
+    required this.item,
+    required this.wearer,
+    required this.builder,
+  });
+
+  final DesignRatingItemDetails item;
+  final int wearer;
+  final Widget Function(BuildContext context, Set<WidgetState> states) builder;
+
+  @override
+  State<_StarTarget> createState() => _StarTargetState();
+}
+
+class _StarTargetState extends State<_StarTarget> {
+  bool _down = false;
+
+  void _press(bool down) {
+    if (down != _down) setState(() => _down = down);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rating = widget.item.states;
+    final disabled = rating.contains(WidgetState.disabled);
+    final wears = widget.item.index == widget.wearer;
+    final dragged = rating.contains(WidgetState.pressed);
+    return Listener(
+      // The whole target, not only the star's paint: a press anywhere on it is this star's.
+      behavior: HitTestBehavior.opaque,
+      onPointerDown: disabled ? null : (_) => _press(true),
+      onPointerUp: (_) => _press(false),
+      onPointerCancel: (_) => _press(false),
+      child: widget.builder(context, {
+        if (wears && rating.contains(WidgetState.focused)) WidgetState.focused,
+        if (dragged ? wears : _down && !disabled) WidgetState.pressed,
+        if (disabled) WidgetState.disabled,
+      }),
+    );
   }
 }
 

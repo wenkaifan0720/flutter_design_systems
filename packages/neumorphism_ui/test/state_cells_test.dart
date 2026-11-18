@@ -200,10 +200,9 @@ final Map<String, _Stated> _parts = {
   'NeumorphicNumberField': _stated(
     ({enabled = true, error}) => _wide(
       NeumorphicNumberField(
-        value: '2',
+        value: 2,
         unit: 'Lamps',
-        onIncrease: enabled ? _tap : null,
-        onDecrease: enabled ? _tap : null,
+        onChanged: enabled ? (_) => _tap() : null,
       ),
     ),
     pressAt: find.byIcon(NeumorphicGlyphs.plus),

@@ -2,6 +2,7 @@
 // part that answers it, `Neumorphic<Stem>`, as a small live specimen. The live gallery lists it, and a test verifies it
 // (every row answered once, every specimen the row's own class).
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:ui_core/inventory.dart';
@@ -250,10 +251,9 @@ final DesignInventory neumorphicInventory = DesignInventory(
     DesignInventoryEntry.present(
       'NumberField',
       (_) => const NeumorphicNumberField(
-        value: '2',
+        value: 2,
         unit: 'Lamps',
-        onIncrease: _none,
-        onDecrease: _none,
+        onChanged: _drop,
       ),
     ),
     DesignInventoryEntry.present(
@@ -462,20 +462,20 @@ final DesignInventory neumorphicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'MenuBar',
-      (_) => const NeumorphicMenuBar(
+      (context) => NeumorphicMenuBar(
         menus: [
           DesignMenuEntry(
             label: 'Scene',
             children: [
               DesignMenuEntry(
                 label: 'New scene',
-                shortcut: 'Ctrl N',
+                shortcut: _primaryKeys(context, LogicalKeyboardKey.keyN),
                 onPressed: _none,
               ),
-              DesignMenuEntry(label: 'Print', onPressed: _none),
+              const DesignMenuEntry(label: 'Print', onPressed: _none),
             ],
           ),
-          DesignMenuEntry(
+          const DesignMenuEntry(
             label: 'View',
             children: [
               DesignMenuEntry(label: 'Rooms', checked: true, onPressed: _none),
@@ -486,15 +486,15 @@ final DesignInventory neumorphicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'Command',
-      (_) => const NeumorphicCommand(
+      (context) => NeumorphicCommand(
         maxHeight: 200,
         commands: [
           DesignCommand(
             label: 'New scene',
             group: 'Scenes',
-            shortcut: 'Ctrl N',
+            shortcut: _primaryKeys(context, LogicalKeyboardKey.keyN),
           ),
-          DesignCommand(label: 'Find a room', group: 'Rooms'),
+          const DesignCommand(label: 'Find a room', group: 'Rooms'),
         ],
       ),
     ),
@@ -967,4 +967,15 @@ class NeumorphicInventoryGallery extends StatelessWidget {
         ),
       );
   }
+}
+
+// A shortcut on the platform's own modifier: Command on Apple's, Control elsewhere, spelled as its menus spell it.
+String _primaryKeys(BuildContext context, LogicalKeyboardKey key) {
+  final apple =
+      defaultTargetPlatform == TargetPlatform.macOS ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+  return designShortcutLabel(
+    context,
+    SingleActivator(key, meta: apple, control: !apple),
+  );
 }

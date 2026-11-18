@@ -472,7 +472,12 @@ DesignCommandPalette _palette({
   ),
   itemBuilder: (context, command, states) => NeumorphicPanelRow(
     label: command.label,
-    states: {...states, if (!command.enabled) WidgetState.disabled},
+    // The palette's lit row is its active one, and the pointer moving onto a row makes it active: the pointer's row
+    // standing up besides read as a second lit row when the page scrolled a row under a still pointer.
+    states: {
+      ...states.difference(const {WidgetState.hovered}),
+      if (!command.enabled) WidgetState.disabled,
+    },
     icon: command.data is IconData ? command.data! as IconData : null,
     trailing: command.shortcut,
   ),
@@ -538,38 +543,10 @@ class NeumorphicMenuBar extends StatelessWidget {
         // A column too narrow for every menu runs them on to a second line.
         child: Wrap(children: items),
       ),
-      dividerBuilder: (context) => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 6),
-        child: NeumorphicEngraved(),
-      ),
-      // One lit row (the keys' or the pointer's, whichever moved last), and the panel's inset inside the scroll, so
-      // a lit row's lift at the menu's edge casts into it rather than being cut by the scroll's edge.
-      surfaceBuilder: (context, info, items) => NeumorphicPanel(
-        presence: info.animation,
-        side: info.side,
-        width: math.min(284, info.maxSize.width),
-        maxHeight: info.maxSize.height,
-        padding: EdgeInsets.zero,
-        menu: true,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: items,
-          ),
-        ),
-      ),
+      dividerBuilder: _menuDivider,
+      surfaceBuilder: _menuPanel,
       itemBuilder: (context, entry, level, states) {
-        if (level == DesignMenuLevel.menu) {
-          return NeumorphicPanelRow(
-            label: entry.label,
-            states: {...states, if (!entry.enabled) WidgetState.disabled},
-            trailing: entry.shortcut,
-            checked: entry.checked ?? false,
-            submenu: entry.isSubmenu,
-          );
-        }
+        if (level == DesignMenuLevel.menu) return _menuRow(entry, states);
         final open = states.contains(WidgetState.selected);
         final sunk =
             entry.enabled && (open || states.contains(WidgetState.pressed));
@@ -612,6 +589,115 @@ class NeumorphicMenuBar extends StatelessWidget {
     properties
       ..add(IterableProperty<DesignMenuEntry>('menus', menus))
       ..add(StringProperty('label', label, defaultValue: null));
+  }
+}
+
+// A menu's painting, the bar's and the context menu's: a divider is an engraved line.
+Widget _menuDivider(BuildContext context) => const Padding(
+  padding: EdgeInsets.symmetric(vertical: 6),
+  child: NeumorphicEngraved(),
+);
+
+// The raised panel round a menu's rows. One lit row (the keys' or the pointer's, whichever moved last), and the panel's
+// inset inside the scroll, so a lit row's lift at the menu's edge casts into it rather than being cut by the scroll's
+// edge.
+Widget _menuPanel(
+  BuildContext context,
+  DesignOverlayInfo info,
+  List<Widget> items,
+) => NeumorphicPanel(
+  presence: info.animation,
+  side: info.side,
+  width: math.min(284, info.maxSize.width),
+  maxHeight: info.maxSize.height,
+  padding: EdgeInsets.zero,
+  menu: true,
+  child: SingleChildScrollView(
+    padding: const EdgeInsets.all(12),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: items,
+    ),
+  ),
+);
+
+// One row of a menu: its words, its keys at the end, its check or its submenu's chevron.
+Widget _menuRow(DesignMenuEntry entry, Set<WidgetState> states) =>
+    NeumorphicPanelRow(
+      label: entry.label,
+      states: {...states, if (!entry.enabled) WidgetState.disabled},
+      trailing: entry.shortcut,
+      checked: entry.checked ?? false,
+      submenu: entry.isSubmenu,
+    );
+
+/// A menu of commands over [child], where the user asks for one: a right click or a long press opens it at the pointer,
+/// Shift+F10 or the Menu key at the focused control inside, and a screen reader finds Show menu among the region's
+/// actions. Its rows are a menu bar's: commands with their keys, checks, submenus and engraved dividers; the pointer's
+/// row is the lit one, and a letter jumps. Escape or a tap outside closes it and the focus goes back; a command closes it,
+/// then runs. On the web the browser's own menu stays shut over [child].
+///
+/// ```dart
+/// NeumorphicContextMenu(menuChildren: [DesignMenuEntry(label: 'Rename', onPressed: rename)], child: const Text('Hall lamp'))
+/// ```
+class NeumorphicContextMenu extends StatelessWidget {
+  /// A menu of [menuChildren] over [child].
+  const NeumorphicContextMenu({
+    super.key,
+    required this.menuChildren,
+    required this.child,
+    this.label,
+    this.controller,
+    this.onOpenChanged,
+  });
+
+  /// The menu's rows: commands, checks, submenus and dividers. Empty: no menu.
+  final List<DesignMenuEntry> menuChildren;
+
+  /// The region that opens it.
+  final Widget child;
+
+  /// What a screen reader calls the menu; null: none.
+  final String? label;
+
+  /// Opens it at a point of [child] from outside (`open(position:)`) and closes it; null: it makes its own.
+  final MenuController? controller;
+
+  /// Told when it opens (true) and when it has closed (false).
+  final ValueChanged<bool>? onOpenChanged;
+
+  @override
+  Widget build(BuildContext context) => DesignContextMenu(
+    menuChildren: menuChildren,
+    semanticLabel: label,
+    controller: controller,
+    onOpenChanged: onOpenChanged,
+    dividerBuilder: _menuDivider,
+    surfaceBuilder: _menuPanel,
+    itemBuilder: (context, entry, level, states) => _menuRow(entry, states),
+    child: child,
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(IterableProperty<DesignMenuEntry>('menuChildren', menuChildren))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<MenuController>(
+          'controller',
+          controller,
+          defaultValue: null,
+        ),
+      )
+      ..add(
+        ObjectFlagProperty<ValueChanged<bool>>.has(
+          'onOpenChanged',
+          onOpenChanged,
+        ),
+      );
   }
 }
 

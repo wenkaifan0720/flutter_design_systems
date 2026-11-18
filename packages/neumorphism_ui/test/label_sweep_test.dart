@@ -4,7 +4,7 @@
 // and a desk's width; the gallery's pages at the gallery's phone width, as tall as their sections.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/alignment.dart'
+import 'package:ui_core_test/ui_core_test.dart'
     show DesignAlignmentReport, DesignLabelCheck;
 import 'package:neumorphism_ui/src/neumorphism/internal/cap_label.dart'
     show neumorphicCapCentred;

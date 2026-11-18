@@ -423,11 +423,7 @@ void main() {
         label: 'Add',
         onPressed: () {},
       ),
-      'stepper keys': NeumorphicNumberField(
-        value: '2',
-        onDecrease: () {},
-        onIncrease: () {},
-      ),
+      'stepper keys': NeumorphicNumberField(value: 2, onChanged: (_) {}),
       'an off switch': NeumorphicSwitch(value: false, onChanged: (_) {}),
       'an open check': NeumorphicRoundCheckbox(onChanged: (_) {}),
       // In use: a bank out of use lies flat, and 3:1 doesn't bind it.

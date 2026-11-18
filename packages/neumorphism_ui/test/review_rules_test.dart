@@ -147,11 +147,10 @@ final Map<String, Widget> _controls = {
     wide: true,
     onPressed: _tap,
   ),
-  'number field': const NeumorphicNumberField(
-    value: '2',
+  'number field': NeumorphicNumberField(
+    value: 2,
     unit: 'people',
-    onDecrease: _tap,
-    onIncrease: _tap,
+    onChanged: (_) => _tap(),
   ),
 };
 

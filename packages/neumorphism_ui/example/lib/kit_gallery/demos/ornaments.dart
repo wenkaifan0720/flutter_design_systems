@@ -1,7 +1,7 @@
 /// The small marks the look is made of. The LED is where the pigment lives: a small lit lamp on what's live.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 import '../kit.dart';

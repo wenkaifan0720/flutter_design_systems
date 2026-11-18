@@ -1,20 +1,26 @@
 # neumorphism_ui
 
-A soft UI design system for Flutter. Raised surfaces and pressed grooves share one wall colour, while paired shadows give them depth and a single pigment marks actions. An optional high-contrast setting adds stronger boundaries.
+A soft UI design system for Flutter: every part is moulded from one wall colour, raised or pressed in by paired light
+and shadow, with one pigment marking what acts. An optional high-contrast setting adds firmer edges.
+
+![Hearth, the gallery's home app, on Neumorphism: its living room at 1440 px by day beside the same room on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hero_home.png)
+
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/neumorphism/)** · [API reference](https://pub.dev/documentation/neumorphism_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
-```yaml
-dependencies:
-  neumorphism_ui: ^0.2.1
+```sh
+flutter pub add neumorphism_ui material_ui
 ```
+
+`material_ui` is Flutter's Material library as a package; the quick start's `MaterialApp` comes from it.
 
 ## Use
 
 `NeumorphicTheme` installs the design system under a `MaterialApp`, `CupertinoApp` or `WidgetsApp`. It supplies the text styles, localizations, scrolling behavior and private bridge used by the controls.
 
 ```dart
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 Future<void> main() async {
@@ -155,17 +161,13 @@ NeumorphicNavigationBar(
 
 Hearth, the example app in the gallery, built from this package:
 
-![A living room by day at 1440 wide](screenshots/hearth-home-1440-day.png)
+![A checkout at night at 1440 px, with address fields, a delivery choice, a quantity stepper and the one act, Pay](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hearth-checkout-1440-night.png)
 
-![The same room at night on a phone](screenshots/hearth-home-390-night.png)
+![An account form on a 390 px phone by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hearth-form-390-day.png)
 
-![A checkout at night](screenshots/hearth-checkout-1440-night.png)
+![Settings by day at 1440 px, rows of switches beside a moulded volume dial](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hearth-settings-1440-day.png)
 
-![An account form on a phone by day](screenshots/hearth-form-390-day.png)
-
-![Settings by day](screenshots/hearth-settings-1440-day.png)
-
-![A list of devices at night on a phone](screenshots/hearth-list-390-night.png)
+![A list of devices at night on a 390 px phone](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/screenshots/hearth-list-390-night.png)
 
 ## How Neumorphism is built
 
@@ -177,7 +179,7 @@ These are the look's laws. A part the original style never had is made by them, 
 4. Bumps of one surface never stack. Parts stand side by side. When two must touch, they are cast as one piece with one light and one shadow: a bank of cells, the avatar cluster. A part on a part is a plain step, and a well in a well is a plain floor. Many small equal choices, such as a month's days, are figures on their holder's surface; only the chosen one is a well, and a chosen range is one moulded channel.
 5. Ink and pigment are colours of a face, never bodies of their own. Ink is for words; the pigment marks what is live and the page's one act.
 6. Only what is in your hand, or what you call up, leaves the wall: a row being dragged, a menu, a dialog, a sheet, a toast. At rest, nothing floats over the page.
-7. Motion is the material moving. A press sinks, keyboard focus lifts, a field's well deepens. Nothing bounces, and reduced motion jumps.
+7. Motion is the material moving. A press sinks, keyboard focus lifts, a field's well deepens. Nothing bounces. With reduced motion a part jumps to its end, and a dialog or a sheet dissolves where it stands.
 8. No corner is sharp. The smallest corner is 6. A face inside another follows the outer corner: its radius is the outer radius minus the inset, and never less than 6.
 
 ## Presets
@@ -194,15 +196,15 @@ Every preset has a separately designed light and dark appearance. Use its named 
 
 Cards, actions and fields in each preset, light on the left and dark on the right:
 
-![Porcelain preset, light and dark](assets/previews/porcelain.png)
+![Porcelain preset, light and dark](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/assets/previews/porcelain.png)
 
-![Pompeii preset, light and dark](assets/previews/pompeii.png)
+![Pompeii preset, light and dark](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/assets/previews/pompeii.png)
 
-![Verona preset, light and dark](assets/previews/verona.png)
+![Verona preset, light and dark](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/assets/previews/verona.png)
 
-![Siena preset, light and dark](assets/previews/siena.png)
+![Siena preset, light and dark](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/assets/previews/siena.png)
 
-![Tyrian preset, light and dark](assets/previews/tyrian.png)
+![Tyrian preset, light and dark](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/neumorphism_ui/assets/previews/tyrian.png)
 
 The example gallery shows every preset and appearance. Run it with `flutter run` from `example/`.
 
@@ -264,14 +266,14 @@ The parts' built-in words come from `DesignLocalizations`, the words every look 
 
 - **Right to left.** Every part mirrors under a right-to-left `Directionality`: chevrons and arrows turn, sliders, progress and steppers fill from the start, and fields swap their leading and trailing parts. Figures, times and codes stay left to right. Public geometry takes the directional types (`EdgeInsetsGeometry`, `AlignmentGeometry`). The example gallery has a Right to left switch.
 - **Large text.** Parts grow with the reader's text size up to 2.0: controls get taller rather than cutting their words, and dialogs and sheets scroll. Three kinds of words grow only to 1.3, as the platforms' own do: a month's day numbers (as Material's date picker's), a bar's tab words (as a platform tab bar's), and the numerals printed on a dial's scale, which stand between its ticks. Each is spoken whole at any size, and a dial's readout grows in full, under the face where it no longer fits in it. Every part and every gallery page is tested at 2.0.
-- **Screen readers and keyboard.** Each part reports its role, label, value and state (checked, selected, expanded, disabled), and decorative paint is excluded from semantics. Everything works from the keyboard, and focus follows reading order. Targets are at least 48 px. Text meets 4.5:1 contrast in every preset, by day and by night. With reduced motion, parts change state at once.
+- **Screen readers and keyboard.** Each part reports its role, label, value and state (checked, selected, expanded, disabled), and decorative paint is excluded from semantics. Everything works from the keyboard, and focus follows reading order. Targets are at least 48 px. Text meets 4.5:1 contrast in every preset, by day and by night. With reduced motion, parts change state at once, and dialogs and sheets dissolve in place.
 - **Edges and states.** A part's edge is soft light and shadow, faint by night, and nothing depends on it alone.
   Every state (on, chosen, checked, focused, a slider's value) and every part without words reaches 3:1 through its colour, words or mark, by day and by night; high contrast adds a fine outline.
 - **Other scripts.** The bundled Manrope covers Latin. Other scripts fall back to the platform's fonts; on the web, Flutter fetches them.
 
-Known limits in 0.2.1:
+Known limits in 0.3.0:
 
-- The words every look shares (Cancel, Today, Close, "3 of 10" and the rest) come from ui_core's `DesignLocalizations`, which speaks 30 languages once your app adds `DesignLocalizations.delegate` beside Flutter's delegates (ui_core's README shows how). The look's own words (a stepper's More and Less, a file drop's prompts, a picker's AM and PM, Try again and a few more) stay English unless your app subclasses `NeumorphicLocalizations` and adds a delegate that loads it.
+- The words every look shares (Cancel, Today, Close, "3 of 10" and the rest) come from ui_core's `DesignLocalizations`, which speaks 30 languages once your app adds `DesignLocalizations.delegate` beside Flutter's delegates (ui_core's README shows how). The look's own words (a file drop's prompts, a picker's AM and PM, Try again and a few more) stay English unless your app subclasses `NeumorphicLocalizations` and adds a delegate that loads it.
 - Dates and numbers are formatted with `intl` in the look's own words' language, so they are English too unless your subclass names another `localeName`. Short weekday names are English, and times show in 24-hour form.
 
 ## Fonts and copying components

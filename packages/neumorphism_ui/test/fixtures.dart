@@ -456,7 +456,7 @@ final neumorphicFixtures = <String, Widget Function(BuildContext)>{
   'NeumorphicStepRow': (context) =>
       const NeumorphicStepRow(time: '09:00', title: 'Work'),
   'NeumorphicNumberField': (context) =>
-      const NeumorphicNumberField(value: '2', onDecrease: hit, onIncrease: hit),
+      NeumorphicNumberField(value: 2, onChanged: (_) => hit()),
   'NeumorphicSubHead': (context) => const NeumorphicSubHead('Details'),
   'NeumorphicSuccessState': (context) =>
       const NeumorphicSuccessState(title: 'Saved', message: 'Ready'),

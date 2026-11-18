@@ -1,7 +1,7 @@
 /// The rows a list is built from, and the figures that say where things stand.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 import '../kit.dart';

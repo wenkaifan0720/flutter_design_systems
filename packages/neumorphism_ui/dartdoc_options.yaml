@@ -1,0 +1,4 @@
+# The host library's {@canonicalFor} names its libraries, which dartdoc's check wrongly calls ignored (members only).
+dartdoc:
+  ignore:
+    - ignored-canonical-for

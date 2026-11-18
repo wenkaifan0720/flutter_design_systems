@@ -250,11 +250,7 @@ void main() {
       ),
       NeumorphicRoundCheckbox(onChanged: (_) => presses++),
       NeumorphicLink('Go', onPressed: () => presses++),
-      NeumorphicNumberField(
-        value: '2',
-        onDecrease: () => presses++,
-        onIncrease: () => presses++,
-      ),
+      NeumorphicNumberField(value: 2, onChanged: (_) => presses++),
     ]) {
       // A page's margin round the part: a target reaches past its face's box (the number field's keys stand on its
       // edges, their targets 2 px past them), and a field takes the column's width, so without one it meets the
@@ -266,7 +262,15 @@ void main() {
           ),
         ),
       );
-      final target = find.byType(DesignPressable).first;
+      // The number field's keys are ui_core's step keys, no pressables: their targets are the look's.
+      final target = find.byType(DesignPressable).evaluate().isNotEmpty
+          ? find.byType(DesignPressable).first
+          : find
+                .ancestor(
+                  of: find.byIcon(NeumorphicGlyphs.minus),
+                  matching: find.byType(DesignTapTarget),
+                )
+                .first;
       final box = tester.getRect(target);
       expect(box.width, greaterThanOrEqualTo(48));
       expect(box.height, greaterThanOrEqualTo(48));

@@ -118,9 +118,12 @@ class _Recorder implements Canvas {
   }
 }
 
-/// Whether focus shows under [root]: a lift painted round a part, or a groove or well deepened.
-bool _focusShows(Finder root) =>
-    _outlines(root).any((o) => _lifts.contains(o.by)) ||
+/// Whether focus shows under [root]: a lift painted round a part, or a groove or well deepened; with [sinks], a bare
+/// face sunk into a well (the number field's figure, a field with no groove at rest).
+bool _focusShows(Finder root, {bool sinks = false}) =>
+    _outlines(
+      root,
+    ).any((o) => _lifts.contains(o.by) || (sinks && o.by == '_PressRelief')) ||
     find
         .descendant(of: root, matching: find.byType(CustomPaint))
         .evaluate()
@@ -349,11 +352,7 @@ final _parts = <String, (Widget Function(), int)>{
     ),
   },
   'stepper': (
-    () => const NeumorphicNumberField(
-      value: '2',
-      onDecrease: _hit,
-      onIncrease: _hit,
-    ),
+    () => NeumorphicNumberField(value: 2, onChanged: (_) => _hit()),
     1,
   ),
   'pagination': (
@@ -564,6 +563,164 @@ final _wholes = <String, _Whole>{
 
 /// The painters a part's tap draws in its face: they are not its holder.
 const _tapPainters = {'_FocusLift', '_Lift', '_PressRelief', '_Overlay'};
+
+/// The radius of [o]'s corner at [corner], from where the corner's diagonal first enters the outline.
+double _radiusAt(_Outline o, Offset corner) {
+  final s = _entry(o.path, corner, o.box.center, o.box.shortestSide * .7);
+  return s.isFinite ? s / (math.sqrt2 - 1) : double.nan;
+}
+
+/// Plates standing in a rounded holder (the largest outline under [root]), measured on what is painted. In a rounded
+/// corner of the holder a plate stands as far in from both sides; inside the corner's curve (in by less than its
+/// radius) the plate's corner is the holder's less that inset, kept at least [NeumorphicRadii.least], as a face moved
+/// in from its holder is; in by the whole radius or more it stands clear of the curve and keeps its own corner. A plate
+/// under the holder's straight top edge, inside the corner's depth, rounds as the plates in its corners do. Returns the
+/// faults and how many corners were measured.
+(List<String>, int) _platesInHolder(Finder root, {double near = 24}) {
+  final outlines = _outlines(root).where(_boxLike).toList();
+  final holder = outlines.reduce(
+    (a, b) => a.box.width * a.box.height >= b.box.width * b.box.height ? a : b,
+  );
+  final o = holder.box;
+  final faults = <String>[];
+  var measured = 0;
+  String f(double v) => v.toStringAsFixed(1);
+  void corner(
+    _Outline plate,
+    Offset at,
+    double holderRadius,
+    double d,
+    String where,
+  ) {
+    final want = math.max(NeumorphicRadii.least, holderRadius - d);
+    final got = _radiusAt(plate, at);
+    measured++;
+    if (!((got - want).abs() <= .75)) {
+      faults.add(
+        '${plate.by} in ${holder.by}, $where: corner ${f(got)}, the holder\'s ${f(holderRadius)} less ${f(d)} '
+        'is ${f(want)}',
+      );
+    }
+  }
+
+  for (final plate in outlines) {
+    final n = plate.box;
+    // A plate is a part's face, a thumb at least: a lamp or a dot on a cell is a mark, not a plate.
+    if (n.shortestSide < 20 ||
+        identical(plate, holder) ||
+        !o.inflate(.01).contains(n.topLeft) ||
+        !o.inflate(.01).contains(n.bottomRight) ||
+        (n.width >= o.width - .3 && n.height >= o.height - .3)) {
+      continue;
+    }
+    final inset = [
+      n.left - o.left,
+      n.top - o.top,
+      o.right - n.right,
+      o.bottom - n.bottom,
+    ];
+    for (final (i, j, outer, inner, where) in [
+      (0, 1, o.topLeft, n.topLeft, 'top left'),
+      (2, 1, o.topRight, n.topRight, 'top right'),
+      (2, 3, o.bottomRight, n.bottomRight, 'bottom right'),
+      (0, 3, o.bottomLeft, n.bottomLeft, 'bottom left'),
+    ]) {
+      final rim = _radiusAt(holder, outer);
+      // A square corner (an edge strip's, a bar's foot on the screen's edge) has no curve to follow.
+      if (!(rim >= 1) || inset[i] > near || inset[j] > near) continue;
+      if ((inset[i] - inset[j]).abs() > .5) {
+        measured++;
+        faults.add(
+          '${plate.by} in ${holder.by}, $where: ${f(inset[i])} in from the side, ${f(inset[j])} from the end',
+        );
+        continue;
+      }
+      final d = (inset[i] + inset[j]) / 2;
+      if (d >= rim - .5) {
+        measured++;
+        continue;
+      }
+      corner(plate, inner, rim, d, where);
+    }
+    final rim = _radiusAt(holder, o.topLeft);
+    if (inset[0] > near &&
+        inset[2] > near &&
+        inset[1] > .3 &&
+        rim >= 1 &&
+        inset[1] < rim - .5) {
+      corner(plate, n.topLeft, rim, inset[1], 'under the top, top left');
+      corner(plate, n.topRight, rim, inset[1], 'under the top, top right');
+    }
+  }
+  return (faults, measured);
+}
+
+List<NeumorphicNavItem> _navItems() => const [
+  NeumorphicNavItem(label: 'Home', icon: NeumorphicGlyphs.house),
+  NeumorphicNavItem(label: 'Search', icon: NeumorphicGlyphs.search),
+  NeumorphicNavItem(label: 'Profile', icon: NeumorphicGlyphs.user),
+];
+
+/// Each plate that stands in a rounded holder, with its holder, as a page shows them.
+final _plates = <String, Widget Function()>{
+  for (final (i, place) in ['first', 'middle', 'last'].indexed)
+    'navigation bar, $place chosen': () => NeumorphicNavigationBar(
+      items: _navItems(),
+      selectedIndex: i,
+      onDestinationSelected: (_) {},
+    ),
+  // A bank's chosen cell is flush in its bank: at an end it takes the bank's corner; between two cells it has no
+  // corner of its bank to follow.
+  for (final (i, place) in [(0, 'first'), (2, 'last')]) ...{
+    'tab bar, $place chosen': () => NeumorphicTabBar(
+      tabs: const ['Overview', 'Activity', 'Files'],
+      selectedIndex: i,
+      onChanged: (_) {},
+    ),
+    'segmented, $place chosen': () => NeumorphicSegmentedButton<int>(
+      label: 'Period',
+      value: i,
+      segments: _segments(),
+      onChanged: (_) {},
+    ),
+    'latches, $place chosen': () => NeumorphicLatchGroup(
+      options: const [
+        NeumorphicLatch('Auto'),
+        NeumorphicLatch('On'),
+        NeumorphicLatch('Off'),
+      ],
+      value: ['Auto', 'On', 'Off'][i],
+      onChanged: (_) {},
+    ),
+  },
+  'switch, on': () =>
+      NeumorphicSwitch(value: true, label: 'Alerts', onChanged: (_) {}),
+  'switch, off': () =>
+      NeumorphicSwitch(value: false, label: 'Alerts', onChanged: (_) {}),
+  'chips in a field': () => NeumorphicMultiSelect<String>(
+    label: 'Guests',
+    values: const ['Ann', 'Ben'],
+    options: const ['Ann', 'Ben', 'Cat'],
+    onChanged: (_) {},
+  ),
+  'dialog': () => const NeumorphicDialog(
+    title: 'Save changes?',
+    actions: [
+      NeumorphicButton('Cancel', onPressed: _hit),
+      NeumorphicButton.filled('Save', onPressed: _hit),
+    ],
+  ),
+  'sheet': () => const SizedBox(
+    height: 320,
+    child: NeumorphicBottomSheet(
+      title: 'Options',
+      inPlace: true,
+      onClose: _hit,
+      actions: [NeumorphicButton.filled('Apply', onPressed: _hit)],
+      child: Text('Choose'),
+    ),
+  ),
+};
 
 void main() {
   setUpAll(loadNeumorphicFonts);
@@ -776,13 +933,62 @@ void main() {
             // Focus shows in the material: a lift round the part, or a field's well deepened. Never a line.
             if (tabs > 0 &&
                 !ringsRow &&
-                !_focusShows(find.byKey(const Key('part')))) {
+                !_focusShows(
+                  find.byKey(const Key('part')),
+                  sinks: name == 'stepper',
+                )) {
               faults.add('$stroke: focus shows nothing');
             }
           }
           expect(faults, isEmpty, reason: faults.join('\n'));
         },
       );
+    }
+  }
+
+  // A chosen plate in a bar, a thumb in its track, a chip in its field, a button at a card's edge: each stands in its
+  // holder's corner as the corner moved in, on a phone and on a desktop.
+  for (final width in [390.0, 1440.0]) {
+    for (final MapEntry(key: name, value: build) in _plates.entries) {
+      testWidgets('$name @${width.toInt()}: concentric in its rounded holder', (
+        tester,
+      ) async {
+        final size = Size(width, 900);
+        tester.view.physicalSize = size;
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final theme = NeumorphicThemeData.porcelain();
+        await tester.pumpWidget(
+          MaterialApp(
+            home: NeumorphicTheme(
+              data: theme,
+              child: MediaQuery(
+                data: MediaQueryData(size: size, disableAnimations: true),
+                child: ColoredBox(
+                  color: theme.colors.ground,
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: SizedBox(
+                        key: const Key('part'),
+                        width: width - 32,
+                        child: build(),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final (faults, measured) = _platesInHolder(
+          find.byKey(const Key('part')),
+        );
+        expect(measured, greaterThan(0), reason: 'a plate in its holder');
+        expect(faults, isEmpty, reason: faults.join('\n'));
+      });
     }
   }
 }

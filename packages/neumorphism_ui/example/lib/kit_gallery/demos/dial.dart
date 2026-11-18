@@ -1,7 +1,7 @@
 /// The cast objects: a fluted dial to set one value, a span dial for what's on now, gauges and knobs. They stay round and take no card. On a phone the big ones go compact, so a page's job stands on the first screen.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 import '../kit.dart';

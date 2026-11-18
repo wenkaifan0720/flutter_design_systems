@@ -187,6 +187,9 @@ const _flows = <String, String>{
   'NeumorphicChoiceBox': 'paints to its size',
   'NeumorphicDayFace': 'its bump and well fill the day it is given',
   'NeumorphicSlider': 'a groove the width of its column',
+  // Missed while it was a State<NeumorphicWheelPicker<T>>: the scan reads a generic widget's state by its bare name.
+  'NeumorphicWheelPicker':
+      'a well the width of its column, or its own, as tall as its rows',
   'NeumorphicProgress': 'a groove the width of its column',
   'NeumorphicStepRow': 'its dot stands in a row of its own',
   'NeumorphicNavigationBar': 'the full width of the page',

@@ -2,8 +2,8 @@
 import 'package:flutter/foundation.dart';
 
 import 'dart:math' as math;
-import 'dart:ui' show SemanticsRole;
 
+import 'package:flutter/rendering.dart' show RenderAbstractViewport;
 import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:flutter/widgets.dart';
@@ -79,73 +79,66 @@ class NeumorphicTabBar extends StatefulWidget {
   }
 }
 
-class _NeumorphicTabBarState extends State<NeumorphicTabBar> {
-  final _nodes = <FocusNode>[];
-  void _resize() {
-    while (_nodes.length > widget.tabs.length) {
-      _nodes.removeLast().dispose();
-    }
-    while (_nodes.length < widget.tabs.length) {
-      _nodes.add(FocusNode());
-    }
-  }
+class _NeumorphicTabBarState extends State<NeumorphicTabBar>
+    with TickerProviderStateMixin {
+  // Null with no tabs: the bar is empty.
+  late DesignTabController? _controller = _make();
 
-  @override
-  void initState() {
-    super.initState();
-    _resize();
-  }
+  DesignTabController? _make() => widget.tabs.isEmpty
+      ? null
+      : (DesignTabController(
+          length: widget.tabs.length,
+          initialIndex: widget.selectedIndex,
+          vsync: this,
+        )..addListener(_chosen));
 
   @override
   void didUpdateWidget(NeumorphicTabBar old) {
     super.didUpdateWidget(old);
-    _resize();
+    final controller = _controller;
+    if (widget.tabs.length != (controller?.length ?? 0)) {
+      controller?.removeListener(_chosen);
+      _controller = _make();
+      // The bar still holds the old one until it rebuilds.
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => controller?.dispose(),
+      );
+    } else if (controller != null && controller.index != widget.selectedIndex) {
+      controller.index = widget.selectedIndex;
+    }
   }
 
   @override
   void dispose() {
-    for (final node in _nodes) {
-      node.dispose();
-    }
+    _controller
+      ?..removeListener(_chosen)
+      ..dispose();
     super.dispose();
   }
 
-  KeyEventResult _key(int index, KeyEvent event) {
-    if (widget.onChanged == null ||
-        widget.tabs.isEmpty ||
-        (event is! KeyDownEvent && event is! KeyRepeatEvent)) {
-      return KeyEventResult.ignored;
-    }
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final key = event.logicalKey;
-    int? next;
-    if (key ==
-        (rtl ? LogicalKeyboardKey.arrowLeft : LogicalKeyboardKey.arrowRight)) {
-      next = (index + 1) % widget.tabs.length;
-    }
-    if (key ==
-        (rtl ? LogicalKeyboardKey.arrowRight : LogicalKeyboardKey.arrowLeft)) {
-      next = (index - 1 + widget.tabs.length) % widget.tabs.length;
-    }
-    if (key == LogicalKeyboardKey.home) next = 0;
-    if (key == LogicalKeyboardKey.end) next = widget.tabs.length - 1;
-    if (next == null) return KeyEventResult.ignored;
-    _nodes[next].requestFocus();
-    widget.onChanged!(next);
-    if (_nodes[next].context != null) {
-      Scrollable.ensureVisible(
-        _nodes[next].context!,
-        duration: NeumorphicMotion.of(context).move,
-      );
-    }
-    return KeyEventResult.handled;
+  // The bar chose a tab (a press, an arrow): the page hears it; a page that keeps its own choice puts the bar back.
+  void _chosen() {
+    final i = _controller!.index;
+    if (i == widget.selectedIndex) return;
+    widget.onChanged?.call(i);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = _controller;
+      if (mounted &&
+          controller != null &&
+          controller.index != widget.selectedIndex) {
+        controller.index = widget.selectedIndex;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+    if (controller == null) return const SizedBox.shrink();
     final t = NeumorphicTheme.of(context);
     final dir = Directionality.of(context);
     final scaler = MediaQuery.textScalerOf(context);
+    final off = widget.onChanged == null;
     final padding = t.density.padding(
       const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     );
@@ -166,16 +159,48 @@ class _NeumorphicTabBarState extends State<NeumorphicTabBar> {
       painter.dispose();
     }
     final label = widget.label ?? NeumorphicLocalizations.of(context).tabs;
+    // A tab's face: its cell pressed in when chosen, the keyboard's lift, its words centred by their capitals.
+    Widget face(int i, Set<WidgetState> states) => Builder(
+      builder: (context) {
+        final selected = i == widget.selectedIndex;
+        final cell = NeumorphicCellScope.of(context);
+        // Chosen is the page's choice, which the bar's follows.
+        final look = neumorphicStyleOf(
+          [widget.style, t.segmentedButtonTheme],
+          {
+            for (final state in states)
+              if (state != WidgetState.selected) state,
+            if (selected) WidgetState.selected,
+          },
+        );
+        return NeumorphicTapFace(
+          states: states,
+          style: widget.style,
+          themeStyle: t.segmentedButtonTheme,
+          shape: cell.border,
+          focusReach: .5,
+          pressRelief: !selected,
+          // A tab's face is its cell, marked for ui_core's checks: read from its pixels, the chosen tab's well
+          // reached into the bank's cast above it, and its words read 19 px under the well's middle under compact.
+          child: DesignKeylineFace(
+            child: NeumorphicCellFace(
+              child: _faceWords(
+                context,
+                look,
+                selected,
+                off,
+                padding,
+                words,
+                i,
+              ),
+            ),
+          ),
+        );
+      },
+    );
     return NeumorphicCellBank(
-      // The tab bar's role sits on the bank inside its scroll, so every tab is its direct child.
-      group: (bank) => Semantics(
-        role: SemanticsRole.tabBar,
-        container: true,
-        explicitChildNodes: true,
-        label: label,
-        // Out of use the whole bar lies flat: its groove and the chosen tab with the words.
-        child: NeumorphicOutOfUse(off: widget.onChanged == null, child: bank),
-      ),
+      // Out of use the whole bar lies flat: its groove and the chosen tab with the words.
+      group: (bank) => NeumorphicOutOfUse(off: off, child: bank),
       selected: widget.selectedIndex,
       minCellWidth: least,
       scroll: true,
@@ -190,85 +215,119 @@ class _NeumorphicTabBarState extends State<NeumorphicTabBar> {
         painter.dispose();
         return h;
       },
-      children: [
-        for (var i = 0; i < widget.tabs.length; i++)
-          Builder(
-            builder: (context) {
-              final selected = i == widget.selectedIndex;
-              final cell = NeumorphicCellScope.of(context);
-              _nodes[i].skipTraversal = !selected;
-              return MergeSemantics(
-                child: Semantics(
-                  role: SemanticsRole.tab,
-                  child: NeumorphicTap(
-                    style: widget.style,
-                    themeStyle: t.segmentedButtonTheme,
-                    shape: cell.border,
-                    focusReach: .5,
-                    pressRelief: !selected,
-                    button: false,
-                    label: widget.tabs[i],
-                    selected: selected,
-                    focusNode: _nodes[i],
-                    onKeyEvent: (_, event) => _key(i, event),
-                    onPressed: widget.onChanged == null
-                        ? null
-                        : () => widget.onChanged!(i),
-                    child: NeumorphicCellFace(
-                      child: Builder(
-                        builder: (context) {
-                          final look = neumorphicStyleOf(
-                            [widget.style, t.segmentedButtonTheme],
-                            {
-                              ...NeumorphicStatesScope.of(context),
-                              if (selected) WidgetState.selected,
-                              if (widget.onChanged == null)
-                                WidgetState.disabled,
-                            },
-                          );
-                          Widget face = NeumorphicOutOfUse(
-                            off: widget.onChanged == null,
-                            child: Padding(
-                              padding:
-                                  look.padding(Directionality.of(context)) ??
-                                  padding,
-                              // Centred by its capitals, as every label of the look is.
-                              child: Center(
-                                child: neumorphicLabel(
-                                  Text(
-                                    widget.tabs[i],
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                    style: words(selected)
-                                        .merge(look.textStyle)
-                                        .copyWith(color: look.foreground),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                          if (look.fill != null) {
-                            face = DecoratedBox(
-                              decoration: ShapeDecoration(
-                                color: look.fill,
-                                shape: cell.border,
-                              ),
-                              child: face,
-                            );
-                          }
-                          return face;
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
+      count: widget.tabs.length,
+      // ui_core's bar lays the tabs in the bank's cells and drives them: one tab stop on the chosen tab, the arrows
+      // along it (mirrored right to left, wrapping), Home and End, each tab heard as a tab with its place.
+      strip: (cell) => DesignTabBar(
+        controller: controller,
+        semanticLabel: label,
+        tabs: [
+          for (final tab in widget.tabs) DesignTab(label: tab, enabled: !off),
+        ],
+        tabBuilder: (context, tab, details) => cell(
+          details.index,
+          _KeptInView(
+            focused: details.states.contains(WidgetState.focused),
+            child: face(details.index, {
+              ...details.states,
+              if (off) WidgetState.disabled,
+            }),
           ),
-      ],
+        ),
+      ),
     );
   }
+
+  Widget _faceWords(
+    BuildContext context,
+    NeumorphicStyleOf look,
+    bool selected,
+    bool off,
+    EdgeInsets padding,
+    TextStyle Function(bool selected) words,
+    int i,
+  ) {
+    Widget face = NeumorphicOutOfUse(
+      off: off,
+      child: Padding(
+        padding: look.padding(Directionality.of(context)) ?? padding,
+        // Centred by its capitals, as every label of the look is.
+        child: Center(
+          child: neumorphicLabel(
+            Text(
+              widget.tabs[i],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: words(selected)
+                  .merge(look.textStyle)
+                  .copyWith(color: look.foreground),
+            ),
+          ),
+        ),
+      ),
+    );
+    if (look.fill != null) {
+      face = DecoratedBox(
+        decoration: ShapeDecoration(
+          color: look.fill,
+          shape: NeumorphicCellScope.of(context).border,
+        ),
+        child: face,
+      );
+    }
+    return face;
+  }
+}
+
+// A tab the keys reach is kept wholly in view where the bar scrolls: ui_core's bar scrolls only a strip of its own,
+// and the bank keeps its faded scroll. Only that scroll moves, and the least way (ui_core's `_reveal`): the page
+// around the bar stays where it is.
+class _KeptInView extends StatefulWidget {
+  const _KeptInView({required this.focused, required this.child});
+
+  final bool focused;
+  final Widget child;
+
+  @override
+  State<_KeptInView> createState() => _KeptInViewState();
+}
+
+class _KeptInViewState extends State<_KeptInView> {
+  @override
+  void didUpdateWidget(_KeptInView old) {
+    super.didUpdateWidget(old);
+    if (widget.focused && !old.focused) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _reveal();
+      });
+    }
+  }
+
+  void _reveal() {
+    final tab = context.findRenderObject();
+    final strip = Scrollable.maybeOf(context, axis: Axis.horizontal);
+    if (tab == null || !tab.attached || strip == null) return;
+    final viewport = RenderAbstractViewport.maybeOf(tab);
+    if (viewport == null) return;
+    final position = strip.position;
+    final start = viewport.getOffsetToReveal(tab, 0).offset;
+    final end = viewport.getOffsetToReveal(tab, 1).offset;
+    final to = position.pixels
+        .clamp(math.min(start, end), math.max(start, end))
+        .clamp(position.minScrollExtent, position.maxScrollExtent)
+        .toDouble();
+    if ((to - position.pixels).abs() < .5) return;
+    final motion = NeumorphicMotion.of(context);
+    if (motion.move == Duration.zero) {
+      position.jumpTo(to);
+    } else {
+      position.animateTo(to, duration: motion.move, curve: motion.standard);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// Where a carousel's slides are, in slides, for the dots under it (ui_core's `controls.position`).

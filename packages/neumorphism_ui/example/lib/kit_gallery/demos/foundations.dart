@@ -1,7 +1,7 @@
 /// The theme's type and colours and the page frame: NeumorphicRow's spans give a desktop its columns and stack on a phone.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 import '../kit.dart';

@@ -4,7 +4,7 @@
 // are checked halfway up too.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ui_core/alignment.dart' show DesignShadowClipCheck;
+import 'package:ui_core_test/ui_core_test.dart' show DesignShadowClipCheck;
 
 // ignore: avoid_relative_lib_imports
 import '../example/lib/everyday_screens.dart';

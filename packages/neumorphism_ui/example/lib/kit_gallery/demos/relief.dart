@@ -1,7 +1,7 @@
 /// The look's moment: a whole place cast in the wall, its floors and bays. A bay's window draws its state with no words in it; the words stand on the wall under it. One a screen, and the look's home.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart';
 
 import '../kit.dart';

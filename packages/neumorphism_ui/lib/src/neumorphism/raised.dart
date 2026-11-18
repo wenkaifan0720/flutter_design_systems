@@ -29,6 +29,7 @@ import 'internal/panel.dart';
 import 'internal/cell_bank.dart'
     show NeumorphicChosenBand, neumorphicWideControlMax;
 import 'internal/moulded.dart';
+import 'internal/page_motion.dart' show neumorphicRouteStiffness;
 
 class _WordsDelegate extends LocalizationsDelegate<NeumorphicLocalizations> {
   const _WordsDelegate(this.words);
@@ -147,7 +148,7 @@ mixin _EscapeCloses<T> on PopupRoute<T> {
   }
 }
 
-enum _RaisedKind { dialog, sheet, menu }
+enum _RaisedKind { sheet, menu }
 
 class _RaisedRoute<T> extends PopupRoute<T> with _EscapeCloses<T> {
   _RaisedRoute({
@@ -292,8 +293,10 @@ Future<T?> _push<T>(
   return result;
 }
 
-/// Raises a soft dialog, closing on Escape, back, or its dismissible scrim.
-/// Focus returns to its opener and the future returns the value passed to pop.
+/// Raises a soft dialog on ui_core's dialog route ([DesignDialogRoute]): it rises and fades in on a spring as long as
+/// the theme's raise, Escape, back or its dismissible scrim close it, Tab stays inside it, the focus goes back to its
+/// opener, and a screen reader hears a dialog named by [NeumorphicDialog]'s title. Under Reduce Motion it only fades.
+/// The future returns the value passed to pop.
 ///
 /// ```dart
 /// showNeumorphicDialog<bool>(context, builder: (context) => NeumorphicDialog(title: 'Keep this?', actions: [NeumorphicButton.filled('Keep', onPressed: () => Navigator.pop(context, true))]))
@@ -306,17 +309,40 @@ Future<T?> showNeumorphicDialog<T>(
   String? closeLabel,
 }) {
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
-  return _push(
-    context,
-    _RaisedRoute<T>(
-      carried: _Carried(context, navigator.context),
-      builder: builder,
-      kind: _RaisedKind.dialog,
-      dismissible: barrierDismissible,
-      closeLabel: closeLabel ?? NeumorphicLocalizations.of(context).close,
+  final carried = _Carried(context, navigator.context);
+  return navigator.push(
+    _NeumorphicDialogRoute<T>(
+      barrierColor: neumorphicVeil(carried.theme.colors),
+      barrierLabel: closeLabel ?? NeumorphicLocalizations.of(context).close,
+      barrierDismissible: barrierDismissible,
+      stiffness: neumorphicRouteStiffness(carried.theme.motion.raise),
+      builder: (context, details) => carried.wrap(
+        // The slab fades in as it rises a step (2.5% of the screen) to its place.
+        FadeTransition(
+          opacity: details.animation,
+          child: SlideTransition(
+            position: details.animation.drive(
+              Tween(begin: const Offset(0, .025), end: Offset.zero),
+            ),
+            child: Builder(builder: builder),
+          ),
+        ),
+      ),
     ),
-    useRootNavigator,
   );
+}
+
+// ui_core's dialog route in the look's Escape order: the newest raised surface takes Escape first, so a dialog opened
+// over a notice closes before the notice does.
+class _NeumorphicDialogRoute<T> extends DesignDialogRoute<T>
+    with _EscapeCloses<T> {
+  _NeumorphicDialogRoute({
+    required super.builder,
+    required super.barrierColor,
+    super.barrierLabel,
+    super.barrierDismissible,
+    super.stiffness,
+  });
 }
 
 /// A raised slab for a question or a decision. Content and actions scroll together
@@ -367,7 +393,11 @@ class NeumorphicDialog extends StatelessWidget {
             child: SingleChildScrollView(
               clipBehavior: Clip.none,
               child: Semantics(
-                scopesRoute: true,
+                // On ui_core's dialog route the route is the dialog (its role and scope) and the title names it;
+                // elsewhere (a specimen on a page) the slab scopes its own.
+                scopesRoute: ModalRoute.of(context) is DesignDialogRoute
+                    ? null
+                    : true,
                 explicitChildNodes: true,
                 child: NeumorphicSurface(
                   cast: NeumorphicSurfaceLevel.slab,
@@ -1741,12 +1771,15 @@ NeumorphicRaised showNeumorphicTooltip(
   return handle;
 }
 
-/// Shows help on pointer hover, keyboard focus or a long press.
+/// Shows help on pointer hover, keyboard focus or a long press, on ui_core's [DesignTooltip]: the pointer may move
+/// onto the tip and it stays, Escape hides it, one shows at a time, and running the pointer along a row of keys reads
+/// each one's tip at once. The tip is the look's raised face, faded in above the control (below where there is no
+/// room), its tail never drawn.
 ///
 /// ```dart
 /// NeumorphicTooltip(message: 'Share', child: NeumorphicRoundButton(NeumorphicGlyphs.info, label: 'Share', onPressed: share))
 /// ```
-class NeumorphicTooltip extends StatefulWidget {
+class NeumorphicTooltip extends StatelessWidget {
   /// Creates a [NeumorphicTooltip].
   const NeumorphicTooltip({
     super.key,
@@ -1768,7 +1801,22 @@ class NeumorphicTooltip extends StatefulWidget {
   /// The hover delay before showing the tooltip.
   final Duration wait;
   @override
-  State<NeumorphicTooltip> createState() => _NeumorphicTooltipState();
+  Widget build(BuildContext context) => DesignTooltip(
+    message: message,
+    hoverDelay: wait,
+    tooltipBuilder: (context, tip) => FadeTransition(
+      opacity: tip.animation,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 280),
+        child: NeumorphicTooltipFace(message: message, style: style),
+      ),
+    ),
+    // The tip points at the child's middle: a round key under it stands its face there, not at its target's start.
+    child: NeumorphicFacePlace(
+      alignment: AlignmentDirectional.center,
+      child: child,
+    ),
+  );
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -1790,75 +1838,6 @@ class NeumorphicTooltip extends StatefulWidget {
         ),
       );
   }
-}
-
-class _NeumorphicTooltipState extends State<NeumorphicTooltip> {
-  NeumorphicRaised? _up;
-  Timer? _timer;
-  void _show() {
-    _timer?.cancel();
-    if (_up != null || !mounted) return;
-    final box = context.findRenderObject();
-    if (box is! RenderBox || !box.hasSize) return;
-    final up = showNeumorphicTooltip(
-      context,
-      message: widget.message,
-      style: widget.style,
-      anchor: box.localToGlobal(Offset.zero) & box.size,
-    );
-    _up = up;
-    up.closed.whenComplete(() {
-      if (identical(_up, up)) _up = null;
-    });
-  }
-
-  void _hide() {
-    _timer?.cancel();
-    _up?.dismiss();
-  }
-
-  @override
-  void dispose() {
-    _hide();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    tooltip: widget.message,
-    child: MouseRegion(
-      onEnter: (_) {
-        _timer?.cancel();
-        _timer = Timer(widget.wait, _show);
-      },
-      onExit: (_) => _hide(),
-      child: Focus(
-        canRequestFocus: false,
-        skipTraversal: true,
-        includeSemantics: false,
-        onFocusChange: (focused) {
-          if (focused &&
-              FocusManager.instance.highlightMode ==
-                  FocusHighlightMode.traditional) {
-            _show();
-          } else if (!focused) {
-            _hide();
-          }
-        },
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          excludeFromSemantics: true,
-          onLongPress: _show,
-          onLongPressUp: _hide,
-          // The tip points at the child's middle: a round key under it stands its face there, not at its target's start.
-          child: NeumorphicFacePlace(
-            alignment: AlignmentDirectional.center,
-            child: widget.child,
-          ),
-        ),
-      ),
-    ),
-  );
 }
 
 /// A soft notice with a tone glyph, an optional action and a dismiss button.

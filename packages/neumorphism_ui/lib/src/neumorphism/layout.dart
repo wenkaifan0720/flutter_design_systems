@@ -654,7 +654,7 @@ class RenderNeumorphicEqualRow extends RenderBox
 /// A row on the 12-column grid: `NeumorphicRow(spans: [7, 5], children: [a, b])`. From 1024 wide the sections sit side by side
 /// and share a height, with 28 gutters, the air a soft shadow needs. Below that they stack with 28 between. It is the only
 /// layout decision a page makes; a list beside the item it opens brings it down to a tablet with [from]. Spans are
-/// shares of the row: [6, 6] and [1, 1] are both halves, and the row is always filled. Tab walks each section to its end before the next.
+/// shares of the row: `[6, 6]` and `[1, 1]` are both halves, and the row is always filled. Tab walks each section to its end before the next.
 ///
 /// ```dart
 /// NeumorphicRow(spans: [8, 4], children: [Text('Main'), Text('Aside')])

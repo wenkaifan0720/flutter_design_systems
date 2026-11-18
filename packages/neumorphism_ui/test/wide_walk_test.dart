@@ -265,11 +265,7 @@ void main() {
               label: 'Add',
               onPressed: () {},
             ),
-            NeumorphicNumberField(
-              value: '2',
-              onDecrease: () {},
-              onIncrease: () {},
-            ),
+            NeumorphicNumberField(value: 2, onChanged: (_) {}),
             NeumorphicRating(label: 'Rating', value: 3, onChanged: (_) {}),
             NeumorphicDatePicker(
               value: DateTime(2026, 11, 12),
@@ -307,9 +303,10 @@ void main() {
       // The number field keeps its keys within 200 of its start (the face the width check finds round them is the
       // card it stands in: shared_checks_test names that read).
       expect(tester.getRect(keys.last).right, lessThanOrEqualTo(48 + 200.5));
+      // Each star's target: the item DesignRating keys for its pointer.
       final stars = find.descendant(
         of: find.byType(NeumorphicRating),
-        matching: find.byType(NeumorphicTap),
+        matching: find.byType(KeyedSubtree),
       );
       expect(
         tester.getRect(stars.first).left,

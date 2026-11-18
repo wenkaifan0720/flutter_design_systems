@@ -98,11 +98,8 @@ final _parts = <String, Widget Function()>{
     onPressed: _hit,
     child: Text('Basic'),
   ),
-  'NeumorphicNumberField': () => const NeumorphicNumberField(
-    value: '2',
-    onDecrease: _hit,
-    onIncrease: _hit,
-  ),
+  'NeumorphicNumberField': () =>
+      NeumorphicNumberField(value: 2, onChanged: (_) => _hit()),
   'NeumorphicDisclosure': () => NeumorphicDisclosure(
     title: 'Details',
     expanded: false,
@@ -141,6 +138,7 @@ const _cursors = <String, MouseCursor>{
   'NeumorphicSearchField': SystemMouseCursors.text,
   'NeumorphicTextArea': SystemMouseCursors.text,
   'NeumorphicInputOtp': SystemMouseCursors.text,
+  'NeumorphicNumberField': SystemMouseCursors.text,
   'NeumorphicSlider': SystemMouseCursors.grab,
 };
 
@@ -430,7 +428,11 @@ void main() {
         await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await tester.pumpAndSettle();
         // A control lifts round its own outline (`_FocusLift`, `_Lift`), the slider round its thumb (`_ThumbLift`); a
-        // field, a code's cell and the wheel deepen their groove instead (`_CastPainter.focus`). Never a stroke.
+        // field, a code's cell and the wheel deepen their groove instead (`_CastPainter.focus`), and the number field's
+        // bare figure, a field with no groove at rest, sinks into a well (`_PressRelief`). Never a stroke.
+        final sunk = name == 'NeumorphicNumberField'
+            ? _painted('_PressRelief')
+            : const <(CustomPainter, Size, Element)>[];
         final lifts = [
           ..._painted('_FocusLift'),
           ..._painted('_Lift'),
@@ -442,7 +444,7 @@ void main() {
               ((painter as dynamic).focus as double) > 0;
         });
         expect(
-          lifts.isNotEmpty || deepened.isNotEmpty,
+          lifts.isNotEmpty || deepened.isNotEmpty || sunk.isNotEmpty,
           isTrue,
           reason: '$name: focus shows nothing',
         );

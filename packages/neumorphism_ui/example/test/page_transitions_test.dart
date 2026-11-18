@@ -5,8 +5,8 @@
 // puts it in its own ThemeData. On iOS the map keeps the swipe back from the screen's leading edge round the look's
 // push (ui_core's DesignSwipeBackPageTransitionsBuilder). ui_core's example/test/page_transitions_test.dart, with the
 // look's map.
-import 'package:flutter/cupertino.dart' show CupertinoPageTransition;
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransition;
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:neumorphism_ui/neumorphism_ui.dart'
     show neumorphicPageTransitions;

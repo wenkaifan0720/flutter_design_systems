@@ -919,10 +919,10 @@ class _LiveExampleState extends State<LiveExample> {
       ),
       NeumorphicNumberField(
         key: const Key('live-stepper'),
-        value: '$_people',
+        value: _people.toDouble(),
+        min: 1,
         unit: 'people',
-        onDecrease: _people == 1 ? null : () => setState(() => _people--),
-        onIncrease: () => setState(() => _people++),
+        onChanged: (value) => setState(() => _people = (value ?? 1).round()),
       ),
       _stack([
         ExcludeSemantics(

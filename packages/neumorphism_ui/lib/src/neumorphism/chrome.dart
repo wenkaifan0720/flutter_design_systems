@@ -869,13 +869,25 @@ class NeumorphicNavigationBar extends StatelessWidget {
 
   /// An optional prominent action placed among the destinations.
   final ShellAction? action;
+
+  /// How far the chosen plate stands in from the bar's shoulders, at the top and the ends alike.
+  static const double _plateInset = 12;
   @override
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context);
     final c = t.colors;
     final bottom = MediaQuery.paddingOf(context).bottom;
+    // The chosen plate stands one inset in from the bar's shoulders, the same at the top and the ends, and rounds by the
+    // shoulders' corner less that inset: concentric in the bar, as a face moved in from its holder is. At 16 in from the
+    // ends under 12 from the top, a control's 12 corner sat inside the shoulders' 20 out of round with them.
+    const inset = _plateInset;
     final tabs = Padding(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, bottom > 26 ? bottom : 26),
+      padding: EdgeInsets.fromLTRB(
+        inset,
+        inset,
+        inset,
+        bottom > 26 ? bottom : 26,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -891,6 +903,10 @@ class NeumorphicNavigationBar extends StatelessWidget {
             Expanded(
               child: _Tab(
                 style: style,
+                radius: math.max(
+                  NeumorphicRadii.least,
+                  NeumorphicRadii.slab - inset,
+                ),
                 item: items[i],
                 on: i == selectedIndex,
                 onPressed: onDestinationSelected == null
@@ -1012,7 +1028,11 @@ class _Tab extends StatelessWidget {
     required this.on,
     this.onPressed,
     this.style,
+    this.radius = NeumorphicRadii.control,
   });
+
+  /// The plate's corner: a control's, or concentric with the bar it stands in.
+  final double radius;
   final VoidCallback? onPressed;
   final NeumorphicNavItem item;
   final bool on;
@@ -1021,6 +1041,7 @@ class _Tab extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = NeumorphicTheme.of(context), c = t.colors;
     return NeumorphicTap(
+      radius: radius,
       label: item.label,
       semanticValue: item.badgeLabel ?? item.badge,
       key: item.key,
@@ -1095,6 +1116,7 @@ class _Tab extends StatelessWidget {
                   cast: on
                       ? NeumorphicSurfaceLevel.groove
                       : NeumorphicSurfaceLevel.part,
+                  radius: radius,
                   style: style,
                   themeStyle: t.segmentedButtonTheme,
                   states: states,
