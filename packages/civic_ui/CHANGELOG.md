@@ -1,3 +1,19 @@
+## 0.2.1
+
+Fixes for what a reader sees, from a look at 0.2.0 in the gallery.
+
+- The side navigation (from 1024 wide) is as wide as its words need at the reader's text size, from 240 to a third of
+  the window: at twice the text the service's name and the places wrap by words, never inside one, and the app's act
+  ("Apply for a permit") stands on one line at the reader's own size. The choice moving along the places leaves its
+  width alone.
+- More tabs than fit (a phone at twice the text) say so: the strip fades at an edge with tabs past it, and a chevron
+  there points on, mirrored right to left.
+- Right to left, a tab's words no longer settle as it is chosen: an underlined label's words stand lifted clear of
+  the underline, and a chosen label's now stand there too.
+- A keyboard focus reads by night: the bar under the yellow plate meets the page in the words' light ink where the
+  plate's dark ink would vanish into the dark ground, 3:1 against the page either way (`CivicThemeData.focusBar`).
+- The gallery's app frame names its service one way.
+
 ## 0.2.0
 
 Needs ui_core 0.3.0. Civic stops writing what ui_core now does, and keeps its painting: it looks as it did and moves

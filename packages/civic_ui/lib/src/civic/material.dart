@@ -90,7 +90,7 @@ class CivicFace extends StatelessWidget {
             press: press,
             focus: focus,
             focusColor: t.focus,
-            barColor: t.onFocus,
+            barColor: t.focusBar,
             side: side,
           ),
           child: child,

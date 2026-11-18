@@ -261,7 +261,7 @@ class _SkipLinkState extends State<_SkipLink> {
                   press: 0,
                   focus: 1,
                   focusColor: t.focus,
-                  barColor: t.onFocus,
+                  barColor: t.focusBar,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(

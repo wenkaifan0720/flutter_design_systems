@@ -69,7 +69,7 @@ class CivicListOption extends StatelessWidget {
         press: 0,
         focus: focused ? 1 : 0,
         focusColor: t.focus,
-        barColor: t.onFocus,
+        barColor: t.focusBar,
       ),
       foregroundPainter: chosen
           ? _ChosenRule(

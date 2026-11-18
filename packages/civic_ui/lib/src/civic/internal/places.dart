@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -217,7 +218,10 @@ class CivicPlacesRail extends StatelessWidget {
 }
 
 /// The site's side navigation down the start of the page on its ground:
-/// [header] over [places] over [footer].
+/// [header] over [places] over [footer]. It is 240 wide, or as wide as its
+/// words need at the reader's text size, to a third of the window: every
+/// word of a place and of the header whole (they wrap by words), and the
+/// footer (the app's act) on one line.
 class CivicPlacesSide extends StatelessWidget {
   /// The side navigation of [places].
   const CivicPlacesSide({
@@ -250,38 +254,133 @@ class CivicPlacesSide extends StatelessWidget {
       explicitChildNodes: true,
       child: ColoredBox(
         color: DesignStyleOf(styles, const {}).fill ?? t.ground,
-        child: SizedBox(
-          width: CivicChromeMetrics.sideNavigation,
-          child: ListView(
+        child: _WordsWide(
+          least: CivicChromeMetrics.sideNavigation,
+          most: MediaQuery.sizeOf(context).width / 3,
+          child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(vertical: CivicSpacing.s24),
-            children: [
-              if (head != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    CivicSpacing.s20,
-                    0,
-                    CivicSpacing.s20,
-                    CivicSpacing.s16,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (head != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      CivicSpacing.s20,
+                      0,
+                      CivicSpacing.s20,
+                      CivicSpacing.s16,
+                    ),
+                    child: head,
                   ),
-                  child: head,
-                ),
-              ...places,
-              if (foot != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    CivicSpacing.s20,
-                    CivicSpacing.s16,
-                    CivicSpacing.s20,
-                    0,
+                ...places,
+                if (foot != null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      CivicSpacing.s20,
+                      CivicSpacing.s16,
+                      CivicSpacing.s20,
+                      0,
+                    ),
+                    child: _WholeLine(child: foot),
                   ),
-                  child: foot,
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+}
+
+// Lays its child out as wide as its words need (its least intrinsic width:
+// every word whole), from [least] to [most].
+class _WordsWide extends SingleChildRenderObjectWidget {
+  const _WordsWide({
+    required this.least,
+    required this.most,
+    required super.child,
+  });
+
+  final double least;
+  final double most;
+
+  @override
+  _RenderWordsWide createRenderObject(BuildContext context) =>
+      _RenderWordsWide(least, most);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderWordsWide box) {
+    box
+      ..least = least
+      ..most = most;
+  }
+}
+
+class _RenderWordsWide extends RenderProxyBox {
+  _RenderWordsWide(this._least, this._most);
+
+  double get least => _least;
+  double _least;
+  set least(double value) {
+    if (value == _least) return;
+    _least = value;
+    markNeedsLayout();
+  }
+
+  double get most => _most;
+  double _most;
+  set most(double value) {
+    if (value == _most) return;
+    _most = value;
+    markNeedsLayout();
+  }
+
+  double _width() {
+    // Whole pixels: the words' width up, the most down.
+    final words = (child?.getMinIntrinsicWidth(double.infinity) ?? 0)
+        .ceilToDouble();
+    return math.max(least, math.min(words, most.floorToDouble()));
+  }
+
+  BoxConstraints _for(BoxConstraints constraints) =>
+      BoxConstraints.tightFor(width: _width()).enforce(constraints);
+
+  @override
+  double computeMinIntrinsicWidth(double height) => _width();
+
+  @override
+  double computeMaxIntrinsicWidth(double height) => _width();
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) =>
+      child?.getDryLayout(_for(constraints)) ?? _for(constraints).smallest;
+
+  @override
+  void performLayout() {
+    final box = child;
+    if (box == null) {
+      size = _for(constraints).smallest;
+      return;
+    }
+    box.layout(_for(constraints), parentUsesSize: true);
+    size = box.size;
+  }
+}
+
+// Its child, its least intrinsic width its whole line's: the side
+// navigation widens for it to stand on one line.
+class _WholeLine extends SingleChildRenderObjectWidget {
+  const _WholeLine({required super.child});
+
+  @override
+  _RenderWholeLine createRenderObject(BuildContext context) =>
+      _RenderWholeLine();
+}
+
+class _RenderWholeLine extends RenderProxyBox {
+  @override
+  double computeMinIntrinsicWidth(double height) =>
+      child?.getMaxIntrinsicWidth(height) ?? 0;
 }
 
 /// A place's face in the band or the rail ([rail]): its glyph over its
@@ -358,7 +457,7 @@ class CivicBarPlace extends StatelessWidget {
                 press: 0,
                 focus: focus,
                 focusColor: t.focus,
-                barColor: t.onFocus,
+                barColor: t.focusBar,
               ),
               foregroundPainter: _TopBar(
                 amount: on,
@@ -535,7 +634,7 @@ class CivicSidePlace extends StatelessWidget {
                 press: 0,
                 focus: focus,
                 focusColor: t.focus,
-                barColor: t.onFocus,
+                barColor: t.focusBar,
               ),
               foregroundPainter: _StartRule(
                 width: rule,
@@ -558,16 +657,30 @@ class CivicSidePlace extends StatelessWidget {
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          label,
-                          style: text.body
-                              .merge(so.textStyle)
-                              .copyWith(
-                                color: ink,
-                                fontWeight: selected
-                                    ? FontWeight.w700
-                                    : FontWeight.w400,
-                              ),
+                        // Its longest word in bold, chosen or not: the
+                        // side navigation, as wide as its words, keeps its
+                        // width as the choice moves.
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minWidth: _longestWord(
+                              context,
+                              label,
+                              text.body
+                                  .merge(so.textStyle)
+                                  .copyWith(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                          child: Text(
+                            label,
+                            style: text.body
+                                .merge(so.textStyle)
+                                .copyWith(
+                                  color: ink,
+                                  fontWeight: selected
+                                      ? FontWeight.w700
+                                      : FontWeight.w400,
+                                ),
+                          ),
                         ),
                       ),
                     ],
@@ -580,6 +693,19 @@ class CivicSidePlace extends StatelessWidget {
       },
     );
   }
+}
+
+// The widest word of [label] in [style], at the reader's text size.
+double _longestWord(BuildContext context, String label, TextStyle style) {
+  final painter = TextPainter(
+    text: TextSpan(text: label, style: style),
+    textDirection: Directionality.of(context),
+    textScaler: MediaQuery.textScalerOf(context),
+    locale: Localizations.maybeLocaleOf(context),
+  )..layout();
+  final width = painter.minIntrinsicWidth;
+  painter.dispose();
+  return width.ceilToDouble();
 }
 
 class _StartRule extends CustomPainter {

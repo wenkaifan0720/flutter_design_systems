@@ -79,6 +79,39 @@ void main() {
       }
     });
 
+    // The focus plate's ink bar meets the page under it: by day the
+    // plate's dark ink, by night (where that ink would vanish into the dark
+    // page) the words' light ink, 3:1 against the ground and a card either
+    // way, so a focus reads by night as by day; on any plate an app gives.
+    test('a focus reads by night as by day: its bar 3:1 on the page', () {
+      for (final focus in const [null, Color(0xFFFFB84D), Color(0xFFFFE066)]) {
+        for (final b in Brightness.values) {
+          final t = CivicThemeData.from(brightness: b, focus: focus);
+          for (final (name, page) in [
+            ('ground', t.ground),
+            ('background', t.background),
+          ]) {
+            expect(
+              CivicThemeData.contrastRatio(t.focusBar, page),
+              greaterThanOrEqualTo(3),
+              reason: '${b.name} $focus on $name',
+            );
+          }
+        }
+        expect(
+          CivicThemeData.from(
+            brightness: Brightness.light,
+            focus: focus,
+          ).focusBar,
+          CivicThemeData.from(
+            brightness: Brightness.light,
+            focus: focus,
+          ).onFocus,
+          reason: 'by day the bar is the plate\'s ink',
+        );
+      }
+    });
+
     test('refuses a focus plate that cannot carry ink words', () {
       expect(
         () => CivicThemeData.from(

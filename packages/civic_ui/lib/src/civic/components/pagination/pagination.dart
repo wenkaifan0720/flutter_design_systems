@@ -278,7 +278,7 @@ class _PageNumber extends StatelessWidget {
                     press: 0,
                     focus: focus,
                     focusColor: t.focus,
-                    barColor: t.onFocus,
+                    barColor: t.focusBar,
                   ),
                   child: square(
                     fill: t.focus.withValues(alpha: 0),

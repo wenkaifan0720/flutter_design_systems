@@ -146,7 +146,7 @@ class _CivicDetailsState extends State<CivicDetails> {
                 press: 0,
                 focus: focus,
                 focusColor: t.focus,
-                barColor: t.onFocus,
+                barColor: t.focusBar,
               ),
               child: Padding(
                 padding: const EdgeInsets.only(bottom: CivicMetrics.bar),

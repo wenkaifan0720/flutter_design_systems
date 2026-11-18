@@ -745,8 +745,20 @@ final class CivicThemeData with Diagnosticable {
   /// The focus plate: what floods a focused part.
   final Color focus;
 
-  /// Words and the bar on [focus].
+  /// Words on [focus], and the ink bar under it where that reads against the
+  /// page ([focusBar]).
   final Color onFocus;
+
+  /// The ink bar a keyboard focus lays under its yellow plate, where it
+  /// meets the page: [onFocus] where that stands 3:1 against both [ground]
+  /// and [background] (by day), else [textPrimary] (by night, where the
+  /// plate's dark ink would vanish into the dark page), so a focus reads by
+  /// night as by day.
+  Color get focusBar =>
+      contrastRatio(onFocus, ground) >= 3 &&
+          contrastRatio(onFocus, background) >= 3
+      ? onFocus
+      : textPrimary;
 
   /// A part's face when it cannot be used.
   final Color disabledFill;

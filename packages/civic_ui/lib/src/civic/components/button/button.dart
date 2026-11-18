@@ -291,7 +291,7 @@ class CivicButton extends StatelessWidget {
                         press: press,
                         focus: focus,
                         focusColor: t.focus,
-                        barColor: t.onFocus,
+                        barColor: t.focusBar,
                         side: disabled ? null : so.side,
                         radius: CivicMetrics.corner,
                       ),

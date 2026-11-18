@@ -108,7 +108,7 @@ class CivicIconButton extends StatelessWidget {
                   press: 0,
                   focus: focus,
                   focusColor: t.focus,
-                  barColor: t.onFocus,
+                  barColor: t.focusBar,
                   radius: CivicMetrics.corner,
                 ),
                 child: SizedBox.fromSize(

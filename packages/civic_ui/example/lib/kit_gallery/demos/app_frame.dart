@@ -34,7 +34,7 @@ class _FrameState extends State<_Frame> {
       places: _places,
       selectedIndex: _index,
       onSelected: (i) => setState(() => _index = i),
-      brand: 'Brindlemere permits',
+      brand: 'Brindlemere parking permits',
       action: CivicShellAction(
         icon: LucideIcons.plus,
         label: 'Apply for a permit',
@@ -43,7 +43,9 @@ class _FrameState extends State<_Frame> {
       ),
       child: CivicScreen(
         skipLinkLabel: 'Skip to main content',
-        topBar: const CivicTopBar(title: 'Brindlemere parking permits'),
+        // The service is named once, over its places from 1024 wide; the bar
+        // names the place, as the gallery's own app does.
+        topBar: CivicTopBar(title: _places[_index].label),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

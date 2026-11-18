@@ -232,7 +232,7 @@ class CivicListRow extends StatelessWidget {
                         press: 0,
                         focus: focus,
                         focusColor: t.focus,
-                        barColor: t.onFocus,
+                        barColor: t.focusBar,
                       ),
                       child: body(states, focus),
                     ),
