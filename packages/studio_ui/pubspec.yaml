@@ -1,0 +1,58 @@
+name: studio_ui
+description: >-
+  A Flutter design system that makes an app a piece of studio gear: brushed anodised panels, glass displays set into them, and keys that latch and light up amber.
+version: 0.1.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/studio/
+repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/studio_ui
+issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
+topics:
+  - design-system
+  - widgets
+  - ui
+  - theme
+screenshots:
+  - description: "Roomtone, Studio's example podcast app, by day - its home at 1440 px beside the same page on a 390 px phone."
+    path: screenshots/hero_home_day.webp
+  - description: "The library at 1440 px by night, the episodes beside the player's glass readouts, transport keys and speeds."
+    path: screenshots/library_1440_night.webp
+  - description: "The recorder on a 390 px phone by night - level meters behind dark glass, the gain fader and a knob."
+    path: screenshots/record_390_night.webp
+  - description: "Settings on a phone by day - switches thrown in their slots, a select, the key bank under the page."
+    path: screenshots/settings_390_day.webp
+  - description: "The gallery's overview at 1440 px by day, the side panel of places and the live player beside the screens."
+    path: screenshots/overview_1440_day.webp
+
+environment:
+  sdk: ">=3.13.0 <4.0.0"
+  flutter: ">=3.47.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ui_core: ^0.3.0
+  material_ui: ^1.9.0
+  cupertino_ui: ^1.0.0
+  lucide_icons_flutter: ">=3.1.25 <5.0.0"
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  leak_tracker_flutter_testing: any
+  ui_core_test: ^0.1.0
+
+flutter:
+  fonts:
+
+    - family: Barlow
+      fonts:
+        - asset: assets/fonts/Barlow-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Barlow-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Barlow-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Barlow-Bold.ttf
+          weight: 700
