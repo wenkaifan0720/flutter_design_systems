@@ -2,7 +2,9 @@
 /// buttons in each variant, live.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -85,7 +87,7 @@ List<MinimalMenuItem> _publish(BuildContext context) => [
   MinimalMenuItem(
     'Save as draft',
     icon: LucideIcons.fileText,
-    shortcut: '⌘ S',
+    shortcut: _command(LogicalKeyboardKey.keyS),
     onPressed: () => showMinimalSnackBar(context, 'Saved'),
   ),
   MinimalMenuItem(
@@ -196,3 +198,12 @@ Widget kitSpecimenSplitButton() => Builder(
     ),
   ),
 );
+
+/// A command's shortcut on the platform's own command key: ⌘ on a Mac or
+/// an iPad, Ctrl elsewhere.
+SingleActivator _command(LogicalKeyboardKey key, {bool shift = false}) {
+  final apple =
+      defaultTargetPlatform == TargetPlatform.macOS ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+  return SingleActivator(key, meta: apple, control: !apple, shift: shift);
+}

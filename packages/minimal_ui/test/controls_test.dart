@@ -273,6 +273,42 @@ void main() {
     }
   });
 
+  testWidgets('on a wide window an action sheet stands centred at a sheet\'s '
+      'width; on a phone it spans the screen inside its margins', (
+    tester,
+  ) async {
+    addTearDown(tester.view.reset);
+    tester.view.devicePixelRatio = 1;
+    for (final width in [1440.0, 390.0]) {
+      tester.view.physicalSize = Size(width, 900);
+      await tester.pumpWidget(
+        _host(
+          Builder(
+            builder: (context) => MinimalButton(
+              'Open',
+              onPressed: () => showMinimalActionSheet(
+                context,
+                title: 'IMG_2041.jpg',
+                actions: [MinimalActionSheetAction('Share', onPressed: () {})],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      final card = tester.getRect(find.byType(MinimalActionSheet));
+      if (width > 600) {
+        expect(card.width, MinimalBottomSheet.centredWidth);
+        expect(card.center.dx, width / 2);
+      } else {
+        expect(card.width, width - 2 * MinimalChromeMetrics.sheetInset);
+      }
+      Navigator.of(tester.element(find.text('Share'))).pop();
+      await tester.pumpAndSettle();
+    }
+  });
+
   testWidgets('a toast\'s action keeps its whole 44 px target', (tester) async {
     var undone = 0;
     await tester.pumpWidget(

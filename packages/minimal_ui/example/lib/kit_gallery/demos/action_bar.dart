@@ -5,7 +5,7 @@
 /// own, so the dock never cuts the strips above it.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 
 import '../kit.dart';

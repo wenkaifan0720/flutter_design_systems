@@ -11,7 +11,7 @@
 /// to author with.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
@@ -371,21 +371,30 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
     Builder(
       builder: (page) {
         final direction = Directionality.maybeOf(page);
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          theme: kitAppTheme,
-          builder: (context, child) {
-            final host = MinimalHost(
-              light: kitTheme(Brightness.light),
-              dark: kitTheme(Brightness.dark),
-              brightness: brightness,
-              child: child ?? const SizedBox.shrink(),
-            );
-            return direction == null
-                ? host
-                : Directionality(textDirection: direction, child: host);
-          },
-          home: home,
+        // A demo's own app stands in a semantics container of its own (as
+        // KitRouteFrame's navigator does): the route under it stands a modal
+        // barrier, which hides from a screen reader whatever painted before
+        // it in its container. Without one, on material_ui's MaterialApp,
+        // the Navigation page's shell window took the top bars and the menu
+        // bar above it out of the page's semantics.
+        return Semantics(
+          container: true,
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: kitAppTheme,
+            builder: (context, child) {
+              final host = MinimalHost(
+                light: kitTheme(Brightness.light),
+                dark: kitTheme(Brightness.dark),
+                brightness: brightness,
+                child: child ?? const SizedBox.shrink(),
+              );
+              return direction == null
+                  ? host
+                  : Directionality(textDirection: direction, child: host);
+            },
+            home: home,
+          ),
         );
       },
     );

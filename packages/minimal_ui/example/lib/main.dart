@@ -2,8 +2,7 @@
 // made yours. The sidebar (a drawer on a phone) moves between the pages; the bar on top opens the Customize panel and
 // switches the appearance, and every page takes the theme the panel sets. Each page stacks the gallery's own demos.
 import 'package:flutter/foundation.dart' show SynchronousFuture;
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';

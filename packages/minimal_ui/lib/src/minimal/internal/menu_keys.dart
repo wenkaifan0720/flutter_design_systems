@@ -2,16 +2,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 /// The menu-button pattern's opening keys: a control that opens a menu
-/// opens it on Enter and Space (its press) and on Down, and a context menu
-/// on Shift+F10 or the context-menu key.
+/// opens it on Enter and Space (its press) and on Down. (A context menu's
+/// keys, Shift+F10 and the context-menu key, are ui_core's.)
 final Set<LogicalKeyboardKey> _openingKeys = {
   LogicalKeyboardKey.enter,
   LogicalKeyboardKey.numpadEnter,
   LogicalKeyboardKey.space,
   LogicalKeyboardKey.select,
   LogicalKeyboardKey.arrowDown,
-  LogicalKeyboardKey.f10,
-  LogicalKeyboardKey.contextMenu,
 };
 
 /// Whether a menu opening now was opened from the keyboard: one of the keys

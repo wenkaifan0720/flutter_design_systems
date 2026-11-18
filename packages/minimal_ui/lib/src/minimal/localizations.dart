@@ -437,7 +437,7 @@ class MinimalLocalizationsEn extends MinimalLocalizations {
   @override
   String get loading => shared.loadingLabel;
   @override
-  String get tryAgain => 'Try again';
+  String get tryAgain => shared.retryButtonLabel;
   @override
   String get search => shared.searchFieldLabel;
   @override

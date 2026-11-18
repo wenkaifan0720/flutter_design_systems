@@ -6,8 +6,7 @@ import 'package:flutter/widgets.dart';
 import '../chrome_metrics.dart';
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
-import '../internal/controls.dart';
-import '../internal/face.dart';
+import '../internal/button_paint.dart';
 import '../internal/styled.dart';
 import '../theme.dart';
 import 'pressable.dart';
@@ -125,82 +124,32 @@ class MinimalButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final themed = switch (variant) {
-      MinimalButtonVariant.primary => t.components.primaryButton,
-      MinimalButtonVariant.secondary => t.components.secondaryButton,
-      MinimalButtonVariant.ghost => t.components.ghostButton,
-      MinimalButtonVariant.destructive => t.components.destructiveButton,
-    };
-    final layers = <MinimalStyle?>[style, themed];
-
-    final (bg, fg, borderColor) = switch (variant) {
-      MinimalButtonVariant.primary => (t.primary, t.primaryForeground, null),
-      MinimalButtonVariant.secondary => (t.card, t.foreground, t.border),
-      MinimalButtonVariant.ghost => (null, t.foreground, null),
-      MinimalButtonVariant.destructive => (
-        t.destructive,
-        t.destructiveForeground,
-        null,
-      ),
-    };
-
-    final (height, hPad, iconSize, type) = switch (size) {
-      MinimalButtonSize.small => (
-        MinimalChromeMetrics.controlSm,
-        MinimalChromeMetrics.buttonPadSm,
-        MinimalIconSize.i14,
-        t.control,
-      ),
-      MinimalButtonSize.medium => (
-        MinimalChromeMetrics.control,
-        MinimalSpacing.s12,
-        MinimalIconSize.i16,
-        t.control,
-      ),
-      MinimalButtonSize.large => (
-        MinimalChromeMetrics.controlLg,
-        MinimalSpacing.s16,
-        MinimalIconSize.i16,
-        t.body.medium,
-      ),
-    };
-
+    final paint = MinimalButtonPaint.of(
+      context,
+      tone: switch (variant) {
+        MinimalButtonVariant.primary => MinimalButtonTone.primary,
+        MinimalButtonVariant.secondary => MinimalButtonTone.secondary,
+        MinimalButtonVariant.ghost => MinimalButtonTone.ghost,
+        MinimalButtonVariant.destructive => MinimalButtonTone.destructive,
+      },
+      scale: switch (size) {
+        MinimalButtonSize.small => MinimalButtonScale.small,
+        MinimalButtonSize.medium => MinimalButtonScale.medium,
+        MinimalButtonSize.large => MinimalButtonScale.large,
+      },
+      style: style,
+    );
+    final bg = paint.bg;
+    final fg = paint.fg;
     final lead = leading;
-    final rest = MinimalStyleOf(layers, const {});
+    final rest = paint.rest;
 
-    Widget face(BuildContext context, Set<WidgetState> states) {
-      final so = MinimalStyleOf(layers, states);
-      final least = so.minimumSize;
-      // The face lerps to each state (Minimal's short plain fade).
-      return MinimalFace(
-        ink: so.foreground ?? fg,
-        constraints: BoxConstraints(
-          minWidth: least?.width ?? 0,
-          minHeight:
-              least?.height ??
-              minimalGrownHeight(context, t.density.height(height)),
-        ),
-        width: expand ? double.infinity : null,
-        // The label's line (16) and its padding stay under the smallest
-        // height (24: a small button at compact density) with a rim or
-        // without, so every variant takes the density's height and a row
-        // of them shares one; a larger text scale still grows it.
-        padding:
-            so.paddingIn(context) ??
-            t.density.padding(
-              EdgeInsets.symmetric(
-                horizontal: hPad,
-                vertical: MinimalSpacing.s2,
-              ),
-            ),
-        decoration: minimalFrame(
-          so.shape ?? t.shapes.small,
-          fill: so.fill ?? bg,
-          side: so.rim(borderColor, t.rim),
-        ),
-        builder: (context, ink) => _face(so, ink ?? fg, lead, iconSize, type),
-      );
-    }
+    Widget face(BuildContext context, Set<WidgetState> states) => paint.face(
+      context,
+      states,
+      expand: expand,
+      content: (so, ink) => _face(so, ink, lead, paint.iconSize, paint.type),
+    );
 
     // Busy, the face keeps its resting strength (no dimming: busy is not
     // disabled) and takes no presses; a screen reader hears an unavailable

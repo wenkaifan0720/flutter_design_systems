@@ -5,8 +5,10 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../internal/cap_label.dart';
 import '../internal/controls.dart';
@@ -289,8 +291,6 @@ class _SeriesChart extends StatefulWidget {
 }
 
 class _SeriesChartState extends State<_SeriesChart> {
-  int? _at;
-  bool _focused = false;
   final _ChartWords _words = _ChartWords();
 
   @override
@@ -368,52 +368,6 @@ class _SeriesChartState extends State<_SeriesChart> {
     );
   }
 
-  int _indexAt(double dx, double width, double axis, double end) {
-    final n = _count;
-    if (n <= 1) return 0;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final plot = width - axis - end;
-    if (plot <= 0) return 0;
-    final x = rtl ? width - axis - dx : dx - axis;
-    return (x / plot * (n - 1)).round().clamp(0, n - 1);
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
-    final n = _count;
-    if (n == 0) return KeyEventResult.ignored;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final key = event.logicalKey;
-    final forward = rtl
-        ? LogicalKeyboardKey.arrowLeft
-        : LogicalKeyboardKey.arrowRight;
-    final back = rtl
-        ? LogicalKeyboardKey.arrowRight
-        : LogicalKeyboardKey.arrowLeft;
-    if (key == forward) {
-      setState(() => _at = ((_at ?? -1) + 1).clamp(0, n - 1));
-    } else if (key == back) {
-      setState(() => _at = ((_at ?? n) - 1).clamp(0, n - 1));
-    } else if (key == LogicalKeyboardKey.escape) {
-      setState(() => _at = null);
-    } else {
-      return KeyEventResult.ignored;
-    }
-    return KeyEventResult.handled;
-  }
-
-  String _readout(int i) {
-    final names = widget.labels;
-    final head = names != null && i < names.length ? '${names[i]}: ' : '';
-    return head +
-        [
-          for (final s in widget.series)
-            if (i < s.values.length) '${s.name} ${widget.format(s.values[i])}',
-        ].join(', ');
-  }
-
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
@@ -473,109 +427,120 @@ class _SeriesChartState extends State<_SeriesChart> {
         ),
       );
     } else {
-      final at = _at;
       final (:axis, :end) = _gutters(figure, scaler);
-      plot = LayoutBuilder(
-        builder: (context, box) {
-          final width = box.maxWidth;
-          final span = width - axis - end;
-          int index(double dx) => _indexAt(dx, width, axis, end);
-          final painted = CustomPaint(
-            size: Size(width, whole),
-            painter: _SeriesPainter(
-              series: [for (final s in widget.series) s.values],
-              colours: colours,
-              labels: widget.labels,
-              area: widget.area,
-              at: at,
-              format: widget.format,
-              rule: t.border,
-              guide: t.textTertiary,
-              ground: t.card,
-              figure: figure,
-              stroke: t.hairline,
-              axis: axis,
-              end: end,
-              figureGap: _figureGap,
-              head: head,
-              strip: strip,
-              labelGap: _labelGap,
-              rtl: Directionality.of(context) == TextDirection.rtl,
-              scaler: scaler,
-              words: _words,
-            ),
-          );
-          // Reading a line is aiming at a point: the crosshair.
-          return MouseRegion(
-            cursor: SystemMouseCursors.precise,
-            onHover: (e) => setState(() => _at = index(e.localPosition.dx)),
-            onExit: (_) => setState(() => _at = null),
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTapDown: (d) => setState(() => _at = index(d.localPosition.dx)),
-              onHorizontalDragUpdate: (d) =>
-                  setState(() => _at = index(d.localPosition.dx)),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  painted,
-                  if (at != null)
-                    _ReadoutCard(
-                      label: widget.labels != null && at < widget.labels!.length
-                          ? widget.labels![at]
-                          : null,
-                      rows: [
-                        for (var s = 0; s < widget.series.length; s++)
-                          if (at < widget.series[s].values.length)
-                            (
-                              widget.series[s].name,
-                              widget.format(widget.series[s].values[at]),
-                              colours[s],
-                            ),
-                      ],
-                      x: n <= 1 ? axis + span / 2 : axis + span * at / (n - 1),
-                      width: width,
-                    ),
+      final labels = widget.labels;
+      // ui_core picks the point (a pointer along x, a finger's scrub, the
+      // keys), says it and the data, and holds the focus; Minimal's painter
+      // keeps its own plot, which the padding hands ui_core: the gutters
+      // at the sides, half a figure's line over it, the labels under it.
+      plot = SizedBox(
+        height: whole,
+        child: DesignChart(
+          semanticLabel:
+              widget.semanticLabel ??
+              [for (final s in widget.series) s.name].join(', '),
+          series: [
+            for (final s in widget.series)
+              DesignChartSeries(
+                label: s.name,
+                points: [
+                  for (var i = 0; i < s.values.length; i++)
+                    DesignChartPoint(i.toDouble(), s.values[i]),
                 ],
               ),
-            ),
-          );
-        },
+          ],
+          // One point stands in the middle, as the painter draws it.
+          xAxis: n <= 1 ? DesignChartXAxis.band : DesignChartXAxis.linear,
+          padding: EdgeInsetsDirectional.fromSTEB(axis, head, end, strip),
+          formatX: (x) {
+            final i = x.round();
+            return labels != null && i >= 0 && i < labels.length
+                ? labels[i]
+                : '${i + 1}';
+          },
+          formatY: widget.format,
+          builder: (context, chart) {
+            final at = chart.active?.index;
+            final width = chart.size.width;
+            final span = width - axis - end;
+            final ring =
+                chart.states.contains(WidgetState.focused) &&
+                FocusManager.instance.highlightMode ==
+                    FocusHighlightMode.traditional;
+            return DecoratedBox(
+              position: DecorationPosition.foreground,
+              decoration: minimalFrame(
+                t.shapes.small,
+                side: ring
+                    ? BorderSide(
+                        color: t.ring,
+                        width: t.focusWidth,
+                        strokeAlign: BorderSide.strokeAlignOutside,
+                      )
+                    : BorderSide.none,
+              ),
+              // Reading a line is aiming at a point: the crosshair.
+              child: MouseRegion(
+                cursor: SystemMouseCursors.precise,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    CustomPaint(
+                      size: Size(width, whole),
+                      painter: _SeriesPainter(
+                        series: [for (final s in widget.series) s.values],
+                        colours: colours,
+                        labels: widget.labels,
+                        area: widget.area,
+                        at: at,
+                        format: widget.format,
+                        rule: t.border,
+                        guide: t.textTertiary,
+                        ground: t.card,
+                        figure: figure,
+                        stroke: t.hairline,
+                        axis: axis,
+                        end: end,
+                        figureGap: _figureGap,
+                        head: head,
+                        strip: strip,
+                        labelGap: _labelGap,
+                        rtl: Directionality.of(context) == TextDirection.rtl,
+                        scaler: scaler,
+                        words: _words,
+                      ),
+                    ),
+                    if (at != null)
+                      _ReadoutCard(
+                        label: labels != null && at < labels.length
+                            ? labels[at]
+                            : null,
+                        rows: [
+                          for (var s = 0; s < widget.series.length; s++)
+                            if (at < widget.series[s].values.length)
+                              (
+                                widget.series[s].name,
+                                widget.format(widget.series[s].values[at]),
+                                colours[s],
+                              ),
+                        ],
+                        x: n <= 1
+                            ? axis + span / 2
+                            : axis + span * at / (n - 1),
+                        width: width,
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       );
     }
-    final at = _at;
-    final ring =
-        _focused &&
-        FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
-    // The plot is the chart's node and its focus stop: what a tap reaches
-    // is what a screen reader outlines; the legend above it is printed.
-    final node = Semantics(
-      container: true,
-      label: widget.semanticLabel,
-      value: at == null || n == 0 ? null : _readout(at),
-      child: Focus(
-        canRequestFocus: n > 0 && !widget.loading,
-        onKeyEvent: _onKey,
-        onFocusChange: (v) => setState(() {
-          _focused = v;
-          if (!v) _at = null;
-        }),
-        child: DecoratedBox(
-          position: DecorationPosition.foreground,
-          decoration: minimalFrame(
-            t.shapes.small,
-            side: ring
-                ? BorderSide(
-                    color: t.ring,
-                    width: t.focusWidth,
-                    strokeAlign: BorderSide.strokeAlignOutside,
-                  )
-                : BorderSide.none,
-          ),
-          child: plot,
-        ),
-      ),
-    );
+    // A loading or empty plot is no stop: its words are its node.
+    final node = widget.loading || n == 0
+        ? Semantics(container: true, label: widget.semanticLabel, child: plot)
+        : plot;
     if (legend == null) return node;
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -1070,8 +1035,8 @@ class MinimalPieChart extends StatefulWidget {
 }
 
 class _MinimalPieChartState extends State<MinimalPieChart> {
+  /// ui_core's picked slice, mirrored for the legend beside the ring.
   int? _at;
-  bool _focused = false;
 
   /// The widest the legend runs.
   static const double _legendWidth = 280;
@@ -1079,43 +1044,19 @@ class _MinimalPieChartState extends State<MinimalPieChart> {
   double get _total =>
       widget.slices.fold(0.0, (s, x) => s + math.max(0.0, x.value));
 
-  int? _sliceAt(Offset p) {
-    final r = widget.size / 2;
-    final d = p - Offset(r, r);
-    final distance = d.distance;
-    if (distance > r || distance < r - widget.thickness - 6) return null;
-    var angle = math.atan2(d.dy, d.dx) + math.pi / 2;
-    if (angle < 0) angle += 2 * math.pi;
-    final total = _total;
-    if (total <= 0) return null;
-    var start = 0.0;
-    for (var i = 0; i < widget.slices.length; i++) {
-      final sweep = math.max(0.0, widget.slices[i].value) / total * 2 * math.pi;
-      if (angle >= start && angle < start + sweep) return i;
-      start += sweep;
+  void _picked(int? i) {
+    if (i == _at) return;
+    void set() {
+      if (mounted) setState(() => _at = i);
     }
-    return null;
-  }
 
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
-    final n = widget.slices.length;
-    if (n == 0) return KeyEventResult.ignored;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.arrowRight ||
-        key == LogicalKeyboardKey.arrowDown) {
-      setState(() => _at = ((_at ?? -1) + 1) % n);
-    } else if (key == LogicalKeyboardKey.arrowLeft ||
-        key == LogicalKeyboardKey.arrowUp) {
-      setState(() => _at = ((_at ?? 0) - 1 + n) % n);
-    } else if (key == LogicalKeyboardKey.escape) {
-      setState(() => _at = null);
+    // A pick the chart drops as it builds (new slices) lands after it.
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) => set());
     } else {
-      return KeyEventResult.ignored;
+      set();
     }
-    return KeyEventResult.handled;
   }
 
   @override
@@ -1132,6 +1073,10 @@ class _MinimalPieChartState extends State<MinimalPieChart> {
     final at = _at;
     String share(double v) =>
         total <= 0 ? '0%' : '${(v / total * 100).round()}%';
+    final summary = [
+      for (final s in widget.slices) '${s.label} ${format(s.value)}',
+    ].join(', ');
+    final rtl = Directionality.of(context) == TextDirection.rtl;
     final Widget donut;
     if (widget.loading) {
       donut = Semantics(
@@ -1161,49 +1106,87 @@ class _MinimalPieChartState extends State<MinimalPieChart> {
         ),
       );
     } else {
-      final picked = at == null ? null : widget.slices[at];
-      // A slice is picked by a tap, as a control is.
-      donut = MouseRegion(
-        cursor: SystemMouseCursors.click,
-        onHover: (e) => setState(() => _at = _sliceAt(e.localPosition)),
-        onExit: (_) => setState(() => _at = null),
-        child: GestureDetector(
-          onTapDown: (d) => setState(() => _at = _sliceAt(d.localPosition)),
-          child: SizedBox.square(
-            dimension: widget.size,
-            child: CustomPaint(
-              painter: _DonutPainter(
-                values: [for (final s in widget.slices) math.max(0.0, s.value)],
-                colours: colours,
-                thickness: widget.thickness,
-                track: t.border,
-                gap: t.card,
-                at: at,
+      // ui_core picks the slice (a pointer or a finger by angle on the
+      // ring, the keys), says it and holds the focus; Minimal paints the
+      // ring, its gaps and the words in the hole.
+      final radius = widget.size / 2;
+      donut = SizedBox.square(
+        dimension: widget.size,
+        child: DesignPieChart(
+          semanticLabel:
+              widget.semanticLabel ??
+              widget.centerLabel ??
+              [for (final s in widget.slices) s.label].join(', '),
+          // Each part with its figure, as the legend prints them.
+          semanticSummary: summary,
+          slices: [
+            for (final s in widget.slices)
+              DesignPieSlice(label: s.label, value: math.max(0.0, s.value)),
+          ],
+          holeRadius: math.max(0.0, radius - widget.thickness) / radius,
+          formatValue: format,
+          onActiveSliceChanged: _picked,
+          builder: (context, pie) {
+            final active = pie.active;
+            final picked = active == null ? null : widget.slices[active];
+            final ring =
+                pie.states.contains(WidgetState.focused) &&
+                FocusManager.instance.highlightMode ==
+                    FocusHighlightMode.traditional;
+            return DecoratedBox(
+              position: DecorationPosition.foreground,
+              decoration: minimalFrame(
+                const CircleBorder(),
+                side: ring
+                    ? BorderSide(
+                        color: t.ring,
+                        width: t.focusWidth,
+                        strokeAlign: BorderSide.strokeAlignOutside,
+                      )
+                    : BorderSide.none,
               ),
-              child: Center(
-                child: ExcludeSemantics(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        picked == null
-                            ? widget.centerValue ?? format(total)
-                            : share(picked.value),
-                        style: t.figure.c(t.foreground),
-                      ),
-                      if (picked != null || widget.centerLabel != null)
-                        Text(
-                          picked?.label ?? widget.centerLabel!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: t.caption.c(t.mutedForeground),
-                        ),
+              // A slice is picked by a tap, as a control is.
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: CustomPaint(
+                  size: pie.size,
+                  painter: _DonutPainter(
+                    values: [
+                      for (final s in widget.slices) math.max(0.0, s.value),
                     ],
+                    colours: colours,
+                    thickness: widget.thickness,
+                    track: t.border,
+                    gap: t.card,
+                    at: active,
+                    rtl: rtl,
+                  ),
+                  child: Center(
+                    child: ExcludeSemantics(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            picked == null
+                                ? widget.centerValue ?? format(total)
+                                : share(picked.value),
+                            style: t.figure.c(t.foreground),
+                          ),
+                          if (picked != null || widget.centerLabel != null)
+                            Text(
+                              picked?.label ?? widget.centerLabel!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: t.caption.c(t.mutedForeground),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       );
     }
@@ -1265,44 +1248,18 @@ class _MinimalPieChartState extends State<MinimalPieChart> {
             ),
           )
         : null;
-    final ring =
-        _focused &&
-        FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
-    final summary = [
-      for (final s in widget.slices) '${s.label} ${format(s.value)}',
-    ].join(', ');
-    // The ring is the chart's node and its focus stop: what a tap reaches
-    // is what a screen reader outlines (the legend beside it is printed,
-    // its words already in the ring's value).
-    final ringed = Semantics(
-      container: true,
-      label: widget.semanticLabel,
-      value: at == null
-          ? summary
-          : '${widget.slices[at].label} ${share(widget.slices[at].value)}',
-      child: Focus(
-        canRequestFocus: total > 0 && !widget.loading,
-        onKeyEvent: _onKey,
-        onFocusChange: (v) => setState(() {
-          _focused = v;
-          if (!v) _at = null;
-        }),
-        child: DecoratedBox(
-          position: DecorationPosition.foreground,
-          decoration: minimalFrame(
-            const CircleBorder(),
-            side: ring
-                ? BorderSide(
-                    color: t.ring,
-                    width: t.focusWidth,
-                    strokeAlign: BorderSide.strokeAlignOutside,
-                  )
-                : BorderSide.none,
-          ),
-          child: donut,
-        ),
-      ),
-    );
+    // A loading or empty ring is no stop: its words are its node. A live
+    // one is ui_core's node, what a tap reaches being what a screen reader
+    // outlines (the legend beside it is printed, its words in the
+    // summary).
+    final ringed = widget.loading || total <= 0
+        ? Semantics(
+            container: true,
+            label: widget.semanticLabel,
+            value: summary,
+            child: donut,
+          )
+        : donut;
     return LayoutBuilder(
       builder: (context, box) {
         if (legend == null) return Center(child: ringed);
@@ -1344,6 +1301,7 @@ class _DonutPainter extends CustomPainter {
     required this.track,
     required this.gap,
     required this.at,
+    this.rtl = false,
   });
 
   final List<double> values;
@@ -1353,8 +1311,13 @@ class _DonutPainter extends CustomPainter {
   final Color gap;
   final int? at;
 
+  /// Counter-clockwise from twelve o'clock, as ui_core lays a pie out
+  /// right to left.
+  final bool rtl;
+
   @override
   void paint(Canvas canvas, Size size) {
+    final sign = rtl ? -1.0 : 1.0;
     final rect = (Offset.zero & size).deflate(thickness / 2);
     final ring = Paint()
       ..style = PaintingStyle.stroke
@@ -1366,8 +1329,8 @@ class _DonutPainter extends CustomPainter {
     }
     var start = -math.pi / 2;
     for (var i = 0; i < values.length; i++) {
-      final sweep = values[i] / total * 2 * math.pi;
-      if (sweep <= 0) continue;
+      final sweep = sign * values[i] / total * 2 * math.pi;
+      if (sweep == 0) continue;
       final faded = at != null && at != i;
       canvas.drawArc(
         rect,
@@ -1390,7 +1353,7 @@ class _DonutPainter extends CustomPainter {
         if (v <= 0) continue;
         final dir = Offset(math.cos(a), math.sin(a));
         canvas.drawLine(c + dir * (r - thickness - 1), c + dir * (r + 1), cut);
-        a += v / total * 2 * math.pi;
+        a += sign * v / total * 2 * math.pi;
       }
     }
   }
@@ -1402,5 +1365,6 @@ class _DonutPainter extends CustomPainter {
       old.thickness != thickness ||
       old.track != track ||
       old.gap != gap ||
+      old.rtl != rtl ||
       old.colours.length != colours.length;
 }

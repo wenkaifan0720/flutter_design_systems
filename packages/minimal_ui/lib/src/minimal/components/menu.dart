@@ -6,9 +6,10 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart' show PointerDeviceKind, kTouchSlop;
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
@@ -28,7 +29,7 @@ import 'pressable.dart';
 /// keyboard shortcut or starting a new group; a null [onPressed] disables it.
 ///
 /// ```dart
-/// MinimalMenuItem('Rename', icon: LucideIcons.pencil, shortcut: 'R', onPressed: rename)
+/// MinimalMenuItem('Rename', icon: LucideIcons.pencil, shortcut: const SingleActivator(LogicalKeyboardKey.keyR), onPressed: rename)
 /// ```
 @immutable
 class MinimalMenuItem {
@@ -62,18 +63,20 @@ class MinimalMenuItem {
   /// Draw a hairline above this item, opening a new group.
   final bool startsGroup;
 
-  /// The key that performs it elsewhere, printed as key caps at the end,
-  /// one per space-separated key (`⌘ D`, `R`): a hint, not a binding.
-  final String? shortcut;
+  /// The keys that perform it elsewhere, printed as key caps at the end in
+  /// the platform's order and the reader's words (`⌘ D` on a Mac, `Ctrl D`
+  /// elsewhere; ui_core's [designShortcutKeys]): a hint, not a binding.
+  final MenuSerializableShortcut? shortcut;
 }
 
-/// How a [MinimalMenu] opens: a tap on its child, or a long press that leaves
-/// the child's ordinary tap to the child (a row's context menu).
+/// How a [MinimalMenu] opens: a tap on its child, or as a context menu that
+/// leaves the child's ordinary tap to the child (a row's context menu).
 enum MinimalMenuTrigger {
   /// A tap on the child.
   tap,
 
-  /// A long press, leaving the child's tap to the child.
+  /// A context menu: a long press or a right click at the pointer, leaving
+  /// the child's tap to the child.
   longPress,
 }
 
@@ -93,9 +96,13 @@ enum MinimalMenuTrigger {
 /// second choice.
 ///
 /// `trigger: longPress` adds a context menu to content while its ordinary
-/// tap stays the content's own: the content takes the press wash while
-/// held, and from the keyboard it is a focus stop that Shift+F10 or the
-/// context-menu key opens.
+/// tap stays the content's own: a long press of a finger or a right click
+/// opens it at the pointer, the content taking the press wash while held;
+/// from the keyboard the content is a focus stop that Shift+F10 or the
+/// context-menu key opens; a screen reader finds "Show menu" among its
+/// actions. The context menu is ui_core's ([DesignContextMenu]): its rows
+/// are a menu bar's, one lit, which the pointer moves too; Minimal paints
+/// them as this card's items.
 ///
 /// [MinimalMenu.button] draws the kit's own trigger, so a page never draws
 /// one: a glyph alone is the 32 px outlined square a bar action wears; a
@@ -369,10 +376,10 @@ class _MinimalMenuState extends State<MinimalMenu> {
           ? MinimalLayout.holdWidth(context, trigger)
           : trigger;
     }
-    return _ContextTrigger(
+    return _MinimalContextMenu(
+      items: widget.items,
       label: widget.label ?? MinimalLocalizations.of(context).moreActions,
-      onOpen: _show,
-      enabled: widget.items.isNotEmpty,
+      style: widget.style,
       child: child,
     );
   }
@@ -382,78 +389,133 @@ class _MinimalMenuState extends State<MinimalMenu> {
 OutlinedBorder _pill(MinimalThemeData t) =>
     MinimalShapes.inset(t.shapes.small, 1);
 
-/// Opens a context menu: Shift+F10 or the context-menu key.
-class _OpenMenuIntent extends Intent {
-  const _OpenMenuIntent();
-}
-
-/// The long-press trigger: the content keeps its own tap; a long press
-/// opens the menu, with the pressable's wash while the finger is held. It
-/// is a focus stop that draws the kit's ring under keyboard focus and
-/// opens on Shift+F10 or the context-menu key, and a screen reader reaches
-/// it as a custom action named [label].
-class _ContextTrigger extends StatefulWidget {
-  const _ContextTrigger({
+/// A context menu over [child] ([MinimalMenuTrigger.longPress]): ui_core's
+/// [DesignContextMenu] opens it (a long press or a right click at the
+/// pointer, Shift+F10 or the context-menu key at the focus, a screen
+/// reader's "Show menu"), and Minimal paints it as [MinimalMenu]'s card. The
+/// content is a focus stop that draws the kit's ring under keyboard focus,
+/// so the keys reach a region with no control of its own, and it takes the
+/// press wash while a finger is held on it.
+class _MinimalContextMenu extends StatefulWidget {
+  const _MinimalContextMenu({
+    required this.items,
     required this.label,
-    required this.onOpen,
-    required this.enabled,
+    required this.style,
     required this.child,
   });
 
+  final List<MinimalMenuItem> items;
   final String label;
-  final VoidCallback onOpen;
-  final bool enabled;
+  final MinimalStyle? style;
   final Widget child;
 
   @override
-  State<_ContextTrigger> createState() => _ContextTriggerState();
+  State<_MinimalContextMenu> createState() => _MinimalContextMenuState();
 }
 
-class _ContextTriggerState extends State<_ContextTrigger> {
+class _MinimalContextMenuState extends State<_MinimalContextMenu> {
   bool _held = false;
   bool _focus = false;
+  Offset? _downAt;
 
   void _hold(bool held) {
     if (_held != held) setState(() => _held = held);
   }
 
+  // The wash while a finger rests: gone once it moves past a tap's slop (a
+  // scroll), lifts or is cancelled.
+  void _down(PointerDownEvent event) {
+    _downAt = event.position;
+    _hold(event.kind != PointerDeviceKind.mouse);
+  }
+
+  void _move(PointerMoveEvent event) {
+    final from = _downAt;
+    if (from != null && (event.position - from).distance > kTouchSlop) {
+      _hold(false);
+    }
+  }
+
+  void _up(PointerEvent _) {
+    _downAt = null;
+    _hold(false);
+  }
+
+  List<DesignMenuEntry> _entries(BuildContext context) => [
+    for (final (i, item) in widget.items.indexed) ...[
+      if (i > 0 && item.startsGroup) const DesignMenuEntry.divider(),
+      DesignMenuEntry(
+        label: item.label,
+        onPressed: item.onPressed,
+        checked: item.selected ? true : null,
+        // What a screen reader adds: the keys in words.
+        shortcut: switch (item.shortcut) {
+          final keys? => designShortcutLabel(
+            context,
+            keys,
+            appleSymbols: false,
+          ),
+          null => null,
+        },
+        data: item,
+      ),
+    ],
+  ];
+
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final enabled = widget.enabled;
-    return Semantics(
-      customSemanticsActions: enabled
-          ? <CustomSemanticsAction, VoidCallback>{
-              CustomSemanticsAction(label: widget.label): widget.onOpen,
-            }
-          : null,
-      child: FocusableActionDetector(
-        enabled: enabled,
-        shortcuts: const <ShortcutActivator, Intent>{
-          SingleActivator(LogicalKeyboardKey.f10, shift: true):
-              _OpenMenuIntent(),
-          SingleActivator(LogicalKeyboardKey.contextMenu): _OpenMenuIntent(),
-        },
-        actions: <Type, Action<Intent>>{
-          _OpenMenuIntent: CallbackAction<_OpenMenuIntent>(
-            onInvoke: (_) {
-              widget.onOpen();
-              return null;
-            },
+    final enabled = widget.items.isNotEmpty;
+    final choosing = widget.items.any((item) => item.selected);
+    return DesignContextMenu(
+      menuChildren: enabled ? _entries(context) : const [],
+      semanticLabel: widget.label,
+      itemBuilder: (context, entry, level, states) {
+        final item = entry.data! as MinimalMenuItem;
+        final keys = item.shortcut;
+        return ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: _MenuMetrics.itemHeight),
+          child: MinimalKitRow(
+            states: states,
+            label: item.label,
+            icon: item.icon,
+            checked: item.selected,
+            choosing: choosing,
+            destructive: item.destructive,
+            style: widget.style,
+            trailing: keys == null ? null : MinimalKbd.shortcut(keys),
           ),
-        },
-        onShowFocusHighlight: (v) => setState(() => _focus = v),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onLongPressDown: enabled ? (_) => _hold(true) : null,
-          onLongPressCancel: enabled ? () => _hold(false) : null,
-          onLongPressUp: enabled ? () => _hold(false) : null,
-          onLongPress: enabled
-              ? () {
-                  _hold(false);
-                  widget.onOpen();
-                }
-              : null,
+        );
+      },
+      dividerBuilder: (context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s4),
+        child: Container(height: t.hairline, color: t.border),
+      ),
+      surfaceBuilder: (context, info, items) => minimalKitPresence(
+        context,
+        info,
+        MinimalKitPanel(
+          style: widget.style,
+          padding: const EdgeInsets.all(MinimalSpacing.s4),
+          width: _MenuMetrics.width,
+          maxHeight: info.maxSize.height,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: items,
+            ),
+          ),
+        ),
+      ),
+      child: Listener(
+        onPointerDown: enabled ? _down : null,
+        onPointerMove: enabled ? _move : null,
+        onPointerUp: enabled ? _up : null,
+        onPointerCancel: enabled ? _up : null,
+        child: FocusableActionDetector(
+          enabled: enabled,
+          onShowFocusHighlight: (v) => setState(() => _focus = v),
           child: AnimatedContainer(
             duration: MinimalMotion.fast,
             curve: MinimalMotion.out,
@@ -931,7 +993,7 @@ class _MenuAction extends StatelessWidget {
                   ),
                   if (shortcut != null) ...[
                     const MinimalGap(MinimalSpacing.s8),
-                    MinimalKbd.chord(shortcut),
+                    MinimalKbd.shortcut(shortcut),
                   ],
                   if (item.selected) ...[
                     const MinimalGap(MinimalSpacing.s8),

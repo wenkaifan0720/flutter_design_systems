@@ -48,6 +48,7 @@ void main() {
       testWidgets(
         '${page.name} builds at ${size.width.round()}',
         (tester) async {
+          final semantics = tester.ensureSemantics();
           tester.view
             ..physicalSize = size
             ..devicePixelRatio = 1;
@@ -77,7 +78,30 @@ void main() {
           for (final element in tester.allElements) {
             built.add('${element.widget.runtimeType}'.split('<').first);
           }
+          // Every band's heading reaches a screen reader, the windows' too:
+          // a demo's own app or navigator stands a route's modal barrier,
+          // which hides whatever painted before it in its semantics
+          // container (the Navigation page's shell window once took the top
+          // bars and the menu bar above it out of the page's semantics).
+          final headings = [
+            for (final screen in tester.widgetList<KitEmbeddedScreen>(
+              find.byType(KitEmbeddedScreen),
+            ))
+              screen.title,
+            for (final window in tester.widgetList<KitWindow>(
+              find.byType(KitWindow),
+            ))
+              ?window.title,
+          ];
+          for (final heading in headings) {
+            expect(
+              find.bySemanticsLabel(heading),
+              findsWidgets,
+              reason: '${page.name}: "$heading" is out of the semantics',
+            );
+          }
           await tester.pumpWidget(const SizedBox());
+          semantics.dispose();
         },
         tags: w == i % 2 ? null : 'sweep',
         experimentalLeakTesting: longWalkLeakTesting,

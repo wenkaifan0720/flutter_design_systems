@@ -1,3 +1,73 @@
+## 0.3.0
+
+Built on ui_core 0.3.0. Minimal's menus, tooltips, dialogs, sheets, tabs, swipe-to-delete, rating and charts now take
+their behaviour from ui_core (its focus, keys, semantics and gestures) and keep Minimal's paint and motion: they look
+as they did, and they do more. Two shortcut fields change type; the other breaks, below, touch only code that
+took a tooltip for a `StatefulWidget` or told a sheet by its route's type.
+
+### Breaking
+
+- `MinimalMenuItem.shortcut` and `MinimalMenuEntry.shortcut` are a `MenuSerializableShortcut`, no longer a `String`:
+  `shortcut: const SingleActivator(LogicalKeyboardKey.keyK, meta: true)` where `shortcut: '⌘ K'` was. The caps print
+  in the platform's order and words (`⇧ ⌘ N` on a Mac, `Ctrl Shift N` elsewhere) and are read out once in words; a
+  split button's menu prints the same. The command palette and search keep their string hints (sequences such as
+  `G T` and `/` are no single shortcut). `MinimalKbd.shortcut(activator)` prints one anywhere; `MinimalKbd.chord`
+  stays for a hint of your own.
+- `MinimalTooltip` is a `StatelessWidget` on ui_core's `DesignTooltip`, no longer a `StatefulWidget` (a
+  `GlobalKey<State<MinimalTooltip>>` no longer fits it). Its constructor is unchanged.
+- `MinimalSheet.pageRoute` and the action sheet build ui_core's `DesignBottomSheetRoute`, no longer Flutter's
+  `ModalBottomSheetRoute`: code that tells a sheet by `route is ModalBottomSheetRoute` checks for
+  `DesignBottomSheetRoute` too, as `MinimalRouteChrome` does. The side sheet and the dialog move on springs
+  (`MinimalChromeMetrics.routeDamping`, `sheetStiffness` and `dialogStiffness`, which keep the 180 ms and 120 ms
+  they took before); ui_core 0.3.0 removed `DesignSideSheetRoute.transitionDuration`.
+
+### Behaviour that changes
+
+- A dialog opens with focus on its safe answer: Enter on a destructive question ("Delete 3 files?") keeps, where it
+  confirmed before; on any other question Enter still confirms. Tab stays inside, Escape closes, and its title names
+  the route for a screen reader.
+- `MinimalTabBar` is one stop for Tab, on the current tab; the arrows move and choose, round the strip, and a screen
+  reader hears a tab and its place ("Inbox, Tab 2 of 4") where it heard a button.
+- `MinimalDismissible` deletes past 40 % of the row, as Flutter's `Dismissible` does; a shorter swipe holds the
+  Delete word open for a tap, and the keyboard opens it. The page removes the row, so it no longer folds its height
+  away.
+- `MinimalRating` takes a drag and the number keys (End for all, Home for none) as well as a tap; without
+  `allowClear` it holds at one star or more. A mouse over the stars previews what a click would set in the quiet ink,
+  and a click answers at once: its score shows in the full ink until the pointer moves again.
+- A line or area chart's readout is one point of one series at a time ("Mon, Runs: 3"): Left and Right walk the
+  labels, Up and Down the series, Home and End go to the ends. A donut's arrows stop at its first and last slice
+  instead of going round, and each slice says its share ("60%, Rent: 60"). Right to left, a donut runs
+  counter-clockwise.
+
+### New, from ui_core 0.3.0
+
+- Context menus open on a right click, a long press, Shift+F10 or the context-menu key; tooltips on hover, focus and
+  a long press, and Escape puts one away. A menu bar's menu takes focus as it opens.
+- `MinimalCombobox(search: ..., debounceDuration: ...)` searches as you type, with its loading, empty and error
+  rows.
+- A bottom sheet closes on a drag down (handing the drag to its list when the list can scroll), on Escape and on the
+  barrier, gives focus back to what opened it, and rises above the keyboard.
+- Haptics go through ui_core's `DesignHaptics`, so an app can turn them off or swap them in one place.
+
+### Fixes
+
+- "Try again" was English in every language; `MinimalLocalizations.tryAgain` now reads the app's own.
+- `dart doc` reports no warnings: the host library is the documented home of its names (it was the parts library),
+  and four references that pointed at nothing are code spans.
+- A `MinimalPreview` placed on a page hid everything above it from screen readers: the route under its own app
+  stands a modal barrier, which hides what painted before it in its semantics container. The preview is now a
+  container of its own (the gallery's demo windows too).
+- `showMinimalActionSheet` on a wide window spread its card across the whole window; it now stands centred at a
+  bottom sheet's width (`MinimalBottomSheet.widthCap`), as its inventory specimen and `showMinimalBottomSheet` do.
+
+### Development
+
+- The review checks come from `package:ui_core_test` (a dev dependency, 0.1.0), where ui_core 0.3.0 moved them.
+- The example and the tests import `material_ui` and `cupertino_ui` rather than Flutter's Material and Cupertino
+  libraries, which Flutter 3.50 deprecates: the package analyzes clean on Flutter 3.47 and 3.50.
+- The package's page leads to the live gallery (its homepage) and the issue tracker, and opens on the Tracker app
+  at 1440 px beside a phone.
+
 ## 0.2.1
 
 Built on ui_core 0.2.1. Nothing is renamed or removed: an app on 0.2.0 compiles on 0.2.1 unchanged.

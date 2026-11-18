@@ -72,7 +72,7 @@ class MinimalNavItem {
 /// [action] stands as a square at the trailing end: the app's one act
 /// reachable from every root.
 ///
-/// [MinimalShell] mounts it; a page never composes nav itself.
+/// `MinimalShell` mounts it; a page never composes nav itself.
 ///
 /// ```dart
 /// MinimalNavigationBar(items: const [MinimalNavItem(LucideIcons.calendarCheck, 'Today'), MinimalNavItem(LucideIcons.listChecks, 'Habits')], selectedIndex: tab, onDestinationSelected: go)

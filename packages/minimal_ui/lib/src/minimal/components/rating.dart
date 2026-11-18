@@ -4,8 +4,9 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart' show PointerDeviceKind, kTouchSlop;
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../internal/kit_paint.dart';
 import '../internal/tap_band.dart';
@@ -18,12 +19,17 @@ import '../theme.dart';
 /// score shown, not a control switched off, so it does not dim.
 ///
 /// As a control, a tap on a star sets the score (a tap on the current one
-/// clears it to zero when [allowClear] holds); under a mouse, and while a
-/// finger is down, the stars the tap would fill show in the quiet ink first
-/// — the one place Minimal answers a hovering pointer, because it says what
-/// a click will do. It is
-/// one keyboard stop: the arrow keys step the score, Home and End go to the
-/// ends, and a screen reader hears it as a slider ("3 of 5").
+/// clears it to zero when [allowClear] holds), and a drag sweeps across
+/// the stars; under a mouse, and while a finger is down, the stars the tap
+/// would fill show in the quiet ink first — the one place Minimal answers a
+/// hovering pointer, because it says what a click will do — and a click
+/// answers at once: the score it set shows in the ink until the pointer
+/// moves again. It is one
+/// keyboard stop: the arrow keys step the score, a digit sets that many,
+/// Home (or 0) and End go to the ends, and a screen reader hears it as a
+/// slider ("3 of 5"). With [allowClear] off it never goes below one star.
+/// The behaviour is ui_core's ([DesignRating]); Minimal paints it, and adds
+/// the clearing tap and the preview under a finger.
 ///
 /// ```dart
 /// MinimalRating(value: stars.toDouble(), onChanged: (v) => setState(() => stars = v), label: 'Your rating')
@@ -99,45 +105,78 @@ class MinimalRating extends StatefulWidget {
 }
 
 class _MinimalRatingState extends State<MinimalRating> {
-  int? _preview;
-  bool _focused = false;
+  FocusNode? _ownNode;
 
-  void _set(int v) {
+  FocusNode get _node =>
+      widget.focusNode ?? (_ownNode ??= FocusNode(debugLabel: 'MinimalRating'));
+
+  // The star a finger is down on (ui_core previews a hovering pointer only),
+  // where it went down, and whether it has since moved into a drag.
+  int? _touch;
+  Offset? _down;
+  bool _moved = false;
+
+  // A click has just set the score under a pointer that has not moved
+  // since: the stars show the score in the ink, not ui_core's hover
+  // preview, so the click reads as done (as Minimal's own preview did,
+  // which a tap ended).
+  bool _clicked = false;
+
+  @override
+  void dispose() {
+    _ownNode?.dispose();
+    super.dispose();
+  }
+
+  // A score set by a tap, a key, a drag or a screen reader: whole stars,
+  // and none below one without [MinimalRating.allowClear].
+  void _changed(double value) {
     final change = widget.onChanged;
     if (change == null) return;
-    final next = v.clamp(0, widget.max);
+    final next = value.round().clamp(widget.allowClear ? 0 : 1, widget.max);
     if (next == widget.value.round()) return;
-    HapticFeedback.selectionClick();
+    // ui_core plays a drag's steps itself; a tap and a key play here.
+    if (!_moved) DesignHaptics.of(context).selectionChanged?.call();
     change(next);
   }
 
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
+  void _pointerDown(PointerDownEvent e, double cell) {
+    _down = e.localPosition;
+    _moved = false;
+    if (e.kind != PointerDeviceKind.mouse) {
+      setState(() => _touch = _starAt(e.localPosition, cell));
     }
-    final now = widget.value.round();
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final key = event.logicalKey;
-    if (key == LogicalKeyboardKey.arrowUp ||
-        key ==
-            (rtl
-                ? LogicalKeyboardKey.arrowLeft
-                : LogicalKeyboardKey.arrowRight)) {
-      _set(now + 1);
-    } else if (key == LogicalKeyboardKey.arrowDown ||
-        key ==
-            (rtl
-                ? LogicalKeyboardKey.arrowRight
-                : LogicalKeyboardKey.arrowLeft)) {
-      _set(now - 1);
-    } else if (key == LogicalKeyboardKey.home) {
-      _set(widget.allowClear ? 0 : 1);
-    } else if (key == LogicalKeyboardKey.end) {
-      _set(widget.max);
-    } else {
-      return KeyEventResult.ignored;
+  }
+
+  void _pointerMove(PointerMoveEvent e) {
+    final down = _down;
+    if (down == null || (e.localPosition - down).distance <= kTouchSlop) {
+      return;
     }
-    return KeyEventResult.handled;
+    _moved = true;
+    if (_touch != null) setState(() => _touch = null);
+  }
+
+  void _pointerUp(PointerUpEvent e, double cell) {
+    final tapped = _down != null && !_moved;
+    final star = _starAt(e.localPosition, cell);
+    setState(() {
+      _touch = null;
+      if (tapped && e.kind == PointerDeviceKind.mouse) _clicked = true;
+    });
+    _down = null;
+    // ui_core's tap leaves the score already set alone (it runs after this,
+    // on the score before the page's rebuild); here a tap on it clears it.
+    if (tapped && widget.allowClear && star == widget.value.round()) {
+      _changed(0);
+    }
+    _moved = false;
+  }
+
+  void _pointerCancel() {
+    setState(() => _touch = null);
+    _down = null;
+    _moved = false;
   }
 
   @override
@@ -145,96 +184,72 @@ class _MinimalRatingState extends State<MinimalRating> {
     final t = context.minimalTheme;
     final live = widget.onChanged != null;
     final value = widget.value.clamp(0.0, widget.max.toDouble());
-    final preview = _preview;
     final cell = widget.size + MinimalSpacing.s4;
-    final stars = Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < widget.max; i++)
-          _Star(
-            size: widget.size,
-            extent: cell,
-            fill: preview != null
-                ? (i < preview ? 1 : 0)
-                : (value - i).clamp(0.0, 1.0),
-            ink: preview != null ? t.textTertiary : t.foreground,
-            edge: t.input,
-            stroke: t.rim,
-          ),
-      ],
-    );
     final l = MinimalLocalizations.of(context);
-    final words = l.ratingOf(_format(value), widget.max);
-    if (!live) {
-      // A mark reads as itself.
-      return Semantics(
-        container: true,
-        label: widget.label,
-        value: words,
-        child: stars,
-      );
-    }
-    final now = value.round();
-    return Semantics(
-      container: true,
-      slider: true,
-      label: widget.label,
-      value: words,
-      increasedValue: l.ratingOf(
-        '${math.min(now + 1, widget.max)}',
-        widget.max,
-      ),
-      decreasedValue: l.ratingOf('${math.max(now - 1, 0)}', widget.max),
-      onIncrease: () => _set(now + 1),
-      onDecrease: () => _set(now - 1),
-      child: Focus(
-        focusNode: widget.focusNode,
-        autofocus: widget.autofocus,
-        onKeyEvent: _onKey,
-        onFocusChange: (v) => setState(() => _focused = v),
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          onExit: (_) => setState(() => _preview = null),
-          // At a finger the stars stand in a band as tall as the floor, a
-          // tap in it landing on the star under it.
-          // The row is one target: a tap anywhere in it, or in the band
-          // round it, picks the star under it, so a finger meets no gap
-          // between two stars.
-          child: MinimalTapBand(
-            child: MouseRegion(
-              onHover: (e) =>
-                  setState(() => _preview = _starAt(e.localPosition, cell)),
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTapDown: (d) =>
-                    setState(() => _preview = _starAt(d.localPosition, cell)),
-                onTapUp: (d) {
-                  final star = _starAt(d.localPosition, cell);
-                  setState(() => _preview = null);
-                  _set(widget.allowClear && star == now ? 0 : star);
-                },
-                onTapCancel: () => setState(() => _preview = null),
-                child: DecoratedBox(
-                  position: DecorationPosition.foreground,
-                  decoration: minimalRingFrame(
-                    t.shapes.small,
-                    // Keyboard focus only: a tap focuses it without a ring.
-                    ring:
-                        _focused &&
-                            FocusManager.instance.highlightMode ==
-                                FocusHighlightMode.traditional
-                        ? t.ring
-                        : null,
-                    ground: minimalGround(context),
-                    width: t.focusWidth,
-                  ),
-                  child: stars,
-                ),
+    final node = _node;
+    return DesignRating(
+      value: value,
+      onChanged: live ? _changed : null,
+      // No onChanged: a mark, read as a value rather than as disabled.
+      readOnly: !live,
+      itemCount: widget.max,
+      semanticLabel: widget.label,
+      semanticFormatterCallback: (v) => l.ratingOf(_format(v), widget.max),
+      focusNode: node,
+      autofocus: widget.autofocus,
+      itemBuilder: (context, item) {
+        final touch = _touch;
+        final settled = _clicked && item.isPreview;
+        return _Star(
+          size: widget.size,
+          extent: cell,
+          fill: touch != null
+              ? (item.index < touch ? 1 : 0)
+              : settled
+              ? (item.index < value.round() ? 1 : 0)
+              : item.fill,
+          ink: touch != null || (item.isPreview && !settled)
+              ? t.textTertiary
+              : t.foreground,
+          edge: t.input,
+          stroke: t.rim,
+        );
+      },
+      layoutBuilder: (context, items) {
+        final stars = Row(mainAxisSize: MainAxisSize.min, children: items);
+        if (!live) return stars;
+        // At a finger the stars stand in a band as tall as the floor, a tap
+        // in it landing on the star under it: the row is one target, so a
+        // finger meets no gap between two stars.
+        return MinimalTapBand(
+          child: Listener(
+            behavior: HitTestBehavior.opaque,
+            onPointerDown: (e) => _pointerDown(e, cell),
+            onPointerMove: _pointerMove,
+            onPointerUp: (e) => _pointerUp(e, cell),
+            onPointerCancel: (_) => _pointerCancel(),
+            onPointerHover: (_) {
+              if (_clicked) setState(() => _clicked = false);
+            },
+            child: DecoratedBox(
+              position: DecorationPosition.foreground,
+              decoration: minimalRingFrame(
+                t.shapes.small,
+                // Keyboard focus only: a tap focuses it without a ring.
+                ring:
+                    node.hasFocus &&
+                        FocusManager.instance.highlightMode ==
+                            FocusHighlightMode.traditional
+                    ? t.ring
+                    : null,
+                ground: minimalGround(context),
+                width: t.focusWidth,
               ),
+              child: stars,
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

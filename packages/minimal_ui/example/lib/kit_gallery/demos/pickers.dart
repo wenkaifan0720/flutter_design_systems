@@ -6,7 +6,8 @@
 /// menu.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -348,19 +349,19 @@ class _MenusState extends State<_Menus> {
       MinimalMenuItem(
         'Mark done',
         icon: LucideIcons.circleCheck,
-        shortcut: 'D',
+        shortcut: const SingleActivator(LogicalKeyboardKey.keyD),
         onPressed: () => _did('Mark done'),
       ),
       MinimalMenuItem(
         'Edit',
         icon: LucideIcons.pencil,
-        shortcut: 'E',
+        shortcut: const SingleActivator(LogicalKeyboardKey.keyE),
         onPressed: () => _did('Edit'),
       ),
       MinimalMenuItem(
         'Duplicate',
         icon: LucideIcons.copy,
-        shortcut: 'Alt D',
+        shortcut: const SingleActivator(LogicalKeyboardKey.keyD, alt: true),
         onPressed: () => _did('Duplicate'),
       ),
       const MinimalMenuItem('Move to…', icon: LucideIcons.folderInput),
@@ -374,7 +375,7 @@ class _MenusState extends State<_Menus> {
         'Delete',
         icon: LucideIcons.trash2,
         destructive: true,
-        shortcut: 'Del',
+        shortcut: const SingleActivator(LogicalKeyboardKey.delete),
         onPressed: () => _did('Delete'),
       ),
     ];

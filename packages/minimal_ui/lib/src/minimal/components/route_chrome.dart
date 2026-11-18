@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../internal/centred_sheet_route.dart';
 
@@ -18,14 +19,17 @@ enum MinimalRouteChrome {
   sheet;
 
   /// The register the route around [context] earns, asked of the route
-  /// itself the way Material's AppBar asks it: a sheet is Minimal's own
-  /// bottom-sheet route (or its centred form in a wide window), and a page
+  /// itself the way Material's AppBar asks it: a sheet is a bottom-sheet
+  /// route, ui_core's or Material's (or Minimal's centred form in a wide
+  /// window), and a page
   /// is pushed when a route stands below it
   /// — not merely when its navigator can pop, which a sheet raised over a
   /// root would make true of the root too.
   static MinimalRouteChrome of(BuildContext context) {
     final route = ModalRoute.of(context);
-    if (route is ModalBottomSheetRoute || route is MinimalCentredSheetRoute) {
+    if (route is DesignBottomSheetRoute ||
+        route is ModalBottomSheetRoute ||
+        route is MinimalCentredSheetRoute) {
       return sheet;
     }
     return route?.impliesAppBarDismissal ?? false ? pushed : root;

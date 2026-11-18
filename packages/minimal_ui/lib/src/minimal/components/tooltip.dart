@@ -3,6 +3,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../internal/styled.dart';
@@ -12,12 +13,18 @@ import '../theme.dart';
 /// action, a truncated value, a shortcut: the inverse surface on the
 /// `shapes.small` step with the words in the caption, a few pixels under
 /// [child] (over it near the screen's foot). It shows after a moment's
-/// hover with a mouse, on a long press by touch, and while the keyboard
-/// focuses the child; it fades in and out in [MinimalMotion.fast]. A
-/// tooltip is information, so it is the one surface a hovering pointer
-/// raises.
+/// hover with a mouse, on a long press by touch, and at once while the
+/// keyboard focuses the child; it fades in and out (a short fade under
+/// Reduce Motion). A tooltip is information, so it is the one surface a
+/// hovering pointer raises.
 ///
-/// A screen reader hears [message] as the child's hint. Never put the
+/// The behaviour is ui_core's ([DesignTooltip]), as WCAG 1.4.13 asks: the
+/// pointer may move onto the tip, Escape hides it without moving the focus,
+/// and it stays until the pointer or the focus leaves; one shows at a
+/// time, and running the pointer along a toolbar reads each control's tip
+/// without the wait. Minimal paints the tip.
+///
+/// A screen reader hears [message] as the child's tooltip. Never put the
 /// only way to do something in a tooltip.
 ///
 /// [style] dresses one tooltip, `components.tooltip` every one: fill,
@@ -26,7 +33,7 @@ import '../theme.dart';
 /// ```dart
 /// MinimalTooltip(message: 'Archive', child: MinimalIconButton(LucideIcons.archive, label: 'Archive', onPressed: archive))
 /// ```
-class MinimalTooltip extends StatefulWidget {
+class MinimalTooltip extends StatelessWidget {
   /// [message], shown by [child] after a moment under the pointer or a long
   /// press.
   const MinimalTooltip({
@@ -52,65 +59,30 @@ class MinimalTooltip extends StatefulWidget {
   /// The gap between the child's edge and the tooltip's.
   static const double gap = 6;
 
-  @override
-  State<MinimalTooltip> createState() => _MinimalTooltipState();
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(StringProperty('message', message))
-      ..add(
-        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
-      )
-      ..add(
-        DiagnosticsProperty<Duration>(
-          'waitDuration',
-          waitDuration,
-          defaultValue: const Duration(milliseconds: 500),
-        ),
-      );
-  }
-}
-
-class _MinimalTooltipState extends State<MinimalTooltip> {
-  final GlobalKey<RawTooltipState> _tip = GlobalKey<RawTooltipState>();
-
-  /// Keyboard focus inside the child shows the tooltip; leaving hides it.
-  void _onFocus(bool focused) {
-    if (focused &&
-        FocusManager.instance.highlightMode == FocusHighlightMode.traditional) {
-      _tip.currentState?.ensureTooltipVisible();
-    } else if (!focused) {
-      RawTooltip.dismissAllToolTips();
-    }
-  }
+  /// Under [child], centred on it, [gap] from it; over it where there are
+  /// fewer than 48 px below (two lines of a tip) and more above.
+  static const DesignOverlayPlacement placement = DesignOverlayPlacement(
+    side: DesignOverlaySide.below,
+    align: DesignOverlayAlign.center,
+    gap: gap,
+    preferredExtent: 48,
+    matchAnchorWidth: false,
+  );
 
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
-    final so = MinimalStyleOf([widget.style, t.components.tooltip], const {});
-    final still = context.minimalStill;
-    final message = widget.message;
-    return RawTooltip(
-      key: _tip,
-      semanticsTooltip: message,
-      hoverDelay: widget.waitDuration,
-      triggerMode: TooltipTriggerMode.longPress,
-      animationStyle: AnimationStyle(
-        duration: still ? Duration.zero : MinimalMotion.fast,
-        reverseDuration: still ? Duration.zero : MinimalMotion.fast,
-        curve: MinimalMotion.out,
-      ),
-      positionDelegate: (c) => positionDependentBox(
-        size: c.overlaySize,
-        childSize: c.tooltipSize,
-        target: c.target,
-        verticalOffset: c.targetSize.height / 2 + MinimalTooltip.gap,
-        preferBelow: true,
-      ),
-      tooltipBuilder: (context, animation) => FadeTransition(
-        opacity: animation,
+    final so = MinimalStyleOf([style, t.components.tooltip], const {});
+    return DesignTooltip(
+      message: message,
+      hoverDelay: waitDuration,
+      placement: placement,
+      tooltipBuilder: (context, info) => AnimatedBuilder(
+        animation: info.animation,
+        builder: (context, child) => Opacity(
+          opacity: info.animation.value.clamp(0.0, 1.0),
+          child: child,
+        ),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 280),
           child: Container(
@@ -134,13 +106,24 @@ class _MinimalTooltipState extends State<MinimalTooltip> {
           ),
         ),
       ),
-      child: Focus(
-        canRequestFocus: false,
-        skipTraversal: true,
-        includeSemantics: false,
-        onFocusChange: _onFocus,
-        child: widget.child,
-      ),
+      child: child,
     );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(StringProperty('message', message))
+      ..add(
+        DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
+      )
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'waitDuration',
+          waitDuration,
+          defaultValue: const Duration(milliseconds: 500),
+        ),
+      );
   }
 }

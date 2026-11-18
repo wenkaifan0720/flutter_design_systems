@@ -1,24 +1,16 @@
 # minimal_ui
 
 A precise, quiet design system for Flutter, in the family of Linear and shadcn/ui: hairlines instead of containers,
-dense 44 px rows, hierarchy from weight rather than size, numbers in mono tabular figures, and one primary colour spent
-on the action. It ships three presets (standard, graphite, ember), each designed by day and by night, and it reads as
-well on a 1440 px desktop window as on a phone.
+dense rows, numbers in mono tabular figures and one primary colour spent on the action, by day and by night.
 
-| Desktop, by day | Phone, by night |
-| --- | --- |
-| ![A habit tracker on Minimal at 1440 px](screenshots/ritual_1440_light.png) | ![The habit tracker on a phone, by night](screenshots/ritual_390_dark.png) |
-| ![A bakery's back office at 1440 px](screenshots/bakery_1440_light.png) | ![The bakery's orders on a phone, by night](screenshots/bakery_390_dark.png) |
+![Minimal's issue tracker at 1440 px by day, beside the same tracker on a 390 px phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/hero_tracker.png)
 
-The parts carry the names Material gives them (`MinimalButton`, `MinimalTextField`, `MinimalAppBar`,
-`MinimalNavigationBar`, `MinimalListTile`, `MinimalCheckbox`, `MinimalSwitch`, `MinimalSegmentedButton`,
-`MinimalTabBar`, ...) and shadcn's names for its colours (`primary`, `foreground`, `muted`, `destructive`, `ring`).
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/minimal/)** · [API reference](https://pub.dev/documentation/minimal_ui/latest/) · [All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
-```yaml
-dependencies:
-  minimal_ui: ^0.2.1
+```sh
+flutter pub add minimal_ui
 ```
 
 ## Set up
@@ -68,6 +60,21 @@ setup above does, or the platform's slide or zoom flies the page in. The map's i
 `DesignSwipeBackPageTransitionsBuilder`, so a swipe from a page's leading edge still takes it back, the page following
 the finger as on every iOS screen (for a map you build yourself, `designSwipeBack(map)` does the same). Android's back
 closes what is open over the page (a menu, a combobox's list, a popover, a sheet, a dialog) before it pops the page.
+
+## What is inside
+
+Hierarchy comes from weight rather than size, rows are a dense 44 px, and the one primary colour is spent on the
+action. Three presets (standard, graphite, ember) are each designed by day and by night, and the parts read as well
+on a 1440 px desktop window as on a phone.
+
+| Desktop, by day | Phone, by night |
+| --- | --- |
+| ![A habit tracker on Minimal at 1440 px](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/ritual_1440_light.png) | ![The habit tracker on a phone, by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/ritual_390_dark.png) |
+| ![A bakery's back office at 1440 px](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/bakery_1440_light.png) | ![The bakery's orders on a phone, by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/minimal_ui/screenshots/bakery_390_dark.png) |
+
+The parts carry the names Material gives them (`MinimalButton`, `MinimalTextField`, `MinimalAppBar`,
+`MinimalNavigationBar`, `MinimalListTile`, `MinimalCheckbox`, `MinimalSwitch`, `MinimalSegmentedButton`,
+`MinimalTabBar`, ...) and shadcn's names for its colours (`primary`, `foreground`, `muted`, `destructive`, `ring`).
 
 ## Everyday parts
 
@@ -251,7 +258,10 @@ ordinary app does not need it.
   expanded, disabled); decorative paint is excluded. Everything works by keyboard, with a visible ring (in an open
   list, the muted fill on the row the keyboard is on), and focus follows reading order in both directions. A menu
   takes a menu button's keys: Enter, Space or Down opens it on the chosen item, the arrows, Home, End and a letter
-  move through it, and Enter or Escape hands the keys back to the control. Interactive parts take an optional `focusNode` and `autofocus`. Every
+  move through it, and Enter or Escape hands the keys back to the control. A dialog opens on its safe answer and keeps
+  Tab inside; a sheet closes on Escape or a drag down and gives focus back to what opened it; a tab bar is one Tab
+  stop whose arrows choose; a chart's arrows walk its points and say each one. Interactive parts take an optional
+  `focusNode` and `autofocus`. Every
   control's tap target is at least 44 × 44 under a finger and 24 × 24 under a pointer (ui_core's `DesignTapTarget`;
   `MinimalTheme` declares the floors with `DesignTapTargetScope`): the compact faces keep their size and the target
   grows round them, whatever the density. Text meets 4.5:1 contrast, and with reduced motion

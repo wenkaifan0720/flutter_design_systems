@@ -40,7 +40,7 @@ class MinimalShellAction {
 }
 
 /// The bottom allowance the shell's bar asks every nav root to reserve:
-/// published by [MinimalShell] over its branch container (and by a preview
+/// published by `MinimalShell` over its branch container (and by a preview
 /// that stands the bar under a lone page), spent by [MinimalScaffold] on its
 /// scroll padding and by [showMinimalSnackBar] on its inset.
 class MinimalShellInsets extends InheritedWidget {

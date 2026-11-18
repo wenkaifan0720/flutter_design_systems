@@ -241,7 +241,7 @@ class MinimalSplitButton extends StatelessWidget {
           label: item.label,
           icon: item.icon,
           destructive: item.destructive,
-          trailing: keys == null ? null : MinimalKbd.chord(keys),
+          trailing: keys == null ? null : MinimalKbd.shortcut(keys),
         );
       },
       surfaceBuilder: (context, info, items) => minimalKitPresence(

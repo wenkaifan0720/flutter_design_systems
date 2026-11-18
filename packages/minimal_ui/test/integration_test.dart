@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
@@ -290,6 +291,8 @@ void main() {
   });
 
   group('MinimalMenu', () {
+    // The caps print the platform's symbols (a Mac's ⌘); a screen reader
+    // hears the keys' names.
     testWidgets('prints a shortcut as key caps', (tester) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
@@ -298,7 +301,14 @@ void main() {
             builder: (context) => MinimalMenu(
               label: 'Actions',
               items: [
-                MinimalMenuItem('Copy ID', shortcut: '⌘ C', onPressed: () {}),
+                MinimalMenuItem(
+                  'Copy ID',
+                  shortcut: const SingleActivator(
+                    LogicalKeyboardKey.keyC,
+                    meta: true,
+                  ),
+                  onPressed: () {},
+                ),
               ],
               child: const Text('Open'),
             ),
@@ -309,11 +319,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(MinimalKbd), findsNWidgets(2));
       expect(
-        find.bySemanticsLabel(RegExp('Shortcut Command C')),
+        find.byWidgetPredicate((w) => w is MinimalKbd && w.keyLabel == '⌘'),
+        findsOneWidget,
+      );
+      expect(
+        find.bySemanticsLabel(RegExp(r'Shortcut Command\+C')),
         findsOneWidget,
       );
       handle.dispose();
-    });
+    }, variant: TargetPlatformVariant.only(TargetPlatform.macOS));
 
     testWidgets('the text pill carries a disclosure chevron', (tester) async {
       await tester.pumpWidget(
@@ -505,6 +519,42 @@ void main() {
       expect(find.text('Habit list'), findsOneWidget);
       expect(find.text('New habit'), findsOneWidget);
       expect(find.text('Settings'), findsOneWidget);
+    });
+
+    // The route under a preview's own app stands a modal barrier, which
+    // hides from a screen reader whatever painted before it in its
+    // semantics container: on material_ui's MaterialApp a preview took the
+    // heading above it, and the page before that, out of the semantics.
+    testWidgets('on a page, what stands before it stays with a screen reader', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: Column(
+            children: [
+              const Text('Screens'),
+              SizedBox(
+                height: 400,
+                child: MinimalPreview(
+                  light: _light,
+                  dark: _dark,
+                  brightness: Brightness.light,
+                  child: const MinimalScaffold(
+                    topBar: MinimalAppBar(title: 'Today'),
+                    body: SizedBox.shrink(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.bySemanticsLabel('Screens'), findsOneWidget);
+      expect(find.bySemanticsLabel('Today'), findsWidgets);
+      semantics.dispose();
     });
   });
 

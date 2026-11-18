@@ -203,6 +203,19 @@ abstract final class MinimalChromeMetrics {
   /// A sheet leaving with its scrim.
   static const Duration sheetOut = Duration(milliseconds: 120);
 
+  /// The damping ratio (ζ) of the spring ui_core's routes move on (a side
+  /// sheet, a bottom sheet, a dialog): 1, critically damped, as Minimal
+  /// never overshoots.
+  static const double routeDamping = 1;
+
+  /// A sheet's spring stiffness (k): critically damped, within 2% of rest
+  /// at [sheetIn], as its 180 ms slide was (ω = 6 / 0.18 s, k = ω²).
+  static const double sheetStiffness = 1111;
+
+  /// A dialog's spring stiffness (k): within 2% of rest at [fadeIn], as its
+  /// 120 ms fade was (ω = 6 / 0.12 s, k = ω²).
+  static const double dialogStiffness = 2500;
+
   /// The tab bar yielding to pushed depth.
   static const Duration barExit = Duration(milliseconds: 120);
 

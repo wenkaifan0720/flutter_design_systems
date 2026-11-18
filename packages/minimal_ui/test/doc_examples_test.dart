@@ -382,6 +382,9 @@ final Map<String, DocExample> _examples = {
     label: 'bash',
   ),
   'MinimalKbd': (context) => MinimalKbd.chord('⌘ K'),
+  'MinimalKbd 2': (context) => MinimalKbd.shortcut(
+    const SingleActivator(LogicalKeyboardKey.keyK, meta: true),
+  ),
   'MinimalColorPicker': (context) => const MinimalColorPicker(
     value: colour,
     onChanged: setColour,
@@ -667,7 +670,7 @@ final Map<String, DocExample> _examples = {
   'MinimalMenuItem': (context) => const MinimalMenuItem(
     'Rename',
     icon: LucideIcons.pencil,
-    shortcut: 'R',
+    shortcut: SingleActivator(LogicalKeyboardKey.keyR),
     onPressed: rename,
   ),
   'MinimalMenu': (context) => const MinimalMenu(
@@ -683,7 +686,13 @@ final Map<String, DocExample> _examples = {
   ),
   'MinimalMenuEntry': (context) => const MinimalMenuEntry(
     'File',
-    children: [MinimalMenuEntry('New', shortcut: '⌘ N', onPressed: create)],
+    children: [
+      MinimalMenuEntry(
+        'New',
+        shortcut: SingleActivator(LogicalKeyboardKey.keyN, meta: true),
+        onPressed: create,
+      ),
+    ],
   ),
   'MinimalMenuBar': (context) => const MinimalMenuBar(
     menus: [

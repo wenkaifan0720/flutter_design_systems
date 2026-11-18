@@ -5,7 +5,6 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -314,13 +313,18 @@ class _ActionCell extends StatelessWidget {
 /// mis-swipe toward the back gesture. Under the row lies the muted ground,
 /// square and full-bleed like the row itself, with the trash glyph and
 /// [label] in [MinimalThemeData.destructiveInk] at the trailing gutter, so the
-/// intent is legible before the finger commits. A screen reader gets the
-/// same act as a custom action named [label].
+/// intent is legible before the finger commits. A short swipe holds the
+/// row open on that word (a tap on it deletes; a tap on the row closes it);
+/// a swipe past 40 % of the row, let go, slides the row away and deletes.
+/// The keyboard opens it with the arrow toward the leading edge and focuses
+/// the word (Escape closes it), and a screen reader gets the same act as a
+/// custom action named [label]. The behaviour is ui_core's
+/// ([DesignSwipeActions], a destructive edge); Minimal paints it.
 ///
-/// UNDO IS THE PAGE'S BUSINESS: this removes the row and calls
-/// [onDismissed]; the page keeps the record in hand and offers the way back
-/// through `showMinimalSnackBar(context, 'Deleted', actionLabel: 'Undo',
-/// onAction: restore)`.
+/// UNDO IS THE PAGE'S BUSINESS: this slides the row away and calls
+/// [onDismissed]; the page removes the record, keeps it in hand and offers
+/// the way back through `showMinimalSnackBar(context, 'Deleted',
+/// actionLabel: 'Undo', onAction: restore)`.
 ///
 /// ```dart
 /// MinimalDismissible(key: ValueKey(habit.id), onDismissed: () => remove(habit), child: row)
@@ -343,52 +347,112 @@ class MinimalDismissible extends StatelessWidget {
   /// The word on the ground behind the row.
   final String? label;
 
+  /// How far past the row's width a let-go swipe deletes: Flutter's
+  /// `Dismissible`'s threshold, which this row kept before.
+  static const double deleteFraction = 0.4;
+
   @override
   Widget build(BuildContext context) {
     final t = context.minimalTheme;
     final words = label ?? MinimalLocalizations.of(context).delete;
-    return Semantics(
-      customSemanticsActions: <CustomSemanticsAction, VoidCallback>{
-        CustomSemanticsAction(label: words): onDismissed,
-      },
-      // The row leaves through its list's edge, not over what stands beyond.
-      child: ClipRect(
-        child: Dismissible(
-          // The gesture's own identity, distinct from this widget's: the
-          // caller's key names the RECORD.
-          key: ObjectKey(key),
-          direction: DismissDirection.endToStart,
-          onDismissed: (_) => onDismissed(),
-          background: ColoredBox(
-            color: t.muted,
-            child: Padding(
-              padding: MinimalInsets.gutter,
-              child: Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    MinimalIcon(
-                      LucideIcons.trash2,
-                      size: MinimalIconSize.i16,
-                      color: t.destructiveInk,
-                    ),
-                    const MinimalGap(MinimalSpacing.s8),
-                    Flexible(
-                      child: Text(
-                        words,
-                        style: t.control.c(t.destructiveInk),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+    final type = t.control.c(t.destructiveInk);
+    final direction = Directionality.of(context);
+    final gutter = MinimalInsets.gutter.resolve(direction);
+    // The ground held open is as wide as its glyph and word in the gutters.
+    final word = TextPainter(
+      text: TextSpan(text: words, style: type),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final extent =
+        (gutter.horizontal +
+                MinimalIconSize.i16 +
+                MinimalSpacing.s8 +
+                word.width)
+            .ceilToDouble();
+    word.dispose();
+    // The row leaves through its list's edge, not over what stands beyond.
+    return ClipRect(
+      child: DesignSwipeActions(
+        endActions: [
+          DesignSwipeAction(
+            label: words,
+            onPressed: onDismissed,
+            destructive: true,
+          ),
+        ],
+        actionExtent: extent,
+        fullSwipeFraction: deleteFraction,
+        actionBuilder: (context, action, details) {
+          final states = details.states;
+          // The press wash and the focus ring lie inside the ground, as a
+          // swipe action's do.
+          return Container(
+            foregroundDecoration: BoxDecoration(
+              color: states.down ? t.foreground.withValues(alpha: 0.08) : null,
+              border: states.ring
+                  ? Border.fromBorderSide(
+                      BorderSide(
+                        color: t.ring,
+                        width: t.focusWidth,
+                        strokeAlign: BorderSide.strokeAlignInside,
+                      ),
+                    )
+                  : null,
+            ),
+            // The ground stands still as the row uncovers it, its word at
+            // the trailing gutter: laid out at its whole width however
+            // little of it shows yet. It reads in the page's direction:
+            // ui_core lays an end side's actions out mirrored, to order
+            // them from the row's edge.
+            child: Directionality(
+              textDirection: direction,
+              child: ExcludeSemantics(
+                child: ClipRect(
+                  child: LayoutBuilder(
+                    builder: (context, c) => OverflowBox(
+                      alignment: AlignmentDirectional.centerEnd,
+                      minWidth: math.max(c.maxWidth, extent),
+                      maxWidth: math.max(c.maxWidth, extent),
+                      child: ColoredBox(
+                        color: t.muted,
+                        child: Padding(
+                          padding: gutter,
+                          child: Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                MinimalIcon(
+                                  LucideIcons.trash2,
+                                  size: MinimalIconSize.i16,
+                                  color: t.destructiveInk,
+                                ),
+                                const MinimalGap(MinimalSpacing.s8),
+                                Flexible(
+                                  child: Text(
+                                    words,
+                                    style: type,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-          child: ColoredBox(color: t.background, child: child),
-        ),
+          );
+        },
+        // The row's own ground, so the word stays hidden under it until it
+        // moves.
+        child: ColoredBox(color: t.background, child: child),
       ),
     );
   }

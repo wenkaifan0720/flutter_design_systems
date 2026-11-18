@@ -634,7 +634,11 @@ void main() {
 
   group('MinimalMenu', () {
     List<MinimalMenuItem> items(List<String> log) => [
-      MinimalMenuItem('Edit', shortcut: 'E', onPressed: () => log.add('edit')),
+      MinimalMenuItem(
+        'Edit',
+        shortcut: const SingleActivator(LogicalKeyboardKey.keyE),
+        onPressed: () => log.add('edit'),
+      ),
       MinimalMenuItem('Duplicate', onPressed: () => log.add('duplicate')),
       const MinimalMenuItem('Move to…'),
       MinimalMenuItem(

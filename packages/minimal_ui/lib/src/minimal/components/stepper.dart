@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -134,7 +133,7 @@ class _MinimalNumberFieldState extends State<MinimalNumberField> {
     final next = (from + direction * widget.step).clamp(widget.min, widget.max);
     if (next == from) return _stop();
     _repeated = next;
-    HapticFeedback.selectionClick();
+    DesignHaptics.of(context).selectionChanged?.call();
     onChanged(next);
   }
 

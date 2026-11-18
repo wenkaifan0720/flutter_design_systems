@@ -1,7 +1,7 @@
 /// A single choice in view, and a score out of five.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 
 import '../kit.dart';

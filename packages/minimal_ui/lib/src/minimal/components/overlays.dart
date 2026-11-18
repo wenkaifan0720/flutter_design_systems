@@ -206,7 +206,8 @@ class MinimalSheet extends StatelessWidget {
 }
 
 /// Shows a [MinimalSheet] from [side] over the whole app, on a dimmed page:
-/// it slides in (fades, under Reduce Motion), focus moves into it and back
+/// it slides in on a spring with no overshoot, settling in about 180 ms
+/// (fades, under Reduce Motion), focus moves into it and back
 /// to the opener when it closes; Escape, a tap on the scrim, a drag toward
 /// its edge or its close button closes it. [width] is its width, at most
 /// the screen less 56 px. The behaviour is ui_core's
@@ -241,7 +242,8 @@ Future<T?> showMinimalSheet<T>(
       barrierColor: t.overlay,
       barrierLabel: words.close,
       semanticLabel: title,
-      transitionDuration: MinimalChromeMetrics.sheetIn,
+      dampingRatio: MinimalChromeMetrics.routeDamping,
+      stiffness: MinimalChromeMetrics.sheetStiffness,
       builder: (context, sheet) => MinimalSheet(
         title: title,
         subtitle: subtitle,

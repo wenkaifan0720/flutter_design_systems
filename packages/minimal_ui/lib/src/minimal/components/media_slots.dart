@@ -44,7 +44,7 @@ abstract final class MinimalMediaSource {
 }
 
 /// What [MinimalMediaSource.reference] reads a picture value as: the declared
-/// [slot] it stands for, or the [image] that draws it.
+/// `slot` it stands for, or the `image` that draws it.
 typedef MinimalMediaReference = ({String? slot, ImageProvider? image});
 
 /// Trusted image delivery for one declared media slot, shared by

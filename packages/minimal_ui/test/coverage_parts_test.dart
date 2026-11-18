@@ -4,6 +4,7 @@
 // and highlights are shape_contract_test's.
 import 'dart:ui' as ui;
 
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/semantics.dart' show SemanticsNode;
 import 'package:flutter/services.dart';
@@ -439,6 +440,51 @@ void main() {
       expect(seen, [4, 0]);
     });
 
+    testWidgets('a mouse previews in the quiet ink; a click shows the score '
+        'in the ink until the pointer moves again', (tester) async {
+      final seen = <int>[];
+      await tester.pumpWidget(_host(rating(seen)));
+      final stars = find.descendant(
+        of: find.byType(MinimalRating),
+        matching: find.byWidgetPredicate(
+          (w) => w.runtimeType.toString() == '_Star',
+        ),
+      );
+      final t = MinimalThemeData.preset('standard', Brightness.light);
+      List<(double, Color)> drawn() => [
+        for (final e in stars.evaluate())
+          (
+            (e.widget as dynamic).fill as double,
+            (e.widget as dynamic).ink as Color,
+          ),
+      ];
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: Offset.zero);
+      await tester.pump();
+      await mouse.moveTo(tester.getCenter(stars.at(3)));
+      await tester.pump();
+      expect(drawn().map((s) => s.$2).toSet(), {
+        t.textTertiary,
+      }, reason: 'a hover previews');
+      expect(drawn().map((s) => s.$1), [1, 1, 1, 1, 0]);
+
+      await mouse.down(tester.getCenter(stars.at(3)));
+      await mouse.up();
+      await tester.pump();
+      expect(seen, [4]);
+      expect(drawn(), [
+        for (var i = 0; i < 5; i++) (i < 4 ? 1.0 : 0.0, t.foreground),
+      ], reason: 'the click answers at once, in the ink');
+
+      await mouse.moveTo(tester.getCenter(stars.at(1)));
+      await tester.pump();
+      expect(drawn().map((s) => s.$2).toSet(), {
+        t.textTertiary,
+      }, reason: 'moved, it previews again');
+      expect(drawn().map((s) => s.$1), [1, 1, 0, 0, 0]);
+      await mouse.removePointer();
+    });
+
     testWidgets('arrows step it, Home and End jump, mirrored right to left', (
       tester,
     ) async {
@@ -473,13 +519,17 @@ void main() {
       );
       final node = _node(tester, 'Average');
       expect(node, isSemantics(value: '3.5 of 5', isSlider: false));
-      expect(
-        find.descendant(
-          of: find.byType(MinimalRating),
-          matching: find.byType(Focus),
-        ),
-        findsNothing,
+      // No stop of Tab's: its focus takes none.
+      final focus = tester.widget<Focus>(
+        find
+            .descendant(
+              of: find.byType(MinimalRating),
+              matching: find.byType(Focus),
+            )
+            .first,
       );
+      expect(focus.canRequestFocus, isFalse);
+      expect(focus.skipTraversal, isTrue);
       handle.dispose();
     });
   });
@@ -993,9 +1043,15 @@ void main() {
     testWidgets('a long press shows the tooltip', (tester) async {
       await tester.pumpWidget(
         _host(
+          // An anchor that takes a touch: ui_core's tooltip leaves an
+          // anchor that paints nothing to the content under it.
           const MinimalTooltip(
             message: 'Copy link',
-            child: SizedBox(key: ValueKey('anchor'), width: 40, height: 40),
+            child: ColoredBox(
+              key: ValueKey('anchor'),
+              color: Color(0x00000000),
+              child: SizedBox(width: 40, height: 40),
+            ),
           ),
           still: true,
         ),
@@ -1203,6 +1259,8 @@ void main() {
     const days = ['Mon', 'Tue', 'Wed', 'Thu'];
     String whole(double v) => '${v.round()}';
 
+    // ui_core's picking: a point is said with its label, its series and
+    // its figure; Up and Down change series at that label.
     testWidgets('the arrows walk the readout, Escape puts it away', (
       tester,
     ) async {
@@ -1220,17 +1278,13 @@ void main() {
       expect(find.text('Runs'), findsOneWidget, reason: 'two series: legend');
       await _key(tester, LogicalKeyboardKey.tab);
       await _key(tester, LogicalKeyboardKey.arrowRight);
-      expect(
-        _node(tester, 'This week'),
-        isSemantics(value: 'Mon: Runs 3, Walks 1'),
-      );
+      expect(_node(tester, 'This week'), isSemantics(value: 'Mon, Runs: 3'));
       await _key(tester, LogicalKeyboardKey.arrowRight);
-      expect(
-        _node(tester, 'This week'),
-        isSemantics(value: 'Tue: Runs 5, Walks 2'),
-      );
+      expect(_node(tester, 'This week'), isSemantics(value: 'Tue, Runs: 5'));
+      await _key(tester, LogicalKeyboardKey.arrowDown);
+      expect(_node(tester, 'This week'), isSemantics(value: 'Tue, Walks: 2'));
       await _key(tester, LogicalKeyboardKey.escape);
-      expect(_node(tester, 'This week').value, isEmpty);
+      expect(_node(tester, 'This week').value, isNot(startsWith('Tue')));
       handle.dispose();
     });
 
@@ -1251,7 +1305,7 @@ void main() {
       );
       await _key(tester, LogicalKeyboardKey.tab);
       await _key(tester, LogicalKeyboardKey.arrowLeft);
-      expect(_node(tester, 'This week'), isSemantics(value: 'Mon: Runs 3'));
+      expect(_node(tester, 'This week'), isSemantics(value: 'Mon, Runs: 3'));
       handle.dispose();
     });
 
@@ -1372,9 +1426,9 @@ void main() {
       expect(gap, lessThan(MinimalSpacing.s16 + 12));
     });
 
-    testWidgets('the donut walks its slices with the arrows, round', (
-      tester,
-    ) async {
+    // ui_core's picking: a slice is said with its share; the arrows stop
+    // at the ends, Home and End go to them.
+    testWidgets('the donut walks its slices with the arrows', (tester) async {
       final handle = tester.ensureSemantics();
       await tester.pumpWidget(
         _host(
@@ -1391,9 +1445,11 @@ void main() {
       );
       await _key(tester, LogicalKeyboardKey.tab);
       await _key(tester, LogicalKeyboardKey.arrowRight);
-      expect(_node(tester, 'Spend').value, startsWith('Rent '));
-      await _key(tester, LogicalKeyboardKey.arrowLeft);
-      expect(_node(tester, 'Spend').value, startsWith('Fun '));
+      expect(_node(tester, 'Spend').value, '60%, Rent: 60');
+      await _key(tester, LogicalKeyboardKey.arrowRight);
+      expect(_node(tester, 'Spend').value, contains('Food: 30'));
+      await _key(tester, LogicalKeyboardKey.end);
+      expect(_node(tester, 'Spend').value, contains('Fun: 10'));
       await _key(tester, LogicalKeyboardKey.escape);
       expect(_node(tester, 'Spend').value, 'Rent 60, Food 30, Fun 10');
       handle.dispose();

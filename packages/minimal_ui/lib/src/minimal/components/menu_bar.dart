@@ -3,7 +3,6 @@
 library;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -24,7 +23,7 @@ import 'code.dart';
 /// ([MinimalMenuEntry.divider]).
 ///
 /// ```dart
-/// MinimalMenuEntry('File', children: [MinimalMenuEntry('New', shortcut: '⌘ N', onPressed: create)])
+/// MinimalMenuEntry('File', children: [MinimalMenuEntry('New', shortcut: const SingleActivator(LogicalKeyboardKey.keyN, meta: true), onPressed: create)])
 /// ```
 @immutable
 class MinimalMenuEntry {
@@ -61,9 +60,10 @@ class MinimalMenuEntry {
   /// A 16 px glyph before the words.
   final IconData? icon;
 
-  /// The key that runs it, printed as key caps at the end (`⌘ S`): a hint,
-  /// not a binding.
-  final String? shortcut;
+  /// The keys that run it, printed as key caps at the end in the
+  /// platform's order and the reader's words (`⌘ S` on a Mac, `Ctrl S`
+  /// elsewhere; ui_core's [designShortcutKeys]): a hint, not a binding.
+  final MenuSerializableShortcut? shortcut;
 
   /// The check of an item that toggles; null: none.
   final bool? checked;
@@ -71,17 +71,25 @@ class MinimalMenuEntry {
   /// Whether it is a hairline.
   final bool divider;
 
-  DesignMenuEntry _design() => divider
+  DesignMenuEntry _design(BuildContext context) => divider
       ? const DesignMenuEntry.divider()
       : DesignMenuEntry(
           label: label,
           onPressed: onPressed,
           children: children == null
               ? null
-              : [for (final c in children!) c._design()],
-          shortcut: shortcut,
+              : [for (final c in children!) c._design(context)],
+          // What a screen reader adds: the keys in words.
+          shortcut: switch (shortcut) {
+            final keys? => designShortcutLabel(
+              context,
+              keys,
+              appleSymbols: false,
+            ),
+            null => null,
+          },
           checked: checked,
-          data: icon,
+          data: this,
         );
 }
 
@@ -95,13 +103,13 @@ class MinimalMenuEntry {
 /// The bar is one tab stop: Left and Right move along it, Down, Enter and
 /// Space open a menu; in a menu Up and Down move, Right opens a submenu or
 /// moves to the next menu, Escape closes it with focus back on the bar;
-/// while a menu is open a pointer over another name opens that one. The
-/// behaviour is ui_core's ([DesignMenuBar]); Minimal paints it, and its
-/// menus keep [MinimalMenu]'s one place: the row with the keys alone takes
-/// the muted fill, and the pointer moves the keys (over a row it is the
-/// place; off the rows, none). A menu the pointer opened starts on none
-/// (the first arrow lands on the first row), one a key opened on its first
-/// row. A phone has no menu bar: a [MinimalMenu] under a button holds the
+/// while a menu is open a pointer over another name opens that one. One
+/// row is lit, the one with the keys, which the pointer moves too (over a
+/// row it is the place; off the rows, none), on the muted fill. A menu the
+/// pointer opened starts on none (Down lands on the first row, Up on the
+/// last), one a key opened on its first row. The behaviour is ui_core's
+/// ([DesignMenuBar], its highlight following the pointer); Minimal paints
+/// it. A phone has no menu bar: a [MinimalMenu] under a button holds the
 /// same commands.
 ///
 /// [style] dresses the strip (fill, edge or side, shape); the menus read
@@ -155,77 +163,72 @@ class MinimalMenuBar extends StatelessWidget {
       ),
     );
 
+    // ui_core lights one row, the current one (hovered when the pointer
+    // moved last, focused when a key did): the muted fill.
     Widget row(DesignMenuEntry entry, Set<WidgetState> states) {
-      final keys = entry.shortcut;
-      final glyph = entry.data;
-      return _BarMenuRow(
+      final source = entry.data;
+      final keys = source is MinimalMenuEntry ? source.shortcut : null;
+      return MinimalKitRow(
         states: states,
-        builder: (states) => MinimalKitRow(
-          states: states,
-          label: entry.label,
-          icon: glyph is IconData ? glyph : null,
-          checked: entry.checked ?? false,
-          trailing: entry.isSubmenu
-              ? MinimalIcon(
-                  Directionality.of(context) == TextDirection.rtl
-                      ? LucideIcons.chevronLeft
-                      : LucideIcons.chevronRight,
-                  size: MinimalIconSize.i16,
-                  color: t.textTertiary,
-                )
-              : keys == null
-              ? null
-              : MinimalKbd.chord(keys),
-        ),
+        label: entry.label,
+        icon: source is MinimalMenuEntry ? source.icon : null,
+        checked: entry.checked ?? false,
+        trailing: entry.isSubmenu
+            ? MinimalIcon(
+                Directionality.of(context) == TextDirection.rtl
+                    ? LucideIcons.chevronLeft
+                    : LucideIcons.chevronRight,
+                size: MinimalIconSize.i16,
+                color: t.textTertiary,
+              )
+            : keys == null
+            ? null
+            : MinimalKbd.shortcut(keys),
       );
     }
 
-    return _BarInputScope(
-      child: MinimalTapBand(
-        child: DesignMenuBar(
-          menus: [for (final m in menus) m._design()],
-          semanticLabel: label ?? MinimalLocalizations.of(context).menuBar,
-          itemBuilder: (context, entry, level, states) =>
-              level == DesignMenuLevel.bar
-              ? top(entry, states)
-              : row(entry, states),
-          dividerBuilder: (context) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s4),
-            child: Container(height: t.hairline, color: t.border),
+    return MinimalTapBand(
+      child: DesignMenuBar(
+        menus: [for (final m in menus) m._design(context)],
+        semanticLabel: label ?? MinimalLocalizations.of(context).menuBar,
+        itemBuilder: (context, entry, level, states) =>
+            level == DesignMenuLevel.bar
+            ? top(entry, states)
+            : row(entry, states),
+        dividerBuilder: (context) => Padding(
+          padding: const EdgeInsets.symmetric(vertical: MinimalSpacing.s4),
+          child: Container(height: t.hairline, color: t.border),
+        ),
+        barBuilder: (context, items) => Container(
+          padding: const EdgeInsets.all(pad),
+          decoration: minimalFrame(
+            outline,
+            fill: strip.fill ?? t.card,
+            side: strip.rim(t.border, t.rim),
           ),
-          barBuilder: (context, items) => Container(
-            padding: const EdgeInsets.all(pad),
-            decoration: minimalFrame(
-              outline,
-              fill: strip.fill ?? t.card,
-              side: strip.rim(t.border, t.rim),
-            ),
-            // Past the window's width (large text on a phone) the menus
-            // scroll along the bar rather than run off it.
-            child: ClipRect(
-              clipper: const MinimalRingRoom(),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                clipBehavior: Clip.none,
-                child: Row(mainAxisSize: MainAxisSize.min, children: items),
-              ),
+          // Past the window's width (large text on a phone) the menus
+          // scroll along the bar rather than run off it.
+          child: ClipRect(
+            clipper: const MinimalRingRoom(),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
+              child: Row(mainAxisSize: MainAxisSize.min, children: items),
             ),
           ),
-          surfaceBuilder: (context, info, items) => minimalKitPresence(
-            context,
-            info,
-            _BarMenuCard(
-              child: MinimalKitPanel(
-                padding: const EdgeInsets.all(MinimalSpacing.s4),
-                width: 224,
-                maxHeight: info.maxSize.height,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: items,
-                  ),
-                ),
+        ),
+        surfaceBuilder: (context, info, items) => minimalKitPresence(
+          context,
+          info,
+          MinimalKitPanel(
+            padding: const EdgeInsets.all(MinimalSpacing.s4),
+            width: 224,
+            maxHeight: info.maxSize.height,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: items,
               ),
             ),
           ),
@@ -244,171 +247,4 @@ class MinimalMenuBar extends StatelessWidget {
         DiagnosticsProperty<MinimalStyle>('style', style, defaultValue: null),
       );
   }
-}
-
-/// The card of one of the bar's menus, holding the keys while no row has
-/// them: a menu the pointer opened (ui_core gives its first row the keys on
-/// every open; here none is lit until the pointer or a key moves), or the
-/// pointer gone off the rows. From the card Down goes to the first row, Up
-/// to the last; Home, End, letters, Escape and the bar's arrows go on to
-/// ui_core.
-class _BarMenuCard extends StatefulWidget {
-  const _BarMenuCard({required this.child});
-
-  final Widget child;
-
-  @override
-  State<_BarMenuCard> createState() => _BarMenuCardState();
-}
-
-class _BarMenuCardState extends State<_BarMenuCard> {
-  final FocusNode _card = FocusNode(debugLabel: 'menu', skipTraversal: true);
-
-  @override
-  void initState() {
-    super.initState();
-    // Opened from a key (Down, Enter, Space on the bar; Left and Right
-    // along it or into a submenu): ui_core's first row keeps the keys.
-    final input = context.getInheritedWidgetOfExactType<_BarInput>();
-    if (input == null || !input.pointer.value) return;
-    // After ui_core's own focus on open, in the same frame.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _card.requestFocus();
-    });
-  }
-
-  @override
-  void dispose() {
-    _card.dispose();
-    super.dispose();
-  }
-
-  KeyEventResult _key(FocusNode node, KeyEvent event) {
-    if (event is KeyUpEvent || !node.hasPrimaryFocus) {
-      return KeyEventResult.ignored;
-    }
-    final down = event.logicalKey == LogicalKeyboardKey.arrowDown;
-    if (!down && event.logicalKey != LogicalKeyboardKey.arrowUp) {
-      return KeyEventResult.ignored;
-    }
-    final rows = [
-      for (final row
-          in node.nearestScope?.traversalDescendants ?? <FocusNode>[])
-        if (row.canRequestFocus && !row.skipTraversal) row,
-    ];
-    if (rows.isEmpty) return KeyEventResult.ignored;
-    (down ? rows.first : rows.last).requestFocus();
-    return KeyEventResult.handled;
-  }
-
-  @override
-  Widget build(BuildContext context) => _BarMenuPlace(
-    card: _card,
-    child: Focus(
-      focusNode: _card,
-      includeSemantics: false,
-      onKeyEvent: _key,
-      child: widget.child,
-    ),
-  );
-}
-
-/// The card a menu's rows hand the keys back to when the pointer leaves.
-class _BarMenuPlace extends InheritedWidget {
-  const _BarMenuPlace({required this.card, required super.child});
-
-  final FocusNode card;
-
-  @override
-  bool updateShouldNotify(_BarMenuPlace old) => card != old.card;
-}
-
-/// A row in one of the bar's menus: the place (the one row with the keys)
-/// takes the muted fill, whatever moved it there; the pointer over a row
-/// makes it the place, and off it hands the keys back to the card.
-class _BarMenuRow extends StatelessWidget {
-  const _BarMenuRow({required this.states, required this.builder});
-
-  /// ui_core's states for the row.
-  final Set<WidgetState> states;
-
-  /// Paints the row for its states, focused when it is the place.
-  final Widget Function(Set<WidgetState> states) builder;
-
-  @override
-  Widget build(BuildContext context) {
-    // The row's own node (ui_core's press), heard here as it changes.
-    final node = Focus.maybeOf(context);
-    final place = node?.hasPrimaryFocus ?? false;
-    final off = MinimalKitStates(states).off;
-    return MouseRegion(
-      onEnter: (_) {
-        context.getInheritedWidgetOfExactType<_BarInput>()?.pointer.value =
-            true;
-        if (!off && node != null && !node.hasPrimaryFocus) node.requestFocus();
-      },
-      onExit: (_) {
-        if (node != null && node.hasPrimaryFocus) {
-          context
-              .getInheritedWidgetOfExactType<_BarMenuPlace>()
-              ?.card
-              .requestFocus();
-        }
-      },
-      child: builder({
-        for (final state in states)
-          if (state != WidgetState.focused && state != WidgetState.hovered)
-            state,
-        if (place && !off) WidgetState.focused,
-      }),
-    );
-  }
-}
-
-/// What last moved through the bar and its menus, the pointer or a key, so a
-/// menu opening knows which opened it: a key's press and release both come
-/// before the menu builds, so the keys held then cannot tell.
-class _BarInputScope extends StatefulWidget {
-  const _BarInputScope({required this.child});
-
-  final Widget child;
-
-  @override
-  State<_BarInputScope> createState() => _BarInputScopeState();
-}
-
-class _BarInputScopeState extends State<_BarInputScope> {
-  // A plain box, read when a menu opens: nothing repaints when it changes.
-  final _Box _pointer = _Box();
-
-  @override
-  Widget build(BuildContext context) => Focus(
-    canRequestFocus: false,
-    skipTraversal: true,
-    includeSemantics: false,
-    // A key on the bar or in a menu: whatever opens next, a key opened.
-    onKeyEvent: (node, event) {
-      if (event is KeyDownEvent) _pointer.value = false;
-      return KeyEventResult.ignored;
-    },
-    child: Listener(
-      onPointerDown: (_) => _pointer.value = true,
-      onPointerHover: (_) => _pointer.value = true,
-      child: _BarInput(pointer: _pointer, child: widget.child),
-    ),
-  );
-}
-
-class _Box {
-  bool value = false;
-}
-
-class _BarInput extends InheritedWidget {
-  const _BarInput({required this.pointer, required super.child});
-
-  /// Whether the pointer moved last.
-  final _Box pointer;
-
-  @override
-  bool updateShouldNotify(_BarInput old) => pointer != old.pointer;
 }

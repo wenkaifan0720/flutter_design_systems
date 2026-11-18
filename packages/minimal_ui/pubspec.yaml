@@ -1,27 +1,28 @@
 name: minimal_ui
 description: >-
   A precise, quiet design system for Flutter: hairlines, dense rows, mono tabular figures and one primary colour, in three presets by day and by night.
-version: 0.2.1
-homepage: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/minimal_ui
+version: 0.3.0
+homepage: https://wenkaifan0720.github.io/flutter_design_systems/minimal/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/minimal_ui
+issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
 topics:
   - design-system
   - widgets
   - ui
   - theme
 screenshots:
+  - description: "An issue tracker on Minimal at 1440 px by day, its list beside the open issue, and the same tracker on a 390 px phone by night."
+    path: screenshots/hero_tracker.png
   - description: "A habit tracker on Minimal at 1440 px by day, the list beside a habit's record."
     path: screenshots/ritual_1440_light.png
   - description: "The same habit tracker on a 390 px phone by night, with its tab bar."
     path: screenshots/ritual_390_dark.png
-  - description: "An issue tracker at 1440 px by night, issues by status beside the open one."
+  - description: "The issue tracker at 1440 px by night, issues by status beside the open one."
     path: screenshots/tracker_1440_dark.png
-  - description: "The issue tracker on a 390 px phone by day."
-    path: screenshots/tracker_390_light.png
   - description: "A bakery's back office at 1440 px by day, the morning's figures over a sortable orders table."
     path: screenshots/bakery_1440_light.png
-  - description: "The bakery's orders on a 390 px phone by night."
-    path: screenshots/bakery_390_dark.png
+  - description: "Minimal's command palette by night, its actions in groups with mono key caps, one dimmed because it needs a paid plan."
+    path: screenshots/palette_1440_dark.png
 
 environment:
   sdk: ">=3.13.0 <4.0.0"
@@ -32,7 +33,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.2.1
+  ui_core: ^0.3.0
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   lucide_icons_flutter: ">=3.1.25 <5.0.0"
@@ -42,6 +43,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
+  ui_core_test: ^0.1.0
 
 flutter:
   assets:

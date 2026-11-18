@@ -94,44 +94,52 @@ class MinimalPreview extends StatelessWidget {
     // The app's locale sets the direction again under it (English reads
     // left to right), so the direction around the preview is carried in.
     final direction = Directionality.maybeOf(context);
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      builder: (context, child) {
-        final host = MinimalHost(
-          light: light,
-          dark: dark,
-          brightness: brightness,
-          child: child ?? const SizedBox.shrink(),
-        );
-        return direction == null
-            ? host
-            : Directionality(textDirection: direction, child: host);
-      },
-      home: switch (presentation) {
-        MinimalPresentation.root => _root(child),
-        MinimalPresentation.pushed => _Presented(
-          route: (_, page) => MaterialPageRoute<void>(builder: (_) => page),
-          stage: _stage(),
-          child: child,
-        ),
-        MinimalPresentation.sheet => _Presented(
-          // As the live sheet page: the card centred over a wide window.
-          route: (context, page) =>
-              MinimalBottomSheet.centresAt(
-                context.size?.width ?? MediaQuery.sizeOf(context).width,
-              )
-              ? MinimalBottomSheet.centredRoute<void>(
-                  context: context,
-                  builder: (_) => page,
+    // Its own semantics container: the route under the preview's app
+    // stands a modal barrier, which hides from a screen reader whatever
+    // painted before it in its container. Without one, a preview placed
+    // after a heading on a page took the heading, and everything above
+    // it, out of the page's semantics.
+    return Semantics(
+      container: true,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        builder: (context, child) {
+          final host = MinimalHost(
+            light: light,
+            dark: dark,
+            brightness: brightness,
+            child: child ?? const SizedBox.shrink(),
+          );
+          return direction == null
+              ? host
+              : Directionality(textDirection: direction, child: host);
+        },
+        home: switch (presentation) {
+          MinimalPresentation.root => _root(child),
+          MinimalPresentation.pushed => _Presented(
+            route: (_, page) => MaterialPageRoute<void>(builder: (_) => page),
+            stage: _stage(),
+            child: child,
+          ),
+          MinimalPresentation.sheet => _Presented(
+            // As the live sheet page: the card centred over a wide window.
+            route: (context, page) =>
+                MinimalBottomSheet.centresAt(
+                  context.size?.width ?? MediaQuery.sizeOf(context).width,
                 )
-              : MinimalBottomSheet.pageRoute<void>(
-                  context: context,
-                  builder: (_) => page,
-                ),
-          stage: _stage(),
-          child: child,
-        ),
-      },
+                ? MinimalBottomSheet.centredRoute<void>(
+                    context: context,
+                    builder: (_) => page,
+                  )
+                : MinimalBottomSheet.pageRoute<void>(
+                    context: context,
+                    builder: (_) => page,
+                  ),
+            stage: _stage(),
+            child: child,
+          ),
+        },
+      ),
     );
   }
 

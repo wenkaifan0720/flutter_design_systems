@@ -21,6 +21,7 @@ import '../internal/text_entry.dart';
 import '../localizations.dart';
 import '../shapes.dart';
 import '../theme.dart';
+import 'feedback.dart';
 import 'input.dart';
 import 'pressable.dart';
 
@@ -87,7 +88,14 @@ double _rowStart(BuildContext context, double value, MinimalStyle? style) =>
 /// a tap takes an option; a screen reader hears the highlight and whether
 /// the typing found anything. With [requireSelection] it is a searchable
 /// select: leaving the field puts back [value]'s text, so it never holds
-/// text that is not an option. The behaviour is ui_core's
+/// text that is not an option.
+///
+/// With [search] the options come from a search that may take time and
+/// fail (a server's): it runs once typing rests for [debounceDuration],
+/// the panel says it is loading (a small spinner and "Loading") while it
+/// runs, and a failed one says so with a "Try again" row that Down reaches
+/// and Enter or a tap runs, the focus staying in the field; only the
+/// latest words' result shows. The behaviour is ui_core's
 /// ([DesignCombobox]); Minimal paints it.
 ///
 /// [fieldStyle] dresses the box over `components.textField`; [listStyle]
@@ -100,7 +108,9 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
   /// A combobox over [options].
   const MinimalCombobox({
     super.key,
-    required this.options,
+    this.options = const [],
+    this.search,
+    this.debounceDuration,
     this.displayString = _text,
     this.value,
     this.onSelected,
@@ -118,8 +128,17 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
     this.autofocus = false,
   });
 
-  /// The options typing filters (case-insensitively, by [displayString]).
+  /// The options typing filters (case-insensitively, by [displayString]),
+  /// when there is no [search].
   final Iterable<T> options;
+
+  /// Finds the options for the words typed, in place of filtering
+  /// [options]: a future for a search that takes time, which may fail.
+  final DesignOptionSearch<T>? search;
+
+  /// How long typing rests before [search] runs; null runs it at every
+  /// letter.
+  final Duration? debounceDuration;
 
   /// An option's words: what the filter matches and the field shows.
   final String Function(T option) displayString;
@@ -176,8 +195,27 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
       minimalFieldWordsStart(context, fieldStyle, icon: icon != null),
       listStyle,
     );
+    // A loading or failed search's line, where the rows would stand.
+    Widget line(Widget lead, String words) => Container(
+      constraints: const BoxConstraints(minHeight: 32),
+      padding: EdgeInsetsDirectional.only(
+        start: start,
+        end: MinimalSpacing.s8,
+        top: MinimalSpacing.s4,
+        bottom: MinimalSpacing.s4,
+      ),
+      child: Row(
+        children: [
+          lead,
+          const MinimalGap(MinimalSpacing.s8),
+          Expanded(child: Text(words, style: t.bodySmall.c(t.mutedForeground))),
+        ],
+      ),
+    );
     return DesignCombobox<T>(
       options: options,
+      search: search,
+      debounceDuration: debounceDuration,
       displayStringForOption: displayString,
       value: value,
       onSelected: onSelected,
@@ -240,6 +278,40 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
           ),
         ),
       ),
+      loadingBuilder: (context) => line(
+        const MinimalCircularProgressIndicator(size: 14),
+        MinimalLocalizations.of(context).loading,
+      ),
+      // The failure, then "Try again" as a row: lit while the keys are on
+      // it (ui_core moves them there on Down), run by Enter or a tap.
+      errorBuilder: (context, failed) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          line(
+            MinimalIcon(
+              LucideIcons.circleAlert,
+              size: MinimalIconSize.i14,
+              color: t.mutedForeground,
+            ),
+            DesignLocalizations.of(context).searchFailedMessage,
+          ),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: failed.retry,
+              child: MinimalKitRow(
+                states: {if (failed.focused) WidgetState.focused},
+                label: MinimalLocalizations.of(context).tryAgain,
+                icon: LucideIcons.rotateCw,
+                start: start,
+                style: listStyle,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -248,6 +320,14 @@ class MinimalCombobox<T extends Object> extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(IterableProperty<T>('options', options))
+      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
+        ),
+      )
       ..add(
         ObjectFlagProperty<String Function(T option)>.has(
           'displayString',

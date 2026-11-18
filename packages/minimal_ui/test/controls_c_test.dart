@@ -405,6 +405,70 @@ void main() {
       expect(habits, ['Meditate']);
     });
 
+    testWidgets('held open, its glyph leads its word in the page\'s '
+        'direction, the word at the trailing gutter', (tester) async {
+      for (final direction in TextDirection.values) {
+        await tester.pumpWidget(
+          _host(
+            Directionality(
+              textDirection: direction,
+              child: SizedBox(
+                width: 390,
+                child: MinimalDismissible(
+                  key: ValueKey(direction),
+                  label: 'Remove',
+                  onDismissed: () {},
+                  child: _row('Morning run'),
+                ),
+              ),
+            ),
+          ),
+        );
+        final row = tester.getRect(find.byType(MinimalDismissible));
+        final rtl = direction == TextDirection.rtl;
+        // A short pull from the trailing edge holds the word open.
+        final gesture = await tester.startGesture(
+          rtl
+              ? row.centerLeft + const Offset(20, 0)
+              : row.centerRight - const Offset(20, 0),
+        );
+        for (var i = 0; i < 8; i++) {
+          await gesture.moveBy(Offset(rtl ? 10 : -10, 0));
+          await tester.pump();
+        }
+        await gesture.up();
+        await tester.pumpAndSettle();
+        final glyph = tester.getRect(
+          find.descendant(
+            of: find.byType(MinimalDismissible),
+            matching: find.byType(MinimalIcon),
+          ),
+        );
+        final word = tester.getRect(find.text('Remove'));
+        if (rtl) {
+          expect(
+            glyph.left,
+            greaterThan(word.right),
+            reason: 'rtl: glyph, then word',
+          );
+          expect(
+            word.left - row.left,
+            closeTo(MinimalInsets.gutter.horizontal / 2, 1),
+          );
+        } else {
+          expect(
+            glyph.right,
+            lessThan(word.left),
+            reason: 'ltr: glyph, then word',
+          );
+          expect(
+            row.right - word.right,
+            closeTo(MinimalInsets.gutter.horizontal / 2, 1),
+          );
+        }
+      }
+    });
+
     testWidgets('the delete is offered as a custom semantics action', (
       tester,
     ) async {
@@ -942,6 +1006,7 @@ void main() {
     Future<Future<bool?>> raise(
       WidgetTester tester, {
       String? cancelLabel = 'Keep',
+      bool destructive = true,
     }) async {
       late BuildContext page;
       await tester.pumpWidget(
@@ -961,7 +1026,7 @@ void main() {
           message: 'Its history goes too.',
           confirmLabel: 'Delete',
           cancelLabel: cancelLabel,
-          destructive: true,
+          destructive: destructive,
         ),
       );
       await tester.pumpAndSettle();
@@ -991,10 +1056,15 @@ void main() {
       expect(await answer, isNull);
     });
 
-    testWidgets('Enter confirms and Escape dismisses with null', (
-      tester,
-    ) async {
+    // Focus opens on the safe answer (ui_core's DesignDialog): the keep of
+    // a destructive question, the confirm of a plain one.
+    testWidgets('Enter answers the safe action and Escape dismisses with '
+        'null', (tester) async {
       var answer = await raise(tester);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+      expect(await answer, isFalse);
+      answer = await raise(tester, destructive: false);
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
       await tester.pumpAndSettle();
       expect(await answer, isTrue);
@@ -1004,19 +1074,20 @@ void main() {
       expect(await answer, isNull);
     });
 
-    // The card holds focus so Enter can answer, but it is no stop of Tab's:
-    // a stop there shows nothing (the web walk found two blank stops a lap).
+    // Focus opens on a button, and Tab goes round the two: the card is no
+    // stop (a stop there shows nothing; the web walk found two blank stops
+    // a lap).
     testWidgets('Tab goes round the buttons, never the card', (tester) async {
       final answer = await raise(tester);
-      final card = FocusManager.instance.primaryFocus;
-      expect(card, isNotNull);
+      final opened = FocusManager.instance.primaryFocus;
+      expect(opened, isNotNull);
       final stops = <FocusNode?>[];
       for (var i = 0; i < 4; i++) {
         await tester.sendKeyEvent(LogicalKeyboardKey.tab);
         await tester.pump();
         stops.add(FocusManager.instance.primaryFocus);
       }
-      expect(stops, isNot(contains(card)));
+      expect(stops, contains(opened));
       expect(stops.toSet(), hasLength(2));
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
@@ -1029,14 +1100,24 @@ void main() {
       final handle = tester.ensureSemantics();
       final answer = await raise(tester, cancelLabel: null);
       expect(find.bySemanticsLabel('Keep'), findsNothing);
+      // The heading names the route; the route's node scopes it.
+      final heading = tester.getSemantics(
+        find.bySemanticsLabel('Delete habit?'),
+      );
       expect(
-        tester.getSemantics(find.bySemanticsLabel('Delete habit?')),
+        heading,
         matchesSemantics(
           label: 'Delete habit?',
-          scopesRoute: true,
+          isHeader: true,
           namesRoute: true,
         ),
       );
+      var scope = heading.parent;
+      while (scope != null &&
+          !scope.getSemanticsData().flagsCollection.scopesRoute) {
+        scope = scope.parent;
+      }
+      expect(scope, isNotNull);
       await tester.tap(find.bySemanticsLabel('Delete'));
       await tester.pumpAndSettle();
       expect(await answer, isTrue);

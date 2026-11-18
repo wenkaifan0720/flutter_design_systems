@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
@@ -315,6 +316,17 @@ class MinimalKbd extends StatelessWidget {
   /// announced once as `Shortcut Command Shift P`.
   static Widget chord(String keys, {Key? key}) => _Chord(keys, key: key);
 
+  /// A keyboard shortcut's keys as caps side by side, in the platform's
+  /// order and the reader's words, as Flutter's own menus print them
+  /// (ui_core's [designShortcutKeys]: `⇧ ⌘ N` on a Mac, `Ctrl Shift N`
+  /// elsewhere), announced once in words (`Shortcut Shift+Command+N`).
+  ///
+  /// ```dart
+  /// MinimalKbd.shortcut(const SingleActivator(LogicalKeyboardKey.keyK, meta: true))
+  /// ```
+  static Widget shortcut(MenuSerializableShortcut keys, {Key? key}) =>
+      _Shortcut(keys, key: key);
+
   /// What the cap prints.
   final String keyLabel;
 
@@ -402,5 +414,39 @@ class _Chord extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// A shortcut's caps side by side ([MinimalKbd.shortcut]).
+class _Shortcut extends StatelessWidget {
+  const _Shortcut(this.keys, {super.key});
+
+  final MenuSerializableShortcut keys;
+
+  @override
+  Widget build(BuildContext context) {
+    final caps = designShortcutKeys(context, keys);
+    return Semantics(
+      label: MinimalLocalizations.of(context)
+          .shortcut(designShortcutLabel(context, keys, appleSymbols: false)),
+      excludeSemantics: true,
+      // Keys read left to right in every language, as a code does.
+      child: Row(
+        textDirection: TextDirection.ltr,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final (i, key) in caps.indexed) ...[
+            if (i > 0) const MinimalGap(MinimalSpacing.s2),
+            MinimalKbd(key),
+          ],
+        ],
+      ),
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<MenuSerializableShortcut>('keys', keys));
   }
 }

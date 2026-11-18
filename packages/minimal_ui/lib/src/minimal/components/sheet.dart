@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
@@ -294,9 +295,13 @@ class MinimalBottomSheet extends StatelessWidget {
     };
   }
 
-  /// The motion both presenting paths run: a hard decelerate up, a quick
-  /// accelerate away — and nothing at all with [MinimalMotion.animate] off
-  /// (and, through [motionOf], under the platform's reduce-motion setting).
+  /// The timed motion of a sheet raised on Flutter's own
+  /// `ModalBottomSheetRoute` (a kit's own sheet): a hard decelerate up, a
+  /// quick accelerate away — and nothing at all with [MinimalMotion.animate]
+  /// off (and, through [motionOf], under the platform's reduce-motion
+  /// setting). Minimal's own sheets ([showMinimalBottomSheet], [pageRoute],
+  /// [showMinimalActionSheet]) move on ui_core's spring instead
+  /// ([MinimalChromeMetrics.sheetStiffness]), settling in about as long.
   static AnimationStyle get motion => MinimalMotion.animate
       ? const AnimationStyle(
           duration: MinimalChromeMetrics.sheetIn,
@@ -332,9 +337,11 @@ class MinimalBottomSheet extends StatelessWidget {
   /// [MinimalScaffold], whose derived bar
   /// prints the card's header and whose close pops this route. The card
   /// rides as low as the page is tall, up to [cap], and no wider than
-  /// [widthCap], centred. Model-authored code
-  /// presents its own pickers with [showMinimalBottomSheet] and never builds
-  /// this route.
+  /// [widthCap], centred. It is ui_core's route ([DesignBottomSheetRoute]):
+  /// it rises on a spring, a drag moves it with the finger and, let go low
+  /// enough or flung down, closes it, and the keyboard lifts it.
+  /// Model-authored code presents its own pickers with
+  /// [showMinimalBottomSheet] and never builds this route.
   static ModalRoute<T> pageRoute<T>({
     required BuildContext context,
     required WidgetBuilder builder,
@@ -342,24 +349,18 @@ class MinimalBottomSheet extends StatelessWidget {
     bool floating = true,
   }) {
     final t = context.minimalTheme;
-    // Measured on the presenting screen, not inside the route: the modal
-    // layer strips the top inset and would report none.
+    // Measured on the presenting screen, not inside the route.
     final gap = floating ? bottomGap(context) : 0.0;
     final maxHeight = cap(context, floating: floating);
-    return ModalBottomSheetRoute<T>(
+    return DesignBottomSheetRoute<T>(
       settings: settings,
-      backgroundColor: const Color(0x00000000),
-      elevation: 0,
-      modalBarrierColor: t.overlay,
-      isScrollControlled: true,
-      constraints: widthCap(floating: floating),
-      sheetAnimationStyle: motionOf(context),
-      builder: (sheetContext) => Padding(
-        padding: EdgeInsets.only(
-          left: floating ? MinimalChromeMetrics.sheetInset : 0,
-          right: floating ? MinimalChromeMetrics.sheetInset : 0,
-          bottom: gap + MediaQuery.viewInsetsOf(sheetContext).bottom,
-        ),
+      barrierColor: t.overlay,
+      barrierLabel: MinimalLocalizations.of(context).dismiss,
+      dampingRatio: MinimalChromeMetrics.routeDamping,
+      stiffness: MinimalChromeMetrics.sheetStiffness,
+      builder: (sheetContext, details) => _rising(
+        floating: floating,
+        gap: gap,
         child: ConstrainedBox(
           constraints: BoxConstraints(maxHeight: maxHeight),
           child: _PageCard(floating: floating, child: builder(sheetContext)),
@@ -367,6 +368,29 @@ class MinimalBottomSheet extends StatelessWidget {
       ),
     );
   }
+
+  /// [child], a card rising from the bottom edge, where it stands: inset
+  /// from the screen's sides and [gap] above its foot when [floating], and
+  /// centred under [widthCap] on a wide window.
+  static Widget _rising({
+    required bool floating,
+    required double gap,
+    required Widget child,
+  }) => Align(
+    alignment: Alignment.bottomCenter,
+    heightFactor: 1,
+    child: ConstrainedBox(
+      constraints: widthCap(floating: floating),
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: floating ? MinimalChromeMetrics.sheetInset : 0,
+          right: floating ? MinimalChromeMetrics.sheetInset : 0,
+          bottom: gap,
+        ),
+        child: child,
+      ),
+    ),
+  );
 
   /// The widest a sheet card stands: a sheet page centred in a wide window
   /// ([centredRoute]), and a sheet rising from the bottom of one
@@ -390,32 +414,35 @@ class MinimalBottomSheet extends StatelessWidget {
 
   /// The route a declared sheet page rides in a wide window: [pageRoute]'s
   /// card, every corner rounded, centred over the dimmed page at most
-  /// [centredWidth] wide, fading in and out as a dialog does (none at all
-  /// when motion is off). The scrim and Escape dismiss it. A
-  /// [MinimalSheetPage] takes it by itself where [centresAt] says so.
+  /// [centredWidth] wide, fading in and out as a dialog does (a short fade
+  /// under Reduce Motion). The scrim and Escape dismiss it; focus stays
+  /// inside it and goes back to what raised it as it closes. It is
+  /// ui_core's dialog route ([DesignDialogRoute]). A [MinimalSheetPage]
+  /// takes it by itself where [centresAt] says so.
   static Route<T> centredRoute<T>({
     required BuildContext context,
     required WidgetBuilder builder,
     RouteSettings? settings,
   }) {
     final t = context.minimalTheme;
-    final still = context.minimalStill;
     return MinimalCentredSheetRoute<T>(
       settings: settings,
       barrierColor: t.overlay,
       barrierLabel: MinimalLocalizations.of(context).dismiss,
-      transitionDuration: still ? Duration.zero : MinimalChromeMetrics.fadeIn,
-      transitionBuilder: (context, animation, _, child) => FadeTransition(
-        opacity: animation.drive(CurveTween(curve: MinimalMotion.out)),
-        child: child,
-      ),
-      pageBuilder: (routeContext, _, _) => SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(MinimalSpacing.s48),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: centredWidth),
-              child: _PageCard(floating: true, child: builder(routeContext)),
+      builder: (routeContext, details) => AnimatedBuilder(
+        animation: details.animation,
+        builder: (context, child) => Opacity(
+          opacity: details.animation.value.clamp(0.0, 1.0),
+          child: child,
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(MinimalSpacing.s48),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: centredWidth),
+                child: _PageCard(floating: true, child: builder(routeContext)),
+              ),
             ),
           ),
         ),
@@ -538,13 +565,17 @@ class MinimalBottomSheet extends StatelessWidget {
 /// declared as a sheet is raised by [MinimalSheetPage] instead, and its close
 /// is derived.
 ///
-/// The card rises from the bottom over [MinimalChromeMetrics.sheetIn] on a
-/// dimmed page, rides as low as its content is tall, and lifts with the
-/// keyboard so a sheet that edits never hides its own field. On a window
-/// wider than [MinimalBottomSheet.centredWidth] it stands centred at that
-/// width, as a dialog does, rather than spanning the window. Drag it down or
-/// tap the scrim to dismiss. `floating: false` presents the edge-attached
-/// drawer instead.
+/// The card rises from the bottom on a spring with no overshoot (settling
+/// in about [MinimalChromeMetrics.sheetIn]) over a dimmed page, rides as
+/// low as its content is tall, and lifts with the keyboard so a sheet that
+/// edits never hides its own field. On a window wider than
+/// [MinimalBottomSheet.centredWidth] it stands centred at that width, as a
+/// dialog does, rather than spanning the window. A drag moves it with the
+/// finger (its content, scrolled to its top, hands the drag on), and let go
+/// low enough or flung down it closes; a tap on the scrim or Escape closes
+/// it too, and focus goes back to the control that raised it.
+/// `floating: false` presents the edge-attached drawer instead. The route
+/// is ui_core's ([DesignBottomSheetRoute]); Minimal paints the card.
 ///
 /// ```dart
 /// await showMinimalBottomSheet<void>(context, title: 'New habit', subtitle: 'Habits', trailing: MinimalSheetAction('Create habit', onPressed: create, isDefaultAction: true), builder: (context) => form);
@@ -562,36 +593,42 @@ Future<T?> showMinimalBottomSheet<T>(
   final t = context.minimalTheme;
   final gap = floating ? MinimalBottomSheet.bottomGap(context) : 0.0;
   final maxHeight = MinimalBottomSheet.cap(context, floating: floating);
-  return showModalBottomSheet<T>(
-    context: context,
-    backgroundColor: const Color(0x00000000),
-    elevation: 0,
-    barrierColor: t.overlay,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    sheetAnimationStyle: MinimalBottomSheet.motionOf(context),
-    // The cap applies to the card inside its bottom gap, exactly as
-    // [pageRoute] applies it, so a shown card and a sheet page of the same
-    // content stand the same height. On a wide window the card stands
-    // centred, at most [MinimalBottomSheet.centredWidth] wide.
-    constraints: MinimalBottomSheet.widthCap(floating: floating),
-    builder: (sheetContext) => Padding(
-      padding: EdgeInsets.only(
-        left: floating ? MinimalChromeMetrics.sheetInset : 0,
-        right: floating ? MinimalChromeMetrics.sheetInset : 0,
-        bottom: gap + MediaQuery.viewInsetsOf(sheetContext).bottom,
-      ),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: maxHeight),
-        child: MinimalBottomSheet(
-          title: title,
-          subtitle: subtitle,
-          leading: leading,
-          trailing: trailing,
-          accessory: accessory,
+  final navigator = Navigator.of(context, rootNavigator: true);
+  // The root navigator may stand above the page's own scopes, so the tokens
+  // travel with the sheet.
+  final themes = InheritedTheme.capture(from: context, to: navigator.context);
+  return navigator.push<T>(
+    DesignBottomSheetRoute<T>(
+      barrierColor: t.overlay,
+      barrierLabel: MinimalLocalizations.of(context).dismiss,
+      semanticLabel: title,
+      dampingRatio: MinimalChromeMetrics.routeDamping,
+      stiffness: MinimalChromeMetrics.sheetStiffness,
+      // The cap applies to the card inside its bottom gap, exactly as
+      // [MinimalBottomSheet.pageRoute] applies it, so a shown card and a
+      // sheet page of the same content stand the same height. On a wide
+      // window the card stands centred, at most
+      // [MinimalBottomSheet.centredWidth] wide.
+      builder: (sheetContext, details) => themes.wrap(
+        MinimalBottomSheet._rising(
           floating: floating,
-          safe: !floating,
-          child: SingleChildScrollView(child: builder(sheetContext)),
+          gap: gap,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: maxHeight),
+            child: MinimalBottomSheet(
+              title: title,
+              subtitle: subtitle,
+              leading: leading,
+              trailing: trailing,
+              accessory: accessory,
+              floating: floating,
+              safe: !floating,
+              child: SingleChildScrollView(
+                controller: details.scrollController,
+                child: builder(sheetContext),
+              ),
+            ),
+          ),
         ),
       ),
     ),

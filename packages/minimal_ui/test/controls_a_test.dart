@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart'
     show debugDefaultTargetPlatformOverride;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show RenderEditable, RenderParagraph;
-import 'package:flutter/semantics.dart' show SemanticsData;
+import 'package:flutter/semantics.dart' show SemanticsData, SemanticsRole;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
@@ -955,7 +955,7 @@ void main() {
         node.getSemanticsData().flagsCollection.isSelected,
         Tristate.isTrue,
       );
-      expect(node.getSemanticsData().flagsCollection.isButton, isTrue);
+      expect(node.getSemanticsData().role, SemanticsRole.tab);
 
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
       await tester.pump();

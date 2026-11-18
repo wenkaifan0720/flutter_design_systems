@@ -2,7 +2,7 @@
 /// with their legend, readout, loading and empty states.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 
 import '../kit.dart';

@@ -1,5 +1,5 @@
 /// Everything `minimal_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (internal/bar_actions.dart, internal/cap_label.dart, internal/centred_sheet_route.dart, internal/column_plan.dart, internal/controls.dart, internal/edge_fade.dart, internal/face.dart, internal/field.dart, internal/give_way_row.dart, internal/kit_paint.dart, internal/lucide_cut.g.dart, internal/menu_keys.dart, internal/page_foot.dart, internal/platform_words.dart, internal/rail_action.dart, internal/sheet_header.dart, internal/styled.dart, internal/tap_band.dart, internal/text_entry.dart, internal/today_mark.dart, internal/trailing_glyph.dart).
+/// keeps back (internal/bar_actions.dart, internal/button_paint.dart, internal/cap_label.dart, internal/centred_sheet_route.dart, internal/column_plan.dart, internal/controls.dart, internal/edge_fade.dart, internal/face.dart, internal/field.dart, internal/give_way_row.dart, internal/kit_paint.dart, internal/lucide_cut.g.dart, internal/menu_keys.dart, internal/page_foot.dart, internal/platform_words.dart, internal/rail_action.dart, internal/sheet_header.dart, internal/styled.dart, internal/tap_band.dart, internal/text_entry.dart, internal/today_mark.dart, internal/trailing_glyph.dart).
 ///
 /// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
 /// rest of your app stays on the package:
@@ -14,12 +14,12 @@
 library;
 
 export 'package:ui_core/ui_core.dart';
-export 'package:ui_core/alignment.dart';
 export 'package:ui_core/inventory.dart';
 
 export 'minimal_ui.dart';
 export 'minimal_host.dart';
 export 'src/minimal/internal/bar_actions.dart';
+export 'src/minimal/internal/button_paint.dart';
 export 'src/minimal/internal/cap_label.dart';
 export 'src/minimal/internal/centred_sheet_route.dart';
 export 'src/minimal/internal/column_plan.dart';

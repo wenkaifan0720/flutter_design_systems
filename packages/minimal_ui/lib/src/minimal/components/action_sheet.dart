@@ -2,8 +2,8 @@
 library;
 
 import 'package:flutter/foundation.dart';
-import 'package:material_ui/material_ui.dart' show showModalBottomSheet;
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/cap_label.dart';
@@ -221,8 +221,12 @@ class _Row extends StatelessWidget {
 
 /// Raises a [MinimalActionSheet] over the app from the bottom, on a dimmed
 /// page, with a Cancel row. An action's press closes the sheet first, then
-/// runs; a tap on the scrim, a drag down or Cancel closes it with nothing
-/// done.
+/// runs; a tap on the scrim, a drag down, Escape or Cancel closes it with
+/// nothing done, and focus goes back to the control that raised it. It
+/// rises on a spring with no overshoot; the route is ui_core's
+/// ([DesignBottomSheetRoute]). On a wide window it stands centred at a
+/// bottom sheet's width ([MinimalBottomSheet.widthCap]); a phone sees it
+/// span the screen inside its margins.
 Future<void> showMinimalActionSheet(
   BuildContext context, {
   required List<MinimalActionSheetAction> actions,
@@ -230,44 +234,54 @@ Future<void> showMinimalActionSheet(
   String? message,
 }) {
   final t = context.minimalTheme;
-  return showModalBottomSheet<void>(
-    context: context,
-    backgroundColor: const Color(0x00000000),
-    elevation: 0,
-    barrierColor: t.overlay,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    sheetAnimationStyle: MinimalBottomSheet.motionOf(context),
-    constraints: const BoxConstraints(),
-    builder: (sheet) {
-      void close() => Navigator.of(sheet).pop();
-      return Padding(
-        padding: EdgeInsets.fromLTRB(
-          MinimalChromeMetrics.sheetInset,
-          0,
-          MinimalChromeMetrics.sheetInset,
-          MinimalBottomSheet.bottomGap(sheet),
-        ),
-        child: MinimalActionSheet(
-          title: title,
-          message: message,
-          onCancel: close,
-          actions: [
-            for (final a in actions)
-              MinimalActionSheetAction(
-                a.label,
-                icon: a.icon,
-                destructive: a.destructive,
-                onPressed: a.onPressed == null
-                    ? null
-                    : () {
-                        close();
-                        a.onPressed!();
-                      },
+  final navigator = Navigator.of(context, rootNavigator: true);
+  final themes = InheritedTheme.capture(from: context, to: navigator.context);
+  return navigator.push<void>(
+    DesignBottomSheetRoute<void>(
+      barrierColor: t.overlay,
+      barrierLabel: MinimalLocalizations.of(context).dismiss,
+      semanticLabel: title,
+      dampingRatio: MinimalChromeMetrics.routeDamping,
+      stiffness: MinimalChromeMetrics.sheetStiffness,
+      builder: (sheet, details) {
+        void close() => Navigator.of(sheet).pop();
+        return themes.wrap(
+          Align(
+            alignment: Alignment.bottomCenter,
+            heightFactor: 1,
+            child: ConstrainedBox(
+              constraints: MinimalBottomSheet.widthCap(floating: true),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  MinimalChromeMetrics.sheetInset,
+                  0,
+                  MinimalChromeMetrics.sheetInset,
+                  MinimalBottomSheet.bottomGap(sheet),
+                ),
+                child: MinimalActionSheet(
+                  title: title,
+                  message: message,
+                  onCancel: close,
+                  actions: [
+                    for (final a in actions)
+                      MinimalActionSheetAction(
+                        a.label,
+                        icon: a.icon,
+                        destructive: a.destructive,
+                        onPressed: a.onPressed == null
+                            ? null
+                            : () {
+                                close();
+                                a.onPressed!();
+                              },
+                      ),
+                  ],
+                ),
               ),
-          ],
-        ),
-      );
-    },
+            ),
+          ),
+        );
+      },
+    ),
   );
 }

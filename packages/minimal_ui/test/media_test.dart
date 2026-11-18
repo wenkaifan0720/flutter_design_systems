@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:minimal_ui/minimal_ui.dart';
 import 'package:minimal_ui/minimal_host.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
 /// A 1 × 1 PNG: real bytes for the engine's decoder.
 final Uint8List _png = base64Decode(
@@ -184,14 +185,30 @@ Widget _picture(ImageProvider provider) => Image(
 );
 
 /// A widget test that leaves the network image client as it found it.
+///
+/// The decoded photo itself is not held to its disposal: after a test that
+/// draws one, the frame Flutter's image completer emitted (its own copy,
+/// image_stream.dart's `_decodeNextFrameAndSchedule`) stays open past the
+/// test's teardown, outside the image cache and with none of the slot's
+/// relays still following it (counted after every test: none), and a plain
+/// `Image` of an `AssetImage` here does the same. Whether the leak tracker
+/// sees it is a matter of when the garbage collector runs: once in the
+/// everyday tier on Flutter 3.50 under heavy load (11-17), never alone. Every
+/// other object the tests make stays tracked.
 void _mediaTest(String description, Future<void> Function(WidgetTester) body) {
-  testWidgets(description, (tester) async {
-    try {
-      await body(tester);
-    } finally {
-      debugNetworkImageHttpClientProvider = null;
-    }
-  });
+  testWidgets(
+    description,
+    (tester) async {
+      try {
+        await body(tester);
+      } finally {
+        debugNetworkImageHttpClientProvider = null;
+      }
+    },
+    experimentalLeakTesting: LeakTesting.settings.withIgnored(
+      notDisposed: const {'Image': null},
+    ),
+  );
 }
 
 void main() {
