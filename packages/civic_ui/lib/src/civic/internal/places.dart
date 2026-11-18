@@ -15,26 +15,6 @@ import 'spring.dart';
 // CivicSideNavigation stand their own pressable places in, and what
 // CivicShellFrame gives ui_core's DesignAdaptiveShell to paint with.
 
-/// The size the bar's and the rail's place names set at, for the places
-/// under it.
-class CivicPlaceNames extends InheritedWidget {
-  /// [names] for [child]'s places.
-  const CivicPlaceNames({super.key, required this.names, required super.child});
-
-  /// The names' scale.
-  final TextScaler names;
-
-  /// The scale at [context]; the reader's own, at most 1.3 times, outside
-  /// a band or a rail.
-  static TextScaler of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<CivicPlaceNames>()?.names ??
-      MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.3);
-
-  @override
-  bool updateShouldNotify(CivicPlaceNames oldWidget) =>
-      oldWidget.names != names;
-}
-
 /// A bar place's name, as [CivicBarPlace] sets it.
 TextStyle civicPlaceNameStyle(
   BuildContext context,
@@ -49,34 +29,7 @@ TextStyle civicPlaceNameStyle(
       fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
     );
 
-/// The places' names all set at one size: the reader's text size, at most
-/// 1.3 times (the bar keeps its height), and no larger than lets the
-/// longest of [labels], in bold, fit a place's [share] of the bar.
-TextScaler civicPlaceNames(
-  BuildContext context,
-  List<CivicStyle?> styles,
-  List<String> labels,
-  double share,
-) {
-  final asked = MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.3);
-  if (!share.isFinite || labels.isEmpty) return asked;
-  final style = civicPlaceNameStyle(context, styles, bold: true);
-  final size = style.fontSize ?? 15;
-  var factor = asked.scale(size) / size;
-  for (final label in labels) {
-    final painter = TextPainter(
-      text: TextSpan(text: label, style: style),
-      textDirection: Directionality.of(context),
-      maxLines: 1,
-    )..layout();
-    if (painter.width > 0) factor = math.min(factor, share / painter.width);
-    painter.dispose();
-  }
-  return TextScaler.linear(factor);
-}
-
-/// The band along a phone's foot under a hairline, [places] sharing its
-/// width, their names at one size ([civicPlaceNames]).
+/// Bottom navigation that wraps destinations when their labels need more room.
 class CivicPlacesBand extends StatelessWidget {
   /// The band of [places], named [labels].
   const CivicPlacesBand({
@@ -85,6 +38,7 @@ class CivicPlacesBand extends StatelessWidget {
     required this.labels,
     required this.places,
     this.group,
+    this.trailing,
   });
 
   /// The places' styles, the nearest first.
@@ -100,41 +54,85 @@ class CivicPlacesBand extends StatelessWidget {
   /// outside it), when given.
   final Widget Function(Widget places)? group;
 
+  /// An action alongside the navigation, outside the group of destinations.
+  final Widget? trailing;
+
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final row = Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [for (final place in places) Expanded(child: place)],
-    );
     return Semantics(
       container: true,
       explicitChildNodes: true,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: DesignStyleOf(styles, const {}).fill ?? t.background,
-          // A hairline over the places, as over an app's action foot: no
-          // ink edge round the app's own chrome.
           border: Border(top: BorderSide(color: t.rule)),
         ),
         child: Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.paddingOf(context).bottom,
           ),
-          child: SizedBox(
-            height: CivicChromeMetrics.navigationBar,
-            child: LayoutBuilder(
-              builder: (context, constraints) => CivicPlaceNames(
-                names: civicPlaceNames(
-                  context,
-                  styles,
-                  labels,
-                  constraints.maxWidth / math.max(1, labels.length) -
-                      2 * CivicSpacing.s4,
+          child: Row(
+            children: [
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    final style = civicPlaceNameStyle(
+                      context,
+                      styles,
+                      bold: true,
+                    );
+                    final widths = [
+                      for (final label in labels)
+                        (_longestWord(context, label, style) +
+                                2 * CivicSpacing.s4)
+                            .clamp(48.0, math.max(48.0, width)),
+                    ];
+                    final rows = <Widget>[];
+                    for (var first = 0; first < places.length;) {
+                      var end = first + 1;
+                      var used = widths[first];
+                      while (end < places.length &&
+                          used + widths[end] <= width) {
+                        used += widths[end++];
+                      }
+                      final share = width / (end - first);
+                      final equal = widths
+                          .getRange(first, end)
+                          .every((w) => w <= share);
+                      rows.add(
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              for (var i = first; i < end; i++)
+                                Expanded(
+                                  flex: equal ? 1 : widths[i].ceil(),
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      minHeight:
+                                          CivicChromeMetrics.navigationBar,
+                                    ),
+                                    child: places[i],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                      first = end;
+                    }
+                    final destinations = Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: rows,
+                    );
+                    return group?.call(destinations) ?? destinations;
+                  },
                 ),
-                child: group?.call(row) ?? row,
               ),
-            ),
+              ?trailing,
+            ],
           ),
         ),
       ),
@@ -170,6 +168,23 @@ class CivicPlacesRail extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.civicTheme;
     final first = lead;
+    final style = civicPlaceNameStyle(context, styles, bold: true);
+    final maxWidth = MediaQuery.sizeOf(context).width / 3;
+    final width = labels
+        .fold<double>(
+          CivicChromeMetrics.navigationRail,
+          (w, label) => math.max(
+            w,
+            _longestWord(context, label, style) +
+                2 * CivicSpacing.s4 +
+                CivicMetrics.edge,
+          ),
+        )
+        .clamp(
+          CivicChromeMetrics.navigationRail,
+          math.max(maxWidth, CivicChromeMetrics.navigationRail),
+        )
+        .toDouble();
     return Semantics(
       container: true,
       explicitChildNodes: true,
@@ -179,36 +194,30 @@ class CivicPlacesRail extends StatelessWidget {
           border: BorderDirectional(end: BorderSide(color: t.rule)),
         ),
         child: SizedBox(
-          width: CivicChromeMetrics.navigationRail,
-          child: CivicPlaceNames(
-            names: civicPlaceNames(
-              context,
-              styles,
-              labels,
-              CivicChromeMetrics.navigationRail - 2 * CivicSpacing.s4,
+          width: width,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              top: CivicSpacing.s12,
+              bottom: CivicSpacing.s12 + MediaQuery.paddingOf(context).bottom,
             ),
-            child: SingleChildScrollView(
-              padding: EdgeInsets.only(
-                top: CivicSpacing.s12,
-                bottom: CivicSpacing.s12 + MediaQuery.paddingOf(context).bottom,
-              ),
-              child: Column(
-                children: [
-                  if (first != null)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: CivicSpacing.s4,
-                        bottom: CivicSpacing.s16,
-                      ),
-                      child: first,
+            child: Column(
+              children: [
+                if (first != null)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: CivicSpacing.s4,
+                      bottom: CivicSpacing.s16,
                     ),
-                  for (final place in places)
-                    SizedBox(
-                      height: CivicChromeMetrics.railPlace,
-                      child: place,
+                    child: first,
+                  ),
+                for (final place in places)
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: CivicChromeMetrics.railPlace,
                     ),
-                ],
-              ),
+                    child: place,
+                  ),
+              ],
             ),
           ),
         ),
@@ -230,6 +239,7 @@ class CivicPlacesSide extends StatelessWidget {
     required this.places,
     this.header,
     this.footer,
+    this.headerInset = CivicSpacing.s24,
   });
 
   /// The places' styles, the nearest first.
@@ -237,6 +247,9 @@ class CivicPlacesSide extends StatelessWidget {
 
   /// The places, pressable.
   final List<Widget> places;
+
+  /// Space above the header.
+  final double headerInset;
 
   /// What stands above the places.
   final Widget? header;
@@ -258,7 +271,10 @@ class CivicPlacesSide extends StatelessWidget {
           least: CivicChromeMetrics.sideNavigation,
           most: MediaQuery.sizeOf(context).width / 3,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: CivicSpacing.s24),
+            padding: EdgeInsets.only(
+              top: headerInset,
+              bottom: CivicSpacing.s24,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -386,8 +402,7 @@ class _RenderWholeLine extends RenderProxyBox {
 /// A place's face in the band or the rail ([rail]): its glyph over its
 /// name, the current one in bold ink under (in the rail, beside) a bar in
 /// the action colour; a press greys it, a keyboard focus lays it on the
-/// yellow plate. Its names' size is the band's or the rail's
-/// ([CivicPlaceNames]).
+/// yellow plate. Labels use the reader's text size.
 class CivicBarPlace extends StatelessWidget {
   /// The face of the place [label].
   const CivicBarPlace({
@@ -425,7 +440,6 @@ class CivicBarPlace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.civicTheme;
-    final names = CivicPlaceNames.of(context);
     return CivicSpringValue(
       value: states.contains(WidgetState.focused) ? 1 : 0,
       spring: CivicMotion.focus,
@@ -479,8 +493,9 @@ class CivicBarPlace extends StatelessWidget {
                   child: Padding(
                     padding: EdgeInsets.only(
                       top: rail
-                          ? CivicSpacing.s4
-                          : CivicSpacing.s4 - CivicMetrics.edge,
+                          ? CivicSpacing.s8
+                          : CivicSpacing.s8 - CivicMetrics.edge,
+                      bottom: CivicSpacing.s4,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -491,30 +506,22 @@ class CivicBarPlace extends StatelessWidget {
                           size: 24,
                           color: ink,
                         ),
-                        // A place's name is never cut: every name sets at
-                        // the size the longest fits its share of the bar
-                        // at, inside a gap from its neighbours.
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: CivicSpacing.s4,
                           ),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              label,
-                              maxLines: 1,
-                              softWrap: false,
-                              textScaler: names,
-                              style: civicPlaceNameStyle(
-                                context,
-                                styles,
-                                bold: selected,
-                                states: {
-                                  ...states,
-                                  if (selected) WidgetState.selected,
-                                },
-                              ).copyWith(color: ink),
-                            ),
+                          child: Text(
+                            label,
+                            textAlign: TextAlign.center,
+                            style: civicPlaceNameStyle(
+                              context,
+                              styles,
+                              bold: selected,
+                              states: {
+                                ...states,
+                                if (selected) WidgetState.selected,
+                              },
+                            ).copyWith(color: ink),
                           ),
                         ),
                       ],

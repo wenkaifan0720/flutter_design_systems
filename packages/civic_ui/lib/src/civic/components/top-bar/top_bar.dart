@@ -63,7 +63,7 @@ class CivicTopBar extends StatelessWidget {
   /// Called by a press on the title; null leaves it words.
   final VoidCallback? onTitlePressed;
 
-  /// The band's height, under the safe area, its rule aside.
+  /// Minimum height of the band, excluding its bottom rule and the safe area.
   static const double height = CivicChromeMetrics.topBar;
 
   /// Overrides for this bar's look.
@@ -149,6 +149,7 @@ class CivicTopBar extends StatelessWidget {
     final onBand = so.foreground ?? onBandOf(t);
     final heading = text.headingS.merge(so.textStyle);
     final top = MediaQuery.paddingOf(context).top;
+    final inset = civicHeaderInset(context, heading);
     final mark = emblem;
     final lead = leading;
     final name = Row(
@@ -161,12 +162,7 @@ class CivicTopBar extends StatelessWidget {
             child: mark,
           ),
         Flexible(
-          child: Text(
-            title,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: heading.copyWith(color: onBand),
-          ),
+          child: Text(title, style: heading.copyWith(color: onBand)),
         ),
       ],
     );
@@ -231,11 +227,7 @@ class CivicTopBar extends StatelessWidget {
                                   focus,
                                 ),
                               ),
-                              child: Text(
-                                title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                              child: Text(title),
                             ),
                           ),
                         ],
@@ -277,7 +269,14 @@ class CivicTopBar extends StatelessWidget {
                       Expanded(
                         child: Align(
                           alignment: AlignmentDirectional.centerStart,
-                          child: titleWidget,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: press == null
+                                  ? inset
+                                  : inset - CivicSpacing.s8,
+                            ),
+                            child: titleWidget,
+                          ),
                         ),
                       ),
                       ...actions,

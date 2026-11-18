@@ -4,6 +4,35 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme.dart';
 import 'paint.dart';
 
+/// The surface shared by select and combobox menus.
+class CivicOptionSurface extends StatelessWidget {
+  /// Clips [child] to the inside of the menu border.
+  const CivicOptionSurface({super.key, required this.child});
+
+  /// The scrolling list of options.
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.civicTheme;
+    const inset = 1.0;
+    return DecoratedBox(
+      decoration: civicFloating(
+        face: t.background,
+        hairline: t.rule,
+        dark: t.isDark,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(inset),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(CivicMetrics.corner - inset),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
 /// One option of a list a field opens (a select's, a combobox's), in
 /// Civic's own material, each state its own and none read as another:
 ///

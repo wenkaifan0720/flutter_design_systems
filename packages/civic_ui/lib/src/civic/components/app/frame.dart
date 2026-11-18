@@ -174,19 +174,20 @@ class CivicShellFrame extends StatelessWidget {
         // A phone: the places along the foot, the act's square at their end.
         // A bar is a tab bar to a screen reader, which holds its tabs alone:
         // the shell's group stands round the places, the act outside it.
-        DesignNavigationMode.bar => Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: CivicPlacesBand(
-                styles: styles,
-                labels: labels,
-                places: details.destinations,
-                group: details.group,
-              ),
-            ),
-            if (act != null) _ActSquare(act),
-          ],
+        DesignNavigationMode.bar => CivicPlacesBand(
+          styles: styles,
+          labels: labels,
+          places: details.destinations,
+          group: details.group,
+          trailing: act == null
+              ? null
+              : Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    start: CivicSpacing.s4,
+                    end: CivicSpacing.s8,
+                  ),
+                  child: _Act(act, wide: false),
+                ),
         ),
         // A tablet: the phone's places down the start, the act over them.
         DesignNavigationMode.rail => beside(
@@ -200,6 +201,10 @@ class CivicShellFrame extends StatelessWidget {
         DesignNavigationMode.sidebar => beside(
           CivicPlacesSide(
             styles: styles,
+            headerInset: brand == null
+                ? CivicSpacing.s24
+                : MediaQuery.paddingOf(context).top +
+                      civicHeaderInset(context, context.civicText.headingS),
             header: brand == null
                 ? null
                 : Text(brand!, style: context.civicText.headingS),
@@ -225,36 +230,6 @@ class CivicShellFrame extends StatelessWidget {
       ..add(
         FlagProperty('showPlaces', value: showPlaces, ifFalse: 'places hidden'),
       );
-  }
-}
-
-/// The act's square on a phone: its glyph on the bar's ground and rule, at
-/// the bar's height above the safe inset.
-class _ActSquare extends StatelessWidget {
-  const _ActSquare(this.action);
-
-  final ShellAction action;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.civicTheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: t.background,
-        border: Border(top: BorderSide(color: t.rule)),
-      ),
-      child: Padding(
-        padding: EdgeInsetsDirectional.only(
-          start: CivicSpacing.s4,
-          end: CivicSpacing.s8,
-          bottom: MediaQuery.paddingOf(context).bottom,
-        ),
-        child: SizedBox(
-          height: CivicNavigationBar.height,
-          child: Center(child: _Act(action, wide: false)),
-        ),
-      ),
-    );
   }
 }
 
@@ -297,6 +272,7 @@ class _Act extends StatelessWidget {
     return Align(
       alignment: AlignmentDirectional.centerStart,
       widthFactor: 1,
+      heightFactor: 1,
       child: CivicIconButton(
         key: action.key,
         icon: action.icon,

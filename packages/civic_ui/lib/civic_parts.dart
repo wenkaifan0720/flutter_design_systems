@@ -1,12 +1,8 @@
-/// Everything `civic_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (internal/announce.dart, internal/field_frame.dart, internal/fit_words.dart, internal/frame_scope.dart, internal/list_option.dart, internal/option.dart, internal/overhang.dart, internal/paint.dart, internal/places.dart, internal/platform_words.dart, internal/spring.dart, internal/underline.dart).
+/// Helpers for customizing components copied from `civic_ui`.
 ///
-/// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
-/// rest of your app stays on the package:
+/// Import this library in the copied widget to use its theme and component helpers.
 ///
 /// ```dart
-/// // lib/ui/my_card.dart, copied from package:civic_ui/src/civic/... and renamed.
-/// import 'package:flutter/widgets.dart';
 /// import 'package:civic_ui/civic_parts.dart';
 /// ```
 ///

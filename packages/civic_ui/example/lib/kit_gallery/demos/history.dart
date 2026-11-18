@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
 import '../kit.dart';
+import '../kit_permits.dart' show PermitsSay;
 
 Widget kitHistoryDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
@@ -13,26 +14,32 @@ Widget kitHistoryDemo(Brightness brightness) => kitScreen(
     KitSection(
       title: 'Timeline',
       children: [
-        CivicTimeline(
-          entries: [
-            CivicTimelineEntry(
-              title: 'Permit approved',
-              date: '7 November 2026',
-              child: CivicLink(
-                onPressed: () {},
-                child: const Text('Download your permit'),
+        Builder(
+          builder: (context) => CivicTimeline(
+            entries: [
+              CivicTimelineEntry(
+                title: context.say('Permit approved'),
+                date: context.say('7 November 2026'),
+                child: CivicLink(
+                  onPressed: () {},
+                  child: Text(context.say('Download your permit')),
+                ),
               ),
-            ),
-            const CivicTimelineEntry(
-              title: 'Proof of address checked',
-              date: '5 November 2026',
-              child: Text('We matched your tenancy agreement to your address.'),
-            ),
-            const CivicTimelineEntry(
-              title: 'Application received',
-              date: '3 November 2026',
-            ),
-          ],
+              CivicTimelineEntry(
+                title: context.say('Proof of address checked'),
+                date: context.say('5 November 2026'),
+                child: Text(
+                  context.say(
+                    'We matched your tenancy agreement to your address.',
+                  ),
+                ),
+              ),
+              CivicTimelineEntry(
+                title: context.say('Application received'),
+                date: context.say('3 November 2026'),
+              ),
+            ],
+          ),
         ),
       ],
     ),

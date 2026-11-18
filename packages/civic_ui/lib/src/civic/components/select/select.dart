@@ -416,56 +416,43 @@ class _CivicSelectListState<T> extends State<_CivicSelectList<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.civicTheme;
     final items = widget.items;
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: widget.maxHeight),
-      child: DecoratedBox(
-        // The list floats over the page: a card's face, a hairline round
-        // it, a soft shadow; no ink edge.
-        decoration: civicFloating(
-          face: t.background,
-          hairline: t.rule,
-          dark: t.isDark,
-        ),
-        // The rows stand inside the hairline by as much as the field's words
-        // stand inside its edge, so their words stand on the field's words.
-        child: Padding(
-          padding: const EdgeInsets.all(CivicMetrics.edge - 1),
-          child: Focus(
-            canRequestFocus: false,
-            skipTraversal: true,
-            includeSemantics: false,
-            onKeyEvent: _onKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (var i = 0; i < items.length; i++)
-                    DesignPressable(
-                      focusNode: _nodes[i],
-                      onPressed: items[i].enabled
-                          ? () => widget.onChosen(items[i].value)
-                          : null,
-                      selected: items[i].value == widget.value,
-                      semanticLabel: items[i].label,
-                      semanticSelected: items[i].value == widget.value,
-                      excludeSemantics: true,
-                      mouseCursor: items[i].enabled
-                          ? SystemMouseCursors.click
-                          : SystemMouseCursors.basic,
-                      builder: (context, states, _) => CivicListOption(
-                        label: items[i].label,
-                        chosen: items[i].value == widget.value,
-                        hovered: states.contains(WidgetState.hovered),
-                        pressed: states.contains(WidgetState.pressed),
-                        focused: states.contains(WidgetState.focused),
-                        enabled: items[i].enabled,
-                      ),
+      child: CivicOptionSurface(
+        child: Focus(
+          canRequestFocus: false,
+          skipTraversal: true,
+          includeSemantics: false,
+          onKeyEvent: _onKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < items.length; i++)
+                  DesignPressable(
+                    focusNode: _nodes[i],
+                    onPressed: items[i].enabled
+                        ? () => widget.onChosen(items[i].value)
+                        : null,
+                    selected: items[i].value == widget.value,
+                    semanticLabel: items[i].label,
+                    semanticSelected: items[i].value == widget.value,
+                    excludeSemantics: true,
+                    mouseCursor: items[i].enabled
+                        ? SystemMouseCursors.click
+                        : SystemMouseCursors.basic,
+                    builder: (context, states, _) => CivicListOption(
+                      label: items[i].label,
+                      chosen: items[i].value == widget.value,
+                      hovered: states.contains(WidgetState.hovered),
+                      pressed: states.contains(WidgetState.pressed),
+                      focused: states.contains(WidgetState.focused),
+                      enabled: items[i].enabled,
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
         ),

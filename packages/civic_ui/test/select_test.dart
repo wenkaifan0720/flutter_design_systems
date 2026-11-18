@@ -103,6 +103,32 @@ Future<(Rect field, Rect list)> _open(
 
 void main() {
   setUpAll(_loadFonts);
+  testWidgets('the closed select announces its chosen value once', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      kitApp(
+        brightness: Brightness.light,
+        home: CivicSelect<String>(
+          labelText: 'Paper size',
+          value: 'A4',
+          items: const [
+            CivicSelectItem(value: 'A4', label: 'A4'),
+            CivicSelectItem(value: 'A3', label: 'A3'),
+          ],
+          onChanged: (_) {},
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final fields = tester.semantics
+        .simulatedAccessibilityTraversal()
+        .map((node) => node.getSemanticsData())
+        .where((data) => data.label.contains('Paper size'));
+    expect(fields, hasLength(1));
+    expect(fields.single.label, 'Paper size');
+    expect(fields.single.value, 'A4');
+  });
 
   for (final width in [390.0, 1440.0]) {
     for (final direction in TextDirection.values) {

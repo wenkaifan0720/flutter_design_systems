@@ -1,3 +1,18 @@
+## 0.2.2
+
+- Tabs keep a solid selection marker up to the ends of a scrolling strip.
+  Arabic labels share the same baseline as other labels and keep clear of their underlines.
+- The top bar grows with the title. On wide screens, the service name in the side navigation
+  aligns with the first line of the page title.
+- Bottom navigation and rail destinations use the system text size. At larger sizes, labels wrap
+  and the bottom bar can use additional rows.
+- Long attachment names wrap so readers can see the extension. Sortable table headings keep each word
+  whole and place the sort arrow below the label when space is tight.
+- Select and combobox highlights follow the inside corners of the menu.
+- The embedded permit service keeps the gallery’s language and reading direction. The timeline example
+  shows Arabic dates in Arabic, and the RTL Back link draws one chevron.
+- Links that run an action are announced as buttons.
+
 ## 0.2.1
 
 Fixes for what a reader sees, from a look at 0.2.0 in the gallery.

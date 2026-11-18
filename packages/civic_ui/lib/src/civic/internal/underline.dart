@@ -1,76 +1,114 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
-/// Civic's underlined words: [child] (words that take the ambient text
-/// style) in [style], merged over it, its underline clear of the letters
-/// where the words read right to left. Arabic's letters join along the line
-/// an underline takes and their tails fall through it, so there the words
-/// stand a fifth of their size over the line (Flutter draws no
-/// text-underline-offset): the underline is drawn under words of no colour,
-/// and the words themselves, the same words laid out the same way, are
-/// drawn over it, lifted. A shadow would lift the underline with them.
-/// Elsewhere, and with no underline, [child] in [style]; [steady] words
-/// with no underline stand lifted right to left too, so words that gain and
-/// lose their underline (a tab as it is chosen) never move.
-///
-/// Plumbing; pages never place one.
+/// Keeps an underline clear of Arabic descenders without moving the label.
 class CivicUnderlined extends StatelessWidget {
-  /// [child] in [style].
-  const CivicUnderlined({
-    super.key,
-    required this.style,
-    required this.child,
-    this.steady = false,
-  });
+  /// Applies [style] to [child].
+  const CivicUnderlined({super.key, required this.style, required this.child});
 
-  /// The words' style, its underline among its decorations.
+  /// The label style and its decoration.
   final TextStyle style;
 
-  /// The words.
+  /// A label, optionally accompanied by a glyph.
   final Widget child;
-
-  /// Whether the words stand lifted right to left with no underline too.
-  final bool steady;
 
   @override
   Widget build(BuildContext context) {
-    final words = style.color;
-    final line = style.decoration;
-    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final ink = style.decorationColor ?? style.color;
+    if (Directionality.of(context) != TextDirection.rtl ||
+        ink == null ||
+        style.decoration?.contains(TextDecoration.underline) != true) {
+      return DefaultTextStyle.merge(style: style, child: child);
+    }
     final size = MediaQuery.textScalerOf(context).scale(
       style.fontSize ?? DefaultTextStyle.of(context).style.fontSize ?? 19,
     );
-    if (!rtl ||
-        words == null ||
-        line == null ||
-        !line.contains(TextDecoration.underline)) {
-      final plain = DefaultTextStyle.merge(style: style, child: child);
-      // Steady words stand where they would over an underline.
-      return rtl && steady
-          ? Transform.translate(offset: Offset(0, -0.2 * size), child: plain)
-          : plain;
-    }
-    // Both layers take the constraints a lone text would, so they wrap
-    // alike; only the words' layer moves, and only as it paints.
-    return Stack(
-      fit: StackFit.passthrough,
-      children: [
-        DefaultTextStyle.merge(
-          style: style.copyWith(
-            color: words.withValues(alpha: 0),
-            decorationColor: style.decorationColor ?? words,
-          ),
-          child: child,
-        ),
-        ExcludeSemantics(
-          child: Transform.translate(
-            offset: Offset(0, -0.2 * size),
-            child: DefaultTextStyle.merge(
-              style: style.copyWith(decoration: TextDecoration.none),
-              child: child,
-            ),
-          ),
-        ),
-      ],
+    return _Underline(
+      ink: ink,
+      thickness: size / 19 * (style.decorationThickness ?? 1),
+      // The words keep their decoration, so the painter knows them from a
+      // glyph, in a colour that draws nothing. Not transparent black: the
+      // text engine reads that as no colour at all and draws the words' own
+      // underline in their colour, through the letters, beside this one.
+      child: DefaultTextStyle.merge(
+        style: style.copyWith(decorationColor: const Color(0x00FFFFFF)),
+        child: child,
+      ),
     );
+  }
+}
+
+class _Underline extends SingleChildRenderObjectWidget {
+  const _Underline({
+    required this.ink,
+    required this.thickness,
+    required super.child,
+  });
+
+  final Color ink;
+  final double thickness;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderUnderline(ink, thickness);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderUnderline renderObject) {
+    renderObject.update(ink, thickness);
+  }
+}
+
+class _RenderUnderline extends RenderProxyBox {
+  _RenderUnderline(this.ink, this.thickness);
+
+  Color ink;
+  double thickness;
+
+  void update(Color nextInk, double nextThickness) {
+    if (ink == nextInk && thickness == nextThickness) return;
+    ink = nextInk;
+    thickness = nextThickness;
+    markNeedsPaint();
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    super.paint(context, offset);
+    if (ink.a == 0) return;
+    final canvas = context.canvas;
+    final paint = Paint()..color = ink;
+    void underline(RenderObject node) {
+      if (node is RenderParagraph) {
+        // Icons paint a paragraph too, but do not inherit the label's decoration.
+        if (node.text.style?.decoration?.contains(TextDecoration.underline) !=
+            true) {
+          return;
+        }
+        final text = node.text.toPlainText();
+        if (text.isEmpty) return;
+        final boxes = node.getBoxesForSelection(
+          TextSelection(baseOffset: 0, extentOffset: text.length),
+        );
+        canvas.save();
+        canvas.translate(offset.dx, offset.dy);
+        canvas.transform(node.getTransformTo(this).storage);
+        for (final box in boxes) {
+          canvas.drawRect(
+            Rect.fromLTRB(
+              box.left,
+              box.bottom,
+              box.right,
+              box.bottom + thickness,
+            ),
+            paint,
+          );
+        }
+        canvas.restore();
+      } else {
+        node.visitChildren(underline);
+      }
+    }
+
+    visitChildren(underline);
   }
 }

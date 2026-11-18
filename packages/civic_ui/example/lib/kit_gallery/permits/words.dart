@@ -267,6 +267,8 @@ const Map<String, String> permitsArabic = {
   'A household in Zone\u00A0B can hold two resident permits.':
       'يحق للأسرة في المنطقة\u00A0ب تصريحان للمقيمين.',
   '3 November 2026': '3 نوفمبر 2026',
+  '7 November 2026': '٧ نوفمبر ٢٠٢٦',
+  'Download your permit': 'نزّل تصريحك',
   '5 November 2026': '5 نوفمبر 2026',
   '12 October 2026': '12 أكتوبر 2026',
   '14 October 2026': '14 أكتوبر 2026',

@@ -14,6 +14,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'screens_matrix.dart' show loadScreenFonts;
+
 const _places = [
   CivicNavItem(LucideIcons.house, 'Home', ValueKey('home')),
   CivicNavItem(LucideIcons.fileText, 'Applications', ValueKey('applications')),
@@ -75,6 +77,7 @@ CivicPreview _place({
 );
 
 void main() {
+  setUpAll(loadScreenFonts);
   testWidgets('a phone stands the places along its foot, the act at their '
       'end, a touch target at least 48 square', (tester) async {
     final semantics = tester.ensureSemantics();

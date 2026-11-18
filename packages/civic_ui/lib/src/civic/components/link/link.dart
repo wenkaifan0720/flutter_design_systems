@@ -12,6 +12,10 @@ import '../../internal/underline.dart';
 /// thickens the underline; a keyboard focus lays the words on the yellow
 /// plate over the ink bar, in ink.
 ///
+/// A screen reader hears it as a button with a link's look: it runs
+/// [onPressed], and on the web an anchor with no address is read as plain
+/// words, not as something to press.
+///
 /// [semanticLabel] says the whole of it to a screen reader where the words
 /// lean on what is beside them: a summary row's "Change" is "Change your
 /// name".
@@ -91,8 +95,9 @@ class CivicLink extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         statesController: statesController,
-        button: false,
-        link: true,
+        // A button to a screen reader: it runs a callback, and on the web
+        // an anchor with no address is read as plain words.
+        button: onPressed != null,
         semanticLabel: semanticLabel,
         excludeSemantics: semanticLabel != null,
         mouseCursor: onPressed == null

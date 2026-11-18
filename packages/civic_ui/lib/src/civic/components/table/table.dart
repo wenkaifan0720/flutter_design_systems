@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -86,79 +88,99 @@ class CivicTable<R> extends StatelessWidget {
     final names = text.label.merge(
       DesignStyleOf([style, t.tableStyle], const {}).textStyle,
     );
-    Widget cell(DesignTableColumn<R> column, Widget child) => Expanded(
-      child: Padding(
-        padding: const EdgeInsetsDirectional.only(
-          top: CivicSpacing.s12,
-          bottom: CivicSpacing.s12,
-          end: CivicSpacing.s16,
-        ),
-        child: Align(
-          alignment: column.numeric
-              ? AlignmentDirectional.centerEnd
-              : AlignmentDirectional.centerStart,
-          child: child,
-        ),
-      ),
-    );
-    Widget tick(bool on, Color ink) => Padding(
-      padding: const EdgeInsetsDirectional.only(end: CivicSpacing.s16),
-      child: SizedBox.square(
-        dimension: _tick,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border.all(color: ink, width: CivicMetrics.edge),
+    Widget table(BuildContext context, BoxConstraints constraints) {
+      final columns = controller.columns;
+      final scaler = MediaQuery.textScalerOf(context);
+      final minimum = [
+        for (final column in columns)
+          _columnWidth(context, column, names, scaler),
+      ];
+      final sum = minimum.fold<double>(0, (a, b) => a + b);
+      final tickWidth = selectable ? _tick + CivicSpacing.s16 : 0.0;
+      final width = math.max(
+        constraints.hasBoundedWidth ? constraints.maxWidth : 0.0,
+        sum + tickWidth,
+      );
+      final share = (width - tickWidth) / math.max(1, columns.length);
+      final equal = minimum.every((w) => w <= share);
+      Widget cell(int index, Widget child) => Expanded(
+        flex: equal ? 1 : minimum[index].ceil(),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.only(
+            top: CivicSpacing.s12,
+            bottom: CivicSpacing.s12,
+            end: CivicSpacing.s16,
           ),
-          child: on ? Icon(LucideIcons.check, size: _glyph, color: ink) : null,
-        ),
-      ),
-    );
-    final table = DesignDataTable<R>(
-      controller: controller,
-      selectable: selectable,
-      onActivate: onActivate,
-      headerRowBuilder: (context, cells) => DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(color: t.border, width: CivicMetrics.edge),
+          child: Align(
+            alignment: columns[index].numeric
+                ? AlignmentDirectional.centerEnd
+                : AlignmentDirectional.centerStart,
+            child: child,
           ),
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            if (selectable) const SizedBox(width: _tick + CivicSpacing.s16),
-            for (final (i, c) in cells.indexed) cell(controller.columns[i], c),
-          ],
-        ),
-      ),
-      headerBuilder: (context, column, sort, states) {
-        if (!column.sortable) {
-          return Text(column.label, style: names);
-        }
-        final focused = states.contains(WidgetState.focused);
-        final ink = focused ? t.onFocus : t.action;
-        return CivicSpringValue(
-          value: focused ? 1 : 0,
-          spring: CivicMotion.focus,
-          effects: true,
-          builder: (context, focus, _) => CustomPaint(
-            painter: CivicFacePainter(
-              fill: t.focus.withValues(alpha: 0),
-              edgeColor: t.onFocus,
-              edgeHeight: 0,
-              press: 0,
-              focus: focus,
-              focusColor: t.focus,
-              barColor: t.focusBar,
+      );
+      Widget tick(bool on, Color ink) => Padding(
+        padding: const EdgeInsetsDirectional.only(end: CivicSpacing.s16),
+        child: SizedBox.square(
+          dimension: _tick,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border.all(color: ink, width: CivicMetrics.edge),
             ),
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: CivicMetrics.bar),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                spacing: CivicSpacing.s4,
-                children: [
-                  Flexible(
-                    child: Text(
+            child: on
+                ? Icon(LucideIcons.check, size: _glyph, color: ink)
+                : null,
+          ),
+        ),
+      );
+      final table = DesignDataTable<R>(
+        controller: controller,
+        selectable: selectable,
+        onActivate: onActivate,
+        headerRowBuilder: (context, cells) => DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: t.border, width: CivicMetrics.edge),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (selectable) const SizedBox(width: _tick + CivicSpacing.s16),
+              for (final (i, c) in cells.indexed) cell(i, c),
+            ],
+          ),
+        ),
+        headerBuilder: (context, column, sort, states) {
+          if (!column.sortable) {
+            return Text(column.label, style: names);
+          }
+          final focused = states.contains(WidgetState.focused);
+          final ink = focused ? t.onFocus : t.action;
+          return CivicSpringValue(
+            value: focused ? 1 : 0,
+            spring: CivicMotion.focus,
+            effects: true,
+            builder: (context, focus, _) => CustomPaint(
+              painter: CivicFacePainter(
+                fill: t.focus.withValues(alpha: 0),
+                edgeColor: t.onFocus,
+                edgeHeight: 0,
+                press: 0,
+                focus: focus,
+                focusColor: t.focus,
+                barColor: t.focusBar,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: CivicMetrics.bar),
+                child: Wrap(
+                  spacing: CivicSpacing.s4,
+                  alignment: column.numeric
+                      ? WrapAlignment.end
+                      : WrapAlignment.start,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
                       column.label,
                       style: names.copyWith(
                         color: ink,
@@ -166,68 +188,75 @@ class CivicTable<R> extends StatelessWidget {
                         decorationColor: ink,
                       ),
                     ),
-                  ),
-                  Icon(
-                    switch (sort) {
-                      DesignSortDirection.ascending => LucideIcons.arrowUp,
-                      DesignSortDirection.descending => LucideIcons.arrowDown,
-                      null => LucideIcons.arrowUpDown,
-                    },
-                    size: _glyph,
-                    applyTextScaling: true,
-                    color: ink,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-      cellBuilder: cellBuilder,
-      rowBuilder: (context, row, cells) {
-        final focused = row.states.contains(WidgetState.focused);
-        final hovered = row.states.contains(WidgetState.hovered);
-        final so = DesignStyleOf(
-          [style, t.tableStyle],
-          {...row.states, if (row.selected) WidgetState.selected},
-        );
-        final ink = focused ? t.onFocus : so.foreground ?? t.textPrimary;
-        final rest =
-            so.fill ??
-            (row.selected || hovered
-                ? t.surface
-                : t.surface.withValues(alpha: 0));
-        return CivicSpringValue(
-          value: focused ? 1 : 0,
-          spring: CivicMotion.focus,
-          effects: true,
-          builder: (context, focus, _) => DecoratedBox(
-            decoration: BoxDecoration(
-              color: Color.lerp(rest, t.focus, focus),
-              border: Border(
-                bottom: BorderSide(
-                  color: Color.lerp(so.edge ?? t.rule, t.onFocus, focus)!,
-                  width: 1 + (CivicMetrics.bar - 1) * focus,
-                ),
-              ),
-            ),
-            child: DefaultTextStyle.merge(
-              style: text.body.copyWith(color: ink),
-              child: IconTheme.merge(
-                data: IconThemeData(color: ink),
-                child: Row(
-                  children: [
-                    if (selectable) tick(row.selected, ink),
-                    for (final (i, c) in cells.indexed)
-                      cell(controller.columns[i], c),
+                    Icon(
+                      switch (sort) {
+                        DesignSortDirection.ascending => LucideIcons.arrowUp,
+                        DesignSortDirection.descending => LucideIcons.arrowDown,
+                        null => LucideIcons.arrowUpDown,
+                      },
+                      size: _glyph,
+                      applyTextScaling: true,
+                      color: ink,
+                    ),
                   ],
                 ),
               ),
             ),
-          ),
+          );
+        },
+        cellBuilder: cellBuilder,
+        rowBuilder: (context, row, cells) {
+          final focused = row.states.contains(WidgetState.focused);
+          final hovered = row.states.contains(WidgetState.hovered);
+          final so = DesignStyleOf(
+            [style, t.tableStyle],
+            {...row.states, if (row.selected) WidgetState.selected},
+          );
+          final ink = focused ? t.onFocus : so.foreground ?? t.textPrimary;
+          final rest =
+              so.fill ??
+              (row.selected || hovered
+                  ? t.surface
+                  : t.surface.withValues(alpha: 0));
+          return CivicSpringValue(
+            value: focused ? 1 : 0,
+            spring: CivicMotion.focus,
+            effects: true,
+            builder: (context, focus, _) => DecoratedBox(
+              decoration: BoxDecoration(
+                color: Color.lerp(rest, t.focus, focus),
+                border: Border(
+                  bottom: BorderSide(
+                    color: Color.lerp(so.edge ?? t.rule, t.onFocus, focus)!,
+                    width: 1 + (CivicMetrics.bar - 1) * focus,
+                  ),
+                ),
+              ),
+              child: DefaultTextStyle.merge(
+                style: text.body.copyWith(color: ink),
+                child: IconTheme.merge(
+                  data: IconThemeData(color: ink),
+                  child: Row(
+                    children: [
+                      if (selectable) tick(row.selected, ink),
+                      for (final (i, c) in cells.indexed) cell(i, c),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+      if (!constraints.hasBoundedWidth || width > constraints.maxWidth + 0.01) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(width: width, child: table),
         );
-      },
-    );
+      }
+      return table;
+    }
+
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) => Column(
@@ -238,7 +267,7 @@ class CivicTable<R> extends StatelessWidget {
             Semantics(header: true, child: Text(heading, style: text.headingM)),
             const SizedBox(height: CivicSpacing.s16),
           ],
-          table,
+          LayoutBuilder(builder: table),
           if (controller.pageCount > 1) ...[
             const SizedBox(height: CivicSpacing.s24),
             CivicPagination(
@@ -250,6 +279,24 @@ class CivicTable<R> extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static double _columnWidth(
+    BuildContext context,
+    DesignTableColumn<dynamic> column,
+    TextStyle style,
+    TextScaler scaler,
+  ) {
+    final p = TextPainter(
+      text: TextSpan(text: column.label, style: style),
+      textDirection: Directionality.of(context),
+      textScaler: scaler,
+      locale: Localizations.maybeLocaleOf(context),
+    )..layout();
+    final word = p.minIntrinsicWidth.ceilToDouble();
+    p.dispose();
+    final icon = column.sortable ? scaler.scale(_glyph) : 0.0;
+    return math.max(word, icon) + CivicSpacing.s16;
   }
 
   /// A row's tick box, and the room a header keeps for it.

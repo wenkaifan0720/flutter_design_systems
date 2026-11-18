@@ -1,33 +1,17 @@
-/// Civic's display formatting: the dates, times, sums and counts a public
-/// service prints, in the plain shapes such services write them. A date is
-/// day, month in full, year ("14 November 2026"), never a number for the
-/// month and never an ordinal. A time is "9am", "5:30pm", "midday" or
-/// "midnight" on a twelve-hour device and "17:30" on a 24-hour one. A
-/// range is joined by "to", which a screen reader says as written ("9am to
-/// 5pm"). A sum drops its zero cents ("€60", "€62.50").
+/// English date, time, amount and count formats for public services.
 ///
-/// PURE AND DETERMINISTIC, no intl, as the design kit's [DisplayFormat]: a
-/// generated app renders inside walkthroughs and golden frames, and a
-/// locale-aware formatter would make one record read differently on two
-/// machines. Nothing here reads the clock: [relative] takes the moment to
-/// measure against. The words are English; a service in another language
-/// says its own.
-///
-/// ```dart
-/// Text('Your permit ends on ${CivicFormat.date(permit.ends)}')
-/// ```
+/// Dates use a written month, such as `14 November 2026`. Time ranges
+/// use the word “to”. [CivicFormat.time] follows the device’s clock setting.
 library;
 
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/host.dart';
 
-/// Civic's formatters.
+/// Formats dates, times and numbers in English for Civic services.
 abstract final class CivicFormat {
-  /// A sum from its minor units (cents), so data carries whole numbers and
-  /// never a float that drifts: "€60" when the cents are zero, else
-  /// "€62.50"; with `cents: true` always two places ("€60.00", for a
-  /// column of sums that line up). A negative leads with the minus:
-  /// "-€12".
+  /// Formats [minorUnits] with [symbol], for example `€60` or `€62.50`.
+  ///
+  /// Set [cents] to show two decimal places even for a whole amount.
   static String money(
     int minorUnits, {
     required String symbol,
@@ -80,10 +64,10 @@ abstract final class CivicFormat {
   static String time(BuildContext context, DateTime d) =>
       clock(d, twentyFourHour: MediaQuery.alwaysUse24HourFormatOf(context));
 
-  /// The time of day on the clock asked for: "17:30" and "09:05" on the
-  /// 24-hour clock; else "5:30pm", "9am" (no ":00"), and "midday" and
-  /// "midnight" for the two that "12am" and "12pm" leave in doubt. [time]
-  /// is the one a page calls; this is its pure core.
+  /// Formats [d] as a 24-hour time or an English 12-hour time.
+  ///
+  /// The 12-hour format uses `midday`, `midnight`, `9am` and `5:30pm`.
+  /// Use [time] to follow the device’s clock setting.
   static String clock(DateTime d, {required bool twentyFourHour}) {
     if (twentyFourHour) {
       return DisplayFormat.clock(d, twentyFourHour: true);

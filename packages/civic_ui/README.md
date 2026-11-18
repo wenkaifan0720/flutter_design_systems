@@ -90,31 +90,19 @@ class _VehiclePageState extends State<VehiclePage> {
 }
 ```
 
-## What it is
+## Components
 
-Civic is the plain look of public services, where the job is that anyone, on any device, in a hurry or with a
-disability, can finish the task. One thing per page. Large type in Atkinson Hyperlegible Next, drawn so that letters
-people confuse look different, on short lines. One accent for each job: blue to act, red for an error, green for done,
-yellow for where the keyboard is. White cards on a cool ground, no strokes round them, corners a little rounded; the
-strong ink edge is a field's alone, and only what floats casts a soft shadow.
+Civic includes question pages, forms, navigation, sortable tables and an answers summary for public services.
+Atkinson Hyperlegible Next is the default typeface. Blue identifies actions, red marks errors, and a yellow
+focus indicator shows which control will respond to the keyboard.
 
-On a phone and a tablet it is an app: its own top bar with the way back and the page's place, lists as rows on cards
-(each pressed whole, a chevron at its end, its status under its title), the page's action kept at its foot while the
-page scrolls, the places along the bottom on a phone and in a rail on a tablet, a tablet's list and the open record
-side by side. From 1024 wide it is the service's site: the masthead, the side navigation, one measured column.
+On a phone, the primary destinations appear at the bottom. Their labels follow the system text size and can
+wrap into another row. From 600 logical pixels wide, the destinations move to a rail. From 1024, the service
+can use a sidebar next to the page title.
 
-Its three moves:
-
-- **The focus bar.** Wherever the keyboard is, it shows: a button or a link floods yellow over a thick ink bar, a box
-  to write in keeps its white inside a yellow ring around a doubled edge.
-- **The question page.** One question per page, asked in the heading, its answers under it with their hints, a back
-  link above and a button that says what happens next.
-- **The answers summary.** Before anything is sent, every answer is set out to check, each with a Change link that a
-  screen reader hears in full ("Change date of birth").
-
-The parts take the parameters a Flutter developer expects: a press is `onPressed`, a row's tap `onTap`, a control is
-`value` with `onChanged`, a destination is `selectedIndex` with `onDestinationSelected`, a field has `labelText`,
-`helperText`, `errorText` and `hintText`, and a null callback disables.
+- Use a question as the page heading and put hints beside the inputs they describe.
+- Give the primary button a label that describes its action, such as “Check your answers.”
+- Use the answers summary before submission. Each Change link can announce which answer it edits.
 
 ## Set up the theme
 
@@ -195,14 +183,11 @@ service (Continue, There is a problem, Step 1 of 3, Change) are yours to give, i
 A page in Arabic reads right to left in Noto Sans Arabic, and the example service says its counts in the form each
 number takes.
 
-## On ui_core
+## Keyboard navigation
 
-Civic paints; [ui_core](https://pub.dev/packages/ui_core) behaves. The dialog is ui_core's `DesignDialogRoute` (a
-spring, the focus kept inside and given back, Escape and back, a dialog or alert to a screen reader); the tabs are its
-`DesignTabBar` (one tab stop, the arrows choosing, "Tab 1 of 3"); an app's frame is its `DesignAdaptiveShell` at
-Civic's widths (the places one tab stop, F6 between the places and the page); the combobox is its `DesignCombobox`
-(the keys, the live count, a search that takes time and fails) and the select's list its `DesignAnchoredOverlay`; the
-toaster, the table's sorting, the swipe back on iOS and the reading of Reduce Motion are its too.
+Use the arrow keys to select a tab. In an application shell, F6 moves focus between navigation and page content.
+Type in a combobox to filter the options, then press Enter to choose one. A dialog keeps focus inside while open
+and restores it on dismissal. Civic uses [ui_core](https://pub.dev/packages/ui_core) for these interactions.
 
 ## Licences
 

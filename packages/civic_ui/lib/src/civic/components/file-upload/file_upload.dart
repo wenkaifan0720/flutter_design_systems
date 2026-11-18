@@ -131,7 +131,7 @@ class CivicFileUpload extends StatelessWidget {
                   spacing: CivicSpacing.s8,
                   children: [
                     Icon(LucideIcons.fileCheck, size: 22, color: t.success),
-                    Text(name, style: text.label),
+                    Flexible(child: Text(name, style: text.label)),
                   ],
                 ),
                 if (remove != null && removeLabel != null)

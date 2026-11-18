@@ -8,20 +8,12 @@ import '../../internal/spring.dart';
 import '../../theme.dart';
 import '../../internal/underline.dart';
 
-/// Views of one thing, side by side over a rule: each a word, the current
-/// one in bold ink standing on a bar in the action colour, the rest in the
-/// action colour, underlined, as links are. A keyboard focus lays a tab on
-/// the yellow plate over the ink bar. More tabs than fit scroll along
-/// between a chevron at each end, dark where tabs stand past it.
-/// Right to left a tab's words stand where an underline's would lift them,
-/// chosen or not, so no word moves as the choice does.
+/// A row of tabs with an underline beneath each unselected label and a solid
+/// bar beneath the selected tab. When the row scrolls, chevrons show which
+/// ends have more tabs. The chevrons follow the reading direction.
 ///
-/// ui_core's [DesignTabBar] under Civic's painting: the bar is one tab stop,
-/// the arrow keys moving along it (mirrored right to left, Home and End to
-/// the ends) and choosing the tab they reach; the chosen tab's bar and words
-/// change on Civic's state spring, and the strip scrolls the tab into view.
-/// A screen reader hears a tab bar of tabs, each with its place ("Tab 1 of
-/// 3").
+/// The arrow keys select a tab. Home and End select the first and last tabs.
+/// Each tab announces its position to screen readers.
 ///
 /// Reads [CivicStyle]'s foreground (a tab's name, by state: selected,
 /// focused) and textStyle (the names): its `style:`, then
@@ -151,12 +143,7 @@ class _CivicTabBarState extends State<CivicTabBar>
   }
 }
 
-// The strip's ends while more tabs stand than fit: a room at each end with a
-// chevron pointing on, dark where tabs stand past that end and faint where
-// none do (as Material's scroll buttons), and the strip fading into a room
-// it scrolls under. The rooms narrow the strip itself, so ui_core's strip,
-// which scrolls a chosen tab just into its view, shows it whole beside
-// them; nothing of a tab stands under a chevron.
+// Give the scroll hints their own space so they never cover a tab.
 class _EdgeCue extends StatefulWidget {
   const _EdgeCue({required this.child});
 
@@ -223,31 +210,6 @@ class _EdgeCueState extends State<_EdgeCue> {
         ),
       ),
     );
-    Widget strip = widget.child;
-    if (_before || _after) {
-      const fade = 12.0;
-      strip = ShaderMask(
-        blendMode: BlendMode.dstIn,
-        shaderCallback: (bounds) {
-          final w = bounds.width <= 0 ? 1.0 : bounds.width;
-          final edge = (fade / w).clamp(0.0, 0.5);
-          // Left to right in paint order: a left edge is the start's when
-          // the words read left to right.
-          final left = rtl ? _after : _before;
-          final right = rtl ? _before : _after;
-          return LinearGradient(
-            colors: [
-              Color(left ? 0x00000000 : 0xFF000000),
-              const Color(0xFF000000),
-              const Color(0xFF000000),
-              Color(right ? 0x00000000 : 0xFF000000),
-            ],
-            stops: [0, edge, 1 - edge, 1],
-          ).createShader(bounds);
-        },
-        child: strip,
-      );
-    }
     return NotificationListener<ScrollMetricsNotification>(
       onNotification: (n) => _metrics(n.metrics),
       child: NotificationListener<ScrollNotification>(
@@ -258,7 +220,7 @@ class _EdgeCueState extends State<_EdgeCue> {
               padding: EdgeInsetsDirectional.symmetric(
                 horizontal: _rooms ? room : 0,
               ),
-              child: strip,
+              child: widget.child,
             ),
             if (_rooms) ...[chevron(true, _before), chevron(false, _after)],
           ],
@@ -334,7 +296,6 @@ class _Tab extends StatelessWidget {
                   widthFactor: 1,
                   heightFactor: 1,
                   child: CivicUnderlined(
-                    steady: true,
                     style: base.copyWith(
                       color: ink,
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w400,

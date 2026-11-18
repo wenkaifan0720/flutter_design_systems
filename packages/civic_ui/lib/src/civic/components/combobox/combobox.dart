@@ -132,17 +132,7 @@ class CivicCombobox<T extends Object> extends StatelessWidget {
       ),
       surfaceBuilder: (context, list) => Padding(
         padding: const EdgeInsets.only(top: CivicSpacing.s8),
-        child: DecoratedBox(
-          decoration: civicFloating(
-            face: t.background,
-            hairline: t.rule,
-            dark: t.isDark,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(CivicMetrics.edge - 1),
-            child: list,
-          ),
-        ),
+        child: CivicOptionSurface(child: list),
       ),
       emptyBuilder: (context) =>
           _Note(DesignLocalizations.of(context).noResultsLabel),

@@ -79,7 +79,7 @@ class CivicNavigationBar extends StatelessWidget {
   /// Overrides for these places' look.
   final CivicStyle? style;
 
-  /// The bar's height, the safe area aside.
+  /// Minimum height of a destination row, excluding the safe area.
   static const double height = CivicChromeMetrics.navigationBar;
 
   @override

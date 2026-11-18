@@ -1,6 +1,18 @@
+import 'dart:math' as math;
+
 import 'package:flutter/widgets.dart';
 
+import '../chrome_metrics.dart';
+
 import '../theme.dart';
+
+/// Space above and below a service or page title in the app header.
+double civicHeaderInset(BuildContext context, TextStyle heading) {
+  final fontSize = heading.fontSize ?? 19;
+  final line =
+      MediaQuery.textScalerOf(context).scale(fontSize) * (heading.height ?? 1);
+  return math.max(CivicSpacing.s12, (CivicChromeMetrics.topBar - line) / 2);
+}
 
 /// Where [CivicScaffold] stands its top bar's words and its page's column:
 /// beside the side navigation, the column at the margin; the bar's words,
