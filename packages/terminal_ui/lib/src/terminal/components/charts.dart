@@ -7,6 +7,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import '../grid.dart';
 import '../primitives/box.dart';
@@ -289,6 +290,15 @@ List<Color> _inks(TermThemeData theme, List<TermSeries> series) {
 /// cell: the most and least values dim at the start, a rule along the
 /// foot, [xLabels] under it, and a key of each series' `●` and name.
 ///
+/// The behaviour is ui_core's [DesignChart]: a pointer over the plot picks
+/// the point nearest it along the foot (a finger scrubs, a tap holds), and
+/// the keys pick too (one tab stop: Left and Right along a series, Up and
+/// Down between series, Home and End, Escape), the point's column shaded
+/// and its value written over the plot; the axes take the accent while the
+/// keys are on it. A screen reader hears [semanticLabel] and the data in a
+/// sentence, or the point picked, and steps through the points. A change of
+/// data springs from the old line to the new.
+///
 /// ```dart
 /// TermLineChart(
 ///   series: const [TermSeries(label: 'p95 ms', values: [120, 135, 128, 160, 142])],
@@ -333,8 +343,8 @@ class TermLineChart extends StatelessWidget {
   /// The words under the foot's start and end.
   final (String, String)? xLabels;
 
-  /// What it shows; a screen reader hears it with each series' first and
-  /// last values.
+  /// What it shows; a screen reader hears it, then the data in a sentence.
+  /// Null: the series' names.
   final String? semanticLabel;
 
   /// Overrides, over the theme's [TermThemeData.chartStyle]: `edge` (the
@@ -349,126 +359,214 @@ class TermLineChart extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final own = TermStyleOf([style, theme.chartStyle], const {});
-    final r = _range(
+    final cw = grid.cellWidth;
+    final stroke = termStroke(theme, grid);
+    final inks = _inks(theme, series);
+    // The axis column is as wide as the widest label the data could give;
+    // the plot takes whole cells after it.
+    final r0 = _range(
       series.expand((s) => s.values),
       min: min ?? (fill ? 0 : null),
       max: max,
     );
-    final top = _num(r.max);
-    final foot = _num(r.min);
-    final axisCols = math.max(top.length, foot.length) + 1;
-    final inks = _inks(theme, series);
-    final rule = own.edge ?? theme.rule;
-    final said = [
-      ?semanticLabel,
-      for (final s in series)
-        if (s.values.isNotEmpty)
-          '${s.label}: from ${_num(s.values.first)} to ${_num(s.values.last)}',
-    ].join('; ');
-    return Semantics(
-      label: said,
-      excludeSemantics: true,
-      child: Directionality(
-        // A time axis runs left to right in any app, as a terminal's does.
-        textDirection: TextDirection.ltr,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            SizedBox(
-              height: grid.lines(lines),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SizedBox(
-                    width: grid.cols(axisCols),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.only(right: grid.cellWidth),
-                          child: Text(top, style: theme.dimStyle),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(right: grid.cellWidth),
-                          child: Text(foot, style: theme.dimStyle),
-                        ),
+    final axisCols = math.max(_num(r0.max).length, _num(r0.min).length) + 1;
+    final axisWidth = grid.cols(axisCols);
+    final plot = SizedBox(
+      height: grid.lines(lines),
+      child: LayoutBuilder(
+        builder: (context, c) {
+          final cols = grid.colsIn(c.maxWidth - axisWidth);
+          final plotWidth = grid.cols(cols);
+          return Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: axisWidth + plotWidth,
+              child: DesignChart(
+                series: [
+                  for (final s in series)
+                    DesignChartSeries(
+                      label: s.label,
+                      points: [
+                        for (final (i, v) in s.values.indexed)
+                          DesignChartPoint(i.toDouble(), v),
                       ],
                     ),
-                  ),
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, c) {
-                        final cols = grid.colsIn(c.maxWidth);
-                        return Align(
-                          alignment: Alignment.centerLeft,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              border: Border(
-                                left: BorderSide(
-                                  color: rule,
-                                  width: termStroke(theme, grid),
-                                ),
-                                bottom: BorderSide(
-                                  color: rule,
-                                  width: termStroke(theme, grid),
-                                ),
-                              ),
-                            ),
-                            child: CustomPaint(
-                              size: Size(grid.cols(cols), grid.lines(lines)),
-                              painter: _PlotPainter(
-                                grid: grid,
-                                series: [for (final s in series) s.values],
-                                inks: inks,
-                                min: r.min,
-                                max: r.max,
-                                fill: fill,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
                 ],
-              ),
-            ),
-            if (xLabels != null)
-              Padding(
-                padding: EdgeInsets.only(left: grid.cols(axisCols)),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(xLabels!.$1, style: theme.dimStyle),
-                    Text(xLabels!.$2, style: theme.dimStyle),
-                  ],
+                semanticLabel:
+                    semanticLabel ?? series.map((s) => s.label).join(', '),
+                yIncludesZero: fill,
+                // The points by their place, from 1.
+                formatX: (x) => '${x.round() + 1}',
+                formatY: _num,
+                // ui_core's x runs between the first and last dot columns'
+                // middles, a quarter cell in from the plot's sides.
+                padding: EdgeInsets.only(
+                  left: axisWidth + cw / 4,
+                  right: cw / 4,
                 ),
-              ),
-            if (series.length > 1 || series.isNotEmpty && semanticLabel == null)
-              Padding(
-                padding: EdgeInsets.only(left: grid.cols(axisCols)),
-                child: Wrap(
-                  spacing: grid.cols(2),
-                  children: [
-                    for (final (i, s) in series.indexed)
-                      Text.rich(
-                        TextSpan(
+                builder: (context, chart) {
+                  final drawn = [
+                    for (final s in chart.series)
+                      [for (final p in s.points) p.y ?? 0],
+                  ];
+                  final r = _range(
+                    drawn.expand((v) => v),
+                    min: min ?? (fill ? 0 : null),
+                    max: max,
+                  );
+                  final focused = chart.states.contains(WidgetState.focused);
+                  final rule = focused ? theme.accent : own.edge ?? theme.rule;
+                  final active = chart.active;
+                  int? cell;
+                  String? readout;
+                  if (active != null) {
+                    final at = chart.positionOf(active).dx - axisWidth;
+                    cell = (at / cw).floor().clamp(0, math.max(0, cols - 1));
+                    final v = drawn[active.series][active.index];
+                    readout =
+                        '${series.length > 1 ? '${series[active.series].label} ' : ''}${_num(v)}';
+                  }
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SizedBox(
+                        width: axisWidth,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            TextSpan(
-                              text: '● ',
-                              style: theme.textStyle.copyWith(color: inks[i]),
+                            Padding(
+                              padding: EdgeInsets.only(right: cw),
+                              child: Text(_num(r.max), style: theme.dimStyle),
                             ),
-                            TextSpan(text: s.label, style: theme.dimStyle),
+                            Padding(
+                              padding: EdgeInsets.only(right: cw),
+                              child: Text(_num(r.min), style: theme.dimStyle),
+                            ),
                           ],
                         ),
                       ),
-                  ],
-                ),
+                      SizedBox(
+                        width: plotWidth,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            border: Border(
+                              left: BorderSide(color: rule, width: stroke),
+                              bottom: BorderSide(color: rule, width: stroke),
+                            ),
+                          ),
+                          child: Stack(
+                            children: [
+                              // The picked point's column, shaded.
+                              if (cell != null)
+                                Positioned(
+                                  left: grid.cols(cell),
+                                  top: 0,
+                                  bottom: 0,
+                                  width: cw,
+                                  child: ColoredBox(
+                                    color: theme.rule.withValues(alpha: 0.35),
+                                  ),
+                                ),
+                              CustomPaint(
+                                size: Size(plotWidth, grid.lines(lines)),
+                                painter: _PlotPainter(
+                                  grid: grid,
+                                  series: drawn,
+                                  inks: inks,
+                                  min: r.min,
+                                  max: r.max,
+                                  fill: fill,
+                                ),
+                              ),
+                              // Its value, on the top line, beside the
+                              // column on the side with room.
+                              if (cell != null && readout != null)
+                                Positioned(
+                                  top: 0,
+                                  left: cell < cols / 2
+                                      ? grid.cols(cell + 1)
+                                      : null,
+                                  right: cell < cols / 2
+                                      ? null
+                                      : plotWidth - grid.cols(cell),
+                                  child: ColoredBox(
+                                    color: theme.background,
+                                    child: Text(
+                                      readout,
+                                      maxLines: 1,
+                                      softWrap: false,
+                                      style: theme.textStyle.copyWith(
+                                        color: inks[active!.series],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
-          ],
-        ),
+            ),
+          );
+        },
+      ),
+    );
+    return Directionality(
+      // A time axis runs left to right in any app, as a terminal's does.
+      textDirection: TextDirection.ltr,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          plot,
+          ExcludeSemantics(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (xLabels != null)
+                  Padding(
+                    padding: EdgeInsets.only(left: axisWidth),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(xLabels!.$1, style: theme.dimStyle),
+                        Text(xLabels!.$2, style: theme.dimStyle),
+                      ],
+                    ),
+                  ),
+                if (series.length > 1 ||
+                    series.isNotEmpty && semanticLabel == null)
+                  Padding(
+                    padding: EdgeInsets.only(left: axisWidth),
+                    child: Wrap(
+                      spacing: grid.cols(2),
+                      children: [
+                        for (final (i, s) in series.indexed)
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: '● ',
+                                  style: theme.textStyle.copyWith(
+                                    color: inks[i],
+                                  ),
+                                ),
+                                TextSpan(text: s.label, style: theme.dimStyle),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

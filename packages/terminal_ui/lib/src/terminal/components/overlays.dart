@@ -74,12 +74,15 @@ class _TermSideSheetRoute<T> extends DesignSideSheetRoute<T> {
     super.width,
     super.barrierColor,
     super.barrierLabel,
-    super.transitionDuration,
     super.semanticLabel,
-  });
+  }) : super(
+         dampingRatio: TermMotion.surface.dampingRatio,
+         stiffness: TermMotion.surface.stiffness,
+       );
 
-  // Terminal's surfaces come up where they stay: a very short fade, no
-  // slide (a finger's drag still moves the pane with it).
+  // Terminal's surfaces come up where they stay: a very short fade on the
+  // route's spring, no slide (a finger's drag still moves the pane with
+  // it).
   @override
   Widget buildTransitions(
     BuildContext context,
@@ -112,14 +115,12 @@ Future<T?> showTermSideSheet<T>({
   final grid = context.termGrid;
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
-  final still = designReduceMotionOf(context);
   return navigator.push<T>(
     _TermSideSheetRoute<T>(
       edge: edge,
       width: grid.cols(cols),
       barrierColor: theme.background.withValues(alpha: 0.72),
       barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
-      transitionDuration: still ? Duration.zero : TermMotion.screen,
       semanticLabel: semanticLabel,
       builder: (context, info) =>
           themes.wrap(SafeArea(child: Builder(builder: builder))),
@@ -409,8 +410,12 @@ class TermHoverCard extends StatelessWidget {
 }
 
 /// A line of words on a block of the foreground's ink, shown while a
-/// pointer rests on [child] or the keyboard is on it; a screen reader
-/// hears [message] as [child]'s tooltip.
+/// pointer rests on [child] or the keyboard is on it, and after a long
+/// press; a screen reader hears [message] as [child]'s tooltip.
+///
+/// The behaviour is ui_core's [DesignTooltip]: the pointer may rest on the
+/// tip, Escape hides it, one shows at a time, and the next shows at once
+/// within a moment of the last. Terminal paints the block and its reveal.
 ///
 /// ```dart
 /// TermTooltip(message: 'rerun (r)', child: TermIconButton(glyph: 'r', semanticLabel: 'rerun', onPressed: rerun))
@@ -439,11 +444,9 @@ class TermTooltip extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final own = TermStyleOf([style, theme.tooltipStyle], const {});
-    return DesignAnchoredOverlay(
-      trigger: DesignOverlayTrigger.hover,
-      focusOnOpen: false,
-      hoverOpenDelay: const Duration(milliseconds: 500),
-      hoverCloseDelay: const Duration(milliseconds: 100),
+    return DesignTooltip(
+      message: message,
+      // On the line above, the words a cell in from the screen's edges.
       placement: DesignOverlayPlacement(
         side: DesignOverlaySide.above,
         gap: 0,
@@ -451,11 +454,7 @@ class TermTooltip extends StatelessWidget {
         preferredExtent: grid.lineHeight,
         matchAnchorWidth: false,
       ),
-      dampingRatio: TermMotion.reveal.dampingRatio,
-      stiffness: TermMotion.reveal.stiffness,
-      anchorBuilder: (context, anchor) =>
-          Semantics(tooltip: message, child: child),
-      overlayBuilder: (context, info) => ExcludeSemantics(
+      tooltipBuilder: (context, info) => ExcludeSemantics(
         child: TermMenuReveal(
           info: info,
           child: ColoredBox(
@@ -479,6 +478,7 @@ class TermTooltip extends StatelessWidget {
           ),
         ),
       ),
+      child: child,
     );
   }
 

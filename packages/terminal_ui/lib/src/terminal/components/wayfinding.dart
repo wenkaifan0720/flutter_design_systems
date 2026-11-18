@@ -11,6 +11,7 @@ import 'package:ui_core/ui_core.dart';
 
 import '../internal/focus_block.dart';
 import '../internal/menu_marks.dart';
+import '../internal/shell_face.dart';
 import '../primitives/control.dart';
 import '../primitives/menu.dart';
 import '../style.dart';
@@ -489,6 +490,124 @@ class TermSteps extends StatelessWidget {
   }
 }
 
+// A row of a menu ui_core opens (a menubar's, a context menu's): a submenu
+// marked `›`, its key dim at the end, a check before a checked one.
+Widget _menuRow(
+  BuildContext context,
+  DesignMenuEntry entry,
+  Set<WidgetState> states,
+) => TermMenuRow(
+  label: entry.isSubmenu ? '${entry.label} ›' : entry.label,
+  states: states,
+  trailing: termKeysShown(context) ? entry.shortcut : null,
+  checked: entry.checked,
+);
+
+// A rule across a menu, on a line of its own.
+Widget _menuDivider(BuildContext context) {
+  final theme = TermTheme.of(context);
+  final grid = context.termGrid;
+  return SizedBox(
+    height: grid.lineHeight,
+    child: Center(
+      child: Container(height: termStroke(theme, grid), color: theme.rule),
+    ),
+  );
+}
+
+// A menu's raised pane, revealed from its top line.
+Widget _menuPlate(
+  BuildContext context,
+  DesignOverlayInfo info,
+  List<Widget> items,
+) => TermMenuReveal(
+  info: info,
+  child: ConstrainedBox(
+    constraints: BoxConstraints(minWidth: context.termGrid.cols(24)),
+    child: TermPane(
+      raised: true,
+      focused: true,
+      // A cell inside the frame each side, so a lit row's bar stands clear
+      // of the frame's sides as of its top and bottom lines.
+      padding: const TermInset(),
+      // A letter takes the keys to the next item it starts: ui_core's menu
+      // does that. One row current, shown once the keys or the pointer
+      // move.
+      child: TermMenuMarks(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: items,
+          ),
+        ),
+      ),
+    ),
+  ),
+);
+
+/// A menu over [child] that opens where it is asked for: at the pointer on
+/// a right click or a long press, at the focused widget on Shift+F10 or the
+/// Menu key, and from a screen reader's "Show menu". Its rows are a
+/// [TermMenuBar] menu's: [menuChildren] are commands, submenus (`›`),
+/// checks and rules, each command's key dim at the end.
+///
+/// The behaviour is ui_core's `DesignContextMenu`: the arrows walk the
+/// rows and into submenus, a letter goes to the next row it starts, Return
+/// picks, Escape closes; one is open at a time, and on the web the
+/// browser's own menu stays shut over [child]. Terminal paints the rows and
+/// the raised pane.
+///
+/// ```dart
+/// TermContextMenu(
+///   menuChildren: [
+///     DesignMenuEntry(label: 'rerun', shortcut: 'r', onPressed: rerun),
+///     DesignMenuEntry(label: 'copy link', onPressed: copy),
+///   ],
+///   child: const Text('run #1482'),
+/// )
+/// ```
+class TermContextMenu extends StatelessWidget {
+  /// A menu of [menuChildren] over [child].
+  const TermContextMenu({
+    super.key,
+    required this.menuChildren,
+    required this.child,
+    this.semanticLabel,
+  });
+
+  /// The menu's rows.
+  final List<DesignMenuEntry> menuChildren;
+
+  /// The region it opens over.
+  final Widget child;
+
+  /// What a screen reader calls the menu.
+  final String? semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    TermMenuMarks.watchInput();
+    return DesignContextMenu(
+      menuChildren: menuChildren,
+      semanticLabel: semanticLabel,
+      dampingRatio: TermMotion.reveal.dampingRatio,
+      stiffness: TermMotion.reveal.stiffness,
+      itemBuilder: (context, entry, level, states) =>
+          _menuRow(context, entry, states),
+      dividerBuilder: _menuDivider,
+      surfaceBuilder: _menuPlate,
+      child: child,
+    );
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(IntProperty('menuChildren', menuChildren.length));
+  }
+}
+
 /// A menubar, as a full-screen terminal program draws one: the menus'
 /// names along the top line, the open one in inverse video, each menu a
 /// raised pane revealed in place under its name; the arrows move along and
@@ -523,12 +642,7 @@ class TermMenuBar extends StatelessWidget {
       menus: menus,
       itemBuilder: (context, entry, level, states) {
         if (level == DesignMenuLevel.menu) {
-          return TermMenuRow(
-            label: entry.isSubmenu ? '${entry.label} ›' : entry.label,
-            states: states,
-            trailing: termKeysShown(context) ? entry.shortcut : null,
-            checked: entry.checked,
-          );
+          return _menuRow(context, entry, states);
         }
         final own = TermStyleOf([style, theme.menuBarStyle], states);
         final lit =
@@ -564,37 +678,8 @@ class TermMenuBar extends StatelessWidget {
           ),
         );
       },
-      dividerBuilder: (context) => SizedBox(
-        height: grid.lineHeight,
-        child: Center(
-          child: Container(height: termStroke(theme, grid), color: theme.rule),
-        ),
-      ),
-      surfaceBuilder: (context, info, items) => TermMenuReveal(
-        info: info,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(minWidth: grid.cols(24)),
-          child: TermPane(
-            raised: true,
-            focused: true,
-            // A cell inside the frame each side, so a lit row's bar stands
-            // clear of the frame's sides as of its top and bottom lines.
-            padding: const TermInset(),
-            // A letter takes the keys to the next item it starts: ui_core's
-            // menu bar does that. One row current, shown once the keys or
-            // the pointer move.
-            child: TermMenuMarks(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: items,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+      dividerBuilder: _menuDivider,
+      surfaceBuilder: _menuPlate,
       barBuilder: (context, items) => ColoredBox(
         color: theme.surface,
         child: Row(children: items),
@@ -649,6 +734,56 @@ class TermNavigationRail extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final rest = TermStyleOf([style, theme.sideBarStyle], const {});
+    Widget face(int i, Set<WidgetState> states) {
+      final own = TermStyleOf([style, theme.sideBarStyle], states);
+      final on = i == selectedIndex;
+      final lit = on || states.contains(WidgetState.pressed);
+      final ink = own.foreground ?? theme.foreground;
+      final words = lit ? theme.background : ink;
+      final d = destinations[i];
+      return TermStateSprings(
+        pressed: states.contains(WidgetState.pressed),
+        focused: states.contains(WidgetState.focused),
+        builder: (context, press, focus) => CustomPaint(
+          // The keyboard's focus: a block at the item's start,
+          // as a list's row has it; on the current item's inverse cell, in
+          // the ground's colour.
+          foregroundPainter: focus > 0
+              ? TermFocusBlockPainter(
+                  amount: focus,
+                  color: lit ? theme.background : theme.accent,
+                  cellWidth: grid.cellWidth,
+                  direction: Directionality.of(context),
+                )
+              : null,
+          child: ColoredBox(
+            color: lit ? own.fill ?? ink : const Color(0x00000000),
+            child: SizedBox(
+              height: grid.lines(2),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    d.glyph ?? d.label.characters.first,
+                    style: theme.boldStyle.copyWith(color: words),
+                  ),
+                  Text(
+                    '${i + 1}',
+                    style: theme.textStyle.copyWith(
+                      color: lit ? words : theme.dim,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // In TermScaffold's shell, its destinations stand in the items'
+    // places: the shell presses them and gives them their keys.
+    final shell = TermShellDestinations.maybeOf(context);
     return DecoratedBox(
       decoration: BoxDecoration(
         border: BorderDirectional(
@@ -668,68 +803,25 @@ class TermNavigationRail extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (var i = 0; i < destinations.length; i++)
-                DesignPressable(
-                  onPressed: onDestinationSelected == null
-                      ? null
-                      : () => onDestinationSelected!(i),
-                  selected: i == selectedIndex,
-                  semanticSelected: i == selectedIndex,
-                  semanticLabel: destinations[i].label,
-                  excludeSemantics: true,
-                  mouseCursor: onDestinationSelected == null
-                      ? SystemMouseCursors.basic
-                      : SystemMouseCursors.click,
-                  builder: (context, states, _) {
-                    final own = TermStyleOf([
-                      style,
-                      theme.sideBarStyle,
-                    ], states);
-                    final on = i == selectedIndex;
-                    final lit = on || states.contains(WidgetState.pressed);
-                    final ink = own.foreground ?? theme.foreground;
-                    final words = lit ? theme.background : ink;
-                    final d = destinations[i];
-                    return TermStateSprings(
-                      pressed: states.contains(WidgetState.pressed),
-                      focused: states.contains(WidgetState.focused),
-                      builder: (context, press, focus) => CustomPaint(
-                        // The keyboard's focus: a block at the item's start,
-                        // as a list's row has it.
-                        foregroundPainter: focus > 0
-                            ? TermFocusBlockPainter(
-                                amount: focus,
-                                color: theme.accent,
-                                cellWidth: grid.cellWidth,
-                                direction: Directionality.of(context),
-                              )
-                            : null,
-                        child: ColoredBox(
-                          color: lit
-                              ? own.fill ?? ink
-                              : const Color(0x00000000),
-                          child: SizedBox(
-                            height: grid.lines(2),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  d.glyph ?? d.label.characters.first,
-                                  style: theme.boldStyle.copyWith(color: words),
-                                ),
-                                Text(
-                                  '${i + 1}',
-                                  style: theme.textStyle.copyWith(
-                                    color: lit ? words : theme.dim,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                if (shell != null)
+                  TermShellFace(
+                    face: (context, states) => face(i, states),
+                    child: shell[i],
+                  )
+                else
+                  DesignPressable(
+                    onPressed: onDestinationSelected == null
+                        ? null
+                        : () => onDestinationSelected!(i),
+                    selected: i == selectedIndex,
+                    semanticSelected: i == selectedIndex,
+                    semanticLabel: destinations[i].label,
+                    excludeSemantics: true,
+                    mouseCursor: onDestinationSelected == null
+                        ? SystemMouseCursors.basic
+                        : SystemMouseCursors.click,
+                    builder: (context, states, _) => face(i, states),
+                  ),
             ],
           ),
         ),
@@ -749,6 +841,13 @@ class TermNavigationRail extends StatelessWidget {
 /// a phone's foot, a [TermNavigationRail] beside a tablet's body, a
 /// [TermSideBar] pane at a desk. It goes by its own width (under 600, to
 /// 1100, past it), so a shell in a pane of a wider screen fits the pane.
+///
+/// The behaviour is ui_core's `DesignAdaptiveShell`: the destinations are
+/// one tab stop, on the current one, the arrows moving along them (Left
+/// and Right in the window list, Up and Down in the rail and the side
+/// pane), Enter or Space going there; F6 moves the keys between the
+/// destinations and the body; a screen reader hears each destination as a
+/// tab and its place ("Tab 2 of 4"), the side pane as the navigation menu.
 ///
 /// ```dart
 /// TermScaffold(
@@ -808,13 +907,56 @@ class TermScaffold extends StatelessWidget {
   Widget _shell(BuildContext context, double width) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final nav = destinations.isNotEmpty;
-    final Widget middle;
-    if (nav && width >= 1100) {
-      middle = Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
+    if (destinations.isEmpty) {
+      return ColoredBox(
+        color: theme.background,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ?topBar,
+            Expanded(child: body),
+            ?statusLine,
+          ],
+        ),
+      );
+    }
+    // Terminal's widths, not Material's classes: the side pane's 26 cells
+    // and a page beside them fit from 1100.
+    final mode = width < 600
+        ? DesignNavigationMode.bar
+        : width < 1100
+        ? DesignNavigationMode.rail
+        : DesignNavigationMode.sidebar;
+    final bar = mode == DesignNavigationMode.bar;
+    final shell = DesignAdaptiveShell(
+      mode: mode,
+      destinations: [
+        for (final d in destinations)
+          DesignNavigationDestination(
+            label: d.badge == null ? d.label : '${d.label}, ${d.badge}',
+            // Terminal draws its places in characters (a glyph, a number,
+            // a name); no icon is drawn.
+            icon: const IconData(0x20),
+          ),
+      ],
+      selectedIndex: selectedIndex,
+      onDestinationSelected: onDestinationSelected,
+      destinationBuilder: (context, _, details) =>
+          TermShellFace.build(context, details.states),
+      navigationBuilder: (context, details) => TermShellDestinations(
+        destinations: details.destinations,
+        child: switch (details.mode) {
+          DesignNavigationMode.bar => TermNavigationBar(
+            destinations: destinations,
+            selectedIndex: selectedIndex,
+            onDestinationSelected: onDestinationSelected,
+          ),
+          DesignNavigationMode.rail => TermNavigationRail(
+            destinations: destinations,
+            selectedIndex: selectedIndex,
+            onDestinationSelected: onDestinationSelected,
+          ),
+          DesignNavigationMode.sidebar => SizedBox(
             width: grid.cols(26),
             child: TermSideBar(
               title: title,
@@ -823,38 +965,29 @@ class TermScaffold extends StatelessWidget {
               onDestinationSelected: onDestinationSelected,
             ),
           ),
-          Expanded(child: body),
-        ],
-      );
-    } else if (nav && width >= 600) {
-      middle = Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TermNavigationRail(
-            destinations: destinations,
-            selectedIndex: selectedIndex,
-            onDestinationSelected: onDestinationSelected,
-          ),
-          Expanded(child: body),
-        ],
-      );
-    } else {
-      middle = body;
-    }
+        },
+      ),
+      // On a phone the status line stands over the window list, as a
+      // multiplexer's does; beside a rail or a pane it runs the screen's
+      // width under both.
+      body: bar
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: body),
+                ?statusLine,
+              ],
+            )
+          : body,
+    );
     return ColoredBox(
       color: theme.background,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ?topBar,
-          Expanded(child: middle),
-          ?statusLine,
-          if (nav && width < 600)
-            TermNavigationBar(
-              destinations: destinations,
-              selectedIndex: selectedIndex,
-              onDestinationSelected: onDestinationSelected,
-            ),
+          Expanded(child: shell),
+          if (!bar) ?statusLine,
         ],
       ),
     );

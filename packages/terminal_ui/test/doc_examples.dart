@@ -66,10 +66,49 @@ void testDocExamples({
         ),
       );
       await tester.pumpAndSettle();
+      await _finish(tester);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     });
   }
+}
+
+/// The futures the examples returned (an async call, as loading the faces),
+/// not yet seen to their end.
+final List<Future<Object?>> _running = [];
+
+/// Lets each async example run to its end, then draws the frames its end
+/// asked for, so nothing is left scheduled when the tree goes: a font
+/// loaded tells the fonts changed, and from Flutter 3.50 the text's relayout
+/// waits for the next frame.
+Future<void> _finish(WidgetTester tester) async {
+  if (_running.isEmpty) return;
+  var done = false;
+  (Object, StackTrace)? failed;
+  Future.wait(_running.toList())
+      .then<void>(
+        (_) => done = true,
+        onError: (Object error, StackTrace stack) {
+          failed = (error, stack);
+          done = true;
+        },
+      )
+      .ignore();
+  _running.clear();
+  // The example's own work happens outside the test's fake clock (a font
+  // is read by the engine): let real time pass, a little at a time.
+  for (var i = 0; i < 200 && !done; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 5)),
+    );
+    await tester.pump();
+  }
+  final (error, stack) = failed ?? (null, null);
+  if (error != null) Error.throwWithStackTrace(error, stack!);
+  expect(done, isTrue, reason: 'an async example never ended');
+  // The message the end sent, then the frame it scheduled.
+  await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+  await tester.pumpAndSettle();
 }
 
 /// [code] with its layout gone: no whitespace, no trailing comma, and no
@@ -125,6 +164,7 @@ class _OnceState extends State<_Once> {
     _ran = true;
     _made = widget.example(context);
     final made = _made;
+    if (made is Future<Object?>) _running.add(made);
     if (made is Route<void>) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) Navigator.of(context).push(made).ignore();

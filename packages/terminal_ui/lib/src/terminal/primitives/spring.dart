@@ -99,7 +99,7 @@ class TermStepper extends StatefulWidget {
   /// Whether it steps.
   final bool running;
 
-  /// Builds frame [step].
+  /// Builds frame `step`.
   final Widget Function(BuildContext context, int step) builder;
 
   @override

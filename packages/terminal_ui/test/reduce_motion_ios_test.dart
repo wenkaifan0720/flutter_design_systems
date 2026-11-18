@@ -111,16 +111,33 @@ void main() {
     );
     await tester.tap(find.byType(TermTextField));
     await tester.pump();
-    bool blinks() =>
-        tester.widget<EditableText>(find.byType(EditableText)).showCursor;
-    expect(blinks(), isTrue, reason: "Flutter's own caret, blinking");
+    // The field's own block (its painter, `_Caret`): whether it is gone
+    // half a second on, as a blinking caret is.
+    final caret = find.byWidgetPredicate(
+      (w) => w is CustomPaint && w.painter.runtimeType.toString() == '_Caret',
+    );
+    final block = paints..rect(color: TermThemeData.dark().accent);
+    Future<bool> blinks() async {
+      await tester.pump();
+      expect(tester.renderObject(caret), block);
+      await tester.pump(const Duration(milliseconds: 500));
+      final gone = !(block as Matcher).matches(
+        tester.renderObject(caret),
+        <dynamic, dynamic>{},
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      return gone;
+    }
+
+    expect(await blinks(), isTrue, reason: 'the caret, blinking');
 
     _iosReduceMotion(tester, true);
     await tester.pump();
-    expect(blinks(), isFalse, reason: 'a steady block in its place');
+    expect(await blinks(), isFalse, reason: 'a steady block in its place');
 
     _iosReduceMotion(tester, false);
     await tester.pump();
-    expect(blinks(), isTrue);
+    expect(await blinks(), isTrue);
+    await tester.pumpWidget(const SizedBox());
   });
 }

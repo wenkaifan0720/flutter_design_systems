@@ -1,52 +1,27 @@
 # terminal_ui
 
-Flutter widgets drawn the way a well-made terminal program draws itself:
-every size whole character cells, panes in box-drawing lines with their
-titles cut into the top line, buttons in brackets, the chosen row in
-inverse video, and the key for every action written beside it. A sixteen
-colour palette in a night and a paper preset, a monochrome theme, and
-everything you need to reach it by touch, pointer, keyboard and screen
-reader.
+Terminal widgets for Flutter: an app drawn on a character grid, with box-drawn panes, bracketed buttons, inverse
+selection and keys beside every action.
 
-```
-┌─ runs ─────────────────────────────── 3 ─┐
-│ ⠹ #1482 atlas-api                    now │
-│ ✗ #1481 atlas-api                 3m 02s │
-│ ✓ #911  web-console               4m 31s │
-└─ ⏎ open ─────────────────────────────────┘
-  [ cancel ] esc   [ deploy ] ⏎
-```
+![slipway, the example deploy console: home at a desk by night beside a new deploy on a phone on paper](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/terminal_ui/screenshots/hero.png)
 
-## Screens
-
-The example app, slipway, is a made-up deploy console built only from these
-widgets.
-
-![Home at a desk, night preset](screenshots/home-1440-night.png)
-
-![Runs, a run and its log tiled at a desk, paper preset](screenshots/runs-1440-paper.png)
-
-![The command palette over the runs, night preset](screenshots/palette-1440-night.png)
-
-![A run's change as a side-by-side diff, paper preset](screenshots/diff-1440-paper.png)
-
-<p>
-  <img src="screenshots/run-390-night.png" width="320" alt="One failing run on a phone, night preset">
-  <img src="screenshots/deploy-390-paper.png" width="320" alt="A new deploy on a phone, paper preset">
-</p>
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/terminal/)** ·
+[API reference](https://pub.dev/documentation/terminal_ui/latest/) ·
+[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Getting started
 
-```yaml
-dependencies:
-  terminal_ui: ^0.1.1
+```sh
+flutter pub add terminal_ui material_ui
 ```
 
 Put `TermTheme` round your app in its builder, and load the faces before the
-first frame so the grid never starts in a fallback font:
+first frame so the grid never starts in a fallback font. The app shell is
+Material's, from `material_ui` (Flutter 3.50 deprecates
+`package:flutter/material.dart` for it):
 
 ```dart
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:terminal_ui/terminal_ui.dart';
 
 Future<void> main() async {
@@ -107,6 +82,40 @@ hold it while they are up).
 example's `test/page_transitions_test.dart` and `test/page_motion_test.dart`
 push and pop a `MaterialPageRoute` on every platform to show it.
 
+## The look
+
+Flutter widgets drawn the way a well-made terminal program draws itself:
+every size whole character cells, panes in box-drawing lines with their
+titles cut into the top line, buttons in brackets, the chosen row in
+inverse video, and the key for every action written beside it. A sixteen
+colour palette in a night and a paper preset, a monochrome theme, and
+everything you need to reach it by touch, pointer, keyboard and screen
+reader.
+
+```
+┌─ runs ─────────────────────────────── 3 ─┐
+│ ⠹ #1482 atlas-api                    now │
+│ ✗ #1481 atlas-api                 3m 02s │
+│ ✓ #911  web-console               4m 31s │
+└─ ⏎ open ─────────────────────────────────┘
+  [ cancel ] esc   [ deploy ] ⏎
+```
+
+## Screens
+
+The example app, slipway, is a made-up deploy console built only from these
+widgets.
+
+![The runs, the failing run and its log tiled at a desk, paper preset](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/terminal_ui/screenshots/runs-1440-paper.png)
+
+![The command palette over the runs, night preset](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/terminal_ui/screenshots/palette-1440-night.png)
+
+![A run's change as a side-by-side diff, paper preset](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/terminal_ui/screenshots/diff-1440-paper.png)
+
+<p>
+  <img src="https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/terminal_ui/screenshots/run-390-night.png" width="320" alt="One failing run on a phone, night preset">
+</p>
+
 ## What's inside
 
 Every component an ordinary app expects, each drawn in the grid and each
@@ -139,7 +148,8 @@ the structure or leave the grid).
 - **Over the screen**: `TermDialog`, the y/N question
   `showTermConfirmDialog` (with a typed guard for destroying things),
   `showTermSheet`, `showTermSideSheet`, `showTermActionSheet`,
-  `TermPopover`, `TermHoverCard`, `TermTooltip`, `TermMenu`, toasts
+  `TermPopover`, `TermHoverCard`, `TermTooltip`, `TermMenu`,
+  `TermContextMenu` (a right click, a long press or Shift+F10), toasts
   through `TermToaster`, `TermBanner`, and screens through
   `TermPageRoute`. A screen change is a cut or a very short fade and a
   menu opens where it stays: nothing travels into place.
@@ -222,6 +232,14 @@ bar's percentage) instead. Inverse selection is announced as selected. The
 spinners and the caret hold still under Reduce Motion. Every tone has a
 glyph (`✓ ✗ ! i`), so nothing is said by colour alone; the monochrome theme
 proves it.
+
+The keys reach everything, on `ui_core` 0.3.0's behaviours: a tab bar and
+a shell's places are one stop each, the arrows moving along them, and F6
+moves between the places and the page; a dialog or a sheet keeps Tab
+inside and gives the focus back as it closes; a line or area chart is a
+stop whose arrows pick its points, and a screen reader hears the data in a
+sentence or the point picked; a rating takes the arrows and the digits; a
+key drawn `^K` is heard "Ctrl+K".
 
 ## Fonts
 

@@ -2,6 +2,7 @@
 /// into the top line and its help or error into the bottom one.
 library;
 
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -20,8 +21,9 @@ import '../theme.dart';
 /// typed on the line between, after an optional [prompt] (`$`, `>`, `~/`).
 ///
 /// The frame doubles in the accent while the field has focus, and draws in
-/// the danger ink while it has an error. The caret is a block, a cell wide;
-/// under Reduce Motion it holds still.
+/// the danger ink while it has an error. The caret is a block on the cell
+/// after the words (before them, right to left), behind the character it
+/// is on; under Reduce Motion it holds still.
 /// A note too long for the frame's line drops under the frame, wrapped.
 ///
 /// It takes Flutter's [TextField] arguments by their names; [controller]
@@ -250,8 +252,44 @@ class _TermTextFieldState extends State<TermTextField> {
       widget.controller ?? (_ownController ??= TextEditingController());
   final _input = GlobalKey();
 
+  // The caret's blink: shown for half a second, gone for half, and shown
+  // again from the start at every edit and move, as a terminal's is.
+  final _caretOn = ValueNotifier<bool>(true);
+  Timer? _blink;
+  FocusNode? _heardFocus;
+  TextEditingController? _heardController;
+  var _steady = false;
+
+  void _hear() {
+    final focus = _focus;
+    final controller = _controller;
+    if (!identical(focus, _heardFocus)) {
+      _heardFocus?.removeListener(_restartBlink);
+      _heardFocus = focus..addListener(_restartBlink);
+    }
+    if (!identical(controller, _heardController)) {
+      _heardController?.removeListener(_restartBlink);
+      _heardController = controller..addListener(_restartBlink);
+    }
+  }
+
+  void _restartBlink() {
+    _blink?.cancel();
+    _blink = null;
+    _caretOn.value = true;
+    if (!mounted || _steady || !_focus.hasFocus) return;
+    _blink = Timer.periodic(
+      const Duration(milliseconds: 500),
+      (_) => _caretOn.value = !_caretOn.value,
+    );
+  }
+
   @override
   void dispose() {
+    _blink?.cancel();
+    _heardFocus?.removeListener(_restartBlink);
+    _heardController?.removeListener(_restartBlink);
+    _caretOn.dispose();
     _ownFocus?.dispose();
     _ownController?.dispose();
     super.dispose();
@@ -285,10 +323,30 @@ class _TermTextFieldState extends State<TermTextField> {
           color: own.foreground ?? (enabled ? theme.foreground : theme.rule),
         );
 
-    // Flutter's caret blinks on a timer whatever the setting; under Reduce
-    // Motion the field hides it and a steady block is painted in its place.
+    // The caret is the field's own block, not Flutter's. Flutter's stands
+    // two pixels before its place on iOS and macOS (Material's offset for a
+    // hairline caret), and holds a margin as wide as itself at the line's
+    // end, which right to left is the start: the words typed stood a cell
+    // inside the label and the hint. So Flutter's caret has no width and is
+    // never shown, and the block is painted behind the words on the cell
+    // the caret is at. Under Reduce Motion it holds still.
     final steady = designReduceMotionOf(context);
+    if (steady != _steady) {
+      _steady = steady;
+      // After this build: the notifier may have listeners painting.
+      scheduleMicrotask(_restartBlink);
+    }
+    _hear();
     final caret = hasError ? theme.danger : theme.accent;
+    final rtl =
+        (widget.textDirection ?? Directionality.of(context)) ==
+        TextDirection.rtl;
+    // The one pixel Flutter still keeps after the last character (its
+    // caret's gap) is, right to left, before the first: the input stands a
+    // pixel further out and its hint a pixel back in, so the words and the
+    // hint both start on the cell the label does.
+    final gap = rtl ? 1.0 : 0.0;
+    final hint = widget.hintText;
 
     // Material's field, on a Material surface of its own that paints
     // nothing, so it stands under any app.
@@ -296,7 +354,7 @@ class _TermTextFieldState extends State<TermTextField> {
       type: MaterialType.transparency,
       child: TextField(
         controller: _controller,
-        showCursor: !steady,
+        showCursor: false,
         focusNode: _focus,
         enabled: enabled,
         readOnly: widget.readOnly,
@@ -324,27 +382,46 @@ class _TermTextFieldState extends State<TermTextField> {
         maxLines: widget.lines,
         minLines: widget.lines,
         style: words,
-        cursorColor: caret,
-        cursorWidth: grid.cellWidth,
+        cursorWidth: 0,
         cursorHeight: grid.fontSize * 1.25,
-        cursorRadius: Radius.zero,
-        cursorOpacityAnimates: false,
         textAlignVertical: multiline
             ? TextAlignVertical.top
             : TextAlignVertical.center,
-        decoration: InputDecoration.collapsed(
-          hintText: widget.hintText,
-          hintStyle: theme.dimStyle,
-        ).copyWith(contentPadding: EdgeInsets.symmetric(vertical: pad)),
+        decoration:
+            (rtl && hint != null
+                    ? InputDecoration.collapsed(
+                        hintText: null,
+                        hint: Padding(
+                          padding: EdgeInsetsDirectional.only(start: gap),
+                          child: Text(
+                            hint,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.dimStyle,
+                          ),
+                        ),
+                      )
+                    : InputDecoration.collapsed(
+                        hintText: hint,
+                        hintStyle: theme.dimStyle,
+                      ))
+                .copyWith(contentPadding: EdgeInsets.symmetric(vertical: pad)),
       ),
     );
-    if (steady && enabled && !widget.readOnly) {
+    if (gap > 0) {
+      control = Transform.translate(offset: Offset(gap, 0), child: control);
+    }
+    if (enabled && !widget.readOnly) {
       control = CustomPaint(
-        painter: _SteadyCaret(
+        painter: _Caret(
           field: _input,
           focus: _focus,
           controller: _controller,
+          on: _caretOn,
           color: caret,
+          width: grid.cellWidth,
+          height: grid.fontSize * 1.25,
+          rtl: rtl,
         ),
         child: KeyedSubtree(key: _input, child: control),
       );
@@ -475,20 +552,29 @@ class _TermTextFieldState extends State<TermTextField> {
   }
 }
 
-// The caret that holds still: a block where the field's own caret would
-// be, behind the words, while the field has focus and nothing is selected.
-class _SteadyCaret extends CustomPainter {
-  _SteadyCaret({
+// The caret: a block on the cell the field's caret is at (after the
+// words; before them, right to left), behind the words, while the field has
+// the focus, nothing is selected and the blink [on] shows it.
+class _Caret extends CustomPainter {
+  _Caret({
     required this.field,
     required this.focus,
     required this.controller,
+    required this.on,
     required this.color,
-  }) : super(repaint: Listenable.merge([focus, controller]));
+    required this.width,
+    required this.height,
+    required this.rtl,
+  }) : super(repaint: Listenable.merge([focus, controller, on]));
 
   final GlobalKey field;
   final FocusNode focus;
   final TextEditingController controller;
+  final ValueListenable<bool> on;
   final Color color;
+  final double width;
+  final double height;
+  final bool rtl;
 
   static RenderEditable? _editable(RenderObject? node) {
     if (node == null || node is RenderEditable) return node as RenderEditable?;
@@ -497,29 +583,54 @@ class _SteadyCaret extends CustomPainter {
     return found;
   }
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (!focus.hasFocus) return;
-    final root = field.currentContext?.findRenderObject();
+  /// Where the block stands in [root]'s box, or null while there is no
+  /// caret to show.
+  static Rect? place(
+    RenderObject? root, {
+    required double width,
+    required double height,
+    required bool rtl,
+  }) {
     final editable = _editable(root);
-    if (root == null || editable == null || !editable.hasSize) return;
+    if (root == null || editable == null || !editable.hasSize) return null;
     final selection = editable.selection;
     if (selection == null || !selection.isValid || !selection.isCollapsed) {
-      return;
+      return null;
     }
-    final rect = MatrixUtils.transformRect(
+    // The caret's place on its line: the line's foot at the caret, with
+    // none of the platform's offsets for a hairline.
+    final foot = editable.getEndpointsForSelection(selection).first.point;
+    final line = editable.preferredLineHeight;
+    final top = foot.dy - line + (line - height) / 2;
+    final left = rtl ? foot.dx - width : foot.dx;
+    return MatrixUtils.transformRect(
       editable.getTransformTo(root),
-      editable.getLocalRectForCaret(selection.extent),
+      Rect.fromLTWH(left, top, width, height),
     );
-    canvas.drawRect(rect, Paint()..color = color);
   }
 
   @override
-  bool shouldRepaint(_SteadyCaret old) =>
+  void paint(Canvas canvas, Size size) {
+    if (!focus.hasFocus || !on.value) return;
+    final rect = place(
+      field.currentContext?.findRenderObject(),
+      width: width,
+      height: height,
+      rtl: rtl,
+    );
+    if (rect != null) canvas.drawRect(rect, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_Caret old) =>
       old.color != color ||
       old.focus != focus ||
       old.controller != controller ||
-      old.field != field;
+      old.on != on ||
+      old.field != field ||
+      old.width != width ||
+      old.height != height ||
+      old.rtl != rtl;
 }
 
 // Words longer than their line, while the keyboard is elsewhere: the last

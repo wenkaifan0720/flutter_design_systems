@@ -451,9 +451,13 @@ class TermMeter extends StatelessWidget {
 /// A rating: a mark a step, `*` given and `·` not, and the count after it:
 /// `* * * · · 3/5`. Brackets close round the marks while it has the
 /// keyboard's focus, and the arrows move it a mark, Home and End to none
-/// and all. A tap or a drag puts it on a mark (left of the first: none).
-/// The pointer over it previews the marks it would give, the one hover a
-/// rating keeps. A screen reader hears a slider, "3 of 5".
+/// and all, a digit to that many. A tap or a drag puts it on a mark (a tap
+/// left of the first: none). The pointer over it previews the marks it
+/// would give, the one hover a rating keeps. A screen reader hears a
+/// slider, "3 of 5".
+///
+/// The behaviour is ui_core's [DesignRating]; Terminal draws the marks,
+/// the brackets and the count.
 ///
 /// ```dart
 /// TermRating(
@@ -516,9 +520,6 @@ class TermRating extends StatefulWidget {
 }
 
 class _TermRatingState extends State<TermRating> {
-  bool _dragging = false;
-  int? _preview;
-
   @override
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
@@ -528,106 +529,82 @@ class _TermRatingState extends State<TermRating> {
     final floor = grid.ceil(DesignTapTargets.of(context).floorOn());
     // A mark and its gap; a finger's are wider.
     final per = touch ? 4 : 2;
-    final cells = 1 + widget.max * per;
-    final width = grid.cols(cells);
-    final rtl = Directionality.of(context) == TextDirection.rtl;
     final change = widget.onChanged;
-
-    int at(Offset local) {
-      final dx = rtl ? width - local.dx : local.dx;
-      if (dx < cw) return 0;
-      return (((dx - cw) / cw) ~/ per + 1).clamp(0, widget.max);
-    }
-
-    void put(Offset local) {
-      if (change == null) return;
-      final v = at(local);
-      if (v != widget.value) change(v);
-    }
-
-    final marks = MouseRegion(
-      onHover: change == null
-          ? null
-          : (e) => setState(() => _preview = at(e.localPosition)),
-      onExit: (_) => setState(() => _preview = null),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        excludeFromSemantics: true,
-        onTapDown: change == null ? null : (d) => put(d.localPosition),
-        onHorizontalDragStart: change == null
-            ? null
-            : (d) {
-                setState(() => _dragging = true);
-                put(d.localPosition);
-              },
-        onHorizontalDragUpdate: change == null
-            ? null
-            : (d) => put(d.localPosition),
-        onHorizontalDragEnd: change == null
-            ? null
-            : (_) => setState(() => _dragging = false),
-        child: DesignValueHandle(
-          value: widget.value.toDouble(),
-          onChanged: change == null ? null : (v) => change(v.round()),
-          max: widget.max.toDouble(),
-          step: 1,
-          divisions: widget.max,
-          dragging: _dragging,
-          semanticLabel: widget.semanticLabel,
-          semanticFormatterCallback: (v) => '${v.round()} of ${widget.max}',
-          focusNode: widget.focusNode,
-          autofocus: widget.autofocus,
-          mouseCursor: change == null
-              ? SystemMouseCursors.basic
-              : SystemMouseCursors.click,
-          minimumSize: Size(width, floor.height),
-          builder: (context, states) {
-            final own = TermStyleOf([widget.style, theme.ratingStyle], states);
-            final disabled = change == null;
-            final given = disabled ? theme.dim : own.fill ?? theme.accent;
-            final left = disabled ? theme.rule : own.foreground ?? theme.dim;
-            final shown = _preview ?? widget.value;
-            final focused = states.contains(WidgetState.focused);
-            final bracket = TextStyle(color: own.edge ?? theme.accent);
-            final pad = ' ' * ((per - 2) ~/ 2);
-            return SizedBox(
-              width: width,
-              height: grid.lineHeight * (touch ? 2 : 1),
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Text.rich(
+    final height = math.max(grid.lineHeight * (touch ? 2 : 1), floor.height);
+    final marks = DesignRating(
+      value: widget.value.toDouble(),
+      onChanged: change == null ? null : (v) => change(v.round()),
+      itemCount: widget.max,
+      semanticLabel: widget.semanticLabel,
+      focusNode: widget.focusNode,
+      autofocus: widget.autofocus,
+      // The first mark carries the cell before it, where the opening
+      // bracket stands; each mark its own cells after it, the last its
+      // closing bracket. ui_core finds the mark under a pointer by them.
+      itemBuilder: (context, item) {
+        final i = item.index;
+        final states = item.states;
+        final own = TermStyleOf([widget.style, theme.ratingStyle], states);
+        final disabled = change == null;
+        final given = disabled ? theme.dim : own.fill ?? theme.accent;
+        final left = disabled ? theme.rule : own.foreground ?? theme.dim;
+        final focused = states.contains(WidgetState.focused);
+        final bracket = TextStyle(color: own.edge ?? theme.accent);
+        final pad = ' ' * ((per - 2) ~/ 2);
+        final on = item.fill >= 1;
+        final last = i == widget.max - 1;
+        final face = SizedBox(
+          width: grid.cols(per + (i == 0 ? 1 : 0)),
+          height: height,
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Text.rich(
+              TextSpan(
+                style: theme.textStyle,
+                children: [
+                  if (i == 0)
+                    TextSpan(text: focused ? '[' : ' ', style: bracket),
                   TextSpan(
-                    style: theme.textStyle,
-                    children: [
-                      TextSpan(text: focused ? '[' : ' ', style: bracket),
-                      for (var i = 1; i <= widget.max; i++)
-                        TextSpan(
-                          text: '$pad${i <= shown ? '*' : '·'}$pad',
-                          style: TextStyle(
-                            color: i <= shown
-                                ? (_preview != null ? theme.foreground : given)
-                                : left,
-                          ),
-                          children: [
-                            if (i < widget.max)
-                              const TextSpan(text: ' ')
-                            else
-                              TextSpan(
-                                text: focused ? ']' : ' ',
-                                style: bracket,
-                              ),
-                          ],
-                        ),
-                    ],
+                    text: '$pad${on ? '*' : '·'}$pad',
+                    style: TextStyle(
+                      color: on
+                          ? (item.isPreview ? theme.foreground : given)
+                          : left,
+                    ),
                   ),
-                  maxLines: 1,
-                  softWrap: false,
-                ),
+                  if (last)
+                    TextSpan(text: focused ? ']' : ' ', style: bracket)
+                  else
+                    const TextSpan(text: ' '),
+                ],
               ),
-            );
-          },
-        ),
-      ),
+              maxLines: 1,
+              softWrap: false,
+            ),
+          ),
+        );
+        if (i != 0 || change == null) return face;
+        // A tap on the cell before the first mark gives none, as it always
+        // has; ui_core's rating puts a tap there on the first.
+        return Stack(
+          children: [
+            face,
+            PositionedDirectional(
+              start: 0,
+              top: 0,
+              bottom: 0,
+              width: cw,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                excludeFromSemantics: true,
+                onTap: () {
+                  if (widget.value != 0) change(0);
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
     if (!widget.showCount) return marks;
     return Row(

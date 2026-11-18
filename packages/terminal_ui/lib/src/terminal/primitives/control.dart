@@ -56,7 +56,7 @@ class TermStateSprings extends StatelessWidget {
   /// Whether the keyboard's focus is on it.
   final bool focused;
 
-  /// Builds the face with the press ([press]) and the focus ([focus]).
+  /// Builds the face with the press (`press`) and the focus (`focus`).
   final Widget Function(BuildContext context, double press, double focus)
   builder;
 

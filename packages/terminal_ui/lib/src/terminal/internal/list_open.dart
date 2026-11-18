@@ -101,7 +101,7 @@ class TermListUp extends StatefulWidget {
   /// A field built by [builder].
   const TermListUp({super.key, required this.builder});
 
-  /// The field: [up] while its list shows; [mark] goes round the list.
+  /// The field: `up` while its list shows; `mark` goes round the list.
   final Widget Function(
     BuildContext context,
     bool up,
@@ -128,4 +128,136 @@ class _TermListUpState extends State<TermListUp> {
     _lists > 0,
     (list) => TermListOpenMark(onChanged: _changed, child: list),
   );
+}
+
+/// Which side of its field a combobox's list opens on. ui_core's anchored
+/// lists (a select's, a menu's) move over their anchor when the room under
+/// it is less than they want and the room over it is more; its combobox
+/// opens on the side it is told and stays there, so near the foot of the
+/// screen its list was held to the sliver left under the field. This keeps
+/// the anchored lists' rule for it: [builder] is told whether the list goes
+/// `above`, read from where the field stood whenever its words or its focus
+/// change (what opens the list), and puts `watch` round the field.
+class TermListSide extends StatefulWidget {
+  /// A field built by [builder], whose list wants [wanted] of room.
+  const TermListSide({super.key, required this.wanted, required this.builder});
+
+  /// The room the list wants under the field before it goes over it.
+  final double wanted;
+
+  /// The field: `above` while its list opens over it; `watch` goes round
+  /// the words' input, with its controller and its focus.
+  final Widget Function(
+    BuildContext context,
+    bool above,
+    Widget Function(
+      TextEditingController controller,
+      FocusNode focusNode,
+      Widget field,
+    )
+    watch,
+  )
+  builder;
+
+  @override
+  State<TermListSide> createState() => _TermListSideState();
+}
+
+class _TermListSideState extends State<TermListSide> {
+  var _above = false;
+  var _safe = EdgeInsets.zero;
+
+  // Reads the room on each side of the field as it last stood.
+  void _place() {
+    if (!mounted) return;
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) => _place());
+      return;
+    }
+    final box = context.findRenderObject();
+    final overlay = Overlay.maybeOf(context)?.context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize || !box.attached) return;
+    if (overlay is! RenderBox || !overlay.hasSize) return;
+    final top = box.localToGlobal(Offset.zero, ancestor: overlay).dy;
+    final over = top - _safe.top;
+    final under = overlay.size.height - _safe.bottom - (top + box.size.height);
+    final above = under < widget.wanted && over > under;
+    if (above != _above) setState(() => _above = above);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // The keyboard and the screen's own edges take room from both sides,
+    // as they do from the list.
+    final media = MediaQuery.maybeOf(context);
+    _safe = media == null
+        ? EdgeInsets.zero
+        : EdgeInsets.only(
+            top: media.padding.top,
+            bottom: media.padding.bottom + media.viewInsets.bottom,
+          );
+    return widget.builder(
+      context,
+      _above,
+      (controller, focusNode, field) => _ListSideWatch(
+        controller: controller,
+        focusNode: focusNode,
+        onChanged: _place,
+        child: field,
+      ),
+    );
+  }
+}
+
+// Calls [onChanged] when the words or the focus change.
+class _ListSideWatch extends StatefulWidget {
+  const _ListSideWatch({
+    required this.controller,
+    required this.focusNode,
+    required this.onChanged,
+    required this.child,
+  });
+
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final VoidCallback onChanged;
+  final Widget child;
+
+  @override
+  State<_ListSideWatch> createState() => _ListSideWatchState();
+}
+
+class _ListSideWatchState extends State<_ListSideWatch> {
+  void _changed() => widget.onChanged();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_changed);
+    widget.focusNode.addListener(_changed);
+  }
+
+  @override
+  void didUpdateWidget(_ListSideWatch old) {
+    super.didUpdateWidget(old);
+    if (old.controller != widget.controller) {
+      old.controller.removeListener(_changed);
+      widget.controller.addListener(_changed);
+    }
+    if (old.focusNode != widget.focusNode) {
+      old.focusNode.removeListener(_changed);
+      widget.focusNode.addListener(_changed);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_changed);
+    widget.focusNode.removeListener(_changed);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

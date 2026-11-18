@@ -37,6 +37,8 @@ workspace:
   - packages/neumorphism_ui/example
   - packages/retro_desktop_ui
   - packages/retro_desktop_ui/example
+  - packages/terminal_ui
+  - packages/terminal_ui/example
 
 dev_dependencies:
   flutter_lints: ^6.0.0

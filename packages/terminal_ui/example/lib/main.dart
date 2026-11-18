@@ -2,7 +2,7 @@
 // is, the example app's screens and what the package holds), then every
 // part's page from its index. The example app, slipway, is a small team's
 // deploy console; open it from the Overview.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:terminal_ui/terminal_ui.dart';
 
 import 'gallery_pages.dart';

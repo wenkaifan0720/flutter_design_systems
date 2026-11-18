@@ -177,13 +177,15 @@ void main() {
         expect(_lit(), [m.rows.last]);
       }, variant: _desk);
 
-      testWidgets('opened by the pointer, Return shows the first and '
-          'chooses nothing', (tester) async {
+      testWidgets('opened by the pointer, Return chooses nothing unseen; '
+          'Down then shows the first', (tester) async {
         await tester.pumpWidget(_host(m.menu));
         final mouse = await _mouse(tester);
         await _click(tester, mouse, m.opener);
         await _key(tester, LogicalKeyboardKey.enter);
         expect(find.byType(TermMenuRow), findsNWidgets(m.rows.length));
+        expect(_lit(), isEmpty);
+        await _key(tester, LogicalKeyboardKey.arrowDown);
         expect(_lit(), [m.rows[0]]);
       }, variant: _desk);
 

@@ -1487,6 +1487,14 @@ abstract final class TermMotion {
   /// A screen, a dialog or a toast coming up: a very short fade in place.
   static const Duration screen = Duration(milliseconds: 120);
 
+  /// A dialog, a sheet or a side sheet coming up and going, on ui_core's
+  /// route spring: critically damped, it settles in about [screen]'s 120 ms
+  /// (to within `designSpringTolerance`), a very short fade in place.
+  static const ({double dampingRatio, double stiffness}) surface = (
+    dampingRatio: 1,
+    stiffness: 5900,
+  );
+
   /// Half the caret's blink: on for this long, then off for as long, as a
   /// terminal's cursor does.
   static const Duration caretHalfPeriod = Duration(milliseconds: 530);

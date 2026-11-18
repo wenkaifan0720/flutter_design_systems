@@ -20,6 +20,7 @@ import '../style.dart';
 import '../theme.dart';
 import 'button.dart';
 import 'chips.dart';
+import 'feedback.dart';
 import 'pane.dart';
 import 'text_field.dart';
 
@@ -398,6 +399,11 @@ class TermNumberField extends StatelessWidget {
 /// under the frame, the one the arrows are on in inverse video, Return
 /// taking it.
 ///
+/// With [search] the options are looked up rather than filtered: while
+/// the search runs the pane says [loadingText] by the spinner, and when it
+/// fails, [errorText] over a [retryText] row (Down from the field reaches
+/// it, Return or a press runs the search again).
+///
 /// ```dart
 /// TermCombobox<String>(
 ///   labelText: 'branch',
@@ -419,6 +425,11 @@ class TermCombobox<T extends Object> extends StatelessWidget {
     this.helperText,
     this.prompt,
     this.emptyText = 'no match',
+    this.search,
+    this.debounceDuration,
+    this.loadingText = 'searching',
+    this.errorText = 'search failed',
+    this.retryText = 'try again',
     this.controller,
     this.focusNode,
     this.style,
@@ -429,8 +440,24 @@ class TermCombobox<T extends Object> extends StatelessWidget {
   /// [TermThemeData.menuStyle].
   final TermStyle? style;
 
-  /// The options it filters.
+  /// The options it filters, when there is no [search].
   final List<T> options;
+
+  /// Looks the options up for the words typed, in place of filtering
+  /// [options]; it may be async.
+  final DesignOptionSearch<T>? search;
+
+  /// How long the typing rests before [search] runs; null: at every change.
+  final Duration? debounceDuration;
+
+  /// What the list says while [search] runs.
+  final String loadingText;
+
+  /// What the list says when [search] fails.
+  final String errorText;
+
+  /// The row under [errorText] that runs [search] again.
+  final String retryText;
 
   /// The words for an option; null: its `toString`.
   final String Function(T option)? displayStringForOption;
@@ -472,10 +499,17 @@ class TermCombobox<T extends Object> extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final show = displayStringForOption ?? (T option) => '$option';
-    // While its list is up, the field stands on the list's ground.
-    return TermListUp(
-      builder: (context, up, mark) =>
-          TermListOpen(open: up, child: _combobox(theme, grid, show, mark)),
+    // While its list is up, the field stands on the list's ground. The
+    // list goes over a field with too little room under it, as a select's
+    // does: its frame and the lines of a failed search, or four options.
+    return TermListSide(
+      wanted: grid.lines(6),
+      builder: (context, above, watch) => TermListUp(
+        builder: (context, up, mark) => TermListOpen(
+          open: up,
+          child: _combobox(theme, grid, show, mark, above, watch),
+        ),
+      ),
     );
   }
 
@@ -484,8 +518,18 @@ class TermCombobox<T extends Object> extends StatelessWidget {
     TermGrid grid,
     String Function(T) show,
     Widget Function(Widget list) mark,
+    bool above,
+    Widget Function(TextEditingController, FocusNode, Widget) watch,
   ) => DesignCombobox<T>(
+    optionsViewOpenDirection: above
+        ? OptionsViewOpenDirection.up
+        : OptionsViewOpenDirection.down,
     options: options,
+    search: search,
+    debounceDuration: debounceDuration,
+    loadingBuilder: (context) => _Searching(text: loadingText),
+    errorBuilder: (context, error) =>
+        _SearchFailed(error: error, text: errorText, retryText: retryText),
     displayStringForOption: show,
     onSelected: onSelected,
     value: value,
@@ -497,18 +541,22 @@ class TermCombobox<T extends Object> extends StatelessWidget {
     focusNode: focusNode,
     semanticLabel: labelText,
     optionsMaxHeight: grid.lines(8),
-    fieldBuilder: (context, field) => TermTextField(
-      controller: field.controller,
-      focusNode: field.focusNode,
-      labelText: labelText,
-      hintText: hintText,
-      helperText: helperText,
-      prompt: prompt,
-      autocorrect: false,
-      style: style,
-      // Return takes the lit option and keeps the focus: no onSubmitted,
-      // whose restarted input would take no more typing in a browser.
-      onEditingComplete: field.submit,
+    fieldBuilder: (context, field) => watch(
+      field.controller,
+      field.focusNode,
+      TermTextField(
+        controller: field.controller,
+        focusNode: field.focusNode,
+        labelText: labelText,
+        hintText: hintText,
+        helperText: helperText,
+        prompt: prompt,
+        autocorrect: false,
+        style: style,
+        // Return takes the lit option and keeps the focus: no onSubmitted,
+        // whose restarted input would take no more typing in a browser.
+        onEditingComplete: field.submit,
+      ),
     ),
     optionBuilder: (context, option, states) =>
         TermMenuRow(label: show(option), states: states),
@@ -548,10 +596,95 @@ class TermCombobox<T extends Object> extends StatelessWidget {
   }
 }
 
+// A search's list while it looks: the spinner and the words, a cell in
+// from the frame as the words that nothing matches are.
+class _Searching extends StatelessWidget {
+  const _Searching({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = TermTheme.of(context);
+    final cw = context.termGrid.cellWidth;
+    return Padding(
+      padding: EdgeInsetsDirectional.symmetric(horizontal: cw),
+      child: Row(
+        children: [
+          const TermSpinner(),
+          SizedBox(width: cw),
+          Expanded(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.dimStyle,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// A search's list when it failed: the words in the danger ink over a row
+// that runs it again, lit while the keys are on it (Down from the field).
+class _SearchFailed extends StatelessWidget {
+  const _SearchFailed({
+    required this.error,
+    required this.text,
+    required this.retryText,
+  });
+
+  final DesignSearchError error;
+  final String text;
+  final String retryText;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = TermTheme.of(context);
+    final cw = context.termGrid.cellWidth;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // ui_core's node says the failure as it shows.
+        ExcludeSemantics(
+          child: Padding(
+            padding: EdgeInsetsDirectional.symmetric(horizontal: cw),
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textStyle.copyWith(color: theme.danger),
+            ),
+          ),
+        ),
+        // The keys reach it from the field, never by Tab.
+        ExcludeFocus(
+          child: DesignPressable(
+            onPressed: error.retry,
+            semanticLabel: retryText,
+            excludeSemantics: true,
+            builder: (context, states, _) => TermMenuRow(
+              label: retryText,
+              states: {...states, if (error.focused) WidgetState.focused},
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 /// A field that gathers tags: each value chosen a [TermTag] with its `×`
 /// on the line over the frame, the field suggesting from [options] as you
 /// type, a comma or Return making the tag, Backspace in an empty field
 /// taking the last one back.
+///
+/// With [search] the suggestions are looked up rather than filtered, and
+/// say so while they are, and when the search fails, as
+/// [TermCombobox]'s do.
 ///
 /// ```dart
 /// TermTagInput<String>(
@@ -575,8 +708,29 @@ class TermTagInput<T extends Object> extends StatelessWidget {
     this.hintText,
     this.helperText,
     this.maxTags,
+    this.search,
+    this.debounceDuration,
+    this.loadingText = 'searching',
+    this.errorText = 'search failed',
+    this.retryText = 'try again',
     this.style,
   });
+
+  /// Looks the suggestions up for the words typed, in place of filtering
+  /// [options]; it may be async.
+  final DesignOptionSearch<T>? search;
+
+  /// How long the typing rests before [search] runs; null: at every change.
+  final Duration? debounceDuration;
+
+  /// What the list says while [search] runs.
+  final String loadingText;
+
+  /// What the list says when [search] fails.
+  final String errorText;
+
+  /// The row under [errorText] that runs [search] again.
+  final String retryText;
 
   /// Overrides for the field, over the theme's
   /// [TermThemeData.textFieldStyle]; the tags read
@@ -589,7 +743,7 @@ class TermTagInput<T extends Object> extends StatelessWidget {
   /// Called with the new tags.
   final ValueChanged<List<T>> onChanged;
 
-  /// What it suggests.
+  /// What it suggests, when there is no [search].
   final List<T> options;
 
   /// The words for a value; null: its `toString`.
@@ -635,6 +789,11 @@ class TermTagInput<T extends Object> extends StatelessWidget {
     values: values,
     onChanged: onChanged,
     options: options,
+    search: search,
+    debounceDuration: debounceDuration,
+    loadingBuilder: (context) => _Searching(text: loadingText),
+    errorBuilder: (context, error) =>
+        _SearchFailed(error: error, text: errorText, retryText: retryText),
     displayStringForOption: show,
     isOptionEnabled: isOptionEnabled,
     // Two marks, apart: the pointer's row takes the accent, the keys' adds

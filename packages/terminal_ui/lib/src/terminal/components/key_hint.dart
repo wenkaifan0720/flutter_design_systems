@@ -56,19 +56,25 @@ bool termKeysShown(BuildContext context) =>
     DesignTapTargets.of(context).inputOn() == DesignInput.pointer;
 
 /// A key or a chord shown beside an action: [keys] in the dim ink, its
-/// letters in the words' face, read to a screen reader as "shortcut" and
-/// the keys. Under touch it draws nothing ([termKeysShown]).
+/// letters in the words' face. A screen reader hears the keys as written,
+/// or, made [TermKey.of] an activator, in the reader's words
+/// (`designShortcutLabel`: "Ctrl+K" for `^K`). Under touch it draws nothing
+/// ([termKeysShown]).
 ///
 /// ```dart
 /// const TermKey('^K');
 /// ```
 class TermKey extends StatelessWidget {
   /// The key written [keys].
-  const TermKey(this.keys, {super.key, this.style});
+  const TermKey(this.keys, {super.key, this.style}) : _activator = null;
 
-  /// [activator]'s keys, written as [termKeyLabel] writes them.
+  /// [activator]'s keys, written as [termKeyLabel] writes them and read
+  /// in the reader's words.
   TermKey.of(SingleActivator activator, {super.key, this.style})
-    : keys = termKeyLabel(activator);
+    : keys = termKeyLabel(activator),
+      _activator = activator;
+
+  final SingleActivator? _activator;
 
   /// Overrides, over the theme's [TermThemeData.keyStyle]: `foreground`
   /// (the keys' words) and `textStyle` (their weight).
@@ -82,8 +88,12 @@ class TermKey extends StatelessWidget {
     if (!termKeysShown(context)) return const SizedBox.shrink();
     final theme = TermTheme.of(context);
     final own = TermStyleOf([style, theme.keyStyle], const {});
+    final activator = _activator;
     return Semantics(
-      label: keys,
+      // `^K` drawn, "Ctrl+K" heard: a screen reader would spell the caret.
+      label: activator == null
+          ? keys
+          : designShortcutLabel(context, activator, appleSymbols: false),
       excludeSemantics: true,
       // A chord reads left to right in every language: `^S`, never `S^`.
       child: Text(

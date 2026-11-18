@@ -13,7 +13,7 @@ import 'package:flutter/rendering.dart';
 import '../grid.dart';
 
 /// A gap cut into a frame's top or bottom line, where its title or its
-/// note stands: from [start] to [end], in pixels from the frame's left.
+/// note stands: from `start` to `end`, in pixels from the frame's left.
 typedef TermGap = ({double start, double end});
 
 /// How far apart the two lines of a double line stand at [grid]: about a
@@ -159,8 +159,42 @@ class TermFramePainter extends CustomPainter {
     if (half < 0.01) {
       _rect(canvas, mid, paint, top, bottom);
     } else {
-      _rect(canvas, mid.inflate(half), paint, top, bottom);
-      _rect(canvas, mid.deflate(half), paint, top, bottom);
+      // Each line of the pair on whole pixels: a cell's middle is a pixel's
+      // middle across and a pixel's edge down (9 by 24), so the same step
+      // out from it would leave the sides astride two pixels, at half
+      // strength beside a crisp top and bottom. The step is taken to the
+      // nearest that lands a line's edge on a pixel's, each way.
+      double whole(double centre) {
+        final off = (centre - stroke / 2) % 1;
+        return math.max(0, (half - off).roundToDouble() + off);
+      }
+
+      final dx = whole(mid.left);
+      final dy = whole(mid.top);
+      _rect(
+        canvas,
+        Rect.fromLTRB(
+          mid.left - dx,
+          mid.top - dy,
+          mid.right + dx,
+          mid.bottom + dy,
+        ),
+        paint,
+        top,
+        bottom,
+      );
+      _rect(
+        canvas,
+        Rect.fromLTRB(
+          mid.left + dx,
+          mid.top + dy,
+          mid.right - dx,
+          mid.bottom - dy,
+        ),
+        paint,
+        top,
+        bottom,
+      );
     }
   }
 
@@ -233,8 +267,8 @@ class TermFramePainter extends CustomPainter {
   }
 }
 
-/// Paints a horizontal rule through the middle of a line, from [start] to
-/// the end, with [gaps] cut out.
+/// Paints a horizontal rule through the middle of a line, from one end to
+/// the other, with [gaps] cut out.
 class TermRulePainter extends CustomPainter {
   /// A rule in [color].
   const TermRulePainter({

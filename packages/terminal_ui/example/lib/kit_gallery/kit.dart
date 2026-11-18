@@ -6,7 +6,7 @@
 /// data.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:terminal_ui/terminal_ui.dart';
 
 export 'slipway_data.dart';
@@ -175,13 +175,27 @@ Widget kitRow(List<Widget> children) => Builder(
 /// A section per part in [parts], each its title over the part, live, as
 /// the inventory builds it (one specimen per part, the gallery's and the
 /// inventory's alike).
-List<Widget> kitParts(List<(String, String)> parts) => [
+///
+/// A part in [own] keeps its own width at the line's start (a button that
+/// opens something, a link), where the others take the line's.
+List<Widget> kitParts(
+  List<(String, String)> parts, {
+  Set<String> own = const {},
+}) => [
   for (final (title, row) in parts)
     kitSection(
       title,
       children: [
         Builder(
-          builder: (context) => termInventory.entryFor(row)!.builder!(context),
+          builder: (context) {
+            final part = termInventory.entryFor(row)!.builder!(context);
+            return own.contains(row)
+                ? Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: part,
+                  )
+                : part;
+          },
         ),
       ],
     ),

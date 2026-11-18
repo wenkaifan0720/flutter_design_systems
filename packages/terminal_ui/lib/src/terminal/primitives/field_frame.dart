@@ -231,7 +231,7 @@ class TermFieldLine extends StatelessWidget {
     required this.child,
   });
 
-  /// Puts the control round the brackets: given [brackets], which draws
+  /// Puts the control round the brackets: given `brackets`, which draws
   /// them for the control's `active` and `edge`, the control's widget. Null:
   /// the brackets drawn for [active] and [edge], the control round the whole
   /// line.

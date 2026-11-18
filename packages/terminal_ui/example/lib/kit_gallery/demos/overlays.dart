@@ -4,7 +4,7 @@
 /// shows while it works: [TermSpinner], [TermProgressBar] and [TermCaret].
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:terminal_ui/terminal_ui.dart';
 
 import '../kit.dart';
@@ -68,6 +68,7 @@ class _Raise extends StatelessWidget {
         context: context,
         builder: (context) => TermDialog(
           title: 'slipway',
+          footer: 'esc close',
           content: const Text('a deploy console, drawn on a character grid.'),
           actions: [
             TermButton.filled(
@@ -118,11 +119,19 @@ class _Working extends StatelessWidget {
             const TermCaret(),
           ],
         ),
+        // The glyph in a cell of its own, so it stands first right to left
+        // too, whatever letters the glyph and the name are.
         for (final tone in TermTone.values)
-          Text(
-            '${tone.glyph} ${tone.name}',
+          DefaultTextStyle.merge(
             style: TermTheme.of(context).textStyle
                 .copyWith(color: tone.colorIn(TermTheme.of(context))),
+            child: Row(
+              children: [
+                Text(tone.glyph),
+                SizedBox(width: grid.cellWidth),
+                Text(tone.name),
+              ],
+            ),
           ),
       ],
     );

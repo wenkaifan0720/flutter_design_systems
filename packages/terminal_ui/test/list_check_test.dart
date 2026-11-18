@@ -1,13 +1,12 @@
 // Every list a field opens on slipway's screens and the gallery pages that
 // have one, at a phone's and a desk's width, at night and on paper, and
 // right to left on a phone: ui_core's checkList (the list as wide as its
-// field, on its edges, its words in line with the field's) finds nothing.
-// On paper the lists ui_core_checks.dart names are set aside for the misread
-// it declares, and only its two findings; night checks every list.
+// field, on its edges, its words in line with the field's) finds nothing,
+// on paper as by night.
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:terminal_ui/terminal_ui.dart';
-import 'package:ui_core/alignment.dart' show DesignWidthCheck;
+import 'package:ui_core_test/ui_core_test.dart' show DesignWidthCheck;
 
 // The example's screens and pages are the ones under test.
 // ignore_for_file: avoid_relative_lib_imports
@@ -16,28 +15,6 @@ import '../example/lib/gallery_pages.dart';
 import '../example/lib/kit_gallery/kit.dart';
 import 'faces.dart';
 import 'ui_core_checks.dart';
-
-// The misread's two findings, as ui_core words them: the list as laid out on
-// its field's edges, read 2.5 px in from each as drawn.
-final _narrower = RegExp(
-  r'(\d+) px wide as laid out, (\d+) as drawn, narrower than the field '
-  r'\((\d+), (\d+) as drawn\)$',
-);
-final _edge = RegExp(
-  r"its leading edge is on the field's as laid out, 2\.5 px in from as "
-  r'drawn$',
-);
-
-bool _misread(String problem) {
-  final m = _narrower.firstMatch(problem.trim());
-  if (m != null) {
-    final laid = int.parse(m[1]!);
-    return int.parse(m[2]!) == laid - 5 &&
-        int.parse(m[3]!) == laid &&
-        int.parse(m[4]!) == laid;
-  }
-  return _edge.hasMatch(problem.trim());
-}
 
 void main() {
   setUpAll(loadFaces);
@@ -77,8 +54,6 @@ void main() {
     (1440.0, TextDirection.ltr, Brightness.dark),
   ];
 
-  final declared = uiCoreChecks.paperListMisreads.lists;
-
   for (final t in targets) {
     for (final (width, dir, b) in configs) {
       final where = '${width.toInt()}${dir == TextDirection.rtl ? ' rtl' : ''}';
@@ -104,9 +79,7 @@ void main() {
           final problems = <String>[];
           void report(String opener, List<String> found) {
             final key = '${t.id} $where $opener';
-            final excused = b == Brightness.light && declared.containsKey(key);
             for (final p in found) {
-              if (excused && _misread(p)) continue;
               problems.add('$key: $p');
             }
           }

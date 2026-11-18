@@ -56,15 +56,21 @@ class TermBanner extends StatelessWidget {
     final cw = grid.cellWidth;
     final ink = tone.colorIn(theme);
     final own = TermStyleOf([style, theme.bannerStyle], const {});
+    // Right to left, the title and the message each keep their own
+    // direction (U+2068 to U+2069, a first-strong isolate), so a title in
+    // Latin letters still stands first, next to its glyph, and not at the
+    // far end of a Latin message.
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    String apart(String text) => rtl ? '\u2068$text\u2069' : text;
     final words = Text.rich(
       TextSpan(
         children: [
           if (title != null)
             TextSpan(
-              text: '$title  ',
+              text: '${apart(title!)}  ',
               style: theme.boldStyle.copyWith(color: ink),
             ),
-          TextSpan(text: message),
+          TextSpan(text: apart(message)),
         ],
       ),
     );

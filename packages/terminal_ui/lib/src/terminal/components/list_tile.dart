@@ -10,6 +10,7 @@ import 'package:ui_core/ui_core.dart';
 import '../grid.dart';
 import '../internal/focus_block.dart';
 import '../internal/menu_marks.dart';
+import '../internal/shell_face.dart';
 import '../primitives/box.dart';
 import '../primitives/control.dart';
 import '../primitives/spring.dart';
@@ -328,6 +329,10 @@ class TermListTile extends StatelessWidget {
       );
     }
 
+    // A shell's destination: the shell presses it and speaks for it; the
+    // row paints in its states.
+    final given = onTap == null ? TermFaceStates.maybeOf(context) : null;
+    if (given != null) return row(given);
     final Widget tile = interactive
         ? DesignPressable(
             onPressed: onTap,

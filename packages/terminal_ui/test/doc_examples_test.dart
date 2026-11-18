@@ -35,6 +35,7 @@ void retry() {}
 void clear() {}
 void openCommit() {}
 void rerun() {}
+void copy() {}
 void pickFiles() {}
 void goHome() {}
 void openProject() {}
@@ -619,6 +620,13 @@ final Map<String, DocExample> _examples = {
         ],
       ),
     ],
+  ),
+  "wayfinding.dart:572": (context) => TermContextMenu(
+    menuChildren: [
+      DesignMenuEntry(label: 'rerun', shortcut: 'r', onPressed: rerun),
+      DesignMenuEntry(label: 'copy link', onPressed: copy),
+    ],
+    child: const Text('run #1482'),
   ),
   "wayfinding.dart:613": (context) => TermNavigationRail(
     destinations: destinations,

@@ -7,7 +7,7 @@
 // app without it gets.
 import 'package:flutter/foundation.dart'
     show debugDefaultTargetPlatformOverride;
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:terminal_ui/terminal_ui.dart';
 import 'package:terminal_ui_example/kit_gallery/overview.dart';

@@ -1,3 +1,103 @@
+## 0.2.0
+
+Built on `ui_core` 0.3.0. Terminal's dialogs and sheets, tab bar, shell,
+tooltip, rating and line and area charts take their behaviour from
+`ui_core` (focus, keys, semantics, gestures) and keep Terminal's paint and
+motion: they look as they did, and they do more. The constructors are
+unchanged; the breaks below touch only code that told a dialog by its
+route's type or held a tab bar's state.
+
+### Breaking
+
+- `showTermDialog`, `showTermSheet`, `showTermConfirmDialog` and
+  `showTermActionSheet` push `ui_core`'s `DesignDialogRoute`, no longer
+  Flutter's `RawDialogRoute`; the side sheet runs on a spring
+  (`TermMotion.surface`, which keeps the 120 ms fade), as `ui_core` 0.3.0
+  removed `DesignSideSheetRoute.transitionDuration`.
+- `TermTabBar` is a `StatefulWidget` (it owns a `DesignTabController`),
+  no longer a `StatelessWidget`. Its constructor is unchanged.
+
+### Behaviour that changes
+
+- A dialog or a sheet keeps Tab inside and gives the focus back to what
+  opened it; Escape, Android's back and a tap outside close it through any
+  `PopScope` in it. The y/N question is an alert to a screen reader.
+- `TermTabBar` is one stop for Tab, on the current tab: the arrows move
+  and choose (mirrored right to left), Home and End go to the ends, and a
+  screen reader hears a tab and its place ("log, Tab 2 of 3").
+- `TermScaffold`'s places (the window list, the rail, the side pane) are
+  one stop, the arrows moving along them and Enter or Space going there;
+  F6 moves between them and the page; a screen reader hears each place as
+  a tab and the side pane as the navigation menu.
+- `TermTooltip` shows on hover, on keyboard focus and after a long press;
+  the pointer may rest on the tip, Escape hides it, one shows at a time.
+- `TermRating` takes a drag across the marks and the digits (End all, Home
+  none), with a step's haptic; a tap left of the first mark still gives
+  none.
+- `TermLineChart` and `TermAreaChart` are a stop: a pointer, a finger or
+  the arrows pick a point (its column shaded, its value over the plot); a
+  screen reader hears the data in a sentence, in the app's language, or
+  the point picked, and steps through the points. A change of data springs.
+- A key drawn by `TermKey.of` (`^K`) is heard in the reader's words
+  ("Ctrl+K").
+- A menu the pointer opened keeps the focus on itself (`ui_core` 0.3.0):
+  the first Down shows the first row, as before, and Return or Space
+  chooses nothing; Return no longer shows the first row.
+- In `TermSplitButton`'s, `TermMenuBar`'s and `TermContextMenu`'s menus
+  (`ui_core`'s rows) the pointer leaving the menu lights no row, and the
+  next Down starts at the first. `TermMenu` keeps the last row the pointer
+  was on, as before.
+
+### Fixed
+
+- `TermCombobox`'s list goes over a field with too little room under it
+  (less than six lines, and more over it), as `TermSelect`'s does; at the
+  foot of a screen it was held to the sliver under the field, its words
+  cut off. `TermTagInput`'s still opens under.
+- The caret of `TermTextField` (and every field on it) is the look's own
+  block, on the cell after the words on every platform, behind the
+  character it is on. On iOS and macOS it stood two pixels before its
+  cell, over the last character's edge.
+- Right to left, the words typed start on the cell the label and the hint
+  do; they stood a cell inside (the room Flutter keeps for its caret). A
+  line of words now runs to the frame's last cell, the caret past it.
+- The keys' block on a chosen tab, window, rail item or menu row is in the
+  ground's colour, cut out of the inverse cell; in the accent it was all
+  but lost there (1.3:1 by night).
+- Right to left, `TermBanner`'s title stands first, by its glyph, when the
+  title and the message are in Latin letters.
+- `TermNavigationBar`'s names stand on the character grid: the room left
+  over is shared in whole cells.
+- A double frame's sides are whole pixels, as its top and bottom are (a
+  focused field, a dialog, a list's pane): they were astride two, at half
+  strength.
+
+### New, from ui_core 0.3.0
+
+- `TermContextMenu`: a menu over a region, opened at the pointer by a
+  right click or a long press, at the focus by Shift+F10 or the Menu key;
+  its rows are `TermMenuBar`'s.
+- `TermCombobox` and `TermTagInput` take `search` (looked up, async) and
+  `debounceDuration`; while a search runs the list says `loadingText` by
+  the spinner, and when it fails, `errorText` over a `retryText` row.
+- `showTermDialog` and `showTermSheet` take `isAlert` and `semanticLabel`.
+- `TermMotion.surface`, the spring a dialog, a sheet and a side sheet come
+  up on.
+
+### The package page
+
+- The pub.dev page opens as every look's: the description, a hero (a desk
+  by night beside a phone on paper), links to the live gallery, the API
+  reference and all the looks, then the install. The homepage is the live
+  gallery; the issue tracker and the topics (with `terminal`) are listed;
+  five screenshots, the hero first.
+
+### Development
+
+- The review checks come from `package:ui_core_test` (a dev dependency),
+  where `ui_core` 0.3.0 moved them; the light-list misreads the list check
+  set aside are gone with `ui_core`'s fix.
+
 ## 0.1.1
 
 - On iOS, Reduce Motion stills the look as Android's Remove animations and a

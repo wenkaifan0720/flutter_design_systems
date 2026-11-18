@@ -13,11 +13,10 @@ import 'package:flutter/widgets.dart';
 /// a menubar's): one row at a time is current, the one with the keys' focus,
 /// and the pointer moving onto a row takes the focus there, so the pointer's
 /// row and the keys' never read as two. A menu the pointer opened lights no
-/// row until the pointer moves onto one or a key is pressed in it; the first
-/// Down, Return or Space then shows the first row (where the menu put the
-/// focus) rather than moving past it or choosing it unseen, Up goes round to
-/// the last, a letter to the row it starts. A menu the keys opened shows its
-/// first row at once.
+/// row until the pointer moves onto one or a key is pressed in it: ui_core
+/// keeps the focus on the menu itself, so the first Down shows the first
+/// row, Up the last, a letter the row it starts, and Return or Space choose
+/// nothing unseen. A menu the keys opened shows its first row at once.
 ///
 /// It sits between the menu's rows and whatever walks them by letters, so a
 /// letter shows the row it jumps to.

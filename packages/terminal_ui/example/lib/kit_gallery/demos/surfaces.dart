@@ -10,16 +10,19 @@ import '../kit.dart';
 Widget kitSurfacesDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
   title: 'surfaces',
-  sections: kitParts(const [
-    ('a side sheet', 'Sheet'),
-    ('an action sheet', 'ActionSheet'),
-    ('a popover', 'Popover'),
-    ('a hover card', 'HoverCard'),
-    ('a tooltip', 'Tooltip'),
-    ('a menu', 'Menu'),
-    ('a banner', 'Banner'),
-    ('nothing here yet', 'EmptyState'),
-    ('a view that failed', 'StatusView'),
-    ('lines still loading', 'Skeleton'),
-  ]),
+  sections: kitParts(
+    own: const {'Sheet', 'Popover', 'Tooltip'},
+    const [
+      ('a side sheet', 'Sheet'),
+      ('an action sheet', 'ActionSheet'),
+      ('a popover', 'Popover'),
+      ('a hover card', 'HoverCard'),
+      ('a tooltip', 'Tooltip'),
+      ('a menu', 'Menu'),
+      ('a banner', 'Banner'),
+      ('nothing here yet', 'EmptyState'),
+      ('a view that failed', 'StatusView'),
+      ('lines still loading', 'Skeleton'),
+    ],
+  ),
 );

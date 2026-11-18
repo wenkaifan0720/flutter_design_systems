@@ -98,10 +98,12 @@ class TermMenuRow extends StatelessWidget {
         ? theme.accent
         : ink;
     final row = CustomPaint(
+      // On a chosen row's bar the keys' block is cut out in the ground's
+      // colour, where the accent would be lost.
       foregroundPainter: keys
           ? TermFocusBlockPainter(
               amount: 1,
-              color: theme.accent,
+              color: lit ? theme.background : theme.accent,
               cellWidth: cw,
               direction: Directionality.of(context),
             )

@@ -101,8 +101,9 @@ class TermDialog extends StatelessWidget {
         ),
       ),
     );
+    // The route round it scopes the screen reader's view; the pane names
+    // it by its title.
     return Semantics(
-      scopesRoute: true,
       namesRoute: true,
       explicitChildNodes: true,
       label: title,
@@ -121,39 +122,69 @@ class TermDialog extends StatelessWidget {
 
 /// Raises the dialog [builder] makes over the app, the screen behind dimmed,
 /// and completes with what it pops. The dialog comes up where it stays, in
-/// a very short fade ([TermMotion.screen]); under Reduce Motion it is
-/// simply there.
+/// a very short fade on [TermMotion.surface] (under Reduce Motion, a fade
+/// of the route's own); it keeps the focus inside while open and gives it
+/// back as it closes, and Escape, Android's back or a tap outside (when
+/// [barrierDismissible]) close it, through any `PopScope` in it.
+///
+/// [isAlert] makes it an alert, a question that wants an answer, to a
+/// screen reader. [semanticLabel] names it; a [TermDialog] names it by its
+/// title.
 Future<T?> showTermDialog<T>({
   required BuildContext context,
   required WidgetBuilder builder,
   bool barrierDismissible = true,
+  bool isAlert = false,
+  String? semanticLabel,
   bool useRootNavigator = true,
+}) {
+  final cw = context.termGrid.cellWidth;
+  return _pushSurface<T>(
+    context,
+    useRootNavigator: useRootNavigator,
+    barrierDismissible: barrierDismissible,
+    isAlert: isAlert,
+    semanticLabel: semanticLabel,
+    page: (child) => SafeArea(
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: cw),
+          child: child,
+        ),
+      ),
+    ),
+    builder: builder,
+  );
+}
+
+// Terminal's modal surfaces on ui_core's dialog route: the screen behind
+// dimmed in the theme's ground, [page] laying out what [builder] makes, the
+// whole fading up in place on TermMotion.surface (critically damped, so the
+// presence never passes 1). The route keeps the focus, gives it back, and
+// closes on Escape, Back and the barrier.
+Future<T?> _pushSurface<T>(
+  BuildContext context, {
+  required bool useRootNavigator,
+  required bool barrierDismissible,
+  required bool isAlert,
+  required String? semanticLabel,
+  required Widget Function(Widget child) page,
+  required WidgetBuilder builder,
 }) {
   final theme = TermTheme.of(context);
   final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
-  final still = designReduceMotionOf(context);
   return navigator.push<T>(
-    RawDialogRoute<T>(
+    DesignDialogRoute<T>(
       barrierDismissible: barrierDismissible,
-      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
+      isAlert: isAlert,
+      semanticLabel: semanticLabel,
       barrierColor: theme.background.withValues(alpha: 0.72),
-      transitionDuration: still ? Duration.zero : TermMotion.screen,
-      pageBuilder: (dialogContext, _, _) => themes.wrap(
-        SafeArea(
-          child: Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: context.termGrid.cellWidth,
-              ),
-              child: Builder(builder: builder),
-            ),
-          ),
-        ),
-      ),
-      transitionBuilder: (context, animation, _, child) => FadeTransition(
-        opacity: animation.drive(CurveTween(curve: Curves.easeOut)),
-        child: child,
+      dampingRatio: TermMotion.surface.dampingRatio,
+      stiffness: TermMotion.surface.stiffness,
+      builder: (routeContext, details) => FadeTransition(
+        opacity: details.animation,
+        child: themes.wrap(page(Builder(builder: builder))),
       ),
     ),
   );
@@ -401,9 +432,21 @@ Future<bool?> showTermConfirmDialog({
     onConfirm: () => Navigator.of(routeContext).pop(true),
     onCancel: () => Navigator.of(routeContext).pop(false),
   );
+  // A question that wants an answer: an alert to a screen reader, though a
+  // tap outside still answers null, as Escape does.
   return asSheet
-      ? showTermSheet<bool>(context: context, builder: question)
-      : showTermDialog<bool>(context: context, builder: question);
+      ? showTermSheet<bool>(
+          context: context,
+          isAlert: true,
+          barrierDismissible: true,
+          builder: question,
+        )
+      : showTermDialog<bool>(
+          context: context,
+          isAlert: true,
+          barrierDismissible: true,
+          builder: question,
+        );
 }
 
 /// A sheet: a raised pane standing on the foot of the screen, [title] cut
@@ -459,7 +502,6 @@ class TermSheet extends StatelessWidget {
     final lh = grid.lineHeight;
     final theme = TermTheme.of(context);
     return Semantics(
-      scopesRoute: true,
       namesRoute: true,
       explicitChildNodes: true,
       label: title,
@@ -513,59 +555,54 @@ class TermSheet extends StatelessWidget {
 
 /// Raises the sheet [builder] makes at the foot of the screen, the screen
 /// behind dimmed, and completes with what it pops. Like a dialog it comes
-/// up where it stays in a very short fade, and a tap outside or Escape
-/// closes it.
+/// up where it stays in a very short fade on [TermMotion.surface], keeps
+/// the focus inside while open, and a tap outside (when
+/// [barrierDismissible]), Escape or Android's back closes it. [isAlert] and
+/// [semanticLabel] are [showTermDialog]'s.
 Future<T?> showTermSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,
   bool barrierDismissible = true,
+  bool isAlert = false,
+  String? semanticLabel,
   bool useRootNavigator = true,
 }) {
   final theme = TermTheme.of(context);
   final grid = context.termGrid;
-  final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
-  final themes = InheritedTheme.capture(from: context, to: navigator.context);
-  final still = designReduceMotionOf(context);
-  return navigator.push<T>(
-    RawDialogRoute<T>(
-      barrierDismissible: barrierDismissible,
-      barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
-      barrierColor: theme.background.withValues(alpha: 0.72),
-      transitionDuration: still ? Duration.zero : TermMotion.screen,
-      // The foot of the screen is cleared under the sheet, edge to edge and
-      // to the bottom, so nothing of the status line or the window list
-      // shows in the margin beside it.
-      pageBuilder: (sheetContext, _, _) => themes.wrap(
-        SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: EdgeInsets.only(top: grid.lineHeight * 0.5),
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: ColoredBox(
-                color: theme.background,
-                child: SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      grid.cellWidth,
-                      grid.lineHeight * 0.5,
-                      grid.cellWidth,
-                      grid.lineHeight * 0.5,
-                    ),
-                    child: Builder(builder: builder),
-                  ),
+  return _pushSurface<T>(
+    context,
+    useRootNavigator: useRootNavigator,
+    barrierDismissible: barrierDismissible,
+    isAlert: isAlert,
+    semanticLabel: semanticLabel,
+    // The foot of the screen is cleared under the sheet, edge to edge and
+    // to the bottom, so nothing of the status line or the window list
+    // shows in the margin beside it.
+    page: (child) => SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: EdgeInsets.only(top: grid.lineHeight * 0.5),
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: ColoredBox(
+            color: theme.background,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  grid.cellWidth,
+                  grid.lineHeight * 0.5,
+                  grid.cellWidth,
+                  grid.lineHeight * 0.5,
                 ),
+                child: child,
               ),
             ),
           ),
         ),
       ),
-      transitionBuilder: (context, animation, _, child) => FadeTransition(
-        opacity: animation.drive(CurveTween(curve: Curves.easeOut)),
-        child: child,
-      ),
     ),
+    builder: builder,
   );
 }
 

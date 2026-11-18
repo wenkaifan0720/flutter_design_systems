@@ -5,12 +5,12 @@ library;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../internal/focus_block.dart';
+import '../internal/shell_face.dart';
 import '../primitives/control.dart';
 import '../primitives/spring.dart';
 import '../style.dart';
@@ -101,6 +101,13 @@ class _FillFromFoot extends CustomPainter {
 /// the chosen one in inverse video. The number is the key that picks it
 /// (with Alt), and the app binds it.
 ///
+/// The behaviour is ui_core's [DesignTabBar]: the bar is one tab stop, on
+/// the chosen tab, the arrows move along it (mirrored right to left), Home
+/// and End go to the ends, and a tab is chosen as the keys reach it; a
+/// screen reader hears each tab and its place ("Tab 2 of 3"). Terminal
+/// paints the tabs, and a bar wider than its line scrolls, `‹` and `›`
+/// marking what is past either end.
+///
 /// ```dart
 /// TermTabBar(
 ///   tabs: const ['steps', 'log', 'env'],
@@ -108,7 +115,7 @@ class _FillFromFoot extends CustomPainter {
 ///   onTap: (index) => setState(() => tab = index),
 /// )
 /// ```
-class TermTabBar extends StatelessWidget {
+class TermTabBar extends StatefulWidget {
   /// Tabs named [tabs].
   const TermTabBar({
     super.key,
@@ -130,103 +137,15 @@ class TermTabBar extends StatelessWidget {
   /// The chosen tab.
   final int selectedIndex;
 
-  /// Called with the tab pressed.
+  /// Called with the tab pressed, or reached by the arrows; null: the tabs
+  /// take no presses.
   final ValueChanged<int>? onTap;
 
   /// Whether each tab shows its number.
   final bool showNumbers;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = TermTheme.of(context);
-    final grid = context.termGrid;
-    final cw = grid.cellWidth;
-    final direction = Directionality.of(context);
-    return _MarkedScroll(
-      child: Semantics(
-        container: true,
-        role: SemanticsRole.tabBar,
-        explicitChildNodes: true,
-        child: Row(
-          children: [
-            for (var i = 0; i < tabs.length; i++) ...[
-              if (i > 0) SizedBox(width: cw),
-              TermTapTarget(
-                child: DesignPressable(
-                  onPressed: onTap == null ? null : () => onTap!(i),
-                  selected: i == selectedIndex,
-                  tab: true,
-                  semanticLabel: tabs[i],
-                  excludeSemantics: true,
-                  mouseCursor: onTap == null
-                      ? SystemMouseCursors.basic
-                      : SystemMouseCursors.click,
-                  builder: (context, states, _) {
-                    final own = TermStyleOf([style, theme.tabBarStyle], states);
-                    return TermStateSprings(
-                      pressed: states.contains(WidgetState.pressed),
-                      focused: states.contains(WidgetState.focused),
-                      builder: (context, press, focus) => TermSpring(
-                        target: i == selectedIndex ? 1 : 0,
-                        token: TermMotion.move,
-                        spatial: true,
-                        builder: (context, t, _) => CustomPaint(
-                          // The keyboard's focus: a block at the tab's start,
-                          // as a list's row has it.
-                          foregroundPainter: focus > 0
-                              ? TermFocusBlockPainter(
-                                  amount: focus,
-                                  color: own.edge ?? theme.accent,
-                                  cellWidth: cw,
-                                  direction: direction,
-                                )
-                              : null,
-                          child: _Inverse(
-                            amount: (t + press * 0.5).clamp(0, 1),
-                            fill: own.fill,
-                            ink: own.foreground,
-                            child: SizedBox(
-                              height: grid.lineHeight,
-                              child: Padding(
-                                padding: EdgeInsetsDirectional.symmetric(
-                                  horizontal: cw,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (showNumbers) ...[
-                                      ExcludeSemantics(
-                                        child: Text(
-                                          '${i + 1}',
-                                          style: theme.textStyle.copyWith(
-                                            color: Color.lerp(
-                                              theme.accent,
-                                              theme.background,
-                                              t,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: cw),
-                                    ],
-                                    Text(tabs[i], maxLines: 1, softWrap: false),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
+  State<TermTabBar> createState() => _TermTabBarState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -234,6 +153,144 @@ class TermTabBar extends StatelessWidget {
     properties
       ..add(IterableProperty<String>('tabs', tabs))
       ..add(IntProperty('selectedIndex', selectedIndex));
+  }
+}
+
+class _TermTabBarState extends State<TermTabBar> with TickerProviderStateMixin {
+  late DesignTabController _controller = _make();
+
+  DesignTabController _make() => DesignTabController(
+    length: widget.tabs.length,
+    initialIndex: widget.selectedIndex,
+    dampingRatio: TermMotion.move.dampingRatio,
+    stiffness: TermMotion.move.stiffness,
+    vsync: this,
+  )..addListener(_chosen);
+
+  @override
+  void didUpdateWidget(TermTabBar old) {
+    super.didUpdateWidget(old);
+    if (widget.tabs.length != _controller.length) {
+      final gone = _controller..removeListener(_chosen);
+      _controller = _make();
+      WidgetsBinding.instance.addPostFrameCallback((_) => gone.dispose());
+    } else if (_controller.index != widget.selectedIndex) {
+      _controller.index = widget.selectedIndex;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller
+      ..removeListener(_chosen)
+      ..dispose();
+    super.dispose();
+  }
+
+  // The bar chose a tab (a press, an arrow): the app hears it; an app that
+  // keeps its own choice puts the bar back.
+  void _chosen() {
+    final i = _controller.index;
+    if (i == widget.selectedIndex) return;
+    widget.onTap?.call(i);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _controller.index != widget.selectedIndex) {
+        _controller.index = widget.selectedIndex;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = TermTheme.of(context);
+    final grid = context.termGrid;
+    final cw = grid.cellWidth;
+    final direction = Directionality.of(context);
+    final enabled = widget.onTap != null;
+    final style = widget.style;
+    return _MarkedScroll(
+      child: DesignTabBar(
+        controller: _controller,
+        isScrollable: true,
+        tabs: [
+          for (final label in widget.tabs)
+            DesignTab(label: label, enabled: enabled),
+        ],
+        tabBuilder: (context, tab, details) {
+          final i = details.index;
+          final states = details.states;
+          final own = TermStyleOf([style, theme.tabBarStyle], states);
+          final face = TermTapTarget(
+            child: TermStateSprings(
+              pressed: states.contains(WidgetState.pressed),
+              focused: states.contains(WidgetState.focused),
+              builder: (context, press, focus) => TermSpring(
+                target: i == _controller.index ? 1 : 0,
+                token: TermMotion.move,
+                spatial: true,
+                builder: (context, t, _) => CustomPaint(
+                  // The keyboard's focus: a block at the tab's start, as a
+                  // list's row has it; on the chosen tab's inverse cell it
+                  // is cut out of the cell in the ground's colour, where
+                  // the accent would be lost.
+                  foregroundPainter: focus > 0
+                      ? TermFocusBlockPainter(
+                          amount: focus,
+                          color: Color.lerp(
+                            own.edge ?? theme.accent,
+                            theme.background,
+                            t.clamp(0, 1),
+                          )!,
+                          cellWidth: cw,
+                          direction: direction,
+                        )
+                      : null,
+                  child: _Inverse(
+                    amount: (t + press * 0.5).clamp(0, 1),
+                    fill: own.fill,
+                    ink: own.foreground,
+                    child: SizedBox(
+                      height: grid.lineHeight,
+                      child: Padding(
+                        padding: EdgeInsetsDirectional.symmetric(
+                          horizontal: cw,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (widget.showNumbers) ...[
+                              Text(
+                                '${i + 1}',
+                                style: theme.textStyle.copyWith(
+                                  color: Color.lerp(
+                                    theme.accent,
+                                    theme.background,
+                                    t,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: cw),
+                            ],
+                            Text(tab.label, maxLines: 1, softWrap: false),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+          // A cell of ground between tabs, as between words.
+          return i == 0
+              ? face
+              : Padding(
+                  padding: EdgeInsetsDirectional.only(start: cw),
+                  child: face,
+                );
+        },
+      ),
+    );
   }
 }
 
@@ -506,57 +563,54 @@ class TermNavigationBar extends StatelessWidget {
     final height = grid.ceil(DesignTapTargets.of(context).floorOn()).height;
     final lines = height < grid.lineHeight ? grid.lineHeight : height;
     final bar = TermStyleOf([style, theme.navigationBarStyle], const {});
-    Widget item(int i, String text) => DesignPressable(
-      onPressed: onDestinationSelected == null
-          ? null
-          : () => onDestinationSelected!(i),
-      selected: i == selectedIndex,
-      semanticSelected: i == selectedIndex,
-      semanticLabel: destinations[i].label,
-      mouseCursor: onDestinationSelected == null
-          ? SystemMouseCursors.basic
-          : SystemMouseCursors.click,
-      builder: (context, states, _) => TermStateSprings(
-        pressed: states.contains(WidgetState.pressed),
-        focused: states.contains(WidgetState.focused),
-        builder: (context, press, focus) => TermSpring(
-          target: i == selectedIndex ? 1 : 0,
-          token: TermMotion.move,
-          spatial: true,
-          builder: (context, t, _) => Center(
-            child: CustomPaint(
-              // The keyboard's focus: a block at the window's start, as a
-              // list's row has it.
-              foregroundPainter: focus > 0
-                  ? TermFocusBlockPainter(
-                      amount: focus,
-                      color: theme.accent,
-                      cellWidth: grid.cellWidth,
-                      direction: Directionality.of(context),
-                    )
-                  : null,
-              child: _Inverse(
-                amount: (t + press * 0.5).clamp(0, 1),
-                fill: TermStyleOf([
-                  style,
-                  theme.navigationBarStyle,
-                ], states).fill,
-                ink: TermStyleOf([
-                  style,
-                  theme.navigationBarStyle,
-                ], states).foreground,
-                child: SizedBox(
-                  height: grid.lineHeight,
-                  child: Padding(
-                    padding: EdgeInsetsDirectional.symmetric(
-                      horizontal: grid.cellWidth,
-                    ),
-                    child: ExcludeSemantics(
-                      child: Text(
-                        text,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.clip,
+    Widget face(int i, String text, Set<WidgetState> states) =>
+        TermStateSprings(
+          pressed: states.contains(WidgetState.pressed),
+          focused: states.contains(WidgetState.focused),
+          builder: (context, press, focus) => TermSpring(
+            target: i == selectedIndex ? 1 : 0,
+            token: TermMotion.move,
+            spatial: true,
+            builder: (context, t, _) => Center(
+              child: CustomPaint(
+                // The keyboard's focus: a block at the window's start, as a
+                // list's row has it; on the current window's inverse cell,
+                // in the ground's colour.
+                foregroundPainter: focus > 0
+                    ? TermFocusBlockPainter(
+                        amount: focus,
+                        color: Color.lerp(
+                          theme.accent,
+                          theme.background,
+                          t.clamp(0, 1),
+                        )!,
+                        cellWidth: grid.cellWidth,
+                        direction: Directionality.of(context),
+                      )
+                    : null,
+                child: _Inverse(
+                  amount: (t + press * 0.5).clamp(0, 1),
+                  fill: TermStyleOf([
+                    style,
+                    theme.navigationBarStyle,
+                  ], states).fill,
+                  ink: TermStyleOf([
+                    style,
+                    theme.navigationBarStyle,
+                  ], states).foreground,
+                  child: SizedBox(
+                    height: grid.lineHeight,
+                    child: Padding(
+                      padding: EdgeInsetsDirectional.symmetric(
+                        horizontal: grid.cellWidth,
+                      ),
+                      child: ExcludeSemantics(
+                        child: Text(
+                          text,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.clip,
+                        ),
                       ),
                     ),
                   ),
@@ -564,9 +618,27 @@ class TermNavigationBar extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ),
-    );
+        );
+    // In TermScaffold's shell, its destinations stand in the windows'
+    // places: the shell presses them and gives them their keys.
+    final shell = TermShellDestinations.maybeOf(context);
+    Widget item(int i, String text) => shell != null
+        ? TermShellFace(
+            face: (context, states) => face(i, text, states),
+            child: shell[i],
+          )
+        : DesignPressable(
+            onPressed: onDestinationSelected == null
+                ? null
+                : () => onDestinationSelected!(i),
+            selected: i == selectedIndex,
+            semanticSelected: i == selectedIndex,
+            semanticLabel: destinations[i].label,
+            mouseCursor: onDestinationSelected == null
+                ? SystemMouseCursors.basic
+                : SystemMouseCursors.click,
+            builder: (context, states, _) => face(i, text, states),
+          );
     return CustomPaint(
       painter: _GroundWithRule(
         ground: theme.surface,
@@ -609,11 +681,31 @@ class TermNavigationBar extends StatelessWidget {
                 if (i != selectedIndex) others += numbered(i);
               }
               if (roomy) {
+                // The room left over, in whole cells, so every name starts
+                // on the character grid: shared evenly between the two ends
+                // and the names. The odd cells go to the ends first, a pair
+                // at a time, then between the names from the outside in; a
+                // last single one to the middle, or (no middle) the end. So
+                // the first name never stands against the screen's edge
+                // while there is a cell to spare, and the line stays even.
+                final spare = c.maxWidth.isFinite
+                    ? grid.colsIn(c.maxWidth - wide.fold(0.0, (a, w) => a + w))
+                    : 0;
+                // Gap g stands before name g; gap n is the end's.
+                final gaps = List.filled(n + 1, spare ~/ (n + 1));
+                var odd = spare % (n + 1);
+                for (var g = 0; odd >= 2 && g < n - g; g++, odd -= 2) {
+                  gaps[g]++;
+                  gaps[n - g]++;
+                }
+                if (odd > 0) gaps[n.isEven ? n ~/ 2 : n]++;
+                int gap(int g) => gaps[g];
                 return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    for (var i = 0; i < n; i++)
+                    for (var i = 0; i < n; i++) ...[
+                      SizedBox(width: grid.cols(gap(i))),
                       SizedBox(width: wide[i], child: item(i, words(i))),
+                    ],
                   ],
                 );
               }
@@ -650,7 +742,7 @@ class TermNavigationBar extends StatelessWidget {
 
 /// The side pane at a desk: [destinations] as rows, each with its glyph and
 /// key, the current one in inverse video, in a pane titled [title], with
-/// [footer] rows under them (a project list, a session).
+/// [children] under them (a project list, a session).
 ///
 /// ```dart
 /// TermSideBar(
@@ -696,6 +788,26 @@ class TermSideBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final rows = TermStyle.layered([style, theme.sideBarStyle]);
+    // In TermScaffold's shell, its destinations stand in the rows' places:
+    // the shell presses them and gives them their keys; each row paints in
+    // the shell's states.
+    final shell = TermShellDestinations.maybeOf(context);
+    Widget row(int i, {required bool pressable}) => TermListTile(
+      leading: destinations[i].glyph == null
+          ? null
+          : ExcludeSemantics(child: Text(destinations[i].glyph!)),
+      title: Text(destinations[i].label),
+      trailing: destinations[i].shortcut != null && termKeysShown(context)
+          ? TermKey.of(destinations[i].shortcut!)
+          : destinations[i].badge == null
+          ? null
+          : Text(destinations[i].badge!, style: theme.dimStyle),
+      selected: i == selectedIndex,
+      style: TermStyle(fill: rows.fill, foreground: rows.foreground),
+      onTap: !pressable || onDestinationSelected == null
+          ? null
+          : () => onDestinationSelected!(i),
+    );
     return Semantics(
       explicitChildNodes: true,
       child: TermPane(
@@ -708,26 +820,16 @@ class TermSideBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               for (var i = 0; i < destinations.length; i++)
-                TermListTile(
-                  leading: destinations[i].glyph == null
-                      ? null
-                      : ExcludeSemantics(child: Text(destinations[i].glyph!)),
-                  title: Text(destinations[i].label),
-                  trailing:
-                      destinations[i].shortcut != null && termKeysShown(context)
-                      ? TermKey.of(destinations[i].shortcut!)
-                      : destinations[i].badge == null
-                      ? null
-                      : Text(destinations[i].badge!, style: theme.dimStyle),
-                  selected: i == selectedIndex,
-                  style: TermStyle(
-                    fill: rows.fill,
-                    foreground: rows.foreground,
-                  ),
-                  onTap: onDestinationSelected == null
-                      ? null
-                      : () => onDestinationSelected!(i),
-                ),
+                if (shell != null)
+                  TermShellFace(
+                    face: (context, states) => TermFaceStates(
+                      states: states,
+                      child: row(i, pressable: false),
+                    ),
+                    child: shell[i],
+                  )
+                else
+                  row(i, pressable: true),
               ...children,
             ],
           ),
@@ -745,7 +847,7 @@ class TermSideBar extends StatelessWidget {
   }
 }
 
-/// One stretch of a [TermStatusLine]: words, an optional [tone] ink.
+/// One stretch of a [TermStatusLine]: words, in an optional [color].
 @immutable
 class TermStatusSegment {
   /// A segment reading [text].
@@ -902,9 +1004,9 @@ class TermStatusLine extends StatelessWidget {
   }
 }
 
-/// A row that scrolls sideways when it runs past its line, marked as a
-/// multiplexer marks a window list longer than its status line: a dim `‹`
-/// or `›` at the edge that has more beyond it.
+/// Marks the sideways scroll in [child] (a row that runs past its line) as
+/// a multiplexer marks a window list longer than its status line: a dim
+/// `‹` or `›` at the edge that has more beyond it.
 class _MarkedScroll extends StatefulWidget {
   const _MarkedScroll({required this.child});
 
@@ -949,10 +1051,7 @@ class _MarkedScrollState extends State<_MarkedScroll> {
         onNotification: (n) => _seen(n.metrics),
         child: Stack(
           children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: widget.child,
-            ),
+            widget.child,
             if (_before)
               PositionedDirectional(
                 start: 0,

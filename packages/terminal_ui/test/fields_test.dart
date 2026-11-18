@@ -83,14 +83,18 @@ void main() {
       return tester.widget<EditableText>(find.byType(EditableText));
     }
 
-    // Flutter's own caret blinks; it shows only where motion is wanted.
-    expect((await field(still: false)).showCursor, isTrue);
-    expect((await field(still: true)).showCursor, isFalse);
-    final painters = [
-      for (final p in tester.widgetList<CustomPaint>(find.byType(CustomPaint)))
-        p.painter.runtimeType.toString(),
-    ];
-    expect(painters, contains('_SteadyCaret'));
+    // The caret is the field's own block either way (fresh_eyes_test has
+    // its place and its blink); Flutter's own is never shown.
+    for (final still in [false, true]) {
+      expect((await field(still: still)).showCursor, isFalse);
+      final painters = [
+        for (final p in tester.widgetList<CustomPaint>(
+          find.byType(CustomPaint),
+        ))
+          p.painter.runtimeType.toString(),
+      ];
+      expect(painters, contains('_Caret'));
+    }
     await tester.pumpWidget(const SizedBox.shrink());
   });
 

@@ -921,20 +921,38 @@ Widget _tooltip(BuildContext context) => const TermTooltip(
   child: TermIconButton(glyph: 'r', semanticLabel: 'rerun', onPressed: _noop),
 );
 
-Widget _menu(BuildContext context) => TermMenu(
-  semanticLabel: 'run actions',
-  anchorBuilder: (context, anchor) => TermIconButton(
-    glyph: '⋯',
-    semanticLabel: 'more',
-    onPressed: anchor.toggle,
-  ),
-  items: const [
-    TermMenuItem(label: 'rerun', shortcut: 'r', onPressed: _noop),
-    TermMenuItem(label: 'copy link', shortcut: 'y', onPressed: _noop),
-    TermMenuItem(
-      label: 'delete logs',
-      isDestructiveAction: true,
-      onPressed: _noop,
+// A menu its key opens, and a context menu over a run: a right click, a
+// long press, Shift+F10 or the Menu key opens it where it was asked for.
+Widget _menu(BuildContext context) => Wrap(
+  spacing: context.termGrid.cellWidth,
+  runSpacing: context.termGrid.lineHeight,
+  crossAxisAlignment: WrapCrossAlignment.center,
+  children: [
+    TermMenu(
+      semanticLabel: 'run actions',
+      anchorBuilder: (context, anchor) => TermIconButton(
+        glyph: '⋯',
+        semanticLabel: 'more',
+        onPressed: anchor.toggle,
+      ),
+      items: const [
+        TermMenuItem(label: 'rerun', shortcut: 'r', onPressed: _noop),
+        TermMenuItem(label: 'copy link', shortcut: 'y', onPressed: _noop),
+        TermMenuItem(
+          label: 'delete logs',
+          isDestructiveAction: true,
+          onPressed: _noop,
+        ),
+      ],
+    ),
+    const TermContextMenu(
+      semanticLabel: 'run #1482',
+      menuChildren: [
+        DesignMenuEntry(label: 'rerun', shortcut: 'r', onPressed: _noop),
+        DesignMenuEntry(label: 'copy link', shortcut: 'y', onPressed: _noop),
+        DesignMenuEntry(label: 'delete logs', onPressed: _noop),
+      ],
+      child: TermButton(label: 'run #1482', onPressed: _noop),
     ),
   ],
 );
@@ -1010,6 +1028,21 @@ class TermInventoryGallery extends StatelessWidget {
   /// The inventory's gallery.
   const TermInventoryGallery({super.key, this.controller});
 
+  // Rows ui_core 0.3.0 gave a behaviour that Terminal does not build on:
+  // the number readout stepped by two buttons, the time typed in one field,
+  // the sheet (a dialog at the foot), the charts with nothing to pick, and
+  // the wheel and the pie it leaves out. They go by their row's name, as
+  // they did, and as a part ui_core has nothing for does.
+  static const _drawnWhole = {
+    'NumberField',
+    'TimePicker',
+    'WheelPicker',
+    'BottomSheet',
+    'BarChart',
+    'PieChart',
+    'Sparkline',
+  };
+
   /// The list's scroll controller (the caller's), or null.
   final ScrollController? controller;
 
@@ -1042,7 +1075,9 @@ class TermInventoryGallery extends StatelessWidget {
               children: [
                 Text(row.name, style: theme.boldStyle),
                 Text(
-                  row.isBehaviour ? 'on ${row.behaviour}' : row.id,
+                  row.isBehaviour && !_drawnWhole.contains(row.id)
+                      ? 'on ${row.behaviour}'
+                      : row.id,
                   style: theme.dimStyle,
                 ),
                 SizedBox(height: grid.lineHeight / 2),
