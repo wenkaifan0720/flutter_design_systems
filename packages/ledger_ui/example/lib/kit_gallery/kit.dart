@@ -14,7 +14,7 @@
 /// packages Ledger depends on.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
@@ -102,23 +102,28 @@ Widget _kitApp({required Brightness brightness, required Widget home}) =>
           // and density, so a sheet or a dialog it raises covers the whole
           // window, the side bar too, not only the frame's body.
           ? LedgerAccountScope(account: kitMaren, child: home)
-          : MaterialApp(
-              debugShowCheckedModeBanner: false,
-              title: 'Keel',
-              theme: kitAppTheme,
-              // ui_core's words in the 30 languages it speaks.
-              localizationsDelegates: galleryDelegates,
-              supportedLocales: DesignLocalizations.supportedLocales,
-              builder: (context, child) => LedgerHost(
-                light: kitTheme(Brightness.light),
-                dark: kitTheme(Brightness.dark),
-                brightness: brightness,
-                child: LedgerAccountScope(
-                  account: kitMaren,
-                  child: child ?? const SizedBox.shrink(),
+          // A semantics container of its own, so an app this one stands in
+          // keeps what it painted before it (a route's barrier hides that).
+          : Semantics(
+              container: true,
+              child: MaterialApp(
+                debugShowCheckedModeBanner: false,
+                title: 'Keel',
+                theme: kitAppTheme,
+                // ui_core's words in the 30 languages it speaks.
+                localizationsDelegates: galleryDelegates,
+                supportedLocales: DesignLocalizations.supportedLocales,
+                builder: (context, child) => LedgerHost(
+                  light: kitTheme(Brightness.light),
+                  dark: kitTheme(Brightness.dark),
+                  brightness: brightness,
+                  child: LedgerAccountScope(
+                    account: kitMaren,
+                    child: child ?? const SizedBox.shrink(),
+                  ),
                 ),
+                home: home,
               ),
-              home: home,
             ),
     );
 
@@ -328,23 +333,28 @@ Widget kitSpecimenStage({
   required Brightness brightness,
   required KitFrame frame,
   required Widget child,
-}) => MaterialApp(
-  debugShowCheckedModeBanner: false,
-  title: 'Keel',
-  theme: kitAppTheme,
-  // ui_core's words in the 30 languages it speaks.
-  localizationsDelegates: galleryDelegates,
-  supportedLocales: DesignLocalizations.supportedLocales,
-  builder: (context, home) => LedgerHost(
-    light: _atKitDensity(LedgerThemeData.preset(style, Brightness.light)),
-    dark: _atKitDensity(LedgerThemeData.preset(style, Brightness.dark)),
-    brightness: brightness,
-    child: LedgerAccountScope(
-      account: kitMaren,
-      child: home ?? const SizedBox.shrink(),
+}) => Semantics(
+  // A semantics container of its own, so a page the specimen stands on keeps
+  // what it painted before it (a route's barrier hides that).
+  container: true,
+  child: MaterialApp(
+    debugShowCheckedModeBanner: false,
+    title: 'Keel',
+    theme: kitAppTheme,
+    // ui_core's words in the 30 languages it speaks.
+    localizationsDelegates: galleryDelegates,
+    supportedLocales: DesignLocalizations.supportedLocales,
+    builder: (context, home) => LedgerHost(
+      light: _atKitDensity(LedgerThemeData.preset(style, Brightness.light)),
+      dark: _atKitDensity(LedgerThemeData.preset(style, Brightness.dark)),
+      brightness: brightness,
+      child: LedgerAccountScope(
+        account: kitMaren,
+        child: home ?? const SizedBox.shrink(),
+      ),
     ),
+    home: _KitStage(frame: frame, child: child),
   ),
-  home: _KitStage(frame: frame, child: child),
 );
 
 class _KitStage extends StatelessWidget {

@@ -1,3 +1,61 @@
+## 0.3.0
+
+Needs ui_core 0.3.0. Ledger's behaviours move onto ui_core's: Ledger keeps its paper, its ink and its motion, and
+ui_core runs the keys, the focus, the gestures and what a screen reader hears. No public name is removed or renamed;
+the changes in behaviour are listed at the end.
+
+- **Dialogs and sheets** (`LedgerDialog.show`, `LedgerSheet.show`, `LedgerSheet.pageRoute`) ride ui_core's
+  `DesignDialogRoute` and `DesignBottomSheetRoute`: they move on ui_core's springs (a short fade under Reduce Motion),
+  keep Tab inside them and give the focus back to what opened them, Escape closes them, and a phone's sheet follows a
+  drag and lets go on a drag down or a fling. A raised `LedgerDialog` opens with the focus on its safe act: Cancel
+  beside a destructive confirm, the confirm otherwise.
+- **Tabs** (`LedgerTabs`) are ui_core's `DesignTabBar`: one tab stop, the arrows (mirrored right to left, wrapping)
+  and Home and End moving the choice, the change on a spring, the rule drawn out under the old tab as it is drawn in
+  under the new. Each tab says its count and its place ("Entries, 12, Tab 2 of 3").
+- **The navigation frame** (`LedgerNavigationFrame`) is ui_core's `DesignAdaptiveShell` at Ledger's widths, painted
+  by `LedgerNavBar` and `LedgerSideBar`: the destinations are one tab stop that the arrows move along, Enter or Space
+  choosing; F6 moves between the navigation and the page; the phone's bar is a tab bar to a screen reader, its act a
+  button beside it, and the side bar is the navigation menu. The phone's tabs gain the keyboard and a focus rule. The
+  page keeps its state as the window crosses a width.
+- **The split button's menu** keeps one current act through ui_core's `highlightFollowsPointer`: the hovered act
+  while the pointer moved last, the focused one while the keys did, none in a menu a click opened (Down lights the
+  first act, Up the last).
+- **The tooltip** (`LedgerTooltip`) is ui_core's `DesignTooltip` round Ledger's slip: it also shows while the keys
+  hold its anchor, the pointer may move onto it, Escape hides it, and one shows at a time after a warm-up.
+- **Wheels** (`LedgerDatePicker`'s wheel presentation) turn on ui_core's `DesignWheelPicker`: Page Up and Down, Home
+  and End and typing join the arrows, a fling settles on a row, and the keyboard's focus draws Ledger's double rule
+  under the wheel.
+- **Searching**: `LedgerCombobox` takes a `search` (and a `debounceDuration`) in place of `options` and paints
+  ui_core's loading and failed states on its paper, with a "Try again" line the keys reach.
+- **Shortcut keys**: `LedgerKbd.shortcut` prints a `SingleActivator` as the platform writes it (⌘K on Apple's
+  platforms, Ctrl+K elsewhere) and spells it for a screen reader.
+- **Surfaces beside the side bar**: a menu, list, popover or tooltip opened in a page beside a side bar of
+  Ledger's keeps clear of the bar through ui_core's `DesignOverlayPadding`.
+- **Right to left**: the preview frame's side bar stood at the left in RTL while its pages stood beside it at the
+  reading start; it stands at the start now.
+- **Symbols in a figure**: Instrument Serif has no ±, arrows, fractions, ≈ ≤ ≥ or ₹ ₩ ₽; a figure, a title or a
+  monogram now sets them in Inter Tight, which ships with Ledger, rather than in the platform's fallback face.
+- The review checks come from ui_core_test 0.1.0 (`package:ui_core_test/ui_core_test.dart`), a dev dependency.
+- **The package page** opens on a hero (home on a desktop by day beside a phone by night) and links to the live
+  gallery, the API reference and the other looks; the install is `flutter pub add ledger_ui material_ui`, and the
+  quick start, the example and the tests import `material_ui` and `cupertino_ui`, not `package:flutter/material.dart`
+  (deprecated in Flutter 3.50).
+
+Changes in behaviour:
+
+- Enter in a split button's menu that a click opened presses nothing until an act is lit (it pressed the first).
+- `LedgerTabs` is one tab stop rather than one per tab, and its arrows wrap from the last tab to the first.
+- Under `LedgerNavigationFrame` the page stands above the tab bar and beside the rail or the side bar rather than
+  under them, so `ShellInsets.of` reads 0 there and a page pads for neither.
+- A sheet or dialog's motion is ui_core's spring; `LedgerSheet.motionOf` still gives Ledger's timed motion for an
+  app's own transitions.
+- `LedgerDatePicker` reports a wheel's value once the wheel comes to rest, not at every row it passes.
+- `LedgerPreview`'s app stands in a semantics container of its own, so a screen reader still reads the page round
+  the preview (a route's barrier hid what was painted before it). The example gallery's Navigator and nested apps do
+  the same; on material_ui's `MaterialApp` the side bar's destinations were missing from the semantics tree.
+- A phone's sheet opened with `LedgerSheet.pageRoute` names its scrim to a screen reader ("Dismiss"), which closes
+  the sheet; it was silent.
+
 ## 0.2.1
 
 Needs ui_core 0.2.1.

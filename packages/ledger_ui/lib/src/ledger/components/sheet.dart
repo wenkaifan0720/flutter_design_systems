@@ -1,9 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
-import 'package:material_ui/material_ui.dart'
-    show Material, MaterialLocalizations, MaterialType, ModalBottomSheetRoute;
+import 'package:material_ui/material_ui.dart' show Material, MaterialType;
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart';
 import 'package:ui_core/ui_core.dart';
+import 'package:ui_core/host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../chrome_metrics.dart';
@@ -11,6 +12,7 @@ import '../internal/cap_center.dart';
 import '../internal/even_acts.dart';
 import '../internal/grabber.dart';
 import '../internal/narrow.dart';
+import '../internal/presence.dart';
 import '../theme.dart';
 import 'host.dart';
 import 'icon-button/icon_button.dart';
@@ -301,16 +303,22 @@ class _OnCard extends InheritedWidget {
 /// route code ([LedgerSheetPage]): that page is a plain `LedgerScreen`,
 /// whose bar becomes the sheet's head with its close.
 ///
-/// On a phone both rise off the bottom edge over the scrim; at desktop
-/// width both stand centred as a dialog. A tap on the scrim, the system back
-/// or the close dismisses them.
+/// On a phone both rise off the bottom edge over the scrim, on ui_core's
+/// [DesignBottomSheetRoute]: a drag moves the sheet with the finger and a
+/// drag down or a fling lets it go. At desktop width both stand centred as
+/// a dialog, on ui_core's [DesignDialogRoute], fading in. Both move on
+/// ui_core's springs (a short fade under Reduce Motion), keep the focus in
+/// them and give it back as they close; a tap on the scrim, Escape, the
+/// system back or the close dismisses them.
 ///
 /// ```dart
 /// final picked = await LedgerSheet.show<String>(context, title: 'Category', builder: (context) => [options]);
 /// ```
 abstract final class LedgerSheet {
-  /// The rise and the fall above [context]: none at all where the platform
-  /// asks for reduced motion.
+  /// Ledger's timed rise and fall above [context] (none at all where the
+  /// platform asks for reduced motion), for an app's own transition that
+  /// should keep time with Ledger's. Ledger's sheets and dialogs move on
+  /// ui_core's springs since 0.3.0 (their routes' `stiffness`).
   static AnimationStyle motionOf(BuildContext context) =>
       LedgerMotion.isReduced(context)
       ? AnimationStyle.noAnimation
@@ -321,8 +329,8 @@ abstract final class LedgerSheet {
           reverseCurve: Curves.easeInCubic,
         );
 
-  /// The tallest a sheet stands on [screen]: 90% of it on a phone, 84% at
-  /// desktop width.
+  /// The tallest a sheet stands on the screen [context] reads: 90% of it on a
+  /// phone, 84% at desktop width.
   static double maxHeight(BuildContext context) {
     final screen = MediaQuery.sizeOf(context).height;
     return screen *
@@ -353,8 +361,6 @@ abstract final class LedgerSheet {
   }) {
     final t = context.ledgerTheme;
     final navigator = LedgerHost.navigatorOf(context);
-    final words = MaterialLocalizations.of(context);
-    final dismiss = DesignLocalizations.of(context).modalBarrierDismissLabel;
     // As showModalBottomSheet does: the caller's themes ride along.
     final themes = InheritedTheme.capture(from: context, to: navigator.context);
     final most = maxHeight(context);
@@ -370,19 +376,21 @@ abstract final class LedgerSheet {
     );
     if (LedgerLayout.isWide(context)) {
       return navigator.push(
-        RawDialogRoute<T>(
+        DesignDialogRoute<T>(
           barrierDismissible: true,
-          barrierLabel: dismiss,
           barrierColor: t.overlay,
-          transitionDuration: motionOf(context).duration ?? Duration.zero,
-          pageBuilder: (sheetContext, _, _) => themes.wrap(
-            Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: dialogWidth(confirm: confirm),
-                  maxHeight: most,
+          semanticLabel: title,
+          builder: (sheetContext, details) => themes.wrap(
+            FadeTransition(
+              opacity: details.animation.drive(ledgerPresence),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: dialogWidth(confirm: confirm),
+                    maxHeight: most,
+                  ),
+                  child: shell(sheetContext),
                 ),
-                child: shell(sheetContext),
               ),
             ),
           ),
@@ -390,30 +398,13 @@ abstract final class LedgerSheet {
       );
     }
     return navigator.push(
-      ModalBottomSheetRoute<T>(
-        capturedThemes: themes,
-        barrierLabel: dismiss,
-        // The tap hint is Flutter's own (the shared words have no "Close
-        // sheet"); the Material route reads Material's words anyway.
-        barrierOnTapHint: words.scrimOnTapHint(words.bottomSheetLabel),
-        backgroundColor: const Color(0x00000000),
-        modalBarrierColor: t.overlay,
-        elevation: 0,
-        isScrollControlled: true,
-        sheetAnimationStyle: motionOf(context),
-        // A tablet's sheet stands centred at the sheet's measure.
-        constraints: BoxConstraints(
-          maxHeight: most,
-          maxWidth: LedgerLayout.sheetMeasure,
-        ),
-        builder: (sheetContext) => Padding(
-          // The keyboard rides outside the card: the card keeps its geometry
-          // and simply sits higher.
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
-          ),
-          child: shell(sheetContext),
-        ),
+      DesignBottomSheetRoute<T>(
+        barrierColor: t.overlay,
+        semanticLabel: title,
+        // The keyboard rides outside the card (ui_core stands the sheet on
+        // it): the card keeps its geometry and simply sits higher.
+        builder: (sheetContext, details) =>
+            themes.wrap(_SheetMeasure(most: most, child: shell(sheetContext))),
       ),
     );
   }
@@ -439,46 +430,80 @@ abstract final class LedgerSheet {
       child: _PageSheetCard(child: builder(sheetContext)),
     );
     if (LedgerLayout.isWide(context)) {
-      return RawDialogRoute<T>(
+      return DesignDialogRoute<T>(
         settings: settings,
         barrierDismissible: true,
-        barrierLabel: DesignLocalizations.of(context).modalBarrierDismissLabel,
         barrierColor: t.overlay,
-        transitionDuration: motionOf(context).duration ?? Duration.zero,
-        pageBuilder: (sheetContext, _, _) => Center(
-          child: SizedBox(
-            width: dialogWidth(confirm: confirm),
-            height: drawer ? null : most,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: most),
-              child: card(sheetContext),
+        builder: (sheetContext, details) => FadeTransition(
+          opacity: details.animation.drive(ledgerPresence),
+          child: Center(
+            child: SizedBox(
+              width: dialogWidth(confirm: confirm),
+              height: drawer ? null : most,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: most),
+                child: card(sheetContext),
+              ),
             ),
           ),
         ),
       );
     }
-    return ModalBottomSheetRoute<T>(
+    return DesignBottomSheetRoute<T>(
       settings: settings,
-      backgroundColor: const Color(0x00000000),
-      modalBarrierColor: t.overlay,
-      elevation: 0,
-      isScrollControlled: true,
-      sheetAnimationStyle: motionOf(context),
-      constraints: BoxConstraints(
-        maxHeight: most,
-        maxWidth: LedgerLayout.sheetMeasure,
+      barrierColor: t.overlay,
+      builder: (sheetContext, details) => _SheetMeasure(
+        most: most,
+        // A page stands at the tallest a sheet stands, the keyboard taking
+        // its foot; a drawer at its content's height.
+        full: !drawer,
+        child: card(sheetContext),
       ),
-      builder: (sheetContext) {
-        final keyboard = MediaQuery.viewInsetsOf(sheetContext).bottom;
-        return Padding(
-          padding: EdgeInsets.only(bottom: keyboard),
-          child: drawer
-              ? card(sheetContext)
-              : SizedBox(height: most - keyboard, child: card(sheetContext)),
-        );
-      },
     );
   }
+}
+
+/// A phone's sheet on ui_core's route: at most [most] tall and, on a tablet,
+/// the sheet's measure, centred; with [full], [most] tall less what the
+/// on-screen keyboard takes (the route stands the sheet on the keyboard and
+/// gives it the room above, so the card's top stays where it was).
+class _SheetMeasure extends StatelessWidget {
+  const _SheetMeasure({
+    required this.most,
+    required this.child,
+    this.full = false,
+  });
+
+  final double most;
+  final bool full;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, room) {
+      // The keyboard as the navigator's screen tells it: the route takes it
+      // off the sheet's own MediaQuery, and the sheet's room (which changes
+      // with it, so this rebuilds) is the navigator's, not the window's (a
+      // preview's stage).
+      final navigator = Navigator.maybeOf(context);
+      final keyboard = navigator == null
+          ? 0.0
+          : MediaQuery.viewInsetsOf(navigator.context).bottom;
+      return Align(
+        alignment: Alignment.bottomCenter,
+        heightFactor: 1,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: LedgerLayout.sheetMeasure,
+            maxHeight: math.max(0.0, most - keyboard),
+          ),
+          child: full
+              ? SizedBox(height: math.max(0.0, most - keyboard), child: child)
+              : child,
+        ),
+      );
+    },
+  );
 }
 
 /// The card a sheet page stands on: the sheet's face, and the page told it

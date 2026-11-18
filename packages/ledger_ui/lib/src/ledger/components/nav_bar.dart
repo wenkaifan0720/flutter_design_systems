@@ -6,6 +6,8 @@ import 'package:ui_core/host.dart';
 
 import '../chrome_metrics.dart';
 import '../internal/face.dart';
+import '../internal/shell_faces.dart';
+import '../internal/state_face.dart';
 import '../theme.dart';
 
 /// One destination of the app's root, as generated apps declare a tab: its
@@ -214,30 +216,39 @@ class LedgerNavBar extends StatelessWidget {
     final inset = MediaQuery.paddingOf(context).bottom;
     final act = action;
     final disc = discTab(items.length, action: act != null);
+    // Under [LedgerNavigationFrame] ui_core's shell presses the tabs (one
+    // tab stop, the arrows along them, a tab bar to a screen reader) and
+    // the bar paints them.
+    final built = LedgerShellDestinations.maybeOf(context);
+    _Tab tab(int i, {Set<WidgetState>? states}) => _Tab(
+      key: items[i].key,
+      icon: i == selectedIndex
+          ? (items[i].selectedIcon ?? items[i].icon)
+          : items[i].icon,
+      label: items[i].label,
+      selected: i == selectedIndex,
+      disc: i == disc,
+      states: states,
+      onTap: states != null ? null : () => onDestinationSelected(i),
+    );
     final cells = <Widget>[
-      for (final (i, item) in items.indexed)
-        _Tab(
-          key: item.key,
-          icon: i == selectedIndex
-              ? (item.selectedIcon ?? item.icon)
-              : item.icon,
-          label: item.label,
-          selected: i == selectedIndex,
-          disc: i == disc,
-          onTap: () => onDestinationSelected(i),
-        ),
+      for (var i = 0; i < items.length; i++)
+        if (built != null && i < built.length) built[i] else tab(i),
     ];
     if (act != null) {
+      final press = _Tab(
+        key: act.key,
+        icon: act.icon,
+        label: act.label ?? '',
+        selected: false,
+        disc: true,
+        onTap: () => act.onPressed(context),
+      );
       cells.insert(
         discAction(items.length),
-        _Tab(
-          key: act.key,
-          icon: act.icon,
-          label: act.label ?? '',
-          selected: false,
-          disc: true,
-          onTap: () => act.onPressed(context),
-        ),
+        // ui_core's tab bar holds tabs alone: the frame speaks the act
+        // beside it.
+        built == null ? press : ExcludeSemantics(child: press),
       );
     }
     final ground = DecoratedBox(
@@ -298,16 +309,20 @@ class LedgerNavBar extends StatelessWidget {
         ),
       ],
     );
-    return Semantics(
-      container: true,
-      explicitChildNodes: true,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: LedgerChromeMetrics.accessoryGap,
-        children: [?accessory, bar],
-      ),
+    final column = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: LedgerChromeMetrics.accessoryGap,
+      children: [?accessory, bar],
     );
+    if (built != null) {
+      // ui_core's tab bar holds the tabs alone.
+      return LedgerDestinationFaces(
+        paint: (context, i, states) => tab(i, states: states),
+        child: column,
+      );
+    }
+    return Semantics(container: true, explicitChildNodes: true, child: column);
   }
 }
 
@@ -318,7 +333,8 @@ class _Tab extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.disc,
-    required this.onTap,
+    this.onTap,
+    this.states,
     super.key,
   });
 
@@ -326,7 +342,13 @@ class _Tab extends StatelessWidget {
   final String label;
   final bool selected;
   final bool disc;
-  final VoidCallback onTap;
+
+  /// Its own press; null where ui_core's shell presses it ([states]).
+  final VoidCallback? onTap;
+
+  /// The shell's press's states: its face alone, the focus rule under it
+  /// while the keys hold it.
+  final Set<WidgetState>? states;
 
   // The least room between two tabs' names.
   static const double _nameGap = 4;
@@ -369,6 +391,73 @@ class _Tab extends StatelessWidget {
     } else {
       mark = null;
     }
+    // The chosen tab's ink and its green tick land at once, in the frame its
+    // page does: a selection never trails the page it names.
+    final face = LedgerFace(
+      duration: Duration.zero,
+      style: LedgerFaceStyle(
+        ink: ink,
+        ground: BoxDecoration(
+          shape: BoxShape.circle,
+          color: selected ? t.accent : null,
+        ),
+      ),
+      builder: (context, s, _) => Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          mark ??
+              Padding(
+                padding: const EdgeInsets.only(
+                  bottom: LedgerChromeMetrics.tabGap,
+                ),
+                child: Icon(
+                  icon,
+                  size: LedgerChromeMetrics.tabGlyph,
+                  color: s.ink,
+                ),
+              ),
+          // A name wider than its column at a large text size sets
+          // smaller on its one line rather than lose its end, never
+          // closer than [_nameGap] to its neighbour's (a gap that grows
+          // with the words, as a word space does).
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.textScalerOf(context).scale(_nameGap) / 2,
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                textAlign: TextAlign.center,
+                style: t.tab.colored(s.ink),
+              ),
+            ),
+          ),
+          // The tick stands 2 up into the 6 under the name.
+          const SizedBox(
+            height: LedgerChromeMetrics.tabGap - LedgerChromeMetrics.tickLift,
+          ),
+          Container(
+            width: LedgerChromeMetrics.tick,
+            height: LedgerChromeMetrics.tick,
+            decoration: s.ground,
+          ),
+        ],
+      ),
+    );
+    final shell = states;
+    if (shell != null) {
+      // The tab's own feel: no sink under a press, as before the shell.
+      return LedgerStateFace(
+        states: shell,
+        radius: t.smallRadius,
+        sinks: false,
+        child: face,
+      );
+    }
     return Semantics(
       button: true,
       selected: selected,
@@ -378,69 +467,8 @@ class _Tab extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        // A pointer over a tab shows the click cursor. The chosen tab's ink
-        // and its green tick land at once, in the frame its page does: a
-        // selection never trails the page it names.
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: LedgerFace(
-            duration: Duration.zero,
-            style: LedgerFaceStyle(
-              ink: ink,
-              ground: BoxDecoration(
-                shape: BoxShape.circle,
-                color: selected ? t.accent : null,
-              ),
-            ),
-            builder: (context, s, _) => Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                mark ??
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        bottom: LedgerChromeMetrics.tabGap,
-                      ),
-                      child: Icon(
-                        icon,
-                        size: LedgerChromeMetrics.tabGlyph,
-                        color: s.ink,
-                      ),
-                    ),
-                // A name wider than its column at a large text size sets
-                // smaller on its one line rather than lose its end, never
-                // closer than [_nameGap] to its neighbour's (a gap that grows
-                // with the words, as a word space does).
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal:
-                        MediaQuery.textScalerOf(context).scale(_nameGap) / 2,
-                  ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      softWrap: false,
-                      textAlign: TextAlign.center,
-                      style: t.tab.colored(s.ink),
-                    ),
-                  ),
-                ),
-                // The tick stands 2 up into the 6 under the name.
-                const SizedBox(
-                  height:
-                      LedgerChromeMetrics.tabGap - LedgerChromeMetrics.tickLift,
-                ),
-                Container(
-                  width: LedgerChromeMetrics.tick,
-                  height: LedgerChromeMetrics.tick,
-                  decoration: s.ground,
-                ),
-              ],
-            ),
-          ),
-        ),
+        // A pointer over a tab shows the click cursor.
+        child: MouseRegion(cursor: SystemMouseCursors.click, child: face),
       ),
     );
   }

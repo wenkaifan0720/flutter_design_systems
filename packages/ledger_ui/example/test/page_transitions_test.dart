@@ -4,8 +4,8 @@
 // Flutter's MaterialPageRoute never reads it, and on a Mac plays the Cupertino slide. Ledger exposes its push as a map
 // of widgets-level PageTransitionsBuilders instead, ledgerPageTransitions, one map for both Materials, and the app
 // puts it in its own ThemeData (the README's setup line).
-import 'package:flutter/cupertino.dart' show CupertinoPageTransition;
-import 'package:flutter/material.dart';
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoPageTransition;
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart'
     show LedgerPageTransitions, ledgerPageTransitions;

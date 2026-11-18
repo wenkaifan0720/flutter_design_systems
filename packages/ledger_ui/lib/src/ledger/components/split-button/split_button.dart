@@ -11,8 +11,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../internal/cap_center.dart';
 import '../../internal/face.dart';
-import '../../internal/menu_marks.dart';
 import '../../internal/option_paper.dart';
+import '../../internal/presence.dart';
 import '../../internal/side_inset.dart';
 import '../../internal/state_face.dart';
 import '../../theme.dart';
@@ -80,7 +80,6 @@ class LedgerSplitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ledgerWatchInput();
     final t = context.ledgerTheme;
     final floor = DesignTapTargets.of(context).floorOn();
     final height = t.density.height(_height, floor: floor.height);
@@ -190,46 +189,43 @@ class LedgerSplitButton extends StatelessWidget {
         final type = t.rowTitle.copyWith(
           leadingDistribution: TextLeadingDistribution.even,
         );
-        // One current act, marked under its words as the select's options
-        // are, inside the slip's 16: never a rule to the paper's edge.
-        return LedgerMenuRow(
-          states: states,
-          enabled: action.enabled,
-          builder: (context, marks) => ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: t.density.height(_row, floor: floor.height),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: _itemPad),
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                widthFactor: 1,
-                child: LedgerOptionWords(
-                  action.label,
-                  states: marks,
-                  style: type.colored(
-                    action.enabled ? t.textPrimary : t.textTertiary,
-                  ),
-                  maxLines: null,
+        // One current act (ui_core's highlightFollowsPointer: hovered when
+        // the pointer moved last, focused when the keys did), marked under
+        // its words as the select's options are, inside the slip's 16:
+        // never a rule to the paper's edge.
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: t.density.height(_row, floor: floor.height),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: _itemPad),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              widthFactor: 1,
+              child: LedgerOptionWords(
+                action.label,
+                states: states,
+                style: type.colored(
+                  action.enabled ? t.textPrimary : t.textTertiary,
                 ),
+                maxLines: null,
               ),
             ),
           ),
         );
       },
       surfaceBuilder: (context, info, items) {
-        // Beside the desktop's side bar the slip keeps to the room between
-        // the bar and its button's end, its words wrapping, rather than
-        // slide under the bar.
-        final room = ledgerRoomBesideSide(context, info);
+        // Beside the desktop's side bar ui_core keeps the slip clear of the
+        // bar; the slip keeps its end at the button's end, its words wrapping
+        // in the room back to the bar, rather than slide past the button.
+        final room = _endRoom(context, info) ?? info.maxSize.width;
         return FadeTransition(
-          // The overlay's spring can pass 1; an opacity can't.
-          opacity: info.animation.drive(_unit),
+          opacity: info.animation.drive(ledgerPresence),
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: info.maxSize.height,
-              minWidth: math.min(_menuWidth, room ?? _menuWidth),
-              maxWidth: room ?? double.infinity,
+              minWidth: math.min(_menuWidth, room),
+              maxWidth: room,
             ),
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -243,26 +239,24 @@ class LedgerSplitButton extends StatelessWidget {
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(vertical: _menuPad),
                   child: IntrinsicWidth(
-                    child: LedgerMenuMarks(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          for (final (i, item) in items.indexed) ...[
-                            if (i > 0)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: _itemPad,
-                                ),
-                                child: SizedBox(
-                                  height: _rule,
-                                  child: ColoredBox(color: t.hairline),
-                                ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (final (i, item) in items.indexed) ...[
+                          if (i > 0)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: _itemPad,
                               ),
-                            item,
-                          ],
+                              child: SizedBox(
+                                height: _rule,
+                                child: ColoredBox(color: t.hairline),
+                              ),
+                            ),
+                          item,
                         ],
-                      ),
+                      ],
                     ),
                   ),
                 ),
@@ -288,7 +282,27 @@ class LedgerSplitButton extends StatelessWidget {
   static const double _menuPad = LedgerSpacing.s4;
   static const double _menuWidth = 200;
 
-  static final Animatable<double> _unit = Animatable<double>.fromCallback(
-    (v) => v.clamp(0.0, 1.0),
-  );
+  /// The room from the button's end back to where ui_core keeps the slip
+  /// (its margin past the side bar and the window's padding), beside a side
+  /// bar and under or over the button; null elsewhere, or with less room
+  /// than a menu's words need (the slip then keeps its width and moves).
+  static double? _endRoom(BuildContext context, DesignOverlayInfo info) {
+    if (!LedgerSideInset.besideOf(context) || !info.side.isVertical) {
+      return null;
+    }
+    const margin = DesignOverlayPlacement();
+    final dir = Directionality.of(context);
+    final pad = MediaQuery.paddingOf(context);
+    final clear = DesignOverlayPadding.of(context);
+    final start = pad.left + clear.left + margin.margin;
+    final anchor = info.anchorRect;
+    final room = switch (dir) {
+      TextDirection.ltr => anchor.right - start,
+      TextDirection.rtl => start + info.maxSize.width - anchor.left,
+    };
+    return room < _leastRoom ? null : room;
+  }
+
+  // A menu's words at their least: two 16s and a short word or two.
+  static const double _leastRoom = 120;
 }

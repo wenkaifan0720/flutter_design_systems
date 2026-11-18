@@ -5,7 +5,7 @@
 // (fading in as it rises 8 onto the page, never slid or zoomed, in 200 ms); choosing another destination from the
 // tab bar, the rail or the side bar changes the page in place, whole from its first frame, and the destinations' marks
 // land in that same frame: the page never stands under another destination's mark.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter_test/flutter_test.dart';

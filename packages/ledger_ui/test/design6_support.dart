@@ -27,7 +27,7 @@ import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 import 'tiers.dart';
 

@@ -5,6 +5,19 @@
 /// beside that one.
 ///
 /// Outside semver: this library may change in any version, a patch included; the CHANGELOG says how to move.
+///
+/// {@canonicalFor chrome_metrics}
+/// {@canonicalFor chrome_metrics.LedgerChromeMetrics}
+/// {@canonicalFor host}
+/// {@canonicalFor host.LedgerHost}
+/// {@canonicalFor host.LedgerMediaGround}
+/// {@canonicalFor preview}
+/// {@canonicalFor preview.LedgerPresentation}
+/// {@canonicalFor preview.LedgerPreview}
+/// {@canonicalFor routes}
+/// {@canonicalFor routes.LedgerPage}
+/// {@canonicalFor sheet_page}
+/// {@canonicalFor sheet_page.LedgerSheetPage}
 library;
 
 export 'package:ui_core/host.dart';

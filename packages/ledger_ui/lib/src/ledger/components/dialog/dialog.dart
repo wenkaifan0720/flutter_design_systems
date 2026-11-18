@@ -6,6 +6,7 @@ import 'package:ui_core/ui_core.dart';
 import '../../chrome_metrics.dart';
 import '../../internal/even_acts.dart';
 import '../../internal/narrow.dart';
+import '../../internal/presence.dart';
 import '../../internal/styled.dart';
 import '../../style.dart';
 import '../../theme.dart';
@@ -34,8 +35,12 @@ enum LedgerDialogType {
 /// "Got it". Its card is 360 at most, the raised paper on the dialog's
 /// shadow, and it scrolls once its words outgrow the screen. Raise it with
 /// [show], which completes with true for the confirm, false for Cancel and
-/// null when the scrim or the system back dismisses it. A phone's choice
-/// among options is a [LedgerSheet]; a dialog is for one question.
+/// null when the scrim, Escape or the system back dismisses it: ui_core's
+/// [DesignDialogRoute] fades it in on its spring (a short fade under Reduce
+/// Motion), keeps Tab inside it, opens with the focus on the safe act
+/// (Cancel beside a destructive confirm, the confirm otherwise) and gives
+/// the focus back to what opened it. A phone's choice among options is a
+/// [LedgerSheet]; a dialog is for one question.
 ///
 /// ```dart
 /// final ok = await LedgerDialog.show(context, title: 'Delete this entry?', body: 'It leaves your records for good.', type: LedgerDialogType.destructive, confirmLabel: 'Delete');
@@ -87,8 +92,9 @@ class LedgerDialog extends StatelessWidget {
   final VoidCallback? onCancelPressed;
 
   /// Raises a [LedgerDialog] over the whole app (the app's root navigator,
-  /// [LedgerHost.navigatorOf]). Completes with true when the confirming act
-  /// is pressed, false for Cancel and null when it is dismissed.
+  /// [LedgerHost.navigatorOf]) on ui_core's [DesignDialogRoute]. Completes
+  /// with true when the confirming act is pressed, false for Cancel and null
+  /// when it is dismissed.
   static Future<bool?> show(
     BuildContext context, {
     required String title,
@@ -100,28 +106,29 @@ class LedgerDialog extends StatelessWidget {
   }) {
     final t = context.ledgerTheme;
     final navigator = LedgerHost.navigatorOf(context);
-    final dismiss = DesignLocalizations.of(context).modalBarrierDismissLabel;
     // As showDialog does: the caller's themes ride along.
     final themes = InheritedTheme.capture(from: context, to: navigator.context);
     return navigator.push(
-      RawDialogRoute<bool>(
+      DesignDialogRoute<bool>(
+        // The scrim closes it, as it did; Escape and the back do too.
         barrierDismissible: true,
-        barrierLabel: dismiss,
         barrierColor: t.overlay,
-        transitionDuration:
-            LedgerSheet.motionOf(context).duration ?? Duration.zero,
-        pageBuilder: (dialogContext, _, _) => themes.wrap(
-          SafeArea(
-            child: Center(
-              child: LedgerDialog(
-                title: title,
-                body: body,
-                type: type,
-                confirmLabel: confirmLabel,
-                cancelLabel: cancelLabel,
-                onConfirmPressed: () => Navigator.of(dialogContext).pop(true),
-                onCancelPressed: () => Navigator.of(dialogContext).pop(false),
-                children: children,
+        semanticLabel: title,
+        builder: (dialogContext, details) => themes.wrap(
+          FadeTransition(
+            opacity: details.animation.drive(ledgerPresence),
+            child: SafeArea(
+              child: Center(
+                child: LedgerDialog(
+                  title: title,
+                  body: body,
+                  type: type,
+                  confirmLabel: confirmLabel,
+                  cancelLabel: cancelLabel,
+                  onConfirmPressed: () => Navigator.of(dialogContext).pop(true),
+                  onCancelPressed: () => Navigator.of(dialogContext).pop(false),
+                  children: children,
+                ),
               ),
             ),
           ),
@@ -174,19 +181,40 @@ class LedgerDialog extends StatelessWidget {
     // Both acts are LedgerButtons, so they share one height at every
     // density (a confirm drawn by hand at 48 stood beside a 40 Cancel at
     // compact).
+    final cancel = cancelLabel ?? shared.cancelButtonLabel;
+    final onCancel = onCancelPressed ?? () => Navigator.of(context).maybePop();
+    // Raised by [show], ui_core's route names it and scopes it; the safe act
+    // (ui_core's rule: the act that is not destructive, else the confirm)
+    // takes the focus as it opens. Standing in a page, it names itself and
+    // takes no focus.
+    final raised = ModalRoute.of(context) is DesignDialogRoute;
+    final safe = !raised
+        ? null
+        : acknowledge
+        ? 1
+        : DesignDialog.safeActionIndex([
+            DesignDialogAction(label: cancel, onPressed: onCancel),
+            DesignDialogAction(
+              label: yes,
+              onPressed: onConfirmPressed,
+              isDefaultAction: true,
+              isDestructiveAction: destructive,
+            ),
+          ]);
     final confirm = LedgerButton.filled(
       yes,
       onPressed: onConfirmPressed,
       expand: true,
       isDestructiveAction: destructive,
+      autofocus: safe == 1,
     );
     final words = body;
     final so = LedgerStyleOf([style, t.components.dialog], const {});
     return Semantics(
-      scopesRoute: true,
-      namesRoute: true,
+      scopesRoute: !raised,
+      namesRoute: !raised,
       explicitChildNodes: true,
-      label: title,
+      label: raised ? null : title,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: _margin),
         child: ConstrainedBox(
@@ -228,11 +256,10 @@ class LedgerDialog extends StatelessWidget {
                           gap: LedgerChromeMetrics.buttonRowGap,
                           children: [
                             LedgerButton(
-                              cancelLabel ?? shared.cancelButtonLabel,
+                              cancel,
                               expand: true,
-                              onPressed:
-                                  onCancelPressed ??
-                                  () => Navigator.of(context).maybePop(),
+                              onPressed: onCancel,
+                              autofocus: safe == 0,
                             ),
                             confirm,
                           ],

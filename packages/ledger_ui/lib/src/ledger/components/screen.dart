@@ -147,7 +147,7 @@ class LedgerScreen extends StatelessWidget {
     // The strip stands over the page on a phone; the page starts under it.
     // Beside a side bar or a rail (a tablet's) the masthead heads the page
     // instead: the side bar carries the wordmark and the owner.
-    final strip = !wide && bar != null && side == 0;
+    final strip = !wide && bar != null && !LedgerSideInset.besideOf(context);
     final top = mq.padding.top + (strip ? LedgerChromeMetrics.topBarHeight : 0);
     // The shell's allowance already spans the device inset, as does the
     // footer's band: a max, never a sum.

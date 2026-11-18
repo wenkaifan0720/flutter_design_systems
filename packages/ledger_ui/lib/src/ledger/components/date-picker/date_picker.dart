@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../chrome_metrics.dart';
 import '../../format.dart';
+import '../../internal/state_face.dart';
 import '../../theme.dart';
 import '../button/button.dart';
 import '../icon-button/icon_button.dart';
@@ -41,21 +42,22 @@ enum LedgerDatePickerPresentation {
 }
 
 /// A day and a time of day chosen from a calendar or from wheels, in the
-/// ledger's hand. [compact] prints the [label] on the dot leader to the value
-/// in mono pills (`Nov 4, 2026`, `7:40 PM`), each raising its own picker in a
-/// sheet that commits on Done; [inline] is the month itself: its name in the
+/// ledger's hand. [LedgerDatePickerPresentation.compact] prints the [label] on
+/// the dot leader to the value in mono pills (`Nov 4, 2026`, `7:40 PM`), each
+/// raising its own picker in a sheet that commits on Done;
+/// [LedgerDatePickerPresentation.inline] is the month itself: its name in the
 /// serif with the two ringed arrows, the weekdays in the small capitals, the
 /// days in 44 point cells with the chosen one struck on the ink and [today]
-/// ringed, closed on the accountant's double rule; [wheel] is the day, or the
-/// hour, the minute and AM or PM, as flat columns of figures that settle
-/// between two ink rules, as a ledger's column stands (never curved away like
-/// a drum). From 600 the month and the wheels stand at most 416 across (their
-/// sheet's width), at the start of their slot. A day outside [firstDate] and
-/// [lastDate] is faint and takes no press,
-/// and every change is kept inside them. Weeks start on Monday. Nothing here
-/// reads the clock: pass [today] to have it ringed. A null [onChanged]
-/// dims the whole picker and holds it. Each wheel is an adjustable value for
-/// a screen reader, and each day a button named by its full date.
+/// ringed, closed on the accountant's double rule;
+/// [LedgerDatePickerPresentation.wheel] is the day, or the hour, the minute and
+/// AM or PM, as flat columns of figures that settle between two ink rules, as a
+/// ledger's column stands (never curved away like a drum). From 600 the month
+/// and the wheels stand at most 416 across (their sheet's width), at the start
+/// of their slot. A day outside [firstDate] and [lastDate] is faint and takes
+/// no press, and every change is kept inside them. Weeks start on Monday.
+/// Nothing here reads the clock: pass [today] to have it ringed. A null
+/// [onChanged] dims the whole picker and holds it. Each wheel is an adjustable
+/// value for a screen reader, and each day a button named by its full date.
 ///
 /// ```dart
 /// LedgerDatePicker(label: 'Due', value: due, mode: LedgerDatePickerMode.dateAndTime, onChanged: setDue)
@@ -723,8 +725,11 @@ class _DayWheel extends StatelessWidget {
 
 /// One scrolling column, flat on the paper: [count] items of [text] settling
 /// between two ink rules, the chosen one in the ink and the rest in the faint.
-/// It is one adjustable value to a screen reader and answers the arrow keys.
-class _Wheel extends StatefulWidget {
+/// The column is ui_core's [DesignWheelPicker]: a tab stop and one adjustable
+/// value to a screen reader, the arrows, Page Up and Down, Home and End and
+/// typing turning it on ui_core's spring, a fling settling on a row; the
+/// keyboard's focus draws Ledger's double rule under it.
+class _Wheel extends StatelessWidget {
   const _Wheel({
     required this.label,
     required this.count,
@@ -744,117 +749,56 @@ class _Wheel extends StatefulWidget {
   final double? width;
 
   @override
-  State<_Wheel> createState() => _WheelState();
-}
-
-class _WheelState extends State<_Wheel> {
-  late final FixedExtentScrollController _scroll = FixedExtentScrollController(
-    initialItem: widget.index,
-  );
-
-  @override
-  void didUpdateWidget(_Wheel old) {
-    super.didUpdateWidget(old);
-    if (old.index == widget.index) return;
-    // Moved from outside (the other wheel clamped it): bring this one along
-    // once the frame is built.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted &&
-          _scroll.hasClients &&
-          _scroll.selectedItem != widget.index) {
-        _scroll.jumpToItem(widget.index);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _scroll.dispose();
-    super.dispose();
-  }
-
-  void _go(int to) {
-    final next = to.clamp(0, widget.count - 1);
-    if (next == widget.index) return;
-    if (!LedgerMotion.isReduced(context) && _scroll.hasClients) {
-      _scroll.animateToItem(
-        next,
-        duration: LedgerMotion.base,
-        curve: LedgerMotion.out,
-      );
-    } else {
-      widget.onIndex(next);
-    }
-  }
-
-  KeyEventResult _key(FocusNode node, KeyEvent event) {
-    if (event is KeyUpEvent) return KeyEventResult.ignored;
-    final by = switch (event.logicalKey) {
-      LogicalKeyboardKey.arrowUp => -1,
-      LogicalKeyboardKey.arrowDown => 1,
-      LogicalKeyboardKey.pageUp => -_page,
-      LogicalKeyboardKey.pageDown => _page,
-      _ => 0,
-    };
-    if (by == 0) return KeyEventResult.ignored;
-    _go(widget.index + by);
-    return KeyEventResult.handled;
-  }
-
-  @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    final here = widget.index;
-    return Semantics(
-      container: true,
-      label: widget.label,
-      value: widget.text(here),
-      increasedValue: here + 1 < widget.count ? widget.text(here + 1) : null,
-      decreasedValue: here > 0 ? widget.text(here - 1) : null,
-      onIncrease: here + 1 < widget.count ? () => _go(here + 1) : null,
-      onDecrease: here > 0 ? () => _go(here - 1) : null,
-      child: Focus(
-        onKeyEvent: _key,
-        child: SizedBox(
-          width: widget.width,
-          height: _item * _shown,
+    return SizedBox(
+      width: width,
+      child: DesignWheelPicker(
+        columns: (_) => [
+          DesignWheelColumn(
+            itemCount: count,
+            itemLabel: text,
+            semanticLabel: label,
+          ),
+        ],
+        selection: [index.clamp(0, count - 1)],
+        onChanged: (selection) => onIndex(selection.first),
+        itemExtent: _item,
+        visibleItemCount: _shown,
+        diameterRatio: _flat,
+        perspective: _perspective,
+        squeeze: 1,
+        overAndUnderCenterOpacity: _fade,
+        itemBuilder: (context, row) => Center(
+          child: Text(
+            row.label,
+            maxLines: 1,
+            softWrap: false,
+            textScaler: TextScaler.noScaling,
+            style: t.amount
+                .sized(_words)
+                .colored(row.selected ? t.textPrimary : t.textTertiary),
+          ),
+        ),
+        columnBuilder: (context, column, wheel) => LedgerStateFace(
+          states: column.states,
+          radius: t.smallRadius,
+          sinks: false,
           child: Stack(
             children: [
-              ExcludeSemantics(
-                child: ListWheelScrollView.useDelegate(
-                  controller: _scroll,
-                  itemExtent: _item,
-                  diameterRatio: _flat,
-                  perspective: _perspective,
-                  overAndUnderCenterOpacity: _fade,
-                  physics: const FixedExtentScrollPhysics(),
-                  onSelectedItemChanged: widget.onIndex,
-                  childDelegate: ListWheelChildBuilderDelegate(
-                    childCount: widget.count,
-                    builder: (context, i) => Center(
-                      child: Text(
-                        widget.text(i),
-                        maxLines: 1,
-                        softWrap: false,
-                        textScaler: TextScaler.noScaling,
-                        style: t.amount
-                            .sized(_words)
-                            .colored(
-                              i == here ? t.textPrimary : t.textTertiary,
-                            ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Center(
-                child: IgnorePointer(
-                  child: Container(
-                    height: _item,
-                    decoration: BoxDecoration(
-                      border: Border(
-                        top: BorderSide(color: t.headRule),
-                        bottom: BorderSide(color: t.headRule),
+              wheel,
+              // The rules at the wheel's middle: the column is as tall as
+              // the wheel, but ui_core lays it out unbounded.
+              Positioned.fill(
+                child: Center(
+                  child: IgnorePointer(
+                    child: Container(
+                      height: _item,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          top: BorderSide(color: t.headRule),
+                          bottom: BorderSide(color: t.headRule),
+                        ),
                       ),
                     ),
                   ),
@@ -873,7 +817,6 @@ class _WheelState extends State<_Wheel> {
   // bend into a drum).
   static const double _item = 40;
   static const int _shown = 5;
-  static const int _page = 5;
   static const double _words = 17;
   static const double _flat = 1000;
   static const double _perspective = .002;

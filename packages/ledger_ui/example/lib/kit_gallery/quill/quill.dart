@@ -8,7 +8,7 @@
 /// they are set.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -146,49 +146,55 @@ class _QuillAppState extends State<QuillApp> {
         registerOffline: widget.registerOffline,
         initialScene: widget.initialScene,
       );
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        // A pushed page laid down in Ledger's motion (Flutter's routes read
-        // the app's theme, not the host's).
-        theme: kitAppTheme,
-        // Hebrew while it reads right to left, else English: ui_core's words
-        // (Cancel, Close, Search, Today...) in either, from its 30.
-        locale: _prefs.direction == TextDirection.rtl
-            ? const Locale('he')
-            : const Locale('en'),
-        localizationsDelegates: galleryDelegates,
-        supportedLocales: DesignLocalizations.supportedLocales,
-        // The phone bar's wordmark reads it: Quill's name in its language.
-        title: _prefs.direction == TextDirection.rtl
-            ? quillHebrewWords['Quill']!
-            : 'Quill',
-        // The window's link (`/#/inputs?theme=dark`) chose the page already:
-        // the app opens on its frame, never on a route named by the link.
-        // (onGenerateRoute is what gives the app its Navigator at all.)
-        onGenerateInitialRoutes: (_) => [
-          MaterialPageRoute<void>(builder: (_) => frame),
-        ],
-        onGenerateRoute: (_) => MaterialPageRoute<void>(builder: (_) => frame),
-        builder: (context, child) => _QuillScope(
-          prefs: _prefs,
-          // The whole app reads as Settings sets it, its routes included.
-          child: Directionality(
-            textDirection: _prefs.direction,
-            child: _scaled(
-              context,
-              LedgerHost(
-                light: LedgerThemeData.light(density: density),
-                dark: LedgerThemeData.dark(density: density),
-                brightness: switch (_prefs.appearance) {
-                  QuillAppearance.light => Brightness.light,
-                  QuillAppearance.dark => Brightness.dark,
-                  QuillAppearance.system => null,
-                },
-                // The owner in the app's language (Hebrew right to left).
-                child: Builder(
-                  builder: (context) => LedgerAccountScope(
-                    account: context.sayOwner,
-                    child: child ?? const SizedBox.shrink(),
+      // A semantics container of its own, so an app this one stands inside
+      // keeps what it painted before it (a route's barrier hides that).
+      return Semantics(
+        container: true,
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          // A pushed page laid down in Ledger's motion (Flutter's routes read
+          // the app's theme, not the host's).
+          theme: kitAppTheme,
+          // Hebrew while it reads right to left, else English: ui_core's words
+          // (Cancel, Close, Search, Today...) in either, from its 30.
+          locale: _prefs.direction == TextDirection.rtl
+              ? const Locale('he')
+              : const Locale('en'),
+          localizationsDelegates: galleryDelegates,
+          supportedLocales: DesignLocalizations.supportedLocales,
+          // The phone bar's wordmark reads it: Quill's name in its language.
+          title: _prefs.direction == TextDirection.rtl
+              ? quillHebrewWords['Quill']!
+              : 'Quill',
+          // The window's link (`/#/inputs?theme=dark`) chose the page already:
+          // the app opens on its frame, never on a route named by the link.
+          // (onGenerateRoute is what gives the app its Navigator at all.)
+          onGenerateInitialRoutes: (_) => [
+            MaterialPageRoute<void>(builder: (_) => frame),
+          ],
+          onGenerateRoute: (_) =>
+              MaterialPageRoute<void>(builder: (_) => frame),
+          builder: (context, child) => _QuillScope(
+            prefs: _prefs,
+            // The whole app reads as Settings sets it, its routes included.
+            child: Directionality(
+              textDirection: _prefs.direction,
+              child: _scaled(
+                context,
+                LedgerHost(
+                  light: LedgerThemeData.light(density: density),
+                  dark: LedgerThemeData.dark(density: density),
+                  brightness: switch (_prefs.appearance) {
+                    QuillAppearance.light => Brightness.light,
+                    QuillAppearance.dark => Brightness.dark,
+                    QuillAppearance.system => null,
+                  },
+                  // The owner in the app's language (Hebrew right to left).
+                  child: Builder(
+                    builder: (context) => LedgerAccountScope(
+                      account: context.sayOwner,
+                      child: child ?? const SizedBox.shrink(),
+                    ),
                   ),
                 ),
               ),
@@ -365,10 +371,16 @@ class QuillFrameState extends State<QuillFrame> {
         onPressed: (_) => _newEntry(),
       ),
       body: framed
-          ? Navigator(
-              key: _desk,
-              pages: [_InPlace(key: ValueKey(_page), child: page)],
-              onDidRemovePage: (_) {},
+          // A semantics container of its own: a route's barrier hides from a
+          // screen reader what was painted before it in its container, and
+          // the side bar and the top bar are painted before the body.
+          ? Semantics(
+              container: true,
+              child: Navigator(
+                key: _desk,
+                pages: [_InPlace(key: ValueKey(_page), child: page)],
+                onDidRemovePage: (_) {},
+              ),
             )
           : KeyedSubtree(key: ValueKey(_page), child: page),
     );

@@ -336,7 +336,7 @@ class LedgerBack extends StatelessWidget {
     final glyph = close ? LucideIcons.x : LucideIcons.chevronLeft;
     if (close ||
         LedgerSheetShell.around(context) ||
-        (!LedgerLayout.isWide(context) && LedgerSideInset.of(context) == 0)) {
+        (!LedgerLayout.isWide(context) && !LedgerSideInset.besideOf(context))) {
       return LedgerIconButton.outlined(
         glyph,
         semanticLabel: spoken,
@@ -641,7 +641,7 @@ class LedgerTopBar extends StatelessWidget {
   Widget _masthead(BuildContext context, Widget? exit, bool wide) {
     final t = context.ledgerTheme;
     final pushed = exit != null;
-    if (!wide && pushed && LedgerSideInset.of(context) == 0) {
+    if (!wide && pushed && !LedgerSideInset.besideOf(context)) {
       return const SizedBox.shrink();
     }
     final account = LedgerAccountScope.maybeOf(context);

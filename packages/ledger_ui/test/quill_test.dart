@@ -19,7 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:ui_core/alignment.dart';
+import 'package:ui_core_test/ui_core_test.dart';
 
 import '../example/lib/kit_gallery/kit.dart';
 import '../example/lib/kit_gallery/quill/entry.dart';

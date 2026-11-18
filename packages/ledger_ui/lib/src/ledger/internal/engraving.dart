@@ -329,6 +329,6 @@ void ledgerRulerTicks(
   }
 }
 
-/// The days ahead of [x0], shaded faintly (the ink at .035).
+/// The days ahead: [box] shaded faintly (the ink at .035).
 void ledgerAhead(Canvas canvas, Rect box, Color ink) =>
     canvas.drawRect(box, Paint()..color = ledgerInk(ink, .035));

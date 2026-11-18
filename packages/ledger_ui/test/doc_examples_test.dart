@@ -286,6 +286,9 @@ void main() {
       ),
       'LedgerKbd': (context) =>
           LedgerKbd(const ['⌘', 'K'], semanticLabel: 'Command K'),
+      'LedgerKbd 2': (context) => LedgerKbd.shortcut(
+        const SingleActivator(LogicalKeyboardKey.keyK, meta: true),
+      ),
       'LedgerPagination': (context) =>
           LedgerPagination(page: 2, pageCount: 9, onChanged: (p) {}),
       'LedgerTooltip': (context) => LedgerTooltip(

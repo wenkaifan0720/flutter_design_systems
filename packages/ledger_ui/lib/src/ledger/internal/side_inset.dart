@@ -8,50 +8,50 @@ import 'package:ui_core/ui_core.dart';
 /// pages never place one.
 class LedgerSideInset extends InheritedWidget {
   /// Publishes the sidebar's [inset] to [child].
-  const LedgerSideInset({required this.inset, required super.child, super.key});
+  const LedgerSideInset({
+    required this.inset,
+    required super.child,
+    this.beside = false,
+    super.key,
+  });
 
   /// How far the sidebar stands over the pages' start.
   final double inset;
+
+  /// Whether the pages stand beside the sidebar or the rail rather than
+  /// under it (ui_core's shell lays them beside it): nothing to pad, but a
+  /// page's masthead heads it as beside a bar.
+  final bool beside;
 
   /// The sidebar's reach over [context]'s page: 0 off the desktop, in a
   /// sheet, or outside a shell.
   static double of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<LedgerSideInset>()?.inset ?? 0;
 
+  /// Whether [context]'s page stands by a sidebar or a rail: under one (an
+  /// [inset] over 0) or [beside] one.
+  static bool besideOf(BuildContext context) {
+    final side = context.dependOnInheritedWidgetOfExactType<LedgerSideInset>();
+    return side != null && (side.beside || side.inset > 0);
+  }
+
   @override
   bool updateShouldNotify(LedgerSideInset oldWidget) =>
-      inset != oldWidget.inset;
+      inset != oldWidget.inset || beside != oldWidget.beside;
 }
 
-/// The most a surface aligned to its anchor's end (a split button's menu)
-/// may be wide without reaching under the sidebar: from the anchor's end
-/// back to the sidebar, one margin clear of it. A page's overlay runs
-/// under the sidebar and ui_core keeps a surface inside the overlay alone,
-/// so a menu wider than that room would slide under the bar. Null without
-/// a sidebar over the overlay [context] stands in, beside a surface that
-/// opens to a side, or with less room than a menu's words need (it then
-/// keeps its width).
-double? ledgerRoomBesideSide(BuildContext context, DesignOverlayInfo info) {
-  final inset = LedgerSideInset.of(context);
-  if (inset == 0 || !info.side.isVertical) return null;
-  const margin = DesignOverlayPlacement();
-  final padding = MediaQuery.paddingOf(context);
-  final anchor = info.anchorRect;
-  final room = switch (Directionality.of(context)) {
-    TextDirection.ltr => anchor.right - inset - margin.margin,
-    // The overlay's width: the room ui_core gives a surface, its margins
-    // and the window's padding.
-    TextDirection.rtl =>
-      padding.left +
-          info.maxSize.width +
-          2 * margin.margin +
-          padding.right -
-          inset -
-          margin.margin -
-          anchor.left,
-  };
-  return room < _leastRoom ? null : room;
-}
-
-// A menu's words at their least: two 16s and a short word or two.
-const double _leastRoom = 120;
+/// Publishes the sidebar's [inset] over [child] ([LedgerSideInset]) and
+/// keeps every surface ui_core opens there (a split button's menu, a
+/// select's list, a popover, a tooltip) clear of the bar
+/// ([DesignOverlayPadding] at the reading start): a page's overlay runs
+/// under the sidebar, which stands over it. No padding at an [inset] of 0.
+Widget ledgerBesideSide({required double inset, required Widget child}) =>
+    LedgerSideInset(
+      inset: inset,
+      child: inset == 0
+          ? child
+          : DesignOverlayPadding(
+              padding: EdgeInsetsDirectional.only(start: inset),
+              child: child,
+            ),
+    );

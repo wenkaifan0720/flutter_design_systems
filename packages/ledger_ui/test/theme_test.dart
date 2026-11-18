@@ -19,6 +19,12 @@ void main() {
           expect(identical(t, LedgerThemeData.preset(id, brightness)), isTrue);
           expect(t.body.fontFamily, ledgerFontFamily('InterTight'));
           expect(t.figure.fontFamily, ledgerFontFamily('InstrumentSerif'));
+          // The serif lacks ± and the arrows: Inter Tight sets them.
+          expect(t.figure.fontFamilyFallback, [ledgerFontFamily('InterTight')]);
+          expect(t.monogram.fontFamilyFallback, [
+            ledgerFontFamily('InterTight'),
+          ]);
+          expect(t.body.fontFamilyFallback, isNull);
           expect(t.monogram.fontStyle, FontStyle.italic);
           expect(t.amount.fontFamily, ledgerFontFamily('PlexMono'));
         });

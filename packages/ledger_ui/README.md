@@ -1,36 +1,31 @@
 # ledger_ui
 
-A Flutter design system kept in ink. A private bank statement on warm paper: ink rules where other looks draw boxes,
-dot leaders between a line's words and its figure, engraved figures for the amounts that matter and a mono for every
-other amount, one green for the act and the money that came in, a vermilion for what went over. Five presets (quire,
-terracotta, indigo, verdigris, carbon), each designed by day and by lamplight, at three densities.
+A Flutter design system kept in ink: warm paper, ink rules where other looks draw boxes, dot leaders, engraved figures
+and mono amounts, by day and by lamplight.
 
-Take away the colour and the font and a settings form is still Ledger's: its fields are written on a rule rather than
-boxed, its rows are ruled lists, its sections head on an ink rule, its amounts hang on their decimal point. Its states
-are said in the same rules and ink: keyboard focus is the accountant's double rule under a control, a pressed act sinks
-into the paper like a stamp, a hovered row's dot leader inks in, a disabled act is written in pencil, and a page
-waiting for its records draws a dot leader in, dot by dot.
+![Home at 1440 by day beside a phone by night](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/ledger_ui/screenshots/hero.webp)
 
-![Home at 1440 by day](screenshots/home-1440-day.png)
-
-The parts take the parameters a Flutter developer expects: a press is `onPressed`, a row's tap `onTap`, a control is
-`value` with `onChanged`, a destination is `selectedIndex` with `onDestinationSelected`, a null callback disables.
+**[Live gallery](https://wenkaifan0720.github.io/flutter_design_systems/ledger/)** ·
+[API reference](https://pub.dev/documentation/ledger_ui/latest/) ·
+[All the looks](https://wenkaifan0720.github.io/flutter_design_systems/)
 
 ## Install
 
-```yaml
-dependencies:
-  ledger_ui: ^0.2.1
+```sh
+flutter pub add ledger_ui material_ui
 ```
 
-## Use
+`material_ui` is the Material library Ledger is built on, for the quick start's `MaterialApp` (Flutter 3.50
+deprecates `package:flutter/material.dart`).
+
+## Quick start
 
 `LedgerTheme` is the whole install. Put it in your app's `builder:`, under a `MaterialApp`, a `CupertinoApp` or a
 `WidgetsApp`; Ledger has no app widget of its own.
 
 ```dart
-import 'package:flutter/material.dart';
 import 'package:ledger_ui/ledger_ui.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,17 +54,33 @@ class App extends StatelessWidget {
 **Page motion.** A page pushed in Ledger is a leaf laid down: it fades in as it rises 8 points onto the page, in 200
 ms, and a pop lifts it off the same way; under reduced motion it lands at once. A destination chosen from the side bar,
 the rail or the tab bar is no push: it changes in place, and its selection lands in the same frame, so a page never
-stands under another destination's mark. `LedgerTheme` and `LedgerHost` set the motion on the Material Ledger is
-built on (`material_ui`), so a `LedgerPage` takes it, but Flutter's own `MaterialPageRoute` reads your app's
-`ThemeData`: the `theme:` line above hands it `ledgerPageTransitions` (one map fits either Material's
-`PageTransitionsTheme`), or the platform's slide or zoom flies the page in. On iOS the map keeps the swipe back from
-the screen's leading edge round Ledger's push (ui_core's `DesignSwipeBackPageTransitionsBuilder`): the page follows
-the finger, as on every iOS screen, and goes past half way or on a fling; a push and a pop are still the leaf.
+stands under another destination's mark. `LedgerTheme` and `LedgerHost` set the motion on the Material Ledger is built
+on (`material_ui`), so a `LedgerPage` takes it, and the `theme:` line above hands `ledgerPageTransitions` to the app's
+own `ThemeData` too (one map fits the `PageTransitionsTheme` of `material_ui` or of Flutter's own Material), so a
+`MaterialPageRoute` pushes in Ledger's motion rather than the platform's slide or zoom. On iOS the map keeps the swipe
+back from the screen's leading edge round Ledger's push (ui_core's `DesignSwipeBackPageTransitionsBuilder`): the page
+follows the finger, as on every iOS screen, and goes past half way or on a fling; a push and a pop are still the leaf.
 Android's back closes what stands open over a page first (a select's list, a popover, a field's suggestions; a sheet
 and a dialog are routes), then pops it.
 
 Under a `CupertinoApp` or a `WidgetsApp` it is the same `builder:`; Ledger supplies the words Flutter's text field asks
 Material for, so a field works under either. Every text under `LedgerTheme` falls back on Ledger's body style.
+
+## The look
+
+A private bank statement on warm paper: ink rules where other looks draw boxes, dot leaders between a line's words
+and its figure, engraved figures for the amounts that matter and a mono for every other amount, one green for the act
+and the money that came in, a vermilion for what went over. Five presets (quire, terracotta, indigo, verdigris,
+carbon), each designed by day and by lamplight, at three densities.
+
+Take away the colour and the font and a settings form is still Ledger's: its fields are written on a rule rather than
+boxed, its rows are ruled lists, its sections head on an ink rule, its amounts hang on their decimal point. Its states
+are said in the same rules and ink: keyboard focus is the accountant's double rule under a control, a pressed act sinks
+into the paper like a stamp, a hovered row's dot leader inks in, a disabled act is written in pencil, and a page
+waiting for its records draws a dot leader in, dot by dot.
+
+The parts take the parameters a Flutter developer expects: a press is `onPressed`, a row's tap `onTap`, a control is
+`value` with `onChanged`, a destination is `selectedIndex` with `onDestinationSelected`, a null callback disables.
 
 ## Examples
 
@@ -126,7 +137,8 @@ LedgerSelect<String>(
 );
 ```
 
-A dialog asks before an act and answers with the choice:
+A dialog asks before an act and answers with the choice. It opens with the focus on its safe act (Cancel beside a
+destructive confirm), keeps Tab inside it, and Escape, the scrim and the system back dismiss it with null:
 
 ```dart
 final confirmed = await LedgerDialog.show(
@@ -139,7 +151,9 @@ final confirmed = await LedgerDialog.show(
 ```
 
 Navigation: `LedgerNavigationFrame` gives the window the navigation it earns, the tab bar under 600, the rail from 600
-and the side bar with your wordmark from 1024.
+and the side bar with your wordmark from 1024. It is ui_core's `DesignAdaptiveShell` in Ledger's paper: the
+destinations are one tab stop that the arrow keys move along, F6 moves between the navigation and the page, and the
+page keeps its state as the window crosses a width.
 
 ```dart
 LedgerNavigationFrame(
@@ -157,7 +171,7 @@ LedgerNavigationFrame(
 
 | | |
 |---|---|
-| ![A transaction at 390 by day](screenshots/transaction-390-day.png) | ![Settings at 390 by lamplight](screenshots/settings-390-night.png) |
+| ![A transaction at 390 by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/ledger_ui/screenshots/transaction-390-day.png) | ![Settings at 390 by lamplight](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/ledger_ui/screenshots/settings-390-night.png) |
 
 ## Theme
 

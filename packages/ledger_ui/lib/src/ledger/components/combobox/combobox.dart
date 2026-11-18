@@ -21,7 +21,11 @@ import '../text-field/text_field.dart';
 /// Escape closes it; with nothing matching the paper says so. [labelOf]
 /// words each option (its `toString` otherwise) and [noteOf] puts a note
 /// at its end (a count, a balance). [requireSelection] holds the field to
-/// an option, giving back the chosen words on blur.
+/// an option, giving back the chosen words on blur. With a [search] in
+/// place of [options] (a payee looked up as it is typed), the paper says
+/// it is looking while the search runs, and when it fails says so with a
+/// "Try again" line the keys reach with Down, as ui_core's combobox runs
+/// it; [debounceDuration] waits for the typing to rest.
 ///
 /// ```dart
 /// LedgerCombobox<String>(label: 'Payee', options: const ['Blue Fern Café', 'Corner Market'], onSelected: (v) {})
@@ -29,7 +33,9 @@ import '../text-field/text_field.dart';
 class LedgerCombobox<T extends Object> extends StatelessWidget {
   /// A field named [label] suggesting from [options].
   const LedgerCombobox({
-    required this.options,
+    this.options = const [],
+    this.search,
+    this.debounceDuration,
     this.label,
     this.hint,
     this.helper,
@@ -45,8 +51,15 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
     super.key,
   });
 
-  /// What it suggests from.
+  /// What it suggests from, when there is no [search].
   final Iterable<T> options;
+
+  /// Finds the options for the words typed, in place of filtering
+  /// [options]; it may take time and fail.
+  final DesignOptionSearch<T>? search;
+
+  /// How long typing rests before [search] runs; null: at every change.
+  final Duration? debounceDuration;
 
   /// The small capitals over the line.
   final String? label;
@@ -93,6 +106,14 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
     properties.add(ObjectFlagProperty<Object?>.has('noteOf', noteOf));
     properties
       ..add(IterableProperty<T>('options', options))
+      ..add(ObjectFlagProperty<DesignOptionSearch<T>>.has('search', search))
+      ..add(
+        DiagnosticsProperty<Duration>(
+          'debounceDuration',
+          debounceDuration,
+          defaultValue: null,
+        ),
+      )
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(StringProperty('hint', hint, defaultValue: null))
       ..add(StringProperty('helper', helper, defaultValue: null))
@@ -128,6 +149,8 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
     final t = context.ledgerTheme;
     return DesignCombobox<T>(
       options: options,
+      search: search,
+      debounceDuration: debounceDuration,
       // The pointer's mark (an underline) and the keyboard's (the double
       // rule) differ on purpose, and only the chosen option stands on the
       // menu's paper, ticked: a pointer leaves the keyboard's place alone.
@@ -172,6 +195,39 @@ class LedgerCombobox<T extends Object> extends StatelessWidget {
         width: double.infinity,
         child: LedgerNoOption(DesignLocalizations.of(context).noResultsLabel),
       ),
+      // Looking, and a failed look, on the same paper at the same width.
+      loadingBuilder: (context) => SizedBox(
+        width: double.infinity,
+        child: LedgerNoOption(DesignLocalizations.of(context).loadingLabel),
+      ),
+      errorBuilder: (context, failed) {
+        final words = DesignLocalizations.of(context);
+        return SizedBox(
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ExcludeSemantics(
+                child: LedgerNoOption(words.searchFailedMessage),
+              ),
+              // "Try again" stands as an option: lit as the keys' line
+              // while they are on it, underlined under the pointer.
+              DesignPressable(
+                onPressed: failed.retry,
+                semanticLabel: words.retryButtonLabel,
+                builder: (context, states, _) => LedgerOptionRow(
+                  label: words.retryButtonLabel,
+                  states: {
+                    ...states.where((s) => s != WidgetState.focused),
+                    if (failed.focused) WidgetState.focused,
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

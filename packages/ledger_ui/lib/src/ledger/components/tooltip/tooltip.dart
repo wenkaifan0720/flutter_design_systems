@@ -3,17 +3,22 @@
 library;
 
 import 'package:flutter/foundation.dart';
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
+import '../../internal/presence.dart';
 import '../../internal/styled.dart';
 import '../../style.dart';
 import '../../theme.dart';
 
 /// A few words on a control (what a glyph does, a figure's full value): the
 /// toast's dark slip in the small radius, [message] in the mono on it,
-/// above the control (below it when there is no room). It stands after a
-/// pointer rests half a second or on a long press, and goes as the pointer
-/// leaves; a screen reader hears [message] as the control's tooltip.
+/// above the control (below it when there is no room), over ui_core's
+/// [DesignTooltip]. It stands after a pointer rests half a second, at once
+/// when the keys bring the focus to the control, or on a long press; the
+/// pointer may move onto it, Escape hides it, and it goes as the pointer or
+/// the focus leaves. A screen reader hears [message] as the control's
+/// tooltip.
 ///
 /// ```dart
 /// LedgerTooltip(message: 'Export as CSV', child: LedgerIconButton(LucideIcons.download, semanticLabel: 'Export', onPressed: () {}))
@@ -52,36 +57,69 @@ class LedgerTooltip extends StatelessWidget {
     final t = context.ledgerTheme;
     final so = LedgerStyleOf([style, t.components.tooltip], const {});
     final corners = so.shape;
-    return Tooltip(
+    return DesignTooltip(
       message: message,
-      preferBelow: false,
-      verticalOffset: _offset,
-      waitDuration: _wait,
-      exitDuration: LedgerMotion.fast,
-      padding:
-          so.padding(Directionality.of(context)) ??
-          const EdgeInsets.symmetric(
-            horizontal: LedgerSpacing.s10,
-            vertical: LedgerSpacing.s6,
-          ),
-      margin: const EdgeInsets.symmetric(horizontal: LedgerSpacing.s16),
-      decoration: corners != null
-          ? ShapeDecoration(
-              color: so.fill ?? t.toast,
-              shape: so.side == null
-                  ? corners
-                  : corners.copyWith(side: so.side),
-            )
-          : BoxDecoration(
-              color: so.fill ?? t.toast,
-              borderRadius: BorderRadius.circular(t.smallRadius),
-              border: so.side == null ? null : Border.fromBorderSide(so.side!),
+      placement: _placement,
+      tooltipBuilder: (context, info) => FadeTransition(
+        opacity: info.animation.drive(ledgerPresence),
+        // At least 32 tall on a phone and 24 on a desktop, the words centred
+        // (as Material's tooltip held Ledger's slip before 0.3.0).
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: _leastHeight),
+          child: DecoratedBox(
+            decoration: corners != null
+                ? ShapeDecoration(
+                    color: so.fill ?? t.toast,
+                    shape: so.side == null
+                        ? corners
+                        : corners.copyWith(side: so.side),
+                  )
+                : BoxDecoration(
+                    color: so.fill ?? t.toast,
+                    borderRadius: BorderRadius.circular(t.smallRadius),
+                    border: so.side == null
+                        ? null
+                        : Border.fromBorderSide(so.side!),
+                  ),
+            child: Padding(
+              padding:
+                  so.padding(Directionality.of(context)) ??
+                  const EdgeInsets.symmetric(
+                    horizontal: LedgerSpacing.s10,
+                    vertical: LedgerSpacing.s6,
+                  ),
+              child: Center(
+                widthFactor: 1,
+                heightFactor: 1,
+                child: Text(
+                  message,
+                  style: so.words(t.meta, so.foreground ?? t.onToast),
+                ),
+              ),
             ),
-      textStyle: so.words(t.meta, so.foreground ?? t.onToast),
+          ),
+        ),
+      ),
       child: child,
     );
   }
 
-  static const double _offset = 28;
-  static const Duration _wait = Duration(milliseconds: 500);
+  static double get _leastHeight => switch (defaultTargetPlatform) {
+    TargetPlatform.macOS ||
+    TargetPlatform.linux ||
+    TargetPlatform.windows => 24,
+    _ => 32,
+  };
+
+  // Above the control and centred on it, 6 from it (Material's 28 from a 44
+  // control's middle, as Ledger's tip stood before 0.3.0), 16 in from the
+  // screen's edges.
+  static const DesignOverlayPlacement _placement = DesignOverlayPlacement(
+    side: DesignOverlaySide.above,
+    align: DesignOverlayAlign.center,
+    gap: 6,
+    margin: LedgerSpacing.s16,
+    preferredExtent: 48,
+    matchAnchorWidth: false,
+  );
 }

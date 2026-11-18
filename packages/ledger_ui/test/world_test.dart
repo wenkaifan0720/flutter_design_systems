@@ -440,9 +440,15 @@ void main() {
 
 /// Pages whose small type in the third ink Flutter's capture samples thinner than the ink: their text contrast is
 /// held by the ink's own ratio instead (ui_core 0.1.1 brings a shared ink-based check).
+// The top-bar page, read whole since its specimens' apps stand in semantics containers of their own (0.3.0): by day
+// its 11 px meta line in the third ink samples thin as above (4.47), and by night the Home specimen's "$6,248.30" runs
+// half under the tab bar, as the shell lays the bar over the page's foot, so the guideline takes the bar's ground and
+// the page's for the figure's two colours (1.61).
 const Set<(String, Brightness)> _sampledThin = {
   ('commit', Brightness.light),
   ('structure', Brightness.light),
+  ('top-bar', Brightness.light),
+  ('top-bar', Brightness.dark),
 };
 
 /// Reduced motion on, as a reader who asked for it has it: every Ledger change lands at once, so a page settles.

@@ -10,6 +10,8 @@ import '../chrome_metrics.dart';
 import '../internal/cap_center.dart';
 import '../internal/end_glyph.dart';
 import '../internal/face.dart';
+import '../internal/shell_faces.dart';
+import '../internal/state_face.dart';
 import '../theme.dart';
 import 'avatar/avatar.dart';
 import 'brand/brand.dart';
@@ -112,11 +114,16 @@ class LedgerSideBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.ledgerTheme;
     final account = LedgerAccountScope.maybeOf(context);
     final act = action;
     final disc = LedgerNavBar.discTab(items.length, action: act != null);
     final current = profileSelected ? -1 : selectedIndex ?? -1;
+    // Under [LedgerNavigationFrame] ui_core's shell presses the
+    // destinations (one tab stop, the arrows along them) and the bar paints
+    // them.
+    final built = LedgerShellDestinations.maybeOf(context);
+    Widget dest(int i, Widget own) =>
+        built != null && i < built.length ? built[i] : own;
     final Widget? green = act != null
         ? _SideAct(
             key: act.key,
@@ -126,18 +133,58 @@ class LedgerSideBar extends StatelessWidget {
             onTap: () => act.onPressed(context),
           )
         : disc != null
-        ? _SideAct(
-            key: items[disc].key,
-            icon: items[disc].icon,
-            label: items[disc].actLabel ?? items[disc].label,
-            current: current == disc,
-            onTap: () => onDestinationSelected(disc),
+        ? dest(
+            disc,
+            _SideAct(
+              key: items[disc].key,
+              icon: items[disc].icon,
+              label: items[disc].actLabel ?? items[disc].label,
+              current: current == disc,
+              onTap: () => onDestinationSelected(disc),
+            ),
           )
         : null;
     final name = brand;
-    if (!extended) {
-      return _rail(context, account, act, disc, current, name);
-    }
+    final Widget bar = extended
+        ? _side(context, account, green, disc, current, name, dest)
+        : _rail(context, account, act, disc, current, name, dest);
+    if (built == null) return bar;
+    return LedgerDestinationFaces(
+      paint: (context, i, states) {
+        final item = items[i];
+        if (!extended) {
+          return _RailMark(
+            key: item.key,
+            icon: i == current ? (item.selectedIcon ?? item.icon) : item.icon,
+            on: i == current,
+            green: i == disc,
+            states: states,
+          );
+        }
+        return i == disc
+            ? _SideAct(
+                key: item.key,
+                icon: item.icon,
+                label: item.actLabel ?? item.label,
+                current: i == current,
+                states: states,
+              )
+            : _Link(item: item, current: i == current, states: states);
+      },
+      child: bar,
+    );
+  }
+
+  Widget _side(
+    BuildContext context,
+    LedgerAccount? account,
+    Widget? green,
+    int? disc,
+    int current,
+    String? name,
+    Widget Function(int i, Widget own) dest,
+  ) {
+    final t = context.ledgerTheme;
     // A Container insets its child by the rule too, as CSS's border-box
     // does: the column's room ends 20 inside the rule.
     return Container(
@@ -187,10 +234,13 @@ class LedgerSideBar extends StatelessWidget {
                 children: [
                   for (final (i, item) in items.indexed)
                     if (i != disc)
-                      _Link(
-                        item: item,
-                        current: i == current,
-                        onTap: () => onDestinationSelected(i),
+                      dest(
+                        i,
+                        _Link(
+                          item: item,
+                          current: i == current,
+                          onTap: () => onDestinationSelected(i),
+                        ),
                       ),
                 ],
               ),
@@ -211,62 +261,9 @@ class LedgerSideBar extends StatelessWidget {
     int? disc,
     int current,
     String? name,
+    Widget Function(int i, Widget own) dest,
   ) {
     final t = context.ledgerTheme;
-    Widget mark(
-      IconData icon,
-      String label,
-      bool on,
-      VoidCallback onTap, {
-      bool green = false,
-      Key? key,
-    }) => LedgerPressable(
-      key: key,
-      onTap: onTap,
-      label: label,
-      selected: on,
-      radius: _railMark / 2,
-      // The chosen mark's fill and ring land at once, in the frame its page
-      // does, as the side bar's links do.
-      child: LedgerFace(
-        duration: Duration.zero,
-        style: LedgerFaceStyle(
-          ink: green
-              ? t.onAccent
-              : on
-              ? t.accent
-              : t.textSecondary,
-          ground: BoxDecoration(
-            shape: BoxShape.circle,
-            color: green ? t.accent : (on ? t.selectedFill : null),
-            boxShadow: green
-                ? (on
-                      ? [
-                          BoxShadow(
-                            color: t.accent,
-                            spreadRadius:
-                                LedgerChromeMetrics.sideActRingGap +
-                                LedgerChromeMetrics.sideActRing,
-                          ),
-                          BoxShadow(
-                            color: t.sideBarFill,
-                            spreadRadius: LedgerChromeMetrics.sideActRingGap,
-                          ),
-                        ]
-                      : t.primaryShadow)
-                : on
-                ? [BoxShadow(color: t.selectedRing, spreadRadius: 1)]
-                : null,
-          ),
-        ),
-        builder: (context, s, _) => Container(
-          width: _railMark,
-          height: _railMark,
-          decoration: s.ground,
-          child: Icon(icon, size: LedgerChromeMetrics.navGlyph, color: s.ink),
-        ),
-      ),
-    );
     return Container(
       width: railWidth,
       decoration: BoxDecoration(
@@ -289,22 +286,25 @@ class LedgerSideBar extends StatelessWidget {
               ),
             ),
           if (act != null)
-            mark(
-              act.icon,
-              act.label ?? '',
-              false,
-              () => act.onPressed(context),
-              green: true,
+            _RailMark(
               key: act.key,
+              icon: act.icon,
+              label: act.label ?? '',
+              on: false,
+              green: true,
+              onTap: () => act.onPressed(context),
             )
           else if (disc != null)
-            mark(
-              items[disc].icon,
-              items[disc].actLabel ?? items[disc].label,
-              current == disc,
-              () => onDestinationSelected(disc),
-              green: true,
-              key: items[disc].key,
+            dest(
+              disc,
+              _RailMark(
+                key: items[disc].key,
+                icon: items[disc].icon,
+                label: items[disc].actLabel ?? items[disc].label,
+                on: current == disc,
+                green: true,
+                onTap: () => onDestinationSelected(disc),
+              ),
             ),
           Semantics(
             container: true,
@@ -314,14 +314,17 @@ class LedgerSideBar extends StatelessWidget {
               children: [
                 for (final (i, item) in items.indexed)
                   if (i != disc)
-                    mark(
-                      i == current
-                          ? (item.selectedIcon ?? item.icon)
-                          : item.icon,
-                      item.label,
-                      i == current,
-                      () => onDestinationSelected(i),
-                      key: item.key,
+                    dest(
+                      i,
+                      _RailMark(
+                        key: item.key,
+                        icon: i == current
+                            ? (item.selectedIcon ?? item.icon)
+                            : item.icon,
+                        label: item.label,
+                        on: i == current,
+                        onTap: () => onDestinationSelected(i),
+                      ),
                     ),
               ],
             ),
@@ -339,8 +342,89 @@ class LedgerSideBar extends StatelessWidget {
       ),
     );
   }
+}
 
-  static const double _railMark = 48;
+/// A rail's mark: a destination's glyph alone in a 48 circle (the current
+/// one on raised paper, its glyph green), or the green act's disc.
+class _RailMark extends StatelessWidget {
+  const _RailMark({
+    required this.icon,
+    required this.on,
+    this.label = '',
+    this.green = false,
+    this.onTap,
+    this.states,
+    super.key,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool on;
+  final bool green;
+
+  /// Its own press; null where ui_core's shell presses it ([states]).
+  final VoidCallback? onTap;
+
+  /// The shell's press's states.
+  final Set<WidgetState>? states;
+
+  static const double _size = 48;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = context.ledgerTheme;
+    // The chosen mark's fill and ring land at once, in the frame its page
+    // does, as the side bar's links do.
+    final face = LedgerFace(
+      duration: Duration.zero,
+      style: LedgerFaceStyle(
+        ink: green
+            ? t.onAccent
+            : on
+            ? t.accent
+            : t.textSecondary,
+        ground: BoxDecoration(
+          shape: BoxShape.circle,
+          color: green ? t.accent : (on ? t.selectedFill : null),
+          boxShadow: green
+              ? (on
+                    ? [
+                        BoxShadow(
+                          color: t.accent,
+                          spreadRadius:
+                              LedgerChromeMetrics.sideActRingGap +
+                              LedgerChromeMetrics.sideActRing,
+                        ),
+                        BoxShadow(
+                          color: t.sideBarFill,
+                          spreadRadius: LedgerChromeMetrics.sideActRingGap,
+                        ),
+                      ]
+                    : t.primaryShadow)
+              : on
+              ? [BoxShadow(color: t.selectedRing, spreadRadius: 1)]
+              : null,
+        ),
+      ),
+      builder: (context, s, _) => Container(
+        width: _size,
+        height: _size,
+        decoration: s.ground,
+        child: Icon(icon, size: LedgerChromeMetrics.navGlyph, color: s.ink),
+      ),
+    );
+    final shell = states;
+    if (shell != null) {
+      return LedgerStateFace(states: shell, radius: _size / 2, child: face);
+    }
+    return LedgerPressable(
+      onTap: onTap,
+      label: label,
+      selected: on,
+      radius: _size / 2,
+      child: face,
+    );
+  }
 }
 
 /// The sidebar's green act (`.btn-move`): 44 tall, round, its glyph and its
@@ -351,24 +435,36 @@ class _SideAct extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.current,
-    required this.onTap,
+    this.onTap,
+    this.states,
     super.key,
   });
 
   final IconData icon;
   final String label;
   final bool current;
-  final VoidCallback onTap;
+
+  /// Its own press; null where ui_core's shell presses it ([states]).
+  final VoidCallback? onTap;
+
+  /// The shell's press's states.
+  final Set<WidgetState>? states;
 
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    return LedgerPressable(
-      onTap: onTap,
-      label: label,
-      selected: current,
-      radius: t.controlRadius,
-      child: Container(
+    final shell = states;
+    Widget press(Widget face) => shell != null
+        ? LedgerStateFace(states: shell, radius: t.controlRadius, child: face)
+        : LedgerPressable(
+            onTap: onTap,
+            label: label,
+            selected: current,
+            radius: t.controlRadius,
+            child: face,
+          );
+    return press(
+      Container(
         height: LedgerChromeMetrics.sideAct,
         decoration: BoxDecoration(
           color: t.accent,
@@ -422,25 +518,48 @@ class _SideAct extends StatelessWidget {
 
 /// One destination's link (`.nav a`).
 class _Link extends StatelessWidget {
-  const _Link({required this.item, required this.current, required this.onTap});
+  const _Link({
+    required this.item,
+    required this.current,
+    this.onTap,
+    this.states,
+  });
 
   final LedgerNavItem item;
   final bool current;
-  final VoidCallback onTap;
+
+  /// Its own press; null where ui_core's shell presses it ([states]).
+  final VoidCallback? onTap;
+
+  /// The shell's press's states.
+  final Set<WidgetState>? states;
 
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    return LedgerPressable(
-      key: item.key,
-      onTap: onTap,
-      label: item.label,
-      selected: current,
-      radius: t.controlRadius,
-      // The chosen link's fill, ring and ink land at once, in the frame its
-      // page does: a selection never trails the page it names (the press
-      // has already sunk the link on the tap).
-      child: LedgerFace(
+    final shell = states;
+    Widget press(Widget face) => shell != null
+        ? KeyedSubtree(
+            key: item.key,
+            child: LedgerStateFace(
+              states: shell,
+              radius: t.controlRadius,
+              child: face,
+            ),
+          )
+        : LedgerPressable(
+            key: item.key,
+            onTap: onTap,
+            label: item.label,
+            selected: current,
+            radius: t.controlRadius,
+            child: face,
+          );
+    // The chosen link's fill, ring and ink land at once, in the frame its
+    // page does: a selection never trails the page it names (the press
+    // has already sunk the link on the tap).
+    return press(
+      LedgerFace(
         duration: Duration.zero,
         style: LedgerFaceStyle(
           ink: current ? t.textPrimary : t.textSecondary,

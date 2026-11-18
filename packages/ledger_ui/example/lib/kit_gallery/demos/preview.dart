@@ -5,7 +5,7 @@
 /// theme once; [LedgerPreview] stands one page the way the app gives it.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:ledger_ui/ledger_host.dart';
 

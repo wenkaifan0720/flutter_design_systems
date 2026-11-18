@@ -1,25 +1,27 @@
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../../internal/cap_center.dart';
-import '../../internal/face.dart';
+import '../../internal/state_face.dart';
 import '../../theme.dart';
-import '../pressable/pressable.dart';
 
 /// In-page sections, peers of one page: a strip 44 tall over the page's
 /// hairline, each [tabs] label set in the sans medium with an optional
 /// [counts] figure after it in the mono, the chosen one in the ink under
 /// one ink rule and the rest in the second ink. A strip
 /// wider than its room scrolls sideways, keeping the chosen tab in view.
-/// The arrow keys (and Home and End) move the choice from a focused tab, and
-/// focus goes with it. [padding] insets the labels (the page's gutter on a
-/// full-bleed strip) while the hairline runs edge to edge. A null
-/// [onSelected] shows the strip without letting it change. Each tab says its
-/// label, its count and whether it is chosen.
+/// The strip is ui_core's [DesignTabBar]: one tab stop, the arrow keys
+/// (mirrored right to left, wrapping) and Home and End move the choice and
+/// the focus with it, and the change runs on ui_core's spring, the old
+/// tab's rule drawn back out as the new one's is drawn in. [padding] insets
+/// the labels (the page's gutter on a full-bleed strip) while the hairline
+/// runs edge to edge. A null [onSelected] shows the strip without letting
+/// it change. A screen reader hears a tab bar, each tab its label, its
+/// count and its place ("Entries, 12, Tab 2 of 3"), and whether it is
+/// chosen.
 ///
 /// ```dart
 /// LedgerTabs(tabs: const ['Overview', 'Entries', 'Notes'], counts: const [null, 12, 3], selectedIndex: tab, onSelected: (i) => setState(() => tab = i))
@@ -70,112 +72,80 @@ class LedgerTabs extends StatefulWidget {
   State<LedgerTabs> createState() => _LedgerTabsState();
 }
 
-class _LedgerTabsState extends State<LedgerTabs> {
-  final ScrollController _scroll = ScrollController();
-  late List<FocusNode> _nodes = _make(widget.tabs.length);
-  late List<GlobalKey> _keys = [
-    for (var i = 0; i < widget.tabs.length; i++) GlobalKey(),
-  ];
+class _LedgerTabsState extends State<LedgerTabs> with TickerProviderStateMixin {
+  late DesignTabController _controller = _make();
 
-  static List<FocusNode> _make(int n) => [
-    for (var i = 0; i < n; i++) FocusNode(debugLabel: 'LedgerTab $i'),
-  ];
+  DesignTabController _make() => DesignTabController(
+    length: widget.tabs.length,
+    initialIndex: widget.tabs.isEmpty
+        ? 0
+        : widget.selectedIndex.clamp(0, widget.tabs.length - 1),
+    vsync: this,
+  )..addListener(_chosen);
+
+  // A tab the person chose: the caller's to take (or not).
+  void _chosen() {
+    final at = _controller.index;
+    if (at != widget.selectedIndex) widget.onSelected?.call(at);
+  }
 
   @override
   void didUpdateWidget(LedgerTabs old) {
     super.didUpdateWidget(old);
     if (old.tabs.length != widget.tabs.length) {
-      for (final node in _nodes) {
-        node.dispose();
-      }
-      _nodes = _make(widget.tabs.length);
-      _keys = [for (var i = 0; i < widget.tabs.length; i++) GlobalKey()];
-    }
-    if (old.selectedIndex != widget.selectedIndex) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _reveal());
+      _controller.dispose();
+      _controller = _make();
+    } else if (widget.selectedIndex != _controller.index &&
+        widget.selectedIndex >= 0 &&
+        widget.selectedIndex < widget.tabs.length) {
+      _controller.animateTo(widget.selectedIndex);
     }
   }
 
   @override
   void dispose() {
-    _scroll.dispose();
-    for (final node in _nodes) {
-      node.dispose();
-    }
+    _controller.dispose();
     super.dispose();
-  }
-
-  void _reveal() {
-    final at = widget.selectedIndex.clamp(0, _keys.length - 1);
-    final context = _keys[at].currentContext;
-    if (!mounted || context == null) return;
-    Scrollable.ensureVisible(
-      context,
-      alignment: .5,
-      duration: LedgerMotion.of(context, LedgerMotion.base),
-      curve: LedgerMotion.out,
-    );
-  }
-
-  void _go(int to) {
-    final onSelected = widget.onSelected;
-    if (onSelected == null || widget.tabs.isEmpty) return;
-    final at = to.clamp(0, widget.tabs.length - 1);
-    _nodes[at].requestFocus();
-    if (at != widget.selectedIndex) onSelected(at);
-  }
-
-  KeyEventResult _key(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
-      return KeyEventResult.ignored;
-    }
-    final rtl = Directionality.of(context) == TextDirection.rtl;
-    final to = switch (event.logicalKey) {
-      LogicalKeyboardKey.arrowRight => widget.selectedIndex + (rtl ? -1 : 1),
-      LogicalKeyboardKey.arrowLeft => widget.selectedIndex + (rtl ? 1 : -1),
-      LogicalKeyboardKey.home => 0,
-      LogicalKeyboardKey.end => widget.tabs.length - 1,
-      _ => null,
-    };
-    if (to == null || widget.onSelected == null) return KeyEventResult.ignored;
-    _go(to);
-    return KeyEventResult.handled;
   }
 
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
-    return Focus(
-      canRequestFocus: false,
-      skipTraversal: true,
-      includeSemantics: false,
-      onKeyEvent: _key,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: t.hairline)),
-        ),
-        child: SingleChildScrollView(
-          controller: _scroll,
-          scrollDirection: Axis.horizontal,
-          padding: widget.padding,
+    final n = widget.tabs.length;
+    final dir = Directionality.of(context);
+    final inset = widget.padding.resolve(dir);
+    final (start, end) = dir == TextDirection.rtl
+        ? (inset.right, inset.left)
+        : (inset.left, inset.right);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: t.hairline)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(top: inset.top, bottom: inset.bottom),
+        child: DesignTabBar(
+          controller: _controller,
+          isScrollable: true,
+          tabs: [
+            for (var i = 0; i < n; i++)
+              DesignTab(
+                label: switch (widget.counts?[i]) {
+                  final count? => '${widget.tabs[i]}, $count',
+                  null => widget.tabs[i],
+                },
+                enabled: widget.onSelected != null,
+              ),
+          ],
           // The tabs meet: each one's press takes half the gap on either
-          // side of its words, so a tap between two reaches the nearer.
-          child: Row(
-            children: [
-              for (var i = 0; i < widget.tabs.length; i++)
-                KeyedSubtree(
-                  key: _keys[i],
-                  child: _Tab(
-                    before: i == 0 ? 0 : _gap / 2,
-                    after: i == widget.tabs.length - 1 ? 0 : _gap / 2,
-                    label: widget.tabs[i],
-                    count: widget.counts?[i],
-                    selected: i == widget.selectedIndex,
-                    focusNode: _nodes[i],
-                    onTap: widget.onSelected == null ? null : () => _go(i),
-                  ),
-                ),
-            ],
+          // side of its words, so a tap between two reaches the nearer; the
+          // ends take the strip's inset, which scrolls with them.
+          tabBuilder: (context, tab, details) => _Tab(
+            before: details.index == 0 ? start : _gap / 2,
+            after: details.index == n - 1 ? end : _gap / 2,
+            label: widget.tabs[details.index],
+            count: widget.counts?[details.index],
+            states: details.states,
+            chosen: details.selection,
           ),
         ),
       ),
@@ -191,10 +161,9 @@ class _Tab extends StatelessWidget {
     required this.before,
     required this.after,
     required this.label,
-    required this.selected,
-    required this.focusNode,
+    required this.states,
+    required this.chosen,
     this.count,
-    this.onTap,
   });
 
   /// The room of the gap its press takes before and after its words.
@@ -202,9 +171,10 @@ class _Tab extends StatelessWidget {
   final double after;
   final String label;
   final int? count;
-  final bool selected;
-  final FocusNode focusNode;
-  final VoidCallback? onTap;
+  final Set<WidgetState> states;
+
+  /// How chosen it is on ui_core's spring: 1 at rest on it, 0 a tab away.
+  final double chosen;
 
   @override
   Widget build(BuildContext context) {
@@ -215,73 +185,64 @@ class _Tab extends StatelessWidget {
       0.0,
       DesignTapTargets.of(context).floorOn().width - before - after,
     );
-    return LedgerPressable(
-      onTap: onTap,
-      focusNode: focusNode,
-      label: label,
-      value: count == null ? null : '$count',
-      selected: selected,
+    final on = chosen.clamp(0.0, 1.0);
+    final ink = Color.lerp(t.textSecondary, t.textPrimary, on)!;
+    // Chosen, the tab's words ink up and its rule is drawn in under it from
+    // the reading start; left, the rule is drawn back out. ui_core's
+    // selection moves both.
+    return LedgerStateFace(
+      states: states,
       radius: t.smallRadius,
       ringInsets: room,
-      // Chosen, the tab's words ink up and its rule is drawn in under
-      // it from the reading start; left, the rule is drawn back out. One
-      // value moves both, in Ledger's one motion.
       child: Padding(
         padding: room,
         child: ConstrainedBox(
           constraints: BoxConstraints(minWidth: least),
-          child: LedgerEase(
-            value: selected ? 1 : 0,
-            duration: LedgerMotion.base,
-            builder: (context, chosen, _) {
-              final ink = Color.lerp(t.textSecondary, t.textPrimary, chosen)!;
-              return SizedBox(
-                height: _height,
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        spacing: _countGap,
-                        children: [
-                          ledgerCapCenter(
-                            t.rowTitle,
-                            Text(
-                              label,
-                              maxLines: 1,
-                              softWrap: false,
-                              style: t.rowTitle.sized(14).line(20).colored(ink),
-                            ),
-                          ),
-                          if (count != null)
-                            ledgerCapCenter(
-                              t.meta,
-                              Text(
-                                '$count',
-                                style: t.meta.line(16).colored(t.textTertiary),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    // The ink rule the chosen tab stands on: one, and heavier
-                    // than a hairline, so a choice never reads as focus (the
-                    // double rule under a control).
-                    if (chosen > 0)
-                      PositionedDirectional(
-                        start: 0,
-                        end: 0,
-                        bottom: 0,
-                        child: FractionallySizedBox(
-                          alignment: AlignmentDirectional.centerStart,
-                          widthFactor: chosen.clamp(0.0, 1.0),
-                          child: Container(height: _rule, color: t.textPrimary),
+          child: SizedBox(
+            height: _height,
+            child: Stack(
+              children: [
+                Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: _countGap,
+                    children: [
+                      ledgerCapCenter(
+                        t.rowTitle,
+                        Text(
+                          label,
+                          maxLines: 1,
+                          softWrap: false,
+                          style: t.rowTitle.sized(14).line(20).colored(ink),
                         ),
                       ),
-                  ],
+                      if (count != null)
+                        ledgerCapCenter(
+                          t.meta,
+                          Text(
+                            '$count',
+                            style: t.meta.line(16).colored(t.textTertiary),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              );
-            },
+                // The ink rule the chosen tab stands on: one, and heavier
+                // than a hairline, so a choice never reads as focus (the
+                // double rule under a control).
+                if (on > 0)
+                  PositionedDirectional(
+                    start: 0,
+                    end: 0,
+                    bottom: 0,
+                    child: FractionallySizedBox(
+                      alignment: AlignmentDirectional.centerStart,
+                      widthFactor: on,
+                      child: Container(height: _rule, color: t.textPrimary),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

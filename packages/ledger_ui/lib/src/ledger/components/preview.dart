@@ -160,35 +160,24 @@ class LedgerPreview extends StatelessWidget {
     platform: platform,
     brightness: brightness,
     device: device,
-    child: MaterialApp(
-      // A new presentation is a new stack: raise it afresh.
-      key: ValueKey<Object>((presentation, drawer, fullScreen, back)),
-      title: brand ?? '',
-      debugShowCheckedModeBanner: false,
-      builder: (context, app) => LedgerHost(
-        light: light,
-        dark: dark,
-        brightness: brightness,
-        child: app ?? const SizedBox.shrink(),
-      ),
-      home: switch (presentation) {
-        LedgerPresentation.root => _Root(
-          tabs: tabs,
-          activeIndex: activeIndex,
-          action: action,
-          brand: brand,
-          location: location,
-          child: child,
+    // A semantics container of its own: a route's barrier in the app hides
+    // from a screen reader what was painted before it in its container, the
+    // page round the preview included.
+    child: Semantics(
+      container: true,
+      child: MaterialApp(
+        // A new presentation is a new stack: raise it afresh.
+        key: ValueKey<Object>((presentation, drawer, fullScreen, back)),
+        title: brand ?? '',
+        debugShowCheckedModeBanner: false,
+        builder: (context, app) => LedgerHost(
+          light: light,
+          dark: dark,
+          brightness: brightness,
+          child: app ?? const SizedBox.shrink(),
         ),
-        // The sidebar stands in the pushed page's own route, as the shell
-        // stands it over the branch the page is pushed on: under a sheet
-        // raised from the page, over the page.
-        LedgerPresentation.pushed => PreviewStage(
-          route: (context, page) => LedgerPage<void>(
-            key: const ValueKey<String>('quire-preview'),
-            child: page,
-          ).createRoute(context),
-          child: _Beside(
+        home: switch (presentation) {
+          LedgerPresentation.root => _Root(
             tabs: tabs,
             activeIndex: activeIndex,
             action: action,
@@ -196,18 +185,35 @@ class LedgerPreview extends StatelessWidget {
             location: location,
             child: child,
           ),
-        ),
-        LedgerPresentation.sheet => PreviewStage(
-          route: (context, page) => LedgerSheetPage<void>(
-            key: const ValueKey<String>('quire-preview'),
-            drawer: drawer,
-            fullScreen: fullScreen,
-            back: back,
-            child: page,
-          ).createRoute(context),
-          child: child,
-        ),
-      },
+          // The sidebar stands in the pushed page's own route, as the shell
+          // stands it over the branch the page is pushed on: under a sheet
+          // raised from the page, over the page.
+          LedgerPresentation.pushed => PreviewStage(
+            route: (context, page) => LedgerPage<void>(
+              key: const ValueKey<String>('quire-preview'),
+              child: page,
+            ).createRoute(context),
+            child: _Beside(
+              tabs: tabs,
+              activeIndex: activeIndex,
+              action: action,
+              brand: brand,
+              location: location,
+              child: child,
+            ),
+          ),
+          LedgerPresentation.sheet => PreviewStage(
+            route: (context, page) => LedgerSheetPage<void>(
+              key: const ValueKey<String>('quire-preview'),
+              drawer: drawer,
+              fullScreen: fullScreen,
+              back: back,
+              child: page,
+            ).createRoute(context),
+            child: child,
+          ),
+        },
+      ),
     ),
   );
 }
@@ -339,9 +345,10 @@ class _Beside extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
-        LedgerSideInset(inset: LedgerChromeMetrics.sideWidth, child: child),
-        Positioned(
-          left: 0,
+        ledgerBesideSide(inset: LedgerChromeMetrics.sideWidth, child: child),
+        // The side bar at the reading start, as the shell stands it.
+        PositionedDirectional(
+          start: 0,
           top: 0,
           bottom: 0,
           width: LedgerChromeMetrics.sideWidth,

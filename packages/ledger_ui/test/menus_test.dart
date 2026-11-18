@@ -3,7 +3,7 @@
 // row's mark never touches the menu's paper (Ledger marks the words alone, inside the row's 16); a menu the pointer
 // opened lights no row until the pointer or the keys move, one the keys opened its first. In the split button's menu
 // and the menu slip. And a split button beside the desktop's side bar opens its menu clear of the bar, which stands
-// over the page's own overlay.
+// over the page's own overlay, the menu's end at the button's end.
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -108,8 +108,9 @@ void main() {
       },
     );
 
+    // ui_core 0.3.0's (highlightFollowsPointer): the surface holds the keys, no row; Enter presses nothing unseen.
     testWidgets(
-      'opened by the pointer, Down or Enter lights the first row rather than pass it or press it unseen',
+      'opened by the pointer, Down lights the first row and Up the last; Enter presses none unseen',
       (t) async {
         await _desktop(t, _host(_split()));
         final mouse = await _mouse(t);
@@ -117,14 +118,16 @@ void main() {
         await _clickChevron(t, mouse);
         await _key(t, LogicalKeyboardKey.enter);
         expect(_pressed, isEmpty);
-        expect(_marks(t, _acts), {'As CSV': 'keys'});
-        await _key(t, LogicalKeyboardKey.escape);
-        await _clickChevron(t, mouse);
         expect(_marks(t, _acts), isEmpty);
         await _key(t, LogicalKeyboardKey.arrowDown);
         expect(_marks(t, _acts), {'As CSV': 'keys'});
         await _key(t, LogicalKeyboardKey.arrowDown);
         expect(_marks(t, _acts), {'As PDF': 'keys'});
+        await _key(t, LogicalKeyboardKey.escape);
+        await _clickChevron(t, mouse);
+        expect(_marks(t, _acts), isEmpty);
+        await _key(t, LogicalKeyboardKey.arrowUp);
+        expect(_marks(t, _acts), {'As XLSX': 'keys'});
       },
     );
 
@@ -244,6 +247,23 @@ void main() {
           final mouse = await _mouse(t);
           await _clickChevron(t, mouse);
           final bar = t.getRect(find.byType(LedgerSideBar));
+          final paper = t.getRect(
+            find
+                .ancestor(
+                  of: find.text(_wide.first),
+                  matching: find.byType(ClipRRect),
+                )
+                .first,
+          );
+          final button = t.getRect(find.byType(LedgerSplitButton));
+          expect(
+            direction == TextDirection.ltr ? paper.right : paper.left,
+            moreOrLessEquals(
+              direction == TextDirection.ltr ? button.right : button.left,
+              epsilon: 0.5,
+            ),
+            reason: "its words wrap in the room back to the bar rather than slide past the button's end",
+          );
           for (final words in _wide) {
             final at = t.getRect(find.text(words));
             if (direction == TextDirection.ltr) {

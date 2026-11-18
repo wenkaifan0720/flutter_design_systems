@@ -1,5 +1,4 @@
-import 'package:flutter/widgets.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 
 /// The gallery's words, as an ordinary app gives them: ui_core's in its 30

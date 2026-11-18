@@ -28,12 +28,12 @@ enum LedgerBannerTone {
   wrong,
 }
 
-/// A notice in the page's flow (a statement ready, a card declined): the
-/// raised paper in the rule with a stroke of its [tone] down its reading
-/// start, the tone's glyph, [title] in the medium and [text] in the second
-/// ink; [action] a text button under them, [onDismiss] the ringed close at
-/// its end. A screen reader hears it as it appears when it is [LedgerBannerTone.wrong]
-/// or [LedgerBannerTone.mind].
+/// A notice in the page's flow (a statement ready, a card declined): the raised
+/// paper in the rule with a stroke of its [tone] down its reading start, the
+/// tone's glyph, [title] in the medium and [text] in the second ink;
+/// [actionLabel] a text button under them (pressing it calls [onAction]),
+/// [onDismiss] the ringed close at its end. A screen reader hears it as it
+/// appears when it is [LedgerBannerTone.wrong] or [LedgerBannerTone.mind].
 ///
 /// ```dart
 /// LedgerBanner(title: 'Your October statement is ready', tone: LedgerBannerTone.note, actionLabel: 'Open', onAction: () {})

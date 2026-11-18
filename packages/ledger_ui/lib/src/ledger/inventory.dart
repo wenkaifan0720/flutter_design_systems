@@ -5,6 +5,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:ui_core/inventory.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -282,7 +283,14 @@ final DesignInventory ledgerInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'Kbd',
-      (_) => const LedgerKbd(['⌘', 'K'], semanticLabel: 'Command K'),
+      // Command K on macOS and iOS, Control K elsewhere.
+      (_) => LedgerKbd.shortcut(
+        SingleActivator(
+          LogicalKeyboardKey.keyK,
+          meta: _apple,
+          control: !_apple,
+        ),
+      ),
     ),
     DesignInventoryEntry.present(
       'Link',
@@ -1254,3 +1262,9 @@ class _InventoryScrollState extends State<_InventoryScroll> {
     ),
   );
 }
+
+// Whether the platform's shortcuts hold Command (macOS, iOS) or Control.
+bool get _apple => switch (defaultTargetPlatform) {
+  TargetPlatform.macOS || TargetPlatform.iOS => true,
+  _ => false,
+};

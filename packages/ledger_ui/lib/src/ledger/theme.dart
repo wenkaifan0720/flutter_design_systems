@@ -1557,6 +1557,13 @@ final class LedgerThemeData with Diagnosticable {
         _Face.mono => monoFace,
       },
       package: ledgerFontPackage,
+      // Instrument Serif has no ±, arrows, fractions, ≈ ≤ ≥ or ₹ ₩ ₽: Inter
+      // Tight, which has them all, sets them in a figure or a title, not
+      // whatever face the platform falls back to (none at all under a test).
+      fontFamilyFallback: switch (slot.face) {
+        _Face.serif || _Face.italic => const [face],
+        _Face.sans || _Face.mono => null,
+      },
       fontStyle: slot.face == _Face.italic ? FontStyle.italic : null,
       fontSize: size,
       fontWeight: FontWeight(slot.weight),
