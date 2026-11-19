@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -86,6 +87,69 @@ void main() {
     expect(words.close, 'Fermer');
     expect(words.pageOf(3, 10), '3 sur 10');
     expect(words.cancel, 'Cancel');
+  });
+  // The shipped delegate serves every locale (it served English alone, and an app in another language was warned at
+  // startup): the time picker says the reader's words, and dates are the locale's.
+  testWidgets('a German app with the delegate is not warned and hears Stunde', (
+    tester,
+  ) async {
+    late NeumorphicLocalizations words;
+    await tester.pumpWidget(
+      _timeApp(const Locale('de'), const [
+        NeumorphicLocalizations.delegate,
+        DesignLocalizations.delegate,
+      ], (w) => words = w),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    final shared = DesignLocalizations.forLocale(const Locale('de'));
+    expect(shared.timePickerHourLabel, 'Stunde');
+    expect(find.text('Stunde'), findsWidgets);
+    expect(find.text(shared.timePickerMinuteLabel), findsWidgets);
+    expect(find.text('Hour'), findsNothing);
+    expect(find.text('Morning or evening'), findsNothing);
+    expect(words.period, shared.timeFieldDayPeriodLabel);
+    expect(words.done, shared.doneButtonLabel);
+    expect(words.tryAgain, shared.retryButtonLabel);
+    expect(words.formatMonthYear(DateTime(2026, 3)), 'März 2026');
+  });
+  testWidgets('a delegate for English alone is warned of in a German app', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _timeApp(const Locale('de'), const [
+        _EnglishOnly(),
+        DesignLocalizations.delegate,
+      ], (_) {}),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      '${tester.takeException()}',
+      contains('is not supported by all of its localization delegates'),
+    );
+  });
+  testWidgets("an English app keeps Neumorphism's own time words", (
+    tester,
+  ) async {
+    late NeumorphicLocalizations words;
+    await tester.pumpWidget(
+      _timeApp(const Locale('en'), const [
+        NeumorphicLocalizations.delegate,
+        DesignLocalizations.delegate,
+      ], (w) => words = w),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('Hour'), findsWidgets);
+    expect(find.text('Morning or evening'), findsWidgets);
+    expect(words.requiredField, 'Required');
+  });
+  test('a locale intl lacks loads with English dates', () async {
+    final words = await NeumorphicLocalizations.delegate.load(
+      const Locale('xx'),
+    );
+    expect(words.localeName, 'en_US');
+    expect(words.formatMonthYear(DateTime(2026, 3)), 'March 2026');
   });
   for (final (locale, direction) in const [
     (Locale('ar'), TextDirection.rtl),
@@ -225,3 +289,51 @@ class _WidgetsDelegate extends LocalizationsDelegate<WidgetsLocalizations> {
   @override
   bool shouldReload(_WidgetsDelegate old) => false;
 }
+
+// Neumorphism's delegate as it was: English alone.
+class _EnglishOnly extends LocalizationsDelegate<NeumorphicLocalizations> {
+  const _EnglishOnly();
+  @override
+  bool isSupported(Locale locale) => locale.languageCode == 'en';
+  @override
+  Future<NeumorphicLocalizations> load(Locale locale) =>
+      SynchronousFuture<NeumorphicLocalizations>(
+        const NeumorphicLocalizationsEn(),
+      );
+  @override
+  bool shouldReload(_EnglishOnly old) => false;
+}
+
+/// An app in [locale] with [delegates], a time picker on its page; [read] takes the page's words.
+Widget _timeApp(
+  Locale locale,
+  List<LocalizationsDelegate<Object?>> delegates,
+  void Function(NeumorphicLocalizations) read,
+) => WidgetsApp(
+  color: const Color(0xFF000000),
+  locale: locale,
+  supportedLocales: DesignLocalizations.supportedLocales,
+  localizationsDelegates: delegates,
+  builder: (context, _) => Directionality(
+    textDirection: TextDirection.ltr,
+    child: NeumorphicTheme(
+      data: NeumorphicThemeData.porcelain(),
+      child: Overlay.wrap(
+        child: Builder(
+          builder: (context) {
+            read(NeumorphicLocalizations.of(context));
+            return Center(
+              child: SizedBox(
+                width: 360,
+                child: NeumorphicTimePicker(
+                  value: const NeumorphicTime(9, 5),
+                  onChanged: (_) {},
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    ),
+  ),
+);

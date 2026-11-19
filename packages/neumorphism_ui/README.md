@@ -275,8 +275,8 @@ The parts' built-in words come from `DesignLocalizations`, the words every look 
 
 Known limits in 0.3.0:
 
-- The words every look shares (Cancel, Today, Close, "3 of 10" and the rest) come from ui_core's `DesignLocalizations`, which speaks 30 languages once your app adds `DesignLocalizations.delegate` beside Flutter's delegates (ui_core's README shows how). The look's own words (a file drop's prompts, a picker's AM and PM, Try again and a few more) stay English unless your app subclasses `NeumorphicLocalizations` and adds a delegate that loads it.
-- Dates and numbers are formatted with `intl` in the look's own words' language, so they are English too unless your subclass names another `localeName`. Short weekday names are English, and times show in 24-hour form.
+- The words every look shares (Cancel, Today, Close, "3 of 10" and the rest) come from ui_core's `DesignLocalizations`, which speaks 30 languages once your app adds `DesignLocalizations.delegate` beside Flutter's delegates (ui_core's README shows how). Install `NeumorphicLocalizations.delegate` beside it: it serves every locale, and the time picker's words (its hour, minute and AM and PM), Done, Try again, the required mark and a table's sort hints come from `DesignLocalizations` in the reader's language. The rest of the look's own words (a file drop's prompts and a few more) stay English unless your app subclasses `NeumorphicLocalizations` and adds a delegate that loads it.
+- Dates and numbers are formatted with `intl`: in the app's locale with `NeumorphicLocalizations.delegate` installed (in English where `intl` lacks the locale), else in English unless your subclass names another `localeName`. Short weekday names are English, and times show in 24-hour form.
 
 ## Fonts and copying components
 

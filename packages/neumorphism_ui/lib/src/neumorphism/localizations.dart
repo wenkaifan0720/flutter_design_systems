@@ -2,12 +2,15 @@
 // the caller's words when given, and these otherwise, so an app in another language installs a delegate and every
 // part speaks it.
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart' show DesignSortDirection;
 import 'package:ui_core/ui_core.dart' show DesignLocalizations;
 import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 import 'package:intl/intl.dart';
 
 /// The words Neumorphism's parts say when the caller gives none. English ships ([NeumorphicLocalizationsEn]); another language is a
-/// subclass and a delegate that loads it. With no delegate installed, the parts speak English.
+/// subclass and a delegate that loads it. The shipped [delegate] serves every locale: its dates and numbers are the
+/// locale's, and the words every look shares (the time picker's among them) are ui_core's [DesignLocalizations] in the
+/// reader's language. With no delegate installed, the parts speak English.
 ///
 /// ```dart
 /// MaterialApp(localizationsDelegates: const [NeumorphicLocalizations.delegate], home: home)
@@ -32,6 +35,8 @@ abstract class NeumorphicLocalizations {
       Localizations.of<WidgetsLocalizations>(context, WidgetsLocalizations),
       DesignLocalizations.of(context),
       localeName: installed?.localeName ?? 'en_US',
+      english:
+          (Localizations.maybeLocaleOf(context)?.languageCode ?? 'en') == 'en',
     );
   }
 
@@ -253,7 +258,10 @@ abstract class NeumorphicLocalizations {
   /// A meter's spoken note when its value is past the good range.
   String get outOfRange => 'Outside the usual range';
 
-  /// Loads Neumorphism's English words for an English locale.
+  /// Loads Neumorphism's English words, with dates and numbers in the app's
+  /// locale, for every locale: an app in any language installs it beside
+  /// `DesignLocalizations.delegate`, and the words the two share come from
+  /// `DesignLocalizations` in the reader's language.
   static const LocalizationsDelegate<NeumorphicLocalizations> delegate =
       _NeumorphicLocalizationsDelegate();
 
@@ -477,13 +485,21 @@ class _NeumorphicLocalizationsDelegate
     extends LocalizationsDelegate<NeumorphicLocalizations> {
   const _NeumorphicLocalizationsDelegate();
 
+  // Every locale: the shared words come from DesignLocalizations, and an
+  // app missing a delegate for its locale is warned at startup.
   @override
-  bool isSupported(Locale locale) => locale.languageCode == 'en';
+  bool isSupported(Locale locale) => true;
 
   @override
   Future<NeumorphicLocalizations> load(Locale locale) async {
-    final name = Intl.canonicalizedLocale(locale.toString());
-    await initializeDateFormatting(name);
+    await initializeDateFormatting();
+    // intl's name for the locale, else its language's, else English: intl
+    // lacks a few of the languages ui_core speaks.
+    final name = Intl.verifiedLocale(
+      Intl.canonicalizedLocale(locale.toString()),
+      DateFormat.localeExists,
+      onFailure: (_) => 'en_US',
+    )!;
     return NeumorphicLocalizationsEn(localeName: name);
   }
 
@@ -494,9 +510,44 @@ class _NeumorphicLocalizationsDelegate
 /// The shipped English, with the words every look shares read from ui_core's [DesignLocalizations] (an app translates
 /// them by extending `DefaultDesignLocalizations`) and the editing words from the app's [WidgetsLocalizations].
 class _FallbackLocalizations extends NeumorphicLocalizationsEn {
-  const _FallbackLocalizations(this.widgets, this.design, {super.localeName});
+  const _FallbackLocalizations(
+    this.widgets,
+    this.design, {
+    required this.english,
+    super.localeName,
+  });
   final WidgetsLocalizations? widgets;
   final DesignLocalizations design;
+
+  /// Whether the app reads English: then the time picker and the words below
+  /// it are Neumorphism's own ("Morning or evening" over the day's halves),
+  /// else [design]'s in the reader's language.
+  final bool english;
+  @override
+  String get hour => english ? super.hour : design.timePickerHourLabel;
+  @override
+  String get minute => english ? super.minute : design.timePickerMinuteLabel;
+  @override
+  String get period => english ? super.period : design.timeFieldDayPeriodLabel;
+  @override
+  String get am => english ? super.am : design.anteMeridiemAbbreviation;
+  @override
+  String get pm => english ? super.pm : design.postMeridiemAbbreviation;
+  @override
+  String get done => english ? super.done : design.doneButtonLabel;
+  @override
+  String get tryAgain => english ? super.tryAgain : design.retryButtonLabel;
+  @override
+  String get requiredField =>
+      english ? super.requiredField : design.requiredHint;
+  @override
+  String get sortedAscending => english
+      ? super.sortedAscending
+      : design.dataTableSortedHint(DesignSortDirection.ascending);
+  @override
+  String get sortedDescending => english
+      ? super.sortedDescending
+      : design.dataTableSortedHint(DesignSortDirection.descending);
   @override
   String get cancel => design.cancelButtonLabel;
   @override

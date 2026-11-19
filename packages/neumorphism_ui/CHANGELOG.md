@@ -1,3 +1,7 @@
+## 0.3.3
+
+- `NeumorphicLocalizations.delegate` now serves every locale. It served English alone, so an app in another language that installed it was warned at startup that its locale had no Neumorphism delegate. With it installed, dates and numbers are the app's locale's (English where `intl` lacks it), and the time picker names its hour, minute and day-period wheels, and says AM and PM, in ui_core's `DesignLocalizations` words for the reader (German's Stunde), as Done, Try again, a field's required mark and a table's sort hints do. An English app keeps Neumorphism's own words ("Morning or evening"), and an app's own `NeumorphicLocalizations` still wins.
+
 ## 0.3.2
 
 - `NeumorphicFormField` now keeps each control of a group in its own semantics node, under the field's label. This covers a segmented button, radios, choices, a toggle or button group, and chips in a row or wrap. Previously the field merged the group into one node, so with semantics on (a screen reader, or a web app with semantics enabled) every tap went to the group's first control. The field now decides by its child. Set `group` to choose yourself. A group that names itself in the field's words, such as a segmented button labelled as its field, is announced once instead of twice.
