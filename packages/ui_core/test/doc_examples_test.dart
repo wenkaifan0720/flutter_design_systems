@@ -282,6 +282,16 @@ final Map<String, DocExample> _examples = {
       child: DesignPressable(onPressed: onPressed, builder: face),
     );
   },
+  'DesignPressable, a small icon in its tap target': (context) {
+    void play() {}
+    return DesignTapTarget(
+      child: DesignPressable(
+        semanticLabel: 'Play',
+        onPressed: play,
+        builder: (context, states, _) => const SizedBox.square(dimension: 16),
+      ),
+    );
+  },
   'DesignTapTarget': (context) {
     void onPressed() {}
     Widget face(BuildContext context, Set<WidgetState> states, Widget? child) =>
@@ -719,9 +729,11 @@ const Set<String> _hostAppOnly = {
 /// The checks' files, which ui_core_test carries.
 const Set<String> _checksFiles = {
   'alignment.dart',
+  'checkable_check.dart',
   'cursor_check.dart',
   'field_parts_check.dart',
   'field_semantics_check.dart',
+  'radio_group_check.dart',
   'shadow_clip_check.dart',
   'spacing_check.dart',
   'tap_target_check.dart',

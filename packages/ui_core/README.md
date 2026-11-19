@@ -59,6 +59,32 @@ class InkButton extends StatelessWidget {
 }
 ```
 
+## Build a look of your own
+
+[Ink proof](example/lib/ink_proof.dart) is a small print studio screen. Turn the strip of printed dots to choose an
+ink coverage, change the paper stock, then reset the proof. From `packages/ui_core` in the package repository:
+
+```sh
+cd example
+flutter pub get
+flutter run -d chrome -t lib/ink_proof.dart
+```
+
+The proof uses `DesignWheelPicker` for dragging, arrow keys, accessibility adjustments and reduced-motion scrolling.
+Its item builder paints the tints and its column builder marks the focused row. `DesignField` labels the paper
+selector, and `DesignToggleGroup` keeps each paper choice individually operable. The reset button draws the states
+from `DesignPressable` and reserves a 48-pixel target.
+
+The app supplies its own English and Arabic copy and its light and dark colours. Registering the widgets and
+design localization delegates supplies reading direction and localized percentages. Try the screen with your
+device set to Arabic or dark appearance.
+
+Run `flutter test test/ink_proof_test.dart` in the example. To check a widget of your own, copy
+[the two test helpers](example/test/support) into your app's test directory and adapt the
+[`behaviourContract` in the proof's test](example/test/ink_proof_test.dart). Give it your finished widget, its
+accessible name, expected actions and keyboard steps. The same test file shows how to operate a compound field
+through its accessibility nodes and change appearance with Arabic text at twice its usual size.
+
 ## The behaviours
 
 | Behaviour | Class | Flutter's nearest |

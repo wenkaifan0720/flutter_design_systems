@@ -13,6 +13,7 @@ import 'package:flutter/widgets.dart';
 
 import 'haptics.dart';
 import 'internal/focus_visible.dart';
+import 'localizations.dart';
 
 /// Builds a handle's face for its [states] (focused while the keyboard is
 /// on it, hovered, pressed while dragged, disabled).
@@ -41,6 +42,7 @@ class DesignValueHandle extends StatefulWidget {
     this.step,
     this.pageStep,
     this.divisions,
+    this.clampValue,
     this.axis = Axis.horizontal,
     this.growsToward = VerticalDirection.up,
     this.onChangeStart,
@@ -91,6 +93,11 @@ class DesignValueHandle extends StatefulWidget {
   /// How many steps the range snaps to; null: none.
   final int? divisions;
 
+  /// Limits a snapped value before it is announced or sent to [onChanged].
+  /// A range slider uses this to keep a thumb clear of its neighbour while
+  /// keeping both thumbs on the same scale. The callback must be pure.
+  final double Function(double value)? clampValue;
+
   /// Which way the track runs.
   final Axis axis;
 
@@ -111,7 +118,7 @@ class DesignValueHandle extends StatefulWidget {
 
   /// What a screen reader hears for a value, as
   /// `Slider.semanticFormatterCallback`; null: a whole percentage of the
-  /// range.
+  /// range, formatted in the reader's locale.
   final String Function(double value)? semanticFormatterCallback;
 
   /// Its focus node.
@@ -150,6 +157,12 @@ class DesignValueHandle extends StatefulWidget {
       ..add(DoubleProperty('step', step, defaultValue: null))
       ..add(DoubleProperty('pageStep', pageStep, defaultValue: null))
       ..add(IntProperty('divisions', divisions, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<double Function(double)>.has(
+          'clampValue',
+          clampValue,
+        ),
+      )
       ..add(EnumProperty<Axis>('axis', axis, defaultValue: Axis.horizontal))
       ..add(
         EnumProperty<VerticalDirection>(
@@ -267,17 +280,22 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
     }
   }
 
-  double _snap(double v) {
+  double _nextValue(double v) {
     final c = v.clamp(widget.min, widget.max);
     final d = widget.divisions;
-    if (d == null || d <= 0) return c;
-    final unit = _range / d;
-    return widget.min + ((c - widget.min) / unit).round() * unit;
+    var snapped = c;
+    if (d != null && d > 0 && _range > 0) {
+      final unit = _range / d;
+      snapped = widget.min + ((c - widget.min) / unit).round() * unit;
+    }
+    return (widget.clampValue?.call(snapped) ?? snapped).clamp(
+      widget.min,
+      widget.max,
+    );
   }
 
-  void _set(double to) {
+  void _set(double v) {
     final change = widget.onChanged;
-    final v = _snap(to);
     if (change == null || v == widget.value) return;
     widget.onChangeStart?.call(widget.value);
     change(v);
@@ -286,7 +304,8 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
 
   String _say(double v) =>
       widget.semanticFormatterCallback?.call(v) ??
-      '${(_range == 0 ? 0 : (v - widget.min) / _range * 100).round()}%';
+      DesignLocalizations.of(context)
+          .formatPercent(_range == 0 ? 0 : (v - widget.min) / _range);
 
   KeyEventResult _key(FocusNode node, KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
@@ -309,22 +328,24 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
     }
     final horizontal = widget.axis == Axis.horizontal;
     final v = widget.value;
+    final double next;
     if (key == up || (horizontal && key == LogicalKeyboardKey.arrowUp)) {
-      _set(v + _step);
+      next = v + _step;
     } else if (key == down ||
         (horizontal && key == LogicalKeyboardKey.arrowDown)) {
-      _set(v - _step);
+      next = v - _step;
     } else if (key == LogicalKeyboardKey.pageUp) {
-      _set(v + _page);
+      next = v + _page;
     } else if (key == LogicalKeyboardKey.pageDown) {
-      _set(v - _page);
+      next = v - _page;
     } else if (key == LogicalKeyboardKey.home) {
-      _set(widget.min);
+      next = widget.min;
     } else if (key == LogicalKeyboardKey.end) {
-      _set(widget.max);
+      next = widget.max;
     } else {
       return widget.onKeyEvent?.call(node, event) ?? KeyEventResult.ignored;
     }
+    _set(_nextValue(next));
     return KeyEventResult.handled;
   }
 
@@ -332,6 +353,8 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
   Widget build(BuildContext context) {
     final enabled = widget.onChanged != null;
     final v = widget.value;
+    final higher = _nextValue(v + _step);
+    final lower = _nextValue(v - _step);
     final states = <WidgetState>{
       if (!enabled) WidgetState.disabled,
       if (enabled && _hovered) WidgetState.hovered,
@@ -350,10 +373,10 @@ class _DesignValueHandleState extends State<DesignValueHandle> {
       slider: true,
       label: widget.semanticLabel,
       value: _say(v),
-      increasedValue: v < widget.max ? _say(_snap(v + _step)) : null,
-      decreasedValue: v > widget.min ? _say(_snap(v - _step)) : null,
-      onIncrease: enabled && v < widget.max ? () => _set(v + _step) : null,
-      onDecrease: enabled && v > widget.min ? () => _set(v - _step) : null,
+      increasedValue: higher > v ? _say(higher) : null,
+      decreasedValue: lower < v ? _say(lower) : null,
+      onIncrease: enabled && higher > v ? () => _set(higher) : null,
+      onDecrease: enabled && lower < v ? () => _set(lower) : null,
       enabled: enabled,
       child: Focus(
         canRequestFocus: false,

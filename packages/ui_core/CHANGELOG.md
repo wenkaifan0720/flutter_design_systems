@@ -1,3 +1,20 @@
+## 0.3.3
+
+- A date or time field's segments wrap between parts when its frame is narrower than them, each segment kept with the separator after it, so no line starts with one. Right to left, a run of digits wraps left to right within itself. Segments that fit stay on one line, laid out as before.
+- A key pressed with Control, Meta or Alt while a date or time segment has focus goes on to the app's shortcuts (Control-S, Command-K, Control-Z) instead of being typed. AltGr still types.
+- A colour picker says its values in the reader's language and digits: the area says "Saturation 40%, Brightness 60%" with `DesignLocalizations`' channel names, list separator and percentages, the hue slider says degrees ("270°"), and the other sliders say percentages.
+- Value handles format their spoken percentages in the current locale, including the next and previous values.
+- A range slider announces the values each thumb can actually reach and offers adjustments only while there is room to move.
+- The Ink proof example shows how to draw custom controls with a paper selector and a halftone wheel. Its widget tests can be adapted to another look.
+- The example's chart and data table switch can be reached with Tab and activated with Enter or Space.
+- A `DesignField` round a text entry and other controls (a search field's Search button, a clear button) says its label, help and error on the entry's node, as Material's `TextField` does, and each other control keeps its own node and name. Before, it said them on a node of its own round all of them.
+- A `DesignNumberField`'s node spans the field but its step buttons (each cut away from the side of the entry it stands on), so a tap through the semantics tree on a step button reaches the button, not the number. Inside a `DesignField` it says the field's label, help and error itself, and the field says them on no other node.
+- A `DesignPressable` turned off takes no tap and no long press, and offers a screen reader no long press.
+- A state the widget brings to a `DesignPressable` (`selected`, turned off) reaches its controller's listeners and `onStatesChanged`, as a state the pointer brings does.
+- A range slider whose drag is cancelled lets its thumb go: it is no longer drawn pressed, and `onChangeEnd` gets the values. A slider turned off mid-drag lets go without calling `onChangeEnd`.
+- The inventory's Segmented control row names its behaviour, `DesignToggleGroup`: a segmented control is a toggle group of which one is chosen. An inventory page that prints a row's behaviour shows it.
+- Docs: `DesignPressable` says how a small icon keeps its tap target (`DesignTapTarget`), and `DesignFormField` that it validates and registers but draws nothing, a `DesignField` built in its `builder` drawing the label, help and error.
+
 ## 0.3.2
 
 - Focus shows as a browser's `:focus-visible` shows it. A dialog, sheet, menu or popover opened with a mouse, a touch or a screen reader still focuses its safe action or first control, so Enter, Tab and Escape work as before, but paints no focus until the next key press. Opened from the keyboard, it paints the focus at once. A mouse press anywhere hides a shown focus until the next key. Buttons, value handles, wheel pickers, colour areas, calendars, carousels, scroll areas, tooltips and hover cards follow it; text fields still show their focus on a click. An app that sets `FocusHighlightStrategy.alwaysTraditional` shows focus whatever the input, as before.

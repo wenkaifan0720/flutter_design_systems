@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import 'ink_proof.dart' show InkProofPage;
 import 'values.dart';
 
 // 0.3.0 routes
@@ -220,6 +221,20 @@ class _ReportPageState extends State<ReportPage> {
                         ),
                       ),
                       // 0.3.0 values end
+                      DesignPressable(
+                        onPressed: () => Navigator.of(context).push(
+                          PageRouteBuilder<void>(
+                            pageBuilder: (context, _, _) =>
+                                const InkProofPage(),
+                          ),
+                        ),
+                        semanticLabel: 'Ink proof',
+                        builder: (context, states, _) => _Box(
+                          selected: false,
+                          focused: states.contains(WidgetState.focused),
+                          child: const Text('Ink proof'),
+                        ),
+                      ),
                     ],
                   ),
                 ],

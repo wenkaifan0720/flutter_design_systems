@@ -90,6 +90,21 @@ void main() {
     await tester.pump();
     expect(tester.getSemantics(find.bySemanticsLabel('Stars')).value, '5 of 5');
 
+    // Tab from the rating to the chart/table switch. Enter and Space both
+    // work, and the switch keeps focus as its label changes.
+    await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Show data table')),
+      isSemantics(isFocused: true),
+    );
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(find.text('Show chart'), findsOneWidget);
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    await tester.pumpAndSettle();
+    expect(find.text('Show data table'), findsOneWidget);
+
     // The visits: a screen reader steps onto January's web visits, then
     // asks for the table; a tap on "Show chart" brings the chart back.
     await tester.scrollUntilVisible(

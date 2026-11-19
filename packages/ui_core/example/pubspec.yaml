@@ -1,5 +1,5 @@
 name: ui_core_example
-description: Four of ui_core's behaviours, painted plainly.
+description: Custom Flutter controls built on ui_core.
 publish_to: none
 
 environment:
@@ -12,6 +12,8 @@ dependencies:
   cupertino_ui: ^1.0.0
   material_ui: ^1.9.0
   flutter:
+    sdk: flutter
+  flutter_localizations:
     sdk: flutter
   ui_core:
     path: ../

@@ -7,7 +7,7 @@ A design system's tests take it as a dev dependency, as an app takes `flutter_te
 
 ```yaml
 dev_dependencies:
-  ui_core_test: ^0.1.2
+  ui_core_test: ^0.1.3
 ```
 
 ```dart
@@ -122,8 +122,8 @@ screen repainted since its last frame stops a check with that reason.
 
 ## The checks a look is held to
 
-Beside the alignment checks, six read any screen, each from its root (a gallery page, an app screen), and say what
-they find in words:
+Beside the alignment checks, seven read any screen, each from its root (a gallery page, an app screen), and one a
+group of radios; each says what it finds in words:
 - `DesignTapTargetCheck`: every control's tap target reaches the look's floor for the input (a phone's screen is
   read for a finger, a desk's for a pointer), and its target is where it is drawn; a text field's own keys (a clear
   or reveal key whose node lies in the field's) are part of the field's reach.
@@ -140,6 +140,11 @@ they find in words:
 - `DesignFieldSemanticsCheck`: each control inside a `DesignField` takes a tap through the semantics tree (a
   screen reader's, or a click on the web with semantics on) on a node of its own, a stepper's buttons lie under no
   node that would take their tap, and the field's label is read once. It reads the semantics tree.
+- `DesignCheckableCheck`: each checkbox, radio and switch says what it is, as Flutter's do: a node that says it is
+  checked or toggled does not also say it is a button, and a radio says whether it is checked.
+- `DesignRadioGroupCheck`: a group of radios answers the keyboard as Flutter's `RadioGroup` does: one tab stop, on
+  the chosen radio, and arrow keys that move round the radios that can be chosen and choose them. It moves the focus
+  and presses keys, so it takes the tester's `sendKeyEvent` and `pump`.
 - `DesignSpacingCheck`: a page's margin, the insets of shapes set in shapes (concentric corners), and gaps on the
   grid; `literals` reads a look's sources for spacing off the grid its `DesignSpacingScope` declares.
 
@@ -148,6 +153,6 @@ a look declares in its theme.
 
 ## Versions
 
-Version 0.1.2 supports ui_core ^0.3.2 and requires Flutter 3.47 or later (Dart 3.13).
+Version 0.1.3 supports ui_core ^0.3.3 and requires Flutter 3.47 or later (Dart 3.13).
 
 See the CHANGELOG for changes to measurements and migration instructions.

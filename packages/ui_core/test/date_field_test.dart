@@ -1,5 +1,6 @@
 import 'dart:ui' show Tristate;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -443,6 +444,63 @@ void main() {
     });
   });
 
+  testWidgets('a shortcut goes past a segment to the shortcuts above the '
+      'field; AltGr still types', (tester) async {
+    var saved = 0;
+    var undone = 0;
+    await tester.pumpWidget(
+      harness(
+        CallbackShortcuts(
+          bindings: {
+            const SingleActivator(LogicalKeyboardKey.keyS, control: true): () =>
+                saved++,
+            const SingleActivator(LogicalKeyboardKey.keyZ, meta: true): () =>
+                undone++,
+          },
+          child: const _DateHost(),
+        ),
+      ),
+    );
+    await _tab(tester);
+    expect(_focusedOn(tester, 'Month'), isTrue);
+    Future<void> held(
+      List<LogicalKeyboardKey> modifiers,
+      LogicalKeyboardKey key,
+      String character,
+    ) async {
+      for (final m in modifiers) {
+        await tester.sendKeyDownEvent(m);
+      }
+      await tester.sendKeyEvent(key, character: character);
+      for (final m in modifiers.reversed) {
+        await tester.sendKeyUpEvent(m);
+      }
+      await tester.pump();
+    }
+
+    await held([LogicalKeyboardKey.controlLeft], LogicalKeyboardKey.keyS, 's');
+    expect(saved, 1, reason: 'Control-S');
+    await held([LogicalKeyboardKey.metaLeft], LogicalKeyboardKey.keyZ, 'z');
+    expect(undone, 1, reason: 'Command-Z');
+    await held([LogicalKeyboardKey.altLeft], LogicalKeyboardKey.digit1, '1');
+    expect(find.text('mm'), findsOneWidget, reason: 'Alt-1 types nothing');
+    expect(_focusedOn(tester, 'Month'), isTrue);
+    // Windows reports AltGr as right Alt with Control: it types.
+    debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+    try {
+      await held(
+        [LogicalKeyboardKey.controlLeft, LogicalKeyboardKey.altRight],
+        LogicalKeyboardKey.digit1,
+        '1',
+      );
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+    await _type(tester, '1');
+    expect(_focusedOn(tester, 'Day'), isTrue, reason: 'month 11 typed');
+    expect(saved, 1);
+  });
+
   testWidgets('a phone keyboard types into the segments', (tester) async {
     await tester.pumpWidget(harness(const _DateHost()));
     await tester.tap(find.text('mm'));
@@ -811,6 +869,218 @@ void main() {
     });
   });
 
+  group('the segments in a frame narrower than them', () {
+    const widths = {
+      DesignDateSegmentType.day: 30.0,
+      DesignDateSegmentType.month: 30.0,
+      DesignDateSegmentType.year: 50.0,
+      DesignDateSegmentType.hour: 30.0,
+      DesignDateSegmentType.minute: 30.0,
+      DesignDateSegmentType.dayPeriod: 30.0,
+    };
+    // Each segment's face 20 px tall, each piece of text between them a
+    // 10 px square.
+    Widget face(BuildContext context, DesignDateSegmentDetails d) => SizedBox(
+      key: ValueKey(d.type),
+      width: widths[d.type],
+      height: 20,
+      child: Text(d.text),
+    );
+    Widget text(BuildContext context, String literal) => SizedBox(
+      key: const ValueKey('text'),
+      width: 10,
+      height: 10,
+      child: Text(literal),
+    );
+    Widget host(
+      double width,
+      Widget field, {
+      Locale? locale,
+      TextDirection direction = TextDirection.ltr,
+    }) {
+      Widget shown = Align(
+        alignment: Alignment.topLeft,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: width),
+          child: field,
+        ),
+      );
+      if (locale != null) {
+        shown = Localizations(
+          locale: locale,
+          delegates: const [
+            DesignLocalizations.delegate,
+            DefaultWidgetsLocalizations.delegate,
+          ],
+          child: Directionality(textDirection: direction, child: shown),
+        );
+      }
+      return harness(shown, textDirection: direction);
+    }
+
+    Widget date({double? minHeight}) => DesignDateField(
+      value: DateTime(2026, 11, 16),
+      semanticLabel: 'Due',
+      onChanged: (_) {},
+      segmentBuilder: face,
+      literalBuilder: text,
+      frameBuilder: minHeight == null
+          ? null
+          : (context, states, segments) => ConstrainedBox(
+              constraints: BoxConstraints(minHeight: minHeight),
+              child: segments,
+            ),
+    );
+    // Where each segment and each piece of text lies in the field.
+    Rect at(WidgetTester tester, Finder piece) {
+      final origin = tester.getTopLeft(
+        find.byType(DesignDateField).evaluate().isEmpty
+            ? find.byType(DesignTimeField)
+            : find.byType(DesignDateField),
+      );
+      return tester.getRect(piece).shift(-origin);
+    }
+
+    Rect segment(WidgetTester tester, DesignDateSegmentType type) =>
+        at(tester, find.byKey(ValueKey(type)));
+    List<Rect> texts(WidgetTester tester) => [
+      for (final e in find.byKey(const ValueKey('text')).evaluate())
+        at(tester, find.byWidget(e.widget)),
+    ];
+
+    testWidgets('when they fit, one line, as a row lays them', (tester) async {
+      await tester.pumpWidget(host(800, date()));
+      expect(segment(tester, DesignDateSegmentType.month), _ltrb(0, 0, 30, 20));
+      expect(segment(tester, DesignDateSegmentType.day), _ltrb(40, 0, 70, 20));
+      expect(
+        segment(tester, DesignDateSegmentType.year),
+        _ltrb(80, 0, 130, 20),
+      );
+      expect(texts(tester), [_ltrb(30, 5, 40, 15), _ltrb(70, 5, 80, 15)]);
+      // In a frame taller than them, centred in it as a row centres them.
+      await tester.pumpWidget(host(800, date(minHeight: 48)));
+      expect(
+        segment(tester, DesignDateSegmentType.month),
+        _ltrb(0, 14, 30, 34),
+      );
+      expect(texts(tester).first, _ltrb(30, 19, 40, 29));
+    });
+
+    testWidgets('narrower, they wrap between parts, each segment kept with '
+        'the text after it', (tester) async {
+      await tester.pumpWidget(host(100, date()));
+      expect(segment(tester, DesignDateSegmentType.day), _ltrb(40, 0, 70, 20));
+      expect(segment(tester, DesignDateSegmentType.year), _ltrb(0, 20, 50, 40));
+      expect(texts(tester), [_ltrb(30, 5, 40, 15), _ltrb(70, 5, 80, 15)]);
+      expect(tester.getSize(find.byType(DesignDateField)), const Size(80, 40));
+      await tester.pumpWidget(host(50, date()));
+      expect(segment(tester, DesignDateSegmentType.day), _ltrb(0, 20, 30, 40));
+      expect(segment(tester, DesignDateSegmentType.year), _ltrb(0, 40, 50, 60));
+      expect(texts(tester), [_ltrb(30, 5, 40, 15), _ltrb(30, 25, 40, 35)]);
+    });
+
+    testWidgets('a time: no line starts with the space before AM/PM', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        host(
+          85,
+          DesignTimeField(
+            value: const DesignTimeOfDay(hour: 15, minute: 5),
+            semanticLabel: 'Start',
+            alwaysUse24HourFormat: false,
+            onChanged: (_) {},
+            segmentBuilder: face,
+            literalBuilder: text,
+          ),
+        ),
+      );
+      expect(
+        segment(tester, DesignDateSegmentType.minute),
+        _ltrb(40, 0, 70, 20),
+      );
+      expect(
+        segment(tester, DesignDateSegmentType.dayPeriod),
+        _ltrb(0, 20, 30, 40),
+      );
+      expect(texts(tester), [_ltrb(30, 5, 40, 15), _ltrb(70, 5, 80, 15)]);
+    });
+
+    testWidgets('Hebrew: a run of digits wraps left to right within itself, '
+        'its lines kept to the right', (tester) async {
+      await tester.pumpWidget(
+        host(
+          100,
+          date(),
+          locale: const Locale('he'),
+          direction: TextDirection.rtl,
+        ),
+      );
+      expect(segment(tester, DesignDateSegmentType.day), _ltrb(0, 0, 30, 20));
+      expect(
+        segment(tester, DesignDateSegmentType.month),
+        _ltrb(40, 0, 70, 20),
+      );
+      expect(
+        segment(tester, DesignDateSegmentType.year),
+        _ltrb(30, 20, 80, 40),
+      );
+      expect(texts(tester), [_ltrb(30, 5, 40, 15), _ltrb(70, 5, 80, 15)]);
+    });
+
+    testWidgets('Arabic: the day first on the right, the year on the next '
+        'line', (tester) async {
+      await tester.pumpWidget(
+        host(
+          100,
+          date(),
+          locale: const Locale('ar'),
+          direction: TextDirection.rtl,
+        ),
+      );
+      expect(segment(tester, DesignDateSegmentType.day), _ltrb(50, 0, 80, 20));
+      expect(
+        segment(tester, DesignDateSegmentType.month),
+        _ltrb(10, 0, 40, 20),
+      );
+      expect(
+        segment(tester, DesignDateSegmentType.year),
+        _ltrb(30, 20, 80, 40),
+      );
+      expect(texts(tester), [_ltrb(40, 5, 50, 15), _ltrb(0, 5, 10, 15)]);
+    });
+
+    testWidgets('wrapped, the focus and a screen reader keep their order, and '
+        'a tap off the segments still goes to one', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(host(100, date()));
+      final field = semanticsOf(tester, _node('Due'));
+      expect(
+        [
+          for (final n in field.debugListChildrenInOrder(
+            DebugSemanticsDumpOrder.traversalOrder,
+          ))
+            n.label,
+        ],
+        ['Month', 'Day', 'Year'],
+      );
+      await _tab(tester);
+      expect(_focusedOn(tester, 'Month'), isTrue);
+      await _tab(tester);
+      await _tab(tester);
+      expect(_focusedOn(tester, 'Year'), isTrue, reason: 'on the next line');
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pump();
+      // Beside the year, on its line.
+      await tester.tapAt(
+        tester.getTopLeft(find.byType(DesignDateField)) + const Offset(65, 30),
+      );
+      await tester.pump();
+      expect(_focusedOn(tester, 'Month'), isTrue);
+      semantics.dispose();
+    });
+  });
+
   group('DesignTimeOfDay', () {
     test('its parts, its period and its order', () {
       const t = DesignTimeOfDay(hour: 15, minute: 5);
@@ -848,3 +1118,6 @@ void main() {
     );
   });
 }
+
+Matcher _ltrb(double l, double t, double r, double b) =>
+    rectMoreOrLessEquals(Rect.fromLTRB(l, t, r, b));

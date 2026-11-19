@@ -149,7 +149,13 @@ void main() {
       ),
     );
     final spin = tester.getRect(find.byType(Fluent2SpinButton));
-    final node = _takes(tester, spin.center, SemanticsAction.increase);
+    final entry = tester.getCenter(
+      find.descendant(
+        of: find.byType(Fluent2SpinButton),
+        matching: find.byType(EditableText),
+      ),
+    );
+    final node = _takes(tester, entry, SemanticsAction.increase);
     expect(node, isNotNull);
     _act(tester, node!, SemanticsAction.increase);
     await tester.pumpAndSettle();

@@ -471,4 +471,77 @@ void main() {
       expect(pressedIn(frames), isFalse);
     });
   });
+
+  testWidgets('turned off, it takes no tap and no long press, and says no '
+      'long press', (tester) async {
+    final semantics = tester.ensureSemantics();
+    var taps = 0;
+    var longPresses = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: DesignPressable(
+            enabled: false,
+            semanticLabel: 'Commit',
+            excludeSemantics: true,
+            onPressed: () => taps++,
+            onLongPress: () => longPresses++,
+            builder: (_, states, _) {
+              expect(states, contains(WidgetState.disabled));
+              return const SizedBox.square(dimension: 64);
+            },
+          ),
+        ),
+      ),
+    );
+    final node = tester
+        .getSemantics(find.bySemanticsLabel('Commit'))
+        .getSemanticsData();
+    await tester.tap(find.byType(DesignPressable));
+    await tester.pumpAndSettle();
+    await tester.longPress(find.byType(DesignPressable));
+    await tester.pumpAndSettle();
+    expect([taps, longPresses], [0, 0]);
+    expect(node.hasAction(SemanticsAction.tap), isFalse);
+    expect(node.hasAction(SemanticsAction.longPress), isFalse);
+    semantics.dispose();
+  });
+
+  testWidgets("a state the widget brings (selected) is told to the "
+      "controller's listeners and onStatesChanged", (tester) async {
+    final controller = WidgetStatesController();
+    addTearDown(controller.dispose);
+    var heard = 0;
+    final told = <Set<WidgetState>>[];
+    var face = false;
+    controller.addListener(() => heard++);
+    Widget app(bool selected) => MaterialApp(
+      home: Center(
+        child: DesignPressable(
+          onPressed: () {},
+          selected: selected,
+          statesController: controller,
+          onStatesChanged: told.add,
+          builder: (_, states, _) {
+            face = states.contains(WidgetState.selected);
+            return const SizedBox.square(dimension: 64);
+          },
+        ),
+      ),
+    );
+    await tester.pumpWidget(app(false));
+    await tester.pumpAndSettle();
+    heard = 0;
+    told.clear();
+    await tester.pumpWidget(app(true));
+    await tester.pumpAndSettle();
+    expect(face, isTrue);
+    expect(controller.value, contains(WidgetState.selected));
+    expect(heard, greaterThan(0));
+    expect(told.last, contains(WidgetState.selected));
+    heard = 0;
+    await tester.pumpWidget(app(true));
+    await tester.pumpAndSettle();
+    expect(heard, 0, reason: 'nothing changed');
+  });
 }

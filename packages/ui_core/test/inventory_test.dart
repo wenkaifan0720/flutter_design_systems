@@ -56,8 +56,9 @@ void main() {
       // 0.3.0: 26, and the overlays' tooltip and context menu; the routes'
       // dialog, bottom sheet, tab bar and the shell's navigation bar, rail,
       // drawer and scaffold; the values' number field, rating, wheel and
-      // time pickers and five charts.
-      expect(rows.where((r) => r.isBehaviour), hasLength(44));
+      // time pickers and five charts. 0.3.3: the segmented control, on the
+      // toggle group as the toggle group's row is.
+      expect(rows.where((r) => r.isBehaviour), hasLength(45));
       // Material's names where Material has the thing, shadcn's where only
       // shadcn does.
       for (final id in [
@@ -95,9 +96,9 @@ void main() {
     final inventory = _bare(_complete());
     expect(inventory.problems, isEmpty);
     inventory.verify();
-    // 0.3.0: overlays 2, routes 7, values 9.
-    expect(inventory.presentCount, 44);
-    expect(inventory.absentCount, 45);
+    // 0.3.0: overlays 2, routes 7, values 9. 0.3.3: the segmented control.
+    expect(inventory.presentCount, 45);
+    expect(inventory.absentCount, 44);
   });
 
   test('it names every way an inventory is wrong', () {

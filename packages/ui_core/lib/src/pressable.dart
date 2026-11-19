@@ -57,6 +57,21 @@ typedef DesignPressableBuilder = Widget Function(
 /// lets it go at once: a scroll took the pointer. A long press holds it
 /// until the finger lifts.
 ///
+/// It is as large as its face, or [minimumSize]: a `DesignTapTargetScope`'s
+/// floors reach it only through a `DesignTapTarget` round it. A small icon
+/// (16 by 16) under a touch scope stays 16 by 16 to a finger and to a
+/// screen reader until it is wrapped:
+///
+/// ```dart
+/// DesignTapTarget(
+///   child: DesignPressable(
+///     semanticLabel: 'Play',
+///     onPressed: play,
+///     builder: (context, states, _) => const SizedBox.square(dimension: 16),
+///   ),
+/// )
+/// ```
+///
 /// ```dart
 /// DesignPressable(onPressed: () {}, semanticLabel: 'Save', builder: (context, states, child) => Opacity(opacity: states.contains(WidgetState.pressed) ? 0.6 : 1, child: const Text('Save')))
 /// ```
@@ -412,7 +427,16 @@ class DesignPressableState extends State<DesignPressable> {
       }
       _controller.addListener(_changed);
     }
+    final before = Set.of(_controller.value);
     _sync();
+    // A change the widget brought (selected, disabled, an error) is told to
+    // the controller's listeners and onStatesChanged once the frame is
+    // built, as one a pointer or the focus brings is told at once.
+    if (!setEquals(before, _controller.value)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _controller.value = Set.of(_controller.value);
+      });
+    }
   }
 
   @override
@@ -524,7 +548,7 @@ class DesignPressableState extends State<DesignPressable> {
 
   void _press() {
     final onPressed = widget.onPressed;
-    if (onPressed == null) return;
+    if (onPressed == null || !_enabled) return;
     if (widget.enableFeedback) Feedback.forTap(context);
     onPressed();
   }
@@ -567,8 +591,9 @@ class DesignPressableState extends State<DesignPressable> {
     Widget node = GestureDetector(
       behavior: HitTestBehavior.opaque,
       excludeFromSemantics: true,
-      onTap: widget.onPressed == null ? null : _press,
-      onLongPress: widget.onLongPress,
+      // Disabled, it takes no press, as an InkWell with no onTap takes none.
+      onTap: widget.onPressed == null || !enabled ? null : _press,
+      onLongPress: enabled ? widget.onLongPress : null,
       child: face,
     );
     // The press from the pointer, beside the recognizers rather than in
@@ -640,7 +665,7 @@ class DesignPressableState extends State<DesignPressable> {
           : widget.onPressed != null
           ? _press
           : _wait,
-      onLongPress: presses ? widget.onLongPress : null,
+      onLongPress: presses && enabled ? widget.onLongPress : null,
       child: node,
     );
     return widget.excludeSemantics ? node : MergeSemantics(child: node);

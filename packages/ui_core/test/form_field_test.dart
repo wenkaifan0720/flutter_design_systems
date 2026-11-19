@@ -383,6 +383,126 @@ void main() {
       );
       expect(entry!.hasFocus, isFalse);
       expect(heard('Estimate'), 1);
+      // Its node spans the field but its buttons, so no tap node lies over
+      // a button.
+      final rect = globalRect(
+        tester.getSemantics(find.byType(DesignNumberField)),
+        tester.view.devicePixelRatio,
+      );
+      final whole = tester.getRect(find.byType(DesignNumberField));
+      for (final (a, b) in [
+        (rect.left, tester.getRect(find.byKey(const ValueKey('-'))).right),
+        (rect.top, whole.top),
+        (rect.right, tester.getRect(find.byKey(const ValueKey('+'))).left),
+        (rect.bottom, whole.bottom),
+      ]) {
+        expect(a, closeTo(b, .01));
+      }
+      semantics.dispose();
+    });
+
+    testWidgets("a number field carries its field's name, help and error on "
+        'its own node, and the field says them on none', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        harness(
+          Center(
+            child: DesignField(
+              labelText: 'Estimate',
+              helperText: 'In minutes',
+              errorText: 'Too long',
+              required: true,
+              builder: _layout,
+              child: DesignNumberField(
+                value: 45,
+                semanticLabel: 'Minutes',
+                onChanged: (_) {},
+                fieldBuilder: (context, d) => plainField(
+                  controller: d.controller,
+                  focusNode: d.focusNode,
+                  width: 80,
+                ),
+                buttonBuilder: (context, d) => SizedBox.square(
+                  dimension: 44,
+                  child: Center(child: Text(d.isIncrement ? '+' : '-')),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      final data = tester
+          .getSemantics(find.byType(DesignNumberField))
+          .getSemanticsData();
+      expect(data.label, 'Estimate, required');
+      expect(data.hint, 'Too long. In minutes');
+      expect(data.validationResult, SemanticsValidationResult.invalid);
+      expect(data.hasAction(SemanticsAction.increase), isTrue);
+      expect(heard('Estimate'), 1);
+      var hinted = 0;
+      void visit(SemanticsNode n) {
+        if (n.hint.contains('Too long')) hinted++;
+        n.visitChildren((c) {
+          visit(c);
+          return true;
+        });
+      }
+
+      visit(owner().rootSemanticsNode!);
+      expect(hinted, 1);
+      semantics.dispose();
+    });
+
+    testWidgets('a text entry beside a button: the entry takes the field '
+        "name and help, and the button keeps its node and its name", (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      final text = TextEditingController();
+      final focus = FocusNode();
+      addTearDown(text.dispose);
+      addTearDown(focus.dispose);
+      var searched = 0;
+      await tester.pumpWidget(
+        harness(
+          Center(
+            child: DesignField(
+              labelText: 'Search',
+              helperText: 'Titles and authors',
+              required: true,
+              focusNode: focus,
+              builder: _layout,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // As a look's text field does, the entry takes a tap on
+                  // the field's node rather than a node of its own.
+                  Semantics(
+                    onTap: focus.requestFocus,
+                    child: plainField(
+                      controller: text,
+                      focusNode: focus,
+                      width: 160,
+                    ),
+                  ),
+                  part('Search', () => searched++),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      final entry = textFieldNode().getSemanticsData();
+      expect(entry.label, 'Search, required');
+      expect(entry.hint, 'Titles and authors');
+      await tapThrough(
+        tester,
+        tester.getCenter(find.byKey(const ValueKey('Search'))),
+      );
+      expect(searched, 1);
+      expect(focus.hasFocus, isFalse);
+      await tapThrough(tester, tester.getCenter(find.byType(EditableText)));
+      expect(focus.hasFocus, isTrue);
       semantics.dispose();
     });
 

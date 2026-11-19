@@ -900,6 +900,49 @@ void main() {
       },
     );
 
+    testWidgets('a bevelled face beside a flat one is held as laid out', (
+      tester,
+    ) async {
+      Widget flat({double height = 48, double short = 0}) => _button(
+        'OK',
+        CustomPaint(
+          painter: _Flat(short: short),
+          size: Size(150, height),
+        ),
+      );
+      Widget raised() => _button(
+        'Cancel',
+        const CustomPaint(painter: _Raised(), size: Size(150, 48)),
+        text: _label('Cancel', colour: const Color(0xffe8e8ec)),
+      );
+      // The two boxes level: a flat face drawn short of its box is not read
+      // against the bevel's box.
+      expect(
+        await _check(
+          tester,
+          surface: const Color(0xff1c1c22),
+          cancel: raised(),
+          ok: flat(short: 1.5),
+        ),
+        isEmpty,
+      );
+      // The flat face's box 4 px shorter: its top and bottom, as laid out.
+      expect(
+        await _check(
+          tester,
+          surface: const Color(0xff1c1c22),
+          cancel: raised(),
+          ok: flat(height: 44),
+        ),
+        [
+          'a button "OK" beside a button "Cancel": its top is 2 px below '
+              'theirs as laid out',
+          'a button "OK" beside a button "Cancel": its bottom is 2 px above '
+              'theirs as laid out',
+        ],
+      );
+    });
+
     testWidgets('its ring with contrast', (tester) async {
       final outlined = _face(fill: _dark, ring: const Color(0xFF6A7282));
       expect(
@@ -2535,6 +2578,22 @@ class _Picture extends CustomPainter {
 // Retro Platinum's raised face by night: two 1 px bands round a fill near
 // the dialog's colour, pale on the top and left, black on the bottom and
 // right.
+// A flat face of one fill, ending [short] px above its box's bottom.
+class _Flat extends CustomPainter {
+  const _Flat({this.short = 0});
+
+  final double short;
+
+  @override
+  void paint(Canvas canvas, Size size) => canvas.drawRect(
+    Rect.fromLTWH(0, 0, size.width, size.height - short),
+    Paint()..color = const Color(0xffa7a1ff),
+  );
+
+  @override
+  bool shouldRepaint(_Flat oldDelegate) => oldDelegate.short != short;
+}
+
 class _Raised extends CustomPainter {
   const _Raised();
 

@@ -151,6 +151,38 @@ void main() {
     semantics.dispose();
   });
 
+  testWidgets("a date's and a time's segments: each segment takes its own "
+      'tap', (tester) async {
+    final semantics = tester.ensureSemantics();
+    Widget segment(BuildContext context, DesignDateSegmentDetails d) =>
+        SizedBox(width: 40, height: 44, child: Center(child: Text(d.text)));
+    await tester.pumpWidget(
+      _field(
+        'Due',
+        DesignDateField(
+          value: DateTime(2026, 11, 16),
+          semanticLabel: 'Due',
+          onChanged: (_) {},
+          segmentBuilder: segment,
+        ),
+      ),
+    );
+    expect(_problems(tester), isEmpty);
+    await tester.pumpWidget(
+      _field(
+        'Starts',
+        DesignTimeField(
+          value: const DesignTimeOfDay(hour: 9, minute: 30),
+          semanticLabel: 'Starts',
+          onChanged: (_) {},
+          segmentBuilder: segment,
+        ),
+      ),
+    );
+    expect(_problems(tester), isEmpty);
+    semantics.dispose();
+  });
+
   testWidgets('one control merged with its label passes', (tester) async {
     final semantics = tester.ensureSemantics();
     final toggle = Semantics(
@@ -162,6 +194,27 @@ void main() {
       await tester.pumpWidget(_field('Wi-Fi', toggle, merge: merge));
       expect(_problems(tester), isEmpty, reason: 'mergeSemantics: $merge');
     }
+    semantics.dispose();
+  });
+
+  testWidgets("a text entry beside a button named as the field (a search "
+      "field's Search): the button's name is its own, not a reading", (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final text = TextEditingController();
+    final focus = FocusNode();
+    addTearDown(text.dispose);
+    addTearDown(focus.dispose);
+    final search = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        plainField(controller: text, focusNode: focus, width: 160),
+        _part('Search'),
+      ],
+    );
+    await tester.pumpWidget(_field('Search', search));
+    expect(_problems(tester), isEmpty);
     semantics.dispose();
   });
 }

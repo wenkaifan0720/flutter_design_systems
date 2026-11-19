@@ -1,3 +1,5 @@
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
+import 'package:flutter/rendering.dart' show RendererBinding;
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -177,6 +179,42 @@ void main() {
     },
   );
 
+  testWidgets('a handle speaks the current locale for each adjustment', (
+    tester,
+  ) async {
+    for (final (locale, lower, value, higher) in [
+      ('tr', '%30', '%40', '%50'),
+      ('ar', '٣٠٪\u061c', '٤٠٪\u061c', '٥٠٪\u061c'),
+    ]) {
+      await tester.pumpWidget(
+        harness(
+          Localizations(
+            locale: Locale(locale),
+            delegates: const [
+              DesignLocalizations.delegate,
+              DefaultWidgetsLocalizations.delegate,
+            ],
+            child: DesignValueHandle(
+              semanticLabel: 'Gain',
+              value: 14,
+              min: 10,
+              max: 20,
+              step: 1,
+              onChanged: (_) {},
+              builder: (_, _) => const SizedBox.square(dimension: 24),
+            ),
+          ),
+        ),
+      );
+      final data = tester
+          .getSemantics(find.bySemanticsLabel('Gain'))
+          .getSemanticsData();
+      expect(data.value, value);
+      expect(data.increasedValue, higher);
+      expect(data.decreasedValue, lower);
+    }
+  });
+
   testWidgets('thumbs sit at their values; a press moves the nearer one; a '
       'drag cannot cross the other', (tester) async {
     await tester.pumpWidget(harness(const _Host()));
@@ -309,6 +347,90 @@ void main() {
     semantics.dispose();
   });
 
+  testWidgets('a thumb announces only the adjustments its gap permits', (
+    tester,
+  ) async {
+    var values = const DesignRangeValues(60, 80);
+    await tester.pumpWidget(
+      harness(
+        StatefulBuilder(
+          builder: (_, setState) => DesignRangeSlider(
+            values: values,
+            max: 100,
+            divisions: 10,
+            minGap: 16,
+            onChanged: (next) => setState(() => values = next),
+            trackBuilder: (_, _) => const SizedBox.shrink(),
+            thumbBuilder: (_, _, _) => const SizedBox.shrink(),
+          ),
+        ),
+      ),
+    );
+
+    final lower = find.bySemanticsLabel('Minimum');
+    final upper = find.bySemanticsLabel('Maximum');
+    SemanticsData data(Finder thumb) =>
+        semanticsOf(tester, thumb).getSemanticsData();
+    Future<void> adjust(Finder thumb, SemanticsAction action) async {
+      semanticsOwner().performAction(tester.getSemantics(thumb).id, action);
+      await tester.pump();
+    }
+
+    // The nearest permitted values are between ticks. Keep their positions
+    // and percentages relative to the whole track.
+    expect(data(lower).increasedValue, '64%');
+    expect(data(upper).decreasedValue, '76%');
+    await adjust(lower, SemanticsAction.increase);
+    expect(data(lower).value, '64%');
+    expect(data(lower).hasAction(SemanticsAction.increase), isFalse);
+    expect(data(lower).increasedValue, isEmpty);
+    expect(data(upper).hasAction(SemanticsAction.decrease), isFalse);
+    expect(data(upper).decreasedValue, isEmpty);
+    expect(data(lower).decreasedValue, '50%');
+    expect(data(upper).increasedValue, '90%');
+
+    await adjust(lower, SemanticsAction.decrease);
+    expect(data(lower).value, '50%');
+    await adjust(upper, SemanticsAction.decrease);
+    expect(data(upper).value, '70%');
+    expect(data(upper).decreasedValue, '66%');
+    await adjust(upper, SemanticsAction.decrease);
+    expect(data(upper).value, '66%');
+    expect(data(upper).hasAction(SemanticsAction.decrease), isFalse);
+    expect(data(lower).hasAction(SemanticsAction.increase), isFalse);
+    expect(data(upper).increasedValue, '80%');
+  });
+
+  testWidgets('a fixed range with divisions offers no adjustments', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      harness(
+        DesignRangeSlider(
+          values: const DesignRangeValues(4, 4),
+          min: 4,
+          max: 4,
+          divisions: 4,
+          onChanged: (_) => fail('a fixed range cannot change'),
+          trackBuilder: (_, _) => const SizedBox.shrink(),
+          thumbBuilder: (_, _, _) => const SizedBox.shrink(),
+        ),
+      ),
+    );
+    for (final label in ['Minimum', 'Maximum']) {
+      final data = semanticsOf(
+        tester,
+        find.bySemanticsLabel(label),
+      ).getSemanticsData();
+      expect(data.value, '0%');
+      expect(data.hasAction(SemanticsAction.increase), isFalse);
+      expect(data.hasAction(SemanticsAction.decrease), isFalse);
+    }
+    await _press(tester, LogicalKeyboardKey.tab);
+    await _press(tester, LogicalKeyboardKey.end);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('a handle alone: vertical, growing down, as a divider', (
     tester,
   ) async {
@@ -338,4 +460,77 @@ void main() {
     expect(value, closeTo(0.4, 1e-9));
     expect(tester.getSize(find.byType(DesignValueHandle)), const Size(44, 44));
   });
+
+  for (final turnedOff in [false, true]) {
+    testWidgets('a drag cancelled${turnedOff ? ' while turned off' : ''} '
+        'lets the thumb go: not pressed, the click cursor', (tester) async {
+      var enabled = true;
+      var values = const DesignRangeValues(0.2, 0.8);
+      var pressed = false;
+      var ended = 0;
+      late StateSetter host;
+      await tester.pumpWidget(
+        harness(
+          Center(
+            child: SizedBox(
+              width: 350,
+              child: StatefulBuilder(
+                builder: (_, setState) {
+                  host = setState;
+                  return DesignRangeSlider(
+                    values: values,
+                    onChanged: enabled
+                        ? (next) => setState(() => values = next)
+                        : null,
+                    onChangeEnd: (_) => ended++,
+                    trackBuilder: (_, _) => const SizedBox.shrink(),
+                    thumbBuilder: (_, index, states) {
+                      if (index == 0) {
+                        pressed = states.contains(WidgetState.pressed);
+                      }
+                      return SizedBox.square(
+                        key: ValueKey('face $index'),
+                        dimension: 32,
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+      final finger = await tester.startGesture(
+        tester.getCenter(find.byKey(const ValueKey('face 0'))),
+        kind: PointerDeviceKind.touch,
+      );
+      await finger.moveBy(const Offset(35, 0));
+      await tester.pump();
+      expect(pressed, isTrue);
+      if (turnedOff) {
+        host(() => enabled = false);
+        await tester.pump();
+      }
+      await finger.cancel();
+      await tester.pump();
+      if (turnedOff) {
+        host(() => enabled = true);
+        await tester.pump();
+      }
+      final mouse = await tester.createGesture(
+        kind: PointerDeviceKind.mouse,
+        pointer: 42,
+      );
+      await mouse.addPointer(
+        location: tester.getCenter(find.byType(DesignRangeSlider)),
+      );
+      await tester.pump();
+      final cursor = RendererBinding.instance.mouseTracker
+          .debugDeviceActiveCursor(1);
+      await mouse.removePointer();
+      expect(pressed, isFalse);
+      expect(cursor, SystemMouseCursors.click);
+      expect(ended, turnedOff ? 0 : 1, reason: 'a cancelled drag ends');
+    });
+  }
 }

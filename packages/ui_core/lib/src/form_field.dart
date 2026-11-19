@@ -8,6 +8,18 @@
 /// [DesignFormField] and [DesignForm] add validation on the widgets layer's
 /// [Form]: a submit that fails shows every error, moves focus to the first
 /// field that is wrong, and tells a screen reader how many need attention.
+///
+/// Which one a control needs:
+///
+/// - [DesignField] alone, for a control whose label, help and error the app
+///   sets itself (a settings switch, a search box): it carries the words and
+///   their semantics, and validates nothing.
+/// - A [DesignFormField] round the [DesignField], for a value the form
+///   checks: it registers with the [Form] above it, runs its validator and
+///   hands its `errorText` to the [DesignField], whose control takes the
+///   [DesignFormField.focusNode].
+/// - [DesignForm] round the fields: it submits them, and on a submit that
+///   fails focuses the first field that is wrong.
 library;
 
 import 'dart:math' as math;
@@ -17,6 +29,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/announce.dart';
+import 'internal/field_words.dart';
 import 'localizations.dart';
 
 /// What a [DesignField]'s builder lays out.
@@ -240,7 +253,12 @@ class _DesignFieldState extends State<DesignField> {
         hint: hint.isEmpty ? null : hint,
         invalid: error != null,
         textDirection: Directionality.maybeOf(context),
-        child: control,
+        child: DesignFieldWords(
+          name: name,
+          hint: hint.isEmpty ? null : hint,
+          invalid: error != null,
+          child: control,
+        ),
       );
     } else if (merge) {
       control = MergeSemantics(
@@ -301,6 +319,11 @@ class _DesignFieldState extends State<DesignField> {
 
 /// A [FormField] whose control [DesignForm] can focus: give [focusNode]
 /// to the control.
+///
+/// It validates and registers; it draws no label, help or error and adds
+/// nothing to the semantics tree. Build a [DesignField] in [builder] and
+/// pass it the field's `errorText`, so the error is shown and read as the
+/// control's hint.
 ///
 /// ```dart
 /// DesignFormField<String>(validator: (value) => (value ?? '').isEmpty ? 'Required' : null, builder: (field) => Text(field.errorText ?? ''))
@@ -486,9 +509,14 @@ class _DesignFormScope extends InheritedWidget {
 
 // The field's own node, shaped by the controls under it: one control is
 // merged with the label, hint and validity; several keep their own nodes
-// under a node that names them. The label is left out when a control
-// already says it; a required field then says it is required first in its
-// hint, unless the control says that too.
+// under a node that names them, unless one of them is a text entry with no
+// node of its own and the others each have theirs: then the entry's node
+// is the field's (Material's text field with a suffix button), the others
+// in it. A control of ui_core's that carries the field's words on its own
+// node (a number field's entry) leaves the field's node saying nothing.
+// The label is left out when a control already says it (a button's name
+// aside); a required field then says it is required first in its hint,
+// unless the control says that too.
 class _FieldSemantics extends SingleChildRenderObjectWidget {
   const _FieldSemantics({
     required this.label,
@@ -586,7 +614,7 @@ class _RenderFieldSemantics extends RenderProxyBox {
 
   // The controls under the field as last described, to describe it again
   // when a layout or a rebuild changes them.
-  ({bool single, bool said, bool saidWhole})? _shape;
+  _FieldShape? _shape;
 
   @override
   void performLayout() {
@@ -599,9 +627,13 @@ class _RenderFieldSemantics extends RenderProxyBox {
     super.describeSemanticsConfiguration(config);
     final shape = _shape = _read();
     config.isSemanticBoundary = true;
+    if (shape.carried) {
+      config.explicitChildNodes = true;
+      return;
+    }
     if (shape.single) {
       config.isMergingSemanticsOfDescendants = true;
-    } else {
+    } else if (!shape.entry) {
       config.explicitChildNodes = true;
     }
     final label = _label;
@@ -616,13 +648,20 @@ class _RenderFieldSemantics extends RenderProxyBox {
         : SemanticsValidationResult.none;
   }
 
-  // Whether the child holds one control at most, whether anything it
+  // Whether the child holds one control at most; whether anything it
   // brings to the semantics tree already says the label's words (a control,
   // or a group's own node that names it: a line of its own that is the
   // words, or starts with them and a comma, as a required field's name
-  // does), and whether it says the whole name, a required field's included.
-  ({bool single, bool said, bool saidWhole}) _read() {
+  // does; a button's name is the button's, not the field's), and whether it
+  // says the whole name, a required field's included; whether its one text
+  // entry joins the field's node; and whether a control of ui_core's
+  // carries the field's words.
+  _FieldShape _read() {
     var controls = 0;
+    var entries = 0;
+    var joins = false;
+    var apart = true;
+    var carried = false;
     final words = _words?.trim().toLowerCase() ?? '';
     final name = _label?.trim().toLowerCase() ?? '';
     bool says(String text, String said) => text
@@ -640,6 +679,9 @@ class _RenderFieldSemantics extends RenderProxyBox {
 
       void hear(RenderObject n) {
         if ((said && whole) || (n is RenderExcludeSemantics && n.excluding)) {
+          return;
+        }
+        if (n is RenderSemanticsAnnotations && n.properties.button == true) {
           return;
         }
         if (n is RenderSemanticsAnnotations) {
@@ -684,19 +726,60 @@ class _RenderFieldSemantics extends RenderProxyBox {
       return below + (adjusts ? 1 : 0);
     }
 
-    void visit(RenderObject n) {
-      if (n is RenderExcludeSemantics && n.excluding) return;
-      if (n is RenderEditable || _acts(n)) {
-        controls += math.max(1, leaves(n));
-        return;
-      }
-      n.visitChildrenForSemantics(visit);
+    // Whether a text entry under [n] reaches the field's node: no node
+    // of its own stands between them.
+    bool reaches(RenderObject n) {
+      if (_bounds(n)) return false;
+      if (n is RenderEditable) return true;
+      var found = false;
+      n.visitChildrenForSemantics((c) => found = found || reaches(c));
+      return found;
     }
 
-    visitChildrenForSemantics(visit);
+    void visit(RenderObject n, bool below) {
+      if (n is RenderExcludeSemantics && n.excluding) return;
+      final bounded = below || _bounds(n);
+      if (n is RenderEditable || _acts(n)) {
+        final count = math.max(1, leaves(n));
+        controls += count;
+        if (count == 1 && holdsEntry(n)) {
+          entries++;
+          joins = !bounded && reaches(n);
+        } else if (!bounded) {
+          apart = false;
+        }
+        carried = carried || _carries(n);
+        return;
+      }
+      n.visitChildrenForSemantics((c) => visit(c, bounded));
+    }
+
+    visitChildrenForSemantics((c) => visit(c, false));
     final (:said, :saidWhole) = hears(this);
-    return (single: controls <= 1, said: said, saidWhole: saidWhole);
+    return (
+      single: controls <= 1,
+      said: said,
+      saidWhole: saidWhole,
+      entry: controls > 1 && entries == 1 && joins && apart,
+      carried: carried,
+    );
   }
+
+  // Whether [n] is, or holds, a control of ui_core's that carries the
+  // field's words.
+  static bool _carries(RenderObject n) {
+    if (n is RenderExcludeSemantics && n.excluding) return false;
+    if (n is RenderDesignFieldWordsCarried) return true;
+    var found = false;
+    n.visitChildrenForSemantics((c) => found = found || _carries(c));
+    return found;
+  }
+
+  // Whether [n] makes a node of its own, which nothing under it merges past.
+  static bool _bounds(RenderObject n) =>
+      n is RenderMergeSemantics ||
+      (n is RenderSemanticsAnnotations &&
+          (n.container || n.explicitChildNodes));
 
   // A node a press, a drag or an adjustment acts on, or one with a value
   // or a state of its own.
@@ -725,3 +808,12 @@ class _RenderFieldSemantics extends RenderProxyBox {
     return false;
   }
 }
+
+// What a field's child brings to the semantics tree.
+typedef _FieldShape = ({
+  bool single,
+  bool said,
+  bool saidWhole,
+  bool entry,
+  bool carried,
+});

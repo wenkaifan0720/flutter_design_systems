@@ -46,9 +46,11 @@ import 'package:ui_core/ui_core.dart';
 import 'internal/drawn_pixels.dart';
 import 'internal/label_line.dart';
 
+part 'checks/checkable_check.dart';
 part 'checks/cursor_check.dart';
 part 'checks/field_parts_check.dart';
 part 'checks/field_semantics_check.dart';
+part 'checks/radio_group_check.dart';
 part 'checks/shadow_clip_check.dart';
 part 'checks/spacing_check.dart';
 part 'checks/tap_target_check.dart';
@@ -2076,6 +2078,9 @@ class DesignLabelCheck {
 ///   taller) is the one the others are held to, and one drawn smaller is
 ///   named, whatever the reason: `a button "Cancel" beside a button "OK":
 ///   its top is level with theirs as laid out, 6 device px below as drawn`.
+///   A bevel (a face lit along two sides and shaded along the other two)
+///   has no single painted edge to read, so beside one the row is held as
+///   laid out: `its bottom is 2 px above theirs as laid out`.
 /// - every control's capitals (its label's, a text entry's typed text or
 ///   hint) on the row's centre line, that control's middle: `a button "OK"
 ///   beside a button "Cancel": the capitals of "OK" are 1 px below the row's
@@ -6132,8 +6137,15 @@ class _LabelReader extends _DrawnReader {
 
 // Reads one row of controls by their drawn outlines.
 // A control in a row with a face of its own: its face as laid out and its
-// outline as drawn (global).
-typedef _RowFace = ({RenderBox control, Rect laid, Rect drawn});
+// outline as drawn, the box that paints the face ([box]), and whether its
+// outline is a bevel, its box standing for its drawn edges (global).
+typedef _RowFace = ({
+  RenderBox control,
+  Rect laid,
+  Rect drawn,
+  Rect box,
+  bool bevel,
+});
 
 // A control's middle as the eye reads it, in the image's pixels, as drawn
 // and as laid out when known, what it is ("its icon is"), and whether it is
@@ -6257,7 +6269,7 @@ class _RowReader extends _DrawnReader {
       }
       final box = face.read ? _global(face.box) : face.rect;
       if (face.read && _hasBevel(box, ground)) {
-        faces.add((control: c, laid: box, drawn: box));
+        faces.add((control: c, laid: box, drawn: box, box: box, bevel: true));
         continue;
       }
       final drawn = marked.contains(face.box)
@@ -6269,7 +6281,13 @@ class _RowReader extends _DrawnReader {
         faceless.add(c);
         continue;
       }
-      faces.add((control: c, laid: face.rect, drawn: drawn ?? face.rect));
+      faces.add((
+        control: c,
+        laid: face.rect,
+        drawn: drawn ?? face.rect,
+        box: box,
+        bevel: false,
+      ));
     }
     final tallest = faces.isEmpty
         ? 0.0
@@ -6302,14 +6320,22 @@ class _RowReader extends _DrawnReader {
       for (final f in row) {
         if (identical(f, held)) continue;
         final who = '${_nameOf(f.control)} beside $theirs';
+        // A bevel's box stands for its drawn edges, so beside one the row
+        // is held as laid out.
+        final bevel = f.bevel || held.bevel;
         for (final (edge, laid, drawn) in [
-          ('top', f.laid.top - held.laid.top, f.drawn.top - held.drawn.top),
+          ('top', f.box.top - held.box.top, f.drawn.top - held.drawn.top),
           (
             'bottom',
-            f.laid.bottom - held.laid.bottom,
+            f.box.bottom - held.box.bottom,
             f.drawn.bottom - held.drawn.bottom,
           ),
         ]) {
+          if (bevel) {
+            if (laid.abs() * _ratio <= check.tolerance) continue;
+            found.add('$who: its $edge is ${_laidAgainst(laid)} as laid out');
+            continue;
+          }
           if (drawn.abs() * _ratio <= check.tolerance) continue;
           found.add(
             '$who: its $edge is ${_laidAgainst(laid)} as laid out, '

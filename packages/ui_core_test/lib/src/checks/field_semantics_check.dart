@@ -16,14 +16,16 @@ part of '../alignment.dart';
 ///   button "High" are one node, so a tap through the semantics tree
 ///   reaches one of them`.
 /// - **A stepper's buttons**: a button of a stepper (a node that steps a
-///   value) that takes a pointer's press and no tap through the semantics
+///   value and takes no tap itself; a date's segment that does is one
+///   control) that takes a pointer's press and no tap through the semantics
 ///   tree of its own (the stepper's node steps instead) lies under no node
 ///   that takes a tap, which would take it in the button's place: `a field
 ///   "Estimate": a tap through the semantics tree on its stepper's button on
 ///   the right lands on "Estimate", not on the button`.
 /// - **The label read once**: the field's label is a line of no more than
-///   one of the nodes over the field: `a field "Estimate": its label is
-///   read 2 times`.
+///   one of the nodes over the field, a button's own name aside (a search
+///   field's Search button): `a field "Estimate": its label is read 2
+///   times`.
 ///
 /// It reads the semantics tree, which a widget test has unless it turns it
 /// off ([WidgetTester.ensureSemantics] turns it on). A test pumps a screen,
@@ -156,7 +158,14 @@ class _FieldSemanticsReader {
       var heard = 0;
       for (final (node, rect) in placed) {
         if (node.isMergedIntoParent || !area.contains(rect.center)) continue;
-        for (final line in node.getSemanticsData().label.split('\n')) {
+        final data = node.getSemanticsData();
+        // A button's own name is the button's (a search field's Search),
+        // not a reading of the field's label; a node that merges several
+        // says each one's words on a line of its own, and is read by them.
+        if (data.flagsCollection.isButton && !data.label.contains('\n')) {
+          continue;
+        }
+        for (final line in data.label.split('\n')) {
           final l = line.trim().toLowerCase();
           if (l == words || l.startsWith('$words,')) heard++;
         }
@@ -175,9 +184,12 @@ class _FieldSemanticsReader {
     _visitShown(n, (c) => holds = _walk(c, excluded: below) || holds);
     final takes = !out && (n is RenderEditable || _takesTap(n));
     if (takes && !holds && n is RenderBox && n.hasSize) _taps.add(n);
+    // A stepper's buttons that take a press alone; a stepper node that takes
+    // a tap itself (a date's segment) is one control with what presses it.
     if (!out &&
         n is RenderSemanticsAnnotations &&
-        (n.properties.onIncrease != null || n.properties.onDecrease != null)) {
+        (n.properties.onIncrease != null || n.properties.onDecrease != null) &&
+        !_takesTap(n)) {
       _visitShown(n, (c) => _press(n, c, excluded: below));
     }
     return takes || holds;

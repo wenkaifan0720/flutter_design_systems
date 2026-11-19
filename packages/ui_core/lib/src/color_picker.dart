@@ -112,8 +112,6 @@ void _setChannel(DesignColorController c, DesignColorChannel ch, double v) {
   }
 }
 
-String _percent(double v) => '${(v * 100).round()}%';
-
 /// What the look paints the area from.
 @immutable
 class DesignColorAreaDetails {
@@ -277,6 +275,9 @@ class _DesignColorAreaState extends State<DesignColorArea> {
 
   @override
   Widget build(BuildContext context) {
+    final words = DesignLocalizations.of(context);
+    // The reader's direction, for what a screen reader says of the area.
+    final reading = Directionality.maybeOf(context);
     // A colour area is not mirrored right to left: saturation grows rightward.
     return Directionality(
       textDirection: TextDirection.ltr,
@@ -291,16 +292,20 @@ class _DesignColorAreaState extends State<DesignColorArea> {
               if (_dragging) WidgetState.pressed,
             },
           );
-          String said(double brightness) =>
-              'saturation ${_percent(hsv.saturation)}, '
-              'brightness ${_percent(brightness)}';
+          // "Saturation 40%, Brightness 60%", in the reader's words, digits
+          // and percent sign.
+          String said(double brightness) => [
+            '${words.colorChannelLabel(DesignColorChannel.saturation)} '
+                '${words.formatPercent(hsv.saturation)}',
+            '${words.colorChannelLabel(DesignColorChannel.brightness)} '
+                '${words.formatPercent(brightness)}',
+          ].join(words.listSeparator);
           final page = widget.step * 10;
           return Semantics(
             container: true,
             slider: true,
-            label:
-                widget.semanticLabel ??
-                DesignLocalizations.of(context).colorAreaLabel,
+            textDirection: reading,
+            label: widget.semanticLabel ?? words.colorAreaLabel,
             value: said(hsv.value),
             increasedValue: said((hsv.value + page).clamp(0.0, 1.0)),
             decreasedValue: said((hsv.value - page).clamp(0.0, 1.0)),
@@ -466,6 +471,7 @@ class _DesignColorSliderState extends State<DesignColorSlider> {
   Widget build(BuildContext context) {
     final ch = widget.channel;
     final c = widget.controller;
+    final words = DesignLocalizations.of(context);
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final t = widget.thumbSize;
     return ValueListenableBuilder<HSVColor>(
@@ -530,12 +536,12 @@ class _DesignColorSliderState extends State<DesignColorSlider> {
                         focusNode: widget.focusNode,
                         autofocus: widget.autofocus,
                         semanticLabel:
-                            widget.semanticLabel ??
-                            DesignLocalizations.of(context)
-                                .colorChannelLabel(ch),
+                            widget.semanticLabel ?? words.colorChannelLabel(ch),
+                        // In the reader's digits: the hue in degrees ("270°"),
+                        // the others as a percentage.
                         semanticFormatterCallback: ch == DesignColorChannel.hue
-                            ? (v) => '${v.round()} degrees'
-                            : _percent,
+                            ? (v) => '${words.formatDecimal(v.round())}°'
+                            : words.formatPercent,
                         onChanged: (v) => _setChannel(c, ch, v),
                         builder: widget.thumbBuilder,
                       ),

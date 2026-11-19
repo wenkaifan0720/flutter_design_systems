@@ -111,6 +111,9 @@ Future<void> _screenChecks(WidgetTester tester) async {
   const DesignTapTargetCheck(look: 'Comic')
       .check(tester.element(find.byType(SettingsScreen)))
       .verify();
+  const DesignCheckableCheck(look: 'Comic')
+      .check(tester.element(find.byType(SettingsScreen)))
+      .verify();
   const DesignTapTargetCheck(
     look: 'Comic',
     input: DesignInput.pointer,
@@ -119,6 +122,18 @@ Future<void> _screenChecks(WidgetTester tester) async {
   final report = await const DesignShadowClipCheck(look: 'Comic').check(
     tester.element(find.byType(SettingsScreen)),
     runAsync: tester.runAsync,
+  );
+  report.verify();
+}
+
+/// [DesignRadioGroupCheck]'s example: it takes the focusable before the
+/// group, so radio_group_check_test.dart runs it in its shape.
+Future<void> _radioGroupCheck(WidgetTester tester, FocusNode before) async {
+  final report = await const DesignRadioGroupCheck(look: 'Comic').check(
+    tester.element(find.byKey(const ValueKey('plan'))),
+    before: before,
+    sendKeyEvent: tester.sendKeyEvent,
+    pump: tester.pump,
   );
   report.verify();
 }
@@ -181,8 +196,11 @@ Future<void> _settleImages(WidgetTester tester) async {
 /// whose other files' examples are ui_core's.
 const Set<String> _checksFiles = {
   'alignment.dart',
+  'checkable_check.dart',
   'cursor_check.dart',
   'field_parts_check.dart',
+  'field_semantics_check.dart',
+  'radio_group_check.dart',
   'shadow_clip_check.dart',
   'spacing_check.dart',
   'tap_target_check.dart',
@@ -202,6 +220,7 @@ void main() {
     expect(_widthCheck, isNotNull);
     expect(_fitChecks, isNotNull);
     expect(_screenChecks, isNotNull);
+    expect(_radioGroupCheck, isNotNull);
     expect(_spacingLiterals, isNotNull);
     expect(_spacingLiteralsOnGrid, isNotNull);
   });

@@ -478,14 +478,23 @@ class _Toggle extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    label: label,
-    onTap: onTap,
-    child: ExcludeSemantics(
-      child: GestureDetector(
-        onTap: onTap,
-        child: DesignTapTarget(
+  Widget build(BuildContext context) => DesignPressable(
+    onPressed: onTap,
+    semanticLabel: label,
+    excludeSemantics: true,
+    builder: (context, states, _) => DesignTapTarget(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: states.contains(WidgetState.pressed) ? _band : null,
+          border: Border.all(
+            color: states.contains(WidgetState.focused)
+                ? _accent
+                : const Color(0x00000000),
+            width: 2,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(label, style: const TextStyle(color: _accent)),
         ),
       ),

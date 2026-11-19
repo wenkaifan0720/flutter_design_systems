@@ -915,7 +915,7 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
       return KeyEventResult.ignored;
     }
-    if (!enabled) return KeyEventResult.ignored;
+    if (!enabled || _isShortcut) return KeyEventResult.ignored;
     final part = _part(type);
     final key = event.logicalKey;
     if (key == LogicalKeyboardKey.arrowUp) {
@@ -949,6 +949,21 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
       _type(type, character);
     }
     return KeyEventResult.handled;
+  }
+
+  // A key pressed with Control, Meta or Alt held is a shortcut (Control-S,
+  // Command-K, Control-Z), not typing, and goes on to the shortcuts above
+  // the field. AltGr, which types characters on many layouts, is not one:
+  // AltGraph itself, or right Alt with Control as Windows reports it.
+  static bool get _isShortcut {
+    final keys = HardwareKeyboard.instance;
+    final altGr =
+        keys.isLogicalKeyPressed(LogicalKeyboardKey.altGraph) ||
+        (defaultTargetPlatform == TargetPlatform.windows &&
+            keys.isLogicalKeyPressed(LogicalKeyboardKey.altRight) &&
+            keys.isControlPressed);
+    if (altGr) return false;
+    return keys.isControlPressed || keys.isMetaPressed || keys.isAltPressed;
   }
 
   void _step(PatternPart part, int delta) {
@@ -1238,22 +1253,66 @@ abstract class _SegmentedFieldState<W extends StatefulWidget> extends State<W>
     }
 
     final built = [for (final p in _parts) part(p)];
+    // The segments lie on one line when they fit, and wrap between parts
+    // when the frame is narrower: each segment kept with the text after it
+    // ("16 /", "11 /", "2026"), so that no line starts with a separator.
     // Right to left, a run of digits still reads left to right
-    // ("16.11.2026", "3:05"), as the bidi algorithm reads a number.
+    // ("16.11.2026", "3:05"), as the bidi algorithm reads a number, and
+    // wraps the same way within itself, its lines kept to the right as the
+    // field's are; a run with text after it keeps to one line with that
+    // text.
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    Widget row(List<Widget> children, [TextDirection? direction]) => Row(
-      mainAxisSize: MainAxisSize.min,
+    bool text(int i) => _parts[i].literal != null;
+    Widget row(List<Widget> children, [TextDirection? direction]) =>
+        children.length == 1
+        ? children.single
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            textDirection: direction,
+            children: children,
+          );
+    Widget wrap(
+      List<Widget> children, [
+      TextDirection? direction,
+      WrapAlignment alignment = WrapAlignment.start,
+    ]) => Wrap(
       textDirection: direction,
+      alignment: alignment,
+      runAlignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: children,
     );
+    Widget kept(List<int> parts, [TextDirection? direction]) =>
+        row([for (final i in parts) built[i]], direction);
     final segments = rtl
-        ? row([
-            for (final run in numberRuns(_parts))
-              run.length == 1
-                  ? built[run.single]
-                  : row([for (final i in run) built[i]], TextDirection.ltr),
+        ? wrap([
+            for (final runs in unbreakable(
+              numberRuns(_parts),
+              (run) => run.length == 1 && text(run.single),
+            ))
+              if (runs case [final run] when run.length > 1)
+                wrap(
+                  [
+                    for (final parts in unbreakable(run, text))
+                      kept(parts, TextDirection.ltr),
+                  ],
+                  TextDirection.ltr,
+                  WrapAlignment.end,
+                )
+              else
+                row([
+                  for (final run in runs)
+                    run.length == 1
+                        ? built[run.single]
+                        : kept(run, TextDirection.ltr),
+                ]),
           ])
-        : row(built);
+        : wrap([
+            for (final parts in unbreakable([
+              for (var i = 0; i < _parts.length; i++) i,
+            ], text))
+              kept(parts),
+          ]);
     final focused = _focused != null;
     final states = <WidgetState>{
       if (!enabled) WidgetState.disabled,

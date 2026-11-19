@@ -55,7 +55,7 @@ void main() {
     node: () => find.bySemanticsLabel('Saturation and brightness'),
     semantics: isSemantics(
       label: 'Saturation and brightness',
-      value: 'saturation 100%, brightness 100%',
+      value: 'Saturation 100%, Brightness 100%',
       isSlider: true,
       isFocusable: true,
       hasIncreaseAction: true,
@@ -67,11 +67,11 @@ void main() {
       final t = p.tester;
       await p.tabInto();
       await p.key(LogicalKeyboardKey.arrowLeft);
-      expect(p.data.value, 'saturation 99%, brightness 100%');
+      expect(p.data.value, 'Saturation 99%, Brightness 100%');
       await p.tabInto(find.bySemanticsLabel('Hue'));
       expect(
         semanticsOf(t, find.bySemanticsLabel('Hue')),
-        isSemantics(isSlider: true, isFocused: true, value: '0 degrees'),
+        isSemantics(isSlider: true, isFocused: true, value: '0°'),
       );
       await p.key(LogicalKeyboardKey.arrowRight);
       expect(_cc.value.hue, closeTo(1, 0.5));
@@ -133,6 +133,92 @@ void main() {
     expect(c.value.value, closeTo(0.65, 0.001));
   });
 
+  testWidgets('the area says its value in the reader\'s words, digits and '
+      'percent sign', (tester) async {
+    final semantics = tester.ensureSemantics();
+    final c = DesignColorController(const Color(0xFF996633));
+    addTearDown(c.dispose);
+    Future<SemanticsData> area(
+      Locale locale,
+      TextDirection direction,
+      String label,
+    ) async {
+      await tester.pumpWidget(
+        harness(
+          Localizations(
+            locale: locale,
+            delegates: const [
+              DesignLocalizations.delegate,
+              DefaultWidgetsLocalizations.delegate,
+            ],
+            child: Directionality(textDirection: direction, child: _view(c)),
+          ),
+          textDirection: direction,
+        ),
+      );
+      return tester
+          .getSemantics(find.bySemanticsLabel(label))
+          .getSemanticsData();
+    }
+
+    // #996633: saturation 67%, brightness 60%.
+    final en = await area(
+      const Locale('en'),
+      TextDirection.ltr,
+      'Saturation and brightness',
+    );
+    expect(en.value, 'Saturation 67%, Brightness 60%');
+    expect(en.increasedValue, 'Saturation 67%, Brightness 70%');
+    expect(en.textDirection, TextDirection.ltr);
+    final de = DesignLocalizations.forLocale(const Locale('de'));
+    final german = await area(
+      const Locale('de'),
+      TextDirection.ltr,
+      de.colorAreaLabel,
+    );
+    expect(german.value, 'Sättigung 67 %, Helligkeit 60 %');
+    final ar = DesignLocalizations.forLocale(const Locale('ar'));
+    final arabic = await area(
+      const Locale('ar'),
+      TextDirection.rtl,
+      ar.colorAreaLabel,
+    );
+    expect(
+      arabic.value,
+      'التشبّع ${ar.formatPercent(0.67)}، السطوع ${ar.formatPercent(0.6)}',
+    );
+    expect(arabic.value, contains('٦٧'), reason: 'Arabic-Indic digits');
+    expect(arabic.value, contains('٪'), reason: 'the Arabic percent sign');
+    expect(
+      arabic.textDirection,
+      TextDirection.rtl,
+      reason: 'read right to left',
+    );
+    // The hue and alpha sliders, in the reader's digits and percent sign
+    // too.
+    expect(
+      tester
+          .getSemantics(
+            find.bySemanticsLabel(ar.colorChannelLabel(DesignColorChannel.hue)),
+          )
+          .getSemanticsData()
+          .value,
+      '${ar.formatDecimal(30)}°',
+    );
+    expect(
+      tester
+          .getSemantics(
+            find.bySemanticsLabel(
+              ar.colorChannelLabel(DesignColorChannel.alpha),
+            ),
+          )
+          .getSemanticsData()
+          .value,
+      ar.formatPercent(1),
+    );
+    semantics.dispose();
+  });
+
   testWidgets('the hue slider: a press, then keys; right to left mirrors '
       'it; a screen reader hears degrees', (tester) async {
     final semantics = tester.ensureSemantics();
@@ -146,7 +232,7 @@ void main() {
     expect(c.value.hue, closeTo(270, 0.5), reason: 'a quarter from the right');
     expect(
       tester.getSemantics(find.bySemanticsLabel('Hue')),
-      isSemantics(isSlider: true, value: '270 degrees'),
+      isSemantics(isSlider: true, value: '270°'),
     );
     final owner = semanticsOwner();
     owner.performAction(

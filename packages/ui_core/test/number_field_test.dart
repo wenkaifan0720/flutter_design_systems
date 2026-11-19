@@ -631,4 +631,85 @@ void main() {
       );
     });
   });
+
+  testWidgets('its node spans the field but its buttons, cut away from the '
+      'side of the entry they stand on', (tester) async {
+    final semantics = tester.ensureSemantics();
+    Widget field(Widget Function(Widget entry, Widget down, Widget up) lay) =>
+        harness(
+          Center(
+            child: DesignNumberField(
+              value: 4,
+              semanticLabel: 'Guests',
+              onChanged: (_) {},
+              fieldBuilder: (context, d) => plainField(
+                controller: d.controller,
+                focusNode: d.focusNode,
+                width: 80,
+              ),
+              buttonBuilder: (context, d) => SizedBox(
+                key: ValueKey(d.isIncrement ? '+' : '-'),
+                width: 24,
+                height: 16,
+              ),
+              // The stepper's node says the number, as a look's does.
+              layoutBuilder: (context, entry, down, up) => Semantics(
+                value: '4',
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: lay(entry, down, up),
+                ),
+              ),
+            ),
+          ),
+        );
+    Rect node() => globalRect(
+      tester.getSemantics(find.byType(DesignNumberField)),
+      tester.view.devicePixelRatio,
+    );
+    Rect box(Finder f) => tester.getRect(f);
+    final whole = find.byType(DesignNumberField);
+    final up = find.byKey(const ValueKey('+'));
+    final down = find.byKey(const ValueKey('-'));
+
+    // A frame with the buttons stacked at its end.
+    await tester.pumpWidget(
+      field(
+        (entry, down, up) => Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            entry,
+            Column(mainAxisSize: MainAxisSize.min, children: [up, down]),
+          ],
+        ),
+      ),
+    );
+    expect(
+      node(),
+      Rect.fromLTRB(
+        box(whole).left,
+        box(whole).top,
+        box(up).left,
+        box(whole).bottom,
+      ),
+    );
+
+    // The buttons above and below the entry.
+    await tester.pumpWidget(
+      field(
+        (entry, down, up) =>
+            Column(mainAxisSize: MainAxisSize.min, children: [up, entry, down]),
+      ),
+    );
+    expect(
+      node(),
+      Rect.fromLTRB(
+        box(whole).left,
+        box(up).bottom,
+        box(whole).right,
+        box(down).top,
+      ),
+    );
+    semantics.dispose();
+  });
 }

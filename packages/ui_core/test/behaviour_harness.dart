@@ -109,3 +109,20 @@ SemanticsNode textFieldNode() {
   semanticsOwner().rootSemanticsNode!.visitChildren(visit);
   return found!;
 }
+
+/// [node]'s box in the view, in logical pixels: the root's transform
+/// scales by [ratio].
+Rect globalRect(SemanticsNode node, double ratio) {
+  var rect = node.rect;
+  for (SemanticsNode? n = node; n != null; n = n.parent) {
+    if (n.transform != null) {
+      rect = MatrixUtils.transformRect(n.transform!, rect);
+    }
+  }
+  return Rect.fromLTRB(
+    rect.left / ratio,
+    rect.top / ratio,
+    rect.right / ratio,
+    rect.bottom / ratio,
+  );
+}

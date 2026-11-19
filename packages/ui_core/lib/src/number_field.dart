@@ -4,12 +4,15 @@
 library;
 
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/decimal.dart' as decimal;
+import 'internal/field_words.dart';
 import 'localizations.dart';
 
 /// The field, as [DesignNumberField.fieldBuilder] gets it: wire
@@ -109,7 +112,13 @@ typedef DesignNumberFieldLayoutBuilder = Widget Function(
 /// Down [pageStep]; Home and End stay the caret's. The two buttons step
 /// once on a press and repeat while held; they are no tab stops and no
 /// screen reader nodes: the field's own node steps, with the next and
-/// previous values.
+/// previous values. That node spans the field but its buttons: each button
+/// is cut away from the side of the entry (the box [fieldBuilder] builds)
+/// it stands on, so a tap through the semantics tree on a button (a click
+/// on the web with semantics on) reaches no node in the button's place.
+/// Inside a
+/// [DesignField] it takes the field's name, help and error, and the field
+/// adds no node of its own that says them.
 ///
 /// That node takes its value from the input's, merged into it. An input
 /// that says itself whether it is enabled (Material's `TextField`) does
@@ -196,7 +205,8 @@ class DesignNumberField extends StatefulWidget {
   final bool autofocus;
 
   /// What a screen reader calls the field ("Quantity"); null: the look's
-  /// label, if it gives one.
+  /// label, if it gives one. Inside a [DesignField] with a label, the
+  /// field's label names it.
   final String? semanticLabel;
 
   /// How a screen reader says the next and previous values ("3 guests");
@@ -563,17 +573,29 @@ class _DesignNumberFieldState extends State<DesignNumberField> {
     );
     final decrement = _button(false);
     final increment = _button(true);
-    return Semantics(
-      container: true,
-      label: widget.semanticLabel,
-      enabled: _enabled,
-      minValue: widget.min?.toString(),
-      maxValue: widget.max?.toString(),
-      // The next values beside the text's; an empty field has neither.
-      increasedValue: up == null || empty ? null : say(up),
-      decreasedValue: down == null || empty ? null : say(down),
-      onIncrease: up == null ? null : () => _step(1),
-      onDecrease: down == null ? null : () => _step(-1),
+    // The field's words, when a DesignField round it gives them to this
+    // field's node.
+    final words = DesignFieldWords.maybeOf(context);
+    final entry = _Entry(
+      child: words == null ? field : DesignFieldWordsCarried(child: field),
+    );
+    return _FieldNode(
+      properties: SemanticsProperties(
+        label: words?.name ?? widget.semanticLabel,
+        hint: words?.hint,
+        validationResult: words?.invalid ?? false
+            ? SemanticsValidationResult.invalid
+            : SemanticsValidationResult.none,
+        enabled: _enabled,
+        minValue: widget.min?.toString(),
+        maxValue: widget.max?.toString(),
+        // The next values beside the text's; an empty field has neither.
+        increasedValue: up == null || empty ? null : say(up),
+        decreasedValue: down == null || empty ? null : say(down),
+        onIncrease: up == null ? null : () => _step(1),
+        onDecrease: down == null ? null : () => _step(-1),
+      ),
+      textDirection: Directionality.maybeOf(context),
       child: ExcludeFocus(
         excluding: !_enabled,
         child: Focus(
@@ -587,7 +609,7 @@ class _DesignNumberFieldState extends State<DesignNumberField> {
             child:
                 widget.layoutBuilder?.call(
                   context,
-                  field,
+                  entry,
                   decrement,
                   increment,
                 ) ??
@@ -595,7 +617,7 @@ class _DesignNumberFieldState extends State<DesignNumberField> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     decrement,
-                    Flexible(child: field),
+                    Flexible(child: entry),
                     increment,
                   ],
                 ),
@@ -605,6 +627,112 @@ class _DesignNumberFieldState extends State<DesignNumberField> {
     );
   }
 }
+
+// The field's node: what it says and does, over the entry's box alone, so
+// the buttons beside the entry stand under no node that takes a tap in
+// their place.
+class _FieldNode extends SingleChildRenderObjectWidget {
+  const _FieldNode({
+    required this.properties,
+    required this.textDirection,
+    required super.child,
+  });
+
+  final SemanticsProperties properties;
+  final TextDirection? textDirection;
+
+  @override
+  _RenderFieldNode createRenderObject(BuildContext context) =>
+      _RenderFieldNode(properties: properties, textDirection: textDirection);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderFieldNode renderObject) {
+    renderObject
+      ..properties = properties
+      ..textDirection = textDirection;
+  }
+}
+
+class _RenderFieldNode extends RenderSemanticsAnnotations {
+  _RenderFieldNode({required super.properties, super.textDirection})
+    : super(container: true);
+
+  // The field, each step button cut away from the side of the entry it
+  // stands on (a button over the entry is left), so a tap through the
+  // semantics tree on a button finds no node in its place.
+  @override
+  Rect get semanticBounds {
+    final whole = super.semanticBounds;
+    RenderBox? entry;
+    final buttons = <RenderBox>[];
+    void visit(RenderObject c) {
+      if (c is _RenderEntry) {
+        entry ??= c;
+      } else if (c is _RenderButtonBox) {
+        buttons.add(c);
+      } else {
+        c.visitChildren(visit);
+      }
+    }
+
+    visitChildren(visit);
+    final e = _rectOf(entry);
+    if (e == null) return whole;
+    var left = whole.left, top = whole.top;
+    var right = whole.right, bottom = whole.bottom;
+    const slack = .5;
+    for (final button in buttons) {
+      final r = _rectOf(button);
+      if (r == null || r.isEmpty) continue;
+      if (r.left >= e.right - slack) {
+        right = math.min(right, r.left);
+      } else if (r.right <= e.left + slack) {
+        left = math.max(left, r.right);
+      } else if (r.top >= e.bottom - slack) {
+        bottom = math.min(bottom, r.top);
+      } else if (r.bottom <= e.top + slack) {
+        top = math.max(top, r.bottom);
+      }
+    }
+    return Rect.fromLTRB(left, top, right, bottom).expandToInclude(e);
+  }
+
+  Rect? _rectOf(RenderBox? box) {
+    if (box == null || !box.hasSize || !box.attached) return null;
+    return MatrixUtils.transformRect(
+      box.getTransformTo(this),
+      Offset.zero & box.size,
+    );
+  }
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    // The entry may move inside a field whose size stays: its node follows.
+    markNeedsSemanticsUpdate();
+  }
+}
+
+// The box the entry stands in, which the field's node always spans.
+class _Entry extends SingleChildRenderObjectWidget {
+  const _Entry({required super.child});
+
+  @override
+  _RenderEntry createRenderObject(BuildContext context) => _RenderEntry();
+}
+
+class _RenderEntry extends RenderProxyBox {}
+
+// The box a step button stands in, which the field's node leaves out.
+class _ButtonBox extends SingleChildRenderObjectWidget {
+  const _ButtonBox({required super.child});
+
+  @override
+  _RenderButtonBox createRenderObject(BuildContext context) =>
+      _RenderButtonBox();
+}
+
+class _RenderButtonBox extends RenderProxyBox {}
 
 // A step button: a press steps, a hold repeats; pointer only.
 class _StepButton extends StatefulWidget {
@@ -664,25 +792,27 @@ class _StepButtonState extends State<_StepButton> {
   }
 
   @override
-  Widget build(BuildContext context) => ExcludeSemantics(
-    child: MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        excludeFromSemantics: true,
-        onTapDown: widget.enabled ? (_) => _press() : null,
-        onTapUp: widget.enabled ? (_) => _release() : null,
-        onTapCancel: _release,
-        child: widget.builder(
-          context,
-          DesignNumberFieldButtonDetails(
-            isIncrement: widget.isIncrement,
-            states: {
-              if (!widget.enabled) WidgetState.disabled,
-              if (widget.enabled && _pressed) WidgetState.pressed,
-              if (widget.enabled && _hovered) WidgetState.hovered,
-            },
+  Widget build(BuildContext context) => _ButtonBox(
+    child: ExcludeSemantics(
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          excludeFromSemantics: true,
+          onTapDown: widget.enabled ? (_) => _press() : null,
+          onTapUp: widget.enabled ? (_) => _release() : null,
+          onTapCancel: _release,
+          child: widget.builder(
+            context,
+            DesignNumberFieldButtonDetails(
+              isIncrement: widget.isIncrement,
+              states: {
+                if (!widget.enabled) WidgetState.disabled,
+                if (widget.enabled && _pressed) WidgetState.pressed,
+                if (widget.enabled && _hovered) WidgetState.hovered,
+              },
+            ),
           ),
         ),
       ),

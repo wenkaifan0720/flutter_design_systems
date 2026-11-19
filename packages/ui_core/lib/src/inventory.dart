@@ -84,7 +84,7 @@ class DesignInventoryRow {
     refs: 'MS',
   );
 
-  /// Toggle button or toggle group.
+  /// Toggle button or toggle group; a single-choice one is the [segmentedButton].
   static const toggleGroup = DesignInventoryRow._(
     'ToggleGroup',
     'Actions',
@@ -245,12 +245,13 @@ class DesignInventoryRow {
     behaviour: 'DesignRangeSlider',
   );
 
-  /// Segmented control.
+  /// Segmented control: a single-choice [toggleGroup].
   static const segmentedButton = DesignInventoryRow._(
     'SegmentedButton',
     'Inputs',
     'Segmented control',
     refs: 'MC',
+    behaviour: 'DesignToggleGroup',
   );
 
   /// Chips (filter, choice, input).

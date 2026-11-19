@@ -295,3 +295,23 @@ List<List<int>> numberRuns(List<PatternPart> parts) {
   }
   return runs;
 }
+
+/// [items] in groups a line of wrapped segments never breaks inside: each
+/// item that is not [isText] with the text items after it, text before the
+/// first such item joining it, so that no line starts with a separator.
+List<List<T>> unbreakable<T>(List<T> items, bool Function(T item) isText) {
+  final groups = <List<T>>[];
+  final lead = <T>[];
+  for (final item in items) {
+    if (!isText(item)) {
+      groups.add([...lead, item]);
+      lead.clear();
+    } else if (groups.isEmpty) {
+      lead.add(item);
+    } else {
+      groups.last.add(item);
+    }
+  }
+  if (lead.isNotEmpty) groups.add(lead);
+  return groups;
+}

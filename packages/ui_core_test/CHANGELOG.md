@@ -1,3 +1,17 @@
+## 0.1.3
+
+- `DesignRowCheck` gives an edge's offset "as laid out" from the faces' boxes, not their painted ink, and beside a
+  bevelled face, whose painted edge it cannot read, holds the row as laid out only.
+- `DesignFieldSemanticsCheck` reads a date or time field's segment, a node that steps and takes a tap, as one control:
+  a typed date inside a `DesignField` no longer fails.
+- `DesignFieldSemanticsCheck` takes a button's own name (a search field's Search) as the button's, not as a reading of
+  the field's label. A node that merges several controls is still read line by line.
+- `DesignRadioGroupCheck`: a group of radios is one tab stop that lands on the chosen radio, and its arrow keys move
+  to the next radio that can be chosen, round the group, and choose it (Left and Right swapped right to left), as
+  Flutter's `RadioGroup` does.
+- `DesignCheckableCheck`: each checkbox, radio and switch on a screen says what it is: a node that says it is checked
+  or toggled does not also say it is a button, and a radio says whether it is checked.
+
 ## 0.1.2
 
 - `DesignFieldPartsCheck` holds a field's own parts: each segment of a date or time field keeps its text at least

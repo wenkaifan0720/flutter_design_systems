@@ -213,6 +213,20 @@ class _DesignRangeSliderState extends State<DesignRangeSlider> {
   // The thumb painted on top where the two meet: the one moved last.
   int _onTop = 1;
 
+  @override
+  void didUpdateWidget(DesignRangeSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Turned off mid-drag, the slider drops its drag recognizer, which then
+    // tells it nothing more: the drag ends here.
+    if (widget.onChanged == null) _dragging = null;
+  }
+
+  // The drag ends, lifted or cancelled.
+  void _endDrag() {
+    setState(() => _dragging = null);
+    widget.onChangeEnd?.call(widget.values);
+  }
+
   void _moving(int index) {
     if (_onTop != index) setState(() => _onTop = index);
   }
@@ -224,28 +238,31 @@ class _DesignRangeSliderState extends State<DesignRangeSlider> {
   double _snap(double v) {
     final c = v.clamp(widget.min, widget.max);
     final d = widget.divisions;
-    if (d == null || d <= 0) return c;
+    if (d == null || d <= 0 || _range == 0) return c;
     final unit = _range / d;
     return widget.min + ((c - widget.min) / unit).round() * unit;
   }
 
-  void _set(int index, double v) {
-    final change = widget.onChanged;
-    if (change == null) return;
+  double _clampThumb(int index, double snapped) {
     final r = widget.values;
-    final lo = r.start + widget.minGap;
-    final hi = r.end - widget.minGap;
-    final next = index == 0
-        ? DesignRangeValues(
-            _snap(v).clamp(widget.min, hi < widget.min ? widget.min : hi),
-            r.end,
-          )
-        : DesignRangeValues(
-            r.start,
-            _snap(v).clamp(lo > widget.max ? widget.max : lo, widget.max),
-          );
-    if (next != r) change(next);
+    if (index == 0) {
+      final hi = (r.end - widget.minGap).clamp(widget.min, widget.max);
+      return snapped.clamp(widget.min, hi);
+    }
+    final lo = (r.start + widget.minGap).clamp(widget.min, widget.max);
+    return snapped.clamp(lo, widget.max);
   }
+
+  void _set(int index, double value) {
+    final r = widget.values;
+    final next = index == 0
+        ? DesignRangeValues(value, r.end)
+        : DesignRangeValues(r.start, value);
+    if (next != r) widget.onChanged?.call(next);
+  }
+
+  void _setFromTrack(int index, double value) =>
+      _set(index, _clampThumb(index, _snap(value)));
 
   // The value under a pointer at [dx] on a track [width] wide.
   double _valueAt(double dx, double width) {
@@ -296,6 +313,7 @@ class _DesignRangeSliderState extends State<DesignRangeSlider> {
             min: widget.min,
             max: widget.max,
             divisions: widget.divisions,
+            clampValue: (value) => _clampThumb(index, value),
             step: widget.step,
             pageStep: widget.pageStep,
             dragging: _dragging == index,
@@ -346,27 +364,25 @@ class _DesignRangeSliderState extends State<DesignRangeSlider> {
                       _onTop = i;
                     });
                     widget.onChangeStart?.call(widget.values);
-                    _set(_dragging!, v);
+                    _setFromTrack(i, v);
                   },
             onHorizontalDragUpdate: !enabled
                 ? null
                 : (d) {
                     final i = _dragging;
-                    if (i != null) _set(i, _valueAt(d.localPosition.dx, width));
+                    if (i != null) {
+                      _setFromTrack(i, _valueAt(d.localPosition.dx, width));
+                    }
                   },
-            onHorizontalDragEnd: !enabled
-                ? null
-                : (_) {
-                    setState(() => _dragging = null);
-                    widget.onChangeEnd?.call(widget.values);
-                  },
+            onHorizontalDragEnd: !enabled ? null : (_) => _endDrag(),
+            onHorizontalDragCancel: !enabled ? null : _endDrag,
             onTapUp: !enabled
                 ? null
                 : (d) {
                     final v = _valueAt(d.localPosition.dx, width);
                     final i = _nearer(v);
                     _moving(i);
-                    _set(i, v);
+                    _setFromTrack(i, v);
                   },
             child: SizedBox(
               height: thumb.height,
