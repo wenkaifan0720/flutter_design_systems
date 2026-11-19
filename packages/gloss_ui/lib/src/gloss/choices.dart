@@ -13,6 +13,7 @@ import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'fonts.dart';
+import 'internal/glaze_state.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -148,8 +149,10 @@ class GlossCheckbox extends StatelessWidget {
               target: on ? 1 : 0,
               damping: GlossMotion.pressDamping,
               stiffness: GlossMotion.snapStiffness,
-              builder: (context, t) => CustomPaint(
-                painter: _SocketPainter(
+              builder: (context, t) => animatedGlazePaint(
+                context,
+                glossGlazeOf(c, states),
+                (light) => _SocketPainter(
                   colors: c,
                   t: t,
                   round: false,
@@ -158,10 +161,7 @@ class GlossCheckbox extends StatelessWidget {
                   disabled: disabled,
                   error: isError,
                   fill: layered.fill,
-                  focus: glossFocusOf(
-                    c,
-                    focused: states.contains(WidgetState.focused),
-                  ),
+                  focus: light,
                   highContrast:
                       MediaQuery.maybeHighContrastOf(context) ?? false,
                 ),
@@ -277,8 +277,10 @@ class _RadioSocket extends StatelessWidget {
       dimension: size,
       child: _Sprung(
         target: chosen ? 1 : 0,
-        builder: (context, t) => CustomPaint(
-          painter: _SocketPainter(
+        builder: (context, t) => animatedGlazePaint(
+          context,
+          glossGlazeOf(c, states),
+          (light) => _SocketPainter(
             colors: c,
             t: t,
             round: true,
@@ -287,10 +289,7 @@ class _RadioSocket extends StatelessWidget {
             disabled: states.contains(WidgetState.disabled),
             error: false,
             fill: layered.fill,
-            focus: glossFocusOf(
-              c,
-              focused: states.contains(WidgetState.focused),
-            ),
+            focus: light,
             highContrast: MediaQuery.maybeHighContrastOf(context) ?? false,
           ),
         ),
@@ -466,10 +465,17 @@ class _SocketPainter extends CustomPainter {
           : light
           ? const Color(0x33000000)
           : const Color(0x33FFFFFF),
-      focus: focus,
+      focus: t < 0.01 || round ? focus : null,
+      travel: pressed ? 0.7 : 0,
     );
     if (highContrast) socket = socket.copyWith(edge: colors.ink);
-    paintGlossFace(canvas, rect, socket, highContrast: highContrast);
+    paintGlossFace(
+      canvas,
+      rect,
+      socket,
+      brightness: colors.brightness,
+      highContrast: highContrast,
+    );
     final shown = t.clamp(0.0, 1.2);
     if (shown <= 0.01) return;
     // The insert (a checkbox) or the bead (a radio): jade gel, seated in the
@@ -490,6 +496,7 @@ class _SocketPainter extends CustomPainter {
           );
     if (fill != null && !disabled) gel = gel.glazed(fill!);
     gel = gel.copyWith(
+      focus: focus,
       lift: 0.35,
       radius: round ? null : (GlossMetrics.socketRadius - inset) * scale,
     );
@@ -497,7 +504,13 @@ class _SocketPainter extends CustomPainter {
       rect.inflate(4),
       Paint()..color = Color.fromRGBO(0, 0, 0, shown.clamp(0.0, 1.0)),
     );
-    paintGlossFace(canvas, seat, gel, highContrast: highContrast);
+    paintGlossFace(
+      canvas,
+      seat,
+      gel,
+      brightness: colors.brightness,
+      highContrast: highContrast,
+    );
     if (!round) {
       final mark = Paint()
         ..style = PaintingStyle.stroke
@@ -682,18 +695,17 @@ class _GlossSwitchState extends State<GlossSwitch>
                 height: _height,
                 child: AnimatedBuilder(
                   animation: _position,
-                  builder: (context, _) => CustomPaint(
-                    painter: _SwitchPainter(
+                  builder: (context, _) => animatedGlazePaint(
+                    context,
+                    glossGlazeOf(c, states),
+                    (light) => _SwitchPainter(
                       colors: c,
                       t: _position.value,
                       rtl: _rtl,
                       pressed: pressed || _dragging,
                       disabled: disabled,
                       light: layered.fill,
-                      focus: glossFocusOf(
-                        c,
-                        focused: states.contains(WidgetState.focused),
-                      ),
+                      focus: light,
                       highContrast:
                           MediaQuery.maybeHighContrastOf(context) ?? false,
                     ),
@@ -740,9 +752,9 @@ class _SwitchPainter extends CustomPainter {
       rect,
       GlossFace.well(colors).copyWith(
         lift: disabled ? -0.5 : -1,
-        focus: focus,
         edge: highContrast ? colors.ink : const Color(0x00000000),
       ),
+      brightness: colors.brightness,
       highContrast: highContrast,
     );
     // The gel moulded into it: smoke when off, jade when on, one glossy
@@ -774,7 +786,8 @@ class _SwitchPainter extends CustomPainter {
     paintGlossFace(
       canvas,
       rect.deflate(2),
-      gel.copyWith(edge: highContrast ? colors.ink : null),
+      gel.copyWith(edge: highContrast ? colors.ink : null, focus: focus),
+      brightness: colors.brightness,
       highContrast: highContrast,
     );
     // The bead.
@@ -784,6 +797,7 @@ class _SwitchPainter extends CustomPainter {
     final beadRect = Rect.fromLTWH(x, (size.height - bead) / 2, bead, bead);
     // By night the bead is the brightest thing on the gel, as by day.
     final pearl = GlossFace.pearl(colors).copyWith(
+      focus: focus,
       // By night the bead a finger carries is moonlit pearl: light against
       // the dark slot, so a switch never reads as switched off for good.
       top: day ? null : const Color(0xFFD5DADF),
@@ -802,7 +816,13 @@ class _SwitchPainter extends CustomPainter {
       bead + squeeze,
       bead,
     );
-    paintGlossFace(canvas, shaped, pearl, highContrast: highContrast);
+    paintGlossFace(
+      canvas,
+      shaped,
+      pearl,
+      brightness: colors.brightness,
+      highContrast: highContrast,
+    );
   }
 
   @override
@@ -1031,8 +1051,10 @@ class _Segment<T> extends StatelessWidget {
         final focused = states.contains(WidgetState.focused);
         final pressed = states.contains(WidgetState.pressed);
         return DesignTapTarget(
-          child: GlossFocusHalo(
+          child: GlossGlazeHighlight(
             focused: focused,
+            hovered: states.contains(WidgetState.hovered),
+            pressed: states.contains(WidgetState.pressed),
             inside: true,
             // On the chosen position's jade, the light of its words.
             color: chosen && !disabled ? c.onJade : null,
@@ -1181,6 +1203,7 @@ class GlossStepper extends StatelessWidget {
                 child: AnimatedGlossSurface(
                   face: can
                       ? GlossFace.pearl(c).copyWith(
+                          focus: glossGlazeOf(c, states),
                           travel: states.contains(WidgetState.pressed) ? 1 : 0,
                         )
                       : GlossFace.pearlOff(c),
@@ -1206,7 +1229,6 @@ class GlossStepper extends StatelessWidget {
       axis: Axis.vertical,
       mouseCursor: SystemMouseCursors.basic,
       builder: (context, states) {
-        final focused = states.contains(WidgetState.focused);
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1220,7 +1242,7 @@ class GlossStepper extends StatelessWidget {
                   face: GlossFace.well(c, radius: GlossMetrics.fieldRadius)
                       .copyWith(
                         lift: enabled ? -1 : -0.5,
-                        focus: glossFocusOf(c, focused: focused),
+                        focus: glossGlazeOf(c, states),
                       ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
@@ -1510,10 +1532,7 @@ class _GlossSliderState extends State<GlossSlider> {
                             travel: _dragging ? 0.6 : 0,
                             lens: enabled ? null : 0.3,
                             lift: enabled ? null : 0.4,
-                            focus: glossFocusOf(
-                              c,
-                              focused: states.contains(WidgetState.focused),
-                            ),
+                            focus: glossGlazeOf(c, states),
                           ),
                         ),
                       ),
@@ -1658,7 +1677,7 @@ class GlossChip extends StatelessWidget {
         if (layered.fill != null) face = face.glazed(layered.fill!);
         face = face.copyWith(
           foreground: colour,
-          focus: glossFocusOf(c, focused: states.contains(WidgetState.focused)),
+          focus: glossGlazeOf(c, states),
         );
         final height = math.max(32.0, theme.controlHeight - 12);
         // Its height is a floor: large words make the capsule taller, never

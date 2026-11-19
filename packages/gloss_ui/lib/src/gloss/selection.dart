@@ -14,6 +14,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'button.dart';
 import 'feedback.dart';
 import 'lists.dart';
+import 'internal/glaze_state.dart';
 import 'surface.dart';
 import 'text_field.dart';
 import 'theme.dart';
@@ -137,10 +138,7 @@ class GlossRangeSlider extends StatelessWidget {
               travel: states.contains(WidgetState.pressed) ? 0.6 : 0,
               lens: enabled ? null : 0.3,
               lift: enabled ? null : 0.4,
-              focus: glossFocusOf(
-                c,
-                focused: states.contains(WidgetState.focused),
-              ),
+              focus: glossGlazeOf(c, states),
             ),
           ),
         ),
@@ -273,19 +271,29 @@ class GlossRating extends StatelessWidget {
       semanticLabel: semanticLabel,
       itemBuilder: (context, star) {
         final n = star.index + 1;
-        // The keys' ring and a drag's dip sit on the last star given.
+        // Keyboard focus follows the last assigned star.
         final lead = n == math.max(1, value);
         final painted = SizedBox.square(
           dimension: enabled ? math.max(size + 8, 36) : size + 4,
-          child: CustomPaint(
-            painter: _StarPainter(
-              c,
-              // The value, not a hovering pointer's preview: the stars
-              // light only when given.
-              on: n <= value,
-              pressed: lead && star.states.contains(WidgetState.pressed),
-              focused: lead && star.states.contains(WidgetState.focused),
-              size: size,
+          child: GlazePointerBuilder(
+            enabled: enabled,
+            builder: (hovered, pressed) => animatedGlazePaint(
+              context,
+              glossGlazeOf(c, {
+                if (lead && star.states.contains(WidgetState.focused))
+                  WidgetState.focused,
+                if (hovered) WidgetState.hovered,
+                if (pressed) WidgetState.pressed,
+              }),
+              (light) => _StarPainter(
+                c,
+                // The value, not a hovering pointer's preview: the stars
+                // light only when given.
+                on: n <= value,
+                pressed: pressed,
+                light: light,
+                size: size,
+              ),
             ),
           ),
         );
@@ -320,14 +328,14 @@ class _StarPainter extends CustomPainter {
     this.c, {
     required this.on,
     required this.pressed,
-    required this.focused,
+    required this.light,
     required this.size,
   });
 
   final GlossColors c;
   final bool on;
   final bool pressed;
-  final bool focused;
+  final Color light;
   final double size;
 
   Path _star(Offset centre, double r) {
@@ -347,7 +355,7 @@ class _StarPainter extends CustomPainter {
     final r = size / 2;
     final star = _star(centre, r);
     final bounds = star.getBounds();
-    final light = c.brightness == Brightness.light;
+    final day = c.brightness == Brightness.light;
     // A given star is on, so jade gel (law 1); one not given is engraved.
     final gel = GlossFace.gel(c);
     if (on) {
@@ -414,24 +422,20 @@ class _StarPainter extends CustomPainter {
             ..strokeJoin = StrokeJoin.round
             // By night the cut's shade sinks into the dark page; its rim
             // catches a little light instead, so the star still reads.
-            ..color = light
-                ? c.wellShade
-                : c.inkSecondary.withValues(alpha: 0.5),
+            ..color = day ? c.wellShade : c.inkSecondary.withValues(alpha: 0.5),
         );
     }
-    if (focused) {
+    if (light.a > 0) {
+      canvas
+        ..save()
+        ..clipPath(star);
       paintGlossHalo(
         canvas,
-        glossOutline(
-          Rect.fromCircle(
-            center: box.center(Offset.zero),
-            radius: box.shortestSide / 2,
-          ),
-          null,
-        ),
-        c.focus,
-        inside: true,
+        RRect.fromRectAndRadius(bounds, Radius.zero),
+        light,
+        brightness: c.brightness,
       );
+      canvas.restore();
     }
   }
 
@@ -439,7 +443,7 @@ class _StarPainter extends CustomPainter {
   bool shouldRepaint(_StarPainter old) =>
       old.on != on ||
       old.pressed != pressed ||
-      old.focused != focused ||
+      old.light != light ||
       old.c != c ||
       old.size != size;
 }

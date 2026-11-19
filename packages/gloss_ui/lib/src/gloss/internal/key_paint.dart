@@ -43,7 +43,7 @@ GlossFace glossKeyFace(
   final layered = DesignStyleOf([style, glossKeyTheme(theme, kind)], states);
   final disabled = states.contains(WidgetState.disabled);
   final pressed = states.contains(WidgetState.pressed);
-  final focus = glossFocusOf(c, focused: states.contains(WidgetState.focused));
+  final focus = glossGlazeOf(c, states);
   if (disabled) {
     // Clouded, not lit: a gel key off keeps a faint cast of its gel, so
     // it still reads as the screen's action and apart from a pearl key.

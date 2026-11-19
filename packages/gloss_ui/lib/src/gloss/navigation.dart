@@ -282,7 +282,7 @@ class _PocketFace extends StatelessWidget {
       bottom: chosen || pressed ? null : c.well.withValues(alpha: 0),
       lip: chosen || pressed ? null : c.lip.withValues(alpha: 0),
       foreground: words,
-      focus: glossFocusOf(c, focused: states.contains(WidgetState.focused)),
+      focus: glossGlazeOf(c, states),
     );
     return DesignTapTarget(
       child: Column(
@@ -384,10 +384,7 @@ class _SideFace extends StatelessWidget {
         child: AnimatedGlossSurface(
           face: face.copyWith(
             foreground: words,
-            focus: glossFocusOf(
-              c,
-              focused: states.contains(WidgetState.focused),
-            ),
+            focus: glossGlazeOf(c, states),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -1163,8 +1160,10 @@ class _GlossTabBarState extends State<GlossTabBar>
     return DesignTapTarget(
       child: SizedBox(
         height: height,
-        child: GlossFocusHalo(
+        child: GlossGlazeHighlight(
           focused: details.states.contains(WidgetState.focused),
+          hovered: details.states.contains(WidgetState.hovered),
+          pressed: details.states.contains(WidgetState.pressed),
           inside: true,
           child: Center(
             child: Padding(

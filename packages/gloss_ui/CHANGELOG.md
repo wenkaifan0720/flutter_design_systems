@@ -1,3 +1,7 @@
+## 0.1.4
+
+- Keyboard focus sharpens the reflection on glazed controls. Pale surfaces keep their body color in daylight and colored glazes deepen slightly. Recessed fields catch the light on their lower inner edge. Pointer hover gives a softer reflection and pressing a control shifts it. Reduce Motion makes these changes immediate.
+
 ## 0.1.3
 
 - A time picker speaks the reader's language, from ui_core's words: a screen reader names its drums "Stunde", "Minute" and "Tageshälfte" in German, "ساعة", "دقيقة" and "ص/م" in Arabic ("Hour", "Minute" and "AM/PM" in English; the last was "AM or PM"), its half-of-day drum and `GlossTime.format` write "ص" and "م" in Arabic, and they were English in every language before.

@@ -9,7 +9,6 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/physics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -178,8 +177,8 @@ class GlossFace with Diagnosticable {
   /// How far a raised face is pressed home, 0 to 1.
   final double travel;
 
-  /// The focus halo's colour ([paintGlossHalo]); clear when not focused.
-  /// Its lens brightens with it.
+  /// The reflected light on this glaze. Its alpha sets the strength.
+  /// Use [glossGlazeOf] for the current interaction states.
   final Color focus;
 
   /// The corner radius; null for a capsule or a circle (half the short side).
@@ -319,12 +318,9 @@ class GlossFace with Diagnosticable {
 
 /// Paints [face] round [child]: its drop shadow (raised) or the rim's shade
 /// along its top (sunken), the rim, the glaze, the glow and the specular
-/// lens, and the focus halo round it all ([paintGlossHalo]).
+/// lens. A focused face catches a sharper reflection inside its glaze.
 ///
-/// The surface's size is its face's: a shadow and a ring are drawn outside
-/// it, so a raised face lines up with a sunken one beside it. Leave 4 px of
-/// room below a raised face (and the halo's [GlossMetrics.focusReach] all
-/// round) where a clip could cut them.
+/// Leave 4 px below a raised face for its cast shadow.
 ///
 /// ```dart
 /// GlossSurface(face: GlossFace.pearl(colors), child: const Padding(padding: EdgeInsets.all(12), child: Text('Pearl')))
@@ -344,7 +340,11 @@ class GlossSurface extends StatelessWidget {
     final travel = face.lift > 0 ? face.travel * GlossMetrics.keyTravel : 0.0;
     final highContrast = MediaQuery.maybeHighContrastOf(context) ?? false;
     return CustomPaint(
-      painter: _FacePainter(face, highContrast: highContrast),
+      painter: _FacePainter(
+        face,
+        GlossTheme.of(context).colors.brightness,
+        highContrast: highContrast,
+      ),
       child: Transform.translate(
         offset: Offset(0, travel),
         child: child == null
@@ -377,7 +377,9 @@ RRect glossOutline(Rect rect, double? radius) => RRect.fromRectAndRadius(
 );
 
 class _FacePainter extends CustomPainter {
-  _FacePainter(this.face, {required this.highContrast});
+  _FacePainter(this.face, this.brightness, {required this.highContrast});
+
+  final Brightness brightness;
 
   final GlossFace face;
   final bool highContrast;
@@ -388,13 +390,16 @@ class _FacePainter extends CustomPainter {
       canvas,
       Offset.zero & size,
       face,
+      brightness: brightness,
       highContrast: highContrast,
     );
   }
 
   @override
   bool shouldRepaint(_FacePainter old) =>
-      old.face != face || old.highContrast != highContrast;
+      old.face != face ||
+      old.brightness != brightness ||
+      old.highContrast != highContrast;
 }
 
 /// Paints [face] in [rect] on [canvas]: what [GlossSurface] draws, for a
@@ -403,6 +408,7 @@ void paintGlossFace(
   Canvas canvas,
   Rect rect,
   GlossFace face, {
+  Brightness brightness = Brightness.light,
   bool highContrast = false,
 }) {
   final raise = math.max(0.0, face.lift);
@@ -463,6 +469,23 @@ void paintGlossFace(
     }
   }
 
+  final light = face.focus.a;
+  final day = brightness == Brightness.light;
+  // White porcelain and neutral plastic keep their body colour in daylight.
+  // Only a coloured pigment deepens as its reflection comes into focus.
+  final deepen = light == 0
+      ? 0.0
+      : day
+      ? (_hasPigment(face.middle) ? 0.075 : 0.0)
+      : (sink > 0 ? 0.095 : 0.135);
+  Color glaze(Color pigment) => deepen == 0
+      ? pigment
+      : Color.lerp(
+          pigment,
+          const Color(0xFF000000).withValues(alpha: pigment.a),
+          light * deepen,
+        )!;
+
   // The glaze.
   canvas.drawRRect(
     inner,
@@ -470,7 +493,7 @@ void paintGlossFace(
       ..shader = ui.Gradient.linear(
         inner.outerRect.topCenter,
         inner.outerRect.bottomCenter,
-        [face.top, face.middle, face.bottom],
+        [glaze(face.top), glaze(face.middle), glaze(face.bottom)],
         const [0, 0.55, 1],
       ),
   );
@@ -596,9 +619,8 @@ void paintGlossFace(
 
   // The specular lens on a raised face's upper part: it ends above a
   // centred label's capitals, and dims as the face is pressed.
-  // Focus brightens it, as the halo lights the glaze from round its rim.
   final lens =
-      math.min(1.0, face.lens * (1 + 0.5 * face.focus.a)) *
+      math.min(1.0, face.lens * (1 + 0.35 * light)) *
       (1 - 0.55 * face.travel) *
       (highContrast ? 0 : 1);
   // A face too small for its rim (a part laid out at nothing, a dot) has no
@@ -607,10 +629,14 @@ void paintGlossFace(
     final box = inner.outerRect;
     final r = inner.tlRadiusX;
     final inset = math.min(3.0, box.width * 0.08);
-    final height = box.height * GlossMetrics.lensFraction;
+    final height =
+        box.height *
+        GlossMetrics.lensFraction *
+        (1 - 0.34 * light) *
+        (1 - 0.18 * face.travel);
     final lensRect = Rect.fromLTWH(
       box.left + inset,
-      box.top + 1,
+      box.top + 1 + face.travel,
       box.width - inset * 2,
       height,
     );
@@ -647,76 +673,145 @@ void paintGlossFace(
     canvas.restore();
   }
 
-  // The focus halo, round the face.
-  paintGlossHalo(canvas, outer, face.focus);
+  if (light > 0) {
+    // Clear slots have no pigment of their own to deepen.
+    if (!day && face.middle.a < 1) {
+      _shadeGlaze(canvas, inner, face.focus, (1 - face.middle.a) * light);
+    }
+    _paintReflection(
+      canvas,
+      inner,
+      light,
+      pale: day && deepen == 0,
+      inset: sink > 0.5,
+      pressure: face.travel,
+    );
+  }
 }
 
-/// Paints Gloss's keyboard focus round [shape] on [canvas]: an Aqua-like
-/// halo of [color], a band of light against the part's edge that fades out
-/// into a soft glow, as if the glaze were lit from round its rim. [color]'s
-/// alpha is how far the focus has come in; clear paints nothing.
-///
-/// With [inside], for a part with no room round it (a row in a list, a
-/// position in a slot), the halo lies just inside [shape] and glows inward
-/// instead, held to it. Either way it never reaches a centred label.
-///
-/// ```dart
-/// paintGlossHalo(canvas, glossOutline(Offset.zero & size, null), colors.focus);
-/// ```
+bool _hasPigment(Color color) {
+  final chroma =
+      math.max(color.r, math.max(color.g, color.b)) -
+      math.min(color.r, math.min(color.g, color.b));
+  return chroma > 0.18 && color.computeLuminance() < 0.72;
+}
+
+// A reflection of a broad light above and to the left. On a convex face
+// the light meets the crown. In a recess it meets the lower inside bevel.
+void _paintReflection(
+  Canvas canvas,
+  RRect shape,
+  double light, {
+  bool inset = false,
+  bool pale = false,
+  double pressure = 0,
+}) {
+  final box = shape.outerRect;
+  if (light <= 0 || box.shortestSide < 3) return;
+  final thickness = math.min(box.height * 0.12, inset ? 2.5 : 3.5);
+  final inner = shape.deflate(math.min(1.4, box.shortestSide * 0.07));
+  final rim = inner.outerRect;
+  final top = inset
+      ? rim.bottom - thickness - 0.4 - pressure
+      : rim.top + 0.45 + 1.8 * pressure;
+  final band = Rect.fromLTWH(rim.left, top, rim.width, thickness);
+  // Glancing light tapers away across the part instead of tracing its edge.
+  final highlight = Path()
+    ..moveTo(band.left, band.center.dy)
+    ..quadraticBezierTo(
+      band.left + rim.width * 0.28,
+      band.top - 0.4,
+      band.left + rim.width * 0.83,
+      band.top + thickness * 0.46,
+    )
+    ..quadraticBezierTo(
+      band.left + rim.width * 0.38,
+      band.bottom + 0.8,
+      band.left,
+      band.bottom,
+    )
+    ..close();
+  canvas
+    ..save()
+    ..clipRRect(inner);
+  if (pale) {
+    // On white, the cool edge of the reflection makes the white streak legible.
+    canvas.drawPath(
+      highlight.shift(Offset(0, inset ? -0.9 : 0.9)),
+      Paint()
+        ..shader = ui.Gradient.linear(
+          band.centerLeft,
+          band.centerRight,
+          [
+            Color.fromRGBO(90, 113, 128, 0.29 * light),
+            Color.fromRGBO(90, 113, 128, 0.35 * light),
+            const Color(0x005A7180),
+          ],
+          const [0, 0.25, 0.88],
+        ),
+    );
+  }
+  canvas
+    ..drawPath(
+      highlight,
+      Paint()
+        ..shader = ui.Gradient.linear(
+          band.centerLeft,
+          band.centerRight,
+          [
+            Color.fromRGBO(255, 255, 255, 0.5 * light),
+            Color.fromRGBO(255, 255, 255, 0.86 * light),
+            const Color(0x00FFFFFF),
+          ],
+          const [0, 0.25, 0.88],
+        ),
+    )
+    ..restore();
+}
+
+void _shadeGlaze(Canvas canvas, RRect shape, Color color, double strength) {
+  final pigment = Color.lerp(
+    const Color(0xFF14212E),
+    color.withValues(alpha: 1),
+    0.12,
+  )!;
+  canvas.drawRRect(
+    shape,
+    Paint()..color = pigment.withValues(alpha: strength * 0.12),
+  );
+}
+
+/// Paints the reflection on a flat glazed part inside [shape].
+/// [color] tints the glaze and its alpha determines the strength.
+/// [inside] sets the reflection slightly farther into a fitted part.
 void paintGlossHalo(
   Canvas canvas,
   RRect shape,
   Color color, {
   bool inside = false,
+  Brightness brightness = Brightness.light,
 }) {
-  if (color.a <= 0) return;
-  const band = GlossMetrics.focusWidth;
-  // The glow, from the band's outer half out to the halo's reach.
-  final glow = Paint()
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 3.5
-    ..color = color.withValues(alpha: color.a * 0.4)
-    ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
-  // The band, solid against the part's edge.
-  final core = Paint()
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = band
-    ..color = color;
-  if (inside) {
-    canvas
-      ..save()
-      ..clipRRect(shape)
-      ..drawRRect(shape.deflate(band + 1), glow)
-      ..drawRRect(shape.deflate(band / 2), core)
-      ..restore();
-    return;
-  }
-  canvas
-    ..drawRRect(shape.inflate(band + 1), glow)
-    ..drawRRect(shape.inflate(band / 2), core);
+  if (color.a <= 0 || shape.outerRect.isEmpty) return;
+  final face = inside ? shape.deflate(0.5) : shape;
+  final day = brightness == Brightness.light;
+  if (!day) _shadeGlaze(canvas, face, color, color.a);
+  _paintReflection(canvas, face, color.a, pale: day);
 }
 
-/// Shows Gloss's focus halo ([paintGlossHalo]) over [child] while
-/// [focused], brought in and out on Gloss's colour spring (a short fade
-/// under Reduce Motion): for a part that paints no [GlossFace] of its own,
-/// a slot's position, a list row, a plain glyph, a text button.
-///
-/// Its shape is [child]'s box, [inset] inside it (outside when negative),
-/// with corners of [radius] (a capsule when null). With [inside] the halo
-/// glows inward from that edge; with [tint] a faint wash of the halo's
-/// colour fills the shape, for a part with no face to light. Its [color] is
-/// the theme's focus jade, or a light one inside a part filled with jade
-/// (a chosen segment), where jade on jade would not show.
+/// The reflected light on a flat part whose own surface lies behind [child].
+/// The reflection fades with interaction and cuts immediately under Reduce Motion.
 ///
 /// ```dart
-/// GlossFocusHalo(focused: focused, inside: true, child: const SizedBox(width: 96, height: 32))
+/// GlossGlazeHighlight(focused: focused, child: const SizedBox(width: 96, height: 32))
 /// ```
-class GlossFocusHalo extends StatefulWidget {
-  /// The halo round [child] while [focused].
-  const GlossFocusHalo({
+class GlossGlazeHighlight extends StatelessWidget {
+  /// Reflects light within the outline of [child].
+  const GlossGlazeHighlight({
     super.key,
     required this.focused,
     required this.child,
+    this.hovered = false,
+    this.pressed = false,
     this.radius,
     this.inset = 0,
     this.inside = false,
@@ -727,142 +822,111 @@ class GlossFocusHalo extends StatefulWidget {
   /// Whether the part has keyboard focus.
   final bool focused;
 
-  /// The part.
+  /// Whether the pointer is over the part.
+  final bool hovered;
+
+  /// Whether the part is held down.
+  final bool pressed;
+
+  /// The content on the glaze.
   final Widget child;
 
-  /// The halo's corners; a capsule when null.
+  /// The corners of the glaze. A null radius gives a capsule.
   final double? radius;
 
-  /// How far inside [child]'s box the halo's edge lies; negative is outside.
+  /// An inset from the edges of the box. Negative values use the full box.
   final double inset;
 
-  /// Whether the halo glows inward from its edge.
+  /// Whether the reflection sits slightly deeper inside a fitted part.
   final bool inside;
 
-  /// Whether a faint wash of the halo's colour fills its shape.
+  /// Whether to give a surface behind plain text a little more pigment.
   final bool tint;
 
-  /// The halo's colour; [GlossColors.focus] when null.
+  /// The tint of the underlying glaze. Defaults to [GlossColors.focus].
   final Color? color;
 
   @override
-  State<GlossFocusHalo> createState() => _GlossFocusHaloState();
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(FlagProperty('focused', value: focused, ifTrue: 'focused'))
-      ..add(DoubleProperty('radius', radius, defaultValue: null))
-      ..add(DoubleProperty('inset', inset, defaultValue: 0))
-      ..add(FlagProperty('inside', value: inside, ifTrue: 'inside'))
-      ..add(FlagProperty('tint', value: tint, ifTrue: 'tint'))
-      ..add(ColorProperty('color', color, defaultValue: null));
-  }
-}
-
-class _GlossFocusHaloState extends State<GlossFocusHalo>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    value: widget.focused ? 1 : 0,
-  );
-
-  @override
-  void didUpdateWidget(GlossFocusHalo old) {
-    super.didUpdateWidget(old);
-    if (old.focused == widget.focused) return;
-    _controller.animateWith(
-      SpringSimulation(
-        DesignMotionPolicy.of(context)
-            .effects(dampingRatio: 1, stiffness: GlossMotion.colorStiffness),
-        _controller.value,
-        widget.focused ? 1 : 0,
-        _controller.velocity,
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final amount = _glazeStrength(focused, hovered, pressed);
     final colors = GlossTheme.of(context).colors;
-    _HaloPainter halo({required bool wash}) => _HaloPainter(
-      _controller,
-      widget.color ?? colors.focus,
-      radius: widget.radius,
-      inset: widget.inset,
-      inside: widget.inside,
-      wash: wash,
+    final pigment = color ?? colors.focus;
+    final target = Offset(amount, pressed ? 1 : 0);
+    Widget paint(Offset value, Widget? content) => CustomPaint(
+      painter: _GlazePainter(
+        value,
+        pigment,
+        colors.brightness,
+        radius,
+        inset,
+        inside,
+        tint,
+      ),
+      child: content,
     );
-    // The wash lies under the part's words; the halo lies over its edge.
-    return CustomPaint(
-      painter: widget.tint ? halo(wash: true) : null,
-      foregroundPainter: halo(wash: false),
-      child: widget.child,
+    if (DesignMotionPolicy.of(context).reduceMotion) {
+      return paint(target, child);
+    }
+    return TweenAnimationBuilder<Offset>(
+      tween: Tween(end: target),
+      duration: const Duration(milliseconds: 140),
+      curve: Curves.easeOut,
+      child: child,
+      builder: (context, value, content) => paint(value, content),
     );
   }
 }
 
-class _HaloPainter extends CustomPainter {
-  _HaloPainter(
-    this.amount,
-    this.color, {
-    required this.radius,
-    required this.inset,
-    required this.inside,
-    required this.wash,
-  }) : super(repaint: amount);
+/// A [GlossGlazeHighlight] for a part drawn with earlier versions of Gloss.
+typedef GlossFocusHalo = GlossGlazeHighlight;
 
-  final Animation<double> amount;
+class _GlazePainter extends CustomPainter {
+  _GlazePainter(
+    this.value,
+    this.color,
+    this.brightness,
+    this.radius,
+    this.inset,
+    this.inside,
+    this.tint,
+  );
+  final Offset value;
   final Color color;
+  final Brightness brightness;
   final double? radius;
   final double inset;
   final bool inside;
-
-  // The faint wash of [color] filling the shape, rather than the halo.
-  final bool wash;
+  final bool tint;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final t = amount.value.clamp(0.0, 1.0);
-    if (t <= 0) return;
-    final shape = glossOutline((Offset.zero & size).deflate(inset), radius);
-    if (wash) {
-      canvas.drawRRect(
-        shape,
-        Paint()..color = color.withValues(alpha: 0.1 * t),
-      );
-      return;
-    }
-    paintGlossHalo(
-      canvas,
-      shape,
-      color.withValues(alpha: color.a * t),
-      inside: inside,
+    final light = value.dx * color.a;
+    if (light <= 0) return;
+    final box = (Offset.zero & size).deflate(
+      math.max(0, inset) + (inside ? 0.5 : 0),
     );
+    if (box.isEmpty) return;
+    final face = glossOutline(box, radius);
+    final day = brightness == Brightness.light;
+    if (!day) _shadeGlaze(canvas, face, color, light * (tint ? 1.18 : 1));
+    _paintReflection(canvas, face, light, pale: day, pressure: value.dy);
   }
 
   @override
-  bool shouldRepaint(_HaloPainter old) =>
-      old.amount != amount ||
+  bool shouldRepaint(_GlazePainter old) =>
+      old.value != value ||
+      old.brightness != brightness ||
       old.color != color ||
       old.radius != radius ||
       old.inset != inset ||
       old.inside != inside ||
-      old.wash != wash;
+      old.tint != tint;
 }
 
 /// [GlossSurface] that moves to each new [face] on a spring from wherever
 /// it is: a press, a release, a focus, a latch. A press sinks on Gloss's
 /// press spring and returns with a little give; a change of glaze runs
-/// without overshoot. Under Reduce Motion it is a short fade, as
-/// `DesignMotionPolicy` says.
+/// without overshoot. Reduce Motion shows the new face immediately.
 ///
 /// ```dart
 /// AnimatedGlossSurface(face: pressed ? resting.copyWith(travel: 1) : resting, child: const Text('Save'))
@@ -910,8 +974,12 @@ class _AnimatedGlossSurfaceState extends State<AnimatedGlossSurface>
     final pressChanged = widget.face.travel != _to.travel;
     _from = _now;
     _to = widget.face;
-    _controller.value = 0;
     final policy = DesignMotionPolicy.of(context);
+    if (policy.reduceMotion) {
+      _controller.value = 1;
+      return;
+    }
+    _controller.value = 0;
     _controller.springTo(
       1,
       pressChanged
@@ -935,7 +1003,10 @@ class _AnimatedGlossSurfaceState extends State<AnimatedGlossSurface>
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
     animation: _controller,
-    builder: (context, child) => GlossSurface(face: _now, child: child),
+    builder: (context, child) => GlossSurface(
+      face: DesignMotionPolicy.of(context).reduceMotion ? _to : _now,
+      child: child,
+    ),
     child: widget.child,
   );
 }
@@ -1144,7 +1215,27 @@ class GlossEngravedLine extends StatelessWidget {
   }
 }
 
-/// The keyboard focus halo's colour for [colors], or clear when [focused]
-/// is false: a [GlossFace]'s `focus`.
+double _glazeStrength(bool focused, bool hovered, bool pressed) => pressed
+    ? 0.22
+    : focused
+    ? 1
+    : hovered
+    ? 0.38
+    : 0;
+
+/// The tint and strength of the reflection for [states].
+Color glossGlazeOf(GlossColors colors, Set<WidgetState> states) =>
+    colors.focus.withValues(
+      alpha: states.contains(WidgetState.disabled)
+          ? 0
+          : _glazeStrength(
+                  states.contains(WidgetState.focused),
+                  states.contains(WidgetState.hovered),
+                  states.contains(WidgetState.pressed),
+                ) *
+                colors.focus.a,
+    );
+
+/// The reflected light for a part which reports just its keyboard focus.
 Color glossFocusOf(GlossColors colors, {required bool focused}) =>
     focused ? colors.focus : colors.focus.withValues(alpha: 0);

@@ -1,8 +1,8 @@
 // Every part a person acts on, in each state it has: idle, hovered, pressed,
 // focused from the keyboard, selected, disabled and in error, by day and by
 // night, at twice the size. Each is a golden (the state matrix the design
-// review reads). Hovered paints as idle does (polish3 §1): the cursor says
-// a part presses.
+// review reads). Hover catches a little light before the stronger keyboard
+// reflection, and a held press moves the highlight.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:convert';
 import 'dart:io';

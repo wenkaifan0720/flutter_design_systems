@@ -408,10 +408,7 @@ class _GlossCalendarState extends State<GlossCalendar> {
                       child: AnimatedGlossSurface(
                         face: face.copyWith(
                           foreground: ink,
-                          focus: glossFocusOf(
-                            c,
-                            focused: states.contains(WidgetState.focused),
-                          ),
+                          focus: glossGlazeOf(c, states),
                         ),
                         child: Center(
                           child: Text(
@@ -498,9 +495,8 @@ class _PickerField extends StatelessWidget {
         well = well.copyWith(
           lift: enabled ? -1 : -0.45,
           edge: error ? c.danger : null,
-          focus: states.contains(WidgetState.focused) || open
-              ? (error ? c.danger : c.focus)
-              : c.focus.withValues(alpha: 0),
+          focus: glossGlazeOf(c, {...states, if (open) WidgetState.focused}),
+          travel: states.contains(WidgetState.pressed) ? 1 : 0,
         );
         final bead = height - 14;
         // Its height is a floor: a date on two lines makes the well taller.
@@ -810,7 +806,7 @@ class GlossDateRangePicker extends StatelessWidget {
 /// row under a clear lens across its middle.
 /// The lens over a drum's chosen row: clear, its rim and the top light's
 /// sheen (by night a faint crown light, not a bar).
-GlossFace _drumLens(GlossColors c, {bool focused = false}) {
+GlossFace _drumLens(GlossColors c, {Set<WidgetState> states = const {}}) {
   final light = c.brightness == Brightness.light;
   return GlossFace(
     top: light ? const Color(0x2EFFFFFF) : const Color(0x14FFFFFF),
@@ -820,7 +816,7 @@ GlossFace _drumLens(GlossColors c, {bool focused = false}) {
     foreground: c.ink,
     lens: light ? 0.7 : 0.3,
     radius: 10,
-    focus: focused ? c.focus : c.focus.withValues(alpha: 0),
+    focus: glossGlazeOf(c, states),
   );
 }
 
@@ -830,7 +826,7 @@ const double _rowHeight = 40;
 /// Gloss's drums on ui_core's wheel picker: a glossy drum per column, its
 /// rows falling into shadow toward the well's lips, the chosen row under a
 /// clear lens. With [sharedLens] one lens spans the columns (a time, read as
-/// one row) and each column keeps its own focus ring.
+/// one row) and each column catches the light independently.
 Widget _drums(
   BuildContext context, {
   required List<DesignWheelColumn> columns,
@@ -871,7 +867,6 @@ Widget _drums(
       ),
     ),
     columnBuilder: (context, column, wheel) {
-      final focused = column.states.contains(WidgetState.focused);
       return SizedBox(
         width: width,
         height: _rowHeight * rows,
@@ -890,21 +885,19 @@ Widget _drums(
                     padding: const EdgeInsets.symmetric(
                       horizontal: GlossSpacing.tight,
                     ),
-                    child: GlossSurface(
+                    child: AnimatedGlossSurface(
                       face: sharedLens
                           // Under a shared lens, the drum keeps its own
-                          // focus ring.
+                          // reflection.
                           ? GlossFace(
                               top: const Color(0x00FFFFFF),
                               middle: const Color(0x00FFFFFF),
                               bottom: const Color(0x00FFFFFF),
                               foreground: c.ink,
                               radius: 10,
-                              focus: focused
-                                  ? c.focus
-                                  : c.focus.withValues(alpha: 0),
+                              focus: glossGlazeOf(c, column.states),
                             )
-                          : _drumLens(c, focused: focused),
+                          : _drumLens(c, states: column.states),
                     ),
                   ),
                 ),
@@ -1216,7 +1209,7 @@ class _GlossColorPickerState extends State<GlossColorPicker> {
       child: GlossSurface(
         face: GlossFace.pearl(c).copyWith(
           lift: states.contains(WidgetState.pressed) ? 0.5 : 1,
-          focus: glossFocusOf(c, focused: states.contains(WidgetState.focused)),
+          focus: glossGlazeOf(c, states),
         ),
         child: Padding(
           padding: const EdgeInsets.all(GlossSpacing.tight),

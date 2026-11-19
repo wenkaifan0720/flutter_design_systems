@@ -67,17 +67,16 @@ abstract final class GlossMetrics {
   /// label never sits on the shine.
   static const double lensFraction = 0.34;
 
-  /// The room between a part and its focus ring.
-  @Deprecated('The focus halo lies against the part, with no room between.')
-  static const double focusGap = 2;
+  /// The reflected light fits within the part.
+  @Deprecated('Glaze reflections are painted within the part.')
+  static const double focusGap = 0;
 
-  /// The width of the focus halo's band of light against the part; its
-  /// glow fades out over [focusReach].
-  static const double focusWidth = 3;
+  /// The legacy focus-band width. Glaze reflections follow the surface.
+  @Deprecated('Glaze reflections follow the surface.')
+  static const double focusWidth = 0;
 
-  /// How far the focus halo's glow reaches beyond the part: room to leave
-  /// round a part where a clip could cut it.
-  static const double focusReach = 6;
+  /// The space needed outside a focused part.
+  static const double focusReach = 0;
 
   /// The room a bead, a fill, a picture or a ring keeps from the rim round
   /// it: enough for the rim's light and shade to show between them.
@@ -387,7 +386,7 @@ class GlossColors with Diagnosticable {
   /// Words on the ruby gel.
   final Color onDanger;
 
-  /// The keyboard focus ring.
+  /// The tint used when a glazed part catches the light.
   final Color focus;
 
   /// The colour of every drop shadow (its strength is the part's).
@@ -878,8 +877,7 @@ class GlossThemeData with Diagnosticable {
     Color tint(Color c) => finish == null
         ? c
         : Color.lerp(c, finish, 0.08)!.withValues(alpha: c.a);
-    // The focus halo's band reads at 4:1 or more on the page (3:1 where a
-    // raised part's shadow lies under it).
+    // Keep the brand tint distinct from its page in either brightness.
     var focus = brightness == Brightness.dark
         ? hsl.withLightness(0.62)
         : middle.withLightness(math.min(0.4, middle.lightness + 0.06));

@@ -97,62 +97,57 @@ class GlossMenuRow extends StatelessWidget {
     final focused = !disabled && states.contains(WidgetState.focused);
     var plate = glossRowPlate(
       c,
-      lit: focused || (!disabled && states.contains(WidgetState.hovered)),
+      lit:
+          c.brightness == Brightness.dark &&
+          (focused || (!disabled && states.contains(WidgetState.hovered))),
       pressed: states.contains(WidgetState.pressed),
     );
     if (layered.fill != null) plate = plate.glazed(layered.fill!);
     return SizedBox(
       height: layered.minimumSize?.height ?? theme.controlHeight - 4,
-      child: GlossFocusHalo(
-        focused: focused,
-        inside: true,
-        radius: glossPanelCorner - glossPanelInset,
-        child: AnimatedGlossSurface(
-          face: plate.copyWith(foreground: ink),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: GlossSpacing.medium,
-            ),
-            child: Row(
-              children: [
-                if (icon != null) ...[
-                  Icon(icon, size: layered.iconSize ?? 18, color: ink),
-                  const SizedBox(width: GlossSpacing.medium),
-                ],
-                Expanded(
-                  child: DesignCapCenter(
-                    capHeightFactor: glossCapHeightFactor,
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.body
-                          .copyWith(color: ink)
-                          .merge(layered.textStyle),
-                    ),
+      child: AnimatedGlossSurface(
+        face: plate.copyWith(foreground: ink, focus: glossGlazeOf(c, states)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: GlossSpacing.medium),
+          child: Row(
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: layered.iconSize ?? 18, color: ink),
+                const SizedBox(width: GlossSpacing.medium),
+              ],
+              Expanded(
+                child: DesignCapCenter(
+                  capHeightFactor: glossCapHeightFactor,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.body
+                        .copyWith(color: ink)
+                        .merge(layered.textStyle),
                   ),
                 ),
-                if (checked) ...[
-                  const SizedBox(width: GlossSpacing.medium),
-                  SizedBox.square(
-                    dimension: 16,
-                    child: CustomPaint(painter: _TickPainter(ink)),
-                  ),
-                ],
-                if (trailing != null) ...[
-                  const SizedBox(width: GlossSpacing.large),
-                  DefaultTextStyle(
-                    style: theme.textTheme.secondary.copyWith(
-                      color: disabled ? c.inkDisabled : c.inkSecondary,
-                    ),
-                    child: IconTheme.merge(
-                      data: IconThemeData(size: 16, color: c.inkSecondary),
-                      child: trailing!,
-                    ),
-                  ),
-                ],
+              ),
+              if (checked) ...[
+                const SizedBox(width: GlossSpacing.medium),
+                SizedBox.square(
+                  dimension: 16,
+                  child: CustomPaint(painter: _TickPainter(ink)),
+                ),
               ],
-            ),
+              if (trailing != null) ...[
+                const SizedBox(width: GlossSpacing.large),
+                DefaultTextStyle(
+                  style: theme.textTheme.secondary.copyWith(
+                    color: disabled ? c.inkDisabled : c.inkSecondary,
+                  ),
+                  child: IconTheme.merge(
+                    data: IconThemeData(size: 16, color: c.inkSecondary),
+                    child: trailing!,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       ),

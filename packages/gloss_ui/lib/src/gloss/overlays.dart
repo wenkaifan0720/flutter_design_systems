@@ -13,6 +13,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import 'button.dart';
 import 'internal/key_paint.dart';
+import 'internal/glaze_state.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -1348,7 +1349,8 @@ class _Toast extends StatelessWidget {
         child: Semantics(
           liveRegion: true,
           container: true,
-          child: GlossSurface(
+          child: GlazePointerSurface(
+            enabled: true,
             face: face,
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 52),

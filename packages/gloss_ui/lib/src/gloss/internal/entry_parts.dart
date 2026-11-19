@@ -9,6 +9,7 @@ import 'package:ui_core/ui_core.dart';
 import '../fonts.dart';
 import '../surface.dart';
 import '../theme.dart';
+import 'glaze_state.dart';
 
 /// The well a field is typed in, for its [states] (focused, disabled,
 /// error), glazed by [fill] and rimmed by [edge] when a style gives them.
@@ -219,7 +220,8 @@ class GlossEntryWell extends StatelessWidget {
         onTap: enabled ? focusNode?.requestFocus : null,
         child: SizedBox(
           height: height ?? theme.controlHeight,
-          child: AnimatedGlossSurface(
+          child: GlazePointerSurface(
+            enabled: enabled,
             face: face,
             child: Row(
               children: [

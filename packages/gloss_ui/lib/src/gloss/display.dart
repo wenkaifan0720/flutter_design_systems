@@ -107,10 +107,7 @@ class _GlossDisclosureState extends State<GlossDisclosure> {
                   bottom: clear,
                   foreground: c.ink,
                   radius: GlossMetrics.fieldRadius,
-                  focus: glossFocusOf(
-                    c,
-                    focused: states.contains(WidgetState.focused),
-                  ),
+                  focus: glossGlazeOf(c, states),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(

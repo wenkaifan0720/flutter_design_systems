@@ -18,6 +18,7 @@ import 'fonts.dart';
 import 'internal/chevron.dart';
 import 'internal/entry_parts.dart';
 import 'internal/menu_parts.dart';
+import 'internal/glaze_state.dart';
 import 'surface.dart';
 import 'text_field.dart';
 import 'theme.dart';
@@ -544,7 +545,8 @@ class _GlossInputGroupState extends State<GlossInputGroup>
             ], states);
             return SizedBox(
               height: theme.controlHeight,
-              child: AnimatedGlossSurface(
+              child: GlazePointerSurface(
+                enabled: widget.enabled,
                 face: glossEntryFace(
                   theme,
                   states,
@@ -729,7 +731,8 @@ class GlossOtpField extends StatelessWidget {
           return SizedBox(
             width: 44,
             height: theme.controlHeight + 4,
-            child: AnimatedGlossSurface(
+            child: GlazePointerSurface(
+              enabled: slot.enabled,
               face: glossEntryFace(
                 theme,
                 states,
@@ -787,36 +790,29 @@ class _OptionRow extends StatelessWidget {
     final focused = !disabled && states.contains(WidgetState.focused);
     return SizedBox(
       height: theme.controlHeight - 4,
-      child: GlossFocusHalo(
-        focused: focused,
-        inside: true,
-        radius: glossPanelCorner - glossPanelInset,
-        child: AnimatedGlossSurface(
-          face: glossRowPlate(
-            c,
-            lit: focused,
-            pressed: states.contains(WidgetState.pressed),
-          ).copyWith(foreground: ink),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: GlossSpacing.medium,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: DesignCapCenter(
-                    capHeightFactor: glossCapHeightFactor,
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.body.copyWith(color: ink),
-                    ),
+      child: AnimatedGlossSurface(
+        face: glossRowPlate(
+          c,
+          lit: focused && c.brightness == Brightness.dark,
+          pressed: states.contains(WidgetState.pressed),
+        ).copyWith(foreground: ink, focus: glossGlazeOf(c, states)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: GlossSpacing.medium),
+          child: Row(
+            children: [
+              Expanded(
+                child: DesignCapCenter(
+                  capHeightFactor: glossCapHeightFactor,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.body.copyWith(color: ink),
                   ),
                 ),
-                if (chosen) Icon(LucideIcons.check, size: 18, color: ink),
-              ],
-            ),
+              ),
+              if (chosen) Icon(LucideIcons.check, size: 18, color: ink),
+            ],
           ),
         ),
       ),
@@ -1292,7 +1288,8 @@ class _TagWellState extends State<_TagWell> {
             : SystemMouseCursors.basic,
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: theme.controlHeight),
-          child: AnimatedGlossSurface(
+          child: GlazePointerSurface(
+            enabled: widget.enabled,
             face: glossEntryFace(
               theme,
               states,
@@ -1354,7 +1351,8 @@ class _Tag extends StatelessWidget {
         children: [
           SizedBox(
             height: _tagHeight(theme),
-            child: GlossSurface(
+            child: GlazePointerSurface(
+              enabled: enabled,
               face: GlossFace.pearl(c).copyWith(
                 foreground: enabled ? c.ink : c.inkDisabled,
                 lens: enabled ? null : 0.25,
@@ -1392,10 +1390,20 @@ class _Tag extends StatelessWidget {
               onPressed: enabled ? tag.onDeleted : null,
               semanticLabel: '${words.tagInputDeleteLabel} $label',
               builder: (context, states, _) => Center(
-                child: Icon(
-                  LucideIcons.x,
-                  size: 14,
-                  color: enabled ? c.inkSecondary : c.inkDisabled,
+                child: GlossGlazeHighlight(
+                  focused: states.contains(WidgetState.focused),
+                  hovered: states.contains(WidgetState.hovered),
+                  pressed: states.contains(WidgetState.pressed),
+                  child: SizedBox.square(
+                    dimension: 22,
+                    child: Center(
+                      child: Icon(
+                        LucideIcons.x,
+                        size: 14,
+                        color: enabled ? c.inkSecondary : c.inkDisabled,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

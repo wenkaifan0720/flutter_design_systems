@@ -8,6 +8,7 @@ import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
 import 'internal/chevron.dart';
+import 'internal/menu_parts.dart';
 import 'surface.dart';
 import 'text_field.dart';
 import 'theme.dart';
@@ -115,9 +116,8 @@ class GlossSelect<T> extends StatelessWidget {
         well = well.copyWith(
           lift: enabled ? -1 : -0.45,
           edge: error != null ? c.danger : layered.edge,
-          focus: states.contains(WidgetState.focused) || open
-              ? (error != null ? c.danger : c.focus)
-              : c.focus.withValues(alpha: 0),
+          focus: glossGlazeOf(c, {...states, if (open) WidgetState.focused}),
+          travel: states.contains(WidgetState.pressed) ? 1 : 0,
         );
         final bead = height - 14;
         return SizedBox(
@@ -369,30 +369,12 @@ class _SelectListState<T> extends State<_SelectList<T>> {
               states.contains(WidgetState.focused) ||
               states.contains(WidgetState.hovered);
           final pressed = states.contains(WidgetState.pressed);
-          final clear = c.well.withValues(alpha: 0);
-          final plate = pressed
-              ? GlossFace.well(c, radius: _radius - _inset).copyWith(lift: -0.8)
-              : lit
-              ? GlossFace(
-                  top: light
-                      ? const Color(0xFFE9EEF2)
-                      : const Color(0xFF3A4048),
-                  middle: light
-                      ? const Color(0xFFE6EBF0)
-                      : const Color(0xFF373D44),
-                  bottom: light
-                      ? const Color(0xFFE2E8ED)
-                      : const Color(0xFF343A40),
-                  foreground: c.ink,
-                  radius: _radius - _inset,
-                )
-              : GlossFace(
-                  top: clear,
-                  middle: clear,
-                  bottom: clear,
-                  foreground: c.ink,
-                  radius: _radius - _inset,
-                );
+          final plate = glossRowPlate(
+            c,
+            lit: !light && lit,
+            pressed: pressed,
+            radius: _radius - _inset,
+          );
           final words = !item.enabled
               ? c.inkDisabled
               : isChosen
@@ -400,45 +382,43 @@ class _SelectListState<T> extends State<_SelectList<T>> {
               : c.ink;
           return SizedBox(
             height: widget.rowHeight,
-            child: GlossFocusHalo(
-              focused: item.enabled && states.contains(WidgetState.focused),
-              inside: true,
-              radius: _radius - _inset,
-              child: AnimatedGlossSurface(
-                face: plate.copyWith(foreground: words),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: GlossSpacing.medium,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: DesignCapCenter(
-                          capHeightFactor: glossCapHeightFactor,
-                          child: Text(
-                            item.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.body.copyWith(
-                              color: words,
-                              fontWeight: isChosen
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                              fontVariations: glossWeightAxis(
-                                isChosen ? FontWeight.w600 : FontWeight.w400,
-                              ),
+            child: AnimatedGlossSurface(
+              face: plate.copyWith(
+                foreground: words,
+                focus: glossGlazeOf(c, states),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: GlossSpacing.medium,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: DesignCapCenter(
+                        capHeightFactor: glossCapHeightFactor,
+                        child: Text(
+                          item.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.body.copyWith(
+                            color: words,
+                            fontWeight: isChosen
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                            fontVariations: glossWeightAxis(
+                              isChosen ? FontWeight.w600 : FontWeight.w400,
                             ),
                           ),
                         ),
                       ),
-                      if (isChosen)
-                        SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CustomPaint(painter: _CheckPainter(words)),
-                        ),
-                    ],
-                  ),
+                    ),
+                    if (isChosen)
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CustomPaint(painter: _CheckPainter(words)),
+                      ),
+                  ],
                 ),
               ),
             ),

@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
+import 'internal/glaze_state.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -250,8 +251,7 @@ class GlossListTile extends StatelessWidget {
           : c.inkSecondary;
       final chevron = showChevron ?? (onTap != null && trailing == null);
       final light = c.brightness == Brightness.light;
-      // The floor under the row, shaded as a finger presses it. A pointer
-      // changes nothing (polish3 §1): the cursor says the row presses.
+      // The floor under the row darkens as a finger presses it.
       final floor = pressed
           ? (light ? const Color(0x14183048) : const Color(0x33000000))
           : const Color(0x00000000);
@@ -259,12 +259,14 @@ class GlossListTile extends StatelessWidget {
           ? theme.rowHeight
           : theme.rowHeight + 16;
       final largeText = MediaQuery.textScalerOf(context).scale(10) >= 15;
-      return CustomPaint(
-        painter: _RowPainter(
+      return animatedGlazePaint(
+        context,
+        glossGlazeOf(c, states),
+        (light) => _RowPainter(
           colors: c,
           floor: floor,
           selected: selected && !disabled,
-          focus: glossFocusOf(c, focused: states.contains(WidgetState.focused)),
+          focus: light,
         ),
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: rowHeight),
@@ -439,7 +441,7 @@ class _RowPainter extends CustomPainter {
   final bool selected;
   final Color focus;
 
-  // A plate or a ring inside a well: inset 4, its corners the well's less 4.
+  // Its plate fits 4 px inside the wall of the well.
   static const double _inset = 4;
   static const double _radius = GlossMetrics.wellRadius - _inset;
 
@@ -456,15 +458,19 @@ class _RowPainter extends CustomPainter {
         // its crown, where it would run behind the title.
         GlossFace.pearl(colors, radius: _radius).copyWith(
           lift: 0.45,
+          focus: focus,
           lens: colors.brightness == Brightness.light ? 0.4 : 0,
         ),
+        brightness: colors.brightness,
       );
+      return;
     }
-    // The focus halo, inside the plate: a row has no room round it.
+    // An unselected row catches the light on the well floor.
     paintGlossHalo(
       canvas,
       RRect.fromRectAndRadius(plate, const Radius.circular(_radius)),
       focus,
+      brightness: colors.brightness,
       inside: true,
     );
   }
@@ -551,7 +557,7 @@ class GlossCard extends StatelessWidget {
       face = face.copyWith(
         edge: layered.edge,
         lift: pressed ? 0.1 : 0.35,
-        focus: glossFocusOf(c, focused: states.contains(WidgetState.focused)),
+        focus: glossGlazeOf(c, states),
       );
       return AnimatedGlossSurface(
         face: face,

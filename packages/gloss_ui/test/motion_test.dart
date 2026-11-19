@@ -1,7 +1,7 @@
 // In motion (design6 O): every part that moves, drags, opens or previews,
 // looked at mid-move on a phone by day and a desk by night. Mid-move nothing
 // throws (no overflow), nothing is painted outside the part (its soft shadow
-// and its focus ring aside), a range's preview ends on the day the pointer
+// aside), a range's preview ends on the day the pointer
 // rests on, and what opens does not jump when it settles.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:math' as math;
@@ -74,7 +74,7 @@ Future<Uint8List> _pixels(WidgetTester tester) async {
 }
 
 /// How many pixels outside [part]'s box (grown by [slack] for its soft
-/// shadow and its focus ring) are not the page.
+/// shadow) are not the page.
 Future<int> _strays(
   WidgetTester tester,
   Finder part, {

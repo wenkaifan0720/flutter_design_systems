@@ -13,6 +13,7 @@ import 'button.dart';
 import 'display.dart';
 import 'feedback.dart';
 import 'internal/chevron.dart';
+import 'internal/glaze_state.dart';
 import 'surface.dart';
 import 'theme.dart';
 import 'wayfinding.dart';
@@ -128,8 +129,10 @@ class GlossDataTable<R> extends StatelessWidget {
       onActivate: onActivate,
       headerBuilder: (context, column, sort, states) {
         final focused = states.contains(WidgetState.focused);
-        return GlossFocusHalo(
+        return GlossGlazeHighlight(
           focused: focused,
+          hovered: states.contains(WidgetState.hovered),
+          pressed: states.contains(WidgetState.pressed),
           inside: true,
           radius: 8,
           inset: 1,
@@ -195,8 +198,10 @@ class GlossDataTable<R> extends StatelessWidget {
                   // A checkbox, not a button, as Flutter's Checkbox reads.
                   button: false,
                   checked: page == DesignSelection.all,
-                  builder: (context, states, _) => GlossFocusHalo(
+                  builder: (context, states, _) => GlossGlazeHighlight(
                     focused: states.contains(WidgetState.focused),
+                    hovered: states.contains(WidgetState.hovered),
+                    pressed: states.contains(WidgetState.pressed),
                     inside: true,
                     radius: 8,
                     inset: 1,
@@ -275,10 +280,7 @@ class GlossDataTable<R> extends StatelessWidget {
               child: AnimatedGlossSurface(
                 face: plate.copyWith(
                   foreground: layered.foreground ?? c.ink,
-                  focus: glossFocusOf(
-                    c,
-                    focused: states.contains(WidgetState.focused),
-                  ),
+                  focus: glossGlazeOf(c, states),
                 ),
                 child: IntrinsicHeight(
                   child: Row(
@@ -437,7 +439,11 @@ class GlossScrollArea extends StatelessWidget {
       ),
       thumbBuilder: (context, thumb) {
         final held = thumb.states.contains(WidgetState.pressed);
-        var bead = GlossFace.pearl(c).copyWith(lift: held ? 0.4 : 0.8);
+        var bead = GlossFace.pearl(c).copyWith(
+          lift: held ? 0.4 : 0.8,
+          travel: held ? 1 : 0,
+          focus: glossGlazeOf(c, thumb.states),
+        );
         final fill = DesignStyleOf(layers, thumb.states).fill;
         if (fill != null) bead = bead.glazed(fill);
         return AnimatedOpacity(
@@ -449,12 +455,17 @@ class GlossScrollArea extends StatelessWidget {
           ),
         );
       },
-      frameBuilder: (context, focused, area) => GlossFocusHalo(
-        focused: focused,
-        inside: true,
-        radius: 8,
-        inset: 1,
-        child: area,
+      frameBuilder: (context, focused, area) => GlazePointerBuilder(
+        enabled: true,
+        builder: (over, down) => GlossGlazeHighlight(
+          focused: focused,
+          hovered: over,
+          pressed: down,
+          inside: true,
+          radius: 8,
+          inset: 1,
+          child: area,
+        ),
       ),
       child: child,
     );
@@ -554,10 +565,8 @@ class GlossSplitView extends StatelessWidget {
         final along = axis == Axis.horizontal;
         final layered = DesignStyleOf(layers, states);
         final held = states.contains(WidgetState.pressed);
-        var grip = GlossFace.pearl(c).copyWith(
-          lift: held ? 0.5 : 1,
-          focus: glossFocusOf(c, focused: states.contains(WidgetState.focused)),
-        );
+        var grip = GlossFace.pearl(c)
+            .copyWith(lift: held ? 0.5 : 1, focus: glossGlazeOf(c, states));
         if (layered.fill != null) grip = grip.glazed(layered.fill!);
         // A finger needs the bead to find the line; under a pointer the
         // line and the cursor say it, and the bead comes up only while the
@@ -655,7 +664,8 @@ class GlossCarousel extends StatelessWidget {
         children: [
           AspectRatio(
             aspectRatio: aspectRatio,
-            child: GlossSurface(
+            child: GlazePointerSurface(
+              enabled: itemCount > 0,
               face: GlossFace.well(
                 c,
                 radius: GlossMetrics.cardRadius,
@@ -903,10 +913,7 @@ class GlossSwipeRow extends StatelessWidget {
                     lift: 0,
                     lens: details.armed ? 0.9 : 0.55,
                     travel: pressed ? 1 : 0,
-                    focus: glossFocusOf(
-                      c,
-                      focused: details.states.contains(WidgetState.focused),
-                    ),
+                    focus: glossGlazeOf(c, details.states),
                   );
           final ink = a.isDestructiveAction ? c.onDanger : c.onJade;
           return AnimatedGlossSurface(
@@ -1132,10 +1139,7 @@ class GlossTree<T extends Object> extends StatelessWidget {
                 child: AnimatedGlossSurface(
                   face: plate.copyWith(
                     foreground: ink,
-                    focus: glossFocusOf(
-                      c,
-                      focused: states.contains(WidgetState.focused),
-                    ),
+                    focus: glossGlazeOf(c, states),
                   ),
                   child: Row(
                     children: [

@@ -148,9 +148,10 @@ class GlossButton extends StatelessWidget {
             ),
             child: _Pressed(
               pressed: pressed,
-              builder: (depth) => GlossFocusHalo(
+              builder: (depth) => GlossGlazeHighlight(
                 focused: focused,
-                inset: -4,
+                hovered: states.contains(WidgetState.hovered),
+                pressed: states.contains(WidgetState.pressed),
                 tint: true,
                 child: Padding(
                   padding: padding,
@@ -247,6 +248,10 @@ class _PressedState extends State<_Pressed>
   void didUpdateWidget(_Pressed old) {
     super.didUpdateWidget(old);
     if (old.pressed != widget.pressed) {
+      if (DesignMotionPolicy.of(context).reduceMotion) {
+        _depth.value = widget.pressed ? 1 : 0;
+        return;
+      }
       _depth.springTo(
         widget.pressed ? 1 : 0,
         DesignMotionPolicy.of(context)
@@ -355,10 +360,7 @@ class GlossIconButton extends StatelessWidget {
         final disabled = states.contains(WidgetState.disabled);
         final pressed = states.contains(WidgetState.pressed);
         final on = selected ?? false;
-        final focus = glossFocusOf(
-          c,
-          focused: states.contains(WidgetState.focused),
-        );
+        final focus = glossGlazeOf(c, states);
         final side = layered.minimumSize?.height ?? theme.controlHeight - 8;
         final glyph = layered.iconSize ?? 20;
         if (_kind == _IconButtonKind.plain) {
@@ -374,8 +376,10 @@ class GlossIconButton extends StatelessWidget {
               dimension: side,
               child: _Pressed(
                 pressed: pressed,
-                builder: (depth) => GlossFocusHalo(
-                  focused: focus.a > 0,
+                builder: (depth) => GlossGlazeHighlight(
+                  focused: states.contains(WidgetState.focused),
+                  hovered: states.contains(WidgetState.hovered),
+                  pressed: states.contains(WidgetState.pressed),
                   inside: true,
                   tint: true,
                   child: Center(

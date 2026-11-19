@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'fonts.dart';
+import 'internal/glaze_state.dart';
 import 'surface.dart';
 import 'theme.dart';
 
@@ -100,7 +101,7 @@ class GlossFieldMessage extends StatelessWidget {
 }
 
 /// A Gloss text field: a well pressed into the page, rounded 12, the words
-/// on its floor. Focus rings it in jade, outside and concentric; an [error]
+/// on its floor. Focus catches the light on its inner bevel. An [error]
 /// rims it in ruby and says itself under it.
 ///
 /// The caller owns a [controller] or [focusNode] it passes; without one the
@@ -340,7 +341,8 @@ class _GlossTextFieldState extends State<GlossTextField> {
         behavior: HitTestBehavior.opaque,
         excludeFromSemantics: true,
         onTap: widget.enabled ? _focus.requestFocus : null,
-        child: AnimatedGlossSurface(
+        child: GlazePointerSurface(
+          enabled: widget.enabled,
           face: face,
           child: Row(
             crossAxisAlignment: oneLine

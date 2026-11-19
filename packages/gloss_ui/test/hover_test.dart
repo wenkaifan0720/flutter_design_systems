@@ -1,8 +1,4 @@
-// A pointer over a part changes nothing it paints: every pressable in every
-// inventory specimen, by day and by night, paints the same pixels hovered as
-// idle. What the pointer does show is the cursor: a click over what presses,
-// text over a field, the plain arrow over a disabled part. The rows a pointer
-// changes on purpose are listed with why, and not compared.
+// Hover changes the glaze of enabled controls and keeps each control's cursor.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -16,7 +12,7 @@ import 'package:gloss_ui/gloss_parts.dart';
 
 import '../example/lib/kit_gallery/kit.dart';
 
-/// Rows a pointer may change on purpose, each with why (polish3 §1).
+/// These open a second surface on hover.
 const pointerFollowing = <String, String>{
   'Tooltip': 'a tooltip opens after the pointer rests',
   'Command': "a command palette's active row follows the pointer",
@@ -37,7 +33,7 @@ Future<Uint8List> _pixels(WidgetTester tester, GlobalKey key) async {
 void main() {
   for (final brightness in Brightness.values) {
     testWidgets(
-      '${brightness.name}: hovering paints nothing, the cursor tells',
+      '${brightness.name}: hover brings up a reflection and the appropriate cursor',
       (tester) async {
         tester.view.physicalSize = const Size(390, 1200);
         tester.view.devicePixelRatio = 1;
@@ -49,7 +45,8 @@ void main() {
         MouseCursor cursor() =>
             RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1) ??
             SystemMouseCursors.basic;
-        final changed = <String>[];
+        final lit = <String>{};
+        final disabledChanges = <String>[];
         final cursors = <String>[];
         var compared = 0;
         for (final entry in GlossInventory.registry.entries) {
@@ -97,10 +94,12 @@ void main() {
             final enabled = (widget.enabled ?? presses) && presses;
             final why = '${entry.row} press $i';
             await mouse.moveTo(const Offset(-10, -10));
-            await tester.pump(const Duration(milliseconds: 50));
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 400));
             final idle = compare ? await _pixels(tester, key) : null;
             await mouse.moveTo(box.center);
-            await tester.pump(const Duration(milliseconds: 50));
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 400));
             final over = cursor();
             // The innermost part under the pointer speaks: a part inside a
             // part may show its own.
@@ -123,7 +122,13 @@ void main() {
             if (idle != null) {
               compared++;
               final hovered = await _pixels(tester, key);
-              if (!listEquals(idle, hovered)) changed.add(why);
+              if (!listEquals(idle, hovered) && !inner) {
+                if (widget.enabled ?? presses) {
+                  lit.add(entry.row);
+                } else if (over == SystemMouseCursors.basic) {
+                  disabledChanges.add(why);
+                }
+              }
             }
           }
           for (final field in find.byType(EditableText).evaluate()) {
@@ -150,9 +155,13 @@ void main() {
         );
         expect(compared, greaterThan(60));
         expect(
-          changed,
+          lit,
+          containsAll(['Button', 'Checkbox', 'Switch', 'Chip', 'IconButton']),
+        );
+        expect(
+          disabledChanges,
           isEmpty,
-          reason: 'Hover changed the paint: ${changed.join(', ')}',
+          reason: 'A disabled control reacted to hover',
         );
         expect(cursors, isEmpty, reason: 'Wrong cursor: ${cursors.join('; ')}');
       },

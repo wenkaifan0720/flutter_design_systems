@@ -1,9 +1,4 @@
-// Keyboard focus lights a soft halo of jade round the glazed part, as Aqua
-// did: no ring stands apart from it. The focused pixels read at 3:1 or more
-// against the same pixels unfocused over at least a 2 px perimeter of the
-// part, by day and by night, on a phone and a wide screen, in both
-// directions; the halo stays within its reach of the part and never crosses
-// its words.
+// Keyboard traversal changes the glaze inside the part in both reading directions.
 // ignore_for_file: avoid_relative_lib_imports
 import 'dart:convert';
 import 'dart:math' as math;
@@ -57,8 +52,7 @@ Future<void> _show(
           alignment: Alignment.topCenter,
           child: Padding(
             padding: const EdgeInsets.only(top: 80),
-            // The part on the page it stands on, with room round it for its
-            // halo.
+            // Leave enough page visible to detect paint outside the part.
             child: RepaintBoundary(
               key: _frame,
               child: Builder(
@@ -128,10 +122,10 @@ class _Part {
   final String name;
   final Widget child;
 
-  /// The part, whose outline the halo follows.
+  /// The widget that owns the face.
   final Type type;
 
-  /// Its words, which the halo never crosses.
+  /// Words that must keep their ink.
   final String? words;
 
   /// Whether it is a checkbox's socket, painted within its box.
@@ -140,8 +134,7 @@ class _Part {
 
 void _none() {}
 
-// The outline the focus follows, and its corners' radius (null for a
-// capsule): the focused face, else the halo's own shape, else the part.
+// Find the visible surface, including parts painted inside a larger tap target.
 (Rect, double?) _outline(WidgetTester tester, _Part part) {
   bool lit(GlossFace face) => face.focus.a > 0;
   final face = find.descendant(
@@ -157,13 +150,15 @@ void _none() {}
     final f = w is AnimatedGlossSurface ? w.face : (w as GlossSurface).face;
     return (tester.getRect(face.first), f.corners?.topLeft.x ?? f.radius);
   }
-  final halo = find.descendant(
+  final glaze = find.descendant(
     of: find.byKey(_frame),
-    matching: find.byWidgetPredicate((w) => w is GlossFocusHalo && w.focused),
+    matching: find.byWidgetPredicate(
+      (w) => w is GlossGlazeHighlight && w.focused,
+    ),
   );
-  if (halo.evaluate().isNotEmpty) {
-    final w = tester.widget<GlossFocusHalo>(halo.first);
-    return (tester.getRect(halo.first).deflate(w.inset), w.radius);
+  if (glaze.evaluate().isNotEmpty) {
+    final w = tester.widget<GlossGlazeHighlight>(glaze.first);
+    return (tester.getRect(glaze.first).deflate(w.inset), w.radius);
   }
   final box = tester.getRect(find.byType(part.type).first);
   if (part.socket) {
@@ -173,11 +168,67 @@ void _none() {}
       GlossMetrics.socketRadius,
     );
   }
+  if (part.type == GlossSwitch) {
+    return (Rect.fromCenter(center: box.center, width: 52, height: 30), null);
+  }
   return (box, 12);
 }
 
 void main() {
   setUpAll(_loadFonts);
+
+  for (final reduced in [false, true]) {
+    testWidgets('glaze focus enters and leaves with reduce motion $reduced', (
+      tester,
+    ) async {
+      _traditionalFocus();
+      final focus = FocusNode();
+      addTearDown(focus.dispose);
+      await tester.pumpWidget(
+        kitApp(
+          brightness: Brightness.light,
+          home: Builder(
+            builder: (context) => MediaQuery(
+              data: MediaQuery.of(context).copyWith(disableAnimations: reduced),
+              child: Center(
+                child: GlossButton.filled(
+                  'Save',
+                  focusNode: focus,
+                  onPressed: _none,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      double reflection() => tester
+          .widget<GlossSurface>(
+            find.descendant(
+              of: find.byType(GlossButton),
+              matching: find.byType(GlossSurface),
+            ),
+          )
+          .face
+          .focus
+          .a;
+      expect(reflection(), 0);
+      focus.requestFocus();
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 35));
+      expect(reflection(), reduced ? equals(1.0) : inExclusiveRange(0.0, 1.0));
+      await tester.pumpAndSettle();
+      expect(reflection(), 1);
+      focus.unfocus();
+      await tester.pump();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 35));
+      expect(reflection(), reduced ? equals(0.0) : inExclusiveRange(0.0, 1.0));
+      await tester.pumpAndSettle();
+      expect(reflection(), 0);
+    });
+  }
 
   final parts = [
     const _Part(
@@ -294,6 +345,28 @@ void main() {
       GlossTextField,
     ),
     _Part(
+      'tab',
+      SizedBox(
+        width: 240,
+        child: GlossTabBar(
+          tabs: const ['Today', 'Week'],
+          selectedIndex: 0,
+          onSelected: (_) {},
+        ),
+      ),
+      GlossTabBar,
+      words: 'Today',
+    ),
+    const _Part(
+      'card',
+      SizedBox(
+        width: 240,
+        child: GlossCard(onTap: _none, child: Text('Dinner')),
+      ),
+      GlossCard,
+      words: 'Dinner',
+    ),
+    _Part(
       'slider',
       SizedBox(
         width: 320,
@@ -312,7 +385,7 @@ void main() {
       for (final direction in TextDirection.values) {
         for (final part in parts) {
           testWidgets(
-            'a focused ${part.name} shows a halo by ${brightness.name} '
+            'a focused ${part.name} catches the light by ${brightness.name} '
             'at ${width.round()}, ${direction.name}',
             (tester) async {
               _traditionalFocus();
@@ -327,36 +400,62 @@ void main() {
               final words = part.words == null
                   ? null
                   : tester.getRect(find.text(part.words!)).shift(-origin);
-              var lit = 0, onWords = 0, far = 0;
-              // The halo's own reach round the outline it follows.
-              final near = rect.inflate(GlossMetrics.focusReach + 1);
-              for (var i = 0; i + 3 < before.length; i += 4) {
-                final at = Offset(
-                  (i ~/ 4) % stride / 2,
-                  (i ~/ 4) ~/ stride / 2,
-                );
-                final r = _ratio(_luminance(before, i), _luminance(after, i));
-                if (r >= 3) {
-                  lit++;
-                  if (words != null && words.deflate(1).contains(at)) onWords++;
+              final outline = glossOutline(rect, radius).scaleRadii();
+              // A half device pixel at an antialiased edge belongs to the face.
+              final edge = outline.inflate(0.5);
+              var changed = 0, onWords = 0, outside = 0;
+              for (var i = 0; i < before.length; i += 4) {
+                if (before[i] == after[i] &&
+                    before[i + 1] == after[i + 1] &&
+                    before[i + 2] == after[i + 2]) {
+                  continue;
                 }
-                if (r >= 1.2 && !near.contains(at)) far++;
+                final at = Offset(
+                  ((i ~/ 4) % stride + 0.5) / 2,
+                  ((i ~/ 4) ~/ stride + 0.5) / 2,
+                );
+                final ratio = _ratio(
+                  _luminance(before, i),
+                  _luminance(after, i),
+                );
+                if (!edge.contains(at)) outside++;
+                if (ratio > 1.035) changed++;
+                if (ratio >= 3 &&
+                    words != null &&
+                    words.deflate(1).contains(at)) {
+                  onWords++;
+                }
               }
-              // A 2 px band round the outline, its corners rounded: four device
-              // pixels to a logical one at 2x.
-              final corner = math.min(
-                radius ?? double.infinity,
-                rect.shortestSide / 2,
-              );
-              final perimeter =
-                  2 * (rect.width + rect.height) - (8 - 2 * math.pi) * corner;
+              if (brightness == Brightness.light &&
+                  {
+                    'text field',
+                    'list row',
+                    'chip',
+                    'tab',
+                    'switch',
+                  }.contains(part.name)) {
+                // The field caret and the label occupy the middle. Sample the
+                // glaze at the side of the lettering, inside the body and clear
+                // of both reflected edges. On the switch, sample the pearl.
+                final fraction = part.name == 'switch'
+                    ? (direction == TextDirection.ltr ? 0.75 : 0.25)
+                    : 0.82;
+                final x = ((rect.left + rect.width * fraction) * 2).floor();
+                final y = (rect.center.dy * 2).floor();
+                final i = (y * stride + x) * 4;
+                expect(
+                  after.sublist(i, i + 3),
+                  before.sublist(i, i + 3),
+                  reason: 'Focus changed the neutral body of ${part.name}',
+                );
+              }
               expect(
-                lit,
-                greaterThanOrEqualTo(2 * perimeter * 4),
-                reason: '${part.name}: $lit lit for a perimeter of $perimeter',
+                changed,
+                greaterThan(16),
+                reason: 'No visible reflection on ${part.name}',
               );
-              expect(onWords, 0, reason: 'the halo crossed the words');
-              expect(far, 0, reason: 'focus changed what is beyond the part');
+              expect(outside, 0, reason: 'Focus painted outside ${part.name}');
+              expect(onWords, 0, reason: 'Focus obscured the words');
             },
           );
         }

@@ -150,10 +150,7 @@ class _CrumbLink extends StatelessWidget {
               bottom: clear,
               foreground: ink,
               radius: 6,
-              focus: glossFocusOf(
-                c,
-                focused: states.contains(WidgetState.focused),
-              ),
+              focus: glossGlazeOf(c, states),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -305,10 +302,7 @@ class GlossPagination extends StatelessWidget {
                             ? c.jadeInk
                             : c.ink),
                     travel: states.contains(WidgetState.pressed) ? 1 : 0,
-                    focus: glossFocusOf(
-                      c,
-                      focused: states.contains(WidgetState.focused),
-                    ),
+                    focus: glossGlazeOf(c, states),
                   ),
                   child: Center(widthFactor: 1, child: child),
                 ),
@@ -629,7 +623,7 @@ class GlossPageDots extends StatelessWidget {
     final c = theme.colors;
     final words = DesignLocalizations.of(context);
     final layered = DesignStyleOf([style, theme.pageDotsStyle], const {});
-    Widget dot(int i) {
+    Widget dot(int i, [Set<WidgetState> states = const {}]) {
       final on = i == index;
       var gel = GlossFace.gel(c).copyWith(lift: 0.3, lens: 0.6);
       if (layered.fill != null) gel = gel.glazed(layered.fill!);
@@ -638,7 +632,12 @@ class GlossPageDots extends StatelessWidget {
         curve: Curves.easeOutCubic,
         width: on ? 22 : 8,
         height: 8,
-        child: AnimatedGlossSurface(face: on ? gel : GlossFace.well(c)),
+        child: AnimatedGlossSurface(
+          face: (on ? gel : GlossFace.well(c)).copyWith(
+            focus: glossGlazeOf(c, states),
+            travel: states.contains(WidgetState.pressed) ? 1 : 0,
+          ),
+        ),
       );
     }
 
@@ -662,11 +661,7 @@ class GlossPageDots extends StatelessWidget {
                     child: SizedBox(
                       width: 24,
                       height: 24,
-                      child: GlossFocusHalo(
-                        focused: states.contains(WidgetState.focused),
-                        inside: true,
-                        child: Center(child: dot(i)),
-                      ),
+                      child: Center(child: dot(i, states)),
                     ),
                   ),
                 ),
@@ -792,10 +787,7 @@ class GlossMenuBar extends StatelessWidget {
         return AnimatedGlossSurface(
           face: plate.copyWith(
             foreground: layered.foreground ?? c.ink,
-            focus: glossFocusOf(
-              c,
-              focused: states.contains(WidgetState.focused),
-            ),
+            focus: glossGlazeOf(c, states),
           ),
           child: Padding(
             padding:

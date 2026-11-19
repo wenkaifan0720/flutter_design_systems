@@ -144,7 +144,7 @@ class _GroupKey extends StatelessWidget {
           lens: disabled ? 0.25 : null,
           lift: disabled ? 0.3 : null,
           travel: states.contains(WidgetState.pressed) ? 1 : 0,
-          focus: glossFocusOf(c, focused: states.contains(WidgetState.focused)),
+          focus: glossGlazeOf(c, states),
         );
         final glyph = item.icon == null
             ? null
@@ -336,10 +336,7 @@ class GlossToggleGroup<T> extends StatelessWidget {
                         : c.inkSecondary),
                 lens: disabled && on ? 0.25 : null,
                 travel: states.contains(WidgetState.pressed) ? 1 : 0,
-                focus: glossFocusOf(
-                  c,
-                  focused: states.contains(WidgetState.focused),
-                ),
+                focus: glossGlazeOf(c, states),
               );
               final only = iconsOnly && toggle.icon != null;
               return AnimatedGlossSurface(
@@ -497,10 +494,7 @@ class GlossSplitButton extends StatelessWidget {
             travel: states.contains(WidgetState.pressed) || (!main && open)
                 ? 1
                 : 0,
-            focus: glossFocusOf(
-              c,
-              focused: states.contains(WidgetState.focused),
-            ),
+            focus: glossGlazeOf(c, states),
           );
           final rtl = Directionality.of(context) == TextDirection.rtl;
           final leftRound = main != rtl;
@@ -588,7 +582,7 @@ class GlossSplitButton extends StatelessWidget {
 
 /// A link: jade words with a line under them, for a way somewhere else in
 /// running text or under a form. Under a press the words deepen and the
-/// line fills; the focus ring rounds the words.
+/// line fills. Its glaze deepens under keyboard focus.
 ///
 /// ```dart
 /// GlossLink('Forgot your password?', onPressed: () {})
@@ -636,12 +630,12 @@ class GlossLink extends StatelessWidget {
                 ? Color.lerp(c.jadeInk, c.ink, 0.45)!
                 : c.jadeInk);
         final clear = c.page.withValues(alpha: 0);
-        // A link has no glaze to light: its focus washes a plate just
-        // beyond its words and haloes it, clear of every letter.
+        // The reflected light lies on the surface beneath the letters.
         return DesignTapTarget(
-          child: GlossFocusHalo(
+          child: GlossGlazeHighlight(
             focused: states.contains(WidgetState.focused),
-            inset: -2,
+            hovered: states.contains(WidgetState.hovered),
+            pressed: states.contains(WidgetState.pressed),
             radius: 8,
             tint: true,
             child: AnimatedGlossSurface(
@@ -655,6 +649,7 @@ class GlossLink extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: GlossMetrics.rimRoom,
+                  vertical: 5,
                 ),
                 child: Text(
                   label,

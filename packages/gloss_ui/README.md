@@ -83,7 +83,7 @@ Gloss supports Android, iOS, web, macOS, Windows, and Linux.
 ## Accessibility
 
 Use Tab to reach a control and the arrow keys to move within tabs, ratings, and wheels.
-A ring marks keyboard focus. Charts expose values to screen readers and scale axis labels with
+Keyboard focus sharpens the reflection on a glazed control. On a recessed field, the light catches its inner edge. Charts expose values to screen readers and scale axis labels with
 system text size. Dialogs, sheets, tabs, and toasts respect reduced motion.
 
 ## Right to left and languages
