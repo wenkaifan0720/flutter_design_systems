@@ -225,7 +225,7 @@ class RetroDesktopListTile extends StatelessWidget {
   /// The main figure displayed by this part.
   final String? figure;
 
-  /// The visible or accessible name of this part.
+  /// The screen reader label. Defaults to [title] followed by [subtitle], if set.
   final String? label;
 
   /// An icon, a monogram, a `RetroDesktopMedia(width: 56)`: its own width stays.
@@ -234,7 +234,7 @@ class RetroDesktopListTile extends StatelessWidget {
   /// A figure or a `RetroDesktopFlag` beside the title, held to a share of the row.
   final Widget? trailing;
 
-  /// A `RetroDesktopButton` or `RetroDesktopButton`, one or two words.
+  /// An optional action widget, usually a button with a short label.
   final Widget? action;
 
   /// The whole row opens something.
@@ -288,7 +288,9 @@ class RetroDesktopListTile extends StatelessWidget {
       selected: selected,
       enabled: enabled,
       onPressed: onPressed,
-      label: label ?? title,
+      label:
+          label ??
+          [title, if (subtitle?.isNotEmpty ?? false) subtitle!].join(', '),
       child: Builder(
         builder: (context) {
           final t = RetroDesktopTheme.of(context);

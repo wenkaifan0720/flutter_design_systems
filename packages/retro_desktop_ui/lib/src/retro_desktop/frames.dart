@@ -104,7 +104,7 @@ bool retroDesktopCompactHere(BuildContext context) {
   return s.compact && !RetroDesktopTheme.of(context).desk;
 }
 
-/// A row of title-bar chrome the desktop's overlay test looks through: nothing under an alert is lost if this is.
+// Window chrome outside the modal content.
 class _Chrome extends SingleChildRenderObjectWidget {
   const _Chrome({required Widget super.child});
   @override
@@ -151,15 +151,16 @@ class _BoxPainter extends RetroDesktopPixelPainter {
       px.fillExact(inner.left, inner.top, inner.right, inner.top + h, line);
       px.fillExact(inner.left, inner.top, inner.left + w, inner.bottom, line);
     }
+    // Each glyph stands on the box's middle, across and down. The zoom box's smaller box is 7 lp in the 13 lp box, so
+    // it keeps 3 lp of face on every side at any whole device-pixel ratio (and within half a device pixel at any
+    // other); the shade box's two bars and the gap between them are three of its lines, the gap on the middle.
     if (kind == 1) {
-      px.frame(
-        Rect.fromLTWH(r.left + 2 * w, r.top + 2 * h, 6 * w, 6 * h),
-        line,
-      );
+      px.frame(Rect.fromCenter(center: r.center, width: 7, height: 7), line);
     } else if (kind == 2) {
-      final a = r.top + 5 * h;
-      px.fillExact(r.left + 2 * w, a, r.right - 2 * w, a + h, line);
-      px.fillExact(r.left + 2 * w, a + 2 * h, r.right - 2 * w, a + 3 * h, line);
+      final a = px.y(r.center.dy - 1.5 * h);
+      final start = r.left + 2 * w, end = r.right - 2 * w;
+      px.fillExact(start, a, end, a + h, line);
+      px.fillExact(start, a + 2 * h, end, a + 3 * h, line);
     }
   }
 
@@ -200,6 +201,9 @@ double _capsBelowMiddle(TextStyle style, TextScaler scaler) {
   return below;
 }
 
+double _captionTop(double height, double box, double pixel) =>
+    ((height - box) / (2 * pixel)).roundToDouble() * pixel;
+
 class _BarLayout extends MultiChildLayoutDelegate {
   _BarLayout(
     this.rtl, {
@@ -224,10 +228,10 @@ class _BarLayout extends MultiChildLayoutDelegate {
   void performLayout(Size size) {
     const side = 2.0, box = 13.0, boxGap = 3.0, min = 6.0, margin = 6.0;
     double place(double x, double w) => rtl ? size.width - x - w : x;
-    final y = 1 + (size.height - 1 - box) / 2;
+    final y = _captionTop(size.height, box, pixel);
     final tiny = BoxConstraints.tight(const Size(box, box));
     layoutChild('close', tiny);
-    positionChild('close', Offset(place(side, box), y.roundToDouble()));
+    positionChild('close', Offset(place(side, box), y));
     if (hasChild('reach')) {
       // The close box's press: the bar's height, from its start edge across 44 lp of stripes.
       const wide = retroDesktopReach;
@@ -235,17 +239,11 @@ class _BarLayout extends MultiChildLayoutDelegate {
       positionChild('reach', Offset(place(0, wide), 0));
     }
     layoutChild('shade', tiny);
-    positionChild(
-      'shade',
-      Offset(place(size.width - side - box, box), y.roundToDouble()),
-    );
+    positionChild('shade', Offset(place(size.width - side - box, box), y));
     layoutChild('zoom', tiny);
     positionChild(
       'zoom',
-      Offset(
-        place(size.width - side - 2 * box - boxGap, box),
-        y.roundToDouble(),
-      ),
+      Offset(place(size.width - side - 2 * box - boxGap, box), y),
     );
     final start = side + box;
     final end = boxes
@@ -261,20 +259,20 @@ class _BarLayout extends MultiChildLayoutDelegate {
         maxWidth: math.max(0, room - math.max(bars, 2 * (12 + 2 * margin))),
       ),
     );
-    // One line: its capitals' middle on the bar's middle line (the boxes'),
-    // on a whole pixel, as the engine puts its baseline (a top on a fraction
-    // of one moves the drawn capitals off where they were laid out). More
-    // lines centre as a block.
+    // One line: its capitals' middle on the boxes' middle line, its top on a
+    // whole device pixel as the boxes' are (a top on a fraction of one moves
+    // the drawn capitals off where they were laid out). More lines centre as
+    // a block on the same line.
     final oneLine = line > 0 && t.height < line * 1.5;
+    final middle = y + box / 2;
+    double snap(double v) => (v / pixel).roundToDouble() * pixel;
     // CSS flex: 1 1 0 on both sides, so the title is centred between the boxes, not the window. The stripes stand
     // where each run is at least 12 px long; shorter, they read as stubs, and the title stands alone between the boxes.
     final spare = (room - t.width) / 2 - 2 * margin;
     final stripes = spare >= 12;
     final bar = stripes ? spare : math.max(0.0, (room - t.width) / 2 - margin);
     final tx = stripes ? start + margin + bar + margin : start + margin + bar;
-    final ty = oneLine
-        ? (1 + (size.height - 1) / 2 - t.height / 2 - caps).roundToDouble()
-        : (1 + (size.height - 1 - t.height) / 2).roundToDouble();
+    final ty = snap(middle - t.height / 2 - (oneLine ? caps : 0));
     positionChild('title', Offset(place(tx, t.width).roundToDouble(), ty));
     final stripe = stripes ? bar : 0.0;
     final st = BoxConstraints.tightFor(width: stripe, height: 12);
@@ -332,10 +330,15 @@ class _TitleBar extends StatelessWidget {
 
   Widget _heading(Widget words) => header && title.isNotEmpty
       ? Semantics(container: true, header: true, child: words)
-      : words;
+      : ExcludeSemantics(child: words);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: PaintingBinding.instance.systemFonts,
+    builder: (context, _) => _build(context),
+  );
+
+  Widget _build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
     final states = <WidgetState>{if (active) WidgetState.selected};
@@ -393,7 +396,7 @@ class _TitleBar extends StatelessWidget {
             if (icon != null && room.maxWidth >= 4 + 20 + 24) ...[
               // The glyph's middle on the capitals' middle.
               Transform.translate(
-                offset: Offset(0, (caps / pixel).roundToDouble() * pixel),
+                offset: Offset(0, caps),
                 child: Icon(icon, size: 14, color: ink),
               ),
               const SizedBox(width: RetroDesktopSpacing.s6),
@@ -481,8 +484,7 @@ class _TitleBar extends StatelessWidget {
                             const SizedBox.expand(),
                             PositionedDirectional(
                               start: 2,
-                              top: (1 + (room.maxHeight - 1 - 13) / 2)
-                                  .roundToDouble(),
+                              top: _captionTop(room.maxHeight, 13, pixel),
                               width: 13,
                               height: 13,
                               child: Stack(
@@ -690,8 +692,8 @@ class _CaptionPainter extends RetroDesktopPixelPainter {
     px.fill(r, c.platinum);
     retroDesktopPaintChiselRect(px.canvas, r, retroDesktopChiselEdge(c));
     final ink = c.text;
-    final cx = (r.left + r.width / 2).floorToDouble();
-    final cy = (r.top + r.height / 2).floorToDouble();
+    final cx = px.x(r.center.dx);
+    final cy = px.y(r.center.dy);
     switch (kind) {
       case 0:
         for (var i = 0; i < 6; i++) {
@@ -699,7 +701,9 @@ class _CaptionPainter extends RetroDesktopPixelPainter {
           px.fillExact(cx + 2 - i, cy - 3 + i, cx + 4 - i, cy - 2 + i, ink);
         }
       case 1:
-        final f = Rect.fromLTWH(cx - 4, cy - 4, 9, 8);
+        final f = px.snap(
+          Rect.fromCenter(center: r.center, width: 9, height: 8),
+        );
         px.fillExact(f.left, f.top, f.right, f.top + 2, ink);
         px.fillExact(f.left, f.top, f.left + 1, f.bottom, ink);
         px.fillExact(f.right - 1, f.top, f.right, f.bottom, ink);
@@ -863,9 +867,14 @@ class RetroDesktopWindow extends StatelessWidget {
             Directionality.of(context),
           )
         : inset;
+    final route = ModalRoute.of(context);
+    final titleNamedByRoute =
+        route is DesignSideSheetRoute &&
+        route.semanticLabel == title &&
+        context.getInheritedWidgetOfExactType<_InsideWindow>() == null;
     return Semantics(
       container: true,
-      label: title,
+      label: titleNamedByRoute ? null : title,
       child: retroDesktopFace(
         shadows: _shadows(c, active),
         states: states,

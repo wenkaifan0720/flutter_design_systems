@@ -1,7 +1,7 @@
 # retro_desktop_ui
 
-Retro Desktop for Flutter: the pixel-era desktop of square windows, one-pixel bevels and striped title bars, in two
-appearances and five presets, by day and night.
+Retro Desktop brings classic Mac and PC controls to Flutter. It includes beveled buttons, striped window titles,
+menus, forms and tables, with five color presets and light and dark themes.
 
 ![Papers by day at 1440 wide: a document list and an open note in windows on the desktop, under the menu bar](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/retro_desktop_ui/screenshots/desktop_day.png)
 
@@ -15,9 +15,8 @@ appearances and five presets, by day and night.
 flutter pub add retro_desktop_ui material_ui
 ```
 
-`material_ui` is Flutter's Material library as a package, where Flutter 3.50 moves it; the setup below imports it, so
-an app starts without a deprecation. A `CupertinoApp` takes `cupertino_ui` (`flutter pub add cupertino_ui`) in its
-place, and a bare `WidgetsApp` needs neither.
+The example below uses `MaterialApp` from `material_ui`. For a `CupertinoApp`, add `cupertino_ui` instead.
+A `WidgetsApp` can use Retro Desktop directly.
 
 The package bundles its faces (Jersey 15, Atkinson Hyperlegible Next and Mono) and its icon font; an app needs no
 font setup of its own. Load them before the first frame so nothing draws in a fallback face:
@@ -273,7 +272,7 @@ part of your own can follow them the same way.
 - **Touch.** A phone keeps the desktop's materials: windows stack, and every control is a finger's reach. A gesture the
   desktop never had (a swipe, a pull) has no part of its own; its job goes to a button or a menu.
 
-So some parts other kits have are made differently here, and some aren't in 0.3.0:
+Use these controls for common desktop interactions.
 
 | Elsewhere | In Retro Desktop |
 | --- | --- |
@@ -405,20 +404,18 @@ What keeps the look:
   To translate them, extend `DefaultDesignLocalizations`, override the words you translate, and add a delegate for
   your subclass to `localizationsDelegates`; every ui_core look then speaks your language. The words only this look
   says (a pager's name, a time picker's wheels, a stepper's More and Less, a file drop's invitation) are
-  `RetroDesktopLocalizations`, English in 0.3.0.
+  `RetroDesktopLocalizations`. Its default language is English; a time picker's Hour, Minute and AM/PM are
+  `DesignLocalizations`', so they follow the app's language.
 - **Dates and numbers.** Month and weekday names, dates, numbers and percentages use `intl` in the locale
-  `RetroDesktopLocalizations.delegate` loads (add it for a locale other than US English); the calendar starts its week
-  on the day `DesignLocalizations.firstDayOfWeek` names, and times are 12- or 24-hour as the platform says.
+  `RetroDesktopLocalizations.delegate` loads (add it for a locale other than US English; it takes every locale); the
+  calendar starts its week on the day `DesignLocalizations.firstDayOfWeek` names, and times are 12- or 24-hour as the
+  platform says.
 - **Scripts.** The look's faces (Jersey 15 for window titles and buttons, Atkinson Hyperlegible Next and Mono for the
   rest) cover the Latin alphabet. Other scripts (Arabic, Hebrew, Chinese, Japanese, Devanagari, Thai) are drawn in the
   platform's fallback fonts (on the web, the Noto fonts Flutter fetches), so they read, but without the pixel face.
 
-Known limits in 0.3.0: the look's own words ship in English only, and a title in another script loses the period's
-pixel type. The glyphs on buttons, rows and fields (`RetroDesktopGlyphs`) are Lucide's line icons, smooth strokes beside
-the pixel art: a pixel set on a 24 px grid stays sharp only at 24 and 48, and the parts draw their glyphs at 13 to 18,
-so a later version brings pixel glyphs drawn for those sizes behind the same `RetroDesktopGlyphs` names. Where a menu
-bar's titles outrun a narrow screen (a phone, large text, a long language), the bar wraps them onto a second row; a later
-version gathers the titles that don't fit into a "…" menu at the bar's end.
+The menu bar wraps titles on narrow screens. Segmented controls stack when their labels outgrow the row, and
+input groups move long prefixes and suffixes above and below the field. Invoice totals stay in view as columns scroll.
 
 ## API notes
 
@@ -428,10 +425,8 @@ a select, a list row) takes an optional `focusNode` and `autofocus`; a widget th
 never disposes it, and makes and disposes its own when none is given. Groups (tabs, navigation, segments, radio groups,
 the pickers) take none, as Flutter's do.
 
-Some slots take words or an icon where Flutter would take a widget, because the look sets them itself: a button's,
-chip's, tab's or menu item's `label`, a window's, dialog's, card's or list row's `title` and `subtitle`, an alert's
-`body`, and `icon` as an `IconData`. A later version adds a widget slot beside each one, with the words made optional, so
-nothing written against 0.1.0 breaks.
+Pass text for button, chip, tab and menu labels. Windows, dialogs, cards and list rows take text for their titles.
+Use `IconData` for a control's `icon` and a widget for a list row's `leading` or `trailing` slot.
 
 Sizes follow the period's: a button is as wide as its words, up to 300 on a desk and half the screen on a phone (never
 under 160); `wide: true` fills its row. A table narrower than its columns' least widths scrolls sideways under the

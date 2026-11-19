@@ -1,3 +1,15 @@
+## 0.3.1
+
+- Keyboard focus follows the rounded ends of Platinum button groups, toggles and split buttons. On parts joined to their neighbours (folder tabs, the places on the menu bar, a number field's value) Platinum draws its focus ring inside the part, clear of the next one.
+- The zoom and shade glyphs stand on the middle of their Platinum title-bar boxes, and every window control is centered on the device pixel grid. A window's title and its glyph stand on the same middle line as the boxes at every pixel ratio.
+- A chart's value axis is as wide as its widest value, so the values start at the chart's edge, in line with the words and buttons around it.
+- `RetroDesktopFormField` takes `mergeSemantics`, as ui_core's field does. Left null, the field reads what its control brings: one control (a text field, a select, a switch) takes the field's name, help and error; several (radios, a segmented button, chips, a row of boxes, a number field's value and its steps, a password and its Show button) keep their own screen-reader nodes, so a tap with semantics on reaches the control tapped, not the field's first; and the name is said once where the control already says it. A number field's value stands in a node of its own, so a tap through the semantics tree on - or + no longer puts the keys in the value.
+- Moving the pointer away from an open menu clears its title and row highlight immediately. The menu stays open for another selection.
+- Segmented controls and fields with prefixes or suffixes adapt to their labels at larger text sizes. Document and window titles reflow when a fallback font loads. Amounts due stay visible while invoice columns scroll.
+- A time picker names its hour, minute and AM/PM fields, and says AM and PM, in the app's language, from ui_core's `DesignLocalizations` (they were English in every language). `RetroDesktopLocalizations.delegate` takes every locale: a German or Arabic app that installs it no longer has Flutter's unsupported-locale warning, and its dates and numbers follow the app's locale.
+- List rows announce their subtitles, window titles are announced once per group, and step counts keep their reading order in right-to-left layouts.
+- The Papers example remembers saved contact details, disables document commands for an empty search, and keeps the confirmation actions clear on phones.
+
 ## 0.3.0
 
 Needs ui_core 0.3.0. Retro Desktop's parts take more of their behaviour from ui_core now and keep their pixels: the

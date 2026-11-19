@@ -6,6 +6,7 @@ import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../kit.dart';
+import 'papers_words.dart';
 
 Widget kitControlsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
@@ -240,8 +241,12 @@ Widget kitSpecimenPriority() => const Wrap(
   ],
 );
 
-Widget kitSpecimenProgress() =>
-    const RetroDesktopLinearProgressIndicator(value: .4, label: '2 of 5 done');
+Widget kitSpecimenProgress() => Builder(
+  builder: (context) => RetroDesktopLinearProgressIndicator(
+    value: .4,
+    label: context.say('2 of 5 done'),
+  ),
+);
 
 Widget kitSpecimenEtch() => const RetroDesktopDivider.etched();
 

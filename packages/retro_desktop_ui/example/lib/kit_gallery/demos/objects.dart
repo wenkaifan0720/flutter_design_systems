@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
 
 import '../kit.dart';
+import 'papers_words.dart';
 
 Widget kitObjectsDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
@@ -28,24 +29,26 @@ Widget kitSpecimenDayTile() => const RetroDesktopDayTile(
 
 Widget kitSpecimenBigFigure() => const RetroDesktopBigFigure('8', unit: '°');
 
-Widget kitSpecimenHero() => const RetroDesktopHeroHeader(
-  object: RetroDesktopDayTile(
-    month: 'MAR',
-    year: '2026',
-    day: '14',
-    weekday: 'Saturday',
+Widget kitSpecimenHero() => Builder(
+  builder: (context) => RetroDesktopHeroHeader(
+    object: const RetroDesktopDayTile(
+      month: 'MAR',
+      year: '2026',
+      day: '14',
+      weekday: 'Saturday',
+    ),
+    eyebrow: 'Good morning',
+    title: '3 left today',
+    progress: .4,
+    progressLabel: context.say('2 of 5 done'),
+    flag: '1 overdue',
+    flagNote: 'since Thursday',
+    stats: const [
+      ('Open', '18', null),
+      ('This week', '4', null),
+      ('Next up', '14:00', null),
+    ],
   ),
-  eyebrow: 'Good morning',
-  title: '3 left today',
-  progress: .4,
-  progressLabel: '2 of 5 done',
-  flag: '1 overdue',
-  flagNote: 'since Thursday',
-  stats: [
-    ('Open', '18', null),
-    ('This week', '4', null),
-    ('Next up', '14:00', null),
-  ],
 );
 
 Widget kitSpecimenFigureHero() => const RetroDesktopFigureHero(

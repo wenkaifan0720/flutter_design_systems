@@ -2418,6 +2418,23 @@ class _NumberFieldState extends State<RetroDesktopNumberField> {
         );
       },
       fieldBuilder: (context, input) => _box(context, t, input, faceHeight),
+      // The stepper's node says the number it steps, as the text reads while it is typed; the value's entry stands in
+      // a node of its own under it (_NumberInput), so a tap through the semantics tree on a step button lands on no
+      // node that takes it in the button's place.
+      layoutBuilder: (context, value, decrement, increment) =>
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _text,
+            builder: (context, text, row) =>
+                Semantics(value: text.text, child: row),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                decrement,
+                Flexible(child: value),
+                increment,
+              ],
+            ),
+          ),
     );
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -2452,10 +2469,11 @@ class _NumberFieldState extends State<RetroDesktopNumberField> {
       input: input,
       enabled: enabled,
       style: style,
-      box: (editable) => RetroDesktopHighlight(
+      box: (editable) => retroDesktopJoinedRing(
         shape: t.shapes.small,
         focused: input.states.contains(WidgetState.focused),
-        inside: true,
+        // Inside the box's outline and bevel, which it shares with the keys.
+        rim: retroDesktopFaceRim(t),
         // Disabled, the value and its box dim with the buttons.
         child: AnimatedOpacity(
           duration: RetroDesktopMotion.of(context).state,
@@ -2521,9 +2539,9 @@ class _NumberFieldState extends State<RetroDesktopNumberField> {
   }
 }
 
-// The number's own text input: an EditableText with the platform's selection gestures, as a text field's, but no
-// field's own node: its value joins the number field's node, which steps it (a Material text field says it is enabled
-// on its own node, so it stood apart and the steps had no value to step).
+// The number's own text input: an EditableText with the platform's selection gestures, as a text field's, in a node
+// of its own under the number field's, which says the value and steps it. Joined to the stepper's node, the entry's
+// tap took a tap through the semantics tree on either step button and put the keys in the box.
 class _NumberInput extends StatefulWidget {
   const _NumberInput({
     required this.input,
@@ -2569,14 +2587,16 @@ class _NumberInputState extends State<_NumberInput>
         cursor: widget.enabled
             ? SystemMouseCursors.text
             : SystemMouseCursors.basic,
-        // The look's own reach, as a text field's: a press past the box puts the caret at its nearest point.
-        child: RetroDesktopReach(
-          keepsPoint: true,
-          child: widget.box(
-            // A screen reader's tap puts the keys in it, to type.
-            Semantics(
-              onTap: widget.enabled ? input.focusNode.requestFocus : null,
-              child: EditableText(
+        // A screen reader's tap puts the keys in it, to type. Its node is the entry's reach, as a text field's: the box a
+        // press reaches and a screen reader outlines.
+        child: Semantics(
+          container: true,
+          onTap: widget.enabled ? input.focusNode.requestFocus : null,
+          // The look's own reach, as a text field's: a press past the box puts the caret at its nearest point.
+          child: RetroDesktopReach(
+            keepsPoint: true,
+            child: widget.box(
+              EditableText(
                 key: editableTextKey,
                 controller: input.controller,
                 focusNode: input.focusNode,
@@ -3272,43 +3292,49 @@ class _TabBarState extends State<RetroDesktopTabBar>
                 // The tab's own face, not the panel's rule that shows
                 // under a closed tab, is what its label is centred on.
                 child: DesignKeylineFace(
-                  child: retroDesktopFace(
-                    openBottom: selected && widget.child != null,
-                    openDepth: join - rule,
-                    states: details.states,
-                    component: t.tabBarTheme.over(
-                      RetroDesktopStyle(
-                        fill: WidgetStatePropertyAll(
-                          selected ? selectedFill : t.colors.platinumDark,
+                  // Tabs stand side by side: the ring keeps inside the
+                  // tab's rim, clear of the next tab and the panel.
+                  child: retroDesktopJoinedRing(
+                    shape: tabShape ?? const RoundedRectangleBorder(),
+                    rim: retroDesktopFaceRim(t),
+                    child: retroDesktopFace(
+                      openBottom: selected && widget.child != null,
+                      openDepth: join - rule,
+                      states: details.states,
+                      component: t.tabBarTheme.over(
+                        RetroDesktopStyle(
+                          fill: WidgetStatePropertyAll(
+                            selected ? selectedFill : t.colors.platinumDark,
+                          ),
+                          shape: tabShape == null
+                              ? null
+                              : WidgetStatePropertyAll(tabShape),
+                          // A closed tab's words in full ink, as the
+                          // period's were: grey type means
+                          // unavailable (the state law).
+                          foreground: WidgetStatePropertyAll(t.colors.text),
+                          textStyle: WidgetStatePropertyAll(t.type.chrome),
                         ),
-                        shape: tabShape == null
-                            ? null
-                            : WidgetStatePropertyAll(tabShape),
-                        // A closed tab's words in full ink, as the
-                        // period's were: grey type means
-                        // unavailable (the state law).
-                        foreground: WidgetStatePropertyAll(t.colors.text),
-                        textStyle: WidgetStatePropertyAll(t.type.chrome),
                       ),
-                    ),
-                    style: widget.style,
-                    // The chosen tab stands 4 taller, all of it above
-                    // its words: every label keeps one centre line.
-                    padding: EdgeInsets.fromLTRB(
-                      12,
-                      selected ? 10 : 6,
-                      12,
-                      selected && widget.child != null ? 6 + join : 6,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        RetroDesktopCaps(Text(widget.tabs[i])),
-                        if (count != null) ...[
-                          const SizedBox(width: RetroDesktopSpacing.s6),
-                          RetroDesktopCaps(Text(count)),
+                      style: widget.style,
+                      // The chosen tab stands 4 taller, all of it above
+                      // its words: every label keeps one centre line.
+                      padding: EdgeInsets.fromLTRB(
+                        12,
+                        selected ? 10 : 6,
+                        12,
+                        selected && widget.child != null ? 6 + join : 6,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          RetroDesktopCaps(Text(widget.tabs[i])),
+                          if (count != null) ...[
+                            const SizedBox(width: RetroDesktopSpacing.s6),
+                            RetroDesktopCaps(Text(count)),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
                 ),

@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'controls.dart';
@@ -236,10 +237,10 @@ class RetroDesktopPasswordField extends StatelessWidget {
   }
 }
 
-/// A box with words fixed at either end of what is typed: a site's address
-/// round a name, a currency before an amount. The add-ons are the machine's
-/// grey, ruled off from the white; a press anywhere on the box types in it.
-/// ui_core's input group carries focus-within and the press.
+/// A text field with a fixed prefix, suffix, or both.
+///
+/// Tapping an add-on focuses the field. When the text does not fit across
+/// the available width, the prefix and suffix move above and below the input.
 ///
 /// ```dart
 /// RetroDesktopInputGroup(label: 'Site', prefix: 'https://', suffix: '.example.com', hint: 'studio')
@@ -365,8 +366,7 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
     RetroDesktopThemeData t,
     String words, {
     required bool start,
-    required double most,
-    double shrink = 1,
+    required bool stacked,
   }) {
     final c = t.colors;
     final rule = BorderSide(
@@ -376,38 +376,29 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: c.platinumLight,
-        border: BorderDirectional(
-          end: start ? rule : BorderSide.none,
-          start: start ? BorderSide.none : rule,
-        ),
+        border: stacked
+            ? Border(
+                top: start ? BorderSide.none : rule,
+                bottom: start ? rule : BorderSide.none,
+              )
+            : BorderDirectional(
+                end: start ? rule : BorderSide.none,
+                start: start ? BorderSide.none : rule,
+              ),
       ),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: most),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: RetroDesktopSpacing.s8,
-          ),
-          child: Center(
-            widthFactor: 1,
-            child: Builder(
-              builder: (context) {
-                final text = Text(
-                  words,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  // The words typed between are the field's: the add-ons match
-                  // them, in the secondary ink.
-                  style: t.type.body.copyWith(color: c.textSecondary),
-                );
-                if (shrink >= 1) return text;
-                final size = t.type.body.fontSize ?? 14;
-                final now = MediaQuery.textScalerOf(context).scale(size) / size;
-                return MediaQuery.withClampedTextScaling(
-                  maxScaleFactor: now * shrink,
-                  child: text,
-                );
-              },
-            ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: RetroDesktopSpacing.s8,
+          vertical: stacked ? RetroDesktopSpacing.s4 : 0,
+        ),
+        child: Align(
+          alignment: stacked && !start
+              ? AlignmentDirectional.centerEnd
+              : AlignmentDirectional.centerStart,
+          widthFactor: 1,
+          child: Text(
+            words,
+            style: t.type.body.copyWith(color: c.textSecondary),
           ),
         ),
       ),
@@ -431,11 +422,7 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
       onSubmitted: widget.onSubmitted,
       semanticLabel: widget.label,
     );
-    // The words typed between keep two fifths of the row (up to 120), so they never get pushed out of a narrow
-    // column. Add-ons too wide for the rest may take that room down to the hint's own width; then their words step
-    // down a little (to four fifths); only then do they share the rest by their widths, each cut short (twice the
-    // text size on a phone left "https://" and ".example.com" the whole row and the field a sliver; in a narrow card
-    // at the plain size, "http…" and ".example.…" were cut beside an empty half of the field).
+    // Keep the complete address readable when its fixed parts outgrow one line.
     final group = LayoutBuilder(
       builder: (context, room) {
         double natural(String? words) {
@@ -451,30 +438,55 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
           return width;
         }
 
-        final pre = natural(widget.prefix), post = natural(widget.suffix);
-        final keep = room.hasBoundedWidth
-            ? math.min(room.maxWidth * .4, 120.0)
-            : 0.0;
-        var spare = room.hasBoundedWidth
-            ? room.maxWidth - keep
-            : double.infinity;
-        var shrink = 1.0;
-        if (pre + post > spare) {
-          spare =
-              room.maxWidth -
-              math.min(keep, math.max(48.0, natural(widget.hint)));
-          final pads =
-              (widget.prefix != null ? 18 : 0) +
-              (widget.suffix != null ? 18 : 0);
-          final words = pre + post - pads;
-          if (pre + post > spare && words > 0) {
-            shrink = math.max(.8, (spare - pads) / words);
-          }
-        }
-        final shrunk = (pre + post) * shrink;
-        final cut = shrunk <= spare ? 1.0 : spare / shrunk;
-        final mostPre = cut < 1 ? pre * shrink * cut : double.infinity;
-        final mostPost = cut < 1 ? post * shrink * cut : double.infinity;
+        final stacked =
+            room.hasBoundedWidth &&
+            room.maxWidth <
+                natural(widget.prefix) +
+                    natural(widget.suffix) +
+                    math.max(56, natural(widget.hint)) +
+                    4 +
+                    (widget.leading == null ? 0 : 24) +
+                    (widget.trailing == null ? 0 : 44);
+        final prefix = widget.prefix == null
+            ? null
+            : _addOn(t, widget.prefix!, start: true, stacked: stacked);
+        final suffix = widget.suffix == null
+            ? null
+            : _addOn(t, widget.suffix!, start: false, stacked: stacked);
+        Widget input(Widget? edit) => IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (!stacked && prefix != null) prefix,
+              if (widget.leading != null)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    start: RetroDesktopSpacing.s8,
+                  ),
+                  child: IconTheme.merge(
+                    data: IconThemeData(size: 15, color: c.text),
+                    child: widget.leading!,
+                  ),
+                ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: RetroDesktopSpacing.s8,
+                  ),
+                  child: edit,
+                ),
+              ),
+              if (widget.trailing != null)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(
+                    end: RetroDesktopSpacing.s4,
+                  ),
+                  child: Center(widthFactor: 1, child: widget.trailing),
+                ),
+              if (!stacked && suffix != null) suffix,
+            ],
+          ),
+        );
         return DesignInputGroup(
           focusNode: _focus,
           enabled: widget.enabled,
@@ -488,54 +500,13 @@ class _InputGroupState extends State<RetroDesktopInputGroup> {
                 context,
                 states: states,
                 padding: EdgeInsets.zero,
-                child: IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (widget.prefix != null)
-                        _addOn(
-                          t,
-                          widget.prefix!,
-                          start: true,
-                          most: mostPre,
-                          shrink: shrink,
-                        ),
-                      if (widget.leading != null)
-                        Padding(
-                          padding: const EdgeInsetsDirectional.only(
-                            start: RetroDesktopSpacing.s8,
-                          ),
-                          child: IconTheme.merge(
-                            data: IconThemeData(size: 15, color: c.text),
-                            child: widget.leading!,
-                          ),
-                        ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: RetroDesktopSpacing.s8,
-                          ),
-                          child: child,
-                        ),
-                      ),
-                      if (widget.trailing != null)
-                        Padding(
-                          padding: const EdgeInsetsDirectional.only(
-                            end: RetroDesktopSpacing.s4,
-                          ),
-                          child: Center(widthFactor: 1, child: widget.trailing),
-                        ),
-                      if (widget.suffix != null)
-                        _addOn(
-                          t,
-                          widget.suffix!,
-                          start: false,
-                          most: mostPost,
-                          shrink: shrink,
-                        ),
-                    ],
-                  ),
-                ),
+                child: stacked
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [?prefix, input(child), ?suffix],
+                      )
+                    : input(child),
               ),
             ),
           ),
@@ -1016,8 +987,13 @@ class _ListField extends StatelessWidget {
 
 /// A control with its words: the name above it, its help under it, and the
 /// error that replaces the help, the way every Retro Desktop field reads.
-/// ui_core's field gives the control its name, help and error for a screen
-/// reader, and marks it required.
+/// ui_core's field gives one control its name, help and error for a screen
+/// reader, and marks it required; a group of controls (radios, a segmented
+/// button, chips, a number field's value and its steps, a password and its
+/// Show button) is named by them, each control keeping its own node, so every
+/// one takes a tap from a screen reader or a browser with semantics on
+/// ([mergeSemantics]). A control that already says the name is not named
+/// again.
 ///
 /// ```dart
 /// RetroDesktopFormField(label: 'Email', help: 'We send the receipt here', required: true, child: RetroDesktopTextField(hint: 'name@example.com'))
@@ -1034,6 +1010,7 @@ class RetroDesktopFormField extends StatelessWidget {
     this.enabled = true,
     this.focusNode,
     this.requiredHint,
+    this.mergeSemantics,
   });
 
   /// The word a screen reader hears for a required field.
@@ -1055,19 +1032,36 @@ class RetroDesktopFormField extends StatelessWidget {
   /// The control's focus, so a press on the name reaches it.
   final FocusNode? focusNode;
 
+  /// Whether the label, help and error join [child]'s one node. Null, the
+  /// default, decides by what [child] brings to the semantics tree, as ui_core
+  /// 0.3.2's field does: one control (a text field, a select, a switch) is one
+  /// node with the label as its name and the help and error as its hint;
+  /// several (radios, segments, chips, a number field's value and its steps, a
+  /// password and its Show button) keep their own nodes, which the label names
+  /// as a group; and the label is left out where a control already says it.
+  /// True and false keep ui_core 0.3.1's field: one node, or a group named by
+  /// the label.
+  final bool? mergeSemantics;
+
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
     final c = t.colors;
+    final decide = mergeSemantics == null;
+    final requiredWords =
+        requiredHint ?? DesignLocalizations.of(context).requiredHint;
+    final hint = [?error, ?help].join('. ');
     return DesignField(
+      // Left to Retro (null), the field is told to merge, which adds no node round the field, and the builder places
+      // the look's own node in place of the merged control: ui_core 0.3.1's field merges whatever it holds.
+      mergeSemantics: mergeSemantics ?? true,
       labelText: label,
       helperText: help,
       errorText: error,
       required: required,
       enabled: enabled,
       focusNode: focusNode,
-      requiredHint:
-          requiredHint ?? DesignLocalizations.of(context).requiredHint,
+      requiredHint: requiredWords,
       builder: (context, parts) => Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1088,7 +1082,21 @@ class RetroDesktopFormField extends StatelessWidget {
                 ),
               ),
             ),
-          parts.control,
+          if (decide)
+            _FieldNode(
+              label: label == null
+                  ? null
+                  : required
+                  ? '$label, $requiredWords'
+                  : label,
+              words: label,
+              hint: hint.isEmpty ? null : hint,
+              invalid: error != null,
+              textDirection: Directionality.maybeOf(context),
+              child: child,
+            )
+          else
+            parts.control,
           if (parts.errorText != null)
             Padding(
               padding: const EdgeInsets.only(top: RetroDesktopSpacing.s6),
@@ -1118,6 +1126,13 @@ class RetroDesktopFormField extends StatelessWidget {
     super.debugFillProperties(properties);
     properties
       ..add(StringProperty('requiredHint', requiredHint, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool>(
+          'mergeSemantics',
+          mergeSemantics,
+          defaultValue: null,
+        ),
+      )
       ..add(StringProperty('label', label, defaultValue: null))
       ..add(StringProperty('help', help, defaultValue: null))
       ..add(StringProperty('error', error, defaultValue: null))
@@ -1130,5 +1145,214 @@ class RetroDesktopFormField extends StatelessWidget {
           defaultValue: null,
         ),
       );
+  }
+}
+
+// The field's own node, shaped by the controls under it, as ui_core 0.3.2's field shapes it: one control is merged
+// with the name, hint and validity; several keep their own nodes under a node that names them; the name is left out
+// when a control already says it. Merged into one node, a group's controls gave a tap through the semantics tree on
+// any of them to the first (the user, 11-18: Stint's Priority and Labels), a password's Show button stood under its
+// entry, and a field named as its number field read its name twice.
+class _FieldNode extends SingleChildRenderObjectWidget {
+  const _FieldNode({
+    required this.label,
+    required this.words,
+    required this.hint,
+    required this.invalid,
+    required this.textDirection,
+    required super.child,
+  });
+
+  final String? label;
+  final String? words;
+  final String? hint;
+  final bool invalid;
+  final TextDirection? textDirection;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderFieldNode(label, words, hint, invalid, textDirection);
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderFieldNode renderObject) {
+    renderObject
+      ..label = label
+      ..words = words
+      ..hint = hint
+      ..invalid = invalid
+      ..textDirection = textDirection;
+  }
+}
+
+class _RenderFieldNode extends RenderProxyBox {
+  _RenderFieldNode(
+    this._label,
+    this._words,
+    this._hint,
+    this._invalid,
+    this._textDirection,
+  );
+
+  String? _label;
+  set label(String? value) {
+    if (value == _label) return;
+    _label = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  String? _words;
+  set words(String? value) {
+    if (value == _words) return;
+    _words = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  String? _hint;
+  set hint(String? value) {
+    if (value == _hint) return;
+    _hint = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  bool _invalid;
+  set invalid(bool value) {
+    if (value == _invalid) return;
+    _invalid = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  TextDirection? _textDirection;
+  set textDirection(TextDirection? value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsSemanticsUpdate();
+  }
+
+  // The controls under the field as last described, to describe it again when a layout changes them (a search
+  // field's clear button comes with its text).
+  ({bool single, bool said})? _shape;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    if (_shape != null && _read() != _shape) markNeedsSemanticsUpdate();
+  }
+
+  @override
+  void describeSemanticsConfiguration(SemanticsConfiguration config) {
+    super.describeSemanticsConfiguration(config);
+    final shape = _shape = _read();
+    config.isSemanticBoundary = true;
+    if (shape.single) {
+      config.isMergingSemanticsOfDescendants = true;
+    } else {
+      config.explicitChildNodes = true;
+    }
+    final label = _label;
+    if (label != null && !shape.said) config.label = label;
+    if (_hint case final hint?) config.hint = hint;
+    if (config.label.isNotEmpty || config.hint.isNotEmpty) {
+      config.textDirection = _textDirection;
+    }
+    config.validationResult = _invalid
+        ? SemanticsValidationResult.invalid
+        : SemanticsValidationResult.none;
+  }
+
+  // Whether the child holds one control at most, and whether anything in it already says the name (a line of its own
+  // that is the name, or starts with it and a comma, as a required field's does): a control, or a group that names
+  // itself, as a radio group or a segmented button does on a node of its own that takes no action.
+  ({bool single, bool said}) _read() {
+    var controls = 0;
+    var said = false;
+    final words = _words?.trim().toLowerCase() ?? '';
+    bool says(String text) => text
+        .split('\n')
+        .map((line) => line.trim().toLowerCase())
+        .any((line) => line == words || line.startsWith('$words,'));
+    bool hears(RenderObject control) {
+      if (words.isEmpty) return false;
+      var heard = false;
+      void hear(RenderObject n) {
+        if (heard || (n is RenderExcludeSemantics && n.excluding)) return;
+        if (n is RenderSemanticsAnnotations) {
+          if (says(n.properties.label ?? '')) heard = true;
+          if (n.excludeSemantics) return;
+        }
+        if (n is RenderParagraph &&
+            says(n.text.toPlainText(includeSemanticsLabels: true))) {
+          heard = true;
+        }
+        n.visitChildrenForSemantics(hear);
+      }
+
+      hear(control);
+      return heard;
+    }
+
+    bool holdsEntry(RenderObject n) {
+      if (n is RenderEditable) return true;
+      var found = false;
+      n.visitChildrenForSemantics((c) => found = found || holdsEntry(c));
+      return found;
+    }
+
+    // The controls under [n]: those that hold no control of their own (a text field's tap wraps its entry: one
+    // control), and an adjustment round an entry (a number field's steps round the value it types in), which a tap
+    // on its parts would not reach once merged with them.
+    int leaves(RenderObject n) {
+      if (n is RenderExcludeSemantics && n.excluding) return 0;
+      if (n is RenderEditable) return 1;
+      var below = 0;
+      if (!(n is RenderSemanticsAnnotations && n.excludeSemantics)) {
+        n.visitChildrenForSemantics((c) => below += leaves(c));
+      }
+      if (below == 0) return _acts(n) ? 1 : 0;
+      final adjusts =
+          n is RenderSemanticsAnnotations &&
+          (n.properties.onIncrease != null ||
+              n.properties.onDecrease != null) &&
+          holdsEntry(n);
+      return below + (adjusts ? 1 : 0);
+    }
+
+    void visit(RenderObject n) {
+      if (n is RenderExcludeSemantics && n.excluding) return;
+      if (n is RenderEditable || _acts(n)) {
+        controls += math.max(1, leaves(n));
+        return;
+      }
+      n.visitChildrenForSemantics(visit);
+    }
+
+    visitChildrenForSemantics(visit);
+    visitChildrenForSemantics((c) => said = said || hears(c));
+    return (single: controls <= 1, said: said);
+  }
+
+  // A node a press, a drag or an adjustment acts on, or one with a value or a state of its own.
+  static bool _acts(RenderObject n) {
+    if (n is RenderSemanticsGestureHandler) {
+      return n.onTap != null ||
+          n.onLongPress != null ||
+          n.onHorizontalDragUpdate != null ||
+          n.onVerticalDragUpdate != null;
+    }
+    if (n is RenderSemanticsAnnotations) {
+      final p = n.properties;
+      return p.button == true ||
+          p.link == true ||
+          p.textField == true ||
+          p.slider == true ||
+          p.toggled != null ||
+          p.checked != null ||
+          p.inMutuallyExclusiveGroup == true ||
+          p.onTap != null ||
+          p.onLongPress != null ||
+          p.onIncrease != null ||
+          p.onDecrease != null ||
+          (p.value?.isNotEmpty ?? false);
+    }
+    return false;
   }
 }

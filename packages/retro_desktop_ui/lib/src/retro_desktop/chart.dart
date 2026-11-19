@@ -432,10 +432,12 @@ class _ChartState extends State<RetroDesktopChart> {
           ),
       ],
     );
-    // The gutter grows with the reader's text, up to its widest value (kept to 60, twice the text cut "30 GB" to
-    // "30…"); a value longer than that still ends in an ellipsis rather than push the plot out.
+    // The gutter is as wide as its widest value, so that value starts on the chart's start edge, the keyline the words
+    // and buttons above and below it stand on (a 60 px floor left "4h" 44 px in). It grows with the reader's text up
+    // to 60 scaled (twice the text cut "30 GB" to "30…"); a value longer than that still ends in an ellipsis rather
+    // than push the plot out.
     final most = MediaQuery.textScalerOf(context).scale(60);
-    var gutter = 60.0;
+    var gutter = 0.0;
     for (final v in ticks) {
       final tp = TextPainter(
         text: TextSpan(text: fmt(v), style: note),

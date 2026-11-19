@@ -1394,7 +1394,10 @@ class RetroDesktopRadioGroup<T> extends StatelessWidget {
   }
 }
 
-/// A row of the appearance's buttons sharing edges, the chosen one pressed in, with roving focus and one selected value.
+/// A group of buttons with a single selected value and arrow-key navigation.
+///
+/// The buttons share a row when their labels fit. Otherwise they stack at the
+/// current text size. The selected button appears pressed.
 ///
 /// ```dart
 /// RetroDesktopSegmentedButton(label: 'View', value: 'list', segments: const [RetroDesktopButtonSegment('list', 'List'), RetroDesktopButtonSegment('grid', 'Grid')], onChanged: (_) {})
@@ -1574,7 +1577,11 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => widget.radio
+      ? _build(context, const BoxConstraints())
+      : LayoutBuilder(builder: _build);
+
+  Widget _build(BuildContext context, BoxConstraints constraints) {
     while (_nodes.length < widget.options.length) {
       _nodes.add(FocusNode());
     }
@@ -1602,6 +1609,29 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
         ? frameShape
         : RetroDesktopShapes.inset(frameShape, rim);
     final count = widget.options.length;
+    final labelStyle = t.type.body.merge(
+      RetroDesktopStyle.first<TextStyle>(
+        [widget.style, t.segmentedButtonTheme],
+        (s) => s.textStyle,
+        const {},
+      ),
+    );
+    final share =
+        (constraints.maxWidth - (count + 1) * rim) / math.max(1, count);
+    final vertical =
+        !widget.radio &&
+        constraints.hasBoundedWidth &&
+        widget.options.any((option) {
+          final words = TextPainter(
+            text: TextSpan(text: option.label, style: labelStyle),
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+            maxLines: 1,
+          )..layout();
+          final width = words.width + 26 + (option.icon == null ? 0 : 22);
+          words.dispose();
+          return width > share;
+        });
     // A row of segments shows a button's face height, as every control that
     // stands in a row with buttons does (Platinum's frame round its cells,
     // Chisel's cells whole buttons), in a reach of its own: one top and one
@@ -1621,7 +1651,13 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
       _nodes[i].skipTraversal = i != entry;
       final cell = widget.radio
           ? null
-          : _cellShape(inner, first: i == 0, last: i == count - 1, rtl: rtl);
+          : _cellShape(
+              inner,
+              first: i == 0,
+              last: i == count - 1,
+              rtl: rtl,
+              vertical: vertical,
+            );
       parts.add(
         Focus(
           canRequestFocus: false,
@@ -1721,9 +1757,13 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
                 // chosen cell's own top row is ink or shade.
                 : DesignKeylineFace(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: rim),
-                      child: SizedBox(
-                        height: cellHeight,
+                      padding: EdgeInsets.symmetric(
+                        vertical: vertical ? 0 : rim,
+                      ),
+                      child: ConstrainedBox(
+                        constraints: vertical
+                            ? BoxConstraints(minHeight: reachHeight)
+                            : BoxConstraints.tightFor(height: cellHeight),
                         child: retroDesktopFace(
                           // The chosen cell stays pressed in; its label never moves.
                           states: chosen
@@ -1770,9 +1810,7 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
                                 child: RetroDesktopCaps(
                                   Text(
                                     option.label,
-                                    maxLines: 1,
-                                    softWrap: false,
-                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
                               ),
@@ -1800,104 +1838,74 @@ class _ChoiceState<T> extends State<_ChoiceGroup<T>> {
     if (widget.radio) {
       return hugged(Column(mainAxisSize: MainAxisSize.min, children: parts));
     }
-    // A divider spans the cells' height, not the reach's.
-    final divider = Padding(
-      padding: EdgeInsets.only(
-        top: cellTop,
-        bottom: reachHeight - cellTop - cellHeight,
-      ),
-      child: SizedBox(
-        width: rim,
-        child: ColoredBox(color: t.colors.control),
-      ),
-    );
-    final row = SizedBox(
-      height: reachHeight,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var i = 0; i < count; i++) ...[
-            if (i > 0 && rim > 0) divider,
-            Expanded(child: parts[i]),
-          ],
-        ],
-      ),
-    );
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final cells = rim == 0
-            ? row
-            // Platinum's frame: one outline round the cells' band, a rim
-            // outside them, its inner corners the end cells' outer corners.
-            // The presses keep the whole reach above and below it.
-            : Stack(
-                children: [
-                  Positioned(
-                    top: frameTop,
-                    height: faceHeight,
-                    left: 0,
-                    right: 0,
-                    child: retroDesktopFace(
-                      states: const {},
-                      scale: RetroDesktopFaceScale.button,
-                      bevel: false,
-                      component: t.segmentedButtonTheme.over(
-                        RetroDesktopStyle(
-                          fill: WidgetStatePropertyAll(t.colors.platinum),
-                          shape: WidgetStatePropertyAll(frameShape),
-                        ),
-                      ),
-                      padding: EdgeInsets.zero,
-                      child: const SizedBox.expand(),
+    final divider = vertical
+        ? SizedBox(
+            height: rim,
+            child: ColoredBox(color: t.colors.control),
+          )
+        : Padding(
+            padding: EdgeInsets.only(
+              top: cellTop,
+              bottom: reachHeight - cellTop - cellHeight,
+            ),
+            child: SizedBox(
+              width: rim,
+              child: ColoredBox(color: t.colors.control),
+            ),
+          );
+    final items = <Widget>[
+      for (var i = 0; i < count; i++) ...[
+        if (i > 0 && rim > 0) divider,
+        vertical ? parts[i] : Expanded(child: parts[i]),
+      ],
+    ];
+    final contents = vertical
+        ? Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: items,
+          )
+        : SizedBox(
+            height: reachHeight,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: items,
+            ),
+          );
+    final cells = rim == 0
+        ? contents
+        : Stack(
+            children: [
+              Positioned.fill(
+                top: vertical ? 0 : frameTop,
+                bottom: vertical ? 0 : reachHeight - frameTop - faceHeight,
+                child: retroDesktopFace(
+                  states: const {},
+                  scale: RetroDesktopFaceScale.button,
+                  bevel: false,
+                  component: t.segmentedButtonTheme.over(
+                    RetroDesktopStyle(
+                      fill: WidgetStatePropertyAll(t.colors.platinum),
+                      shape: WidgetStatePropertyAll(frameShape),
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: rim),
-                    child: row,
-                  ),
-                ],
-              );
-        // In a row the whole control stands
-        // [RetroDesktopSegmentedButton.rowSegmentWidth] a segment.
-        if (!constraints.hasBoundedWidth) {
-          return SizedBox(width: widget.rowSegmentWidth * count, child: cells);
-        }
-        if (hug) return hugged(cells);
-        // Words too wide for their equal shares (twice the text size on a phone cut "loading" to "lo…") come down
-        // together to the size at which the widest fits: every choice readable, all at one size.
-        final share =
-            (constraints.maxWidth - (count + 1) * rim) / count - 2 * 12 - 2;
-        final words = t.type.body.merge(
-          RetroDesktopStyle.first<TextStyle>(
-            [widget.style, t.segmentedButtonTheme],
-            (s) => s.textStyle,
-            const {},
-          ),
-        );
-        final scaler = MediaQuery.textScalerOf(context);
-        var most = double.infinity;
-        var over = false;
-        for (final o in widget.options) {
-          final tp = TextPainter(
-            text: TextSpan(text: o.label, style: words),
-            textDirection: Directionality.of(context),
-            textScaler: TextScaler.noScaling,
-            maxLines: 1,
-          )..layout();
-          final plain = tp.width;
-          tp.dispose();
-          final room = share - (o.icon != null ? 22 : 0);
-          if (plain <= 0) continue;
-          if (scaler.scale(plain) > room) over = true;
-          most = math.min(most, room / plain);
-        }
-        if (!over) return cells;
-        return MediaQuery.withClampedTextScaling(
-          maxScaleFactor: math.max(1.0, most),
-          child: cells,
-        );
-      },
-    );
+                  padding: EdgeInsets.zero,
+                  child: const SizedBox.expand(),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: rim,
+                  vertical: vertical ? rim : 0,
+                ),
+                child: contents,
+              ),
+            ],
+          );
+    if (!constraints.hasBoundedWidth) {
+      return SizedBox(width: widget.rowSegmentWidth * count, child: cells);
+    }
+    return vertical ? cells : hugged(cells);
   }
 }
 
@@ -1909,6 +1917,7 @@ OutlinedBorder _cellShape(
   required bool first,
   required bool last,
   required bool rtl,
+  required bool vertical,
 }) {
   if (inner is! RoundedRectangleBorder) {
     return first && last ? inner : const RetroDesktopBorder.square();
@@ -1917,10 +1926,10 @@ OutlinedBorder _cellShape(
   final left = rtl ? last : first, right = rtl ? first : last;
   return RoundedRectangleBorder(
     borderRadius: BorderRadius.only(
-      topLeft: left ? r.topLeft : Radius.zero,
-      bottomLeft: left ? r.bottomLeft : Radius.zero,
-      topRight: right ? r.topRight : Radius.zero,
-      bottomRight: right ? r.bottomRight : Radius.zero,
+      topLeft: (vertical ? first : left) ? r.topLeft : Radius.zero,
+      bottomLeft: (vertical ? last : left) ? r.bottomLeft : Radius.zero,
+      topRight: (vertical ? first : right) ? r.topRight : Radius.zero,
+      bottomRight: (vertical ? last : right) ? r.bottomRight : Radius.zero,
     ),
   );
 }

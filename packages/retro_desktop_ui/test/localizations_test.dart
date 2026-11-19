@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:retro_desktop_ui/retro_desktop_ui.dart';
@@ -233,6 +234,127 @@ void main() {
       },
     );
   }
+
+  // A time picker's wheels are named in the app's language, by its DesignLocalizations, with no Retro Desktop words
+  // for it: they said "Hour", "Minute" and "AM or PM" in every language.
+  for (final (locale, direction) in const [
+    (Locale('ar'), TextDirection.rtl),
+    (Locale('de'), TextDirection.ltr),
+  ]) {
+    testWidgets('a time picker names its wheels in '
+        '${locale.languageCode}', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        WidgetsApp(
+          color: const Color(0xFF000000),
+          locale: locale,
+          supportedLocales: DesignLocalizations.supportedLocales,
+          localizationsDelegates: const [DesignLocalizations.delegate],
+          builder: (context, _) => Directionality(
+            textDirection: direction,
+            child: RetroDesktopTheme(
+              data: RetroDesktopThemeData.classic(),
+              child: Center(
+                child: RetroDesktopTimePicker(
+                  value: const RetroDesktopTime(9, 30),
+                  use24Hour: false,
+                  onChanged: (_) {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      // What a screen reader says at each node: its name and its value.
+      final said = <String>[];
+      void visit(SemanticsNode n) {
+        final data = n.getSemanticsData();
+        said.add('${data.label} ${data.value}'.trim());
+        n.visitChildren((c) {
+          visit(c);
+          return true;
+        });
+      }
+
+      visit(
+        tester
+            .binding
+            .renderViews
+            .first
+            .owner!
+            .semanticsOwner!
+            .rootSemanticsNode!,
+      );
+      final words = DesignLocalizations.forLocale(locale);
+      for (final word in [
+        words.timePickerHourLabel,
+        words.timePickerMinuteLabel,
+        words.timeFieldDayPeriodLabel,
+        words.anteMeridiemAbbreviation,
+      ]) {
+        expect(
+          said.where((s) => s.contains(word)),
+          isNotEmpty,
+          reason: '"$word" is said ($said)',
+        );
+      }
+      for (final english in ['Hour', 'AM or PM']) {
+        expect(
+          said.where((s) => s.contains(english)),
+          isEmpty,
+          reason: '"$english" is not said ($said)',
+        );
+      }
+      semantics.dispose();
+    });
+  }
+
+  // The look's delegate takes every locale: it said English only, so a German app that installed it, as the README
+  // shows, had Flutter's warning that no delegate supports de, and the delegate was skipped.
+  testWidgets('a German app with the look\'s delegate has no warning and '
+      'hears Stunde', (tester) async {
+    final semantics = tester.ensureSemantics();
+    late BuildContext inside;
+    await tester.pumpWidget(
+      WidgetsApp(
+        color: const Color(0xFF000000),
+        locale: const Locale('de'),
+        supportedLocales: const [Locale('de')],
+        localizationsDelegates: const [RetroDesktopLocalizations.delegate],
+        builder: (context, _) => Directionality(
+          textDirection: TextDirection.ltr,
+          child: RetroDesktopTheme(
+            data: RetroDesktopThemeData.classic(),
+            child: Builder(
+              builder: (context) {
+                inside = context;
+                return Center(
+                  child: RetroDesktopTimePicker(
+                    value: const RetroDesktopTime(9, 30),
+                    use24Hour: true,
+                    onChanged: (_) {},
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      tester.takeException(),
+      isNull,
+      reason: 'no unsupported-locale warning',
+    );
+    final words = RetroDesktopLocalizations.of(inside);
+    expect(words.hour, 'Stunde');
+    expect(words.localeName, 'de', reason: 'its dates and numbers are German');
+    expect(find.bySemanticsLabel(RegExp('^Stunde')), findsWidgets);
+    semantics.dispose();
+  });
 
   // A text field's selection handles and menu build in the app's root overlay, above a theme that sits under the
   // app's home rather than in its builder: there the theme's `of` gives the look's default rather than throwing.

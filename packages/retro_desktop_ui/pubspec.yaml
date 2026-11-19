@@ -1,7 +1,7 @@
 name: retro_desktop_ui
 description: >-
   Retro Desktop for Flutter: the pixel-era desktop of square windows, one-pixel bevels and striped title bars, in two appearances and five presets, by day and night.
-version: 0.3.0
+version: 0.3.1
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/retro_desktop/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/retro_desktop_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues
@@ -34,7 +34,7 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
-  ui_core: ^0.3.0
+  ui_core: ^0.3.1
   material_ui: ^1.9.0
   cupertino_ui: ^1.0.0
   intl: ^0.20.3
@@ -45,7 +45,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   leak_tracker_flutter_testing: any
-  ui_core_test: ^0.1.0
+  ui_core_test: ^0.1.1
 
 flutter:
   fonts:

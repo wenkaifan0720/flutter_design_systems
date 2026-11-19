@@ -1,12 +1,8 @@
-/// Everything `retro_desktop_ui`'s component files use, public: the look, the foundation, and the helpers the look's barrel
-/// keeps back (component_themes.dart, controls.dart, frames.dart, internal/caps.dart, internal/face.dart, internal/marks.dart, internal/modal.dart, internal/parts.dart, internal/platform_words.dart, internal/presence.dart, layout.dart, pixels.dart, press.dart, theme.dart).
+/// Helpers for customizing components copied from `retro_desktop_ui`.
 ///
-/// Import it in a component you copied out of the package to change, in place of the `src/` imports it had; the
-/// rest of your app stays on the package:
+/// Import this library in the copied widget to use its theme and component helpers.
 ///
 /// ```dart
-/// // lib/ui/my_card.dart, copied from package:retro_desktop_ui/src/retro_desktop/... and renamed.
-/// import 'package:flutter/widgets.dart';
 /// import 'package:retro_desktop_ui/retro_desktop_parts.dart';
 /// ```
 ///

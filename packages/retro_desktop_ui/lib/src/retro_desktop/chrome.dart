@@ -158,13 +158,21 @@ class _MenuCell extends StatelessWidget {
       ),
     );
     if (onPressed == null) return KeyedSubtree(key: cellKey, child: cell);
+    final shape = RetroDesktopTheme.of(context).shapes.small;
     return RetroDesktopPressable(
       button: true,
       selected: on,
       label: label,
       key: cellKey,
       onPressed: onPressed,
-      child: cell,
+      // The cells stand side by side across the bar, the bar's edges at their
+      // top and foot: the ring keeps inside the cell, in the words' ink on the
+      // chosen place's highlight, so it shows whole and crosses no neighbour.
+      builder: (context, states) => retroDesktopJoinedRing(
+        shape: shape,
+        insideColor: on ? c.onHighlight : null,
+        child: cell,
+      ),
     );
   }
 }

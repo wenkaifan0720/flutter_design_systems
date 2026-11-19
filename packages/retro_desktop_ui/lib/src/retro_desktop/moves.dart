@@ -445,10 +445,12 @@ class RetroDesktopStepProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = RetroDesktopTheme.of(context);
+    final localizations = RetroDesktopLocalizations.of(context);
+    final fraction =
+        '${localizations.formatInteger(currentStep + 1)} / ${localizations.formatInteger(count)}';
     return Semantics(
       label: name,
-      value:
-          '${RetroDesktopLocalizations.of(context).formatInteger(currentStep + 1)} / ${RetroDesktopLocalizations.of(context).formatInteger(count)}',
+      value: fraction,
       child: ExcludeSemantics(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -459,7 +461,8 @@ class RetroDesktopStepProgress extends StatelessWidget {
               children: [
                 Text(name, style: t.type.body),
                 Text(
-                  '${RetroDesktopLocalizations.of(context).formatInteger(currentStep + 1)} / ${RetroDesktopLocalizations.of(context).formatInteger(count)}',
+                  fraction,
+                  textDirection: TextDirection.ltr,
                   style: t.type.meta,
                 ),
               ],

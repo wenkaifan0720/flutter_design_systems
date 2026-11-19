@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 const String? retroDesktopFontPackage = 'retro_desktop_ui';
 
 /// [family] under the name Flutter registers it by: `AtkinsonNext` when the app bundles it, `packages/retro_desktop_ui/AtkinsonNext` from the
-/// package. A test that loads the faces itself loads them under this name.
+/// package.
 ///
 /// ```dart
 /// final loader = FontLoader(retroDesktopFontFamily('AtkinsonNext'))..addFont(bytes);

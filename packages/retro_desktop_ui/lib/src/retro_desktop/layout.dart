@@ -1532,7 +1532,12 @@ class RetroDesktopBalancedText extends StatelessWidget {
   /// How text is aligned within its available width.
   final TextAlign textAlign;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: PaintingBinding.instance.systemFonts,
+    builder: (context, _) => _build(context),
+  );
+
+  Widget _build(BuildContext context) {
     // Measured at the reader's text size (measured at the plain size, twice the text broke "keeping" into "keepin"
     // over "g"), its longest word whole on a line.
     return retroDesktopWholeWords(
@@ -1552,7 +1557,16 @@ class RetroDesktopBalancedText extends StatelessWidget {
             tp.dispose();
             return Text(text, style: style, textAlign: textAlign);
           }
-          var lo = 0.0, hi = c.maxWidth;
+          var lo = math.min(
+            c.maxWidth,
+            retroDesktopWidestWord(
+                  text,
+                  style,
+                  textScaler: MediaQuery.textScalerOf(context),
+                ).ceilToDouble() +
+                1,
+          );
+          var hi = c.maxWidth;
           for (var i = 0; i < 12 && hi - lo > 1; i++) {
             final mid = (lo + hi) / 2;
             tp.layout(maxWidth: mid);

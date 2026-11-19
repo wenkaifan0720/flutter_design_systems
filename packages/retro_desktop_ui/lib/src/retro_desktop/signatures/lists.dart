@@ -33,7 +33,11 @@ import '../tokens.dart';
 Widget _tableViewport({
   required double minimumWidth,
   required LayoutWidgetBuilder builder,
-}) => _TableViewport(minimumWidth: minimumWidth, builder: builder);
+  Widget? footer,
+}) {
+  final table = _TableViewport(minimumWidth: minimumWidth, builder: builder);
+  return footer == null ? table : RetroDesktopColumn(children: [table, footer]);
+}
 
 class _TableViewport extends StatefulWidget {
   const _TableViewport({required this.minimumWidth, required this.builder});
@@ -1076,6 +1080,22 @@ class RetroDesktopTable extends StatelessWidget implements RetroDesktopFlush {
     return RetroDesktopWell(
       style: style,
       child: _tableViewport(
+        footer: amount == null
+            ? null
+            : _Due(
+                label: amount.$1,
+                figure: amount.$2,
+                inlineWidth:
+                    measure(
+                      amount.$1,
+                      t.type.text(14, 18, weight: FontWeight.w700),
+                    ) +
+                    measure(
+                      amount.$2,
+                      t.type.mono(18, 22, weight: FontWeight.w700),
+                    ) +
+                    RetroDesktopSpacing.s12,
+              ),
         minimumWidth: [
           for (var k = 0; k < columns.length; k++)
             columns[k].width != null
@@ -1209,7 +1229,6 @@ class RetroDesktopTable extends StatelessWidget implements RetroDesktopFlush {
               ),
               for (final row in rows) line(row),
               if (total != null) line(total!, sum: true),
-              if (amount != null) _Due(label: amount.$1, figure: amount.$2),
             ],
           );
         },
@@ -1240,7 +1259,12 @@ class RetroDesktopTable extends StatelessWidget implements RetroDesktopFlush {
 /// The amount due at a table's foot: a double rule over it, the label in the text face, the figure larger in the
 /// fixed-width face at the end, under the column of amounts.
 class _Due extends StatelessWidget {
-  const _Due({required this.label, required this.figure});
+  const _Due({
+    required this.label,
+    required this.figure,
+    required this.inlineWidth,
+  });
+  final double inlineWidth;
   final String label, figure;
   @override
   Widget build(BuildContext context) {
@@ -1255,27 +1279,33 @@ class _Due extends StatelessWidget {
           RetroDesktopSpacing.s8,
           RetroDesktopSpacing.s10,
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: t.type.text(14, 18, weight: FontWeight.w700),
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(width: RetroDesktopSpacing.s12),
-            Text(
+        child: LayoutBuilder(
+          builder: (context, room) {
+            final name = Text(
+              label,
+              style: t.type.text(14, 18, weight: FontWeight.w700),
+            );
+            final price = Text(
               figure,
               style: t.type.mono(18, 22, weight: FontWeight.w700),
-              maxLines: 1,
-              softWrap: false,
-            ),
-          ],
+            );
+            if (room.maxWidth >= inlineWidth) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [name, price],
+              );
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                name,
+                const SizedBox(height: RetroDesktopSpacing.s4),
+                Align(alignment: AlignmentDirectional.centerEnd, child: price),
+              ],
+            );
+          },
         ),
       ),
     );

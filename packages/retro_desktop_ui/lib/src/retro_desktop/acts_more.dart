@@ -15,6 +15,7 @@ import 'internal/presence.dart';
 
 import 'layout.dart' show RetroDesktopReach;
 import 'press.dart';
+import 'shapes.dart';
 import 'theme.dart';
 import 'internal/caps.dart';
 import 'tokens.dart';
@@ -28,11 +29,7 @@ double _stripInset(BuildContext context) => math.max(
       2,
 );
 
-/// A segment's reach around what it shows: the frame's inset and its rim
-/// above and below [shown]. To the shared checks a segment is its band of the
-/// frame (rim included), what the eye reads as its top and bottom: the frame
-/// is drawn behind the segments, and its outline read from the pixels of one
-/// segment's reach moved with what stood around the strip.
+// The painted face sits inside the segment's pointer target.
 Widget _cell(BuildContext context, Widget shown) => Padding(
   padding: EdgeInsets.symmetric(vertical: _stripInset(context)),
   child: DesignKeylineFace(
@@ -204,19 +201,28 @@ Widget _segment(
     builder: (context) {
       final end = context.dependOnInheritedWidgetOfExactType<_JoinedEnd>();
       final bleed = t.strokes.hairline;
-      return retroDesktopHeldGround(
-        t,
-        held: held,
-        // Over the frame's bevel, to its outline.
-        bleed: bleed,
-        outline: end?.outline,
-        reach: EdgeInsets.fromLTRB(
-          end?.left ?? false ? bleed : 0,
-          bleed,
-          end?.right ?? false ? bleed : 0,
-          bleed,
+      RetroDesktopHighlightClaim.maybeOf(context)?.claim(context, states);
+      final shape = end == null
+          ? retroDesktopItemShape(t)
+          : RetroDesktopShapes.inset(end.outline, retroDesktopFaceRim(t));
+      return RetroDesktopHighlight(
+        shape: shape,
+        focused: states.contains(WidgetState.focused),
+        inside: true,
+        child: retroDesktopHeldGround(
+          t,
+          held: held,
+          // Over the frame's bevel, to its outline.
+          bleed: bleed,
+          outline: end?.outline,
+          reach: EdgeInsets.fromLTRB(
+            end?.left ?? false ? bleed : 0,
+            bleed,
+            end?.right ?? false ? bleed : 0,
+            bleed,
+          ),
+          child: shown,
         ),
-        child: shown,
       );
     },
   );
@@ -380,8 +386,6 @@ class RetroDesktopToggleGroup<T> extends StatelessWidget {
       minimumSize: Size(least, least),
       layoutBuilder: (context, items) => _joined(context, items),
       itemBuilder: (context, value, states) {
-        final t = RetroDesktopTheme.of(context);
-        final focused = states.contains(WidgetState.focused);
         final face = _segment(
           context,
           states,
@@ -393,12 +397,7 @@ class RetroDesktopToggleGroup<T> extends StatelessWidget {
           context,
           Opacity(
             opacity: states.contains(WidgetState.disabled) ? .5 : 1,
-            child: RetroDesktopHighlight(
-              shape: retroDesktopItemShape(t),
-              focused: focused,
-              inside: true,
-              child: face,
-            ),
+            child: face,
           ),
         );
       },
@@ -485,7 +484,6 @@ class RetroDesktopSplitButton extends StatelessWidget {
       layoutBuilder: (context, main, toggle) =>
           _joined(context, [main, toggle]),
       buttonBuilder: (context, part, states, open) {
-        final t = RetroDesktopTheme.of(context);
         final face = part == DesignSplitPart.main
             ? _segment(context, states, label: label, icon: icon)
             : _segment(
@@ -500,12 +498,7 @@ class RetroDesktopSplitButton extends StatelessWidget {
           context,
           Opacity(
             opacity: states.contains(WidgetState.disabled) ? .5 : 1,
-            child: RetroDesktopHighlight(
-              shape: retroDesktopItemShape(t),
-              focused: states.contains(WidgetState.focused),
-              inside: true,
-              child: face,
-            ),
+            child: face,
           ),
         );
       },

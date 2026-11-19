@@ -267,6 +267,10 @@ class KitDocumentsView extends ChangeNotifier {
   /// The selected document's name.
   String get selected => _selected;
 
+  /// The current document while it is visible in the filtered list.
+  String? get visibleSelection =>
+      rows.any((row) => row.name == _selected) ? _selected : null;
+
   /// The sorted column: name, kind, changed, size.
   int get sort => _sort;
 
@@ -355,6 +359,7 @@ class KitDocuments extends StatelessWidget {
             end: k == 3,
           );
       final say = context.say;
+      final selected = rows.indexWhere((row) => row.name == view.selected);
       final list = RetroDesktopListTable(
         label: say('Documents'),
         columns: [
@@ -366,7 +371,7 @@ class KitDocuments extends StatelessWidget {
         ],
         ascending: view.ascending,
         onSort: (k) => view.sortBy(phone && k == 1 ? 2 : k),
-        selected: rows.indexWhere((r) => r.name == view.selected),
+        selected: selected < 0 ? null : selected,
         onSelected: (i) => view.select(rows[i].name),
         onOpen: (i) => onOpen(rows[i].name),
         rows: [
@@ -428,40 +433,66 @@ class KitDocuments extends StatelessWidget {
   );
 }
 
+/// The contact details Papers saves for the session.
+typedef KitContactDetails = ({String name, String email, String location});
+
+const _defaultContact = (
+  name: 'Alex Lee',
+  email: 'alex@example.com',
+  location: 'local',
+);
+
 /// Your details: the name on what you share and order, and where new
 /// documents go. Label over field, "Cancel" beside the ringed default.
 class KitDetailsForm extends StatefulWidget {
-  /// The form; [onDone] runs after either button, [onEdited] at the first
-  /// change.
+  /// Edits [details] and reports changes before the user saves or cancels.
   const KitDetailsForm({
     super.key,
-    this.onDone,
-    this.onEdited,
-    this.name = 'Alex Lee',
+    this.details = _defaultContact,
+    this.onChanged,
+    this.onSave,
+    this.onCancel,
   });
 
-  /// Closes the window it stands in, if any.
-  final VoidCallback? onDone;
+  /// The values displayed when the form opens.
+  final KitContactDetails details;
 
-  /// Told when a field changes, so closing the window can ask to save.
-  final VoidCallback? onEdited;
+  /// Called whenever a field changes.
+  final ValueChanged<KitContactDetails>? onChanged;
 
-  /// The name the form opens with.
-  final String name;
+  /// Called when Save is selected.
+  final VoidCallback? onSave;
+
+  /// Called when Cancel is selected.
+  final VoidCallback? onCancel;
 
   @override
   State<KitDetailsForm> createState() => _KitDetailsFormState();
 }
 
 class _KitDetailsFormState extends State<KitDetailsForm> {
-  var _where = 'local';
+  late var _draft = widget.details;
 
-  void _done(String message) {
-    showRetroDesktopSnackBar(context, context.say(message));
-    widget.onDone?.call();
+  void _change({String? name, String? email, String? location}) {
+    setState(
+      () => _draft = (
+        name: name ?? _draft.name,
+        email: email ?? _draft.email,
+        location: location ?? _draft.location,
+      ),
+    );
+    widget.onChanged?.call(_draft);
   }
 
-  void _edited([Object? _]) => widget.onEdited?.call();
+  void _done(bool save) {
+    showRetroDesktopSnackBar(
+      context,
+      context.say(
+        save ? 'Your details are saved' : 'Your details are as they were',
+      ),
+    );
+    (save ? widget.onSave : widget.onCancel)?.call();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -478,39 +509,40 @@ class _KitDetailsFormState extends State<KitDetailsForm> {
         ),
         RetroDesktopTextField(
           label: say('Name'),
-          initial: say(widget.name),
-          onChanged: _edited,
+          initial: say(widget.details.name),
+          onChanged: (name) => _change(name: name),
         ),
         RetroDesktopTextField(
           label: say('Email address'),
-          initial: 'alex@example.com',
+          initial: widget.details.email,
           keyboardType: TextInputType.emailAddress,
-          onChanged: _edited,
+          onChanged: (email) => _change(email: email),
         ),
         RetroDesktopSelect<String>(
           label: say('Save new documents to'),
-          value: _where,
+          value: _draft.location,
           options: [
             RetroDesktopOption('local', say('This computer')),
             RetroDesktopOption('shared', say('The shared disk')),
           ],
-          onChanged: (value) {
-            setState(() => _where = value);
-            _edited();
-          },
+          onChanged: (value) => _change(location: value),
         ),
-        _Buttons([
-          // The look's one secondary button is the push button.
-          RetroDesktopButton(
-            say('Cancel'),
-            onPressed: () => _done('Your details are as they were'),
-          ),
-          RetroDesktopButton(
-            say('Save'),
-            isDefaultAction: true,
-            onPressed: () => _done('Your details are saved'),
-          ),
-        ]),
+        Visibility(
+          visible:
+              RetroDesktopTheme.of(context).desk ||
+              (ModalRoute.isCurrentOf(context) ?? true),
+          maintainSize: true,
+          maintainState: true,
+          maintainAnimation: true,
+          child: _Buttons([
+            RetroDesktopButton(say('Cancel'), onPressed: () => _done(false)),
+            RetroDesktopButton(
+              say('Save'),
+              isDefaultAction: true,
+              onPressed: () => _done(true),
+            ),
+          ]),
+        ),
       ],
     );
   }
@@ -812,8 +844,15 @@ class _KitPapersState extends State<KitPapers> {
   var _opened = 'Project notes';
   var _ordering = 'Project notes';
   String? _icon;
-  // Whether Your details holds a change not saved yet.
-  late var _detailsEdited = widget.moment == KitPapersMoment.unsaved;
+  var _savedDetails = _defaultContact;
+  late var _draftDetails = widget.moment == KitPapersMoment.unsaved
+      ? (
+          name: 'Alex Lee-Morgan',
+          email: _defaultContact.email,
+          location: _defaultContact.location,
+        )
+      : _savedDetails;
+  bool _confirmingDetails = false;
 
   @override
   void initState() {
@@ -859,7 +898,7 @@ class _KitPapersState extends State<KitPapers> {
   }
 
   void _close(KitPapersWindow w) {
-    if (w == KitPapersWindow.details && _detailsEdited) {
+    if (w == KitPapersWindow.details && _draftDetails != _savedDetails) {
       _closeEdited();
       return;
     }
@@ -869,6 +908,8 @@ class _KitPapersState extends State<KitPapers> {
   // Closing your details with a change in them: the period's three answers,
   // Save ringed, "Don't save" at the far start, away from it.
   Future<void> _closeEdited() async {
+    if (_confirmingDetails) return;
+    _confirmingDetails = true;
     final answer = await showRetroDesktopDialog<String>(
       context,
       builder: (context) => RetroDesktopDialog(
@@ -888,12 +929,19 @@ class _KitPapersState extends State<KitPapers> {
         ],
       ),
     );
-    if (!mounted || answer == null || answer == 'cancel') return;
+    if (!mounted) return;
+    _confirmingDetails = false;
+    if (answer == null || answer == 'cancel') return;
     if (answer == 'save' && context.mounted) {
       showRetroDesktopSnackBar(context, context.say('Your details are saved'));
     }
+    _finishDetails(save: answer == 'save');
+  }
+
+  void _finishDetails({required bool save}) {
     setState(() {
-      _detailsEdited = false;
+      if (save) _savedDetails = _draftDetails;
+      _draftDetails = _savedDetails;
       _open.remove(KitPapersWindow.details);
     });
   }
@@ -1005,15 +1053,10 @@ class _KitPapersState extends State<KitPapers> {
           paragraphs: [for (final p in doc.paragraphs) say(p)],
         ),
         KitPapersWindow.details => KitDetailsForm(
-          name: widget.moment == KitPapersMoment.unsaved
-              ? 'Alex Lee-Morgan'
-              : 'Alex Lee',
-          onEdited: () => _detailsEdited = true,
-          // Save and Cancel say what to do with the changes: no question.
-          onDone: () => setState(() {
-            _detailsEdited = false;
-            _open.remove(KitPapersWindow.details);
-          }),
+          details: _draftDetails,
+          onChanged: (value) => _draftDetails = value,
+          onSave: () => _finishDetails(save: true),
+          onCancel: () => _finishDetails(save: false),
         ),
         KitPapersWindow.settings => const KitSettingsPanel(),
         KitPapersWindow.prints => KitPrintOrder(
@@ -1032,6 +1075,7 @@ class _KitPapersState extends State<KitPapers> {
   }
 
   List<DesignMenuEntry> _menus(KitPapersHost? host) {
+    final selected = _view.visibleSelection;
     final front = _open.isEmpty ? null : _open.last;
     final say = context.say;
     DesignMenuEntry sort(int k, String label) => DesignMenuEntry(
@@ -1082,7 +1126,7 @@ class _KitPapersState extends State<KitPapers> {
           DesignMenuEntry(
             label: say('Open'),
             shortcut: keys(LogicalKeyboardKey.keyO),
-            onPressed: () => _openDocument(_view.selected),
+            onPressed: selected == null ? null : () => _openDocument(selected),
           ),
           DesignMenuEntry(
             label: say('Close window'),
@@ -1099,7 +1143,7 @@ class _KitPapersState extends State<KitPapers> {
           DesignMenuEntry(
             label: say('Order printed copies…'),
             shortcut: keys(LogicalKeyboardKey.keyP),
-            onPressed: () => _order(_view.selected),
+            onPressed: selected == null ? null : () => _order(selected),
           ),
         ],
       ),
@@ -1150,9 +1194,11 @@ class _KitPapersState extends State<KitPapers> {
             DesignMenuEntry(
               label: _title(w, _opened),
               checked: front == w,
-              onPressed: () => w == KitPapersWindow.prints
-                  ? _order(_view.selected)
-                  : _front(w),
+              onPressed: w != KitPapersWindow.prints
+                  ? () => _front(w)
+                  : selected == null
+                  ? null
+                  : () => _order(selected),
             ),
         ],
       ),
@@ -1383,8 +1429,11 @@ class _KitPapersState extends State<KitPapers> {
     }
 
     final keys = <ShortcutActivator, VoidCallback>{};
-    key(LogicalKeyboardKey.keyO, () => _openDocument(_view.selected), keys);
-    key(LogicalKeyboardKey.keyP, () => _order(_view.selected), keys);
+    final selected = _view.visibleSelection;
+    if (selected != null) {
+      key(LogicalKeyboardKey.keyO, () => _openDocument(selected), keys);
+      key(LogicalKeyboardKey.keyP, () => _order(selected), keys);
+    }
     key(LogicalKeyboardKey.keyF, _find, keys);
     key(LogicalKeyboardKey.comma, () => _front(KitPapersWindow.settings), keys);
     if (front != null) key(LogicalKeyboardKey.keyW, () => _close(front), keys);

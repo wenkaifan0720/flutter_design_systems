@@ -260,6 +260,55 @@ Widget retroDesktopFieldButton(
 double retroDesktopFaceRim(RetroDesktopThemeData t) =>
     t.strokes.regular + t.strokes.hairline;
 
+/// The focus ring of a part joined to its neighbours (a folder tab, a place on the menu bar, a stepper's value): inside
+/// the part, as a segmented button's cell draws it, so it crosses no neighbour and no outline it shares. Platinum's
+/// ring, outside a part that stands alone, here takes its gap inside [rim] (the part's own outline and bevel; none for
+/// a part that draws neither); Chisel's dotted rectangle stands inside every face already and keeps its place. With no
+/// [focused], the ring follows the press above and takes its feedback ahead of the face in [child], which then draws
+/// none: build it in the press's builder, as a face is, so it reads the press's states as they change.
+Widget retroDesktopJoinedRing({
+  required OutlinedBorder shape,
+  required Widget child,
+  bool? focused,
+  double rim = 0,
+  Color? insideColor,
+}) => Builder(
+  builder: (context) {
+    final t = RetroDesktopTheme.of(context);
+    var on = focused;
+    if (on == null) {
+      final claim = RetroDesktopHighlightClaim.maybeOf(context);
+      if (claim == null || !claim.claim(context, claim.states)) return child;
+      on = claim.states.contains(WidgetState.focused);
+    }
+    final inset = t.focus.inside ? 0.0 : rim;
+    return Stack(
+      fit: StackFit.passthrough,
+      children: [
+        child,
+        Positioned.fill(
+          child: IgnorePointer(
+            child: Padding(
+              padding: EdgeInsets.all(inset),
+              child: RetroDesktopHighlight(
+                shape: RetroDesktopShapes.inset(
+                  shape,
+                  inset,
+                  textDirection: Directionality.of(context),
+                ),
+                focused: on,
+                inside: true,
+                insideColor: insideColor,
+                child: const SizedBox.expand(),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  },
+);
+
 /// The height a button's face shows, a line button's: one line of its words,
 /// its padding at the theme's density, and its rim. Every control that stands
 /// in a row with buttons (a popup, an icon button, a joined strip) shows it,

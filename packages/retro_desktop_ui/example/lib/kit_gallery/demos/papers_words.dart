@@ -25,6 +25,7 @@ String papersHebrewFor(String english) => _hebrew[english] ?? english;
 const Map<String, String> _hebrew = {
   // The app and its windows.
   'Papers': 'ניירות',
+  '2 of 5 done': 'הושלמו 2 מתוך 5',
   'Documents': 'מסמכים',
   'Your details': 'הפרטים שלך',
   'Settings': 'הגדרות',

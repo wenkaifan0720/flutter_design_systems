@@ -278,9 +278,10 @@ void main() {
       );
       final more = find.byIcon(RetroDesktopGlyphs.plus);
       final less = find.byIcon(RetroDesktopGlyphs.minus);
-      // The field's one node steps, and says where it can't.
+      // The field's node steps, and says where it can't; the value it types
+      // in stands in a node of its own under it.
       bool can(SemanticsAction action) => tester
-          .getSemantics(find.byType(EditableText))
+          .getSemantics(find.bySemanticsLabel(RegExp('^Quantity')).first)
           .getSemanticsData()
           .hasAction(action);
       await tester.tap(more);
