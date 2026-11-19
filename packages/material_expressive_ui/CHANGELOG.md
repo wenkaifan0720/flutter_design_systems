@@ -1,3 +1,7 @@
+## 0.3.2
+
+- A select no longer rebuilds every frame after its window widens past 600 px (0.3.1). A read-only value now decides whether it wraps while it is laid out, from the width it is given, rather than in a frame after.
+
 ## 0.3.1
 
 - Switches keep the Material 52 × 32 dp track at every density. The thumb has an even 8 dp inset when off, 4 dp when on or showing an icon, and 2 dp when pressed. It moves without overshooting its end.

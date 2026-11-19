@@ -1430,39 +1430,25 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
     widget.onTap?.call();
   }
 
-  /// A read-only entry's width at its last layout ([_WidthReport]), and
-  /// the value's style, scale and direction at the last build.
-  double? _entryWidth;
-  TextStyle _valueStyle = const TextStyle();
-  TextScaler _valueScaler = TextScaler.noScaling;
-  TextDirection _valueDirection = TextDirection.ltr;
-
-  /// Whether [text] needs more than one line of the entry's width (its
+  /// Whether [text] needs more than one line of an entry [width] wide (its
   /// caret's room kept): a read-only value then wraps.
-  bool _wraps(String text) {
-    final width = _entryWidth;
-    if (width == null || text.isEmpty) return false;
+  static bool _wraps(
+    String text,
+    double width, {
+    required TextStyle style,
+    required TextScaler scaler,
+    required TextDirection direction,
+  }) {
+    if (text.isEmpty || !width.isFinite) return false;
     final painter = TextPainter(
-      text: TextSpan(text: text, style: _valueStyle),
-      textDirection: _valueDirection,
-      textScaler: _valueScaler,
+      text: TextSpan(text: text, style: style),
+      textDirection: direction,
+      textScaler: scaler,
       maxLines: 1,
     )..layout(maxWidth: math.max(0.0, width - _caretRoom));
     final wraps = painter.didExceedMaxLines;
     painter.dispose();
     return wraps;
-  }
-
-  /// The entry laid out [width] wide: one more build when the value's lines
-  /// change with it.
-  void _entryLaidOut(double width) {
-    if (width == _entryWidth) return;
-    final before = _wraps(_controller.text);
-    _entryWidth = width;
-    if (_wraps(_controller.text) == before) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) setState(() {});
-    });
   }
 
   @override
@@ -1620,14 +1606,8 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
     // value's and the hint's are, and wrapped onto more lines only when it
     // does not. The editable retains focus, selection and the field's
     // semantics either way.
-    _valueStyle = bodyLarge;
-    _valueScaler = MediaQuery.textScalerOf(context);
-    _valueDirection = Directionality.of(context);
-    final wrapValue =
-        widget.readOnly &&
-        widget._singleLine &&
-        !widget.obscureText &&
-        _wraps(text);
+    final valueScaler = MediaQuery.textScalerOf(context);
+    final valueDirection = Directionality.of(context);
     final textColour = resolve(colors.text);
     // The pointer's cursor over the whole field, its container and label
     // too, as Material's TextField shows it: the text cursor where it takes
@@ -1638,7 +1618,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
         : widget.readOnly && widget.onTap != null
         ? SystemMouseCursors.click
         : SystemMouseCursors.text;
-    final entry = Material(
+    Widget entry({required bool wraps}) => Material(
       type: MaterialType.transparency,
       child: TextField(
         controller: _controller,
@@ -1656,7 +1636,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
         autocorrect: !widget.obscureText,
         enableSuggestions: !widget.obscureText,
         minLines: widget._minLines,
-        maxLines: wrapValue ? null : widget._maxLines,
+        maxLines: wraps ? null : widget._maxLines,
         maxLength: widget.maxLength,
         inputFormatters: widget.inputFormatters,
         enabled: enabled,
@@ -1677,8 +1657,22 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
       textDirection: Directionality.of(context),
       child: line(
         widget.readOnly && widget._singleLine && !widget.obscureText
-            ? _WidthReport(onWidth: _entryLaidOut, child: entry)
-            : entry,
+            // Its lines are decided as it is laid out, from the width it is
+            // given, so the same width always draws the same lines: a parent
+            // that tries two widths in one frame (a select's widest option)
+            // leaves it settled, with no frame after.
+            ? _ValueLines(
+                builder: (context, constraints) => entry(
+                  wraps: _wraps(
+                    text,
+                    constraints.maxWidth,
+                    style: bodyLarge,
+                    scaler: valueScaler,
+                    direction: valueDirection,
+                  ),
+                ),
+              )
+            : entry(wraps: false),
         start: textStart,
         end: textEnd,
       ),
@@ -3081,32 +3075,25 @@ class ExpressivePasswordField extends StatelessWidget {
 /// width and the 1dp gap before it.
 const double _caretRoom = 3;
 
-/// Tells [onWidth] its width after each layout: a read-only entry's, so its
-/// value takes a second line only when one is too narrow for it.
-class _WidthReport extends SingleChildRenderObjectWidget {
-  const _WidthReport({required this.onWidth, required Widget super.child});
-
-  final ValueChanged<double> onWidth;
-
-  @override
-  _RenderWidthReport createRenderObject(BuildContext context) =>
-      _RenderWidthReport(onWidth);
+/// Builds a read-only entry as it is laid out, from the constraints it is
+/// given, so its value takes a second line only when one is too narrow for
+/// it. Unlike a [LayoutBuilder], it answers intrinsics and dry layout with
+/// the entry it last built.
+class _ValueLines extends ConstrainedLayoutBuilder<BoxConstraints> {
+  const _ValueLines({required super.builder});
 
   @override
-  void updateRenderObject(
-    BuildContext context,
-    _RenderWidthReport renderObject,
-  ) => renderObject.onWidth = onWidth;
+  RenderAbstractLayoutBuilderMixin<BoxConstraints, RenderBox>
+  createRenderObject(BuildContext context) => _RenderValueLines();
 }
 
-class _RenderWidthReport extends RenderProxyBox {
-  _RenderWidthReport(this.onWidth);
-
-  ValueChanged<double> onWidth;
-
+class _RenderValueLines extends RenderProxyBox
+    with
+        RenderObjectWithLayoutCallbackMixin,
+        RenderAbstractLayoutBuilderMixin<BoxConstraints, RenderBox> {
   @override
   void performLayout() {
+    runLayoutCallback();
     super.performLayout();
-    onWidth(size.width);
   }
 }
