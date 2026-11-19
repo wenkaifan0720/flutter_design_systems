@@ -12,12 +12,16 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'actions.dart' show GlossToggleGroup;
 import 'button.dart';
+import 'choices.dart' show GlossSegmentedButton, GlossStepper;
 import 'feedback.dart' show GlossSpinner;
 import 'fonts.dart';
 import 'internal/chevron.dart';
 import 'internal/entry_parts.dart';
 import 'internal/menu_parts.dart';
+import 'pickers.dart' show GlossTimePicker;
+import 'selection.dart' show GlossRangeSlider;
 import 'surface.dart';
 import 'text_field.dart';
 import 'theme.dart';
@@ -784,31 +788,39 @@ class _OptionRow extends StatelessWidget {
         : chosen
         ? c.jadeInk
         : c.ink;
+    final focused = !disabled && states.contains(WidgetState.focused);
     return SizedBox(
       height: theme.controlHeight - 4,
-      child: AnimatedGlossSurface(
-        face: glossRowPlate(
-          c,
-          lit: states.contains(WidgetState.focused),
-          pressed: states.contains(WidgetState.pressed),
-        ).copyWith(foreground: ink),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: GlossSpacing.medium),
-          child: Row(
-            children: [
-              Expanded(
-                child: DesignCapCenter(
-                  capHeightFactor: glossCapHeightFactor,
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.body.copyWith(color: ink),
+      child: GlossFocusHalo(
+        focused: focused,
+        inside: true,
+        radius: glossPanelCorner - glossPanelInset,
+        child: AnimatedGlossSurface(
+          face: glossRowPlate(
+            c,
+            lit: focused,
+            pressed: states.contains(WidgetState.pressed),
+          ).copyWith(foreground: ink),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: GlossSpacing.medium,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: DesignCapCenter(
+                    capHeightFactor: glossCapHeightFactor,
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.body.copyWith(color: ink),
+                    ),
                   ),
                 ),
-              ),
-              if (chosen) Icon(LucideIcons.check, size: 18, color: ink),
-            ],
+                if (chosen) Icon(LucideIcons.check, size: 18, color: ink),
+              ],
+            ),
           ),
         ),
       ),
@@ -1404,7 +1416,9 @@ typedef GlossForm = DesignForm;
 
 /// Any control with its label, help and error, as one field: the label
 /// above it names it to a screen reader, the error under it is announced
-/// as it appears.
+/// as it appears. A group of controls (a row or column of them, a
+/// segmented choice, a stepper, chips) keeps each control's own node and
+/// tap, and the label names the group ([mergeSemantics]).
 ///
 /// ```dart
 /// GlossFormField(labelText: 'Units', helperText: 'For every recipe', child: GlossSwitch(value: true, onChanged: (_) {}))
@@ -1420,7 +1434,7 @@ class GlossFormField extends StatelessWidget {
     this.isRequired = false,
     this.enabled = true,
     this.focusNode,
-    this.mergeSemantics = true,
+    this.mergeSemantics,
   });
 
   /// The control.
@@ -1444,8 +1458,30 @@ class GlossFormField extends StatelessWidget {
   /// The control's focus, which a tap on the label asks for.
   final FocusNode? focusNode;
 
-  /// Whether the label names the control (true) or a group of controls.
-  final bool mergeSemantics;
+  /// Whether the label names the control (true) or a group of controls
+  /// (false). Left null, the field reads its child: a row, column or wrap
+  /// of controls, a segmented choice, a stepper, a toggle group, a range
+  /// slider, a tag input or a time picker is a group, so each control keeps
+  /// its own node and answers its own tap; anything else is one control.
+  final bool? mergeSemantics;
+
+  // Whether [child], through any padding, alignment or sizing round it, is
+  // a group of controls.
+  static bool _isGroup(Widget child) => switch (child) {
+    Flex() ||
+    Wrap() ||
+    GlossSegmentedButton() ||
+    GlossStepper() ||
+    GlossToggleGroup() ||
+    GlossRangeSlider() ||
+    GlossTagInput() ||
+    GlossTimePicker() => true,
+    Padding(child: final inner?) ||
+    Align(child: final inner?) ||
+    SizedBox(child: final inner?) ||
+    ConstrainedBox(child: final inner?) => _isGroup(inner),
+    _ => false,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -1458,7 +1494,7 @@ class GlossFormField extends StatelessWidget {
       required: isRequired,
       enabled: enabled,
       focusNode: focusNode,
-      mergeSemantics: mergeSemantics,
+      mergeSemantics: mergeSemantics ?? !_isGroup(child),
       builder: (context, parts) => Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,

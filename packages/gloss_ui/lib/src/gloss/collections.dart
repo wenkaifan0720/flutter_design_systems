@@ -128,8 +128,11 @@ class GlossDataTable<R> extends StatelessWidget {
       onActivate: onActivate,
       headerBuilder: (context, column, sort, states) {
         final focused = states.contains(WidgetState.focused);
-        return CustomPaint(
-          foregroundPainter: focused ? _InsetRing(c.focus) : null,
+        return GlossFocusHalo(
+          focused: focused,
+          inside: true,
+          radius: 8,
+          inset: 1,
           // A header sorts on a tap: a finger's height.
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 44),
@@ -190,10 +193,11 @@ class GlossDataTable<R> extends StatelessWidget {
                       : controller.togglePage,
                   semanticLabel: words.selectedLabel,
                   checked: page == DesignSelection.all,
-                  builder: (context, states, _) => CustomPaint(
-                    foregroundPainter: states.contains(WidgetState.focused)
-                        ? _InsetRing(c.focus)
-                        : null,
+                  builder: (context, states, _) => GlossFocusHalo(
+                    focused: states.contains(WidgetState.focused),
+                    inside: true,
+                    radius: 8,
+                    inset: 1,
                     child: SizedBox(
                       width: _box,
                       child: Center(
@@ -378,27 +382,6 @@ class GlossDataTable<R> extends StatelessWidget {
   }
 }
 
-class _InsetRing extends CustomPainter {
-  _InsetRing(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) => canvas.drawRRect(
-    RRect.fromRectAndRadius(
-      (Offset.zero & size).deflate(GlossMetrics.focusWidth),
-      const Radius.circular(8),
-    ),
-    Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = GlossMetrics.focusWidth
-      ..color = color,
-  );
-
-  @override
-  bool shouldRepaint(_InsetRing old) => old.color != color;
-}
-
 /// A scroll area: [child] scrolling with a pearl bead for its thumb in a
 /// groove along its edge, shown while it scrolls or the pointer is near.
 /// The keys scroll it once it has the focus.
@@ -464,8 +447,11 @@ class GlossScrollArea extends StatelessWidget {
           ),
         );
       },
-      frameBuilder: (context, focused, area) => CustomPaint(
-        foregroundPainter: focused ? _InsetRing(c.focus) : null,
+      frameBuilder: (context, focused, area) => GlossFocusHalo(
+        focused: focused,
+        inside: true,
+        radius: 8,
+        inset: 1,
         child: area,
       ),
       child: child,

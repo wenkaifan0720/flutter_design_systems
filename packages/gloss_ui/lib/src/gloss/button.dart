@@ -148,8 +148,10 @@ class GlossButton extends StatelessWidget {
             ),
             child: _Pressed(
               pressed: pressed,
-              builder: (depth) => CustomPaint(
-                foregroundPainter: focused ? _TextFocusPainter(c.focus) : null,
+              builder: (depth) => GlossFocusHalo(
+                focused: focused,
+                inset: -4,
+                tint: true,
                 child: Padding(
                   padding: padding,
                   child: Center(
@@ -266,28 +268,6 @@ class _PressedState extends State<_Pressed>
   );
 }
 
-/// A text button's focus: a capsule ring round its words, 4 px clear of them.
-class _TextFocusPainter extends CustomPainter {
-  _TextFocusPainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final box = (Offset.zero & size).inflate(6);
-    canvas.drawRRect(
-      glossOutline(box, null),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = GlossMetrics.focusWidth
-        ..color = color,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_TextFocusPainter old) => old.color != color;
-}
-
 enum _IconButtonKind { pearl, gel, plain }
 
 /// A round Gloss bead holding a glyph: pearl by default, jade gel with
@@ -394,8 +374,10 @@ class GlossIconButton extends StatelessWidget {
               dimension: side,
               child: _Pressed(
                 pressed: pressed,
-                builder: (depth) => CustomPaint(
-                  painter: focus.a > 0 ? _BeadFocusPainter(focus) : null,
+                builder: (depth) => GlossFocusHalo(
+                  focused: focus.a > 0,
+                  inside: true,
+                  tint: true,
                   child: Center(
                     child: Transform.translate(
                       offset: Offset(0, depth),
@@ -465,25 +447,4 @@ class GlossIconButton extends StatelessWidget {
         DiagnosticsProperty<bool>('selected', selected, defaultValue: null),
       );
   }
-}
-
-class _BeadFocusPainter extends CustomPainter {
-  _BeadFocusPainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawCircle(
-      size.center(Offset.zero),
-      size.shortestSide / 2 - GlossMetrics.focusWidth / 2,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = GlossMetrics.focusWidth
-        ..color = color,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_BeadFocusPainter old) => old.color != color;
 }

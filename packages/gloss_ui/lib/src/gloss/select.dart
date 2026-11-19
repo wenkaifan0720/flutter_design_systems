@@ -400,40 +400,45 @@ class _SelectListState<T> extends State<_SelectList<T>> {
               : c.ink;
           return SizedBox(
             height: widget.rowHeight,
-            child: AnimatedGlossSurface(
-              face: plate.copyWith(foreground: words),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: GlossSpacing.medium,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: DesignCapCenter(
-                        capHeightFactor: glossCapHeightFactor,
-                        child: Text(
-                          item.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.body.copyWith(
-                            color: words,
-                            fontWeight: isChosen
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                            fontVariations: glossWeightAxis(
-                              isChosen ? FontWeight.w600 : FontWeight.w400,
+            child: GlossFocusHalo(
+              focused: item.enabled && states.contains(WidgetState.focused),
+              inside: true,
+              radius: _radius - _inset,
+              child: AnimatedGlossSurface(
+                face: plate.copyWith(foreground: words),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: GlossSpacing.medium,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: DesignCapCenter(
+                          capHeightFactor: glossCapHeightFactor,
+                          child: Text(
+                            item.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.body.copyWith(
+                              color: words,
+                              fontWeight: isChosen
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                              fontVariations: glossWeightAxis(
+                                isChosen ? FontWeight.w600 : FontWeight.w400,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    if (isChosen)
-                      SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CustomPaint(painter: _CheckPainter(words)),
-                      ),
-                  ],
+                      if (isChosen)
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CustomPaint(painter: _CheckPainter(words)),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),

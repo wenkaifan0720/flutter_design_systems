@@ -9,6 +9,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/physics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
@@ -177,7 +178,8 @@ class GlossFace with Diagnosticable {
   /// How far a raised face is pressed home, 0 to 1.
   final double travel;
 
-  /// The focus ring's colour; clear when not focused.
+  /// The focus halo's colour ([paintGlossHalo]); clear when not focused.
+  /// Its lens brightens with it.
   final Color focus;
 
   /// The corner radius; null for a capsule or a circle (half the short side).
@@ -317,12 +319,12 @@ class GlossFace with Diagnosticable {
 
 /// Paints [face] round [child]: its drop shadow (raised) or the rim's shade
 /// along its top (sunken), the rim, the glaze, the glow and the specular
-/// lens, and the focus ring outside it all, concentric.
+/// lens, and the focus halo round it all ([paintGlossHalo]).
 ///
 /// The surface's size is its face's: a shadow and a ring are drawn outside
 /// it, so a raised face lines up with a sunken one beside it. Leave 4 px of
-/// room below a raised face (and the ring's 4 all round) where a clip could
-/// cut them.
+/// room below a raised face (and the halo's [GlossMetrics.focusReach] all
+/// round) where a clip could cut them.
 ///
 /// ```dart
 /// GlossSurface(face: GlossFace.pearl(colors), child: const Padding(padding: EdgeInsets.all(12), child: Text('Pearl')))
@@ -594,7 +596,11 @@ void paintGlossFace(
 
   // The specular lens on a raised face's upper part: it ends above a
   // centred label's capitals, and dims as the face is pressed.
-  final lens = face.lens * (1 - 0.55 * face.travel) * (highContrast ? 0 : 1);
+  // Focus brightens it, as the halo lights the glaze from round its rim.
+  final lens =
+      math.min(1.0, face.lens * (1 + 0.5 * face.focus.a)) *
+      (1 - 0.55 * face.travel) *
+      (highContrast ? 0 : 1);
   // A face too small for its rim (a part laid out at nothing, a dot) has no
   // room for a lens.
   if (lens > 0.01 && inner.outerRect.width > 4 && inner.outerRect.height > 4) {
@@ -641,17 +647,215 @@ void paintGlossFace(
     canvas.restore();
   }
 
-  // The focus ring, concentric, outside the face.
-  if (face.focus.a > 0) {
-    const by = GlossMetrics.focusGap + GlossMetrics.focusWidth / 2;
-    canvas.drawRRect(
-      outer.inflate(by),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = GlossMetrics.focusWidth
-        ..color = face.focus,
+  // The focus halo, round the face.
+  paintGlossHalo(canvas, outer, face.focus);
+}
+
+/// Paints Gloss's keyboard focus round [shape] on [canvas]: an Aqua-like
+/// halo of [color], a band of light against the part's edge that fades out
+/// into a soft glow, as if the glaze were lit from round its rim. [color]'s
+/// alpha is how far the focus has come in; clear paints nothing.
+///
+/// With [inside], for a part with no room round it (a row in a list, a
+/// position in a slot), the halo lies just inside [shape] and glows inward
+/// instead, held to it. Either way it never reaches a centred label.
+///
+/// ```dart
+/// paintGlossHalo(canvas, glossOutline(Offset.zero & size, null), colors.focus);
+/// ```
+void paintGlossHalo(
+  Canvas canvas,
+  RRect shape,
+  Color color, {
+  bool inside = false,
+}) {
+  if (color.a <= 0) return;
+  const band = GlossMetrics.focusWidth;
+  // The glow, from the band's outer half out to the halo's reach.
+  final glow = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 3.5
+    ..color = color.withValues(alpha: color.a * 0.4)
+    ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
+  // The band, solid against the part's edge.
+  final core = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = band
+    ..color = color;
+  if (inside) {
+    canvas
+      ..save()
+      ..clipRRect(shape)
+      ..drawRRect(shape.deflate(band + 1), glow)
+      ..drawRRect(shape.deflate(band / 2), core)
+      ..restore();
+    return;
+  }
+  canvas
+    ..drawRRect(shape.inflate(band + 1), glow)
+    ..drawRRect(shape.inflate(band / 2), core);
+}
+
+/// Shows Gloss's focus halo ([paintGlossHalo]) over [child] while
+/// [focused], brought in and out on Gloss's colour spring (a short fade
+/// under Reduce Motion): for a part that paints no [GlossFace] of its own,
+/// a slot's position, a list row, a plain glyph, a text button.
+///
+/// Its shape is [child]'s box, [inset] inside it (outside when negative),
+/// with corners of [radius] (a capsule when null). With [inside] the halo
+/// glows inward from that edge; with [tint] a faint wash of the halo's
+/// colour fills the shape, for a part with no face to light. Its [color] is
+/// the theme's focus jade, or a light one inside a part filled with jade
+/// (a chosen segment), where jade on jade would not show.
+///
+/// ```dart
+/// GlossFocusHalo(focused: focused, inside: true, child: const SizedBox(width: 96, height: 32))
+/// ```
+class GlossFocusHalo extends StatefulWidget {
+  /// The halo round [child] while [focused].
+  const GlossFocusHalo({
+    super.key,
+    required this.focused,
+    required this.child,
+    this.radius,
+    this.inset = 0,
+    this.inside = false,
+    this.tint = false,
+    this.color,
+  });
+
+  /// Whether the part has keyboard focus.
+  final bool focused;
+
+  /// The part.
+  final Widget child;
+
+  /// The halo's corners; a capsule when null.
+  final double? radius;
+
+  /// How far inside [child]'s box the halo's edge lies; negative is outside.
+  final double inset;
+
+  /// Whether the halo glows inward from its edge.
+  final bool inside;
+
+  /// Whether a faint wash of the halo's colour fills its shape.
+  final bool tint;
+
+  /// The halo's colour; [GlossColors.focus] when null.
+  final Color? color;
+
+  @override
+  State<GlossFocusHalo> createState() => _GlossFocusHaloState();
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('focused', value: focused, ifTrue: 'focused'))
+      ..add(DoubleProperty('radius', radius, defaultValue: null))
+      ..add(DoubleProperty('inset', inset, defaultValue: 0))
+      ..add(FlagProperty('inside', value: inside, ifTrue: 'inside'))
+      ..add(FlagProperty('tint', value: tint, ifTrue: 'tint'))
+      ..add(ColorProperty('color', color, defaultValue: null));
+  }
+}
+
+class _GlossFocusHaloState extends State<GlossFocusHalo>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    value: widget.focused ? 1 : 0,
+  );
+
+  @override
+  void didUpdateWidget(GlossFocusHalo old) {
+    super.didUpdateWidget(old);
+    if (old.focused == widget.focused) return;
+    _controller.animateWith(
+      SpringSimulation(
+        DesignMotionPolicy.of(context)
+            .effects(dampingRatio: 1, stiffness: GlossMotion.colorStiffness),
+        _controller.value,
+        widget.focused ? 1 : 0,
+        _controller.velocity,
+      ),
     );
   }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = GlossTheme.of(context).colors;
+    _HaloPainter halo({required bool wash}) => _HaloPainter(
+      _controller,
+      widget.color ?? colors.focus,
+      radius: widget.radius,
+      inset: widget.inset,
+      inside: widget.inside,
+      wash: wash,
+    );
+    // The wash lies under the part's words; the halo lies over its edge.
+    return CustomPaint(
+      painter: widget.tint ? halo(wash: true) : null,
+      foregroundPainter: halo(wash: false),
+      child: widget.child,
+    );
+  }
+}
+
+class _HaloPainter extends CustomPainter {
+  _HaloPainter(
+    this.amount,
+    this.color, {
+    required this.radius,
+    required this.inset,
+    required this.inside,
+    required this.wash,
+  }) : super(repaint: amount);
+
+  final Animation<double> amount;
+  final Color color;
+  final double? radius;
+  final double inset;
+  final bool inside;
+
+  // The faint wash of [color] filling the shape, rather than the halo.
+  final bool wash;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final t = amount.value.clamp(0.0, 1.0);
+    if (t <= 0) return;
+    final shape = glossOutline((Offset.zero & size).deflate(inset), radius);
+    if (wash) {
+      canvas.drawRRect(
+        shape,
+        Paint()..color = color.withValues(alpha: 0.1 * t),
+      );
+      return;
+    }
+    paintGlossHalo(
+      canvas,
+      shape,
+      color.withValues(alpha: color.a * t),
+      inside: inside,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_HaloPainter old) =>
+      old.amount != amount ||
+      old.color != color ||
+      old.radius != radius ||
+      old.inset != inset ||
+      old.inside != inside ||
+      old.wash != wash;
 }
 
 /// [GlossSurface] that moves to each new [face] on a spring from wherever
@@ -940,6 +1144,7 @@ class GlossEngravedLine extends StatelessWidget {
   }
 }
 
-/// The keyboard focus ring for [colors], or clear when [focused] is false.
+/// The keyboard focus halo's colour for [colors], or clear when [focused]
+/// is false: a [GlossFace]'s `focus`.
 Color glossFocusOf(GlossColors colors, {required bool focused}) =>
     focused ? colors.focus : colors.focus.withValues(alpha: 0);

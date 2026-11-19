@@ -636,33 +636,39 @@ class GlossLink extends StatelessWidget {
                 ? Color.lerp(c.jadeInk, c.ink, 0.45)!
                 : c.jadeInk);
         final clear = c.page.withValues(alpha: 0);
+        // A link has no glaze to light: its focus washes a plate just
+        // beyond its words and haloes it, clear of every letter.
         return DesignTapTarget(
-          child: AnimatedGlossSurface(
-            face: GlossFace(
-              top: clear,
-              middle: clear,
-              bottom: clear,
-              foreground: ink,
-              radius: 6,
-              focus: glossFocusOf(
-                c,
-                focused: states.contains(WidgetState.focused),
+          child: GlossFocusHalo(
+            focused: states.contains(WidgetState.focused),
+            inset: -2,
+            radius: 8,
+            tint: true,
+            child: AnimatedGlossSurface(
+              face: GlossFace(
+                top: clear,
+                middle: clear,
+                bottom: clear,
+                foreground: ink,
+                radius: 6,
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: GlossMetrics.rimRoom,
-              ),
-              child: Text(
-                label,
-                style: theme.textTheme.body
-                    .copyWith(
-                      color: ink,
-                      decoration: disabled ? null : TextDecoration.underline,
-                      decorationColor: ink.withValues(alpha: pressed ? 1 : 0.5),
-                      decorationThickness: pressed ? 2 : 1.2,
-                    )
-                    .merge(layered.textStyle),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: GlossMetrics.rimRoom,
+                ),
+                child: Text(
+                  label,
+                  style: theme.textTheme.body
+                      .copyWith(
+                        color: ink,
+                        decoration: disabled ? null : TextDecoration.underline,
+                        decorationColor: ink.withValues(
+                          alpha: pressed ? 1 : 0.5,
+                        ),
+                        decorationThickness: pressed ? 2 : 1.2,
+                      )
+                      .merge(layered.textStyle),
+                ),
               ),
             ),
           ),

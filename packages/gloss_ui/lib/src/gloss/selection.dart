@@ -420,13 +420,17 @@ class _StarPainter extends CustomPainter {
         );
     }
     if (focused) {
-      canvas.drawCircle(
-        box.center(Offset.zero),
-        box.shortestSide / 2 - 1,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = GlossMetrics.focusWidth
-          ..color = c.focus,
+      paintGlossHalo(
+        canvas,
+        glossOutline(
+          Rect.fromCircle(
+            center: box.center(Offset.zero),
+            radius: box.shortestSide / 2,
+          ),
+          null,
+        ),
+        c.focus,
+        inside: true,
       );
     }
   }

@@ -1163,10 +1163,9 @@ class _GlossTabBarState extends State<GlossTabBar>
     return DesignTapTarget(
       child: SizedBox(
         height: height,
-        child: CustomPaint(
-          foregroundPainter: details.states.contains(WidgetState.focused)
-              ? _InsetRingPainter(c.focus)
-              : null,
+        child: GlossFocusHalo(
+          focused: details.states.contains(WidgetState.focused),
+          inside: true,
           child: Center(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -1200,25 +1199,4 @@ class _GlossTabBarState extends State<GlossTabBar>
       ),
     );
   }
-}
-
-/// A ring 1 px inside a slot, its corners a capsule's.
-class _InsetRingPainter extends CustomPainter {
-  _InsetRingPainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawRRect(
-      glossOutline((Offset.zero & size).deflate(1), null),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = GlossMetrics.focusWidth
-        ..color = color,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_InsetRingPainter old) => old.color != color;
 }

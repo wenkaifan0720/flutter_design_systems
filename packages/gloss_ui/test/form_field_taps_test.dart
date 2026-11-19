@@ -1,0 +1,232 @@
+// Controls in a GlossFormField take a tap, each its own: a segmented
+// choice's keys, chips in a wrap, a stepper's keys, a switch and a checkbox, by
+// the pointer and through their semantics (a screen reader's double tap, a
+// browser's click with semantics on). A group's controls merged into the
+// field's one node gave every tap to the first of them (the user, 11-18:
+// Stint's Priority and Labels took no tap, in Neumorphism's look,
+// Appliance's and Studio's).
+import 'dart:convert';
+
+import 'package:material_ui/material_ui.dart' show MaterialApp;
+import 'package:flutter/semantics.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:gloss_ui/gloss_ui.dart';
+
+// Gloss's own faces.
+Future<void> _loadFonts() async {
+  final manifest = json.decode(
+    await rootBundle.loadString('FontManifest.json'),
+  ) as List<dynamic>;
+  for (final entry in manifest.cast<Map<String, dynamic>>()) {
+    final family = entry['family'] as String;
+    final loader = FontLoader(
+      family.startsWith('packages/') ? family : glossRegisteredFamily(family),
+    );
+    for (final font
+        in (entry['fonts'] as List<dynamic>).cast<Map<String, dynamic>>()) {
+      loader.addFont(rootBundle.load(font['asset'] as String));
+    }
+    await loader.load();
+  }
+}
+
+class _Form extends StatefulWidget {
+  const _Form({required this.log});
+
+  final List<String> log;
+
+  @override
+  State<_Form> createState() => _FormState();
+}
+
+class _FormState extends State<_Form> {
+  var _priority = 'low';
+  final _labels = <String>{};
+  var _estimate = 45;
+  var _reminder = false;
+  var _done = false;
+
+  void _say(String what) => widget.log.add(what);
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      GlossFormField(
+        labelText: 'Priority',
+        child: GlossSegmentedButton<String>(
+          semanticLabel: 'Priority',
+          segments: const [
+            GlossSegment(value: 'low', label: 'Low'),
+            GlossSegment(value: 'normal', label: 'Normal'),
+            GlossSegment(value: 'high', label: 'High'),
+          ],
+          selected: _priority,
+          onChanged: (v) {
+            _say('priority $v');
+            setState(() => _priority = v);
+          },
+        ),
+      ),
+      GlossFormField(
+        labelText: 'Labels',
+        child: Wrap(
+          spacing: 8,
+          children: [
+            for (final l in ['Planning', 'Review', 'Fieldwork'])
+              GlossChip(
+                label: l,
+                selected: _labels.contains(l),
+                onSelected: (_) {
+                  _say('label $l');
+                  setState(
+                    () => _labels.contains(l)
+                        ? _labels.remove(l)
+                        : _labels.add(l),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+      GlossFormField(
+        labelText: 'Estimate (minutes)',
+        child: GlossStepper(
+          value: _estimate,
+          min: 5,
+          max: 480,
+          step: 15,
+          semanticLabel: 'Estimate',
+          onChanged: (v) {
+            _say('estimate $v');
+            setState(() => _estimate = v);
+          },
+        ),
+      ),
+      GlossFormField(
+        labelText: 'Reminder',
+        helperText: 'A nudge before it is due',
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: GlossSwitch(
+            value: _reminder,
+            onChanged: (v) {
+              _say('reminder $v');
+              setState(() => _reminder = v);
+            },
+          ),
+        ),
+      ),
+      GlossFormField(
+        labelText: 'Done',
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: GlossCheckbox(
+            value: _done,
+            onChanged: (v) {
+              _say('done $v');
+              setState(() => _done = v ?? false);
+            },
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+Future<List<String>> _pump(WidgetTester tester) async {
+  tester.view.physicalSize = const Size(520, 900);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+  final log = <String>[];
+  await tester.pumpWidget(
+    MaterialApp(
+      builder: (context, app) =>
+          GlossHost(brightness: Brightness.light, child: app!),
+      home: Align(
+        alignment: Alignment.topCenter,
+        child: SizedBox(width: 440, child: _Form(log: log)),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+  return log;
+}
+
+const _taken = [
+  'priority high',
+  'label Review',
+  'estimate 60',
+  'reminder true',
+  'done true',
+];
+
+void main() {
+  setUpAll(_loadFonts);
+
+  // The stepper is one adjustable node: its keys answer the pointer, and a
+  // screen reader raises it by its increase action.
+  Finder increase() => find
+      .descendant(
+        of: find.byType(GlossStepper),
+        matching: find.byType(DesignPressable),
+      )
+      .last;
+
+  testWidgets('each control in a field takes the pointer\'s tap', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final log = await _pump(tester);
+    for (final target in [
+      find.text('High'),
+      find.text('Review'),
+      increase(),
+      find.byType(GlossSwitch),
+      find.byType(GlossCheckbox),
+    ]) {
+      await tester.tap(target);
+      await tester.pumpAndSettle();
+    }
+    expect(log, _taken);
+    semantics.dispose();
+  });
+
+  testWidgets('each control in a field takes a tap through the node the '
+      'platform sees for it, and a group is named by its field', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final log = await _pump(tester);
+    for (final (control, name, action) in [
+      (find.text('High'), 'High', SemanticsAction.tap),
+      (find.text('Review'), 'Review', SemanticsAction.tap),
+      (find.byType(GlossStepper), 'Estimate', SemanticsAction.increase),
+      (find.byType(GlossSwitch), 'Reminder', SemanticsAction.tap),
+      (find.byType(GlossCheckbox), 'Done', SemanticsAction.tap),
+    ]) {
+      // A key's node merges its words up into it.
+      final own = tester.getSemantics(control);
+      expect(
+        own.getSemanticsData().label,
+        startsWith(name),
+        reason: '$name has its own node',
+      );
+      own.owner!.performAction(own.id, action);
+      await tester.pumpAndSettle();
+    }
+    expect(log, _taken);
+    expect(
+      tester.getSemantics(find.text('High')).getSemanticsData().label,
+      isNot(contains('Low')),
+      reason: 'one key, not the group',
+    );
+    // The field names its group: one node above the keys says
+    // 'Priority', once.
+    expect(find.bySemanticsLabel(RegExp('^Priority')), findsWidgets);
+    semantics.dispose();
+  });
+}

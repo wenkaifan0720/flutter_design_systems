@@ -884,8 +884,11 @@ class _Segment<T> extends StatelessWidget {
         final focused = states.contains(WidgetState.focused);
         final pressed = states.contains(WidgetState.pressed);
         return DesignTapTarget(
-          child: CustomPaint(
-            foregroundPainter: focused ? _SlotFocusPainter(c.focus) : null,
+          child: GlossFocusHalo(
+            focused: focused,
+            inside: true,
+            // On the chosen position's jade, the light of its words.
+            color: chosen && !disabled ? c.onJade : null,
             child: SizedBox(
               height: height,
               child: Transform.translate(
@@ -940,31 +943,11 @@ class _Segment<T> extends StatelessWidget {
   }
 }
 
-/// The focus inside a slot: a capsule ring 2 px inside it, so it never sits
-/// on the trough's rim or a neighbour.
-class _SlotFocusPainter extends CustomPainter {
-  _SlotFocusPainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawRRect(
-      glossOutline((Offset.zero & size).deflate(1), null),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = GlossMetrics.focusWidth
-        ..color = color,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_SlotFocusPainter old) => old.color != color;
-}
-
 /// A Gloss stepper: a readout window pressed into the surface between two
-/// pearl beads, minus and plus. The count steps with a detent; the arrow
-/// keys step it too, and a screen reader hears it as an adjustable value.
+/// pearl beads, minus and plus, the beads as tall as the window (the
+/// control's height, or taller as the text grows). The count steps with a
+/// detent; the arrow keys step it too, and a screen reader hears it as an
+/// adjustable value.
 ///
 /// ```dart
 /// GlossStepper(value: 4, min: 1, max: 12, onChanged: (value) {})
@@ -1017,11 +1000,26 @@ class GlossStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = GlossTheme.of(context);
     final c = theme.colors;
-    final height = theme.controlHeight;
     final enabled = onChanged != null;
     void set(int next) => onChanged?.call(next.clamp(min, max));
     final words = format?.call(value) ?? '$value';
-    final bead = height - 8;
+    final figure = theme.textTheme.label.copyWith(
+      color: enabled ? c.ink : c.inkDisabled,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    // The beads and the window are one height: the control's, or taller as
+    // the text grows.
+    final line = TextPainter(
+      text: TextSpan(text: words, style: figure),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final height = math.max(
+      theme.controlHeight,
+      line.height + 2 * GlossSpacing.small,
+    );
+    line.dispose();
     Widget key(IconData glyph, int by) {
       final can = enabled && (by < 0 ? value > min : value < max);
       // The beads are for a finger and a pointer; the keyboard and a screen
@@ -1032,7 +1030,7 @@ class GlossStepper extends StatelessWidget {
             onPressed: can ? () => set(value + by) : null,
             builder: (context, states, _) => DesignTapTarget(
               child: SizedBox.square(
-                dimension: bead,
+                dimension: height,
                 child: AnimatedGlossSurface(
                   face: can
                       ? GlossFace.pearl(c).copyWith(
@@ -1068,7 +1066,7 @@ class GlossStepper extends StatelessWidget {
             key(LucideIcons.minus, -step),
             const SizedBox(width: GlossSpacing.small),
             ConstrainedBox(
-              constraints: BoxConstraints(minWidth: height + 16),
+              constraints: BoxConstraints(minWidth: theme.controlHeight + 16),
               child: SizedBox(
                 height: height,
                 child: AnimatedGlossSurface(
@@ -1087,16 +1085,7 @@ class GlossStepper extends StatelessWidget {
                         value: value,
                         child: DesignCapCenter(
                           capHeightFactor: glossCapHeightFactor,
-                          child: Text(
-                            words,
-                            maxLines: 1,
-                            style: theme.textTheme.label.copyWith(
-                              color: enabled ? c.ink : c.inkDisabled,
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
-                            ),
-                          ),
+                          child: Text(words, maxLines: 1, style: figure),
                         ),
                       ),
                     ),

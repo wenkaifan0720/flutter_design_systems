@@ -460,18 +460,13 @@ class _RowPainter extends CustomPainter {
         ),
       );
     }
-    if (focus.a > 0) {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          plate.deflate(GlossMetrics.focusWidth / 2),
-          const Radius.circular(_radius - GlossMetrics.focusWidth / 2),
-        ),
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = GlossMetrics.focusWidth
-          ..color = focus,
-      );
-    }
+    // The focus halo, inside the plate: a row has no room round it.
+    paintGlossHalo(
+      canvas,
+      RRect.fromRectAndRadius(plate, const Radius.circular(_radius)),
+      focus,
+      inside: true,
+    );
   }
 
   @override

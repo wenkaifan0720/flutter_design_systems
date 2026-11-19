@@ -662,10 +662,9 @@ class GlossPageDots extends StatelessWidget {
                     child: SizedBox(
                       width: 24,
                       height: 24,
-                      child: CustomPaint(
-                        foregroundPainter: states.contains(WidgetState.focused)
-                            ? _RingPainter(c.focus)
-                            : null,
+                      child: GlossFocusHalo(
+                        focused: states.contains(WidgetState.focused),
+                        inside: true,
                         child: Center(child: dot(i)),
                       ),
                     ),
@@ -687,27 +686,6 @@ class GlossPageDots extends StatelessWidget {
       ..add(IntProperty('count', count))
       ..add(IntProperty('index', index));
   }
-}
-
-class _RingPainter extends CustomPainter {
-  _RingPainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) => canvas.drawRRect(
-    RRect.fromRectAndRadius(
-      (Offset.zero & size).deflate(1),
-      Radius.circular(size.height / 2),
-    ),
-    Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = GlossMetrics.focusWidth
-      ..color = color,
-  );
-
-  @override
-  bool shouldRepaint(_RingPainter old) => old.color != color;
 }
 
 /// One menu of a [GlossMenuBar].
