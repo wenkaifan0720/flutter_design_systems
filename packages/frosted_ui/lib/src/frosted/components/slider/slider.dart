@@ -12,16 +12,14 @@ import '../../theme.dart';
 import '../../internal/dim.dart';
 
 /// A slider: a value along a glass tube 6 tall (the prism bar's track in its
-/// hairline), filled as far as the value with the prism's own band, under a
+/// hairline), filled to the value in accent ink, under a
 /// white knob 22 across in the toggle's shadow. Drag it or press where it
 /// should stand; the arrow keys move it a step. With [divisions] it stands
 /// only on the beads along the tube. Read aloud as an adjustable value named
 /// [label], saying [semanticFormatterCallback]'s words for it (the share of the way by
 /// default). [onChangeStart] and [onChangeEnd] bracket a drag, a press or
 /// a key step, for work that should wait for the hand to lift (saving the
-/// value). A null [onChanged] draws it faded and inert. DERIVED: the
-/// source has no slider; the prism bar's tube and the toggle's knob lend it
-/// their faces.
+/// value). A null [onChanged] disables the slider.
 ///
 /// ```dart
 /// FrostedSlider(value: alertAt, min: 0, max: 100, divisions: 20, label: 'Alert at', semanticFormatterCallback: (v) => '\${v.round()}% of budget', onChanged: setAlertAt, onChangeEnd: saveAlertAt)
@@ -125,12 +123,12 @@ class FrostedSlider extends StatelessWidget {
     final s = FrostedStyleLayers(style, t.components.slider, {
       if (!live) WidgetState.disabled,
     });
-    final active = s.fill;
+    final active = s.fill ?? t.colorScheme.accentText;
     final thumb = s.shape;
     final cut = thumb is CircleBorder ? null : s.cut(FrostedCorners.full);
     const knob = FrostedChromeMetrics.sliderThumb;
     final (thumbEdge, thumbEdges) = s.edgeOf(
-      t.glass.edge,
+      t.colorScheme.textSecondary,
       FrostedStrokes.regular,
     );
     final step = (max - min) / (divisions ?? 20);
@@ -211,9 +209,6 @@ class FrostedSlider extends StatelessWidget {
                     material: FrostedMaterial.paint,
                     radius: const BorderRadius.all(end),
                     color: active,
-                    gradients: active == null
-                        ? [t.hues.iris.band]
-                        : const <Gradient>[],
                   ),
                 ),
                 if (divisions case final steps?)

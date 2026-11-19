@@ -164,13 +164,18 @@ Widget kitSpecimenStepper() => _Live<int>(
     onChanged: set,
     label: 'the budget',
     note: 'a month',
+    money: true,
   ),
 );
 
 Widget kitSpecimenStepperFloor() => _Live<int>(
   0,
-  (value, set) =>
-      FrostedNumberField(value: value, onChanged: set, label: 'the budget'),
+  (value, set) => FrostedNumberField(
+    value: value,
+    onChanged: set,
+    label: 'the budget',
+    money: true,
+  ),
 );
 
 /// The account a transfer comes from.

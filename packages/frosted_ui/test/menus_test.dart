@@ -11,6 +11,7 @@
 // list opens on its value).
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
@@ -98,6 +99,71 @@ Future<void> _key(WidgetTester tester, LogicalKeyboardKey key) async {
 }
 
 void main() {
+  testWidgets('at 200% on a phone, a month name in a menu wraps whole beside '
+      'its amount; a line stands at the row\'s least height', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    Widget menu() => FrostedMenu<String>(
+      title: 'Spent by month',
+      label: 'Months',
+      items: [
+        // Short amounts: the test font draws every glyph a whole em wide.
+        for (final (month, spent) in const [
+          ('August 2026', '\$9'),
+          ('October 2026', '\$8'),
+        ])
+          FrostedMenuItem(
+            month,
+            month,
+            trailing: Text(spent),
+            checked: month == 'October 2026',
+          ),
+      ],
+      onSelected: (_) {},
+    );
+    Future<void> pump(double scale) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          debugShowCheckedModeBanner: false,
+          builder: (context, page) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(scale)),
+            child: FrostedHost(brightness: Brightness.light, child: page!),
+          ),
+          home: Align(
+            alignment: AlignmentDirectional.topEnd,
+            child: Padding(padding: const EdgeInsets.all(16), child: menu()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    }
+
+    await pump(1);
+    final rest = tester.getSize(find.byType(FrostedPressable).first).height;
+    expect(rest, FrostedBreakpoints.touchHitTarget);
+    await pump(2);
+    for (final month in ['August 2026', 'October 2026']) {
+      final words = tester.renderObject<RenderParagraph>(find.text(month));
+      expect(words.didExceedMaxLines, isFalse, reason: '$month whole');
+      final row = tester.getRect(
+        find.ancestor(
+          of: find.text(month),
+          matching: find.byType(FrostedPressable),
+        ),
+      );
+      final drawn = tester.getRect(find.text(month));
+      expect(row.top, lessThan(drawn.top), reason: '$month inside its row');
+      expect(
+        row.bottom,
+        greaterThan(drawn.bottom),
+        reason: '$month inside its row',
+      );
+    }
+  });
+
   setUp(() => _room = null);
 
   for (final t in [
@@ -124,20 +190,18 @@ void main() {
       expect(_lit(tester, rows, wash), [
         'Study',
       ], reason: 'on from the pointer; the resting pointer lights nothing');
-      // The keyboard's ring inside its row: its outer line is the row's
-      // edge, the menu's inset clear all round, corners concentric.
-      const ring =
-          FrostedChromeMetrics.focusRingGap +
-          FrostedChromeMetrics.focusRingWidth;
+      // The keyboard's light inside its row: it lights from the row's own
+      // edge inward, the menu's inset clear all round, corners concentric.
       final rings = tester.widgetList<FrostedFocusRing>(
         find.ancestor(
           of: find.text('Study').last,
           matching: find.byType(FrostedFocusRing),
         ),
       );
-      expect(rings.first.insets, const EdgeInsets.all(ring));
+      expect(rings.first.inside, isTrue);
+      expect(rings.first.insets, EdgeInsets.zero);
       expect(
-        rings.first.radius + ring,
+        rings.first.radius,
         FrostedChromeMetrics.menuRadius - FrostedChromeMetrics.menuInset,
         reason: 'concentric with the menu',
       );

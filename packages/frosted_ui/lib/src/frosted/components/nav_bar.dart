@@ -458,9 +458,8 @@ class _Tab extends StatelessWidget {
       child: FrostedKeyFocus(
         enabled: tap != null,
         radius: FrostedCorners.r10,
-        ringInsets: const EdgeInsets.all(
-          FrostedChromeMetrics.focusRingGap + FrostedStrokes.heavy,
-        ),
+        ringInsets: const EdgeInsets.all(FrostedStrokes.heavy),
+        ringInside: true,
         keys: {
           if (tap != null) ...{
             LogicalKeyboardKey.enter: tap,

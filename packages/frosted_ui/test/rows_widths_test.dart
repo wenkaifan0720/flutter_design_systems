@@ -65,6 +65,21 @@ const _misreadRows = {
   // discs; 0.1.0 reads it 8 device px short at each end.
   'week': "ui_core_test 0.1.0 misread: today's ring read inside it",
 };
+
+/// Single problems the row reader reports that the page does not have, by
+/// page; the rest of the page's rows are still held. Read again with each
+/// ui_core_test.
+const _misreadRowProblems = {
+  // ui_core_test 0.1.1 (outlined and bevelled faces read against their
+  // ground) reads the remove key inside the unchosen "Ines Park" chip, by
+  // night only, 1 px short of the chosen "Design" chip beside it. Laid out,
+  // both faces (and the key's target) end at the same y, day and night.
+  'choices': [
+    'compact night · a button "Remove Ines Park" beside a button "Design": '
+        'its bottom is 1 px above theirs',
+  ],
+};
+
 const _misreadWidths = {
   'selection': 'ui_core misread, 0.2.0 design-sweep reads: widths from 600',
   'tabs': 'ui_core misread, 0.2.0 design-sweep reads: widths from 600',
@@ -235,7 +250,11 @@ void main() {
               runAsync: tester.runAsync,
             );
             problems.addAll([
-              for (final p in report.problems) '$name $day · $p',
+              for (final p in report.problems)
+                if (!(_misreadRowProblems[page.id] ?? const <String>[]).any(
+                  '$name $day · $p'.startsWith,
+                ))
+                  '$name $day · $p',
             ]);
           }
         }

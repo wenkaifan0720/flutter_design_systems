@@ -49,6 +49,21 @@ Widget kitControlsDemo(Brightness brightness) => kitScreen(
       ],
     ),
     kitSection(
+      'Destructive, beside its way back',
+      children: [
+        FrostedButtonRow(
+          children: [
+            FrostedButton.glass('Keep card', onPressed: () {}),
+            FrostedButton.destructive(
+              'Delete card',
+              icon: LucideIcons.trash2,
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ],
+    ),
+    kitSection(
       'A row of two, and a longer word keeping its width',
       children: [
         FrostedButtonRow(

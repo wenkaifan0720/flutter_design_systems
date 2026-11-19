@@ -354,7 +354,21 @@ class FrostedTimePicker extends StatelessWidget {
     // The hour's row i: 1 to 12 on the 12-hour clock (12 first is midnight
     // and noon), 00 to 23 on the 24-hour one.
     final hourIndex = h24 ? now.hour : (now.hour % 12 + 11) % 12;
-    final halves = [words.am, words.pm];
+    // Frosted's own words where an app gives them; left at English, the
+    // shared ones ui_core speaks in the reader's language.
+    final shared = DesignLocalizations.of(context);
+    const english = FrostedLocalizationsEn();
+    String say(String own, String plain, String theirs) =>
+        own == plain ? theirs : own;
+    final hourName = say(words.hour, english.hour, shared.timePickerHourLabel);
+    final minuteName = say(
+      words.minute,
+      english.minute,
+      shared.timePickerMinuteLabel,
+    );
+    final am = say(words.am, english.am, shared.anteMeridiemAbbreviation);
+    final pm = say(words.pm, english.pm, shared.postMeridiemAbbreviation);
+    final halves = [am, pm];
     final wheels = _wheels(
       context,
       live: change != null,
@@ -362,20 +376,22 @@ class FrostedTimePicker extends StatelessWidget {
         DesignWheelColumn(
           itemCount: h24 ? 24 : 12,
           itemLabel: (i) => h24 ? _two(i) : '${i + 1}',
-          semanticLabel: words.hour,
+          semanticLabel: hourName,
           looping: true,
         ),
         DesignWheelColumn(
           itemCount: 60 ~/ minuteInterval,
           itemLabel: (i) => _two(i * minuteInterval),
-          semanticLabel: words.minute,
+          semanticLabel: minuteName,
           looping: true,
         ),
         if (!h24)
           DesignWheelColumn(
             itemCount: 2,
             itemLabel: (i) => halves[i],
-            semanticLabel: '${words.am} / ${words.pm}',
+            semanticLabel: words.am == english.am && words.pm == english.pm
+                ? shared.timeFieldDayPeriodLabel
+                : '$am / $pm',
           ),
       ],
       selection: [

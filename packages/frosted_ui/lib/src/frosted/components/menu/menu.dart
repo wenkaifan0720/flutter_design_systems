@@ -408,6 +408,17 @@ class FrostedMenu<T> extends StatelessWidget {
     LogicalKeyboardKey.arrowUp,
   };
 
+  /// [base] grown with the text, as far as the window's gutters: a menu's
+  /// names keep their room at 200% rather than cutting off beside amounts
+  /// that stay whole (the user's audit, 11-18).
+  static double _grown(BuildContext context, double base) {
+    final grow = MediaQuery.textScalerOf(context).scale(16) / 16;
+    if (grow <= 1) return base;
+    final room =
+        MediaQuery.sizeOf(context).width - 2 * FrostedChromeMetrics.gutter;
+    return math.max(base, math.min(base * grow, room));
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
@@ -428,7 +439,7 @@ class FrostedMenu<T> extends StatelessWidget {
       child: Material(
         type: MaterialType.transparency,
         child: SizedBox(
-          width: width ?? FrostedChromeMetrics.menuWidth,
+          width: _grown(context, width ?? FrostedChromeMetrics.menuWidth),
           child: FrostedFace(
             material: FrostedMaterial.slab,
             radius: BorderRadius.circular(corner),
@@ -534,8 +545,11 @@ class _MenuRow extends StatelessWidget {
     final t = context.frostedTheme;
     final swatch = hue;
     final corner = BorderRadius.circular(FrostedChromeMetrics.menuItemRadius);
+    // Room above and below for a name that wraps at large text; a line's
+    // row stands at its least height.
     const inset = EdgeInsets.symmetric(
       horizontal: FrostedChromeMetrics.menuItemInset,
+      vertical: FrostedChromeMetrics.optionInset,
     );
     // Lit: under a pointer or held by the keyboard (law 7), its words in the
     // ink as a panel row's are.
@@ -556,9 +570,12 @@ class _MenuRow extends StatelessWidget {
         ),
         Expanded(
           child: frostedCapCentred(
+            // A long name wraps rather than losing its end beside an
+            // amount that stays whole ("Augu…" at 200%, the user's audit,
+            // 11-18).
             Text(
               label,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: checked
                   ? t.textTheme.link.semibold.c(t.colorScheme.textPrimary)
@@ -577,18 +594,16 @@ class _MenuRow extends StatelessWidget {
           ),
       ],
     );
-    // The ring's band and line stand inside the row, so its outer line is
-    // the row's edge: the menu's inset clear all round it, its corner
-    // concentric with the menu's.
-    const ring =
-        FrostedChromeMetrics.focusRingGap + FrostedChromeMetrics.focusRingWidth;
+    // The focus light glows inward from the row's edge, so it stays within
+    // the row: the menu's inset clear all round it, its corner concentric
+    // with the menu's.
     Widget pressable() => FrostedPressable(
       onPressed: onTap,
       focusNode: focusNode,
       label: label,
       selected: checked,
-      radius: FrostedChromeMetrics.menuItemRadius - ring,
-      ringInsets: const EdgeInsets.all(ring),
+      radius: FrostedChromeMetrics.menuItemRadius,
+      ringInside: true,
       builder: (context, states, _) {
         final at = place;
         // In a menu [FrostedMenu.show] raises, the one place the keys or
@@ -602,11 +617,14 @@ class _MenuRow extends StatelessWidget {
                 : at.current.value == index);
         return FrostedDim(
           off: onTap == null,
-          // At least a finger's target tall, as a panel row is.
-          child: SizedBox(
-            height: math.max(
-              FrostedChromeMetrics.menuItem,
-              FrostedBreakpoints.touchHitTarget,
+          // At least a finger's target tall, as a panel row is, and taller
+          // as a long name wraps.
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: math.max(
+                FrostedChromeMetrics.menuItem,
+                FrostedBreakpoints.touchHitTarget,
+              ),
             ),
             // Chosen is the brighter glass (law 6), the plate every chosen
             // chip, segment and link stands on, not a quieter wash under it

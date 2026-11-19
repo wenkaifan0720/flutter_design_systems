@@ -134,7 +134,7 @@ class FrostedRangeSlider extends StatelessWidget {
                           child: FrostedFace(
                             material: FrostedMaterial.paint,
                             radius: const BorderRadius.all(end),
-                            gradients: [t.hues.iris.band],
+                            color: t.colorScheme.accentText,
                           ),
                         ),
                       ],
@@ -156,7 +156,7 @@ class FrostedRangeSlider extends StatelessWidget {
                 color: t.colorScheme.toggleKnob.computeLuminance() > .5
                     ? t.colorScheme.toggleKnob
                     : t.colorScheme.textPrimary,
-                edge: t.glass.edge,
+                edge: t.colorScheme.textSecondary,
                 edges: const EdgeInsets.all(FrostedStrokes.regular),
                 shadows: t.shadows.toggleKnob,
               ),

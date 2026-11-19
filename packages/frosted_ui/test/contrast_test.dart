@@ -2,13 +2,14 @@
 // tone's glyph on its snack-bar disc by night, "Working…" on a busy action bar, and a person not chosen in a pick.
 // Also the snack bar's desktop measure (380, at the line's start), and a button's words at 200% kept inside its
 // pill's round ends, found in the same round.
-import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frosted_ui/frosted_ui.dart';
 import 'package:frosted_ui/frosted_host.dart';
 import 'package:frosted_ui/src/frosted/internal/dim.dart';
+import 'package:frosted_ui/src/frosted/internal/face.dart';
 
 Future<void> _pump(
   WidgetTester t,
@@ -164,9 +165,8 @@ void main() {
     expect(bar.left, 16);
   });
 
-  testWidgets("at 200% a long word stays inside the pill's round ends", (
-    t,
-  ) async {
+  testWidgets("at 200% a long word wraps and every line stays inside the "
+      "pill's round ends", (t) async {
     await _pump(
       t,
       FrostedActionBar(
@@ -176,17 +176,41 @@ void main() {
       ),
       scale: const TextScaler.linear(2),
     );
-    final pill = t.getRect(find.byType(FrostedButton));
-    final words = t.getRect(
+    final face = find
+        .descendant(
+          of: find.byType(FrostedButton),
+          matching: find.byType(FrostedFace),
+        )
+        .first;
+    final outline = t
+        .widget<FrostedFace>(face)
+        .radius
+        .toRRect(t.getRect(face))
+        .inflate(0.5);
+    final words = t.renderObject<RenderParagraph>(
       find.descendant(
         of: find.byType(FrostedButton),
-        matching: find.byType(Text),
+        matching: find.byType(RichText),
       ),
     );
-    final r = pill.height / 2;
-    final into = math.min(words.height / 2, r);
-    final curve = r - math.sqrt(r * r - into * into);
-    expect(words.left - pill.left, greaterThanOrEqualTo(curve - 0.5));
-    expect(pill.right - words.right, greaterThanOrEqualTo(curve - 0.5));
+    final lines = words.getBoxesForSelection(
+      TextSelection(
+        baseOffset: 0,
+        extentOffset: words.text.toPlainText().length,
+      ),
+    );
+    expect(lines.length, greaterThan(1), reason: 'the long word wraps');
+    for (final line in lines) {
+      final box = line.toRect();
+      for (final corner in [
+        box.topLeft,
+        box.topRight,
+        box.bottomLeft,
+        box.bottomRight,
+      ]) {
+        final at = words.localToGlobal(corner);
+        expect(outline.contains(at), isTrue, reason: '$at of $box in $outline');
+      }
+    }
   });
 }

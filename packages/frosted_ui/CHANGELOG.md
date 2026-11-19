@@ -1,3 +1,21 @@
+## 0.3.1
+
+- The time wheel names its hour, minute and day-period columns, and says AM and PM, in the reader's language: Frosted's own words when an app gives them, else ui_core's `DesignLocalizations` (it said Hour and Minute in English in every locale).
+- Keyboard focus now lights the glass instead of ringing it: the rim goes bright, the frost brightens and a soft glow of light stands round the part. By day the glow is a clear tone of the theme's focus hue, never a dark slate line; by night a pale one. It meets 3:1 against the unfocused part on every preset, day and night, at 1x and 2x text. Rows in a list, a menu, a settings group (`FrostedValueRow`) and a form (`FrostedFormRow`) light from inside their edge, their plate reaching a little past the row into the group's inset, so the light never covers a row's words, its chevron or trailing button, its neighbours or its panel's edge. Focused fields and the search field light the same way.
+- `FrostedFormField` keeps each control of a group in its own semantics node, under the field's label. Groups are a segmented button, radios, choices, a toggle or button group, filter chips, a number field, a colour or icon picker, or controls in a row, column or wrap. Previously a group was merged into one node, so with semantics on (a screen reader, or a web app with semantics enabled) every tap went to its first control. `mergeSemantics` is now `bool?`; null, the default, decides by the child. A group that names itself in the field's words, such as a segmented button labelled as its field, is announced once instead of twice.
+- `FrostedNumberField` shows a plain number by default, with an optional `unit` after it (`unit: (n) => n == 1 ? 'person' : 'people'`), read with the figure. Set `money: true` for an amount with its currency sign. Each round goes out of use at its bound. `FrostedAmountField` takes a `sign` (null for none) and a `suffix`.
+- `FrostedNumberField`'s minus and plus rounds are now as tall as the figure's well between them (64 at 100%, growing with the text), so the row stands at one height. They were 48 beside a 64 well. Where the row is too narrow for that (200% text on a phone), the rounds give way only as far as the well's three figures need, centred on it, never below 48, so the figure is never cut.
+- Menus widen with the text size, up to the window's margins, and a long entry name wraps to a second line. At 200% on a phone, month names no longer truncate beside their amounts.
+- A full-width button whose words wrap at large text keeps a line's room above and below them, so its first and last lines stay off the face's edge and its round ends.
+- `FrostedButton.destructive` is glass tinted with the theme's danger hue. Its word holds 4.5:1 on the tint, day and night.
+- A filled button out of use is now faint glass (the dimmed pane a glass button out of use shows) with its word over it in the quiet ink at full strength, not a dimmed ink pill whose word fell under 3:1.
+- The calendar, the week strip and date marks show their days in the reader's digits (Arabic's ١٨), matching how they are read.
+- Harbor Activity now searches merchants, categories, accounts, transaction status and amounts. The detail pane follows the selected filter and clears when there are no matches.
+- Split a transaction into equal shares, with any leftover cents allocated exactly. Save or cancel a split and reopen it from the transaction. Get help opens assistance for the selected transaction. The monthly spending limit opens an editor and retains the saved amount.
+- Tables keep file types and sizes legible at larger text sizes and inset their selection controls. At the reader's own text size a table keeps to its width (on a phone its checks give up their inset first); it scrolls sideways only once larger text would break its words. Weekday labels and dates scale together. Segmented choices stack when they outgrow a row, sign-in labels wrap, and swipe actions allow space for their full labels.
+- Sliders and range sliders use a contrasting active track and thumb outline.
+- The month menu keeps the chosen month in Arabic, and the gallery heading stays on one line at the phone’s 2× text setting.
+
 ## 0.3.0
 
 Frosted 0.3.0 stands on ui_core 0.3.0: its dialog, sheets, tooltip, tab bar, wheels, number field and rating keep

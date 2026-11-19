@@ -339,13 +339,15 @@ void main() {
               ),
               seen: seen,
             ),
+            // Words that fit one row in this font (a wider set stacks: the
+            // next test).
             FrostedSegmentedButton(
               segments: const [
-                FrostedButtonSegment('today', 'Today'),
-                FrostedButtonSegment('tomorrow', 'Tomorrow'),
-                FrostedButtonSegment('date', 'Choose a date'),
+                FrostedButtonSegment('now', 'Now'),
+                FrostedButtonSegment('later', 'Later'),
+                FrostedButtonSegment('day', 'Pick a day'),
               ],
-              value: 'today',
+              value: 'now',
               label: 'When',
               fill: true,
               onChanged: (_) {},
@@ -398,17 +400,17 @@ void main() {
       expect(when.height, target);
       expect(band(find.byType(FrostedSegmentedButton<String>).last).height, 42);
       expect(
-        t.getSize(find.widgetWithText(FrostedPressable, 'Today')).height,
+        t.getSize(find.widgetWithText(FrostedPressable, 'Now')).height,
         target,
       );
-      expect(face('Today').height, 38);
+      expect(face('Now').height, 38);
     },
   );
 
   testWidgets(
     'FrostedSegmentedButton fill shares the pill by its words: three unequal '
     'labels in a 358 field each keep their whole word, 36 tall, the slack '
-    'shared equally; words too wide for it all narrow in proportion',
+    'shared equally; words too wide for one row stack, each whole',
     (t) async {
       Widget pill(List<String> labels) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -465,29 +467,29 @@ void main() {
       expect(widths[2], moreOrLessEquals(172.67, epsilon: 0.1));
       expect(t.getSize(find.byType(FrostedSegmentedButton<String>)).width, 358);
       // Today, Tomorrow and Choose a date are 90, 132 and 202 of their own in
-      // this font, 424 for the 350: all narrow in proportion, none to nothing.
+      // this font, 424 for the 350: too wide for one row, they stack, each the
+      // pill's width and its whole word.
       const wide = ['Today', 'Tomorrow', 'Choose a date'];
       await _pump(t, pill(wide));
-      final narrowed = [
+      final stacked = [
         for (final l in wide)
-          t.getSize(find.widgetWithText(FrostedPressable, l)).width,
+          t.getRect(find.widgetWithText(FrostedPressable, l)),
       ];
-      expect(
-        narrowed.fold(0.0, (a, b) => a + b),
-        moreOrLessEquals(350, epsilon: 0.1),
-      );
-      expect(
-        narrowed[1] / narrowed[0],
-        moreOrLessEquals(132 / 90, epsilon: 0.01),
-      );
-      expect(
-        narrowed[2] / narrowed[0],
-        moreOrLessEquals(202 / 90, epsilon: 0.01),
-      );
-      expect(
-        t.getSize(find.widgetWithText(FrostedPressable, 'Today')).height,
-        FrostedBreakpoints.touchHitTarget,
-      );
+      for (var i = 0; i < wide.length; i++) {
+        final word = t.renderObject<RenderParagraph>(find.text(wide[i]));
+        expect(
+          word.size.width,
+          moreOrLessEquals(word.textSize.width, epsilon: 0.1),
+          reason: '${wide[i]} is drawn whole',
+        );
+        expect(stacked[i].width, stacked[0].width, reason: wide[i]);
+        expect(stacked[i].left, stacked[0].left, reason: wide[i]);
+        expect(stacked[i].height, FrostedBreakpoints.touchHitTarget);
+        if (i > 0) {
+          expect(stacked[i].top, greaterThanOrEqualTo(stacked[i - 1].bottom));
+        }
+      }
+      expect(t.getSize(find.byType(FrostedSegmentedButton<String>)).width, 358);
     },
   );
 
@@ -1131,6 +1133,7 @@ void main() {
           label: 'the budget',
           note: 'a month',
           max: 260,
+          money: true,
           onChanged: set,
         ),
         seen: seen,
@@ -1145,6 +1148,8 @@ void main() {
       isSemantics(label: 'the budget\n\$', value: '250'),
     );
     expect(find.bySemanticsLabel('Raise the budget'), findsNothing);
+    // Each round a disc as tall as the 64 well beside it: one height in
+    // the row.
     expect(
       t.getSize(
         find
@@ -1154,7 +1159,7 @@ void main() {
             )
             .first,
       ),
-      const Size(48, 48),
+      const Size(64, 64),
     );
     // `.stepper .inp--amt { width: 3ch }`: three zeros' own advance, the
     // figure's tracking and tabular figures left out, as a ch is.

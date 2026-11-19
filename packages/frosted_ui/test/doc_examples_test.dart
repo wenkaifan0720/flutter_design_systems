@@ -124,6 +124,11 @@ void main() {
       ], total: 7),
       'FrostedButton 2': (context) =>
           FrostedButton('Review transfer', expand: true, onPressed: review),
+      'FrostedButton.destructive': (context) => FrostedButton.destructive(
+        'Delete task',
+        icon: FrostedGlyphs.delete,
+        onPressed: delete,
+      ),
       'FrostedButton.glass': (context) => FrostedButton.glass(
         'Clear filters',
         icon: FrostedGlyphs.close,
@@ -734,7 +739,6 @@ void main() {
       'FrostedFormField': (context) => FrostedFormField(
         label: 'Notify me',
         helper: 'Pick at least one',
-        mergeSemantics: false,
         child: Row(children: [chipA, chipB]),
       ),
       'FrostedTextField': (context) => FrostedTextField(
@@ -785,11 +789,13 @@ void main() {
       ),
       'FrostedSwapButton': (context) => FrostedSwapButton(),
       'FrostedNumberField': (context) => FrostedNumberField(
-        value: budget,
-        onChanged: (v) => setState(() => budget = v),
-        label: 'the budget',
-        step: 10,
-        note: 'a month',
+        value: guests,
+        onChanged: (v) => setState(() => guests = v),
+        label: 'Guests',
+        min: 1,
+        max: 12,
+        step: 1,
+        unit: (n) => n == 1 ? 'person' : 'people',
       ),
       'FrostedSelect': (context) => FrostedSelect<String>(
         label: 'Room',

@@ -293,6 +293,18 @@ const _arabic = <String, String>{
   'Sun, Oct 18': 'الأحد، 18 أكتوبر',
   'Farmers Market': 'سوق المزارعين',
   'Split': 'تقسيم',
+  'Split transaction': 'تقسيم المعاملة',
+  'Save split': 'حفظ التقسيم',
+  'People': 'عدد الأشخاص',
+  'people': 'أشخاص',
+  'No matching transactions': 'لا توجد معاملات مطابقة',
+  'Try another merchant, category or account.':
+      'جرّب تاجرًا أو فئة أو حسابًا آخر.',
+  'Transaction help': 'مساعدة بشأن المعاملة',
+  'Check the merchant, date and amount in this transaction before contacting your bank.':
+      'تحقّق من التاجر والتاريخ والمبلغ قبل التواصل مع مصرفك.',
+  'Save limit': 'حفظ الحد',
+  'Limit in dollars': 'الحد بالدولار',
   'Done': 'تم',
   'Search activity': 'ابحث في النشاط',
   'Show': 'عرض',

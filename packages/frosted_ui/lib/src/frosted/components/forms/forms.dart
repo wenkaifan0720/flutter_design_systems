@@ -10,6 +10,7 @@ import 'package:material_ui/material_ui.dart'
         TextField,
         Theme,
         VisualDensity;
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
@@ -605,6 +606,8 @@ class FrostedAmountField extends StatefulWidget {
     this.keyboardType,
     this.hint = '0',
     this.helper,
+    this.sign = r'$',
+    this.suffix,
     this.size = FrostedAmountFieldSize.regular,
     this.centered = false,
     this.showLabel = true,
@@ -643,6 +646,14 @@ class FrostedAmountField extends StatefulWidget {
   /// What the empty well shows after the sign.
   final String hint;
 
+  /// The currency sign before the figure, in the quiet ink; null, none (a
+  /// plain number).
+  final String? sign;
+
+  /// Words after the figure, in the quiet ink (a unit: "people"); null,
+  /// none.
+  final String? suffix;
+
   /// {@macro frosted.helper}
   final String? helper;
 
@@ -669,6 +680,8 @@ class FrostedAmountField extends StatefulWidget {
     properties
       ..add(StringProperty('label', label))
       ..add(StringProperty('value', value, defaultValue: null))
+      ..add(StringProperty('sign', sign, defaultValue: r'$'))
+      ..add(StringProperty('suffix', suffix, defaultValue: null))
       ..add(
         ObjectFlagProperty<ValueChanged<String>>.has('onChanged', onChanged),
       )
@@ -824,39 +837,60 @@ class _FrostedAmountFieldState extends State<FrostedAmountField>
       // Flexible: at large text the figure's room can outgrow the well, and
       // the entry then scrolls within what is left beside the sign.
       input = Flexible(
-        child: IntrinsicWidth(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minWidth: width,
-              minHeight: FrostedChromeMetrics.stepper,
+        child: _FigureFloor(
+          floor: width,
+          child: IntrinsicWidth(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: width,
+                minHeight: FrostedChromeMetrics.stepper,
+              ),
+              child: input,
             ),
-            child: input,
           ),
         ),
       );
     } else {
       input = Expanded(child: input);
     }
-    final sign = Padding(
-      padding: EdgeInsets.only(
-        // In a stepper the figure's line stands 4 lower in its 48 entry.
-        top: small
-            ? 0
-            : FrostedChromeMetrics.amountWellCurrencyDrop +
-                  (widget.centered
-                      ? (FrostedChromeMetrics.stepper -
-                                FrostedChromeMetrics.amountWellFigure) /
-                            2
-                      : 0),
-      ),
-      child: Text(
-        r'$',
-        textScaler: TextScaler.noScaling,
-        style: t.textTheme.titleMedium.display
-            .line(FrostedChromeMetrics.amountWellCurrency)
-            .c(t.colorScheme.textTertiary),
-      ),
-    );
+    // In a stepper the figure's line stands 4 lower in its 48 entry.
+    final quietTop = small
+        ? 0.0
+        : FrostedChromeMetrics.amountWellCurrencyDrop +
+              (widget.centered
+                  ? (FrostedChromeMetrics.stepper -
+                            FrostedChromeMetrics.amountWellFigure) /
+                        2
+                  : 0);
+    final quiet = t.textTheme.titleMedium.display
+        .line(FrostedChromeMetrics.amountWellCurrency)
+        .c(t.colorScheme.textTertiary);
+    final sign = widget.sign == null
+        ? null
+        : Padding(
+            padding: EdgeInsets.only(top: quietTop),
+            child: Text(
+              widget.sign!,
+              textScaler: TextScaler.noScaling,
+              style: quiet,
+            ),
+          );
+    // A unit after the figure, on the sign's line; words, so it grows with
+    // the reader's text. It shares a narrow well with the figure rather than
+    // pushing past it (a stepper's in a dialog).
+    final suffix = widget.suffix == null
+        ? null
+        : Flexible(
+            child: Padding(
+              padding: EdgeInsets.only(top: quietTop),
+              child: Text(
+                widget.suffix!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: quiet,
+              ),
+            ),
+          );
     // The well is at least its height and grows with larger text; the sign
     // and figure stand on its centre line by alignment, which at the
     // figure's own size is the source's 12 under the top.
@@ -895,7 +929,7 @@ class _FrostedAmountFieldState extends State<FrostedAmountField>
                     ? CrossAxisAlignment.center
                     : CrossAxisAlignment.start,
                 spacing: FrostedChromeMetrics.amountWellGap,
-                children: [sign, input],
+                children: [?sign, input, ?suffix],
               ),
             ),
           ),
@@ -958,61 +992,53 @@ class _SearchPill extends StatelessWidget {
       FrostedChromeMetrics.search,
       FrostedBreakpoints.touchHitTarget,
     );
-    return ConstrainedBox(
-      constraints: BoxConstraints(minHeight: height),
-      child: FrostedFace(
-        material: FrostedMaterial.well,
-        radius: BorderRadius.circular(height / 2),
-        color: typed || (focused && !t.isDark)
-            ? t.glass.plane.withValues(alpha: _searchTypedOpacity)
-            : null,
-        // By day the well wears one even lit rim all round, and holding
-        // focus it brightens, glows white and its edge takes the focus ink
-        // (the accent at 70%, opal's cool blue); by night its edge is the
-        // night glass's rim (the accent while it holds focus). Never a dark
-        // line.
-        sheen: t.isDark ? t.glass.rim : null,
-        ring: t.isDark
-            ? null
-            : focused
-            ? frostedFocusInk(t)
-            : FrostedChromeMetrics.litEdge,
-        shadows: [
-          if (t.isDark && focused)
-            frostedShadow(
-              color: t.colorScheme.accent,
-              spread: FrostedChromeMetrics.outline,
-            )
-          else if (t.isDark)
-            frostedShadow(
-              color: t.controlEdge,
-              spread: FrostedChromeMetrics.outline,
-            )
-          else if (focused)
-            ...frostedFocusGlow,
-        ],
-        child: Padding(
-          padding: EdgeInsetsDirectional.only(
-            start: FrostedChromeMetrics.searchInset,
-            end: clearing
-                ? FrostedChromeMetrics.searchInset -
-                      FrostedChromeMetrics.searchClearPull
-                : FrostedChromeMetrics.searchInset,
-          ),
-          // The line answers taps from the pill's top to its bottom.
-          child: FrostedFieldRoom(
-            child: Row(
-              spacing: FrostedChromeMetrics.searchGap,
-              children: [
-                Icon(
-                  FrostedGlyphs.search,
-                  size: FrostedChromeMetrics.searchGlyph,
-                  color: typed
-                      ? t.colorScheme.textPrimary
-                      : t.colorScheme.textTertiary,
-                ),
-                Expanded(child: child),
-              ],
+    return FrostedFocusRing(
+      shown: focused,
+      radius: height / 2,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: height),
+        child: FrostedFace(
+          material: FrostedMaterial.well,
+          radius: BorderRadius.circular(height / 2),
+          color: typed || (focused && !t.isDark)
+              ? t.glass.plane.withValues(alpha: _searchTypedOpacity)
+              : null,
+          // By day the well wears one even lit rim all round, by night the
+          // night glass's rim; holding focus the glass lights up as every
+          // part's does (FrostedFocusRing, round the pill below). Never a dark
+          // line.
+          sheen: t.isDark ? t.glass.rim : null,
+          ring: t.isDark ? null : FrostedChromeMetrics.litEdge,
+          shadows: [
+            if (t.isDark)
+              frostedShadow(
+                color: t.controlEdge,
+                spread: FrostedChromeMetrics.outline,
+              ),
+          ],
+          child: Padding(
+            padding: EdgeInsetsDirectional.only(
+              start: FrostedChromeMetrics.searchInset,
+              end: clearing
+                  ? FrostedChromeMetrics.searchInset -
+                        FrostedChromeMetrics.searchClearPull
+                  : FrostedChromeMetrics.searchInset,
+            ),
+            // The line answers taps from the pill's top to its bottom.
+            child: FrostedFieldRoom(
+              child: Row(
+                spacing: FrostedChromeMetrics.searchGap,
+                children: [
+                  Icon(
+                    FrostedGlyphs.search,
+                    size: FrostedChromeMetrics.searchGlyph,
+                    color: typed
+                        ? t.colorScheme.textPrimary
+                        : t.colorScheme.textTertiary,
+                  ),
+                  Expanded(child: child),
+                ],
+              ),
             ),
           ),
         ),
@@ -1579,9 +1605,11 @@ class FrostedSwapButton extends StatelessWidget {
 // Stepper
 // ---------------------------------------------------------------------------
 
-/// A budget's stepper (`.stepper`): a 48 glass round with a minus, the
-/// amount well with the sign and figure on its centre, and a 48 round
-/// with a plus, 12 apart; an optional [note] centred 8 under (a month).
+/// A number you step (`.stepper`): a 48 glass round with a minus, the
+/// number's well with its figure on the centre, and a 48 round with a plus,
+/// 12 apart; an optional [note] centred 8 under (a month). The figure is a
+/// plain number, with its [unit] after it (2 people); with [money] it is an
+/// amount, the currency sign before it (a budget's $250).
 /// The page owns [value]; each round moves it to the next multiple of
 /// [step] from [min] that way (repeating while held), never under [min] or
 /// over [max] (a round with nowhere to go is disabled). A figure typed
@@ -1594,7 +1622,7 @@ class FrostedSwapButton extends StatelessWidget {
 /// [DesignNumberField] is the behaviour.
 ///
 /// ```dart
-/// FrostedNumberField(value: budget, onChanged: (v) => setState(() => budget = v), label: 'the budget', step: 10, note: 'a month')
+/// FrostedNumberField(value: guests, onChanged: (v) => setState(() => guests = v), label: 'Guests', min: 1, max: 12, step: 1, unit: (n) => n == 1 ? 'person' : 'people')
 /// ```
 class FrostedNumberField extends StatelessWidget {
   /// Creates a [FrostedNumberField].
@@ -1606,6 +1634,8 @@ class FrostedNumberField extends StatelessWidget {
     this.min = 0,
     this.max,
     this.note,
+    this.unit,
+    this.money = false,
     this.focusNode,
     this.autofocus = false,
     super.key,
@@ -1646,10 +1676,20 @@ class FrostedNumberField extends StatelessWidget {
   /// The quiet line centred under the stepper (a month).
   final String? note;
 
+  /// The words after the figure for a value, in the quiet ink, so a count
+  /// says what it counts (`(n) => n == 1 ? 'person' : 'people'`); read with
+  /// the figure. Null, none.
+  final String Function(int value)? unit;
+
+  /// Whether the figure is an amount of money: the currency sign before it
+  /// (a budget's stepper). False, a plain number.
+  final bool money;
+
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
     final live = onChanged != null;
+    final words = unit?.call(value);
     // .stepper { gap: 12px }  .step-b { width: 48px; height: 48px }
     // .stepper .amount-in { flex: 1; justify-content: center }
     // .stepper-c { text-align: center; margin-top: -8px }
@@ -1677,7 +1717,7 @@ class FrostedNumberField extends StatelessWidget {
       fieldBuilder: (context, field) => ListenableBuilder(
         listenable: field.controller,
         builder: (context, child) => Semantics(
-          value: live ? field.controller.text : '$value',
+          value: [live ? field.controller.text : '$value', ?words].join(' '),
           child: child,
         ),
         child: FrostedDim(
@@ -1709,25 +1749,27 @@ class FrostedNumberField extends StatelessWidget {
             keyboardType: field.keyboardType,
             centered: true,
             showLabel: false,
+            sign: money ? r'$' : null,
+            suffix: words,
           ),
         ),
       ),
-      buttonBuilder: (context, button) => frostedIconButtonFace(
-        context,
-        button.isIncrement ? FrostedGlyphs.add : FrostedGlyphs.remove,
-        states: button.states,
-        enabled: !button.states.contains(WidgetState.disabled),
-        size: FrostedIconButtonSize.large,
-        style: t.components.numberField,
+      // Each round is a disc as tall as the well its row lays it beside
+      // (_StepperRow), at any text size: 48 rounds beside a 64 well stood at
+      // two heights in one row (the user, 11-18).
+      buttonBuilder: (context, button) => LayoutBuilder(
+        builder: (context, box) => frostedIconButtonFace(
+          context,
+          button.isIncrement ? FrostedGlyphs.add : FrostedGlyphs.remove,
+          states: button.states,
+          enabled: !button.states.contains(WidgetState.disabled),
+          size: FrostedIconButtonSize.large,
+          diameter: box.hasBoundedHeight ? box.maxHeight : null,
+          style: t.components.numberField,
+        ),
       ),
-      layoutBuilder: (context, field, lower, raise) => Row(
-        spacing: FrostedChromeMetrics.stepperGap,
-        children: [
-          lower,
-          Expanded(child: field),
-          raise,
-        ],
-      ),
+      layoutBuilder: (context, field, lower, raise) =>
+          _StepperRow(children: [lower, field, raise]),
     );
     if (note == null) return row;
     return Column(
@@ -1767,8 +1809,178 @@ class FrostedNumberField extends StatelessWidget {
       ..add(IntProperty('step', step, defaultValue: 10))
       ..add(IntProperty('min', min, defaultValue: 0))
       ..add(IntProperty('max', max, defaultValue: null))
-      ..add(StringProperty('note', note, defaultValue: null));
+      ..add(StringProperty('note', note, defaultValue: null))
+      ..add(ObjectFlagProperty<Function>.has('unit', unit))
+      ..add(FlagProperty('money', value: money, ifTrue: 'money'));
   }
+}
+
+/// A stepper's figure, whose least width is the three figures it always
+/// shows ([floor]), whatever it holds: its row gives the well that room
+/// beside its rounds, and a longer figure scrolls within it.
+class _FigureFloor extends SingleChildRenderObjectWidget {
+  const _FigureFloor({required this.floor, super.child});
+
+  final double floor;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderFigureFloor(floor);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderFigureFloor renderObject,
+  ) => renderObject.floor = floor;
+}
+
+class _RenderFigureFloor extends RenderProxyBox {
+  _RenderFigureFloor(this._floor);
+
+  double _floor;
+  set floor(double value) {
+    if (value == _floor) return;
+    _floor = value;
+    markNeedsLayout();
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) => _floor;
+}
+
+/// A stepper's row: its lower round, its well and its raise round, 12
+/// apart, in reading order. The well takes the width the rounds leave; each
+/// round is a square as tall as the well, so the three stand at one height
+/// whatever the text size, unless the row is too narrow for the well's
+/// three figures beside rounds that large: then the rounds give way, as
+/// large as leaves them whole (never under a large icon button's), centred
+/// on the well.
+class _StepperRow extends MultiChildRenderObjectWidget {
+  const _StepperRow({required super.children});
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderStepperRow(Directionality.of(context));
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderStepperRow renderObject,
+  ) => renderObject.direction = Directionality.of(context);
+}
+
+class _StepperRowData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderStepperRow extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _StepperRowData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _StepperRowData> {
+  _RenderStepperRow(this._direction);
+
+  static const double _gap = FrostedChromeMetrics.stepperGap;
+
+  /// The round's side before the well is measured (a large icon button's).
+  static final double _guess = FrostedIconButtonSize.large.diameter;
+
+  TextDirection _direction;
+  set direction(TextDirection value) {
+    if (value == _direction) return;
+    _direction = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _StepperRowData) {
+      child.parentData = _StepperRowData();
+    }
+  }
+
+  RenderBox get _lower => firstChild!;
+  RenderBox get _well => childAfter(firstChild!)!;
+  RenderBox get _raise => lastChild!;
+
+  double _wellWidth(double width, double round) =>
+      math.max(0, width - 2 * (round + _gap));
+
+  /// The rounds' side beside a well [tall] high in a row [width] wide.
+  double _side(double width, double tall) {
+    final room = (width - _well.getMinIntrinsicWidth(tall)) / 2 - _gap;
+    return math.min(tall, math.max(math.min(tall, _guess), room));
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _well.getMinIntrinsicHeight(_wellWidth(width, _guess));
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      _well.getMaxIntrinsicHeight(_wellWidth(width, _guess));
+
+  @override
+  double computeMinIntrinsicWidth(double height) =>
+      _well.getMinIntrinsicWidth(height) + 2 * (height + _gap);
+
+  @override
+  double computeMaxIntrinsicWidth(double height) =>
+      _well.getMaxIntrinsicWidth(height) + 2 * (height + _gap);
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) {
+    final width = constraints.maxWidth;
+    var tall = _well
+        .getDryLayout(BoxConstraints.tightFor(width: _wellWidth(width, _guess)))
+        .height;
+    final side = _side(width, tall);
+    tall = _well
+        .getDryLayout(BoxConstraints.tightFor(width: _wellWidth(width, side)))
+        .height;
+    return constraints.constrain(Size(width, tall));
+  }
+
+  @override
+  void performLayout() {
+    final width = constraints.maxWidth;
+    // The well's height decides the rounds' side, and the rounds' side the
+    // well's width: measure at a large round's side, then lay the well out
+    // again at its own height's (a well's height does not follow its width).
+    _well.layout(
+      BoxConstraints.tightFor(width: _wellWidth(width, _guess)),
+      parentUsesSize: true,
+    );
+    var tall = _well.size.height;
+    var side = _side(width, tall);
+    if (side != _guess) {
+      _well.layout(
+        BoxConstraints.tightFor(width: _wellWidth(width, side)),
+        parentUsesSize: true,
+      );
+      tall = _well.size.height;
+      side = math.min(side, tall);
+    }
+    final round = BoxConstraints.tight(Size.square(side));
+    _lower.layout(round);
+    _raise.layout(round);
+    size = constraints.constrain(Size(width, tall));
+    final rtl = _direction == TextDirection.rtl;
+    final start = rtl ? _raise : _lower;
+    final end = rtl ? _lower : _raise;
+    final drop = (tall - side) / 2;
+    (start.parentData! as _StepperRowData).offset = Offset(0, drop);
+    (_well.parentData! as _StepperRowData).offset = Offset(side + _gap, 0);
+    (end.parentData! as _StepperRowData).offset = Offset(
+      size.width - side,
+      drop,
+    );
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) =>
+      defaultPaint(context, offset);
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }
 
 // ---------------------------------------------------------------------------

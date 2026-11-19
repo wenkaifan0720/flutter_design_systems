@@ -186,12 +186,9 @@ void main() {
       scale: 2,
     );
     double tall(String word) {
-      final words = t.getRect(find.text(word));
       final face = find.ancestor(
         of: find.text(word),
-        matching: find.byWidgetPredicate(
-          (w) => w is SizedBox && w.height != null && w.height! > words.height,
-        ),
+        matching: find.byType(FrostedFace),
       );
       return t.getSize(face.first).height;
     }

@@ -23,8 +23,7 @@ import '../../internal/cap.dart';
 /// provider without a face of its own, wears the system's: the high glass,
 /// or with [emphasis] the ink of the page's one act. [label] replaces the
 /// words. While [busy] the face stays, takes no press and says "Working…",
-/// announced as it changes. DERIVED: the source has no sign-in; the glass
-/// and the ink buttons lend the faces.
+/// announced as it changes. The label wraps at large text sizes.
 ///
 /// ```dart
 /// FrostedSignInButton('apple', onPressed: signInWithApple)
@@ -105,6 +104,8 @@ class FrostedSignInButton extends StatelessWidget {
               )
             : FrostedButton.glass(
                 words,
+                focusNode: focusNode,
+                autofocus: autofocus,
                 icon: provider == 'email' ? FrostedGlyphs.email : null,
                 expand: true,
                 onPressed: press,
@@ -123,8 +124,10 @@ class FrostedSignInButton extends StatelessWidget {
             const Color(0xFF8E918F),
           )
         : (_white, const Color(0xFF1F1F1F), const Color(0xFF747775));
-    final face = SizedBox(
-      height: FrostedChromeMetrics.buttonWideHeight,
+    final face = Container(
+      constraints: const BoxConstraints(
+        minHeight: FrostedChromeMetrics.buttonWideHeight,
+      ),
       width: double.infinity,
       child: FrostedFace(
         material: FrostedMaterial.paint,
@@ -135,6 +138,7 @@ class FrostedSignInButton extends StatelessWidget {
         edge: edge,
         padding: const EdgeInsets.symmetric(
           horizontal: FrostedChromeMetrics.buttonInset,
+          vertical: FrostedSpacing.s6,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -149,8 +153,7 @@ class FrostedSignInButton extends StatelessWidget {
               child: frostedCapCentred(
                 Text(
                   words,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
                   style: t.textTheme.labelLarge
                       .at(FrostedChromeMetrics.buttonWideWord)
                       .c(ink),

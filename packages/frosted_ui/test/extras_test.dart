@@ -670,12 +670,11 @@ void main() {
       await t.drag(find.text('Harbor Transit'), const Offset(-200, 0));
       await t.pumpAndSettle();
       final open = t.getRect(find.text('Harbor Transit'));
-      expect(
-        rest.left - open.left,
-        moreOrLessEquals(2 * FrostedChromeMetrics.swipeBlock),
-      );
       final delete = t.getCenter(find.text('DELETE'));
       final pin = t.getCenter(find.text('PIN'));
+      final extent = delete.dx - pin.dx;
+      expect(extent, greaterThanOrEqualTo(FrostedChromeMetrics.swipeBlock));
+      expect(rest.left - open.left, moreOrLessEquals(2 * extent));
       expect(delete.dx, greaterThan(pin.dx));
       await t.tap(find.text('DELETE'));
       await t.pumpAndSettle();

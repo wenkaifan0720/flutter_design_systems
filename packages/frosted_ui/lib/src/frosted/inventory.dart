@@ -156,6 +156,7 @@ final DesignInventory frostedInventory = DesignInventory(
         onChanged: _drop,
         label: 'the budget',
         note: 'a month',
+        money: true,
       ),
     ),
     DesignInventoryEntry.present(

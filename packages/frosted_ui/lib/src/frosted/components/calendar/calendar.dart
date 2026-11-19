@@ -409,8 +409,9 @@ class _FrostedMonths extends StatelessWidget {
             shadows: ends ? t.shadows.button : const <BoxShadow>[],
             ring: day.isToday && !ends ? t.colorScheme.borderStrong : null,
             child: Center(
+              // In the reader's digits (Arabic's ١٨), as its name is read.
               child: Text(
-                '${day.date.day}',
+                DesignLocalizations.of(context).formatDecimal(day.date.day),
                 style:
                     (ends || day.isToday
                             ? t.textTheme.labelLarge.semibold

@@ -964,6 +964,7 @@ class FrostedListTile extends StatelessWidget {
               ringInsets: const EdgeInsets.symmetric(
                 horizontal: -FrostedChromeMetrics.rowMarkBleed,
               ),
+              ringInside: true,
               child: row,
             ),
     );

@@ -384,9 +384,8 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
 
   /// Whether the pill is a form field's: its segments 36 tall, and below 600
   /// wide the pill takes the field's width, the segments sharing it as a
-  /// form's `.field .seg-ctl span { flex: 1 1 auto }` does: each segment the
-  /// width of its own word and the slack shared equally, so no word is cut
-  /// (when even the words do not fit, all narrow in proportion). From 600 up
+  /// form does. Each segment gets its label width and an equal share of
+  /// the remaining space. Choices stack when their labels need more room. From 600 up
   /// it keeps to its segments, as every strip does.
   final bool fill;
 
@@ -458,14 +457,7 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
             value: s.words(words),
             lerp: FrostedEase.words,
             builder: (context, drawn) => frostedCapCentredSnapped(
-              Text(
-                item.label,
-                maxLines: 1,
-                softWrap: false,
-                // Large words in a shared strip narrowed past them.
-                overflow: TextOverflow.ellipsis,
-                style: drawn,
-              ),
+              Text(item.label, textAlign: TextAlign.center, style: drawn),
             ),
           ),
         );
@@ -542,9 +534,7 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
           radius: BorderRadius.circular(plateRadius),
           shape: cut,
         ),
-        // A strip keeps to its segments; past its room (long words at large
-        // text) they narrow in proportion, each word ending in an ellipsis,
-        // rather than overflow.
+        // Use the same moving plate when the choices need several rows.
         builder: (context, keys) => _SegmentShares(
           fill: share,
           children: [
@@ -590,11 +580,9 @@ class FrostedSegmentedButton<T> extends StatelessWidget {
   }
 }
 
-/// A pill's segments, 2 apart. [fill]ed, across its width, as `.field
-/// .seg-ctl span { flex: 1 1 auto }` sets them: each the width of its own
-/// word, the slack shared equally. Else each keeps its own width and the
-/// strip its segments'. Either way, when even their own widths do not fit,
-/// all narrow in proportion. Unbounded, each keeps its own width.
+/// Arranges segments with a two-point gap. Each segment keeps its label's
+/// natural width, and [fill] shares any extra room equally. When the row
+/// would clip a label, the segments stack and fill the available width.
 class _SegmentShares extends MultiChildRenderObjectWidget {
   const _SegmentShares({required this.fill, required super.children});
 
@@ -644,27 +632,26 @@ class _RenderSegmentShares extends RenderBox
 
   double _gaps(int n) => _gap * math.max(0, n - 1);
 
-  /// Each segment's width in [width]: its own, plus an equal share of what
-  /// is left; all narrowed in proportion when even their own do not fit.
-  List<double> _widths(double width) {
-    final kids = getChildrenAsList();
-    final own = [for (final c in kids) c.getMaxIntrinsicWidth(double.infinity)];
-    if (kids.isEmpty || !width.isFinite) return own;
-    final room = math.max(0.0, width - _gaps(kids.length));
+  /// Uses one row while every label fits. In a narrow field, each option
+  /// receives the width of the field and the active plate moves vertically.
+  ({List<double> widths, bool stacked}) _layoutFor(double width) {
+    final own = [
+      for (var c = firstChild; c != null; c = childAfter(c))
+        c.getMaxIntrinsicWidth(double.infinity),
+    ];
+    if (own.isEmpty || !width.isFinite) return (widths: own, stacked: false);
+    final room = math.max(0.0, width - _gaps(own.length));
     final total = own.fold(0.0, (a, b) => a + b);
-    if (total >= room) {
-      return [
-        for (final w in own) total == 0 ? room / kids.length : room * w / total,
-      ];
+    if (total > room + .01) {
+      return (widths: List.filled(own.length, width), stacked: true);
     }
-    if (!_fill) return own;
-    final share = (room - total) / kids.length;
-    return [for (final w in own) w + share];
+    final extra = _fill ? (room - total) / own.length : 0.0;
+    return (widths: [for (final w in own) w + extra], stacked: false);
   }
 
-  double _extent(BoxConstraints c, List<double> widths) =>
-      _fill && c.hasBoundedWidth
-      ? c.maxWidth
+  double _extent(BoxConstraints bounds, List<double> widths, bool stacked) =>
+      (_fill || stacked) && bounds.hasBoundedWidth
+      ? bounds.maxWidth
       : widths.fold(0.0, (a, b) => a + b) + _gaps(widths.length);
 
   @override
@@ -683,13 +670,14 @@ class _RenderSegmentShares extends RenderBox
   }
 
   double _tallest(double width, double Function(RenderBox, double) measure) {
-    final widths = _widths(width);
+    final (:widths, :stacked) = _layoutFor(width);
     var h = 0.0;
     var i = 0;
     for (var c = firstChild; c != null; c = childAfter(c)) {
-      h = math.max(h, measure(c, widths[i++]));
+      final cell = measure(c, widths[i++]);
+      h = stacked ? h + cell : math.max(h, cell);
     }
-    return h;
+    return stacked ? h + _gaps(widths.length) : h;
   }
 
   @override
@@ -702,18 +690,20 @@ class _RenderSegmentShares extends RenderBox
 
   @override
   Size computeDryLayout(BoxConstraints constraints) {
-    final widths = _widths(constraints.maxWidth);
+    final (:widths, :stacked) = _layoutFor(constraints.maxWidth);
     final h = _tallest(
       constraints.maxWidth,
       (c, w) => c.getDryLayout(BoxConstraints.tightFor(width: w)).height,
     );
-    return constraints.constrain(Size(_extent(constraints, widths), h));
+    return constraints.constrain(
+      Size(_extent(constraints, widths, stacked), h),
+    );
   }
 
   @override
   void performLayout() {
-    final widths = _widths(constraints.maxWidth);
-    final extent = _extent(constraints, widths);
+    final (:widths, :stacked) = _layoutFor(constraints.maxWidth);
+    final extent = _extent(constraints, widths, stacked);
     var h = 0.0;
     var i = 0;
     for (var c = firstChild; c != null; c = childAfter(c)) {
@@ -721,17 +711,20 @@ class _RenderSegmentShares extends RenderBox
         BoxConstraints.tightFor(width: widths[i++]),
         parentUsesSize: true,
       );
-      h = math.max(h, c.size.height);
+      h = stacked ? h + c.size.height : math.max(h, c.size.height);
     }
-    var x = 0.0;
+    if (stacked) h += _gaps(widths.length);
+    var offset = 0.0;
     i = 0;
     for (var c = firstChild; c != null; c = childAfter(c)) {
       final w = widths[i++];
-      (c.parentData! as _SharesData).offset = Offset(
-        _direction == TextDirection.rtl ? extent - x - w : x,
-        (h - c.size.height) / 2,
-      );
-      x += w + _gap;
+      (c.parentData! as _SharesData).offset = stacked
+          ? Offset(0, offset)
+          : Offset(
+              _direction == TextDirection.rtl ? extent - offset - w : offset,
+              (h - c.size.height) / 2,
+            );
+      offset += (stacked ? c.size.height : w) + _gap;
     }
     size = constraints.constrain(Size(extent, h));
   }

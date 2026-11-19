@@ -17,6 +17,7 @@ class FrostedKeyFocus extends StatefulWidget {
     required this.radius,
     required this.child,
     this.ringInsets = EdgeInsets.zero,
+    this.ringInside = false,
     this.focusNode,
     this.autofocus = false,
     super.key,
@@ -34,6 +35,10 @@ class FrostedKeyFocus extends StatefulWidget {
 
   /// How far inside [child]'s box the ringed object stands.
   final EdgeInsets ringInsets;
+
+  /// Whether the focus light glows inward from the object's edge, kept
+  /// within it.
+  final bool ringInside;
 
   /// The caller's focus node; null keeps one of the widget's own.
   final FocusNode? focusNode;
@@ -108,6 +113,7 @@ class _FrostedKeyFocusState extends State<FrostedKeyFocus> {
                     context,
                     radius: widget.radius,
                     insets: at,
+                    inside: widget.ringInside,
                   ),
                 ),
               ),

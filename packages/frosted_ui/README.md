@@ -1,7 +1,6 @@
 # frosted_ui
 
-Frosted glass for Flutter: panes rimmed with light stand on a canvas lit by soft washes of colour, and one ink act
-carries each page, by day and by night.
+Frosted is a Flutter component library for translucent forms, transaction lists, charts and navigation. Choose from seven colour presets, each with a light and dark appearance.
 
 ![Harbor, the gallery's sample app, on its Activity page at 1440 wide and on a phone, by day](https://raw.githubusercontent.com/wenkaifan0720/flutter_design_systems/main/packages/frosted_ui/screenshots/hero.webp)
 
@@ -22,12 +21,11 @@ bare `WidgetsApp`, `frosted_ui` is all an app adds.
 
 ## Set up
 
-`FrostedTheme` is the whole install. Put it in your app's `builder:`, under a `MaterialApp`, a `CupertinoApp` or a
-`WidgetsApp`; Frosted has no app widget of its own. Call `frostedLoadFonts()` before `runApp` so the first frame is set
-in the bundled faces (on the web a font otherwise arrives after it).
+Mount `FrostedHost` in the app builder so controls, pages, dialogs and toasts share a theme. It follows the platform brightness by default. Load the bundled fonts before `runApp` to use them from the first frame.
 
 ```dart
 import 'package:frosted_ui/frosted_ui.dart';
+import 'package:frosted_ui/frosted_host.dart';
 import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
@@ -41,10 +39,9 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    // FrostedTheme's Material theme reaches the app's page routes: pushed pages move as Frosted's do (see Motion).
-    builder: (context, child) => FrostedTheme(
-      data: FrostedThemeData.opal(),
-      darkData: FrostedThemeData.opal(Brightness.dark),
+    builder: (context, child) => FrostedHost(
+      light: FrostedThemeData.opal(),
+      dark: FrostedThemeData.opal(Brightness.dark),
       child: child!,
     ),
     home: const FrostedScaffold(
@@ -59,7 +56,7 @@ Under a `CupertinoApp` it is the same `builder:`:
 
 ```dart
 CupertinoApp(
-  builder: (context, child) => FrostedTheme(data: FrostedThemeData.glacier(), child: child!),
+  builder: (context, child) => FrostedHost(light: FrostedThemeData.glacier(), dark: FrostedThemeData.glacier(Brightness.dark), child: child!),
   home: const TodayPage(),
 );
 ```
@@ -69,16 +66,14 @@ And under a bare `WidgetsApp`, which asks for its colour and how to build a rout
 ```dart
 WidgetsApp(
   color: const Color(0xFF0B0B0F),
-  builder: (context, child) => FrostedTheme(data: FrostedThemeData.jade(), child: child!),
+  builder: (context, child) => FrostedHost(light: FrostedThemeData.jade(), dark: FrostedThemeData.jade(Brightness.dark), child: child!),
   pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
       PageRouteBuilder<T>(settings: settings, pageBuilder: (context, _, _) => builder(context)),
   home: const TodayPage(),
 );
 ```
 
-`darkData:` is the theme for the platform's dark appearance; leave it out and every brightness takes `data`. Nothing of
-Material shows under Frosted: no ink, and the text field's caret, selection, handles and menu, and the scroll bar, are
-Frosted's. No Material or Cupertino type appears in Frosted's API.
+To theme just one subtree, wrap it in `FrostedTheme(data: …)`. Its `data` is the active appearance. The optional `darkData` supplies the dark counterpart for controls drawn over media and defaults to `data.darkTwin`.
 
 ## The look
 
@@ -249,18 +244,11 @@ FrostedButton.glass(
 What stays Frosted's whatever you set: the canvas's washes of light, the glass's rim of light along its top, the
 spectrum, the ink act's pill, the press read as the face dimming, the 44 and 48 px targets and the motion.
 
-## How Frosted is built
+## Composing a page
 
-Eight laws make the look. A part of your own follows them too, and stays Frosted.
+Place related rows in one glass panel with dividers. Use wells for inputs and raised slabs for menus, dialogs and sheets. Frosted draws each surface’s rim and chooses its opacity from the theme. Keep spacing transparent so the backdrop remains visible between panels.
 
-1. **Two substances.** Everything is glass or paint. Glass (sheer for a card, pane for a section or a control, well for a field, slab for what is raised, bar for what holds the page) shows what is behind it, blurred and tinted. Paint (the one ink act, a track's fill, a mark, a pearl, a figure) is opaque and lies on a glass.
-2. **Light comes from above.** Every glass catches it along its edge, as a lit rim and a sheen across its top. A well is cut into its glass and shaded along its top inside edge. By day no edge is a dark line.
-3. **Depth is thickness.** A nearer glass is thicker, and its lift is softer and wider. What lies under a raised slab (a sheet, a dialog, a menu) dims and softens. Nothing has a bevel or a hard shadow.
-4. **Glass stacks one way.** A glass lies on the backdrop or on one other glass. Glasses of one layer stand side by side and never overlap; only a raised slab passes over another. Content scrolls under the bars, and a list is one glass holding rows with hairlines, not a pane per row.
-5. **Nothing pretends to be the ground.** A gap between two things is cut, so the glass and the backdrop show through it; it is never painted in the ground's colour.
-6. **One act; choosing is glass.** The ink pill is the only solid thing that acts. A choice is a brighter, thicker glass that slides under the words.
-7. **Motion moves glass.** A slab rises while the page dims, a chosen pill slides, a light passes over a loading pane. Nothing springs or bounces, and Reduce Motion turns each movement to a cut. A pointer over a button or a glass changes only the cursor; in a menu, a list of choices or a table it lights the row a press would pick, and over a handle the handle.
-8. **Words hold whatever is behind.** Text keeps 4.5:1 on its glass over black, white or any backdrop, and every glass has an opaque form that high contrast turns on.
+Use the solid ink button for the page’s primary action and glass buttons for secondary actions. A brighter glass plate marks a selected option. Controls respect reduced motion and high contrast.
 
 ## Glass on the web
 
@@ -274,11 +262,14 @@ costs no blur at all. The canvas's washes are painted once and cached.
   disabled); paint that only decorates is left out.
 - **Keyboard.** Every control takes focus (each single control takes a `focusNode` and `autofocus`), Enter and Space act, Tab
   moves on, the arrow keys move a slider and a rating (toward the end of the line, right to left too), and the focus
-  light shows while the keyboard, not a pointer, holds focus. Focus follows the reading order, right to left too.
+  light shows while the keyboard, not a pointer, holds focus: the glass lights up, its rim bright, its frost brighter
+  and a soft glow of light round it, never a dark line. A row in a list or a menu lights from inside its edge, so its
+  light never crosses its neighbours or its panel. Focus follows the reading order, right to left too.
 - **Targets.** 44 px under a pointer and 48 px under a finger (Android, iOS and Fuchsia), as Material pads its targets.
-- **Contrast.** Words hold 4.5:1 on their glass (3:1 when large), by day and by night, over any backdrop. Known limit: by
-  day a field's rim and the focus light are white light on pale glass, under 3:1 against the page (about 1.1 to 1.3:1);
-  a field is found by its well and its label, and focus also changes the well itself.
+- **Contrast.** Words hold 4.5:1 on their glass (3:1 when large), by day and by night, over any backdrop. The focus
+  light stands 3:1 off the unfocused part over at least a 2 px perimeter's area, on every preset, day and night, at 1x
+  and 2x text: by day it glows in a clear tone of the theme's focus hue (light on pale glass would not reach 3:1), by
+  night in a pale one.
 - **Motion.** Every change of state eases from where it is; Reduce Motion makes each one a cut. The dialog and the
   sheets ride ui_core's critically damped springs: nothing overshoots, and a sheet let go mid-drag carries the finger's
   speed. A page pushed over
@@ -298,27 +289,14 @@ costs no blur at all. The canvas's washes are painted once and cached.
   `$` in front, a card number, keycaps, badge counts and the clock wheels keep their order, the wordmark does not
   mirror, and charts with their time axes run left to right. Times and dates an app passes in as words are the app's
   to write in its language. The gallery's Customize panel switches the direction and the text size.
-- **Words.** What a part says by itself comes from two places, both English unless the app installs its language:
-  the words every design system shares (Cancel, OK, Close, Back, Clear, Delete, More, Loading, No results, Today,
-  Previous month, Show password, Refresh, Carousel, Menu bar, the weekday names) from ui_core's `DesignLocalizations`,
-  under the names `MaterialLocalizations` gives them; Frosted's own (Done, Try again, the composer's Send, a
-  transfer's Swap, the card's Balance, number and CVC, the text menu's Cut, Copy and Paste) from `FrostedLocalizations`. To translate,
-  extend `DefaultDesignLocalizations` and subclass `FrostedLocalizations`, and add a delegate for each to the app's
-  `localizationsDelegates`. Still English-only in 0.1.0: a goal's "On track" and "Behind", "Over budget", "Pending",
-  "Frozen card", "Back to <page>" and the keycaps' names.
-- **Dates and numbers.** The calendar and the pickers take the first day of the week and the weekday names from
-  `DesignLocalizations`, and 12- or 24-hour time from `FrostedLocalizations`. Month names, "Yesterday" and "In 3 days"
-  in rows and cards, and money and number formats are English (en-US) in 0.1.0.
+- **Strings.** Install `DesignLocalizations.delegate` and use `DesignLocalizations.supportedLocales` for shared control labels in 30 languages. `FrostedLocalizations` supplies labels specific to the look, including Send, Swap, Pending and Frozen. To translate them, extend `FrostedLocalizationsEn` and register a delegate for your locale. The example gallery includes an Arabic delegate.
+- **Dates and amounts.** Calendars use `DesignLocalizations` for the start of the week. `FrostedLocalizations` supplies picker month names, date captions and the 12- or 24-hour clock. The separate `FrostedFormat` utility formats US English dates and dollar amounts. Supply localized strings to components that accept preformatted text when your app uses another currency or locale.
 - **Other scripts.** Frosted's fonts carry Latin. Arabic, Hebrew, Chinese, Japanese, Hindi and Thai fall back to the
   platform's fonts (on the web, Flutter's Noto fallback).
 
-## Words and glyphs as values
+## Labels and icons
 
-A part takes the words it shows as a `String` and its glyph as an `IconData` (`FrostedButton('Pay', icon:
-FrostedGlyphs.creditCard)`, `FrostedListTile(title: 'Rent')`), where Flutter's own widgets take a `Widget`: the look sets their
-type, size and ink. These are the `label`, `title`, `subtitle`, `message`, `body`, `caption`, `text` and `action`
-strings and the `icon` glyphs across the parts. 0.2.0 adds a `Widget` slot beside each one, with the `String` made
-optional, so nothing written against 0.1.0 breaks.
+Pass a string for a button label and an `IconData` for its optional icon, for example `FrostedButton('Pay', icon: FrostedGlyphs.creditCard, onPressed: pay)`. A `FrostedListTile` accepts a title and optional meta text. Its `leading`, `mid` and `trailing` slots accept widgets for an avatar, account information or a custom action.
 
 ## Example
 

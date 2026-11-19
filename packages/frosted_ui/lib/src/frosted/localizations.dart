@@ -263,13 +263,18 @@ abstract class FrostedLocalizations {
   /// A select's prompt before anything is chosen.
   String get select;
 
-  /// The time wheel's columns.
+  /// The time wheel's columns. Left at English ("Hour", "Minute"), the
+  /// wheel says ui_core's `DesignLocalizations` words in the reader's
+  /// language (`timePickerHourLabel`, `timePickerMinuteLabel`).
   String get hour;
 
   /// See [hour].
   String get minute;
 
-  /// Before and after noon.
+  /// Before and after noon. Left at English, the time wheel says
+  /// `DesignLocalizations`' (`anteMeridiemAbbreviation`,
+  /// `postMeridiemAbbreviation`, and `timeFieldDayPeriodLabel` for the
+  /// column).
   String get am;
 
   /// See [am].

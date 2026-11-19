@@ -168,19 +168,21 @@ class FrostedIconButton extends StatelessWidget {
 
 /// An icon button's disc as [FrostedIconButton] draws it in [states], with
 /// no press of its own: for a part whose behaviour presses it (a number
-/// field's steps). Kept back from the package's barrel.
+/// field's steps). A [diameter] draws the disc at that size instead of
+/// [size]'s, the glyph keeping [size]'s. Kept back from the package's barrel.
 Widget frostedIconButtonFace(
   BuildContext context,
   IconData icon, {
   required Set<WidgetState> states,
   required bool enabled,
   FrostedIconButtonSize size = FrostedIconButtonSize.regular,
+  double? diameter,
   bool? selected,
   bool badge = false,
   FrostedStyle? style,
 }) {
   final t = context.frostedTheme;
-  final d = size.diameter;
+  final d = diameter ?? size.diameter;
   final layers = FrostedStyleLayers(style, t.components.iconButton);
   final s = layers.at(states);
   final on = selected ?? false;

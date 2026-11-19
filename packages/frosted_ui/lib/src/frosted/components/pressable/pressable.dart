@@ -1,12 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-import '../../chrome_metrics.dart';
 import '../../internal/dim.dart';
 import '../../internal/face.dart';
 import '../../internal/hit_slop.dart';
-import '../../internal/styled.dart';
 import '../../theme.dart';
 
 /// What a [FrostedPressable] is to assistive technology.
@@ -73,6 +73,7 @@ class FrostedPressable extends StatelessWidget {
     this.radius = 0,
     this.shape,
     this.ringInsets = EdgeInsets.zero,
+    this.ringInside = false,
     this.excludeChild = true,
     this.pressedOpacity = 1,
     this.focusNode,
@@ -136,6 +137,10 @@ class FrostedPressable extends StatelessWidget {
   /// the face bleeds past it (a chosen row's plate).
   final EdgeInsetsGeometry ringInsets;
 
+  /// Whether the focus light glows inward from the face's edge, kept within
+  /// it (a row in a list, a row in a menu), rather than out round it.
+  final bool ringInside;
+
   /// Whether the child's own semantics are replaced by [label].
   final bool excludeChild;
 
@@ -196,6 +201,7 @@ class FrostedPressable extends StatelessWidget {
         radius: radius,
         shape: shape,
         insets: ringInsets,
+        inside: ringInside,
         child: face,
       );
       // The control spans the target round its face.
@@ -241,6 +247,7 @@ class FrostedPressable extends StatelessWidget {
           defaultValue: EdgeInsets.zero,
         ),
       )
+      ..add(FlagProperty('ringInside', value: ringInside, ifTrue: 'ringInside'))
       ..add(
         FlagProperty(
           'excludeChild',
@@ -260,28 +267,30 @@ class FrostedPressable extends StatelessWidget {
   }
 }
 
-/// The keyboard's focus, the source's ring round its act on every part: round
-/// a face whose corner is [radius] (or [shape], which wins), a band
-/// [FrostedChromeMetrics.focusRingGap] wide (white by day, the page's ground
-/// by night) and beyond it a line [FrostedChromeMetrics.focusRingWidth] wide
-/// in the focus ink (the accent at 70%; for a theme whose accent is its
-/// words' ink, the cool blue by day and the pale ink by night: light, never
-/// a dark line), so focus reads on a pale backdrop and round the pale ink
-/// pill by night. The layers run concentric. Drawn while the keyboard holds
+/// The keyboard's focus, said in glass: the glass lights up. Its rim goes
+/// bright (white by day, the pale ink by night) and a soft glow of light
+/// stands round it, in the focus light (the focus ink made luminous: by day a
+/// clear tone of its hue, by night a pale one), strongest at the face's edge
+/// and fading out. Never a dark or opaque line (the user, 11-17 and 11-18).
+/// The glow runs round a face whose corner is [radius] (or [shape], which
+/// wins); with [inside], for a row in a list or a cell in a bank, it glows
+/// inward from the face's edge instead, so it stays within the row and never
+/// crosses its neighbours or its panel's edge. Drawn while the keyboard holds
 /// focus: with [shown] it fades in, and out when focus leaves (a cut under
-/// Reduce Motion).
+/// Reduce Motion). It never covers the face's words.
 ///
 /// ```dart
 /// FrostedFocusRing(shown: focused, radius: 12, child: face)
 /// ```
 class FrostedFocusRing extends StatelessWidget {
-  /// Rings [child].
+  /// Lights [child]'s focus.
   const FrostedFocusRing({
     required this.child,
     this.shown = true,
     this.radius = 0,
     this.shape,
     this.insets = EdgeInsets.zero,
+    this.inside = false,
     super.key,
   });
 
@@ -294,89 +303,100 @@ class FrostedFocusRing extends StatelessWidget {
   /// The face's corner radius.
   final double radius;
 
-  /// The face's outline; the ring follows it at the gap.
+  /// The face's outline; the glow follows it.
   final OutlinedBorder? shape;
 
-  /// How far inside [child]'s box the ringed face stands.
+  /// How far inside [child]'s box the lit face stands.
   final EdgeInsetsGeometry insets;
 
+  /// Whether the glow runs inward from the face's edge (a row, a cell) rather
+  /// than out round it.
+  final bool inside;
+
   @override
-  Widget build(BuildContext context) => Stack(
-    fit: StackFit.passthrough,
-    clipBehavior: Clip.none,
-    children: [
-      child,
-      Positioned.fill(
-        child: IgnorePointer(
-          child: FrostedFade(
-            opacity: shown ? 1 : 0,
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: layers(
-                context,
-                radius: radius,
-                shape: shape,
-                insets: insets,
+  Widget build(BuildContext context) {
+    final at = insets.resolve(Directionality.maybeOf(context));
+    return Stack(
+      fit: StackFit.passthrough,
+      clipBehavior: Clip.none,
+      children: [
+        // The frost brightens: a wash of light under the face, which glass
+        // blurs into its frost (an opaque face hides it). Under, so it never
+        // dims the face's words.
+        Positioned(
+          left: at.left,
+          top: at.top,
+          right: at.right,
+          bottom: at.bottom,
+          child: IgnorePointer(
+            child: FrostedFade(
+              opacity: shown ? 1 : 0,
+              child: DecoratedBox(
+                decoration: ShapeDecoration(
+                  color: frostedFocusWash(context.frostedTheme),
+                  shape: _outline(radius, shape),
+                ),
               ),
             ),
           ),
         ),
-      ),
-    ],
-  );
+        child,
+        Positioned.fill(
+          child: IgnorePointer(
+            child: FrostedFade(
+              opacity: shown ? 1 : 0,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: layers(
+                  context,
+                  radius: radius,
+                  shape: shape,
+                  insets: insets,
+                  inside: inside,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-  /// The ring's layers, for a [Stack] over a face whose corner is [radius]
-  /// (or [shape], which wins) standing [insets] inside the stack: the band
-  /// hugging the face and the line beyond it. Each is the face's outline
-  /// moved out by its distance (every corner r + d round the same centre, a
-  /// square corner square), so they run concentric. The band keeps the line
-  /// apart from a face filled in the ring's own ink.
+  // The face's outline, without its stroke.
+  static OutlinedBorder _outline(double radius, OutlinedBorder? shape) =>
+      shape?.copyWith(side: BorderSide.none) ??
+      RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(math.max(0, radius)),
+      );
+
+  /// The focus light's layers, for a [Stack] over a face whose corner is
+  /// [radius] (or [shape], which wins) standing [insets] inside the stack: the
+  /// glow round the face (or, [inside], within it) and the bright rim on its
+  /// edge.
   static List<Widget> layers(
     BuildContext context, {
     double radius = 0,
     OutlinedBorder? shape,
     EdgeInsetsGeometry insets = EdgeInsets.zero,
+    bool inside = false,
   }) {
     final inset = insets.resolve(Directionality.maybeOf(context));
     final t = context.frostedTheme;
-    const gap = FrostedChromeMetrics.focusRingGap;
-    const width = FrostedChromeMetrics.focusRingWidth;
-    // The source's ring round its act, on every focusable part: a band of
-    // white, then a line of the focus ink (frostedFocusInk: the accent at
-    // 70%, or where the accent is the words' ink, by day the cool blue and
-    // by night the pale ink): light, never a dark line round glass (the
-    // user, 11-17). A band of light alone read as the glass's own rim on a
-    // pale backdrop, and merged with the pale ink pill by night, so by night
-    // the band is the page's ground. Self-review round 1.
-    final light = t.isDark ? t.colorScheme.background : t.colorScheme.ringInner;
-    final line = frostedFocusInk(t);
-    OutlinedBorder outline(double out, [BorderSide side = BorderSide.none]) =>
-        FrostedStyleLayers.around(shape, out)?.copyWith(side: side) ??
-        RoundedRectangleBorder(
-          side: side,
-          borderRadius: BorderRadius.circular(radius > 0 ? radius + out : 0),
-        );
-    Widget at(double out, Widget child) => Positioned(
-      left: inset.left - out,
-      top: inset.top - out,
-      right: inset.right - out,
-      bottom: inset.bottom - out,
-      child: IgnorePointer(child: child),
-    );
+    final outline = _outline(radius, shape);
     return [
-      at(
-        gap,
-        DecoratedBox(
-          decoration: ShapeDecoration(
-            shape: outline(gap, BorderSide(color: light, width: gap)),
-          ),
-        ),
-      ),
-      at(
-        gap + width,
-        DecoratedBox(
-          decoration: ShapeDecoration(
-            shape: outline(gap + width, BorderSide(color: line, width: width)),
+      Positioned(
+        left: inset.left,
+        top: inset.top,
+        right: inset.right,
+        bottom: inset.bottom,
+        child: CustomPaint(
+          painter: FrostedFocusLight(
+            outline,
+            light: frostedFocusLight(t),
+            rim: t.isDark
+                ? t.colorScheme.textPrimary.withValues(alpha: .9)
+                : const Color(0xF2FFFFFF),
+            inside: inside,
           ),
         ),
       ),
@@ -398,6 +418,7 @@ class FrostedFocusRing extends StatelessWidget {
           insets,
           defaultValue: EdgeInsets.zero,
         ),
-      );
+      )
+      ..add(FlagProperty('inside', value: inside, ifTrue: 'inside'));
   }
 }

@@ -29,7 +29,8 @@ export 'package:ui_core/ui_core.dart' show DesignTreeController;
 /// (its chevron saying which way), a check at each row's start and one over
 /// them for the whole page, the chosen rows on the accent's wash, the page
 /// numbers under the table once there is more than a page. One Tab stop
-/// for the rows: the arrows walk them, Space selects, Shift extends, Return
+/// for the rows. Narrow tables scroll horizontally, and longer cells wrap.
+/// The arrows walk the rows, Space selects, Shift extends, and Return
 /// opens a row with [onActivate]. ui_core's [DesignDataTable] and
 /// [DesignTableController] are the behaviour.
 ///
@@ -80,7 +81,43 @@ class FrostedDataTable<R> extends StatelessWidget {
     // checks' column is at least the target wide, so a check stands in its
     // whole target (48 under a finger).
     final head0 = math.max(_head, FrostedBreakpoints.hitTargetOf(context));
-    final check = math.max(_check, FrostedBreakpoints.hitTargetOf(context));
+    // A check stands inset in its column where there is room; on a phone it
+    // gives up the inset (down to its bare target) before the columns give up
+    // theirs.
+    const checkInset = FrostedSpacing.s8;
+    final target = math.max(_check, FrostedBreakpoints.hitTargetOf(context));
+    final body = t.textTheme.titleMedium.fontSize ?? 16;
+    final scaledBody = MediaQuery.textScalerOf(context).scale(body);
+    // A column's words take about five of their ems. At the reader's own text
+    // size the table keeps to its width, as it always has; once larger text
+    // leaves its columns less than that, it scrolls sideways rather than
+    // breaking its words.
+    final words5 = columns.length * (5 * scaledBody + 2 * FrostedSpacing.s12);
+    final grown = scaledBody > body + .01;
+    Widget viewport(Widget child) => LayoutBuilder(
+      builder: (context, box) {
+        final full = target + 2 * checkInset;
+        if (!selectable) {
+          if (!grown || !box.hasBoundedWidth || box.maxWidth >= words5) {
+            return child;
+          }
+        } else if (!box.hasBoundedWidth) {
+          return _CheckColumn(width: full, child: child);
+        } else {
+          final room = box.maxWidth - words5;
+          if (!grown || room >= target) {
+            return _CheckColumn(width: room.clamp(target, full), child: child);
+          }
+        }
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: (selectable ? full : 0) + words5,
+            child: _CheckColumn(width: full, child: child),
+          ),
+        );
+      },
+    );
     Widget celled(DesignTableColumn<R> column, Widget child) => Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: FrostedSpacing.s12),
@@ -101,128 +138,19 @@ class FrostedDataTable<R> extends StatelessWidget {
           color: t.glass.fill,
           ring: t.glass.edge,
           clipChild: true,
-          child: Semantics(
-            label: label,
-            container: true,
-            child: DesignDataTable<R>(
-              controller: controller,
-              selectable: selectable,
-              onActivate: onActivate,
-              // The rule under the heads is painted over them, so it takes
-              // nothing from their height.
-              headerRowBuilder: (context, cells) => Container(
-                height: head0,
-                color: t.glass.wash,
-                foregroundDecoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: t.colorScheme.border),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    if (selectable)
-                      SizedBox(
-                        width: check,
-                        child: Center(
-                          child: FrostedCheckbox(
-                            value: switch (controller.pageSelection) {
-                              DesignSelection.none => false,
-                              DesignSelection.some => null,
-                              DesignSelection.all => true,
-                            },
-                            label: words.selectAll,
-                            onChanged: (_) => controller.togglePage(),
-                          ),
-                        ),
-                      ),
-                    for (final (i, cell) in cells.indexed)
-                      celled(columns[i], cell),
-                  ],
-                ),
-              ),
-              headerBuilder: (context, column, sort, states) {
-                final lit =
-                    states.contains(WidgetState.hovered) ||
-                    states.contains(WidgetState.pressed) ||
-                    sort != null;
-                final words = frostedCapCentred(
-                  Text(
-                    column.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: t.textTheme.labelSmall.semibold.c(
-                      lit
-                          ? t.colorScheme.textPrimary
-                          : t.colorScheme.textSecondary,
-                    ),
-                  ),
-                );
-                final head = !column.sortable
-                    ? words
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        spacing: FrostedSpacing.s4,
-                        children: [
-                          Flexible(child: words),
-                          Icon(
-                            switch (sort) {
-                              null => FrostedGlyphs.sort,
-                              DesignSortDirection.ascending =>
-                                FrostedGlyphs.chevronUp,
-                              DesignSortDirection.descending =>
-                                FrostedGlyphs.chevronDown,
-                            },
-                            size: 14,
-                            color: sort == null
-                                ? t.colorScheme.textTertiary
-                                : t.colorScheme.textPrimary,
-                          ),
-                        ],
-                      );
-                // A sortable head answers its whole cell, the header row
-                // as tall as the touch target.
-                return SizedBox(
+          child: viewport(
+            Semantics(
+              label: label,
+              container: true,
+              child: DesignDataTable<R>(
+                controller: controller,
+                selectable: selectable,
+                onActivate: onActivate,
+                // The rule under the heads is painted over them, so it takes
+                // nothing from their height.
+                headerRowBuilder: (context, cells) => Container(
                   height: head0,
-                  width: double.infinity,
-                  child: Align(
-                    alignment: column.numeric
-                        ? AlignmentDirectional.centerEnd
-                        : AlignmentDirectional.centerStart,
-                    child: frostedRingFor(states, head, radius: 4),
-                  ),
-                );
-              },
-              cellBuilder: (context, row, column) => DefaultTextStyle.merge(
-                style:
-                    (column.numeric
-                            ? t.textTheme.titleMedium.tabular
-                            : t.textTheme.titleMedium)
-                        .c(t.colorScheme.textPrimary),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                // One line in the body face: its capitals on the row's middle.
-                child: DesignCapCenter(
-                  capHeightFactor: frostedSansCap,
-                  child: cellBuilder(context, row, column),
-                ),
-              ),
-              rowBuilder: (context, row, cells) {
-                final lit =
-                    row.states.contains(WidgetState.hovered) ||
-                    row.states.contains(WidgetState.pressed);
-                // A row lighting under the pointer or being chosen eases.
-                final motion = FrostedMotion.of(context);
-                final face = AnimatedContainer(
-                  duration: motion.fast,
-                  curve: motion.curve,
-                  height: _row,
-                  decoration: BoxDecoration(
-                    color: row.selected
-                        ? t.colorScheme.accentSubtle
-                        : (lit ? t.glass.wash : null),
-                  ),
-                  // The rule drawn over the row, taking no room: the cells
-                  // keep the row's middle.
+                  color: t.glass.wash,
                   foregroundDecoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(color: t.colorScheme.border),
@@ -232,12 +160,20 @@ class FrostedDataTable<R> extends StatelessWidget {
                     children: [
                       if (selectable)
                         SizedBox(
-                          width: check,
-                          child: Center(
+                          width: _CheckColumn.of(context),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  (_CheckColumn.of(context) - target) / 2,
+                            ),
                             child: FrostedCheckbox(
-                              value: row.selected,
-                              label: words.selectRow,
-                              onChanged: (_) => row.toggle(),
+                              value: switch (controller.pageSelection) {
+                                DesignSelection.none => false,
+                                DesignSelection.some => null,
+                                DesignSelection.all => true,
+                              },
+                              label: words.selectAll,
+                              onChanged: (_) => controller.togglePage(),
                             ),
                           ),
                         ),
@@ -245,12 +181,124 @@ class FrostedDataTable<R> extends StatelessWidget {
                         celled(columns[i], cell),
                     ],
                   ),
-                );
-                return FrostedFocusRing(
-                  shown: row.states.contains(WidgetState.focused),
-                  child: face,
-                );
-              },
+                ),
+                headerBuilder: (context, column, sort, states) {
+                  final lit =
+                      states.contains(WidgetState.hovered) ||
+                      states.contains(WidgetState.pressed) ||
+                      sort != null;
+                  final words = frostedCapCentred(
+                    Text(
+                      column.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: t.textTheme.labelSmall.semibold.c(
+                        lit
+                            ? t.colorScheme.textPrimary
+                            : t.colorScheme.textSecondary,
+                      ),
+                    ),
+                  );
+                  final head = !column.sortable
+                      ? words
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          spacing: FrostedSpacing.s4,
+                          children: [
+                            Flexible(child: words),
+                            Icon(
+                              switch (sort) {
+                                null => FrostedGlyphs.sort,
+                                DesignSortDirection.ascending =>
+                                  FrostedGlyphs.chevronUp,
+                                DesignSortDirection.descending =>
+                                  FrostedGlyphs.chevronDown,
+                              },
+                              size: 14,
+                              color: sort == null
+                                  ? t.colorScheme.textTertiary
+                                  : t.colorScheme.textPrimary,
+                            ),
+                          ],
+                        );
+                  // A sortable head answers its whole cell, the header row
+                  // as tall as the touch target.
+                  return SizedBox(
+                    height: head0,
+                    width: double.infinity,
+                    child: Align(
+                      alignment: column.numeric
+                          ? AlignmentDirectional.centerEnd
+                          : AlignmentDirectional.centerStart,
+                      child: frostedRingFor(states, head, radius: 4),
+                    ),
+                  );
+                },
+                cellBuilder: (context, row, column) => DefaultTextStyle.merge(
+                  style:
+                      (column.numeric
+                              ? t.textTheme.titleMedium.tabular
+                              : t.textTheme.titleMedium)
+                          .c(t.colorScheme.textPrimary),
+                  // A longer cell can wrap while retaining the row’s middle.
+                  child: DesignCapCenter(
+                    capHeightFactor: frostedSansCap,
+                    child: cellBuilder(context, row, column),
+                  ),
+                ),
+                rowBuilder: (context, row, cells) {
+                  final lit =
+                      row.states.contains(WidgetState.hovered) ||
+                      row.states.contains(WidgetState.pressed);
+                  // A row lighting under the pointer or being chosen eases.
+                  final motion = FrostedMotion.of(context);
+                  final face = AnimatedContainer(
+                    duration: motion.fast,
+                    curve: motion.curve,
+                    constraints: const BoxConstraints(minHeight: _row),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: FrostedSpacing.s4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: row.selected
+                          ? t.colorScheme.accentSubtle
+                          : (lit ? t.glass.wash : null),
+                    ),
+                    // The rule drawn over the row, taking no room: the cells
+                    // keep the row's middle.
+                    foregroundDecoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: t.colorScheme.border),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        if (selectable)
+                          SizedBox(
+                            width: _CheckColumn.of(context),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal:
+                                    (_CheckColumn.of(context) - target) / 2,
+                              ),
+                              child: FrostedCheckbox(
+                                value: row.selected,
+                                label: words.selectRow,
+                                onChanged: (_) => row.toggle(),
+                              ),
+                            ),
+                          ),
+                        for (final (i, cell) in cells.indexed)
+                          celled(columns[i], cell),
+                      ],
+                    ),
+                  );
+                  return FrostedFocusRing(
+                    shown: row.states.contains(WidgetState.focused),
+                    child: face,
+                  );
+                },
+              ),
             ),
           ),
         );
@@ -444,4 +492,17 @@ class FrostedTreeView<T extends Object> extends StatelessWidget {
       ..add(ObjectFlagProperty<ValueChanged<T>>.has('onActivate', onActivate))
       ..add(StringProperty('label', label, defaultValue: null));
   }
+}
+
+/// The width of a data table's checks' column, as its room allows.
+class _CheckColumn extends InheritedWidget {
+  const _CheckColumn({required this.width, required super.child});
+
+  final double width;
+
+  static double of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_CheckColumn>()!.width;
+
+  @override
+  bool updateShouldNotify(_CheckColumn oldWidget) => width != oldWidget.width;
 }

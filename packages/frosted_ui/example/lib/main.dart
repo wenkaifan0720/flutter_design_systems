@@ -689,9 +689,16 @@ class _Overview extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 12,
         children: [
-          Text(
-            'Frosted',
-            style: t.textTheme.displayMedium.c(t.colorScheme.textPrimary),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                'Frosted',
+                maxLines: 1,
+                style: t.textTheme.displayMedium.c(t.colorScheme.textPrimary),
+              ),
+            ),
           ),
           Text(
             'A look made of glass. Every bar, card, field and sheet is a '

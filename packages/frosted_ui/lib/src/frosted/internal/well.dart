@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 
 import '../chrome_metrics.dart';
+import '../components/pressable/pressable.dart' show FrostedFocusRing;
 import '../theme.dart';
-import 'css_shadow.dart';
 import 'dim.dart';
 import 'face.dart';
 import 'styled.dart';
@@ -111,10 +111,12 @@ class FrostedWell extends StatelessWidget {
     //   box-shadow: inset 0 0 0 1px rgba(21,21,45,.08) }
     // A field is recessed glass: a step darker than what holds it, shaded
     // along its top inside edge.
-    // By day the well wears one even lit rim all round: holding focus it
-    // brightens and glows, and when wrong the rim warms toward the over hue
-    // over the over tint; never a dark line. By night its edge is the night
-    // glass's rim (the accent while it holds focus, the over ink when wrong).
+    // By day the well wears one even lit rim all round: holding focus the
+    // glass lights up as every part's does (FrostedFocusRing: its rim bright,
+    // a glow of the focus light round it, the frost brighter), and when wrong
+    // the rim warms toward the over hue over the over tint; never a dark
+    // line. By night its edge is the night glass's rim (the over ink when
+    // wrong), and holding focus it lights up the same way.
     final day = !t.isDark;
     final well = FrostedFace(
       material: s.fill == null ? FrostedMaterial.well : FrostedMaterial.paint,
@@ -138,33 +140,19 @@ class FrostedWell extends StatelessWidget {
           ? null
           : error
           ? frostedErrorEdge(t)
-          : s.edge ??
-                // Holding focus the well shows light, never a dark line: by
-                // day its edge takes the focus ink (frostedFocusInk: the
-                // accent at 70%, opal's cool blue) and it glows white
-                // (below); by night its edge takes the accent.
-                (focused
-                    ? (day ? frostedFocusInk(t) : t.colorScheme.accent)
-                    : day
-                    ? FrostedChromeMetrics.litEdge
-                    : t.controlEdge),
-      // A focused well glows white by day; by night it wears a ring of the
-      // focus ink 2 past its edge: its edge alone read as barely brighter
-      // than the light edge every well has by night (self-review round 2).
-      shadows: !focused || error
-          ? const <BoxShadow>[]
-          : day
-          ? frostedFocusGlow
-          : [
-              frostedShadow(
-                color: frostedFocusInk(t),
-                spread: FrostedChromeMetrics.focusRingWidth,
-              ),
-            ],
+          : s.edge ?? (day ? FrostedChromeMetrics.litEdge : t.controlEdge),
       padding: s.padding?.resolve(Directionality.of(context)) ?? padding,
       child: child,
     );
-    return FrostedFade(opacity: enabled ? 1 : .5, child: s.least(well));
+    // Holding focus, the glass lights up: never a dark line (the user,
+    // 11-17 and 11-18).
+    final lit = FrostedFocusRing(
+      shown: focused,
+      radius: FrostedStyleLayers.radiusOf(cut, 0, corner),
+      shape: cut,
+      child: well,
+    );
+    return FrostedFade(opacity: enabled ? 1 : .5, child: s.least(lit));
   }
 }
 

@@ -17,7 +17,7 @@ import '../../internal/dim.dart';
 import '../../internal/cap.dart';
 
 // The two faces a [FrostedButton] wears, one per constructor.
-enum _Face { ink, glass }
+enum _Face { ink, glass, danger }
 
 /// Whether [cut] draws a pill [height] tall: round ends, each corner at
 /// least half the height (the ink act's own outline; null is the look's).
@@ -68,6 +68,10 @@ enum FrostedButtonSize {
 /// ```dart
 /// FrostedButton.glass('See all', size: FrostedButtonSize.small, onPressed: seeAll)
 /// ```
+///
+/// ```dart
+/// FrostedButton.destructive('Delete task', icon: FrostedGlyphs.delete, onPressed: delete)
+/// ```
 class FrostedButton extends StatelessWidget {
   /// Creates the page's or the sheet's one act (`.btn--ink`): the word on
   /// the ink with a light along its top edge, standing in its own lift
@@ -100,6 +104,22 @@ class FrostedButton extends StatelessWidget {
     this.autofocus = false,
     super.key,
   }) : _face = _Face.glass;
+
+  /// Creates an act that destroys or cannot be undone (Delete, Remove):
+  /// glass tinted with the theme's danger hue, its word and glyph in a
+  /// danger ink that holds 4.5:1 on the tint, day and night.
+  const FrostedButton.destructive(
+    this.label, {
+    required this.onPressed,
+    this.icon,
+    this.expand = false,
+    this.semanticLabel,
+    this.size = FrostedButtonSize.regular,
+    this.style,
+    this.focusNode,
+    this.autofocus = false,
+    super.key,
+  }) : _face = _Face.danger;
 
   /// The word.
   final String label;
@@ -210,6 +230,14 @@ class FrostedButton extends StatelessWidget {
       return null;
     }
 
+    // Out of use, the ink act is faint glass, its word in the quiet ink at
+    // full strength: dimmed, the ink pill read as a grey smudge and took its
+    // white word under 3:1 (the user, 11-18).
+    final faint = _face == _Face.ink && !enabled;
+    // The destructive act's tint, over the page, and the danger ink that
+    // holds 4.5:1 on it.
+    final tint = t.colorScheme.dangerSubtle;
+    final dangerInk = frostedDangerInk(t, tint);
     Widget draw(Set<WidgetState> states) {
       final s = layers.at(states);
       final cut = cutOf(s);
@@ -217,10 +245,13 @@ class FrostedButton extends StatelessWidget {
       final radius = BorderRadius.circular(round);
       final ink =
           s.foreground ??
-          switch (_face) {
-            _Face.ink => t.colorScheme.onButton,
-            _Face.glass => t.colorScheme.textPrimary,
-          };
+          (faint
+              ? t.colorScheme.textSecondary
+              : switch (_face) {
+                  _Face.ink => t.colorScheme.onButton,
+                  _Face.glass => t.colorScheme.textPrimary,
+                  _Face.danger => dangerInk,
+                });
       final words = s.words(
         small
             ? t.textTheme.labelLarge
@@ -253,8 +284,9 @@ class FrostedButton extends StatelessWidget {
             child: frostedCapCentred(
               Text(
                 label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                maxLines: expand ? null : 1,
+                overflow: expand ? TextOverflow.visible : TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
                 style: words,
               ),
             ),
@@ -270,10 +302,49 @@ class FrostedButton extends StatelessWidget {
       // vanished on a light sheet and left the face 2 smaller than the ink
       // beside it. The glass reaches the box's edge; its rim lies inside.
       final (edge, edges) = s.edgeOf(null, FrostedStrokes.regular);
-      Widget face = SizedBox(
-        height: height,
+      Widget face = Container(
+        constraints: BoxConstraints(
+          minHeight: height,
+          maxHeight: expand ? double.infinity : height,
+        ),
         width: expand ? double.infinity : null,
         child: switch (_face) {
+          // Out of use: the glass a glass act out of use shows (its pane
+          // dimmed), the word over it at full strength. A pane at full
+          // strength was as bright as a glass act in use beside it, and read
+          // as one.
+          _Face.ink when faint => Stack(
+            fit: StackFit.passthrough,
+            children: [
+              Positioned.fill(
+                child: FrostedDim(
+                  off: true,
+                  child: FrostedFace(
+                    material: FrostedMaterial.pane,
+                    radius: radius,
+                    shape: cut,
+                    color: fill,
+                    wash: s.overlay,
+                    edge: edge,
+                    edges: edges,
+                  ),
+                ),
+              ),
+              content,
+            ],
+          ),
+          // Glass stained with the danger hue, its rim of light kept.
+          _Face.danger => FrostedFace(
+            material: FrostedMaterial.pane,
+            radius: radius,
+            shape: cut,
+            color: fill ?? tint,
+            wash: s.overlay,
+            edge: edge,
+            edges: edges,
+            sheen: t.glass.rim,
+            child: content,
+          ),
           _Face.ink => FrostedFace(
             material: FrostedMaterial.paint,
             radius: radius,
@@ -330,7 +401,9 @@ class FrostedButton extends StatelessWidget {
         },
       );
       face = s.least(face);
-      face = FrostedDim(off: !enabled, child: face);
+      // The faint glass is the ink act's own off state, drawn at full
+      // strength so its word stays readable.
+      face = FrostedDim(off: !enabled && !faint, child: face);
       return face;
     }
 
@@ -464,6 +537,24 @@ class _RenderSpill extends RenderShiftedBox {
     return r - math.sqrt(r * r - d * d);
   }
 
+  /// The room above and below in [width]: once the words wrap (large
+  /// text), one line's room from the face's top and foot, as a single line
+  /// stands centred in it, so the first and last lines keep off the face's
+  /// edge and clear of its round ends (they touched both at 200%). A line
+  /// that does not wrap is centred in the face as it always was.
+  double _rise(double width) {
+    final c = child;
+    if (c == null || !_faceHeight.isFinite || !width.isFinite) return 0;
+    final inner = math.max(0.0, width - 2 * _side(width));
+    final own = c.getMaxIntrinsicHeight(inner);
+    // Words that fit the face stand centred in it as they always did; only
+    // taller ones (wrapped at large text) are measured on one line.
+    if (own <= _faceHeight + 0.5) return 0;
+    final line = c.getMaxIntrinsicHeight(double.infinity);
+    if (own <= line + 0.5) return 0;
+    return math.max(0, (_faceHeight - line) / 2);
+  }
+
   /// The room either side in [width]: the whole inset while the content's
   /// own width fits beside it, less (to the [_floor]) as it does not; and
   /// the whole inset again once the word must narrow anyway, as CSS's
@@ -490,18 +581,27 @@ class _RenderSpill extends RenderShiftedBox {
 
   @override
   double computeMinIntrinsicHeight(double width) =>
-      child?.getMinIntrinsicHeight(math.max(0, width - 2 * _side(width))) ?? 0;
+      (child?.getMinIntrinsicHeight(math.max(0, width - 2 * _side(width))) ??
+          0) +
+      2 * _rise(width);
 
   @override
   double computeMaxIntrinsicHeight(double width) =>
-      child?.getMaxIntrinsicHeight(math.max(0, width - 2 * _side(width))) ?? 0;
+      (child?.getMaxIntrinsicHeight(math.max(0, width - 2 * _side(width))) ??
+          0) +
+      2 * _rise(width);
 
   @override
   Size computeDryLayout(covariant BoxConstraints constraints) {
     final side = _side(constraints.maxWidth);
-    final inner = constraints.deflate(EdgeInsets.symmetric(horizontal: side));
+    final rise = _rise(constraints.maxWidth);
+    final inner = constraints.deflate(
+      EdgeInsets.symmetric(horizontal: side, vertical: rise),
+    );
     final own = child?.getDryLayout(inner) ?? Size.zero;
-    return constraints.constrain(Size(own.width + 2 * side, own.height));
+    return constraints.constrain(
+      Size(own.width + 2 * side, own.height + 2 * rise),
+    );
   }
 
   @override
@@ -512,11 +612,16 @@ class _RenderSpill extends RenderShiftedBox {
       size = constraints.constrain(Size(2 * side, 0));
       return;
     }
+    final rise = _rise(constraints.maxWidth);
     c.layout(
-      constraints.deflate(EdgeInsets.symmetric(horizontal: side)),
+      constraints.deflate(
+        EdgeInsets.symmetric(horizontal: side, vertical: rise),
+      ),
       parentUsesSize: true,
     );
-    size = constraints.constrain(Size(c.size.width + 2 * side, c.size.height));
+    size = constraints.constrain(
+      Size(c.size.width + 2 * side, c.size.height + 2 * rise),
+    );
     (c.parentData! as BoxParentData).offset = Offset(
       (size.width - c.size.width) / 2,
       (size.height - c.size.height) / 2,

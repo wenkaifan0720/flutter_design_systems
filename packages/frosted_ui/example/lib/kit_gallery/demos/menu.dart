@@ -105,7 +105,7 @@ class _MonthState extends State<_Month> {
       // the button's box.
       child: Builder(
         builder: (anchor) => FrostedButton.glass(
-          month,
+          kitSay(month),
           size: FrostedButtonSize.small,
           icon: LucideIcons.chevronDown,
           onPressed: () async {

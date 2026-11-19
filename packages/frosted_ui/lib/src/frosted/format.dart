@@ -2,16 +2,8 @@
 /// screen prints, in the shapes the look writes them
 /// ("−$1,326.44", "Mon, Oct 26", "8:12 AM", "In 4 days").
 ///
-/// PURE AND DETERMINISTIC, no intl. A generated app renders inside
-/// walkthroughs and golden frames, and a locale-aware formatter makes the
-/// same record read differently on two machines, which turns a diff into a
-/// false failure. The vocabulary here is US English and the shapes are
-/// fixed, so a screen's text is a function of its data and nothing else.
-///
-/// Nothing here touches [DateTime.now]: the day words take the moment to
-/// measure against as an argument, because a formatter that reads the clock
-/// cannot be tested. Money is in dollars, to the cent: an amount is rounded
-/// to whole cents once, then printed from those.
+/// Amounts use US dollars and comma grouping. Relative dates use the
+/// reference day supplied by the caller.
 ///
 /// ```dart
 /// Text(FrostedFormat.money(-1326.44), style: t.textTheme.amount)
@@ -63,7 +55,7 @@ abstract final class FrostedFormat {
 
   /// An amount as a line of words prints it: "$6,248.30", "−$1,326.44",
   /// "+$3,412.50" with `sign: true`; `cents: false` rounds to whole dollars
-  /// (half to even, as the pilot's figures do): "$2,700".
+  /// (rounding a half dollar to the nearest even dollar): "$2,700".
   static String money(num amount, {bool cents = true, bool sign = false}) {
     final lead = _signOf(amount, sign);
     if (!cents) return '$lead\$${_grouped(wholeDollars(amount))}';

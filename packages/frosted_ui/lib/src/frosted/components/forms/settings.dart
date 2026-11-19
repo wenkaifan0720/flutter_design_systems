@@ -324,6 +324,14 @@ class FrostedValueRow extends StatelessWidget {
       value: value,
       role: FrostedPressRole.link,
       radius: FrostedCorners.r14,
+      // A row lights from inside its edge, its plate bleeding past the row
+      // into the group's inset as a list row's does: the light stays off the
+      // row's words (flush with its edge), its neighbours and the group's
+      // edge.
+      ringInsets: const EdgeInsets.symmetric(
+        horizontal: -FrostedChromeMetrics.rowMarkBleed,
+      ),
+      ringInside: true,
       child: row,
     );
   }
@@ -517,6 +525,11 @@ class FrostedFormRow extends StatelessWidget {
         value: value,
         role: FrostedPressRole.link,
         radius: FrostedCorners.r14,
+        // Lit from inside, as a settings row is.
+        ringInsets: const EdgeInsets.symmetric(
+          horizontal: -FrostedChromeMetrics.rowMarkBleed,
+        ),
+        ringInside: true,
         child: row,
       );
     }

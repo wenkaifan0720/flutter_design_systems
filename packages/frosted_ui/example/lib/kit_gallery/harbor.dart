@@ -433,6 +433,15 @@ class HarborActivity extends StatefulWidget {
 
 class _HarborActivityState extends State<HarborActivity> {
   var _show = _Show.all;
+  String _query = '';
+  final _splits = ValueNotifier(<HarborTransaction, int>{});
+
+  @override
+  void dispose() {
+    _splits.dispose();
+    super.dispose();
+  }
+
   HarborTransaction? _chosen = harborDays.first.rows.first;
 
   @override
@@ -445,12 +454,89 @@ class _HarborActivityState extends State<HarborActivity> {
     });
   }
 
-  bool _keeps(HarborTransaction tx) => switch (_show) {
-    _Show.all => true,
-    _Show.spending => !tx.isIncome,
-    _Show.income => tx.isIncome,
-    _Show.pending => tx.pending,
-  };
+  bool _keeps(HarborTransaction tx) {
+    final inFilter = switch (_show) {
+      _Show.all => true,
+      _Show.spending => !tx.isIncome,
+      _Show.income => tx.isIncome,
+      _Show.pending => tx.pending,
+    };
+    final query = _query.trim().toLowerCase();
+    return inFilter &&
+        (query.isEmpty ||
+            [
+              kitSay(tx.title),
+              kitSay(tx.category),
+              kitSay(tx.account),
+              kitSay(tx.pending ? 'Pending' : 'Settled'),
+              FrostedFormat.money(tx.amount),
+            ].any((word) => word.toLowerCase().contains(query)));
+  }
+
+  String _splitSummary(HarborTransaction tx, int people) {
+    final cents = (tx.amount.abs() * 100).round();
+    final each = cents ~/ people, remainder = cents % people;
+    final lower = FrostedFormat.money(each / 100);
+    if (remainder == 0) return '$people × $lower';
+    final upper = FrostedFormat.money((each + 1) / 100);
+    return '$remainder × $upper + ${people - remainder} × $lower';
+  }
+
+  Future<void> _editSplit(BuildContext context, HarborTransaction tx) async {
+    var people = _splits.value[tx] ?? 2;
+    final save = await FrostedDialog.show(
+      context,
+      title: kitSay('Split transaction'),
+      confirmLabel: kitSay('Save split'),
+      cancelLabel: kitSay('Cancel'),
+      content: StatefulBuilder(
+        builder: (context, change) => Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 12,
+          children: [
+            Text(
+              '${kitSay(tx.title)} · ${FrostedFormat.money(tx.amount.abs())}',
+            ),
+            FrostedNumberField(
+              label: kitSay('People'),
+              value: people,
+              min: 2,
+              max: 20,
+              step: 1,
+              unit: (_) => kitSay('people'),
+              onChanged: (v) => change(() => people = v),
+            ),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                _splitSummary(tx, people),
+                textDirection: TextDirection.ltr,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (mounted && save == true) _splits.value = {..._splits.value, tx: people};
+  }
+
+  Widget _detail(HarborTransaction tx) => ValueListenableBuilder(
+    valueListenable: _splits,
+    builder: (context, splits, child) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 12,
+      children: [
+        child!,
+        if (splits[tx] case final int people)
+          FrostedKeyValue(
+            label: kitSay('Split'),
+            value: _splitSummary(tx, people),
+          ),
+      ],
+    ),
+    child: HarborTransactionDetail(tx),
+  );
 
   FrostedHue _hue(FrostedThemeData t, String name) => switch (name) {
     'mint' => t.hues.mint,
@@ -490,12 +576,12 @@ class _HarborActivityState extends State<HarborActivity> {
     FrostedSheet.show<void>(
       context,
       title: kitSay(tx.title),
-      builder: (context) => [HarborTransactionDetail(tx)],
+      builder: (context) => [_detail(tx)],
       foot: (context) => [
         FrostedButton.glass(
           kitSay('Split'),
           icon: FrostedGlyphs.split,
-          onPressed: () {},
+          onPressed: () => _editSplit(context, tx),
         ),
         FrostedButton(
           kitSay('Done'),
@@ -514,9 +600,13 @@ class _HarborActivityState extends State<HarborActivity> {
     final days = [
       for (final day in harborDays)
         (label: day.label, rows: day.rows.where(_keeps).toList()),
-    ].where((day) => day.rows.isNotEmpty);
+    ].where((day) => day.rows.isNotEmpty).toList();
     final list = <Widget>[
-      FrostedSearchField(hint: kitSay('Search activity')),
+      FrostedSearchField(
+        hint: kitSay('Search activity'),
+        value: _query,
+        onChanged: (value) => setState(() => _query = value),
+      ),
       const SizedBox(height: 12),
       FrostedFilterChipGroup<_Show>(
         label: kitSay('Show'),
@@ -529,6 +619,11 @@ class _HarborActivityState extends State<HarborActivity> {
           FrostedFilterOption(_Show.pending, kitSay('Pending')),
         ],
       ),
+      if (days.isEmpty)
+        FrostedEmptyState(
+          title: kitSay('No matching transactions'),
+          body: kitSay('Try another merchant, category or account.'),
+        ),
       for (final day in days) ...[
         const SizedBox(height: 20),
         FrostedListSection(
@@ -552,7 +647,9 @@ class _HarborActivityState extends State<HarborActivity> {
         ),
       );
     }
-    final chosen = _chosen;
+    final chosen = _chosen != null && _keeps(_chosen!)
+        ? _chosen
+        : days.firstOrNull?.rows.first;
     return FrostedScaffold(
       topBar: bar,
       scroll: false,
@@ -597,7 +694,7 @@ class _HarborActivityState extends State<HarborActivity> {
                       spacing: 16,
                       children: [
                         FrostedCardHeader(kitSay(chosen.title)),
-                        HarborTransactionDetail(chosen),
+                        _detail(chosen),
                         Row(
                           spacing: 12,
                           children: [
@@ -606,14 +703,21 @@ class _HarborActivityState extends State<HarborActivity> {
                                 kitSay('Split'),
                                 icon: FrostedGlyphs.split,
                                 expand: true,
-                                onPressed: () {},
+                                onPressed: () => _editSplit(context, chosen),
                               ),
                             ),
                             Expanded(
                               child: FrostedButton.glass(
                                 kitSay('Get help'),
                                 expand: true,
-                                onPressed: () {},
+                                onPressed: () => FrostedDialog.show(
+                                  context,
+                                  title: kitSay('Transaction help'),
+                                  message: kitSay(
+                                    'Check the merchant, date and amount in this transaction before contacting your bank.',
+                                  ),
+                                  confirmLabel: kitSay('Done'),
+                                ),
                               ),
                             ),
                           ],
@@ -689,6 +793,28 @@ class _HarborSettingsState extends State<HarborSettings> {
   var _bills = true;
   var _weekly = false;
   var _faceId = true;
+  int _monthlyLimit = 2500;
+
+  Future<void> _editLimit() async {
+    var draft = _monthlyLimit;
+    final save = await FrostedDialog.show(
+      context,
+      title: kitSay('Monthly spending limit'),
+      confirmLabel: kitSay('Save limit'),
+      cancelLabel: kitSay('Cancel'),
+      content: StatefulBuilder(
+        builder: (context, change) => FrostedNumberField(
+          label: kitSay('Limit in dollars'),
+          value: draft,
+          min: 0,
+          step: 100,
+          money: true,
+          onChanged: (value) => change(() => draft = value),
+        ),
+      ),
+    );
+    if (mounted && save == true) setState(() => _monthlyLimit = draft);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -798,8 +924,8 @@ class _HarborSettingsState extends State<HarborSettings> {
                 children: [
                   FrostedValueRow(
                     title: kitSay('Monthly spending limit'),
-                    value: r'$2,500',
-                    onPressed: () {},
+                    value: FrostedFormat.money(_monthlyLimit, cents: false),
+                    onPressed: _editLimit,
                   ),
                 ],
               ),

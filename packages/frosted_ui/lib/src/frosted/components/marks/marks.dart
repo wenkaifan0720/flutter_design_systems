@@ -2,6 +2,7 @@ import 'dart:ui' show SemanticsValidationResult;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:ui_core/ui_core.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../glyphs.dart';
@@ -301,7 +302,7 @@ class FrostedDateBlock extends StatelessWidget {
                 ),
                 // `.date span`: 500 16/1 in the display face, -.01em.
                 Text(
-                  '${date.day}',
+                  DesignLocalizations.of(context).formatDecimal(date.day),
                   maxLines: 1,
                   textScaler: TextScaler.noScaling,
                   style: t.textTheme.titleLarge.medium

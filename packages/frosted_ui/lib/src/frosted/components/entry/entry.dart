@@ -15,6 +15,12 @@ import '../../localizations.dart';
 import '../../theme.dart';
 import '../forms/forms.dart';
 import '../icon-button/round_button.dart';
+import '../actions/actions.dart' show FrostedButtonGroup;
+import '../choices/choices.dart' show FrostedChoices, FrostedRadioGroup;
+import '../color_picker/color_picker.dart' show FrostedColorPicker;
+import '../controls/controls.dart'
+    show FrostedFilterChipGroup, FrostedIconPicker, FrostedSegmentedButton;
+import '../toggle/toggle.dart' show FrostedToggleGroup;
 import '../../internal/dim.dart';
 
 // ---------------------------------------------------------------------------
@@ -688,12 +694,14 @@ class FrostedInputOtp extends StatelessWidget {
 /// hears the control named by [label], "required" when [required], then
 /// the help or the error, and the error is announced as it appears. Use
 /// it round a control that has no label of its own (a slider, a switch, a
-/// set of chips or a switch row's group, the last two with
-/// [mergeSemantics] false); [FrostedTextField] and its kin carry theirs.
+/// set of chips, a segmented button, a switch row's group);
+/// [FrostedTextField] and its kin carry theirs. A single control takes the
+/// field's name as its own; a group keeps each control's node under the
+/// field's name, so a tap reaches the control it lands on.
 /// ui_core's [DesignField] is the behaviour.
 ///
 /// ```dart
-/// FrostedFormField(label: 'Notify me', helper: 'Pick at least one', mergeSemantics: false, child: Row(children: [chipA, chipB]))
+/// FrostedFormField(label: 'Notify me', helper: 'Pick at least one', child: Row(children: [chipA, chipB]))
 /// ```
 class FrostedFormField extends StatelessWidget {
   /// [child] labelled [label].
@@ -705,7 +713,7 @@ class FrostedFormField extends StatelessWidget {
     this.required = false,
     this.enabled = true,
     this.focusNode,
-    this.mergeSemantics = true,
+    this.mergeSemantics,
     super.key,
   });
 
@@ -713,10 +721,53 @@ class FrostedFormField extends StatelessWidget {
   final Widget child;
 
   /// Whether [child] is one control whose node takes the field's name and
-  /// hint (a slider, a switch); false for a group of controls (a set of
-  /// chips, a switch row's group), each keeping its own node, the field's
-  /// name and hint on the group round them.
-  final bool mergeSemantics;
+  /// hint (a slider, a switch), or a group of controls (a set of chips, a
+  /// segmented button, radios, a stepper, a switch row's group), each keeping
+  /// its own node with the field's name and hint on the group round them.
+  /// Null decides by [child]: one of the look's groups, or a row, column or
+  /// wrap of controls (through an [Align], [Padding], [SizedBox] or
+  /// [ConstrainedBox]), is a group. Merged into one node, a group's controls
+  /// gave every tap through semantics (a screen reader's, a browser's with
+  /// semantics on) to the first of them. A group that names itself in the
+  /// label's words (a segmented button labelled as its field) is heard once:
+  /// the field adds no name of its own.
+  final bool? mergeSemantics;
+
+  static bool _isGroup(Widget w) => switch (w) {
+    FrostedSegmentedButton() ||
+    FrostedRadioGroup() ||
+    FrostedChoices() ||
+    FrostedToggleGroup() ||
+    FrostedButtonGroup() ||
+    FrostedFilterChipGroup() ||
+    FrostedNumberField() ||
+    FrostedColorPicker() ||
+    FrostedIconPicker() ||
+    Flex() ||
+    Wrap() => true,
+    Align(:final child?) ||
+    Padding(:final child?) ||
+    SizedBox(:final child?) ||
+    ConstrainedBox(:final child?) => _isGroup(child),
+    _ => false,
+  };
+
+  // The name a group gives its own node, seen through the same wrappers.
+  static String? _ownName(Widget w) => switch (w) {
+    FrostedSegmentedButton(:final label) => label,
+    FrostedRadioGroup(:final label) => label,
+    FrostedNumberField(:final label) => label,
+    FrostedChoices(:final label) => label,
+    FrostedToggleGroup(:final label) => label,
+    FrostedButtonGroup(:final label) => label,
+    FrostedFilterChipGroup(:final label) => label,
+    FrostedIconPicker(:final label) => label,
+    Align(:final child?) ||
+    Padding(:final child?) ||
+    SizedBox(:final child?) ||
+    ConstrainedBox(:final child?) => _ownName(child),
+    _ => null,
+  };
 
   /// The control's name, over it.
   final String? label;
@@ -739,17 +790,26 @@ class FrostedFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.frostedTheme;
+    final merge = mergeSemantics ?? !_isGroup(child);
+    // A group that already says the label's words on its own node: the
+    // field draws the label but does not say it, so it is read once, not
+    // "Priority, Priority" (ui_core 0.3.2's rule, which applies when a field
+    // decides for itself).
+    final own = merge ? null : _ownName(child)?.trim().toLowerCase();
+    final heard = own != null && own == label?.trim().toLowerCase();
     return DesignField(
-      labelText: label,
+      labelText: heard ? null : label,
       helperText: helper,
       errorText: error,
       required: required,
       enabled: enabled,
       focusNode: focusNode,
-      mergeSemantics: mergeSemantics,
+      mergeSemantics: merge,
       requiredHint: DesignLocalizations.of(context).requiredHint,
       builder: (context, parts) {
-        final head = parts.label;
+        final head =
+            parts.label ??
+            (heard ? ExcludeSemantics(child: Text(label!)) : null);
         final hint = parts.error ?? parts.helper;
         final column = Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -797,6 +857,7 @@ class FrostedFormField extends StatelessWidget {
         FlagProperty(
           'mergeSemantics',
           value: mergeSemantics,
+          ifTrue: 'mergeSemantics: true',
           ifFalse: 'mergeSemantics: false',
         ),
       )

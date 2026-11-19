@@ -39,6 +39,140 @@ Color frostedFocusInk(FrostedThemeData t) {
   return t.colorScheme.cold.withValues(alpha: ring.a);
 }
 
+/// The keyboard focus's light ([FrostedFocusLight]): the focus ink's hue
+/// made luminous and clear. By day a saturated tone of it, as light as it can
+/// be and still stand 3:1 off the darkest of the theme's dawn (its ground and
+/// its washes; on opal's a vivid blue, never slate: opal's near-black ink
+/// falls back to the cool blue); by night a pale tone of it.
+Color frostedFocusLight(FrostedThemeData t) {
+  final ink = HSLColor.fromColor(frostedFocusInk(t).withValues(alpha: 1));
+  final hue = ink.withSaturation(
+    t.isDark ? math.min(ink.saturation, .9) : math.max(ink.saturation, .8),
+  );
+  final want = t.isDark ? .55 : (_darkestDawn(t) + .05) / 3.6 - .05;
+  // Luminance rises with lightness: the lightest tone at most [want] by day,
+  // the darkest at least [want] by night.
+  var lo = 0.0, hi = 1.0;
+  for (var i = 0; i < 24; i++) {
+    final mid = (lo + hi) / 2;
+    if (hue.withLightness(mid).toColor().computeLuminance() < want) {
+      lo = mid;
+    } else {
+      hi = mid;
+    }
+  }
+  return hue.withLightness(t.isDark ? hi : lo).toColor();
+}
+
+// The luminance of the darkest place on the theme's dawn: its ground, or a
+// wash of its light over it at its strongest.
+double _darkestDawn(FrostedThemeData t) {
+  final ground = t.colorScheme.background.withValues(alpha: 1);
+  final l = t.lights;
+  var least = ground.computeLuminance();
+  for (final wash in [l.lilac, l.rose, l.peach]) {
+    final at = wash.withValues(alpha: (wash.a * l.strength).clamp(0, 1));
+    least = math.min(least, Color.alphaBlend(at, ground).computeLuminance());
+  }
+  return least;
+}
+
+/// The ink of a destructive act's word over its [tint] (the danger hue's
+/// subtle share, over the page's ground): the theme's danger hue, moved
+/// toward the words' ink until it holds 4.5:1 on the tint, day and night.
+Color frostedDangerInk(FrostedThemeData t, Color tint) {
+  final ground = Color.alphaBlend(
+    tint,
+    t.colorScheme.background.withValues(alpha: 1),
+  );
+  final hue = t.colorScheme.danger.withValues(alpha: 1);
+  final words = t.colorScheme.textPrimary.withValues(alpha: 1);
+  for (var k = 0.0; k <= 1; k += .05) {
+    final ink = Color.lerp(hue, words, k)!;
+    if (FrostedThemeData.contrast(ink, ground) >= 4.6) return ink;
+  }
+  return words;
+}
+
+/// The frost's brightening under a focused glass face: white by day, the
+/// pale ink faintly by night.
+Color frostedFocusWash(FrostedThemeData t) => t.isDark
+    ? t.colorScheme.textPrimary.withValues(alpha: .10)
+    : const Color(0x59FFFFFF);
+
+/// The glass lit by the keyboard's focus, over a face [outline] filling the
+/// paint's box: a bright core of [light] hugging the face's edge, a soft glow
+/// of it fading out beyond (or, [inside], inward from the edge, kept within
+/// the face), and a [rim] of light along the edge itself.
+class FrostedFocusLight extends CustomPainter {
+  /// Lights [outline]'s edge.
+  const FrostedFocusLight(
+    this.outline, {
+    required this.light,
+    required this.rim,
+    this.inside = false,
+  });
+
+  /// The face's outline.
+  final ShapeBorder outline;
+
+  /// The glow's light.
+  final Color light;
+
+  /// The rim's light.
+  final Color rim;
+
+  /// Whether the glow runs inward, within the face.
+  final bool inside;
+
+  /// How far the bright core reaches from the edge.
+  static const double core = 4;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final face = Offset.zero & size;
+    if (face.isEmpty) return;
+    final edge = outline.getOuterPath(face);
+    canvas.save();
+    canvas.clipPath(
+      inside
+          ? edge
+          : Path.combine(
+              PathOperation.difference,
+              Path()..addRect(face.inflate(48)),
+              edge,
+            ),
+    );
+    Paint band(double width, double blur, double alpha) => Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width
+      ..color = light.withValues(alpha: light.a * alpha)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur);
+    // The glow, fading out to about 10 from the edge.
+    canvas.drawPath(edge, band(16, 5, .45));
+    // Its bright core along the edge; within a face, a little deeper, as
+    // its rim takes less of it.
+    canvas.drawPath(edge, band((inside ? core + 1 : core) * 2, 1.4, 1));
+    canvas.restore();
+    // The rim of the glass catching the light.
+    final rimWidth = inside ? 1.0 : 1.5;
+    canvas.drawPath(
+      outline.getOuterPath(face.deflate(rimWidth / 2)),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = rimWidth
+        ..color = rim,
+    );
+  }
+
+  @override
+  bool shouldRepaint(FrostedFocusLight old) =>
+      old.outline != outline ||
+      old.light != light ||
+      old.rim != rim ||
+      old.inside != inside;
+}
+
 /// A field holding focus by day: the light its rim gives off, a soft
 /// white glow round the well. White, not the focus ink: a tinted glow read
 /// as a grey shadow on the dawn backdrop.
