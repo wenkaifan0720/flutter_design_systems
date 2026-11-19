@@ -109,6 +109,7 @@ class TermGrid with Diagnosticable {
   }
 
   static bool _isFormat(int rune) =>
+      rune == 0x061C ||
       (rune >= 0x200B && rune <= 0x200F) ||
       (rune >= 0x202A && rune <= 0x202E) ||
       (rune >= 0x2060 && rune <= 0x2069) ||

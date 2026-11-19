@@ -247,6 +247,11 @@ English defaults, they follow the locale too. For another language, extend
 `DefaultTermLocalizations` and add a delegate for it to
 `localizationsDelegates`.
 
+Figures follow the locale as well, through `DesignLocalizations`: dates,
+times, the number field and the charts (a bar's value, a chart's scale and
+readout, a sparkline's reading) write the reader's digits and separators,
+Arabic-Indic digits in Arabic and `2,5` in German.
+
 ## Fonts
 
 JetBrains Mono (SIL Open Font License 1.1) for the words, and Liberation

@@ -1,3 +1,13 @@
+## 0.2.4
+
+- Charts write their figures in the reader's digits and separators, as the
+  number field writes its value: a bar's value, a line or area chart's
+  scale and readout, the points a screen reader hears, and a sparkline's
+  reading (Arabic's `٢٫٥`, German's `2,5`). A figure of 1000 or more is
+  grouped as the number field groups it (`1,482`).
+- `TermGrid.widthOf` counts Arabic's letter mark (U+061C) as no cell, as it
+  counts the other direction marks.
+
 ## 0.2.3
 
 - A pressed tab tints its whole cell and leaves its words whole, as a pressed

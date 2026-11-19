@@ -16,10 +16,13 @@ import '../style.dart';
 import '../theme.dart';
 import '../localizations.dart';
 
-String _num(double v) {
-  if (v == v.roundToDouble()) return v.toInt().toString();
-  return v.abs() >= 10 ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
-}
+/// [v] as a chart writes it, in the reader's digits and separators as the
+/// number field writes its value: whole where it is whole or ten and over,
+/// else to a tenth ("2.5", "1,482"; Arabic's "٢٫٥", German's "2,5").
+String _num(DesignLocalizations l, double v) => l.formatDecimal(
+  v,
+  fractionDigits: v == v.roundToDouble() || v.abs() >= 10 ? 0 : 1,
+);
 
 ({double min, double max}) _range(
   Iterable<double> values, {
@@ -85,13 +88,14 @@ class TermSparkline extends StatelessWidget {
     final n = cols ?? values.length;
     final r = _range(values, min: 0);
     final words = TermLocalizations.of(context);
+    final l = DesignLocalizations.of(context);
     final said = values.isEmpty
         ? words.noValuesLabel
         : words.sparklineLabel(
-            _num(values.first),
-            _num(values.last),
-            _num(values.reduce(math.min)),
-            _num(values.reduce(math.max)),
+            _num(l, values.first),
+            _num(l, values.last),
+            _num(l, values.reduce(math.min)),
+            _num(l, values.reduce(math.max)),
           );
     return Semantics(
       label: [?semanticLabel, said].join(', '),
@@ -205,14 +209,14 @@ class TermBarChart extends StatelessWidget {
     final grid = context.termGrid;
     final own = TermStyleOf([style, theme.chartStyle], const {});
     final top = max ?? _range(bars.map((b) => b.$2), min: 0).max;
+    final l = DesignLocalizations.of(context);
+    String figure(double v) =>
+        unit == null ? _num(l, v) : '${_num(l, v)} $unit';
     var labelCols = 0;
     var valueCols = 0;
-    for (final (l, v) in bars) {
-      labelCols = math.max(labelCols, l.characters.length);
-      valueCols = math.max(
-        valueCols,
-        _num(v).length + (unit == null ? 0 : unit!.length + 1),
-      );
+    for (final (label, v) in bars) {
+      labelCols = math.max(labelCols, label.characters.length);
+      valueCols = math.max(valueCols, grid.colsIn(grid.widthOf(figure(v))));
     }
     return Semantics(
       container: true,
@@ -222,9 +226,9 @@ class TermBarChart extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          for (final (l, v) in bars)
+          for (final (label, v) in bars)
             Semantics(
-              label: '$l, ${_num(v)}${unit == null ? '' : ' $unit'}',
+              label: '$label, ${figure(v)}',
               excludeSemantics: true,
               child: SizedBox(
                 height: grid.lineHeight,
@@ -232,7 +236,7 @@ class TermBarChart extends StatelessWidget {
                   children: [
                     SizedBox(
                       width: grid.cols(labelCols + 2),
-                      child: Text(l, style: theme.dimStyle),
+                      child: Text(label, style: theme.dimStyle),
                     ),
                     Expanded(
                       child: LayoutBuilder(
@@ -254,7 +258,7 @@ class TermBarChart extends StatelessWidget {
                     SizedBox(
                       width: grid.cols(valueCols + 1),
                       child: Text(
-                        '${_num(v)}${unit == null ? '' : ' $unit'}',
+                        figure(v),
                         textAlign: TextAlign.end,
                         style: theme.textStyle,
                       ),
@@ -383,7 +387,9 @@ class TermLineChart extends StatelessWidget {
       min: min ?? (fill ? 0 : null),
       max: max,
     );
-    final axisCols = math.max(_num(r0.max).length, _num(r0.min).length) + 1;
+    final l = DesignLocalizations.of(context);
+    int cells(double v) => grid.colsIn(grid.widthOf(_num(l, v)));
+    final axisCols = math.max(cells(r0.max), cells(r0.min)) + 1;
     final axisWidth = grid.cols(axisCols);
     final plot = SizedBox(
       height: grid.lines(lines),
@@ -410,8 +416,8 @@ class TermLineChart extends StatelessWidget {
                     semanticLabel ?? series.map((s) => s.label).join(', '),
                 yIncludesZero: fill,
                 // The points by their place, from 1.
-                formatX: (x) => '${x.round() + 1}',
-                formatY: _num,
+                formatX: (x) => l.formatDecimal(x.round() + 1),
+                formatY: (y) => _num(l, y),
                 // ui_core's x runs between the first and last dot columns'
                 // middles, a quarter cell in from the plot's sides.
                 padding: EdgeInsets.only(
@@ -438,7 +444,7 @@ class TermLineChart extends StatelessWidget {
                     cell = (at / cw).floor().clamp(0, math.max(0, cols - 1));
                     final v = drawn[active.series][active.index];
                     readout =
-                        '${series.length > 1 ? '${series[active.series].label} ' : ''}${_num(v)}';
+                        '${series.length > 1 ? '${series[active.series].label} ' : ''}${_num(l, v)}';
                   }
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -463,11 +469,11 @@ class TermLineChart extends StatelessWidget {
                                 children: [
                                   Padding(
                                     padding: EdgeInsets.only(right: cw),
-                                    child: Text(_num(r.max), style: scale),
+                                    child: Text(_num(l, r.max), style: scale),
                                   ),
                                   Padding(
                                     padding: EdgeInsets.only(right: cw),
-                                    child: Text(_num(r.min), style: scale),
+                                    child: Text(_num(l, r.min), style: scale),
                                   ),
                                 ],
                               ),

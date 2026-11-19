@@ -118,7 +118,7 @@ const _words = <String, Map<String, String>>{
     'typed': 'اكتب atlas-api للتأكيد',
     'keys': 'y نعم · n لا · esc',
     'cancel': 'esc إلغاء',
-    'sparkline': 'من 3 إلى 9، الأدنى 3، الأعلى 9',
+    'sparkline': 'من ٣ إلى ٩، الأدنى ٣، الأعلى ٩',
     'no values': 'لا قيم',
     'red': 'أحمر',
     'bright white': 'أبيض فاتح',
