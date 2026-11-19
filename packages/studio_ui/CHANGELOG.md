@@ -1,3 +1,17 @@
+## 0.1.2
+
+- A stepper's keys stand as tall as its readout at every text size (44 px keys beside a 48 px readout at 200% before), both growing with the figures, and the readout keeps the row's height in a taller box instead of stretching to fill it.
+- Every part shows keyboard focus as lit studio gear does: its own edge lights amber, 3 px hugging its outline with no gap, and a soft amber glow spills round it, in place of a ring drawn apart from it. Keys in a bank (a selector, a toolbar, the key bank) light just inside their own edge; a tab lights round its words; the graphite key's light is deepened by day to read over its shadow. `StudioMetrics.focusWidth` is the lit edge's width (3); `focusGap` is deprecated. `paintStudioFocusLight` paints the same light for a part that paints its own face. A text field's window lights the same edge while it has the typing, however it got it, as well as its rim.
+- A date field's calendar matches its field's width up to a month's comfortable width (seven days at a key's widest slot, about 390 px); under a wider field it keeps that width from the field's leading edge.
+- A select and a combobox show one indicator at their end: Studio's pair of wedges, up and down.
+- A select grows with the reader's text size, as a text field does, so its words are never cut at 200%.
+- On a wide screen the app's name at the head of the side panel sits on the line of the page title beside it, in a band as tall as the app bar, and the panel's keys start under that band.
+- By day a readout is pale glass lit amber from behind, as a backlit LCD is, under dark figures; by night it stays dark glass under glowing figures. `StudioColors.litReadout`, `readoutLit`, `readoutDim` and `readoutGlow` give a custom readout the same light. A brand's figures are kept at 4.5:1 on the glass in both rooms, and its dim trace at 3:1.
+- A dialog's actions stand in one row while their labels fit. When they do not, they stack full width at one height, the main action first and a quiet Cancel last, instead of falling into uneven rows at the trailing edge.
+- The figures a part sets itself are in the reader's digits and separators (Arabic-Indic in Arabic; a chart's scale reads 1,500 in English), as a calendar's heading is: a calendar's days, a time drum's hours and minutes, a stepper's count, a badge's count, a pager's figures, a file's upload percentage, and a chart's scale and ring total. A stepper's `format` still sets its own words.
+- `StudioCheckRow`: a checkbox and its words as one target and one spoken control, with an optional note under the words.
+- A form field holding a group of controls (a row, column or wrap of them, a segmented choice, a stepper, a toggle bank, a range fader, a tag input, a time picker's drums) keeps each control's own node and tap, and its label names the group. Before, with semantics on (a screen reader, or a browser that turned them on), a tap on any of them went to the first. `StudioFormField.mergeSemantics` is now null by default and decides by the child; true and false still force it.
+
 ## 0.1.1
 
 - Recorder transport and confirmation buttons show the entire destructive action at large text sizes.

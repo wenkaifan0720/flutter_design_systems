@@ -114,7 +114,7 @@ class _StudioProgressBarState extends State<StudioProgressBar>
                     segments: widget.segments,
                     value: value,
                     sweep: _sweep.value,
-                    lit: widget.color ?? c.indicator,
+                    lit: widget.color ?? c.readoutLit,
                     off: c.lampOff.withValues(alpha: 0.35),
                     rtl: Directionality.of(context) == TextDirection.rtl,
                   ),
@@ -535,7 +535,9 @@ class StudioStatusView extends StatelessWidget {
                             data: IconThemeData(
                               size: StudioIconSizes.huge,
                               color: error
-                                  ? (c.brightness == Brightness.dark
+                                  ? (c.litReadout
+                                        ? c.dangerLegend
+                                        : c.brightness == Brightness.dark
                                         ? c.danger
                                         : Color.lerp(
                                             c.danger,

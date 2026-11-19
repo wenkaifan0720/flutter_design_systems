@@ -328,6 +328,14 @@ final Map<String, DocExample> _examples = {
       semanticLabel: 'Explicit',
     );
   },
+  'StudioCheckRow': (context) {
+    var done = false;
+    return StudioCheckRow(
+      label: 'Done',
+      value: done,
+      onChanged: (v) => setState(() => done = v),
+    );
+  },
   'StudioRadio': (context) {
     String? format = 'mp3';
     return StudioRadio<String>(

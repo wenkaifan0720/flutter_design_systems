@@ -66,6 +66,10 @@ class _Faceplate extends StatelessWidget {
   }
 }
 
+// An app bar's height in [theme]: a control with room above and below.
+double _barHeight(StudioThemeData theme) =>
+    theme.controlHeight + 2 * StudioSpacing.small + 4;
+
 /// The top bar: a faceplate across the screen, the page's title printed on
 /// it, a back key at its start on a pushed page (a close key in a sheet),
 /// the page's actions as keys at its end. A [bottom] (a [StudioTabBar])
@@ -142,9 +146,7 @@ class StudioAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final layered = DesignStyleOf([style, theme.appBarStyle], const {});
-    final height =
-        layered.minimumSize?.height ??
-        theme.controlHeight + 2 * StudioSpacing.small + 4;
+    final height = layered.minimumSize?.height ?? _barHeight(theme);
     final margin = StudioSpacing.pageMargin(MediaQuery.sizeOf(context).width);
     final lead =
         leading ?? (automaticallyImplyLeading ? autoLeading(context) : null);
@@ -681,26 +683,37 @@ class StudioSideNavigation extends StatelessWidget {
         child: SafeArea(
           right: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               StudioSpacing.medium,
-              StudioSpacing.large,
+              header == null ? StudioSpacing.large : 0,
               StudioSpacing.medium,
               StudioSpacing.medium,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // The header stands in a band as tall as an app bar, so the
+                // app's name sits on the line of the page title beside it.
                 if (header != null)
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: StudioSpacing.medium,
-                      bottom: StudioSpacing.large,
-                    ),
-                    child: DefaultTextStyle.merge(
-                      style: theme.textTheme.title.copyWith(color: c.legend),
-                      child: header!,
+                  ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: _barHeight(theme)),
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        start: StudioSpacing.medium,
+                      ),
+                      child: Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        widthFactor: 1,
+                        child: DefaultTextStyle.merge(
+                          style: theme.textTheme.title.copyWith(
+                            color: c.legend,
+                          ),
+                          child: header!,
+                        ),
+                      ),
                     ),
                   ),
+                if (header != null) const SizedBox(height: StudioSpacing.small),
                 Semantics(
                   container: true,
                   explicitChildNodes: true,
@@ -1027,6 +1040,7 @@ class _StudioTabBarState extends State<StudioTabBar>
                             states.contains(WidgetState.focused)
                                 ? c.focusRing
                                 : null,
+                            StudioLight.of(context),
                           ),
                           child: TweenAnimationBuilder<Color?>(
                             tween: ColorTween(end: ink),
@@ -1073,38 +1087,43 @@ class _StudioTabBarState extends State<StudioTabBar>
   }
 }
 
-/// A focus ring drawn round a legend's words, outside their box, so the
-/// words stand where the layout puts them.
+/// Studio's focus light round a legend's words, outside their box, so the
+/// words stand where the layout puts them: the lit edge and its amber glow
+/// as a key's, round the legend's plate.
 class _RingPainter extends CustomPainter {
-  _RingPainter(this.color);
+  _RingPainter(this.color, this.light);
 
-  /// How far the ring stands out from the words.
+  /// How far the lit edge stands out from the words, its outer side.
   static const reach = Offset(StudioSpacing.tight, StudioSpacing.hair);
 
   final Color? color;
+  final StudioLight light;
 
   @override
   void paint(Canvas canvas, Size size) {
     final ring = color;
     if (ring == null) return;
     const w = StudioMetrics.focusWidth;
-    final box = Rect.fromLTRB(
-      -reach.dx + w / 2,
-      -reach.dy + w / 2,
-      size.width + reach.dx - w / 2,
-      size.height + reach.dy - w / 2,
+    final plate = Rect.fromLTRB(
+      -reach.dx + w,
+      -reach.dy + w,
+      size.width + reach.dx - w,
+      size.height + reach.dy - w,
     );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(box, const Radius.circular(StudioRadii.small)),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = w
-        ..color = ring,
+    paintStudioFocusLight(
+      canvas,
+      RRect.fromRectAndRadius(
+        plate,
+        const Radius.circular(StudioRadii.small - w),
+      ),
+      ring,
+      light,
     );
   }
 
   @override
-  bool shouldRepaint(_RingPainter old) => old.color != color;
+  bool shouldRepaint(_RingPainter old) =>
+      old.color != color || old.light != light;
 }
 
 class _TabLightPainter extends CustomPainter {

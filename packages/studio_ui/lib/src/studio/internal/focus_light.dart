@@ -9,7 +9,7 @@ import 'package:ui_core/ui_core.dart';
 import '../theme.dart';
 
 /// [child], a face with [radius] corners, lit from behind while [edge]
-/// shows: the light comes out of the gap round the face, 2.5 px of [edge]
+/// shows: the light comes out of the gap round the face, 3 px of [edge]
 /// hugging its outline with no gap (3:1 and more against what is round the
 /// part, over more than a 2 px perimeter, by day and by night), and a soft
 /// amber glow beyond it. The face itself and its words are untouched.
@@ -104,7 +104,7 @@ class _StudioFocusLightState extends State<StudioFocusLight>
 }
 
 // The lit band's width, all of it outside the face.
-const double _band = 2.5;
+const double _band = StudioMetrics.focusWidth;
 
 RRect _face(Size size, double radius, double sink) => RRect.fromRectAndRadius(
   (Offset.zero & size).shift(Offset(0, sink)),

@@ -4,6 +4,7 @@
 library;
 
 import 'dart:async' show scheduleMicrotask;
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'internal/list_keys.dart';
+import 'internal/stepper_glyph.dart';
 import 'surface.dart';
 import 'text_field.dart';
 import 'theme.dart';
@@ -138,12 +140,15 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
     final c = theme.colors;
     final enabled = onChanged != null;
     final chosen = items.where((i) => i.value == value).firstOrNull;
-    final height =
-        DesignStyleOf([
-          style,
-          theme.selectStyle,
-        ], const {}).minimumSize?.height ??
-        theme.controlHeight;
+    // As tall as a text field: the control height, or the chosen line at
+    // the reader's text size where that is taller.
+    final body = theme.textTheme.body;
+    final height = math.max(
+      DesignStyleOf([style, theme.selectStyle], const {}).minimumSize?.height ??
+          theme.controlHeight,
+      MediaQuery.textScalerOf(context).scale(body.fontSize ?? 16) *
+          (body.height ?? 1.5),
+    );
 
     Widget window(DesignOverlayAnchor? anchor) {
       final open = anchor?.isOpen ?? false;
@@ -236,7 +241,7 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
                   SizedBox(
                     width: height,
                     child: Center(
-                      child: _Stepper(
+                      child: StudioStepperGlyph(
                         color: !enabled
                             ? c.disabled
                             : open
@@ -296,58 +301,6 @@ class _StudioSelectState<T> extends State<StudioSelect<T>> {
       ],
     );
   }
-}
-
-// The stepper glyph: a small pair of wedges, up and down.
-class _Stepper extends StatelessWidget {
-  const _Stepper({required this.color});
-
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) => TweenAnimationBuilder<Color?>(
-    tween: ColorTween(end: color),
-    duration: MediaQuery.maybeDisableAnimationsOf(context) ?? false
-        ? Duration.zero
-        : const Duration(milliseconds: 160),
-    builder: (context, color, _) => CustomPaint(
-      size: const Size(10, 14),
-      painter: _StepperPainter(color ?? this.color),
-    ),
-  );
-}
-
-class _StepperPainter extends CustomPainter {
-  _StepperPainter(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final paint = Paint()..color = color;
-    canvas
-      ..drawPath(
-        Path()
-          ..moveTo(0, h * 0.42)
-          ..lineTo(w / 2, 0)
-          ..lineTo(w, h * 0.42)
-          ..close(),
-        paint,
-      )
-      ..drawPath(
-        Path()
-          ..moveTo(0, h * 0.58)
-          ..lineTo(w / 2, h)
-          ..lineTo(w, h * 0.58)
-          ..close(),
-        paint,
-      );
-  }
-
-  @override
-  bool shouldRepaint(_StepperPainter old) => old.color != color;
 }
 
 /// One row of a [StudioMenuList].

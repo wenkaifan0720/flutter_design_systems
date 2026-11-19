@@ -10,6 +10,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ui_core/ui_core.dart';
 
 import 'surface.dart';
 import 'theme.dart';
@@ -35,9 +36,9 @@ class StudioSeries {
 }
 
 List<Color> _lights(StudioColors c) => [
-  c.indicator,
+  c.readoutLit,
   c.onReadout,
-  Color.lerp(c.indicator, c.readout, 0.45)!,
+  c.readoutDim,
   c.onReadoutMuted,
 ];
 
@@ -53,8 +54,10 @@ double _niceMax(double max) {
   return 10 * power;
 }
 
-String _figure(double v) =>
-    v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
+// A figure in the reader's digits: whole, or to one place.
+String _figure(DesignLocalizations words, double v) => v == v.roundToDouble()
+    ? words.formatDecimal(v.toInt())
+    : words.formatDecimal(v, fractionDigits: 1);
 
 // A chart's frame: the scope window, and the legend under it.
 class _Scope extends StatelessWidget {
@@ -144,6 +147,10 @@ abstract class _AxesPainter extends CustomPainter {
   final List<StudioSeries> series;
   final TextDirection direction;
 
+  /// The reader's words, whose digits the scale's figures are set in; the
+  /// chart gives them before the painter paints.
+  late final DesignLocalizations words;
+
   late final double top = _niceMax(
     series.fold<double>(
       0,
@@ -170,7 +177,7 @@ abstract class _AxesPainter extends CustomPainter {
     var gutter = 0.0;
     var labelHeight = 0.0;
     for (var i = 0; i <= rows; i++) {
-      final p = _words(_figure(top * i / rows));
+      final p = _words(_figure(words, top * i / rows));
       gutter = math.max(gutter, p.width);
       labelHeight = math.max(labelHeight, p.height);
       p.dispose();
@@ -209,7 +216,7 @@ abstract class _AxesPainter extends CustomPainter {
     for (var i = 0; i <= rows; i++) {
       final y = r.bottom - r.height * i / rows;
       canvas.drawLine(Offset(r.left, y), Offset(r.right, y), line);
-      final p = _words(_figure(top * i / rows), color: c.onReadoutMuted);
+      final p = _words(_figure(words, top * i / rows), color: c.onReadoutMuted);
       final labelTop = y - p.height / 2;
       final left = r.left - StudioSpacing.small - p.width;
       if (left >= 0 && labelTop >= 0 && labelTop + p.height <= previousTop) {
@@ -255,7 +262,8 @@ abstract class _AxesPainter extends CustomPainter {
       old.text != text ||
       !listEquals(old.labels, labels) ||
       old.series != series ||
-      old.direction != direction;
+      old.direction != direction ||
+      old.words != words;
 }
 
 class _LinePainter extends _AxesPainter {
@@ -407,14 +415,17 @@ abstract class _AxesChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
+    final words = DesignLocalizations.of(context);
     final text = theme.textTheme.caption.copyWith(
       fontSize: MediaQuery.textScalerOf(context).scale(11),
       fontFeatures: const [FontFeature.tabularFigures()],
     );
     final readOut = [
       for (final s in series)
-        '${s.label}: ${[for (final (i, v) in s.values.indexed) '${i < labels.length ? labels[i] : i} ${_figure(v)}'].join(', ')}',
+        '${s.label}: ${[for (final (i, v) in s.values.indexed) '${i < labels.length ? labels[i] : i} ${_figure(words, v)}'].join(', ')}',
     ].join('. ');
+    final scope = painter(c, text, Directionality.of(context));
+    if (scope is _AxesPainter) scope.words = words;
     return _Scope(
       semanticLabel: semanticLabel,
       readOut: readOut,
@@ -422,10 +433,7 @@ abstract class _AxesChart extends StatelessWidget {
       legend: [
         for (final (i, s) in series.indexed) (s.label, _lightOf(c, i, s.color)),
       ],
-      chart: CustomPaint(
-        size: Size.infinite,
-        painter: painter(c, text, Directionality.of(context)),
-      ),
+      chart: CustomPaint(size: Size.infinite, painter: scope),
     );
   }
 
@@ -568,6 +576,7 @@ class StudioPieChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
+    final words = DesignLocalizations.of(context);
     final total = slices.fold<double>(0, (a, s) => a + s.value);
     final readOut = [
       for (final s in slices)
@@ -593,16 +602,11 @@ class StudioPieChart extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                centerLabel ?? _figure(total),
+                centerLabel ?? _figure(words, total),
                 style: theme.textTheme.readout.copyWith(
-                  color: c.indicator,
+                  color: c.readoutLit,
                   fontSize: 22,
-                  shadows: [
-                    Shadow(
-                      color: c.indicator.withValues(alpha: 0.5),
-                      blurRadius: 6,
-                    ),
-                  ],
+                  shadows: c.readoutGlow(c.readoutLit, alpha: 0.5),
                 ),
               ),
             ),

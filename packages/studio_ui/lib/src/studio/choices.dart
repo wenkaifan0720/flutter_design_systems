@@ -1,5 +1,6 @@
 /// Studio's choices: [StudioCheckbox] (a latching square key whose check
-/// lights), [StudioRadio] (a round latching key with a lamp), [StudioSwitch]
+/// lights), [StudioCheckRow] (a checkbox and its words as one target),
+/// [StudioRadio] (a round latching key with a lamp), [StudioSwitch]
 /// (a slide toggle whose slot lights behind its cap) and
 /// [StudioSegmentedButton] (a bank of latching keys in a recess).
 library;
@@ -22,8 +23,8 @@ import 'theme.dart';
 /// lets it out.
 ///
 /// A null [onChanged] disables it. [isError] lights its rim in the danger
-/// colour. Its tap target is the platform's floor round its 24 px key; put it
-/// in a [StudioListTile] for a row a whole finger finds.
+/// colour. Its tap target is the platform's floor round its 24 px key; with
+/// words beside it, use a [StudioCheckRow], whose whole row is the target.
 ///
 /// Reads [style]'s `fill` and `foreground` (the check's light), then
 /// [StudioThemeData.checkboxStyle].
@@ -69,65 +70,201 @@ class StudioCheckbox extends StatelessWidget {
   static const double size = 24;
 
   @override
+  Widget build(BuildContext context) => DesignPressable(
+    onPressed: onChanged == null ? null : () => onChanged!(!value),
+    focusNode: focusNode,
+    autofocus: autofocus,
+    checked: value,
+    isError: isError,
+    semanticLabel: semanticLabel,
+    builder: (context, states, _) => DesignTapTarget(
+      child: _CheckKey(
+        value: value,
+        isError: isError,
+        style: style,
+        states: states,
+      ),
+    ),
+  );
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(FlagProperty('value', value: value, ifTrue: 'checked'))
+      ..add(
+        FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),
+      );
+  }
+}
+
+// A checkbox's key in [states]: [StudioCheckbox]'s, and [StudioCheckRow]'s,
+// whose whole row is the one target.
+class _CheckKey extends StatelessWidget {
+  const _CheckKey({
+    required this.value,
+    required this.isError,
+    required this.style,
+    required this.states,
+  });
+
+  final bool value;
+  final bool isError;
+  final StudioStyle? style;
+  final Set<WidgetState> states;
+
+  @override
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
+    const size = StudioCheckbox.size;
+    final layered = DesignStyleOf(
+      [style, theme.checkboxStyle],
+      {...states, if (value) WidgetState.selected},
+    );
+    final disabled = states.contains(WidgetState.disabled);
+    final pressed = states.contains(WidgetState.pressed);
+    final focused = states.contains(WidgetState.focused);
+    var face = layered.on(
+      c.keyFace
+          .copyWith(
+            radius: StudioRadii.small,
+            travel: value || pressed ? 1 : 0,
+            fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
+            rim: isError ? c.danger : c.danger.withValues(alpha: 0),
+          )
+          .backlitIf(c, value && !disabled),
+    );
+    // Focused, the light round the key is its one edge: a latched key's
+    // lit rim gives way to it (an error's rim stays).
+    if (focused && !isError) {
+      face = face.copyWith(rim: face.rim.withValues(alpha: 0));
+    }
+    final light = layered.foreground ?? c.litLegend;
+    return SizedBox.square(
+      dimension: size,
+      // Focused, the key's own edge lights amber: no ring round it.
+      child: StudioFocusLight(
+        edge: focused ? c.focusRing : c.focusRing.withValues(alpha: 0),
+        radius: face.radius,
+        sink: face.travel * StudioMetrics.pressTravel,
+        child: AnimatedStudioSurface(
+          face: face,
+          child: _Glyph(
+            on: value,
+            painter: (t) => _CheckPainter(
+              t: t,
+              lit: disabled ? c.disabled : light,
+              // Unchecked, the cap is blank: a faint check reads as
+              // checked at a glance.
+              unlit: c.onKey.withValues(alpha: 0),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A checkbox and its words as one target and one spoken control: a press
+/// anywhere on the row latches the key in or out, and keyboard focus lights
+/// the key's own edge. [note] stands under the words. A null [onChanged]
+/// disables it; [isError] lights the key's rim in the danger colour.
+///
+/// Reads [style] as [StudioCheckbox] does.
+///
+/// ```dart
+/// StudioCheckRow(label: 'Done', value: done, onChanged: (v) => setState(() => done = v))
+/// ```
+class StudioCheckRow extends StatelessWidget {
+  /// A row checking [label].
+  const StudioCheckRow({
+    super.key,
+    required this.label,
+    this.note,
+    required this.value,
+    required this.onChanged,
+    this.isError = false,
+    this.focusNode,
+    this.autofocus = false,
+    this.style,
+  });
+
+  /// What it checks.
+  final String label;
+
+  /// A line under [label]; none when null.
+  final String? note;
+
+  /// Whether it is checked.
+  final bool value;
+
+  /// Called with the new value; null disables it.
+  final ValueChanged<bool>? onChanged;
+
+  /// Whether what it answers is wrong.
+  final bool isError;
+
+  /// {@macro design.focusNode}
+  final FocusNode? focusNode;
+
+  /// {@macro design.autofocus}
+  final bool autofocus;
+
+  /// The key's style, over [StudioThemeData.checkboxStyle].
+  final StudioStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = StudioTheme.of(context);
+    final c = theme.colors;
+    final off = onChanged == null;
     return DesignPressable(
-      onPressed: onChanged == null ? null : () => onChanged!(!value),
+      onPressed: off ? null : () => onChanged!(!value),
       focusNode: focusNode,
       autofocus: autofocus,
       checked: value,
       isError: isError,
-      semanticLabel: semanticLabel,
-      builder: (context, states, _) {
-        final layered = DesignStyleOf(
-          [style, theme.checkboxStyle],
-          {...states, if (value) WidgetState.selected},
-        );
-        final disabled = states.contains(WidgetState.disabled);
-        final pressed = states.contains(WidgetState.pressed);
-        final focused = states.contains(WidgetState.focused);
-        var face = layered.on(
-          c.keyFace
-              .copyWith(
-                radius: StudioRadii.small,
-                travel: value || pressed ? 1 : 0,
-                fill: disabled ? Color.lerp(c.key, c.panelLow, 0.5) : null,
-                rim: isError ? c.danger : c.danger.withValues(alpha: 0),
-              )
-              .backlitIf(c, value && !disabled),
-        );
-        // Focused, the light round the key is its one edge: a latched key's
-        // lit rim gives way to it (an error's rim stays).
-        if (focused && !isError) {
-          face = face.copyWith(rim: face.rim.withValues(alpha: 0));
-        }
-        final light = layered.foreground ?? c.litLegend;
-        return DesignTapTarget(
-          child: SizedBox.square(
-            dimension: size,
-            // Focused, the key's own edge lights amber: no ring round it.
-            child: StudioFocusLight(
-              edge: focused ? c.focusRing : c.focusRing.withValues(alpha: 0),
-              radius: face.radius,
-              sink: face.travel * StudioMetrics.pressTravel,
-              child: AnimatedStudioSurface(
-                face: face,
-                child: _Glyph(
-                  on: value,
-                  painter: (t) => _CheckPainter(
-                    t: t,
-                    lit: disabled ? c.disabled : light,
-                    // Unchecked, the cap is blank: a faint check reads as
-                    // checked at a glance.
-                    unlit: c.onKey.withValues(alpha: 0),
-                  ),
+      semanticLabel: note == null ? label : '$label, $note',
+      excludeSemantics: true,
+      builder: (context, states, _) => ConstrainedBox(
+        constraints: BoxConstraints(minHeight: theme.controlHeight),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: StudioSpacing.small),
+          child: Row(
+            children: [
+              _CheckKey(
+                value: value,
+                isError: isError,
+                style: style,
+                states: states,
+              ),
+              const SizedBox(width: StudioSpacing.medium),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: theme.textTheme.label.copyWith(
+                        color: off ? c.disabled : c.legend,
+                      ),
+                    ),
+                    if (note != null)
+                      Text(
+                        note!,
+                        style: theme.textTheme.secondary.copyWith(
+                          color: off ? c.disabled : c.legendMuted,
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -135,6 +272,7 @@ class StudioCheckbox extends StatelessWidget {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties
+      ..add(StringProperty('label', label))
       ..add(FlagProperty('value', value: value, ifTrue: 'checked'))
       ..add(
         FlagProperty('enabled', value: onChanged != null, ifFalse: 'disabled'),

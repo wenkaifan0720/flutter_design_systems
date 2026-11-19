@@ -75,7 +75,7 @@ Widget kitControlsDemo(Brightness brightness) => kitScreen(
     ),
     const KitSection(
       title: 'Meters',
-      note: 'Lit segments behind dark glass; red only past the clip line.',
+      note: 'Lit segments behind the glass; red only past the clip line.',
       children: [
         StudioMeter(level: 0.5, peak: 0.66, semanticLabel: 'Left'),
         StudioMeter(level: 0.96, peak: 1, semanticLabel: 'Right'),

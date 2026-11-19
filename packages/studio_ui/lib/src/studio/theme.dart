@@ -40,11 +40,15 @@ abstract final class StudioMetrics {
   /// A list row's height on a display or a panel, before density.
   static const double rowHeight = 52;
 
-  /// The room between a face and its focus ring.
+  /// The room a focus ring once kept round a face.
+  @Deprecated(
+    'Focus lights the face\'s own edge with no gap since 0.1.2; nothing '
+    'stands apart from the part.',
+  )
   static const double focusGap = 2;
 
-  /// The focus ring's width.
-  static const double focusWidth = 2;
+  /// The width of a focused face's lit edge, hugging its outline.
+  static const double focusWidth = 3;
 
   /// How far a pressed key sinks.
   static const double pressTravel = 1.5;
@@ -200,8 +204,9 @@ abstract final class StudioMotion {
 ///
 /// The metal is chrome: [chassis], [panel] and [bar] (each with its lower
 /// tone), printed with [legend] and [legendMuted], cut with [groove]. The
-/// glass is content: [display] with [onDisplay], and the dark [readout]
-/// windows whose figures glow in [indicator]. [indicator] is the one accent,
+/// glass is content: [display] with [onDisplay], and the [readout] windows:
+/// by night dark glass whose figures glow in [indicator], by day pale glass
+/// lit amber from behind, its figures [readoutLit]. [indicator] is the one accent,
 /// the light of a lamp, a backlit key or a lit legend ([litLegend] where a lit
 /// word must still read on the metal by day). [danger] is the meaning of a
 /// live recording or a failure, nothing else.
@@ -247,7 +252,8 @@ class StudioColors with Diagnosticable {
   });
 
   /// The gear in a bright room: light silver anodised panels, pale warm
-  /// glass displays with graphite words, dark readout windows.
+  /// glass displays with graphite words, readout windows of pale glass lit
+  /// amber from behind (as a backlit LCD is by day).
   const StudioColors.light()
     : brightness = Brightness.light,
       chassis = const Color(0xFFBEC2C7),
@@ -268,8 +274,8 @@ class StudioColors with Diagnosticable {
       onDisplay = const Color(0xFF1A1C1F),
       onDisplayMuted = const Color(0xFF575A60),
       displayLine = const Color(0x17000000),
-      readout = const Color(0xFF16181B),
-      readoutLow = const Color(0xFF0C0D0F),
+      readout = const Color(0xFFF7E0BC),
+      readoutLow = const Color(0xFFF0D2A2),
       key = const Color(0xFFF6F7F8),
       keyLow = const Color(0xFFD9DCE0),
       onKey = const Color(0xFF202328),
@@ -373,7 +379,8 @@ class StudioColors with Diagnosticable {
   /// A rule between rows on a display.
   final Color displayLine;
 
-  /// A readout window's dark glass, in both modes.
+  /// A readout window's glass: by night dark, by day pale and lit from
+  /// behind by the indicator.
   final Color readout;
 
   /// The readout's lower tone.
@@ -482,11 +489,56 @@ class StudioColors with Diagnosticable {
   /// The main key's legend with no power: unlit, still read at 4.5:1.
   Color get onLitKeyOff => const Color(0xFFA19C92);
 
-  /// Words on a readout window's dark glass, in both rooms.
-  Color get onReadout => const Color(0xFFF1EBDF);
+  /// Whether the readout windows are pale glass lit from behind (by day)
+  /// rather than dark glass (by night), read off [readout] itself.
+  bool get litReadout => readout.computeLuminance() > 0.4;
 
-  /// Supporting words on a readout window's glass.
-  Color get onReadoutMuted => const Color(0xFFBDB6A8);
+  /// Words on a readout window's glass: warm white on the dark glass, a warm
+  /// near-black on the lit glass.
+  Color get onReadout =>
+      litReadout ? const Color(0xFF2A2116) : const Color(0xFFF1EBDF);
+
+  /// Supporting words on a readout window's glass, at 4.5:1.
+  Color get onReadoutMuted =>
+      litReadout ? const Color(0xFF5E4C33) : const Color(0xFFBDB6A8);
+
+  /// A readout's lit figures and segments: [indicator], glowing, on the dark
+  /// glass (lifted until it reads there at 4.5:1, for a brand too dim); on
+  /// the lit glass the indicator deepened until it reads there at 4.5:1, as
+  /// a backlit LCD's figures do.
+  Color get readoutLit => _onGlass(indicator, 4.5);
+
+  // [light] deepened by day, or lifted by night, until it reads at [ratio]
+  // on both ends of the glass.
+  Color _onGlass(Color light, double ratio) {
+    final b = litReadout ? Brightness.light : Brightness.dark;
+    var c = light;
+    for (final glass in [readout, readoutLow]) {
+      c = StudioThemeData._readableOn(c, glass, b, ratio: ratio);
+    }
+    return c;
+  }
+
+  /// A dimmer light on a readout (a third trace): the indicator half-way to
+  /// the glass, kept at 3:1 on it.
+  Color get readoutDim {
+    return _onGlass(Color.lerp(readoutLit, readout, 0.45)!, 3);
+  }
+
+  /// The glow round a readout's lit figures: on the dark glass only; the lit
+  /// glass is lit from behind, and its figures stay sharp.
+  List<Shadow> readoutGlow(
+    Color light, {
+    double alpha = 0.55,
+    double blur = 6,
+  }) => litReadout
+      ? const []
+      : [
+          Shadow(
+            color: light.withValues(alpha: alpha),
+            blurRadius: blur,
+          ),
+        ];
 
   /// The dimming over a page under a dialog or a sheet: the room's lights
   /// lowered.
@@ -514,6 +566,8 @@ class StudioColors with Diagnosticable {
     Color? displayLow,
     Color? onDisplay,
     Color? onDisplayMuted,
+    Color? readout,
+    Color? readoutLow,
     Color? key,
     Color? keyLow,
     Color? onKey,
@@ -539,8 +593,8 @@ class StudioColors with Diagnosticable {
     onDisplay: onDisplay ?? this.onDisplay,
     onDisplayMuted: onDisplayMuted ?? this.onDisplayMuted,
     displayLine: displayLine,
-    readout: readout,
-    readoutLow: readoutLow,
+    readout: readout ?? this.readout,
+    readoutLow: readoutLow ?? this.readoutLow,
     key: key ?? this.key,
     keyLow: keyLow ?? this.keyLow,
     onKey: onKey ?? this.onKey,
@@ -772,7 +826,7 @@ class StudioTextTheme with Diagnosticable {
         FontWeight.w600,
         colors.legendMuted,
       ).copyWith(letterSpacing: 1.6),
-      readout: s(20, 24, FontWeight.w600, colors.indicator).copyWith(
+      readout: s(20, 24, FontWeight.w600, colors.readoutLit).copyWith(
         fontFeatures: const [FontFeature.tabularFigures()],
         letterSpacing: 0.4,
       ),
@@ -964,7 +1018,8 @@ class StudioThemeData with Diagnosticable {
   ///
   /// The main key's lit legend is the indicator lightened until it reads on
   /// its graphite at 4.5:1. By day a lit legend on the metal is the
-  /// indicator darkened until it reads there at 4.5:1.
+  /// indicator darkened until it reads there at 4.5:1, and the readout
+  /// windows' pale glass is lit from behind by the indicator.
   ///
   /// ```dart
   /// final theme = StudioThemeData.from(indicator: const Color(0xFF4FD1C5));
@@ -996,6 +1051,12 @@ class StudioThemeData with Diagnosticable {
         ratio: 3,
       ),
     );
+    if (base.brightness == Brightness.light) {
+      colors = colors.copyWith(
+        readout: Color.lerp(const Color(0xFFF4F1E7), indicator, 0.25),
+        readoutLow: Color.lerp(const Color(0xFFE7E8E2), indicator, 0.38),
+      );
+    }
     if (finish != null) colors = _anodise(colors, finish);
     return StudioThemeData(
       colors: colors,

@@ -185,7 +185,11 @@ class StudioPagination extends StatelessWidget {
     final words = DesignLocalizations.of(context);
     final change = onChanged;
     final width = '$pageCount'.length.clamp(2, 4);
-    String two(int n) => n.toString().padLeft(width, '0');
+    // Zero-padded figures in the reader's digits, ungrouped.
+    String two(int n) => [
+      for (final d in n.toString().padLeft(width, '0').codeUnits)
+        words.formatDecimal(d - 0x30),
+    ].join();
     final rtl = Directionality.of(context) == TextDirection.rtl;
     return StudioStrip(
       child: Row(

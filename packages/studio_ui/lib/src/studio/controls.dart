@@ -826,14 +826,16 @@ class _KnobPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round
         ..color = pointer,
     );
+    // Focused, the knob's own edge lights amber, as Studio's keys do.
     if (focus != null) {
-      canvas.drawCircle(
-        centre,
-        r + StudioMetrics.focusGap + StudioMetrics.focusWidth / 2,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = StudioMetrics.focusWidth
-          ..color = focus!,
+      paintStudioFocusLight(
+        canvas,
+        RRect.fromRectAndRadius(
+          Rect.fromCircle(center: centre, radius: r),
+          Radius.circular(r),
+        ),
+        focus!,
+        light,
       );
     }
   }
@@ -849,7 +851,7 @@ class _KnobPainter extends CustomPainter {
       old.focus != focus;
 }
 
-/// A level meter: a row (or a column) of segments behind dark glass, lit
+/// A level meter: a row (or a column) of segments behind readout glass, lit
 /// from the start up to [level] in the indicator light, the segments past
 /// [clip] in the danger colour (only those: red means clipping), a dark red
 /// while unlit so the zone shows. [peak]
@@ -926,9 +928,9 @@ class StudioMeter extends StatelessWidget {
                   clip: clip,
                   axis: axis,
                   rtl: Directionality.of(context) == TextDirection.rtl,
-                  lit: layered.fill ?? c.indicator,
-                  danger: c.danger,
-                  off: Color.lerp(c.readout, c.indicator, 0.1)!,
+                  lit: layered.fill ?? c.readoutLit,
+                  danger: c.litReadout ? c.dangerLegend : c.danger,
+                  off: Color.lerp(c.readout, c.readoutLit, 0.1)!,
                 ),
               ),
             ),

@@ -55,8 +55,20 @@ StudioFace _litFace(StudioColors c, Set<WidgetState> states, double radius) =>
       foreground: states.contains(WidgetState.disabled)
           ? c.onLitKeyOff
           : c.onLitKey,
-      focus: _ring(c, states),
+      focus: _litRing(c, states),
     );
+
+// The graphite key's focus light: by day its deep cast shadow lies under
+// its lower edge, so the amber is deepened to read over it.
+Color _litRing(StudioColors c, Set<WidgetState> states) {
+  final ring = _ring(c, states);
+  if (c.brightness == Brightness.dark) return ring;
+  final hsl = HSLColor.fromColor(ring);
+  return hsl
+      .withLightness(hsl.lightness * 0.7)
+      .toColor()
+      .withValues(alpha: ring.a);
+}
 
 List<Shadow>? _glow(Color light, bool on) =>
     on ? [Shadow(color: light.withValues(alpha: 0.45), blurRadius: 6)] : null;

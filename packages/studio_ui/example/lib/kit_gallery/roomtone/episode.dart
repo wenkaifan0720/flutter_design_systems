@@ -13,9 +13,9 @@ import 'data.dart';
 import 'roomtone.dart';
 import 'words.dart';
 
-/// A show's tile: its initials in the readout's warm white on dark glass,
-/// as a channel's label on a desk (amber stays for what is on). No
-/// pictures: the show's mark is its name.
+/// A show's tile: its initials in a readout's words on its glass (pale and
+/// lit from behind by day, dark by night), as a channel's label on a desk
+/// (amber stays for what is on). No pictures: the show's mark is its name.
 class RoomtoneCover extends StatelessWidget {
   /// The tile of [show], [size] square.
   const RoomtoneCover({super.key, required this.show, this.size = 44});
@@ -63,12 +63,11 @@ class RoomtoneCover extends StatelessWidget {
                 fontSize: size * 0.36,
                 height: 1,
                 color: theme.colors.onReadout,
-                shadows: [
-                  Shadow(
-                    color: theme.colors.onReadout.withValues(alpha: 0.35),
-                    blurRadius: 6,
-                  ),
-                ],
+                // A glow on the dark glass; on the lit glass, sharp.
+                shadows: theme.colors.readoutGlow(
+                  theme.colors.onReadout,
+                  alpha: 0.35,
+                ),
               ),
             ),
           ),

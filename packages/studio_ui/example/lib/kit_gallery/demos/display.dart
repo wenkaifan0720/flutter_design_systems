@@ -24,7 +24,7 @@ Widget kitDisplayDemo(Brightness brightness) => kitScreen(
     ),
     const KitSection(
       title: 'Avatars',
-      note: 'Portholes of dark glass in a metal bezel; initials glow when there is no picture.',
+      note: 'Portholes of readout glass in a metal bezel; initials when there is no picture.',
       children: [
         KitRow(
           children: [

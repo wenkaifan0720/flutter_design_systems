@@ -1060,7 +1060,7 @@ class StudioPullToRefresh extends StatelessWidget {
           DesignRefreshMode.done => Icon(
             LucideIcons.check,
             size: StudioIconSizes.regular,
-            color: c.indicator,
+            color: c.readoutLit,
           ),
           _ => StudioLampRing(
             lit: details.mode == DesignRefreshMode.armed

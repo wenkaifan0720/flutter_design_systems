@@ -16,15 +16,20 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'actions.dart' show StudioToggleBank;
 import 'button.dart';
+import 'choices.dart' show StudioSegmentedButton;
 import 'feedback.dart' show StudioSpinner;
+import 'internal/stepper_glyph.dart';
+import 'pickers.dart' show StudioRangeFader, StudioTimePicker;
 import 'select.dart';
 import 'surface.dart';
 import 'text_field.dart';
 import 'theme.dart';
 
 // A window's face for [states]: the glass, its rim lit while focused and
-// red with an error, dimmed when off.
+// red with an error, dimmed when off. Focus lights its edge as it does a
+// key's: however it came, it is where the typing goes.
 StudioFace _window(StudioThemeData theme, Set<WidgetState> states) {
   final c = theme.colors;
   final error = states.contains(WidgetState.error);
@@ -37,6 +42,7 @@ StudioFace _window(StudioThemeData theme, Set<WidgetState> states) {
         : focused
         ? c.indicator.withValues(alpha: 0.9)
         : c.indicator.withValues(alpha: 0),
+    focus: focused ? c.focusRing : c.focusRing.withValues(alpha: 0),
     fill: disabled ? Color.lerp(c.display, c.panelLow, 0.4) : null,
   );
 }
@@ -387,7 +393,8 @@ class StudioPasswordField extends StatelessWidget {
 
 /// A field with add-ons in one window: [leading] and [trailing] stand as
 /// engraved plates at its ends (a scheme, a unit), parted from the words by
-/// a groove; the window's rim lights while the words have the keyboard.
+/// a groove; the window's rim and edge light while the words have the
+/// keyboard.
 ///
 /// Built on ui_core's DesignInputGroup; reads [style]'s `fill` and `edge`,
 /// then [StudioThemeData.textFieldStyle].
@@ -685,8 +692,8 @@ class StudioCodeField extends StatelessWidget {
                   rim: slot.isError
                       ? c.danger
                       : slot.active && slot.focused
-                      ? c.indicator.withValues(alpha: 0.9)
-                      : c.indicator.withValues(alpha: 0),
+                      ? c.readoutLit.withValues(alpha: 0.9)
+                      : c.readoutLit.withValues(alpha: 0),
                 ),
                 child: Center(
                   child: Text(
@@ -697,14 +704,9 @@ class StudioCodeField extends StatelessWidget {
                         : figure,
                     style: theme.textTheme.readout.copyWith(
                       fontSize: 24,
-                      color: slot.enabled ? c.indicator : c.disabled,
+                      color: slot.enabled ? c.readoutLit : c.disabled,
                       shadows: slot.enabled
-                          ? [
-                              Shadow(
-                                color: c.indicator.withValues(alpha: 0.5),
-                                blurRadius: 6,
-                              ),
-                            ]
+                          ? c.readoutGlow(c.readoutLit, alpha: 0.5)
                           : null,
                     ),
                   ),
@@ -728,9 +730,10 @@ class StudioCodeField extends StatelessWidget {
 }
 
 /// A count you step: its figures in a readout window between a key that
-/// takes one away and a key that adds one. The arrow keys step it while it
-/// has the keyboard; a screen reader reads and steps it as a value. A key
-/// at a bound goes dark.
+/// takes one away and a key that adds one, the keys as tall as the window
+/// (the control's height, or taller as the figures grow). The arrow keys
+/// step it while it has the keyboard; a screen reader reads and steps it as
+/// a value. A key at a bound goes dark.
 ///
 /// A null [onChanged] disables it.
 ///
@@ -770,7 +773,8 @@ class StudioStepper extends StatelessWidget {
   /// What a screen reader calls it.
   final String? semanticLabel;
 
-  /// How the count reads (`'$value min'`); the bare figure when null.
+  /// How the count reads (`'$value min'`); the figure in the reader's
+  /// digits when null.
   final String Function(int value)? format;
 
   /// The take-away key's name.
@@ -779,23 +783,39 @@ class StudioStepper extends StatelessWidget {
   /// The add key's name.
   final String increaseLabel;
 
-  String _text(int v) => format?.call(v) ?? '$v';
-
   @override
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
+    final words = DesignLocalizations.of(context);
+    String text(int v) => format?.call(v) ?? words.formatDecimal(v);
     final c = theme.colors;
     final change = onChanged;
     final canDown = change != null && value - step >= min;
     final canUp = change != null && value + step <= max;
     void down() => change?.call((value - step).clamp(min, max));
     void up() => change?.call((value + step).clamp(min, max));
+    final figure = theme.textTheme.readout.copyWith(
+      color: change == null ? c.disabled : c.readoutLit,
+    );
+    // The keys and the readout are one height: the control's, or taller as
+    // the figures grow.
+    final line = TextPainter(
+      text: TextSpan(text: text(value), style: figure),
+      textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final height = math.max(theme.controlHeight, line.height);
+    line.dispose();
+    final keyStyle = StudioStyle(
+      minimumSize: WidgetStatePropertyAll(Size.square(height)),
+    );
     return Semantics(
       container: true,
       label: semanticLabel,
-      value: _text(value),
-      increasedValue: canUp ? _text(value + step) : null,
-      decreasedValue: canDown ? _text(value - step) : null,
+      value: text(value),
+      increasedValue: canUp ? text(value + step) : null,
+      decreasedValue: canDown ? text(value - step) : null,
       onIncrease: canUp ? up : null,
       onDecrease: canDown ? down : null,
       child: Focus(
@@ -826,6 +846,7 @@ class StudioStepper extends StatelessWidget {
                     child: StudioIconButton(
                       icon: const Icon(LucideIcons.minus),
                       tooltip: decreaseLabel,
+                      style: keyStyle,
                       onPressed: canDown ? down : null,
                     ),
                   ),
@@ -836,13 +857,14 @@ class StudioStepper extends StatelessWidget {
                     stiffness: StudioMotion.lampStiffness,
                     face: c.readoutFace.copyWith(
                       rim: focused
-                          ? c.indicator.withValues(alpha: 0.9)
-                          : c.indicator.withValues(alpha: 0),
+                          ? c.readoutLit.withValues(alpha: 0.9)
+                          : c.readoutLit.withValues(alpha: 0),
                     ),
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         minWidth: 64,
-                        minHeight: theme.controlHeight,
+                        minHeight: height,
+                        maxHeight: height,
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -850,12 +872,7 @@ class StudioStepper extends StatelessWidget {
                         ),
                         child: Center(
                           widthFactor: 1,
-                          child: Text(
-                            _text(value),
-                            style: theme.textTheme.readout.copyWith(
-                              color: change == null ? c.disabled : c.indicator,
-                            ),
-                          ),
+                          child: Text(text(value), maxLines: 1, style: figure),
                         ),
                       ),
                     ),
@@ -867,6 +884,7 @@ class StudioStepper extends StatelessWidget {
                     child: StudioIconButton(
                       icon: const Icon(LucideIcons.plus),
                       tooltip: increaseLabel,
+                      style: keyStyle,
                       onPressed: canUp ? up : null,
                     ),
                   ),
@@ -894,7 +912,10 @@ class StudioStepper extends StatelessWidget {
 
 /// Any control with its label above it, its help under it and its error
 /// beside a lit lamp in the help's place, read to a screen reader as one
-/// field (its name, its hint, its validity).
+/// field (its name, its hint, its validity). A group of controls (a row or
+/// column of them, a segmented choice, a stepper, chips) keeps each
+/// control's own node and tap, and the label names the group
+/// ([mergeSemantics]).
 ///
 /// Built on ui_core's DesignField; a [StudioTextField] carries its own label
 /// and needs none.
@@ -912,7 +933,7 @@ class StudioFormField extends StatelessWidget {
     this.error,
     this.isRequired = false,
     this.enabled = true,
-    this.mergeSemantics = true,
+    this.mergeSemantics,
   });
 
   /// The control.
@@ -933,10 +954,31 @@ class StudioFormField extends StatelessWidget {
   /// Whether the control is on.
   final bool enabled;
 
-  /// Whether the control is one node that takes the label as its name; a
-  /// group (radios, a segmented choice) sets it false and the label names
-  /// the group.
-  final bool mergeSemantics;
+  /// Whether the control is one node that takes the label as its name
+  /// (true) or a group the label names (false). Left null, the field reads
+  /// its child: a row, column or wrap of controls, a segmented choice, a
+  /// stepper, a toggle bank, a range fader, a tag input or a time picker's
+  /// two drums is a group, so each control keeps its own node and answers
+  /// its own tap; anything else is one control.
+  final bool? mergeSemantics;
+
+  // Whether [child], through any padding, alignment or sizing round it, is
+  // a group of controls.
+  static bool _isGroup(Widget child) => switch (child) {
+    Flex() ||
+    Wrap() ||
+    StudioSegmentedButton() ||
+    StudioStepper() ||
+    StudioToggleBank() ||
+    StudioRangeFader() ||
+    StudioTagInput() ||
+    StudioTimePicker() => true,
+    Padding(child: final inner?) ||
+    Align(child: final inner?) ||
+    SizedBox(child: final inner?) ||
+    ConstrainedBox(child: final inner?) => _isGroup(inner),
+    _ => false,
+  };
 
   @override
   Widget build(BuildContext context) => DesignField(
@@ -945,7 +987,7 @@ class StudioFormField extends StatelessWidget {
     errorText: error,
     required: isRequired,
     enabled: enabled,
-    mergeSemantics: mergeSemantics,
+    mergeSemantics: mergeSemantics ?? !_isGroup(child),
     builder: (context, parts) {
       final theme = StudioTheme.of(context);
       final c = theme.colors;
@@ -1001,7 +1043,11 @@ class StudioFormField extends StatelessWidget {
       ..add(FlagProperty('isRequired', value: isRequired, ifTrue: 'required'))
       ..add(FlagProperty('enabled', value: enabled, ifFalse: 'disabled'))
       ..add(
-        FlagProperty('mergeSemantics', value: mergeSemantics, ifFalse: 'group'),
+        FlagProperty(
+          'mergeSemantics',
+          value: mergeSemantics ?? !_isGroup(child),
+          ifFalse: 'group',
+        ),
       );
   }
 }
@@ -1212,10 +1258,13 @@ class StudioCombobox<T extends Object> extends StatelessWidget {
             // Enter takes the lit option and the field keeps the keyboard.
             onEditingComplete: field.submit,
             suffix: ExcludeSemantics(
-              child: Icon(
-                LucideIcons.chevronsUpDown,
-                size: StudioIconSizes.medium,
-                color: enabled ? c.onDisplayMuted : c.disabled,
+              child: SizedBox.square(
+                dimension: StudioIconSizes.medium,
+                child: Center(
+                  child: StudioStepperGlyph(
+                    color: enabled ? c.onDisplayMuted : c.disabled,
+                  ),
+                ),
               ),
             ),
           ),

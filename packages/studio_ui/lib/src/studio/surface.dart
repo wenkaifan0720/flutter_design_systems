@@ -74,13 +74,15 @@ class StudioFace with Diagnosticable {
   /// A sunk face's inner rim, lit: a focused field's glass.
   final Color rim;
 
-  /// The keyboard focus ring outside the face; transparent when not focused.
+  /// The keyboard focus light: the face's edge lit in it, hugging its
+  /// outline with no gap, and a soft amber glow round it; transparent when
+  /// not focused.
   final Color focus;
 
   /// Whether the metal shows its brush ([StudioThemeData.textureStrength]).
   final bool brushed;
 
-  /// How much of the face is there: 1 whole, 0 gone but for its focus ring.
+  /// How much of the face is there: 1 whole, 0 gone but for its focus light.
   /// A recess that only shows under a press (a key with no cap) fades in by
   /// it.
   final double presence;
@@ -233,9 +235,9 @@ class StudioLight {
 
 /// Paints [face] round [child]: the cast shadow or the recess, the face lit
 /// from the top (sunk by its [StudioFace.travel]), its glow, its lit rim and
-/// the focus ring outside it.
+/// its focus light round its edge.
 ///
-/// The surface's size is its face's: shadows, glows and the focus ring fall
+/// The surface's size is its face's: shadows, glows and the focus light fall
 /// outside it, so a raised face lines up with a sunk one beside it. Leave 6 px
 /// of room round a raised or lit face where a clip could cut it.
 ///
@@ -372,14 +374,51 @@ void _paintFace(
     if (layered) canvas.restore();
   }
   if (face.focus.a > 0) {
-    const gap = StudioMetrics.focusGap + StudioMetrics.focusWidth / 2;
-    canvas.drawRRect(
-      rest.inflate(gap),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = StudioMetrics.focusWidth
-        ..color = face.focus,
+    paintStudioFocusLight(canvas, body, face.focus, light, inside: inBank);
+  }
+}
+
+/// Paints Studio's keyboard focus round [outline] on [canvas]: the edge lit
+/// in [focus], [StudioMetrics.focusWidth] of it hugging the outline with no
+/// gap, and a soft glow of the indicator's amber beyond it, as lit studio
+/// gear shows it. Nothing lights inside the outline, so the face and its
+/// words are untouched. A key [inside] a bank stands in its socket with no
+/// room round it: its edge lights just inside its own outline, the glow
+/// inward, so nothing spills on its neighbours. [focus]'s alpha fades the
+/// whole light.
+void paintStudioFocusLight(
+  Canvas canvas,
+  RRect outline,
+  Color focus,
+  StudioLight light, {
+  bool inside = false,
+}) {
+  if (focus.a == 0) return;
+  final night = light.colors.brightness == Brightness.dark;
+  const w = StudioMetrics.focusWidth;
+  final glow = Paint()
+    ..color = light.colors.indicator.withValues(
+      alpha: focus.a * (night ? 0.55 : 0.7),
+    )
+    ..maskFilter = MaskFilter.blur(
+      inside ? BlurStyle.inner : BlurStyle.outer,
+      inside ? 4 : 6,
     );
+  final edge = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = w
+    ..color = focus;
+  if (inside) {
+    canvas
+      ..save()
+      ..clipRRect(outline)
+      ..drawRRect(outline, glow)
+      ..drawRRect(outline.deflate(w / 2), edge)
+      ..restore();
+  } else {
+    canvas
+      ..drawRRect(outline, glow)
+      ..drawRRect(outline.inflate(w / 2), edge);
   }
 }
 
@@ -729,13 +768,13 @@ extension StudioFaces on StudioColors {
     foreground: onDisplay,
   );
 
-  /// A dark readout window's glass.
+  /// A readout window's glass: dark by night, lit from behind by day.
   StudioFace get readoutFace => StudioFace(
     fill: readout,
     fillLow: readoutLow,
     depth: StudioDepth.sunk,
     radius: StudioRadii.small,
-    foreground: indicator,
+    foreground: readoutLit,
   );
 
   /// A recess that holds keys (a bank, a rail, a slot).
@@ -953,8 +992,10 @@ class _LampPainter extends CustomPainter {
       old.night != night;
 }
 
-/// A readout window: dark glass in both rooms, its figures glowing in the
-/// indicator light, tabular so they never jitter as they change.
+/// A readout window: by night dark glass, its figures glowing in the
+/// indicator light; by day pale glass lit from behind, its figures the
+/// indicator deepened to read there. Tabular figures, so they never jitter
+/// as they change.
 ///
 /// ```dart
 /// StudioReadout('1:24:05')
@@ -977,7 +1018,7 @@ class StudioReadout extends StatelessWidget {
   /// A small unit after them (`%`, `dB`).
   final String? unit;
 
-  /// Their light; the theme's indicator when null.
+  /// Their light; the theme's [StudioColors.readoutLit] when null.
   final Color? color;
 
   /// Over the theme's readout style.
@@ -992,15 +1033,10 @@ class StudioReadout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
-    final light = color ?? theme.colors.indicator;
+    final light = color ?? theme.colors.readoutLit;
     final base = theme.textTheme.readout
         .merge(style)
-        .copyWith(
-          color: light,
-          shadows: [
-            Shadow(color: light.withValues(alpha: 0.55), blurRadius: 6),
-          ],
-        );
+        .copyWith(color: light, shadows: theme.colors.readoutGlow(light));
     return Semantics(
       label: semanticsLabel,
       excludeSemantics: semanticsLabel != null,

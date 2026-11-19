@@ -1,4 +1,5 @@
-// A date field's popover lines up with its field in one frame, its chosen
+// A date field's popover lines up with its field in one frame (up to a
+// month's comfortable width, from the field's leading edge), its chosen
 // day reads in its lit slot, and the checkbox, the date field and a calendar
 // day show keyboard focus as amber light on their own edge: no ring apart
 // from the part, and focused pixels at 3:1 or more against the same pixels
@@ -175,37 +176,58 @@ void main() {
     expect(_framed(tester), isTrue);
   });
 
-  testWidgets('a wide date field spreads the month, its days keys', (
+  for (final direction in TextDirection.values) {
+    testWidgets('a wide date field keeps a month\'s comfortable width from '
+        'its leading edge in ${direction.name}', (tester) async {
+      tester.view.devicePixelRatio = 2;
+      tester.view.physicalSize = const Size(1440 * 2, 1688);
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, app) => Directionality(
+            textDirection: direction,
+            child: StudioHost(brightness: Brightness.light, child: app!),
+          ),
+          home: Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(width: 720, child: _date()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final field = tester.getRect(find.byType(StudioDatePicker));
+      await tester.tap(find.byType(StudioDatePicker));
+      await tester.pumpAndSettle();
+      final panel = tester.getRect(find.byType(StudioListBezel));
+      // About 400 px: seven days at a key's widest slot, so the week scans.
+      expect(panel.width, inInclusiveRange(380, 450));
+      final rtl = direction == TextDirection.rtl;
+      expect(
+        rtl ? panel.right : panel.left,
+        moreOrLessEquals(rtl ? field.right : field.left, epsilon: 0.5),
+      );
+      final slot = tester.getRect(
+        find
+            .ancestor(
+              of: find.text('9'),
+              matching: find.byType(AnimatedStudioSurface),
+            )
+            .first,
+      );
+      expect(slot.width, lessThan(slot.height * 1.5));
+    });
+  }
+
+  testWidgets('a date field as wide as a comfortable month matches it', (
     tester,
   ) async {
-    tester.view.devicePixelRatio = 2;
-    tester.view.physicalSize = const Size(1440 * 2, 1688);
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(
-      MaterialApp(
-        builder: (context, app) =>
-            StudioHost(brightness: Brightness.light, child: app!),
-        home: Align(
-          alignment: Alignment.topCenter,
-          child: SizedBox(width: 640, child: _date()),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await _show(tester, SizedBox(width: 358, child: _date()));
     final field = tester.getRect(find.byType(StudioDatePicker));
     await tester.tap(find.byType(StudioDatePicker));
     await tester.pumpAndSettle();
     final panel = tester.getRect(find.byType(StudioListBezel));
-    expect(panel.width, moreOrLessEquals(field.width, epsilon: 0.5));
-    final slot = tester.getRect(
-      find
-          .ancestor(
-            of: find.text('9'),
-            matching: find.byType(AnimatedStudioSurface),
-          )
-          .first,
-    );
-    expect(slot.width, lessThan(slot.height * 1.5));
+    expect(panel.left, moreOrLessEquals(field.left, epsilon: 0.5));
+    expect(panel.right, moreOrLessEquals(field.right, epsilon: 0.5));
   });
 
   for (final brightness in Brightness.values) {

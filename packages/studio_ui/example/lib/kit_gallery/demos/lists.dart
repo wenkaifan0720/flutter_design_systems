@@ -59,7 +59,7 @@ Widget kitListsDemo(Brightness brightness) => kitScreen(
         const StudioDisplay(
           readout: true,
           padding: EdgeInsets.all(StudioSpacing.regular),
-          child: Text('A readout pane: dark glass in both rooms.'),
+          child: Text('A readout pane: lit by day, dark by night.'),
         ),
       ],
     ),

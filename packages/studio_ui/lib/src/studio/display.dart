@@ -511,8 +511,9 @@ String _initials(String name) {
   return letters.first + letters.last;
 }
 
-/// A person: a round porthole of dark glass set in a metal bezel, their
-/// picture in it or, without one, their initials glowing in it.
+/// A person: a round porthole of readout glass (pale and lit from behind by
+/// day, dark by night) set in a metal bezel, their picture in it or, without
+/// one, their initials in it.
 ///
 /// ```dart
 /// const StudioAvatar(name: 'Noor Haddad')
@@ -654,7 +655,7 @@ class StudioAvatarGroup extends StatelessWidget {
                               style: theme.textTheme.readout.copyWith(
                                 fontSize: size * 0.32,
                                 height: 1,
-                                color: c.indicator,
+                                color: c.readoutLit,
                               ),
                             ),
                           ),
@@ -717,18 +718,18 @@ class StudioBadge extends StatelessWidget {
     final c = theme.colors;
     if (!show) return child;
     final n = count;
+    // The count in the reader's digits.
+    final words = DesignLocalizations.of(context);
     final label = n == null
         ? ''
         : n > 99
-        ? '99+'
-        : '$n';
+        ? '${words.formatDecimal(99)}+'
+        : words.formatDecimal(n);
     final style = theme.textTheme.readout.copyWith(
       fontSize: 11,
       height: 1,
-      color: c.indicator,
-      shadows: [
-        Shadow(color: c.indicator.withValues(alpha: 0.5), blurRadius: 4),
-      ],
+      color: c.readoutLit,
+      shadows: c.readoutGlow(c.readoutLit, alpha: 0.5, blur: 4),
     );
     final painter = TextPainter(
       text: TextSpan(text: label, style: style),
@@ -796,8 +797,8 @@ enum StudioTagTone {
   danger,
 }
 
-/// A small legend window: a few words backlit on dark glass in both rooms
-/// (a state, a kind), its lamp lit for [StudioTagTone.lit] or red for
+/// A small legend window: a few words on readout glass (pale and lit from
+/// behind by day, dark by night: a state, a kind), its lamp lit for [StudioTagTone.lit] or red for
 /// [StudioTagTone.danger]. It is not a key.
 ///
 /// Reads [style]'s `fill`, `foreground` and `textStyle`, then
@@ -834,9 +835,12 @@ class StudioTag extends StatelessWidget {
         switch (tone) {
           StudioTagTone.plain => c.onReadout,
           StudioTagTone.lit => c.onReadout,
-          // The failure's red, lifted until it reads on the dark glass.
+          // The failure's red: deepened on the lit glass, lifted until it
+          // reads on the dark glass.
           StudioTagTone.danger =>
-            c.brightness == Brightness.dark
+            c.litReadout
+                ? c.dangerLegend
+                : c.brightness == Brightness.dark
                 ? c.danger
                 : Color.lerp(c.danger, const Color(0xFFFFFFFF), 0.35)!,
         };
@@ -882,7 +886,7 @@ class StudioTag extends StatelessWidget {
   }
 }
 
-/// A picture behind glass: [image] in a dark window set into the metal at
+/// A picture behind glass: [image] in a readout window set into the metal at
 /// [aspectRatio], a faint reflection across its top. While it loads (or
 /// with none) the window shows an engraved picture glyph.
 ///

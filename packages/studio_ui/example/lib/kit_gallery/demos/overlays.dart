@@ -76,7 +76,7 @@ Widget kitOverlaysDemo(Brightness brightness) => kitScreen(
     ),
     KitSection(
       title: 'Toast',
-      note: 'A strip of dark glass with its lamp lit.',
+      note: 'A strip of readout glass with its lamp lit.',
       children: [
         Builder(
           builder: (context) => Align(

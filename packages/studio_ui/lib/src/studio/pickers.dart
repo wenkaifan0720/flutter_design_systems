@@ -428,7 +428,7 @@ class _StudioCalendarState extends State<StudioCalendar> {
                                     child: FittedBox(
                                       fit: BoxFit.scaleDown,
                                       child: Text(
-                                        '${day.date.day}',
+                                        words.formatDecimal(day.date.day),
                                         maxLines: 1,
                                         softWrap: false,
                                         style: layered
@@ -653,21 +653,29 @@ DesignOverlayPlacement _calendarPlacement(BuildContext context) =>
 const double _calendarFloor =
     7 * 40 + 2 * (StudioSpacing.small + StudioMetrics.recessInset);
 
-// A calendar's popover: as wide as its field, edge to edge; under a field
-// narrower than a month it keeps a month's width from the field's leading
-// edge. Never wider than the screen allows.
-Widget _panel(DesignOverlayInfo info, Widget child) => FadeTransition(
-  opacity: info.animation,
-  child: SizedBox(
-    width: math.min(
-      info.maxSize.width,
-      math.max(info.anchorRect.width, _calendarFloor),
-    ),
-    child: StudioListBezel(
-      child: _InPopover(child: SingleChildScrollView(child: child)),
-    ),
-  ),
-);
+// The widest a month spreads: seven days at a key's widest slot inside the
+// bezel (about 390 px, more as the text grows), so the week still scans.
+double _calendarCap(BuildContext context) =>
+    7 * (_dayHeight(context) + 12) +
+    2 * (StudioSpacing.small + StudioMetrics.recessInset);
+
+// A calendar's popover: as wide as its field, edge to edge, up to a month's
+// comfortable width; under a narrower field it keeps a month's width, and
+// under a wider one the comfortable width, from the field's leading edge.
+// Never wider than the screen allows.
+Widget _panel(BuildContext context, DesignOverlayInfo info, Widget child) =>
+    FadeTransition(
+      opacity: info.animation,
+      child: SizedBox(
+        width: math.min(
+          info.maxSize.width,
+          info.anchorRect.width.clamp(_calendarFloor, _calendarCap(context)),
+        ),
+        child: StudioListBezel(
+          child: _InPopover(child: SingleChildScrollView(child: child)),
+        ),
+      ),
+    );
 
 /// A date field: a glass window showing the chosen day (or [hint]) with a
 /// calendar glyph at its end; a press opens a [StudioCalendar] under it,
@@ -755,6 +763,7 @@ class StudioDatePicker extends StatelessWidget {
                 semanticLabel: label,
               ),
               overlayBuilder: (context, info) => _panel(
+                context,
                 info,
                 StudioCalendar(
                   firstDate: firstDate,
@@ -875,6 +884,7 @@ class StudioDateRangePicker extends StatelessWidget {
                 semanticLabel: label,
               ),
               overlayBuilder: (context, info) => _panel(
+                context,
                 info,
                 StudioCalendar.range(
                   firstDate: firstDate,
@@ -954,7 +964,7 @@ Widget _drums(
       final light = !enabled || !row.enabled
           ? c.disabled
           : here
-          ? c.indicator
+          ? c.readoutLit
           : c.onReadout.withValues(alpha: 0.55);
       return Center(
         child: Text(
@@ -963,7 +973,7 @@ Widget _drums(
           style: theme.textTheme.readout.copyWith(
             fontSize: here ? 20 : 17,
             color: light,
-            shadows: _glow(light, here && enabled),
+            shadows: c.litReadout ? null : _glow(light, here && enabled),
           ),
         ),
       );
@@ -1147,7 +1157,11 @@ class StudioTimePicker extends StatelessWidget {
     final change = onChanged;
     final minutes = [for (var m = 0; m < 60; m += minuteInterval) m];
     final name = semanticLabel ?? 'Time';
-    String two(int n) => n.toString().padLeft(2, '0');
+    // Two figures in the reader's digits (Arabic-Indic in Arabic).
+    final words = DesignLocalizations.of(context);
+    String two(int n) => n < 10
+        ? '${words.formatDecimal(0)}${words.formatDecimal(n)}'
+        : words.formatDecimal(n);
     return _housing(
       c,
       _drums(
@@ -1180,8 +1194,10 @@ class StudioTimePicker extends StatelessWidget {
                 ':',
                 style: theme.textTheme.readout.copyWith(
                   fontSize: 20,
-                  color: change == null ? c.disabled : c.indicator,
-                  shadows: _glow(c.indicator, change != null),
+                  color: change == null ? c.disabled : c.readoutLit,
+                  shadows: c.litReadout
+                      ? null
+                      : _glow(c.indicator, change != null),
                 ),
               ),
             ),
@@ -2272,6 +2288,7 @@ class _FileRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StudioTheme.of(context);
     final c = theme.colors;
+    final words = DesignLocalizations.of(context);
     final progress = file.progress;
     return StudioSurface(
       face: c.displayFace.copyWith(radius: StudioRadii.key),
@@ -2304,7 +2321,7 @@ class _FileRow extends StatelessWidget {
                   Text(
                     progress == null
                         ? file.size
-                        : '${file.size} · ${(progress * 100).round()}%',
+                        : '${file.size} · ${words.formatPercent(progress)}',
                     style: theme.textTheme.caption.copyWith(
                       color: c.onDisplayMuted,
                       fontFeatures: const [FontFeature.tabularFigures()],
