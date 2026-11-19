@@ -19,7 +19,8 @@ import '../component_themes.dart';
 import '../controls.dart';
 import '../internal/cap_label.dart';
 import '../internal/field_icon.dart';
-import '../internal/lettering.dart' show comicDisplayFor;
+import '../internal/lettering.dart' show comicDisplayFor, comicWeekdayScaleMost;
+import '../internal/pop.dart';
 import '../internal/track.dart';
 import '../editing.dart';
 import '../glyphs.dart';
@@ -41,7 +42,7 @@ Color _inputInk(ComicColors c) => c.dark ? c.text : c.onPaper;
 TextStyle _inputText(ComicThemeData t) =>
     t.type.text(16, 1.3, weight: FontWeight.w600, color: _inputInk(t.colors));
 
-/// The text field's inked frame for [states]: the look's focus ring outside it while anything inside has focus, the
+/// The text field's inked frame for [states]: popped off its print while anything inside has focus, the
 /// danger tone when wrong, half strength when disabled. With [bleed] the child spans the frame's width, rim and all,
 /// and keeps its parts off the rim itself (a tag input's editor, which a suggestion list opens from).
 Widget _fieldFrame(
@@ -903,7 +904,9 @@ class _ComicMultiSelectState<T extends Object>
           focusNode: focus,
           semanticLabel: widget.label,
           deleteLabel: words.delete,
-          surfaceBuilder: (context, list) => ComicRaisedFrame(child: list),
+          // The list starts on the field's face, which the focus lifts toward the start.
+          surfaceBuilder: (_, list) =>
+              comicListOnLiftedField(context, ComicRaisedFrame(child: list)),
           // Its options' words start on the field's words.
           optionBuilder: (context, option, states) => ComicMenuRowFace(
             states: states,
@@ -1223,7 +1226,7 @@ class ComicRangeSlider extends StatelessWidget {
   }
 }
 
-/// The slider's knob: a caption-filled disc inked round, a size larger while it is dragged, ringed under the
+/// The slider's knob: a caption-filled disc inked round, a size larger while it is dragged, popped under the
 /// keyboard's focus.
 class _Knob extends StatelessWidget {
   /// Creates a [_Knob].
@@ -1408,8 +1411,12 @@ class ComicCalendar extends StatelessWidget {
           ),
         ],
       ),
+      // An initial shrinks to its cell less a hair each side, so two never touch however large the reader's text.
       weekdayBuilder: (context, weekday, label) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: ComicSpace.close),
+        padding: const EdgeInsets.symmetric(
+          vertical: ComicSpace.close,
+          horizontal: ComicSpace.fine,
+        ),
         child: FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
@@ -1417,6 +1424,9 @@ class ComicCalendar extends StatelessWidget {
             maxLines: 1,
             softWrap: false,
             textAlign: TextAlign.center,
+            // At most twice their size, as Material's calendar: larger, seven initials fill a phone's row and touch.
+            textScaler: MediaQuery.textScalerOf(context)
+                .clamp(maxScaleFactor: comicWeekdayScaleMost),
             style: t.type.small,
           ),
         ),
@@ -1853,6 +1863,9 @@ class ComicWheelPicker<T> extends StatefulWidget {
   }
 }
 
+/// The height of a wheel row's line of words at 1x: 18 px at a line height of 1.2.
+const double _wheelLine = 18 * 1.2;
+
 class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
     with _OwnedFocus<ComicWheelPicker<T>> {
   @override
@@ -1904,6 +1917,11 @@ class _ComicWheelPickerState<T> extends State<ComicWheelPicker<T>>
         child: Text(
           row.label,
           maxLines: 1,
+          // A row's words grow with the reader's text until their line fills the row (twice their size at the
+          // default 44): larger, the rows would overlap and the band would cut the chosen one, so they stop there.
+          textScaler: MediaQuery.textScalerOf(
+            context,
+          ).clamp(maxScaleFactor: math.max(1, widget.itemExtent / _wheelLine)),
           style: t.type.text(
             18,
             1.2,

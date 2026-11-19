@@ -58,7 +58,7 @@ OutlinedBorder comicCappedShape(OutlinedBorder shape, double most) {
   return largest <= most ? shape : comicInsetShape(shape, largest - most);
 }
 
-/// The concentric shape [gap] outside [shape], for a focus ring: each rounded corner grows by [gap], a square corner
+/// The concentric shape [gap] outside [shape], for a mark round a part: each rounded corner grows by [gap], a square corner
 /// stays square, and circles and capsules stay circles and capsules in their larger bounds.
 ///
 /// ```dart

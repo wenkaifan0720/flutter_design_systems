@@ -15,6 +15,7 @@ import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoLocalizations;
 import 'package:ui_core/ui_core.dart';
 
 import 'press.dart' show ComicTapTarget;
+import 'internal/lettered.dart';
 import 'internal/platform_words.dart';
 
 /// The width where the phone layout becomes the 12-column desktop layout.
@@ -178,23 +179,25 @@ class ComicMotion {
       designReduceMotionOf(context) ? Duration.zero : d;
 }
 
-/// The keyboard's focus ring: a [width] line [gap] outside the control's own outline, in [color], which reads 3:1 on
-/// the page, card and control grounds.
+/// The keyboard's focus ink and room. A focused part pops: it lifts up and to the start off a hard print of its
+/// outline in the plate's ink, [width] down and to the end. [color] inks that print where the plate's ink would not show
+/// on the ground beside the part (a light control at night), and a splitter's handle. [width] and [gap] together are
+/// the room a focused part keeps from what stands beside it.
 @immutable
 class ComicFocusRing {
   /// Creates a [ComicFocusRing].
   const ComicFocusRing({required this.color, this.width = 3, this.gap = 3});
 
-  /// The ring's colour.
+  /// The focus ink, which reads 3:1 on the page, card and control grounds.
   final Color color;
 
-  /// The ring's line, in logical pixels.
+  /// How far a focused part's print stands down and to the end of it, in logical pixels.
   final double width;
 
-  /// The space between the control's outline and the ring.
+  /// With [width], the room a focused part keeps from what stands beside it, in logical pixels.
   final double gap;
 
-  /// This ring with the named values changed.
+  /// This focus with the named values changed.
   ComicFocusRing copyWith({Color? color, double? width, double? gap}) =>
       ComicFocusRing(
         color: color ?? this.color,
@@ -202,7 +205,7 @@ class ComicFocusRing {
         gap: gap ?? this.gap,
       );
 
-  /// The ring [t] of the way from [a] to [b].
+  /// The focus [t] of the way from [a] to [b].
   static ComicFocusRing lerp(ComicFocusRing a, ComicFocusRing b, double t) =>
       ComicFocusRing(
         color: Color.lerp(a.color, b.color, t)!,
@@ -1739,7 +1742,7 @@ class ComicThemeData with Diagnosticable {
     width: strokes.heavy ?? 3,
   );
 
-  /// The keyboard's focus ring, legible on page, card and control grounds.
+  /// The keyboard's focus ink and room, legible on page, card and control grounds.
   ComicFocusRing get focus => _focus;
 
   /// Whether this is a light page or a dark one: `colors.brightness`, as `ThemeData.brightness`.
@@ -2388,7 +2391,7 @@ class ComicLetteringScope extends StatelessWidget {
         style: TextStyle(color: letters),
         child: IconTheme.merge(
           data: IconThemeData(color: letters),
-          child: child,
+          child: Lettered(child: child),
         ),
       ),
     );

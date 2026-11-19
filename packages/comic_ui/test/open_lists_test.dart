@@ -1048,4 +1048,75 @@ void main() {
       }
     },
   );
+
+  // A field the focus lifts toward the start (its pop) keeps its typed list on its face as drawn: the list's edges
+  // stand on the lifted face's, both ways round.
+  for (final direction in TextDirection.values) {
+    for (final kind in ['combobox', 'multi-select']) {
+      testWidgets(
+        'a $kind list starts on its lifted field (${direction.name})',
+        (tester) async {
+          await tester.pumpWidget(
+            comicApp(
+              direction: direction,
+              Center(
+                child: SizedBox(
+                  width: 320,
+                  child: kind == 'combobox'
+                      ? const ComicCombobox<String>(
+                          label: 'Port',
+                          options: ['Porto', 'Porto Santo', 'Lisbon'],
+                        )
+                      : ComicMultiSelect<String>(
+                          label: 'Ports',
+                          options: const ['Porto', 'Porto Santo', 'Lisbon'],
+                          values: const [],
+                          onChanged: (_) {},
+                        ),
+                ),
+              ),
+            ),
+          );
+          await tester.showKeyboard(find.byType(EditableText));
+          await tester.enterText(find.byType(EditableText), 'Port');
+          await tester.pumpAndSettle();
+          // The face as drawn: the field's highlight lifts what is inside its transform.
+          final highlight = find
+              .ancestor(
+                of: find.byType(EditableText),
+                matching: find.byType(ComicHighlight),
+              )
+              .first;
+          final lifted = find
+              .descendant(
+                of: find
+                    .descendant(of: highlight, matching: find.byType(Transform))
+                    .first,
+                matching: find.byType(CustomPaint),
+              )
+              .first;
+          final face = tester.getRect(lifted);
+          final room = tester.getRect(
+            find
+                .descendant(of: highlight, matching: find.byType(Transform))
+                .first,
+          );
+          expect(
+            (face.left - room.left).abs(),
+            greaterThan(1),
+            reason: 'the focused field did not lift',
+          );
+          final list = tester.getRect(find.byType(ComicRaisedFrame).last);
+          final edge = direction == TextDirection.ltr
+              ? list.left - face.left
+              : list.right - face.right;
+          expect(
+            edge.abs(),
+            lessThan(0.5),
+            reason: 'list at $list, the face at $face',
+          );
+        },
+      );
+    }
+  }
 }

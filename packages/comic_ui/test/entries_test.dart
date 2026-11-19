@@ -221,6 +221,167 @@ void main() {
     expect(find.byType(ComicMenu<String>), findsNothing);
   });
 
+  testWidgets('a select field shows its label and is named by it', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      comicApp(
+        ComicSelectField(
+          label: 'Delivery day',
+          value: 'Thursday',
+          onPressed: () {},
+        ),
+      ),
+    );
+    // The label stands above the box, in a text field's label style.
+    final label = tester.widget<Text>(find.text('Delivery day'));
+    final theme = ComicTheme.of(tester.element(find.text('Delivery day')));
+    expect(label.style, theme.type.title);
+    expect(
+      tester.getBottomLeft(find.text('Delivery day')).dy,
+      lessThanOrEqualTo(tester.getTopLeft(find.byType(ComicPressable)).dy),
+    );
+    // One node: the label is the select's name, its value read after it.
+    expect(find.bySemanticsLabel('Delivery day'), findsOneWidget);
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Delivery day')),
+      isSemantics(
+        label: 'Delivery day',
+        value: 'Thursday',
+        isButton: true,
+        hasTapAction: true,
+      ),
+    );
+    handle.dispose();
+  });
+
+  testWidgets('a select field with only a semantic label draws no label', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      comicApp(
+        ComicSelectField(
+          semanticLabel: 'Delivery day',
+          value: 'Thursday',
+          onPressed: () {},
+        ),
+      ),
+    );
+    expect(find.text('Delivery day'), findsNothing);
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Delivery day')),
+      isSemantics(label: 'Delivery day', value: 'Thursday'),
+    );
+    // A semantic label speaks in place of a shown one.
+    await tester.pumpWidget(
+      comicApp(
+        ComicSelectField(
+          label: 'Day',
+          semanticLabel: 'Delivery day',
+          value: 'Thursday',
+          onPressed: () {},
+        ),
+      ),
+    );
+    expect(find.text('Day'), findsOneWidget);
+    expect(find.bySemanticsLabel('Day'), findsNothing);
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Delivery day')),
+      isSemantics(label: 'Delivery day', value: 'Thursday'),
+    );
+    // With neither, the value is its name, as before.
+    await tester.pumpWidget(
+      comicApp(ComicSelectField(value: 'Thursday', onPressed: () {})),
+    );
+    expect(
+      tester.getSemantics(find.bySemanticsLabel('Thursday')),
+      isSemantics(label: 'Thursday', isButton: true),
+    );
+    handle.dispose();
+  });
+
+  testWidgets(
+    'a labelled select is named by its label and opens from its box',
+    (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        comicApp(
+          ComicSelect<String>(
+            label: 'Format',
+            value: 'print',
+            options: const [
+              ComicSelectOption('print', 'Print'),
+              ComicSelectOption('digital', 'Digital'),
+            ],
+            onChanged: (_) {},
+          ),
+        ),
+      );
+      expect(find.text('Format'), findsOneWidget);
+      expect(find.bySemanticsLabel('Format'), findsOneWidget);
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Format')),
+        isSemantics(label: 'Format', value: 'Print', isButton: true),
+      );
+      handle.dispose();
+    },
+  );
+
+  for (final width in [390.0, 800.0]) {
+    for (final bottom in [false, true]) {
+      testWidgets(
+        'a labelled select field opens its menu from its box, not its label '
+        '(${width.round()} wide, ${bottom ? 'at the foot' : 'at the top'})',
+        (tester) async {
+          tester.view.physicalSize = Size(width, 700);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          Future<(Rect, Rect)> open({String? label}) async {
+            await tester.pumpWidget(
+              comicApp(
+                Align(
+                  alignment: bottom
+                      ? Alignment.bottomCenter
+                      : Alignment.topCenter,
+                  child: ComicMenuAnchor<String>(
+                    matchAnchorWidth: true,
+                    items: const [
+                      ComicMenuItem('thu', 'Thursday', selected: true),
+                      ComicMenuItem('fri', 'Friday'),
+                    ],
+                    onSelected: (_) {},
+                    builder: (context, open) => ComicSelectField(
+                      label: label,
+                      value: 'Thursday',
+                      onPressed: open,
+                    ),
+                  ),
+                ),
+              ),
+            );
+            final box = tester.getRect(find.byType(ComicPressable));
+            await tester.tap(find.byType(ComicPressable));
+            await tester.pumpAndSettle();
+            final menu = tester.getRect(find.byType(ComicMenu<String>));
+            await tester.tapAt(Offset.zero);
+            await tester.pumpAndSettle();
+            return (box, menu);
+          }
+
+          final (plainBox, plainMenu) = await open();
+          final (box, menu) = await open(label: 'Delivery day');
+          // The menu stands against the box as it does with no label.
+          expect(box.size, plainBox.size);
+          expect(menu.width, plainMenu.width);
+          expect(menu.left - box.left, plainMenu.left - plainBox.left);
+          expect(menu.top - box.top, plainMenu.top - plainBox.top);
+        },
+      );
+    }
+  }
+
   testWidgets('radio arrows skip disabled options and mirror in RTL', (
     tester,
   ) async {

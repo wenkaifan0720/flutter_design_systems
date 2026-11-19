@@ -1,8 +1,8 @@
 // The one press every control in Comic stands on: the design kit's pressable (focus, Enter and Space, hover, one
 // semantics node, the states) with Comic's face on it, in print (laws 1 and 4): the pointer lays a plain ink
 // shade on the part's own outline, a press swells it and sinks the face (onto its hard print, for a part that stands
-// on one), a disabled face is screened back toward its paper, and a ring only the keyboard sees. Each moves on Comic's
-// motion tokens.
+// on one), a disabled face is screened back toward its paper, and the keyboard's part pops off a hard print. Each
+// moves on Comic's motion tokens.
 import 'package:flutter/foundation.dart';
 
 import 'dart:math' as math;
@@ -14,8 +14,9 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import 'internal/geometry.dart';
+import 'internal/lettered.dart';
+import 'internal/pop.dart';
 import 'internal/reach.dart';
-import 'styled.dart';
 import 'theme.dart';
 
 /// A press's states read by name, for a face that draws its own: `states.hovered`, `states.pressed` and so on.
@@ -357,10 +358,10 @@ class ComicPressable extends StatelessWidget {
   /// The states, when the caller watches or drives them.
   final WidgetStatesController? statesController;
 
-  /// A corner its ring and wash follow when [outline] is null; 0 takes the theme's control step (`shapes.small`).
+  /// A corner its pop and wash follow when [outline] is null; 0 takes the theme's control step (`shapes.small`).
   final double radius;
 
-  /// False when the face draws the ring itself.
+  /// False when the face draws its focus itself.
   final bool ring;
 
   /// Whether hover and press tint the face.
@@ -389,7 +390,7 @@ class ComicPressable extends StatelessWidget {
   /// More keys, on top of Enter and Space: arrows on a radio group, a slider.
   final KeyEventResult Function(FocusNode node, KeyEvent event)? keys;
 
-  /// A styled part's outline, for its states: the ring and the wash follow it in place of [radius]. Null keeps [radius].
+  /// A styled part's outline, for its states: the pop and the wash follow it in place of [radius]. Null keeps [radius].
   final WidgetStateProperty<OutlinedBorder?>? outline;
 
   /// A styled part's wash for its states, as `ButtonStyle.overlayColor`: drawn as given in place of the look's ink at
@@ -664,8 +665,9 @@ OutlinedBorder _defaultOutline(double radius, ComicThemeData t) => radius > 0
     ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(radius))
     : t.shapes.small;
 
-/// A plain ink tint under the pointer or a press, and a keyboard ring following
-/// the control's outline. The tint is uniform across the lettering.
+/// A plain ink tint under the pointer or a press, and the keyboard's pop: under the focus the part lifts up and to the
+/// start off a hard print of its outline, down and to the end, its words on a plain fill. The tint is uniform across the
+/// lettering.
 ///
 /// [ComicPressable] draws it over its whole face. A face whose pressable part is smaller than its target (a tab bar's
 /// indicator above its word) turns the press's own marks off and puts this around that part.
@@ -688,17 +690,15 @@ class ComicHighlight extends StatelessWidget {
     this.printed = false,
   });
 
-  /// Whether the face stands on its print ([ComicPlated]): the ring then goes round the face and its print together,
-  /// clear of both.
+  /// Whether the face stands on its print ([ComicPlated]): lifted, that print shows wider, and no second one is drawn.
   final bool printed;
 
-  /// The press's states: hovered and pressed shade it, focused rings it.
+  /// The press's states: hovered and pressed shade it, focused pops it.
   final Set<WidgetState> states;
 
-  /// An opaque gap, in this colour, between the part and its ring, concentric with both. For a ring drawn on a fill
-  /// (a split button's half inside the act face): the fill around a ring can come close to the ring's own colour, and
-  /// the gap keeps the ring apart from it. A ring on the ground needs none: the gap shows the ground and the part's own
-  /// rim stands between it and the part's fill.
+  /// The plain fill a part with no fill of its own stands on while it pops: the face its words were written on (a
+  /// split button's half on the act face, a trough's cell on the trough). Null: the card. Where the part pops inside
+  /// its row ([PopInside]), the band laid inside its print.
   final Color? ringGap;
 
   /// The part's outline, from the look's shape theme.
@@ -716,7 +716,7 @@ class ComicHighlight extends StatelessWidget {
   /// A styled part's wash for these states, drawn as given.
   final Color? overlay;
 
-  /// Rings under the keyboard's focus.
+  /// Pops under the keyboard's focus.
   final bool ring;
 
   @override
@@ -736,7 +736,10 @@ class ComicHighlight extends StatelessWidget {
         : 0.0;
     final tint = over ?? (washColor ?? t.colors.text).withValues(alpha: .10);
     final motion = ComicMotion.of(context);
-    // The wash and the ring each move from where they are: the ring inks in round the face, and out.
+    final direction = Directionality.maybeOf(context);
+    final end = direction == TextDirection.rtl ? -1.0 : 1.0;
+    // The wash and the pop each move from where they are: under the keyboard the part pops off the page, lifting up
+    // and to the start off a hard print of its outline, and settles back.
     return TweenAnimationBuilder<double>(
       tween: Tween(end: ringed ? 1 : 0),
       duration: motion.state,
@@ -747,27 +750,60 @@ class ComicHighlight extends StatelessWidget {
         duration: motion.press,
         curve: Curves.easeOut,
         child: child,
-        builder: (context, w, child) => CustomPaint(
-          foregroundPainter: w <= 0 && r <= 0
+        builder: (context, w, child) {
+          final outline = shape.copyWith(side: BorderSide.none);
+          final popped = r > 0;
+          // A part with no fill of its own pops on the card, a panel off the page, unless it stands on a filled ground
+          // (a lamp, a chosen row): that fill stays behind its words, and its print takes their ink, which reads on it.
+          final ground = !popped
               ? null
-              : _PressPainter(
-                  w <= 0 ? null : tint.withValues(alpha: tint.a * w),
-                  // Drawn, not faded: the ring's line thickens from nothing to its width.
-                  r <= 0
-                      ? null
-                      : ComicFocusRing(
-                          color: t.focus.color,
-                          width: t.focus.width * r.clamp(0, 1),
-                          gap: t.focus.gap,
-                        ),
-                  shape.copyWith(side: BorderSide.none),
-                  Directionality.maybeOf(context),
-                  r <= 0 ? null : ringGap,
-                  printed ? comicPressPlate : 0,
-                  !RingInClip.of(context),
-                ),
-          child: child,
-        ),
+              : ringGap ?? (Lettered.of(context) ? null : t.colors.card);
+          final ink = ground == null ? t.colors.text : _printInk(t, ground);
+          final inside = popped && PopInside.of(context);
+          final lift = popped && !inside
+              ? Offset(-end * comicFocusLift * r, -comicFocusLift * r)
+              : Offset.zero;
+          final step = t.focus.width * r;
+          // One tree in every state, only its paint and offset change, so the part (a field, a scrolling list) keeps
+          // its state as the focus comes and goes.
+          return CustomPaint(
+            // A part on its print already stands on one: lifted, the print shows wider. Any other gets its own.
+            painter: !popped || inside || printed
+                ? null
+                : _PopPainter(
+                    outline,
+                    ink,
+                    ground,
+                    Offset(end * step, step),
+                    lift,
+                    direction ?? TextDirection.ltr,
+                  ),
+            foregroundPainter: !inside
+                ? null
+                : _InsetPrint(
+                    outline,
+                    ink,
+                    ringGap,
+                    (t.focus.width + 2) * r,
+                    direction ?? TextDirection.ltr,
+                  ),
+            // Drawn, not hit: the part answers the pointer where it stood.
+            child: Transform.translate(
+              offset: lift,
+              transformHitTests: false,
+              child: CustomPaint(
+                foregroundPainter: w <= 0
+                    ? null
+                    : _WashPainter(
+                        tint.withValues(alpha: tint.a * w),
+                        outline,
+                        direction,
+                      ),
+                child: child,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -810,141 +846,85 @@ class ComicHighlight extends StatelessWidget {
 
 const double _hoverShade = .65;
 
-class _PressPainter extends CustomPainter {
-  _PressPainter(
-    this.wash,
-    this.ring,
-    this.drawn,
-    this.direction, [
-    this.gap,
-    this.print = 0,
-    this.emanata = true,
-  ]);
+/// The pointer's and the press's tint, filling the part's outline.
+class _WashPainter extends CustomPainter {
+  _WashPainter(this.wash, this.drawn, this.direction);
 
-  /// How far the face's print stands down and to the end; the ring goes round both.
-  final double print;
-
-  /// Whether the ring's corners carry emanata: not inside a container that clips at its edge ([RingInClip]).
-  final bool emanata;
-
-  /// The part's outline: the wash fills it, the ring stands concentric outside it.
+  final Color wash;
   final OutlinedBorder drawn;
   final TextDirection? direction;
-  final Color? wash;
-  final ComicFocusRing? ring;
 
-  /// [ComicHighlight.ringGap]: the band from the outline to the ring's centre, filled before the ring is stroked over
-  /// its outer half.
+  @override
+  void paint(Canvas canvas, Size size) => canvas.drawPath(
+    drawn.getOuterPath(Offset.zero & size, textDirection: direction),
+    fillPaint(wash),
+  );
+
+  @override
+  bool shouldRepaint(_WashPainter o) =>
+      o.wash != wash || o.drawn != drawn || o.direction != direction;
+}
+
+/// The print a focused part pops off where it cannot lift (a row edge to edge in its list, [PopInside]): a band
+/// [step] deep inside its outline along the bottom and the end, as its shadow would show, with a band of [gap] inside
+/// it to keep it apart from a fill near its ink.
+class _InsetPrint extends CustomPainter {
+  const _InsetPrint(
+    this.outline,
+    this.ink,
+    this.gap,
+    this.step,
+    this.direction,
+  );
+
+  final OutlinedBorder outline;
+  final Color ink;
   final Color? gap;
+  final double step;
+  final TextDirection direction;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final r = Offset.zero & size;
-    if (wash != null) {
-      canvas.drawPath(
-        drawn.getOuterPath(r, textDirection: direction),
-        fillPaint(wash!),
+    if (step <= 0) return;
+    final box = Offset.zero & size;
+    final end = direction == TextDirection.rtl ? -1.0 : 1.0;
+    final face = outline.getOuterPath(box, textDirection: direction);
+    // Even-odd: the outline less itself moved up and to the start (the web build doesn't cut a difference).
+    Path band(double d) => Path()
+      ..fillType = PathFillType.evenOdd
+      ..addPath(face, Offset.zero)
+      ..addPath(
+        outline.getOuterPath(
+          box.shift(Offset(-end * d, -d)),
+          textDirection: direction,
+        ),
+        Offset.zero,
       );
-    }
-    final ring = this.ring;
-    if (ring != null) {
-      final rtl = direction == TextDirection.rtl;
-      final box = print <= 0
-          ? r
-          : Rect.fromLTRB(
-              r.left - (rtl ? print : 0),
-              r.top,
-              r.right + (rtl ? 0 : print),
-              r.bottom + print,
-            );
-      final centre = comicOutsetShape(
-        drawn,
-        ring.gap,
-      ).getOuterPath(box.inflate(ring.gap), textDirection: direction);
-      final gap = this.gap;
-      if (gap != null) {
-        // Even-odd, not Path.combine: the web build doesn't cut a difference (Flutter 3.47).
-        canvas.drawPath(
-          Path()
-            ..fillType = PathFillType.evenOdd
-            ..addPath(centre, Offset.zero)
-            ..addPath(
-              drawn.getOuterPath(box, textDirection: direction),
-              Offset.zero,
-            ),
-          fillPaint(gap),
-        );
-      }
-      canvas.drawPath(centre, strokePaint(ring.color, ring.width));
-      if (emanata) {
-        _emanata(
-          canvas,
-          ring,
-          comicOutsetShape(drawn, ring.gap),
-          box.inflate(ring.gap),
-        );
-      }
-    }
-  }
-
-  // Emanata, the comic's "look here" ticks: three at each corner of the ring, on the ring's own curve where a corner is
-  // round, growing with the ring as it inks in (law 6: drawn, not faded).
-  void _emanata(
-    Canvas canvas,
-    ComicFocusRing ring,
-    OutlinedBorder shape,
-    Rect box,
-  ) {
-    final w = ring.width;
-    if (w <= 0) return;
-    final half = math.min(box.width, box.height) / 2;
-    final radius = switch (shape) {
-      CircleBorder() || StadiumBorder() => half,
-      RoundedRectangleBorder(:final borderRadius) => math.min(
-        half,
-        borderRadius.resolve(direction).topLeft.x,
-      ),
-      _ => 0.0,
-    };
-    // The 45-degree point of a round corner stands this far in from the box's corner on each axis.
-    final inset = radius * (1 - math.sqrt1_2);
-    final paint = strokePaint(ring.color, w * comicEmanataWeight)
-      ..strokeCap = StrokeCap.round;
-    for (final (dx, dy) in const [
-      (-1.0, -1.0),
-      (1.0, -1.0),
-      (-1.0, 1.0),
-      (1.0, 1.0),
-    ]) {
-      final corner = Offset(
-        (dx < 0 ? box.left : box.right) - dx * inset,
-        (dy < 0 ? box.top : box.bottom) - dy * inset,
-      );
-      final out = math.atan2(dy, dx);
-      for (final turn in const [-comicEmanataSpread, 0.0, comicEmanataSpread]) {
-        final a = out + turn;
-        final along = Offset(math.cos(a), math.sin(a));
-        final start = corner + along * (w + comicEmanataGap);
-        canvas.drawLine(start, start + along * (w * comicEmanataLength), paint);
-      }
-    }
+    canvas
+      ..save()
+      ..clipPath(face);
+    final gap = this.gap;
+    if (gap != null) canvas.drawPath(band(step + 2), fillPaint(gap));
+    canvas
+      ..drawPath(band(step), fillPaint(ink))
+      ..restore();
   }
 
   @override
-  bool shouldRepaint(_PressPainter o) =>
+  bool shouldRepaint(_InsetPrint o) =>
+      o.outline != outline ||
+      o.ink != ink ||
       o.gap != gap ||
-      o.print != print ||
-      o.emanata != emanata ||
-      o.wash != wash ||
-      o.ring?.color != ring?.color ||
-      o.ring?.width != ring?.width ||
-      o.ring?.gap != ring?.gap ||
-      o.drawn != drawn ||
+      o.step != step ||
       o.direction != direction;
 }
 
-/// Emanata at the focus ring's corners: each tick this many ring widths long and this fraction of its weight, [comicEmanataGap]
-/// clear of the ring, fanned [comicEmanataSpread] radians either side of the corner's diagonal.
+/// Emanata at the corners of the focus ring Comic drew before its focus became the pop: each tick this many ring widths
+/// long and this fraction of its weight, [comicEmanataGap] clear of the ring, fanned [comicEmanataSpread] radians either
+/// side of the corner's diagonal.
+@Deprecated(
+  'Comic no longer draws a focus ring or its emanata: a focused part pops off its print.',
+)
 const double comicEmanataLength = 1.5,
     comicEmanataWeight = .8,
     comicEmanataGap = 1.5,
@@ -1020,6 +1000,67 @@ class ComicPlated extends StatelessWidget {
       )
       ..add(DiagnosticsProperty<OutlinedBorder>('shape', shape));
   }
+}
+
+/// The print a focused part pops off: its outline [step] down and to the end in [ink], and the face lifted by [lift]
+/// laid on a plain [ground], so a part with no fill of its own (a link, a quiet button, a row) pops as a panel with its
+/// words on a plain fill. A part with a fill covers the ground with its own; with no [ground] the fill under the part
+/// (a lamp, a chosen row) stays behind it.
+class _PopPainter extends CustomPainter {
+  const _PopPainter(
+    this.outline,
+    this.ink,
+    this.ground,
+    this.step,
+    this.lift,
+    this.direction,
+  );
+  final ShapeBorder outline;
+  final Color ink;
+  final Color? ground;
+  final Offset step, lift;
+  final TextDirection direction;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final box = Offset.zero & size;
+    final print = outline.getOuterPath(
+      box.shift(step),
+      textDirection: direction,
+    );
+    // Even-odd round the lifted face: the clip is everything but the face (the web build doesn't cut a difference).
+    final outside = Path()
+      ..fillType = PathFillType.evenOdd
+      ..addRect(box.inflate(step.distance + lift.distance + 8))
+      ..addPath(
+        outline.getOuterPath(box.shift(lift), textDirection: direction),
+        Offset.zero,
+      );
+    canvas
+      ..save()
+      ..clipPath(outside)
+      ..drawPath(print, fillPaint(ink))
+      ..restore();
+    final ground = this.ground;
+    if (ground != null) {
+      canvas.drawPath(
+        outline.getOuterPath(box.shift(lift), textDirection: direction),
+        fillPaint(ground),
+      );
+    }
+  }
+
+  @override
+  bool? hitTest(Offset position) => false;
+
+  @override
+  bool shouldRepaint(_PopPainter old) =>
+      old.outline != outline ||
+      old.ink != ink ||
+      old.ground != ground ||
+      old.step != step ||
+      old.lift != lift ||
+      old.direction != direction;
 }
 
 class _PrintPainter extends CustomPainter {
@@ -1136,6 +1177,23 @@ class _ScreenScope extends InheritedWidget {
 
   @override
   bool updateShouldNotify(_ScreenScope old) => old.ground != ground;
+}
+
+/// A focus print's ink on [ground]: the plate's, as every print in the comic, unless it would not show there (a
+/// caption's yellow at night); then the first of the comic's inks that reaches 3:1 on it, or the one that shows most.
+Color _printInk(ComicThemeData t, Color ground) {
+  final g = ground.computeLuminance();
+  double on(Color ink) => _contrastOf(ink.computeLuminance(), g);
+  final inks = [
+    t.colors.nightLine,
+    t.colors.onCaption,
+    t.colors.text,
+    t.focus.color,
+  ];
+  for (final ink in inks) {
+    if (on(ink) >= 3) return ink;
+  }
+  return inks.reduce((a, b) => on(a) >= on(b) ? a : b);
 }
 
 /// The contrast between two colours, as WCAG reckons it.

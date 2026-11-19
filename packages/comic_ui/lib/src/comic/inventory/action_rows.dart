@@ -380,8 +380,8 @@ class ComicSplitButton extends StatelessWidget {
               states: states,
               shape: inner,
               washColor: ink,
-              // The ring stands on the act face, not the ground: the ground's colour between keeps it apart.
-              ringGap: c.background,
+              // A half pops on the act face, where its words were written.
+              ringGap: look.fill ?? c.primary,
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: part == DesignSplitPart.main ? 13 : 6,

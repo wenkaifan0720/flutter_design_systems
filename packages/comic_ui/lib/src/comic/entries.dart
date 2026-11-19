@@ -383,7 +383,7 @@ class ComicSelect<T> extends StatelessWidget {
   /// Receives a selection.
   final ValueChanged<T>? onChanged;
 
-  /// Optional visible field label.
+  /// Optional visible field label, also the field's spoken name.
   final String? label;
 
   /// Overrides the localized empty prompt.
@@ -415,10 +415,6 @@ class ComicSelect<T> extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (label != null) ...[
-            Text(label!, style: t.type.title),
-            const SizedBox(height: ComicSpace.close),
-          ],
           ComicMenuAnchor<T>(
             matchAnchorWidth: true,
             items: [
@@ -431,10 +427,12 @@ class ComicSelect<T> extends StatelessWidget {
                 ),
             ],
             onSelected: onChanged,
+            // The field draws the label and speaks it as its name.
             builder: (context, open) => ComicSelectField(
               focusNode: focusNode,
               autofocus: autofocus,
               style: style,
+              label: label,
               value: text,
               onPressed: onChanged == null ? null : open,
             ),
@@ -721,7 +719,7 @@ class _ComicRadioGroupState<T> extends State<ComicRadioGroup<T>> {
         children: [
           ExcludeSemantics(child: Text(widget.label, style: t.type.title)),
           for (var i = 0; i < widget.options.length; i++)
-            // The row's side room stands outward, its wash round the ring, the ring on the column's edge.
+            // The row's side room stands outward, its wash and its pop on the column's edge.
             ComicOutward(
               margin: const EdgeInsets.symmetric(horizontal: ComicSpace.tight),
               child: ComicPressable(

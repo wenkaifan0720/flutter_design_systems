@@ -193,6 +193,13 @@ void main() {
     of: find.byElementPredicate((x) => identical(x, e)),
     matching: matching,
   );
+  Element selectWords(Element select) => find
+      .descendant(
+        of: within(select, find.byType(ComicPressable)).first,
+        matching: find.byType(RichText),
+      )
+      .evaluate()
+      .first;
 
   for (final width in [390.0, 1440.0]) {
     for (final (name, body) in [('account', gateAccount), ('shop', gateShop)]) {
@@ -205,10 +212,10 @@ void main() {
               'field ${(e.widget as ComicTextField).label}':
                   left(within(e, find.byType(EditableText)).evaluate().first) -
                   left(e),
+            // A select's words in its box (its press), not its label above the box.
             for (final e in find.byType(ComicSelectField).evaluate())
               'select ${(e.widget as ComicSelectField).value}':
-                  left(within(e, find.byType(RichText)).evaluate().first) -
-                  left(e),
+                  left(selectWords(e)) - left(e),
             for (final e in find.byType(ComicChoiceBox).evaluate())
               'choice ${(e.widget as ComicChoiceBox).label}':
                   left(within(e, find.byType(RichText)).evaluate().first) -
@@ -237,9 +244,7 @@ void main() {
   ) async {
     await pumpScreen(tester, 390, gateAccount);
     final select = find.byType(ComicSelectField);
-    final value = left(
-      within(select.evaluate().first, find.byType(RichText)).evaluate().first,
-    );
+    final value = left(selectWords(select.evaluate().first));
     await tester.tap(select);
     await settle(tester);
     final row = tester.getTopLeft(find.text('Express delivery')).dx;
@@ -252,7 +257,7 @@ void main() {
 
   // Every select and dropdown at 600, 1024, 1440 and 1920 (the user, 16:34: 'the width for dropdown seems to be a
   // common problem'): closed, its face at most about 320 at its column's start; open, its list at least as wide as
-  // the face and on its leading edge.
+  // the face (a typed field's as drawn, lifted by its focus) and on its leading edge.
   for (final width in [600.0, 1024.0, 1440.0, 1920.0]) {
     testWidgets('dropdowns keep their width at ${width.toInt()}', (
       tester,
@@ -328,6 +333,26 @@ void main() {
           reason: '$name closed at ${rect.left}, the column at $column',
         );
       }
+      // A field's face as drawn: typed in, the field has the focus and its pop lifts the face toward the start.
+      Rect drawn(Finder face) {
+        final editor = find.descendant(
+          of: face,
+          matching: find.byType(EditableText),
+        );
+        if (editor.evaluate().isEmpty) return tester.getRect(face);
+        final lift = find
+            .descendant(
+              of: find
+                  .ancestor(of: editor, matching: find.byType(ComicHighlight))
+                  .first,
+              matching: find.byType(Transform),
+            )
+            .first;
+        return tester.getRect(
+          find.descendant(of: lift, matching: find.byType(CustomPaint)).first,
+        );
+      }
+
       Future<void> opens(
         String name,
         Finder face,
@@ -336,7 +361,7 @@ void main() {
       ) async {
         await open();
         await settle(tester);
-        final f = tester.getRect(face), l = tester.getRect(list.first);
+        final f = drawn(face), l = tester.getRect(list.first);
         expect(
           l.width,
           greaterThanOrEqualTo(f.width - 0.5),

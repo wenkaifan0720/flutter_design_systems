@@ -659,7 +659,7 @@ class ComicRating extends StatelessWidget {
     final words = ComicLocalizations.of(context);
     // Each star's press stands at its floor (the design kit's tap target), the star itself on its slot's start, so the
     // first inks on the column's keyline as the read-only stars do; the stars sit a floor apart. The marks of a press
-    // (the dots under the pointer, the chosen disc) fill the star's own round face; the focus ring stands round it.
+    // (the dots under the pointer, the chosen disc) fill the star's own round face, which pops under the keyboard.
     return Semantics(
       label: label,
       value: words.rating(value, of),

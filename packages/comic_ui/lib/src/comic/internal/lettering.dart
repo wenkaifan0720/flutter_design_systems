@@ -9,6 +9,14 @@ import 'package:flutter/widgets.dart';
 /// setting until 32 px and stop there, never below their own size.
 const double comicLetteringMost = 32;
 
+/// The most a calendar's weekday initials grow with the reader's text size: twice, as Material's calendar. Larger,
+/// seven initials fill a phone's row of day cells and touch.
+const double comicWeekdayScaleMost = 2;
+
+/// The most a chart's scale words grow with the reader's text size: 1.3 times, as Material's slider value label. They
+/// stand side by side under the bar; larger, one leaves the other too narrow for its words.
+const double comicScaleWordsMost = 1.3;
+
 /// The reader's text scaler, capped so [style]'s lettering stops growing at
 /// [comicLetteringMost].
 TextScaler comicLetteringScaler(BuildContext context, TextStyle style) {

@@ -1,7 +1,7 @@
 name: comic_ui
 description: >-
   A Flutter design system drawn as a printed comic page: inked panels, speech balloons and Ben-Day dots in flat inks, every change of state a quick cut or pop.
-version: 0.3.1
+version: 0.3.2
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/comic/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/comic_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues

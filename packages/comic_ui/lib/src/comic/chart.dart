@@ -321,7 +321,7 @@ class ComicBarChart extends ComicLineChart {
 
 class _ComicChartState extends State<ComicChart> {
   bool _focused = false;
-  // ui_core's chart takes the keys on this node; Comic rings the whole chart (its labels and key too) while it has them.
+  // ui_core's chart takes the keys on this node; the whole chart (its labels and key too) pops while it has them.
   late final FocusNode _focus = FocusNode(debugLabel: 'ComicChart')
     ..addListener(() {
       if (_focused != _focus.hasFocus) {
@@ -561,8 +561,8 @@ class _ComicChartState extends State<ComicChart> {
         Text(words, style: axis),
       ],
     );
-    // A chart is a stop in the tab order (the arrows read its points), so it wears the ring every stop wears, round the
-    // whole chart at the control step. Its words are its one node's, ui_core's chart's (its label, its summary, a step
+    // A chart is a stop in the tab order (the arrows read its points), so it pops as every stop does, the whole chart
+    // at the control step. Its words are its one node's, ui_core's chart's (its label, its summary, a step
     // per point): the labels and the key under the plot are not read again.
     return ComicHighlight(
       states: _focused ? const {WidgetState.focused} : const <WidgetState>{},

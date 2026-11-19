@@ -8,7 +8,7 @@ import 'package:intl/intl.dart' show Bidi;
 
 import '../balloons.dart';
 import '../internal/geometry.dart';
-import '../internal/lettering.dart' show comicDisplayFor;
+import '../internal/lettering.dart' show comicDisplayFor, comicScaleWordsMost;
 import '../heads.dart';
 import '../layout.dart';
 import '../people.dart';
@@ -1225,22 +1225,39 @@ class ComicShares extends StatelessWidget {
         if (scaleStart != null || scaleEnd != null || scaleNote != null)
           Padding(
             padding: const EdgeInsets.only(top: ComicSpace.close),
-            child: ComicFitRow(
-              fill: 1,
-              fillShare: .34,
-              children: [
-                Text(scaleStart ?? '', style: scaleStyle),
-                Text(
-                  scaleNote ?? '',
-                  style: scaleStyle,
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  scaleEnd ?? '',
-                  style: scaleStyle,
-                  textAlign: TextAlign.end,
-                ),
-              ],
+            // The scale's words grow at most 1.3 times with the reader's text. With no note between them, the start
+            // takes what the end leaves, never less than its longest word, so each wraps only between words.
+            child: MediaQuery.withClampedTextScaling(
+              maxScaleFactor: comicScaleWordsMost,
+              child: scaleNote == null
+                  ? ComicFitRow(
+                      fill: 0,
+                      children: [
+                        Text(scaleStart ?? '', style: scaleStyle),
+                        Text(
+                          scaleEnd ?? '',
+                          style: scaleStyle,
+                          textAlign: TextAlign.end,
+                        ),
+                      ],
+                    )
+                  : ComicFitRow(
+                      fill: 1,
+                      fillShare: .34,
+                      children: [
+                        Text(scaleStart ?? '', style: scaleStyle),
+                        Text(
+                          scaleNote!,
+                          style: scaleStyle,
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          scaleEnd ?? '',
+                          style: scaleStyle,
+                          textAlign: TextAlign.end,
+                        ),
+                      ],
+                    ),
             ),
           ),
         const SizedBox(height: ComicSpace.near),

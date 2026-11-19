@@ -15,6 +15,7 @@ import '../press.dart';
 import '../styled.dart';
 import '../theme.dart';
 import '../knobs.dart' show ComicSpace;
+import 'pop.dart';
 
 /// The trough: [shape] filled with [fill] and ringed by [rim], holding [cells] in reading order.
 ///
@@ -83,7 +84,7 @@ class ComicTrack extends StatelessWidget {
   /// The cells, in reading order.
   final List<Widget> cells;
 
-  /// The outline a cell's face, wash and ring take inside a trough of [shape] with [rim].
+  /// The outline a cell's face, wash and focus print take inside a trough of [shape] with [rim].
   static OutlinedBorder cellShape(
     OutlinedBorder shape,
     BorderSide rim, [
@@ -107,6 +108,7 @@ class ComicTrack extends StatelessWidget {
       shape: shape,
       rim: rim,
       fill: fill,
+      thumb: thumb,
       child: TweenAnimationBuilder<double>(
         tween: Tween(end: lit?.toDouble() ?? -1),
         duration: still || lit == null ? Duration.zero : motion.state,
@@ -144,7 +146,11 @@ class ComicTrough extends StatelessWidget {
     required this.fill,
     required this.child,
     this.clip = false,
+    this.thumb,
   });
+
+  /// The chosen cell's fill, which a focused chosen cell pops on.
+  final Color? thumb;
 
   /// The trough's outline.
   final OutlinedBorder shape;
@@ -169,6 +175,8 @@ class ComicTrough extends StatelessWidget {
     );
     return _TrackRim(
       rim: rim.width,
+      fill: fill,
+      thumb: thumb,
       child: DecoratedBox(
         position: DecorationPosition.foreground,
         decoration: ShapeDecoration(shape: shape.copyWith(side: rim)),
@@ -191,19 +199,31 @@ class ComicTrough extends StatelessWidget {
 
 /// The rim's width, for the faces of a trough's cells: a cell spans the rim's bands, its face stands inside them.
 class _TrackRim extends InheritedWidget {
-  const _TrackRim({required this.rim, required super.child});
+  const _TrackRim({
+    required this.rim,
+    required super.child,
+    this.fill,
+    this.thumb,
+  });
 
   final double rim;
+
+  /// The trough's fill and its thumb's, which a focused cell pops on.
+  final Color? fill, thumb;
+
+  static _TrackRim? _of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_TrackRim>();
 
   static double of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<_TrackRim>()?.rim ?? 0;
 
   @override
-  bool updateShouldNotify(_TrackRim old) => rim != old.rim;
+  bool updateShouldNotify(_TrackRim old) =>
+      rim != old.rim || fill != old.fill || thumb != old.thumb;
 }
 
 /// A cell's face inside a trough: [child] centred [gap] inside the cell, with the press's marks in [shape], so its
-/// wash and ring are concentric with the trough and the thumb. Where the row is too narrow for a cell's words they
+/// wash and its focus print are concentric with the trough and the thumb. Where the row is too narrow for a cell's words they
 /// shrink on one line rather than break, so every cell keeps one height and its words their place.
 class ComicTrackFace extends StatelessWidget {
   /// Creates a cell face.
@@ -246,32 +266,43 @@ class ComicTrackFace extends StatelessWidget {
   final EdgeInsetsGeometry padding;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.symmetric(
-      horizontal: gap,
-      vertical: gap + _TrackRim.of(context),
-    ),
-    child: ComicStateDecoration(
-      decoration: fill == null
-          ? const BoxDecoration()
-          : ShapeDecoration(color: fill, shape: shape),
-      child: ComicHighlight(
-        states: states,
-        shape: shape,
-        overlay: overlay,
-        child: Padding(
-          padding: padding,
-          child: Center(
-            widthFactor: 1,
-            heightFactor: 1,
-            child: wrap
-                ? child
-                : FittedBox(fit: BoxFit.scaleDown, child: child),
+  Widget build(BuildContext context) {
+    final track = _TrackRim._of(context);
+    final ground =
+        fill ??
+        (states.contains(WidgetState.selected) ? track?.thumb : null) ??
+        track?.fill;
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: gap,
+        vertical: gap + _TrackRim.of(context),
+      ),
+      child: ComicStateDecoration(
+        decoration: fill == null
+            ? const BoxDecoration()
+            : ShapeDecoration(color: fill, shape: shape),
+        // Cells stand side by side inside the rim, so the keyboard's cell pops inside itself, as a row does.
+        child: PopInside(
+          child: ComicHighlight(
+            states: states,
+            shape: shape,
+            overlay: overlay,
+            ringGap: ground,
+            child: Padding(
+              padding: padding,
+              child: Center(
+                widthFactor: 1,
+                heightFactor: 1,
+                child: wrap
+                    ? child
+                    : FittedBox(fit: BoxFit.scaleDown, child: child),
+              ),
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _Cells extends MultiChildRenderObjectWidget {
@@ -649,21 +680,20 @@ class ComicAnchorFace extends SingleChildRenderObjectWidget {
 
 class _RenderAnchorFace extends RenderProxyBox {}
 
-/// The box a menu opens from when anchored on [root]: the marked face found down [root]'s single-child chain, or
-/// [root] itself.
+/// The box a menu opens from when anchored on [root]: the one marked face under [root] (a labelled field's box,
+/// not its label), or [root] itself when there is none or more than one.
 RenderBox comicAnchorFaceOf(RenderBox root) {
-  RenderObject? at = root;
-  while (at != null) {
-    if (at is _RenderAnchorFace) return at;
-    RenderObject? only;
-    var count = 0;
-    at.visitChildren((child) {
-      only = child;
-      count++;
-    });
-    at = count == 1 ? only : null;
+  final faces = <RenderBox>[];
+  void find(RenderObject at) {
+    if (at is _RenderAnchorFace) {
+      faces.add(at);
+      return;
+    }
+    at.visitChildren(find);
   }
-  return root;
+
+  find(root);
+  return faces.length == 1 ? faces.single : root;
 }
 
 /// Keeps a button at its content width on screens at least 600 pixels wide

@@ -163,7 +163,8 @@ class RenderComicOutward extends RenderShiftedBox {
   Rect? describeSemanticsClip(RenderObject? child) => Offset.zero & size;
 }
 
-/// Keeps a focus ring inside its clipping ancestor by shortening the corner marks.
+/// Marks content cut at its clipping ancestor's edge (a panel's). Comic's focus pop reaches 3 px past a part, inside
+/// the room a part keeps from a panel's edge, so it draws whole there; this no longer changes what is drawn.
 class RingInClip extends InheritedWidget {
   /// Creates a [RingInClip].
   const RingInClip({super.key, required super.child});

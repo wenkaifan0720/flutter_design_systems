@@ -1063,8 +1063,8 @@ class ComicTextField extends StatelessWidget {
         : this.trailing;
     final frame = AnimatedComicShape(
       shape: look.shape ?? (maxLines > 1 ? t.shapes.medium : t.shapes.small),
-      // The keyboard's focus rings the field as it rings every part: the look's ring, concentric outside the frame
-      // (the frame recoloured to the ring's ink was the same ink as its rim in light).
+      // The keyboard's field pops as every part does: the frame lifts off a hard print of itself (the frame recoloured
+      // to the focus ink was the same ink as its rim in light).
       builder: (context, shape) => ComicHighlight(
         states: {if (effectiveFocus.hasFocus) WidgetState.focused},
         shape: shape ?? const RoundedRectangleBorder(),
@@ -1474,10 +1474,11 @@ class ComicSendButton extends StatelessWidget {
   }
 }
 
-/// A read-only picker: a value, a dim note and a arrow, in a field's box.
+/// A read-only picker: a value, a dim note and a arrow, in a field's box, under an optional [label].
+/// A screen reader names it by [semanticLabel], else [label], and reads [value] after the name.
 ///
 /// ```dart
-/// ComicSelectField(value: 'Current ··3108', note: 'Change', onPressed: () {})
+/// ComicSelectField(label: 'Account', value: 'Current ··3108', note: 'Change', onPressed: () {})
 /// ```
 class ComicSelectField extends StatelessWidget {
   /// Creates a [ComicSelectField].
@@ -1486,6 +1487,8 @@ class ComicSelectField extends StatelessWidget {
     this.style,
     required this.value,
     this.note,
+    this.label,
+    this.semanticLabel,
     this.onPressed,
     this.focusNode,
     this.autofocus = false,
@@ -1499,6 +1502,14 @@ class ComicSelectField extends StatelessWidget {
 
   /// Secondary explanatory text.
   final String? note;
+
+  /// The field's name, shown above its box in the field-label style (as [ComicTextField]'s) and spoken as the
+  /// field's name. Null: no line above the box.
+  final String? label;
+
+  /// The name a screen reader speaks, in place of [label]: for a select with no visible label, or one whose label
+  /// leans on what is beside it. Null: [label]; with neither, the select is named by its [value].
+  final String? semanticLabel;
 
   /// {@macro comic.onPressed}
   final VoidCallback? onPressed;
@@ -1514,14 +1525,17 @@ class ComicSelectField extends StatelessWidget {
     final t = ComicTheme.of(context), c = t.colors;
     final layers = [style, t.textFieldTheme],
         base = comicStyleOf([style, t.textFieldTheme], const {});
+    final name = semanticLabel ?? label;
     // A dropdown's face: its content's width, at most comicDropdownMost from 600 up.
-    return comicDropdownWidth(
+    final face = comicDropdownWidth(
       context,
       ComicPressable(
         focusNode: focusNode,
         autofocus: autofocus,
         onPressed: onPressed,
-        label: value,
+        // Named, it reads its name and then its value; unnamed, its value is its name.
+        label: name ?? value,
+        value: name == null ? null : value,
         // Under a ComicMenuAnchor (a select), expanded while its list is up.
         expanded: ComicMenuOpen.of(context),
         // The Down arrow opens it, as Enter and Space do.
@@ -1601,6 +1615,17 @@ class ComicSelectField extends StatelessWidget {
         },
       ),
     );
+    if (label == null) return face;
+    // The label stands above the box as a text field's does; the box is what a menu opens from.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ExcludeSemantics(child: Text(label!, style: t.type.title)),
+        const SizedBox(height: ComicSpace.close),
+        face,
+      ],
+    );
   }
 
   @override
@@ -1610,6 +1635,8 @@ class ComicSelectField extends StatelessWidget {
       ..add(DiagnosticsProperty<ComicStyle>('style', style, defaultValue: null))
       ..add(StringProperty('value', value))
       ..add(StringProperty('note', note, defaultValue: null))
+      ..add(StringProperty('label', label, defaultValue: null))
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -3166,7 +3193,7 @@ class _Action extends StatelessWidget {
       },
     );
     // Quiet words with no surface at rest start on their column's edge: the room before them is drawn outward only (its
-    // wash and ring), and the box they take, the one a tap and a screen reader reach, stands at least the floor. Held
+    // wash and its pop), and the box they take, the one a tap and a screen reader reach, stands at least the floor. Held
     // at a set width (a phone's stacked actions) they stay centred in it.
     final dir = Directionality.of(context);
     final restShape = base.shape ?? t.shapes.small;

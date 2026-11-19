@@ -1,7 +1,7 @@
 // What the behaviour tests share (behaviour_test, behaviour_styled_test, behaviour_pages_test): the table of
 // interactive parts, the host, the checks and the groups.
 // The behaviour law (looks/COMPLETE.md §2a). Every part that takes a callback is enumerated from the source, so a new
-// one fails here until it is named in the table. Each one: Tab reaches it, its focus ring paints, Enter and Space press
+// one fails here until it is named in the table. Each one: Tab reaches it, it pops under the focus, Enter and Space press
 // it, with no callback it takes no focus and its face is told it is disabled, a hover reaches its face's states, and with
 // animations disabled nothing it does leaves a running animation. Each part, and every example page, lays out with no
 // exception at 390, 768, 1024 and 1440, at text scale 2.0 and right to left.
@@ -703,11 +703,18 @@ List<String> _crushed(WidgetTester tester) => [
       '"${p.text.toPlainText().trim()}" ${p.size.width.toStringAsFixed(0)}x${p.size.height.toStringAsFixed(0)}',
 ];
 
-/// Foreground painters: a focus ring is one.
-int _painters(WidgetTester tester) => tester
-    .widgetList<CustomPaint>(find.byType(CustomPaint))
-    .where((p) => p.foregroundPainter != null)
-    .length;
+/// The parts popped under the keyboard's focus: a print beside the part or inside it, or a part on its own print
+/// lifted off it.
+int _pops(WidgetTester tester) =>
+    tester.widgetList<CustomPaint>(find.byType(CustomPaint)).where((p) {
+      final child = p.child;
+      return p.painter?.runtimeType.toString() == '_PopPainter' ||
+          p.foregroundPainter?.runtimeType.toString() == '_InsetPrint' ||
+          (child is Transform &&
+              !child.transformHitTests &&
+              (child.transform.getTranslation().x != 0 ||
+                  child.transform.getTranslation().y != 0));
+    }).length;
 
 List<DesignPressableState> _pressables(WidgetTester tester) => tester
     .stateList<DesignPressableState>(find.byType(DesignPressable))
@@ -870,7 +877,7 @@ void behaviourLaws() {
   });
 }
 
-/// Each part's behaviour, as drawn or [styled]: Tab, its ring, Enter and Space; with no callback, no focus; a hover;
+/// Each part's behaviour, as drawn or [styled]: Tab, its pop, Enter and Space; with no callback, no focus; a hover;
 /// its targets; a press under Reduce Motion; and its layout at each width.
 void partBehaviours({required bool styled}) {
   group(styled ? 'styled controls' : 'as drawn controls', () {
@@ -890,7 +897,7 @@ void partBehaviours({required bool styled}) {
       group(name, () {
         if (part.focus) {
           testWidgetsOnEveryPlatform(
-            'Tab reaches it and its ring paints; Enter and Space press it',
+            'Tab reaches it and it pops; Enter and Space press it',
             (tester) async {
               await _size(tester, 390);
               var hits = 0;
@@ -904,7 +911,7 @@ void partBehaviours({required bool styled}) {
                 () => FocusManager.instance.highlightStrategy =
                     FocusHighlightStrategy.automatic,
               );
-              final unringed = _painters(tester);
+              final resting = _pops(tester);
               await tester.sendKeyEvent(LogicalKeyboardKey.tab);
               await tester.pump();
               expect(
@@ -917,14 +924,14 @@ void partBehaviours({required bool styled}) {
                   _pressables(tester)
                       .any((s) => s.states.contains(WidgetState.focused)),
                   isTrue,
-                  reason: 'the focused press was not told to ring',
+                  reason: 'the focused press was not told to pop',
                 );
               }
               if (part.pressable && !part.lit) {
                 expect(
-                  _painters(tester),
-                  greaterThan(unringed),
-                  reason: 'no ring painted',
+                  _pops(tester),
+                  greaterThan(resting),
+                  reason: 'it did not pop',
                 );
               }
               if (part.keys) {

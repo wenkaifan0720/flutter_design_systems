@@ -194,6 +194,7 @@ final Map<String, DocExample> _examples = {
       ComicTextField(hint: 'Your name', onChanged: (text) {}),
   'ComicSendButton': (context) => ComicSendButton(onPressed: () {}),
   'ComicSelectField': (context) => ComicSelectField(
+    label: 'Account',
     value: 'Current ··3108',
     note: 'Change',
     onPressed: () {},

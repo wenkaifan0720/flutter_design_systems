@@ -21,6 +21,7 @@ import 'theme.dart';
 import 'component_themes.dart';
 import 'styled.dart';
 import 'internal/cap_label.dart';
+import 'internal/lettering.dart' show comicWeekdayScaleMost;
 import 'knobs.dart' show ComicSpace;
 import 'internal/style_guard.dart';
 
@@ -527,6 +528,11 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
                                         i) %
                                     7],
                                 textAlign: TextAlign.center,
+                                // At most twice their size, as Material's calendar: larger, seven initials fill
+                                // a phone's row and touch.
+                                textScaler: MediaQuery.textScalerOf(
+                                  context,
+                                ).clamp(maxScaleFactor: comicWeekdayScaleMost),
                                 style: t.type.small,
                               ),
                             ),

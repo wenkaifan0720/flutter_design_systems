@@ -284,15 +284,15 @@ To change the default square control corners, pass `shapes: ComicShapes.rounded(
 `ComicThemeData.copyWith`. Nested controls follow their container's corners. Use `ComicTypeface`, `ComicDensity`
 and `ComicStrokes` to change type, spacing or outline weight.
 
-Comic uses a plain tint for hover and press, an ink outline for keyboard focus and a solid fill for disabled
-controls. Halftone patterns are reserved for illustrations. Speech balloons, narration captions and display
+Comic uses a plain tint for hover and press, a pop for keyboard focus (the part lifts up and toward the start off a
+hard ink print of its outline) and a solid fill for disabled controls. Halftone patterns are reserved for illustrations. Speech balloons, narration captions and display
 lettering keep a clear background behind the words.
 
 ## Accessibility and languages
 
 - **Screen readers and keyboards.** Every control reports its role, label, value and state (checked, selected,
   expanded, disabled) and leaves its decorative print out. Tab moves in reading order; Enter and Space press, arrows
-  move within groups, Escape closes what is raised, and the keyboard's focus is ringed. The gallery's tests hold every
+  move within groups, Escape closes what is raised, and the part the keyboard is on pops off its print. The gallery's tests hold every
   page to Flutter's tap-target, labelled-target and text-contrast guidelines, by day and by night.
 - **Large text.** Parts follow the system's text scaling: words wrap or end with an ellipsis on purpose, controls grow
   taller, and dialogs and sheets scroll. Every gallery page is tested at text scale 2.0.

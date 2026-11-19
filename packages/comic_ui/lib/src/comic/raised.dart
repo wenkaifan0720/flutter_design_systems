@@ -16,6 +16,7 @@ import 'glyphs.dart';
 import 'balloons.dart';
 import 'controls.dart';
 import 'internal/menu_open.dart';
+import 'internal/pop.dart';
 import 'frames.dart';
 import 'localizations.dart';
 import 'press.dart';
@@ -1061,7 +1062,7 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
     final look = comicStyleOf([widget.style, t.menuTheme], const {});
     final frame = look.shape ?? t.shapes.medium;
     // A row sits 4 px inside the rim, so its corner is the menu's minus that inset: concentric, never a square
-    // block inside a rounded menu. Its wash and ring take the same outline.
+    // block inside a rounded menu. Its wash takes the same outline.
     final inset = comicRim(t, look, t.colors.nightLine, 3).width + 4;
     final row = comicInsetShape(frame, inset);
     // The words' start inside a row: the menu's own 12, or the field's words when it opened from one.
@@ -1096,7 +1097,7 @@ class _ComicMenuState<T> extends State<ComicMenu<T>> {
                 keys: (_, event) => _key(i, event),
                 outline: WidgetStatePropertyAll(row),
                 // The active row's shade is the menu's own, below: it follows the keys as well as the pointer, so the
-                // keys' row needs no ring (one round a row is painted over by the next, and reads as a rule).
+                // keys' row needs no pop of its own (a row lifted over the next would cover it).
                 wash: false,
                 ring: false,
                 builder: (context, states) {
@@ -2731,8 +2732,11 @@ class _ComicComboboxState<T extends Object> extends State<ComicCombobox<T>> {
         checked: _chosen(option),
         start: comicFieldListWords(ComicTheme.of(context), widget.style),
       ),
-      surfaceBuilder: (context, list) =>
-          ComicRaisedFrame(style: widget.style, child: list),
+      // The list starts on the field's face, which the focus lifts toward the start.
+      surfaceBuilder: (_, list) => comicListOnLiftedField(
+        context,
+        ComicRaisedFrame(style: widget.style, child: list),
+      ),
       emptyBuilder: (context) => comicSearchNote(
         context,
         DesignLocalizations.of(context).noResultsLabel,

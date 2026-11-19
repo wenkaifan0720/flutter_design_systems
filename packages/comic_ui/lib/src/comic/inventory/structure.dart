@@ -11,6 +11,7 @@ import '../glyphs.dart';
 import '../layout.dart';
 import '../localizations.dart';
 import '../moves.dart';
+import '../internal/pop.dart';
 import '../internal/reach.dart' show RingInClip;
 import '../press.dart';
 import '../raised.dart';
@@ -1180,11 +1181,8 @@ class _ComicSwipeActionsState extends State<ComicSwipeActions> {
             final fill = action.destructive ? c.tones.danger : c.caption;
             final ink = action.destructive ? c.card : c.onCaption;
             // A plate runs the row's full height and takes the control step, as
-            // every framed part does; its wash and ring take that same plate.
+            // every framed part does; its wash and its pop take that same plate.
             final plate = t.shapes.small;
-            // The strip is clipped at the plates' edge, so a ring outside one would not show: the keyboard's ring stands
-            // inside the plate, an opaque band of the card between it and the fill.
-            final room = t.focus.gap + t.focus.width;
             final face = ComicHighlight(
               states: state.states,
               shape: plate,
@@ -1225,12 +1223,13 @@ class _ComicSwipeActionsState extends State<ComicSwipeActions> {
               fit: StackFit.expand,
               children: [
                 face,
+                // The plates stand edge to edge in a clipped strip, so the keyboard's plate pops inside itself: its
+                // print along its bottom and end, a band of the card inside it.
                 Positioned.fill(
-                  child: Padding(
-                    padding: EdgeInsets.all(room),
+                  child: PopInside(
                     child: ComicHighlight(
                       states: state.states,
-                      shape: comicInsetShape(plate, room),
+                      shape: plate,
                       wash: false,
                       ringGap: c.card,
                       child: const SizedBox.expand(),
@@ -1359,8 +1358,6 @@ class ComicTreeView<T extends Object> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = ComicTheme.of(context);
-    // The rows stand edge to edge on opaque faces, so a ring outside one is painted over by the next: it goes inside.
-    final room = t.focus.gap + t.focus.width;
     return DesignTree<T>(
       controller: controller,
       labelOf: labelOf,
@@ -1387,14 +1384,14 @@ class ComicTreeView<T extends Object> extends StatelessWidget {
                 : ComicGlyphs.forward,
           ),
           if (item.states.contains(WidgetState.focused))
+            // Rows stand edge to edge, so the keyboard's row pops inside itself: its print along its bottom and end.
             Positioned.fill(
-              child: Padding(
-                padding: EdgeInsets.all(room),
+              child: PopInside(
                 child: ComicHighlight(
                   states: _focused,
-                  shape: comicInsetShape(comicMenuRowShape(t), room),
+                  shape: comicMenuRowShape(t),
                   wash: false,
-                  // On a picked row the ring stands on the fill: the card's colour keeps it apart.
+                  // On a picked row the print stands on the fill: a band of the card's colour keeps it apart.
                   ringGap: t.colors.card,
                   child: const SizedBox.expand(),
                 ),

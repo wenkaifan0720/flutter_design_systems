@@ -85,8 +85,8 @@ class ComicNavigationDrawer extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Rows stand the keyboard's ring apart, so the next row's fill never covers the ring of the one
-                      // above.
+                      // Rows stand apart by more than a print's depth, so the print of the row the keyboard pops
+                      // never reaches the next row.
                       for (var i = 0; i < destinations.length; i++) ...[
                         if (i > 0)
                           SizedBox(height: t.focus.gap + t.focus.width),
@@ -344,6 +344,7 @@ class _ComicTabBarState extends State<ComicTabBar>
             shape: outer,
             rim: rim,
             fill: c.dark ? c.card : c.control,
+            thumb: c.caption,
             clip: scrolls,
             child: DesignTabBar(
               controller: _controller!,

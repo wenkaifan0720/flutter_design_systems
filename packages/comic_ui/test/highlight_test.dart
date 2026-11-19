@@ -1,8 +1,9 @@
 // Every interaction mark takes its part's exact shape, under every corner family Customize offers. For each pressable
-// part on every gallery page it hovers, presses and focuses the part, then reads the mark the look paints: a pointer
-// over a part paints no mark at all; the press's wash and the focus ring take the outline the part itself paints (its
-// ShapeDecoration or its painter's shape), and a frameless part (a row, a link) must still take a step of the shape
-// theme. The focus ring stands concentric outside it.
+// part on every gallery page it hovers, presses and focuses the part, then reads the mark the look paints: the
+// pointer's and the press's wash and the focus's print take the outline the part itself paints (its ShapeDecoration or
+// its painter's shape), and a frameless part (a row, a link) must still take a step of the shape theme. A focused part
+// pops: it lifts off a print of that outline, or, edge to edge in its row, shows the print inside it; a part on its
+// own print lifts off that one.
 // These read a private painter's fields by name, so the calls are dynamic.
 // ignore_for_file: avoid_dynamic_calls
 import 'package:flutter/gestures.dart';
@@ -50,18 +51,45 @@ OutlinedBorder? _partShape(Element highlight, Size size) {
   return found;
 }
 
-/// The look's mark on [highlight], or null when it paints none in these states.
+/// The look's wash on [highlight], or null when it paints none in these states.
 dynamic _mark(Element highlight) {
   dynamic found;
   void visit(Element e) {
     if (found != null) return;
     final w = e.widget;
     if (w is CustomPaint &&
-        w.foregroundPainter?.runtimeType.toString() == '_PressPainter') {
+        w.foregroundPainter?.runtimeType.toString() == '_WashPainter') {
       found = w.foregroundPainter;
       return;
     }
-    e.visitChildren(visit);
+    if (w is! ComicHighlight) e.visitChildren(visit);
+  }
+
+  highlight.visitChildren(visit);
+  return found;
+}
+
+/// The pop [highlight] paints: the outline of its print (beside the part, or a band inside it), null for a part that
+/// lifts off its own print, and how far the part lifts. Null when the highlight builds no pop at all.
+({Object? outline, Offset lift})? _pop(Element highlight) {
+  ({Object? outline, Offset lift})? found;
+  void visit(Element e) {
+    if (found != null) return;
+    final w = e.widget;
+    if (w is CustomPaint && w.child is Transform) {
+      final dynamic print = w.painter?.runtimeType.toString() == '_PopPainter'
+          ? w.painter
+          : w.foregroundPainter?.runtimeType.toString() == '_InsetPrint'
+          ? w.foregroundPainter
+          : null;
+      final moved = (w.child! as Transform).transform.getTranslation();
+      found = (
+        outline: print == null ? null : print.outline as Object?,
+        lift: Offset(moved.x, moved.y),
+      );
+      return;
+    }
+    if (w is! ComicHighlight) e.visitChildren(visit);
   }
 
   highlight.visitChildren(visit);
@@ -166,22 +194,23 @@ void main() {
                 !steps.contains(_bare(drawnShape(drawn, size)))) {
               failures.add('$where: frameless mark $drawn is no shape step');
             }
-            // Focus: the ring is painted, on this outline.
+            // Focus: the part pops, off a print of this outline.
             if (widget.ring) {
               Focus.maybeOf(highlight, createDependency: false)?.requestFocus();
               await tester.pump();
-              // The ring inks in on the state motion; where the focus lands a frame late, the next frame starts it.
+              // The pop runs on the state motion; where the focus lands a frame late, the next frame starts it.
               await tester.pump(const Duration(milliseconds: 400));
               await tester.pump(const Duration(milliseconds: 400));
               if (highlight.mounted &&
                   Focus.maybeOf(highlight, createDependency: false)?.hasFocus ==
                       true) {
-                final dynamic mark = _mark(highlight);
+                final pop = _pop(highlight);
                 ringed++;
-                if (mark == null || mark.ring == null) {
-                  failures.add('$where: focused, but no ring');
-                } else if (mark.drawn != drawn) {
-                  failures.add('$where: ring on ${mark.drawn}, part $drawn');
+                if (pop == null ||
+                    (pop.outline == null && pop.lift == Offset.zero)) {
+                  failures.add('$where: focused, but it does not pop');
+                } else if (pop.outline != null && pop.outline != drawn) {
+                  failures.add('$where: print on ${pop.outline}, part $drawn');
                 }
               }
               FocusManager.instance.primaryFocus?.unfocus();
@@ -229,7 +258,7 @@ void main() {
           }
           debugPrint(
             'highlights ${corners.name}/${page.id}: $checked parts, '
-            '$ringed rings, $washed washes',
+            '$ringed pops, $washed washes',
           );
           if (checked > 0) {
             expect(ringed, greaterThan(0), reason: 'no part took the focus');

@@ -9,9 +9,10 @@ import 'package:flutter/painting.dart';
 import 'fonts.dart';
 
 /// The weight of Comic's ink, in two steps: [standard], the look's own contours part by part, and [bold], rims at 4
-/// and the focus ring at 5. Each step names the widths every styled part's rims and rules read, in logical pixels:
-/// [hairline] for the rules inside a part (the act plate's inner rule, a segment's, a card's second line), [regular]
-/// for a part's rim, [heavy] for the focus ring and a chosen part's rim; null keeps the look's own ink contours.
+/// and a focused part's print at 5. Each step names the widths every styled part's rims and rules read, in logical
+/// pixels: [hairline] for the rules inside a part (the act plate's inner rule, a segment's, a card's second line),
+/// [regular] for a part's rim, [heavy] for a focused part's print and a chosen part's rim; null keeps the look's own
+/// ink contours.
 ///
 /// ```dart
 /// final theme = ComicThemeData.offset().copyWith(strokes: ComicStrokes.bold);
@@ -33,7 +34,7 @@ class ComicStrokes with Diagnosticable {
   /// The look's own ink: each part's contour as it was drawn, with heavier focus marks. A theme's default.
   static const ComicStrokes standard = ComicStrokes._();
 
-  /// Rims at 4 and the focus ring at 5: a bolder line for a brand that wants it.
+  /// Rims at 4 and a focused part's print at 5: a bolder line for a brand that wants it.
   static const ComicStrokes bold = ComicStrokes._(
     hairline: 3,
     regular: 4,
@@ -57,7 +58,7 @@ class ComicStrokes with Diagnosticable {
   /// A part's rim.
   final double? regular;
 
-  /// The focus ring and a chosen part's rim.
+  /// A focused part's print and a chosen part's rim.
   final double? heavy;
 
   /// True when every width is null.

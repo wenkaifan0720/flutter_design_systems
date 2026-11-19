@@ -408,11 +408,25 @@ class _SliderInk extends CustomPainter {
         ..strokeWidth = side?.width ?? 2
         ..color = side?.color ?? colors.nightLine,
     );
-    final knob = Rect.fromCenter(
+    final rest = Rect.fromCenter(
       center: Offset(x, size.height / 2),
-      width: held ? 24 : 22,
-      height: held ? 24 : 22,
+      width: held || focused ? 24 : 22,
+      height: held || focused ? 24 : 22,
     );
+    // Under the keyboard the thumb pops off the rail, as every part does: it lifts up and to the start off a hard
+    // print of itself, down and to the end.
+    final end = rtl ? -1.0 : 1.0;
+    final knob = focused
+        ? rest.shift(Offset(-end * _focusLift, -_focusLift))
+        : rest;
+    if (focused) {
+      canvas.drawPath(
+        thumb.getOuterPath(rest.shift(Offset(end * focus.width, focus.width))),
+        paint
+          ..style = PaintingStyle.fill
+          ..color = colors.nightLine,
+      );
+    }
     final knobPath = thumb.getOuterPath(knob);
     canvas.drawPath(
       knobPath,
@@ -427,14 +441,6 @@ class _SliderInk extends CustomPainter {
         ..strokeWidth = 2.5
         ..color = colors.nightLine,
     );
-    if (focused) {
-      canvas.drawPath(
-        thumb.getOuterPath(knob.inflate(focus.gap)),
-        paint
-          ..strokeWidth = focus.width
-          ..color = focus.color,
-      );
-    }
   }
 
   @override
@@ -452,3 +458,5 @@ class _SliderInk extends CustomPainter {
       old.thumb != thumb ||
       old.shape != shape;
 }
+
+const double _focusLift = 2;

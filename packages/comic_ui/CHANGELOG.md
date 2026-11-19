@@ -1,3 +1,16 @@
+## 0.3.2
+
+- Keyboard focus is Comic's own pop instead of an outline ring: the focused part lifts up and toward the start off a
+  hard ink print of its outline, and its words stay on a plain fill. Rows, tabs and segments that stand edge to edge
+  show the print inside their outline instead of lifting. A slider's knob grows and lifts off its print. The print's
+  ink reaches 3:1 on the ground around it in every preset, by day and by night, and Reduce Motion shows it at once.
+  A combobox's or multi-select's list starts on its field as the focus lifts it, its words on the field's.
+- `comicEmanataLength`, `comicEmanataWeight`, `comicEmanataGap` and `comicEmanataSpread` are deprecated: Comic no
+  longer draws focus emanata.
+- `ComicSelectField` takes a `label`, shown above its box in the field-label style, and a `semanticLabel`. A screen
+  reader names the select by it and reads the value after the name; the menu still opens from the box.
+  `ComicSelect`'s label is its field's spoken name too.
+
 ## 0.3.1
 
 - Hover and press give controls a plain ink tint, and a link's words darken under it to stay readable. Disabled
