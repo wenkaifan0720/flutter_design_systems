@@ -1,6 +1,6 @@
 /// The command palette, as a fuzzy finder draws one: `>` and what is typed,
 /// a count of what matches, then the commands that match, the letters that
-/// matched lit and the highlighted one in inverse video.
+/// matched lit and the highlighted one under the cursor.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -83,8 +83,8 @@ class TermCommandPalette extends StatefulWidget {
   }) : assert(maxLines > 0);
 
   /// Overrides for the rows, over the theme's [TermThemeData.menuStyle]:
-  /// `fill` (the lit row) and `foreground` (the words). The frame is a
-  /// [TermPane]'s, styled by [TermThemeData.paneStyle].
+  /// `fill` (the cursor on the lit row) and `foreground` (the words). The
+  /// frame is a [TermPane]'s, styled by [TermThemeData.paneStyle].
   final TermStyle? style;
 
   /// The commands, in the order they list with no query.
@@ -364,7 +364,7 @@ class _Item extends StatelessWidget {
     final ink = !enabled
         ? theme.rule
         : lit
-        ? theme.background
+        ? theme.onAccent
         : own.foreground ?? theme.foreground;
     final words = theme.textStyle.copyWith(color: ink);
     // A matched letter: the accent, bold; on the inverse row, bold and
@@ -393,8 +393,16 @@ class _Item extends StatelessWidget {
     // to production`) never read the same; the mark and the key keep to
     // its first line.
     final pad = (height - grid.lineHeight) / 2;
-    return ColoredBox(
-      color: lit ? own.fill ?? theme.foreground : const Color(0x00000000),
+    // The highlighted command is the cursor: the row in the accent, a pair
+    // of brackets cut out of its end cells.
+    return CustomPaint(
+      painter: TermCursorPainter(
+        grid: grid,
+        amount: lit ? 1 : 0,
+        color: own.fill ?? theme.accent,
+        knockout: theme.onAccent,
+        stroke: termStroke(theme, grid),
+      ),
       child: ConstrainedBox(
         constraints: BoxConstraints(minHeight: height),
         child: Padding(
@@ -421,7 +429,7 @@ class _Item extends StatelessWidget {
                   shortcut,
                   style: TermStyle(
                     foreground: WidgetStatePropertyAll(
-                      lit ? theme.background : theme.dim,
+                      lit ? theme.onAccent : theme.dim,
                     ),
                   ),
                 ),

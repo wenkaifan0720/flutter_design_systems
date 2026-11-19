@@ -22,14 +22,17 @@ Widget _host(Widget child) => MaterialApp(
 // A desk: a pointer and keys, rows one line tall.
 final _desk = TargetPlatformVariant.only(TargetPlatform.macOS);
 
-// The rows that show as current: the keys' block drawn at their start.
+// The rows that show as current: the keys' cursor drawn on them.
 List<String> _lit() => [
   for (final e in find.byType(TermMenuRow).evaluate())
     if (find
         .descendant(
           of: find.byElementPredicate((x) => identical(x, e)),
           matching: find.byWidgetPredicate(
-            (w) => w is CustomPaint && w.foregroundPainter != null,
+            (w) =>
+                w is CustomPaint &&
+                w.painter is TermCursorPainter &&
+                (w.painter! as TermCursorPainter).amount > 0.5,
           ),
         )
         .evaluate()

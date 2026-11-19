@@ -2,8 +2,9 @@
 // platform's accessibility features (`reduceMotion`), never as MediaQuery's
 // `disableAnimations`, which Android and the web set. Terminal reads both,
 // through ui_core's `designReduceMotionOf`: with the iOS flag alone a spring
-// settles without overshoot, the spinner and the caret stand still, and each
-// follows the flag as it changes, with no app rebuild.
+// settles without overshoot, the keyboard's focus is cut (no fade), the
+// spinner and the caret stand still, and each follows the flag as it
+// changes, with no app rebuild.
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
@@ -55,6 +56,34 @@ void main() {
       expect(calm.last, closeTo(1, 0.001));
     });
   }
+
+  testWidgets("the keyboard's focus glides in, and under iOS Reduce Motion "
+      'stands at once', (tester) async {
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    var shown = 0.0;
+    Widget at(double target) => TermSpring(
+      target: target,
+      token: TermMotion.move,
+      spatial: true,
+      focus: true,
+      builder: (context, value, child) {
+        shown = value;
+        return const SizedBox();
+      },
+    );
+    await tester.pumpWidget(at(0));
+    await tester.pumpWidget(at(1));
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(shown, inExclusiveRange(0, 0.99));
+    await tester.pumpAndSettle();
+    expect(shown, closeTo(1, 0.001));
+
+    _iosReduceMotion(tester, true);
+    await tester.pumpWidget(at(0));
+    expect(shown, 0);
+    await tester.pumpWidget(at(1));
+    expect(shown, 1);
+  });
 
   testWidgets('the spinner stands still as iOS Reduce Motion comes on, and '
       'turns again as it goes', (tester) async {

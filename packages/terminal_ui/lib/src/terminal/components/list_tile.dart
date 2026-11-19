@@ -8,7 +8,6 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../grid.dart';
-import '../internal/focus_block.dart';
 import '../internal/menu_marks.dart';
 import '../internal/shell_face.dart';
 import '../primitives/box.dart';
@@ -27,9 +26,10 @@ import 'pane.dart';
 /// column (where it starts: [titleCols]); under a finger it is two lines,
 /// [subtitle] under [title]. The
 /// row runs from edge to edge (put rows in a [TermPane.list]) and keeps a
-/// one-cell gutter at its start, where the keyboard's focus shows as a
-/// block in the accent. [selected] draws the row in inverse video, and a
-/// screen reader hears it selected; a press fills it the same way.
+/// one-cell gutter at each end. The keyboard's focus is the cursor over the
+/// whole row, a pair of brackets cut out of its gutters (on a chosen row,
+/// hollow). [selected] draws the row in inverse video, and a screen reader
+/// hears it selected; a press fills it the same way.
 ///
 /// ```dart
 /// TermListTile(
@@ -90,9 +90,9 @@ class TermListTile extends StatelessWidget {
 
   /// Whether the row is an option in a list a field opens (a
   /// [TermSelect]'s): the pointer over it marks it as the keys on it do,
-  /// its words in the accent and the block in its gutter, so the row a
-  /// press would take shows before the press, apart from the chosen one's
-  /// bar. A row in a page's list keeps its words, and only the keys mark it.
+  /// its words in the accent, so the row a press would take shows before
+  /// the press, apart from the chosen one's bar; the keys add the cursor. A
+  /// row in a page's list keeps its words, and only the keys mark it.
   /// In a list the pointer opened, the keys' mark waits for a key
   /// ([TermMenuMarks]).
   final bool option;
@@ -110,8 +110,8 @@ class TermListTile extends StatelessWidget {
   final String? semanticLabel;
 
   /// Overrides, over the theme's [TermThemeData.listTileStyle]: `fill`
-  /// (selected or pressed), `foreground` (the words), `edge` (the gutter
-  /// mark) and `textStyle` (the title's colour and weight).
+  /// (selected or pressed), `foreground` (the words), `edge` (the
+  /// keyboard's cursor) and `textStyle` (the title's colour and weight).
   final TermStyle? style;
 
   @override
@@ -122,7 +122,6 @@ class TermListTile extends StatelessWidget {
     final lh = grid.lineHeight;
     final touch = DesignTapTargets.of(context).inputOn() == DesignInput.touch;
     final height = touch ? lh * 2 : lh;
-    final direction = Directionality.of(context);
     final interactive = onTap != null && enabled;
     // Chosen in a pane without the keyboard: a faint shade, not the bright
     // bar the active pane's row has.
@@ -157,12 +156,17 @@ class TermListTile extends StatelessWidget {
             token: TermMotion.press,
             builder: (context, chosen, _) {
               final inverse = ((active ? chosen : 0.0) + press).clamp(0.0, 1.0);
+              // The keys' cursor: a block of the accent over the row, a
+              // pair of brackets cut out of its end cells; on the chosen
+              // bar it goes hollow, the bar cleared under it.
+              final hollow = active && selected;
+              final cursor = disabled ? 0.0 : focus;
               final shade = termRowShade(theme);
               // The pointer over a row changes nothing (it says "this presses"
               // by its cursor), but over an option: its words take the
               // accent, or its chosen bar does; a style that resolves
               // `hovered` still can.
-              final ground =
+              final bar =
                   own.fill ??
                   Color.lerp(
                     Color.lerp(
@@ -173,26 +177,39 @@ class TermListTile extends StatelessWidget {
                     pointer ? theme.accent : theme.foreground,
                     inverse,
                   )!;
+              final ground = hollow
+                  ? bar.withValues(alpha: bar.a * (1 - cursor))
+                  : bar;
               final ink =
                   own.foreground ??
                   (disabled
                       ? theme.rule
-                      : Color.lerp(
-                          // An option's marked words take the accent, off the
-                          // chosen bar.
-                          option
-                              ? Color.lerp(
-                                  theme.foreground,
-                                  theme.accent,
-                                  mark,
-                                )!
-                              : theme.foreground,
-                          theme.background,
-                          inverse,
-                        )!);
+                      : termCursorInk(
+                          theme,
+                          Color.lerp(
+                            // An option's marked words take the accent, off the
+                            // chosen bar.
+                            option
+                                ? Color.lerp(
+                                    theme.foreground,
+                                    theme.accent,
+                                    mark,
+                                  )!
+                                : theme.foreground,
+                            theme.background,
+                            inverse,
+                          )!,
+                          cursor,
+                          hollow: hollow,
+                        ));
               final dim = disabled
                   ? theme.rule
-                  : Color.lerp(theme.dim, theme.background, inverse)!;
+                  : termCursorInk(
+                      theme,
+                      Color.lerp(theme.dim, theme.background, inverse)!,
+                      cursor,
+                      hollow: hollow,
+                    );
               final words = theme.textStyle
                   .merge(own.textStyle)
                   .copyWith(color: ink);
@@ -310,10 +327,14 @@ class TermListTile extends StatelessWidget {
               return CustomPaint(
                 painter: _RowPainter(
                   ground: ground,
-                  gutter: focus,
-                  gutterColor: own.edge ?? theme.accent,
-                  cellWidth: cw,
-                  direction: direction,
+                  cursor: TermCursorPainter(
+                    grid: grid,
+                    amount: cursor,
+                    color: own.edge ?? theme.accent,
+                    knockout: theme.onAccent,
+                    stroke: termStroke(theme, grid),
+                    hollow: hollow,
+                  ),
                 ),
                 child: SizedBox(
                   height: height,
@@ -389,40 +410,22 @@ class TermListTile extends StatelessWidget {
 }
 
 class _RowPainter extends CustomPainter {
-  const _RowPainter({
-    required this.ground,
-    required this.gutter,
-    required this.gutterColor,
-    required this.cellWidth,
-    required this.direction,
-  });
+  const _RowPainter({required this.ground, required this.cursor});
 
   final Color ground;
-  final double gutter;
-  final Color gutterColor;
-  final double cellWidth;
-  final TextDirection direction;
+  final TermCursorPainter cursor;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (ground.a > 0) {
       canvas.drawRect(Offset.zero & size, Paint()..color = ground);
     }
-    if (gutter <= 0) return;
-    // The focus: a block in the gutter, half a cell wide, growing in.
-    canvas.drawRect(
-      termFocusBlock(size, gutter, cellWidth, direction),
-      Paint()..color = gutterColor,
-    );
+    cursor.paint(canvas, size);
   }
 
   @override
   bool shouldRepaint(_RowPainter old) =>
-      old.ground != ground ||
-      old.gutter != gutter ||
-      old.gutterColor != gutterColor ||
-      old.cellWidth != cellWidth ||
-      old.direction != direction;
+      old.ground != ground || cursor.shouldRepaint(old.cursor);
 }
 
 /// The heading over a run of rows: [title] in bold, then a rule to the end

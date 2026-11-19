@@ -9,7 +9,9 @@ import 'package:ui_core/ui_core.dart';
 /// Builds [builder] with a value that springs from where it is to [target]
 /// whenever [target] changes. [spatial] runs the token as a spatial spring
 /// (something moves or resizes), else as an effects spring (a fill or a
-/// colour); under Reduce Motion both settle without overshoot.
+/// colour); under Reduce Motion both settle without overshoot, and a
+/// keyboard focus indicator ([focus]) is cut: it stands at its target at
+/// once, with no fade.
 class TermSpring extends StatefulWidget {
   /// A value springing to [target] on [token].
   const TermSpring({
@@ -18,6 +20,7 @@ class TermSpring extends StatefulWidget {
     required this.token,
     required this.builder,
     this.spatial = false,
+    this.focus = false,
     this.child,
   });
 
@@ -30,6 +33,10 @@ class TermSpring extends StatefulWidget {
   /// Whether the value moves something (spatial) or changes a fill or a
   /// colour (effects).
   final bool spatial;
+
+  /// Whether the value shows the keyboard's focus, which Reduce Motion cuts
+  /// rather than calms.
+  final bool focus;
 
   /// Builds with the value now.
   final Widget Function(BuildContext context, double value, Widget? child)
@@ -54,6 +61,10 @@ class _TermSpringState extends State<TermSpring>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.target != widget.target) {
       final policy = DesignMotionPolicy.of(context);
+      if (widget.focus && policy.reduceMotion) {
+        _value.value = widget.target;
+        return;
+      }
       final spring = widget.spatial
           ? policy.spatial(
               dampingRatio: widget.token.dampingRatio,

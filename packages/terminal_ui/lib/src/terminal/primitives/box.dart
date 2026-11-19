@@ -344,8 +344,13 @@ enum TermBracketShape {
 
 /// Paints a bracket in the first cell and its pair in the last cell of
 /// [size], each a single line splitting into a double one as [doubled]
-/// goes from 0 to 1 (focus). Between them, [fill] covers the inner cells:
-/// a press, a selection or a filled button, in inverse video.
+/// goes from 0 to 1. Between them, [fill] covers the inner cells: a press,
+/// a selection or a filled button, in inverse video.
+///
+/// The keyboard's focus is the [cursor]: a block of [cursorColor] over
+/// every cell, the brackets taken in and cut out of it in [knockout]. On a
+/// part already filled ([hollow]: chosen, or a filled button) the cursor
+/// turns it hollow instead: the bracket cells go solid, the fill clears.
 class TermBracketPainter extends CustomPainter {
   /// Brackets in [color] round the cells of [size].
   const TermBracketPainter({
@@ -356,7 +361,23 @@ class TermBracketPainter extends CustomPainter {
     this.fill,
     this.fillAmount = 1,
     this.shape = TermBracketShape.square,
+    this.cursor = 0,
+    this.cursorColor,
+    this.knockout,
+    this.hollow = false,
   });
+
+  /// How far the keyboard's focus has come, 0 to 1.
+  final double cursor;
+
+  /// The cursor's ink (the accent); null draws none.
+  final Color? cursorColor;
+
+  /// The brackets' colour on the cursor (the ink words take on the accent).
+  final Color? knockout;
+
+  /// Whether the cursor hollows a filled part rather than covering it.
+  final bool hollow;
 
   /// The grid.
   final TermGrid grid;
@@ -386,6 +407,17 @@ class TermBracketPainter extends CustomPainter {
     final lh = grid.lineHeight;
     final cy = size.height / 2;
     final height = math.min(grid.fontSize * 1.2, lh);
+    final c = cursorColor == null ? 0.0 : cursor.clamp(0.0, 1.0);
+    if (c > 0) {
+      termPaintCursor(
+        canvas,
+        Rect.fromLTRB(0, cy - lh / 2, size.width, cy + lh / 2),
+        cursorColor!,
+        c,
+        cw,
+        hollow: hollow,
+      );
+    }
     if (fill != null && fillAmount > 0) {
       final amount = fillAmount.clamp(0.0, 1.0);
       final full = Rect.fromLTRB(cw, cy - lh / 2, size.width - cw, cy + lh / 2);
@@ -394,14 +426,19 @@ class TermBracketPainter extends CustomPainter {
         width: full.width,
         height: ui.lerpDouble(height * 0.5, full.height, amount)!,
       );
+      final shown = hollow ? 1 - c : 1.0;
       canvas.drawRect(
         inner,
         Paint()
-          ..color = fill!.withValues(alpha: fill!.a * math.min(1, amount * 2)),
+          ..color = fill!.withValues(
+            alpha: fill!.a * math.min(1, amount * 2) * shown,
+          ),
       );
     }
     final paint = Paint()
-      ..color = color
+      ..color = c > 0 && knockout != null
+          ? Color.lerp(color, knockout, c)!
+          : color
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke
       ..strokeJoin = StrokeJoin.miter;
@@ -481,7 +518,108 @@ class TermBracketPainter extends CustomPainter {
       old.doubled != doubled ||
       old.fill != fill ||
       old.fillAmount != fillAmount ||
-      old.shape != shape;
+      old.shape != shape ||
+      old.cursor != cursor ||
+      old.cursorColor != cursorColor ||
+      old.knockout != knockout ||
+      old.hollow != hollow;
+}
+
+/// The cursor over [band]: a block of [color] over every cell, [amount] of
+/// the way in; [hollow], the band's first and last [cellWidth] only, as the
+/// cursor stands on a part already in inverse video.
+void termPaintCursor(
+  Canvas canvas,
+  Rect band,
+  Color color,
+  double amount,
+  double cellWidth, {
+  bool hollow = false,
+}) {
+  final a = amount.clamp(0.0, 1.0);
+  if (a <= 0) return;
+  final paint = Paint()..color = color.withValues(alpha: color.a * a);
+  if (!hollow || band.width <= cellWidth * 2) {
+    canvas.drawRect(band, paint);
+    return;
+  }
+  canvas
+    ..drawRect(
+      Rect.fromLTWH(band.left, band.top, cellWidth, band.height),
+      paint,
+    )
+    ..drawRect(
+      Rect.fromLTRB(band.right - cellWidth, band.top, band.right, band.bottom),
+      paint,
+    );
+}
+
+/// The cursor on a part with no brackets of its own (a row, a tab, a
+/// choice in a group): the block of [termPaintCursor] over [size], and in
+/// its first and last cells a pair of brackets one line tall cut out of it
+/// in [knockout], the cursor's own edges, so the block never reads as a
+/// chosen part's inverse video.
+class TermCursorPainter extends CustomPainter {
+  /// The cursor over a part [amount] focused.
+  const TermCursorPainter({
+    required this.grid,
+    required this.amount,
+    required this.color,
+    required this.knockout,
+    required this.stroke,
+    this.hollow = false,
+  });
+
+  /// The grid.
+  final TermGrid grid;
+
+  /// How far the keyboard's focus has come, 0 to 1.
+  final double amount;
+
+  /// The cursor's ink (the accent).
+  final Color color;
+
+  /// The brackets cut out of it.
+  final Color knockout;
+
+  /// One line's width.
+  final double stroke;
+
+  /// Whether the part is in inverse video already: the cursor stands on its
+  /// end cells only.
+  final bool hollow;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final a = amount.clamp(0.0, 1.0);
+    if (a <= 0) return;
+    termPaintCursor(
+      canvas,
+      Offset.zero & size,
+      color,
+      a,
+      grid.cellWidth,
+      hollow: hollow,
+    );
+    final lh = math.min(grid.lineHeight, size.height);
+    canvas.save();
+    canvas.translate(0, (size.height - lh) / 2);
+    TermBracketPainter(
+      grid: grid,
+      color: knockout.withValues(alpha: knockout.a * a),
+      stroke: stroke,
+    ).paint(canvas, Size(size.width, lh));
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(TermCursorPainter old) =>
+      old.grid != grid ||
+      old.amount != amount ||
+      old.color != color ||
+      old.knockout != knockout ||
+      old.stroke != stroke ||
+      old.hollow != hollow;
 }
 
 /// The dots of one braille cell lit for each frame of Terminal's spinner:

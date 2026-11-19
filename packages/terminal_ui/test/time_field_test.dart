@@ -49,7 +49,7 @@ void main() {
       await tester.enterText(find.byType(EditableText), '24:00');
       await tester.pump();
       expect(heard, hasLength(1));
-      expect(find.text('hh:mm, 00:00 to 23:59'), findsOneWidget);
+      expect(find.text('00:00–23:59'), findsOneWidget);
     });
 
     testWidgets('stepped by the arrows, round midnight', (tester) async {

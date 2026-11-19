@@ -68,7 +68,8 @@ Back first dismisses an open menu, list or popover.
 Flutter widgets drawn the way a well-made terminal program draws itself:
 every size whole character cells, panes in box-drawing lines with their
 titles cut into the top line, buttons in brackets, the chosen row in
-inverse video, and the key for every action written beside it. A sixteen
+inverse video, the keyboard's focus as the cursor, and the key for every
+action written beside it. A sixteen
 colour palette in a night and a paper preset, a monochrome theme, and
 everything you need to reach it by touch, pointer, keyboard and screen
 reader.
@@ -213,6 +214,14 @@ bar's percentage) instead. Inverse selection is announced as selected. The
 spinners and the caret hold still under Reduce Motion. Every tone has a
 glyph (`✓ ✗ ! i`), so nothing is said by colour alone; the monochrome theme
 proves it.
+
+The keyboard's focus is the cursor: an accent block over the part, its
+words and brackets cut out of it, hollow on a part already chosen or
+filled, so chosen, pressed and focused read apart by shape in the
+monochrome theme too. Text fields double their frame and show the caret.
+Focus shows for the keyboard only, never after a click, and differs from
+the part at rest at 3:1 or more over at least a 2 px outline's area on
+every theme.
 
 Tab visits a tab bar or navigation group once. Use the arrow keys to move
 between destinations and F6 to switch between navigation and the page.

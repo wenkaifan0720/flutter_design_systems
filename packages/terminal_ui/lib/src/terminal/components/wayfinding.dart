@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-import '../internal/focus_block.dart';
 import '../internal/menu_marks.dart';
 import '../internal/shell_face.dart';
 import '../primitives/control.dart';
@@ -92,16 +91,25 @@ class TermBreadcrumb extends StatelessWidget {
                         style,
                         theme.breadcrumbStyle,
                       ], states);
-                      final lit =
-                          states.contains(WidgetState.focused) ||
-                          states.contains(WidgetState.pressed);
+                      // A press: the crumb in inverse video. The keyboard's
+                      // focus: the cursor behind it, half a cell past it.
+                      final lit = states.contains(WidgetState.pressed);
+                      final focused =
+                          !lit && states.contains(WidgetState.focused);
                       final ink = own.foreground ?? theme.accent;
-                      return ColoredBox(
-                        color: lit ? ink : const Color(0x00000000),
-                        child: Text(
-                          crumb.label,
-                          style: theme.textStyle.copyWith(
-                            color: lit ? theme.background : ink,
+                      return TermCursorSpan(
+                        focus: focused ? 1 : 0,
+                        child: ColoredBox(
+                          color: lit ? ink : const Color(0x00000000),
+                          child: Text(
+                            crumb.label,
+                            style: theme.textStyle.copyWith(
+                              color: lit
+                                  ? theme.background
+                                  : focused
+                                  ? theme.onAccent
+                                  : ink,
+                            ),
                           ),
                         ),
                       );
@@ -308,20 +316,40 @@ class TermPageDots extends StatelessWidget {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final own = TermStyleOf([style, theme.paginationStyle], const {});
-    Widget dot(int i) => SizedBox(
-      width: grid.cols(2),
-      height: grid.lineHeight,
-      child: Center(
-        child: Text(
-          i == index ? '●' : '·',
-          style: theme.textStyle.copyWith(
-            color: i == index
-                ? own.fill ?? theme.accent
-                : own.foreground ?? theme.dim,
+    // A dot: pressed, its cell in inverse video; under the keyboard's
+    // focus, the cursor over it, half a cell past it each side.
+    Widget dot(int i, [Set<WidgetState> states = const {}]) {
+      final ink = i == index
+          ? own.fill ?? theme.accent
+          : own.foreground ?? theme.dim;
+      return SizedBox(
+        width: grid.cols(2),
+        height: grid.lineHeight,
+        child: Center(
+          child: TermStateSprings(
+            pressed: states.contains(WidgetState.pressed),
+            focused: states.contains(WidgetState.focused),
+            builder: (context, press, focus) => TermCursorSpan(
+              focus: focus * (1 - press),
+              child: ColoredBox(
+                color: ink.withValues(alpha: ink.a * press),
+                child: Text(
+                  i == index ? '●' : '·',
+                  style: theme.textStyle.copyWith(
+                    color: Color.lerp(
+                      termCursorInk(theme, ink, focus * (1 - press)),
+                      theme.background,
+                      press,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
-      ),
-    );
+      );
+    }
+
     return Semantics(
       label: 'page ${index + 1} of $count',
       excludeSemantics: onChanged == null,
@@ -340,7 +368,7 @@ class TermPageDots extends StatelessWidget {
                   semanticLabel: 'page ${i + 1}',
                   excludeSemantics: true,
                   mouseCursor: SystemMouseCursors.click,
-                  builder: (context, states, _) => dot(i),
+                  builder: (context, states, _) => dot(i, states),
                 ),
               ),
         ],
@@ -645,31 +673,44 @@ class TermMenuBar extends StatelessWidget {
           return _menuRow(context, entry, states);
         }
         final own = TermStyleOf([style, theme.menuBarStyle], states);
-        final lit =
-            states.contains(WidgetState.selected) ||
-            states.contains(WidgetState.focused);
+        // The open menu's name in inverse video; the keyboard's focus the
+        // cursor over it (on the open one, hollow).
+        final lit = states.contains(WidgetState.selected);
+        final cursor = entry.enabled && states.contains(WidgetState.focused)
+            ? 1.0
+            : 0.0;
         final ink = own.foreground ?? theme.foreground;
+        final bar = own.fill ?? ink;
         // A menu's name is one line; what a tap reaches is the floor, so
         // under a finger the bar is two lines with the names in its middle.
         return TermTapTarget(
           child: ColoredBox(
-            color: lit ? own.fill ?? ink : const Color(0x00000000),
-            child: SizedBox(
-              height: grid.lineHeight,
-              child: Padding(
-                padding: EdgeInsetsDirectional.symmetric(
-                  horizontal: grid.cellWidth,
-                ),
-                child: Center(
-                  widthFactor: 1,
-                  child: Text(
-                    entry.label,
-                    style: theme.textStyle.copyWith(
-                      color: !entry.enabled
-                          ? theme.rule
-                          : lit
-                          ? theme.background
-                          : ink,
+            color: lit
+                ? bar.withValues(alpha: bar.a * (1 - cursor))
+                : const Color(0x00000000),
+            child: TermCursorCells(
+              focus: cursor,
+              hollow: lit,
+              child: SizedBox(
+                height: grid.lineHeight,
+                child: Padding(
+                  padding: EdgeInsetsDirectional.symmetric(
+                    horizontal: grid.cellWidth,
+                  ),
+                  child: Center(
+                    widthFactor: 1,
+                    child: Text(
+                      entry.label,
+                      style: theme.textStyle.copyWith(
+                        color: !entry.enabled
+                            ? theme.rule
+                            : termCursorInk(
+                                theme,
+                                lit ? theme.background : ink,
+                                cursor,
+                                hollow: lit,
+                              ),
+                      ),
                     ),
                   ),
                 ),
@@ -739,45 +780,50 @@ class TermNavigationRail extends StatelessWidget {
       final on = i == selectedIndex;
       final lit = on || states.contains(WidgetState.pressed);
       final ink = own.foreground ?? theme.foreground;
-      final words = lit ? theme.background : ink;
       final d = destinations[i];
       return TermStateSprings(
         pressed: states.contains(WidgetState.pressed),
         focused: states.contains(WidgetState.focused),
-        builder: (context, press, focus) => CustomPaint(
-          // The keyboard's focus: a block at the item's start,
-          // as a list's row has it; on the current item's inverse cell, in
-          // the ground's colour.
-          foregroundPainter: focus > 0
-              ? TermFocusBlockPainter(
-                  amount: focus,
-                  color: lit ? theme.background : theme.accent,
-                  cellWidth: grid.cellWidth,
-                  direction: Directionality.of(context),
-                )
-              : null,
-          child: ColoredBox(
-            color: lit ? own.fill ?? ink : const Color(0x00000000),
-            child: SizedBox(
-              height: grid.lines(2),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    d.glyph ?? d.label.characters.first,
-                    style: theme.boldStyle.copyWith(color: words),
-                  ),
-                  Text(
-                    '${i + 1}',
-                    style: theme.textStyle.copyWith(
-                      color: lit ? words : theme.dim,
+        builder: (context, press, focus) {
+          // The keyboard's focus: the cursor over the item; on the current
+          // item's inverse, hollow.
+          final bar = own.fill ?? ink;
+          final words = termCursorInk(
+            theme,
+            lit ? theme.background : ink,
+            focus,
+            hollow: lit,
+          );
+          return ColoredBox(
+            color: lit
+                ? bar.withValues(alpha: bar.a * (1 - focus))
+                : const Color(0x00000000),
+            child: TermCursorCells(
+              focus: focus,
+              hollow: lit,
+              child: SizedBox(
+                height: grid.lines(2),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      d.glyph ?? d.label.characters.first,
+                      style: theme.boldStyle.copyWith(color: words),
                     ),
-                  ),
-                ],
+                    Text(
+                      '${i + 1}',
+                      style: theme.textStyle.copyWith(
+                        color: lit
+                            ? words
+                            : termCursorInk(theme, theme.dim, focus),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       );
     }
 

@@ -12,6 +12,8 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../grid.dart';
+import '../internal/digits.dart';
+import '../internal/field_cursor.dart';
 import '../internal/list_open.dart';
 import '../internal/menu_marks.dart';
 import '../primitives/box.dart';
@@ -24,11 +26,25 @@ import 'button.dart';
 import 'pane.dart';
 import 'text_field.dart';
 
-/// [date] as a terminal writes one: `2026-11-14`.
-String termDate(DateTime date) =>
-    '${date.year.toString().padLeft(4, '0')}-'
-    '${date.month.toString().padLeft(2, '0')}-'
-    '${date.day.toString().padLeft(2, '0')}';
+/// [date] as a terminal writes one, `2026-11-14`: year, month and day in
+/// that order, in [localizations]' digits when given (Arabic's
+/// `٢٠٢٦-١١-١٤`), else ASCII.
+String termDate(DateTime date, {DesignLocalizations? localizations}) {
+  final l = localizations;
+  String figure(int n, int width) => l == null
+      ? n.toString().padLeft(width, '0')
+      : termDigits(l, n, width: width);
+  return '${figure(date.year, 4)}-${figure(date.month, 2)}-'
+      '${figure(date.day, 2)}';
+}
+
+// The date's form in the reader's placeholders: `yyyy-mm-dd`.
+String _dateForm(DesignLocalizations l) =>
+    '${l.dateFieldYearPlaceholder}-${l.dateFieldMonthPlaceholder}-'
+    '${l.dateFieldDayPlaceholder}';
+
+const String _dateHint = 'yyyy-mm-dd';
+const String _rangeHint = 'from → to';
 
 /// A month as `cal` prints it: the month's name between `‹` and `›`, the
 /// weekdays in two letters, each day in its own cells, the chosen one in
@@ -79,6 +95,7 @@ class TermCalendar extends StatelessWidget {
     final floor = grid.ceil(DesignTapTargets.of(context).floorOn());
     final touch = DesignTapTargets.of(context).inputOn() == DesignInput.touch;
     final rtl = Directionality.of(context) == TextDirection.rtl;
+    final l = DesignLocalizations.of(context);
     return DesignCalendar(
       controller: controller,
       onChanged: onChanged,
@@ -93,7 +110,7 @@ class TermCalendar extends StatelessWidget {
           children: [
             TermIconButton(
               glyph: rtl ? '›' : '‹',
-              semanticLabel: 'previous month',
+              semanticLabel: l.previousMonthTooltip.toLowerCase(),
               onPressed: header.previous,
             ),
             Expanded(
@@ -101,24 +118,30 @@ class TermCalendar extends StatelessWidget {
             ),
             TermIconButton(
               glyph: rtl ? '‹' : '›',
-              semanticLabel: 'next month',
+              semanticLabel: l.nextMonthTooltip.toLowerCase(),
               onPressed: header.next,
             ),
           ],
         ),
       ),
-      weekdayBuilder: (context, weekday, label) => SizedBox(
-        height: grid.lineHeight,
-        child: Center(
-          child: ExcludeSemantics(
-            child: Text(
-              label.characters.take(2).toString(),
-              style: theme.dimStyle,
+      // The weekdays and the days grow with the reader's text to twice its
+      // size, as Material's calendar's do: past that a day's two figures
+      // no longer fit its seventh of the month.
+      weekdayBuilder: (context, weekday, label) => _daySized(
+        (context) => SizedBox(
+          height: context.termGrid.lineHeight,
+          child: Center(
+            child: ExcludeSemantics(
+              child: Text(
+                label.characters.take(2).toString(),
+                style: theme.dimStyle,
+              ),
             ),
           ),
         ),
       ),
-      dayBuilder: (context, day, states) {
+      dayBuilder: (context, day, states) => _daySized((context) {
+        final grid = context.termGrid;
         final own = TermStyleOf([style, theme.calendarStyle], states);
         // The day a waiting range would end on is drawn as a finished
         // range's end is.
@@ -137,8 +160,12 @@ class TermCalendar extends StatelessWidget {
         final before = banded && !day.isRangeStart;
         final after = banded && !day.isRangeEnd && !day.isPreviewEnd;
         final band = theme.rule.withValues(alpha: 0.35);
+        // The keys' day is the cursor: its block in the accent, a pair of
+        // brackets cut out of its end cells; on the chosen day, hollow.
         final ink = !day.enabled
             ? theme.rule
+            : focused
+            ? (chosen ? theme.accent : theme.onAccent)
             : chosen
             ? theme.onAccent
             : day.inMonth
@@ -167,10 +194,13 @@ class TermCalendar extends StatelessWidget {
                   painter: focused
                       ? TermBracketPainter(
                           grid: grid,
-                          color: own.edge ?? theme.accent,
+                          color: theme.onAccent,
                           stroke: termStroke(theme, grid),
-                          doubled: 1,
                           fill: ground,
+                          cursor: 1,
+                          cursorColor: own.edge ?? theme.accent,
+                          knockout: theme.onAccent,
+                          hollow: chosen,
                         )
                       : null,
                   child: ColoredBox(
@@ -179,7 +209,7 @@ class TermCalendar extends StatelessWidget {
                         : ground,
                     child: Center(
                       child: Text(
-                        '${day.date.day}'.padLeft(2),
+                        termDigits(l, day.date.day).padLeft(2),
                         style: (day.isToday ? theme.boldStyle : theme.textStyle)
                             .copyWith(
                               color: ink,
@@ -196,7 +226,7 @@ class TermCalendar extends StatelessWidget {
             ),
           ),
         );
-      },
+      }),
     );
   }
 
@@ -229,7 +259,7 @@ class TermDatePicker extends StatefulWidget {
     required this.firstDate,
     required this.lastDate,
     this.labelText,
-    this.hintText = 'yyyy-mm-dd',
+    this.hintText = _dateHint,
     this.helperText,
     this.errorText,
     this.currentDate,
@@ -296,12 +326,13 @@ class _TermDatePickerState extends State<TermDatePicker> {
   @override
   Widget build(BuildContext context) {
     final value = widget.value;
+    final l = DesignLocalizations.of(context);
     return _DateField(
       labelText: widget.labelText,
       helperText: widget.helperText,
       errorText: widget.errorText,
-      words: value == null ? null : termDate(value),
-      hintText: widget.hintText,
+      words: value == null ? null : termDate(value, localizations: l),
+      hintText: widget.hintText == _dateHint ? _dateForm(l) : widget.hintText,
       enabled: widget.onChanged != null,
       style: widget.style,
       // Each opening starts the keys on the chosen day, wherever they were
@@ -345,7 +376,7 @@ class TermDateRangePicker extends StatefulWidget {
     required this.firstDate,
     required this.lastDate,
     this.labelText,
-    this.hintText = 'from → to',
+    this.hintText = _rangeHint,
     this.helperText,
     this.errorText,
     this.currentDate,
@@ -411,6 +442,7 @@ class _TermDateRangePickerState extends State<TermDateRangePicker> {
   @override
   Widget build(BuildContext context) {
     final value = widget.value;
+    final l = DesignLocalizations.of(context);
     final end = value?.end;
     return _DateField(
       labelText: widget.labelText,
@@ -418,11 +450,17 @@ class _TermDateRangePickerState extends State<TermDateRangePicker> {
       errorText: widget.errorText,
       words: value == null || end == null
           ? null
-          : '${termDate(value.start)} → ${termDate(end)}',
+          : '${termDate(value.start, localizations: l)} → '
+                '${termDate(end, localizations: l)}',
       range: value == null || end == null
           ? null
-          : (termDate(value.start), termDate(end)),
-      hintText: widget.hintText,
+          : (
+              termDate(value.start, localizations: l),
+              termDate(end, localizations: l),
+            ),
+      hintText: widget.hintText == _rangeHint
+          ? '${_dateForm(l)} → ${_dateForm(l)}'
+          : widget.hintText,
       enabled: widget.onChanged != null,
       style: widget.style,
       // Each opening starts the keys on the range's first day.
@@ -554,43 +592,62 @@ class _DateFieldState extends State<_DateField> {
                     widget.style,
                     theme.selectStyle,
                   ], states);
-                  return TermFieldFrame(
-                    parts: parts,
-                    active:
-                        states.contains(WidgetState.focused) || anchor.isOpen,
-                    edge: own.edge,
-                    lines: lines,
-                    child: parts.control,
+                  // The frame doubles as every field's does; the keys' focus
+                  // puts the value line under the cursor, as a select's.
+                  return TermStateSprings(
+                    pressed: false,
+                    focused: states.contains(WidgetState.focused),
+                    builder: (context, _, focus) => TermFieldFrame(
+                      parts: parts,
+                      active:
+                          states.contains(WidgetState.focused) || anchor.isOpen,
+                      edge: own.edge,
+                      lines: lines,
+                      child: TermFieldCursor(
+                        focus: focus,
+                        child: parts.control,
+                      ),
+                    ),
                   );
                 },
               ),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    words,
-                    maxLines: lines,
-                    softWrap: lines > 1,
-                    overflow: TextOverflow.ellipsis,
-                    textDirection: TextDirection.ltr,
-                    style: widget.words == null
-                        ? theme.dimStyle
-                        : theme.textStyle.copyWith(
-                            color: enabled ? theme.foreground : theme.rule,
-                          ),
-                  ),
-                ),
-                SizedBox(width: grid.cellWidth),
-                ExcludeSemantics(
-                  child: Text(
-                    '▾',
-                    style: theme.textStyle.copyWith(
-                      color: enabled ? theme.accent : theme.rule,
+            child: Builder(
+              builder: (context) => Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      words,
+                      maxLines: lines,
+                      softWrap: lines > 1,
+                      overflow: TextOverflow.ellipsis,
+                      textDirection: TextDirection.ltr,
+                      style: widget.words == null
+                          ? theme.dimStyle.copyWith(
+                              color: TermFieldCursor.inkOf(context, theme.dim),
+                            )
+                          : theme.textStyle.copyWith(
+                              color: TermFieldCursor.inkOf(
+                                context,
+                                enabled ? theme.foreground : theme.rule,
+                              ),
+                            ),
                     ),
                   ),
-                ),
-              ],
+                  SizedBox(width: grid.cellWidth),
+                  ExcludeSemantics(
+                    child: Text(
+                      '▾',
+                      style: theme.textStyle.copyWith(
+                        color: TermFieldCursor.inkOf(
+                          context,
+                          enabled ? theme.accent : theme.rule,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -662,7 +719,8 @@ class _FocusOnOpenState extends State<_FocusOnOpen> {
 
 /// A time typed as a terminal takes one, `14:30`, on a 24-hour clock: the
 /// words checked as they are typed, the arrows stepping it by [step]
-/// minutes.
+/// minutes. Its figures are the reader's digits (Arabic's `١٤:٣٠`), and
+/// either theirs or ASCII ones type it.
 ///
 /// ```dart
 /// TermTimeField(
@@ -678,7 +736,7 @@ class TermTimeField extends StatefulWidget {
     required this.value,
     required this.onChanged,
     this.labelText,
-    this.helperText = '24-hour, hh:mm · ↑↓ step',
+    this.helperText = _timeHelp,
     this.step = 15,
     this.style,
   });
@@ -692,7 +750,8 @@ class TermTimeField extends StatefulWidget {
   /// What the time is.
   final String? labelText;
 
-  /// Help under the frame.
+  /// Help under the frame; by default the times it takes and the keys that
+  /// step it, `00:00–23:59 · ↑↓`, in the reader's digits.
   final String? helperText;
 
   /// How many minutes an arrow steps it.
@@ -712,22 +771,47 @@ class TermTimeField extends StatefulWidget {
   }
 }
 
+const String _timeHelp = '00:00–23:59 · ↑↓';
+
 class _TermTimeFieldState extends State<TermTimeField> {
-  late final _text = TextEditingController(text: _write(widget.value));
+  final _text = TextEditingController();
+  DesignLocalizations? _words;
   String? _error;
 
-  static String _write(TermTime? t) => t == null
-      ? ''
-      : '${t.hour.toString().padLeft(2, '0')}:'
-            '${t.minute.toString().padLeft(2, '0')}';
+  String _write(TermTime? t) {
+    final l = _words ?? const DefaultDesignLocalizations();
+    return t == null
+        ? ''
+        : '${termDigits(l, t.hour, width: 2)}:'
+              '${termDigits(l, t.minute, width: 2)}';
+  }
 
-  static TermTime? _read(String text) {
-    final m = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(text.trim());
+  TermTime? _read(String text) {
+    final l = _words ?? const DefaultDesignLocalizations();
+    final m = RegExp(r'^(\d{1,2}):(\d{2})$')
+        .firstMatch(termAsciiDigits(l, text.trim()));
     if (m == null) return null;
     final h = int.parse(m.group(1)!);
     final min = int.parse(m.group(2)!);
     if (h > 23 || min > 59) return null;
     return TermTime(hour: h, minute: min);
+  }
+
+  // The times it takes, in the reader's digits: `00:00–23:59`.
+  String get _range =>
+      '${_write(const TermTime(hour: 0, minute: 0))}–'
+      '${_write(const TermTime(hour: 23, minute: 59))}';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final l = DesignLocalizations.of(context);
+    if (identical(l, _words)) return;
+    final shown = _words == null ? widget.value : _read(_text.text);
+    _words = l;
+    // The same time in the new reader's digits; words that do not read yet
+    // stay as typed.
+    if (shown != null || _text.text.isEmpty) _text.text = _write(shown);
   }
 
   @override
@@ -747,11 +831,7 @@ class _TermTimeFieldState extends State<TermTimeField> {
 
   void _typed(String text) {
     final t = _read(text);
-    setState(
-      () => _error = t == null && text.isNotEmpty
-          ? 'hh:mm, 00:00 to 23:59'
-          : null,
-    );
+    setState(() => _error = t == null && text.isNotEmpty ? _range : null);
     if (t != null) widget.onChanged?.call(t);
   }
 
@@ -767,31 +847,36 @@ class _TermTimeFieldState extends State<TermTimeField> {
   }
 
   @override
-  Widget build(BuildContext context) => CallbackShortcuts(
-    bindings: {
-      const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
-          _stepBy(widget.step),
-      const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
-          _stepBy(-widget.step),
-    },
-    child: TermTextField(
-      controller: _text,
-      labelText: widget.labelText,
-      helperText: widget.helperText,
-      errorText: _error,
-      hintText: 'hh:mm',
-      enabled: widget.onChanged != null,
-      autocorrect: false,
-      textDirection: TextDirection.ltr,
-      keyboardType: TextInputType.datetime,
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[0-9:]')),
-        LengthLimitingTextInputFormatter(5),
-      ],
-      onChanged: _typed,
-      style: widget.style,
-    ),
-  );
+  Widget build(BuildContext context) {
+    final l = DesignLocalizations.of(context);
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
+            _stepBy(widget.step),
+        const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+            _stepBy(-widget.step),
+      },
+      child: TermTextField(
+        controller: _text,
+        labelText: widget.labelText,
+        helperText: widget.helperText == _timeHelp
+            ? '$_range · ↑↓'
+            : widget.helperText,
+        errorText: _error,
+        hintText: '--:--',
+        enabled: widget.onChanged != null,
+        autocorrect: false,
+        textDirection: TextDirection.ltr,
+        keyboardType: TextInputType.datetime,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp('[${termDigitClass(l)}:]')),
+          LengthLimitingTextInputFormatter(5),
+        ],
+        onChanged: _typed,
+        style: widget.style,
+      ),
+    );
+  }
 }
 
 /// A colour picker drawn in cells: an area of saturation across and
@@ -867,8 +952,22 @@ class TermColorPicker extends StatelessWidget {
     return DesignColorPicker(
       controller: controller,
       areaHeight: grid.lines(lines),
+      // The keyboard's focus on the area: the cursor round it, hollow, its
+      // first and last columns and its top and bottom rows of half-block
+      // pixels, a pair of brackets its height cut out of the columns, as a
+      // chosen row's end cells take it; the thumb's brackets go to the
+      // cursor too.
       areaBuilder: (context, area) => CustomPaint(
         painter: _HalfBlockArea(grid: grid, hue: area.color.hue),
+        foregroundPainter: area.states.contains(WidgetState.focused)
+            ? _AreaCursor(
+                lineHeight: grid.lineHeight,
+                cellWidth: grid.cellWidth,
+                color: theme.accent,
+                knockout: theme.onAccent,
+                stroke: termStroke(theme, grid),
+              )
+            : null,
         child: const SizedBox.expand(),
       ),
       areaThumbBuilder: (context, area) => _Ring(
@@ -929,15 +1028,20 @@ class TermColorPicker extends StatelessWidget {
                     builder: (context, states, _) => SizedBox(
                       width: grid.cols(3),
                       height: grid.lineHeight,
+                      // The keyboard's focus: the cursor on the swatch's end
+                      // cells, brackets cut out of it, its colour between.
                       child: CustomPaint(
-                        painter: TermBracketPainter(
-                          grid: grid,
-                          color: states.contains(WidgetState.focused)
-                              ? theme.accent
-                              : const Color(0x00000000),
-                          stroke: termStroke(theme, grid),
-                          doubled: states.contains(WidgetState.focused) ? 1 : 0,
-                        ),
+                        foregroundPainter: states.contains(WidgetState.focused)
+                            ? TermBracketPainter(
+                                grid: grid,
+                                color: theme.onAccent,
+                                stroke: termStroke(theme, grid),
+                                cursor: 1,
+                                cursorColor: theme.accent,
+                                knockout: theme.onAccent,
+                                hollow: true,
+                              )
+                            : null,
                         child: Padding(
                           padding: EdgeInsetsDirectional.symmetric(
                             horizontal: grid.cellWidth * 0.5,
@@ -954,6 +1058,62 @@ class TermColorPicker extends StatelessWidget {
       ),
     );
   }
+}
+
+// The cursor on a colour area, hollow: its first and last columns and its
+// top and bottom half-lines in [color], a bracket the area's height cut out
+// of each column in [knockout].
+class _AreaCursor extends CustomPainter {
+  const _AreaCursor({
+    required this.lineHeight,
+    required this.cellWidth,
+    required this.color,
+    required this.knockout,
+    required this.stroke,
+  });
+
+  final double lineHeight;
+  final double cellWidth;
+  final Color color;
+  final Color knockout;
+  final double stroke;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final pixel = lineHeight / 2;
+    final ground = Paint()..color = color;
+    final ink = Paint()..color = knockout;
+    final h = size.height;
+    final arm = cellWidth * 0.4;
+    final inset = cellWidth * 0.3;
+    canvas
+      ..drawRect(Rect.fromLTWH(0, 0, cellWidth, h), ground)
+      ..drawRect(Rect.fromLTWH(size.width - cellWidth, 0, cellWidth, h), ground)
+      ..drawRect(Rect.fromLTWH(0, 0, size.width, pixel), ground)
+      ..drawRect(Rect.fromLTWH(0, h - pixel, size.width, pixel), ground);
+    void bracket(double x, double dir) {
+      final y0 = pixel / 2;
+      final y1 = h - y0;
+      canvas
+        ..drawRect(Rect.fromLTWH(x - stroke / 2, y0, stroke, y1 - y0), ink)
+        ..drawRect(Rect.fromLTWH(dir > 0 ? x : x - arm, y0, arm, stroke), ink)
+        ..drawRect(
+          Rect.fromLTWH(dir > 0 ? x : x - arm, y1 - stroke, arm, stroke),
+          ink,
+        );
+    }
+
+    bracket(inset + stroke / 2, 1);
+    bracket(size.width - inset - stroke / 2, -1);
+  }
+
+  @override
+  bool shouldRepaint(_AreaCursor old) =>
+      old.lineHeight != lineHeight ||
+      old.cellWidth != cellWidth ||
+      old.color != color ||
+      old.knockout != knockout ||
+      old.stroke != stroke;
 }
 
 // The saturation-brightness area for [hue] as cells of two half-block
@@ -1045,11 +1205,16 @@ class _Ring extends StatelessWidget {
         width: grid.cols(3),
         height: grid.lineHeight,
         child: CustomPaint(
+          // The keyboard's focus: the cursor on the brackets' cells, the
+          // brackets cut out of it, the colour between them left showing.
           painter: TermBracketPainter(
             grid: grid,
-            color: Color.lerp(color, accent, focus)!,
+            color: color,
             stroke: termStroke(theme, grid) * 2,
-            doubled: focus,
+            cursor: focus,
+            cursorColor: accent,
+            knockout: theme.onAccent,
+            hollow: true,
           ),
         ),
       ),
@@ -1128,3 +1293,13 @@ class TermTime {
       'TermTime(${hour.toString().padLeft(2, '0')}:'
       '${minute.toString().padLeft(2, '0')})';
 }
+
+/// The most a calendar's day grows with the reader's text.
+const double _dayScaleCap = 2;
+
+// [build] under the reader's text scale capped at [_dayScaleCap], its grid
+// (`context.termGrid`) capped with it.
+Widget _daySized(WidgetBuilder build) => MediaQuery.withClampedTextScaling(
+  maxScaleFactor: _dayScaleCap,
+  child: Builder(builder: build),
+);

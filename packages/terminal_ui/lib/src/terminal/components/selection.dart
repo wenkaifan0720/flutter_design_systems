@@ -45,22 +45,30 @@ class _ChoiceFace extends StatelessWidget {
       pressed: states.contains(WidgetState.pressed),
       focused: states.contains(WidgetState.focused),
       builder: (context, press, focus) {
-        final rest = error ? theme.danger : theme.rule;
         final brackets = disabled
             ? theme.rule.withValues(alpha: 0.6)
-            : Color.lerp(rest, theme.accent, focus)!;
+            : error
+            ? theme.danger
+            : theme.rule;
+        final cursor = disabled ? 0.0 : focus;
         final ink = disabled
             ? theme.rule
-            : Color.lerp(theme.accent, theme.background, press)!;
+            : termCursorInk(
+                theme,
+                Color.lerp(theme.accent, theme.background, press)!,
+                cursor,
+              );
         final box = CustomPaint(
           painter: TermBracketPainter(
             grid: grid,
             color: own.edge ?? brackets,
             stroke: stroke,
-            doubled: focus,
             fill: own.fill ?? (disabled ? null : theme.foreground),
             fillAmount: press,
             shape: shape,
+            cursor: cursor,
+            cursorColor: theme.accent,
+            knockout: theme.onAccent,
           ),
           child: SizedBox(
             width: grid.cols(3),
@@ -69,24 +77,39 @@ class _ChoiceFace extends StatelessWidget {
           ),
         );
         if (label == null) return box;
+        // The cursor takes the whole line, the label with the box, as a
+        // terminal's selection does.
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             box,
-            SizedBox(width: grid.cellWidth),
             Flexible(
-              child: Text(
-                label!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                softWrap: false,
-                style: theme.textStyle
-                    .merge(own.textStyle)
-                    .copyWith(
-                      color:
-                          own.foreground ??
-                          (disabled ? theme.rule : theme.foreground),
+              child: TermCursorSpan(
+                focus: cursor,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(width: grid.cellWidth),
+                    Flexible(
+                      child: Text(
+                        label!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                        style: theme.textStyle
+                            .merge(own.textStyle)
+                            .copyWith(
+                              color: termCursorInk(
+                                theme,
+                                own.foreground ??
+                                    (disabled ? theme.rule : theme.foreground),
+                                cursor,
+                              ),
+                            ),
+                      ),
                     ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -101,8 +124,9 @@ class _ChoiceFace extends StatelessWidget {
 ///
 /// [value] true draws `x` in the accent, false nothing, null (with
 /// [tristate]) `-`. The mark springs in and out; a press fills the box in
-/// inverse video; the keyboard's focus doubles the brackets. [onChanged]
-/// null disables it.
+/// inverse video; the keyboard's focus is the cursor over the line, the
+/// box's brackets and mark and the label cut out of it. [onChanged] null
+/// disables it.
 ///
 /// ```dart
 /// TermCheckbox(
@@ -442,6 +466,7 @@ class TermSwitch extends StatelessWidget {
                     (disabled
                         ? theme.rule.withValues(alpha: 0.5)
                         : Color.lerp(theme.rule, theme.accent, t.clamp(0, 1))!);
+                final cursor = disabled ? 0.0 : focus;
                 final face = CustomPaint(
                   painter: TermBracketPainter(
                     grid: grid,
@@ -449,42 +474,66 @@ class TermSwitch extends StatelessWidget {
                         own.edge ??
                         (disabled
                             ? theme.rule.withValues(alpha: 0.6)
-                            : Color.lerp(theme.rule, theme.accent, focus)!),
+                            : theme.rule),
                     stroke: stroke,
-                    doubled: focus,
+                    cursor: cursor,
+                    cursorColor: theme.accent,
+                    knockout: theme.onAccent,
                   ),
                   foregroundPainter: _Thumb(
                     grid: grid,
                     at: t,
-                    // Held, the block lights towards the words' ink.
-                    color: own.fill != null || disabled
-                        ? block
-                        : Color.lerp(block, theme.foreground, press * 0.6)!,
-                    track: theme.rule,
+                    // Held, the block lights towards the words' ink; under
+                    // the cursor, block and track are cut out of it.
+                    color: termCursorInk(
+                      theme,
+                      own.fill != null || disabled
+                          ? block
+                          : Color.lerp(block, theme.foreground, press * 0.6)!,
+                      cursor,
+                    ),
+                    track: termCursorInk(theme, theme.rule, cursor),
                     press: press,
                     direction: direction,
                   ),
                   child: SizedBox(width: grid.cols(4), height: grid.lineHeight),
                 );
                 if (label == null) return face;
+                // The cursor takes the whole line, the label with the
+                // switch.
                 return Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     face,
-                    SizedBox(width: grid.cellWidth),
                     Flexible(
-                      child: Text(
-                        label!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        softWrap: false,
-                        style: theme.textStyle
-                            .merge(own.textStyle)
-                            .copyWith(
-                              color:
-                                  own.foreground ??
-                                  (disabled ? theme.rule : theme.foreground),
+                      child: TermCursorSpan(
+                        focus: cursor,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(width: grid.cellWidth),
+                            Flexible(
+                              child: Text(
+                                label!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: false,
+                                style: theme.textStyle
+                                    .merge(own.textStyle)
+                                    .copyWith(
+                                      color: termCursorInk(
+                                        theme,
+                                        own.foreground ??
+                                            (disabled
+                                                ? theme.rule
+                                                : theme.foreground),
+                                        cursor,
+                                      ),
+                                    ),
+                              ),
                             ),
+                          ],
+                        ),
                       ),
                     ),
                   ],

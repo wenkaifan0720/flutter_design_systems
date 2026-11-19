@@ -7,10 +7,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
+import '../internal/field_cursor.dart';
 import '../internal/list_open.dart';
 import '../internal/menu_marks.dart';
 import '../internal/type_ahead.dart';
 import '../primitives/field_frame.dart';
+import '../primitives/control.dart';
 import '../style.dart';
 import '../theme.dart';
 import 'list_tile.dart';
@@ -44,7 +46,7 @@ class TermSelectItem<T> {
 /// A select: the frame a [TermTextField] has, with the chosen [value]'s
 /// label on its line and a `▾` at the end. A press, Return, Space or Down
 /// opens a menu of [items] under it, exactly as wide as the field, the
-/// chosen one in inverse video and the keys on it. Up and Down move through
+/// chosen one in inverse video and the cursor on it. Up and Down move through
 /// it, round from the last to the first, Home and End go to the ends, a
 /// letter to the next item it starts; Return chooses, Escape closes it and
 /// the keys are back on the field. The pointer over an item, and the keys
@@ -194,35 +196,46 @@ class _TermSelectState<T> extends State<TermSelect<T>> {
       {if (!enabled) WidgetState.disabled},
     );
     // What the field shows: the chosen value's words and the `▾`.
-    final value = Row(
-      children: [
-        Expanded(
-          child: Text(
-            chosen?.label ?? widget.hintText ?? '',
-            maxLines: 1,
-            softWrap: false,
-            overflow: TextOverflow.ellipsis,
-            style: chosen == null
-                ? theme.dimStyle
-                : theme.textStyle
-                      .merge(rest.textStyle)
-                      .copyWith(
-                        color: enabled
-                            ? rest.foreground ?? theme.foreground
-                            : theme.rule,
-                      ),
-          ),
-        ),
-        SizedBox(width: cw),
-        ExcludeSemantics(
-          child: Text(
-            '▾',
-            style: theme.textStyle.copyWith(
-              color: enabled ? theme.accent : theme.rule,
+    // Under the keyboard's cursor its words are cut out of it.
+    final value = Builder(
+      builder: (context) => Row(
+        children: [
+          Expanded(
+            child: Text(
+              chosen?.label ?? widget.hintText ?? '',
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.ellipsis,
+              style: chosen == null
+                  ? theme.dimStyle.copyWith(
+                      color: TermFieldCursor.inkOf(context, theme.dim),
+                    )
+                  : theme.textStyle
+                        .merge(rest.textStyle)
+                        .copyWith(
+                          color: TermFieldCursor.inkOf(
+                            context,
+                            enabled
+                                ? rest.foreground ?? theme.foreground
+                                : theme.rule,
+                          ),
+                        ),
             ),
           ),
-        ),
-      ],
+          SizedBox(width: cw),
+          ExcludeSemantics(
+            child: Text(
+              '▾',
+              style: theme.textStyle.copyWith(
+                color: TermFieldCursor.inkOf(
+                  context,
+                  enabled ? theme.accent : theme.rule,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
 
     // The field, its list open or not ([anchor] null: an off select, which
@@ -274,11 +287,15 @@ class _TermSelectState<T> extends State<TermSelect<T>> {
             );
           }
           return press(
-            (states) => TermFieldFrame(
-              parts: parts,
-              active: active(states),
-              edge: own(states).edge,
-              child: parts.control,
+            (states) => TermStateSprings(
+              pressed: false,
+              focused: states.contains(WidgetState.focused),
+              builder: (context, _, focus) => TermFieldFrame(
+                parts: parts,
+                active: active(states),
+                edge: own(states).edge,
+                child: TermFieldCursor(focus: focus, child: parts.control),
+              ),
             ),
           );
         },

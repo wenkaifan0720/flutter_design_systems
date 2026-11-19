@@ -175,8 +175,23 @@ class TermOtpField extends StatelessWidget {
   /// What a screen reader calls it.
   final String semanticLabel;
 
+  // The code grows with the reader's text to twice its size, and never
+  // past the width it is given: past that a six-character code runs off a
+  // phone.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, box) {
+      final cells = length * 3 + (length.isEven ? 3 : 0);
+      final whole = TermTheme.of(context).grid.cols(cells);
+      final fits = box.hasBoundedWidth ? box.maxWidth / whole : 2.0;
+      return MediaQuery.withClampedTextScaling(
+        maxScaleFactor: math.max(1, math.min(2, fits)),
+        child: Builder(builder: _code),
+      );
+    },
+  );
+
+  Widget _code(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final stroke = termStroke(theme, grid);
@@ -278,9 +293,11 @@ class TermOtpField extends StatelessWidget {
   }
 }
 
-/// A number and the two buttons that step it: `[-]  3  [+]`, the number as
-/// wide as its widest value so nothing shifts as it counts. A screen
-/// reader hears it as a value it can raise and lower.
+/// A number and the two keys that step it: `[-]  3  [+]`, the number as
+/// wide as its widest value so nothing shifts as it counts, in the
+/// reader's digits. The number is the one stop for the keyboard: Up and
+/// Down step it, Home and End take it to [min] and [max]; the keys are the
+/// pointer's. A screen reader hears it as a value it can raise and lower.
 ///
 /// ```dart
 /// TermNumberField(
@@ -334,6 +351,7 @@ class TermNumberField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
+    final l = DesignLocalizations.of(context);
     final change = onChanged;
     final down = change != null && value > min
         ? () => change(math.max(min, value - step))
@@ -341,42 +359,75 @@ class TermNumberField extends StatelessWidget {
     final up = change != null && value < max
         ? () => change(math.min(max, value + step))
         : null;
-    final digits = math.max('$min'.length, '$max'.length);
-    final said = unit == null ? '$value' : '$value $unit';
+    String figure(int v) => l.formatDecimal(v);
+    final shown = figure(value);
+    final width = math.max(
+      grid.widthOf(figure(min)),
+      grid.widthOf(figure(max)),
+    );
+    // The keys are the pointer's: the number holds the keyboard and says
+    // what they do, so they need no words of their own.
+    Widget key(String glyph, VoidCallback? onPressed) => ExcludeSemantics(
+      child: ExcludeFocus(
+        child: TermIconButton(
+          glyph: glyph,
+          semanticLabel: glyph,
+          onPressed: onPressed,
+          style: style,
+        ),
+      ),
+    );
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        TermIconButton(
-          glyph: '-',
-          semanticLabel: 'less $semanticLabel',
-          onPressed: down,
-          style: style,
-        ),
+        key('-', down),
         Semantics(
           label: semanticLabel,
-          value: said,
-          increasedValue: up == null ? null : '${value + step}',
-          decreasedValue: down == null ? null : '${value - step}',
+          value: unit == null ? shown : '$shown $unit',
+          increasedValue: up == null
+              ? null
+              : figure(math.min(max, value + step)),
+          decreasedValue: down == null
+              ? null
+              : figure(math.max(min, value - step)),
           onIncrease: up,
           onDecrease: down,
           excludeSemantics: true,
-          child: SizedBox(
-            width: grid.cols(digits + 2),
-            child: Text(
-              '$value',
-              textAlign: TextAlign.center,
-              style: theme.boldStyle.copyWith(
-                color: change == null ? theme.rule : theme.foreground,
+          child: _TermNumberFocus(
+            enabled: change != null,
+            onStep: {
+              LogicalKeyboardKey.arrowUp: up,
+              LogicalKeyboardKey.arrowDown: down,
+              LogicalKeyboardKey.home: change == null || value == min
+                  ? null
+                  : () => change(min),
+              LogicalKeyboardKey.end: change == null || value == max
+                  ? null
+                  : () => change(max),
+            },
+            builder: (context, focus) => TermCursorCells(
+              focus: focus,
+              child: SizedBox(
+                width: width + grid.cols(2),
+                height: grid.lineHeight,
+                child: Center(
+                  child: Text(
+                    shown,
+                    textAlign: TextAlign.center,
+                    style: theme.boldStyle.copyWith(
+                      color: TermCursorCells.inkOf(
+                        context,
+                        change == null ? theme.rule : theme.foreground,
+                        focus,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
         ),
-        TermIconButton(
-          glyph: '+',
-          semanticLabel: 'more $semanticLabel',
-          onPressed: up,
-          style: style,
-        ),
+        key('+', up),
         if (unit != null) ...[
           SizedBox(width: grid.cellWidth),
           ExcludeSemantics(child: Text(unit!, style: theme.dimStyle)),
@@ -395,8 +446,44 @@ class TermNumberField extends StatelessWidget {
   }
 }
 
+// The number's keyboard stop: Up, Down, Home and End run their [onStep]
+// (null: nothing to do there), its focus shown on the keyboard's spring.
+class _TermNumberFocus extends StatelessWidget {
+  const _TermNumberFocus({
+    required this.enabled,
+    required this.onStep,
+    required this.builder,
+  });
+
+  final bool enabled;
+  final Map<LogicalKeyboardKey, VoidCallback?> onStep;
+  final Widget Function(BuildContext context, double focus) builder;
+
+  @override
+  Widget build(BuildContext context) => Focus(
+    canRequestFocus: enabled,
+    skipTraversal: !enabled,
+    includeSemantics: false,
+    onKeyEvent: (node, event) {
+      if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+        return KeyEventResult.ignored;
+      }
+      if (!onStep.containsKey(event.logicalKey)) return KeyEventResult.ignored;
+      onStep[event.logicalKey]?.call();
+      return KeyEventResult.handled;
+    },
+    child: Builder(
+      builder: (context) => TermStateSprings(
+        pressed: false,
+        focused: Focus.of(context).hasFocus,
+        builder: (context, _, focus) => builder(context, focus),
+      ),
+    ),
+  );
+}
+
 /// A field that suggests as you type: the matches listed in a pane right
-/// under the frame, the one the arrows are on in inverse video, Return
+/// under the frame, the one the arrows are on under the cursor, Return
 /// taking it.
 ///
 /// With [search] the options are looked up rather than filtered: while
@@ -939,6 +1026,7 @@ class _TagFrameState extends State<_TagFrame> {
             target: _focused ? 1 : 0,
             token: TermMotion.move,
             spatial: true,
+            focus: true,
             builder: (context, t, child) => CustomPaint(
               painter: TermFramePainter(
                 grid: grid,

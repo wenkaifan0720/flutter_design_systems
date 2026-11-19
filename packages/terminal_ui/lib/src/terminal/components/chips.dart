@@ -95,24 +95,35 @@ class TermTag extends StatelessWidget {
         onPressed: onDeleted,
         semanticLabel: 'remove $label',
         mouseCursor: SystemMouseCursors.click,
-        builder: (context, states, _) {
-          final lit =
-              states.contains(WidgetState.pressed) ||
-              states.contains(WidgetState.focused);
-          return ColoredBox(
-            color: lit ? words : ground,
-            child: SizedBox(
-              width: grid.cols(2),
-              height: grid.lineHeight,
-              child: Center(
-                child: Text(
-                  '×',
-                  style: theme.textStyle.copyWith(color: lit ? ground : words),
+        builder: (context, states, _) => TermStateSprings(
+          pressed: states.contains(WidgetState.pressed),
+          focused: states.contains(WidgetState.focused),
+          builder: (context, press, focus) {
+            // A press: the two cells in inverse video of the words' ink.
+            // The keyboard's focus: the cursor, the accent over them.
+            final pressed = press > 0.5;
+            final cursor = pressed ? 0.0 : focus;
+            return ColoredBox(
+              color: pressed
+                  ? words
+                  : Color.lerp(ground, theme.accent, cursor)!,
+              child: SizedBox(
+                width: grid.cols(2),
+                height: grid.lineHeight,
+                child: Center(
+                  child: Text(
+                    '×',
+                    style: theme.textStyle.copyWith(
+                      color: pressed
+                          ? ground
+                          : termCursorInk(theme, words, cursor),
+                    ),
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
     return Semantics(
@@ -136,7 +147,8 @@ class TermTag extends StatelessWidget {
 
 /// A chip that filters: [label] in round brackets, `( failed )`, chosen in
 /// inverse video with a `✓` in the cells kept for it, so choosing moves
-/// nothing.
+/// nothing. The keyboard's focus is the cursor over it, its brackets cut
+/// out (on a chosen chip, hollow).
 ///
 /// ```dart
 /// TermChip(
@@ -192,20 +204,28 @@ class TermChip extends StatelessWidget {
             final rest = own.foreground ?? theme.foreground;
             final words = !enabled
                 ? theme.rule
-                : selected
-                ? theme.background
-                : Color.lerp(rest, theme.background, press)!;
+                : termCursorInk(
+                    theme,
+                    selected
+                        ? theme.background
+                        : Color.lerp(rest, theme.background, press)!,
+                    focus,
+                    hollow: selected,
+                  );
             return CustomPaint(
               painter: TermBracketPainter(
                 grid: grid,
                 color: !enabled
                     ? theme.rule.withValues(alpha: 0.6)
-                    : Color.lerp(own.edge ?? theme.rule, theme.accent, focus)!,
+                    : own.edge ?? theme.rule,
                 stroke: termStroke(theme, grid),
-                doubled: focus,
                 shape: TermBracketShape.round,
                 fill: enabled ? own.fill ?? rest : theme.rule,
                 fillAmount: selected ? 1 : press,
+                cursor: enabled ? focus : 0,
+                cursorColor: theme.accent,
+                knockout: theme.onAccent,
+                hollow: selected,
               ),
               child: SizedBox(
                 height: grid.lineHeight,

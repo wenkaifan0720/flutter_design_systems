@@ -114,33 +114,42 @@ class _TermDisclosureState extends State<TermDisclosure> {
                 widget.style,
                 theme.disclosureStyle,
               ], states);
-              final lit =
-                  states.contains(WidgetState.focused) ||
-                  states.contains(WidgetState.pressed);
+              final pressed = states.contains(WidgetState.pressed);
               final ink = own.foreground ?? theme.foreground;
-              return SizedBox(
-                height: grid.lineHeight,
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: grid.cols(2),
-                      child: Text(
-                        _open ? '▾' : '▸',
-                        style: theme.textStyle.copyWith(
-                          color: own.edge ?? theme.accent,
+              // A press: the title in inverse video. The keyboard's focus:
+              // the cursor behind it, half a cell past it each side.
+              return TermStateSprings(
+                pressed: pressed,
+                focused: states.contains(WidgetState.focused) && !pressed,
+                builder: (context, press, focus) => SizedBox(
+                  height: grid.lineHeight,
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: grid.cols(2),
+                        child: Text(
+                          _open ? '▾' : '▸',
+                          style: theme.textStyle.copyWith(
+                            color: own.edge ?? theme.accent,
+                          ),
                         ),
                       ),
-                    ),
-                    ColoredBox(
-                      color: lit ? ink : _clear,
-                      child: Text(
-                        widget.title,
-                        style: theme.boldStyle.copyWith(
-                          color: lit ? theme.background : ink,
+                      TermCursorSpan(
+                        focus: focus,
+                        child: ColoredBox(
+                          color: pressed ? ink : _clear,
+                          child: Text(
+                            widget.title,
+                            style: theme.boldStyle.copyWith(
+                              color: pressed
+                                  ? theme.background
+                                  : termCursorInk(theme, ink, focus),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },
@@ -391,8 +400,12 @@ class TermDataTable<R> extends StatelessWidget {
       ];
     }
 
-    Widget mark(String m, Color ink) =>
-        Text(m, style: theme.textStyle.copyWith(color: ink));
+    // A mark in its cells; under the keyboard's focus, the cursor behind it,
+    // half a cell past it each side.
+    Widget mark(String m, Color ink, {bool cursor = false}) => TermCursorSpan(
+      focus: cursor ? 1 : 0,
+      child: Text(m, style: theme.textStyle.copyWith(color: ink)),
+    );
 
     return DefaultTextStyle.merge(
       maxLines: 1,
@@ -403,9 +416,8 @@ class TermDataTable<R> extends StatelessWidget {
         selectable: selectable,
         onActivate: onActivate,
         headerBuilder: (context, column, sort, states) {
-          final lit =
-              states.contains(WidgetState.focused) ||
-              states.contains(WidgetState.pressed);
+          final lit = states.contains(WidgetState.pressed);
+          final focused = !lit && states.contains(WidgetState.focused);
           final words =
               '${column.label}${switch (sort) {
                 DesignSortDirection.ascending => ' ↑',
@@ -419,20 +431,27 @@ class TermDataTable<R> extends StatelessWidget {
             alignment: column.numeric
                 ? AlignmentDirectional.centerEnd
                 : AlignmentDirectional.centerStart,
-            child: ColoredBox(
-              color: lit ? theme.foreground : _clear,
-              child: Text(
-                words,
-                style: theme.boldStyle.copyWith(
-                  color: lit
-                      ? theme.background
-                      : sort != null
-                      ? theme.foreground
-                      : theme.dim,
-                  decoration: column.sortable && !lit
-                      ? TextDecoration.underline
-                      : null,
-                  decorationColor: theme.rule,
+            // A press: the heading in inverse video. The keyboard's
+            // focus: the cursor behind it, half a cell past it each side.
+            child: TermCursorSpan(
+              focus: focused ? 1 : 0,
+              child: ColoredBox(
+                color: lit ? theme.foreground : _clear,
+                child: Text(
+                  words,
+                  style: theme.boldStyle.copyWith(
+                    color: lit
+                        ? theme.background
+                        : focused
+                        ? theme.onAccent
+                        : sort != null
+                        ? theme.foreground
+                        : theme.dim,
+                    decoration: column.sortable && !lit
+                        ? TextDecoration.underline
+                        : null,
+                    decorationColor: focused ? theme.onAccent : theme.rule,
+                  ),
                 ),
               ),
             ),
@@ -466,8 +485,9 @@ class TermDataTable<R> extends StatelessWidget {
                         DesignSelection.none => '[ ]',
                       },
                       states.contains(WidgetState.focused)
-                          ? theme.accent
+                          ? theme.onAccent
                           : theme.dim,
+                      cursor: states.contains(WidgetState.focused),
                     ),
                   ),
                 ),
@@ -491,21 +511,31 @@ class TermDataTable<R> extends StatelessWidget {
             cellBuilder(context, row, column),
         rowBuilder: (context, row, cells) {
           final own = TermStyleOf([style, theme.tableStyle], row.states);
-          final focused = row.states.contains(WidgetState.focused);
           final pressed = row.states.contains(WidgetState.pressed);
-          final ground = row.selected || pressed
+          // The keyboard's focus: the cursor, the row in the accent, its
+          // words in the ink they take on it and a `>` cut out of its
+          // cursor column; a selected row's shade, and a press, stay apart
+          // from it.
+          final focused = !pressed && row.states.contains(WidgetState.focused);
+          final ground = focused
+              ? theme.accent
+              : row.selected || pressed
               ? own.fill ?? termRowShade(theme)
               : _clear;
           final out = laid(
             cells,
-            lead: focused ? mark('>', theme.accent) : null,
+            lead: focused ? mark('>', theme.onAccent) : null,
           );
           if (selectable) {
             out[1] = SizedBox(
               width: grid.cols(4),
               child: mark(
                 row.selected ? '[x]' : '[ ]',
-                row.selected ? theme.accent : theme.dim,
+                focused
+                    ? theme.onAccent
+                    : row.selected
+                    ? theme.accent
+                    : theme.dim,
               ),
             );
           }
@@ -514,7 +544,11 @@ class TermDataTable<R> extends StatelessWidget {
             child: SizedBox(
               height: _touch(context) ? grid.lines(2) : grid.lineHeight,
               child: DefaultTextStyle.merge(
-                style: TextStyle(color: own.foreground ?? theme.foreground),
+                style: TextStyle(
+                  color: focused
+                      ? theme.onAccent
+                      : own.foreground ?? theme.foreground,
+                ),
                 child: Row(children: out),
               ),
             ),
@@ -794,18 +828,26 @@ class TermSplitView extends StatelessWidget {
       hitExtent: math.max(across, 24),
       dividerBuilder: (context, states, axis) {
         final own = TermStyleOf([style, theme.splitViewStyle], states);
-        final held =
-            states.contains(WidgetState.pressed) ||
-            states.contains(WidgetState.focused);
+        final held = states.contains(WidgetState.pressed);
+        // The keyboard's focus: the cursor, the divider's cells in the
+        // accent with its rule cut out of them; a drag doubles the rule.
+        final focused = !held && states.contains(WidgetState.focused);
         final stroke = termStroke(theme, grid);
         return MouseRegion(
           cursor: axis == Axis.horizontal
               ? SystemMouseCursors.resizeColumn
               : SystemMouseCursors.resizeRow,
-          child: _Rule(
-            color: held ? own.fill ?? theme.accent : own.edge ?? theme.rule,
-            stroke: held ? stroke * 2 : stroke,
-            axis: axis == Axis.horizontal ? Axis.vertical : Axis.horizontal,
+          child: ColoredBox(
+            color: focused ? own.fill ?? theme.accent : _clear,
+            child: _Rule(
+              color: focused
+                  ? theme.onAccent
+                  : held
+                  ? own.fill ?? theme.accent
+                  : own.edge ?? theme.rule,
+              stroke: held ? stroke * 2 : stroke,
+              axis: axis == Axis.horizontal ? Axis.vertical : Axis.horizontal,
+            ),
           ),
         );
       },
@@ -1000,7 +1042,7 @@ class TermPullToRefresh extends StatelessWidget {
 
 /// A tree as `tree` prints one: `├─` and `└─` before each node, `│`
 /// carrying each open branch down, `▸` or `▾` on a node with children;
-/// the keyboard's row in inverse video, the chosen in bold accent. The
+/// the keyboard's row under the cursor, the chosen in bold accent. The
 /// arrows walk it (→ opens, ← closes or climbs), Enter opens a leaf.
 ///
 /// ```dart
@@ -1061,47 +1103,64 @@ class TermTree<T extends Object> extends StatelessWidget {
           semanticLabel: semanticLabel,
           rowBuilder: (context, item) {
             final own = TermStyleOf([style, theme.treeStyle], item.states);
-            final lit =
-                item.states.contains(WidgetState.focused) ||
-                item.states.contains(WidgetState.pressed);
+            final lit = item.states.contains(WidgetState.pressed);
+            final focused = !lit && item.states.contains(WidgetState.focused);
             final ink = own.foreground ?? theme.foreground;
             final name = item.selected ? theme.accent : ink;
-            return SizedBox(
-              height: _touch(context) ? grid.lines(2) : grid.lineHeight,
-              child: Row(
-                children: [
-                  Text(
-                    guides(item.row),
-                    style: theme.textStyle.copyWith(
-                      color: own.edge ?? theme.rule,
-                    ),
-                  ),
-                  SizedBox(
-                    width: grid.cols(2),
-                    child: item.hasChildren
-                        ? GestureDetector(
-                            onTap: item.toggle,
-                            child: Text(
-                              item.expanded ? '▾' : '▸',
-                              style: theme.textStyle.copyWith(color: theme.dim),
-                            ),
-                          )
-                        : null,
-                  ),
-                  Flexible(
-                    child: ColoredBox(
-                      color: lit ? own.fill ?? ink : _clear,
-                      child: Text(
-                        labelOf(item.row.node),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style:
-                            (item.selected ? theme.boldStyle : theme.textStyle)
-                                .copyWith(color: lit ? theme.background : name),
+            // The keyboard's focus: the cursor over the whole row, as a
+            // list's row has it, the guides and the name cut out of it. A
+            // press: the name alone in inverse video.
+            return ColoredBox(
+              color: focused ? theme.accent : _clear,
+              child: SizedBox(
+                height: _touch(context) ? grid.lines(2) : grid.lineHeight,
+                child: Row(
+                  children: [
+                    Text(
+                      guides(item.row),
+                      style: theme.textStyle.copyWith(
+                        color: focused
+                            ? theme.onAccent
+                            : own.edge ?? theme.rule,
                       ),
                     ),
-                  ),
-                ],
+                    SizedBox(
+                      width: grid.cols(2),
+                      child: item.hasChildren
+                          ? GestureDetector(
+                              onTap: item.toggle,
+                              child: Text(
+                                item.expanded ? '▾' : '▸',
+                                style: theme.textStyle.copyWith(
+                                  color: focused ? theme.onAccent : theme.dim,
+                                ),
+                              ),
+                            )
+                          : null,
+                    ),
+                    Flexible(
+                      child: ColoredBox(
+                        color: lit ? own.fill ?? ink : _clear,
+                        child: Text(
+                          labelOf(item.row.node),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              (item.selected
+                                      ? theme.boldStyle
+                                      : theme.textStyle)
+                                  .copyWith(
+                                    color: lit
+                                        ? theme.background
+                                        : focused
+                                        ? theme.onAccent
+                                        : name,
+                                  ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },

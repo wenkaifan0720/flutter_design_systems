@@ -6,7 +6,6 @@ library;
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-import '../internal/focus_block.dart';
 import '../internal/menu_marks.dart';
 import '../style.dart';
 import '../theme.dart';
@@ -16,12 +15,14 @@ import 'control.dart';
 /// A menu's row: [label] (and [trailing], a key or a count, dim at the
 /// end). The chosen row ([checked], or [WidgetState.selected] in [states])
 /// stands in inverse video, as a press does; under the pointer the row's
-/// words take the accent, and where the keys are a block stands at its
-/// start too, so neither reads as a second choice. In an open menu
-/// ([TermMenuMarks] round it) one row is current: the keys' row, which the
-/// pointer moves as it moves onto a row, shown once the keys or the
-/// pointer have moved in a menu the pointer opened. In the rule's ink when
-/// disabled. One line for a pointer, two for a finger.
+/// words take the accent, and where the keys are the cursor stands on it
+/// ([TermCursorCells]: the row in the accent, a pair of brackets cut out
+/// of its end cells; on the chosen row, hollow), so neither reads as a
+/// second choice. In an open menu ([TermMenuMarks] round it) one row is
+/// current: the keys' row, which the pointer moves as it moves onto a row,
+/// shown once the keys or the pointer have moved in a menu the pointer
+/// opened. In the rule's ink when disabled. One line for a pointer, two
+/// for a finger.
 class TermMenuRow extends StatelessWidget {
   /// A row saying [label] in [states].
   const TermMenuRow({
@@ -57,18 +58,14 @@ class TermMenuRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
-    final grid = context.termGrid;
-    final cw = grid.cellWidth;
-    final touch = DesignTapTargets.of(context).inputOn() == DesignInput.touch;
     final disabled = states.contains(WidgetState.disabled);
+    final chosen =
+        !disabled && (checked == true || states.contains(WidgetState.selected));
+    final pressed = !disabled && states.contains(WidgetState.pressed);
     // The chosen row, and a row being pressed: the bar.
-    final lit =
-        !disabled &&
-        (checked == true ||
-            states.contains(WidgetState.selected) ||
-            states.contains(WidgetState.pressed));
+    final lit = chosen || pressed;
     // Where the keys or the pointer are: the accent, never a bar of its own;
-    // the keys add the block, so the pointer's row and the keys' never read
+    // the keys add the cursor, so the pointer's row and the keys' never read
     // as one mark. Under the pointer, the chosen row's bar takes the accent.
     // In a menu the pointer moves the keys' row, so the one current row is
     // the keys', once shown.
@@ -90,71 +87,34 @@ class TermMenuRow extends StatelessWidget {
     final here = keys || pointer;
     final own = TermStyleOf([style, theme.menuStyle], states);
     final ink = danger ? theme.danger : own.foreground ?? theme.foreground;
-    final words = disabled
-        ? theme.rule
-        : lit
-        ? theme.background
-        : here && !danger
-        ? theme.accent
-        : ink;
-    final row = CustomPaint(
-      // On a chosen row's bar the keys' block is cut out in the ground's
-      // colour, where the accent would be lost.
-      foregroundPainter: keys
-          ? TermFocusBlockPainter(
-              amount: 1,
-              color: lit ? theme.background : theme.accent,
-              cellWidth: cw,
-              direction: Directionality.of(context),
-            )
-          : null,
-      child: ColoredBox(
-        color: !lit
+    // A press shows as the press, the cursor stepping aside for it. The
+    // cursor jumps from row to row as a terminal's does: a glide would
+    // leave two rows lit as it moves, and a menu has one current row.
+    final row = Builder(
+      builder: (context) {
+        final cursor = keys && !pressed ? 1.0 : 0.0;
+        final hollow = chosen;
+        Color onCursor(Color rest) =>
+            termCursorInk(theme, rest, cursor, hollow: hollow);
+        final words = disabled
+            ? theme.rule
+            : lit
+            ? onCursor(theme.background)
+            : onCursor(here && !danger ? theme.accent : ink);
+        final bar = !lit
             ? const Color(0x00000000)
-            : pointer && !danger
+            : pointer && !danger && !keys
             ? theme.accent
-            : own.fill ?? ink,
-        child: SizedBox(
-          height: grid.lineHeight * (touch ? 2 : 1),
-          child: Padding(
-            padding: EdgeInsetsDirectional.symmetric(horizontal: cw),
-            child: Row(
-              children: [
-                if (checked != null)
-                  SizedBox(
-                    width: grid.cols(2),
-                    child: ExcludeSemantics(
-                      child: Text(
-                        checked! ? '•' : ' ',
-                        style: theme.textStyle.copyWith(color: words),
-                      ),
-                    ),
-                  ),
-                Expanded(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textStyle.copyWith(color: words),
-                  ),
-                ),
-                if (trailing != null) ...[
-                  SizedBox(width: grid.cols(2)),
-                  ExcludeSemantics(
-                    child: Text(
-                      trailing!,
-                      style: theme.textStyle.copyWith(
-                        color: lit ? theme.background : theme.dim,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
+            : own.fill ?? ink;
+        return ColoredBox(
+          color: hollow ? bar.withValues(alpha: bar.a * (1 - cursor)) : bar,
+          child: TermCursorCells(
+            focus: cursor,
+            hollow: hollow,
+            child: _rowCells(context, words, lit, onCursor),
           ),
-        ),
-      ),
+        );
+      },
     );
     if (marks == null || disabled) return row;
     return MouseRegion(
@@ -167,6 +127,58 @@ class TermMenuRow extends StatelessWidget {
         TermMenuMarks.show(context);
       },
       child: row,
+    );
+  }
+
+  Widget _rowCells(
+    BuildContext context,
+    Color words,
+    bool lit,
+    Color Function(Color rest) onCursor,
+  ) {
+    final theme = TermTheme.of(context);
+    final grid = context.termGrid;
+    final cw = grid.cellWidth;
+    final touch = DesignTapTargets.of(context).inputOn() == DesignInput.touch;
+    return SizedBox(
+      height: grid.lineHeight * (touch ? 2 : 1),
+      child: Padding(
+        padding: EdgeInsetsDirectional.symmetric(horizontal: cw),
+        child: Row(
+          children: [
+            if (checked != null)
+              SizedBox(
+                width: grid.cols(2),
+                child: ExcludeSemantics(
+                  child: Text(
+                    checked! ? '•' : ' ',
+                    style: theme.textStyle.copyWith(color: words),
+                  ),
+                ),
+              ),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textStyle.copyWith(color: words),
+              ),
+            ),
+            if (trailing != null) ...[
+              SizedBox(width: grid.cols(2)),
+              ExcludeSemantics(
+                child: Text(
+                  trailing!,
+                  style: theme.textStyle.copyWith(
+                    color: onCursor(lit ? theme.background : theme.dim),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
@@ -210,9 +222,10 @@ class TermMenuReveal extends StatelessWidget {
   );
 }
 
-/// A pair of brackets one line tall round [child], in the rule's ink (the
-/// accent, doubled, by [focus]), at its middle line however tall the
-/// targets inside make it.
+/// A pair of brackets one line tall round [child], in the rule's ink, at
+/// its middle line however tall the targets inside make it. Under the
+/// keyboard's [focus] the cursor stands on the brackets' cells, the
+/// brackets cut out of it.
 class TermBracketBand extends StatelessWidget {
   /// Brackets round [child].
   const TermBracketBand({
@@ -245,9 +258,12 @@ class TermBracketBand extends StatelessWidget {
               child: CustomPaint(
                 painter: TermBracketPainter(
                   grid: grid,
-                  color: Color.lerp(edge ?? theme.rule, theme.accent, focus)!,
+                  color: edge ?? theme.rule,
                   stroke: termStroke(theme, grid),
-                  doubled: focus,
+                  cursor: focus,
+                  cursorColor: theme.accent,
+                  knockout: theme.onAccent,
+                  hollow: true,
                 ),
               ),
             ),
@@ -263,8 +279,9 @@ class TermBracketBand extends StatelessWidget {
 }
 
 /// One choice's cells inside brackets: [label] a cell either side, in
-/// inverse video when [on], the press filling in, the keyboard's focus
-/// underlining it in the accent.
+/// inverse video when [on], the press filling in, the keyboard's focus the
+/// cursor on its cells ([TermCursorCells]; on a chosen one, hollow: its end
+/// cells in the accent, its fill cleared, its words in the accent).
 class TermCellFace extends StatelessWidget {
   /// A face saying [label].
   const TermCellFace({
@@ -307,40 +324,42 @@ class TermCellFace extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
-    final ink = fill ?? (on && focus > 0.5 ? theme.accent : theme.foreground);
+    final ink = fill ?? theme.foreground;
     final rest = foreground ?? theme.foreground;
+    final cursor = enabled ? focus : 0.0;
     final ground = !enabled
         ? (on ? theme.rule.withValues(alpha: 0.4) : null)
         : on
-        ? ink
+        ? ink.withValues(alpha: ink.a * (1 - cursor))
         : press > 0
         ? rest.withValues(alpha: 0.3 * press)
         : null;
     final words = !enabled
         ? theme.rule
-        : on
-        ? theme.background
-        : Color.lerp(rest, theme.accent, focus)!;
+        : termCursorInk(
+            theme,
+            on ? theme.background : rest,
+            cursor,
+            hollow: on,
+          );
     return ColoredBox(
       color: ground ?? const Color(0x00000000),
-      child: SizedBox(
-        height: grid.lineHeight,
-        child: Padding(
-          padding: EdgeInsetsDirectional.symmetric(
-            horizontal: grid.cols(padCols),
-          ),
-          child: Center(
-            widthFactor: 1,
-            child: Text(
-              label,
-              maxLines: 1,
-              softWrap: false,
-              style: theme.textStyle.copyWith(
-                color: words,
-                decoration: focus > 0.5 && !on
-                    ? TextDecoration.underline
-                    : null,
-                decorationColor: theme.accent,
+      child: TermCursorCells(
+        focus: cursor,
+        hollow: on,
+        child: SizedBox(
+          height: grid.lineHeight,
+          child: Padding(
+            padding: EdgeInsetsDirectional.symmetric(
+              horizontal: grid.cols(padCols),
+            ),
+            child: Center(
+              widthFactor: 1,
+              child: Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                style: theme.textStyle.copyWith(color: words),
               ),
             ),
           ),
@@ -352,7 +371,8 @@ class TermCellFace extends StatelessWidget {
 
 /// A button's face: [label] in brackets one line tall, [padCols] either
 /// side, filled in the accent when [filled], the press filling in, the
-/// focus doubling the brackets.
+/// keyboard's focus the cursor over it, its brackets cut out (hollow when
+/// [filled]).
 class TermBracketFace extends StatelessWidget {
   /// A face saying [label].
   const TermBracketFace({
@@ -420,23 +440,35 @@ class TermBracketFace extends StatelessWidget {
     } else if (filled) {
       ground = Color.lerp(fill ?? ink, theme.foreground, press * 0.4);
       amount = 1;
-      words = theme.onAccent;
-      brackets = Color.lerp(edge ?? fill ?? ink, theme.foreground, focus)!;
+      words = termCursorInk(
+        theme,
+        foreground ?? theme.onAccent,
+        focus,
+        hollow: true,
+      );
+      brackets = edge ?? fill ?? ink;
     } else {
       final base = danger ? theme.danger : theme.foreground;
       ground = fill ?? base;
       amount = press;
-      words = Color.lerp(foreground ?? base, theme.background, press)!;
-      brackets = Color.lerp(edge ?? theme.rule, theme.accent, focus)!;
+      words = termCursorInk(
+        theme,
+        Color.lerp(foreground ?? base, theme.background, press)!,
+        focus,
+      );
+      brackets = edge ?? theme.rule;
     }
     return CustomPaint(
       painter: TermBracketPainter(
         grid: grid,
         color: brackets,
         stroke: termStroke(theme, grid),
-        doubled: focus,
         fill: ground,
         fillAmount: amount,
+        cursor: enabled ? focus : 0,
+        cursorColor: theme.accent,
+        knockout: theme.onAccent,
+        hollow: filled,
       ),
       child: SizedBox(
         height: grid.lineHeight,
@@ -451,11 +483,7 @@ class TermBracketFace extends StatelessWidget {
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.ellipsis,
-              style: theme.textStyle
-                  .merge(textStyle)
-                  .copyWith(
-                    color: enabled && filled ? foreground ?? words : words,
-                  ),
+              style: theme.textStyle.merge(textStyle).copyWith(color: words),
             ),
           ),
         ),

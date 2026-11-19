@@ -113,6 +113,7 @@ class TermFieldFrame extends StatelessWidget {
           target: active ? 1 : 0,
           token: TermMotion.move,
           spatial: true,
+          focus: true,
           builder: (context, t, child) => CustomPaint(
             painter: TermFramePainter(
               grid: grid,
@@ -313,6 +314,7 @@ class TermFieldLine extends StatelessWidget {
           target: active ? 1 : 0,
           token: TermMotion.move,
           spatial: true,
+          focus: true,
           builder: (context, t, child) => CustomPaint(
             painter: TermBracketPainter(
               grid: grid,

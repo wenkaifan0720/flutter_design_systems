@@ -19,7 +19,9 @@ import 'feedback.dart';
 /// the accent, the value a block one cell wide that steps from cell to
 /// cell: `━━━━━━█──────────`. The arrows move it by [step], Page Up and
 /// Down by a tenth, Home and End to the ends; a drag or a tap on the rule
-/// puts it there. A screen reader hears a slider.
+/// puts it there. The keyboard's focus is the cursor: a block of the accent
+/// a line tall across the rail, the rule and the value cut out of it; in
+/// hand, the value fills its cell. A screen reader hears a slider.
 ///
 /// ```dart
 /// TermSlider(
@@ -202,11 +204,9 @@ class _TermSliderState extends State<TermSlider> {
                           : own.fill ?? theme.accent,
                       thumb: change == null
                           ? theme.rule
-                          : Color.lerp(
-                              own.foreground ?? theme.foreground,
-                              theme.accent,
-                              focus,
-                            )!,
+                          : own.foreground ?? theme.foreground,
+                      cursor: theme.accent,
+                      knockout: theme.onAccent,
                       stroke: termStroke(theme, grid),
                       textDirection: Directionality.of(context),
                       inset: 0,
@@ -315,6 +315,8 @@ class TermRangeSlider extends StatelessWidget {
                       theme.accent
                 : theme.rule,
             thumb: theme.foreground,
+            cursor: theme.accent,
+            knockout: theme.onAccent,
             stroke: termStroke(theme, grid),
             textDirection: Directionality.of(context),
             inset: target.width / 2,
@@ -330,18 +332,15 @@ class TermRangeSlider extends StatelessWidget {
             painter: _BlockPainter(
               color: states.contains(WidgetState.disabled)
                   ? theme.rule
-                  : Color.lerp(
-                      TermStyleOf([
-                            style,
-                            theme.sliderStyle,
-                          ], states).foreground ??
-                          theme.foreground,
-                      theme.accent,
-                      focus,
-                    )!,
-              ring: focus,
-              ringColor: theme.accent,
-              stroke: termStroke(theme, grid),
+                  : TermStyleOf([
+                          style,
+                          theme.sliderStyle,
+                        ], states).foreground ??
+                        theme.foreground,
+              cursor: states.contains(WidgetState.disabled) ? 0 : focus,
+              cursorColor: theme.accent,
+              knockout: theme.onAccent,
+              cellWidth: grid.cellWidth,
             ),
           ),
         ),
@@ -449,8 +448,9 @@ class TermMeter extends StatelessWidget {
 }
 
 /// A rating: a mark a step, `*` given and `·` not, and the count after it:
-/// `* * * · · 3/5`. Brackets close round the marks while it has the
-/// keyboard's focus, and the arrows move it a mark, Home and End to none
+/// `* * * · · 3/5`. The keyboard's focus is the cursor over the marks, the
+/// brackets it closes round them cut out of it, and the arrows move it a
+/// mark, Home and End to none
 /// and all, a digit to that many. A tap or a drag puts it on a mark (a tap
 /// left of the first: none). The pointer over it previews the marks it
 /// would give, the one hover a rating keeps. A screen reader hears a
@@ -483,7 +483,7 @@ class TermRating extends StatefulWidget {
 
   /// Overrides, over the theme's [TermThemeData.ratingStyle]: `fill` (the
   /// marks given), `foreground` (the marks left and the count) and `edge`
-  /// (the focus brackets).
+  /// (the brackets at rest).
   final TermStyle? style;
 
   /// The marks given, 0 to [max].
@@ -548,38 +548,47 @@ class _TermRatingState extends State<TermRating> {
         final disabled = change == null;
         final given = disabled ? theme.dim : own.fill ?? theme.accent;
         final left = disabled ? theme.rule : own.foreground ?? theme.dim;
-        final focused = states.contains(WidgetState.focused);
-        final bracket = TextStyle(color: own.edge ?? theme.accent);
+        // The keyboard's focus: the cursor over every mark, the brackets it
+        // brings and the marks cut out of it.
+        final focused = !disabled && states.contains(WidgetState.focused);
+        final bracket = TextStyle(
+          color: focused ? theme.onAccent : own.edge ?? theme.accent,
+        );
         final pad = ' ' * ((per - 2) ~/ 2);
         final on = item.fill >= 1;
         final last = i == widget.max - 1;
         final face = SizedBox(
           width: grid.cols(per + (i == 0 ? 1 : 0)),
           height: height,
-          child: Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: Text.rich(
-              TextSpan(
-                style: theme.textStyle,
-                children: [
-                  if (i == 0)
-                    TextSpan(text: focused ? '[' : ' ', style: bracket),
-                  TextSpan(
-                    text: '$pad${on ? '*' : '·'}$pad',
-                    style: TextStyle(
-                      color: on
-                          ? (item.isPreview ? theme.foreground : given)
-                          : left,
+          child: ColoredBox(
+            color: focused ? theme.accent : const Color(0x00000000),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text.rich(
+                TextSpan(
+                  style: theme.textStyle,
+                  children: [
+                    if (i == 0)
+                      TextSpan(text: focused ? '[' : ' ', style: bracket),
+                    TextSpan(
+                      text: '$pad${on ? '*' : '·'}$pad',
+                      style: TextStyle(
+                        color: focused
+                            ? theme.onAccent
+                            : on
+                            ? (item.isPreview ? theme.foreground : given)
+                            : left,
+                      ),
                     ),
-                  ),
-                  if (last)
-                    TextSpan(text: focused ? ']' : ' ', style: bracket)
-                  else
-                    const TextSpan(text: ' '),
-                ],
+                    if (last)
+                      TextSpan(text: focused ? ']' : ' ', style: bracket)
+                    else
+                      const TextSpan(text: ' '),
+                  ],
+                ),
+                maxLines: 1,
+                softWrap: false,
               ),
-              maxLines: 1,
-              softWrap: false,
             ),
           ),
         );
@@ -634,6 +643,8 @@ class _RailPainter extends CustomPainter {
     required this.rule,
     required this.fill,
     required this.thumb,
+    required this.cursor,
+    required this.knockout,
     required this.stroke,
     required this.textDirection,
     required this.inset,
@@ -650,6 +661,12 @@ class _RailPainter extends CustomPainter {
   final Color rule;
   final Color fill;
   final Color thumb;
+
+  /// The keyboard's cursor: a block of it a line tall across the whole
+  /// rail, the rule, the heavy part and the thumb cut out of it in
+  /// [knockout].
+  final Color cursor;
+  final Color knockout;
   final double stroke;
   final TextDirection textDirection;
   final double inset;
@@ -665,11 +682,22 @@ class _RailPainter extends CustomPainter {
       return textDirection == TextDirection.rtl ? size.width - x : x;
     }
 
+    var c = 0.0;
+    for (final f in focused) {
+      c = math.max(c, f.clamp(0.0, 1.0));
+    }
+    if (c > 0) {
+      final lh = grid.lineHeight;
+      canvas.drawRect(
+        Rect.fromLTRB(0, y - lh / 2, size.width, y + lh / 2),
+        Paint()..color = cursor.withValues(alpha: cursor.a * c),
+      );
+    }
     canvas.drawLine(
       Offset(x0, y),
       Offset(x1, y),
       Paint()
-        ..color = rule
+        ..color = Color.lerp(rule, knockout, c)!
         ..strokeWidth = stroke,
     );
     // A thumb on the nearest cell: the block steps, as a terminal's would.
@@ -689,7 +717,7 @@ class _RailPainter extends CustomPainter {
       Offset(math.min(a, b), y),
       Offset(math.max(a, b), y),
       Paint()
-        ..color = fill
+        ..color = Color.lerp(fill, knockout, c)!
         ..strokeWidth = stroke * 3,
     );
     for (final (i, t) in thumbs.indexed) {
@@ -697,18 +725,8 @@ class _RailPainter extends CustomPainter {
       final p = (i < pressed.length ? pressed[i] : 0.0).clamp(0.0, 1.0);
       canvas.drawRect(
         rect.deflate(size.height * 0.08 * (1 - p)),
-        Paint()..color = Color.lerp(thumb, fill, p)!,
+        Paint()..color = Color.lerp(Color.lerp(thumb, fill, p), knockout, c)!,
       );
-      final f = i < focused.length ? focused[i] : 0.0;
-      if (f > 0) {
-        canvas.drawRect(
-          rect.inflate(stroke),
-          Paint()
-            ..color = fill.withValues(alpha: f)
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = stroke,
-        );
-      }
     }
   }
 
@@ -722,41 +740,52 @@ class _RailPainter extends CustomPainter {
       old.rule != rule ||
       old.fill != fill ||
       old.thumb != thumb ||
+      old.cursor != cursor ||
+      old.knockout != knockout ||
       old.grid != grid ||
       old.inset != inset ||
       old.textDirection != textDirection;
 }
 
-// A thumb: a block one cell wide, ringed in the accent by [ring].
+// A thumb: a block one cell wide; under the keyboard's [cursor], a block
+// of [cursorColor] over its cell and the cells either side, the thumb cut
+// out of it in [knockout].
 class _BlockPainter extends CustomPainter {
   const _BlockPainter({
     required this.color,
-    required this.ring,
-    required this.ringColor,
-    required this.stroke,
+    required this.cursor,
+    required this.cursorColor,
+    required this.knockout,
+    required this.cellWidth,
   });
 
   final Color color;
-  final double ring;
-  final Color ringColor;
-  final double stroke;
+  final double cursor;
+  final Color cursorColor;
+  final Color knockout;
+  final double cellWidth;
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
-    canvas.drawRect(rect.deflate(size.height * 0.08), Paint()..color = color);
-    if (ring > 0) {
+    final f = cursor.clamp(0.0, 1.0);
+    if (f > 0) {
       canvas.drawRect(
-        rect.inflate(stroke),
-        Paint()
-          ..color = ringColor.withValues(alpha: ring)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = stroke,
+        Rect.fromLTRB(-cellWidth, 0, size.width + cellWidth, size.height),
+        Paint()..color = cursorColor.withValues(alpha: cursorColor.a * f),
       );
     }
+    canvas.drawRect(
+      rect.deflate(size.height * 0.08),
+      Paint()..color = Color.lerp(color, knockout, f)!,
+    );
   }
 
   @override
   bool shouldRepaint(_BlockPainter old) =>
-      old.color != color || old.ring != ring || old.ringColor != ringColor;
+      old.color != color ||
+      old.cursor != cursor ||
+      old.cursorColor != cursorColor ||
+      old.knockout != knockout ||
+      old.cellWidth != cellWidth;
 }

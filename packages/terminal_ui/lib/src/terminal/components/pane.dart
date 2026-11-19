@@ -319,6 +319,7 @@ class _TermPaneState extends State<TermPane> {
           target: active ? 1 : 0,
           token: TermMotion.move,
           spatial: true,
+          focus: true,
           builder: (context, t, child) {
             final color = Color.lerp(
               resting.edge ?? theme.rule,

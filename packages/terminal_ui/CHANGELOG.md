@@ -1,3 +1,40 @@
+## 0.2.2
+
+- Dates, times and the number field write their figures in the reader's
+  digits (Arabic's Arabic-Indic ones), and the time field reads either
+  those or ASCII ones. The date fields' hints, the time field's help line
+  and the calendar's month arrows take ui_core's words for the reader's
+  language; the time field's help and its error show the times it takes,
+  `00:00–23:59`, instead of English words.
+- The number field is one keyboard stop, as a spin button is: Up and Down
+  step it, Home and End take it to its ends, and its `[-]` and `[+]` keys
+  are the pointer's. A screen reader hears its name, its value and the
+  values a step gives, in place of two keys named in English.
+- A toggle group measures its choices' words as they are set before it
+  puts them on one line, so words in a face other than the grid's (a
+  script JetBrains Mono lacks) wrap instead of running past the line.
+- Keyboard focus is now the cursor: an accent block over the focused
+  part, its words and edge glyphs cut out of it, as a terminal shows a
+  selection. It replaces the doubled brackets and focus rings on buttons,
+  chips, toggles, tabs, checkboxes, radios, switches, sliders, ratings,
+  rows, menus, links, crumbs, pages, calendar days and colour swatches.
+  A chosen or filled part goes hollow, so chosen, pressed and focused
+  read apart without colour. A checkbox, radio or switch puts its label
+  under the cursor too, and a slider its whole rail. A select or date
+  field also puts its value line under the cursor. A colour area takes it
+  round its edge, and a line chart on its scale column. Text fields keep
+  their doubled frame and caret. Focus shows only for the keyboard; a
+  click never leaves it. The cursor glides in, and under Reduce Motion it
+  (and a field's or pane's doubled frame) stands at once, with no fade. Against the part at rest, it changes at least a
+  2 px line's area at 3:1 on every theme, night and paper, monochrome
+  included. Page dots now show focus and a press.
+- A calendar's days and weekdays grow with the system text size up to
+  twice their size, as Material's calendar's do, so every day reads whole
+  at 300%. A one-time code grows up to twice its size or the width it is
+  given, whichever is smaller, so all its cells show on a phone. A bar
+  chart's names and values grow up to 1.3 times their size, so its values
+  stay on screen.
+
 ## 0.2.1
 
 - Navigation destinations keep their names at large text sizes. Calendar

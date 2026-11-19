@@ -186,8 +186,16 @@ class TermBarChart extends StatelessWidget {
   /// (the blocks) and `edge` (the dots left).
   final TermStyle? style;
 
+  // The names and the values grow with the reader's text to 1.3 times its
+  // size, as Material's slider's value label does, so a phone's width
+  // keeps both and the bars between them.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
+    maxScaleFactor: 1.3,
+    child: Builder(builder: _bars),
+  );
+
+  Widget _bars(BuildContext context) {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final own = TermStyleOf([style, theme.chartStyle], const {});
@@ -294,8 +302,9 @@ List<Color> _inks(TermThemeData theme, List<TermSeries> series) {
 /// the point nearest it along the foot (a finger scrubs, a tap holds), and
 /// the keys pick too (one tab stop: Left and Right along a series, Up and
 /// Down between series, Home and End, Escape), the point's column shaded
-/// and its value written over the plot; the axes take the accent while the
-/// keys are on it. A screen reader hears [semanticLabel] and the data in a
+/// and its value written over the plot; while the keys are on it the
+/// cursor stands on the column of its scale, the most and least values cut
+/// out of it, as a terminal's gutter lights the current line. A screen reader hears [semanticLabel] and the data in a
 /// sentence, or the point picked, and steps through the points. A change of
 /// data springs from the old line to the new.
 ///
@@ -415,7 +424,7 @@ class TermLineChart extends StatelessWidget {
                     max: max,
                   );
                   final focused = chart.states.contains(WidgetState.focused);
-                  final rule = focused ? theme.accent : own.edge ?? theme.rule;
+                  final rule = own.edge ?? theme.rule;
                   final active = chart.active;
                   int? cell;
                   String? readout;
@@ -429,22 +438,37 @@ class TermLineChart extends StatelessWidget {
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      SizedBox(
-                        width: axisWidth,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(right: cw),
-                              child: Text(_num(r.max), style: theme.dimStyle),
+                      TermStateSprings(
+                        pressed: false,
+                        focused: focused,
+                        builder: (context, _, f) {
+                          final scale = theme.dimStyle.copyWith(
+                            color: termCursorInk(theme, theme.dim, f),
+                          );
+                          return ColoredBox(
+                            color: theme.accent.withValues(
+                              alpha: theme.accent.a * f,
                             ),
-                            Padding(
-                              padding: EdgeInsets.only(right: cw),
-                              child: Text(_num(r.min), style: theme.dimStyle),
+                            child: SizedBox(
+                              width: axisWidth,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(right: cw),
+                                    child: Text(_num(r.max), style: scale),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(right: cw),
+                                    child: Text(_num(r.min), style: scale),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
                       SizedBox(
                         width: plotWidth,

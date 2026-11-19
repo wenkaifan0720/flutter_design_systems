@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 
-import '../internal/focus_block.dart';
 import '../internal/shell_face.dart';
 import '../primitives/control.dart';
 import '../primitives/spring.dart';
@@ -45,16 +44,21 @@ class TermNavigationDestination {
 }
 
 /// One cell of inverse video that grows in as [amount] goes to 1: a chosen
-/// tab, a current window.
+/// tab, a current window. The keyboard's focus ([cursor]) is the cursor
+/// over it; on the chosen one ([chosen]) hollow, its inverse cleared.
 class _Inverse extends StatelessWidget {
   const _Inverse({
     required this.amount,
     required this.child,
+    this.cursor = 0,
+    this.chosen = false,
     this.fill,
     this.ink,
   });
 
   final double amount;
+  final double cursor;
+  final bool chosen;
   final Widget child;
   final Color? fill;
   final Color? ink;
@@ -64,12 +68,26 @@ class _Inverse extends StatelessWidget {
     final theme = TermTheme.of(context);
     final ground = fill ?? theme.foreground;
     return CustomPaint(
-      painter: _FillFromFoot(color: ground, amount: amount),
-      child: DefaultTextStyle.merge(
-        style: TextStyle(
-          color: Color.lerp(ink ?? theme.foreground, theme.background, amount),
+      painter: _FillFromFoot(
+        color: chosen
+            ? ground.withValues(alpha: ground.a * (1 - cursor.clamp(0, 1)))
+            : ground,
+        amount: amount,
+      ),
+      child: TermCursorCells(
+        focus: cursor,
+        hollow: chosen,
+        child: DefaultTextStyle.merge(
+          style: TextStyle(
+            color: termCursorInk(
+              theme,
+              Color.lerp(ink ?? theme.foreground, theme.background, amount)!,
+              cursor,
+              hollow: chosen,
+            ),
+          ),
+          child: child,
         ),
-        child: child,
       ),
     );
   }
@@ -205,7 +223,6 @@ class _TermTabBarState extends State<TermTabBar> with TickerProviderStateMixin {
     final theme = TermTheme.of(context);
     final grid = context.termGrid;
     final cw = grid.cellWidth;
-    final direction = Directionality.of(context);
     final enabled = widget.onTap != null;
     final style = widget.style;
     return _MarkedScroll(
@@ -228,52 +245,42 @@ class _TermTabBarState extends State<TermTabBar> with TickerProviderStateMixin {
                 target: i == _controller.index ? 1 : 0,
                 token: TermMotion.move,
                 spatial: true,
-                builder: (context, t, _) => CustomPaint(
-                  // The keyboard's focus: a block at the tab's start, as a
-                  // list's row has it; on the chosen tab's inverse cell it
-                  // is cut out of the cell in the ground's colour, where
-                  // the accent would be lost.
-                  foregroundPainter: focus > 0
-                      ? TermFocusBlockPainter(
-                          amount: focus,
-                          color: Color.lerp(
-                            own.edge ?? theme.accent,
-                            theme.background,
-                            t.clamp(0, 1),
-                          )!,
-                          cellWidth: cw,
-                          direction: direction,
-                        )
-                      : null,
-                  child: _Inverse(
-                    amount: (t + press * 0.5).clamp(0, 1),
-                    fill: own.fill,
-                    ink: own.foreground,
-                    child: SizedBox(
-                      height: grid.lineHeight,
-                      child: Padding(
-                        padding: EdgeInsetsDirectional.symmetric(
-                          horizontal: cw,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (widget.showNumbers) ...[
-                              Text(
-                                '${i + 1}',
-                                style: theme.textStyle.copyWith(
-                                  color: Color.lerp(
+                // The keyboard's focus is the cursor over the tab; the keys
+                // choose as they move, so it stands on the chosen tab,
+                // hollow: its inverse cleared, its end cells in the accent.
+                builder: (context, t, _) => _Inverse(
+                  amount: (t + press * 0.5).clamp(0, 1),
+                  cursor: focus,
+                  chosen: i == _controller.index,
+                  fill: own.fill,
+                  ink: own.foreground,
+                  child: SizedBox(
+                    height: grid.lineHeight,
+                    child: Padding(
+                      padding: EdgeInsetsDirectional.symmetric(horizontal: cw),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (widget.showNumbers) ...[
+                            Text(
+                              '${i + 1}',
+                              style: theme.textStyle.copyWith(
+                                color: termCursorInk(
+                                  theme,
+                                  Color.lerp(
                                     theme.accent,
                                     theme.background,
                                     t,
-                                  ),
+                                  )!,
+                                  focus,
+                                  hollow: i == _controller.index,
                                 ),
                               ),
-                              SizedBox(width: cw),
-                            ],
-                            Text(tab.label, maxLines: 1, softWrap: false),
+                            ),
+                            SizedBox(width: cw),
                           ],
-                        ),
+                          Text(tab.label, maxLines: 1, softWrap: false),
+                        ],
                       ),
                     ),
                   ),
@@ -572,45 +579,32 @@ class TermNavigationBar extends StatelessWidget {
             token: TermMotion.move,
             spatial: true,
             builder: (context, t, _) => Center(
-              child: CustomPaint(
-                // The keyboard's focus: a block at the window's start, as a
-                // list's row has it; on the current window's inverse cell,
-                // in the ground's colour.
-                foregroundPainter: focus > 0
-                    ? TermFocusBlockPainter(
-                        amount: focus,
-                        color: Color.lerp(
-                          theme.accent,
-                          theme.background,
-                          t.clamp(0, 1),
-                        )!,
-                        cellWidth: grid.cellWidth,
-                        direction: Directionality.of(context),
-                      )
-                    : null,
-                child: _Inverse(
-                  amount: (t + press * 0.5).clamp(0, 1),
-                  fill: TermStyleOf([
-                    style,
-                    theme.navigationBarStyle,
-                  ], states).fill,
-                  ink: TermStyleOf([
-                    style,
-                    theme.navigationBarStyle,
-                  ], states).foreground,
-                  child: SizedBox(
-                    height: grid.lineHeight,
-                    child: Padding(
-                      padding: EdgeInsetsDirectional.symmetric(
-                        horizontal: grid.cellWidth,
-                      ),
-                      child: ExcludeSemantics(
-                        child: Text(
-                          text,
-                          maxLines: 1,
-                          softWrap: false,
-                          overflow: TextOverflow.clip,
-                        ),
+              // The keyboard's focus: the cursor over the window, hollow
+              // on the current one.
+              child: _Inverse(
+                amount: (t + press * 0.5).clamp(0, 1),
+                cursor: focus,
+                chosen: i == selectedIndex,
+                fill: TermStyleOf([
+                  style,
+                  theme.navigationBarStyle,
+                ], states).fill,
+                ink: TermStyleOf([
+                  style,
+                  theme.navigationBarStyle,
+                ], states).foreground,
+                child: SizedBox(
+                  height: grid.lineHeight,
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.symmetric(
+                      horizontal: grid.cellWidth,
+                    ),
+                    child: ExcludeSemantics(
+                      child: Text(
+                        text,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.clip,
                       ),
                     ),
                   ),

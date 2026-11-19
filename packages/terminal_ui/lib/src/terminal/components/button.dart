@@ -1,5 +1,5 @@
 /// Buttons: a label in brackets, `[ Deploy ]`, pressed in inverse video and
-/// focused in doubled brackets.
+/// focused under the cursor.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -18,8 +18,10 @@ import 'key_hint.dart';
 /// brackets take, with the key that works it written after it.
 ///
 /// A press fills the cells between the brackets in inverse video; the
-/// keyboard's focus doubles the brackets in the accent; under the pointer
-/// nothing changes but the cursor. [onPressed] null disables it.
+/// keyboard's focus is the cursor, a block of the accent over every cell
+/// with the brackets cut out of it (on a filled button, hollow: the bracket
+/// cells in the accent, the fill cleared); under the pointer nothing
+/// changes but the mouse cursor. [onPressed] null disables it.
 ///
 /// [TermButton.filled] is a screen's one primary action, filled in the
 /// accent; [isDestructiveAction] draws either in the danger ink.
@@ -138,29 +140,46 @@ class TermButton extends StatelessWidget {
                 brackets = theme.rule.withValues(alpha: 0.6);
                 fillAmount = 1;
               } else if (filled) {
+                // The cursor on a filled button hollows it: its bracket
+                // cells in the accent, its fill cleared, its words in the
+                // accent on the ground.
                 final base = ink;
                 fill = Color.lerp(base, theme.foreground, press * 0.4);
                 fillAmount = 1;
-                words = theme.onAccent;
-                brackets = Color.lerp(base, theme.foreground, focus)!;
+                words = termCursorInk(
+                  theme,
+                  theme.onAccent,
+                  focus,
+                  hollow: true,
+                );
+                brackets = base;
               } else {
+                // The cursor over the rest: a block of the accent, the
+                // brackets taken in and cut out of it.
                 fill = isDestructiveAction ? theme.danger : theme.foreground;
                 fillAmount = press;
-                words = Color.lerp(
-                  isDestructiveAction ? theme.danger : theme.foreground,
-                  theme.background,
-                  press,
-                )!;
-                brackets = Color.lerp(theme.rule, theme.accent, focus)!;
+                words = termCursorInk(
+                  theme,
+                  Color.lerp(
+                    isDestructiveAction ? theme.danger : theme.foreground,
+                    theme.background,
+                    press,
+                  )!,
+                  focus,
+                );
+                brackets = theme.rule;
               }
               final face = CustomPaint(
                 painter: TermBracketPainter(
                   grid: grid,
                   color: own.edge ?? brackets,
                   stroke: stroke,
-                  doubled: focus,
                   fill: own.fill ?? fill,
                   fillAmount: fillAmount,
+                  cursor: disabled ? 0 : focus,
+                  cursorColor: theme.accent,
+                  knockout: theme.onAccent,
+                  hollow: filled,
                 ),
                 child: SizedBox(
                   height: grid.lineHeight,
@@ -296,7 +315,12 @@ class TermIconButton extends StatelessWidget {
               final amount = on ? 1.0 : press;
               final words = disabled
                   ? theme.rule
-                  : Color.lerp(theme.foreground, theme.background, amount)!;
+                  : termCursorInk(
+                      theme,
+                      Color.lerp(theme.foreground, theme.background, amount)!,
+                      focus,
+                      hollow: on,
+                    );
               return CustomPaint(
                 painter: TermBracketPainter(
                   grid: grid,
@@ -304,11 +328,14 @@ class TermIconButton extends StatelessWidget {
                       own.edge ??
                       (disabled
                           ? theme.rule.withValues(alpha: 0.6)
-                          : Color.lerp(theme.rule, theme.accent, focus)!),
+                          : theme.rule),
                   stroke: stroke,
-                  doubled: focus,
                   fill: own.fill ?? (disabled ? null : theme.foreground),
                   fillAmount: amount,
+                  cursor: disabled ? 0 : focus,
+                  cursorColor: theme.accent,
+                  knockout: theme.onAccent,
+                  hollow: on,
                 ),
                 child: SizedBox(
                   width: grid.cols(3),

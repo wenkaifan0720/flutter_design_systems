@@ -280,7 +280,7 @@ void main() {
     });
   });
 
-  testWidgets("the keys' block on a chosen tab is in the ground's colour", (
+  testWidgets("the keys' cursor on a chosen tab goes hollow, in the accent", (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -294,17 +294,17 @@ void main() {
     );
     await tester.sendKeyEvent(LogicalKeyboardKey.tab);
     await tester.pumpAndSettle();
-    final blocks = [
+    final cursors = [
       for (final paint in tester.widgetList<CustomPaint>(
         find.byType(CustomPaint),
       ))
-        if (paint.foregroundPainter.runtimeType.toString() ==
-            'TermFocusBlockPainter')
-          // The painter is the look's own, inside the package.
-          // ignore: avoid_dynamic_calls
-          (paint.foregroundPainter as dynamic).color as Color,
+        if (paint.painter is TermCursorPainter)
+          paint.painter! as TermCursorPainter,
     ];
-    expect(blocks, [TermThemeData.dark().background]);
+    expect(cursors, hasLength(1));
+    expect(cursors.single.hollow, isTrue);
+    expect(cursors.single.color, TermThemeData.dark().accent);
+    expect(cursors.single.knockout, TermThemeData.dark().onAccent);
   });
 
   testWidgets("right to left, a banner's Latin title stands first, by its "
