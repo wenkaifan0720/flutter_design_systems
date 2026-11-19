@@ -19,7 +19,8 @@ import '../component_themes.dart';
 import '../controls.dart';
 import '../internal/cap_label.dart';
 import '../internal/field_icon.dart';
-import '../internal/lettering.dart' show comicDisplayFor, comicWeekdayScaleMost;
+import '../internal/lettering.dart'
+    show comicCalendarScaleMost, comicDisplayFor;
 import '../internal/pop.dart';
 import '../internal/track.dart';
 import '../editing.dart';
@@ -1390,14 +1391,18 @@ class ComicCalendar extends StatelessWidget {
             targetAlignment: AlignmentDirectional.centerStart,
             onPressed: header.previous,
           ),
+          // The month's name grows at most twice, as Material's calendar header: larger, it broke mid-word.
           Expanded(
             child: Semantics(
               header: true,
               liveRegion: true,
-              child: Text(
-                header.label,
-                style: t.type.title,
-                textAlign: TextAlign.center,
+              child: MediaQuery.withClampedTextScaling(
+                maxScaleFactor: comicCalendarScaleMost,
+                child: Text(
+                  header.label,
+                  style: t.type.title,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ),
@@ -1426,7 +1431,7 @@ class ComicCalendar extends StatelessWidget {
             textAlign: TextAlign.center,
             // At most twice their size, as Material's calendar: larger, seven initials fill a phone's row and touch.
             textScaler: MediaQuery.textScalerOf(context)
-                .clamp(maxScaleFactor: comicWeekdayScaleMost),
+                .clamp(maxScaleFactor: comicCalendarScaleMost),
             style: t.type.small,
           ),
         ),
@@ -1444,8 +1449,11 @@ class ComicCalendar extends StatelessWidget {
             ),
         ],
       ),
-      dayBuilder: (context, day, states) =>
-          _CalendarDay(day: day, states: states),
+      // A day's number grows at most twice, as Material's calendar on a phone: larger, it filled its cell to the rules.
+      dayBuilder: (context, day, states) => MediaQuery.withClampedTextScaling(
+        maxScaleFactor: comicCalendarScaleMost,
+        child: _CalendarDay(day: day, states: states),
+      ),
     );
     return onChanged != null
         ? calendar

@@ -22,6 +22,7 @@ export 'src/comic/internal/field_icon.dart';
 export 'src/comic/internal/geometry.dart';
 export 'src/comic/internal/lettered.dart';
 export 'src/comic/internal/lettering.dart';
+export 'src/comic/internal/lettering_reach.dart';
 export 'src/comic/internal/menu_open.dart';
 export 'src/comic/internal/menu_rows.dart';
 export 'src/comic/internal/platform_words.dart';

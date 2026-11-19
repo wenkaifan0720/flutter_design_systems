@@ -192,7 +192,7 @@ void main() {
       matching: find.byType(RichText),
     );
     // Only the selects' labels: a value may ellipsise in a narrow select, a label may not break.
-    final words = {'Hour', 'Minute', 'AM or PM'};
+    final words = {'Hour', 'Minute', 'AM/PM'};
     for (final p in tester.renderObjectList<RenderParagraph>(labels)) {
       if (!words.contains(p.text.toPlainText())) continue;
       for (final word in p.text.toPlainText().split(' ')) {

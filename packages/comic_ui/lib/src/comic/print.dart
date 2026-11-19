@@ -7,7 +7,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'internal/geometry.dart';
-import 'internal/lettering.dart' show ComicPrintGround, comicRightToLeftScript;
+import 'internal/lettering.dart'
+    show ComicPrintGround, comicMarkedPitch, comicRightToLeftScript;
 import 'theme.dart';
 import 'knobs.dart';
 
@@ -667,13 +668,28 @@ class RenderComicLettering extends RenderBox
         ? [_typeface.text]
         : null,
     fontSize: size,
-    height: ((size * _w.lineHeight).roundToDouble() - .01) / size,
+    height: _height(size),
     letterSpacing: _script ? 0 : size * _w.tracking,
     fontWeight: _script ? FontWeight.w700 : FontWeight.w400,
     color: foreground == null ? color : null,
     foreground: foreground,
     leadingDistribution: TextLeadingDistribution.even,
   );
+
+  // Lettering whose marks reach past a plain capital (an acute, a stacked Vietnamese tone) gets the leading they need
+  // in the look's own face, so they never cut into the line above.
+  double _height(double size) {
+    final pitch =
+        _script ||
+            _typeface.display != ComicTypeface.look.display ||
+            _typeface.displayPackage != ComicTypeface.look.displayPackage
+        ? null
+        : comicMarkedPitch(_w.spans?.map((s) => s.$1).join(' ') ?? _w.text);
+    if (pitch != null && pitch > _w.lineHeight) {
+      return (size * pitch).ceilToDouble() / size;
+    }
+    return ((size * _w.lineHeight).roundToDouble() - .01) / size;
+  }
 
   InlineSpan _span(double size, Color? color, Paint? foreground) {
     final s = _w.spans;

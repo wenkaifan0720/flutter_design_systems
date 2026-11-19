@@ -1,3 +1,24 @@
+## 0.3.4
+
+- At 300% text a date picker's and a calendar's days fit. Their numbers grow at most twice with the reader's text,
+  as Material's calendar on a phone: a `ComicDatePicker`'s grid no longer outgrows a phone and scrolls sideways, and
+  a `ComicCalendar`'s numbers no longer fill their cells to the rules. The month's name grows at most twice too, as
+  Material's calendar header: larger, "November" and "September" broke mid-word between the arrows.
+- A wrapped heading's marks no longer cut into the line above. The lettering sets its lines 0.95 of its size apart,
+  room enough for its plain capitals, but its accents, rings and Vietnamese tones reach higher. A heading whose
+  letters carry them (French, Spanish, Nordic, German, Vietnamese) gets the least leading its own marks need, the
+  same between all its lines, in `ComicLetters`, the parts' titles and `ComicLettering`. English keeps its leading.
+- `ComicTimePicker` says its hour, minute and half of the day in the app's language: ui_core's
+  `DesignLocalizations` words (`timePickerHourLabel`, `timePickerMinuteLabel`, `timeFieldDayPeriodLabel` and the
+  AM and PM abbreviations), in its 30 languages. It said them in English in every one. In English the half of the
+  day is named "AM/PM". `ComicLocalizations`' `hour`, `minute`, `period`, `am` and `pm` are deprecated, and a
+  subclass no longer needs to give them.
+- `ComicLocalizations.delegate` supports every locale, as ui_core's does. It supported English alone: a German or
+  Arabic app that installed it met Flutter's warning that a delegate leaves out its locale, and the delegate was
+  skipped. In another language it loads Comic's English words with the ones ui_core shares (Dismiss, Try again,
+  Delete, a rating, the months and weekdays, a time's hour and minute) in that language, and
+  `ComicLocalizations.of` does the same where no delegate is installed. `ComicLocalizations.forLocale` gives them.
+
 ## 0.3.3
 
 - At large text sizes, three parts keep their words whole. A `ComicWheelPicker` row's words grow with the reader's

@@ -301,9 +301,11 @@ lettering keep a clear background behind the words.
 - **Other scripts.** Bangers and Shantell Sans cover Latin scripts. Arabic, Hebrew, Chinese, Japanese, Hindi, Thai and
   other scripts fall back to the platform's fonts (on the web, to the Noto fonts the engine fetches; a build made
   with `--no-web-resources-cdn` must bundle its own).
-- **Control labels.** Extend `DefaultDesignLocalizations` for shared labels such as Close, Cancel and Loading.
-  Extend `ComicLocalizations` for Comic-specific labels such as file prompts and ratings. Register your delegates in
-  `localizationsDelegates`. Both libraries default to English.
+- **Control labels.** Register `DesignLocalizations.delegate` and `ComicLocalizations.delegate` in
+  `localizationsDelegates`. Both support every locale. ui_core says the shared labels (Close, Cancel, Loading, a
+  time's hour and minute) in its 30 languages; Comic says its own labels (file prompts, ratings) in English, with the
+  words ui_core shares in the app's language. Extend `ComicLocalizations` to say Comic's labels in another language,
+  and `DefaultDesignLocalizations` to change the shared ones.
 - **Dates and numbers.** Call `initializeDateFormatting()` for localized month and weekday names. Use
   `firstWeekday` to change the Monday start. Time pickers follow the platform's 24-hour setting. Pass
   locale-formatted strings for counts and currency.

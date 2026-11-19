@@ -21,7 +21,7 @@ import 'theme.dart';
 import 'component_themes.dart';
 import 'styled.dart';
 import 'internal/cap_label.dart';
-import 'internal/lettering.dart' show comicWeekdayScaleMost;
+import 'internal/lettering.dart' show comicCalendarScaleMost;
 import 'knobs.dart' show ComicSpace;
 import 'internal/style_guard.dart';
 
@@ -260,6 +260,7 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
     final t = ComicTheme.of(context), locale = _locale(context);
     // Reserve the measured day label and its actual outline insets. An
     // arbitrary text allowance made even an ordinary phone scroll sideways.
+    // The numbers grow at most twice (see [_grid]), so they are measured so.
     var minimumDayWidth = 48.0;
     final direction = Directionality.of(context);
     for (final states in const <Set<WidgetState>>[
@@ -283,7 +284,8 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
       final padding = look.padding(direction)?.horizontal ?? 0;
       final painter = TextPainter(
         textDirection: direction,
-        textScaler: MediaQuery.textScalerOf(context),
+        textScaler: MediaQuery.textScalerOf(context)
+            .clamp(maxScaleFactor: comicCalendarScaleMost),
       );
       for (var day = 1; day <= 31; day++) {
         painter.text = TextSpan(
@@ -448,10 +450,15 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
           ? () => _walk(_bound(_shiftMonth(1)), focus: false)
           : null,
     );
+    // The month's name grows at most twice too, as Material's calendar header: larger, "November" outgrew the space
+    // between the arrows and broke mid-word.
     final month = Semantics(
       header: true,
       liveRegion: true,
-      child: Text(heading, style: t.type.title, textAlign: TextAlign.center),
+      child: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: comicCalendarScaleMost,
+        child: Text(heading, style: t.type.title, textAlign: TextAlign.center),
+      ),
     );
     return Align(
       alignment: AlignmentDirectional.topStart,
@@ -502,60 +509,61 @@ class _ComicDatePickerState extends State<ComicDatePicker> {
               ],
             ),
           const SizedBox(height: ComicSpace.close),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SizedBox(
-              width: math.max(
-                7 * minimumDayWidth,
-                box.hasBoundedWidth ? box.maxWidth : 336,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ExcludeSemantics(
-                    child: Row(
-                      children: [
-                        for (var i = 0; i < 7; i++)
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: ComicSpace.close,
-                              ),
-                              child: Text(
-                                (widget.dayNames ??
-                                    words.weekdaysShort)[(widget.firstWeekday -
-                                        1 +
-                                        i) %
-                                    7],
-                                textAlign: TextAlign.center,
-                                // At most twice their size, as Material's calendar: larger, seven initials fill
-                                // a phone's row and touch.
-                                textScaler: MediaQuery.textScalerOf(
-                                  context,
-                                ).clamp(maxScaleFactor: comicWeekdayScaleMost),
-                                style: t.type.small,
+          // The weekdays and days grow at most twice, as Material's calendar on a phone: larger, seven initials touch
+          // and seven days' numbers outgrew a phone, the grid scrolling sideways.
+          MediaQuery.withClampedTextScaling(
+            maxScaleFactor: comicCalendarScaleMost,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: math.max(
+                  7 * minimumDayWidth,
+                  box.hasBoundedWidth ? box.maxWidth : 336,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ExcludeSemantics(
+                      child: Row(
+                        children: [
+                          for (var i = 0; i < 7; i++)
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: ComicSpace.close,
+                                ),
+                                child: Text(
+                                  (widget.dayNames ??
+                                      words.weekdaysShort)[(widget
+                                              .firstWeekday -
+                                          1 +
+                                          i) %
+                                      7],
+                                  textAlign: TextAlign.center,
+                                  style: t.type.small,
+                                ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  for (var row = 0; row < (count + lead + 6) ~/ 7; row++)
-                    Row(
-                      children: [
-                        for (var col = 0; col < 7; col++)
-                          Expanded(
-                            child:
-                                row * 7 + col - lead + 1 < 1 ||
-                                    row * 7 + col - lead + 1 > count
-                                ? const SizedBox(
-                                    height: ComicDatePicker.dayWidth,
-                                  )
-                                : cell(row * 7 + col - lead + 1),
-                          ),
-                      ],
-                    ),
-                ],
+                    for (var row = 0; row < (count + lead + 6) ~/ 7; row++)
+                      Row(
+                        children: [
+                          for (var col = 0; col < 7; col++)
+                            Expanded(
+                              child:
+                                  row * 7 + col - lead + 1 < 1 ||
+                                      row * 7 + col - lead + 1 > count
+                                  ? const SizedBox(
+                                      height: ComicDatePicker.dayWidth,
+                                    )
+                                  : cell(row * 7 + col - lead + 1),
+                            ),
+                        ],
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -637,7 +645,8 @@ class ComicTimePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final words = ComicLocalizations.of(context),
+    // The hour, minute and half of the day in the app's language: ui_core's words.
+    final shared = DesignLocalizations.of(context),
         time = value ?? const ComicTime(0, 0),
         h24 = use24hFormat ?? MediaQuery.alwaysUse24HourFormatOf(context);
     final minutes = {
@@ -651,7 +660,7 @@ class ComicTimePicker extends StatelessWidget {
     final selects = <Widget>[
       ComicSelect<int>(
         style: layers,
-        label: hourLabel ?? words.hour,
+        label: hourLabel ?? shared.timePickerHourLabel,
         value: h24 ? time.hour : time.hour % 12,
         options: [
           for (var hour = 0; hour < (h24 ? 24 : 12); hour++)
@@ -675,7 +684,7 @@ class ComicTimePicker extends StatelessWidget {
       ),
       ComicSelect<int>(
         style: layers,
-        label: minuteLabel ?? words.minute,
+        label: minuteLabel ?? shared.timePickerMinuteLabel,
         value: time.minute,
         options: [
           for (final minute in minutes)
@@ -688,11 +697,11 @@ class ComicTimePicker extends StatelessWidget {
       if (!h24)
         ComicSelect<int>(
           style: layers,
-          label: periodLabel ?? words.period,
+          label: periodLabel ?? shared.timeFieldDayPeriodLabel,
           value: time.hour ~/ 12,
           options: [
-            ComicSelectOption(0, words.am),
-            ComicSelectOption(1, words.pm),
+            ComicSelectOption(0, shared.anteMeridiemAbbreviation),
+            ComicSelectOption(1, shared.postMeridiemAbbreviation),
           ],
           onChanged: onChanged == null
               ? null

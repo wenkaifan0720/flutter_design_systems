@@ -943,16 +943,6 @@ class KitComicWordsArabic extends ComicLocalizationsEn {
     'ديسمبر',
   ];
   @override
-  String get hour => 'الساعة';
-  @override
-  String get minute => 'الدقيقة';
-  @override
-  String get period => 'صباحًا أو مساءً';
-  @override
-  String get am => 'ص';
-  @override
-  String get pm => 'م';
-  @override
   String get mainNavigation => 'الرئيسية';
   @override
   String get tabs => 'علامات التبويب';

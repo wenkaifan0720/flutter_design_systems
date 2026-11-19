@@ -2,7 +2,12 @@
 // - a wheel's rows overlapped and its band cut the chosen value: a row's words grow until their line fills the row;
 // - a shares chart's scale set "540 done" one character a line: its words grow at most 1.3 times, as Material's
 //   slider label, and wrap only between words;
-// - a calendar's weekday initials touched into one word: they grow at most twice, as Material's calendar.
+// - a calendar's weekday initials touched into one word: they grow at most twice, as Material's calendar;
+// - a date picker's grid outgrew a phone and scrolled sideways, and a calendar's numbers filled their cells to the
+//   rules: a day's number grows at most twice too, as Material's calendar on a phone;
+// - a calendar's month name outgrew the space between its arrows and broke mid-word ("Novembe", "r 2026"): it grows
+//   at most twice, as Material's calendar header.
+// Measured in the bundled faces, as a device draws them.
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
@@ -12,13 +17,20 @@ import 'package:comic_ui/comic_ui.dart';
 
 import 'support.dart';
 
-/// [child] at [scale] times the text size, in a phone-wide page.
-Future<void> _at(WidgetTester tester, double scale, Widget child) async {
-  tester.view.physicalSize = const Size(390, 2400);
+/// [child] at [scale] times the text size, in a page [width] wide (a phone's by default), in [direction].
+Future<void> _at(
+  WidgetTester tester,
+  double scale,
+  Widget child, {
+  double width = 390,
+  TextDirection direction = TextDirection.ltr,
+}) async {
+  tester.view.physicalSize = Size(width, 2400);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   await tester.pumpWidget(
     comicApp(
+      direction: direction,
       Builder(
         builder: (context) => MediaQuery(
           data: MediaQuery.of(context)
@@ -37,6 +49,25 @@ Future<void> _at(WidgetTester tester, double scale, Widget child) async {
 RenderParagraph _words(WidgetTester tester, String text) =>
     tester.renderObject<RenderParagraph>(find.text(text).first);
 
+/// Fails when a word of [p]'s text is wider than [p], so its lines break inside it.
+void _wordsWhole(RenderParagraph p) {
+  final words = p.text.toPlainText();
+  for (final word in words.split(' ')) {
+    final tp = TextPainter(
+      text: TextSpan(text: word, style: p.text.style),
+      textDirection: TextDirection.ltr,
+      textScaler: p.textScaler,
+      maxLines: 1,
+    )..layout();
+    expect(
+      p.size.width + .5,
+      greaterThanOrEqualTo(tp.width),
+      reason: '"$word" in "$words" breaks mid-word',
+    );
+    tp.dispose();
+  }
+}
+
 /// The left and right of [p]'s drawn words on the screen.
 (double, double) _drawn(RenderParagraph p) {
   final boxes = p.getBoxesForSelection(
@@ -51,6 +82,8 @@ RenderParagraph _words(WidgetTester tester, String text) =>
 }
 
 void main() {
+  setUpAll(loadComicFonts);
+
   for (final scale in [2.0, 3.0]) {
     testWidgets('a wheel row holds its words at ${scale.toInt()}00% text', (
       tester,
@@ -104,20 +137,7 @@ void main() {
         for (final words in ['540 done', '330 to go', ?note]) {
           final p = _words(tester, words);
           expect(p.textScaler.scale(12), closeTo(12 * 1.3, .01));
-          for (final word in words.split(' ')) {
-            final tp = TextPainter(
-              text: TextSpan(text: word, style: p.text.style),
-              textDirection: TextDirection.ltr,
-              textScaler: p.textScaler,
-              maxLines: 1,
-            )..layout();
-            expect(
-              p.size.width + .5,
-              greaterThanOrEqualTo(tp.width),
-              reason: '"$word" in "$words" breaks mid-word',
-            );
-            tp.dispose();
-          }
+          _wordsWhole(p);
         }
       },
     );
@@ -161,5 +181,111 @@ void main() {
         expect(p.textScaler.scale(size), lessThanOrEqualTo(size * 2 + .01));
       }
     });
+  }
+
+  for (final which in ['date picker', 'calendar']) {
+    for (final width in [390.0, 1440.0]) {
+      for (final direction in TextDirection.values) {
+        testWidgets(
+          "a $which's days fit at 300% text, at most twice their size, $width wide, ${direction.name}",
+          (tester) async {
+            final calendar = DesignCalendarController(
+              firstDate: DateTime(2026),
+              lastDate: DateTime(2027),
+              initialMonth: DateTime(2026, 11),
+              selectedDate: DateTime(2026, 11, 6),
+            );
+            addTearDown(calendar.dispose);
+            await _at(
+              tester,
+              3,
+              width: width,
+              direction: direction,
+              which == 'date picker'
+                  ? ComicDatePicker(
+                      value: DateTime(2026, 11, 6),
+                      firstDate: DateTime(2026),
+                      lastDate: DateTime(2027),
+                      onChanged: (_) {},
+                    )
+                  : ComicCalendar(controller: calendar, onChanged: (_) {}),
+            );
+            expect(tester.takeException(), isNull);
+            // Seven days stand across the page: nothing scrolls sideways.
+            for (final s in tester.stateList<ScrollableState>(
+              find.byType(Scrollable),
+            )) {
+              if (s.position.axis == Axis.horizontal) {
+                expect(
+                  s.position.maxScrollExtent,
+                  0,
+                  reason: 'the grid scrolls sideways',
+                );
+              }
+            }
+            for (var day = 1; day <= 30; day++) {
+              final number = find.text('$day').first;
+              final p = tester.renderObject<RenderParagraph>(number);
+              final size = p.text.style!.fontSize!;
+              expect(
+                p.textScaler.scale(size),
+                lessThanOrEqualTo(size * 2 + .01),
+                reason: '"$day" grows past twice',
+              );
+              // Its figures stand inside its cell, clear of the rule round it.
+              final cell = tester.getRect(
+                find
+                    .ancestor(of: number, matching: find.byType(DecoratedBox))
+                    .first,
+              );
+              final (left, right) = _drawn(p);
+              final rule = day == 6 ? 2.5 : 1.0;
+              expect(
+                left - cell.left >= rule && cell.right - right >= rule,
+                isTrue,
+                reason: '"$day" draws $left to $right in a cell $cell',
+              );
+            }
+          },
+        );
+      }
+    }
+  }
+
+  for (final which in ['date picker', 'calendar']) {
+    for (final width in [320.0, 390.0, 1440.0]) {
+      for (final month in [9, 11]) {
+        testWidgets(
+          "a $which's month name stays whole at 300% text, $width wide, month $month",
+          (tester) async {
+            final calendar = DesignCalendarController(
+              firstDate: DateTime(2026),
+              lastDate: DateTime(2027),
+              initialMonth: DateTime(2026, month),
+            );
+            addTearDown(calendar.dispose);
+            await _at(
+              tester,
+              3,
+              width: width,
+              which == 'date picker'
+                  ? ComicDatePicker(
+                      value: DateTime(2026, month, 6),
+                      firstDate: DateTime(2026),
+                      lastDate: DateTime(2027),
+                      onChanged: (_) {},
+                    )
+                  : ComicCalendar(controller: calendar, onChanged: (_) {}),
+            );
+            expect(tester.takeException(), isNull);
+            final name = month == 9 ? 'September 2026' : 'November 2026';
+            final p = _words(tester, name);
+            _wordsWhole(p);
+            final size = p.text.style!.fontSize!;
+            expect(p.textScaler.scale(size), closeTo(size * 2, .01));
+          },
+        );
+      }
+    }
   }
 }
