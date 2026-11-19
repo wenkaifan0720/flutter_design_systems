@@ -2143,7 +2143,8 @@ const _Palette _emberLight = (
   borderStrong: Color(0xFFD7D2CC),
   input: Color(0xFF8F8A84),
   text1: Color(0xFF1B1917),
-  text2: Color(0xFF75706A),
+  // 4.5:1 on the sunken fill, where a read-only field's prompt stands.
+  text2: Color(0xFF726D67),
   text3: Color(0xFFA8A29B),
   textInverse: Color(0xFFFFFFFF),
   primary: Color(0xFFE5602F),
@@ -2454,7 +2455,9 @@ MinimalColors _derive(Color primary, Color? neutral, Brightness brightness) {
   // dark.
   final far = dark ? _white : _black;
   final text1 = _settle(tint(p.text1), grounds, 7, far);
-  final text2 = _settle(tint(p.text2), grounds, 4.5, far);
+  // Secondary words also stand on the sunken fill: a read-only field's
+  // prompt.
+  final text2 = _settle(tint(p.text2), [...grounds, tint(p.sunken)], 4.5, far);
   final controlBorder = _settle(tint(p.input), grounds, 3, far);
   final textInverse = dark ? background : _white;
 

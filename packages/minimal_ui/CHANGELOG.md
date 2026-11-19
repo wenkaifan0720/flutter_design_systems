@@ -1,3 +1,10 @@
+## 0.3.2
+
+- At large text sizes a date picker's value grows with the text: its pill and row get taller and the date wraps between its words (20 Nov over 2026) instead of losing the year or the foot of its figures.
+- Bar chart axis labels grow with the text size up to 1.3× (`MinimalBarChart.maxLabelScale`), so a week's day names stay whole in their columns at 300%.
+- In the ember preset's light theme, secondary text is slightly darker, so a read-only field's prompt reads at 4.5:1 on the sunken fill.
+- In themes from `MinimalThemeData.from` with a `neutral`, secondary text is slightly darker, to keep 4.5:1 on sunken fills.
+
 ## 0.3.1
 
 - A focused field shows focus by its own edge: text fields, fields with add-ons, search, multi-select, combobox, password, text area and the composer turn their outline to the accent, 1.5 px thick and drawn inward, with no ring outside it. A click or a tap shows it as Tab does, and an invalid field takes the accent while it has focus. The active verification-code cell uses the same 1.5 px accent, and keeps it when validation fails.

@@ -94,6 +94,8 @@ void main() {
             'onDanger': (t.destructiveForeground, t.destructive),
             'textPrimary': (t.foreground, t.background),
             'textSecondary': (t.mutedForeground, t.background),
+            // A read-only or disabled field's prompt, on its sunken fill.
+            'textSecondaryOnSunken': (t.mutedForeground, t.sunken),
           };
           for (final MapEntry(key: role, value: (ink, fill)) in pairs.entries) {
             expect(

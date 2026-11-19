@@ -62,7 +62,9 @@ enum MinimalDatePickerPresentation {
 /// pills' values in the quiet ink at the regular weight.
 ///
 /// Every pill and every day stands in a 44 px slot, so each keeps its whole
-/// touch target. The calendar is one keyboard stop: the arrow keys walk the
+/// touch target. At a large text size a pill's value wraps between its
+/// words and the pill and its slot grow with it, as a Material text field
+/// does. The calendar is one keyboard stop: the arrow keys walk the
 /// days (stepping the month at its edges), Page Up and Page Down step the
 /// month, Enter or Space picks the day. The time columns' 32 px items abut
 /// like a dense list's rows: each takes its whole row of the column.
@@ -359,10 +361,13 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
           // Disabled, the value drops to the quiet ink at the regular
           // weight: dimmed, the full ink at medium would still read
           // stronger than an enabled row's label.
+          // At a large text size a value too wide for its room wraps
+          // between its words ("20 Nov" over "2026") and the pill grows
+          // with it, as a Material text field does: never a figure cut off.
           child: minimalCapLabel(
             Text(
               text,
-              maxLines: 1,
+              textWidthBasis: TextWidthBasis.longestLine,
               style: enabled
                   ? t.monoValue.medium
                   : t.monoValue.c(t.mutedForeground),
@@ -370,12 +375,14 @@ class _MinimalDatePickerState extends State<MinimalDatePicker> {
           ),
         ),
       );
-      // A 44 px slot (the row's height) around the 28 px pill, so the row
-      // leaves room for the pill's whole touch target.
-      return SizedBox(
-        height: t.rowHeight,
-        child: Center(
+      // At least a 44 px slot (the row's height) around the 28 px pill, so
+      // the row leaves room for the pill's whole touch target; taller when
+      // the value is.
+      return ConstrainedBox(
+        constraints: BoxConstraints(minHeight: t.rowHeight),
+        child: Align(
           widthFactor: 1,
+          heightFactor: 1,
           child: enabled
               ? Builder(
                   builder: (pillContext) => MinimalPressable(

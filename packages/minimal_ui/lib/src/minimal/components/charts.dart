@@ -59,6 +59,12 @@ class MinimalBarChart extends StatelessWidget {
   /// instrument, never a wall of blocks.
   static const double maxBarWidth = 12;
 
+  /// The most the axis labels grow with the reader's text size, as Material's
+  /// navigation bar labels do: a week's names (`Mon`) stay whole in their
+  /// seventh of a phone at 300%. The chart's semantics carry each bar's
+  /// label and value at any size.
+  static const double maxLabelScale = 1.3;
+
   static String _figure(double v) =>
       v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
 
@@ -108,12 +114,15 @@ class MinimalBarChart extends StatelessWidget {
           ),
           if (names != null) ...[
             const MinimalGap(MinimalSpacing.s4),
-            Text(
-              name ?? '',
-              style: on ? labelStyle.c(t.foreground).medium : labelStyle,
-              maxLines: 1,
-              overflow: TextOverflow.clip,
-              softWrap: false,
+            MediaQuery.withClampedTextScaling(
+              maxScaleFactor: maxLabelScale,
+              child: Text(
+                name ?? '',
+                style: on ? labelStyle.c(t.foreground).medium : labelStyle,
+                maxLines: 1,
+                overflow: TextOverflow.clip,
+                softWrap: false,
+              ),
             ),
           ],
         ],
