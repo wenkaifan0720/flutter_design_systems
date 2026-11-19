@@ -1019,13 +1019,19 @@ class _ComicTag extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                label,
-                style: t.type.text(
-                  14,
-                  1.2,
-                  weight: FontWeight.w800,
-                  color: c.onCaption,
+              // On one line, ended with an ellipsis where it outgrows its field, as Material's chips' labels: at 300%
+              // text in a desk column a long tag overflowed its row.
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: t.type.text(
+                    14,
+                    1.2,
+                    weight: FontWeight.w800,
+                    color: c.onCaption,
+                  ),
                 ),
               ),
               ExcludeSemantics(

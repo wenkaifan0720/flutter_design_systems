@@ -1,3 +1,17 @@
+## 0.3.5
+
+- At 300% text a time picker's labels stay whole. Its words grow at most twice with the reader's text, as Material's
+  time picker's, and its selects stand in a row only while each label fits its select on one line; else they stack.
+  In a desk column "Minute" broke mid-word ("Minut / e").
+- A closed select holds its value on one line and ends it with an ellipsis where it outgrows the field, as Material's
+  `DropdownMenu`; its name and whole value are still read, and the open menu lists the value whole. At 300% text
+  "Thursday" broke mid-word ("Thur / sday"). Where the value used to wrap whole onto a second line (at 200% text on a
+  phone, "Standard delivery"), it now ends with an ellipsis, as Material's does.
+- A tag input's tag stands on one line and ends with an ellipsis where it outgrows the field, as Material's chips'
+  labels. At 300% text in a desk column a long tag overflowed its row.
+- The example gallery's side nav grows wider when the reader's text makes a page's name outgrow it, so the names wrap
+  only between words. At 300% text "Overview" broke mid-word ("Overvie / w").
+
 ## 0.3.4
 
 - At 300% text a date picker's and a calendar's days fit. Their numbers grow at most twice with the reader's text,

@@ -21,7 +21,8 @@ import 'theme.dart';
 import 'component_themes.dart';
 import 'styled.dart';
 import 'internal/cap_label.dart';
-import 'internal/lettering.dart' show comicCalendarScaleMost;
+import 'internal/lettering.dart'
+    show comicCalendarScaleMost, comicTimeScaleMost;
 import 'knobs.dart' show ComicSpace;
 import 'internal/style_guard.dart';
 
@@ -657,10 +658,15 @@ class ComicTimePicker extends StatelessWidget {
       style,
       ComicTheme.of(context).timePickerTheme,
     ]);
+    final names = [
+      hourLabel ?? shared.timePickerHourLabel,
+      minuteLabel ?? shared.timePickerMinuteLabel,
+      if (!h24) periodLabel ?? shared.timeFieldDayPeriodLabel,
+    ];
     final selects = <Widget>[
       ComicSelect<int>(
         style: layers,
-        label: hourLabel ?? shared.timePickerHourLabel,
+        label: names[0],
         value: h24 ? time.hour : time.hour % 12,
         options: [
           for (var hour = 0; hour < (h24 ? 24 : 12); hour++)
@@ -684,7 +690,7 @@ class ComicTimePicker extends StatelessWidget {
       ),
       ComicSelect<int>(
         style: layers,
-        label: minuteLabel ?? shared.timePickerMinuteLabel,
+        label: names[1],
         value: time.minute,
         options: [
           for (final minute in minutes)
@@ -697,7 +703,7 @@ class ComicTimePicker extends StatelessWidget {
       if (!h24)
         ComicSelect<int>(
           style: layers,
-          label: periodLabel ?? shared.timeFieldDayPeriodLabel,
+          label: names[2],
           value: time.hour ~/ 12,
           options: [
             ComicSelectOption(0, shared.anteMeridiemAbbreviation),
@@ -711,40 +717,56 @@ class ComicTimePicker extends StatelessWidget {
         ),
     ];
     // Hour, minute and AM or PM on one row of equal selects, each label on one line, up to 160 a select; under
-    // 96 a select (a phone's narrow column) they stack. The least grows with the text: at 200% on a phone the labels
-    // would break mid-word ("Minut e") and the selects stand at different heights under them.
+    // 96 a select (a phone's narrow column), or under a label's own width, they stack. The least grows with the
+    // text: at 200% on a phone the labels would break mid-word ("Minut e") and the selects stand at different
+    // heights under them. The words grow at most twice, as Material's time picker's.
     const gap = 12.0, most = 160.0;
-    final least = math.min(most, MediaQuery.textScalerOf(context).scale(96));
-    return LayoutBuilder(
-      builder: (context, box) {
-        final n = selects.length;
-        final room = box.hasBoundedWidth
-            ? box.maxWidth
-            : n * most + (n - 1) * gap;
-        final each = math.min(most, (room - (n - 1) * gap) / n);
-        if (each < least) {
-          return Column(
+    final title = ComicTheme.of(context).type.title;
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: comicTimeScaleMost,
+      child: LayoutBuilder(
+        builder: (context, box) {
+          final scaler = MediaQuery.textScalerOf(context);
+          var least = math.min(most, scaler.scale(96));
+          for (final name in names) {
+            final words = TextPainter(
+              text: TextSpan(text: name, style: title),
+              textDirection: Directionality.of(context),
+              textScaler: scaler,
+              maxLines: 1,
+            )..layout();
+            least = math.max(least, words.width);
+            words.dispose();
+          }
+          final n = selects.length;
+          final room = box.hasBoundedWidth
+              ? box.maxWidth
+              : n * most + (n - 1) * gap;
+          final each = math.min(most, (room - (n - 1) * gap) / n);
+          if (each < least) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < n; i++) ...[
+                  if (i > 0) const SizedBox(height: gap),
+                  selects[i],
+                ],
+              ],
+            );
+          }
+          return Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               for (var i = 0; i < n; i++) ...[
-                if (i > 0) const SizedBox(height: gap),
-                selects[i],
+                if (i > 0) const SizedBox(width: gap),
+                SizedBox(width: each, child: selects[i]),
               ],
             ],
           );
-        }
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (var i = 0; i < n; i++) ...[
-              if (i > 0) const SizedBox(width: gap),
-              SizedBox(width: each, child: selects[i]),
-            ],
-          ],
-        );
-      },
+        },
+      ),
     );
   }
 

@@ -20,6 +20,10 @@ const double comicLetteringMost = 32;
 /// name outgrows the space between its arrows and breaks mid-word.
 const double comicCalendarScaleMost = 2;
 
+/// The most a time picker's words grow with the reader's text size: twice, as Material's time picker's. Larger, its
+/// labels outgrow a select in a desk column and break mid-word.
+const double comicTimeScaleMost = 2;
+
 /// The most a chart's scale words grow with the reader's text size: 1.3 times, as Material's slider value label. They
 /// stand side by side under the bar; larger, one leaves the other too narrow for its words.
 const double comicScaleWordsMost = 1.3;

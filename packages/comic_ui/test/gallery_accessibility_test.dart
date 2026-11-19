@@ -126,20 +126,62 @@ void main() {
         }
       },
     );
+    // As Material's DropdownMenu: the closed field holds its value on one line and ends it with an ellipsis where it
+    // outgrows the field; the value is read whole, and the open menu shows it whole.
     testWidgets(
-      'a closed select displays the complete delivery method in ${dir.name}',
+      'a closed select keeps the delivery method on one line, read and listed whole, in ${dir.name}',
       (tester) async {
+        final semantics = tester.ensureSemantics();
         await phone(
           tester,
-          ComicSelectField(value: 'Standard delivery', onPressed: () {}),
+          ComicSelect<String>(
+            label: 'Delivery',
+            value: 'standard',
+            options: const [
+              ComicSelectOption('standard', 'Standard delivery'),
+              ComicSelectOption('express', 'Express delivery'),
+            ],
+            onChanged: (_) {},
+          ),
           scale: 2,
           direction: dir,
         );
         final text = tester.renderObject<RenderParagraph>(
           find.text('Standard delivery'),
         );
-        expect(text.didExceedMaxLines, isFalse);
-        expect(text.size.height, greaterThan(45));
+        expect(text.maxLines, 1);
+        expect(text.overflow, TextOverflow.ellipsis);
+        expect(text.didExceedMaxLines, isTrue);
+        final line = TextPainter(
+          text: text.text,
+          textDirection: dir,
+          textScaler: text.textScaler,
+          maxLines: 1,
+        )..layout();
+        expect(text.size.height, closeTo(line.height, .5));
+        line.dispose();
+        expect(
+          tester.getSemantics(find.bySemanticsLabel('Delivery')),
+          isSemantics(label: 'Delivery', value: 'Standard delivery'),
+        );
+        await tester.tap(find.text('Standard delivery'));
+        await tester.pumpAndSettle();
+        // The open menu lists the value whole: not cut short, wrapping only between its words.
+        final listed = tester.renderObject<RenderParagraph>(
+          find.text('Standard delivery').last,
+        );
+        expect(listed.didExceedMaxLines, isFalse);
+        for (final word in const ['Standard', 'delivery']) {
+          final one = TextPainter(
+            text: TextSpan(text: word, style: listed.text.style),
+            textDirection: dir,
+            textScaler: listed.textScaler,
+            maxLines: 1,
+          )..layout();
+          expect(listed.size.width + .5, greaterThanOrEqualTo(one.width));
+          one.dispose();
+        }
+        semantics.dispose();
       },
     );
   }

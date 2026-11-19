@@ -1591,7 +1591,16 @@ class ComicSelectField extends StatelessWidget {
                 gap: 10,
                 fillShare: .3,
                 children: [
-                  CapLabel(child: Text(value, style: text)),
+                  // The value on one line, ended with an ellipsis where it outgrows the field, as Material's
+                  // DropdownMenu's: it is read whole, and larger text broke it mid-word ("Thur / sday").
+                  CapLabel(
+                    child: Text(
+                      value,
+                      style: text,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                   if (note != null)
                     Text(
                       note!,

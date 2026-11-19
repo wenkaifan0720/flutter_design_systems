@@ -6,7 +6,13 @@
 // - a date picker's grid outgrew a phone and scrolled sideways, and a calendar's numbers filled their cells to the
 //   rules: a day's number grows at most twice too, as Material's calendar on a phone;
 // - a calendar's month name outgrew the space between its arrows and broke mid-word ("Novembe", "r 2026"): it grows
-//   at most twice, as Material's calendar header.
+//   at most twice, as Material's calendar header;
+// - a time picker's labels outgrew a desk column's select and broke mid-word ("Minut / e"): its words grow at most
+//   twice, as Material's time picker's, and its selects stack where a label would not fit its select on one line;
+// - a select's value broke mid-word ("Thur / sday"): it stands on one line with an ellipsis, as Material's
+//   DropdownMenu's;
+// - a tag input's long tag overflowed its row in a desk column: it stands on one line with an ellipsis, as Material's
+//   chips' labels.
 // Measured in the bundled faces, as a device draws them.
 import 'dart:math' as math;
 
@@ -287,5 +293,137 @@ void main() {
         );
       }
     }
+  }
+
+  for (final (locale, names) in const [
+    (Locale('en'), ['Hour', 'Minute', 'AM/PM']),
+    (Locale('de'), ['Stunde', 'Minute', 'Tageshälfte']),
+  ]) {
+    // A phone's page, and desk columns as the gallery lays them.
+    for (final (page, column) in const [
+      (320.0, null),
+      (390.0, null),
+      (1440.0, 240.0),
+      (1440.0, 360.0),
+      (1440.0, 520.0),
+    ]) {
+      testWidgets(
+        "a time picker's labels stay whole at 300% text, ${locale.languageCode}, "
+        '$page wide${column == null ? '' : ' in a $column column'}',
+        (tester) async {
+          final picker = Builder(
+            builder: (context) => Localizations.override(
+              context: context,
+              locale: locale,
+              delegates: const [DesignLocalizations.delegate],
+              child: ComicTimePicker(
+                value: const ComicTime(9, 30),
+                use24hFormat: false,
+                onChanged: (_) {},
+              ),
+            ),
+          );
+          await _at(
+            tester,
+            3,
+            width: page,
+            column == null
+                ? picker
+                : Align(
+                    alignment: AlignmentDirectional.topStart,
+                    child: SizedBox(width: column, child: picker),
+                  ),
+          );
+          expect(tester.takeException(), isNull);
+          for (final name in names) {
+            final p = _words(tester, name);
+            _wordsWhole(p);
+            final size = p.text.style!.fontSize!;
+            expect(p.textScaler.scale(size), closeTo(size * 2, .01));
+          }
+        },
+      );
+    }
+  }
+
+  for (final column in [200.0, 320.0]) {
+    testWidgets(
+      "a select's value stays on one line at 300% text, in a $column column",
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        await _at(
+          tester,
+          3,
+          Align(
+            alignment: AlignmentDirectional.topStart,
+            child: SizedBox(
+              width: column,
+              child: ComicSelect<String>(
+                label: 'Delivery day',
+                value: 'thu',
+                options: const [ComicSelectOption('thu', 'Thursday')],
+                onChanged: (_) {},
+              ),
+            ),
+          ),
+        );
+        expect(tester.takeException(), isNull);
+        final p = _words(tester, 'Thursday');
+        expect(p.maxLines, 1);
+        expect(p.overflow, TextOverflow.ellipsis);
+        final line = TextPainter(
+          text: p.text,
+          textDirection: TextDirection.ltr,
+          textScaler: p.textScaler,
+          maxLines: 1,
+        )..layout();
+        expect(p.size.height, closeTo(line.height, .5));
+        line.dispose();
+        // It is read whole.
+        expect(
+          tester.getSemantics(find.bySemanticsLabel('Delivery day')),
+          isSemantics(label: 'Delivery day', value: 'Thursday'),
+        );
+        semantics.dispose();
+      },
+    );
+  }
+
+  for (final direction in TextDirection.values) {
+    testWidgets(
+      "a tag input's long tag stays in its field at 300% text, ${direction.name}",
+      (tester) async {
+        const tag = 'قصص بوليسية طويلة';
+        await _at(
+          tester,
+          3,
+          width: 1440,
+          direction: direction,
+          Align(
+            alignment: AlignmentDirectional.topStart,
+            child: SizedBox(
+              width: 240,
+              child: ComicMultiSelect<String>(
+                label: 'Genres',
+                values: const [tag, 'Western'],
+                options: const [tag, 'Western'],
+                onChanged: (_) {},
+              ),
+            ),
+          ),
+        );
+        expect(tester.takeException(), isNull);
+        final p = _words(tester, tag);
+        expect(p.maxLines, 1);
+        expect(p.overflow, TextOverflow.ellipsis);
+        final field = tester.getRect(find.byType(ComicMultiSelect<String>));
+        final drawn = tester.getRect(find.text(tag).first);
+        expect(
+          drawn.left >= field.left - .5 && drawn.right <= field.right + .5,
+          isTrue,
+          reason: 'the tag draws $drawn in a field $field',
+        );
+      },
+    );
   }
 }

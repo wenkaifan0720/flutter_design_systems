@@ -3,7 +3,10 @@
 // moon or sun turns the page to night or day; Customize opens the theme's knobs (the preset, the strokes, the density,
 // the faces, your own colours, the reading direction and the text scaling) and every page takes them as you set them.
 // Comic's corners stay square and its type at the look's sizes: the platform's text scaling serves readers.
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart';
 import 'package:comic_ui/comic_ui.dart';
 import 'package:comic_ui/comic_host.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -493,10 +496,73 @@ class _GalleryAppState extends State<GalleryApp> with WidgetsBindingObserver {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SizedBox(width: 264, child: drawer((i) => _go(livePages[i].id))),
+        _AtLeastItsWords(
+          width: 264,
+          child: drawer((i) => _go(livePages[i].id)),
+        ),
         Expanded(child: content),
       ],
     );
+  }
+}
+
+/// The side nav's column: [width] wide, and wider where the reader's text makes a page's name hold a word longer than
+/// its row, so the names wrap only between their words. At 300% text "Overview" broke mid-word ("Overvie / w").
+class _AtLeastItsWords extends SingleChildRenderObjectWidget {
+  const _AtLeastItsWords({required this.width, required super.child});
+
+  /// The column's width while every word fits it.
+  final double width;
+
+  @override
+  RenderObject createRenderObject(BuildContext context) =>
+      _RenderAtLeastItsWords(width);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderAtLeastItsWords renderObject,
+  ) => renderObject.width = width;
+}
+
+class _RenderAtLeastItsWords extends RenderProxyBox {
+  _RenderAtLeastItsWords(this._width);
+
+  double _width;
+  set width(double value) {
+    if (value == _width) return;
+    _width = value;
+    markNeedsLayout();
+  }
+
+  // A child's least intrinsic width is its longest word's, with what stands beside it on its row.
+  double _own(double height) =>
+      math.max(_width, child?.getMinIntrinsicWidth(height) ?? 0);
+
+  @override
+  double computeMinIntrinsicWidth(double height) => _own(height);
+
+  @override
+  double computeMaxIntrinsicWidth(double height) => _own(height);
+
+  @override
+  Size computeDryLayout(covariant BoxConstraints constraints) {
+    final width = constraints.constrainWidth(_own(constraints.maxHeight));
+    final inner = constraints.tighten(width: width);
+    return child?.getDryLayout(inner) ?? inner.smallest;
+  }
+
+  @override
+  void performLayout() {
+    final width = constraints.constrainWidth(_own(constraints.maxHeight));
+    final inner = constraints.tighten(width: width);
+    final child = this.child;
+    if (child == null) {
+      size = inner.smallest;
+      return;
+    }
+    child.layout(inner, parentUsesSize: true);
+    size = child.size;
   }
 }
 
