@@ -321,6 +321,81 @@ void main() {
         expect(t.getSize(face).height, 44 - 2 * 2);
       }
     });
+
+    // The user (11-18, a form's Priority): in a column that stretches its
+    // children the ring ran the column's width, its chips bunched at its
+    // start; and the focused chip's double rule stood short of the chip and
+    // under the ring, 4 clear of the chip.
+    testWidgets('a wide slot keeps the ring to its chips, and focus rules '
+        'the whole chip, touching it', (t) async {
+      for (final size in const [_phone, _desktop]) {
+        await _pump(
+          t,
+          LedgerSegmentedControl(
+            options: _ranges,
+            value: _range,
+            onChanged: (_) {},
+          ),
+          size: size,
+        );
+        final control = find.byWidgetPredicate(
+          (w) => w is LedgerSegmentedControl,
+        );
+        final ring = t.getRect(
+          find
+              .descendant(of: control, matching: find.byType(DecoratedBox))
+              .first,
+        );
+        final chips = [
+          for (final e
+              in find
+                  .descendant(
+                    of: control,
+                    matching: find.byType(LedgerPressable),
+                  )
+                  .evaluate())
+            t.getRect(find.byElementPredicate((x) => identical(x, e))),
+        ]..sort((a, b) => a.left.compareTo(b.left));
+        final where = '${size.width.round()} wide';
+        expect(ring.left, t.getRect(control).left, reason: where);
+        expect(ring.left, chips.first.left - 2, reason: where);
+        expect(ring.right, chips.last.right + 2, reason: where);
+        expect(
+          ring.width,
+          lessThan(t.getSize(control).width),
+          reason: '$where: the column is wider than the chips',
+        );
+
+        FocusManager.instance.highlightStrategy =
+            FocusHighlightStrategy.alwaysTraditional;
+        addTearDown(
+          () => FocusManager.instance.highlightStrategy =
+              FocusHighlightStrategy.automatic,
+        );
+        await t.sendKeyEvent(LogicalKeyboardKey.tab);
+        await t.sendKeyEvent(LogicalKeyboardKey.tab);
+        await t.pumpAndSettle();
+        final drawn = find.byWidgetPredicate(
+          (w) =>
+              w is CustomPaint && '${w.painter.runtimeType}' == '_DoubleRule',
+        );
+        expect(drawn, findsOneWidget, reason: where);
+        final focused = find.ancestor(
+          of: drawn,
+          matching: find.byType(LedgerPressable),
+        );
+        // No corner kept clear: the rule runs the chip's whole width.
+        expect(t.widget<LedgerPressable>(focused).radius, 0, reason: where);
+        final rule = t.getRect(drawn);
+        final chip = t.getRect(focused);
+        expect(rule.left, chip.left, reason: where);
+        expect(rule.width, chip.width, reason: where);
+        // The face stands 2 inside the chip's target: the rule's top is its foot.
+        expect(rule.top, chip.bottom - 2, reason: where);
+        FocusManager.instance.highlightStrategy =
+            FocusHighlightStrategy.automatic;
+      }
+    });
   });
 
   group('LedgerFilters', () {
@@ -1015,6 +1090,239 @@ void main() {
         },
       );
     });
+
+    testWidgets('at its ceiling it raises no further', (t) async {
+      final moves = <num>[];
+      await _everywhere(
+        t,
+        LedgerStepper(
+          value: _diningBudget,
+          label: 'Monthly budget',
+          max: _diningBudget,
+          onChanged: moves.add,
+        ),
+        (wide, theme) {
+          expect(
+            _node(t, 'Monthly budget'),
+            isSemantics(
+              value: '\$250',
+              decreasedValue: '\$245',
+              hasIncreaseAction: false,
+              hasDecreaseAction: true,
+            ),
+          );
+          expect(
+            _node(t, 'Raise Monthly budget'),
+            _inert(label: 'Raise Monthly budget'),
+          );
+        },
+      );
+      await t.tap(find.bySemanticsLabel('Raise Monthly budget'));
+      expect(moves, isEmpty);
+    });
+  });
+
+  // A form's number (11-18: Stint's estimate, 5 to 480 minutes, was a bare
+  // figure between two rings that took no typing).
+  group('LedgerStepper as a field', () {
+    Widget estimate(
+      List<num> moves, {
+      num value = 45,
+      String? error,
+      String label = 'Estimate (minutes)',
+    }) => StatefulBuilder(
+      builder: (context, setState) => LedgerStepper(
+        size: LedgerStepperSize.field,
+        label: label,
+        value: value,
+        min: 5,
+        max: 480,
+        format: (minutes) => '$minutes minutes',
+        error: error,
+        onChanged: (v) => setState(() {
+          moves.add(v);
+          value = v;
+        }),
+      ),
+    );
+
+    Finder number() => find.descendant(
+      of: find.byType(LedgerStepper),
+      matching: find.byType(EditableText),
+    );
+
+    testWidgets('names its number over the rule and says it whole', (t) async {
+      await _everywhere(t, estimate([]), (wide, theme) {
+        expect(find.text('ESTIMATE (MINUTES)'), findsOneWidget);
+        expect(
+          _node(t, 'Estimate (minutes)'),
+          isSemantics(
+            value: '45 minutes',
+            increasedValue: '50 minutes',
+            decreasedValue: '40 minutes',
+            hasIncreaseAction: true,
+            hasDecreaseAction: true,
+          ),
+        );
+        expect(t.widget<EditableText>(number()).controller.text, '45');
+        // The figures in a text field's words.
+        expect(
+          t.widget<EditableText>(number()).style.fontSize,
+          LedgerTextField.wordsOf(theme).fontSize,
+        );
+      });
+    });
+
+    testWidgets('takes a typed number, kept within its bounds', (t) async {
+      final moves = <num>[];
+      await _pump(t, estimate(moves));
+      await t.enterText(number(), '120');
+      await t.testTextInput.receiveAction(TextInputAction.done);
+      await t.pumpAndSettle();
+      expect(moves, [120]);
+      // Above its ceiling: the field says so while it is typed, and takes
+      // the ceiling.
+      await t.enterText(number(), '900');
+      await t.pumpAndSettle();
+      expect(find.text('From 5 to 480'), findsOneWidget);
+      await t.testTextInput.receiveAction(TextInputAction.done);
+      await t.pumpAndSettle();
+      expect(moves, [120, 480]);
+      expect(find.text('From 5 to 480'), findsNothing);
+      expect(t.widget<EditableText>(number()).controller.text, '480');
+      // Under its floor, then the focus leaving: the floor.
+      await t.enterText(number(), '2');
+      await t.pumpAndSettle();
+      expect(find.text('From 5 to 480'), findsOneWidget);
+      FocusManager.instance.primaryFocus?.unfocus();
+      await t.pumpAndSettle();
+      expect(moves, [120, 480, 5]);
+      expect(find.text('From 5 to 480'), findsNothing);
+    });
+
+    testWidgets('Up and Down, Page Up and Page Down and the rings step it', (
+      t,
+    ) async {
+      final moves = <num>[];
+      await _pump(t, estimate(moves));
+      await t.tap(number());
+      await t.pumpAndSettle();
+      await t.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+      await t.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await t.sendKeyEvent(LogicalKeyboardKey.arrowDown);
+      await t.sendKeyEvent(LogicalKeyboardKey.pageUp);
+      await t.pumpAndSettle();
+      // Ten steps on, to the next of them counted from 5 (ui_core's).
+      expect(moves, [50, 45, 40, 55]);
+      await t.tap(find.byIcon(LucideIcons.plus));
+      await t.tap(find.byIcon(LucideIcons.minus));
+      await t.pumpAndSettle();
+      expect(moves, [50, 45, 40, 55, 60, 55]);
+      t.semantics.increase(find.semantics.byLabel('Estimate (minutes)'));
+      await t.pumpAndSettle();
+      expect(moves.last, 60);
+    });
+
+    testWidgets('at a bound its ring is off', (t) async {
+      final moves = <num>[];
+      await _pump(t, estimate(moves, value: 480));
+      expect(
+        _node(t, 'Estimate (minutes)'),
+        isSemantics(
+          value: '480 minutes',
+          decreasedValue: '475 minutes',
+          hasIncreaseAction: false,
+          hasDecreaseAction: true,
+        ),
+      );
+      await t.tap(find.byIcon(LucideIcons.plus));
+      await t.pumpAndSettle();
+      expect(moves, isEmpty);
+    });
+
+    testWidgets('an error given stands under its rule', (t) async {
+      await _pump(t, estimate([], error: 'Estimate the task'));
+      expect(find.text('Estimate the task'), findsOneWidget);
+    });
+
+    for (final scale in const [1.0, 2.0]) {
+      for (final direction in TextDirection.values) {
+        final how = '${(scale * 100).round()}% ${direction.name}';
+        testWidgets('stands level with a text field beside it at $how', (
+          t,
+        ) async {
+          for (final size in const [_phone, _desktop]) {
+            for (final brightness in Brightness.values) {
+              final where =
+                  '$how, ${size.width.round()} wide, ${brightness.name}';
+              await _pump(
+                t,
+                Builder(
+                  builder: (context) => MediaQuery(
+                    data: MediaQuery.of(context)
+                        .copyWith(textScaler: TextScaler.linear(scale)),
+                    child: Directionality(
+                      textDirection: direction,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Expanded(
+                            child: LedgerTextField(
+                              key: ValueKey<String>('title'),
+                              label: 'Title',
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            // Labels of one line each at 200% in half a
+                            // phone, so the two fields' rows compare.
+                            child: KeyedSubtree(
+                              key: const ValueKey<String>('estimate'),
+                              child: estimate([], label: 'Minutes'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                size: size,
+                brightness: brightness,
+              );
+              await t.pumpAndSettle();
+              expect(t.takeException(), isNull, reason: where);
+              _expectWordsFit(t, where);
+              final title = t.getRect(find.byKey(const ValueKey('title')));
+              final stepper = t.getRect(find.byKey(const ValueKey('estimate')));
+              expect(stepper.height, title.height, reason: where);
+              expect(stepper.top, title.top, reason: where);
+              // The rings stand inside the line, the number at its start.
+              final line = t.getRect(number());
+              for (final icon in const [LucideIcons.minus, LucideIcons.plus]) {
+                final ring = t.getRect(find.byIcon(icon));
+                expect(
+                  ring.top,
+                  greaterThanOrEqualTo(stepper.top),
+                  reason: where,
+                );
+                expect(
+                  ring.bottom,
+                  lessThanOrEqualTo(stepper.bottom),
+                  reason: where,
+                );
+                expect(
+                  direction == TextDirection.ltr
+                      ? ring.left >= line.right
+                      : ring.right <= line.left,
+                  isTrue,
+                  reason: '$where $icon',
+                );
+              }
+            }
+          }
+        });
+      }
+    }
   });
 }
 

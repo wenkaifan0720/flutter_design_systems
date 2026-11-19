@@ -1,13 +1,56 @@
 /// A new entry: a form written on the rule, its receipt drawn beside it
-/// as it is filled in (from 1024), checked when it is saved.
+/// as it is filled in (from 1024), checked when it is saved, and saved to
+/// the register.
 library;
+
+import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../kit.dart';
+import 'quill.dart';
 import 'words.dart';
+
+/// What [text] says was paid, read as a person writes dollars: "17.43" or
+/// "17,43" (a decimal comma), "1,743.50" or "1.743,50" (grouped
+/// thousands), "1,743" (a thousands comma), with or without the dollar
+/// sign. Null when it does not read as dollars and cents: no digit, a
+/// letter or a sign, a third decimal ("17.435") or a stray mark ("17,4,3").
+double? quillAmount(String text) {
+  final s = text.replaceAll(RegExp(r'[\s\u00A0$]'), '');
+  if (!RegExp(r'^[\d.,]+$').hasMatch(s) || !RegExp(r'\d').hasMatch(s)) {
+    return null;
+  }
+  final at = math.max(s.lastIndexOf('.'), s.lastIndexOf(','));
+  var whole = s;
+  var cents = '';
+  if (at >= 0) {
+    final mark = s[at];
+    final tail = s.substring(at + 1);
+    final before = s.substring(0, at);
+    // Three digits after the last mark group thousands when no other kind
+    // of mark stands before it, and the mark is a comma or comes again
+    // ("1,743", "1.234.567"); a lone point before three is a third decimal.
+    final groups =
+        tail.length == 3 &&
+        !before.contains(mark == '.' ? ',' : '.') &&
+        (mark == ',' || before.contains(mark));
+    if (!groups) {
+      if (tail.length > 2) return null;
+      whole = before;
+      cents = tail;
+    }
+  }
+  if (!RegExp(r'^(\d*|\d{1,3}(,\d{3})+|\d{1,3}(\.\d{3})+)$').hasMatch(whole)) {
+    return null;
+  }
+  final dollars = whole.replaceAll(RegExp('[.,]'), '');
+  return double.parse(
+    '${dollars.isEmpty ? '0' : dollars}.${cents.padRight(2, '0')}',
+  );
+}
 
 class QuillEntryPage extends StatefulWidget {
   const QuillEntryPage({super.key});
@@ -26,6 +69,9 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
   String _repeat = 'never';
   bool _keepReceipt = true;
   bool _budgeted = true;
+  // Each field's fault in English, said as it is shown; null: none shown.
+  // Once Save is pressed, the faults follow the fields as they change.
+  bool _tried = false;
   String? _amountError;
   String? _payeeError;
   String? _categoryError;
@@ -64,6 +110,13 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
       ];
 
   @override
+  void initState() {
+    super.initState();
+    _amount.addListener(_recheck);
+    _payee.addListener(_recheck);
+  }
+
+  @override
   void dispose() {
     _amount.dispose();
     _payee.dispose();
@@ -71,26 +124,74 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
     super.dispose();
   }
 
-  double? get _value => double.tryParse(_amount.text.replaceAll(',', ''));
+  double? get _value => quillAmount(_amount.text);
+
+  String? get _amountFault {
+    if (_amount.text.trim().isEmpty) return 'Enter what was paid';
+    final value = _value;
+    if (value == null) return 'Enter an amount such as 17.43';
+    return value <= 0 ? 'Enter what was paid' : null;
+  }
+
+  String? get _payeeFault =>
+      _payee.text.trim().isEmpty ? 'Say who was paid' : null;
+
+  /// The faults read again as a field changes, once Save was pressed: a
+  /// corrected field drops its fault at once, an emptied one shows it
+  /// again. A field shows none before the first Save.
+  void _recheck() {
+    if (!_tried) return;
+    final amount = _amountFault;
+    final payee = _payeeFault;
+    if (amount != _amountError || payee != _payeeError) {
+      setState(() {
+        _amountError = amount;
+        _payeeError = payee;
+      });
+    }
+  }
 
   void _save() {
-    final value = _value;
+    _tried = true;
     setState(() {
-      _amountError = value == null || value <= 0
-          ? context.say('Enter what was paid')
-          : null;
-      _payeeError = _payee.text.trim().isEmpty
-          ? context.say('Say who was paid')
-          : null;
-      _categoryError = _category == null
-          ? context.say('Choose a category')
-          : null;
+      _amountError = _amountFault;
+      _payeeError = _payeeFault;
+      _categoryError = _category == null ? 'Choose a category' : null;
     });
     if (_amountError != null || _payeeError != null || _categoryError != null) {
       return;
     }
+    QuillPrefs.maybeOf(context)?.save(_entry());
     LedgerToast.show(context, context.say('Entry saved to the register'));
     Navigator.of(context).pop();
+  }
+
+  /// The entry as the register keeps it, on its day at the hour it was
+  /// written.
+  KitTx _entry() {
+    final saved = QuillPrefs.maybeOf(context)?.saved.length ?? 0;
+    final payee = _payee.text.trim();
+    final back = switch (_day) {
+      'yesterday' => 1,
+      'monday' => 2,
+      _ => 0,
+    };
+    final at = kitNow.subtract(Duration(days: back));
+    return KitTx(
+      id: 'n${saved + 1}',
+      title: payee,
+      lead: quillInitials(payee),
+      subtitle: _category!,
+      time: LedgerFormat.time(at),
+      day: switch (_day) {
+        'today' => 'Today',
+        'yesterday' => 'Yesterday',
+        _ => LedgerFormat.day(at, now: kitNow),
+      },
+      account: _account,
+      amount: -_value!,
+      at: at,
+    );
   }
 
   Widget _pair(bool paired, Widget a, Widget b) => paired
@@ -114,6 +215,9 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!quillSignedIn(context)) {
+      return QuillSignedOutPage(title: context.say('New entry'));
+    }
     final width = MediaQuery.sizeOf(context).width;
     final wide = LedgerLayout.isWide(context);
     final paired = width >= LedgerNavigationFrame.railFrom;
@@ -137,7 +241,7 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
             hint: '0.00',
             controller: _amount,
             isRequired: true,
-            error: _amountError,
+            error: _amountError == null ? null : context.say(_amountError!),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             textInputAction: TextInputAction.next,
           ),
@@ -146,7 +250,7 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
             hint: context.say('Who was paid'),
             controller: _payee,
             isRequired: true,
-            error: _payeeError,
+            error: _payeeError == null ? null : context.say(_payeeError!),
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.next,
           ),
@@ -160,7 +264,7 @@ class _QuillEntryPageState extends State<QuillEntryPage> {
             value: _category,
             items: _said(_categories),
             isRequired: true,
-            error: _categoryError,
+            error: _categoryError == null ? null : context.say(_categoryError!),
             onChanged: (v) => setState(() {
               _category = v;
               _categoryError = null;

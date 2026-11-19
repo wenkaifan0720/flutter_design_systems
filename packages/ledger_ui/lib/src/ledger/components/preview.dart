@@ -259,6 +259,7 @@ class _Root extends StatelessWidget {
       inset: inset,
       count: tabs.length,
       action: action != null,
+      labels: [for (final tab in tabs) tab.label, ?action?.label],
     );
     final Widget bottom = LedgerNavBar(
       items: tabs,

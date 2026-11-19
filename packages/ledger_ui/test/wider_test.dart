@@ -539,6 +539,39 @@ void main() {
       expect(picked, DateTime(2026, 11, 12, 9, 30));
     });
 
+    // The user (11-18, a Due date at a tablet's width): the sheet stood 640
+    // wide round a month held to 416, a dead column at its end beside the
+    // title's rule and Done.
+    for (final width in const [800.0, 1440.0]) {
+      testWidgets('the day sheet and its month share one measure at '
+          '${width.round()}', (t) async {
+        await _pump(
+          t,
+          LedgerDatePicker(label: 'Due', value: day, onChanged: (_) {}),
+          size: Size(width, 900),
+        );
+        await t.tap(find.text('Nov 4, 2026'));
+        await t.pumpAndSettle();
+        final shell = find.byType(LedgerSheetShell);
+        final pad = LedgerSheetShell.padding(t.element(shell));
+        final card = t.getRect(shell);
+        final month = t.getRect(
+          find.byWidgetPredicate(
+            (w) =>
+                w is LedgerDatePicker &&
+                w.presentation == LedgerDatePickerPresentation.inline,
+          ),
+        );
+        expect(month.left, card.left + pad.left);
+        expect(month.right, card.right - pad.right);
+        // The arrows at the month's end.
+        expect(
+          t.getRect(find.bySemanticsLabel('Next month')).right,
+          moreOrLessEquals(month.right, epsilon: 1),
+        );
+      });
+    }
+
     testWidgets('days outside the range are inert and the month steps', (
       t,
     ) async {

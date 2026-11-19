@@ -141,6 +141,38 @@ void main() {
       });
     }
 
+    testWidgets('a stepper field says its range in ${locale.languageCode}', (
+      t,
+    ) async {
+      await t.pumpWidget(
+        _app(
+          locale,
+          direction,
+          LedgerStepper(
+            size: LedgerStepperSize.field,
+            label: 'Minuten',
+            value: 45,
+            min: 5,
+            max: 480,
+            step: 5,
+            onChanged: (_) {},
+          ),
+        ),
+      );
+      await t.pumpAndSettle();
+      final words = DesignLocalizations.forLocale(locale);
+      final range =
+          '${words.formatDecimal(5)}\u2013${words.formatDecimal(480)}';
+      await t.tap(find.byType(EditableText));
+      await t.enterText(find.byType(EditableText), '900');
+      await t.pump();
+      expect(find.text(range), findsOneWidget);
+      expect(find.textContaining(RegExp('From|Enter')), findsNothing);
+      await t.enterText(find.byType(EditableText), 'x');
+      await t.pump();
+      expect(find.text(range), findsOneWidget);
+    });
+
     testWidgets('ui_core\'s words are in ${locale.languageCode}', (t) async {
       late DesignLocalizations words;
       await t.pumpWidget(

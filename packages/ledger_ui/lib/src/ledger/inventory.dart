@@ -618,11 +618,12 @@ final DesignInventory ledgerInventory = DesignInventory(
       (_) => _Held<num>(
         2,
         (context, value, set) => LedgerStepper(
+          size: LedgerStepperSize.field,
           value: value,
           label: 'Copies',
           min: 1,
+          max: 20,
           step: 1,
-          format: (n) => n.toStringAsFixed(0),
           onChanged: set,
         ),
       ),

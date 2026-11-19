@@ -127,12 +127,20 @@ class LedgerNavBar extends StatelessWidget {
       action || discTab(count, action: false) != null;
 
   /// The height of a tab's column in [context]: its glyph and the 6 under
-  /// it (the disc and the 4 it leaves, with [disc]), its name's line, the 4
-  /// over the tick and the tick: 48, and 76 for the disc's.
-  static double columnIn(BuildContext context, {required bool disc}) {
+  /// it (the disc and the 4 it leaves, with [disc]), its name's [lines] (set
+  /// by [scaler], else the reader's), the 4 over the tick and the tick: 48,
+  /// and 76 for the disc's.
+  static double columnIn(
+    BuildContext context, {
+    required bool disc,
+    int lines = 1,
+    TextScaler? scaler,
+  }) {
     final tab = context.ledgerTheme.tab;
     final line =
-        MediaQuery.textScalerOf(context).scale(tab.fontSize!) * tab.height!;
+        (scaler ?? MediaQuery.textScalerOf(context)).scale(tab.fontSize!) *
+        tab.height! *
+        lines;
     return (disc
             ? LedgerChromeMetrics.disc +
                   LedgerChromeMetrics.tabGap -
@@ -145,16 +153,38 @@ class LedgerNavBar extends StatelessWidget {
 
   /// The band a bar of [count] tabs stands in over a device inset of
   /// [inset]: [heightIn], or its rule and its row where a larger text
-  /// scale makes the row the taller.
+  /// scale makes the row the taller. With the tabs' and the act's [labels]
+  /// and the bar's [width] (the screen's when null), it counts the second
+  /// line their names break onto at a large text size.
   static double bandIn(
     BuildContext context, {
     required double inset,
     required int count,
     required bool action,
-  }) => math.max(
-    heightIn(inset),
-    _rule + columnIn(context, disc: hasDisc(count, action: action)),
-  );
+    List<String> labels = const [],
+    double? width,
+  }) {
+    final disc = hasDisc(count, action: action);
+    final cells = count + (action ? 1 : 0);
+    final names = labels.isEmpty || cells == 0
+        ? null
+        : _names(
+            context,
+            labels,
+            ((width ?? MediaQuery.sizeOf(context).width) -
+                    2 * LedgerChromeMetrics.tabBarSide) /
+                cells,
+          );
+    final column = names == null || names.lines == 1
+        ? columnIn(context, disc: disc)
+        : columnIn(
+            context,
+            disc: disc,
+            lines: names.lines,
+            scaler: names.scaler,
+          );
+    return math.max(heightIn(inset), _rule + column);
+  }
 
   /// The bar's height over a device inset of [inset]: 84, its 22 foot
   /// grown to the inset when the inset is larger.
@@ -166,33 +196,58 @@ class LedgerNavBar extends StatelessWidget {
   /// The rule over the bar, 1 (`border-top: 1px`).
   static const double _rule = 1;
 
-  /// The text scaler every tab's name sets at: the reader's, or less, so
-  /// the widest of [labels] fits a column [column] wide with the least
-  /// room between names ([_Tab._nameGap], grown as a word space grows).
-  static TextScaler _namesScaler(
+  /// The text scaler every tab's name sets at, and its lines: the reader's
+  /// size on one line while the widest of [labels] fits a column [column]
+  /// wide with the least room between names ([_Tab._nameGap], grown as a
+  /// word space grows). Past that, a name of two words breaks between them
+  /// onto a second line, and the size shrinks only as far as the widest
+  /// word needs (a one-word name's, whole), so a large text size still
+  /// reads large; where no break would help, all set on one line at the
+  /// size the widest name needs.
+  static ({TextScaler scaler, int lines}) _names(
     BuildContext context,
     List<String> labels,
     double column,
   ) {
     final scaler = MediaQuery.textScalerOf(context);
-    if (!column.isFinite || column <= 0) return scaler;
+    if (!column.isFinite || column <= 0) return (scaler: scaler, lines: 1);
     final style = context.ledgerTheme.tab;
     final room = column - scaler.scale(_Tab._nameGap);
-    var fit = 1.0;
-    for (final label in labels) {
+    if (room <= 0) return (scaler: scaler, lines: 1);
+    double width(String words) {
       final painter = TextPainter(
-        text: TextSpan(text: label, style: style),
+        text: TextSpan(text: words, style: style),
         textScaler: scaler,
         textDirection: Directionality.of(context),
         maxLines: 1,
       )..layout();
-      if (painter.width > room && room > 0) {
-        fit = math.min(fit, room / painter.width);
-      }
+      final w = painter.width;
       painter.dispose();
+      return w;
     }
-    return fit >= 1 ? scaler : _ShrunkScaler(scaler, fit);
+
+    var whole = 0.0;
+    var broken = 0.0;
+    for (final label in labels) {
+      final w = width(label);
+      whole = math.max(whole, w);
+      final words = label.split(' ').where((w) => w.isNotEmpty).toList();
+      broken = math.max(
+        broken,
+        w <= room || words.length < 2 ? w : words.map(width).reduce(math.max),
+      );
+    }
+    if (whole <= room) return (scaler: scaler, lines: 1);
+    if (broken < whole) {
+      // A hair under the room, so a word set at the shrunk size never
+      // breaks within itself.
+      final fit = broken <= room ? 1.0 : (room - _wordSlack) / broken;
+      return (scaler: fit >= 1 ? scaler : _ShrunkScaler(scaler, fit), lines: 2);
+    }
+    return (scaler: _ShrunkScaler(scaler, room / whole), lines: 1);
   }
+
+  static const double _wordSlack = 1;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -289,20 +344,25 @@ class LedgerNavBar extends StatelessWidget {
                 // names stay one size (each shrinking to its own column
                 // read as five sizes of type).
                 child: LayoutBuilder(
-                  builder: (context, row) => MediaQuery(
-                    data: MediaQuery.of(context).copyWith(
-                      textScaler: _namesScaler(context, [
-                        for (final item in items) item.label,
-                        ?act?.label,
-                      ], row.maxWidth / cells.length),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        for (final cell in cells) Expanded(child: cell),
-                      ],
-                    ),
-                  ),
+                  builder: (context, row) {
+                    final names = _names(context, [
+                      for (final item in items) item.label,
+                      ?act?.label,
+                    ], row.maxWidth / cells.length);
+                    return MediaQuery(
+                      data: MediaQuery.of(context)
+                          .copyWith(textScaler: names.scaler),
+                      child: _NameLines(
+                        lines: names.lines,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            for (final cell in cells) Expanded(child: cell),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -418,24 +478,32 @@ class _Tab extends StatelessWidget {
                   color: s.ink,
                 ),
               ),
-          // A name wider than its column at a large text size sets
-          // smaller on its one line rather than lose its end, never
-          // closer than [_nameGap] to its neighbour's (a gap that grows
-          // with the words, as a word space does).
+          // A name wider than its column at a large text size breaks
+          // between its words ([_NameLines]) or sets smaller on its one
+          // line rather than lose its end, never closer than [_nameGap] to
+          // its neighbour's (a gap that grows with the words, as a word
+          // space does).
           Padding(
             padding: EdgeInsets.symmetric(
               horizontal: MediaQuery.textScalerOf(context).scale(_nameGap) / 2,
             ),
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                label,
-                maxLines: 1,
-                softWrap: false,
-                textAlign: TextAlign.center,
-                style: t.tab.colored(s.ink),
-              ),
-            ),
+            child: _NameLines.of(context) > 1
+                ? Text(
+                    label,
+                    maxLines: _NameLines.of(context),
+                    textAlign: TextAlign.center,
+                    style: t.tab.colored(s.ink),
+                  )
+                : FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      softWrap: false,
+                      textAlign: TextAlign.center,
+                      style: t.tab.colored(s.ink),
+                    ),
+                  ),
           ),
           // The tick stands 2 up into the 6 under the name.
           const SizedBox(
@@ -473,6 +541,20 @@ class _Tab extends StatelessWidget {
       child: face,
     );
   }
+}
+
+/// The lines a bar's names may take: two where a name breaks between its
+/// words at a large text size, else one.
+class _NameLines extends InheritedWidget {
+  const _NameLines({required this.lines, required super.child});
+
+  final int lines;
+
+  static int of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_NameLines>()?.lines ?? 1;
+
+  @override
+  bool updateShouldNotify(_NameLines old) => old.lines != lines;
 }
 
 /// [base], every size times [factor]: the tab bar's names, set together at

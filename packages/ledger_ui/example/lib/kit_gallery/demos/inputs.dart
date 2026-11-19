@@ -147,6 +147,7 @@ class _LiveState extends State<_Live> {
   String? _account;
   late final List<bool> _alerts = [for (final a in kitAlerts) a.on];
   num _budget = kitDiningBudget;
+  num _copies = 2;
   final _amount = TextEditingController(
     text: kitTransferAmount.toStringAsFixed(2),
   );
@@ -218,6 +219,16 @@ class _LiveState extends State<_Live> {
         controller: _amount,
       ),
       LedgerField(label: 'Note', controller: _note),
+      LedgerStepper(
+        size: LedgerStepperSize.field,
+        label: 'Copies',
+        value: _copies,
+        min: 1,
+        max: 20,
+        step: 1,
+        format: (n) => n == 1 ? '1 copy' : '$n copies',
+        onChanged: (v) => setState(() => _copies = v),
+      ),
       LedgerStepper(
         value: _budget,
         label: 'Monthly budget',
@@ -411,6 +422,17 @@ Widget kitSpecimenStepperAlone() => LedgerStepper(
   value: kitAddAmount,
   label: 'Amount to add',
   showRings: false,
+  onChanged: (_) {},
+);
+
+/// A form's estimate: typed or stepped on the field's rule.
+Widget kitSpecimenStepperField() => LedgerStepper(
+  size: LedgerStepperSize.field,
+  label: 'Estimate (minutes)',
+  value: 45,
+  min: 5,
+  max: 480,
+  format: (minutes) => '$minutes minutes',
   onChanged: (_) {},
 );
 

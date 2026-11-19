@@ -607,7 +607,7 @@ bool _onCard(String p, Set<String> names) {
 /// (the filters' pill, ringed the same; 0.2.0 read a chosen one beside one not 4 device px off at 390 and 1440 by
 /// day, and by night 0.5 device px off with 0.1 px as laid out: the chosen pill's light fill read beside the dark
 /// ones, so a toggle group's are held by night too), and a compact date picker's two pills (the same rule over the
-/// same raised fill; r10 read them 0.8 device px off at 1440 by day only).
+/// same raised fill; r10 read them 0.8 device px off at 1440 by day only), each named by the picker's label.
 Set<String> _dayPills(WidgetTester t) => {
   for (final e in find.byType(LedgerChip).evaluate())
     if (!e.ledgerTheme.isDark) (e.widget as LedgerChip).label,
@@ -620,8 +620,7 @@ Set<String> _dayPills(WidgetTester t) => {
     if (!e.ledgerTheme.isDark &&
         (e.widget as LedgerDatePicker).presentation ==
             LedgerDatePickerPresentation.compact)
-      for (final part in const ['date', 'time'])
-        '${(e.widget as LedgerDatePicker).label} $part',
+      (e.widget as LedgerDatePicker).label,
 };
 
 /// A filter set's pills as it words them, whatever it holds.

@@ -1281,6 +1281,16 @@ void main() {
         step: 1,
         showRings: false,
       ),
+      'LedgerStepper 4': (context) => LedgerStepper(
+        size: LedgerStepperSize.field,
+        label: 'Estimate (minutes)',
+        value: 45,
+        min: 5,
+        max: 480,
+        step: 5,
+        format: (minutes) => '$minutes minutes',
+        onChanged: (v) {},
+      ),
       'LedgerBadge': (context) => LedgerBadge(
         count: 3,
         child: LedgerIconButton(

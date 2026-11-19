@@ -161,6 +161,11 @@ class LedgerNavigationFrame extends StatelessWidget {
                 inset: MediaQuery.paddingOf(context).bottom,
                 count: count,
                 action: true,
+                labels: [
+                  for (final item in destinations) item.label,
+                  ?act.label,
+                ],
+                width: room.maxWidth,
               ),
               child: Semantics(
                 container: true,

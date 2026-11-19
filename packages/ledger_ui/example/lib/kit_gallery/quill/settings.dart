@@ -1,7 +1,9 @@
 /// Settings: the owner's profile, the alerts, the reading direction, the
 /// preferences and the appearance, each a ruled section; Sign out at the
 /// foot. The direction, the appearance and the density re-set the whole
-/// app.
+/// app. The profile is the app's, so a changed name stays as Quill moves
+/// between pages; signed out, the profile and the alerts give way to Sign
+/// in and this device's settings remain.
 library;
 
 import 'package:material_ui/material_ui.dart';
@@ -23,10 +25,6 @@ class QuillSettings extends StatefulWidget {
 }
 
 class _QuillSettingsState extends State<QuillSettings> {
-  String? _name;
-  String _email = 'maren.holt@example.com';
-  String _phone = '(415) 555-0119';
-
   @override
   void initState() {
     super.initState();
@@ -64,6 +62,7 @@ class _QuillSettingsState extends State<QuillSettings> {
       confirmLabel: context.say('Sign out'),
     );
     if (ok == true && mounted) {
+      context.findAncestorStateOfType<QuillFrameState>()?.signOut();
       LedgerToast.show(context, context.say('Signed out'));
     }
   }
@@ -74,34 +73,46 @@ class _QuillSettingsState extends State<QuillSettings> {
     final width = MediaQuery.sizeOf(context).width;
     final wide = LedgerLayout.isWide(context);
     final paired = width >= LedgerNavigationFrame.railFrom;
-    final name = _name ?? context.say(kitMaren.name);
+    final name = quillOwnerName(context);
 
     final profile = LedgerSection(
       head: LedgerHead(
         context.say('Profile'),
-        note: context.say('Since Mar 2023'),
+        note: prefs.signedIn ? context.say('Since Mar 2023') : null,
       ),
-      child: LedgerRows(
-        children: [
-          LedgerSettingRow(
-            title: context.say('Name'),
-            value: name,
-            onTap: () => _edit('Name', name, (v) => setState(() => _name = v)),
-          ),
-          LedgerSettingRow(
-            title: context.say('Email'),
-            value: _email,
-            onTap: () =>
-                _edit('Email', _email, (v) => setState(() => _email = v)),
-          ),
-          LedgerSettingRow(
-            title: context.say('Phone'),
-            value: _phone,
-            onTap: () =>
-                _edit('Phone', _phone, (v) => setState(() => _phone = v)),
-          ),
-        ],
-      ),
+      child: !prefs.signedIn
+          ? const QuillSignedOut()
+          : LedgerRows(
+              children: [
+                LedgerSettingRow(
+                  title: context.say('Name'),
+                  value: name,
+                  onTap: () => _edit(
+                    'Name',
+                    name,
+                    (v) => prefs.update((p) => p.name = v),
+                  ),
+                ),
+                LedgerSettingRow(
+                  title: context.say('Email'),
+                  value: prefs.email,
+                  onTap: () => _edit(
+                    'Email',
+                    prefs.email,
+                    (v) => prefs.update((p) => p.email = v),
+                  ),
+                ),
+                LedgerSettingRow(
+                  title: context.say('Phone'),
+                  value: prefs.phone,
+                  onTap: () => _edit(
+                    'Phone',
+                    prefs.phone,
+                    (v) => prefs.update((p) => p.phone = v),
+                  ),
+                ),
+              ],
+            ),
     );
 
     final alerts = LedgerSection(
@@ -123,19 +134,21 @@ class _QuillSettingsState extends State<QuillSettings> {
       ),
     );
 
-    final currency = LedgerSelect<String>(
-      label: context.say('Currency'),
-      value: prefs.currency,
-      items: [
-        LedgerSelectItem(value: 'USD', label: context.say('US dollar')),
-        LedgerSelectItem(value: 'EUR', label: context.say('Euro')),
-        LedgerSelectItem(value: 'GBP', label: context.say('Pound sterling')),
+    // Quill's accounts and entries are kept in dollars, so the currency is
+    // a fact here, not a choice the app could not keep.
+    final currency = LedgerRows(
+      children: [
+        LedgerSettingRow(
+          title: context.say('Currency'),
+          value: context.say('US dollar'),
+          subtitle: context.say('Accounts are kept in dollars'),
+        ),
       ],
-      onChanged: (v) => prefs.update((p) => p.currency = v),
     );
     final week = LedgerSelect<String>(
       label: context.say('Week starts on'),
       value: prefs.weekStart,
+      helper: context.say('The first day of each week'),
       items: [
         LedgerSelectItem(value: 'monday', label: context.say('Monday')),
         LedgerSelectItem(value: 'sunday', label: context.say('Sunday')),
@@ -171,36 +184,25 @@ class _QuillSettingsState extends State<QuillSettings> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // A row's words stand 14 into it: the first label stands there too.
-          const LedgerGap(LedgerSpacing.s14),
+          currency,
+          fieldGap,
+          // Two blanks on the half grid from 600, each the width of its
+          // words, not the column's; each says what it changes on one line
+          // under it, so the two stand at one height.
           if (paired)
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: currency),
-                const SizedBox(width: LedgerSpacing.s24),
                 Expanded(child: week),
+                const SizedBox(width: LedgerSpacing.s24),
+                Expanded(child: density),
               ],
             )
           else ...[
-            currency,
-            fieldGap,
             week,
-          ],
-          fieldGap,
-          // On the same half grid as Currency: a blank the width of its
-          // words, not the column's.
-          if (paired)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: density),
-                const SizedBox(width: LedgerSpacing.s24),
-                const Spacer(),
-              ],
-            )
-          else
+            fieldGap,
             density,
+          ],
         ],
       ),
     );
@@ -270,14 +272,24 @@ class _QuillSettingsState extends State<QuillSettings> {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [profile, gap, alerts, gap, reading],
+                    children: [
+                      profile,
+                      if (prefs.signedIn) ...[gap, alerts],
+                      gap,
+                      reading,
+                    ],
                   ),
                 ),
                 const SizedBox(width: LedgerSpacing.s56),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [preferences, gap, appearance, gap, signOut],
+                    children: [
+                      preferences,
+                      gap,
+                      appearance,
+                      if (prefs.signedIn) ...[gap, signOut],
+                    ],
                   ),
                 ),
               ],
@@ -286,16 +298,14 @@ class _QuillSettingsState extends State<QuillSettings> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 profile,
-                gap,
-                alerts,
+                if (prefs.signedIn) ...[gap, alerts],
                 gap,
                 reading,
                 gap,
                 preferences,
                 gap,
                 appearance,
-                gap,
-                signOut,
+                if (prefs.signedIn) ...[gap, signOut],
               ],
             ),
     );

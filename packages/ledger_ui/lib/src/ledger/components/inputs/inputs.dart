@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart'
     show InputBorder, InputDecoration, Material, MaterialType, TextField;
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
@@ -13,6 +14,7 @@ import '../../format.dart';
 import '../../internal/cap_center.dart';
 import '../../internal/end_glyph.dart';
 import '../../internal/face.dart';
+import '../../internal/field_frame.dart';
 import '../../internal/on_cheque.dart';
 import '../../internal/text_input.dart';
 import '../../internal/styled.dart';
@@ -21,13 +23,16 @@ import '../../theme.dart';
 import '../marks/marks.dart';
 import '../money/money.dart';
 import '../pressable/pressable.dart';
+import '../text-field/text_field.dart';
 
 /// A segmented set of words (`.chips`): the range of a chart (1M 3M 1Y
 /// All), Today or Later. The chosen one is set in the ink, the rest in
 /// the mono's second ink, all in one ring of the light paper; [onChanged]
 /// null shows the set without letting it change. Each says whether it is
-/// chosen. The options are any values: [labelOf] words each (its
-/// `toString()` when null), so a range can be an enum.
+/// chosen. The ring is as wide as its chips, at the start of a wider slot.
+/// Keyboard focus rules the double rule under the focused chip, as wide
+/// as the chip and touching it. The options are any values: [labelOf]
+/// words each (its `toString()` when null), so a range can be an enum.
 ///
 /// ```dart
 /// LedgerSegmentedControl(options: const ['1M', '3M', '1Y', 'All'], value: '1Y', onChanged: (r) {})
@@ -97,8 +102,10 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
     final innerRadius = math.max(0.0, t.controlRadius - _pad);
     // The ring is drawn behind the strip, not padded round it: 3 inside its
     // outer edge (its 1 rule, then 2 of paper) at the ends, and the chips'
-    // own 3 above and under them.
-    return DecoratedBox(
+    // own 3 above and under them. A slot wider than the chips (a column
+    // that stretches its children) keeps the ring to the chips, at the
+    // slot's start, rather than drawing an empty run of ring after them.
+    final strip = DecoratedBox(
       decoration: BoxDecoration(
         color: t.surface,
         borderRadius: BorderRadius.circular(t.controlRadius),
@@ -122,8 +129,14 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
                       : () => onChanged!(o),
                   label: _say(o),
                   selected: o == value,
-                  radius: innerRadius,
-                  ringInsets: const EdgeInsets.symmetric(vertical: _pad),
+                  // The focus rule runs the chip's whole width and stands
+                  // on its foot: its face is 2 inside the target above, and
+                  // the rule's own drop under a face is taken back.
+                  radius: 0,
+                  ringInsets: const EdgeInsets.only(
+                    top: _pad,
+                    bottom: _pad + 2 * LedgerChromeMetrics.focusGap,
+                  ),
                   // The ink fill leaves the old choice and inks in under the new
                   // one in Ledger's one motion.
                   child: Padding(
@@ -186,6 +199,12 @@ class LedgerSegmentedControl<T> extends StatelessWidget {
           ],
         ),
       ),
+    );
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      widthFactor: 1,
+      heightFactor: 1,
+      child: strip,
     );
   }
 
@@ -1820,9 +1839,40 @@ class LedgerChequeAmount extends StatelessWidget {
       (15 - 11) / 2 * (_ascent - _descent) + (_bodyLine - _labelLine) / 2;
 }
 
-/// The budget's stepper (`.stepper`): the sum in the serif, 72 (88 on the
-/// desktop), between two 48 rings that lower and raise it by [step];
-/// [onChanged] null holds it. Read as an adjustable value; each ring says
+/// How large a [LedgerStepper] stands.
+enum LedgerStepperSize {
+  /// The budget's sum (`.stepper`): the figure in the serif, 72 (88 on the
+  /// desktop), between two 48 rings. A display figure, stepped but not
+  /// typed: a budget, a balance to set.
+  figure,
+
+  /// A form's number: written on a field's rule at the text field's
+  /// height, its label in the small capitals over it, its help or error
+  /// under it, the − and + rings at the line's end. The number takes
+  /// typing.
+  field,
+}
+
+/// A number stepped down and up by [step] between [min] and [max]; its
+/// ring at a bound is off, and [onChanged] null holds it.
+///
+/// [size] [LedgerStepperSize.field] is a form's number (an estimate in
+/// minutes, a count of copies): written on the text field's rule, at its
+/// height, so it stands level with a field beside it; [label] in the small
+/// capitals over the line, [helper] or [error] under it. The number takes
+/// typing in the reader's digits, read as Enter is pressed or the focus
+/// leaves and kept within [min] and [max]; while a typed number is outside
+/// them the field says so in its error ('From 5 to 480'; in another language
+/// the range in its digits, '٥–٤٨٠'; [error] given says that instead).
+/// Up and Down step it, Page Up and Page Down by ten steps; the rings step
+/// once on a press and repeat while held. A screen reader hears one
+/// adjustable number named [label]. [format] says the number to a screen
+/// reader ('45 minutes'); the line shows the plain number.
+///
+/// [LedgerStepperSize.figure], the default, is the budget's stepper
+/// (`.stepper`): the sum in the serif, 72 (88 on the desktop), between two
+/// 48 rings that lower and raise it by [step], read as an adjustable value
+/// and formatted as whole dollars unless [format] says otherwise; each ring says
 /// its [lowerLabel] or [raiseLabel] whole ('Lower the budget'), or, left
 /// unset, Lower or Raise and the [label]. The sum stands on its input's
 /// own line, 1.05 of its size (75.6 at 72, 92.4 at 88, as the budget and
@@ -1843,6 +1893,10 @@ class LedgerChequeAmount extends StatelessWidget {
 /// ```dart
 /// LedgerStepper(value: 110, label: 'Amount to add', step: 1, showRings: false)
 /// ```
+///
+/// ```dart
+/// LedgerStepper(size: LedgerStepperSize.field, label: 'Estimate (minutes)', value: 45, min: 5, max: 480, step: 5, format: (minutes) => '$minutes minutes', onChanged: (v) {})
+/// ```
 class LedgerStepper extends StatelessWidget {
   /// A [value] named [label], lowered and raised by [step].
   const LedgerStepper({
@@ -1850,13 +1904,18 @@ class LedgerStepper extends StatelessWidget {
     required this.label,
     this.step = 5,
     this.min = 0,
+    this.max,
+    this.size = LedgerStepperSize.figure,
     this.format,
     this.lowerLabel,
     this.raiseLabel,
+    this.helper,
+    this.error,
     this.onChanged,
     this.showRings = true,
     super.key,
-  }) : assert(step > 0);
+  }) : assert(step > 0),
+       assert(max == null || max >= min);
 
   /// The sum.
   final num value;
@@ -1870,8 +1929,16 @@ class LedgerStepper extends StatelessWidget {
   /// The lowest the sum goes.
   final num min;
 
-  /// Formats the displayed value and the values announced to screen readers.
-  /// Defaults to whole dollars. For quantities, pass `(value) => '$value'`.
+  /// The highest the sum goes; null sets no bound.
+  final num? max;
+
+  /// How large it stands: the budget's [LedgerStepperSize.figure], or a
+  /// form's [LedgerStepperSize.field].
+  final LedgerStepperSize size;
+
+  /// Formats the value a screen reader hears, and the figure's words. A
+  /// figure defaults to whole dollars (for quantities, pass `(value) =>
+  /// '$value'`); a field shows the plain number and defaults to it.
   final String Function(num value)? format;
 
   /// The lower ring's words; null reads 'Lower' and the [label].
@@ -1883,7 +1950,15 @@ class LedgerStepper extends StatelessWidget {
   /// Called with the new sum; null holds it.
   final ValueChanged<num>? onChanged;
 
-  /// Whether the lower and raise rings stand at its ends.
+  /// A field's help under its rule.
+  final String? helper;
+
+  /// What is wrong with a field's number, under its rule in the danger
+  /// red; null while it is fine (a typed number outside [min] and [max]
+  /// says so itself).
+  final String? error;
+
+  /// Whether a figure's lower and raise rings stand at its ends.
   final bool showRings;
 
   @override
@@ -1894,21 +1969,29 @@ class LedgerStepper extends StatelessWidget {
       ..add(StringProperty('label', label))
       ..add(DiagnosticsProperty<num>('step', step))
       ..add(DiagnosticsProperty<num>('min', min))
+      ..add(DiagnosticsProperty<num>('max', max, defaultValue: null))
+      ..add(EnumProperty<LedgerStepperSize>('size', size))
       ..add(ObjectFlagProperty<Object?>.has('format', format))
       ..add(StringProperty('lowerLabel', lowerLabel, defaultValue: null))
       ..add(StringProperty('raiseLabel', raiseLabel, defaultValue: null))
+      ..add(StringProperty('helper', helper, defaultValue: null))
+      ..add(StringProperty('error', error, defaultValue: null))
       ..add(ObjectFlagProperty<ValueChanged<num>>.has('onChanged', onChanged))
       ..add(FlagProperty('showRings', value: showRings, ifTrue: 'showRings'));
   }
 
   @override
   Widget build(BuildContext context) {
+    if (this.size == LedgerStepperSize.field) {
+      return _StepperField(stepper: this);
+    }
     final t = context.ledgerTheme;
     final wide = LedgerLayout.isWide(context);
     String display(num amount) =>
         format?.call(amount) ?? LedgerFormat.money(amount, showCents: false);
     final words = display(value);
     final canLower = onChanged != null && value - step >= min;
+    final canRaise = onChanged != null && (max == null || value + step <= max!);
     final size = wide ? _sizeWide : _size;
     // The input's box is its line (75.6 in Chrome), held to the whole
     // pixel (76, 92 on the desktop) so the 48 rings centred on it, and the
@@ -1959,9 +2042,9 @@ class LedgerStepper extends StatelessWidget {
       container: true,
       label: label,
       value: words,
-      increasedValue: onChanged == null ? null : display(value + step),
+      increasedValue: canRaise ? display(value + step) : null,
       decreasedValue: canLower ? display(value - step) : null,
-      onIncrease: onChanged == null ? null : () => onChanged!(value + step),
+      onIncrease: canRaise ? () => onChanged!(value + step) : null,
       onDecrease: canLower ? () => onChanged!(value - step) : null,
       child: showRings
           ? Padding(
@@ -1985,7 +2068,7 @@ class LedgerStepper extends StatelessWidget {
                     ring(
                       LucideIcons.plus,
                       raiseLabel ?? 'Raise $label',
-                      onChanged == null ? null : () => onChanged!(value + step),
+                      canRaise ? () => onChanged!(value + step) : null,
                     ),
                   ],
                 ),
@@ -2010,4 +2093,229 @@ class LedgerStepper extends StatelessWidget {
   // `.stepper-input`: 400 72/1.05 (88 on the desktop); Chrome keeps that
   // line on this input (the live sheets' boxes: 75.59 and 92.4 tall).
   static const double _line = 1.05;
+}
+
+/// A [LedgerStepper] at [LedgerStepperSize.field]: ui_core's number field
+/// written on a Ledger field's rule.
+class _StepperField extends StatefulWidget {
+  const _StepperField({required this.stepper});
+
+  final LedgerStepper stepper;
+
+  @override
+  State<_StepperField> createState() => _StepperFieldState();
+}
+
+class _StepperFieldState extends State<_StepperField> {
+  final FocusNode _focus = FocusNode(debugLabel: 'LedgerStepper');
+  final TextEditingController _controller = TextEditingController();
+
+  // What the typed number breaks, while it has focus: its bounds, or that
+  // it does not read as a number.
+  String? _wrong;
+
+  LedgerStepper get _s => widget.stepper;
+
+  // A whole step from a whole least value keeps whole numbers.
+  bool get _whole => _s.step is int && _s.min is int;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_check);
+    _focus.addListener(_check);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_check);
+    _focus.removeListener(_check);
+    _controller.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  void _check() {
+    if (!mounted) return;
+    // The number field writes the value into its text as the value comes
+    // in, which may be mid-build: say what is wrong once the frame is laid.
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      SchedulerBinding.instance.addPostFrameCallback((_) => _check());
+      return;
+    }
+    final wrong = _wrongOf(_controller.text.trim());
+    if (wrong != _wrong) setState(() => _wrong = wrong);
+  }
+
+  String? _wrongOf(String text) {
+    if (!_focus.hasFocus || text.isEmpty) return null;
+    final l = DesignLocalizations.of(context);
+    final read = l.parseDecimal(text);
+    final max = _s.max;
+    if (read != null && read >= _s.min && (max == null || read <= max)) {
+      return null;
+    }
+    final from = l.formatDecimal(_s.min);
+    // In English in words; in another language the range alone, in its
+    // digits ("٥–٤٨٠", "≥ ٥"), as ui_core has no words for it.
+    if ((Localizations.maybeLocaleOf(context)?.languageCode ?? 'en') != 'en') {
+      return max == null
+          ? '\u2265 $from'
+          : '$from\u2013${l.formatDecimal(max)}';
+    }
+    if (read == null) return 'Enter a number';
+    return max == null
+        ? 'At least $from'
+        : 'From $from to ${l.formatDecimal(max)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = _s;
+    final t = context.ledgerTheme;
+    final l = DesignLocalizations.of(context);
+    final enabled = s.onChanged != null;
+    final whole = _whole;
+    num taken(double v) => whole ? v.round() : v;
+    String say(num n) => s.format?.call(n) ?? l.formatDecimal(n);
+    final error = s.error ?? _wrong;
+    final so = LedgerStyleOf(
+      [t.components.textField],
+      {
+        if (!enabled) WidgetState.disabled,
+        if (error != null) WidgetState.error,
+      },
+    );
+    final ink = so.foreground ?? (enabled ? t.textPrimary : t.textTertiary);
+    // The figures typed as a text field's words, each as wide as the next.
+    final words = LedgerTextField.wordsOf(t)
+        .copyWith(fontFeatures: const [FontFeature.tabularFigures()]);
+    final height = LedgerTextField.heightOf(t);
+    Widget ring(DesignNumberFieldButtonDetails button) {
+      final off = button.states.contains(WidgetState.disabled);
+      final pressed = button.states.contains(WidgetState.pressed);
+      final hovered = button.states.contains(WidgetState.hovered);
+      final line = off ? t.textFaint : t.textPrimary;
+      return SizedBox(
+        width: _target,
+        height: height,
+        child: Center(
+          child: Container(
+            width: _ring,
+            height: _ring,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: pressed
+                  ? t.textPrimary
+                  : hovered
+                  ? t.surfaceAlt
+                  : t.textPrimary.withValues(alpha: 0),
+              border: Border.all(color: line),
+            ),
+            child: Icon(
+              button.isIncrement ? LucideIcons.plus : LucideIcons.minus,
+              size: _glyph,
+              color: pressed ? t.background : line,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final number = DesignNumberField(
+      value: s.value.toDouble(),
+      onChanged: enabled
+          // The number field tells only of a change, and of none while
+          // empty: an emptied field puts its number back.
+          ? (to) {
+              if (to != null) s.onChanged!(taken(to));
+            }
+          : null,
+      min: s.min.toDouble(),
+      max: s.max?.toDouble(),
+      step: s.step.toDouble(),
+      pageStep: s.step.toDouble() * 10,
+      fractionDigits: whole ? 0 : null,
+      controller: _controller,
+      focusNode: _focus,
+      semanticLabel: s.label,
+      semanticFormatterCallback: (v) => say(taken(v)),
+      fieldBuilder: (context, field) {
+        final input = Material(
+          type: MaterialType.transparency,
+          child: TextField(
+            controller: field.controller,
+            focusNode: field.focusNode,
+            keyboardType: field.keyboardType,
+            inputFormatters: field.inputFormatters,
+            onEditingComplete: field.onEditingComplete,
+            readOnly: !enabled,
+            enableInteractiveSelection: enabled,
+            decoration: null,
+            maxLines: 1,
+            style: so.words(words, ink),
+            cursorColor: t.textPrimary,
+            cursorWidth: 1.5,
+          ),
+        );
+        // ui_core's node steps the number, so it says the number too: a
+        // Material text field says whether it is enabled, which keeps it
+        // from merging there, so the value is given on the node round it.
+        return ListenableBuilder(
+          listenable: field.controller,
+          builder: (context, child) {
+            final read = l.parseDecimal(field.controller.text.trim());
+            return Semantics(
+              value: read == null ? field.controller.text : say(taken(read)),
+              child: child,
+            );
+          },
+          // The input's node stands over the whole line, a finger's
+          // height, not over its one line of figures.
+          child: MergeSemantics(
+            child: ledgerCapCenter(
+              words,
+              DesignTextEntryBox(minHeight: height, maxLines: 1, child: input),
+            ),
+          ),
+        );
+      },
+      buttonBuilder: (context, button) => ring(button),
+      // The number at the line's start, as a field's words; its rings at
+      // the end, as a field's acts.
+      layoutBuilder: (context, field, decrement, increment) => Row(
+        children: [
+          Expanded(child: field),
+          decrement,
+          increment,
+        ],
+      ),
+    );
+    final framed = DesignField(
+      // The number field names itself; the frame shows the label.
+      mergeSemantics: false,
+      helperText: s.helper,
+      errorText: error,
+      enabled: enabled,
+      focusNode: _focus,
+      builder: (context, parts) => LedgerFieldFrame(
+        parts: parts,
+        displayLabel: s.label,
+        focusNode: _focus,
+        labelCursor: SystemMouseCursors.text,
+        line: parts.control,
+      ),
+      // A press on a ring is the field's, not a tap outside its words.
+      child: TextFieldTapRegion(child: number),
+    );
+    // A number is a short entry: at its measure from 600, as a sum is.
+    return LedgerLayout.measured(context, framed);
+  }
+
+  // The rings: a 32 circle in a 48 target, the glyph at 16.
+  static const double _target = 48;
+  static const double _ring = 32;
+  static const double _glyph = 16;
 }

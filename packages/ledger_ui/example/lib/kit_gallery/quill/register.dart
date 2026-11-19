@@ -1,12 +1,14 @@
-/// The Register: every entry by day under a search and a filter; each opens
-/// its receipt. Words that match nothing leave the empty state; a register
-/// that cannot load leaves the error state and its Try again.
+/// The Register: every entry by day under a search and a filter, the ones
+/// saved in Quill with them; each opens its receipt. Words that match
+/// nothing leave the empty state; a register that cannot load leaves the
+/// error state and its Try again.
 library;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:ledger_ui/ledger_ui.dart';
 
 import '../kit.dart';
+import 'quill.dart';
 import 'words.dart';
 
 /// An entry's receipt, as the register's record prints it, in Quill's
@@ -97,9 +99,16 @@ class _QuillRegisterState extends State<QuillRegister> {
 
   @override
   Widget build(BuildContext context) {
+    if (!quillSignedIn(context)) {
+      return QuillSignedOutPage(title: context.say('Register'));
+    }
     final query = _search.text.trim();
+    final held = quillDays(context);
+    // What the register holds, counted from its days: the meta never names
+    // more entries than a scroll reaches.
+    final total = held.fold<int>(0, (n, d) => n + d.rows.length);
     final found = [
-      for (final english in kitDays)
+      for (final english in held)
         if (context.sayDay(english) case final d)
           if (d.rows
                   .where((tx) => _shows(_filter, tx) && _matches(query, tx))
@@ -176,15 +185,15 @@ class _QuillRegisterState extends State<QuillRegister> {
       topBar: LedgerTopBar(
         title: context.say('Register'),
         // Nothing counted when nothing loaded; a search or a filter counts
-        // what it shows of the month's.
+        // what it shows of what the register holds, from its first day.
         meta: _offline
             ? context.say('Not loaded')
             : narrowed
             ? (context.quillHebrew
-                  ? '$shown מתוך $kitActivityCount'
-                  : '$shown of $kitActivityCount entries')
-            : '$kitActivityCount ${context.say('entries in')}'
-                  '${context.quillHebrew ? '' : ' '}${context.say(kitMonthName)}',
+                  ? '$shown מתוך $total'
+                  : '$shown of $total entries')
+            : '$total ${context.say('entries since')} '
+                  '${context.sayDate(held.last.rows.last.at)}',
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -242,19 +251,21 @@ class QuillReceiptPage extends StatelessWidget {
   final KitTx tx;
 
   @override
-  Widget build(BuildContext context) => LedgerScreen(
-    topBar: LedgerTopBar(
-      title: context.say(tx.title),
-      meta: context.say(tx.day),
-    ),
-    body: Align(
-      alignment: AlignmentDirectional.topStart,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: _measure),
-        child: quillReceipt(context, tx),
-      ),
-    ),
-  );
+  Widget build(BuildContext context) => !quillSignedIn(context)
+      ? QuillSignedOutPage(title: context.say('Register'))
+      : LedgerScreen(
+          topBar: LedgerTopBar(
+            title: context.say(tx.title),
+            meta: context.say(tx.day),
+          ),
+          body: Align(
+            alignment: AlignmentDirectional.topStart,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: _measure),
+              child: quillReceipt(context, tx),
+            ),
+          ),
+        );
 
   static const double _measure = 480;
 }

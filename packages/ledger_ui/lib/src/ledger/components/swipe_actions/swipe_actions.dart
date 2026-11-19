@@ -170,8 +170,8 @@ class _Cell extends StatelessWidget {
       LedgerSwipeTone.accent => (t.accent, t.onAccent),
       LedgerSwipeTone.destructive => (t.danger, t.onDanger),
     };
-    return ColoredBox(
-      color: fill,
+    return DecoratedBox(
+      decoration: BoxDecoration(color: fill),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

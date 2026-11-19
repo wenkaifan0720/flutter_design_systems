@@ -34,7 +34,8 @@ enum QuillScene { searching, nothingFound, receipt, newEntry, signOut, account }
 /// How the app is lit.
 enum QuillAppearance { light, dark, system }
 
-/// What Settings sets for the whole app.
+/// What the app keeps while it runs: what Settings sets for the whole app,
+/// the owner's profile and session, and the entries saved to the register.
 class QuillPrefs extends ChangeNotifier {
   QuillPrefs({
     this.appearance = QuillAppearance.light,
@@ -52,17 +53,96 @@ class QuillPrefs extends ChangeNotifier {
   /// The alerts, by name: on or off.
   final Map<String, bool> alerts = {for (final a in kitAlerts) a.label: a.on};
 
-  String currency = 'USD';
   String weekStart = 'monday';
+
+  /// Whether the owner is signed in. Signed out, Quill keeps this device's
+  /// settings and asks for a sign-in before it shows an account or an entry.
+  bool signedIn = true;
+
+  /// The owner's name once changed in Settings; null: the sample owner's.
+  String? name;
+  String email = 'maren.holt@example.com';
+  String phone = '(415) 555-0119';
+
+  /// The entries saved in this session, newest first.
+  final List<KitTx> saved = [];
 
   void update(void Function(QuillPrefs prefs) change) {
     change(this);
     notifyListeners();
   }
 
+  /// Adds [entry] to the register.
+  void save(KitTx entry) => update((p) => p.saved.insert(0, entry));
+
+  /// The register's days, each with the entries saved to it in this
+  /// session, newest first, and its net with them.
+  List<KitDay> get days {
+    final days = [...kitDays];
+    for (final entry in saved.reversed) {
+      final i = days.indexWhere((d) => d.label == entry.day);
+      final day = i < 0 ? KitDay(entry.day, null, 0, const []) : days[i];
+      final rows = [...day.rows, entry]..sort((a, b) => b.at.compareTo(a.at));
+      final next = KitDay(day.label, day.note, day.net + entry.amount, rows);
+      if (i < 0) {
+        days.insert(0, next);
+      } else {
+        days[i] = next;
+      }
+    }
+    return days;
+  }
+
   /// The [QuillPrefs] above [context].
   static QuillPrefs of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<_QuillScope>()!.notifier!;
+
+  /// The [QuillPrefs] above [context], or null outside a [QuillApp].
+  static QuillPrefs? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_QuillScope>()?.notifier;
+}
+
+/// The register's days as the app holds them: [QuillPrefs.days], or the
+/// sample's outside a [QuillApp].
+List<KitDay> quillDays(BuildContext context) =>
+    QuillPrefs.maybeOf(context)?.days ?? kitDays;
+
+/// Whether the owner is signed in above [context] (outside a [QuillApp],
+/// always).
+bool quillSignedIn(BuildContext context) =>
+    QuillPrefs.maybeOf(context)?.signedIn ?? true;
+
+/// The owner's name as the app shows it: the one set in Settings, else the
+/// sample owner's, in Quill's language.
+String quillOwnerName(BuildContext context) =>
+    QuillPrefs.maybeOf(context)?.name ?? context.say(kitMaren.name);
+
+/// What a page shows in place of the account while the owner is signed out:
+/// why, and Sign in, which brings the account back.
+class QuillSignedOut extends StatelessWidget {
+  const QuillSignedOut({super.key});
+
+  @override
+  Widget build(BuildContext context) => LedgerEmptyState(
+    title: context.say('You are signed out'),
+    body: context.say('Sign in to see your accounts and entries.'),
+    actionLabel: context.say('Sign in'),
+    onActionPressed: () =>
+        QuillPrefs.of(context).update((p) => p.signedIn = true),
+  );
+}
+
+/// A page titled [title] holding [QuillSignedOut].
+class QuillSignedOutPage extends StatelessWidget {
+  const QuillSignedOutPage({required this.title, super.key});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => LedgerScreen(
+    topBar: LedgerTopBar(title: title),
+    body: const QuillSignedOut(),
+  );
 }
 
 class _QuillScope extends InheritedNotifier<QuillPrefs> {
@@ -189,12 +269,17 @@ class _QuillAppState extends State<QuillApp> {
                     QuillAppearance.dark => Brightness.dark,
                     QuillAppearance.system => null,
                   },
-                  // The owner in the app's language (Hebrew right to left).
+                  // The owner in the app's language (Hebrew right to left),
+                  // under the name set in Settings; none while signed out.
                   child: Builder(
-                    builder: (context) => LedgerAccountScope(
-                      account: context.sayOwner,
-                      child: child ?? const SizedBox.shrink(),
-                    ),
+                    builder: (context) {
+                      final page = child ?? const SizedBox.shrink();
+                      if (!_prefs.signedIn) return page;
+                      return LedgerAccountScope(
+                        account: _owner(context),
+                        child: page,
+                      );
+                    },
                   ),
                 ),
               ),
@@ -204,6 +289,24 @@ class _QuillAppState extends State<QuillApp> {
       );
     },
   );
+
+  LedgerAccount _owner(BuildContext context) {
+    final owner = context.sayOwner;
+    final name = _prefs.name;
+    if (name == null) return owner;
+    return LedgerAccount(
+      name: name,
+      initials: quillInitials(name),
+      meta: owner.meta,
+      unread: owner.unread,
+      onProfilePressed: owner.onProfilePressed,
+      onNotificationsPressed: owner.onNotificationsPressed,
+      profileLocation: owner.profileLocation,
+      notificationsLocation: owner.notificationsLocation,
+      searchHint: owner.searchHint,
+      onSearchPressed: owner.onSearchPressed,
+    );
+  }
 
   Widget _scaled(BuildContext context, Widget child) {
     final scale = widget.textScale;
@@ -330,6 +433,15 @@ class QuillFrameState extends State<QuillFrame> {
     _page = page;
     _scene = null;
   });
+
+  /// Ends the session: closes what was pushed (a receipt, an entry, a part's
+  /// page) and leaves the owner on Settings, signed out.
+  void signOut() {
+    Navigator.of(context).popUntil((r) => r.isFirst);
+    _desk.currentState?.popUntil((r) => r.isFirst);
+    QuillPrefs.of(context).update((p) => p.signedIn = false);
+    _go(QuillPage.settings);
+  }
 
   void _newEntry() => push(const QuillEntryPage());
 

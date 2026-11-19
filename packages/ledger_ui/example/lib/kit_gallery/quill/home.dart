@@ -18,6 +18,9 @@ class QuillHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!quillSignedIn(context)) {
+      return QuillSignedOutPage(title: context.say('Home'));
+    }
     final wide = LedgerLayout.isWide(context);
     final worth = LedgerSection(
       head: LedgerHead(
@@ -60,7 +63,7 @@ class QuillHome extends StatelessWidget {
     // The last few days, about six entries (Today, Yesterday, Monday): at
     // desktop width the register's column ends near the accounts beside it.
     final days = <KitDay>[];
-    for (final day in kitDays) {
+    for (final day in quillDays(context)) {
       if (days.fold<int>(0, (n, d) => n + d.rows.length) >= _recentRows) break;
       days.add(day);
     }
@@ -112,9 +115,13 @@ class QuillHome extends StatelessWidget {
       ),
     );
     const gap = LedgerGap(LedgerSpacing.s40);
+    // The owner's first name, once changed in Settings.
+    final name = QuillPrefs.maybeOf(context)?.name;
     return LedgerScreen(
       topBar: LedgerTopBar(
-        title: context.say('Good evening, Maren'),
+        title: name == null
+            ? context.say('Good evening, Maren')
+            : '${context.say('Good evening,')} ${name.split(' ').first}',
         meta: context.sayToday(kitNow),
       ),
       body: wide
@@ -153,7 +160,7 @@ Future<void> showQuillAccount(BuildContext context, KitRow account) {
     title: name,
     builder: (context) {
       final entries = [
-        for (final day in kitDays)
+        for (final day in quillDays(context))
           for (final tx in day.rows)
             if (tx.account == account.name) tx,
       ].take(4).toList();

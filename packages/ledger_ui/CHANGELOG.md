@@ -2,13 +2,19 @@
 
 - `LedgerTabs.children` displays swipeable pages and gives each panel its tab's accessible name. The Selection example includes Entries, Notes and Files panels.
 - `LedgerStepper.format` formats quantities and their screen-reader values. The default still displays whole dollars. The Copies example counts in single units.
+- `LedgerStepper(size: LedgerStepperSize.field)` is a form's number field. The number sits on a text field's rule at the same height, with its label above and help or error text below, and the minus and plus buttons sit at the end of the line. It accepts typed numbers within `min` and `max` and shows an error while a typed number is out of range. Up and Down step the value, and Page Up and Page Down move ten steps. The new `max` also stops both sizes' plus button at that value. The default size is still the budget's large figure.
 - Inline search accepts taps across the field’s height and supports keyboard and screen-reader input. One-time codes and selects announce their label once, and a multi-select's tags can be reached separately from its text field.
 - Standalone navigation destinations can be focused and activated with the keyboard.
 - Field captions and compact date pickers make room for long labels. Step counts keep the current step first in right-to-left layouts.
 - Month charts place overlapping first-day and current-day labels on separate lines. Pie chart legends wrap their amounts and percentages below the labels when space is tight.
 - The refresh prompt stays inside its visible area during short drags. Segmented controls follow their outer corners when the theme uses a small radius. The clear button sits evenly inside the search field.
+- A segmented control in a wider slot keeps its ring to its segments, at the slot's start. Its keyboard focus rule spans the focused segment and touches it.
+- In a sheet, the date picker's month, arrows and closing rule span the sheet, so a tablet's date sheet no longer leaves an empty column beside the calendar.
+- The date picker speaks the app's language. Outside English, its pills, calendar and wheels use ui_core's words, date order and digits: an Arabic due date reads ٢٠ نوفمبر ٢٠٢٦ at ٠٩:٣٠, and a German one 20. Nov. 2026 at 21:05. Its wheels use a 24-hour clock where the language does, and weeks still start on Monday. English reads as before. Each pill is named by the picker's label, with its date or time as the value. At large text sizes the month's name wraps instead of being cut. Outside English, the stepper field's range error shows the range in the language's digits (٥–٤٨٠).
 - Tables keep amounts and whole words readable. When columns are too narrow, each record shows its remaining fields below the name with their column labels. Swipe actions size their solid backgrounds to fit their labels. Calendar dates and weekday labels grow with the system text size.
 - Validation messages use higher-contrast red text. Page titles can use the full width beside the back button when there are no actions.
+- At large text sizes, two-word tab bar names such as New entry wrap onto a second line instead of shrinking every name to fit the longest on one line. At twice the text size, the names in a five-column phone bar grow to about 1.6 times their normal size. `LedgerNavBar.bandIn` accepts the names and the bar's width to reserve room for the second line.
+- In Quill, the example app, saved entries appear in the register, its search and Home. Amounts entered with a decimal comma keep their cents. Validation errors update as the fields are corrected. Signing out hides the account, register and receipts until you sign in again. Profile changes are kept when you leave Settings. The register count includes only entries the register contains. Settings shows the currency as US dollar because Ledger formats amounts in dollars.
 
 ## 0.3.0
 

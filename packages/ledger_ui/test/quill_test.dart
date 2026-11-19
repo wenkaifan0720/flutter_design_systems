@@ -571,7 +571,7 @@ void main() {
   testWidgets("a select's open list hugs its options", (t) async {
     await _open(t, _screens.firstWhere((s) => s.name == 'settings'), _desktop);
     final select = find.byWidgetPredicate(
-      (w) => w is LedgerSelect && w.label == 'Currency',
+      (w) => w is LedgerSelect && w.label == 'Density',
     );
     final anchor = find
         .descendant(of: select, matching: find.byType(LedgerPressable))
@@ -582,7 +582,7 @@ void main() {
     final list = t.getRect(
       find
           .ancestor(
-            of: find.text('Pound sterling'),
+            of: find.text('Comfortable'),
             matching: find.byType(SingleChildScrollView),
           )
           .first,

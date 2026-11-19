@@ -54,9 +54,12 @@ enum LedgerDatePickerPresentation {
 /// [LedgerDatePickerPresentation.wheel] is the day, or the hour, the minute and
 /// AM or PM, as flat columns of figures that settle between two ink rules, as a
 /// ledger's column stands (never curved away like a drum). From 600 the month
-/// and the wheels stand at most 416 across (their sheet's width), at the start
-/// of their slot. A day outside [firstDate] and [lastDate] is faint and takes
+/// and the wheels stand at most 416 across (a desktop sheet's width), at the
+/// start of their slot; on a sheet's card they span the card. A day outside [firstDate] and [lastDate] is faint and takes
 /// no press, and every change is kept inside them. Weeks start on Monday.
+/// In English it writes as above; in another language, the days, months,
+/// clock and figures are that language's, in its order and its digits, from
+/// ui_core's [DesignLocalizations] (`٢٠ نوفمبر ٢٠٢٦`, `٠٩:٣٠`, `20. Nov. 2026`).
 /// Nothing here reads the clock: pass [today] to have it ringed. A null
 /// [onChanged] dims the whole picker and holds it. Each wheel is an adjustable
 /// value for a screen reader, and each day a button named by its full date.
@@ -85,7 +88,8 @@ class LedgerDatePicker extends StatefulWidget {
   /// Told the new value; null holds the picker and dims it.
   final ValueChanged<DateTime>? onChanged;
 
-  /// What the picker is of: the compact line's words and its sheet's title.
+  /// What the picker is of: the compact line's words, its pills' and its
+  /// wheels' spoken names and its sheet's title.
   final String label;
 
   /// Whether it sets the day, the time or both.
@@ -103,7 +107,8 @@ class LedgerDatePicker extends StatefulWidget {
   /// The day the calendar rings; none when null.
   final DateTime? today;
 
-  /// Whether the clock is read on the twenty-four hour face.
+  /// Whether the clock is read on the twenty-four hour face, as it is anyway
+  /// where the reader's language reads one (German's 21:05).
   final bool use24hFormat;
 
   @override
@@ -271,10 +276,13 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
     };
     // From 600 the month and the wheels stand at the width their own sheet
     // gives them, at the start of their slot: a calendar across a desktop
-    // column spreads its days 150 apart.
+    // column spreads its days 150 apart. On a sheet's card the card is their
+    // measure, as it is its acts': the month, its arrows and its rule span
+    // the card under the title's rule (a tablet's 640 sheet, not 416 of it).
     final measured =
         widget.presentation != LedgerDatePickerPresentation.compact &&
-        MediaQuery.sizeOf(context).width >= LedgerLayout.measuredFrom;
+        MediaQuery.sizeOf(context).width >= LedgerLayout.measuredFrom &&
+        !LedgerSheetShell.around(context);
     return Opacity(
       opacity: live ? 1 : LedgerChromeMetrics.disabledOpacity,
       child: Semantics(
@@ -302,9 +310,7 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
     final t = context.ledgerTheme;
     final live = widget.onChanged != null;
     final v = widget.value;
-    final clock = widget.use24hFormat
-        ? '${v.hour.toString().padLeft(2, '0')}:${v.minute.toString().padLeft(2, '0')}'
-        : LedgerFormat.time(v);
+    final dates = _Dates.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: _lineGap),
       child: LedgerLeaderLine(
@@ -314,16 +320,18 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
           alignment: WrapAlignment.end,
           spacing: _gap / 2,
           children: [
+            // Each pill is named by the picker's label and read as its value:
+            // the day or the clock in the reader's words.
             if (_hasDate)
               _Pill(
-                LedgerFormat.date(v, showYear: true),
-                label: '${widget.label} date',
+                dates.day(v),
+                label: widget.label,
                 onTap: live ? () => _raise(LedgerDatePickerMode.date) : null,
               ),
             if (_hasTime)
               _Pill(
-                clock,
-                label: '${widget.label} time',
+                dates.clock(v, use24h: widget.use24hFormat),
+                label: widget.label,
                 onTap: live ? () => _raise(LedgerDatePickerMode.time) : null,
               ),
           ],
@@ -340,6 +348,116 @@ class _LedgerDatePickerState extends State<LedgerDatePicker> {
 
 bool _same(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
+
+/// The picker's days, months, clock and figures in the reader's language. In
+/// English, as Ledger writes them ([LedgerFormat]: "Nov 20, 2026", "Friday,
+/// November 20, 2026", "MO", "9:05 PM"); in another, from ui_core's
+/// [DesignLocalizations]: its month and day with its year (the year first
+/// where the language marks it, "2026年11月20日"), its full date, its weekday
+/// letters, its clock and its digits.
+class _Dates {
+  _Dates.of(BuildContext context)
+    : _words = DesignLocalizations.of(context),
+      _english =
+          (Localizations.maybeLocaleOf(context)?.languageCode ?? 'en') == 'en';
+
+  final DesignLocalizations _words;
+  final bool _english;
+
+  /// A day with its year, as a pill prints it: "Nov 20, 2026",
+  /// "٢٠ نوفمبر ٢٠٢٦", "20. Nov. 2026", "2026年11月20日".
+  String day(DateTime d) {
+    if (_english) return LedgerFormat.date(d, showYear: true);
+    final monthDay = _words.formatShortMonthDay(d);
+    final year = _words.formatYear(d);
+    // A year with its mark leads (Japanese's and Chinese's U+5E74 joined,
+    // Korean's spaced); a month that leads takes a comma before the year.
+    if (!_figures.hasMatch(year)) {
+      return year.endsWith('\u5E74') ? '$year$monthDay' : '$year $monthDay';
+    }
+    return _leadingFigure.hasMatch(monthDay)
+        ? '$monthDay $year'
+        : '$monthDay, $year';
+  }
+
+  /// A day in full, as a calendar's day is read: "Friday, November 20, 2026".
+  String longDay(DateTime d) =>
+      _english ? LedgerFormat.longDate(d) : _words.formatFullDate(d);
+
+  /// A month and its year, a calendar's title: "November 2026".
+  String month(DateTime d) => _english
+      ? LedgerFormat.month(d, showYear: true)
+      : _words.formatMonthYear(d);
+
+  /// A weekday's head over a calendar's column, in capitals: "MO".
+  String weekdayHead(int weekday) => _english
+      ? _englishHeads[weekday - 1]
+      : _words.formatShortWeekday(weekday).toUpperCase();
+
+  /// A day on a wheel: "Fri, Nov 20", with its year "Fri, Nov 20, 2026".
+  String wheelDay(DateTime d, {required bool year}) {
+    if (_english) {
+      return LedgerFormat.date(d, showWeekday: true, showYear: year);
+    }
+    final weekday = _words.formatShortWeekday(d.weekday);
+    final date = year ? day(d) : _words.formatShortMonthDay(d);
+    return '$weekday${_words.listSeparator}$date';
+  }
+
+  /// The clock on its twelve-hour face, or on twenty-four with [use24h]:
+  /// "9:05 PM", "09:30", "٠٩:٣٠".
+  String clock(DateTime d, {required bool use24h}) {
+    if (_english && !use24h) return LedgerFormat.time(d);
+    return _words.formatTimeOfDay(
+      DesignTimeOfDay.fromDateTime(d),
+      alwaysUse24HourFormat: use24h,
+    );
+  }
+
+  /// Whether the clock stands on its twenty-four-hour face: when [use24h]
+  /// asks, or where the language's own clock is one.
+  bool twentyFour({required bool use24h}) =>
+      use24h || (!_english && _words.timeFieldPattern().contains('H'));
+
+  /// A whole number in the language's digits: "20", "٢٠".
+  String figure(int n) => _english ? '$n' : _words.formatDecimal(n);
+
+  /// A number of two digits, a clock's minute: "05", "٠٥".
+  String twoFigures(int n) => n < 10 ? figure(0) + figure(n) : figure(n);
+
+  /// Morning's or afternoon's mark: "AM", "PM".
+  String period({required bool pm}) => _english
+      ? (pm ? 'PM' : 'AM')
+      : (pm
+            ? _words.postMeridiemAbbreviation
+            : _words.anteMeridiemAbbreviation);
+
+  /// The day wheel's spoken name.
+  String get dayLabel => _english ? 'Day' : _words.dateFieldDayLabel;
+
+  /// The hour wheel's spoken name.
+  String get hourLabel => _english ? 'Hour' : _words.timePickerHourLabel;
+
+  /// The minute wheel's spoken name.
+  String get minuteLabel => _english ? 'Minute' : _words.timePickerMinuteLabel;
+
+  /// The AM or PM wheel's spoken name.
+  String get periodLabel =>
+      _english ? 'AM or PM' : _words.timeFieldDayPeriodLabel;
+
+  static const List<String> _englishHeads = [
+    'MO',
+    'TU',
+    'WE',
+    'TH',
+    'FR',
+    'SA',
+    'SU',
+  ];
+
+  static final RegExp _figures = RegExp(r'^\p{Nd}+$', unicode: true);
+  static final RegExp _leadingFigure = RegExp(r'^\p{Nd}', unicode: true);
+}
 
 DateTime _day(DateTime d) => DateTime(d.year, d.month, d.day);
 
@@ -429,11 +547,10 @@ class _CalendarState extends State<_Calendar> {
       (widget.first == null || !d.isBefore(_day(widget.first!))) &&
       (widget.last == null || !d.isAfter(_day(widget.last!)));
 
-  static const List<String> _heads = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
-
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
+    final dates = _Dates.of(context);
     final first = widget.first;
     final last = widget.last;
     final canBack =
@@ -456,10 +573,10 @@ class _CalendarState extends State<_Calendar> {
               child: Semantics(
                 header: true,
                 liveRegion: true,
+                // The month's name wraps at the reader's larger text, never
+                // cut short.
                 child: Text(
-                  LedgerFormat.month(_month, showYear: true),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  dates.month(_month),
                   style: t.barTitle.colored(t.textPrimary),
                 ),
               ),
@@ -486,13 +603,17 @@ class _CalendarState extends State<_Calendar> {
         ExcludeSemantics(
           child: Row(
             children: [
-              for (final head in _heads)
+              for (
+                var weekday = DateTime.monday;
+                weekday <= DateTime.sunday;
+                weekday++
+              )
                 Expanded(
                   child: Center(
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        head,
+                        dates.weekdayHead(weekday),
                         maxLines: 1,
                         style: t.tag.colored(t.textTertiary),
                       ),
@@ -507,7 +628,7 @@ class _CalendarState extends State<_Calendar> {
           Row(
             children: [
               for (var c = 0; c < 7; c++)
-                Expanded(child: _cell(t, r * 7 + c - lead + 1, length)),
+                Expanded(child: _cell(t, dates, r * 7 + c - lead + 1, length)),
             ],
           ),
         const SizedBox(height: _ruleTop),
@@ -526,7 +647,7 @@ class _CalendarState extends State<_Calendar> {
     );
   }
 
-  Widget _cell(LedgerThemeData t, int n, int length) {
+  Widget _cell(LedgerThemeData t, _Dates dates, int n, int length) {
     if (n < 1 || n > length) return const SizedBox(height: _cell44);
     final d = DateTime(_month.year, _month.month, n);
     final chosen = _same(d, widget.value);
@@ -544,7 +665,7 @@ class _CalendarState extends State<_Calendar> {
             child: DesignTapTarget(
               child: LedgerPressable(
                 onTap: open ? () => widget.onPick(d) : null,
-                label: LedgerFormat.longDate(d),
+                label: dates.longDay(d),
                 selected: chosen,
                 radius: mark / 2,
                 child: Container(
@@ -561,7 +682,7 @@ class _CalendarState extends State<_Calendar> {
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
-                      '$n',
+                      dates.figure(n),
                       maxLines: 1,
                       style: t.amount.colored(
                         chosen
@@ -614,21 +735,24 @@ class _Clock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.ledgerTheme;
+    final dates = _Dates.of(context);
+    // On the twenty-four-hour face when asked, or where the reader's clock
+    // is one (German's 21:05), as the pill prints it.
+    final h24 = dates.twentyFour(use24h: use24h);
     final pm = value.hour >= 12;
     final twelve = value.hour % 12 == 0 ? 12 : value.hour % 12;
-    String two(int i) => i.toString().padLeft(2, '0');
     final gap = shrink ? 0.0 : _gap;
     // The hour, the colon and the minute read left to right in either
     // direction ("9 : 30"); AM or PM stands at the reading end.
     final clock = <Widget>[
       _Wheel(
-        label: 'Hour',
-        count: use24h ? 24 : 12,
-        index: use24h ? value.hour : twelve - 1,
-        text: (i) => use24h ? two(i) : '${i + 1}',
+        label: dates.hourLabel,
+        count: h24 ? 24 : 12,
+        index: h24 ? value.hour : twelve - 1,
+        text: (i) => h24 ? dates.twoFigures(i) : dates.figure(i + 1),
         width: _digits,
         onIndex: (i) => onChanged(
-          use24h
+          h24
               ? _at(i, value.minute)
               : _at((i + 1) % 12 + (pm ? 12 : 0), value.minute),
         ),
@@ -644,10 +768,10 @@ class _Clock extends StatelessWidget {
         ),
       ),
       _Wheel(
-        label: 'Minute',
+        label: dates.minuteLabel,
         count: 60,
         index: value.minute,
-        text: two,
+        text: dates.twoFigures,
         width: _digits,
         onIndex: (i) => onChanged(_at(value.hour, i)),
       ),
@@ -659,12 +783,12 @@ class _Clock extends StatelessWidget {
         spacing: gap,
         children: clock,
       ),
-      if (!use24h)
+      if (!h24)
         _Wheel(
-          label: 'AM or PM',
+          label: dates.periodLabel,
           count: 2,
           index: pm ? 1 : 0,
-          text: (i) => i == 0 ? 'AM' : 'PM',
+          text: (i) => dates.period(pm: i == 1),
           width: _meridiem,
           onIndex: (i) =>
               onChanged(_at(value.hour % 12 + (i == 1 ? 12 : 0), value.minute)),
@@ -715,12 +839,12 @@ class _DayWheel extends StatelessWidget {
     final count = to.difference(from).inDays + 1;
     final at = _day(value).difference(from).inDays.clamp(0, count - 1);
     DateTime dayAt(int i) => DateTime(from.year, from.month, from.day + i);
+    final dates = _Dates.of(context);
     return _Wheel(
-      label: 'Day',
+      label: dates.dayLabel,
       count: count,
       index: at,
-      text: (i) =>
-          LedgerFormat.date(dayAt(i), showWeekday: true, showYear: year),
+      text: (i) => dates.wheelDay(dayAt(i), year: year),
       onIndex: (i) {
         final d = dayAt(i);
         onChanged(DateTime(d.year, d.month, d.day, value.hour, value.minute));
