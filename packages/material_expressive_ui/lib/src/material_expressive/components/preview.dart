@@ -1,24 +1,4 @@
-/// The preview: one page's isolated preview — the host and the ground a
-/// page gets live, without a router — in the Android or the iOS register
-/// (CONTRACT §4.2 `ExpressivePreview(…, platform:)`; §5; SPEC
-/// `GenChrome.preview`). Chrome, no vocabulary role. Owner: w2-preview.
-///
-/// - The device: the design kit's [PreviewFrame] publishes the register,
-///   its brightness and the screen; with `device` the page is laid out at
-///   the register's [PreviewDevice] (Android 411.43 × 914.29 dp at 2.625,
-///   iOS 390 × 844 pt at 3) and scaled to fit.
-/// - The system bars: drawn for the register in Material's look — on
-///   Android the edge-to-edge status bar and the gesture (or three-button)
-///   navigation bar, on iOS the status bar and the home indicator — and
-///   published as the screen's safe-area insets, so the page reserves them
-///   exactly as it does live. Their glyphs follow the top-most
-///   [SystemUiOverlayStyle] the page annotates under each band, as the
-///   real bars do (a cover over a dark photo asks for light glyphs), and
-///   otherwise the theme's content colour.
-/// - The presentation: a page previewed alone stands in the register its
-///   live route would — a root, a page pushed over another (the kit's
-///   [PreviewStage] raises it on an [ExpressivePage] route) or a sheet
-///   ([ExpressiveSheetPage]) — and a preview refuses its own pop.
+/// An isolated preview of a page in an Expressive theme.
 library;
 
 import 'package:flutter/foundation.dart';

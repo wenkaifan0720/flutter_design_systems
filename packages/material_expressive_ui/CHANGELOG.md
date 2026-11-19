@@ -1,7 +1,19 @@
+## 0.3.1
+
+- Switches keep the Material 52 × 32 dp track at every density. The thumb has an even 8 dp inset when off, 4 dp when on or showing an icon, and 2 dp when pressed. It moves without overshooting its end.
+- Menus light one row at a time: the selected row gives its fill to the row under the pointer or the keys, and a select's chosen option keeps a check at its end. Lit and selected rows share one shape and sit 4 dp from each other and from the menu's edges at every density.
+- A multi-select's suggestions open at the field's full width, 4 dp below it, or 4 dp above it when there is no room below. A chip reached with the keys draws its focus ring round the chip, inside the field.
+- Multi-select fields, menu rows and banner actions leave an even margin around their rounded corners. Snackbar actions use square state layers inside the bar's small corners.
+- Keyboard users can choose a clock value, reveal swipe actions, reorder a list from its handle and read a focused control's tooltip. Screen readers announce a split menu button's expanded state and a rating's current score.
+- Calendar headings, selected field values and timeline entries wrap at larger text sizes. Navigation badges stay inside the bar and status headings keep whole words together when space allows.
+- Navigation bars, rails and drawers cap their labels and badges at 1.3× text, as Material's navigation bar does. A date picker's header caps at 1.6× (1.4× while a date is typed) and its weekday letters at 2×, so at 300% text no label, count, date or letter is cut.
+- An editable rating is as wide as its stars, not the column it stands in.
+- Charts place points, tick labels and inspected values in reading order. Target bands and disabled menu commands have greater contrast. Meters preserve the order of the current value and its limit in right-to-left layouts.
+- The Trip planner confirms before discarding edits and offers a clear action when a search has no matches.
+
 ## 0.3.0
 
-Expressive moves onto ui_core 0.3.0 and hands it the behaviours ui_core now owns, keeping its own paint and motion.
-Needs `ui_core: ^0.3.0`; the review checks the tests run come from the new dev package `ui_core_test: ^0.1.0`.
+Requires ui_core 0.3.0 or later in the 0.3 series.
 
 - **Breaking** `ExpressiveWindowSizeClass` is gone: use ui_core's `DesignWindowSizeClass`, the same five classes at the
   same breakpoints (600, 840, 1200, 1600). `ExpressiveWindowSizeClass.ofWidth(w)` is

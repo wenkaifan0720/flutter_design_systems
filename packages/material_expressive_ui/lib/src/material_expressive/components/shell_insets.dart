@@ -10,7 +10,7 @@ import 'package:ui_core/host.dart' show ShellInsets;
 import '../chrome_metrics.dart';
 
 /// The bottom allowance the shell asks each branch root to reserve
-/// (CONTRACT §4.2 `ExpressiveShellInsets`): the bar (64dp) + the system's
+///: the bar (64dp) + the system's
 /// bottom inset + the floating action button's clearance + the docked
 /// accessory. The shell publishes it through the design kit's
 /// `ShellInsets`; a screen reads it with [of].

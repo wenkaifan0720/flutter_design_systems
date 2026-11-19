@@ -1,17 +1,4 @@
-/// Badges: the dot and the count (CONTRACT §4.1 `badge`), ported from
-/// Compose material3 1.5.0-alpha29 `Badge.kt`: [ExpressiveBadge] (Compose's
-/// `Badge`), which with a `child` stands on the top end corner of it as
-/// Compose's `BadgedBox` does — a navigation item's icon, a tab's label, an
-/// icon button, anything.
-///
-/// Geometry, colours and type are `BadgeTokens`; the offsets and the count
-/// badge's padding are what `Badge.kt` sets in code (`BadgeBehavior`).
-///
-/// Deviation from Compose: `BadgedBox` also clamps the badge inside the
-/// nearest `badgeBounds()` (a navigation item's, a tab's) through rulers; a
-/// Flutter layout cannot read an ancestor's box while it lays out, so the
-/// badge stands at its offsets alone. Every navigation item and tab here
-/// is wider than its icon plus a badge, so the clamp never binds in them.
+/// Dot and count badges for icons and navigation destinations.
 library;
 
 import 'dart:math' as math;

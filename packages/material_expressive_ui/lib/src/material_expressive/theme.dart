@@ -1,44 +1,4 @@
-/// Expressive's theme: [ExpressiveThemeData] for one theme in one
-/// brightness — its record and every foundation — built from the generated
-/// baked themes; the [ExpressiveTheme] a host mounts it on (and
-/// [AnimatedExpressiveTheme], which springs between two); and
-/// `context.expressiveTheme` ([ExpressiveThemeContext]). Owner: w1-host
-/// (the final composition), with `test/theme_test.dart`.
-///
-/// Themes are data (wave decision D6): `themes/<id>/theme.json` in the
-/// module, baked by `tools/expressive_tokens` into
-/// `internal/themes/<id>.g.dart` and listed by `internal/themes/registry.g.dart`
-/// in module.yaml's preset order. `baseline` is exactly what Compose's
-/// `MaterialExpressiveTheme` paints by default — light
-/// `expressiveLightColorScheme()`, dark `ColorDarkTokens` (CONTRACT §6) —
-/// the gallery default and the oracle's reference.
-///
-/// An app may bake themes of its own: the same `theme.json`, baked by the
-/// same tool into the app's generated code as [ExpressiveThemeSpec] consts,
-/// the public form of a baked theme. [ExpressiveThemeData.fromBaked] builds
-/// one, and [ExpressiveThemeData.forApp] finds a theme by id among the
-/// app's themes first, then the system's presets. An app that owns themes
-/// may also bake its pictures' colours (`ExpressiveArtwork`): a page a
-/// picture heads wears the theme retinted by it.
-///
-/// Every foundation is reachable from the theme, so a component reads
-/// everything it paints with from `context.expressiveTheme`:
-///
-/// | Member | Foundation | File |
-/// | --- | --- | --- |
-/// | `colors` | the colour roles | `color.dart` |
-/// | `type` | the 30-style type scale | `type.dart` |
-/// | `shapes` | the corner scale (library shapes: `shape.dart`) | `shape.dart` |
-/// | `motion` | the motion scheme and its springs | `motion.dart` |
-/// | `states` | the state-layer opacities | `states.dart` |
-/// | `elevation` | tonal and shadow elevation | `elevation.dart` |
-///
-/// The fixed scales need no theme: `ExpressiveSpacing` (`spacing.dart`),
-/// `ExpressiveSymbolsFont` / `ExpressiveSymbols` (`icons.dart`) and the
-/// generated component tokens a component reads through its foundation
-/// (a colour role through `colors.role`, a shape key through `shapes.of`,
-/// a type key through `type.of`, a motion key through `ExpressiveMotion.of`,
-/// an elevation level through `elevation`).
+/// The Expressive theme, its presets and inherited theme widgets.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -68,7 +28,7 @@ export 'internal/density.dart' show ExpressiveDensity;
 /// colour, a row with no fill).
 const Color expressiveTransparent = Color(0x00000000);
 
-/// The motion scheme a theme runs (CONTRACT §2, "Motion").
+/// The motion scheme a theme runs.
 enum ExpressiveMotionScheme {
   /// Springs that overshoot: Material's default, and every hero moment's.
   expressive,
@@ -161,7 +121,7 @@ class ExpressiveStateLayers with Diagnosticable {
 }
 
 /// The expression budget: how many hero moments an app may spend
-/// (CONTRACT §3), at most one per page.
+///, at most one per page.
 enum ExpressiveExpression {
   /// No hero moments.
   calm,
@@ -173,17 +133,9 @@ enum ExpressiveExpression {
   bold,
 }
 
-/// One theme as baked, in public form: what an app's generated themes hold.
+/// A theme’s seed, scheme variant, contrast, motion and colour roles.
 ///
-/// `tools/expressive_tokens` bakes each of an app's `theme.json` files into
-/// one const, as it bakes the system's presets: the record ([seed],
-/// [variant], [contrast], [motion], [expression]) and every colour role,
-/// light and dark, by [ExpressiveColorRole] name as ARGB. A spec varies
-/// what `theme.json` varies and nothing else: it wears the system's one
-/// type scale and Compose's default corner scale, as every preset does.
-///
-/// [ExpressiveThemeData.fromBaked] builds a theme from one, and
-/// [ExpressiveThemeData.forApp] looks one up by [id].
+/// Use [ExpressiveThemeData.fromBaked] to build a theme from this record. [ExpressiveThemeData.forApp] looks it up by [id].
 @immutable
 class ExpressiveThemeSpec {
   /// A theme spec of the given record.
@@ -235,17 +187,7 @@ class ExpressiveThemeSpec {
   final Map<String, int> statusDark;
 }
 
-/// One custom colour of an app, baked in one theme and brightness: a
-/// colour group as Material's custom colours have it, [color] with the
-/// content on it, and a [container] with the content on that.
-///
-/// `tools/expressive_tokens` bakes one per colour an app declares in its
-/// module.yaml (`theming.customColors`) for each of its themes, light and
-/// dark: the colour harmonised toward the theme's seed, then read through
-/// the theme's own 2025 scheme at its contrast, and held to the contrast
-/// floors (content 4.5:1, the colour against its container and the surface
-/// 3:1; all 7:1 at contrast 1). An app reads them through its generated
-/// [ExpressiveCustomColors].
+/// A custom colour and its container, with their contrasting foreground colours.
 @immutable
 class ExpressiveCustomColor {
   /// A custom colour with its on-colour, container and on-container.
@@ -274,10 +216,7 @@ class ExpressiveCustomColor {
   /// Content on [container]: a status's label.
   Color get onContainer => Color(_onContainer);
 
-  /// The name the colour goes by in this theme (module.yaml's `label`, or
-  /// the theme's own), which a screen reader, a swatch or a filter chip
-  /// says beside it: a colour is never the only signal. Null when the app
-  /// names it by meaning elsewhere.
+  /// Optional display name for the colour in a swatch or accessible label.
   final String? label;
 
   @override
@@ -311,9 +250,7 @@ class ExpressiveCustomColorSet {
       brightness == Brightness.dark ? dark : light;
 }
 
-/// An app's custom colours: the table `tools/expressive_tokens` generates
-/// beside its themes (`lib/app/themes.g.dart`, `appCustomColors`), each of
-/// its own themes' colours, the default theme first.
+/// Named custom colour groups for each of an app's themes.
 @immutable
 class ExpressiveCustomColors {
   /// Custom colours with the given [names] and [themes].
@@ -325,9 +262,8 @@ class ExpressiveCustomColors {
   /// Each of the app's own themes' colours, by theme id, the default first.
   final Map<String, ExpressiveCustomColorSet> themes;
 
-  /// [name] in [theme]: baked for that app theme in its brightness. A
-  /// system preset (the gate's robustness look) wears the default theme's.
-  /// Throws an [ArgumentError] for a name the app does not declare.
+  /// Returns the named colour at [theme]'s brightness. System presets use
+  /// the default app theme's colours. Throws [ArgumentError] for an unknown name.
   ExpressiveCustomColor of(String name, ExpressiveThemeData theme) {
     if (!names.contains(name)) {
       throw ArgumentError.value(
@@ -342,7 +278,6 @@ class ExpressiveCustomColors {
   }
 }
 
-/// [baked]'s status tones in [brightness], or null when it has none.
 ExpressiveStatusColors? _resolveStatus(
   ExpressiveBakedTheme baked,
   Brightness brightness,
@@ -352,14 +287,7 @@ ExpressiveStatusColors? _resolveStatus(
       : baked.colors.statusLight,
 );
 
-/// A theme's status tones: success and warning as Material's custom
-/// colours, each a colour group ([ExpressiveCustomColor]). Never colour
-/// roles (contract §7): `tools/expressive_tokens` bakes them for every
-/// preset and every app theme, light and dark, from Material's green 800
-/// (#2E7D32) and amber 600 (#FFB300) harmonised toward the theme's seed,
-/// held to the custom-colour floors (content 4.5:1; the colour against its
-/// container and the surface 3:1; all 7:1 at contrast 1). A banner, a tag
-/// and the kit parts' notices read them.
+/// Success and warning colours harmonized to the theme's seed.
 @immutable
 class ExpressiveStatusColors {
   /// Status tones of the given groups.
@@ -760,12 +688,11 @@ class ExpressiveThemeData with Diagnosticable {
     return theme.copyWith(colors: colors);
   }
 
-  /// Every theme id, in module.yaml's preset order: the default first.
+  /// Available preset IDs, starting with the default.
   static List<String> get presets =>
       expressiveBakedThemes.keys.toList(growable: false);
 
-  /// The theme a host wears when it is handed none: the gallery default,
-  /// module.yaml's first preset. A generated app names its own theme.
+  /// The preset used when a host has no explicit theme.
   static String get defaultPreset => expressiveDefaultThemeId;
 
   static final RegExp _themeId = RegExp(r'^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$');

@@ -1,24 +1,4 @@
-/// Navigation (CONTRACT §4.1 `tab-bar`, `side-nav`, `tabs`; §4.2
-/// `ExpressiveNavItem`), ported from Compose material3 1.5.0-alpha29:
-///
-/// - [ExpressiveNavigationBar]: the flexible navigation bar (`ShortNavigationBar`
-///   + `ShortNavigationBarItem`, measured by `NavigationItem.kt`'s
-///   policies): 64dp, 3–5 labelled destinations, vertical destinations (icon over label)
-///   on a phone, horizontal destinations (icon beside label) in a wider window,
-///   equal-weight or centred.
-/// - [ExpressiveNavigationRail]: the navigation rail (`WideNavigationRail`,
-///   collapsed; `WideNavigationRailItem`), 96dp, with a header slot for the
-///   floating action button.
-/// - [ExpressiveTabBar]: in-page tabs, primary and secondary, fixed or
-///   scrollable (`PrimaryTabRow`, `SecondaryTabRow` and their scrollable
-///   forms; `Tab`), the indicator sliding on a spatial spring.
-///
-/// Every item is a pressable (`states.dart`): a navigation item's ripple is
-/// the active indicator's, as Compose draws it (a touch anywhere on the
-/// item reaches it), a tab's covers the tab. The selected item's icon
-/// fills (`ExpressiveIcon`); the indicator grows from its centre on
-/// `NavigationItemBehavior.indicatorMotion`. The shell (`shell.dart`)
-/// draws the bar on a phone and the rail from 600dp.
+/// Navigation bars, rails, drawers and tabs.
 library;
 
 import 'dart:math' as math;
@@ -67,9 +47,7 @@ import 'overlays.dart' show ExpressivePopupRoute;
 // Items
 // ---------------------------------------------------------------------------
 
-/// One navigation destination (CONTRACT §4.2 `ExpressiveNavItem(icon,
-/// label, key)`): its glyph, its label — required, Material always labels
-/// its navigation — and the walkthrough key set on its hit target.
+/// A named navigation destination with an icon and an optional badge.
 @immutable
 class ExpressiveNavItem {
   /// A destination showing [icon] and labelled [label].
@@ -104,7 +82,7 @@ class ExpressiveNavItem {
   /// The label under (or beside) the glyph.
   final String label;
 
-  /// The key on the item's hit target (a walkthrough step's).
+  /// The key for the destination's interactive area.
   final Key? key;
 
   /// The glyph while selected; null fills [icon] instead.
@@ -187,8 +165,16 @@ class ExpressiveNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) => FocusTraversalGroup(
     // Its destinations are one stop in the keyboard's reading order, as a
     // rail's are.
-    child: Builder(builder: _bar),
+    child: MediaQuery.withClampedTextScaling(
+      maxScaleFactor: maxTextScale,
+      child: Builder(builder: _bar),
+    ),
   );
+
+  /// The largest text scale a bar's or a rail's destinations take, their
+  /// labels and counts (Material's NavigationBar, 1.3): at 300% text an item
+  /// broke its word ("Toda/y") or cut its count.
+  static const double maxTextScale = 1.3;
 
   Widget _bar(BuildContext context) {
     final t = context.expressiveTheme;
@@ -606,7 +592,12 @@ class ExpressiveNavigationRail extends StatelessWidget {
     // Its destinations are one stop in the keyboard's reading order: on a
     // wide window Tab walks the rail, then the page, not row by row across
     // both (11-14).
-    child: Builder(builder: _rail),
+    child: MediaQuery.withClampedTextScaling(
+      // As the bar's: at 300% text a destination with a count dropped its
+      // label.
+      maxScaleFactor: ExpressiveNavigationBar.maxTextScale,
+      child: Builder(builder: _rail),
+    ),
   );
 
   Widget _rail(BuildContext context) {
@@ -1550,14 +1541,27 @@ class _RenderNavItem extends RenderBox
   double computeMinIntrinsicHeight(double width) =>
       computeMaxIntrinsicHeight(width);
 
+  double _badgeClearance(double overflow) => overflow <= 0
+      ? 0
+      : math.max(
+          0.0,
+          overflow +
+              ExpressiveSpacing.s4 -
+              _geometry.itemVerticalPadding -
+              _geometry.indicatorVerticalPadding,
+        );
+
   @override
   double computeMaxIntrinsicHeight(double width) {
     final g = _geometry;
     final icon = _icon.getMaxIntrinsicHeight(width);
     if (_top) {
       final label = _label.getMaxIntrinsicHeight(width);
+      final badgeAbove = ExpressiveBadgeAnchor.topOverflow(_icon, width);
+      final extra = _badgeClearance(badgeAbove);
       return icon +
           label +
+          2 * extra +
           g.itemVerticalPadding * 2 +
           g.indicatorVerticalPadding * 2 +
           g.indicatorToLabel;
@@ -1631,7 +1635,11 @@ class _RenderNavItem extends RenderBox
       // which measures itself under loosened constraints, in the item's
       // minimum height: a collapsed rail item's 52dp content sits 6dp down
       // its 64dp.
-      final top = math.max(0.0, _px((height - ownHeight) / 2));
+      final badgeAbove = -_icon.paintBounds.top;
+      final top = math.max(
+        _badgeClearance(badgeAbove),
+        _px((height - ownHeight) / 2),
+      );
       final iconY = top + g.itemVerticalPadding + g.indicatorVerticalPadding;
       final indicatorY = iconY - g.indicatorVerticalPadding;
       _place(_indicator, (width - animatedWidth) / 2, indicatorY);

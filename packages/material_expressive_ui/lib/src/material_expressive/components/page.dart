@@ -1,47 +1,4 @@
-/// Pages: the go_router page a route pushed off a root stands in
-/// (CONTRACT §4.2 `ExpressivePage`). Chrome, no vocabulary role. Owner:
-/// w2-page.
-///
-/// The look is Material everywhere; the push and the back gesture are the
-/// platform's own (CONTRACT §5), chosen from `Theme.of(context).platform`
-/// each time the route builds, never pinned:
-///
-/// - **Android**: Material 3's fade-forwards push, and predictive back.
-///   The push is AOSP's activity transition as the pinned platform
-///   (android-37.2, `data/res/anim/activity_{open,close}_{enter,exit}.xml`)
-///   states it: 450 ms; the incoming page travels 96dp on
-///   `fast_out_extra_slow_in` and fades in linearly over 83 ms after 50 ms
-///   (open), or fades out over 83 ms after 35 ms (close); the page beneath
-///   travels 96dp the other way at full opacity. Flutter's own
-///   `FadeForwardsPageTransitionsBuilder` (pinned SDK 3.47.0,
-///   `material/page_transitions_theme.dart`) approximates the same
-///   transition with a 25 % travel and longer fades; this port follows AOSP.
-///   Predictive back follows the Android motion spec
-///   (developer.android.com/design/ui/mobile/guides/patterns/predictive-back,
-///   "Motion specs"; the constants Flutter's
-///   `PredictiveBackPageTransitionsBuilder` carries): while the gesture
-///   runs, the page scales to 90 %, shifts `width / 20 - 8dp` away from the
-///   swiped edge, follows the finger vertically by at most
-///   `height / 20 - 8dp` and rounds to the display's corners, all over
-///   Compose's `PredictiveBack.transform` of the gesture's progress
-///   (material3 `internal/BackHandler.kt`: `CubicBezierEasing(0.1, 0.1, 0,
-///   1)`). Release commits or cancels by spring (the theme's default spatial
-///   spring; critically damped under Reduce Motion); a commit fades the page
-///   out where the gesture left it while the page beneath travels home.
-/// - **iOS**: the Cupertino page slide, which carries the edge swipe-back
-///   and the parallax of the page beneath
-///   (`CupertinoRouteTransitionMixin.buildPageTransitions`, 500 ms).
-/// - **Every other platform** (macOS, Windows, Linux, Fuchsia, and the web
-///   on any of them): Android's fade-forwards push, a 96dp travel and a
-///   fade, never a page flying in across the window. Their back is a key, a
-///   button or the browser's, not a gesture the page follows.
-///
-/// [expressivePageTransitions], which `ExpressiveHost`'s theme names, gives
-/// an app's own page routes (a `MaterialPageRoute`, go_router's
-/// `MaterialPage`) the same motion on every platform.
-///
-/// The push clocks and curves here are the one documented exception to
-/// "springs only" (RUN 2 decision F11): the platform owns them.
+/// Navigator pages with platform transitions and back gestures.
 library;
 
 import 'dart:ui' show lerpDouble;
@@ -221,7 +178,7 @@ class _ExpressivePageRoute<T> extends PageRoute<T>
 }
 
 /// A page route whose system back gesture is Android's predictive back
-/// (CONTRACT §5): [ExpressivePage]'s route and the full-screen dialog
+///: [ExpressivePage]'s route and the full-screen dialog
 /// ([ExpressiveSheetPage] with `drawer`) share it. The route builds its
 /// page inside an [ExpressivePredictiveBackTransition], which draws the
 /// gesture's frame; the route claims the gesture, follows it and settles
@@ -403,7 +360,7 @@ Widget? _delegatedPageTransition(
 
 // AOSP's activity transition (android-37.2, data/res/anim/
 // activity_{open,close}_{enter,exit}.xml): the platform-owned push
-// (decision F11).
+//.
 
 /// How far a page travels: `android:fromXDelta="96dp"`.
 const _kTravel = 96.0;

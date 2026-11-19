@@ -1,29 +1,4 @@
-/// The screen: a page's scaffold, which derives its bar from the route's
-/// register (CONTRACT §4.2 `ExpressiveScaffold`). Chrome, no vocabulary role.
-/// Owner: w2-appbar.
-///
-/// The registers (design_kit's `RoutePresentation`):
-///
-/// - **root**: the large flexible bar collapsing to the small one as the
-///   body scrolls (Compose's `LargeFlexibleTopAppBar` with
-///   `exitUntilCollapsedScrollBehavior`), or an authored search app bar;
-/// - **pushed**: the small bar with the back arrow (Material's on both
-///   platforms);
-/// - **sheet**: the sheet's header — close, the title and an optional
-///   confirm action — on the sheet's own container (the drag handle is the
-///   sheet container's, `ExpressiveSheetPage`);
-/// - **full-screen dialog** (a sheet raised full screen): close, the title
-///   and the confirm action, on the surface.
-///
-/// A page passes a [ExpressiveScaffold.title] and gets its bar; it authors an
-/// `ExpressiveAppBar` only to add to it (a subtitle, actions, the confirm
-/// action, a search bar) and never draws its own back or close.
-///
-/// The collapse runs the body in a `CustomScrollView` under a pinned
-/// header: as the body scrolls the bar gives up its title row first, and a
-/// scroll that stops midway snaps the bar open or shut on the
-/// `AppBar.topSnapMotion` spring (Compose's `settleAppBar`). A docked bar
-/// fills its colour once content passes under it.
+/// Page scaffolds and responsive body layout.
 library;
 
 import 'dart:math' as math;
@@ -44,7 +19,7 @@ import '../theme.dart';
 import 'app_bar.dart';
 import 'host.dart';
 
-/// How a scroll treats the keyboard, by platform (CONTRACT §5): on iOS and
+/// How a scroll treats the keyboard, by platform: on iOS and
 /// macOS a drag dismisses it, as UIKit's `keyboardDismissMode` does in
 /// scrolling screens; on Android it stays up until the field loses focus
 /// or the system back closes it (a Compose scroll leaves the IME alone).

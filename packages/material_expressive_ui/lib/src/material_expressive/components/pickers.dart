@@ -1,71 +1,4 @@
-/// Pickers: the date picker (calendar, input, docked, range, and its modal
-/// dialog), the time picker (dial, input, vibrant, scroll, and its dialogs)
-/// and the number scroll field (CONTRACT §4.1 `date-picker`, `time-picker`,
-/// and the "number scroll field" extra). Owner: w3-pickers.
-///
-/// Ports of Compose material3 1.5.0-alpha29 (wave decision F1):
-///
-/// - [ExpressiveDatePicker] is `DatePicker` (`DatePicker.kt`):
-///   `DateEntryContainer`'s header (title, headline, the mode toggle, the
-///   divider), `DatePickerContent`'s month navigation (the year menu button
-///   and the two arrows), the weekday letters, the horizontally paged months
-///   (`HorizontalMonthsList`, six 48dp rows of 40dp days) and the year grid
-///   (`YearPicker`, three 72 × 36dp years a row) revealed over them; in input
-///   mode `DateInputContent` (`DateInput.kt`), an outlined field that
-///   validates as it is typed. Geometry and colours are
-///   `DatePickerModalTokens` and `DatePickerDefaults.colors()`; the constants
-///   Compose writes in code are `DatePickerBehavior` / `DateInputBehavior`.
-/// - [ExpressiveDateRangePicker] is `DateRangePicker` (`DateRangePicker.kt`):
-///   a vertical list of months under month subheads, the selected span drawn
-///   behind the days (`drawRangeBackground`, line for line), and
-///   `DateRangeInputContent`'s two fields.
-/// - [ExpressiveDockedDatePicker] is the Compose docked sample: an outlined,
-///   read-only field whose calendar button raises a `DatePicker` without its
-///   header in a popover below it.
-/// - [ExpressiveDatePickerDialog] is `DatePickerDialog`
-///   (`DatePickerDialog.android.kt`): 360dp wide at most 568dp tall, the
-///   picker over the dismiss and confirm text buttons.
-///   [showExpressiveDatePicker] and [showExpressiveDateRangePicker] raise it
-///   and resolve to the confirmed selection (a draft until then).
-/// - [ExpressiveTimePicker] is `TimePicker` (`TimePicker.kt`): the hour and
-///   minute selectors, the AM/PM toggle (the updated `ToggleButton` toggle,
-///   `ComposeMaterial3Flags.isUpdatedTimepickerToggleEnabled`), and the
-///   256dp clock dial (`ClockFace`), its selector springing to the value,
-///   its numbers crossfading between hours and minutes; `vibrant` is the
-///   `TimePicker(shapes = …)` overload with `vibrantColors()`.
-///   [ExpressiveTimeInput] is `TimeInput`, [ExpressiveTimeScroll] is
-///   `TimeScroll` on [ExpressiveScrollField] (`ScrollField.kt`).
-/// - [ExpressiveTimePickerDialog] is `TimePickerDialog` and
-///   `VibrantTimePickerDialog` (`TimePickerDialog.kt`), portrait layout;
-///   [showExpressiveTimePicker] raises it.
-///
-/// Every value a picker prints goes through the design kit's formatter
-/// (`ExpressiveFormat`): English, day first ("12 Mar 2031"), deterministic.
-///
-/// Deviations from Compose, recorded for the oracle:
-/// - Words are the kit's English and our own phrasing, not Compose's
-///   localized strings; the month names and weekday letters are the app's
-///   ([DesignLocalizations.formatMonthYear], the first letter of
-///   [DesignLocalizations.formatShortWeekday]); the headline is
-///   `ExpressiveFormat.date`, not the
-///   locale's `yMMMd`; the week starts on
-///   [ExpressiveDatePicker.firstDayOfWeek], else the locale's
-///   ([ExpressiveLocalizations.firstDayOfWeek]: Sunday in English, as
-///   Compose's en-US locale).
-/// - The mode switch fades and slides the incoming content in on Compose's
-///   springs, but the outgoing content leaves at once and the height snaps
-///   (Compose's `AnimatedContent` also cross-fades out and animates size).
-/// - Months page with a `PageView` snapping on the default effects spring
-///   (Compose snaps its `LazyRow` on the same spring); the arrows spring the
-///   page on the default spatial spring. Keyboard focus moves between days
-///   by the platform's directional traversal, not `dayOnKeyEvent`'s month
-///   hops.
-/// - The time dialogs lay out in portrait only (Compose switches to a
-///   landscape layout on short, wide windows); the picker itself takes
-///   [ExpressiveTimePickerLayout.horizontal].
-/// - Symbols: the bundled Material Symbols subset has no `date_range` or
-///   `swipe_vertical`; the calendar toggle is `calendar_month` and the
-///   scroll toggle `unfold_more`.
+/// Date, date range and time pickers with calendar, dial and text entry.
 library;
 
 import 'dart:async';
@@ -314,7 +247,7 @@ class _DateColors {
 // Spring scrolling.
 
 /// Springs [position] to [target] on [spring]: a ballistic activity driven
-/// by the spring's simulation, never a duration (wave decision F10).
+/// by the spring's simulation, never a duration.
 void _springScroll(
   ScrollPosition position,
   double target,
@@ -601,6 +534,9 @@ class _ExpressiveDatePickerState extends State<ExpressiveDatePicker> {
       predicate: widget.selectableDayPredicate,
     );
     final typing = _mode == ExpressiveDatePickerMode.input;
+    // Material's date picker header: 1.6x, 1.4x while a date is typed. Past
+    // it the chosen date cut ("18 S…") at 300% text.
+    final headerScale = typing ? 1.4 : 1.6;
     final selected = widget.selected;
     final headline =
         widget.headline ??
@@ -616,20 +552,26 @@ class _ExpressiveDatePickerState extends State<ExpressiveDatePicker> {
     return _DateEntryContainer(
       colors: colors,
       title: widget.showHeader
-          ? _HeaderTitle(
-              // Android's `m3c_date_input_title` reads as the picker's title.
-              widget.title ?? ExpressiveLocalizations.of(context).selectDate,
-              colors: colors,
-              range: false,
+          ? MediaQuery.withClampedTextScaling(
+              maxScaleFactor: headerScale,
+              child: _HeaderTitle(
+                // Android's `m3c_date_input_title` reads as the picker's title.
+                widget.title ?? ExpressiveLocalizations.of(context).selectDate,
+                colors: colors,
+                range: false,
+              ),
             )
           : null,
       headline: widget.showHeader
-          ? _HeaderHeadline(
-              spoken: spoken,
-              colors: colors,
-              style: t.type.of(DatePickerModalTokens.headerHeadlineFont),
-              range: false,
-              child: Text(headline),
+          ? MediaQuery.withClampedTextScaling(
+              maxScaleFactor: headerScale,
+              child: _HeaderHeadline(
+                spoken: spoken,
+                colors: colors,
+                style: t.type.of(DatePickerModalTokens.headerHeadlineFont),
+                range: false,
+                child: Text(headline),
+              ),
             )
           : null,
       modeToggle: widget.showHeader && widget.showModeToggle
@@ -750,7 +692,18 @@ class _DateEntryContainer extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 ?header,
-                Flexible(child: child),
+                // A box shorter than the picker (a bounded slot at large
+                // text, where the headings wrap) scrolls the body under the
+                // header, as the dialog scrolls the whole picker; with room
+                // to spare nothing moves or clips.
+                Flexible(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) =>
+                        constraints.hasBoundedHeight
+                        ? SingleChildScrollView(child: child)
+                        : child,
+                  ),
+                ),
               ],
             ),
           ),
@@ -839,11 +792,6 @@ class _HeaderHeadline extends StatelessWidget {
       liveRegion: true,
       label: spoken,
       excludeSemantics: true,
-      // The single date's headline is one line (`maxLines = 1`); the
-      // range's texts wrap, and the header grows with them — up to
-      // [maxRangeTextScale]: past it the two dates would push the calendar
-      // off a phone, so the range's headline stops growing there, as
-      // Material's date range picker caps its header.
       child: DefaultTextStyle(
         style: style
             .merge(
@@ -857,8 +805,6 @@ class _HeaderHeadline extends StatelessWidget {
                       ?.resolve(const <WidgetState>{}) ??
                   colors.headline,
             ),
-        maxLines: range ? null : 1,
-        overflow: range ? TextOverflow.clip : TextOverflow.ellipsis,
         child: range
             ? MediaQuery.withClampedTextScaling(
                 maxScaleFactor: maxRangeTextScale,
@@ -1241,8 +1187,10 @@ class _MonthsNavigation extends StatelessWidget {
     padding: const EdgeInsets.symmetric(
       horizontal: DatePickerBehavior.horizontalPadding,
     ),
-    child: SizedBox(
-      height: DatePickerBehavior.monthYearHeight,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(
+        minHeight: DatePickerBehavior.monthYearHeight,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
@@ -1329,15 +1277,7 @@ class _YearMenuButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Flexible(
-              child: ExcludeSemantics(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
+            Flexible(child: ExcludeSemantics(child: Text(label))),
             const SizedBox(width: ButtonSmallTokens.iconLabelSpace),
             Transform.rotate(
               angle: expanded ? math.pi : 0,
@@ -1375,38 +1315,43 @@ class _WeekDays extends StatelessWidget {
     // A week from a known Monday (5 January 2026), turned to start on
     // firstDayOfWeek.
     final monday = DateTime(2026, 1, 5);
-    return SizedBox(
-      height: DatePickerBehavior.cellSize,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          for (var i = 0; i < DateTime.daysPerWeek; i++)
-            Builder(
-              builder: (context) {
-                final day = DateTime(
-                  monday.year,
-                  monday.month,
-                  monday.day +
-                      (firstDayOfWeek - DateTime.monday + i) %
-                          DateTime.daysPerWeek,
-                );
-                // The letter in the app's words; the name read aloud is
-                // the kit's (the shared words name a weekday only short).
-                final name = ExpressiveFormat.weekday(day, short: false);
-                final letter = DesignLocalizations.of(context)
-                    .formatShortWeekday(day.weekday)
-                    .characters
-                    .first;
-                return Expanded(
-                  child: Semantics(
-                    label: name,
-                    excludeSemantics: true,
-                    child: Center(child: Text(letter, style: style)),
-                  ),
-                );
-              },
-            ),
-        ],
+    // At most 2x, as Material's day picker: past it a letter's line outgrew
+    // the 48dp row and lost its lower edge.
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 2,
+      child: SizedBox(
+        height: DatePickerBehavior.cellSize,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            for (var i = 0; i < DateTime.daysPerWeek; i++)
+              Builder(
+                builder: (context) {
+                  final day = DateTime(
+                    monday.year,
+                    monday.month,
+                    monday.day +
+                        (firstDayOfWeek - DateTime.monday + i) %
+                            DateTime.daysPerWeek,
+                  );
+                  // The letter in the app's words; the name read aloud is
+                  // the kit's (the shared words name a weekday only short).
+                  final name = ExpressiveFormat.weekday(day, short: false);
+                  final letter = DesignLocalizations.of(context)
+                      .formatShortWeekday(day.weekday)
+                      .characters
+                      .first;
+                  return Expanded(
+                    child: Semantics(
+                      label: name,
+                      excludeSemantics: true,
+                      child: Center(child: Text(letter, style: style)),
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -3789,6 +3734,8 @@ class _ClockFaceState extends State<_ClockFace> with TickerProviderStateMixin {
   ExpressiveTimeSelection? _previousFace;
   late int _hour = widget.controller.hour;
   late int _minute = widget.controller.minute;
+  final _numbersFocus = <(ExpressiveTimeSelection, int), FocusNode>{};
+  (ExpressiveTimeSelection, int)? _atFocus;
   bool _dragging = false;
   Offset _drag = Offset.zero;
   Timer? _switch;
@@ -3805,8 +3752,19 @@ class _ClockFaceState extends State<_ClockFace> with TickerProviderStateMixin {
     final c = _c;
     var moved = c.hour != _hour || c.minute != _minute;
     if (c.selection != _face) {
+      final moveFocus = _numbersFocus.entries.any(
+        (entry) => entry.value.hasPrimaryFocus,
+      );
       _previousFace = _face;
       _face = c.selection;
+      _atFocus = null;
+      if (moveFocus) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            _numbersFocus[(_face, _entryValue(_face))]?.requestFocus();
+          }
+        });
+      }
       _fade
         ..value = 0
         ..springTo(1, ExpressiveMotion.of(context).defaultEffects);
@@ -3836,6 +3794,9 @@ class _ClockFaceState extends State<_ClockFace> with TickerProviderStateMixin {
   @override
   void dispose() {
     _switch?.cancel();
+    for (final node in _numbersFocus.values) {
+      node.dispose();
+    }
     _angle.dispose();
     _fade.dispose();
     super.dispose();
@@ -3907,7 +3868,97 @@ class _ClockFaceState extends State<_ClockFace> with TickerProviderStateMixin {
     return value == c.minute;
   }
 
-  /// A number chosen by its semantics tap.
+  int _entryValue(ExpressiveTimeSelection face) =>
+      face == ExpressiveTimeSelection.hour
+      ? (_c.is24Hour ? _c.hour : _c.hourForDisplay)
+      : (_c.minute ~/ _fiveMinutes) * _fiveMinutes;
+
+  KeyEventResult _dialKey(
+    KeyEvent event,
+    ExpressiveTimeSelection face,
+    int value,
+  ) {
+    final key = event.logicalKey;
+    if (event is KeyUpEvent) return KeyEventResult.ignored;
+    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.space) {
+      if (event is KeyDownEvent) _choose(face, value);
+      return KeyEventResult.handled;
+    }
+    final step = switch (key) {
+      LogicalKeyboardKey.arrowRight || LogicalKeyboardKey.arrowUp => 1,
+      LogicalKeyboardKey.arrowLeft || LogicalKeyboardKey.arrowDown => -1,
+      _ => 0,
+    };
+    if (step == 0) return KeyEventResult.ignored;
+    final (outer, inner) = _values(face);
+    final numbers = [...outer, ...inner];
+    final next = numbers[(numbers.indexOf(value) + step) % numbers.length];
+    _numbersFocus[(face, next)]?.requestFocus();
+    return KeyEventResult.handled;
+  }
+
+  Widget _numberButton(ExpressiveTimeSelection face, int value, Widget label) {
+    final id = (face, value);
+    final node = _numbersFocus.putIfAbsent(
+      id,
+      () => FocusNode(debugLabel: 'Clock $value'),
+    );
+    final current = _atFocus;
+    final tabStop = current != null && current.$1 == face
+        ? current.$2
+        : _entryValue(face);
+    return Focus(
+      focusNode: node,
+      skipTraversal: value != tabStop,
+      onFocusChange: (focused) {
+        if (mounted && focused) setState(() => _atFocus = id);
+      },
+      onKeyEvent: (_, event) => _dialKey(event, face, value),
+      child: Builder(
+        builder: (context) {
+          final focused = Focus.of(context).hasPrimaryFocus;
+          final accent = context.expressiveTheme.colors.secondary;
+          return Semantics(
+            button: true,
+            selected: _isValue(face, value),
+            label: _spokenNumber(
+              face,
+              strings: ExpressiveLocalizations.of(context),
+              is24Hour: _c.is24Hour,
+              number: value,
+            ),
+            onTap: () => _choose(face, value),
+            excludeSemantics: true,
+            // The focus ring is drawn over the number's target, beside its
+            // number rather than around it: the ring holds no words, so a
+            // number set larger than the circle's square is never read as
+            // spilling out of it.
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                label,
+                IgnorePointer(
+                  child: ExpressiveSpringColor(
+                    value: focused ? accent : accent.withValues(alpha: 0),
+                    motion: ExpressiveMotionKey.fastEffects,
+                    builder: (context, color, _) => DecoratedBox(
+                      decoration: ShapeDecoration(
+                        shape: CircleBorder(
+                          side: BorderSide(color: color, width: 2),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Sets the number chosen by keyboard or assistive technology.
   void _choose(ExpressiveTimeSelection face, int value) {
     final c = _c;
     if (face == ExpressiveTimeSelection.hour) {
@@ -3944,21 +3995,7 @@ class _ClockFaceState extends State<_ClockFace> with TickerProviderStateMixin {
           top: _dialCentre + radius * math.sin(angle) - halfTarget,
           width: target,
           height: target,
-          child: semantics
-              ? Semantics(
-                  button: true,
-                  selected: _isValue(face, value),
-                  label: _spokenNumber(
-                    face,
-                    strings: ExpressiveLocalizations.of(context),
-                    is24Hour: _c.is24Hour,
-                    number: value,
-                  ),
-                  onTap: () => _choose(face, value),
-                  excludeSemantics: true,
-                  child: label,
-                )
-              : label,
+          child: semantics ? _numberButton(face, value, label) : label,
         );
       }
     }
@@ -4678,7 +4715,7 @@ class _TimeFieldState extends State<_TimeField> {
 // ---------------------------------------------------------------------------
 // The scroll field and the time scroll.
 
-/// Compose's `ScrollField` (CONTRACT §4.1's number scroll field): a
+/// Compose's `ScrollField`: a
 /// vertically paged wheel of [itemCount] numbers that wraps around, a third
 /// of [ScrollFieldBehavior.height] a number, the centred one selected —
 /// drawn larger and in `onSurface` as it springs in, the others in

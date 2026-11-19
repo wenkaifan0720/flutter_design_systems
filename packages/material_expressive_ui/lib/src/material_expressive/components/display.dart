@@ -172,26 +172,28 @@ class ExpressiveTimeline extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        SizedBox(
-          height: ExpressiveSpacing.s24,
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                child: Text(
+        ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: ExpressiveSpacing.s24),
+          child: SizedBox(
+            width: double.infinity,
+            child: OverflowBar(
+              alignment: MainAxisAlignment.spaceBetween,
+              overflowAlignment: OverflowBarAlignment.start,
+              spacing: ExpressiveSpacing.s8,
+              children: [
+                Text(
                   entry.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: t.type.titleSmall.copyWith(color: c.onSurface),
                 ),
-              ),
-              if (time != null) ...<Widget>[
-                const SizedBox(width: ExpressiveSpacing.s8),
-                Text(
-                  time,
-                  style: t.type.labelMedium.copyWith(color: c.onSurfaceVariant),
-                ),
+                if (time != null)
+                  Text(
+                    time,
+                    style: t.type.labelMedium.copyWith(
+                      color: c.onSurfaceVariant,
+                    ),
+                  ),
               ],
-            ],
+            ),
           ),
         ),
         if (description != null)

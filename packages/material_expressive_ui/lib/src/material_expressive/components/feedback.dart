@@ -1,21 +1,4 @@
-/// Feedback — the banner (a card with actions), the tonal skeleton
-/// placeholder, and the loading, error and empty screen states (CONTRACT
-/// §4.1 `banner`, `skeleton`, `empty-state`; §4.2 loading/error/empty
-/// states). Owner: w3-feedback.
-///
-/// Material 3 has no banner, skeleton or screen-state component in
-/// Compose; these are patterns built from the system:
-/// - the banner is a filled card (`FilledCardTokens`' container and
-///   shape, or a tone's container role) holding an icon, a title and a
-///   message, and text buttons (w3-buttons) for its actions;
-/// - the skeleton is a tonal placeholder (`surfaceContainerHighest`) on
-///   the shape scale that pulses on the slow effects spring, and holds
-///   still under Reduce Motion;
-/// - the screen states follow Cody v2's `InitialGenLoadingState`,
-///   `InitialGenErrorState` and `InitialGenEmptyState` (centred, the
-///   loading and error states announced as live regions): the loading
-///   state is the contained loading indicator, the error and empty states
-///   an icon, text and a tonal button.
+/// Banners, placeholders and loading, error, success and empty states.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -24,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import '../icons.dart';
 import '../component_themes.dart';
 import '../elevation.dart';
+import '../internal/tokens/behavior.g.dart';
 import '../internal/tokens/filled_card_tokens.g.dart';
 import '../motion.dart';
 import '../shape.dart';
@@ -140,6 +124,27 @@ class ExpressiveBanner extends StatelessWidget {
     final resolved = t.bannerTheme.layeredUnder(style);
     final ink = resolved.foregroundColor?.resolve(states) ?? content;
     final textStyle = resolved.textStyle?.resolve(states);
+    final frame = t.shapes.of(FilledCardTokens.containerShape);
+    final gap = t.density
+        .padding(const EdgeInsets.all(ExpressiveSpacing.s8))
+        .bottom;
+    final actionShape = ExpressiveCornerBorder.all(
+      ExpressiveCornerSize.dp(
+        (frame.bottomEnd.dp - gap).clamp(0.0, double.infinity),
+      ),
+    );
+    final pull = actions.isEmpty || resolved.padding?.resolve(states) != null
+        ? 0.0
+        : (ExpressiveSpacing.s16 - gap).clamp(0.0, ExpressiveSpacing.s16);
+    final actionStyle = ExpressiveComponentThemeData(
+      shape: WidgetStatePropertyAll(actionShape),
+      minimumSize: WidgetStatePropertyAll(
+        Size(
+          t.density.width(ButtonBehavior.minWidth, floor: 0),
+          HostBehavior.minimumInteractiveComponentSize,
+        ),
+      ),
+    ).layeredUnder(t.buttonTheme);
     return Semantics(
       container: true,
       child: ExpressiveSurface(
@@ -148,60 +153,67 @@ class ExpressiveBanner extends StatelessWidget {
         states: states,
         color: container,
         contentColor: ink,
-        shape: t.shapes.of(FilledCardTokens.containerShape),
-        padding: const EdgeInsetsDirectional.fromSTEB(
+        shape: frame,
+        // The actions stand [gap] from the card's end, concentric with its
+        // corner, and the words 16dp from it: the end padding is the
+        // actions', and the words take the rest. A screen reader's box and
+        // the touch target are the whole button, inside the card.
+        padding: EdgeInsetsDirectional.fromSTEB(
           ExpressiveSpacing.s16,
           ExpressiveSpacing.s16,
-          ExpressiveSpacing.s16,
+          ExpressiveSpacing.s16 - pull,
           ExpressiveSpacing.s8,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                if (glyph != null) ...<Widget>[
-                  ExpressiveIcon(
-                    glyph,
-                    size:
-                        resolved.iconSize?.resolve(states) ??
-                        ExpressiveSpacing.s24,
-                    color: ink,
-                  ),
-                  const SizedBox(width: ExpressiveSpacing.s16),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      if (heading != null) ...<Widget>[
+            Padding(
+              padding: EdgeInsetsDirectional.only(end: pull),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  if (glyph != null) ...<Widget>[
+                    ExpressiveIcon(
+                      glyph,
+                      size:
+                          resolved.iconSize?.resolve(states) ??
+                          ExpressiveSpacing.s24,
+                      color: ink,
+                    ),
+                    const SizedBox(width: ExpressiveSpacing.s16),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        if (heading != null) ...<Widget>[
+                          Text(
+                            heading,
+                            style: t.type.titleMedium
+                                .merge(textStyle)
+                                .copyWith(color: ink),
+                          ),
+                          const SizedBox(height: ExpressiveSpacing.s4),
+                        ],
                         Text(
-                          heading,
-                          style: t.type.titleMedium
+                          message,
+                          style: t.type.bodyMedium
                               .merge(textStyle)
-                              .copyWith(color: ink),
+                              .copyWith(
+                                color:
+                                    resolved.foregroundColor?.resolve(states) ??
+                                    (tone == ExpressiveTone.neutral
+                                        ? c.onSurfaceVariant
+                                        : content),
+                              ),
                         ),
-                        const SizedBox(height: ExpressiveSpacing.s4),
                       ],
-                      Text(
-                        message,
-                        style: t.type.bodyMedium
-                            .merge(textStyle)
-                            .copyWith(
-                              color:
-                                  resolved.foregroundColor?.resolve(states) ??
-                                  (tone == ExpressiveTone.neutral
-                                      ? c.onSurfaceVariant
-                                      : content),
-                            ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             if (actions.isEmpty)
               const SizedBox(height: ExpressiveSpacing.s8)
@@ -218,6 +230,7 @@ class ExpressiveBanner extends StatelessWidget {
                     for (final action in actions)
                       ExpressiveTextButton(
                         action.label,
+                        style: actionStyle,
                         onPressed: action.onPressed,
                         child: tone == ExpressiveTone.neutral
                             ? null
@@ -600,7 +613,7 @@ class _BalancedText extends StatelessWidget {
         return plain;
       }
       // Bisect for the narrowest width that still sets [count] lines.
-      var narrow = 0.0;
+      var narrow = painter.minIntrinsicWidth.clamp(0.0, full).toDouble();
       var wide = full;
       while (wide - narrow > 1) {
         final mid = (narrow + wide) / 2;
@@ -876,7 +889,7 @@ class ExpressiveEmptyState extends StatelessWidget {
 /// done, what follows from it and a tonal next step — centred and announced;
 /// the render state a task ends on (a booking made, a payment sent). The
 /// ground is `primaryContainer`, the theme's own: Expressive keeps no
-/// success colour (CONTRACT §7).
+/// success colour.
 ///
 /// ```dart
 /// ExpressiveSuccessState(title: 'Table booked', message: 'We sent the details to your inbox.', actionLabel: 'Done', onAction: close)

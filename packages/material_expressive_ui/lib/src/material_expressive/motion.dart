@@ -1,38 +1,4 @@
-/// Expressive's motion: [ExpressiveMotion], the springs a theme's components
-/// move with (CONTRACT §2 "Motion"; wave decision E6). Owner: w1-motion,
-/// with `internal/motion/`, the generator's `emit/motion.ts`, the gallery's
-/// motion demo and `test/motion_test.dart`.
-///
-/// A scheme is six springs, spatial (moves, resizes, reshapes) and effects
-/// (opacity, colour), each fast, default and slow — Compose's
-/// `ExpressiveMotionTokens` / `StandardMotionTokens`, generated from the
-/// pinned jar into `internal/tokens/` and mapped through the design kit's
-/// `designSpring` (mass 1, stiffness k, damping 2ζ√k):
-///
-/// | Scheme | spatial fast · default · slow (ζ/k) | effects fast · default · slow |
-/// | --- | --- | --- |
-/// | Expressive | 0.6/800 · 0.8/380 · 0.8/200 | 1.0/3800 · 1.0/1600 · 1.0/800 |
-/// | Standard | 0.9/1400 · 0.9/700 · 0.9/300 | same |
-///
-/// How a component moves: it names a spring by [ExpressiveMotionKey] (the
-/// key Compose's component code uses, generated into the behaviour
-/// constants) and reads it where it runs, with [ExpressiveMotion.of] (or
-/// `context.expressiveMotion`), which applies the three things the theme
-/// alone does not know:
-///
-/// - the theme's scheme (`context.expressiveTheme.motion`);
-/// - a subtree pinned to Standard ([ExpressiveStandardMotion]; an
-///   Expressive app may calm dense data, a Standard app never bounces, so
-///   nothing pins Expressive);
-/// - Reduce Motion, the kit's [DesignMotionPolicy]: spatial springs critically
-///   damped (ζ = 1 at the token's stiffness), effects a short fade (ζ = 1 at
-///   no less than the fastest effects token's 3800).
-///
-/// Then it runs the spring: `controller.springTo(target, spring)` (the
-/// kit's [DesignSpringDrive], exported here), or one of the implicit helpers —
-/// [ExpressiveSpringValue] for a number, [ExpressiveSpringTween] for any
-/// lerpable value, [ExpressiveSpringColor], [ExpressiveSpringSize] and
-/// [ExpressiveSpringShape]. Nothing here takes a duration or a curve.
+/// Spring motion specifications and animated widgets for the Expressive theme.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -211,7 +177,7 @@ extension ExpressiveMotionContext on BuildContext {
 }
 
 /// Pins everything below it to the Standard scheme: an Expressive app's
-/// dense data, a settings list, a table. The swap goes one way (CONTRACT §2):
+/// dense data, a settings list, a table. The swap goes one way:
 /// nothing pins Expressive, so a Standard app never bounces. It follows its
 /// subtree into overlays and routes that capture themes.
 class ExpressiveStandardMotion extends InheritedTheme {

@@ -1,7 +1,4 @@
-/// The shell's action (CONTRACT §4.2): [ExpressiveShellAction], the design
-/// kit's `ShellAction` drawn as Expressive's floating action button, its
-/// extended form or its FAB menu. Part of the host layer: an app's own
-/// screens place an [ExpressiveFloatingActionButton] instead.
+/// The primary action shown alongside shell navigation.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -16,7 +13,7 @@ import 'hero.dart';
 import 'nav.dart' show ExpressiveNavigationRail;
 import 'splash.dart' show ExpressiveSplashScreenAnchor;
 
-/// The shell's action (CONTRACT §4.2): the design kit's [ShellAction]
+/// The shell's action: the design kit's [ShellAction]
 /// (icon, onPressed, label, accent, key) plus [menu]. As a spec it goes to
 /// `ExpressiveShell(action:)`; as a widget — `ExpressiveShellAction(action:
 /// spec)`, what the shell draws — it draws any spec by its type:
@@ -35,8 +32,7 @@ import 'splash.dart' show ExpressiveSplashScreenAnchor;
 ///   overlay, so the action's box (and the shell's band) stays the closed
 ///   toggle's. [accent] gives it the vibrant family, and [scrim] dims the
 ///   screen behind it while it is open. In a rail's header (the shell at
-///   ≥ 600dp) the menu is never drawn (no FAB menu beside a rail, CONTRACT
-///   §3): the plain FAB runs [onPressed].
+///   600 dp and wider) the plain FAB runs [onPressed].
 ///
 /// The shell places it 16dp in from the end and above the bar
 /// (`ScaffoldBehavior.fabSpacing`).
@@ -72,12 +68,12 @@ class ExpressiveShellAction extends StatelessWidget implements ShellAction {
        ),
        assert(
          menu == null || label == null,
-         'A FAB menu never opens from an extended FAB (CONTRACT §3): give '
+         'A FAB menu never opens from an extended FAB: give '
          'the action a label or a menu, not both.',
        ),
        assert(
          menu == null || (menu.length >= 2 && menu.length <= 5),
-         'A FAB menu holds 2–5 items (CONTRACT §3).',
+         'A FAB menu holds 2–5 items.',
        ),
        assert(!scrim || menu != null, 'Only a FAB menu dims the screen.'),
        assert(
@@ -197,7 +193,7 @@ class ExpressiveShellAction extends StatelessWidget implements ShellAction {
         ? ExpressiveFabColor.primary
         : ExpressiveFabColor.primaryContainer;
     final announced = spec.label ?? expressive?.semanticLabel;
-    // A FAB menu never sits beside a rail (CONTRACT §3): in the rail's
+    // A FAB menu never sits beside a rail: in the rail's
     // header (the shell at ≥ 600dp) the action falls back to the plain FAB,
     // its [onPressed] the act.
     final besideRail =

@@ -1,57 +1,4 @@
-/// Expressive's interaction states: [ExpressiveStateLayers] (Compose's
-/// `StateTokens`: the hover, focus, pressed and dragged overlays),
-/// [ExpressivePressable] — the one pressable every button, icon button,
-/// split button, button group, FAB, chip, navigation item and list row is
-/// built on — and [ExpressiveMinimumInteractiveSize] (Compose's
-/// `minimumInteractiveComponentSize`). Owner: w1-host, with
-/// `test/states_test.dart` and the gallery's states demo.
-///
-/// What Compose does, and what the pressable does for a component:
-///
-/// - **State layers.** Hover, focus and drag draw an overlay of the content
-///   colour at the `StateTokens` opacity (0.08 · 0.10 · 0.16) over the
-///   container (Compose's `StateLayer`, drawn by `ripple()` over the
-///   content). Focus is the focus state layer: Compose's default
-///   `RippleThemeConfiguration` (`OpacityFocusThemeConfiguration`) draws no
-///   ring.
-/// - **Focus ring.** Under keyboard focus (Flutter's traditional highlight
-///   mode, as a desktop or a hardware keyboard brings), the pressable also
-///   draws the M3 focus indicator around its shape ([ExpressiveFocusRing]):
-///   3dp in `secondary`, 2dp out from the edge, from the Material token
-///   DB's `md.comp.*.focus.indicator.*` (the 1.5 jar carries the colour,
-///   not the thickness or the offset). A layer alone is not seen at 3:1; the
-///   ring is. A touch never shows it.
-/// - **Ripple.** A press draws the platform ripple in the content colour at
-///   the pressed opacity (0.10): the sparkle ripple on Android, the radial
-///   ripple elsewhere (whatever splash the host's
-///   Material theme names), bounded by the component's shape
-///   or unbounded at a token radius (checkbox, radio, switch handles),
-///   centred on the pressable or on the part [ExpressivePressable.inkRect]
-///   names (the switch's thumb, as Compose puts its unbounded ripple on the
-///   thumb while the toggleable is the whole switch).
-///   Pressed draws no separate state layer, as on Compose's Android ripple.
-/// - **Press and selected shape morph.** A component passes its token
-///   shapes ([ExpressivePressShapes]: rest, pressed, selected — Compose's
-///   `ButtonShapes` and toggle `checkedShape`) and its motion key
-///   (`ButtonBehavior.pressMotion`, `ToggleButtonBehavior.shapeMotion`, …).
-///   The pressable springs the corners between them: pressed wins, then
-///   selected, then rest (Compose's `shapeByInteraction`).
-/// - **Width.** A button group widens the pressed button and squeezes its
-///   neighbours: the group listens to [ExpressivePressable.onPressedChanged]
-///   and springs the widths itself (`ButtonGroupBehavior`).
-/// - **Elevation** by state on a spring ([ExpressiveStateElevation],
-///   `elevation.dart`), **semantics** by role ([ExpressivePressRole]),
-///   keyboard focus and activation, and the 48dp minimum touch target.
-/// - **Controls inside.** Compose's `clickable` leaves a clickable inside it
-///   alone (a search bar's trailing icons and avatar, a list item's
-///   trailing button, a button on a card): the child consumes its own
-///   press, and `mergeDescendants` stops at it. So the pressable hit-tests
-///   its content before its ink, a touch on a pressable inside that takes
-///   input is that one's alone, and the semantics merge the content except
-///   such a pressable, which keeps a node of its own
-///   ([ExpressiveSemanticsGroup]).
-///
-/// A component never reimplements any of this (wave decision F3).
+/// Press, hover, focus and selection feedback for Expressive controls.
 library;
 
 import 'dart:math' as math;
@@ -236,6 +183,7 @@ class ExpressivePressable extends StatefulWidget {
     this.error = false,
     this.role = ExpressivePressRole.button,
     this.semanticsRole,
+    this.expanded,
     this.semanticLabel,
     this.tooltip,
     this.side = BorderSide.none,
@@ -316,6 +264,9 @@ class ExpressivePressable extends StatefulWidget {
   /// `Semantics.role` sets it: [SemanticsRole.tab] for a tab bar's tab or a
   /// navigation item, as Flutter's `TabBar` and `NavigationBar` mark theirs.
   final SemanticsRole? semanticsRole;
+
+  /// Whether the content opened by this control is expanded, when applicable.
+  final bool? expanded;
 
   /// What a screen reader says, over the content's own text.
   final String? semanticLabel;
@@ -467,6 +418,9 @@ class ExpressivePressable extends StatefulWidget {
         ),
       )
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        DiagnosticsProperty<bool?>('expanded', expanded, defaultValue: null),
+      )
       ..add(StringProperty('tooltip', tooltip, defaultValue: null))
       ..add(
         DiagnosticsProperty<BorderSide>(
@@ -797,6 +751,7 @@ class _ExpressivePressableState extends State<ExpressivePressable> {
       child: Semantics(
         enabled: enabled,
         role: widget.semanticsRole,
+        expanded: widget.expanded,
         button:
             widget.role == ExpressivePressRole.button ||
             widget.role == ExpressivePressRole.toggle,

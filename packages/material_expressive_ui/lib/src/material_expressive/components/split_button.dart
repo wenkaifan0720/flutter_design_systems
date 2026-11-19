@@ -1,32 +1,4 @@
-/// Split buttons, XS–XL: a labelled leading button and a trailing chevron
-/// that opens a menu (CONTRACT §4.1 `split-button`). Owner:
-/// w3-iconbuttons, with `test/split_button_test.dart` and the gallery's
-/// split-button demo.
-///
-/// A port of Compose material3 1.5.0-alpha29's `SplitButton.kt` (wave
-/// decision F1):
-///
-/// - [ExpressiveSplitButtonLayout] is `SplitButtonLayout`: the trailing
-///   button at its own width, the leading button in the rest, both as tall
-///   as the taller, `between-space` apart; the pair keeps the 48dp touch
-///   target, its halves do not.
-/// - [ExpressiveSplitLeadingButton] and [ExpressiveSplitTrailingButton] are
-///   `SplitButtonDefaults.LeadingButton` / `TrailingButton` and their
-///   `Tonal…`, `Outlined…` and `Elevated…` forms: `ButtonDefaults`' colours,
-///   elevation and outline for the kind; full outer corners and the size's
-///   inner corner, which tightens to the size's pressed inner corner on
-///   `SplitButtonBehavior.pressMotion` (`leadingButtonShapesFor` /
-///   `trailingButtonShapesFor`). The trailing button, checked, becomes a
-///   circle under a pressed-opacity veil of its content colour, and centres
-///   its content optically (`horizontalCenterOptically`).
-/// - [ExpressiveSplitButton] composes them the way Compose's samples do:
-///   the leading icon and label at `ButtonDefaults.iconSizeFor`,
-///   `iconSpacingFor` and `textStyleFor` the size, the trailing chevron at
-///   `trailingButtonIconSizeFor`, turning a half turn when checked, and the
-///   [ExpressiveSplitButton.menu] slot shown under the pair while it is.
-///
-/// L and XL split buttons (96 and 136dp) are hero widgets (CONTRACT §3):
-/// they assert an [ExpressiveHeroMoment] above them.
+/// Split buttons with a primary action and an expandable menu.
 library;
 
 import 'dart:math' as math;
@@ -837,7 +809,20 @@ class ExpressiveSplitTrailingButton extends StatefulWidget {
     this.semanticLabel,
     this.focusNode,
     super.key,
-  });
+  }) : _menuTrigger = false;
+
+  const ExpressiveSplitTrailingButton._menu({
+    required this.onPressed,
+    required this.child,
+    required this.checked,
+    required this.kind,
+    required this.style,
+    required this.size,
+    required this.semanticLabel,
+    required this.focusNode,
+  }) : _menuTrigger = true;
+
+  final bool _menuTrigger;
 
   /// What a tap does (a toggle: flip [checked]); null disables the half.
   final VoidCallback? onPressed;
@@ -941,9 +926,10 @@ class _ExpressiveSplitTrailingButtonState
       side: paint.side,
       elevation: paint.elevation,
       selected: checked,
-      role: widget.checked == null
+      role: widget._menuTrigger || widget.checked == null
           ? ExpressivePressRole.button
           : ExpressivePressRole.toggle,
+      expanded: widget._menuTrigger ? checked : null,
       onPressed: widget.onPressed,
       onPressedChanged: (pressed) => setState(() => _pressed = pressed),
       semanticLabel: widget.semanticLabel,
@@ -1397,7 +1383,7 @@ class _ExpressiveSplitButtonState extends State<ExpressiveSplitButton> {
         size: widget.size,
         child: leadingContent,
       ),
-      trailing: ExpressiveSplitTrailingButton(
+      trailing: ExpressiveSplitTrailingButton._menu(
         focusNode: _trailing,
         onPressed: widget.enabled ? () => _set(!open) : null,
         checked: open,

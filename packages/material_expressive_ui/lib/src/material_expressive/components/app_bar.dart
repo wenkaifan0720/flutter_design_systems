@@ -1,39 +1,4 @@
-/// App bars: the small top app bar, the medium and large flexible app bars
-/// (subtitle, centred, collapsing by scroll, colour fill on scroll) and the
-/// search app bar; the search bar, its input field and the full-screen
-/// search view (CONTRACT §4.1 `app-bar`, `search-field`; §4.2
-/// `ExpressiveAppBar`). Owner: w2-appbar.
-///
-/// Ports of Compose material3 1.5.0-alpha29:
-///
-/// - `AppBar.kt`: `TopAppBar` (`SingleRowTopAppBar`), `MediumFlexibleTopAppBar`
-///   and `LargeFlexibleTopAppBar` (`TwoRowsTopAppBar`), both laid out by
-///   `TopAppBarLayout`'s measure policy ([_TopAppBarLayout] here, line for
-///   line), and `TopAppBarState`'s height and content offsets
-///   ([ExpressiveAppBarScroll]). `ExpressiveScaffold`, which owns the
-///   scrollable, runs the exit-until-collapsed scroll and `settleAppBar`'s
-///   snap.
-/// - `SearchBar.kt`: `AppBarWithSearch` ([ExpressiveAppBar.search]), the
-///   collapsed `SearchBar` ([ExpressiveSearchBar]), `SearchBarDefaults
-///   .InputField` ([ExpressiveSearchField]) and `ExpandedFullScreenSearchBar`
-///   / `ExpandedFullScreenContainedSearchBar` (the view a bar opens:
-///   `FullScreenSearchBarLayout`'s geometry, predictive back included —
-///   [expressiveSearchViewGeometry(]).
-///
-/// Deliberate deviations:
-/// - The search view expands on the slow spatial spring and collapses on
-///   the default one (`rememberSearchBarState`'s `animationSpecForExpand` /
-///   `ForCollapse`: `SearchBarBehavior.expandMotion` / `collapseMotion`),
-///   where the legacy `SearchBar` runs 400/250 ms tweens (RUN 2 decision
-///   F10).
-/// - The collapsed search bar is a button that opens the view rather than a
-///   focusable text field whose focus expands it (Compose disables the soft
-///   keyboard in the collapsed bar, so typing starts in the view either way).
-/// - The search app bar fills its colour on scroll but never hides
-///   (Compose's `enterAlwaysSearchBarScrollBehavior` is opt-in).
-/// - A flexible bar's collapse range is measured from its title with a text
-///   painter before layout (the screen's sliver needs it up front), where
-///   Compose reads it from the laid-out title row; the two agree.
+/// Top app bars, bottom app bars and expandable search.
 library;
 
 import 'dart:math' as math;
@@ -279,7 +244,7 @@ class ExpressiveAppBarAction extends StatelessWidget {
   }
 }
 
-/// The authored screen header (CONTRACT §4.2 `ExpressiveAppBar`): Material's
+/// The authored screen header: Material's
 /// top app bar in its small, medium flexible and large flexible sizes, or
 /// the search app bar ([ExpressiveAppBar.search]).
 ///
@@ -2297,8 +2262,7 @@ class _ExpressiveSearchFieldState extends State<ExpressiveSearchField> {
 // The search view.
 
 /// The full-screen search view's route: a popup over the app whose
-/// progress runs on springs (wave decision F11: expand out, collapse back,
-/// as `rememberSearchBarState`), claiming the system's predictive back
+/// progress runs on springs, claiming the system's predictive back
 /// gesture on Android.
 class _SearchViewRoute extends PopupRoute<void>
     with ExpressiveBackHandleRoute<void> {

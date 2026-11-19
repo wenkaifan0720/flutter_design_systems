@@ -1,14 +1,7 @@
-/// The face of a part whose interaction states ui_core owns.
-///
-/// ui_core's behaviours (`package:initial_gen_app/design_kit/...`) hand a
-/// builder a `Set<WidgetState>`: hovered, pressed, focused (keyboard focus
-/// only, never after a tap), selected, disabled, error. Expressive paints
-/// them exactly as its own pressable does (`states.dart`): the state layer
-/// of the content colour at the `StateTokens` opacity, composited into the
-/// part's own container so it takes the part's exact shape, and under
-/// keyboard focus the M3 focus indicator, 3dp in `secondary` 2dp out from
-/// the shape, concentric with it. A change of shape springs.
+/// State layers, focus outlines and input frames for composite controls.
 library;
+
+import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart'
     show Material, MaterialType, TextField;
@@ -140,12 +133,16 @@ class _Ring extends CustomPainter {
     required this.inward,
     required this.textDirection,
     this.gap,
+    this.faceHeight,
   });
 
   final OutlinedBorder shape;
   final Color color;
   final double thickness;
   final bool inward;
+
+  /// The face's height inside the painted box, centred; all of it if null.
+  final double? faceHeight;
 
   /// The surface band between an inward ring and a filled face.
   final Color? gap;
@@ -154,7 +151,11 @@ class _Ring extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) => expressivePaintFocusRing(
     canvas,
-    Offset.zero & size,
+    Rect.fromCenter(
+      center: size.center(Offset.zero),
+      width: size.width,
+      height: math.min(size.height, faceHeight ?? size.height),
+    ),
     shape,
     color: color,
     thickness: thickness,
@@ -171,20 +172,17 @@ class _Ring extends CustomPainter {
       old.color != color ||
       old.thickness != thickness ||
       old.inward != inward ||
+      old.faceHeight != faceHeight ||
       old.textDirection != textDirection;
 }
 
-/// The outlined text field's container for a field ui_core frames (an
-/// input group, a tag input): the extra-small corner at least 56dp tall (less
-/// at a denser theme, as the text field), its
-/// outline 1dp in `outline`, `onSurface` under a pointer, 2dp `primary` while
-/// anything inside has focus, in `error` for [WidgetState.error], and
-/// `onSurface` at 12% when disabled (`OutlinedTextFieldTokens`).
+/// An outlined frame for an input group or a tag field.
 class ExpressiveFieldFrame extends StatelessWidget {
   /// A frame for [states] around [child].
   const ExpressiveFieldFrame({
     required this.states,
     required this.child,
+    this.shape,
     this.padding = const EdgeInsetsDirectional.symmetric(
       horizontal: ExpressiveSpacing.s4,
     ),
@@ -199,6 +197,9 @@ class ExpressiveFieldFrame extends StatelessWidget {
 
   /// Inside the outline.
   final EdgeInsetsGeometry padding;
+
+  /// The field outline. Defaults to the theme's outlined text field shape.
+  final OutlinedBorder? shape;
 
   @override
   Widget build(BuildContext context) {
@@ -239,7 +240,7 @@ class ExpressiveFieldFrame extends StatelessWidget {
         minHeight: t.density.height(OutlinedTextFieldTokens.containerHeight),
       ),
       child: ExpressiveSurface(
-        shape: t.shapes.of(OutlinedTextFieldTokens.containerShape),
+        shape: shape ?? t.shapes.of(OutlinedTextFieldTokens.containerShape),
         color: const Color(0x00000000),
         contentColor: c.onSurface,
         side: BorderSide(color: color, width: width),
@@ -400,8 +401,14 @@ class ExpressiveFocusRingBox extends StatelessWidget {
     required this.focused,
     required this.shape,
     required this.child,
+    this.faceHeight,
     super.key,
   });
+
+  /// The part's visible height, centred in [child]'s box, when its box is
+  /// taller (a chip's 48dp touch target round its 32dp face): the ring
+  /// follows the face, not the target.
+  final double? faceHeight;
 
   /// Whether the keyboard is on the part.
   final bool focused;
@@ -414,17 +421,22 @@ class ExpressiveFocusRingBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!focused) return child;
     final t = context.expressiveTheme;
-    return CustomPaint(
-      foregroundPainter: _Ring(
-        shape: shape,
-        color: t.colors.secondary,
-        thickness: _ringThickness,
-        inward: false,
-        textDirection: Directionality.maybeOf(context),
-      ),
+    return ExpressiveSpringColor(
+      value: t.colors.secondary.withValues(alpha: focused ? 1 : 0),
+      motion: ExpressiveMotionKey.fastEffects,
       child: child,
+      builder: (context, color, child) => CustomPaint(
+        foregroundPainter: _Ring(
+          shape: shape,
+          color: color,
+          thickness: _ringThickness,
+          inward: false,
+          textDirection: Directionality.maybeOf(context),
+          faceHeight: faceHeight,
+        ),
+        child: child,
+      ),
     );
   }
 }

@@ -538,6 +538,41 @@ void main() {
     expect(taps, 2);
   });
 
+  testWidgets('a read-only value (a select\'s, a date\'s) sits where an '
+      'editable value does', (tester) async {
+    final typed = TextEditingController(text: 'Lisbon');
+    final chosen = TextEditingController(text: 'Lisbon');
+    addTearDown(typed.dispose);
+    addTearDown(chosen.dispose);
+    await tester.pumpWidget(
+      _app(
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            SizedBox(
+              width: 200,
+              child: ExpressiveTextField(label: 'City', controller: typed),
+            ),
+            SizedBox(
+              width: 200,
+              child: ExpressiveTextField(
+                label: 'City',
+                controller: chosen,
+                readOnly: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    final entries = find.byType(EditableText);
+    final editable = tester.getRect(entries.at(0));
+    final readOnly = tester.getRect(entries.at(1));
+    expect(readOnly.top, editable.top);
+    expect(readOnly.height, editable.height);
+  });
+
   group('code input', () {
     testWidgets('a paste fills every cell and completes', (tester) async {
       String? completed;

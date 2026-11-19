@@ -1,26 +1,4 @@
-/// Lists: the expressive list item (1–3 lines, slots, select, toggle,
-/// expand, drag) and the segmented section (corners 4 inner and 16 outer, 16
-/// selected), the reorderable list, swipe-to-dismiss and swipe actions, the
-/// lazy grid, the accordion (an expandable item), dividers and section
-/// headers (CONTRACT §4.1 `list-row`, `list-section`, `grid`, `accordion`,
-/// `divider`, `section-header`). Owner: w3-lists.
-///
-/// Ports of Compose material3 1.5.0-alpha29's `ListItem.kt` (the
-/// interactive `ListItem` and `SegmentedListItem` overloads, their
-/// `InteractiveListItemMeasurePolicy`, flag
-/// `isExpressiveListItemHeightBasedOnTextLinesFixEnabled` on, the jar's
-/// default), `ListItemDefaults.kt` (colours, shapes, `segmentedShapes`,
-/// `SegmentedGap`, the adaptive vertical alignment), `Divider.kt` and
-/// `SwipeToDismissBox.kt`: geometry, colours and shapes from the generated
-/// `ListTokens`, `ReorderListTokens`, `ExpandedListTokens`,
-/// `RevealListTokens` and `DividerTokens`, springs on the motion keys
-/// `ListItemBehavior` and `SwipeToDismissBoxBehavior` carry.
-///
-/// Row grammar is one component with slots: every row is an
-/// [ExpressiveListTile] (headline, overline, supporting, leading, trailing);
-/// a section, a reorderable list or an accordion hands its items their
-/// position (segment shapes, the section's container colour, dragged) through
-/// the tree, so an item never names its place.
+/// List rows, grouped sections, reordering, swipe actions and disclosures.
 library;
 
 import 'dart:math' as math;
@@ -28,10 +6,12 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:ui_core/ui_core.dart';
 
 import '../component_themes.dart';
 import '../internal/cap_label.dart';
+import '../internal/state_face.dart' show ExpressiveFocusRingBox;
 import '../internal/styled_content.dart';
 import '../elevation.dart';
 import '../icons.dart';
@@ -63,6 +43,7 @@ class _Segment extends InheritedWidget {
   const _Segment({
     required super.child,
     this.index,
+    this.reorder,
     this.count,
     this.containerColor,
     this.corners,
@@ -70,6 +51,7 @@ class _Segment extends InheritedWidget {
 
   /// The item's index in its group; null when not segmented.
   final int? index;
+  final DesignReorderItem? reorder;
 
   /// The group's size; null when not segmented.
   final int? count;
@@ -88,6 +70,7 @@ class _Segment extends InheritedWidget {
 
   @override
   bool updateShouldNotify(_Segment oldWidget) =>
+      reorder != oldWidget.reorder ||
       index != oldWidget.index ||
       count != oldWidget.count ||
       containerColor != oldWidget.containerColor ||
@@ -1529,33 +1512,57 @@ class ExpressiveReorderableListView extends StatelessWidget {
   final Color? containerColor;
 
   @override
-  Widget build(BuildContext context) => ReorderableList(
-    shrinkWrap: true,
-    physics: const NeverScrollableScrollPhysics(),
-    itemCount: itemCount,
-    onReorderItem: onReorder,
-    proxyDecorator: (child, index, animation) => _Dragged(child: child),
-    itemBuilder: (context, index) {
-      final item = itemBuilder(context, index);
-      assert(item.key != null, 'a reorderable item needs a key');
-      return KeyedSubtree(
-        key: item.key,
-        child: Padding(
+  Widget build(BuildContext context) {
+    final items = List<Widget>.generate(
+      itemCount,
+      (index) => itemBuilder(context, index),
+    );
+    assert(
+      items.every((item) => item.key != null),
+      'a reorderable item needs a key',
+    );
+    return ScrollConfiguration(
+      behavior: ScrollConfiguration.of(context)
+          .copyWith(physics: const NeverScrollableScrollPhysics()),
+      child: DesignReorderableList<Widget>(
+        items: items,
+        keyOf: (item) => item.key!,
+        labelOf: (item) {
+          if (item is ExpressiveListTile) {
+            final label = item.semanticLabel;
+            if (label != null) return label;
+            final title = item.title;
+            if (title is Text) {
+              final text =
+                  title.semanticsLabel ??
+                  title.data ??
+                  title.textSpan?.toPlainText();
+              if (text != null) return text;
+            }
+          }
+          return ExpressiveLocalizations.of(context).reorder;
+        },
+        shrinkWrap: true,
+        longPressToDrag: false,
+        onReorder: onReorder,
+        proxyDecorator: (child, index, animation) => _Dragged(child: child),
+        itemBuilder: (context, item, reorder) => Padding(
           padding: EdgeInsets.only(
-            bottom: segmented && index < itemCount - 1
+            bottom: segmented && reorder.index < itemCount - 1
                 ? ListTokens.segmentedGap
-                : ExpressiveSpacing.s0,
+                : 0,
           ),
           child: _Segment(
-            index: segmented ? index : null,
+            index: segmented ? reorder.index : null,
             count: segmented ? itemCount : null,
+            reorder: reorder,
             containerColor: containerColor,
             child: item,
           ),
         ),
-      );
-    },
-  );
+      ),
+    );
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -1601,17 +1608,44 @@ class ExpressiveReorderHandle extends StatelessWidget {
   final String? semanticLabel;
 
   @override
-  Widget build(BuildContext context) => ReorderableDragStartListener(
-    index: index,
-    child: MouseRegion(
+  Widget build(BuildContext context) {
+    final glyph = MouseRegion(
       cursor: SystemMouseCursors.grab,
       child: Icon(
         ExpressiveSymbols.dragIndicator,
         semanticLabel:
             semanticLabel ?? ExpressiveLocalizations.of(context).reorder,
       ),
-    ),
-  );
+    );
+    final reorder = _Segment.of(context)?.reorder;
+    if (reorder == null || reorder.index != index) {
+      return ReorderableDragStartListener(index: index, child: glyph);
+    }
+    return reorder.handle(
+      Builder(
+        builder: (context) {
+          final focused = Focus.of(context).hasPrimaryFocus;
+          final theme = context.expressiveTheme;
+          return ExpressiveSpringColor(
+            value: focused
+                ? theme.colors.secondary
+                : theme.colors.secondary.withValues(alpha: 0),
+            motion: ExpressiveMotionKey.fastEffects,
+            builder: (context, color, child) => DecoratedBox(
+              position: DecorationPosition.foreground,
+              decoration: ShapeDecoration(
+                shape: theme.shapes.full.copyWith(
+                  side: BorderSide(color: color, width: 2),
+                ),
+              ),
+              child: child,
+            ),
+            child: glyph,
+          );
+        },
+      ),
+    );
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -2027,6 +2061,64 @@ class _ExpressiveSwipeActionsState extends State<ExpressiveSwipeActions>
     with
         SingleTickerProviderStateMixin,
         _AnchoredSwipe<ExpressiveSwipeActions> {
+  final _rowFocus = FocusNode(debugLabel: 'Swipe actions');
+  final _actionFocus = FocusNode(debugLabel: 'Revealed action');
+  FocusNode? _returnFocus;
+
+  @override
+  void dispose() {
+    _rowFocus.dispose();
+    _actionFocus.dispose();
+    super.dispose();
+  }
+
+  Future<void> _closeFromKeys() async {
+    final previous = _returnFocus;
+    _returnFocus = null;
+    if (previous != null &&
+        previous.context != null &&
+        previous.canRequestFocus) {
+      previous.requestFocus();
+    }
+    await springTo(0);
+  }
+
+  Future<void> _openFromKeys(bool leading) async {
+    final count = leading ? widget.leading.length : widget.trailing.length;
+    final destination = _revealWidth(count) * (leading ? 1 : -1);
+    _returnFocus ??= FocusManager.instance.primaryFocus;
+    await springTo(destination);
+    if (mounted && settled == destination) _actionFocus.requestFocus();
+  }
+
+  KeyEventResult _key(FocusNode _, KeyEvent event) {
+    if (event is! KeyDownEvent || !widget.enabled) {
+      return KeyEventResult.ignored;
+    }
+    final key = event.logicalKey;
+    final open = settled != 0 || offset.value.abs() > .01;
+    if (key == LogicalKeyboardKey.escape && open) {
+      _closeFromKeys();
+      return KeyEventResult.handled;
+    }
+    if (key != LogicalKeyboardKey.arrowLeft &&
+        key != LogicalKeyboardKey.arrowRight) {
+      return KeyEventResult.ignored;
+    }
+    final leading =
+        (key == LogicalKeyboardKey.arrowRight) ==
+        (Directionality.of(context) == TextDirection.ltr);
+    if (open && leading != (offset.value > 0)) {
+      _closeFromKeys();
+      return KeyEventResult.handled;
+    }
+    if ((leading ? widget.leading : widget.trailing).isEmpty) {
+      return KeyEventResult.ignored;
+    }
+    if (!open) _openFromKeys(leading);
+    return KeyEventResult.handled;
+  }
+
   @override
   bool get swipeEnabled => widget.enabled;
 
@@ -2050,15 +2142,20 @@ class _ExpressiveSwipeActionsState extends State<ExpressiveSwipeActions>
   @override
   void onSettled(double anchor, double width) {
     setState(() {});
-    if (width == 0 || anchor.abs() != width) return;
+    if (!widget.allowsFullSwipe ||
+        _returnFocus != null ||
+        width == 0 ||
+        anchor.abs() != width) {
+      return;
+    }
     final actions = anchor > 0 ? widget.leading : widget.trailing;
     actions.first.onPressed();
     springTo(0);
   }
 
   void _run(ExpressiveSwipeAction action) {
+    _closeFromKeys();
     action.onPressed();
-    springTo(0);
   }
 
   Widget _actions(List<ExpressiveSwipeAction> actions, bool leading) {
@@ -2077,7 +2174,13 @@ class _ExpressiveSwipeActionsState extends State<ExpressiveSwipeActions>
           spacing: ExpressiveSpacing.s8,
           children: <Widget>[
             for (final action in ordered)
-              _RevealButton(action: action, onPressed: () => _run(action)),
+              _RevealButton(
+                action: action,
+                focusNode: identical(action, actions.first)
+                    ? _actionFocus
+                    : null,
+                onPressed: () => _run(action),
+              ),
           ],
         ),
       ),
@@ -2095,18 +2198,40 @@ class _ExpressiveSwipeActionsState extends State<ExpressiveSwipeActions>
               CustomSemanticsAction(label: action.label): action.onPressed,
           }
         : null,
-    child: swipeBox(
-      background: (logical) => logical > 0
-          ? _actions(widget.leading, true)
-          : _actions(widget.trailing, false),
-      // Open, a tap on the row closes it instead of reaching the row.
-      content: settled == 0
-          ? widget.child
-          : GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => springTo(0),
-              child: AbsorbPointer(child: widget.child),
+    child: Focus(
+      focusNode: _rowFocus,
+      canRequestFocus: widget.enabled,
+      skipTraversal: switch (widget.child) {
+        final ExpressiveListTile tile =>
+          tile.enabled &&
+              (tile.onTap != null ||
+                  tile.onLongPress != null ||
+                  tile.onChanged != null),
+        _ => false,
+      },
+      onKeyEvent: _key,
+      child: Builder(
+        builder: (context) => ExpressiveFocusRingBox(
+          focused: Focus.of(context).hasPrimaryFocus,
+          shape:
+              _Segment.of(context)?.corners ??
+              context.expressiveTheme.shapes.small,
+          child: swipeBox(
+            background: (logical) => logical > 0
+                ? _actions(widget.leading, true)
+                : _actions(widget.trailing, false),
+            // Open, a tap on the row closes it instead of reaching the row.
+            content: GestureDetector(
+              behavior: HitTestBehavior.deferToChild,
+              onTap: settled == 0 ? null : _closeFromKeys,
+              child: AbsorbPointer(
+                absorbing: settled != 0,
+                child: widget.child,
+              ),
             ),
+          ),
+        ),
+      ),
     ),
   );
 }
@@ -2114,10 +2239,15 @@ class _ExpressiveSwipeActionsState extends State<ExpressiveSwipeActions>
 /// One revealed action: a 40dp button, round in `secondaryContainer` or,
 /// emphasized, 16dp-cornered in `primary` (`RevealListTokens`).
 class _RevealButton extends StatelessWidget {
-  const _RevealButton({required this.action, required this.onPressed});
+  const _RevealButton({
+    required this.action,
+    required this.onPressed,
+    this.focusNode,
+  });
 
   final ExpressiveSwipeAction action;
   final VoidCallback onPressed;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -2152,6 +2282,7 @@ class _RevealButton extends StatelessWidget {
       semanticLabel: action.label,
       tooltip: action.label,
       onPressed: onPressed,
+      focusNode: focusNode,
       child: ExpressiveStyledContent(
         minimumSize: const Size.square(SmallIconButtonTokens.containerHeight),
         iconSize: SmallIconButtonTokens.iconSize,

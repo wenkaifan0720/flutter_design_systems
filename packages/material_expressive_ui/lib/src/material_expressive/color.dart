@@ -1,23 +1,4 @@
-/// Expressive's colour: [ExpressiveColorScheme], every colour role of one
-/// theme in one brightness, which `context.expressiveTheme.colors` carries
-/// (CONTRACT §2 "Color"). Components paint with these roles and nothing
-/// else — by name (`colors.primary`) or, from a token, by its symbolic
-/// [ExpressiveColorRole] (`colors.role(ButtonSmallTokens.containerColor)`).
-///
-/// The roles are exactly Compose's `ColorScheme` at material3 1.5.0-alpha29
-/// (its 48 `ColorSchemeKeyTokens`, the generated [ExpressiveColorRole]),
-/// plus [ExpressiveColorScheme.shadow] (md.sys.color.shadow), which
-/// Compose paints as a constant.
-///
-/// A theme's colours are baked from its `themes/<id>/theme.json` by
-/// `tools/expressive_tokens` (`emit/color.ts`, the seed baker in
-/// `src/bake/`: material-color-utilities 0.4.0, spec 2025, phone), light
-/// and dark; dark is generated, never an inversion of light. `baseline` is
-/// exactly what Compose's `MaterialExpressiveTheme` paints by default
-/// (CONTRACT §6), from the jar's tokens rather than the baker.
-///
-/// Owner: w1-color (with `internal/color/`, `emit/color.ts`, `src/bake/`
-/// and `test/color_test.dart`).
+/// Material colour roles and their light and dark schemes.
 library;
 
 import 'package:flutter/foundation.dart';

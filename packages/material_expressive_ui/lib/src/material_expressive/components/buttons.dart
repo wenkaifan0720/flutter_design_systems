@@ -1,35 +1,4 @@
-/// Buttons: the common buttons — filled, tonal, outlined, elevated and text;
-/// XS–XL; round or square; toggle — that change shape on press; standard and
-/// connected button groups, the connected group standing in for segmented
-/// buttons; and the inline text link (CONTRACT §4.1 `button`, `button-group`,
-/// `segmented-control`, `link`; §4.2 `ExpressiveButton`). Owner: w3-buttons,
-/// with `test/buttons_test.dart` and the gallery's buttons demo.
-///
-/// A port of Compose material3 1.5.0-alpha29 (wave decision F1):
-///
-/// - [ExpressiveButton]'s five are `Button`, `FilledTonalButton`, `OutlinedButton`,
-///   `ElevatedButton` and `TextButton` with `ButtonDefaults`' size ladder
-///   (`contentPaddingFor`, `iconSizeFor`, `iconSpacingFor`, `textStyleFor`,
-///   `shapesFor`): XS 32, S 40, M 56, L 96, XL 136dp. The shape springs to
-///   the size's pressed shape on `ButtonBehavior.pressMotion` (an effects
-///   spring: the press never bounces). Flutter's classes hold the five:
-///   [ExpressiveFilledButton] (and its `.tonal`), [ExpressiveOutlinedButton],
-///   [ExpressiveElevatedButton] and [ExpressiveTextButton].
-/// - [ExpressiveToggleButton] is `ToggleButton`, `ElevatedToggleButton`,
-///   `FilledTonalToggleButton` and `OutlinedToggleButton`: checked colours,
-///   and the round button checking to the size's square shape (a square one
-///   to the round), on `ToggleButtonBehavior.shapeMotion`.
-/// - [ExpressiveButtonGroup] is `ButtonGroup`'s measure policy: the pressed
-///   button widens by `ButtonGroupBehavior.expandedRatio` of its width and
-///   its neighbours give way, on `ButtonGroupBehavior.motion`.
-/// - [ExpressiveSegmentedButton] is the connected button group: a
-///   `ButtonGroup` of toggle buttons with `ButtonGroupDefaults.connected*`
-///   shapes — full outer corners, small inner corners that tighten on press
-///   and round out when checked.
-/// - [ExpressiveLink] is a link inside running text.
-///
-/// L and XL buttons are hero widgets (CONTRACT §3): they assert an
-/// [ExpressiveHeroMoment] above them.
+/// Buttons, links and connected single- or multiple-choice controls.
 library;
 
 import 'dart:math' as math;
@@ -99,7 +68,7 @@ enum ExpressiveButtonKind {
 }
 
 /// Material's five button sizes, by container height. [large] and
-/// [extraLarge] are hero sizes (CONTRACT §3).
+/// [extraLarge] are hero sizes.
 enum ExpressiveButtonSize {
   /// 32dp (`ButtonDefaults.ExtraSmallContainerHeight`).
   extraSmall,
@@ -189,7 +158,7 @@ class ExpressiveToggleButtonColors with Diagnosticable {
   }
 }
 
-/// A common button (CONTRACT §4.1 `button`): a label, optionally with a
+/// A common button: a label, optionally with a
 /// leading and a trailing icon, in one of Material's five styles and five
 /// sizes, round or square, that changes shape on press. The five are
 /// Flutter's classes, which share this base as Flutter's share
@@ -1075,8 +1044,7 @@ class ExpressiveButtonSegment<T> {
   final bool enabled;
 }
 
-/// The segmented button (CONTRACT §4.1 `segmented-control`; Compose's
-/// `SingleChoiceSegmentedButtonRow`, Material's `SegmentedButton`): Material 3
+/// The segmented button (Compose's `SingleChoiceSegmentedButtonRow`): Material 3
 /// Expressive's connected button group, which replaces segmented buttons —
 /// two to five toggle buttons joined 2dp apart, the outer corners full and
 /// the inner ones small; a press tightens the inner corners and widens the
@@ -1176,8 +1144,7 @@ class ExpressiveSegmentedButton<T> extends StatelessWidget {
   }
 }
 
-/// The multi-choice segmented button (CONTRACT §4.1 `segmented-control`,
-/// `multi`; Compose's `MultiChoiceSegmentedButtonRow`): the connected group
+/// The multi-choice segmented button (Compose's `MultiChoiceSegmentedButtonRow`): the connected group
 /// of [ExpressiveSegmentedButton] whose segments are independent toggles,
 /// [value] the set chosen.
 ///
@@ -1347,7 +1314,7 @@ class _ConnectedSegments<T> extends StatelessWidget {
   }
 }
 
-/// A link (CONTRACT §4.1 `link`): its words in `primary`, underlined, with
+/// A link: its words in `primary`, underlined, with
 /// the pressable's state layers and ripple. Standing alone it keeps the 48dp
 /// tap target every control does; in a paragraph ([span]) it takes none, as
 /// WCAG 2.5.8 exempts a target inside a sentence (a line box cannot grow).

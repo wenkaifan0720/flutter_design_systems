@@ -1,19 +1,4 @@
-/// Media: the image in a declared media slot, masked by the corner scale or
-/// a library shape, and the avatar — a photo, initials or a glyph in a small
-/// fixed shape (CONTRACT §4.1 `image`, `avatar`). Owner: w3-media.
-///
-/// Compose has no image or avatar component of its own: Material's image is
-/// `Image` clipped by a shape (`Modifier.clip(shape)`), and its avatar is the
-/// list item's leading avatar (`ListTokens.ItemLeadingAvatar*`: a 40dp
-/// `primaryContainer` circle with its initials in `titleMedium`
-/// `onPrimaryContainer`). Both are ported from those tokens.
-///
-/// - Delivery is the design kit's [MediaSlotImage] (bundled asset or the
-///   host's durable URL, retries while mounted); this file draws only the
-///   placeholder it passes and the mask.
-/// - A library-shape mask on an image or an avatar is a hero moment
-///   (CONTRACT §3): it asserts an [ExpressiveHeroMoment] ancestor. Masks never go
-///   on text; the corner scale is not a hero.
+/// Avatars, images, thumbnails and other media components.
 library;
 
 import 'dart:math' as math;
@@ -376,7 +361,7 @@ class ExpressiveMedia extends StatelessWidget {
 
   /// A picture masked by the library [shape] (Compose's
   /// `Modifier.clip(MaterialShapes.X.toShape())`), square by default: a
-  /// hero moment, which asserts an [ExpressiveHeroMoment] ancestor (CONTRACT §3).
+  /// hero moment, which asserts an [ExpressiveHeroMoment] ancestor.
   const ExpressiveMedia.shaped({
     required this.slotId,
     required ExpressiveMaterialShape this.shape,

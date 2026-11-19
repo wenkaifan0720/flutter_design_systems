@@ -1,24 +1,4 @@
-/// Expressive's type: [ExpressiveTextTheme], the 30 styles (15 baseline,
-/// 15 emphasized) of Compose's `TypeScaleTokens` set in Roboto Flex, which
-/// `context.expressiveTheme.type` carries (CONTRACT §2 "Type"; wave
-/// decision E7). Owner: w1-type.
-///
-/// Every style comes from the generated tokens (`internal/tokens/`:
-/// `TypographyTokens.of(key)` over `TypeScaleTokens`), never a literal:
-///
-/// - family Roboto Flex (the bundled `RobotoFlex`, trimmed to `wght` +
-///   `opsz`), the only typeface Expressive wears;
-/// - size, weight, tracking and line height the token's;
-/// - `FontVariation('wght', weight)` and `FontVariation('opsz', size)`:
-///   Flutter never sets the optical size itself, and Roboto Flex's default
-///   (14) would draw every other size with the wrong optics. The optical
-///   size is the token's size: text scaling enlarges the glyphs, not their
-///   optics, as on Android;
-/// - the line height laid out as Compose lays it (`DefaultLineHeightStyle`:
-///   alignment Center, trim None): [TextLeadingDistribution.even].
-///
-/// Line heights are the tokens' in every locale, as in Compose
-/// ([ExpressiveLanguageHeight] names a locale's category, informationally).
+/// Text styles, font loading and variable font axes for Material Expressive.
 library;
 
 import 'package:flutter/foundation.dart';

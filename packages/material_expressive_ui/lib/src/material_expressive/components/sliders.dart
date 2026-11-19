@@ -1,34 +1,4 @@
-/// Sliders — standard, centred, range and vertical, in five track sizes,
-/// with stops, an inset icon and a value indicator — and the quantity
-/// stepper (CONTRACT §4.1 `slider`, `quantity-stepper`). Owner: w3-sliders.
-///
-/// A port of Compose material3 1.5.0-alpha29's `Slider.kt`: `Slider`,
-/// `VerticalSlider` and `RangeSlider` with `SliderDefaults.Thumb`, `Track`
-/// and `CenteredTrack`. Geometry and colours come from the generated
-/// `SliderTokens` and `SliderBehavior`; the layout follows `SliderImpl` and
-/// `RangeSliderImpl`'s measure policy (the handle spans the track's ends,
-/// a stepped value's handle is inset by the track's corner), the track is
-/// `drawTrack` line for line (segments that leave a gap around the handle,
-/// 2dp inside corners, the stop indicator at each open end, ticks in the
-/// opposite colour), and input is Compose's: a tap moves the value on
-/// release, a drag moves it from where the finger went down, arrows, Home,
-/// End and Page keys step it. The handle narrows to half its width while
-/// pressed, dragged or focused, at once, as Compose does (no spring).
-///
-/// Beyond the component code (deviations, recorded for the oracle): the
-/// five track sizes, the inset icon and the value indicator are the
-/// Material 3 Expressive spec's, which Compose reaches only by sizing
-/// `Track` and `Thumb` and drawing labels in samples. The sizes are the
-/// token scale's own steps: track XS 16 (`SliderTokens`) · S 24 · M 40 ·
-/// L 56 · XL 96, the handle the track plus `activeHandlePadding` above and
-/// below (never under `SliderTokens.handleHeight`), the corners the shape
-/// scale's small · small · medium · large · extra-large (XS keeps the
-/// default: half the track, no corner shrinking); the value indicator uses
-/// the `SliderTokens` value-indicator roles.
-///
-/// The quantity stepper has no Compose counterpart: two tonal icon buttons
-/// (`FilledTonalIconButtonTokens` on `SmallIconButtonTokens`' geometry, on
-/// the shared pressable) around the value; holding one repeats.
+/// Sliders and range sliders with continuous and discrete values.
 library;
 
 import 'dart:async';

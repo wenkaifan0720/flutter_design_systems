@@ -1,39 +1,4 @@
-/// Toolbars: floating (horizontal and vertical) and docked, standard and
-/// vibrant (CONTRACT §4.1 `toolbar`). Owner: w3-toolbar, with
-/// `test/toolbar_test.dart` and the gallery's toolbar demo.
-///
-/// A port of Compose material3 1.5.0-alpha29 (wave decision F1):
-///
-/// - [ExpressiveFloatingToolbar] is `HorizontalFloatingToolbar` and
-///   `VerticalFloatingToolbar`, both overloads: without a FAB (leading and
-///   trailing content that expand in and shrink away on `expanded`) and
-///   with one (`…WithFabLayout`: the toolbar's length springs between its
-///   full intrinsic length and nothing while the FAB grows from 56 to
-///   80dp). Colours are `FloatingToolbarDefaults
-///   .standardFloatingToolbarColors` / `vibrantFloatingToolbarColors`
-///   ([ExpressiveToolbarKind]).
-/// - [ExpressiveToolbarFab] is `FloatingToolbarDefaults
-///   .StandardFloatingActionButton` / `VibrantFloatingActionButton`: a FAB
-///   that fills the square the toolbar gives it, in the toolbar kind's FAB
-///   colours.
-/// - [ExpressiveDockedToolbar] is `FlexibleBottomAppBar` (the docked
-///   toolbar): edge to edge at the bottom, its actions spaced between or
-///   at the fixed spacing.
-/// - [ExpressiveToolbarScrollBehavior] is `FloatingToolbarDefaults
-///   .exitAlwaysScrollBehavior` (and `BottomAppBarDefaults
-///   .exitAlwaysScrollBehavior` for the docked toolbar): the toolbar leaves
-///   the screen as content scrolls on and returns as it scrolls back,
-///   snapping to shown or hidden on a spring when the scroll stops part way.
-/// - [ExpressiveToolbarScrollExpansion] is `Modifier
-///   .floatingToolbarVerticalNestedScroll`: `expanded` flips after the
-///   content scrolls `ScrollDistanceThreshold` (40dp) either way.
-///
-/// With a touch-exploration screen reader on (Flutter's
-/// `MediaQuery.accessibleNavigation`), a floating toolbar stays expanded and
-/// ignores its scroll behaviour, and it offers an expand / collapse custom
-/// action, as Compose's does. A FAB menu never sits beside a toolbar
-/// (CONTRACT §3): debug builds check it with
-/// [ExpressiveFabMenu.debugCheckNoMenuBeside].
+/// Floating and docked toolbars.
 library;
 
 import 'dart:math' as math;
@@ -144,7 +109,7 @@ double _roundToPixels(double dp, double ratio) =>
 ///
 /// [scrollBehavior] lets the toolbar leave the screen as content scrolls;
 /// [ExpressiveToolbarScrollExpansion] drives [expanded] from a scroll
-/// instead. Never beside a FAB menu (CONTRACT §3).
+/// instead. Never beside a FAB menu.
 class ExpressiveFloatingToolbar extends StatefulWidget {
   /// A floating toolbar of [children].
   const ExpressiveFloatingToolbar({

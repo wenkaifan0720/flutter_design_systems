@@ -1,27 +1,4 @@
-/// The splash and its handoff: the app's mark on the theme's colours while
-/// the app restores its session, then the mark morphing into the first
-/// screen's anchor as the ground fades to show the page (the front doors'
-/// threshold, docs/architecture/material-expressive-contract.md §3).
-/// Owner: front-doors `sys`.
-///
-/// Not a Compose component: Android's splash screen hands its icon to the
-/// app's first frame; an Expressive app's first Flutter frame is this
-/// splash, so the handoff is the system's own. It is built from the
-/// library: a shape mark is a library shape
-/// ([ExpressiveMaterialShape.cookie9Sided] by default) that, while the app
-/// restores, runs the loading indicator ([ExpressiveLoadingIndicator], its
-/// own seven-shape sequence, unforked) at the large FAB's size; the handoff
-/// is a morph ([ExpressivePolygonMorph], the library's shape matching) from the mark's shape
-/// in its rectangle to the anchor's shape — a step of the corner scale or a
-/// library shape — in the anchor's, on the theme's default spatial spring,
-/// while the ground fades on the default effects spring; the anchor's own
-/// widget then fades in over the morphed shape on the fast effects spring
-/// and the overlay unmounts.
-///
-/// It never adds wait: a restore that ends before the first frame still
-/// plays the handoff as the transition. No anchor within a few frames, a
-/// custom mark with no [ExpressiveSplashScreenSource], or Reduce Motion: the
-/// overlay cross-fades instead.
+/// The app launch surface and its animated transition.
 library;
 
 import 'dart:ui' show lerpDouble;

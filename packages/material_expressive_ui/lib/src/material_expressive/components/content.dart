@@ -1,20 +1,4 @@
-/// Content: text in the 30 type styles, Material Symbols icons, and — on
-/// tokens — the stat (with its counter), the rating and the message bubble
-/// (CONTRACT §4.1 `text`, `icon`, `stat`, `message-bubble`, `rating`; the
-/// chart is its own family, chart.dart). Owner: w3-media.
-///
-/// Compose ports:
-/// - [ExpressiveText] is Compose's `Text(style = MaterialTheme.typography.X)`:
-///   the style's colour is the ambient content colour (the host's
-///   `onSurface`) unless given. Emphasized display and headline styles are a
-///   hero moment (CONTRACT §3) and assert an [ExpressiveHeroMoment] ancestor.
-/// - [ExpressiveIcon] is Compose's `Icon` over the Material Symbols font:
-///   the tint is the ambient content colour, the FILL follows `selected` on
-///   the fast effects spring ([ExpressiveIcon]).
-///
-/// Material has no stat, rating or message bubble component; these
-/// are built for the host app only from the scheme's roles, the type scale, the
-/// corner scale, the spacing scale, component tokens and springs.
+/// Themed text, icons, statistics, message bubbles and star ratings.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -87,7 +71,7 @@ ExpressiveTypeKey expressiveTypeKeyOf(
 }
 
 /// Whether the emphasized [role] is a hero moment: emphasized display and
-/// headline are (CONTRACT §3); emphasized title, body and label are
+/// headline are; emphasized title, body and label are
 /// Expressive's default emphasis on selected, unread and primary labels.
 bool _emphasisIsHero(ExpressiveTextRole role) =>
     role == ExpressiveTextRole.display || role == ExpressiveTextRole.headline;
@@ -840,7 +824,7 @@ class ExpressiveRating extends StatelessWidget {
   /// The stars' size.
   final ExpressiveRatingSize size;
 
-  /// What a screen reader says of a read-only rating.
+  /// The accessible name of the rating. Its current score is announced separately.
   final String? semanticLabel;
 
   static String _number(double value) => value == value.roundToDouble()
@@ -869,7 +853,23 @@ class ExpressiveRating extends StatelessWidget {
           ),
       ],
     );
-    if (change != null) return row;
+    if (change != null) {
+      // The rating's node is as wide as its stars, where they stand: in a
+      // column that stretches its children it spanned the column, a control
+      // as wide as the page with its stars at one end.
+      return Align(
+        alignment: AlignmentDirectional.centerStart,
+        widthFactor: 1,
+        heightFactor: 1,
+        child: Semantics(
+          container: true,
+          explicitChildNodes: true,
+          label: semanticLabel,
+          value: ExpressiveLocalizations.of(context).rated(_number(value), max),
+          child: row,
+        ),
+      );
+    }
     return Semantics(
       image: true,
       label:
@@ -930,7 +930,8 @@ class ExpressiveRating extends StatelessWidget {
       // The 40dp state layer of an icon control, not Flutter's default
       // splash radius.
       rippleRadius: ExpressiveSpacing.s40 / 2,
-      selected: filled,
+      role: ExpressivePressRole.radio,
+      selected: index == value,
       semanticLabel: ExpressiveLocalizations.of(context).rate(index, max),
       onPressed: onPressed,
       child: ExpressiveStyledContent(

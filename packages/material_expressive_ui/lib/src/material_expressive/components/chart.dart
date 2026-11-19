@@ -1,13 +1,4 @@
-/// Chart: a simple chart on tokens, no chart library (CONTRACT §4.1
-/// `chart`). Counts plot from zero as bars or a line, a label under each
-/// point, as they always have; a measure (a pulse, a weight) plots on an
-/// axis scaled to it ([ExpressiveChartDomain]) with its labels thinned to
-/// fit ([ExpressiveChartLabels]); and a paired measure (a blood pressure's
-/// two numbers) plots as two series on one axis ([ExpressiveChart.paired]).
-///
-/// Material has no chart component; this one is built for the host app
-/// only from the scheme's roles, the type scale, the spacing scale, component tokens
-/// and springs.
+/// Bar, line, area, paired-series and donut charts.
 library;
 
 import 'dart:async' show Timer;
@@ -18,6 +9,7 @@ import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/widgets.dart';
 
 import '../color.dart' show ExpressiveColorScheme;
+import '../contrast.dart' show expressiveContrastRatio;
 import '../internal/tokens/linear_progress_indicator_tokens.g.dart';
 import '../motion.dart';
 import '../shape.dart';
@@ -135,8 +127,7 @@ class ExpressiveChartBand {
   /// `Your target`.
   final String label;
 
-  /// Its fill (a range in its status's container colour, say);
-  /// `surfaceContainerHigh` when null.
+  /// The range's fill. Defaults to a contrasting tone from the primary palette.
   final Color? color;
 
   @override
@@ -858,6 +849,7 @@ class ExpressiveChart extends StatelessWidget {
         builder: (shown) => CustomPaint(
           size: Size.infinite,
           painter: _ChartPainter(
+            direction: Directionality.of(context),
             kind: kind,
             values: shown,
             highlight: highlight,
@@ -1001,6 +993,22 @@ class ExpressiveChart extends StatelessWidget {
         ? -1
         : candidates.indexWhere((tick) => tick.at == markedAt);
     final paired = kind == ExpressiveChartType.paired;
+    final rangeColor = band == null
+        ? expressiveTransparent
+        : band!.color ?? _bandTint(colors);
+    Color seriesInk(Color base) {
+      if (band == null) return base;
+      final dark = expressiveContrastRatio(colors.onSurface, rangeColor);
+      final light = expressiveContrastRatio(colors.surface, rangeColor);
+      return _contrastingTone(
+        base,
+        dark > light ? colors.onSurface : colors.surface,
+        rangeColor,
+      );
+    }
+
+    final firstInk = ink ?? color ?? seriesInk(colors.primary);
+    final secondInk = seriesInk(colors.tertiary);
     final plot = AspectRatio(
       aspectRatio: aspectRatio,
       child: _ChartValues(
@@ -1012,9 +1020,7 @@ class ExpressiveChart extends StatelessWidget {
               _Line(
                 xs: xs[s],
                 ys: <double>[for (final _ in series[s]) shown[at++]],
-                color: s == 0
-                    ? ink ?? color ?? colors.primary
-                    : colors.tertiary,
+                color: s == 0 ? firstInk : secondInk,
                 dashed: s == 1,
                 colors: <Color?>[for (final p in series[s]) p.color],
               ),
@@ -1030,14 +1036,17 @@ class ExpressiveChart extends StatelessWidget {
               emptyLabel: emptyLabel,
               firstX: allX.isEmpty ? null : allX.reduce(math.min),
               band: band == null ? null : (band!.low, band!.high),
-              bandColor: band?.color ?? _bandTint(colors),
+              bandColor: rangeColor,
               target: target?.value,
               targetColor: colors.outline,
               highlightFill: colors.surfaceContainerHighest,
               highlightStyle: theme.type.labelSmallEmphasized
                   .merge(typography)
                   .copyWith(color: ink ?? colors.onSurface),
-              area: kind == ExpressiveChartType.line && domain.fromZero
+              area:
+                  kind == ExpressiveChartType.line &&
+                      domain.fromZero &&
+                      band == null
                   ? colors.primaryContainer
                   : null,
               highlight: highlight,
@@ -1080,7 +1089,7 @@ class ExpressiveChart extends StatelessWidget {
                 label: first!.label,
                 style: legendStyle,
                 mark: _Legend(
-                  color: ink ?? colors.primary,
+                  color: firstInk,
                   dashed: false,
                   pointStroke: ExpressiveSpacing.s2,
                 ),
@@ -1089,7 +1098,7 @@ class ExpressiveChart extends StatelessWidget {
                 label: second!.label,
                 style: legendStyle,
                 mark: _Legend(
-                  color: colors.tertiary,
+                  color: secondInk,
                   dashed: true,
                   pointStroke: ExpressiveSpacing.s2,
                 ),
@@ -1099,7 +1108,7 @@ class ExpressiveChart extends StatelessWidget {
                   label: band.label,
                   style: legendStyle,
                   mark: _Legend(
-                    color: band.color ?? _bandTint(colors),
+                    color: rangeColor,
                     dashed: false,
                     swatch: true,
                     edge: colors.outlineVariant,
@@ -1296,7 +1305,10 @@ class _PointTooltipState extends State<_PointTooltip> {
 
   void _show(Offset at, double width) {
     _hide?.cancel();
-    final i = _indexAt(at.dx, width);
+    final i = _indexAt(
+      Directionality.of(context) == TextDirection.rtl ? width - at.dx : at.dx,
+      width,
+    );
     if (i != _shown) setState(() => _shown = i);
   }
 
@@ -1331,7 +1343,7 @@ class _PointTooltipState extends State<_PointTooltip> {
             right: 0,
             top: math.max(0, y - ExpressiveSpacing.s32 - ExpressiveSpacing.s4),
             child: Align(
-              alignment: Alignment(
+              alignment: AlignmentDirectional(
                 width <= 0 ? 0 : (centre / width) * 2 - 1,
                 0,
               ),
@@ -1420,6 +1432,7 @@ class _Values {
 
 class _ChartPainter extends CustomPainter {
   const _ChartPainter({
+    required this.direction,
     required this.kind,
     required this.values,
     required this.highlight,
@@ -1435,6 +1448,7 @@ class _ChartPainter extends CustomPainter {
     this.targetColor = expressiveTransparent,
   });
 
+  final TextDirection direction;
   final ExpressiveChartType kind;
   final List<double> values;
   final int? highlight;
@@ -1458,7 +1472,9 @@ class _ChartPainter extends CustomPainter {
     final top = peak <= 0 ? 1.0 : peak;
     final count = values.length;
     final column = (size.width - gap * (count - 1)) / count;
-    double centre(int i) => i * (column + gap) + column / 2;
+    double start(int i) =>
+        (direction == TextDirection.rtl ? count - 1 - i : i) * (column + gap);
+    double centre(int i) => start(i) + column / 2;
     double height(double v) => (v.clamp(0, top) / top) * size.height;
 
     canvas.drawLine(
@@ -1484,12 +1500,7 @@ class _ChartPainter extends CustomPainter {
           // A bar shorter than half its width rounds only as far as it is
           // tall, so it stays a bar and never reads as a dome.
           final radius = Radius.circular(math.min(column / 2, h));
-          final rect = Rect.fromLTWH(
-            i * (column + gap),
-            size.height - h,
-            column,
-            h,
-          );
+          final rect = Rect.fromLTWH(start(i), size.height - h, column, h);
           canvas.drawRRect(
             RRect.fromRectAndCorners(rect, topLeft: radius, topRight: radius),
             Paint()..color = i == highlight ? accent : bar,
@@ -1540,6 +1551,7 @@ class _ChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_ChartPainter old) =>
+      old.direction != direction ||
       old.kind != kind ||
       old.highlight != highlight ||
       old.gap != gap ||
@@ -1643,10 +1655,31 @@ const double _seriesStroke = ExpressiveSpacing.s4;
 /// without rounding off the range it marks at the plot's ends.
 const double _bandCorner = ShapeTokens.cornerValueSmall;
 
-/// A band's fill when it names none: the primary container, half
-/// strength, so the series' own colours stay legible on it.
-Color _bandTint(ExpressiveColorScheme colors) =>
-    colors.primaryContainer.withValues(alpha: colors.primaryContainer.a * .6);
+/// The lightest mix of the two brand tones with a 3:1 contrast against
+/// the plot surface. The legend uses the same colour.
+Color _bandTint(ExpressiveColorScheme colors) {
+  final end = expressiveContrastRatio(colors.primary, colors.surface) >= 3.05
+      ? colors.primary
+      : colors.onSurface;
+  return _contrastingTone(colors.primaryContainer, end, colors.surface);
+}
+
+Color _contrastingTone(Color start, Color end, Color background) {
+  bool visible(Color candidate) =>
+      expressiveContrastRatio(candidate, background) >= 3.05;
+  if (visible(start)) return start;
+  var low = 0.0;
+  var high = 1.0;
+  for (var i = 0; i < 8; i++) {
+    final mid = (low + high) / 2;
+    if (visible(Color.lerp(start, end, mid)!)) {
+      high = mid;
+    } else {
+      low = mid;
+    }
+  }
+  return Color.lerp(start, end, high)!;
+}
 
 /// Each series' point shape, from Material's shape library: the first a
 /// circle, the second a diamond, so two series part by shape as well as
@@ -1802,6 +1835,7 @@ class _ScaledChartPainter extends CustomPainter {
   }
 
   void _paint(Canvas canvas, Size size) {
+    final rtl = textDirection == TextDirection.rtl;
     final sparkline = labels == ExpressiveChartLabels.none;
     final plain = labels == ExpressiveChartLabels.plain;
     final inset = _pointRadius + _pointGap;
@@ -1860,9 +1894,9 @@ class _ScaledChartPainter extends CustomPainter {
           ? inset
           : math.max(inset, xLabels.last.width / 2);
       plot = Rect.fromLTRB(
-        gutter,
+        rtl ? endRoom : gutter,
         math.max(inset, lineHeight / 2),
-        size.width - endRoom,
+        size.width - (rtl ? gutter : endRoom),
         size.height - xBand,
       );
     }
@@ -1870,8 +1904,11 @@ class _ScaledChartPainter extends CustomPainter {
     final range = axis.max - axis.min;
     double y(double v) =>
         plot.bottom - (range <= 0 ? 0.5 : (v - axis.min) / range) * plot.height;
-    double x(double at) =>
-        span <= 0 ? plot.center.dx : plot.left + plot.width * at / span;
+    double x(double at) => span <= 0
+        ? plot.center.dx
+        : rtl
+        ? plot.right - plot.width * at / span
+        : plot.left + plot.width * at / span;
 
     if (band case (final low, final high)) {
       // On the small corner (8dp, or half the band when thinner):
@@ -1922,8 +1959,10 @@ class _ScaledChartPainter extends CustomPainter {
     Rect? note;
     TextPainter? notePainter;
     if (!sparkline && emptyLabel != null && firstX != null && firstX! > 0) {
-      final right = x(firstX!);
-      final room = right - plot.left - ExpressiveSpacing.s8;
+      final first = x(firstX!);
+      final start = rtl ? first : plot.left;
+      final end = rtl ? plot.right : first;
+      final room = end - start - ExpressiveSpacing.s8;
       final label = room > ExpressiveSpacing.s40
           ? _label(emptyLabel!, maxWidth: room)
           : null;
@@ -1932,7 +1971,7 @@ class _ScaledChartPainter extends CustomPainter {
       if (label != null && label.computeLineMetrics().length <= 2) {
         notePainter = label;
         final at = Offset(
-          plot.left + (right - plot.left - notePainter.width) / 2,
+          start + (end - start - notePainter.width) / 2,
           plot.center.dy - notePainter.height / 2,
         );
         note = (at & notePainter.size).inflate(ExpressiveSpacing.s4);
@@ -1968,7 +2007,12 @@ class _ScaledChartPainter extends CustomPainter {
         final top = at - label.height / 2;
         label.paint(
           canvas,
-          Offset(plot.left - ExpressiveSpacing.s8 - label.width, top),
+          Offset(
+            rtl
+                ? plot.right + ExpressiveSpacing.s8
+                : plot.left - ExpressiveSpacing.s8 - label.width,
+            top,
+          ),
         );
         centres.add(top + label.height / 2);
       }
@@ -1992,15 +2036,21 @@ class _ScaledChartPainter extends CustomPainter {
               for (final p in xLabels) p.width,
             ], scale: span <= 0 ? plot.width : plot.width / span)
           : <int>[for (var i = 0; i < ticks.length; i++) i];
-      var limit = size.width + ExpressiveSpacing.s8;
+      var limit = rtl
+          ? -ExpressiveSpacing.s8
+          : size.width + ExpressiveSpacing.s8;
       for (final i in kept.reversed) {
         final label = xLabels[i];
         final left = (x(ticks[i].at) - label.width / 2)
             .clamp(0.0, math.max(0.0, size.width - label.width))
             .toDouble();
-        if (left + label.width > limit - ExpressiveSpacing.s8) continue;
+        if (rtl
+            ? left < limit + ExpressiveSpacing.s8
+            : left + label.width > limit - ExpressiveSpacing.s8) {
+          continue;
+        }
         label.paint(canvas, Offset(left, plot.bottom + xLabelTop));
-        limit = left;
+        limit = rtl ? left + label.width : left;
       }
     }
 

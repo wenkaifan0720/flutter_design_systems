@@ -1,18 +1,4 @@
-/// Expressive's icons: the Material Symbols Rounded glyphs the system
-/// wears (Apache-2.0, subset, the FILL axis for selection; CONTRACT §2
-/// "Icons", §9.3). No other icon font, and never a Google product mark
-/// (§6). Owner: w1-type. The `icon` role's component lives with the content
-/// family; this file is the glyph set and the fill.
-///
-/// - [ExpressiveSymbols]: one `IconData` per bundled glyph, generated
-///   (`internal/icons/symbols.g.dart`) from the subset's codepoints by
-///   `tools/expressive_tokens/fonts/` — `symbols.txt` lists the glyphs: the
-///   ones Expressive's components draw and a documented everyday-app set.
-/// - [ExpressiveSymbolsFont]: the font the glyphs are drawn in and the fill of
-///   each state.
-/// - [ExpressiveIcon]: a glyph as Compose's `Icon` draws it, whose FILL
-///   follows a selected state on the theme's fast effects spring, never a
-///   duration.
+/// The bundled Material Symbols Rounded icon set.
 library;
 
 import 'package:flutter/foundation.dart';

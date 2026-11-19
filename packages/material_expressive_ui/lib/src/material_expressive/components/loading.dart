@@ -1,36 +1,4 @@
-/// The loading indicator — plain and contained, indeterminate and
-/// determinate — and pull-to-refresh (CONTRACT §4.1 `loading-indicator`).
-/// Owner: w3-feedback.
-///
-/// A port of Compose material3 1.5.0-alpha29's `LoadingIndicator.kt`
-/// (`LoadingIndicator`, `ContainedLoadingIndicator`, `LoadingIndicatorImpl`)
-/// and `pulltorefresh/PullToRefresh.kt` (`PullToRefreshBox` with
-/// `PullToRefreshDefaults.LoadingIndicator`). Sizes and colours come from
-/// the generated `LoadingIndicatorTokens`; the cycle's timing, spring and
-/// shapes from `LoadingIndicatorBehavior`; the pull's threshold, drag
-/// multiplier and overshoot turn from `PullToRefreshBehavior`
-/// (`tools/expressive_tokens/behavior/loading.yaml`).
-///
-/// The indeterminate cycle is Compose's `LaunchedEffect` loop as a function
-/// of the frame clock: every `morphInterval` a morph to the next of the
-/// seven shapes starts on the (0.6, 200) spring; once that spring finishes
-/// (Compose's settle estimate at the 0.1 visibility threshold) the shape
-/// index advances, the morph snaps to 0 and the resting angle gains a
-/// quarter turn; the drawn angle is morph × 90 + that angle + a linear
-/// global turn every `globalRotation`. The shapes are the library's
-/// (`internal/shape`, held to Compose's cubics), morphed into one reused
-/// [Path], scaled by Compose's `calculateScaleFactor` × 38/48 and centred.
-///
-/// Deviations (recorded for the oracle):
-/// - Under Reduce Motion the morph spring is critically damped (the kit's
-///   policy for a spatial spring); Compose keeps it.
-/// - The pull's settle to the threshold and back runs on the fast spatial
-///   spring; Compose's `PullToRefreshState` uses `Animatable`'s default
-///   spring (no bounce, medium stiffness), which is no motion token.
-/// - The pull is read from Flutter's scroll notifications (overscroll on
-///   Android, the bounce on iOS) instead of nested scrolling, as Flutter's
-///   own refresh indicator does; the thresholds and the tension are
-///   Compose's.
+/// Determinate and indeterminate Expressive loading indicators.
 library;
 
 import 'dart:async';

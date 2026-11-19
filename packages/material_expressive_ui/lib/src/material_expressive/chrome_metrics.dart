@@ -39,18 +39,10 @@ abstract final class ExpressiveChromeMetrics {
   /// (`NavigationRailCollapsedTokens.ContainerWidth`).
   static const double railWidth = NavigationRailCollapsedTokens.containerWidth;
 
-  /// The narrowest window the shell stands the navigation rail in instead
-  /// of the bar (CONTRACT §4.2: "rail ≥ 600dp"): Material's medium window
-  /// class, androidx.window `WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND`
-  /// (m3.material.io, "Window size classes"). The material3 jar states no
-  /// breakpoint, so it is typed here, cited.
+  /// Smallest window width that uses a navigation rail (600 dp).
   static const double railMinWindowWidth = 600;
 
-  /// The narrowest window the shell shows the rail expanded in, labels
-  /// beside the icons: Material's large window class (1200dp,
-  /// m3.material.io, "Window size classes": "expanded navigation rail" for
-  /// large and extra-large windows). Below it the rail stays collapsed, so
-  /// an expanded window (840 to 1200dp) keeps its room for two panes.
+  /// Smallest window width that expands the rail to show labels beside its icons (1200 dp).
   static const double expandedRailMinWindowWidth = 1200;
 
   /// The floating action button's side (`FabBaselineTokens.ContainerHeight`,
@@ -62,8 +54,7 @@ abstract final class ExpressiveChromeMetrics {
   /// `ShapeTokens.CornerValueLarge`.
   static const double fabCornerRadius = ShapeTokens.cornerValueLarge;
 
-  /// The floating action button's gap to the screen's end edge and to the
-  /// bar below it (`Scaffold.kt` `FabSpacing`; behavior.yaml).
+  /// Gap between a floating action button and the screen edge or bottom bar.
   static const double fabMargin = ScaffoldBehavior.fabSpacing;
 
   /// What the floating action button takes above the bar on a phone: its
@@ -88,13 +79,11 @@ abstract final class ExpressiveChromeMetrics {
   static const double sheetHandleHeight =
       SheetBottomTokens.dockedDragHandleHeight;
 
-  /// The space above and below the drag handle (`SheetDefaults.kt`
-  /// `DragHandleVerticalPadding`; behavior.yaml).
+  /// Vertical padding on each side of a bottom sheet’s drag handle.
   static const double sheetHandlePadding =
       SheetDefaultsBehavior.dragHandleVerticalPadding;
 
-  /// A modal sheet at its first (partial) detent, as a share of the screen's
-  /// height (`BottomSheet.kt`'s partially expanded anchor; behavior.yaml).
+  /// Fraction of screen height a sheet uses when partially expanded.
   static const double sheetPartialHeightFraction =
       BottomSheetBehavior.partialHeightFraction;
 

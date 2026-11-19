@@ -587,6 +587,43 @@ void main() {
       );
     });
 
+    testWidgets('toggled on, the thumb settles once: it never passes its end '
+        'or turns back', (tester) async {
+      var on = false;
+      await tester.pumpWidget(
+        _app(
+          StatefulBuilder(
+            builder: (context, setState) => ExpressiveSwitch(
+              value: on,
+              onChanged: (v) => setState(() => on = v),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byType(ExpressiveSwitch));
+      final track = _track(tester);
+      final starts = <double>[];
+      final ends = <double>[];
+      for (var frame = 0; frame < 60; frame++) {
+        await tester.pump(const Duration(milliseconds: 8));
+        final thumb = _thumb(tester);
+        starts.add(thumb.left - track.left);
+        ends.add(track.right - thumb.right);
+      }
+      await tester.pumpAndSettle();
+      expect(on, isTrue);
+      for (var i = 1; i < starts.length; i++) {
+        expect(
+          starts[i],
+          greaterThanOrEqualTo(starts[i - 1]),
+          reason: 'frame $i turns back',
+        );
+      }
+      // The checked thumb's 4dp margin at the end is never crossed.
+      expect(ends.reduce((a, b) => a < b ? a : b), greaterThanOrEqualTo(4));
+      expect(_thumb(tester).left - track.left, 24);
+    });
+
     testWidgets('the thumb grows to 28dp at once on press, springs back on '
         'release', (tester) async {
       await tester.pumpWidget(

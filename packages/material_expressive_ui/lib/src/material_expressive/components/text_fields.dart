@@ -1,25 +1,4 @@
-/// Text fields: filled, outlined and the expressive rounded and tonal forms,
-/// label inside or cut out, secure, multi-line; segmented code fields; the
-/// error supporting text (CONTRACT §4.1 `text-field`, `text-area`,
-/// `code-input`, `field-error`). Owner: w3-textfields.
-///
-/// A port of Compose's `TextField` and `OutlinedTextField` (material3
-/// 1.5.0-alpha29): the decoration is `CommonDecorationBox` and its two
-/// measure policies (`internal/TextFieldImpl.kt`), measured and placed the
-/// way `TextFieldMeasurePolicy` (filled, label inside) and
-/// `OutlinedTextFieldMeasurePolicy` (outlined, label in the outline's
-/// cutout) do; the colours are `TextFieldDefaults.colors()` /
-/// `tonalColors()` and their outlined twins, from the generated
-/// `FilledTextFieldTokens`, `OutlinedTextFieldTokens` and
-/// `TextFieldBehavior`. The label moves on the fast spatial spring, the
-/// placeholder and affixes fade and every colour changes on the effects
-/// springs, the indicator or outline thickens on the fast spatial spring.
-///
-/// Under the decoration, Flutter's text-editing core does the editing — the
-/// primitive Compose's `BasicTextField` is to its decorator — with no
-/// decoration of its own: text handles, the edit menu, the caret and the
-/// selection gestures follow the platform (Android's on Android, iOS's on
-/// iOS; CONTRACT §5).
+/// Text entry, text areas, password fields and number fields.
 library;
 
 import 'dart:math' as math;
@@ -1451,6 +1430,41 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
     widget.onTap?.call();
   }
 
+  /// A read-only entry's width at its last layout ([_WidthReport]), and
+  /// the value's style, scale and direction at the last build.
+  double? _entryWidth;
+  TextStyle _valueStyle = const TextStyle();
+  TextScaler _valueScaler = TextScaler.noScaling;
+  TextDirection _valueDirection = TextDirection.ltr;
+
+  /// Whether [text] needs more than one line of the entry's width (its
+  /// caret's room kept): a read-only value then wraps.
+  bool _wraps(String text) {
+    final width = _entryWidth;
+    if (width == null || text.isEmpty) return false;
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: _valueStyle),
+      textDirection: _valueDirection,
+      textScaler: _valueScaler,
+      maxLines: 1,
+    )..layout(maxWidth: math.max(0.0, width - _caretRoom));
+    final wraps = painter.didExceedMaxLines;
+    painter.dispose();
+    return wraps;
+  }
+
+  /// The entry laid out [width] wide: one more build when the value's lines
+  /// change with it.
+  void _entryLaidOut(double width) {
+    if (width == _entryWidth) return;
+    final before = _wraps(_controller.text);
+    _entryWidth = width;
+    if (_wraps(_controller.text) == before) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = context.expressiveTheme;
@@ -1601,14 +1615,19 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
     final textStart = widget.prefix == null ? startPadding : 0.0;
     final textEnd = widget.suffix == null ? endPadding : 0.0;
 
-    // A one-line read-only field (a select's, a date's) shows a value too
-    // long for it with an ellipsis while it is not focused, as its other
-    // one-line text does; the entry stays laid out under it (its semantics,
-    // taps, and selection once focused), drawn clear. The tree keeps one
-    // shape either way, so focus never rebuilds the entry.
-    final ellipsizes =
-        widget.readOnly && widget._singleLine && !widget.obscureText;
-    final shown = ellipsizes && !_focusNode.hasFocus && text.isNotEmpty;
+    // Read-only choices keep their full value visible: one line while it
+    // fits the entry's width, its capitals on the line's middle as a typed
+    // value's and the hint's are, and wrapped onto more lines only when it
+    // does not. The editable retains focus, selection and the field's
+    // semantics either way.
+    _valueStyle = bodyLarge;
+    _valueScaler = MediaQuery.textScalerOf(context);
+    _valueDirection = Directionality.of(context);
+    final wrapValue =
+        widget.readOnly &&
+        widget._singleLine &&
+        !widget.obscureText &&
+        _wraps(text);
     final textColour = resolve(colors.text);
     // The pointer's cursor over the whole field, its container and label
     // too, as Material's TextField shows it: the text cursor where it takes
@@ -1619,16 +1638,14 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
         : widget.readOnly && widget.onTap != null
         ? SystemMouseCursors.click
         : SystemMouseCursors.text;
-    Widget entry = Material(
+    final entry = Material(
       type: MaterialType.transparency,
       child: TextField(
         controller: _controller,
         focusNode: _focusNode,
         contextMenuBuilder: expressiveContextMenu,
         decoration: null,
-        style: bodyLarge.copyWith(
-          color: shown ? textColour.withValues(alpha: 0) : textColour,
-        ),
+        style: bodyLarge.copyWith(color: textColour),
         cursorColor: isError ? colors.errorCursor : colors.cursor,
         keyboardType:
             widget.keyboardType ??
@@ -1639,7 +1656,7 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
         autocorrect: !widget.obscureText,
         enableSuggestions: !widget.obscureText,
         minLines: widget._minLines,
-        maxLines: widget._maxLines,
+        maxLines: wrapValue ? null : widget._maxLines,
         maxLength: widget.maxLength,
         inputFormatters: widget.inputFormatters,
         enabled: enabled,
@@ -1653,42 +1670,18 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
         onTap: widget.onTap,
       ),
     );
-    if (ellipsizes) {
-      entry = Stack(
-        children: <Widget>[
-          entry,
-          Positioned.fill(
-            child: IgnorePointer(
-              child: ExcludeSemantics(
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  // A RichText, with the entry's strut: the entry's glyphs
-                  // where the entry draws them, and finders still find the
-                  // value once (in the entry).
-                  child: RichText(
-                    text: TextSpan(
-                      text: shown ? text : '',
-                      style: bodyLarge.copyWith(color: textColour),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    strutStyle: StrutStyle.fromTextStyle(bodyLarge),
-                    textScaler: MediaQuery.textScalerOf(context),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
     final input = _InputNode(
       expanded: ExpressiveFieldNodeHost.expandedOf(context),
       label: widget.semanticLabel ?? widget.label ?? widget.hintText,
       invalid: isError,
       textDirection: Directionality.of(context),
-      child: line(entry, start: textStart, end: textEnd),
+      child: line(
+        widget.readOnly && widget._singleLine && !widget.obscureText
+            ? _WidthReport(onWidth: _entryLaidOut, child: entry)
+            : entry,
+        start: textStart,
+        end: textEnd,
+      ),
     );
 
     Widget? placeholder;
@@ -3081,5 +3074,39 @@ class ExpressivePasswordField extends StatelessWidget {
           onSubmitted,
         ),
       );
+  }
+}
+
+/// The room an editable line keeps past its text for the caret: its 2dp
+/// width and the 1dp gap before it.
+const double _caretRoom = 3;
+
+/// Tells [onWidth] its width after each layout: a read-only entry's, so its
+/// value takes a second line only when one is too narrow for it.
+class _WidthReport extends SingleChildRenderObjectWidget {
+  const _WidthReport({required this.onWidth, required Widget super.child});
+
+  final ValueChanged<double> onWidth;
+
+  @override
+  _RenderWidthReport createRenderObject(BuildContext context) =>
+      _RenderWidthReport(onWidth);
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderWidthReport renderObject,
+  ) => renderObject.onWidth = onWidth;
+}
+
+class _RenderWidthReport extends RenderProxyBox {
+  _RenderWidthReport(this.onWidth);
+
+  ValueChanged<double> onWidth;
+
+  @override
+  void performLayout() {
+    super.performLayout();
+    onWidth(size.width);
   }
 }

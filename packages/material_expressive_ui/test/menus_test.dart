@@ -5,6 +5,7 @@
 /// v2 context-menu and popover tests ported (decision F14).
 library;
 
+import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -430,12 +431,110 @@ void main() {
       tester.getRect(groups.last).top - tester.getRect(groups.first).bottom,
       SegmentedMenuTokens.segmentedGap,
     );
-    // Items: medium outside, extra-small between.
+    // The group label separates Edit from the top corners: one row shape,
+    // the selected item's, lit or chosen alike.
     final editShape =
         tester.widget<ExpressiveSurface>(itemSurface('Edit')).shape
             as ExpressiveCornerBorder;
     expect(editShape.radiiOn(edit).topLeft.x, 12);
-    expect(editShape.radiiOn(edit).bottomLeft.x, 4);
+    expect(editShape.radiiOn(edit).bottomLeft.x, 12);
+  });
+
+  testWidgets("a select's list lights one row: the chosen row lends the "
+      'hovered row its fill, at one shape and inset, and keeps its check', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      host(
+        (context) => ExpressiveMenu(
+          entries: [
+            for (final size in ['Small', 'Medium', 'Large', 'Extra large'])
+              ExpressiveMenuRadioItem(
+                size,
+                selected: size == 'Medium',
+                check: false,
+                onSelected: () {},
+              ),
+          ],
+          child: const Text('Size'),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Size'));
+    await tester.pumpAndSettle();
+    ExpressiveSurface surface(String label) =>
+        tester.widget<ExpressiveSurface>(itemSurface(label));
+    final rest = bloom.colors.surfaceContainerLow;
+    Finder row(String label) => find
+        .ancestor(
+          of: find.text(label),
+          matching: find.byType(ExpressivePressable),
+        )
+        .first;
+    // The choice: its fill, and its check at the row's end.
+    expect(surface('Medium').color, bloom.colors.tertiaryContainer);
+    expect(
+      find.descendant(
+        of: row('Medium'),
+        matching: find.byIcon(ExpressiveSymbols.check),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      tester.getRect(find.byIcon(ExpressiveSymbols.check)).left,
+      greaterThan(tester.getRect(find.text('Medium')).right),
+    );
+
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(mouse.removePointer);
+    await mouse.addPointer(location: Offset.zero);
+    await mouse.moveTo(tester.getCenter(itemSurface('Small')));
+    await tester.pumpAndSettle();
+    expect(surface('Small').color, isNot(rest), reason: 'lit');
+    expect(surface('Medium').color, rest, reason: 'one lit row');
+    expect(
+      find.descendant(
+        of: row('Medium'),
+        matching: find.byIcon(ExpressiveSymbols.check),
+      ),
+      findsOneWidget,
+      reason: 'the choice keeps its mark',
+    );
+
+    // One shape at one inset: the lit row's and the chosen row's.
+    final small = tester.getRect(itemSurface('Small'));
+    final medium = tester.getRect(itemSurface('Medium'));
+    final large = tester.getRect(itemSurface('Large'));
+    final last = tester.getRect(itemSurface('Extra large'));
+    expect(small.left, medium.left);
+    expect(small.width, medium.width);
+    expect(small.height, medium.height);
+    final group = tester.getRect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is ExpressiveSurface &&
+            widget.shadowElevation == ExpressiveElevationLevel.level2,
+      ),
+    );
+    expect(small.top - group.top, 4);
+    expect(medium.top - small.bottom, 4);
+    expect(large.top - medium.bottom, 4);
+    expect(last.top - large.bottom, 4);
+    expect(group.bottom - last.bottom, 4);
+    expect(small.left - group.left, 4);
+    BorderRadius radii(String label, Rect rect) =>
+        (surface(label).shape as ExpressiveCornerBorder).radiiOn(rect);
+    // The panel's 16dp corners less the 4dp inset at its ends; 12dp inside.
+    expect(radii('Small', small).topLeft.x, 12);
+    expect(radii('Small', small).bottomLeft.x, 12);
+    expect(radii('Medium', medium).topLeft.x, 12);
+    expect(radii('Medium', medium).bottomLeft.x, 12);
+
+    // The pointer on the choice: lit itself, the only lit row.
+    await mouse.moveTo(tester.getCenter(itemSurface('Medium')));
+    await tester.pumpAndSettle();
+    expect(surface('Medium').color, isNot(rest));
+    expect(surface('Small').color, rest);
   });
 
   testWidgets('a selected item springs to the selected colour and shape', (

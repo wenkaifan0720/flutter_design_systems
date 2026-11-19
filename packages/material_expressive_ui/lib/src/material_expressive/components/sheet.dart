@@ -1,42 +1,4 @@
-/// Sheets (CONTRACT §4.1 roles `sheet`, `action-sheet` and
-/// `full-screen-cover`; §4.2 `ExpressiveSheetPage`). Owner: w2-sheet.
-///
-/// A port of Compose material3 1.5.0-alpha29's `ModalBottomSheet`
-/// (`ModalBottomSheet.kt`), the `BottomSheet` it lays out (`BottomSheet.kt`)
-/// and `SheetState` with its defaults (`SheetDefaults.kt`):
-///
-/// - [ExpressiveBottomSheet] is `BottomSheet`: the container
-///   (`SheetBottomTokens`: surface container low, the extra-large top
-///   corners), the drag handle (32×4dp in on-surface-variant, 22dp above
-///   and below), at most 640dp wide, standing on anchors — hidden at the
-///   bottom edge, partially expanded at half the height (or at the sheet's
-///   own height when it is shorter: Compose's deterministic partial anchor,
-///   the pinned default) and expanded at its content's height. It follows
-///   a drag, and a scrollable inside it through the primary scroll
-///   controller (Compose's nested scroll connection: the sheet rises before
-///   the content scrolls, and falls once the content is at its top); a
-///   release settles by the anchored-draggable rule (56dp positional and
-///   125dp/s velocity thresholds) on the default spatial spring. `show`
-///   runs the default spatial spring, `hide` and `partialExpand` the fast
-///   effects spring, as `BottomSheet` sets them. A spring that carries the
-///   sheet above its highest anchor stretches the container down to the
-///   edge rather than open a gap (`verticalScaleUp`), and a predictive back
-///   gesture scales it (48dp narrower and 24dp shorter at full progress,
-///   about the point Compose's `sheetPredictiveBackScaling` names) while
-///   the content keeps its aspect.
-/// - [ExpressiveSheetPage] is `ModalBottomSheet` as a go_router page on the
-///   root navigator: the scrim (the scrim role at 32 %, fading on the
-///   default effects spring, closing the sheet on a tap), the sheet rising
-///   from the bottom edge, and the platform's back: Android's predictive
-///   back, and a system back that settles an expanded sheet to its partial
-///   anchor before it dismisses (`settleToDismiss`); on iOS the sheet is
-///   swiped down. With `drawer` it is a full-screen dialog instead
-///   ([ExpressiveFullScreenDialogPage]). [showExpressiveBottomSheet] raises
-///   the same sheet from code; a short list of actions is list rows in it.
-///
-/// The route controllers run on springs (decision F11): each route drives
-/// its controller with `animateWith(SpringSimulation)` and states a
-/// transition duration derived from the spring's settle time.
+/// Bottom sheets, action sheets and adaptive side sheets.
 library;
 
 import 'dart:async';
@@ -1115,7 +1077,7 @@ class _DragHandle extends StatelessWidget {
 // --- The routes --------------------------------------------------------------
 
 /// How long [spring] takes to settle from 0 to 1 at the kit's tolerance:
-/// a route's transition duration (decision F11).
+/// a route's transition duration.
 Duration _settleTime(SpringDescription spring) {
   final simulation = designSpringSimulation(spring, from: 0, to: 1);
   var ms = 0;
@@ -1487,7 +1449,7 @@ class _SheetBackObserver with WidgetsBindingObserver {
 /// effects spring (the bottom sheet's show and hide springs). Compose has
 /// no full-screen dialog component; the motion is the sheet's.
 ///
-/// Its back is the platform's (CONTRACT §5): on Android the predictive back
+/// Its back is the platform's: on Android the predictive back
 /// `ExpressivePage`'s route runs (the same claim, frame and springs, shared
 /// through [ExpressivePredictiveBackRoute]); on iOS a swipe down, as a
 /// presented page is dismissed there. Flutter's Cupertino full-screen

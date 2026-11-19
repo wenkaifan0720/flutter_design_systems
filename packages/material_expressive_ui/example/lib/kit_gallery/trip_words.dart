@@ -215,6 +215,10 @@ class TripWords {
   String remindLine(String day) => '$mayaAndSam get an email on $day.';
   String get saveTrip => 'Save trip';
   String get discard => 'Discard changes';
+  String get discardTitle => 'Discard your edits?';
+  String get keepEditing => 'Keep editing';
+  String get noSharedMatches => 'No matching shared items';
+  String get clearSearch => 'Clear search';
   String get dates => 'Dates';
   String get nightsLabel => 'Nights';
 
@@ -720,6 +724,14 @@ class _ArabicTripWords extends TripWords {
   String get saveTrip => 'حفظ الرحلة';
   @override
   String get discard => 'تجاهل التغييرات';
+  @override
+  String get discardTitle => 'هل تريد تجاهل تعديلاتك؟';
+  @override
+  String get keepEditing => 'متابعة التعديل';
+  @override
+  String get noSharedMatches => 'لا توجد عناصر مشتركة مطابقة';
+  @override
+  String get clearSearch => 'مسح البحث';
   @override
   String get dates => 'التواريخ';
   @override

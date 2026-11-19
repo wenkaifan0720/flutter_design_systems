@@ -1,49 +1,4 @@
-/// Overlays: dialogs (basic, with an icon), plain and rich tooltips, and
-/// coach marks (CONTRACT §4.1 `dialog`, `tooltip`, `coach-mark`), plus the
-/// spring-driven popup route menus and dialogs are raised in. Owner:
-/// w3-menus, with `test/overlays_test.dart` and the gallery's overlays demo.
-///
-/// Ports of Compose material3 1.5.0-alpha29 (wave decision F1):
-///
-/// - [ExpressiveDialog] is `AlertDialogContent` (`AlertDialog.kt`): a
-///   `surfaceContainerHigh` container on the extra-large corner, 24dp
-///   padding, the optional `secondary` icon centred over a centred title,
-///   the supporting text, and the actions in `AlertDialogFlowRow`, listed
-///   as drawn: the confirm action last, ending the row, and on top when they
-///   stack. Its actions are
-///   Compose's `TextButton`s, drawn on the shared pressable
-///   (a text action of their own; the buttons family is not this item's to
-///   import, decision F5). [showExpressiveDialog] raises it on the root
-///   navigator in an [ExpressivePopupRoute] over the 32 % scrim.
-/// - [ExpressivePlainTooltip] and [ExpressiveRichTooltip] are
-///   `TooltipScope.PlainTooltip` and `.RichTooltip` (`Tooltip.kt`);
-///   [ExpressiveTooltip] is `TooltipBox`: a long press or a hovering mouse
-///   shows the tooltip above its anchor (below when there is no room),
-///   growing from 0.8 on the fast spatial spring as it fades in on the fast
-///   effects spring; a non-persistent one leaves after 1.5 s (or when the
-///   mouse leaves), a persistent one when a tap lands outside it.
-/// - [ExpressiveCoachMark] is a persistent rich tooltip with a caret
-///   (`TooltipDefaults.caretShape`) and an action, shown by the app rather
-///   than by a long press. Compose has no coach mark; this is the Material
-///   composition the spec's "rich tooltip with an action" names, in a
-///   `TooltipBox(focusable = true, hasAction = true)`: Back and Escape
-///   dismiss it (the focusable `Popup`'s `dismissOnBackPress`), Tab from
-///   its anchor moves keyboard focus onto its action (`BasicTooltip.kt`'s
-///   `keyboardBehavior`), and focus is back on the anchor once it goes.
-///
-/// Every popup mounts on the root overlay and wears the themes of the
-/// context that raised it ([InheritedTheme.capture]), so it keeps the app's
-/// theme when the app is not the root (App Preview nests every preview in
-/// its own app). The coach mark alone mounts on its anchor's nearest
-/// overlay: it teaches one screen, so it stays with it (in a pane with a
-/// navigator of its own, in a frame with an overlay of its own).
-///
-/// [ExpressiveBackHandle] is the system back for an overlay a component
-/// holds open over its route rather than in a route of its own (a split
-/// button's menu, an open FAB menu, a combobox's menu): Compose's
-/// `BackHandler(enabled = open)`, which a focusable `Popup`,
-/// `ExposedDropdownMenuBox` and the FAB menu's sample each carry. The first
-/// back closes the overlay and nothing else.
+/// Dialogs, tooltips and coach marks.
 library;
 
 import 'dart:async';
@@ -80,8 +35,7 @@ import '../internal/style_layers.dart';
 // The popup route.
 
 /// How long [spring] takes to carry a 0–1 progress to rest at the kit's
-/// [designSpringTolerance]: a spring route's `transitionDuration` (wave decision
-/// F11). The spring drives the route's controller; the navigator only reads
+/// [designSpringTolerance]: a spring route's `transitionDuration`. The spring drives the route's controller; the navigator only reads
 /// the figure.
 Duration expressiveSettleTime(SpringDescription spring) {
   final simulation = designSpringSimulation(spring, from: 0, to: 1);
@@ -95,8 +49,7 @@ Duration expressiveSettleTime(SpringDescription spring) {
   return Duration(microseconds: elapsed);
 }
 
-/// A modal popup route driven by a spring, never a duration (wave decision
-/// F11): the push runs the route's controller to 1 on [spring] and the pop
+/// A modal popup route driven by a spring, never a duration : the push runs the route's controller to 1 on [spring] and the pop
 /// runs it back to 0, each from wherever it is — except a pop an overlay
 /// held open in the popup takes ([ExpressiveBackHandle]), which leaves it
 /// up. Menus, popovers and dialogs are raised in it on the root navigator,
@@ -1454,6 +1407,19 @@ class _ExpressiveTooltipState extends State<ExpressiveTooltip> {
   );
 
   ExpressiveTooltipController? _listened;
+  bool _keyboardFocus = false;
+  bool _hovered = false;
+
+  void _focusChanged(bool focused) {
+    _keyboardFocus =
+        focused &&
+        FocusManager.instance.highlightMode == FocusHighlightMode.traditional;
+    if (_keyboardFocus) {
+      _presenter.show(timeout: false);
+    } else if (!focused && !_hovered && _listened?.isVisible != true) {
+      _presenter.hide();
+    }
+  }
 
   @override
   void initState() {
@@ -1515,16 +1481,35 @@ class _ExpressiveTooltipState extends State<ExpressiveTooltip> {
   Widget build(BuildContext context) => Semantics(
     tooltip: widget.message ?? widget.text,
     onLongPress: _showByUser,
-    child: MouseRegion(
-      onEnter: (_) => _presenter.show(timeout: false),
-      onExit: (_) {
-        if (!widget.persistent) _presenter.hide();
+    child: Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      onFocusChange: _focusChanged,
+      onKeyEvent: (_, event) {
+        if (event is! KeyDownEvent ||
+            event.logicalKey != LogicalKeyboardKey.escape ||
+            !_presenter._shown.value) {
+          return KeyEventResult.ignored;
+        }
+        _presenter.hide();
+        widget.controller?.dismiss();
+        return KeyEventResult.handled;
       },
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        excludeFromSemantics: true,
-        onLongPress: _showByUser,
-        child: widget.child,
+      child: MouseRegion(
+        onEnter: (_) {
+          _hovered = true;
+          _presenter.show(timeout: false);
+        },
+        onExit: (_) {
+          _hovered = false;
+          if (!widget.persistent && !_keyboardFocus) _presenter.hide();
+        },
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          excludeFromSemantics: true,
+          onLongPress: _showByUser,
+          child: widget.child,
+        ),
       ),
     ),
   );

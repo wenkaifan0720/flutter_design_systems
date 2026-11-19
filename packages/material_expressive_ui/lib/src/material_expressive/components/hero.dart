@@ -1,16 +1,4 @@
-/// The hero: [ExpressiveHeroMoment], the scope every opt-in hero widget requires
-/// and the expression budget counts (CONTRACT §3). No vocabulary role of its
-/// own. Owner: w1-host.
-///
-/// CONTRACT §3's opt-in hero moments — L/XL buttons, library-shape masks on
-/// images, avatars and metrics, emphasized display and headline type,
-/// vibrant menus, wavy progress, the large flexible app bar with imagery,
-/// the FAB menu, the container transform — each assert an [ExpressiveHeroMoment]
-/// above them in debug builds ([ExpressiveHeroMoment.debugCheck]). A page spends
-/// at most one hero moment and an app no more than its theme's
-/// `expression` allows (calm none, balanced one, bold two); the source law
-/// that counts hero pages against the budget reads
-/// [ExpressiveHeroMoment.countOn] and the `ExpressiveHeroMoment(` call sites.
+/// Scopes and shapes for a page’s prominent action or illustration.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -52,7 +40,7 @@ class ExpressiveHeroMoment extends StatefulWidget {
             '$widget is a hero widget outside an ExpressiveHeroMoment.',
           ),
           ErrorDescription(
-            'Hero widgets spend the app\'s expression budget (CONTRACT §3): '
+            'Hero widgets spend the app\'s expression budget: '
             'at most one hero moment per page, and no more per app than the '
             'theme\'s expression allows.',
           ),

@@ -1,29 +1,4 @@
-/// Floating action buttons (CONTRACT §4.1 `fab`; the shell's action is `shell_action.dart`'s):
-/// ports of Compose material3 1.5.0-alpha29's `FloatingActionButton.kt` and
-/// `FloatingActionButtonMenu.kt`.
-///
-/// - [ExpressiveFloatingActionButton]: `FloatingActionButton`, `MediumFloatingActionButton`
-///   and `LargeFloatingActionButton` (56, 80, 96dp; the 40dp small FAB is
-///   skipped, §4.1) in six colour styles ([ExpressiveFabColor]).
-/// - [ExpressiveFloatingActionButton.extended]: `Small`/`Medium`/`LargeExtendedFloatingActionButton`
-///   with `expanded`, its width and label springing between the labelled pill
-///   and the bare FAB; [ExpressiveFabScrollExpansion] collapses it while the
-///   page scrolls down.
-/// - [ExpressiveFabMenu]: `FloatingActionButtonMenu` with its
-///   `ToggleFloatingActionButton` (the FAB morphs into the round close button)
-///   and 2–5 [ExpressiveFabMenuItem]s that stagger in. A hero widget (§3):
-///   it asserts an [ExpressiveHeroMoment] above it and 2–5 items, and never opens
-///   from an extended FAB. [ExpressiveFabMenu.countOn] and
-///   [ExpressiveFabMenu.debugCheckNoMenuBeside] let a toolbar or rail assert
-///   the "no FAB menu beside a toolbar or rail" rule.
-/// - `ExpressiveShellAction` (`shell_action.dart`): the shell's action, the design kit's
-///   [ShellAction] plus `menu:`; as a widget, it draws any spec.
-///
-/// Geometry, colours, shapes, elevation and springs come from the generated
-/// tokens (`FabBaselineTokens`, `FabMediumTokens`, `FabLargeTokens`,
-/// `ExtendedFab*Tokens`, `FabPrimaryContainerTokens`, `FabMenuBaselineTokens`)
-/// and the behaviour constants (`FloatingActionButtonBehavior`,
-/// `FloatingActionButtonMenuBehavior`). Owner: w2-fab.
+/// Floating action buttons and expandable action menus.
 library;
 
 import 'dart:math' as math;
@@ -33,7 +8,6 @@ import 'package:flutter/physics.dart' show SpringSimulation;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:ui_core/host.dart';
 
 import '../color.dart';
 import '../component_themes.dart';
@@ -159,7 +133,7 @@ ExpressiveStateElevation _elevation({required bool lowered}) => lowered
       );
 
 /// The spring a FAB's shadow changes on. Compose animates FAB elevation on
-/// `ElevationDefaults`' tweens; Expressive runs springs only (F10), so the
+/// `ElevationDefaults`' tweens; Expressive runs springs only, so the
 /// shadow runs the fast effects spring.
 const ExpressiveMotionKey _elevationMotion = ExpressiveMotionKey.fastEffects;
 
@@ -859,7 +833,7 @@ enum ExpressiveFabMenuColor {
 /// items stagger in from the one nearest the button (`staggerMotion`; each
 /// item's width and opacity on `itemWidthMotion`, `itemAlphaMotion`).
 ///
-/// A hero moment (CONTRACT §3): it must sit inside an [ExpressiveHeroMoment], holds
+/// A hero moment: it must sit inside an [ExpressiveHeroMoment], holds
 /// 2–5 items (Material allows 6; §3 caps it at 5), never opens from an
 /// extended FAB (its button is always the toggle FAB), and never sits beside
 /// a toolbar or rail. Debug builds assert the first two; the toolbar and the
@@ -965,9 +939,7 @@ class ExpressiveFabMenu extends StatefulWidget {
   /// A key set on the toggle's hit target (a walkthrough's).
   final Key? buttonKey;
 
-  /// Test hook (the oracle's scenes): wraps each part of every menu —
-  /// `toggle`, `item-<i>` and `item-<i>-label` — so a scene can tag it.
-  /// Null outside tests.
+  /// Wraps the toggle, each item and its label for widget tests.
   @visibleForTesting
   static Widget Function(String part, Widget child)? debugPartWrapper;
 
@@ -976,7 +948,7 @@ class ExpressiveFabMenu extends StatefulWidget {
 
   /// How many FAB menus are mounted on [route] now (null counts the menus
   /// outside any route): what a toolbar or rail reads to keep the "no FAB
-  /// menu beside a toolbar or rail" rule (CONTRACT §3).
+  /// menu beside a toolbar or rail" rule.
   static int countOn(Route<Object?>? route) =>
       route == null ? _unrouted : (_menusByRoute[route] ?? 0);
 
@@ -1013,7 +985,7 @@ class ExpressiveFabMenu extends StatefulWidget {
               ErrorSummary('$widget sits beside an ExpressiveFabMenu.'),
               ErrorDescription(
                 'A FAB menu never shares a screen with a toolbar or a '
-                'navigation rail (CONTRACT §3).',
+                'navigation rail.',
               ),
               ErrorHint(
                 'Use a plain ExpressiveFloatingActionButton, or move the acts into the '

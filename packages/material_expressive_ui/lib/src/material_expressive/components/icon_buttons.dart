@@ -1,34 +1,4 @@
-/// Icon buttons: standard, filled, tonal and outlined; XS–XL; narrow,
-/// uniform or wide; round or square; toggle (CONTRACT §4.1 `icon-button`).
-/// Owner: w3-iconbuttons, with `test/icon_buttons_test.dart` and the
-/// gallery's icon-buttons demo.
-///
-/// A port of Compose material3 1.5.0-alpha29 (wave decision F1):
-///
-/// - [ExpressiveIconButton] is `IconButton`, `FilledIconButton`,
-///   `FilledTonalIconButton` and `OutlinedIconButton` with
-///   `IconButtonDefaults`' size ladder (`extraSmallContainerSize` …
-///   `extraLargeContainerSize` by `IconButtonWidthOption`, the size's icon
-///   size and its round, square and pressed shapes). The shape springs to
-///   the size's pressed shape on `IconButtonBehavior.pressMotion` (an
-///   effects spring: the press never bounces).
-/// - [ExpressiveIconToggleButton] is `IconToggleButton`,
-///   `FilledIconToggleButton`, `FilledTonalIconToggleButton` and
-///   `OutlinedIconToggleButton` with `IconButtonDefaults.toggleableShapes`:
-///   the checked colours, the checked shape (a round button checks to the
-///   size's `selected.container.shape.round`, a square one to its
-///   `…square`), and the glyph filling as it checks.
-/// - In an `ExpressiveButtonGroup` both join the group's squish, as any
-///   child of Compose's `ButtonGroup` does through `Modifier.animateWidth`:
-///   the pressed button widens, its neighbours give way, and the glyph
-///   stays centred in the width the group fixes.
-/// - Colours are `IconButtonDefaults`': the standard and outlined buttons
-///   take their content colour from the ambient icon colour (Compose's
-///   `LocalContentColor`) unless `vibrant` asks for the tokens'
-///   `onSurfaceVariant` (Compose's `*VibrantColors`).
-///
-/// L and XL icon buttons (96 and 136dp) are hero widgets (CONTRACT §3):
-/// they assert an [ExpressiveHeroMoment] above them.
+/// Icon buttons, including toggleable, filled, tonal and outlined variants.
 library;
 
 import 'package:flutter/foundation.dart';

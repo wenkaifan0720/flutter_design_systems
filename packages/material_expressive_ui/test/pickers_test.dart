@@ -491,7 +491,9 @@ void main() {
       });
     }
 
-    testWidgets('lays out Compose geometry from the tokens', (tester) async {
+    testWidgets('keeps token cell sizes and fits the entire date header', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         host(
           (_) => SizedBox(
@@ -502,10 +504,18 @@ void main() {
       );
       final picker = tester.getSize(find.byType(ExpressiveDatePicker));
       expect(picker.width, DatePickerModalTokens.containerWidth);
-      // Header 120 (its divider inside), navigation 56, weekdays 48, six rows of 48.
+      final headerContent =
+          DatePickerBehavior.titlePaddingTop +
+          tester.getSize(find.text('Select date')).height +
+          tester.getSize(find.text('5 Sep 2026')).height +
+          DatePickerBehavior.headlinePaddingBottom +
+          1;
       expect(
         picker.height,
-        DatePickerModalTokens.headerContainerHeight +
+        headerContent.clamp(
+              DatePickerModalTokens.headerContainerHeight,
+              double.infinity,
+            ) +
             DatePickerBehavior.monthYearHeight +
             DatePickerBehavior.cellSize * 7,
       );
@@ -523,6 +533,72 @@ void main() {
       // Sunday first: S M T W T F S.
       expect(find.text('S'), findsNWidgets(2));
       expect(find.text('T'), findsNWidgets(2));
+    });
+
+    testWidgets('in a box shorter than itself at 2.0 text, the picker '
+        'scrolls its calendar under the header, nothing overflowing', (
+      tester,
+    ) async {
+      // The headings wrap at large text, so the picker outgrows a bounded
+      // slot (the inventory's 560dp specimen box).
+      const box = Size(358, 560);
+      await tester.pumpWidget(
+        host(
+          (_) => Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox.fromSize(
+              size: box,
+              child: Held(initial: DateTime(2026, 5, 5)),
+            ),
+          ),
+          scale: 2,
+        ),
+      );
+      expect(tester.takeException(), isNull);
+      final frame = tester.getRect(find.byType(Held));
+      expect(frame.size, box);
+      final body = find.descendant(
+        of: find.byType(ExpressiveDatePicker),
+        matching: find.byType(SingleChildScrollView),
+      );
+      expect(body, findsOneWidget);
+      final position = tester
+          .state<ScrollableState>(
+            find.descendant(of: body, matching: find.byType(Scrollable)).first,
+          )
+          .position;
+      expect(position.maxScrollExtent, greaterThan(0));
+      // May 2026 takes six weeks; its last day scrolls into the box.
+      expect(tester.getRect(find.text('31')).bottom, greaterThan(frame.bottom));
+      await tester.drag(body, Offset(0, -box.height));
+      await tester.pumpAndSettle();
+      expect(position.pixels, position.maxScrollExtent);
+      expect(
+        tester.getRect(find.text('31')).bottom,
+        lessThanOrEqualTo(frame.bottom),
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('given unbounded height (a dialog scrolls the picker), its '
+        'body is not a second scroll view', (tester) async {
+      await tester.pumpWidget(
+        host(
+          (_) => Center(
+            child: SizedBox(
+              width: DatePickerModalTokens.containerWidth,
+              child: Held(initial: DateTime(2026, 9, 5)),
+            ),
+          ),
+        ),
+      );
+      expect(
+        find.descendant(
+          of: find.byType(ExpressiveDatePicker),
+          matching: find.byType(SingleChildScrollView),
+        ),
+        findsNothing,
+      );
     });
 
     testWidgets('the week starts where the locale says, unless the picker '

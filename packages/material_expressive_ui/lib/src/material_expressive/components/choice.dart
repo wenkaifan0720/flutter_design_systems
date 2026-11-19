@@ -1,19 +1,4 @@
-/// Choice tiles: a large tonal tile per option, for a decision a page is
-/// about (how readings arrive, which rooms a home has, your usual café),
-/// alone or in a group that chooses one (radio semantics) or several
-/// (checkbox semantics). Owner: front-doors `sys`.
-///
-/// Not a Compose component: Material 3 Expressive draws these decisions as
-/// selectable surfaces (Clock's alarm rows, Phone's in-call controls), which
-/// this builds from the system's own parts. The tile is an
-/// [ExpressivePressable] on the list item's geometry (`ListTokens`), its
-/// container `surfaceContainerHigh` at rest and `primaryContainer` when
-/// selected on the fast effects spring; selecting morphs its corners from
-/// `large` toward `extraLargeIncreased` (pressed squeezes to `medium`) on
-/// the fast spatial spring, fills the leading glyph and raises the title to
-/// its emphasized style — emphasized type on a selected label is
-/// expressive by default (CONTRACT §3), not a hero. A selected tile also
-/// shows a check, so the choice never reads from colour alone.
+/// Choice controls for a group of options.
 library;
 
 import 'dart:math' as math;

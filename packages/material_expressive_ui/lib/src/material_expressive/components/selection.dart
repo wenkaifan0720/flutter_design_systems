@@ -1,22 +1,4 @@
-/// Selection controls: the checkbox (indeterminate and error included), the
-/// radio button and its group, and the switch with its thumb icon (CONTRACT
-/// §4.1 `checkbox`, `radio-group`, `switch`), each with a labelled row.
-/// Owner: w3-selection.
-///
-/// Ports of Compose material3 1.5.0-alpha29's `Checkbox.kt`
-/// (`TriStateCheckbox`, flag `isCheckboxStylingFixEnabled` off, the jar's
-/// default), `RadioButton.kt` and `Switch.kt`: geometry and colours from the
-/// generated `CheckboxTokens`, `RadioButtonTokens`, `SwitchTokens` and the
-/// behaviour constants (`CheckboxBehavior`, `RadioButtonBehavior`,
-/// `SwitchBehavior`), motion on the motion keys Compose names.
-///
-/// As in Flutter's Material and Cupertino controls, a null `onChanged` (a
-/// radio's `onPressed`) disables the control at its full size: disabled
-/// colours, the 48dp target kept, nothing reported. The bare mark a labelled row puts inside
-/// itself (no touch target, no ripple, no focus: the row is the one
-/// toggleable surface, Compose's `onCheckedChange = null`) is its own
-/// constructor: [ExpressiveCheckbox.mark], [ExpressiveRadio.mark],
-/// [ExpressiveSwitch.mark].
+/// Checkboxes, radio buttons, switches and labelled selection rows.
 library;
 
 import 'dart:math' as math;
@@ -921,7 +903,9 @@ class ExpressiveRadioGroup<T> extends StatelessWidget {
 /// A Material 3 switch (Compose `Switch`): a 52 × 32dp track whose thumb
 /// grows from 16dp to 24dp when checked (or when it carries an icon) and to
 /// 28dp while pressed — at once, as Compose snaps it — then moves and
-/// resizes on the fast spatial spring (`SwitchBehavior.thumbMotion`).
+/// resizes at the fast spatial spring's stiffness
+/// (`SwitchBehavior.thumbMotion`), critically damped: it settles once, with
+/// no overshoot past its end and no wobble.
 ///
 /// [checkedIcon] and [uncheckedIcon] are the thumb's content in each state
 /// (Compose's `thumbContent`): an `Icon`, given the 16dp size
@@ -1119,8 +1103,19 @@ class _ExpressiveSwitchState extends State<ExpressiveSwitch>
       _offset.value = offset;
       return;
     }
-    final spring = ExpressiveMotion.of(context)
+    // The scheme's stiffness, critically damped: Expressive's fast spatial
+    // spring (0.6) carries the thumb about 9% past its end and back, which
+    // reads as a jiggle on a part this small.
+    final scheme = ExpressiveMotion.of(context)
         .spring(SwitchBehavior.thumbMotion);
+    final critical = 2 * math.sqrt(scheme.stiffness * scheme.mass);
+    final spring = scheme.damping >= critical
+        ? scheme
+        : SpringDescription(
+            mass: scheme.mass,
+            stiffness: scheme.stiffness,
+            damping: critical,
+          );
     if (_size.value != size) _size.springTo(size, spring);
     if (_offset.value != offset) _offset.springTo(offset, spring);
   }
@@ -1177,8 +1172,10 @@ class _ExpressiveSwitchState extends State<ExpressiveSwitch>
     _retarget();
   }
 
-  void _dragUpdate(DragUpdateDetails details) {
-    final delta = _rtl ? -details.delta.dx : details.delta.dx;
+  void _dragUpdate(DragUpdateDetails details, double travel) {
+    if (travel <= 0) return;
+    final motion = details.delta.dx * (_high - _low) / travel;
+    final delta = _rtl ? -motion : motion;
     setState(() => _drag = ((_drag ?? _low) + delta).clamp(_low, _high));
     _retarget();
   }
@@ -1293,17 +1290,11 @@ class _ExpressiveSwitchState extends State<ExpressiveSwitch>
     final trackSize = Size(
       math.max(
         minimum.width,
-        math.max(
-          t.density.width(_Thumb.width),
-          _Thumb.pressedDiameter + inset.horizontal + 16,
-        ),
+        math.max(_Thumb.width, _Thumb.pressedDiameter + inset.horizontal + 16),
       ),
       math.max(
         minimum.height,
-        math.max(
-          t.density.height(_Thumb.height),
-          _Thumb.pressedDiameter + inset.vertical,
-        ),
+        math.max(_Thumb.height, _Thumb.pressedDiameter + inset.vertical),
       ),
     );
     final nativeThumb = t.shapes.of(SwitchTokens.handleShape);
@@ -1336,16 +1327,24 @@ class _ExpressiveSwitchState extends State<ExpressiveSwitch>
     // centres it vertically rounded (`Alignment.CenterStart`).
     final dpr = MediaQuery.devicePixelRatioOf(context);
     Rect thumbRect(Size box) {
-      final size = (_size.value * dpr).truncateToDouble();
-      final baseSize = _size.value;
-      final span = (_Thumb.width - baseSize);
-      final fraction = span <= 0 ? 0.0 : _offset.value / span;
-      final safe = rtl ? inset.right : inset.left;
-      final travel = math.max(0.0, box.width - baseSize - inset.horizontal);
+      final baseSize = _size.isAnimating ? _size.value : _targetSize;
+      final baseOffset = _offset.isAnimating || _held
+          ? _offset.value
+          : _targetOffset(baseSize);
+      final size = (baseSize * dpr).truncateToDouble();
+      final nativeGap = (_Thumb.height - baseSize) / 2;
+      final fraction =
+          (baseOffset - nativeGap) / (_Thumb.width - _Thumb.height);
+      final gap = (box.height - baseSize) / 2;
+      final leading = math.max(gap, rtl ? inset.right : inset.left);
+      final trailing = math.max(gap, rtl ? inset.left : inset.right);
+      final travel = math.max(0.0, box.width - baseSize - leading - trailing);
       final start =
-          (customShape == null && box.width == _Thumb.width
-              ? _offset.value
-              : safe + fraction * travel) *
+          (box == const Size(_Thumb.width, _Thumb.height) &&
+                  leading == nativeGap &&
+                  trailing == nativeGap
+              ? baseOffset
+              : leading + fraction * travel) *
           dpr;
       final pixelStart = start.truncateToDouble();
       final width = box.width * dpr;
@@ -1432,7 +1431,10 @@ class _ExpressiveSwitchState extends State<ExpressiveSwitch>
             onPointerCancel: (_) => _pointer(false),
             child: GestureDetector(
               onHorizontalDragStart: _interactive ? _dragStart : null,
-              onHorizontalDragUpdate: _interactive ? _dragUpdate : null,
+              onHorizontalDragUpdate: _interactive
+                  ? (details) =>
+                        _dragUpdate(details, trackSize.width - trackSize.height)
+                  : null,
               onHorizontalDragEnd: _interactive ? _dragEnd : null,
               onHorizontalDragCancel: _interactive ? _dragCancel : null,
               // Press feedback is the pressable's ink alone, over the thumb

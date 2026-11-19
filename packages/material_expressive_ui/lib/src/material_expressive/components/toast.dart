@@ -1,38 +1,4 @@
-/// Toasts: the snackbar, with one action, above the FAB and the bar (CONTRACT
-/// §4.1 `toast`; §4.2 `showExpressiveSnackBar`). Owner: w2-toast, with
-/// `test/toast_test.dart` and the gallery's toast demo.
-///
-/// A port of Compose material3 1.5.0-alpha29 (wave decision F1):
-///
-/// - [ExpressiveSnackBar] is `Snackbar(snackbarData)`: a `Surface` in
-///   `SnackbarTokens`' inverse colours, extra-small corners and level-3
-///   shadow, the message in `bodyMedium`, one action (Compose's plain `TextButton`
-///   — 12dp side padding, 58 × 40dp least — in `inversePrimary` as
-///   `textButtonColors(contentColor = actionColor)`) and an optional dismiss (a standard icon button with the
-///   close glyph). It lays out as the pin draws it —
-///   `ComposeMaterial3Flags.isSnackbarStylingFixEnabled` is false there, so
-///   `LegacyOneRowSnackbar` and `LegacyNewLineButtonSnackbar`: one line
-///   centres in 48dp with the action on the text's baseline; more lines put
-///   the first baseline 30dp down in at least 68dp; `actionOnNewLine`
-///   stacks the action row under the text.
-/// - [showExpressiveSnackBar] is `SnackbarHostState.showSnackbar` on a host
-///   in the root overlay: one toast at a time, the rest queued in order; the
-///   one leaving fades on `fastEffects` and scales to 0.8 on `fastSpatial`
-///   while the next enters the same way (`FadeInFadeOutWithScale`); short
-///   and long toasts time out as `SnackbarDuration.toMillis`. It stands
-///   above the shell's bar and floating action button
-///   ([ExpressiveShellInsets]), the system inset and the keyboard.
-///
-/// Deviations: a toast with an action defaults to
-/// [ExpressiveSnackBarDuration.short] (4 s) rather than Compose's `Indefinite`:
-/// a generated app's undo toast must not hold the queue until tapped, and
-/// v2's promise (Cody's action toast lingers 4.2 s) is what generated-app
-/// walkthroughs drain — two bounded 2.5 s pumps, which a 10 s timer would
-/// outlive ("A Timer is still pending"). Android's accessibility timeout scaling is not applied.
-/// The enter/exit springs settle at `Animatable`'s default visibility
-/// threshold (animation-core's `Spring.DefaultDisplacementThreshold`,
-/// 0.01) as Compose's do, not at the kit's finer [designSpringTolerance]. `icon`
-/// is accepted and not drawn (CONTRACT §4.2).
+/// Transient snackbars and actions for the current screen.
 library;
 
 import 'dart:async';
@@ -221,6 +187,9 @@ class ExpressiveSnackBar extends StatelessWidget {
             ),
             child: ExpressiveIconButton(
               ExpressiveSymbols.close,
+              style: ExpressiveComponentThemeData(
+                shape: WidgetStatePropertyAll(theme.shapes.none),
+              ).layeredUnder(theme.iconButtonTheme),
               onPressed: onDismiss,
               semanticLabel: ExpressiveLocalizations.of(context).toastDismiss,
               tooltip: ExpressiveLocalizations.of(context).toastDismiss,
@@ -320,9 +289,8 @@ class _SnackbarAction extends StatelessWidget {
     final theme = context.expressiveTheme;
     return ExpressivePressable(
       componentStyle: theme.buttonTheme,
-      shapes: ExpressivePressShapes.all(
-        theme.shapes.of(ButtonSmallTokens.containerShapeRound),
-      ),
+      // The snackbar has a 4 dp corner. The inset action has square corners.
+      shapes: ExpressivePressShapes.all(theme.shapes.none),
       motion: ButtonBehavior.pressMotion,
       color: expressiveTransparent,
       contentColor: color,

@@ -1,9 +1,4 @@
-/// WCAG 2 contrast, the measure a theme's colour pairs are held to
-/// (CONTRACT §2 "Color"): [expressiveContrastRatio] of two colours, and
-/// [ExpressiveContrast.contrastShortfalls] of a whole scheme. Shared by
-/// Expressive's own colour tests and an example app's tests of its own
-/// themes and colours (docs/architecture/example-apps-plan.md §4.1), so
-/// every theme is read against one definition.
+/// WCAG contrast measurements for Expressive colour schemes.
 library;
 
 import 'package:flutter/widgets.dart';

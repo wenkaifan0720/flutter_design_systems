@@ -416,6 +416,108 @@ void main() {
       expect(chosen, ['green']);
     });
 
+    testWidgets("its suggestions open from the field's outline at its width, "
+        '4dp below it, each row 4dp from the next and from the panel', (
+      tester,
+    ) async {
+      keyboard();
+      await tester.pumpWidget(host(multi(const [], (_) {})));
+      await tester.tap(find.byType(EditableText));
+      await tester.pumpAndSettle();
+      final field = tester.getRect(find.byType(ExpressiveFieldFrame));
+      final panel = tester.getRect(find.byType(ExpressivePopoverSurface));
+      expect(panel.left, moreOrLessEquals(field.left));
+      expect(panel.right, moreOrLessEquals(field.right));
+      expect(panel.top - field.bottom, moreOrLessEquals(4));
+      Rect face(String words) => tester.getRect(
+        find
+            .ancestor(
+              of: find.text(words),
+              matching: find.byType(ExpressiveStateFace),
+            )
+            .first,
+      );
+      expect(face('Red').top - panel.top, moreOrLessEquals(4));
+      expect(panel.bottom - face('Black').bottom, moreOrLessEquals(4));
+      for (final row in rows) {
+        expect(face(row).left - panel.left, moreOrLessEquals(4), reason: row);
+        expect(panel.right - face(row).right, moreOrLessEquals(4), reason: row);
+      }
+      for (var i = 1; i < rows.length; i++) {
+        expect(
+          face(rows[i]).top - face(rows[i - 1]).bottom,
+          moreOrLessEquals(4),
+          reason: rows[i],
+        );
+      }
+    });
+
+    testWidgets('with no room under the field, its suggestions open above '
+        'it, 4dp from its outline, at its width', (tester) async {
+      keyboard();
+      tester.view.physicalSize = const Size(400, 420);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        host(
+          SizedBox(
+            height: 372,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: multi(const [], (_) {}),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.byType(EditableText));
+      await tester.pumpAndSettle();
+      final field = tester.getRect(find.byType(ExpressiveFieldFrame));
+      final panel = tester.getRect(find.byType(ExpressivePopoverSurface));
+      expect(panel.bottom, lessThanOrEqualTo(field.top), reason: 'above');
+      expect(field.top - panel.bottom, moreOrLessEquals(4));
+      expect(panel.left, moreOrLessEquals(field.left));
+      expect(panel.right, moreOrLessEquals(field.right));
+    });
+
+    testWidgets("a chip the keys reach rings its face, inside the field's "
+        'outline', (tester) async {
+      keyboard();
+      await tester.pumpWidget(host(multi(const ['red', 'green'], (_) {})));
+      await tester.tap(find.byType(EditableText));
+      await tester.pumpAndSettle();
+      await press(tester, LogicalKeyboardKey.escape);
+      await press(tester, LogicalKeyboardKey.backspace);
+      await tester.pumpAndSettle();
+      final ring = find.byWidgetPredicate(
+        (widget) => widget is ExpressiveFocusRingBox && widget.focused,
+      );
+      expect(ring, findsOneWidget);
+      final chip = tester.getRect(
+        find
+            .descendant(
+              of: find.descendant(
+                of: ring,
+                matching: find.byType(ExpressiveChip),
+              ),
+              matching: find.byType(ExpressiveSurface),
+            )
+            .first,
+      );
+      final box = tester.getRect(ring);
+      expect(box.height, greaterThan(chip.height), reason: 'its touch target');
+      expect(
+        tester.widget<ExpressiveFocusRingBox>(ring).faceHeight,
+        moreOrLessEquals(chip.height),
+      );
+      expect(box.center.dy, moreOrLessEquals(chip.center.dy));
+      // The ring, 2dp out and 3dp wide, clear of the outline.
+      final field = tester.getRect(find.byType(ExpressiveFieldFrame));
+      final drawn = chip.inflate(5);
+      expect(drawn.top, greaterThan(field.top));
+      expect(drawn.bottom, lessThan(field.bottom));
+      expect(drawn.left, greaterThan(field.left));
+    });
+
     testWidgets('a disabled option is never taken; typed words filter', (
       tester,
     ) async {
@@ -923,7 +1025,7 @@ void main() {
     });
 
     testWidgets("a menu's rows stand 4dp clear of its container on every "
-        'side, at the densest density too', (tester) async {
+        'side and 4dp apart, at the densest density too', (tester) async {
       final compact = bloom.copyWith(density: ExpressiveDensity.compact);
       await tester.pumpWidget(host(bar(), theme: compact));
       await tester.tap(find.text('File'));
@@ -946,6 +1048,7 @@ void main() {
       expect(panel.bottom - face('Close').bottom, 4);
       expect(face('New').left - panel.left, 4);
       expect(panel.right - face('New').right, 4);
+      expect(face('New').height, 44, reason: 'its 48dp target less 2dp');
 
       await press(tester, LogicalKeyboardKey.escape);
       await tester.pumpWidget(host(overflow(), theme: compact));
@@ -963,11 +1066,12 @@ void main() {
             return box.localToGlobal(Offset.zero) & box.size;
           })
           .reduce((a, b) => a.height >= b.height ? a : b);
+      // The item's drawn face: the innermost surface round its words.
       Rect item(String words) => tester.getRect(
         find
             .ancestor(
               of: find.text(words),
-              matching: find.byType(ExpressivePressable),
+              matching: find.byType(ExpressiveSurface),
             )
             .first,
       );
@@ -975,6 +1079,33 @@ void main() {
       expect(group.bottom - item('Delete').bottom, 4);
       expect(item('Rename').left - group.left, 4);
       expect(group.right - item('Rename').right, 4);
+      // Every face 44dp and 4dp from the next: an even 48dp pitch, the end
+      // rows' too.
+      final faces = find
+          .descendant(
+            of: find.byWidgetPredicate(
+              (widget) =>
+                  widget is ExpressiveSurface &&
+                  widget.shadowElevation == ExpressiveElevationLevel.level2,
+            ),
+            matching: find.byType(ExpressivePressable),
+          )
+          .evaluate()
+          .map((e) {
+            final face = find.descendant(
+              of: find.byElementPredicate((x) => x == e),
+              matching: find.byType(ExpressiveSurface),
+            );
+            return tester.getRect(face.first);
+          })
+          .where((r) => r.left < group.right && r.right > group.left)
+          .where((r) => r.top >= group.top && r.bottom <= group.bottom)
+          .toList();
+      expect(faces.length, greaterThanOrEqualTo(2));
+      for (var i = 0; i < faces.length; i++) {
+        expect(faces[i].height, 44, reason: 'row $i');
+        if (i > 0) expect(faces[i].top - faces[i - 1].bottom, 4);
+      }
     });
   });
 }

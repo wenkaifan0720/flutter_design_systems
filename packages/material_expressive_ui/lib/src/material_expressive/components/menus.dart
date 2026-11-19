@@ -1,36 +1,4 @@
-/// Menus: Material 3 Expressive's vertical menus, standard and vibrant,
-/// with groups, labels, dividers, submenus, checkable and selectable items,
-/// and the menu surface as a popover (CONTRACT §4.1 `menu`, `popover`).
-/// Owner: w3-menus, with `test/menus_test.dart` and the gallery's menus
-/// demo.
-///
-/// A port of Compose material3 1.5.0-alpha29's expressive menus
-/// (`Menu.kt`, `MenuDefaults.kt`; wave decision F1):
-///
-/// - The menu is `DropdownMenuPopup`'s content: a column of
-///   `DropdownMenuGroup`s as wide as the widest item (112–280dp), 2dp apart
-///   (`MenuDefaults.GroupSpacing`). A group is a surface at elevation 2 —
-///   `surfaceContainerLow` (standard) or `tertiaryContainer` (vibrant) —
-///   whose corners depend on its place (large outside, small between
-///   groups) and fall back to small when the mouse leaves it
-///   (`inactiveShape`, on the fast spatial spring).
-/// - An item is `DropdownMenuItemContent`: a 44dp surface 4dp in from the
-///   group's sides (in the 48dp touch target), 12dp padding, a 20dp leading
-///   icon 8dp from a `labelLarge` label, trailing content at the end. Its
-///   corners depend on its place in the group (medium outside, extra-small
-///   between items) and morph to medium when selected; its container
-///   springs to `tertiaryContainer` (`tertiary` when vibrant) on the fast
-///   effects spring. A checkable item (`CheckableDropdownMenuItem`) grows
-///   its check in on the fast spatial spring.
-/// - The menu opens below its anchor (`MenuAnchorPosition.Below`), placed by
-///   Compose's candidate positions inside 8dp and 48dp window margins, and
-///   scales from 0.8 around the point nearest its anchor
-///   (`calculateTransformOrigin`) on the fast spatial spring as it fades on
-///   the fast effects spring.
-///
-/// Menus mount on the root navigator and wear the themes of the context
-/// that opened them ([InheritedTheme.capture]): a menu keeps the app's
-/// theme when the app is not the root.
+/// Menus, menu bars, command palettes and multi-select fields.
 library;
 
 import 'dart:async';
@@ -51,7 +19,9 @@ import '../icons.dart';
 import '../internal/cap_label.dart';
 import '../internal/choice_width.dart';
 import '../internal/tokens/behavior.g.dart';
+import '../internal/tokens/chips_tokens.g.dart';
 import '../internal/tokens/divider_tokens.g.dart';
+import '../internal/tokens/input_chip_tokens.g.dart';
 import '../internal/tokens/keys.g.dart';
 import '../internal/tokens/list_tokens.g.dart';
 import '../internal/tokens/menu_tokens.g.dart';
@@ -198,9 +168,9 @@ class ExpressiveMenuRadioItem extends ExpressiveMenuEntry {
   final bool selected;
 
   /// Whether a chosen item with neither [icon] nor [selectedIcon] shows the
-  /// check. A select's list marks its choice by the row's fill alone, as
-  /// Material's exposed dropdown does, so every option's words keep one
-  /// edge, the field's.
+  /// check before its words. A select's list (false) shows it after them
+  /// instead, so every option's words keep one edge, the field's; with the
+  /// row's fill it marks the choice, and it stays while another row is lit.
   final bool check;
 
   /// Told when the item is tapped; disabled when null.
@@ -297,7 +267,7 @@ class ExpressiveMenuGroup {
 /// A bounded height scrolls the entries instead of clipping the last action.
 ///
 /// [vibrant] menus (`MenuDefaults.groupVibrantContainerColor`) are a hero
-/// moment: they need an [ExpressiveHeroMoment] ancestor (CONTRACT §3).
+/// moment: they need an [ExpressiveHeroMoment] ancestor.
 class ExpressiveMenuSurface extends StatelessWidget {
   /// A menu surface laying out [groups].
   const ExpressiveMenuSurface({
@@ -427,30 +397,46 @@ class ExpressiveMenuSurface extends StatelessWidget {
   return (rest: rest, inactive: inactive);
 }
 
-/// `MenuDefaults.itemShape(index, count)`: rest and selected shapes.
-ExpressivePressShapes _itemShapes(BuildContext context, int index, int count) {
+typedef _MenuRowGeometry = ({
+  ExpressivePressShapes shapes,
+  bool first,
+  bool last,
+});
+
+/// A row's one shape, lit or chosen alike: the selected item's corners
+/// (`md.comp.menus.item.selected.shape`) inside, and at a group's first and
+/// last row the group's corners less the row's 4dp inset, concentric with
+/// them. A hovered row and the chosen row read as one shape at one inset.
+_MenuRowGeometry _itemGeometry(
+  BuildContext context,
+  ExpressiveCornerBorder panel, {
+  required bool first,
+  required bool last,
+}) {
   final shapes = context.expressiveTheme.shapes;
-  final selected = shapes.of(SegmentedMenuTokens.itemSelectedShape);
-  final outer = shapes.medium.topStart;
-  final inner = shapes.extraSmall.topStart;
-  final OutlinedBorder rest = count == 1
-      ? shapes.of(SegmentedMenuTokens.itemShape)
-      : index == 0
-      ? ExpressiveCornerBorder(
-          topStart: outer,
-          topEnd: outer,
-          bottomEnd: inner,
-          bottomStart: inner,
+  ExpressiveCornerSize inset(ExpressiveCornerSize corner) =>
+      corner.fraction == 0
+      ? ExpressiveCornerSize.dp(
+          math.max(0.0, corner.dp - MenuBehavior.itemInset),
         )
-      : index == count - 1
-      ? ExpressiveCornerBorder(
-          topStart: inner,
-          topEnd: inner,
-          bottomEnd: outer,
-          bottomStart: outer,
-        )
-      : shapes.of(SegmentedMenuTokens.itemShape);
-  return ExpressivePressShapes(shape: rest, selected: selected);
+      : corner;
+  ExpressiveCornerBorder row(ExpressiveShapeKey token) {
+    final inner = shapes.of(token);
+    return ExpressiveCornerBorder(
+      topStart: first ? inset(panel.topStart) : inner.topStart,
+      topEnd: first ? inset(panel.topEnd) : inner.topEnd,
+      bottomStart: last ? inset(panel.bottomStart) : inner.bottomStart,
+      bottomEnd: last ? inset(panel.bottomEnd) : inner.bottomEnd,
+    );
+  }
+
+  return (
+    first: first,
+    last: last,
+    shapes: ExpressivePressShapes.all(
+      row(SegmentedMenuTokens.itemSelectedShape),
+    ),
+  );
 }
 
 /// A menu group: its surface, whose corners fall back to the inactive shape
@@ -493,12 +479,6 @@ class _MenuGroupState extends State<_MenuGroup> {
       ),
     );
     final entries = widget.group.entries;
-    final items = entries.whereType<ExpressiveMenuEntry>().where(
-      (entry) =>
-          entry is! ExpressiveMenuDivider && entry is! ExpressiveMenuNote,
-    );
-    final count = items.length;
-    var index = 0;
     final label = widget.group.label;
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = _hasBeenHovered = true),
@@ -526,7 +506,7 @@ class _MenuGroupState extends State<_MenuGroup> {
                     vibrant: widget.vibrant,
                     states: {if (_hovered) WidgetState.hovered},
                   ),
-                for (final entry in entries)
+                for (final (index, entry) in entries.indexed)
                   if (entry is ExpressiveMenuDivider)
                     const _MenuDivider()
                   else if (entry is ExpressiveMenuNote)
@@ -534,7 +514,12 @@ class _MenuGroupState extends State<_MenuGroup> {
                   else
                     _MenuEntryTile(
                       entry: entry,
-                      shapes: _itemShapes(context, index++, count),
+                      geometry: _itemGeometry(
+                        context,
+                        shape as ExpressiveCornerBorder,
+                        first: label == null && index == 0,
+                        last: index == entries.length - 1,
+                      ),
                       vibrant: widget.vibrant,
                     ),
               ],
@@ -546,17 +531,39 @@ class _MenuGroupState extends State<_MenuGroup> {
   }
 }
 
-/// A menu's list inside its container: 4dp clear of every edge
-/// (`md.comp.menus.group.padding` above and below, the items' own 4dp at the
-/// sides), at every density, so no item's fill or ring touches the container
-/// and the items' corners stay concentric with its corners. Scrolled
-/// ([scrolls]) inside that inset when its height is bounded.
-Widget _menuInset(Widget list, {bool scrolls = false}) => Padding(
-  padding: const EdgeInsets.symmetric(
-    vertical: SegmentedMenuTokens.groupPadding,
+/// A menu's list inside its container: every row's face 4dp clear of the
+/// container's edges (`md.comp.menus.group.padding`) and of the next row's
+/// face, at every density, so no item's fill or ring touches the container
+/// or another, and the items' corners stay concentric with its corners.
+/// Where touch targets are enforced each row is 48dp with its face
+/// 2dp in from either end ([_rowFace]), so the list stands 2dp in;
+/// otherwise the faces fill their rows and it stands the full 4dp in.
+/// [rowsInset] says the rows hold that 2dp themselves (a field's options).
+/// Scrolled ([scrolls]) inside that inset when its height is bounded.
+Widget _menuInset(
+  Widget list, {
+  bool scrolls = false,
+  bool rowsInset = false,
+}) => Builder(
+  builder: (context) => Padding(
+    padding: EdgeInsets.symmetric(
+      vertical:
+          rowsInset || ExpressiveMinimumInteractiveSize.enforcedAt(context)
+          ? _rowGap
+          : SegmentedMenuTokens.groupPadding,
+    ),
+    child: scrolls ? SingleChildScrollView(primary: false, child: list) : list,
   ),
-  child: scrolls ? SingleChildScrollView(primary: false, child: list) : list,
 );
+
+/// Half the 4dp between two rows' faces: what each row keeps clear at
+/// either end of its 48dp target.
+const double _rowGap = SegmentedMenuTokens.groupPadding / 2;
+
+/// A row face's least height where touch targets are enforced: its 48dp
+/// target less [_rowGap] at either end, at every density.
+const double _rowFace =
+    HostBehavior.minimumInteractiveComponentSize - 2 * _rowGap;
 
 /// An [ExpressiveMenuNote]: an item's padding and height, its supporting
 /// text's type and ink, nothing to press; a live region.
@@ -741,25 +748,14 @@ _ItemColors _tokenItemColors(
   required bool selected,
 }) {
   final c = context.expressiveTheme.colors;
-  Color faded(ExpressiveColorRole role, double opacity) =>
-      c.role(role).withValues(alpha: opacity);
   if (vibrant) {
     final container = c.role(VibrantMenuTokens.containerColor);
     if (!enabled) {
       return (
         container: container,
-        text: faded(
-          VibrantMenuTokens.itemDisabledLabelTextColor,
-          VibrantMenuTokens.itemDisabledLabelTextOpacity,
-        ),
-        leading: faded(
-          VibrantMenuTokens.itemDisabledLeadingIconColor,
-          VibrantMenuTokens.itemDisabledLeadingIconOpacity,
-        ),
-        trailing: faded(
-          VibrantMenuTokens.itemDisabledTrailingIconColor,
-          VibrantMenuTokens.itemDisabledTrailingIconOpacity,
-        ),
+        text: c.onSurfaceVariant,
+        leading: c.onSurfaceVariant,
+        trailing: c.onSurfaceVariant,
       );
     }
     if (selectable && selected) {
@@ -783,18 +779,9 @@ _ItemColors _tokenItemColors(
     if (!enabled) {
       return (
         container: container.withValues(alpha: 0),
-        text: faded(
-          ListTokens.itemDisabledLabelTextColor,
-          ListTokens.itemDisabledLabelTextOpacity,
-        ),
-        leading: faded(
-          ListTokens.itemDisabledLeadingIconColor,
-          ListTokens.itemDisabledLeadingIconOpacity,
-        ),
-        trailing: faded(
-          ListTokens.itemDisabledTrailingIconColor,
-          ListTokens.itemDisabledTrailingIconOpacity,
-        ),
+        text: c.onSurfaceVariant,
+        leading: c.onSurfaceVariant,
+        trailing: c.onSurfaceVariant,
       );
     }
     return (
@@ -808,18 +795,9 @@ _ItemColors _tokenItemColors(
   if (!enabled) {
     return (
       container: container,
-      text: faded(
-        StandardMenuTokens.itemDisabledLabelTextColor,
-        StandardMenuTokens.itemDisabledLabelTextOpacity,
-      ),
-      leading: faded(
-        StandardMenuTokens.itemDisabledLeadingIconColor,
-        StandardMenuTokens.itemDisabledLeadingIconOpacity,
-      ),
-      trailing: faded(
-        StandardMenuTokens.itemDisabledTrailingIconColor,
-        StandardMenuTokens.itemDisabledTrailingIconOpacity,
-      ),
+      text: c.onSurfaceVariant,
+      leading: c.onSurfaceVariant,
+      trailing: c.onSurfaceVariant,
     );
   }
   if (selected) {
@@ -883,6 +861,28 @@ class _MenuLead extends ValueNotifier<_Lead> {
 
   /// The row the pointer last took the focus to.
   FocusNode? pointerFocus;
+
+  /// The row lit now, if one is: a chosen row lends it the light.
+  final ValueNotifier<Object?> lit = ValueNotifier<Object?>(null);
+
+  bool _disposed = false;
+
+  /// [row]'s light came on ([on]) or went out.
+  void lightChanged(Object row, {required bool on}) {
+    if (_disposed) return;
+    if (on) {
+      lit.value = row;
+    } else if (lit.value == row) {
+      lit.value = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    lit.dispose();
+    super.dispose();
+  }
 
   /// The light of a row [focused] and [hovered] as it is.
   _Light lightOf({required bool focused, required bool hovered}) =>
@@ -1025,12 +1025,12 @@ class _LeadHostState extends State<_LeadHost> {
 class _MenuEntryTile extends StatefulWidget {
   const _MenuEntryTile({
     required this.entry,
-    required this.shapes,
+    required this.geometry,
     required this.vibrant,
   });
 
   final ExpressiveMenuEntry entry;
-  final ExpressivePressShapes shapes;
+  final _MenuRowGeometry geometry;
   final bool vibrant;
 
   @override
@@ -1098,7 +1098,7 @@ class _MenuEntryTileState extends State<_MenuEntryTile> {
           supportingText: entry.supportingText,
           icon: entry.icon,
           trailing: _trailing(entry.trailingText, entry.trailingIcon),
-          shapes: widget.shapes,
+          geometry: widget.geometry,
           colors: _itemColors(
             context,
             selectable: false,
@@ -1127,7 +1127,7 @@ class _MenuEntryTileState extends State<_MenuEntryTile> {
               (entry.icon == null ? ExpressiveSymbols.check : null),
           selected: checked,
           trailing: _trailing(entry.trailingText, null),
-          shapes: widget.shapes,
+          geometry: widget.geometry,
           colors: _itemColors(
             context,
             selectable: true,
@@ -1135,6 +1135,7 @@ class _MenuEntryTileState extends State<_MenuEntryTile> {
             enabled: enabled,
             selected: checked,
           ),
+          restColors: _restColors(context, enabled: enabled),
           role: ExpressivePressRole.checkbox,
           onPressed: enabled
               ? () {
@@ -1157,8 +1158,14 @@ class _MenuEntryTileState extends State<_MenuEntryTile> {
                   ? ExpressiveSymbols.check
                   : null),
           selected: entry.selected,
-          trailing: _trailing(entry.trailingText, null),
-          shapes: widget.shapes,
+          // A select's list marks its choice at the row's end, where it
+          // stays while another row is lit.
+          trailing:
+              _trailing(entry.trailingText, null) ??
+              (!entry.check && entry.selected && entry.icon == null
+                  ? const Icon(ExpressiveSymbols.check)
+                  : null),
+          geometry: widget.geometry,
           colors: _itemColors(
             context,
             selectable: true,
@@ -1166,6 +1173,7 @@ class _MenuEntryTileState extends State<_MenuEntryTile> {
             enabled: enabled,
             selected: entry.selected,
           ),
+          restColors: _restColors(context, enabled: enabled),
           role: ExpressivePressRole.radio,
           onPressed: enabled
               ? () {
@@ -1188,7 +1196,7 @@ class _MenuEntryTileState extends State<_MenuEntryTile> {
             icon: entry.icon,
             selected: _submenuOpen,
             trailing: Icon(forward),
-            shapes: widget.shapes,
+            geometry: widget.geometry,
             colors: _itemColors(
               context,
               selectable: true,
@@ -1196,6 +1204,7 @@ class _MenuEntryTileState extends State<_MenuEntryTile> {
               enabled: enabled,
               selected: _submenuOpen,
             ),
+            restColors: _restColors(context, enabled: enabled),
             role: ExpressivePressRole.button,
             onPressed: enabled ? () => _openSubmenu(entry) : null,
           ),
@@ -1206,6 +1215,16 @@ class _MenuEntryTileState extends State<_MenuEntryTile> {
         return _MenuNote(entry, vibrant: widget.vibrant);
     }
   }
+
+  /// A selectable row's colours unchosen.
+  _ItemColors _restColors(BuildContext context, {required bool enabled}) =>
+      _itemColors(
+        context,
+        selectable: true,
+        vibrant: widget.vibrant,
+        enabled: enabled,
+        selected: false,
+      );
 
   Widget? _trailing(String? text, IconData? icon) {
     if (text != null) {
@@ -1227,8 +1246,9 @@ class _MenuItemTile extends StatelessWidget {
   const _MenuItemTile({
     required this.label,
     this.style,
-    required this.shapes,
+    required this.geometry,
     required this.colors,
+    _ItemColors? restColors,
     required this.role,
     required this.onPressed,
     this.supportingText,
@@ -1236,7 +1256,7 @@ class _MenuItemTile extends StatelessWidget {
     this.selectedIcon,
     this.selected = false,
     this.trailing,
-  });
+  }) : restColors = restColors ?? colors;
 
   final String label;
   final ExpressiveComponentThemeData? style;
@@ -1245,8 +1265,11 @@ class _MenuItemTile extends StatelessWidget {
   final IconData? selectedIcon;
   final bool selected;
   final Widget? trailing;
-  final ExpressivePressShapes shapes;
+  final _MenuRowGeometry geometry;
   final _ItemColors colors;
+
+  /// Its colours unchosen: a chosen row's while another row is lit.
+  final _ItemColors restColors;
   final ExpressivePressRole role;
   final VoidCallback? onPressed;
 
@@ -1263,7 +1286,11 @@ class _MenuItemTile extends StatelessWidget {
       ),
       child: _LitItem(
         enabled: enabled,
-        builder: (focus, states, light) {
+        builder: (focus, states, light, yielded) {
+          // Another row lit: the chosen row lends it the light, keeping its
+          // mark (its check) and its words on the menu's own colours, so
+          // one row at a time reads as current.
+          final colors = yielded ? restColors : this.colors;
           final hover =
               t.menuTheme.overlayColor?.resolve(const {WidgetState.hovered}) ??
               t.states.layerOf(colors.text, const {WidgetState.hovered});
@@ -1278,7 +1305,7 @@ class _MenuItemTile extends StatelessWidget {
             style: style,
             componentStyle: t.menuTheme.copyWith(
               backgroundColor: WidgetStateProperty.resolveWith((states) {
-                final own = selected && enabled
+                final own = selected && enabled && !yielded
                     ? t.menuTheme.backgroundColor?.resolve(states)
                     : null;
                 return own == null ? null : lit(own);
@@ -1291,7 +1318,7 @@ class _MenuItemTile extends StatelessWidget {
             ),
             focusNode: focus,
             statesController: states,
-            shapes: shapes,
+            shapes: geometry.shapes,
             motion: MenuBehavior.itemShapeMotion,
             colorMotion: MenuBehavior.itemColorMotion,
             color: lit(colors.container),
@@ -1304,16 +1331,24 @@ class _MenuItemTile extends StatelessWidget {
             // out would lie under its neighbours.
             focusInward: true,
             focusRing: light == _Light.ring,
-            child: _itemContent(context),
+            // Every row centred in its target, its face [_rowFace] at
+            // least: 4dp between faces and from the menu's ends, as at its
+            // sides, at every density.
+            child: ExpressiveMinimumInteractiveSize.enforcedAt(context)
+                ? ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: _rowFace),
+                    child: _itemContent(context, colors),
+                  )
+                : _itemContent(context, colors),
           );
         },
       ),
     );
   }
 
-  /// The item's icon, words and trailing content, laid out as
+  /// The item's icon, words and trailing content in [colors], laid out as
   /// `MenuArrangement` does.
-  Widget _itemContent(BuildContext context) {
+  Widget _itemContent(BuildContext context, _ItemColors colors) {
     final t = context.expressiveTheme;
     return Builder(
       builder: (context) {
@@ -1455,11 +1490,13 @@ class _LitItem extends StatefulWidget {
 
   final bool enabled;
 
-  /// The item for its focus, its states and its light.
+  /// The item for its focus, its states, its light, and whether another
+  /// row of its menu is lit ([yielded]: a chosen row lends it its fill).
   final Widget Function(
     FocusNode focus,
     WidgetStatesController states,
     _Light light,
+    bool yielded,
   )
   builder;
 
@@ -1491,8 +1528,31 @@ class _LitItemState extends State<_LitItem> {
     if (mounted) setState(() {});
   }
 
+  /// The menu this row last told of its light, and whether it was on.
+  _MenuLead? _told;
+  bool _toldOn = false;
+
+  /// Tells [lead] whether this row is lit, after the frame that lit it (a
+  /// chosen row elsewhere in the menu rebuilds to lend it the light).
+  void _tell(_MenuLead? lead, {required bool on}) {
+    if (identical(lead, _told) && on == _toldOn) return;
+    final before = _told;
+    _told = lead;
+    _toldOn = on;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!identical(before, lead)) before?.lightChanged(this, on: false);
+      if (mounted && identical(_told, lead)) lead?.lightChanged(this, on: on);
+    });
+  }
+
   @override
   void dispose() {
+    final told = _told;
+    if (told != null && _toldOn) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => told.lightChanged(this, on: false),
+      );
+    }
     _focus
       ..removeListener(_focusChanged)
       ..dispose();
@@ -1510,11 +1570,22 @@ class _LitItemState extends State<_LitItem> {
         ? _Light.off
         : lead?.lightOf(focused: focused, hovered: _hovered) ??
               _lightAlone(focused: focused, hovered: _hovered);
+    _tell(lead, on: light != _Light.off);
     return MouseRegion(
       onHover: widget.enabled && lead != null
           ? (_) => lead.pointerOver(_focus)
           : null,
-      child: widget.builder(_focus, _states, light),
+      child: lead == null
+          ? widget.builder(_focus, _states, light, false)
+          : ValueListenableBuilder<Object?>(
+              valueListenable: lead.lit,
+              builder: (context, lit, _) => widget.builder(
+                _focus,
+                _states,
+                light,
+                light == _Light.off && lit != null && !identical(lit, this),
+              ),
+            ),
     );
   }
 }
@@ -2429,7 +2500,7 @@ class _RenderMenuPlacement extends RenderBox
 /// anywhere.
 ///
 /// [vibrant] menus are a hero moment: they need an [ExpressiveHeroMoment]
-/// ancestor (CONTRACT §3).
+/// ancestor.
 class ExpressiveMenu extends StatefulWidget {
   /// A menu of [groups] or [entries], anchored to [child] or to what [builder] builds.
   const ExpressiveMenu({
@@ -3336,19 +3407,27 @@ Widget _optionFace(
     enabled: enabled,
     selected: selected,
   );
-  final shape = selectable && selected
-      ? t.shapes.of(SegmentedMenuTokens.itemSelectedShape)
-      : t.shapes.of(SegmentedMenuTokens.itemShape);
+  // A standalone option sits 4 dp inside the large popover on every side.
+  final shape = _itemGeometry(
+    context,
+    t.shapes.of(SegmentedMenuTokens.containerShape),
+    first: true,
+    last: true,
+  ).shapes.shape;
   final glyph =
       icon ?? (selectable && selected ? ExpressiveSymbols.check : null);
   final text = Text(
     label,
-    maxLines: 1,
-    overflow: TextOverflow.ellipsis,
     style: t.type.labelLarge.copyWith(color: colors.text),
   );
+  // A 48dp row, its face [_rowGap] in from either end ([_menuInset]
+  // `rowsInset`): 4dp between faces and from the panel's ends, as at its
+  // sides.
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: MenuBehavior.itemInset),
+    padding: const EdgeInsets.symmetric(
+      horizontal: MenuBehavior.itemInset,
+      vertical: _rowGap,
+    ),
     child: ExpressiveStateFace(
       states: shown,
       shape: shape,
@@ -3360,7 +3439,7 @@ Widget _optionFace(
       focusInward: true,
       focusLayer: false,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: ExpressiveSpacing.s48),
+        constraints: const BoxConstraints(minHeight: _rowFace),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: ExpressiveSpacing.s12,
@@ -3381,8 +3460,6 @@ Widget _optionFace(
                           text,
                           Text(
                             supporting,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                             style: t.type.bodyMedium.copyWith(
                               color: colors.trailing,
                             ),
@@ -3417,7 +3494,7 @@ Widget _optionFace(
 Widget _panel(Widget child) => DesignKeylineFace(
   child: ExpressivePopoverSurface(
     padding: EdgeInsets.zero,
-    child: _menuInset(child),
+    child: _menuInset(child, rowsInset: true),
   ),
 );
 
@@ -3569,6 +3646,51 @@ class ExpressiveMultiSelect<T extends Object> extends StatefulWidget {
 
 class _ExpressiveMultiSelectState<T extends Object>
     extends State<ExpressiveMultiSelect<T>> {
+  /// The visible chip's height ([face]) and the field's inset round the
+  /// chips ([inset]), matching the chip's vertical margin while its delete
+  /// target and the editable line both retain a full-size touch target.
+  ({double face, double inset}) _chip(BuildContext context) {
+    final t = context.expressiveTheme;
+    final states = <WidgetState>{
+      if (widget.onChanged == null) WidgetState.disabled,
+    };
+    final direction = Directionality.of(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    double lineHeight(TextStyle style) {
+      final line = TextPainter(
+        text: TextSpan(text: 'M', style: style),
+        textDirection: direction,
+        textScaler: scaler,
+      )..layout();
+      final height = line.height;
+      line.dispose();
+      return height;
+    }
+
+    final padding = t.density
+        .padding(const EdgeInsets.all(ExpressiveSpacing.s8))
+        .top;
+    final type = t.type
+        .of(InputChipTokens.labelTextFont)
+        .merge(t.chipTheme.textStyle?.resolve(states));
+    final minimum =
+        t.chipTheme.minimumSize?.resolve(states)?.height ??
+        t.density.height(ChipsTokens.height, floor: 0);
+    final content = math.max(
+      lineHeight(type),
+      t.chipTheme.iconSize?.resolve(states) ?? InputChipTokens.trailingIconSize,
+    );
+    final face = math.max(
+      minimum,
+      content + (t.chipTheme.padding?.resolve(states)?.vertical ?? 0),
+    );
+    final row = math.max(
+      HostBehavior.minimumInteractiveComponentSize,
+      lineHeight(t.type.bodyLarge),
+    );
+    return (face: face, inset: padding + math.max(0.0, (row - face) / 2));
+  }
+
   FocusNode? _ownNode;
 
   /// The handed node, else one of its own (disposed with the state; a
@@ -3633,6 +3755,12 @@ class _ExpressiveMultiSelectState<T extends Object>
     final t = context.expressiveTheme;
     final onChanged = widget.onChanged;
     final enabled = onChanged != null;
+    final (:face, :inset) = _chip(context);
+    final shape = ExpressiveCornerBorder.all(
+      ExpressiveCornerSize.dp(
+        t.shapes.of(InputChipTokens.containerShape).topStart.dp + inset,
+      ),
+    );
     // A choice as a select is: from [ExpressiveSelect.wideFrom], at most
     // [ExpressiveSelect.wideMaxWidth] at its column's start.
     return expressiveChoiceWidth(
@@ -3641,12 +3769,12 @@ class _ExpressiveMultiSelectState<T extends Object>
         focusNode: _node,
         enabled: enabled,
         isError: widget.isError,
+        // The frame's inset lies inside the tags' layout ([layoutBuilder]):
+        // the suggestions open from the field's outline, its width.
         builder: (context, states, child) => ExpressiveFieldFrame(
           states: states,
-          padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: ExpressiveSpacing.s8,
-            vertical: ExpressiveSpacing.s8,
-          ),
+          shape: shape,
+          padding: EdgeInsets.zero,
           child: child,
         ),
         child: DesignTagInput<T>(
@@ -3717,14 +3845,29 @@ class _ExpressiveMultiSelectState<T extends Object>
               ),
             ),
           ),
-          layoutBuilder: (context, tags, field) => Wrap(
-            spacing: ExpressiveSpacing.s8,
-            runSpacing: ExpressiveSpacing.s8,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: <Widget>[...tags, field],
+          // The frame's padding as a surface keeps it: density moves the
+          // 8dp above and below the chips, not the inset beside them.
+          layoutBuilder: (context, tags, field) => Padding(
+            padding: EdgeInsetsDirectional.symmetric(
+              horizontal: inset,
+              vertical: t.density
+                  .padding(
+                    const EdgeInsets.symmetric(vertical: ExpressiveSpacing.s8),
+                  )
+                  .top,
+            ),
+            child: Wrap(
+              spacing: ExpressiveSpacing.s8,
+              runSpacing: ExpressiveSpacing.s8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: <Widget>[...tags, field],
+            ),
           ),
+          // The ring round the chip's face, not its taller touch target:
+          // inside the field's outline.
           tagBuilder: (context, value, tag) => ExpressiveFocusRingBox(
             focused: tag.focused,
+            faceHeight: face,
             shape: t.shapes.small,
             // A disabled chip keeps its remove glyph, dimmed and inert (M3's
             // disabled input chip): the field keeps its size.
@@ -3736,7 +3879,14 @@ class _ExpressiveMultiSelectState<T extends Object>
           ),
           optionBuilder: (context, option, states) =>
               _optionFace(context, states: states, label: _label(option)),
-          surfaceBuilder: (context, list) => _panel(list),
+          // Clear of the outline below it, as a select's menu stands.
+          // 4dp from the field on whichever side the list opens: below it,
+          // or above it when the screen has no room under the field. The
+          // other 4dp is clear and takes no taps.
+          surfaceBuilder: (context, list) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: ExpressiveSpacing.s4),
+            child: _panel(list),
+          ),
         ),
       ),
     );
@@ -3881,7 +4031,7 @@ class ExpressiveMenuBar extends StatelessWidget {
           final open = states.contains(WidgetState.selected);
           final enabled = !states.contains(WidgetState.disabled);
           final content = !enabled
-              ? t.colors.onSurface.withValues(alpha: 0.38)
+              ? t.colors.onSurfaceVariant
               : open
               ? t.colors.onSecondaryContainer
               : t.colors.onSurfaceVariant;

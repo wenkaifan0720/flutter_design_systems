@@ -110,6 +110,26 @@ String? _misread(String where, String problem) {
         "on the 64dp toolbar, two faces (ui_core 0e25289dfd reads the "
         "toolbar's actions by its pill; the oracle's toolbar scenes)";
   }
+  if (page == 'toolbar' &&
+      RegExp(
+        r'^a button "New note" beside a button "[^"]*": its icon is on the '
+        r"row's centre line as laid out, [\d.]+ device px above as drawn",
+      ).hasMatch(problem)) {
+    return "the floating toolbar's FAB beside it, drawn on the row's centre "
+        "line: its + and the toolbar's glyphs centred at 1915.9 and 1915.3 "
+        'on a 1916 line, compact and standard (probe 11-18, drawn at 4x)';
+  }
+  if (page == 'icon-buttons' &&
+      _density == 'compact' &&
+      RegExp(
+        r'^a switch "(Save|Notify me|Pin)" beside a switch "(Save|Notify '
+        r'me|Pin)": its (top|bottom) is level with theirs as laid out, '
+        r'[\d.]+ device px (below|above) as drawn',
+      ).hasMatch(problem)) {
+    return "the toggles' 32dp faces, drawn level: Save's ring, Notify me's "
+        "checked fill and Pin's fill each span 8 to 40 of their 48dp box, "
+        'light and dark (probe 11-18, drawn at 4x)';
+  }
   if ((page == 'cards' || page == 'everyday-cards') &&
       problem.contains('the capitals of')) {
     return "a card's title sits at its top or foot by design, not on the "
@@ -140,13 +160,16 @@ String? _misread(String where, String problem) {
         "it's height";
   }
   if (page == 'select' &&
-      problem.contains(
-        'a list opened from a button "Standard delivery": its words are',
-      )) {
+      RegExp(
+        r'a list opened from a button "(Standard delivery|Delivery)": its '
+        r'words are',
+      ).hasMatch(problem)) {
     return "the page's own in-place menu (the Open section, under the "
         'delivery field, its words 16 in) read as the list the field '
-        "opened, which overlaps it: that list's words stand at 68.1, the "
-        "field's value at 68.3 (probe, ui_core 0e25289dfd)";
+        "opened, which overlaps it: the section starts at the field's foot, "
+        'where the list does, and of the two at the same distance the check '
+        "keeps the first it found, the page's; the list's words stand at "
+        "68.1, the field's value at 68.3 (probes 11-18, ui_core_test 0.1.1)";
   }
   if (RegExp(
     r"^a tab bar: [\d.]+ px wide as laid out, [\d.]+ as drawn; its \d+ "

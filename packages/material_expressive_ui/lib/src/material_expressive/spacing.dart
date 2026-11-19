@@ -1,12 +1,4 @@
-/// Expressive's spacing: [ExpressiveSpacing], Material's 8dp scale
-/// `space0…space900` = 0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 32, 36, 40,
-/// 48, 56, 64, 72 under Cody's member names (`ExpressiveSpacing.s8` =
-/// `space100`; CONTRACT §2 "Spacing"). Fixed: themes never vary it.
-///
-/// Generated: tools/expressive_tokens reads the scale from
-/// `spec/spacing.json` (its source page and retrieval date), cross-checks
-/// every step against the token DB's `md.sys.measurement.*` and writes
-/// `internal/spacing/spacing.g.dart`, which this names. Owner: w1-tokens.
+/// Spacing constants for Expressive layouts.
 library;
 
 import 'internal/spacing/spacing.g.dart';

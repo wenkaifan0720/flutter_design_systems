@@ -1,20 +1,4 @@
-/// Cards: elevated, filled and outlined (CONTRACT §4.1 `card`). Owner:
-/// w3-cards.
-///
-/// A port of Compose's `Card.kt`: a card is a `Surface` (here
-/// [ExpressiveSurface]) holding its content, in the variant's container
-/// colour, shape (`corner.medium`), shadow elevation and — outlined — its
-/// 1dp `outlineVariant` stroke, every value from the generated
-/// `ElevatedCardTokens` / `FilledCardTokens` / `OutlinedCardTokens`. A card
-/// with [ExpressiveCard.onPressed] is Compose's clickable card: the shared
-/// [ExpressivePressable] draws its state layers and ripple in the content
-/// colour and springs its elevation by interaction (`CardElevation`), and a
-/// disabled one takes the variant's disabled colours.
-///
-/// CONTRACT §3 bans containment deeper than 2 and a card around one row, a
-/// list section or one field. In debug a card asserts both where it can see
-/// them: a third nested card, and a card whose child is itself one list row,
-/// list section or field.
+/// Filled, elevated and outlined cards.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -214,7 +198,7 @@ ExpressiveStateElevation expressiveCardElevation(
 /// minimum: it is already one tap target.
 ///
 /// Never wrap one list row, one list section or one field in a card, and
-/// never nest cards more than two deep (CONTRACT §3).
+/// never nest cards more than two deep.
 ///
 /// ```dart
 /// ExpressiveCard.elevated(onPressed: open, padding: EdgeInsets.all(ExpressiveSpacing.s16), child: Text('Ridge trail'))
@@ -401,15 +385,14 @@ class ExpressiveCard extends StatelessWidget {
     );
   }
 
-  /// CONTRACT §3 in debug: a third nested card, or a card around one row,
-  /// section or field, is a defect.
+  /// Checks the nesting depth and child when assertions are enabled.
   bool _debugCheckContainment(BuildContext context) {
     final depth = _CardDepth.of(context) + 1;
     if (depth > _CardDepth.maxDepth) {
       throw FlutterError.fromParts(<DiagnosticsNode>[
         ErrorSummary('ExpressiveCard is nested $depth deep.'),
         ErrorDescription(
-          'Containment deeper than 2 is banned (CONTRACT §3): a card may '
+          'Containment deeper than 2 is banned: a card may '
           'hold a card, never a card holding a card.',
         ),
         ErrorHint('Flatten the inner cards into rows, sections or media.'),
@@ -420,8 +403,7 @@ class ExpressiveCard extends StatelessWidget {
       throw FlutterError.fromParts(<DiagnosticsNode>[
         ErrorSummary('ExpressiveCard holds a single $name.'),
         ErrorDescription(
-          'A card around one row, a list section or one field is banned '
-          '(CONTRACT §3): the row, section or field is already a container.',
+          'A row, list section or field already provides its own container.',
         ),
         ErrorHint(
           'Drop the card, or give it a subject: media, text and actions.',

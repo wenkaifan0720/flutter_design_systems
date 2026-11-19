@@ -123,6 +123,7 @@ List<NavTab> _tabs(TripWords w) => [
 
 class _TripAppState extends State<TripApp> {
   final _trip = _Trip();
+  final _plan = GlobalKey<_PlanScreenState>();
   late String _screen = widget.screen;
   String? _open;
 
@@ -151,8 +152,11 @@ class _TripAppState extends State<TripApp> {
     super.dispose();
   }
 
-  void _go(String screen) {
+  Future<void> _go(String screen) async {
     if (screen == _screen) return;
+    final plan = _plan.currentState;
+    if (plan != null && !await plan.mayLeave()) return;
+    if (!mounted) return;
     setState(() => _screen = screen);
     widget.onScreenChanged?.call(screen);
   }
@@ -199,7 +203,7 @@ class _TripAppState extends State<TripApp> {
         body: KeyedSubtree(
           key: ValueKey('trip/$_screen'),
           child: switch (_screen) {
-            TripScreens.plan => const _PlanScreen(),
+            TripScreens.plan => _PlanScreen(key: _plan),
             TripScreens.shared => const _SharedScreen(),
             TripScreens.kit => const _KitScreen(),
             TripScreens.preferences => const _PreferencesScreen(),
@@ -950,7 +954,7 @@ class _Lately extends StatelessWidget {
 // Plan: the trip's details.
 
 class _PlanScreen extends StatefulWidget {
-  const _PlanScreen();
+  const _PlanScreen({super.key});
 
   @override
   State<_PlanScreen> createState() => _PlanScreenState();
@@ -978,6 +982,37 @@ class _PlanScreenState extends State<_PlanScreen> {
     super.dispose();
   }
 
+  bool _confirming = false;
+
+  bool get _dirty =>
+      _name.text.trim() != _trip.nameIn(TripWords.read(context)) ||
+      _leave != _trip.leave ||
+      _back != _trip.back ||
+      _stay != _trip.stay ||
+      _remind != _trip.remind;
+
+  Future<bool> mayLeave() async {
+    if (!_dirty) return true;
+    if (_confirming) return false;
+    _confirming = true;
+    final w = TripWords.read(context);
+    try {
+      return await showExpressiveDialog<bool>(
+            context: context,
+            builder: (context) => ExpressiveDialog(
+              title: w.discardTitle,
+              actions: [
+                ExpressiveDialogAction(w.keepEditing, value: false),
+                ExpressiveDialogAction(w.discard, value: true, filled: true),
+              ],
+            ),
+          ) ==
+          true;
+    } finally {
+      _confirming = false;
+    }
+  }
+
   void _close() => _TripScope.of(context).go(TripScreens.home);
 
   void _save() {
@@ -991,6 +1026,7 @@ class _PlanScreenState extends State<_PlanScreen> {
       _trip.stay = _stay;
       _trip.remind = _remind;
     });
+    if (_name.text != _trip.nameIn(w)) _name.text = _trip.nameIn(w);
     showExpressiveSnackBar(context, w.tripSaved);
     _close();
   }
@@ -1096,50 +1132,56 @@ class _PlanScreenState extends State<_PlanScreen> {
         ),
       ],
     );
-    return _Screen(
-      title: TripScreens.titleIn(w, TripScreens.plan),
-      subtitle: _trip.nameIn(w),
-      leading: ExpressiveIconButton(
-        ExpressiveSymbols.close,
-        semanticLabel: w.discard,
-        onPressed: _close,
-      ),
-      measure: 960,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth < _twoPanes) {
-            return Align(
-              alignment: AlignmentDirectional.topStart,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: form,
-              ),
-            );
-          }
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 32,
-            children: [
-              // Two panes, each with keylines of its own: the form's end is
-              // its own, not the summary's (a card, a region already).
-              Expanded(
-                flex: 3,
-                child: DesignKeylineRegion(label: 'Trip form', child: form),
-              ),
-              Expanded(
-                flex: 2,
-                child: _PlanSummary(
-                  name: _name.text.trim().isEmpty
-                      ? _trip.nameIn(w)
-                      : _name.text.trim(),
-                  dates: w.range(_leave, _back),
-                  nights: nights,
-                  stay: w.stay(_stay),
+    return PopScope<Object?>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _close();
+      },
+      child: _Screen(
+        title: TripScreens.titleIn(w, TripScreens.plan),
+        subtitle: _trip.nameIn(w),
+        leading: ExpressiveIconButton(
+          ExpressiveSymbols.close,
+          semanticLabel: w.discard,
+          onPressed: _close,
+        ),
+        measure: 960,
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth < _twoPanes) {
+              return Align(
+                alignment: AlignmentDirectional.topStart,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: form,
                 ),
-              ),
-            ],
-          );
-        },
+              );
+            }
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              spacing: 32,
+              children: [
+                // Two panes, each with keylines of its own: the form's end is
+                // its own, not the summary's (a card, a region already).
+                Expanded(
+                  flex: 3,
+                  child: DesignKeylineRegion(label: 'Trip form', child: form),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: _PlanSummary(
+                    name: _name.text.trim().isEmpty
+                        ? _trip.nameIn(w)
+                        : _name.text.trim(),
+                    dates: w.range(_leave, _back),
+                    nights: nights,
+                    stay: w.stay(_stay),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -1295,6 +1337,13 @@ class _SharedList extends StatefulWidget {
 
 class _SharedListState extends State<_SharedList> {
   final _search = GlobalKey<ExpressiveSearchBarState>();
+  final _query = TextEditingController();
+
+  @override
+  void dispose() {
+    _query.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1336,6 +1385,7 @@ class _SharedListState extends State<_SharedList> {
       children: [
         ExpressiveSearchBar(
           key: _search,
+          controller: _query,
           hintText: w.searchShared,
           results: (context, query) {
             final q = query.trim().toLowerCase();
@@ -1346,6 +1396,27 @@ class _SharedListState extends State<_SharedList> {
             return ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
+                if (q.isNotEmpty && found.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Semantics(
+                      liveRegion: true,
+                      child: Column(
+                        children: [
+                          Text(
+                            w.noSharedMatches,
+                            textAlign: TextAlign.center,
+                            style: context.expressiveTheme.type.titleMedium,
+                          ),
+                          const SizedBox(height: 12),
+                          ExpressiveTextButton(
+                            w.clearSearch,
+                            onPressed: _query.clear,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 for (final i in found)
                   row(i, after: () => _search.currentState?.close()),
               ],

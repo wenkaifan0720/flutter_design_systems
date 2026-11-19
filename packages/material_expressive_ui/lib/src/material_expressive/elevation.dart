@@ -1,28 +1,4 @@
-/// Expressive's elevation: [ExpressiveElevation], the six levels and the two
-/// ways Compose shows them, and [ExpressiveSurface], Compose's `Surface`
-/// (CONTRACT §2). Owner: w1-host, with `test/elevation_test.dart` and the
-/// gallery's elevation demo.
-///
-/// Levels are [ExpressiveElevationLevel] (generated from `ElevationTokens`:
-/// 0 · 1 · 3 · 6 · 8 · 12 dp); a component token names one symbolically
-/// (`ElevatedButtonTokens.containerElevation`). Compose shows a level two
-/// ways, and so does a surface here:
-///
-/// - **Tonal elevation**: a surface whose colour is the `surface` role is
-///   tinted by `surfaceTint` at alpha (4.5 · ln(dp + 1) + 2) / 100
-///   (`ColorScheme.surfaceColorAtElevation`; the constants are behaviour,
-///   `HostBehavior`), accumulated through nested surfaces
-///   (`LocalAbsoluteTonalElevation`). Any other colour is left alone: M3
-///   Expressive paints most containers with the surface-container roles
-///   instead, so the tint is rare.
-/// - **Shadow elevation**: a shadow cast by the surface's shape in the
-///   `shadow` role, drawn with Android's shadow model: HWUI's ambient +
-///   spot shadows from a point light over the top centre of the window
-///   ([ExpressiveShadowLight], [ExpressiveElevation.paintShadow]), not the
-///   engine's `drawShadow` (a fixed directional light, spot alpha 0.25).
-///   Only the few shadowed components use it (elevated buttons and cards,
-///   FABs, menus, snackbars, the docked toolbar); a level animates between
-///   states on a spring.
+/// Tonal surfaces and shadows for Material elevation levels.
 library;
 
 import 'dart:math' as math;
@@ -228,10 +204,7 @@ class ExpressiveElevation {
   int get hashCode => Object.hash(ExpressiveElevation, colors);
 }
 
-/// Android's shadow model, as the framework applies it on the oracle AVD
-/// (`material_oracle`, android-36) and Skia draws it. The literal lint
-/// excepts exactly these declarations (T `src/lint.ts`,
-/// `LITERAL_EXCEPTIONS`): they are the platform's, not a design token.
+/// Android's ambient and spot light values for Material elevation shadows.
 abstract final class ExpressiveAndroidShadowModel {
   // frameworks/base core/res/res/values/dimens.xml, read from the AVD's
   // framework-res.apk (`aapt2 dump resources`); Theme.Material's

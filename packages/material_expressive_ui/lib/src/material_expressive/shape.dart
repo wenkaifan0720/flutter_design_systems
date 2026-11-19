@@ -1,24 +1,4 @@
-/// Expressive's shape (CONTRACT §2 "Shape"): [ExpressiveShapes], the corner
-/// scale (0 · 4 · 8 · 12 · 16 · 20 · 28 · 32 · 48 · full, with top, bottom,
-/// start and end variants for inner corners), which
-/// `context.expressiveTheme.shapes` carries; and the 35 library shapes of
-/// Compose's `MaterialShapes` ([ExpressiveMaterialShape]) with their border
-/// ([ExpressiveMaterialShapeBorder]) and morph ([ExpressiveMorph]).
-///
-/// The scale is Compose's `Shapes`: every step an [ExpressiveCornerBorder]
-/// whose corners are the theme's baked `ShapeTokens` (`internal/shape/`,
-/// written by `tools/expressive_tokens`' `emit/shape.ts`), resolved at
-/// paint time exactly as Compose's `CornerBasedShape` does — a percent
-/// corner against the shorter side, every corner clamped to half of it.
-/// Components name a step or an [ExpressiveShapeKey] token, never a length.
-///
-/// The library shapes are generated from `MaterialShapes.kt` and built on
-/// a vendored port of androidx graphics-shapes (`internal/shape/graphics/`,
-/// MIT via `material_new_shapes`), held to Compose's own cubics by
-/// `test/shape_test.dart`. They mask imagery — media, avatars, metrics —
-/// never text containers (CONTRACT §3).
-///
-/// Owner: w1-shape.
+/// Corner, geometric and morphing shapes for Expressive components.
 library;
 
 import 'dart:math' as math;
@@ -492,7 +472,7 @@ Path expressiveLibraryShapePath(ExpressiveMaterialShape shape, Rect rect) {
 }
 
 /// A library shape as a border: to clip imagery (`ClipPath.shape`,
-/// `ShapeDecoration`), never a text container (CONTRACT §3).
+/// `ShapeDecoration`), never a text container.
 @immutable
 class ExpressiveMaterialShapeBorder extends OutlinedBorder {
   /// A border of the library [shape], with an optional [side].

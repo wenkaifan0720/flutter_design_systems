@@ -1,37 +1,4 @@
-/// Progress — linear and circular indicators, determinate and
-/// indeterminate, with the wavy variants as an opt-in hero — and the step
-/// indicator (CONTRACT §4.1 `progress`, `step-indicator`). Owner:
-/// w3-feedback.
-///
-/// A port of Compose material3 1.5.0-alpha29's `ProgressIndicator.kt`
-/// (`LinearProgressIndicator` and `CircularProgressIndicator` with their
-/// track gap and stop indicator) and `WavyProgressIndicator.kt` with its
-/// drawing in `internal/LinearWavyProgressModifiers.kt` and
-/// `internal/CircularWavyProgressModifiers.kt`. Geometry and colours come
-/// from the generated `ProgressIndicatorTokens`,
-/// `LinearProgressIndicatorTokens` and `CircularProgressIndicatorTokens`;
-/// what Compose sets in code (the 240dp default width, the indeterminate
-/// keyframe timelines, the wave's star) from `ProgressIndicatorBehavior`,
-/// `ProgressEasingBehavior` and `WavyProgressIndicatorBehavior`
-/// (`tools/expressive_tokens/behavior/progress.yaml`).
-///
-/// The drawing is Compose's line for line: the flat linear bar's round
-/// caps clamped inside the track and the gap widened by the stroke; the
-/// circular arcs from 12 o'clock with the gap as a sweep; the wavy line a
-/// chain of quadratics measured and cut per frame, flattened by the
-/// amplitude; the circular wave a star morphed from a circle, drawn twice
-/// round so the wave can travel.
-///
-/// Deviations (recorded for the oracle):
-/// - Compose runs the indeterminate timelines as keyframes on an infinite
-///   transition. Expressive evaluates the same keyframes (same delays,
-///   durations and cubic-bezier easings, and Compose's interval rule: an
-///   easing applies to the interval that starts at its keyframe) as a
-///   function of the frame clock's elapsed time, so no
-///   `AnimationController` with a duration and no `Curve` exist here.
-/// - Compose tweens a wavy indicator's amplitude over 500ms when progress
-///   crosses 10 % or 95 %; Expressive runs the change on the default
-///   effects spring (springs only).
+/// Linear and circular progress indicators and labelled meters.
 library;
 
 import 'dart:math' as math;
@@ -409,8 +376,8 @@ class ExpressiveLinearProgressIndicator extends StatefulWidget {
   /// The progress 0–1, or null while indeterminate.
   final double? value;
 
-  /// Whether the active indicator is a travelling wave (a hero: it needs an
-  /// [ExpressiveHeroMoment] above it, CONTRACT §3).
+  /// Whether the active indicator displays a travelling wave. Requires an
+  /// [ExpressiveHeroMoment] ancestor when enabled.
   final bool wavy;
 
   /// Whether the indicator fills the width available instead of its 240dp.
@@ -537,15 +504,30 @@ class ExpressiveMeter extends StatelessWidget {
                         ],
                       );
                   final title = Text(label, style: titleStyle);
-                  final amount = Text(figure, style: valueStyle);
-                  TextPainter measure(String text, TextStyle style) =>
-                      TextPainter(
-                        text: TextSpan(text: text, style: style),
-                        textDirection: Directionality.of(context),
-                        textScaler: MediaQuery.textScalerOf(context),
-                      )..layout();
-                  final titleSize = measure(label, titleStyle);
-                  final valueSize = measure(figure, valueStyle);
+                  final amount = Text(
+                    figure,
+                    style: valueStyle,
+                    textDirection: TextDirection.ltr,
+                  );
+                  TextPainter measure(
+                    String text,
+                    TextStyle style,
+                    TextDirection direction,
+                  ) => TextPainter(
+                    text: TextSpan(text: text, style: style),
+                    textDirection: direction,
+                    textScaler: MediaQuery.textScalerOf(context),
+                  )..layout();
+                  final titleSize = measure(
+                    label,
+                    titleStyle,
+                    Directionality.of(context),
+                  );
+                  final valueSize = measure(
+                    figure,
+                    valueStyle,
+                    TextDirection.ltr,
+                  );
                   final required =
                       titleSize.minIntrinsicWidth +
                       valueSize.width +

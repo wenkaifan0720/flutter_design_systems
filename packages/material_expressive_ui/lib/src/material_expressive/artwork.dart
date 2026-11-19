@@ -1,7 +1,4 @@
-/// An app's artwork colours: [ExpressiveArtwork], the slot-to-scheme
-/// table `tools/expressive_tokens` bakes from the pictures an app marks,
-/// and [ExpressiveArtworkScheme], one picture's scheme. Part of the host
-/// layer: a generated app reads them from `lib/app/artwork.g.dart`.
+/// Colour schemes derived from artwork.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -11,15 +8,9 @@ import 'color.dart';
 import 'internal/color/baked_colors.dart';
 import 'theme.dart';
 
-/// One picture's content colour, baked: the scheme a page wears when the
-/// picture heads it, as Jetcaster's Now Playing and show pages recolour
-/// from the cover.
+/// A picture’s light and dark colour roles at a given contrast.
 ///
-/// `tools/expressive_tokens` bakes one per slot an app's `media.json` marks
-/// `scheme`, at each contrast the app's themes wear: the picture's source
-/// colour (material-color-utilities' quantizer and score, falling back to
-/// the app's seed, never Google Blue), then a vibrant 2025 scheme, light
-/// and dark. An app reads them through its generated [ExpressiveArtwork].
+/// [source] is the colour used to build the schemes. [fallback] identifies a scheme built from the app’s seed.
 @immutable
 class ExpressiveArtworkScheme {
   /// An artwork scheme of the given record.
@@ -36,7 +27,7 @@ class ExpressiveArtworkScheme {
   /// The media slot whose picture this is.
   final String slot;
 
-  /// The picture: its media_corpus id.
+  /// The identifier of the source image.
   final String image;
 
   /// The source colour the scheme was baked from, ARGB.
@@ -64,14 +55,9 @@ class ExpressiveArtworkScheme {
       );
 }
 
-/// An app's artwork: the slot-to-scheme table `tools/expressive_tokens`
-/// generates (`lib/app/artwork.g.dart`, `appArtwork`).
+/// Looks up a picture’s colour scheme for the active app theme.
 ///
-/// A page a picture heads mounts [retint] of its theme on an
-/// [ExpressiveTheme] around itself, and cross-fades between schemes
-/// with [ExpressiveColorScheme.lerp] on the theme's spring. Only colour
-/// changes: type, shape, motion and the expression budget stay the
-/// theme's.
+/// Use [retint] to apply the scheme to a page headed by that picture.
 @immutable
 class ExpressiveArtwork {
   /// Artwork of the given [themes] and [schemes].
@@ -86,12 +72,9 @@ class ExpressiveArtwork {
   /// Every slot that has a scheme.
   Set<String> get slots => {for (final scheme in schemes) scheme.slot};
 
-  /// [slot]'s scheme for [theme]: at the contrast of the app theme [theme]
-  /// is, in its brightness. Null when [theme] is none of the app's own
-  /// themes (a system preset, as the gate's robustness look wears), which
-  /// a picture never retints. Throws an [ArgumentError] for a slot with no
-  /// scheme, and a [StateError] when the slot was not baked at that
-  /// theme's contrast.
+  /// The artwork colours for [slot] at [theme]’s brightness and contrast.
+  ///
+  /// Returns null for an unregistered theme. Throws [ArgumentError] for an unknown slot or [StateError] when its contrast is unavailable.
   ExpressiveColorScheme? colorsFor(String slot, ExpressiveThemeData theme) {
     if (!slots.contains(slot)) {
       throw ArgumentError.value(

@@ -1,17 +1,4 @@
-/// The host: the theme scope, the thin Material `ThemeData` primitives
-/// read, the ground, the text and icon defaults and Android's edge-to-edge
-/// system bars, mounted once around the app (CONTRACT §4.2 `ExpressiveHost`;
-/// Compose's `MaterialExpressiveTheme`). Chrome, no vocabulary role.
-/// Owner: w1-host.
-///
-/// It pins no platform (CONTRACT §5): the thin `ThemeData`'s platform is
-/// the ambient one, a preview frame's register inside one, so scroll
-/// physics, text handles and haptics follow the platform while everything
-/// drawn stays Material. Page transitions are the look's on every platform
-/// (`expressivePageTransitions`): an app's own page routes push
-/// as an `ExpressivePage` does, never with Flutter's default for a
-/// platform the look does not name. It sets no text-scale
-/// clamp: text scales as the platform asks, as in Compose.
+/// Theme and platform services for the Expressive component library.
 library;
 
 import 'package:flutter/foundation.dart';
@@ -345,7 +332,7 @@ class _ExpressiveHostState extends State<ExpressiveHost> {
         : (high ? widget.highContrastLight : null) ??
               widget.light ??
               preset(Brightness.light);
-    // Behaviour follows the platform (CONTRACT §5): never pinned, and a
+    // Behaviour follows the platform: never pinned, and a
     // preview frame's register inside one.
     final platform = PreviewFrame.targetPlatformOf(context);
     // Day to night (or a new preset) springs: the whole theme lerps on the

@@ -3,6 +3,8 @@
 /// their badges with.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
@@ -24,6 +26,10 @@ class ExpressiveBadgeAnchor extends StatelessWidget {
     required this.child,
     super.key,
   });
+
+  /// How far a badge extends above its anchor at the available [width].
+  static double topOverflow(RenderBox anchor, double width) =>
+      anchor is _RenderBadgedBox ? anchor.topOverflow(width) : 0;
 
   /// The badge: an [ExpressiveBadge], usually. Null draws [child] alone.
   final Widget? badge;
@@ -84,6 +90,20 @@ class _RenderBadgedBox extends RenderBox
 
   RenderBox get _badge => lastChild!;
 
+  double topOverflow(double width) {
+    final hasContent =
+        _badge.getMaxIntrinsicWidth(double.infinity) > BadgeTokens.size;
+    final offset = hasContent
+        ? BadgeBehavior.contentVerticalOffset
+        : BadgeBehavior.dotOffset;
+    return math.max(0.0, _badge.getMaxIntrinsicHeight(width) - offset);
+  }
+
+  Rect _paintBounds = Rect.zero;
+
+  @override
+  Rect get paintBounds => _paintBounds;
+
   @override
   double computeMinIntrinsicWidth(double height) =>
       _anchor.getMinIntrinsicWidth(height);
@@ -129,10 +149,9 @@ class _RenderBadgedBox extends RenderBox
       TextDirection.ltr => start,
       TextDirection.rtl => size.width - start - badge.width,
     };
-    (_badge.parentData! as BoxParentData).offset = Offset(
-      x,
-      -badge.height + vertical,
-    );
+    final badgeOffset = Offset(x, -badge.height + vertical);
+    (_badge.parentData! as BoxParentData).offset = badgeOffset;
+    _paintBounds = (Offset.zero & size).expandToInclude(badgeOffset & badge);
   }
 
   @override

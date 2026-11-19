@@ -1,15 +1,4 @@
-/// Chips: assist, filter, input and suggestion, flat and elevated, and the
-/// row they flow in (CONTRACT §4.1 `chip`). Owner: w3-selection.
-///
-/// A port of Compose material3 1.5.0-alpha29's `Chip.kt`: the private
-/// `Chip`/`SelectableChip` (a clickable `Surface` — here the shared
-/// [ExpressivePressable] — over `ChipContent`/`AnimatingChipContent`),
-/// every colour, border and elevation from `AssistChipTokens`,
-/// `FilterChipTokens`, `InputChipTokens` and `SuggestionChipTokens` as each
-/// chip's `*Defaults` reads them, the spacing from `ChipBehavior` and
-/// `InputChipBehavior`. The morphing shapes of the Expressive overloads
-/// (`FilterChipDefaults.shapes()`, `InputChipDefaults.shapes()`: medium at
-/// rest, full when selected, small while pressed) are [morph].
+/// Assist, filter, input and suggestion chips.
 library;
 
 import 'dart:math' as math;

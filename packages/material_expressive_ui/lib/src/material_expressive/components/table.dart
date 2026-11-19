@@ -1,17 +1,4 @@
-/// The table: records with the same fields (CONTRACT §4.1 `table`, the
-/// one row Compose's material3 does not carry). Expressive derives it from
-/// its list grammar rather than inventing one: Material's list item tokens
-/// give the row's height, its leading and trailing space and its type, the
-/// divider stands between rows, a chosen row wears the list's selected
-/// container, and a row that opens something takes the press every list
-/// item has.
-///
-/// Narrower than [ExpressiveTable.stackBelow] (the medium window class:
-/// every phone held upright), or where a column would be too narrow for
-/// its longest word (large text), a row stops being a row: it becomes a
-/// list item, its first cell the headline and each other cell a supporting
-/// line under its column's name. Nothing is cut, no word breaks, and
-/// nothing scrolls sideways.
+/// Tables that turn each record into a labelled list item when columns need more room.
 library;
 
 import 'package:flutter/foundation.dart';

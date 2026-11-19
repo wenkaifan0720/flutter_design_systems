@@ -158,6 +158,50 @@ void main() {
     expect(find.text('Trip saved'), findsOneWidget);
   });
 
+  testWidgets('closing or going back asks before discarding an edited trip', (
+    tester,
+  ) async {
+    await _open(tester, TripScreens.plan);
+    final field = find.descendant(
+      of: _key('plan-name'),
+      matching: find.byType(EditableText),
+    );
+    await tester.enterText(field, 'Revised weekend');
+    await _tap(tester, find.bySemanticsLabel('Discard changes'));
+    expect(find.text('Discard your edits?'), findsOneWidget);
+    await _tap(tester, find.text('Keep editing'));
+    expect(
+      tester.widget<EditableText>(field).controller.text,
+      'Revised weekend',
+    );
+    await tester.binding.handlePopRoute();
+    await settle(tester);
+    expect(find.text('Discard your edits?'), findsOneWidget);
+    await _tap(tester, find.text('Discard changes'));
+    expect(_key('trip-days'), findsOneWidget);
+    expect(find.text('Big Sur weekend'), findsWidgets);
+  });
+
+  for (final width in [390.0, 1440.0]) {
+    testWidgets(
+      'an unmatched shared search explains and clears the query at ${width}px',
+      (tester) async {
+        await _open(tester, TripScreens.shared, width: width);
+        await _tap(tester, find.byType(ExpressiveSearchBar));
+        final field = find.byType(EditableText).last;
+        await tester.enterText(field, 'Qzvzz');
+        await settle(tester);
+        expect(find.text('No matching shared items'), findsOneWidget);
+        await _tap(tester, find.text('Clear search'));
+        expect(tester.widget<EditableText>(field).controller.text, isEmpty);
+        expect(find.text('No matching shared items'), findsNothing);
+        await tester.enterText(field, 'Car');
+        await settle(tester);
+        expect(find.text('Car rental'), findsWidgets);
+      },
+    );
+  }
+
   testWidgets('Edit trip on a desktop keeps a summary beside the form', (
     tester,
   ) async {

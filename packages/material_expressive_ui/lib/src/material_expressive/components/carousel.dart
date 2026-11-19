@@ -1,34 +1,4 @@
-/// Carousels — multi-browse, uncontained, centred hero and full-screen — and
-/// the page indicator (CONTRACT §4.1 `carousel`, `page-indicator`). Owner:
-/// w3-cards.
-///
-/// A port of Compose's `carousel/` package (material3 1.5.0-alpha29):
-///
-/// - **Keylines** (`Keylines.kt`, `KeylineList.kt`, `Arrangement.kt`): each
-///   variant fits large, medium and small item sizes to the carousel's
-///   width (`multiBrowseKeylineList`, `uncontainedKeylineList`,
-///   `heroKeylineList`), and lays them out as keylines — a size and a
-///   centre per slot, with an anchor just outside either edge.
-/// - **Strategy** (`Strategy.kt`): the keylines at rest, plus the steps
-///   that shift them as the first and last items scroll into place, and the
-///   keyline list for any scroll offset.
-/// - **Items** (`Carousel.kt`, `Modifier.carouselItem`): every item is laid
-///   out at the focal size and placed like a pager page; the keylines it
-///   falls between give its mask (the visible part, centred in the item)
-///   and a translation that pins masked items edge to edge. The content is
-///   drawn at full size under the mask, so an item's picture stays centred
-///   as its mask narrows: the parallax Material's carousel shows.
-/// - **Snapping** (`KeylineSnapPosition.kt`, `CarouselDefaults`): items
-///   snap to their keyline positions, at most one item per fling for the
-///   multi-browse, hero and full-screen carousels; the uncontained carousel
-///   scrolls freely. The platform's scroll physics owns overscroll (stretch
-///   on Android, rubber band on iOS; CONTRACT §5).
-///
-/// The layout runs in device pixels as Compose's does (its page size,
-/// spacing and snap offsets are whole pixels), so geometry lands where the
-/// oracle's does. Lengths come from `CarouselBehavior` (Compose's
-/// `CarouselDefaults`); the ratios in the strategy maths are Compose's own
-/// arithmetic, cited where they appear.
+/// Carousels with adaptive item sizes and animated shape changes.
 library;
 
 import 'dart:math' as math;

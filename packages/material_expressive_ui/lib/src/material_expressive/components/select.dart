@@ -1,38 +1,4 @@
-/// Select: the exposed dropdown menu, read-only ([ExpressiveSelect]) and
-/// editable and filtered ([ExpressiveCombobox]) (CONTRACT §4.1 `select`,
-/// `combobox`). Owner: w3-select, with `test/select_test.dart` and the
-/// gallery's select demo.
-///
-/// A port of Compose material3 1.5.0-alpha29's `ExposedDropdownMenuBox`
-/// (`ExposedDropdownMenu.kt`; wave decision F1):
-///
-/// - The anchor is a text field from the text-fields family, filled or
-///   outlined (`ExposedDropdownMenuDefaults.textFieldColors()` are
-///   `FilledAutocompleteTokens`, the same roles as the plain field's), with
-///   `ExposedDropdownMenuDefaults.TrailingIcon`: `arrow_drop_down`, turned
-///   half a turn while the menu is open (Compose's `rotate(180f)`, no
-///   animation).
-/// - A select's field is `menuAnchor(PrimaryNotEditable)`: read-only, a
-///   tap anywhere on it toggles the menu, Enter or Space toggles it from
-///   the keyboard (`expandable`'s `isClick`), and the menu is a focusable
-///   popup whose items take the arrow keys.
-/// - A combobox's field is `menuAnchor(PrimaryEditable)`: typing opens the
-///   menu over the options that match (the `EditableExposedDropdownMenu`
-///   sample's filter), the popup is not focusable so typing goes on
-///   (`popupPropertiesForAnchorType`), Enter toggles it, and Down, Up or
-///   Tab hand the keyboard to the items. Its trailing icon is
-///   `menuAnchor(SecondaryEditable)`: a button toggling the menu without
-///   focusing the field.
-/// - The menu is as wide as its anchor (`exposedDropdownSize(matchAnchorWidth
-///   = true)`), wider only as far as its widest option needs, opens below
-///   it and keeps inside the window's margins.
-///
-/// Deviation: Compose's `ExposedDropdownMenu` draws its items in the
-/// baseline `DropdownMenuContent` surface (`MenuDefaults.shape`,
-/// `surfaceContainer`). Expressive's select draws them in the menus
-/// family's expressive `DropdownMenuGroup` — the one menu the system
-/// offers, with `SelectableDropdownMenuItem`s marking the chosen option —
-/// so a select's menu looks like every other menu in the app.
+/// Read-only selects and editable comboboxes backed by a menu of options.
 library;
 
 import 'dart:math' as math;
