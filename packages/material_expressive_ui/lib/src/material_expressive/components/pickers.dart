@@ -79,6 +79,36 @@ String _spokenDay(BuildContext context, DateTime d) =>
 String _inputText(DateTime d) =>
     '${_two(d.month)}/${_two(d.day)}/${d.year.toString().padLeft(4, '0')}';
 
+/// [d] as a docked field prints it: MM/DD/YYYY ([_inputText], Compose's
+/// sample) where the app's language writes a short date as English does
+/// (month, day, year, in Western digits), else that language's short date
+/// ([DesignLocalizations.dateFieldPattern]) in its digits, as Material's
+/// date field prints `formatCompactDate`.
+String _fieldDate(BuildContext context, DateTime d) {
+  final words = DesignLocalizations.of(context);
+  if (words.dateFieldPattern ==
+          const DefaultDesignLocalizations().dateFieldPattern &&
+      words.formatDecimal(0) == '0') {
+    return _inputText(d);
+  }
+  String digits(int n, int width) {
+    final said = words.formatDecimal(n);
+    return said.length >= width
+        ? said
+        : words.formatDecimal(0) * (width - said.length) + said;
+  }
+
+  return words.dateFieldPattern.replaceAllMapped(
+    RegExp(r"'([^']*)'|y+|M+|d+"),
+    (part) => switch (part[0]![0]) {
+      "'" => part[1]!.isEmpty ? "'" : part[1]!,
+      'y' => words.formatYear(d),
+      'M' => digits(d.month, part[0]!.length),
+      _ => digits(d.day, part[0]!.length),
+    },
+  );
+}
+
 String _two(int v) => v.toString().padLeft(2, '0');
 
 /// Which days a picker lets the user choose (Compose's `SelectableDates`
@@ -1236,6 +1266,43 @@ class _MonthsNavigation extends StatelessWidget {
 /// `YearPickerMenuButton`: a text button in the ambient content colour, on
 /// the full corner, the month and year (in the navigation colour) then the
 /// drop-down arrow (turned over while the years are open).
+/// [label] on at most two lines, cut short with an ellipsis, never broken
+/// inside a word: where its widest word is wider than a line it stands on
+/// one line, as Flutter breaks a word that a line cannot hold.
+class _WholeWords extends StatelessWidget {
+  const _WholeWords(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      var style = DefaultTextStyle.of(context).style;
+      if (MediaQuery.boldTextOf(context)) {
+        style = style.merge(const TextStyle(fontWeight: FontWeight.bold));
+      }
+      final painter = TextPainter(
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+        locale: Localizations.maybeLocaleOf(context),
+      );
+      var widest = 0.0;
+      for (final word in label.split(RegExp(r'\s+'))) {
+        painter
+          ..text = TextSpan(text: word, style: style)
+          ..layout();
+        widest = math.max(widest, painter.width);
+      }
+      painter.dispose();
+      return Text(
+        label,
+        maxLines: widest <= constraints.maxWidth ? 2 : 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    },
+  );
+}
+
 class _YearMenuButton extends StatelessWidget {
   const _YearMenuButton({
     required this.label,
@@ -1277,7 +1344,16 @@ class _YearMenuButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Flexible(child: ExcludeSemantics(child: Text(label))),
+            // At most 2x, as Material's month label, in whole words: past it
+            // "September 2026" broke mid-word beside the arrows.
+            Flexible(
+              child: ExcludeSemantics(
+                child: MediaQuery.withClampedTextScaling(
+                  maxScaleFactor: 2,
+                  child: _WholeWords(label),
+                ),
+              ),
+            ),
             const SizedBox(width: ButtonSmallTokens.iconLabelSpace),
             Transform.rotate(
               angle: expanded ? math.pi : 0,
@@ -2342,8 +2418,17 @@ class _RangeCalendarState extends State<_RangeCalendar> {
     super.dispose();
   }
 
+  // At most Material's range calendar scale (its weekday letters, month
+  // subheads and days, `_kMaxRangeTextScaleFactor`): past it, at 300% text,
+  // a month and its subhead outgrew the calendar's box and its first row
+  // stood cut under the weekday letters.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
+    maxScaleFactor: _HeaderHeadline.maxRangeTextScale,
+    child: Builder(builder: _calendar),
+  );
+
+  Widget _calendar(BuildContext context) {
     final t = context.expressiveTheme;
     final subhead = t.type
         .of(DatePickerModalTokens.rangeSelectionMonthSubheadFont)
@@ -2445,7 +2530,8 @@ class _RangeCalendarState extends State<_RangeCalendar> {
 /// The docked date picker (Compose's docked sample): a read-only text field
 /// of [kind] (filled, as [ExpressiveTextField] is, so a date sits among a
 /// form's fields; Compose's sample draws it outlined) showing [value] as
-/// MM/DD/YYYY (or as [format] prints it), whose tap (or calendar button)
+/// MM/DD/YYYY in English, the locale's short date in another language (or
+/// as [format] prints it), whose tap (or calendar button)
 /// raises the calendar in a popover below it — no header, no toggle. A
 /// chosen day is reported through [onChanged] at once; the popover stays
 /// until a tap outside, Escape or the system back closes it.
@@ -2472,8 +2558,10 @@ class ExpressiveDockedDatePicker extends StatefulWidget {
 
   /// How the read-only field prints [value] — an app whose dates are day
   /// first passes its own (`(d) => ExpressiveFormat.date(d)`, "3 Oct
-  /// 2026"), so the field never reads as another day. Compose's MM/DD/YYYY
-  /// input pattern when null.
+  /// 2026"), so the field never reads as another day. When null, Compose's
+  /// MM/DD/YYYY in English, and in another language the locale's short date
+  /// ([DesignLocalizations.dateFieldPattern]) in its digits, as Material's
+  /// date field.
   final String Function(DateTime day)? format;
 
   /// Called with the day the user chooses; disabled when null.
@@ -2576,13 +2664,19 @@ class ExpressiveDockedDatePicker extends StatefulWidget {
 
 class _ExpressiveDockedDatePickerState
     extends State<ExpressiveDockedDatePicker> {
-  late final TextEditingController _text = TextEditingController(
-    text: _shown(widget.value),
-  );
+  final TextEditingController _text = TextEditingController();
   bool _open = false;
 
   String _shown(DateTime? day) =>
-      day == null ? '' : (widget.format ?? _inputText)(day);
+      day == null ? '' : widget.format?.call(day) ?? _fieldDate(context, day);
+
+  // The app's language decides how the date is printed.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final shown = _shown(widget.value);
+    if (_text.text != shown) _text.text = shown;
+  }
 
   @override
   void didUpdateWidget(ExpressiveDockedDatePicker old) {

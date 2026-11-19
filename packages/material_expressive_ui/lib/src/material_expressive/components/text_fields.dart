@@ -102,6 +102,7 @@ class ExpressiveTextField extends StatefulWidget {
     this.onEditingComplete,
     this.onTap,
     this.semanticLabel,
+    this.decorate,
     super.key,
   }) : _singleLine = true,
        _minLines = null,
@@ -136,6 +137,7 @@ class ExpressiveTextField extends StatefulWidget {
     required this.onEditingComplete,
     required this.onTap,
     required this.semanticLabel,
+    required this.decorate,
   }) : _singleLine = false,
        prefix = null,
        suffix = null,
@@ -252,6 +254,13 @@ class ExpressiveTextField extends StatefulWidget {
   /// What a screen reader calls the field; [label], then [hintText],
   /// when null.
   final String? semanticLabel;
+
+  /// Wraps the editable alone, inside the field's own node, so what it adds
+  /// to the semantics (a name, a hint) is the input's, and the field's
+  /// trailing controls (a reveal toggle, a clear button) stay controls of
+  /// their own. A form that names its inputs itself passes its decorator
+  /// here, with an empty [semanticLabel] so the name is read once.
+  final Widget Function(Widget editable)? decorate;
 
   final bool _singleLine;
   final int? _minLines;
@@ -375,7 +384,10 @@ class ExpressiveTextField extends StatefulWidget {
         ),
       )
       ..add(ObjectFlagProperty<GestureTapCallback?>.has('onTap', onTap))
-      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget)?>.has('decorate', decorate),
+      );
   }
 }
 
@@ -414,6 +426,7 @@ class ExpressiveTextArea extends StatelessWidget {
     this.onEditingComplete,
     this.onTap,
     this.semanticLabel,
+    this.decorate,
     super.key,
   });
 
@@ -505,6 +518,9 @@ class ExpressiveTextArea extends StatelessWidget {
   /// See [ExpressiveTextField.semanticLabel].
   final String? semanticLabel;
 
+  /// See [ExpressiveTextField.decorate].
+  final Widget Function(Widget editable)? decorate;
+
   @override
   Widget build(BuildContext context) => ExpressiveTextField._multiline(
     minLines: minLines,
@@ -535,6 +551,7 @@ class ExpressiveTextArea extends StatelessWidget {
     onEditingComplete: onEditingComplete,
     onTap: onTap,
     semanticLabel: semanticLabel,
+    decorate: decorate,
   );
 
   @override
@@ -632,7 +649,10 @@ class ExpressiveTextArea extends StatelessWidget {
         ),
       )
       ..add(ObjectFlagProperty<GestureTapCallback?>.has('onTap', onTap))
-      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null));
+      ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(
+        ObjectFlagProperty<Widget Function(Widget)?>.has('decorate', decorate),
+      );
   }
 }
 
@@ -1650,29 +1670,34 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
         onTap: widget.onTap,
       ),
     );
+    final decorate = widget.decorate;
+    Widget decorated(Widget editable) =>
+        decorate == null ? editable : decorate(editable);
     final input = _InputNode(
       expanded: ExpressiveFieldNodeHost.expandedOf(context),
       label: widget.semanticLabel ?? widget.label ?? widget.hintText,
       invalid: isError,
       textDirection: Directionality.of(context),
       child: line(
-        widget.readOnly && widget._singleLine && !widget.obscureText
-            // Its lines are decided as it is laid out, from the width it is
-            // given, so the same width always draws the same lines: a parent
-            // that tries two widths in one frame (a select's widest option)
-            // leaves it settled, with no frame after.
-            ? _ValueLines(
-                builder: (context, constraints) => entry(
-                  wraps: _wraps(
-                    text,
-                    constraints.maxWidth,
-                    style: bodyLarge,
-                    scaler: valueScaler,
-                    direction: valueDirection,
+        decorated(
+          widget.readOnly && widget._singleLine && !widget.obscureText
+              // Its lines are decided as it is laid out, from the width it is
+              // given, so the same width always draws the same lines: a parent
+              // that tries two widths in one frame (a select's widest option)
+              // leaves it settled, with no frame after.
+              ? _ValueLines(
+                  builder: (context, constraints) => entry(
+                    wraps: _wraps(
+                      text,
+                      constraints.maxWidth,
+                      style: bodyLarge,
+                      scaler: valueScaler,
+                      direction: valueDirection,
+                    ),
                   ),
-                ),
-              )
-            : entry(wraps: false),
+                )
+              : entry(wraps: false),
+        ),
         start: textStart,
         end: textEnd,
       ),
@@ -1865,6 +1890,19 @@ class _ExpressiveTextFieldState extends State<ExpressiveTextField>
         ),
       ),
     );
+    // A disabled field is one disabled control, as Compose's decoration box
+    // is: its drawn label (excluded, the input carries the name), its input
+    // and its supporting line stand in one disabled node, so their disabled
+    // ink (onSurface at 38%, which WCAG exempts) is a disabled control's.
+    // The input keeps its own node inside it.
+    if (!enabled) {
+      field = Semantics(
+        container: true,
+        explicitChildNodes: true,
+        enabled: false,
+        child: field,
+      );
+    }
     field = GestureDetector(
       onTap: _focusFromDecoration,
       excludeFromSemantics: true,

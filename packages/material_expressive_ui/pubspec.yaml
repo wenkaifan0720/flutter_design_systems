@@ -1,7 +1,7 @@
 name: material_expressive_ui
 description: >-
   Unofficial Material 3 Expressive for Flutter, ported from Compose: shapes that morph on springs, a 35-shape library, tonal colour and motion that overshoots.
-version: 0.3.2
+version: 0.3.3
 homepage: https://wenkaifan0720.github.io/flutter_design_systems/material_expressive/
 repository: https://github.com/wenkaifan0720/flutter_design_systems/tree/main/packages/material_expressive_ui
 issue_tracker: https://github.com/wenkaifan0720/flutter_design_systems/issues

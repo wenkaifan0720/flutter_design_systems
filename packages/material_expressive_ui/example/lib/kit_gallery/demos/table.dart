@@ -159,11 +159,33 @@ class _DataState extends State<_Data> {
 }
 
 /// Five orders sorted by total, two chosen.
-Widget kitSpecimenDataTableOrders() => ExpressiveDataTable<_Order>(
-  controller: _orderTable()
+Widget kitSpecimenDataTableOrders() => const _ChosenOrders();
+
+/// [kitSpecimenDataTableOrders]'s table, which owns its controller and
+/// disposes it.
+class _ChosenOrders extends StatefulWidget {
+  const _ChosenOrders();
+
+  @override
+  State<_ChosenOrders> createState() => _ChosenOrdersState();
+}
+
+class _ChosenOrdersState extends State<_ChosenOrders> {
+  late final DesignTableController<_Order> _table = _orderTable()
     ..sort('total')
     ..toggle(_orders[0])
-    ..toggle(_orders[3]),
-  columnFlex: _orderFlex,
-  cellBuilder: _orderCell,
-);
+    ..toggle(_orders[3]);
+
+  @override
+  void dispose() {
+    _table.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => ExpressiveDataTable<_Order>(
+    controller: _table,
+    columnFlex: _orderFlex,
+    cellBuilder: _orderCell,
+  );
+}

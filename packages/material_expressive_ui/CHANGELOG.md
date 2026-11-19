@@ -1,3 +1,12 @@
+## 0.3.3
+
+- A radio group is one Tab stop, as Flutter's `RadioGroup`: Tab lands on the chosen option, or the first enabled one while none is chosen, and the next Tab leaves the group. The arrow keys choose the next or previous option, skip disabled ones and wrap at the ends. Left and Right swap in right-to-left layouts.
+- `ExpressiveTextField` and `ExpressiveTextArea` take `decorate`, which wraps the editable alone inside the field's node. A form that names its inputs passes its decorator there, so a screen reader reads the input's name and hint once and the reveal and clear buttons stay controls of their own. `ExpressiveFormField` reads its child as ui_core's `DesignField` does: one control takes the label, while several (a stepper's buttons and entry) keep their own nodes.
+- A disabled text field is one disabled control to a screen reader: its label, input and supporting text sit in a single disabled node.
+- A date picker caps its month label at 2× text, as Material's does, and keeps it whole on up to two lines without breaking a word; at 300% it broke mid-word. A month whose name is wider than its line ends with an ellipsis. A range picker's calendar caps its weekday letters, month headings and days at 1.3×, as Material's does, so its first month is no longer cut under the weekday row.
+- `ExpressiveDockedDatePicker` prints its day as the app's language writes a short date, in its digits, as Material's date field does: an Arabic app read "11/20/2026". English keeps MM/DD/YYYY, and a `format` still wins.
+- A time picker names its hour and minute fields and its AM/PM pair, and says AM and PM, in the app's language: from the app's `DesignLocalizations`, which ui_core speaks in 30 languages, unless the app supplies its own `ExpressiveLocalizations`. `ExpressiveLocalizations.delegate` takes every locale, so a German or Arabic app that installs it no longer gets Flutter's warning that no delegate supports its locale.
+
 ## 0.3.2
 
 - A select no longer rebuilds every frame after its window widens past 600 px (0.3.1). A read-only value now decides whether it wraps while it is laid out, from the width it is given, rather than in a frame after.

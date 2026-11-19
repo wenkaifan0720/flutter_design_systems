@@ -143,112 +143,159 @@ class ExpressiveLocalizations {
     this.selectPage = 'Select every row on this page',
     this.selectRow = 'Select row',
     this.colorHex = 'Hex',
-  }) : _shared = const DefaultDesignLocalizations();
+  }) : _shared = const DefaultDesignLocalizations(),
+       _time = null;
 
-  /// [own]'s words, with [_shared] for the words every look shares.
-  ExpressiveLocalizations._bound(ExpressiveLocalizations own, this._shared)
-    : cancelSearch = own.cancelSearch,
-      showSuggestions = own.showSuggestions,
-      hideSuggestions = own.hideSuggestions,
-      sheetDragHandle = own.sheetDragHandle,
-      toolbarExpand = own.toolbarExpand,
-      toolbarCollapse = own.toolbarCollapse,
-      fabMenu = own.fabMenu,
-      toastDismiss = own.toastDismiss,
-      tryAgain = own.tryAgain,
-      reorder = own.reorder,
-      quantity = own.quantity,
-      messageSending = own.messageSending,
-      messageSent = own.messageSent,
-      messageRead = own.messageRead,
-      messageFailed = own.messageFailed,
-      messageFromYou = own.messageFromYou,
-      removeChip = own.removeChip,
-      rated = own.rated,
-      rate = own.rate,
-      codeInput = own.codeInput,
-      decrease = own.decrease,
-      increase = own.increase,
-      stepOf = own.stepOf,
-      allStepsDone = own.allStepsDone,
-      selectDate = own.selectDate,
-      selectDates = own.selectDates,
-      enterDates = own.enterDates,
-      selectedDate = own.selectedDate,
-      enteredDate = own.enteredDate,
-      startDate = own.startDate,
-      endDate = own.endDate,
-      date = own.date,
-      datePattern = own.datePattern,
-      inRange = own.inRange,
-      toDateInput = own.toDateInput,
-      toCalendar = own.toCalendar,
-      toYears = own.toYears,
-      toDays = own.toDays,
-      badDatePattern = own.badDatePattern,
-      dateNotAllowed = own.dateNotAllowed,
-      endBeforeStart = own.endBeforeStart,
-      outOfYears = own.outOfYears,
-      goToYear = own.goToYear,
-      selectTime = own.selectTime,
-      enterTime = own.enterTime,
-      am = own.am,
-      pm = own.pm,
-      period = own.period,
-      hour = own.hour,
-      minute = own.minute,
-      selectHour = own.selectHour,
-      selectMinute = own.selectMinute,
-      toKeyboard = own.toKeyboard,
-      toDial = own.toDial,
-      toScroll = own.toScroll,
-      badHour = own.badHour,
-      badMinute = own.badMinute,
-      hours = own.hours,
-      oClock = own.oClock,
-      minutes = own.minutes,
-      breadcrumbs = own.breadcrumbs,
-      moreBreadcrumbs = own.moreBreadcrumbs,
-      pagination = own.pagination,
-      goToPage = own.goToPage,
-      pageOf = own.pageOf,
-      chartEmpty = own.chartEmpty,
-      fileInput = own.fileInput,
-      chooseFiles = own.chooseFiles,
-      removeFile = own.removeFile,
-      selectPage = own.selectPage,
-      selectRow = own.selectRow,
-      colorHex = own.colorHex;
+  /// [own]'s words, with [_shared] for the words every look shares and,
+  /// where [time] is given, its time picker words over [own]'s English ones.
+  ExpressiveLocalizations._bound(
+    ExpressiveLocalizations own,
+    this._shared, [
+    DesignLocalizations? time,
+  ]) : _time = time,
+       cancelSearch = own.cancelSearch,
+       showSuggestions = own.showSuggestions,
+       hideSuggestions = own.hideSuggestions,
+       sheetDragHandle = own.sheetDragHandle,
+       toolbarExpand = own.toolbarExpand,
+       toolbarCollapse = own.toolbarCollapse,
+       fabMenu = own.fabMenu,
+       toastDismiss = own.toastDismiss,
+       tryAgain = own.tryAgain,
+       reorder = own.reorder,
+       quantity = own.quantity,
+       messageSending = own.messageSending,
+       messageSent = own.messageSent,
+       messageRead = own.messageRead,
+       messageFailed = own.messageFailed,
+       messageFromYou = own.messageFromYou,
+       removeChip = own.removeChip,
+       rated = own.rated,
+       rate = own.rate,
+       codeInput = own.codeInput,
+       decrease = own.decrease,
+       increase = own.increase,
+       stepOf = own.stepOf,
+       allStepsDone = own.allStepsDone,
+       selectDate = own.selectDate,
+       selectDates = own.selectDates,
+       enterDates = own.enterDates,
+       selectedDate = own.selectedDate,
+       enteredDate = own.enteredDate,
+       startDate = own.startDate,
+       endDate = own.endDate,
+       date = own.date,
+       datePattern = own.datePattern,
+       inRange = own.inRange,
+       toDateInput = own.toDateInput,
+       toCalendar = own.toCalendar,
+       toYears = own.toYears,
+       toDays = own.toDays,
+       badDatePattern = own.badDatePattern,
+       dateNotAllowed = own.dateNotAllowed,
+       endBeforeStart = own.endBeforeStart,
+       outOfYears = own.outOfYears,
+       goToYear = own.goToYear,
+       selectTime = own.selectTime,
+       enterTime = own.enterTime,
+       am = _timeWord(time, (l) => l.anteMeridiemAbbreviation, own.am),
+       pm = _timeWord(time, (l) => l.postMeridiemAbbreviation, own.pm),
+       period = _timeWord(time, (l) => l.timeFieldDayPeriodLabel, own.period),
+       hour = _timeWord(time, (l) => l.timePickerHourLabel, own.hour),
+       minute = _timeWord(time, (l) => l.timePickerMinuteLabel, own.minute),
+       selectHour = own.selectHour,
+       selectMinute = own.selectMinute,
+       toKeyboard = own.toKeyboard,
+       toDial = own.toDial,
+       toScroll = own.toScroll,
+       badHour = own.badHour,
+       badMinute = own.badMinute,
+       hours = own.hours,
+       oClock = own.oClock,
+       minutes = own.minutes,
+       breadcrumbs = own.breadcrumbs,
+       moreBreadcrumbs = own.moreBreadcrumbs,
+       pagination = own.pagination,
+       goToPage = own.goToPage,
+       pageOf = own.pageOf,
+       chartEmpty = own.chartEmpty,
+       fileInput = own.fileInput,
+       chooseFiles = own.chooseFiles,
+       removeFile = own.removeFile,
+       selectPage = own.selectPage,
+       selectRow = own.selectRow,
+       colorHex = own.colorHex;
 
   /// The defaults.
   static const ExpressiveLocalizations english = ExpressiveLocalizations();
 
-  /// Loads [english] for an English locale, as `DefaultMaterialLocalizations`
-  /// does: add it to an app's `localizationsDelegates`. Another language
-  /// comes from a delegate of its own (see the class's example); with
-  /// neither, [of] reads English.
+  /// Loads [english] for every locale: add it to an app's
+  /// `localizationsDelegates`. A language with words of the app's own comes
+  /// from a delegate of its own (see the class's example); with neither,
+  /// [of] reads English. Where the words are [english] in another language,
+  /// a time picker's ([hour], [minute], [period], [am], [pm]) are the app's
+  /// `DesignLocalizations`' (ui_core's in the app's language with this
+  /// delegate and none of those installed).
   static const LocalizationsDelegate<ExpressiveLocalizations> delegate =
       _ExpressiveLocalizationsDelegate();
 
   /// The words in force at [context]: the look's own from the nearest
   /// [ExpressiveLocalizationsScope], else the app's localizations for its
   /// locale (a delegate's), else [english]; the shared ones from
-  /// [DesignLocalizations.of] (English with none registered).
+  /// [DesignLocalizations.of] (English with none registered). Over
+  /// [english], a time picker's words are the shared ones in the app's
+  /// language (see [delegate]).
   static ExpressiveLocalizations of(BuildContext context) {
-    final shared = DesignLocalizations.of(context);
+    final installed = Localizations.of<DesignLocalizations>(
+      context,
+      DesignLocalizations,
+    );
+    final shared = installed ?? const DefaultDesignLocalizations();
+    final loaded = Localizations.of<ExpressiveLocalizations>(
+      context,
+      ExpressiveLocalizations,
+    );
     final own =
         context
             .dependOnInheritedWidgetOfExactType<ExpressiveLocalizationsScope>()
             ?.strings ??
-        Localizations.of<ExpressiveLocalizations>(
-          context,
-          ExpressiveLocalizations,
-        ) ??
+        loaded ??
         english;
-    if (identical(own._shared, shared)) return own;
+    final time = !identical(own, english)
+        ? null
+        : installed ??
+              (loaded == null
+                  ? null
+                  : _inLanguage(Localizations.localeOf(context)));
+    if (identical(own._shared, shared) && time == null) return own;
     final last = _bindings[own];
-    if (last != null && identical(last._shared, shared)) return last;
-    return _bindings[own] = ExpressiveLocalizations._bound(own, shared);
+    if (last != null &&
+        identical(last._shared, shared) &&
+        identical(last._time, time)) {
+      return last;
+    }
+    return _bindings[own] = ExpressiveLocalizations._bound(own, shared, time);
+  }
+
+  /// ui_core's words for [locale], one object a locale.
+  static DesignLocalizations _inLanguage(Locale locale) =>
+      _languages.putIfAbsent(
+        locale.toLanguageTag(),
+        () => DesignLocalizations.forLocale(locale),
+      );
+
+  static final Map<String, DesignLocalizations> _languages =
+      <String, DesignLocalizations>{};
+
+  /// [words]' [word] where it says other than ui_core's English, else [own].
+  static String _timeWord(
+    DesignLocalizations? words,
+    String Function(DesignLocalizations words) word,
+    String own,
+  ) {
+    if (words == null) return own;
+    final said = word(words);
+    return said == word(const DefaultDesignLocalizations()) ? own : said;
   }
 
   /// Each set of the look's own words, bound to the shared words last read
@@ -258,6 +305,10 @@ class ExpressiveLocalizations {
 
   /// The words every look shares: ui_core's.
   final DesignLocalizations _shared;
+
+  /// The words a time picker says over [english]'s, where they are another
+  /// language's.
+  final DesignLocalizations? _time;
 
   // Chrome.
 
@@ -656,8 +707,10 @@ class _ExpressiveLocalizationsDelegate
     extends LocalizationsDelegate<ExpressiveLocalizations> {
   const _ExpressiveLocalizationsDelegate();
 
+  // Every locale: one that says only English would be skipped in a German
+  // or Arabic app, with Flutter's warning that no delegate supports it.
   @override
-  bool isSupported(Locale locale) => locale.languageCode == 'en';
+  bool isSupported(Locale locale) => true;
 
   @override
   Future<ExpressiveLocalizations> load(Locale locale) =>

@@ -9,6 +9,7 @@ library;
 
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -93,6 +94,45 @@ void _whole(
       reason: '"$said" ($rect) stands inside $box',
     );
   }
+}
+
+/// Each word of [paragraph] stands on one line: no word is broken.
+void _wordsWhole(RenderParagraph paragraph) {
+  final text = paragraph.text.toPlainText();
+  for (final word in RegExp(r'\S+').allMatches(text)) {
+    final boxes = paragraph.getBoxesForSelection(
+      TextSelection(baseOffset: word.start, extentOffset: word.end),
+    );
+    expect(
+      boxes.map((box) => box.top.round()).toSet(),
+      hasLength(lessThanOrEqualTo(1)),
+      reason: '"${word[0]}" of "$text" is not broken',
+    );
+  }
+}
+
+/// A month whose name is one word wider than a date picker's label at 2x.
+class _LongMonth extends DefaultDesignLocalizations {
+  const _LongMonth();
+
+  static const month = 'Septemberseptember';
+
+  @override
+  String formatMonthYear(DateTime date) => '$month ${date.year}';
+}
+
+class _LongMonthDelegate extends LocalizationsDelegate<DesignLocalizations> {
+  const _LongMonthDelegate();
+
+  @override
+  bool isSupported(Locale locale) => true;
+
+  @override
+  Future<DesignLocalizations> load(Locale locale) =>
+      SynchronousFuture(const _LongMonth());
+
+  @override
+  bool shouldReload(_LongMonthDelegate old) => false;
 }
 
 const _barItems = <ExpressiveNavItem>[
@@ -262,6 +302,17 @@ void main() {
           cap: header,
         );
         if (typing) return;
+        // The month at most 2x, as Material's, whole and in whole words: it
+        // broke mid-word ("Septemb/er 2026") at 3x.
+        final month = tester.renderObject<RenderParagraph>(
+          find.text('September 2026'),
+        );
+        expect(
+          month.textScaler.scale(10),
+          moreOrLessEquals(10 * math.min(scale, 2)),
+        );
+        expect(month.didExceedMaxLines, isFalse, reason: 'the month is whole');
+        _wordsWhole(month);
         // The letters stand in their 48dp row, their lower edges in it.
         for (final letter in ['S', 'M', 'W', 'F']) {
           final text = find.text(letter).first;
@@ -276,5 +327,86 @@ void main() {
         }
       });
     }
+
+    if (scale == 3) {
+      testWidgets('a month whose name is wider than its line ends with an '
+          'ellipsis on one line at 3x text, never broken mid-word', (
+        tester,
+      ) async {
+        await _pump(
+          tester,
+          scale,
+          Localizations(
+            locale: const Locale('en'),
+            delegates: const [
+              DefaultWidgetsLocalizations.delegate,
+              _LongMonthDelegate(),
+            ],
+            child: SingleChildScrollView(
+              child: ExpressiveDatePicker(
+                currentDate: DateTime(2026, 9, 12),
+                initialMonth: DateTime(2026, 9),
+                onChanged: (_) {},
+              ),
+            ),
+          ),
+        );
+        final month = tester.renderObject<RenderParagraph>(
+          find.text('${_LongMonth.month} 2026'),
+        );
+        // The case: the month's name alone is wider than the label's line.
+        final word = TextPainter(
+          text: TextSpan(text: _LongMonth.month, style: month.text.style),
+          textDirection: TextDirection.ltr,
+          textScaler: month.textScaler,
+        )..layout();
+        addTearDown(word.dispose);
+        expect(word.width, greaterThan(month.constraints.maxWidth));
+        expect(month.maxLines, 1);
+        expect(month.didExceedMaxLines, isTrue, reason: 'it ends with "…"');
+        final lines = month.getBoxesForSelection(
+          TextSelection(
+            baseOffset: 0,
+            extentOffset: month.text.toPlainText().length,
+          ),
+        );
+        expect(lines.map((box) => box.top.round()).toSet(), hasLength(1));
+      });
+    }
+
+    testWidgets('a range picker\'s calendar takes at most Material\'s range '
+        'scale, its month under the weekday letters, at ${scale}x text', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        scale,
+        SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: ExpressiveDateRangePicker(
+            start: DateTime(2026, 9, 14),
+            end: DateTime(2026, 9, 19),
+            currentDate: DateTime(2026, 9, 12),
+            initialMonth: DateTime(2026, 9),
+            onChanged: (_, _) {},
+          ),
+        ),
+      );
+      const cap = 1.3;
+      final month = find.text('September 2026');
+      _whole(tester, month, scale: scale, cap: cap);
+      final letters = find.text('M').first;
+      _whole(tester, letters, scale: scale, cap: cap);
+      // September opens the list, whole, just under the letters: its
+      // subhead in view, no row of it cut under them.
+      expect(
+        tester.getRect(month).top,
+        greaterThanOrEqualTo(tester.getRect(letters).bottom),
+      );
+      expect(
+        tester.getRect(find.text('1').first).top,
+        greaterThan(tester.getRect(month).bottom),
+      );
+    });
   }
 }

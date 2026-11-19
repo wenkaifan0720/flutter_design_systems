@@ -434,7 +434,7 @@ void main() {
     );
     final start = ExpressiveFormat.date(DateTime(2026, 9, 3));
     expect(scaleOf(start), closeTo(1.3, 1e-9));
-    // The calendar below keeps the reader's scale.
-    expect(scaleOf('September 2026'), closeTo(2, 1e-9));
+    // The calendar below stops there too, as Material's range calendar.
+    expect(scaleOf('September 2026'), closeTo(1.3, 1e-9));
   });
 }

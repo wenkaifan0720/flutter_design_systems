@@ -74,7 +74,7 @@ Widgets read their theme from `context.expressiveTheme`. Use `copyWith` to set d
 
 Import `package:material_expressive_ui/material_expressive_host.dart` for `ExpressiveHost`, adaptive app navigation and page transitions. `ExpressiveShellScaffold` places destinations in a bottom bar on phones and a rail on wider screens. `ExpressivePage`, `ExpressiveSheetPage` and `ExpressiveFullScreenDialogPage` work with the Navigator pages API.
 
-Use `ExpressiveLocalizations` for component text and `DesignLocalizations` for shared actions. Both include English defaults. Supply delegates for your app's other languages. Give icon-only controls a `semanticLabel` and give the rating a name such as “Rate this trip” so a screen reader can announce its current score in context.
+Use `ExpressiveLocalizations` for component text and `DesignLocalizations` for shared actions. Both include English defaults, and `ExpressiveLocalizations.delegate` takes every locale. Supply delegates for your app's other languages. Until you do, a time picker's words come from `DesignLocalizations`, which ui_core speaks in 30 languages. Give icon-only controls a `semanticLabel` and give the rating a name such as “Rate this trip” so a screen reader can announce its current score in context.
 
 ## Custom components
 

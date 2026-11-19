@@ -275,7 +275,10 @@ class ExpressiveFormField extends StatelessWidget {
       required: required,
       enabled: enabled,
       focusNode: focusNode,
-      mergeSemantics: !group,
+      // DesignField's default for one control or several (a stepper's
+      // buttons and entry keep their own nodes, and a child that names
+      // itself is not named twice); a group is named as one.
+      mergeSemantics: group ? false : null,
       builder: (context, parts) {
         final labelColor = !parts.enabled
             ? c.onSurface.withValues(alpha: 0.38)
