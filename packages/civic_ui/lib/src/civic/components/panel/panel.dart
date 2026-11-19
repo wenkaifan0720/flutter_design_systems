@@ -109,9 +109,13 @@ class CivicConfirmationPanel extends StatelessWidget {
 }
 
 /// A message across the top of a page the reader should see before
-/// anything else: an outage, a deadline, a change made. [tone] info draws
-/// it in the action colour, success in the success colour: a band with the
-/// [title] over a white well holding the words.
+/// anything else: an outage, a deadline, a change made. A band with the
+/// [title] over a white well holding the words, the band in [tone]'s
+/// colour: info the action colour, success the success colour, warning a
+/// deep amber (never the focus's yellow), error the error colour. The
+/// [title] says the tone in words (Important, Success, Warning, There is a
+/// problem), so it never rests on the colour. A success or an error is
+/// announced as it appears, unless [announce] says otherwise.
 ///
 /// Reads [CivicStyle]'s fill (the band), foreground (its words) and
 /// textStyle (the message): its `style:`, then
@@ -130,6 +134,7 @@ class CivicNotificationBanner extends StatelessWidget {
     required this.title,
     required this.child,
     this.tone = CivicTone.info,
+    this.announce,
     this.style,
   });
 
@@ -139,8 +144,12 @@ class CivicNotificationBanner extends StatelessWidget {
   /// The message.
   final Widget child;
 
-  /// Info or success.
+  /// Info (the default), success, warning or error; neutral reads as info.
   final CivicTone tone;
+
+  /// Whether a screen reader hears it as it appears; null: a success and an
+  /// error are heard, the others are not.
+  final bool? announce;
 
   /// Overrides for this banner's look.
   final CivicStyle? style;
@@ -150,45 +159,62 @@ class CivicNotificationBanner extends StatelessWidget {
     final t = context.civicTheme;
     final text = context.civicText;
     final so = DesignStyleOf([style, t.bannerStyle], const {});
-    final band = so.fill ?? (tone == CivicTone.success ? t.success : t.action);
-    final onBand =
-        so.foreground ?? (tone == CivicTone.success ? t.onSuccess : t.onAction);
+    // A warning's band is the warning tone's deep words by day and that
+    // amber made deep by night, white words on both: a caution, apart from
+    // the focus plate's yellow.
+    final amber = t.tones[CivicTone.warning]?.$2 ?? const Color(0xFF5C4300);
+    final warning = t.isDark
+        ? HSLColor.fromColor(amber).withLightness(0.26).toColor()
+        : amber;
+    final (fill, words) = switch (tone) {
+      CivicTone.success => (t.success, t.onSuccess),
+      CivicTone.warning => (warning, const Color(0xFFFFFFFF)),
+      CivicTone.error => (t.danger, t.onDanger),
+      CivicTone.info || CivicTone.neutral => (t.action, t.onAction),
+    };
+    final band = so.fill ?? fill;
+    final onBand = so.foreground ?? words;
     return Semantics(
       container: true,
-      liveRegion: tone == CivicTone.success,
+      liveRegion:
+          announce ?? (tone == CivicTone.success || tone == CivicTone.error),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: band,
+          // Square, as the error summary and the panel are.
           border: Border.all(color: band, width: CivicMetrics.bar),
-          borderRadius: BorderRadius.circular(CivicMetrics.cardCorner),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                CivicSpacing.s16,
-                CivicSpacing.s4,
-                CivicSpacing.s16,
-                CivicSpacing.s8,
-              ),
-              child: Semantics(
-                header: true,
-                child: Text(title, style: text.label.copyWith(color: onBand)),
-              ),
-            ),
-            ColoredBox(
-              color: t.background,
-              child: Padding(
-                padding: const EdgeInsets.all(CivicSpacing.s16),
-                child: DefaultTextStyle(
-                  style: text.headingS.merge(so.textStyle),
-                  child: child,
+        // The band's colour frames the message all round.
+        child: Padding(
+          padding: const EdgeInsets.all(CivicMetrics.bar),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  CivicSpacing.s16,
+                  0,
+                  CivicSpacing.s16,
+                  CivicSpacing.s4,
+                ),
+                child: Semantics(
+                  header: true,
+                  child: Text(title, style: text.label.copyWith(color: onBand)),
                 ),
               ),
-            ),
-          ],
+              ColoredBox(
+                color: t.background,
+                child: Padding(
+                  padding: const EdgeInsets.all(CivicSpacing.s16),
+                  child: DefaultTextStyle(
+                    style: text.headingS.merge(so.textStyle),
+                    child: child,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -200,6 +226,7 @@ class CivicNotificationBanner extends StatelessWidget {
     properties
       ..add(StringProperty('title', title))
       ..add(EnumProperty<CivicTone>('tone', tone, defaultValue: CivicTone.info))
+      ..add(DiagnosticsProperty<bool>('announce', announce, defaultValue: null))
       ..add(
         DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null),
       );

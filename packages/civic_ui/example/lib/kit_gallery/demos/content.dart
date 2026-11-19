@@ -115,9 +115,14 @@ Widget kitContentDemo(Brightness brightness) => kitScreen(
             children: [
               Text('Your reference number'),
               SizedBox(height: CivicSpacing.s8),
-              Text(
-                'BRM-4821-K',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 30),
+              // A reference stays on one line: it scales down before it
+              // would break.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'BRM-4821-K',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 30),
+                ),
               ),
             ],
           ),
@@ -130,6 +135,20 @@ Widget kitContentDemo(Brightness brightness) => kitScreen(
           title: 'Success',
           tone: CivicTone.success,
           child: Text('Your contact preferences have been saved.'),
+        ),
+        CivicNotificationBanner(
+          title: 'Warning',
+          tone: CivicTone.warning,
+          child: Text(
+            'Your permit runs out in 5 days. Renew it to keep parking.',
+          ),
+        ),
+        CivicNotificationBanner(
+          title: 'There is a problem',
+          tone: CivicTone.error,
+          child: Text(
+            'We could not take your payment. You have not been charged.',
+          ),
         ),
       ],
     ),

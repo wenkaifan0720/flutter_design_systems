@@ -64,6 +64,8 @@ class CivicHost extends StatelessWidget {
         frame?.brightness ??
         MediaQuery.platformBrightnessOf(context);
     final t = wanted == Brightness.dark ? dark ?? _dark : light ?? _light;
+    // The platform the app's own Material theme behaves as.
+    final platform = Theme.of(context).platform;
     return CivicTheme(
       data: t,
       child: CivicToaster(
@@ -73,16 +75,21 @@ class CivicHost extends StatelessWidget {
               : SystemUiOverlayStyle.dark,
           child: ColoredBox(
             color: t.background,
-            child: Theme(
-              data: Theme.of(context).copyWith(
-                // Civic's page change, on every platform.
-                pageTransitionsTheme: const PageTransitionsTheme(
-                  builders: civicPageTransitions,
+            // Read under CivicTheme: the Material theme Civic puts there (a
+            // text field's caret, selection and handles in Civic's colours),
+            // not the app's from round the host.
+            child: Builder(
+              builder: (context) => Theme(
+                data: Theme.of(context).copyWith(
+                  // Civic's page change, on every platform.
+                  pageTransitionsTheme: const PageTransitionsTheme(
+                    builders: civicPageTransitions,
+                  ),
+                  // In a preview, the frame's platform is the one behaved as.
+                  platform: frame?.platform.targetPlatform ?? platform,
                 ),
-                // In a preview, the frame's platform is the one behaved as.
-                platform: frame?.platform.targetPlatform,
+                child: child,
               ),
-              child: child,
             ),
           ),
         ),

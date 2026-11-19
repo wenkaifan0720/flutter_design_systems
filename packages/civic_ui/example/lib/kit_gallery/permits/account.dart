@@ -383,6 +383,26 @@ List<Widget> _applicationsList(BuildContext context, {String? selected}) {
         style: context.civicText.caption,
       ),
     ),
+    // The filters applied, each a chip a press removes (beside the boxes
+    // that tick them, for a reader who scrolled past those).
+    if (state.statuses.isNotEmpty) ...[
+      const SizedBox(height: CivicSpacing.s8),
+      Wrap(
+        spacing: CivicSpacing.s8,
+        runSpacing: CivicSpacing.s8,
+        children: [
+          for (final (id, label, _) in _statuses)
+            if (state.statuses.contains(id))
+              CivicChip.removable(
+                label: context.say(label),
+                onDeleted: () {
+                  state.statuses.remove(id);
+                  state.changed();
+                },
+              ),
+        ],
+      ),
+    ],
     const SizedBox(height: CivicSpacing.s8),
     if (shown.isEmpty)
       Padding(
@@ -434,14 +454,14 @@ List<Widget> _applicationsList(BuildContext context, {String? selected}) {
 }
 
 /// A tablet's applications: the list in a pane at the start, the open
-/// record (the first, until another is chosen) beside it.
+/// record (the first, until another is chosen) beside it, the grip between
+/// them.
 class _ApplicationPanes extends StatelessWidget {
   const _ApplicationPanes();
 
   @override
   Widget build(BuildContext context) {
     final state = context.permits;
-    final t = context.civicTheme;
     final text = context.civicText;
     final a = _applications.firstWhere(
       (a) => a.reference == state.application,
@@ -469,25 +489,20 @@ class _ApplicationPanes extends StatelessWidget {
         ..._applicationsList(context, selected: a.reference),
       ],
     );
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(
-          width: permitsListPane,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              border: BorderDirectional(end: BorderSide(color: t.rule)),
-            ),
-            child: list,
-          ),
+    // The reader shares the room between the list and the record with the
+    // grip between them; the list starts [permitsListPane] wide.
+    return LayoutBuilder(
+      builder: (context, box) => CivicSplitView(
+        initialFraction: (permitsListPane / box.maxWidth).clamp(0.2, 0.6),
+        minFirst: permitsListPane - CivicSpacing.s64,
+        minSecond: permitsListPane,
+        semanticLabel: context.say('Resize the list and the record'),
+        first: list,
+        second: KeyedSubtree(
+          key: ValueKey(a.reference),
+          child: _record(context, a, pane: true),
         ),
-        Expanded(
-          child: KeyedSubtree(
-            key: ValueKey(a.reference),
-            child: _record(context, a, pane: true),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

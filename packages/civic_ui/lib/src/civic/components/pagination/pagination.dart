@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../internal/link_target.dart';
 import '../../internal/paint.dart';
 import '../../internal/spring.dart';
 import '../../theme.dart';
@@ -31,6 +32,7 @@ import '../link/link.dart';
 ///   pageCount: 12,
 ///   selectedIndex: page,
 ///   onPageChanged: (index) => setState(() => page = index),
+///   urlOf: (index) => Uri.parse('/streets?page=${index + 1}'),
 /// )
 /// ```
 class CivicPagination extends StatelessWidget {
@@ -40,6 +42,7 @@ class CivicPagination extends StatelessWidget {
     required this.pageCount,
     required this.selectedIndex,
     required this.onPageChanged,
+    this.urlOf,
     this.previousLabel,
     this.nextLabel,
     this.style,
@@ -55,6 +58,12 @@ class CivicPagination extends StatelessWidget {
   /// Called with a page's index, from 0, as it is chosen; null disables
   /// the pages.
   final ValueChanged<int>? onPageChanged;
+
+  /// A page's address, by its index from 0 (`(i) =>
+  /// Uri.parse('/streets?page=${i + 1}')`): with it, Previous, Next and
+  /// the numbers are read as links to their pages ([CivicLink.url]);
+  /// without it, as buttons that change the page in place.
+  final Uri Function(int index)? urlOf;
 
   /// The previous link's words; null says "Previous page" in the reader's
   /// language.
@@ -102,6 +111,7 @@ class CivicPagination extends StatelessWidget {
     final previous = selectedIndex > 0
         ? CivicLink.quiet(
             onPressed: go == null ? null : () => go(selectedIndex - 1),
+            url: go == null ? null : urlOf?.call(selectedIndex - 1),
             textStyle: context.civicText.label.copyWith(color: t.action),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -116,6 +126,7 @@ class CivicPagination extends StatelessWidget {
     final next = selectedIndex < pageCount - 1
         ? CivicLink.quiet(
             onPressed: go == null ? null : () => go(selectedIndex + 1),
+            url: go == null ? null : urlOf?.call(selectedIndex + 1),
             textStyle: context.civicText.label.copyWith(color: t.action),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -160,6 +171,7 @@ class CivicPagination extends StatelessWidget {
                 semanticLabel: words.positionLabel(page + 1, pageCount),
                 selected: page == selectedIndex,
                 onPressed: go == null ? null : () => go(page),
+                url: urlOf?.call(page),
                 style: style,
               ),
           if (next != null) level(next),
@@ -199,6 +211,7 @@ class _PageNumber extends StatelessWidget {
     required this.semanticLabel,
     required this.selected,
     required this.onPressed,
+    required this.url,
     required this.style,
   });
 
@@ -206,6 +219,7 @@ class _PageNumber extends StatelessWidget {
   final String semanticLabel;
   final bool selected;
   final VoidCallback? onPressed;
+  final Uri? url;
   final CivicStyle? style;
 
   @override
@@ -246,60 +260,85 @@ class _PageNumber extends StatelessWidget {
         ),
       );
     }
-    return DesignTapTarget(
-      child: DesignPressable(
-        onPressed: onPressed,
-        button: false,
-        link: true,
-        semanticLabel: semanticLabel,
-        excludeSemantics: true,
-        mouseCursor: onPressed == null
-            ? SystemMouseCursors.basic
-            : SystemMouseCursors.click,
-        builder: (context, states, _) {
-          final disabled = states.contains(WidgetState.disabled);
-          return CivicSpringValue(
-            value: states.contains(WidgetState.pressed) ? 1 : 0,
-            spring: CivicMotion.press,
-            builder: (context, press, _) => CivicSpringValue(
-              value: states.contains(WidgetState.focused) ? 1 : 0,
-              spring: CivicMotion.focus,
-              effects: true,
-              builder: (context, focus, _) {
-                final so = DesignStyleOf(styles, states);
-                final ink = disabled
-                    ? so.foreground ?? t.textDisabled
-                    : Color.lerp(so.foreground ?? t.action, t.onFocus, focus)!;
-                return CustomPaint(
-                  painter: CivicFacePainter(
-                    fill: t.focus.withValues(alpha: 0),
-                    edgeColor: t.onFocus,
-                    edgeHeight: 0,
-                    press: 0,
-                    focus: focus,
-                    focusColor: t.focus,
-                    barColor: t.focusBar,
-                  ),
-                  child: square(
-                    fill: t.focus.withValues(alpha: 0),
-                    child: Text(
-                      '$number',
-                      style: text.label.copyWith(
-                        color: ink,
-                        decoration: disabled
-                            ? TextDecoration.none
-                            : TextDecoration.underline,
-                        decorationColor: ink,
-                        decorationThickness: 1.2 + 1.8 * press,
+    final address = url;
+    final pressed = onPressed;
+    Widget face(VoidCallback? onPressed, {required bool link}) =>
+        DesignTapTarget(
+          child: DesignPressable(
+            onPressed: onPressed,
+            // A link to its page when it has an address; else a button.
+            button: !link && onPressed != null,
+            link: link,
+            semanticLabel: semanticLabel,
+            excludeSemantics: true,
+            mouseCursor: onPressed == null
+                ? SystemMouseCursors.basic
+                : SystemMouseCursors.click,
+            builder: (context, states, _) {
+              final disabled = states.contains(WidgetState.disabled);
+              return CivicSpringValue(
+                value: states.contains(WidgetState.pressed) ? 1 : 0,
+                spring: CivicMotion.press,
+                builder: (context, press, _) => CivicSpringValue(
+                  value: states.contains(WidgetState.focused) ? 1 : 0,
+                  spring: CivicMotion.focus,
+                  effects: true,
+                  builder: (context, focus, _) {
+                    final so = DesignStyleOf(styles, states);
+                    final ink = disabled
+                        ? so.foreground ?? t.textDisabled
+                        : Color.lerp(
+                            so.foreground ?? t.action,
+                            t.onFocus,
+                            focus,
+                          )!;
+                    return CustomPaint(
+                      painter: CivicFacePainter(
+                        fill: t.focus.withValues(alpha: 0),
+                        edgeColor: t.onFocus,
+                        edgeHeight: 0,
+                        press: 0,
+                        focus: focus,
+                        focusColor: t.focus,
+                        barColor: t.focusBar,
                       ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      ),
+                      child: square(
+                        fill: t.focus.withValues(alpha: 0),
+                        child: Text(
+                          '$number',
+                          style: text.label.copyWith(
+                            color: ink,
+                            decoration: disabled
+                                ? TextDecoration.none
+                                : TextDecoration.underline,
+                            // Under the focus the ink bar is the one line:
+                            // the underline fades as the plate comes, as a
+                            // link's does.
+                            decorationColor: disabled
+                                ? ink
+                                : Color.lerp(
+                                    so.foreground ?? t.action,
+                                    t.onFocus.withValues(alpha: 0),
+                                    focus,
+                                  ),
+                            decorationThickness: 1.2 + 1.8 * press,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        );
+    if (address == null || pressed == null) {
+      return face(pressed, link: false);
+    }
+    return CivicLinkTarget(
+      url: address,
+      onPressed: pressed,
+      builder: (context, press) => face(press, link: true),
     );
   }
 }

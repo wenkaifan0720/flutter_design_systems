@@ -39,10 +39,12 @@ class _ErrorsState extends State<_Errors> {
             CivicErrorSummaryItem(
               text: 'Enter your full name',
               onPressed: _name.requestFocus,
+              url: Uri(fragment: 'full-name'),
             ),
             CivicErrorSummaryItem(
               text: 'Date of birth must include a month',
               onPressed: _day.requestFocus,
+              url: Uri(fragment: 'date-of-birth'),
             ),
           ],
         ),

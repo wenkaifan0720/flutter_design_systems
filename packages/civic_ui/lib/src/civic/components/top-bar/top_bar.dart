@@ -109,6 +109,7 @@ class CivicTopBar extends StatelessWidget {
         key: key,
         icon: LucideIcons.x,
         semanticLabel: words.closeButtonLabel,
+        tooltip: words.closeButtonLabel,
         onPressed: leave,
       ),
     };
@@ -136,6 +137,7 @@ class CivicTopBar extends StatelessWidget {
       key: key,
       icon: LucideIcons.chevronLeft,
       semanticLabel: DesignLocalizations.of(context).backButtonTooltip,
+      tooltip: DesignLocalizations.of(context).backButtonTooltip,
       onPressed: onPressed,
     ),
   );

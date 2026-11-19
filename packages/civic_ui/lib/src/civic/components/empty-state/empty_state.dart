@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '../../internal/fit_words.dart';
 import '../../theme.dart';
 
 /// What a list or a page says when it has nothing to show, or cannot show
@@ -58,7 +59,14 @@ class CivicEmptyState extends StatelessWidget {
     final heading = Semantics(
       header: true,
       liveRegion: announce,
-      child: Text(title, style: isPageHeading ? text.headingXL : text.headingM),
+      // At a large text size the heading wraps between words, never
+      // inside one, as the page's own heading does.
+      child: CivicFitWords(
+        title,
+        style: isPageHeading ? text.headingXL : text.headingM,
+        // A section's heading grows as far as the reader's words do.
+        most: isPageHeading ? CivicLayout.headingScaleMost : double.infinity,
+      ),
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

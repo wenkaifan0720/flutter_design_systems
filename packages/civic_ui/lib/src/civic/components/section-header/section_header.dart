@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import '../../internal/fit_words.dart';
 import '../../theme.dart';
 
 /// A heading over a section of a page, a screen reader's heading, with an
@@ -33,7 +34,11 @@ class CivicSectionHeader extends StatelessWidget {
     final text = context.civicText;
     final heading = Semantics(
       header: true,
-      child: Text(title, style: isLarge ? text.headingL : text.headingM),
+      child: CivicFitWords(
+        title,
+        style: isLarge ? text.headingL : text.headingM,
+        most: isLarge ? CivicLayout.headingScaleMost : double.infinity,
+      ),
     );
     final end = action;
     return Padding(

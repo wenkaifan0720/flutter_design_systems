@@ -92,7 +92,9 @@ class _VehiclePageState extends State<VehiclePage> {
 
 ## Components
 
-Civic includes question pages, forms, navigation, sortable tables and an answers summary for public services.
+Civic includes question pages, forms, navigation, sortable tables and an answers summary for public services,
+and its own version of every common part: inputs and pickers, dates, menus and sheets, cards and layouts, avatars
+and badges, progress and skeletons, and charts that can show their figures as a table.
 Atkinson Hyperlegible Next is the default typeface. Blue identifies actions, red marks errors, and a yellow
 focus indicator shows which control will respond to the keyboard.
 

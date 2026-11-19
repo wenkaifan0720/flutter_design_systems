@@ -3,18 +3,19 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../internal/paint.dart';
-import '../../internal/spring.dart';
+import '../../internal/link_face.dart';
+import '../../internal/link_target.dart';
 import '../../theme.dart';
-import '../../internal/underline.dart';
 
 /// Words that go somewhere: underlined, in the action colour. A press
 /// thickens the underline; a keyboard focus lays the words on the yellow
 /// plate over the ink bar, in ink.
 ///
-/// A screen reader hears it as a button with a link's look: it runs
-/// [onPressed], and on the web an anchor with no address is read as plain
-/// words, not as something to press.
+/// A link that goes somewhere names where, its [url]: a screen reader
+/// hears a link, and on the web it is an anchor with that address, which
+/// the browser can open in a new tab. One that only runs [onPressed]
+/// (opens a fold, clears the filters) is heard as a button, keeping a
+/// link's look.
 ///
 /// [semanticLabel] says the whole of it to a screen reader where the words
 /// lean on what is beside them: a summary row's "Change" is "Change your
@@ -26,7 +27,8 @@ import '../../internal/underline.dart';
 ///
 /// ```dart
 /// CivicLink(
-///   onPressed: () => openGuidance(),
+///   url: Uri.parse('/guidance/permit-zones'),
+///   onPressed: () => router.go('/guidance/permit-zones'),
 ///   child: const Text('Read the guidance on permit zones'),
 /// )
 /// ```
@@ -34,8 +36,9 @@ class CivicLink extends StatelessWidget {
   /// A link.
   const CivicLink({
     super.key,
-    required this.onPressed,
+    this.onPressed,
     required this.child,
+    this.url,
     this.semanticLabel,
     this.textStyle,
     this.focusNode,
@@ -48,8 +51,9 @@ class CivicLink extends StatelessWidget {
   /// link, a link in a footer.
   const CivicLink.quiet({
     super.key,
-    required this.onPressed,
+    this.onPressed,
     required this.child,
+    this.url,
     this.semanticLabel,
     this.textStyle,
     this.focusNode,
@@ -60,8 +64,23 @@ class CivicLink extends StatelessWidget {
 
   final bool _ink;
 
-  /// Called on a press; null leaves the words as plain words.
+  /// Called on a press. Null with a [url]: a press follows the url;
+  /// null without one: the words are plain words.
   final VoidCallback? onPressed;
+
+  /// Where it goes: a web address (`https://…`), or a route as the app's
+  /// router names it (`Uri.parse('/permits')`), url_launcher's [Link]
+  /// beneath. With one it is read as a link carrying that address, on the
+  /// web an anchor the URL strategy spells (`#/permits` on hash routes);
+  /// without one it only runs [onPressed], and is read as a button.
+  ///
+  /// A press runs [onPressed] when there is one, so the app goes there its
+  /// own way and the browser does not follow the address too; without it,
+  /// the press follows the url (a web address opens, a route is pushed to
+  /// the app's router). On the web a press with the new-tab key held (Cmd
+  /// on a Mac, Ctrl elsewhere), or a middle click, leaves the page where it
+  /// is and opens the address in a new tab, as any link's does.
+  final Uri? url;
 
   /// The words.
   final Widget child;
@@ -87,7 +106,31 @@ class CivicLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.civicTheme;
+    // The focus plate hugs the words, as a public service's link focus
+    // does, however wide the column it stands in.
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      widthFactor: 1,
+      heightFactor: 1,
+      child: _link(context),
+    );
+  }
+
+  Widget _link(BuildContext context) {
+    final address = url;
+    if (address == null) {
+      // A link that only runs a callback is a button to a screen reader:
+      // on the web an anchor with no address is read as plain words.
+      return _pressable(onPressed, link: false);
+    }
+    return CivicLinkTarget(
+      url: address,
+      onPressed: onPressed,
+      builder: (context, press) => _pressable(press, link: true),
+    );
+  }
+
+  Widget _pressable(VoidCallback? onPressed, {required bool link}) {
     return DesignTapTarget(
       alignment: AlignmentDirectional.centerStart,
       child: DesignPressable(
@@ -95,80 +138,20 @@ class CivicLink extends StatelessWidget {
         focusNode: focusNode,
         autofocus: autofocus,
         statesController: statesController,
-        // A button to a screen reader: it runs a callback, and on the web
-        // an anchor with no address is read as plain words.
-        button: onPressed != null,
+        button: !link && onPressed != null,
+        link: link,
         semanticLabel: semanticLabel,
         excludeSemantics: semanticLabel != null,
         mouseCursor: onPressed == null
             ? SystemMouseCursors.basic
             : SystemMouseCursors.click,
-        builder: (context, states, _) {
-          final so = DesignStyleOf([style, t.linkStyle], states);
-          final base = context.civicText.body
-              .merge(so.textStyle)
-              .merge(textStyle);
-          final disabled = states.contains(WidgetState.disabled);
-          // A colour in [textStyle] is the link's ink at rest.
-          final ink = disabled
-              ? t.textDisabled
-              : textStyle?.color ??
-                    so.foreground ??
-                    (_ink ? t.textPrimary : t.action);
-          // A pointer over it thickens the line under the words and deepens
-          // their colour; a press takes them the rest of the way to the
-          // ink, as a link held down does on a public service's page.
-          final held = states.contains(WidgetState.pressed) ? 1.0 : 0.0;
-          Color deep(double amount) =>
-              Color.lerp(ink, t.textPrimary, 0.45 * amount + 0.55 * held)!;
-          final touched =
-              states.contains(WidgetState.pressed) ||
-              states.contains(WidgetState.hovered);
-          return CivicSpringValue(
-            value: touched ? 1 : 0,
-            spring: CivicMotion.press,
-            builder: (context, press, _) => CivicSpringValue(
-              value: states.contains(WidgetState.focused) ? 1 : 0,
-              spring: CivicMotion.focus,
-              effects: true,
-              builder: (context, focus, _) => CustomPaint(
-                painter: CivicFacePainter(
-                  fill: t.focus.withValues(alpha: 0),
-                  edgeColor: t.onFocus,
-                  edgeHeight: 0,
-                  press: 0,
-                  focus: focus,
-                  focusColor: t.focus,
-                  barColor: t.focusBar,
-                  outset: CivicMetrics.edge,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: CivicMetrics.bar),
-                  child: IconTheme.merge(
-                    data: IconThemeData(
-                      color: Color.lerp(deep(press), t.onFocus, focus),
-                    ),
-                    child: CivicUnderlined(
-                      style: base.copyWith(
-                        color: Color.lerp(deep(press), t.onFocus, focus),
-                        decoration: disabled
-                            ? TextDecoration.none
-                            : TextDecoration.underline,
-                        decorationColor: Color.lerp(
-                          deep(press),
-                          t.onFocus.withValues(alpha: 0),
-                          focus,
-                        ),
-                        decorationThickness: 1.2 + 1.8 * press,
-                      ),
-                      child: child,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
+        builder: (context, states, _) => CivicLinkFace(
+          states: states,
+          quiet: _ink,
+          textStyle: textStyle,
+          style: style,
+          child: child,
+        ),
       ),
     );
   }
@@ -179,6 +162,7 @@ class CivicLink extends StatelessWidget {
     properties
       ..add(FlagProperty('quiet', value: _ink, ifTrue: 'quiet'))
       ..add(ObjectFlagProperty<VoidCallback>.has('onPressed', onPressed))
+      ..add(DiagnosticsProperty<Uri>('url', url, defaultValue: null))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<TextStyle>(

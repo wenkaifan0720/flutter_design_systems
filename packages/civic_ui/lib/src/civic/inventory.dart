@@ -7,38 +7,74 @@ import 'package:flutter/widgets.dart';
 import 'package:ui_core/inventory.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'components/avatar/avatar.dart';
+import 'components/badge/badge.dart';
 import 'components/breadcrumbs/breadcrumbs.dart';
 import 'components/button-group/button_group.dart';
 import 'components/button/button.dart';
+import 'components/calendar/calendar.dart';
+import 'components/card/card.dart';
+import 'components/carousel/carousel.dart';
+import 'components/charts/charts.dart';
+import 'components/charts/pie_chart.dart';
 import 'components/checkbox/checkbox.dart';
+import 'components/chip/chip.dart';
+import 'components/code-field/code_field.dart';
+import 'components/color-picker/color_picker.dart';
 import 'components/combobox/combobox.dart';
-import 'components/date-input/date_input.dart';
+import 'components/command-palette/command_palette.dart';
+import 'components/date-picker/date_picker.dart';
 import 'components/details/details.dart';
 import 'components/dialog/dialog.dart';
 import 'components/empty-state/empty_state.dart';
 import 'components/file-upload/file_upload.dart';
 import 'components/icon-button/icon_button.dart';
+import 'components/image/image.dart';
+import 'components/kbd/kbd.dart';
 import 'components/link/link.dart';
 import 'components/list-row/list_row.dart';
+import 'components/menu/menu.dart';
+import 'components/meter/meter.dart';
+import 'components/multi-select/multi_select.dart';
 import 'components/navigation/navigation.dart';
+import 'components/number-field/number_field.dart';
+import 'components/page-dots/page_dots.dart';
 import 'components/pagination/pagination.dart';
 import 'components/panel/panel.dart';
 import 'components/password-field/password_field.dart';
+import 'components/popover/popover.dart';
+import 'components/progress-bar/progress_bar.dart';
+import 'components/pull-to-refresh/pull_to_refresh.dart';
 import 'components/radio/radio.dart';
+import 'components/rating/rating.dart';
+import 'components/reorderable-list/reorderable_list.dart';
 import 'components/scaffold/scaffold.dart';
+import 'components/scroll-area/scroll_area.dart';
 import 'components/search-field/search_field.dart';
 import 'components/section-break/section_break.dart';
 import 'components/section-header/section_header.dart';
 import 'components/select/select.dart';
+import 'components/sheet/sheet.dart';
+import 'components/skeleton/skeleton.dart';
+import 'components/slider/slider.dart';
+import 'components/spinner/spinner.dart';
+import 'components/split-button/split_button.dart';
+import 'components/split-view/split_view.dart';
+import 'components/step-indicator/step_indicator.dart';
 import 'components/summary-list/summary_list.dart';
+import 'components/swipe-actions/swipe_actions.dart';
 import 'components/switch/switch.dart';
 import 'components/table/table.dart';
 import 'components/tabs/tabs.dart';
 import 'components/tag/tag.dart';
+import 'components/text-area/text_area.dart';
 import 'components/text-field/text_field.dart';
 import 'components/timeline/timeline.dart';
 import 'components/toast/toast.dart';
+import 'components/toggle-group/toggle_group.dart';
 import 'components/top-bar/top_bar.dart';
+import 'components/tree/tree.dart';
+import 'components/wheel-picker/wheel_picker.dart';
 import 'internal/frame_scope.dart';
 import 'theme.dart';
 
@@ -111,30 +147,183 @@ class _FeesState extends State<_Fees> {
 Widget _fee(BuildContext context, _Fee fee, DesignTableColumn<_Fee> column) =>
     Text(column.id == 'year' ? fee.year : fee.permit);
 
+/// The calendar's specimen: it owns its controller.
+class _Days extends StatefulWidget {
+  const _Days();
+
+  @override
+  State<_Days> createState() => _DaysState();
+}
+
+class _DaysState extends State<_Days> {
+  final _days = DesignCalendarController(
+    firstDate: DateTime(2026),
+    lastDate: DateTime(2026, 12, 31),
+    selectedDate: DateTime(2026, 11, 24),
+    initialMonth: DateTime(2026, 11),
+  );
+
+  @override
+  void dispose() {
+    _days.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => CivicCalendar(controller: _days);
+}
+
+/// The colour picker's specimen: it owns its controller.
+class _Colour extends StatefulWidget {
+  const _Colour();
+
+  @override
+  State<_Colour> createState() => _ColourState();
+}
+
+class _ColourState extends State<_Colour> {
+  final _colour = DesignColorController(const Color(0xFF0F4C81));
+
+  @override
+  void dispose() {
+    _colour.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => CivicColorPicker(
+    labelText: 'Badge colour',
+    controller: _colour,
+    swatches: const [
+      CivicColorSwatch(Color(0xFF0F4C81), 'Harbour blue'),
+      CivicColorSwatch(Color(0xFF0B6136), 'Park green'),
+      CivicColorSwatch(Color(0xFF8A1C1C), 'Brick red'),
+    ],
+  );
+}
+
+/// A pane of the split view's and the carousel's specimens: its words on
+/// the pale ground.
+class _Pane extends StatelessWidget {
+  const _Pane(this.words);
+
+  final String words;
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+    color: context.civicTheme.surface,
+    child: Center(
+      child: Padding(
+        padding: const EdgeInsets.all(CivicSpacing.s8),
+        child: Text(words, textAlign: TextAlign.center),
+      ),
+    ),
+  );
+}
+
+/// The scroll area's specimen: it owns its controller.
+class _Terms extends StatefulWidget {
+  const _Terms();
+
+  @override
+  State<_Terms> createState() => _TermsState();
+}
+
+class _TermsState extends State<_Terms> {
+  final _scroll = ScrollController();
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    height: 120,
+    child: CivicScrollArea(
+      controller: _scroll,
+      focusable: true,
+      semanticLabel: 'Terms of the permit',
+      child: SingleChildScrollView(
+        controller: _scroll,
+        child: const Padding(
+          padding: EdgeInsetsDirectional.only(end: CivicSpacing.s24),
+          child: Text(
+            'The permit is for the vehicle named on it. Show it on the '
+            'windscreen, where a warden can read it. It lets the vehicle '
+            'park in its zone\'s permit bays at any time. It does not let '
+            'it park on a yellow line, in a disabled bay or in a bay for '
+            'loading. Tell us within 14 days if the vehicle changes.',
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// The reorderable list's specimen: it keeps its order.
+class _Order extends StatefulWidget {
+  const _Order();
+
+  @override
+  State<_Order> createState() => _OrderState();
+}
+
+class _OrderState extends State<_Order> {
+  final _documents = ['Proof of address', 'Vehicle logbook', 'Photo ID'];
+
+  @override
+  Widget build(BuildContext context) => CivicReorderableList<String>(
+    items: _documents,
+    labelOf: (d) => d,
+    onReorder: (from, to) =>
+        setState(() => _documents.insert(to, _documents.removeAt(from))),
+  );
+}
+
+/// The tree's specimen: it owns its controller.
+class _Sections extends StatefulWidget {
+  const _Sections();
+
+  @override
+  State<_Sections> createState() => _SectionsState();
+}
+
+class _SectionsState extends State<_Sections> {
+  static const _under = {
+    'Parking': ['Permits', 'Fines'],
+    'Permits': ['Resident', 'Visitor'],
+  };
+
+  final _sections = DesignTreeController<String>(
+    roots: const ['Parking', 'Bins'],
+    childrenOf: (s) => _under[s] ?? const [],
+    expanded: const ['Parking'],
+  );
+
+  @override
+  void dispose() {
+    _sections.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => CivicTree<String>(
+    controller: _sections,
+    labelOf: (s) => s,
+    semanticLabel: 'Council services',
+  );
+}
+
 /// The specimens that fill the height they are given; a gallery frames
 /// each in a box of this height.
 const Map<String, double> civicInventoryHeights = {
   'NavigationDrawer': 260,
+  'RefreshIndicator': 200,
+  'Resizable': 160,
   'Scaffold': 320,
 };
-
-/// The words a public service puts where another look puts a control: why
-/// Civic leaves a row out, and what it uses instead.
-abstract final class _Why {
-  static const charts =
-      'A public service gives its numbers in words and in a table '
-      '(CivicTable), which every reader and every screen reader can read; '
-      'a chart says less to fewer people';
-  static const hidden =
-      'A public service keeps every action in sight as a button or a link '
-      '(CivicButton, CivicLink): an action behind a hover, a long press or '
-      'a gesture is one some readers never find';
-  static const overPage =
-      'A public service asks one thing per page: what another look lays '
-      'over the page, Civic puts on a page of its own, or folds under its '
-      'title in place (CivicDetails); the one interruption it keeps is the '
-      'dialog (CivicDialog)';
-}
 
 /// Civic's inventory: every row of the shared component list, answered.
 final DesignInventory civicInventory = DesignInventory(
@@ -167,13 +356,29 @@ final DesignInventory civicInventory = DesignInventory(
         ],
       ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'ToggleGroup',
-      'A public service asks for one answer of several with radios '
-          '(CivicRadioGroup), whose every answer is labelled in words, and '
-          'for several with checkboxes (CivicCheckbox)',
+      (_) => const CivicToggleGroup<String>(
+        labelText: 'Show applications',
+        segments: [
+          CivicSegment(value: 'drafts', label: 'Drafts'),
+          CivicSegment(value: 'sent', label: 'Sent'),
+        ],
+        selected: {'sent'},
+        onSelectionChanged: _drop,
+      ),
     ),
-    const DesignInventoryEntry.absent('SplitButton', _Why.hidden),
+    DesignInventoryEntry.present(
+      'SplitButton',
+      (_) => const CivicSplitButton(
+        label: 'Send application',
+        onPressed: _none,
+        actions: [
+          CivicSplitAction('Save and come back later', onPressed: _none),
+          CivicSplitAction('Print your answers', onPressed: _none),
+        ],
+      ),
+    ),
     DesignInventoryEntry.present(
       'Link',
       (_) => const CivicLink(
@@ -181,10 +386,9 @@ final DesignInventory civicInventory = DesignInventory(
         child: Text('Read the guidance on permit zones'),
       ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'Kbd',
-      'A public service teaches no shortcuts: every page works with Tab and '
-          'Enter alone, so there are no keys to show',
+      (_) => const CivicKbd.combination(['Ctrl', 'K']),
     ),
     // Inputs
     DesignInventoryEntry.present(
@@ -193,9 +397,9 @@ final DesignInventory civicInventory = DesignInventory(
     ),
     DesignInventoryEntry.present(
       'TextArea',
-      (_) => const CivicTextField(
+      (_) => const CivicTextArea(
         labelText: 'Why do you need a second permit?',
-        maxLines: 4,
+        maxLength: 200,
         minLines: 3,
       ),
     ),
@@ -215,17 +419,19 @@ final DesignInventory civicInventory = DesignInventory(
         widthInCharacters: 5,
       ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'InputOtp',
-      'A code is typed in one box (CivicTextField with the number '
-          'keyboard): boxes that jump the caret between them confuse a '
-          'screen reader and break a paste',
+      (_) => const CivicCodeField(labelText: 'Security code'),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'NumberField',
-      'A number is typed in a box sized for it (CivicTextField with '
-          'widthInCharacters and the number keyboard): a stepper\'s small '
-          'buttons are slow and easy to miss',
+      (_) => const CivicNumberField(
+        labelText: 'Visitor days',
+        value: 3,
+        min: 1,
+        max: 30,
+        onChanged: _drop,
+      ),
     ),
     DesignInventoryEntry.present(
       'Select',
@@ -246,11 +452,14 @@ final DesignInventory civicInventory = DesignInventory(
         options: ['France', 'Germany', 'Ireland', 'Italy', 'Spain'],
       ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'MultiSelect',
-      'Several answers are checkboxes (CivicCheckbox in a CivicFieldset): '
-          'each answer in sight and in words, where tags in a box hide '
-          'what was not chosen',
+      (_) => const CivicMultiSelect<String>(
+        labelText: 'Languages you speak',
+        options: ['English', 'Polish', 'Punjabi', 'Welsh'],
+        values: ['English', 'Welsh'],
+        onChanged: _drop,
+      ),
     ),
     DesignInventoryEntry.present(
       'Checkbox',
@@ -280,33 +489,59 @@ final DesignInventory civicInventory = DesignInventory(
         labelText: 'Renewal reminders',
       ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'Slider',
-      'A public service asks for an amount in a box sized for it '
-          '(CivicTextField): a slider is hard to set exactly, by a hand '
-          'that shakes or by the keys',
+      (_) => const CivicSlider(
+        labelText: 'Text size',
+        value: 150,
+        min: 100,
+        max: 200,
+        divisions: 4,
+        onChanged: _drop,
+      ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'Rating',
-      'A public service asks how it went in words a reader picks '
-          '(CivicRadio: very good to very poor) and a box for why: a row '
-          'of stars is hard to hear, to reach by the keys and to tap '
-          'exactly',
+      (_) => const CivicRating(
+        labelText: 'How easy was it to apply?',
+        value: 4,
+        labels: ['Very hard', 'Hard', 'Neither', 'Easy', 'Very easy'],
+        onChanged: _drop,
+      ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'RangeSlider',
-      'A range is two boxes, from and to (CivicTextField): two thumbs on '
-          'one track are harder still to set exactly',
+      (_) => const CivicRangeSlider(
+        labelText: 'Monthly cost',
+        values: DesignRangeValues(20, 60),
+        max: 100,
+        divisions: 20,
+        onChanged: _drop,
+      ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'SegmentedButton',
-      'One answer of several is a radio group (CivicRadioGroup), whose '
-          'answers wrap and grow with the text where segments squeeze',
+      (_) => const CivicSegmentedControl<String>(
+        labelText: 'Period',
+        segments: [
+          CivicSegment(value: 'week', label: 'Week'),
+          CivicSegment(value: 'month', label: 'Month'),
+          CivicSegment(value: 'year', label: 'Year'),
+        ],
+        value: 'month',
+        onChanged: _drop,
+      ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'Chip',
-      'Filters are checkboxes in the filter column (CivicCheckbox), and a '
-          'status is a tag (CivicTag): chips mix the two',
+      (_) => const Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          CivicChip(label: 'Open now', selected: true, onSelected: _drop),
+          CivicChip.removable(label: 'Zone B', onDeleted: _none),
+        ],
+      ),
     ),
     DesignInventoryEntry.present(
       'FileUpload',
@@ -317,42 +552,58 @@ final DesignInventory civicInventory = DesignInventory(
         onChoose: _none,
       ),
     ),
+    // A date typed in the reader's order, with the calendar a button
+    // away; a date of birth stays three boxes (CivicDateInput).
     DesignInventoryEntry.present(
       'DatePicker',
-      (_) => const CivicDateInput(
-        labelText: 'Date of birth',
-        helperText: 'For example, 27 3 1987',
-        dayLabel: 'Day',
-        monthLabel: 'Month',
-        yearLabel: 'Year',
+      (_) => CivicDatePicker(
+        labelText: 'When do you want the permit to start?',
+        value: DateTime(2026, 11, 24),
+        firstDate: DateTime(2026),
+        lastDate: DateTime(2026, 12, 31),
+        onChanged: _drop,
       ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'DateRangePicker',
-      'A range of dates is two date inputs, from and to (CivicDateInput), '
-          'each typed as the reader knows it',
+      (_) => CivicDateRangePicker(
+        labelText: 'When will your visitor stay?',
+        value: null,
+        firstDate: DateTime(2026),
+        lastDate: DateTime(2026, 12, 31),
+        onChanged: _drop,
+      ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'TimePicker',
-      'A time is typed (CivicTextField, "for example, 2:30pm"), or chosen '
-          'from the times free as radios (CivicRadioGroup)',
+      (_) => const CivicTimeInput(
+        labelText: 'What time will you arrive?',
+        value: DesignTimeOfDay(hour: 9, minute: 30),
+        onChanged: _drop,
+      ),
     ),
-    const DesignInventoryEntry.absent(
-      'Calendar',
-      'A date the reader knows is typed (CivicDateInput); a date chosen '
-          'from what is free is a list of radios (CivicRadioGroup), which a '
-          'screen reader reads as easily as an eye',
-    ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present('Calendar', (_) => const _Days()),
+    DesignInventoryEntry.present(
       'WheelPicker',
-      'A wheel is a phone\'s gesture: a date is typed (CivicDateInput) and '
-          'one answer of several is a radio group (CivicRadioGroup)',
+      (_) => CivicWheelPicker(
+        labelText: 'Collection time',
+        columns: (_) => [
+          DesignWheelColumn(
+            itemCount: 24,
+            itemLabel: (i) => '$i'.padLeft(2, '0'),
+            semanticLabel: 'Hour',
+          ),
+          DesignWheelColumn(
+            itemCount: 4,
+            itemLabel: (i) => '${i * 15}'.padLeft(2, '0'),
+            semanticLabel: 'Minute',
+          ),
+        ],
+        selection: const [9, 2],
+        onChanged: _drop,
+      ),
     ),
-    const DesignInventoryEntry.absent(
-      'ColorPicker',
-      'A public service never asks for a colour it cannot also take in '
-          'words: a vehicle\'s colour is typed (CivicTextField)',
-    ),
+    DesignInventoryEntry.present('ColorPicker', (_) => const _Colour()),
     DesignInventoryEntry.present(
       'FormField',
       (_) => const CivicTextField(
@@ -428,27 +679,44 @@ final DesignInventory civicInventory = DesignInventory(
         onPageChanged: _drop,
       ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'StepProgress',
-      'A public service says where the reader is in words over the '
-          'question (CivicPageBody\'s caption, "Step 2 of 3") and lists '
-          'what is left as a task list (CivicListRow with CivicTag): a '
-          'progress bar promises an end the answers can move',
+      (_) => const CivicStepIndicator(
+        steps: ['Your vehicle', 'Your details', 'Proof of address', 'Check'],
+        current: 1,
+      ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'PageDots',
-      'Civic has no carousel, so nothing to count: every page of a service '
-          'is a page',
+      (_) => const CivicPageDots(count: 5, index: 1, onChanged: _drop),
     ),
     const DesignInventoryEntry.absent(
       'MenuBar',
       'A public service has no menus: its places are its navigation '
           '(CivicNavigationBar, CivicSideNavigation), its acts are buttons',
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'Command',
-      'A public service is found by its words, not commands: a search box '
-          '(CivicSearchField) finds what a reader looks for',
+      (_) => Builder(
+        builder: (context) => CivicButton.secondary(
+          onPressed: () => showCivicCommandPalette(
+            context: context,
+            commands: const [
+              DesignCommand(
+                label: 'Your applications',
+                group: 'Pages',
+                onPressed: _none,
+              ),
+              DesignCommand(
+                label: 'Apply for a permit',
+                group: 'Actions',
+                onPressed: _none,
+              ),
+            ],
+          ),
+          child: const Text('Find a page or action'),
+        ),
+      ),
     ),
     DesignInventoryEntry.present(
       'Scaffold',
@@ -468,11 +736,10 @@ final DesignInventory civicInventory = DesignInventory(
     // Containers
     DesignInventoryEntry.present(
       'Card',
-      (_) => const CivicSummaryCard(
-        title: 'Resident permit',
-        child: CivicSummaryList(
-          rows: [CivicSummaryRow(label: 'Zone', value: Text('B: Harbourside'))],
-        ),
+      (_) => const CivicCard(
+        title: 'Resident permit, Zone B',
+        onPressed: _none,
+        child: Text('Runs out on 3 November 2027.'),
       ),
     ),
     DesignInventoryEntry.present(
@@ -516,39 +783,55 @@ final DesignInventory civicInventory = DesignInventory(
       'Divider',
       (_) => const CivicSectionBreak(size: CivicSectionBreakSize.medium),
     ),
-    const DesignInventoryEntry.absent(
-      'ScrollArea',
-      'A service\'s page scrolls whole, with the platform\'s own '
-          'scrollbar: Civic puts nothing that scrolls inside a page, where '
-          'a reader with a magnifier loses it',
-    ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present('ScrollArea', (_) => const _Terms()),
+    DesignInventoryEntry.present(
       'Resizable',
-      'A public service is one reading column: there are no panes to size',
+      (_) => const CivicSplitView(
+        first: _Pane('Your applications'),
+        second: _Pane('Resident permit, Zone B'),
+        minFirst: 120,
+        minSecond: 120,
+      ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'CarouselView',
-      'A carousel hides all but one of its items and moves on its own: '
-          'Civic lists them (CivicListRow)',
+      (_) => CivicCarousel(
+        semanticLabel: 'Permit zones',
+        height: 120,
+        itemCount: 3,
+        itemBuilder: (context, index) =>
+            _Pane(const ['Zone A', 'Zone B', 'Zone C'][index]),
+      ),
     ),
-    const DesignInventoryEntry.absent(
-      'ReorderableListView',
-      'An order of preference is asked as a question per place ("First '
-          'choice", CivicSelect): dragging rows is hard by the keys and by '
-          'a screen reader',
+    DesignInventoryEntry.present('ReorderableListView', (_) => const _Order()),
+    DesignInventoryEntry.present(
+      'SwipeActions',
+      (_) => const CivicSwipeActions(
+        menuLabel: 'Actions for Resident permit',
+        endActions: [
+          CivicSwipeAction(label: 'Archive', onPressed: _none),
+          CivicSwipeAction(
+            label: 'Withdraw',
+            onPressed: _none,
+            isDestructiveAction: true,
+          ),
+        ],
+        child: CivicListRow(title: Text('Resident permit, Zone B')),
+      ),
     ),
-    const DesignInventoryEntry.absent('SwipeActions', _Why.hidden),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'RefreshIndicator',
-      'A service\'s page says when it was true and offers Try again '
-          '(CivicEmptyState with a CivicButton): a pull is a gesture some '
-          'readers cannot make and none can see',
+      (_) => CivicPullToRefresh(
+        onRefresh: () async {},
+        child: ListView(
+          children: const [
+            CivicListRow(title: Text('Resident permit, Zone B')),
+            CivicListRow(title: Text('Visitor permit')),
+          ],
+        ),
+      ),
     ),
-    const DesignInventoryEntry.absent(
-      'TreeView',
-      'A public service is shallow: a place below another is a page with '
-          'breadcrumbs (CivicBreadcrumbs), not a branch to open',
-    ),
+    DesignInventoryEntry.present('TreeView', (_) => const _Sections()),
     DesignInventoryEntry.present(
       'Timeline',
       (_) => const CivicTimeline(
@@ -558,29 +841,38 @@ final DesignInventory civicInventory = DesignInventory(
         ],
       ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'Avatar',
-      'A public service knows a reader by their name and a reference, '
-          'which it writes out: it shows no faces',
+      (_) => const CivicAvatar(name: 'Amara Okafor'),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'AvatarGroup',
-      'A public service shows no faces, so no pile of them: people are '
-          'named in a list (CivicSummaryList)',
+      (_) => const CivicAvatarGroup(
+        names: ['Amara Okafor', 'Ben Hale', 'Chi Lee', 'Dev Rao', 'Eli Moss'],
+      ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'Badge',
-      'A count is said in words beside what it counts ("3 applications"): '
-          'a number in a dot says nothing of what it counts',
+      (_) => const CivicBadge(
+        count: 2,
+        noun: 'update',
+        child: Text('Your applications'),
+      ),
     ),
     DesignInventoryEntry.present(
       'Tag',
       (_) => const CivicTag(label: 'Approved', tone: CivicTone.success),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'Media',
-      'A public service carries its meaning in words: a picture that a '
-          'reader needs is a file to open (CivicLink)',
+      (_) => const SizedBox(
+        width: 240,
+        child: CivicImage(
+          image: null,
+          description: 'Map of Zone B',
+          caption: 'Zone B runs from the river to Mill Lane.',
+        ),
+      ),
     ),
     DesignInventoryEntry.present(
       'EmptyState',
@@ -609,22 +901,105 @@ final DesignInventory civicInventory = DesignInventory(
         ),
       ),
     ),
-    const DesignInventoryEntry.absent('BottomSheet', _Why.overPage),
-    const DesignInventoryEntry.absent('Sheet', _Why.overPage),
-    const DesignInventoryEntry.absent('ActionSheet', _Why.hidden),
-    const DesignInventoryEntry.absent('Popover', _Why.overPage),
+    DesignInventoryEntry.present(
+      'BottomSheet',
+      (_) => Builder(
+        builder: (context) => CivicButton.secondary(
+          onPressed: () => showCivicBottomSheet<void>(
+            context: context,
+            title: 'Filter applications',
+            builder: (_) =>
+                const Text('Show applications that are in progress.'),
+          ),
+          child: const Text('Filter applications'),
+        ),
+      ),
+    ),
+    DesignInventoryEntry.present(
+      'Sheet',
+      (_) => Builder(
+        builder: (context) => CivicButton.secondary(
+          onPressed: () => showCivicSideSheet<void>(
+            context: context,
+            title: 'Filter applications',
+            builder: (_) =>
+                const Text('Show applications that are in progress.'),
+          ),
+          child: const Text('Filter applications'),
+        ),
+      ),
+    ),
+    DesignInventoryEntry.present(
+      'ActionSheet',
+      (_) => Builder(
+        builder: (context) => CivicButton.secondary(
+          onPressed: () => showCivicActionSheet<String>(
+            context: context,
+            title: 'Application BRM-4821-K',
+            actions: const [
+              CivicActionSheetAction(
+                value: 'print',
+                label: 'Print your answers',
+              ),
+              CivicActionSheetAction(
+                value: 'withdraw',
+                label: 'Withdraw application',
+                isDestructiveAction: true,
+              ),
+            ],
+          ),
+          child: const Text('Application actions'),
+        ),
+      ),
+    ),
+    DesignInventoryEntry.present(
+      'Popover',
+      (_) => CivicPopover(
+        title: 'Who counts as a visitor',
+        content: const Text(
+          'Anyone staying less than 14 days who does not live at the address.',
+        ),
+        builder: (context, anchor) => CivicLink(
+          onPressed: anchor.toggle,
+          child: const Text('Who counts as a visitor?'),
+        ),
+      ),
+    ),
     const DesignInventoryEntry.absent(
       'HoverCard',
-      'A hover is out of reach of a finger, the keys and a screen reader: '
-          'what more there is to know is in sight or folded (CivicDetails)',
+      'Nothing in Civic opens on a hover alone, out of reach of a finger, '
+          'the keys and a screen reader: more to know opens on a press '
+          '(CivicPopover) or folds in place (CivicDetails)',
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'Tooltip',
-      'Civic writes an action\'s name on it; its few glyph-only buttons '
-          '(CivicIconButton: Close) carry their name for a screen reader, '
-          'and a tip a finger cannot reach is help some readers never get',
+      (_) => const CivicIconButton(
+        icon: LucideIcons.printer,
+        semanticLabel: 'Print this page',
+        tooltip: 'Print this page',
+        onPressed: _none,
+      ),
     ),
-    const DesignInventoryEntry.absent('Menu', _Why.hidden),
+    DesignInventoryEntry.present(
+      'Menu',
+      (_) => CivicMenu<String>(
+        semanticLabel: 'Application actions',
+        items: const [
+          CivicMenuItem(value: 'print', label: 'Print your answers'),
+          CivicMenuItem(
+            value: 'withdraw',
+            label: 'Withdraw application',
+            isDestructiveAction: true,
+            startsGroup: true,
+          ),
+        ],
+        onSelected: (_) {},
+        builder: (context, anchor) => CivicButton.secondary(
+          onPressed: anchor.toggle,
+          child: const Text('Actions'),
+        ),
+      ),
+    ),
     DesignInventoryEntry.present(
       'SnackBar',
       (_) => CivicToaster(
@@ -645,21 +1020,21 @@ final DesignInventory civicInventory = DesignInventory(
       ),
     ),
     // Feedback
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'LinearProgressIndicator',
-      'A public service\'s page loads whole and says how far through a '
-          'service the reader is in words (CivicPageBody\'s caption)',
+      (_) => const CivicProgressBar(
+        label: 'Uploading proof of address',
+        value: 0.4,
+        valueLabel: '2 of 5 pages uploaded',
+      ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'CircularProgressIndicator',
-      'A public service\'s page loads whole; a wait it cannot avoid is a '
-          'page that says what is happening, in words',
+      (_) => const CivicSpinner(label: 'Checking your vehicle'),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'Skeleton',
-      'A skeleton shows the shape of nothing to a reader who cannot see it '
-          'and is silent to one who uses a screen reader: Civic\'s pages '
-          'load whole',
+      (_) => const CivicSkeleton(child: CivicSkeletonText(lines: 2)),
     ),
     DesignInventoryEntry.present(
       'StatusView',
@@ -668,16 +1043,65 @@ final DesignInventory civicInventory = DesignInventory(
         children: [Text('You will be able to use the service later.')],
       ),
     ),
-    const DesignInventoryEntry.absent(
+    DesignInventoryEntry.present(
       'Meter',
-      'An amount against a limit is said in words ("€60 of €120"): a gauge '
-          'says less to fewer people',
+      (_) => const CivicMeter(
+        label: 'Visitor days used this year',
+        value: 38,
+        max: 60,
+        high: 50,
+        valueLabel: '38 of 60 days used',
+      ),
     ),
     // Charts
-    const DesignInventoryEntry.absent('LineChart', _Why.charts),
-    const DesignInventoryEntry.absent('BarChart', _Why.charts),
-    const DesignInventoryEntry.absent('AreaChart', _Why.charts),
-    const DesignInventoryEntry.absent('PieChart', _Why.charts),
-    const DesignInventoryEntry.absent('Sparkline', _Why.charts),
+    DesignInventoryEntry.present(
+      'LineChart',
+      (_) => const CivicLineChart(
+        title: 'Permits issued each month',
+        labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+        series: [
+          CivicChartSeries('Resident', [120, 135, 128, 142]),
+          CivicChartSeries('Visitor', [80, 92, 110, 104]),
+        ],
+      ),
+    ),
+    DesignInventoryEntry.present(
+      'BarChart',
+      (_) => const CivicBarChart(
+        title: 'Fines paid by quarter',
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        series: [
+          CivicChartSeries('Fines paid', [310, 280, 355, 290]),
+        ],
+      ),
+    ),
+    DesignInventoryEntry.present(
+      'AreaChart',
+      (_) => const CivicAreaChart(
+        title: 'Applications waiting',
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+        series: [
+          CivicChartSeries('Waiting', [42, 38, 51, 47, 33]),
+        ],
+      ),
+    ),
+    DesignInventoryEntry.present(
+      'PieChart',
+      (_) => const CivicPieChart(
+        title: 'Permits by kind',
+        slices: [
+          CivicPieSlice('Resident', 1240),
+          CivicPieSlice('Visitor', 610),
+          CivicPieSlice('Business', 150),
+        ],
+      ),
+    ),
+    DesignInventoryEntry.present(
+      'Sparkline',
+      (_) => const CivicSparkline(
+        label: 'Visitor permits this week',
+        values: [12, 18, 15, 22, 19, 26, 31],
+      ),
+    ),
   ],
 );

@@ -1,6 +1,7 @@
 // Brindlemere parking permits' everyday screens in every setting Civic holds
 // them to: at 390, 768 and 1440, by day and by night, and at 390 right to
-// left in Arabic and at twice the text; nothing overflows or throws.
+// left in Arabic and at twice the text (in English and in Arabic); nothing
+// overflows or throws, and at twice the text no line breaks inside a word.
 //
 // The everyday run (screens_test) takes each screen once, the settings dealt
 // round the screens, so each width, each theme, right to left and twice the
@@ -19,6 +20,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../example/lib/everyday_screens.dart';
+import 'words_whole.dart';
 
 /// Loads the faces the screens are drawn in (from `setUpAll`).
 Future<void> loadScreenFonts() async {
@@ -75,6 +77,7 @@ const List<ScreenSetting> screenSettings = [
   (1440, Brightness.dark, TextDirection.ltr, 1),
   (390, Brightness.light, TextDirection.rtl, 1),
   (390, Brightness.light, TextDirection.ltr, 2),
+  (390, Brightness.light, TextDirection.rtl, 2),
 ];
 
 /// Whether the everyday run takes screen [screen] in setting [setting]: each
@@ -103,6 +106,9 @@ void screensMatrix(bool Function(int screen, int setting) include) {
           );
           expect(tester.takeException(), isNull);
           expect(find.byType(CivicScaffold), findsOneWidget);
+          if (width == 390 && text == 2) {
+            expectWordsWhole(tester, where: screen.id);
+          }
         },
       );
     }

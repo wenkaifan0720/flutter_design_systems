@@ -59,6 +59,7 @@ class CivicListRow extends StatelessWidget {
     this.endIcon,
     this.selected = false,
     this.semanticLabel,
+    this.semanticValue,
     this.style,
     this.focusNode,
   });
@@ -95,6 +96,10 @@ class CivicListRow extends StatelessWidget {
 
   /// What a screen reader says for the whole row; null merges its words.
   final String? semanticLabel;
+
+  /// What a row that goes somewhere holds, read after its name ("Current
+  /// step"); null reads nothing more. A row of words reads all its words.
+  final String? semanticValue;
 
   /// Overrides for this row's look.
   final CivicStyle? style;
@@ -184,6 +189,7 @@ class CivicListRow extends StatelessWidget {
             onPressed: onTap,
             focusNode: focusNode,
             semanticLabel: semanticLabel,
+            semanticValue: semanticValue,
             excludeSemantics: semanticLabel != null,
             link: true,
             button: false,
@@ -262,6 +268,7 @@ class CivicListRow extends StatelessWidget {
       )
       ..add(FlagProperty('selected', value: selected, ifTrue: 'selected'))
       ..add(StringProperty('semanticLabel', semanticLabel, defaultValue: null))
+      ..add(StringProperty('semanticValue', semanticValue, defaultValue: null))
       ..add(DiagnosticsProperty<CivicStyle>('style', style, defaultValue: null))
       ..add(
         DiagnosticsProperty<FocusNode>(
@@ -297,7 +304,8 @@ class _StartMark extends CustomPainter {
 
 /// A group of rows on a card: white (by night, slate) on the page's ground,
 /// its corners a little rounded, no stroke round it, hairlines between its
-/// rows from their words' start; a [title] over it, outside the card, says
+/// rows from their words' start (a child that draws nothing, a row left
+/// out, takes no hairline); a [title] over it, outside the card, says
 /// what they are. A list of things (applications, tasks, settings, search
 /// results) stands in one, as an app's lists do.
 ///
@@ -333,25 +341,7 @@ class CivicListGroup extends StatelessWidget {
         color: t.background,
         child: _GroupScope(
           child: CivicCardScope(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final (i, child) in children.indexed) ...[
-                  if (i > 0)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(
-                        start: CivicSpacing.s16,
-                      ),
-                      child: SizedBox(
-                        height: 1,
-                        child: ColoredBox(color: t.hairline),
-                      ),
-                    ),
-                  child,
-                ],
-              ],
-            ),
+            child: _Ruled(color: t.hairline, children: children),
           ),
         ),
       ),
@@ -375,6 +365,155 @@ class CivicListGroup extends StatelessWidget {
       ..add(StringProperty('title', title, defaultValue: null))
       ..add(IntProperty('children', children.length));
   }
+}
+
+/// A group's rows, full width, a hairline from the words' start between
+/// each two that draw something.
+class _Ruled extends MultiChildRenderObjectWidget {
+  const _Ruled({required this.color, required super.children});
+
+  final Color color;
+
+  @override
+  _RenderRuled createRenderObject(BuildContext context) =>
+      _RenderRuled(color, Directionality.of(context));
+
+  @override
+  void updateRenderObject(BuildContext context, _RenderRuled renderObject) =>
+      renderObject
+        ..color = color
+        ..textDirection = Directionality.of(context);
+}
+
+class _RuledParentData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderRuled extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _RuledParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, _RuledParentData> {
+  _RenderRuled(this._color, this._textDirection);
+
+  static const double _hairline = 1;
+
+  Color _color;
+  set color(Color value) {
+    if (value == _color) return;
+    _color = value;
+    markNeedsPaint();
+  }
+
+  TextDirection _textDirection;
+  set textDirection(TextDirection value) {
+    if (value == _textDirection) return;
+    _textDirection = value;
+    markNeedsPaint();
+  }
+
+  // Where each hairline is drawn, from the top.
+  final List<double> _lines = [];
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _RuledParentData) {
+      child.parentData = _RuledParentData();
+    }
+  }
+
+  Iterable<RenderBox> get _rows sync* {
+    var child = firstChild;
+    while (child != null) {
+      yield child;
+      child = childAfter(child);
+    }
+  }
+
+  // The heights stacked, a hairline between the ones that draw something.
+  double _stack(Iterable<double> heights) {
+    var total = 0.0;
+    var any = false;
+    for (final height in heights) {
+      if (height <= 0) continue;
+      if (any) total += _hairline;
+      total += height;
+      any = true;
+    }
+    return total;
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) => _rows.fold(
+    0,
+    (widest, row) => math.max(widest, row.getMinIntrinsicWidth(height)),
+  );
+
+  @override
+  double computeMaxIntrinsicWidth(double height) => _rows.fold(
+    0,
+    (widest, row) => math.max(widest, row.getMaxIntrinsicWidth(height)),
+  );
+
+  @override
+  double computeMinIntrinsicHeight(double width) =>
+      _stack(_rows.map((row) => row.getMinIntrinsicHeight(width)));
+
+  @override
+  double computeMaxIntrinsicHeight(double width) =>
+      _stack(_rows.map((row) => row.getMaxIntrinsicHeight(width)));
+
+  @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    final each = BoxConstraints.tightFor(width: constraints.maxWidth);
+    return constraints.constrain(
+      Size(
+        constraints.maxWidth,
+        _stack(_rows.map((row) => row.getDryLayout(each).height)),
+      ),
+    );
+  }
+
+  @override
+  void performLayout() {
+    final each = BoxConstraints.tightFor(width: constraints.maxWidth);
+    _lines.clear();
+    var y = 0.0;
+    var any = false;
+    for (final row in _rows) {
+      row.layout(each, parentUsesSize: true);
+      if (row.size.height > 0) {
+        if (any) {
+          _lines.add(y);
+          y += _hairline;
+        }
+        any = true;
+      }
+      (row.parentData! as _RuledParentData).offset = Offset(0, y);
+      y += row.size.height;
+    }
+    size = constraints.constrain(Size(constraints.maxWidth, y));
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    final paint = Paint()..color = _color;
+    final ltr = _textDirection == TextDirection.ltr;
+    final width = size.width - CivicSpacing.s16;
+    for (final line in _lines) {
+      context.canvas.drawRect(
+        Rect.fromLTWH(
+          offset.dx + (ltr ? CivicSpacing.s16 : 0),
+          offset.dy + line,
+          width,
+          _hairline,
+        ),
+        paint,
+      );
+    }
+    defaultPaint(context, offset);
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
+      defaultHitTestChildren(result, position: position);
 }
 
 /// Says to the rows under it that they stand in a [CivicListGroup].

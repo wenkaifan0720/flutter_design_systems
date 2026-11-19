@@ -323,7 +323,8 @@ class _RenderPassPointer extends RenderProxyBox {
 /// no side navigation beside it, the column starts where a centred
 /// [CivicLayout.pageWidth] frame starts in a wide window, in line with the
 /// top bar's words. The heading sets at most half as large again at a
-/// large text size, so its longest word still fits the column.
+/// large text size, so its longest word still fits the column; a screen
+/// reader hears it as the heading that names the page.
 ///
 /// A question page gives no [title]: its question is the heading
 /// (`isPageHeading` on the field).
@@ -451,8 +452,12 @@ class CivicPageBody extends StatelessWidget {
                 const SizedBox(height: CivicSpacing.s4),
               ],
               if (head != null) ...[
+                // The heading names the page's route, as a page's title
+                // names a browser's tab.
                 Semantics(
+                  container: true,
                   header: true,
+                  namesRoute: true,
                   child: CivicFitWords(head, style: text.headingXL),
                 ),
                 const SizedBox(height: CivicSpacing.s24),

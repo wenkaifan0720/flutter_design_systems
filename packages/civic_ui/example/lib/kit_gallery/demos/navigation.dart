@@ -124,9 +124,17 @@ class _Trail extends StatelessWidget {
     children: [
       CivicBreadcrumbs(
         items: [
-          CivicBreadcrumb(label: 'Home', onPressed: () {}),
-          CivicBreadcrumb(label: 'Parking', onPressed: () {}),
-          CivicBreadcrumb(label: 'Resident permits', onPressed: () {}),
+          CivicBreadcrumb(
+            label: 'Home',
+            onPressed: () {},
+            url: Uri.parse('/overview'),
+          ),
+          CivicBreadcrumb(
+            label: 'Parking permits',
+            onPressed: () {},
+            url: Uri.parse('/start'),
+          ),
+          const CivicBreadcrumb(label: 'Resident permit'),
         ],
       ),
     ],

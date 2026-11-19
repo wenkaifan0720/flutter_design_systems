@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../internal/paint.dart';
 import '../../internal/spring.dart';
+import '../../internal/underline.dart';
 import '../../theme.dart';
 import '../pagination/pagination.dart';
 
@@ -28,6 +29,13 @@ export 'package:ui_core/ui_core.dart'
 /// lies on the yellow plate. With [selectable] a press or Space ticks a row
 /// (a square tick at its start); with the controller's page size the pages
 /// follow under it as a [CivicPagination].
+///
+/// A column is at least as wide as its longest word: its name's, and each
+/// shown row's where the cell is words (a [Text]), so no word breaks
+/// inside. Where the columns need more room than there is, each row
+/// stands as a block instead: its first cell in bold, then each column's
+/// name and its cell, with the sortable columns' names over the rows, so
+/// no cell is cut and nothing scrolls.
 ///
 /// The [controller] is the caller's: it makes it, keeps it across rebuilds
 /// and disposes it.
@@ -91,12 +99,22 @@ class CivicTable<R> extends StatelessWidget {
     Widget table(BuildContext context, BoxConstraints constraints) {
       final columns = controller.columns;
       final scaler = MediaQuery.textScalerOf(context);
+      // A column is at least as wide as its longest word, its name's or
+      // (where a cell is words) a shown row's, so no word breaks inside;
+      // past the room, each row stands as a block.
+      final shown = controller.pageRows;
       final minimum = [
         for (final column in columns)
-          _columnWidth(context, column, names, scaler),
+          math.max(
+            _columnWidth(context, column, names, scaler),
+            _cellsWidth(context, shown, column, text.body, scaler),
+          ),
       ];
       final sum = minimum.fold<double>(0, (a, b) => a + b);
       final tickWidth = selectable ? _tick + CivicSpacing.s16 : 0.0;
+      final stacked =
+          constraints.hasBoundedWidth &&
+          sum + tickWidth > constraints.maxWidth + 0.01;
       final width = math.max(
         constraints.hasBoundedWidth ? constraints.maxWidth : 0.0,
         sum + tickWidth,
@@ -133,6 +151,48 @@ class CivicTable<R> extends StatelessWidget {
           ),
         ),
       );
+      // A row as a block: its first cell in bold, then each column's name
+      // and its cell, the cell at the end where both fit on a line, under
+      // the name where not.
+      Widget block(List<Widget> cells, bool on, Color ink, double focus) {
+        final name = Color.lerp(t.textSecondary, t.onFocus, focus)!;
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: CivicSpacing.s12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (selectable) tick(on, ink),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: CivicSpacing.s4,
+                  children: [
+                    for (final (i, c) in cells.indexed)
+                      if (i == 0)
+                        DefaultTextStyle.merge(
+                          style: text.label.copyWith(color: ink),
+                          child: c,
+                        )
+                      else
+                        Wrap(
+                          alignment: WrapAlignment.spaceBetween,
+                          spacing: CivicSpacing.s16,
+                          children: [
+                            Text(
+                              columns[i].label,
+                              style: text.body.copyWith(color: name),
+                            ),
+                            c,
+                          ],
+                        ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
       final table = DesignDataTable<R>(
         controller: controller,
         selectable: selectable,
@@ -143,65 +203,96 @@ class CivicTable<R> extends StatelessWidget {
               bottom: BorderSide(color: t.border, width: CivicMetrics.edge),
             ),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if (selectable) const SizedBox(width: _tick + CivicSpacing.s16),
-              for (final (i, c) in cells.indexed) cell(i, c),
-            ],
-          ),
+          child: stacked
+              // Over blocks, only the names a press sorts by.
+              ? Padding(
+                  padding: const EdgeInsets.only(bottom: CivicSpacing.s8),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Wrap(
+                      spacing: CivicSpacing.s24,
+                      runSpacing: CivicSpacing.s8,
+                      children: [
+                        for (final (i, c) in cells.indexed)
+                          if (columns[i].sortable) c,
+                      ],
+                    ),
+                  ),
+                )
+              : Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (selectable)
+                      const SizedBox(width: _tick + CivicSpacing.s16),
+                    for (final (i, c) in cells.indexed) cell(i, c),
+                  ],
+                ),
         ),
         headerBuilder: (context, column, sort, states) {
           if (!column.sortable) {
             return Text(column.label, style: names);
           }
           final focused = states.contains(WidgetState.focused);
-          final ink = focused ? t.onFocus : t.action;
           return CivicSpringValue(
             value: focused ? 1 : 0,
             spring: CivicMotion.focus,
             effects: true,
-            builder: (context, focus, _) => CustomPaint(
-              painter: CivicFacePainter(
-                fill: t.focus.withValues(alpha: 0),
-                edgeColor: t.onFocus,
-                edgeHeight: 0,
-                press: 0,
-                focus: focus,
-                focusColor: t.focus,
-                barColor: t.focusBar,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: CivicMetrics.bar),
-                child: Wrap(
-                  spacing: CivicSpacing.s4,
-                  alignment: column.numeric
-                      ? WrapAlignment.end
-                      : WrapAlignment.start,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      column.label,
-                      style: names.copyWith(
-                        color: ink,
-                        decoration: TextDecoration.underline,
-                        decorationColor: ink,
-                      ),
-                    ),
-                    Icon(
-                      switch (sort) {
-                        DesignSortDirection.ascending => LucideIcons.arrowUp,
-                        DesignSortDirection.descending => LucideIcons.arrowDown,
-                        null => LucideIcons.arrowUpDown,
-                      },
-                      size: _glyph,
-                      applyTextScaling: true,
-                      color: ink,
-                    ),
-                  ],
+            builder: (context, focus, _) {
+              // The words turn to ink as the plate comes up.
+              final ink = Color.lerp(t.action, t.onFocus, focus)!;
+              return CustomPaint(
+                painter: CivicFacePainter(
+                  fill: t.focus.withValues(alpha: 0),
+                  edgeColor: t.onFocus,
+                  edgeHeight: 0,
+                  press: 0,
+                  focus: focus,
+                  focusColor: t.focus,
+                  barColor: t.focusBar,
+                  // The plate reaches past the words, as a link's does.
+                  outset: CivicMetrics.edge,
                 ),
-              ),
-            ),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: CivicMetrics.bar),
+                  child: Wrap(
+                    spacing: CivicSpacing.s4,
+                    alignment: column.numeric
+                        ? WrapAlignment.end
+                        : WrapAlignment.start,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      // Right to left the line stands clear of Arabic's
+                      // tails; under the focus the ink bar is the one line,
+                      // the underline fading as the plate comes, as a
+                      // link's does.
+                      CivicUnderlined(
+                        style: names.copyWith(
+                          color: ink,
+                          decoration: TextDecoration.underline,
+                          decorationColor: Color.lerp(
+                            t.action,
+                            t.onFocus.withValues(alpha: 0),
+                            focus,
+                          ),
+                        ),
+                        child: Text(column.label),
+                      ),
+                      Icon(
+                        switch (sort) {
+                          DesignSortDirection.ascending => LucideIcons.arrowUp,
+                          DesignSortDirection.descending =>
+                            LucideIcons.arrowDown,
+                          null => LucideIcons.arrowUpDown,
+                        },
+                        size: _glyph,
+                        applyTextScaling: true,
+                        color: ink,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           );
         },
         cellBuilder: cellBuilder,
@@ -212,7 +303,7 @@ class CivicTable<R> extends StatelessWidget {
             [style, t.tableStyle],
             {...row.states, if (row.selected) WidgetState.selected},
           );
-          final ink = focused ? t.onFocus : so.foreground ?? t.textPrimary;
+          final words = so.foreground ?? t.textPrimary;
           final rest =
               so.fill ??
               (row.selected || hovered
@@ -222,37 +313,57 @@ class CivicTable<R> extends StatelessWidget {
             value: focused ? 1 : 0,
             spring: CivicMotion.focus,
             effects: true,
-            builder: (context, focus, _) => DecoratedBox(
-              decoration: BoxDecoration(
-                color: Color.lerp(rest, t.focus, focus),
-                border: Border(
-                  bottom: BorderSide(
-                    color: Color.lerp(so.edge ?? t.rule, t.onFocus, focus)!,
-                    width: 1 + (CivicMetrics.bar - 1) * focus,
+            builder: (context, focus, _) {
+              // The words turn to ink as the plate comes up.
+              final ink = Color.lerp(words, t.onFocus, focus)!;
+              return CustomPaint(
+                // The plate grows past the row's ends as it comes up, so its
+                // words stand inset on it; the focus bar comes up under it
+                // as the hairline goes.
+                painter: CivicFacePainter(
+                  fill: rest,
+                  edgeColor: t.onFocus,
+                  edgeHeight: 0,
+                  press: 0,
+                  focus: focus,
+                  focusColor: t.focus,
+                  barColor: t.focusBar,
+                  outset: CivicSpacing.s8 * focus,
+                ),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Color.lerp(
+                          so.edge ?? t.rule,
+                          (so.edge ?? t.rule).withValues(alpha: 0),
+                          focus,
+                        )!,
+                      ),
+                    ),
+                  ),
+                  child: DefaultTextStyle.merge(
+                    style: text.body.copyWith(color: ink),
+                    child: IconTheme.merge(
+                      data: IconThemeData(color: ink),
+                      child: stacked
+                          ? block(cells, row.selected, ink, focus)
+                          : Row(
+                              children: [
+                                if (selectable) tick(row.selected, ink),
+                                for (final (i, c) in cells.indexed) cell(i, c),
+                              ],
+                            ),
+                    ),
                   ),
                 ),
-              ),
-              child: DefaultTextStyle.merge(
-                style: text.body.copyWith(color: ink),
-                child: IconTheme.merge(
-                  data: IconThemeData(color: ink),
-                  child: Row(
-                    children: [
-                      if (selectable) tick(row.selected, ink),
-                      for (final (i, c) in cells.indexed) cell(i, c),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+              );
+            },
           );
         },
       );
-      if (!constraints.hasBoundedWidth || width > constraints.maxWidth + 0.01) {
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SizedBox(width: width, child: table),
-        );
+      if (!constraints.hasBoundedWidth) {
+        return SizedBox(width: width, child: table);
       }
       return table;
     }
@@ -287,16 +398,49 @@ class CivicTable<R> extends StatelessWidget {
     TextStyle style,
     TextScaler scaler,
   ) {
+    final word = _longestWord(context, column.label, style, scaler);
+    final icon = column.sortable ? scaler.scale(_glyph) : 0.0;
+    return math.max(word, icon) + CivicSpacing.s16;
+  }
+
+  /// The longest word in [column]'s cells among [rows], where a cell is
+  /// words (a [Text]); 0 where none is.
+  double _cellsWidth(
+    BuildContext context,
+    List<R> rows,
+    DesignTableColumn<R> column,
+    TextStyle style,
+    TextScaler scaler,
+  ) {
+    var widest = 0.0;
+    for (final row in rows) {
+      final cell = cellBuilder(context, row, column);
+      if (cell is! Text) continue;
+      final words = cell.data ?? cell.textSpan?.toPlainText();
+      if (words == null || words.isEmpty) continue;
+      widest = math.max(
+        widest,
+        _longestWord(context, words, style.merge(cell.style), scaler),
+      );
+    }
+    return widest == 0 ? 0 : widest + CivicSpacing.s16;
+  }
+
+  static double _longestWord(
+    BuildContext context,
+    String words,
+    TextStyle style,
+    TextScaler scaler,
+  ) {
     final p = TextPainter(
-      text: TextSpan(text: column.label, style: style),
+      text: TextSpan(text: words, style: style),
       textDirection: Directionality.of(context),
       textScaler: scaler,
       locale: Localizations.maybeLocaleOf(context),
     )..layout();
     final word = p.minIntrinsicWidth.ceilToDouble();
     p.dispose();
-    final icon = column.sortable ? scaler.scale(_glyph) : 0.0;
-    return math.max(word, icon) + CivicSpacing.s16;
+    return word;
   }
 
   /// A row's tick box, and the room a header keeps for it.

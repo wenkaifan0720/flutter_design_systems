@@ -17,13 +17,24 @@ import '../link/link.dart';
 @immutable
 class CivicErrorSummaryItem {
   /// A problem saying [text]; [onPressed] focuses its field.
-  const CivicErrorSummaryItem({required this.text, required this.onPressed});
+  const CivicErrorSummaryItem({
+    required this.text,
+    required this.onPressed,
+    this.url,
+  });
 
   /// The error, as the field says it.
   final String text;
 
   /// Takes the reader to the field: request its focus node's focus.
   final VoidCallback onPressed;
+
+  /// The field's place on the page, as a fragment (`Uri(fragment:
+  /// 'full-name')`, a public service's `#full-name`): with one, the entry
+  /// is read as a link to the field ([CivicLink.url]); without one, as a
+  /// button. Either way a press runs [onPressed], which takes the focus to
+  /// the field; the browser does not follow the fragment.
+  final Uri? url;
 }
 
 /// What a page that was sent with problems shows first, at its top: a box
@@ -50,6 +61,7 @@ class CivicErrorSummaryItem {
 ///           CivicErrorSummaryItem(
 ///             text: 'Enter your full name',
 ///             onPressed: nameFocus.requestFocus,
+///             url: Uri(fragment: 'full-name'),
 ///           ),
 ///         ],
 ///       ),
@@ -263,6 +275,7 @@ class _CivicErrorSummaryState extends State<CivicErrorSummary> {
                           words: (width) => wordsAt(e.text, width),
                           child: CivicLink(
                             onPressed: e.onPressed,
+                            url: e.url,
                             textStyle: text.label.copyWith(color: t.danger),
                             child: Text(e.text),
                           ),

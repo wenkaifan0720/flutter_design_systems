@@ -1,5 +1,6 @@
 // Choices: radios with hints, checkboxes under a question, a select for a
-// long list, and switches for settings that act at once.
+// long list, several answers from a long list, and switches for settings
+// that act at once.
 import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
@@ -7,9 +8,60 @@ import '../kit.dart';
 
 Widget kitChoicesDemo(Brightness brightness) => kitScreen(
   brightness: brightness,
-  title: 'Radios, checkboxes, select & switch',
-  sections: const [_Radios(), _Checks(), _Select(), _Combobox(), _Switches()],
+  title: 'Radios, checkboxes, selects & switch',
+  sections: const [
+    _Radios(),
+    _Checks(),
+    _Select(),
+    _Combobox(),
+    _MultiSelect(),
+    _Switches(),
+  ],
 );
+
+class _MultiSelect extends StatefulWidget {
+  const _MultiSelect();
+
+  @override
+  State<_MultiSelect> createState() => _MultiSelectState();
+}
+
+class _MultiSelectState extends State<_MultiSelect> {
+  List<String> _spoken = const ['English', 'Welsh'];
+
+  static const _languages = [
+    'Arabic',
+    'Bengali',
+    'English',
+    'French',
+    'Gujarati',
+    'Polish',
+    'Portuguese',
+    'Punjabi',
+    'Romanian',
+    'Somali',
+    'Urdu',
+    'Welsh',
+  ];
+
+  @override
+  Widget build(BuildContext context) => KitSection(
+    title: 'Multi-select',
+    caption:
+        'Several answers from a long list: the chosen stand over the field, '
+        'and a press on one removes it. Where the answers are few, '
+        'checkboxes are quicker.',
+    children: [
+      CivicMultiSelect<String>(
+        labelText: 'Which languages do you speak?',
+        helperText: 'Start typing, then choose from the list.',
+        options: _languages,
+        values: _spoken,
+        onChanged: (next) => setState(() => _spoken = next),
+      ),
+    ],
+  );
+}
 
 class _Radios extends StatefulWidget {
   const _Radios();

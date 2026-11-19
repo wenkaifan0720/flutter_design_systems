@@ -1,5 +1,8 @@
 // Buttons and links: the page's one action, the actions beside it, the
-// start of a service, the destructive one, and links in words.
+// start of a service, the destructive one, one sending its press, and
+// links in words.
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -12,8 +15,61 @@ Widget kitActionsDemo(Brightness brightness) => kitScreen(
   intro:
       'A button says what happens next. Its face stands on a solid edge, '
       'which a press sinks onto; there is no other shadow anywhere.',
-  sections: const [_Buttons(), _Group(), _IconButtons(), _Links()],
+  sections: const [_Buttons(), _Sending(), _Group(), _IconButtons(), _Links()],
 );
+
+class _Sending extends StatefulWidget {
+  const _Sending();
+
+  @override
+  State<_Sending> createState() => _SendingState();
+}
+
+class _SendingState extends State<_Sending> {
+  Timer? _send;
+  var _sent = false;
+
+  void _press() => setState(() {
+    _sent = false;
+    _send = Timer(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _send = null;
+          _sent = true;
+        });
+      }
+    });
+  });
+
+  @override
+  void dispose() {
+    _send?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => KitSection(
+    title: 'Sending',
+    caption:
+        'While its press is sent the button says so and takes no other '
+        'press. It keeps its focus and its width.',
+    children: [
+      CivicButton(
+        onPressed: _press,
+        busy: _send != null,
+        busyLabel: 'Sending',
+        child: const Text('Send application'),
+      ),
+      if (_sent) const Text('Your application was sent.'),
+      CivicButton.secondary(
+        onPressed: () {},
+        busy: true,
+        busyLabel: 'Saving',
+        child: const Text('Save and come back later'),
+      ),
+    ],
+  );
+}
 
 class _Buttons extends StatelessWidget {
   const _Buttons();
@@ -110,6 +166,7 @@ class _Links extends StatelessWidget {
     children: [
       CivicBackLink(onPressed: () {}),
       CivicLink(
+        url: Uri.parse('/zones'),
         onPressed: () {},
         child: const Text('Read the guidance on permit zones'),
       ),

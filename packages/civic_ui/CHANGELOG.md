@@ -1,3 +1,39 @@
+## 0.3.0
+
+Civic now has its own version of every common part, in the same look: large type, plain words, the yellow
+keyboard focus, by day and by night, right to left, and at twice the text size.
+
+- Inputs: `CivicTextArea`, `CivicNumberField`, `CivicCodeField`, `CivicSlider` and `CivicRangeSlider`,
+  `CivicRating`, `CivicMultiSelect`, `CivicSegmentedControl` and `CivicToggleGroup`, `CivicChip`,
+  `CivicColorPicker` and `CivicWheelPicker`.
+- Dates and times: `CivicCalendar`, `CivicDatePicker`, `CivicDateRangePicker` and `CivicTimeInput`.
+- Menus and overlays: `CivicMenu`, `CivicPopover`, `CivicTooltip`, `CivicSplitButton`, `showCivicBottomSheet`,
+  `showCivicSideSheet`, `showCivicActionSheet` and `showCivicCommandPalette`.
+- Containers and layout: `CivicCard`, `CivicAccordion`, `CivicGrid`, `CivicScrollArea`, `CivicSplitView` (one pane
+  at a time below 600 wide), `CivicCarousel` with `CivicPageDots`, `CivicImage`, `CivicReorderableList`,
+  `CivicSwipeActions`, `CivicTree` and `CivicActionBar`.
+- People and figures: `CivicAvatar` and `CivicAvatarGroup`, `CivicBadge`, `CivicKbd`, `CivicAmount`,
+  `CivicKeyFigure` and `CivicStepIndicator`.
+- Progress and data: `CivicSpinner`, `CivicProgressBar`, `CivicMeter`, `CivicSkeleton`, `CivicPullToRefresh`, and
+  `CivicLineChart`, `CivicAreaChart`, `CivicBarChart`, `CivicPieChart` and `CivicSparkline`. Each chart can show its
+  figures as a table, and says a missing figure in words.
+- The controllers and values these parts take (calendar, time, wheel, code, command, range and colour) are
+  exported with them.
+- `CivicButton` can show that it is working (`busy`, `busyLabel`): it keeps its focus and ignores presses until
+  the work is done.
+- `CivicLink`, breadcrumbs, pagination, summary-list actions and error-summary items (and the new `CivicCard`) can
+  take a `url`, which opens as a web link does (in a new tab with Ctrl or ⌘ on the web). Civic now depends on
+  `url_launcher`.
+- A table that needs more room than there is shows each row as a block instead of scrolling sideways, and a
+  column is at least as wide as its longest word.
+- Toasts taller than the screen scroll, with the newest in view.
+- Screen readers: a page's heading names the page; a field's placeholder is read only where there is no help or
+  error; `CivicIconButton` can be a toggle (`selected`, `semanticValue`); `CivicListRow` takes a `semanticValue`;
+  and `CivicNotificationBanner.announce` says whether a banner is read as it appears.
+- A list group draws no divider for a row that shows nothing.
+- A focused page number or sortable table heading shows one line, the ink bar under the yellow plate, where
+  it kept its underline over the bar. Right to left, a sortable heading's underline keeps clear of Arabic's
+  tails, as a link's does.
 ## 0.2.2
 
 - Tabs keep a solid selection marker up to the ends of a scrolling strip.

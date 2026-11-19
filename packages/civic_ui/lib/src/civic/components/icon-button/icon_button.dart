@@ -7,6 +7,7 @@ import 'package:ui_core/ui_core.dart';
 import '../../internal/paint.dart';
 import '../../internal/spring.dart';
 import '../../theme.dart';
+import '../tooltip/tooltip.dart';
 
 /// A glyph that acts, on a squared face only the press and the focus show:
 /// a press sinks it into the page's band, a keyboard focus floods it yellow
@@ -18,10 +19,19 @@ import '../../theme.dart';
 /// [CivicThemeData.iconButtonStyle]. With no foreground, the glyph takes
 /// the surrounding [IconTheme]'s colour.
 ///
+/// With a [tooltip] a pointer resting on it, the keyboard reaching it and a
+/// long press show those words beside it ([CivicTooltip]).
+///
+/// A glyph that is on or off (Reminders, Saved) takes [selected]: on, it
+/// stands solid in the action colour with the glyph in its ink, as a chosen
+/// [CivicChip] does, and a screen reader hears it as a toggle. What it holds
+/// (a count drawn over it) is its [semanticValue], read after its name.
+///
 /// ```dart
 /// CivicIconButton(
 ///   icon: LucideIcons.x,
 ///   semanticLabel: 'Close',
+///   tooltip: 'Close',
 ///   onPressed: () => Navigator.of(context).pop(),
 /// )
 /// ```
@@ -36,6 +46,9 @@ class CivicIconButton extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     this.statesController,
+    this.tooltip,
+    this.selected,
+    this.semanticValue,
   });
 
   /// The glyph.
@@ -59,8 +72,31 @@ class CivicIconButton extends StatelessWidget {
   /// {@macro civic.statesController}
   final WidgetStatesController? statesController;
 
+  /// Words shown beside it on a pointer's rest, the keyboard's focus and a
+  /// long press; null shows none. A screen reader hears [semanticLabel],
+  /// and this too where it says more.
+  final String? tooltip;
+
+  /// Whether it is on, for a glyph that turns something on and off; null
+  /// for one that acts once.
+  final bool? selected;
+
+  /// What it holds, read after [semanticLabel] ("3 new" for a count drawn
+  /// over it); null reads nothing more.
+  final String? semanticValue;
+
   @override
   Widget build(BuildContext context) {
+    final words = tooltip;
+    if (words == null || words.isEmpty) return _button(context);
+    return CivicTooltip(
+      message: words,
+      excludeFromSemantics: words == semanticLabel,
+      child: _button(context),
+    );
+  }
+
+  Widget _button(BuildContext context) {
     final t = context.civicTheme;
     return DesignTapTarget(
       child: DesignPressable(
@@ -69,25 +105,40 @@ class CivicIconButton extends StatelessWidget {
         autofocus: autofocus,
         statesController: statesController,
         semanticLabel: semanticLabel,
+        semanticValue: semanticValue,
+        selected: selected ?? false,
+        toggled: selected,
         mouseCursor: onPressed == null
             ? SystemMouseCursors.basic
             : SystemMouseCursors.click,
         builder: (context, states, _) {
           final so = DesignStyleOf([style, t.iconButtonStyle], states);
           final disabled = states.contains(WidgetState.disabled);
+          final on = selected ?? false;
           // On a band of its own (the top bar's ink) it takes the band's glyph
           // colour.
           final ink = disabled
               ? t.textDisabled
-              : so.foreground ?? IconTheme.of(context).color ?? t.textPrimary;
+              : so.foreground ??
+                    (on ? t.onAction : null) ??
+                    IconTheme.of(context).color ??
+                    t.textPrimary;
           final asked =
               so.minimumSize ?? const Size.square(CivicMetrics.controlHeight);
           final size = Size(
             math.max(asked.width, CivicMetrics.controlHeight),
             math.max(asked.height, CivicMetrics.controlHeight),
           );
+          // A pointer over it veils the face lightly, a press deeper.
+          final veil = disabled
+              ? 0.0
+              : states.contains(WidgetState.pressed)
+              ? 1.0
+              : states.contains(WidgetState.hovered)
+              ? 0.5
+              : 0.0;
           return CivicSpringValue(
-            value: states.contains(WidgetState.pressed) ? 1 : 0,
+            value: veil,
             spring: CivicMotion.press,
             effects: true,
             builder: (context, press, _) => CivicSpringValue(
@@ -96,10 +147,11 @@ class CivicIconButton extends StatelessWidget {
               effects: true,
               builder: (context, focus, _) => CustomPaint(
                 painter: CivicFacePainter(
-                  // A press veils the face in its glyph's colour, so it shows
-                  // on the page and on the top bar's band alike.
+                  // The veil is the glyph's colour, so it shows on the page
+                  // and on the top bar's band alike.
                   fill: Color.lerp(
-                    so.fill ?? ink.withValues(alpha: 0),
+                    so.fill ??
+                        (on && !disabled ? t.action : ink.withValues(alpha: 0)),
                     ink.withValues(alpha: 0.16),
                     press,
                   )!,
@@ -151,6 +203,9 @@ class CivicIconButton extends StatelessWidget {
           statesController,
           defaultValue: null,
         ),
-      );
+      )
+      ..add(StringProperty('tooltip', tooltip, defaultValue: null))
+      ..add(DiagnosticsProperty<bool>('selected', selected, defaultValue: null))
+      ..add(StringProperty('semanticValue', semanticValue, defaultValue: null));
   }
 }

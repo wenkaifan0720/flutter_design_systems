@@ -21,6 +21,7 @@ class CivicSummaryRow {
     this.actionLabel,
     this.actionSemanticLabel,
     this.onActionPressed,
+    this.actionUrl,
   });
 
   /// What was asked, in a few words: Name, Date of birth.
@@ -38,6 +39,11 @@ class CivicSummaryRow {
 
   /// Called by the action; null shows no action.
   final VoidCallback? onActionPressed;
+
+  /// The address of the question's page the action goes back to: with
+  /// one, Change is read as a link to it ([CivicLink.url]); without one,
+  /// as a button that runs [onActionPressed] in place.
+  final Uri? actionUrl;
 }
 
 /// The answers a reader gave, set out to check before sending: what was
@@ -57,6 +63,7 @@ class CivicSummaryRow {
 ///     actionLabel: 'Change',
 ///     actionSemanticLabel: 'Change name',
 ///     onActionPressed: () => router.go('/apply/name'),
+///     actionUrl: Uri.parse('/apply/name'),
 ///   ),
 /// ])
 /// ```
@@ -160,6 +167,7 @@ class CivicSummaryList extends StatelessWidget {
         ? null
         : CivicLink(
             onPressed: act,
+            url: row.actionUrl,
             semanticLabel:
                 row.actionSemanticLabel ?? '${row.actionLabel} ${row.label}',
             child: Text(row.actionLabel!),

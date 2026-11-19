@@ -9,13 +9,17 @@ import '../link/link.dart';
 @immutable
 class CivicBreadcrumb {
   /// A place called [label].
-  const CivicBreadcrumb({required this.label, this.onPressed});
+  const CivicBreadcrumb({required this.label, this.onPressed, this.url});
 
   /// Its name.
   final String label;
 
   /// Goes there; null for the page the reader is on, said in plain words.
   final VoidCallback? onPressed;
+
+  /// The place's address, a route or a web address: with one, the crumb
+  /// is read as a link to it ([CivicLink.url]); without one, as a button.
+  final Uri? url;
 }
 
 /// Where a page sits in the service, above its heading: the places over
@@ -28,8 +32,12 @@ class CivicBreadcrumb {
 /// ```dart
 /// CivicBreadcrumbs(
 ///   items: [
-///     CivicBreadcrumb(label: 'Home', onPressed: goHome),
-///     CivicBreadcrumb(label: 'Your applications', onPressed: goBack),
+///     CivicBreadcrumb(label: 'Home', onPressed: goHome, url: Uri.parse('/')),
+///     CivicBreadcrumb(
+///       label: 'Your applications',
+///       onPressed: goBack,
+///       url: Uri.parse('/applications'),
+///     ),
 ///   ],
 /// )
 /// ```
@@ -68,6 +76,7 @@ class CivicBreadcrumbs extends StatelessWidget {
             if (item.onPressed case final go?)
               CivicLink.quiet(
                 onPressed: go,
+                url: item.url,
                 textStyle: small,
                 child: Text(item.label),
               )

@@ -11,7 +11,9 @@ import '../top-bar/top_bar.dart';
 /// Hosts Civic's toasts over [child]: put it above the app's navigator
 /// (`WidgetsApp.builder`), under a [CivicTheme], then call
 /// [CivicToast.show]. F6 moves the focus to the newest toast; Escape
-/// dismisses it.
+/// dismisses it. Where the toasts are taller than the screen (a long
+/// toast at twice the text, or one leaving as the next comes), they scroll,
+/// the newest in sight at the foot, rather than run off it.
 ///
 /// Its toasts read [CivicStyle]'s fill (the band), foreground (the words
 /// and the glyph) and textStyle: its `style:`, then
@@ -31,6 +33,19 @@ class CivicToaster extends StatelessWidget {
     maxVisible: 1,
     regionLabel: null,
     padding: const EdgeInsets.all(CivicSpacing.s16),
+    // Nothing stands in the host while no toast shows; the scroll is never
+    // the page's own.
+    stackBuilder: (context, toasts) => toasts.isEmpty
+        ? const SizedBox.shrink()
+        : SingleChildScrollView(
+            primary: false,
+            reverse: true,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: toasts,
+            ),
+          ),
     toastBuilder: (context, details) =>
         _CivicToastView(details: details, style: style),
     child: child,
@@ -126,6 +141,7 @@ class _CivicToastView extends StatelessWidget {
                     icon: LucideIcons.x,
                     semanticLabel: DesignLocalizations.of(context)
                         .closeButtonLabel,
+                    tooltip: DesignLocalizations.of(context).closeButtonLabel,
                     onPressed: details.dismiss,
                   ),
                 ],

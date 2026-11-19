@@ -100,7 +100,8 @@ class CivicTextField extends StatefulWidget {
   final String? errorText;
 
   /// Shown in the box while it is empty. Put what the reader needs in
-  /// [helperText]: a hint goes as they start writing.
+  /// [helperText]: a hint goes as they start writing. A screen reader hears
+  /// it as the field's hint only where there is no help or error to hear.
   final String? hintText;
 
   /// What stands in a joined cell before the box: a currency sign, as
@@ -501,7 +502,12 @@ class _CivicTextFieldState extends State<CivicTextField> {
             child: box,
           )
         : box;
-    final typed = hint == null ? entry : Semantics(hint: hint, child: entry);
+    // The help and the error are the field's hint; the placeholder only
+    // where there is neither.
+    final typed =
+        hint == null || widget.helperText != null || widget.errorText != null
+        ? entry
+        : Semantics(hint: hint, child: entry);
     // The seat: the box's whole width inside its edge is the field's, so a
     // tap in the padding beside the words focuses it as a tap on them does.
     return TextFieldTapRegion(
@@ -516,7 +522,12 @@ class _CivicTextFieldState extends State<CivicTextField> {
             padding:
                 so.padding(Directionality.of(context)) ??
                 const EdgeInsets.symmetric(horizontal: CivicTextField._inset),
-            child: typed,
+            // Inside the edge; the seat runs under it, so the input is the
+            // box's whole height to a tap and to a screen reader.
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: CivicMetrics.edge),
+              child: typed,
+            ),
           ),
         ),
       ),
@@ -536,6 +547,7 @@ class _CivicTextFieldState extends State<CivicTextField> {
     final ink = context.civicText.label.copyWith(color: t.textPrimary);
     Widget cell(Widget child) => ExcludeSemantics(
       child: Container(
+        margin: const EdgeInsets.symmetric(vertical: CivicMetrics.edge),
         constraints: const BoxConstraints(
           minWidth: CivicMetrics.box,
           minHeight: inner,
@@ -569,12 +581,13 @@ class _CivicTextFieldState extends State<CivicTextField> {
       heightFactor: 1,
       child: control,
     );
+    // Each of the line's pieces keeps inside the edge above and below.
     final line = Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(
-        CivicMetrics.edge,
-        CivicMetrics.edge,
-        suffixIcon == null ? CivicMetrics.edge : CivicMetrics.controlHeight,
-        CivicMetrics.edge,
+      padding: EdgeInsetsDirectional.only(
+        start: CivicMetrics.edge,
+        end: suffixIcon == null
+            ? CivicMetrics.edge
+            : CivicMetrics.controlHeight,
       ),
       child: Row(
         mainAxisSize: boxWidth == null ? MainAxisSize.max : MainAxisSize.min,
@@ -613,9 +626,12 @@ class _CivicTextFieldState extends State<CivicTextField> {
     );
   }
 
-  Widget _divider(CivicThemeData t) => SizedBox(
-    width: CivicMetrics.edge,
-    height: CivicMetrics.controlHeight - 2 * CivicMetrics.edge,
-    child: ColoredBox(color: t.border),
+  Widget _divider(CivicThemeData t) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: CivicMetrics.edge),
+    child: SizedBox(
+      width: CivicMetrics.edge,
+      height: CivicMetrics.controlHeight - 2 * CivicMetrics.edge,
+      child: ColoredBox(color: t.border),
+    ),
   );
 }

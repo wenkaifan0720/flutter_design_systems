@@ -1,13 +1,10 @@
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:ui_core/ui_core.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-import '../../internal/paint.dart';
-import '../../internal/spring.dart';
+import '../../internal/button_face.dart';
 import '../../theme.dart';
 
 enum _Kind { primary, secondary, start }
@@ -27,6 +24,12 @@ enum _Kind { primary, secondary, start }
 /// words; [expand] says otherwise. A
 /// pointer over it deepens its face; a keyboard focus floods the face
 /// yellow and turns its edge to the ink bar.
+///
+/// While its press is being sent, [busy]: its words cross to a turning
+/// arc and [busyLabel] ("Sending"), which a screen reader hears, and it
+/// takes no press, so nobody sends twice, while keeping its focus and its
+/// width (give [busyLabel] up front and the face is as wide as the wider of
+/// the two words throughout).
 ///
 /// Reads [CivicStyle]'s fill, foreground, edge, side (a stroke round the
 /// face, none by default), padding, minimumSize (a face never stands lower than its 48
@@ -56,6 +59,8 @@ class CivicButton extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     this.statesController,
+    this.busy = false,
+    this.busyLabel,
   }) : _kind = _Kind.primary;
 
   /// The page's action from its words alone: `CivicButton.label('Continue',
@@ -72,6 +77,8 @@ class CivicButton extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     this.statesController,
+    this.busy = false,
+    this.busyLabel,
   }) : child = Text(label),
        _kind = _Kind.primary;
 
@@ -87,6 +94,8 @@ class CivicButton extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     this.statesController,
+    this.busy = false,
+    this.busyLabel,
   }) : _kind = _Kind.secondary;
 
   /// The start of a service, larger, with an arrow: Start now.
@@ -100,6 +109,8 @@ class CivicButton extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     this.statesController,
+    this.busy = false,
+    this.busyLabel,
   }) : isDestructiveAction = false,
        _kind = _Kind.start;
 
@@ -143,188 +154,51 @@ class CivicButton extends StatelessWidget {
   /// {@endtemplate}
   final WidgetStatesController? statesController;
 
+  /// Whether its press is being sent: it shows [busyLabel] by a turning
+  /// arc and takes no press.
+  final bool busy;
+
+  /// The words while [busy] ("Sending"); null: "Loading" in the reader's
+  /// language.
+  final String? busyLabel;
+
+  static void _hold() {}
+
   @override
   Widget build(BuildContext context) {
-    final t = context.civicTheme;
-    final text = context.civicText;
     final width = MediaQuery.maybeSizeOf(context)?.width ?? 1024;
     final stretch = expand ?? width < CivicLayout.medium;
-    final start = _kind == _Kind.start;
-    final height = start ? 56.0 : CivicMetrics.controlHeight;
     // Spans a bounded column without a LayoutBuilder, so a dialog or a row
     // can still measure the button by its words.
     return _Stretch(
       stretch: stretch,
       child: DesignTapTarget(
         child: DesignPressable(
-          onPressed: onPressed,
+          // Busy, it keeps its focus and its look: it takes the press and
+          // does nothing with it.
+          onPressed: busy && onPressed != null ? _hold : onPressed,
           focusNode: focusNode,
           autofocus: autofocus,
           statesController: statesController,
           mouseCursor: onPressed == null
               ? SystemMouseCursors.basic
+              : busy
+              ? SystemMouseCursors.progress
               : SystemMouseCursors.click,
-          builder: (context, states, _) {
-            final kind = isDestructiveAction
-                ? t.destructiveButtonStyle
-                : switch (_kind) {
-                    _Kind.primary => t.primaryButtonStyle,
-                    _Kind.secondary => t.secondaryButtonStyle,
-                    _Kind.start => t.startButtonStyle,
-                  };
-            final so = DesignStyleOf([style, kind], states);
-            final disabled = states.contains(WidgetState.disabled);
-            final secondary = _kind == _Kind.secondary;
-            // A secondary button is a tint of its words' colour (the
-            // action's, or the error's when it destroys) on a deeper tint's
-            // edge, with no stroke round it.
-            Color tint(Color c, double a) =>
-                Color.alphaBlend(c.withValues(alpha: a), t.background);
-            final (fill, ink, edge) = disabled
-                ? (t.disabledFill, t.textDisabled, t.rule)
-                : secondary && isDestructiveAction
-                ? (
-                    tint(t.danger, t.isDark ? 0.2 : 0.12),
-                    t.danger,
-                    tint(t.danger, t.isDark ? 0.45 : 0.4),
-                  )
-                : isDestructiveAction
-                ? (t.danger, t.onDanger, t.dangerEdge)
-                : secondary
-                ? (t.secondaryFill, t.onSecondary, t.secondaryEdge)
-                : (t.action, t.onAction, t.actionEdge);
-            final pressed = states.contains(WidgetState.pressed) ? 1.0 : 0.0;
-            final focused = states.contains(WidgetState.focused) ? 1.0 : 0.0;
-            final hovered = states.contains(WidgetState.hovered) ? 1.0 : 0.0;
-            final words = (start ? text.headingM : text.button).merge(
-              so.textStyle,
-            );
-            final padding =
-                so.padding(Directionality.of(context)) ??
-                EdgeInsets.symmetric(
-                  horizontal: start ? CivicSpacing.s24 : CivicSpacing.s20,
-                );
-            // The face's room over and under the words grows with them, so
-            // large words never run edge to edge.
-            final room =
-                CivicSpacing.s8 *
-                MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.75);
-            final asked = so.minimumSize;
-            final min = Size(
-              asked?.width ?? 0,
-              math.max(asked?.height ?? 0, height),
-            );
-            return CivicSpringValue(
-              value: hovered,
-              spring: CivicMotion.press,
-              effects: true,
-              builder: (context, hover, _) => CivicSpringValue(
-                value: pressed,
-                spring: CivicMotion.press,
-                builder: (context, press, _) => CivicSpringValue(
-                  value: focused,
-                  spring: CivicMotion.focus,
-                  effects: true,
-                  builder: (context, focus, _) {
-                    // A pointer over it deepens its face (by night, lifts it):
-                    // a solid face a clear step darker, a tinted one a step
-                    // toward its edge.
-                    final rest = so.fill ?? fill;
-                    final over = secondary
-                        ? Color.lerp(rest, so.edge ?? edge, 0.45)!
-                        : t.isDark
-                        ? Color.lerp(rest, const Color(0xFFFFFFFF), 0.25)!
-                        : Color.lerp(rest, const Color(0xFF000000), 0.35)!;
-                    final face = disabled
-                        ? rest
-                        : Color.lerp(rest, over, hover)!;
-                    // By day a solid face's edge deepens with it, so the
-                    // deeper face still stands on a darker edge.
-                    final base = so.edge ?? edge;
-                    final under = disabled || secondary || t.isDark
-                        ? base
-                        : Color.lerp(
-                            base,
-                            const Color(0xFF000000),
-                            0.5 * hover,
-                          )!;
-                    final fg = Color.lerp(
-                      so.foreground ?? ink,
-                      t.onFocus,
-                      focus,
-                    )!;
-                    final label = Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: CivicSpacing.s8,
-                      children: [
-                        Flexible(
-                          child: DesignCapCenter(
-                            capHeightFactor: context.civicText.capHeight,
-                            child: DefaultTextStyle(
-                              style: words.copyWith(color: fg),
-                              textAlign: TextAlign.center,
-                              child: child,
-                            ),
-                          ),
-                        ),
-                        if (icon != null)
-                          // The start's arrow points the way the words read.
-                          Transform.flip(
-                            flipX:
-                                start &&
-                                Directionality.of(context) == TextDirection.rtl,
-                            child: Icon(
-                              icon,
-                              size: so.iconSize ?? (start ? 28 : 22),
-                              color: fg,
-                              applyTextScaling: true,
-                            ),
-                          ),
-                      ],
-                    );
-                    return CustomPaint(
-                      painter: CivicFacePainter(
-                        fill: face,
-                        edgeColor: under,
-                        edgeHeight: CivicMetrics.bar,
-                        press: press,
-                        focus: focus,
-                        focusColor: t.focus,
-                        barColor: t.focusBar,
-                        side: disabled ? null : so.side,
-                        radius: CivicMetrics.corner,
-                      ),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minWidth: min.width,
-                          minHeight: min.height,
-                        ),
-                        child: Padding(
-                          // The words stand on the face, above the edge, and
-                          // sink with it.
-                          padding: EdgeInsets.only(
-                            top: CivicMetrics.bar * press,
-                            bottom: CivicMetrics.bar * (1 - press),
-                          ),
-                          child: Padding(
-                            padding: padding.add(
-                              EdgeInsets.symmetric(vertical: room),
-                            ),
-                            child: Center(
-                              widthFactor: 1,
-                              heightFactor: 1,
-                              child: label,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            );
-          },
+          builder: (context, states, _) => CivicButtonFace(
+            states: states,
+            kind: switch (_kind) {
+              _Kind.primary => CivicButtonKind.primary,
+              _Kind.secondary => CivicButtonKind.secondary,
+              _Kind.start => CivicButtonKind.start,
+            },
+            destructive: isDestructiveAction,
+            icon: icon,
+            style: style,
+            busy: busy,
+            busyLabel: busyLabel,
+            child: child,
+          ),
         ),
       ),
     );
@@ -354,6 +228,8 @@ class CivicButton extends StatelessWidget {
         ),
       )
       ..add(FlagProperty('autofocus', value: autofocus, ifTrue: 'autofocus'))
+      ..add(FlagProperty('busy', value: busy, ifTrue: 'busy'))
+      ..add(StringProperty('busyLabel', busyLabel, defaultValue: null))
       ..add(
         DiagnosticsProperty<WidgetStatesController>(
           'statesController',

@@ -182,6 +182,7 @@ void main() {
       _expectMatrix(
         await _states(tester, {
           'rest': () => button(_none, null),
+          'hovered': () => button(_none, _with(WidgetState.hovered)),
           'pressed': () => button(_none, _with(WidgetState.pressed)),
           'focused': () => button(_none, _with(WidgetState.focused)),
           'disabled': () => button(null, null),
@@ -279,6 +280,251 @@ void main() {
     });
   });
 
+  group("the state matrix of 0.3's inputs", () {
+    testWidgets('a chip', (tester) async {
+      Widget chip({bool on = false, bool enabled = true, bool focus = false}) =>
+          CivicChip(
+            key: _part,
+            label: 'Open now',
+            selected: on,
+            onSelected: enabled ? (_) {} : null,
+            autofocus: focus,
+          );
+      _expectMatrix(
+        await _states(tester, {
+          'rest': chip,
+          'selected': () => chip(on: true),
+          'focused': () => chip(focus: true),
+          'disabled': () => chip(enabled: false),
+        }),
+      );
+    });
+
+    testWidgets('a toggle group', (tester) async {
+      Widget group({
+        Set<String> on = const {},
+        bool enabled = true,
+        bool error = false,
+      }) => CivicToggleGroup<String>(
+        key: _part,
+        segments: const [
+          CivicSegment(value: 'a', label: 'Drafts'),
+          CivicSegment(value: 'b', label: 'Sent'),
+        ],
+        selected: on,
+        onSelectionChanged: enabled ? (_) {} : null,
+        errorText: error ? 'Choose what to show' : null,
+      );
+      final looks = await _states(tester, {
+        'rest': group,
+        'selected': () => group(on: {'a'}),
+        'disabled': () => group(enabled: false),
+      });
+      _expectMatrix(looks);
+    });
+
+    testWidgets('a text area', (tester) async {
+      Widget area({
+        bool enabled = true,
+        bool error = false,
+        bool focus = false,
+      }) => CivicTextArea(
+        key: _part,
+        labelText: 'Why do you need a permit?',
+        maxLength: 200,
+        enabled: enabled,
+        errorText: error ? 'Say why you need a permit' : null,
+        autofocus: focus,
+      );
+      final looks = await _states(tester, {
+        'rest': area,
+        'focused': () => area(focus: true),
+        'disabled': () => area(enabled: false),
+      });
+      _expectMatrix(looks);
+    });
+
+    testWidgets('a code field', (tester) async {
+      Widget code({bool enabled = true, bool focus = false}) => CivicCodeField(
+        key: _part,
+        labelText: 'Security code',
+        enabled: enabled,
+        autofocus: focus,
+      );
+      _expectMatrix(
+        await _states(tester, {
+          'rest': code,
+          'focused': () => code(focus: true),
+          'disabled': () => code(enabled: false),
+        }),
+      );
+    });
+
+    testWidgets('a number field', (tester) async {
+      Widget number({bool enabled = true, bool focus = false}) =>
+          CivicNumberField(
+            key: _part,
+            labelText: 'Visitor days',
+            value: 3,
+            min: 1,
+            max: 30,
+            onChanged: enabled ? (_) {} : null,
+            autofocus: focus,
+          );
+      _expectMatrix(
+        await _states(tester, {
+          'rest': number,
+          'focused': () => number(focus: true),
+          'disabled': () => number(enabled: false),
+        }),
+      );
+    });
+
+    testWidgets('a slider', (tester) async {
+      Widget slider({bool enabled = true, bool focus = false}) => CivicSlider(
+        key: _part,
+        labelText: 'Text size',
+        value: 150,
+        min: 100,
+        max: 200,
+        onChanged: enabled ? (_) {} : null,
+        autofocus: focus,
+      );
+      _expectMatrix(
+        await _states(tester, {
+          'rest': slider,
+          'focused': () => slider(focus: true),
+          'disabled': () => slider(enabled: false),
+        }),
+      );
+    });
+
+    testWidgets('a rating: the focus on the mark the keys move', (
+      tester,
+    ) async {
+      Widget rating({bool enabled = true, bool focus = false}) => CivicRating(
+        key: _part,
+        labelText: 'How easy was it?',
+        value: 3,
+        onChanged: enabled ? (_) {} : null,
+        autofocus: focus,
+      );
+      _expectMatrix(
+        await _states(tester, {
+          'rest': rating,
+          'focused': () => rating(focus: true),
+          'disabled': () => rating(enabled: false),
+        }),
+      );
+    });
+
+    testWidgets('a date picker', (tester) async {
+      Widget date({bool enabled = true, bool focus = false}) => CivicDatePicker(
+        key: _part,
+        labelText: 'Start date',
+        value: DateTime(2026, 11, 24),
+        firstDate: DateTime(2026),
+        lastDate: DateTime(2026, 12, 31),
+        onChanged: enabled ? (_) {} : null,
+        autofocus: focus,
+      );
+      // (The error's words stand over the well, so its error look is the
+      // text field's, held there.)
+      _expectMatrix(
+        await _states(tester, {
+          'rest': date,
+          'focused': () => date(focus: true),
+          'disabled': () => date(enabled: false),
+        }),
+      );
+    });
+
+    testWidgets('a wheel picker', (tester) async {
+      Widget wheel({bool enabled = true, bool focus = false}) =>
+          CivicWheelPicker(
+            key: _part,
+            labelText: 'Hour',
+            columns: (_) => [
+              DesignWheelColumn(itemCount: 24, itemLabel: (i) => '$i'),
+            ],
+            selection: const [9],
+            onChanged: enabled ? (_) {} : null,
+            autofocus: focus,
+          );
+      _expectMatrix(
+        await _states(tester, {
+          'rest': wheel,
+          'focused': () => wheel(focus: true),
+          'disabled': () => wheel(enabled: false),
+        }),
+      );
+    });
+  });
+
+  group("the state matrix of 0.3's containers", () {
+    testWidgets('a card that is a link', (tester) async {
+      Widget card([WidgetState? state]) => CivicCard(
+        key: _part,
+        title: 'Resident permit',
+        onPressed: _none,
+        url: Uri.parse('/permits/resident'),
+        statesController: state == null ? null : _with(state),
+        child: const Text('Valid until 31 March'),
+      );
+      _expectMatrix(
+        await _states(tester, {
+          'rest': card,
+          'hovered': () => card(WidgetState.hovered),
+          'pressed': () => card(WidgetState.pressed),
+          'focused': () => card(WidgetState.focused),
+        }),
+      );
+    });
+
+    testWidgets('an accordion section, shut and open', (tester) async {
+      Widget accordion({bool open = false}) => CivicAccordion(
+        key: _part,
+        sections: const [
+          CivicAccordionSection(
+            title: 'Who can apply',
+            child: Text('Residents of the zone'),
+          ),
+        ],
+        expanded: open ? const {0} : const {},
+        onExpandedChanged: (_) {},
+      );
+      final looks = await _states(tester, {
+        'shut': accordion,
+        'open': () => accordion(open: true),
+      });
+      // Open, the section shows its words: it grows, as it should.
+      expect(
+        listEquals(looks['shut']!.$2, looks['open']!.$2),
+        isFalse,
+        reason: 'open looks different from shut',
+      );
+    });
+
+    testWidgets('a tree row', (tester) async {
+      Widget tree({bool selected = false}) {
+        final c = DesignTreeController<String>(
+          roots: const ['Parking', 'Bins'],
+          childrenOf: (_) => const [],
+        );
+        addTearDown(c.dispose);
+        if (selected) c.select('Parking');
+        return CivicTree<String>(key: _part, controller: c, labelOf: (s) => s);
+      }
+
+      _expectMatrix(
+        await _states(tester, {
+          'rest': tree,
+          'selected': () => tree(selected: true),
+        }),
+      );
+    });
+  });
+
   group('motion', () {
     testWidgets('a press moves on a spring: a frame in, it stands between', (
       tester,
@@ -327,6 +573,33 @@ void main() {
       final focused = await _picture(tester);
       expect(listEquals(between, rest), isFalse);
       expect(listEquals(between, focused), isFalse);
+    });
+
+    testWidgets("a rating's focus arrives on a spring", (tester) async {
+      FocusManager.instance.highlightStrategy =
+          FocusHighlightStrategy.alwaysTraditional;
+      addTearDown(
+        () => FocusManager.instance.highlightStrategy =
+            FocusHighlightStrategy.automatic,
+      );
+      final node = FocusNode();
+      addTearDown(node.dispose);
+      await _pump(
+        tester,
+        CivicRating(key: _part, value: 2, focusNode: node, onChanged: (_) {}),
+      );
+      await tester.pumpAndSettle();
+      final rest = await _picture(tester);
+      node.requestFocus();
+      // The focus lands a frame later than a state set on a controller.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 16));
+      await tester.pump(const Duration(milliseconds: 16));
+      final between = await _picture(tester);
+      await tester.pumpAndSettle();
+      final focused = await _picture(tester);
+      expect(listEquals(between, rest), isFalse, reason: 'it has moved');
+      expect(listEquals(between, focused), isFalse, reason: 'not yet there');
     });
 
     testWidgets('a check settles within half a second', (tester) async {

@@ -31,6 +31,21 @@ class PermitsStartPage extends StatelessWidget {
             'Use this service to apply for a permit to park on your street in a Brindlemere permit zone.',
           ),
         ),
+        const SizedBox(height: CivicSpacing.s8),
+        // A visitor's vehicle parks on another permit: the start page says
+        // who counts as one, beside the question.
+        CivicPopover(
+          title: context.say('Who counts as a visitor'),
+          content: Text(
+            context.say(
+              'Anyone staying less than 14 days who does not live at your address. Their vehicle parks with a visitor permit, not this one.',
+            ),
+          ),
+          builder: (context, anchor) => CivicLink(
+            onPressed: anchor.toggle,
+            child: Text(context.say('Who counts as a visitor?')),
+          ),
+        ),
         const SizedBox(height: CivicSpacing.s24),
         CivicListGroup(
           children: [
@@ -243,6 +258,7 @@ class _PermitsVehiclePageState extends State<PermitsVehiclePage> {
                 CivicErrorSummaryItem(
                   text: error,
                   onPressed: _first.requestFocus,
+                  url: Uri(fragment: 'vehicle'),
                 ),
               ],
             ),
@@ -414,10 +430,11 @@ class _PermitsDetailsPageState extends State<PermitsDetailsPage> {
           : CivicErrorSummary(
               title: context.say('There is a problem'),
               errors: [
-                for (final (_, words, node) in problems)
+                for (final (field, words, node) in problems)
                   CivicErrorSummaryItem(
                     text: context.say(words),
                     onPressed: node.requestFocus,
+                    url: Uri(fragment: field),
                   ),
               ],
             ),
@@ -564,6 +581,8 @@ class PermitsCheckPage extends StatelessWidget {
         actionLabel: change,
         actionSemanticLabel: '$change $said',
         onActionPressed: () => state.go(page),
+        // The question's own address, as the app's URLs name its pages.
+        actionUrl: Uri.parse('/${page.name}'),
       );
     }
 
@@ -672,16 +691,56 @@ class PermitsSentPage extends StatelessWidget {
             child: Text(context.say('View your applications')),
           ),
         ),
-        // Two links a line apart, so wrapped they still read as two.
-        const SizedBox(height: CivicSpacing.s8),
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: CivicLink(
-            onPressed: () {},
-            child: Text(context.say('What did you think of this service?')),
-          ),
-        ),
+        const SizedBox(height: CivicSpacing.s48),
+        const _Feedback(),
       ],
     );
   }
+}
+
+/// How it went, asked once the application is sent: a score said in words,
+/// and thanks once it is given.
+class _Feedback extends StatefulWidget {
+  const _Feedback();
+
+  @override
+  State<_Feedback> createState() => _FeedbackState();
+}
+
+class _FeedbackState extends State<_Feedback> {
+  double _ease = 0;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      CivicSectionHeader(
+        title: context.say('What did you think of this service?'),
+      ),
+      CivicRating(
+        labelText: context.say('How easy was it to apply?'),
+        value: _ease,
+        labels: [
+          for (final words in const [
+            'Very hard',
+            'Hard',
+            'Neither easy nor hard',
+            'Easy',
+            'Very easy',
+          ])
+            context.say(words),
+        ],
+        onChanged: (v) => setState(() => _ease = v),
+      ),
+      if (_ease > 0) ...[
+        const SizedBox(height: CivicSpacing.s16),
+        Semantics(
+          liveRegion: true,
+          child: Text(
+            context.say('Thank you. Your answer helps us improve the service.'),
+          ),
+        ),
+      ],
+    ],
+  );
 }

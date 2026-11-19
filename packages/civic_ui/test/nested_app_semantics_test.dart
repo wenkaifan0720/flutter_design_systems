@@ -81,7 +81,11 @@ void main() {
           initialPart: i,
         ),
       );
-      await tester.pumpAndSettle();
+      // A page with a wait on it (an arc turning) never settles: give it
+      // a second.
+      for (var f = 0; f < 20; f++) {
+        await tester.pump(const Duration(milliseconds: 50));
+      }
       final headings = [
         for (final section in tester.widgetList<KitSection>(
           find.byType(KitSection, skipOffstage: false),

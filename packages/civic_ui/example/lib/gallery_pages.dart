@@ -6,14 +6,24 @@ import 'kit_gallery/demos/page.dart';
 import 'kit_gallery/demos/app_frame.dart';
 import 'kit_gallery/demos/navigation.dart';
 import 'kit_gallery/demos/actions.dart';
+import 'kit_gallery/demos/toggles.dart';
 import 'kit_gallery/demos/entry.dart';
 import 'kit_gallery/demos/choices.dart';
 import 'kit_gallery/demos/search.dart';
+import 'kit_gallery/demos/dates.dart';
+import 'kit_gallery/demos/scales.dart';
 import 'kit_gallery/demos/errors.dart';
 import 'kit_gallery/demos/answers.dart';
 import 'kit_gallery/demos/content.dart';
 import 'kit_gallery/demos/tables.dart';
 import 'kit_gallery/demos/history.dart';
+import 'kit_gallery/demos/waits.dart';
+import 'kit_gallery/demos/charts.dart';
+import 'kit_gallery/demos/containers.dart';
+import 'kit_gallery/demos/steps.dart';
+import 'kit_gallery/demos/arrange.dart';
+import 'kit_gallery/demos/people.dart';
+import 'kit_gallery/demos/menus.dart';
 import 'kit_gallery/demos/overlays.dart';
 import 'kit_gallery/demos/permits.dart';
 import 'kit_gallery/demos/inventory.dart';
@@ -32,13 +42,16 @@ const List<GalleryPage> galleryPages = [
   (id: 'app-frame', title: 'The app\'s frame', build: kitAppFrameDemo),
   (id: 'navigation', title: 'Navigation & tabs', build: kitNavigationDemo),
   (id: 'actions', title: 'Buttons & links', build: kitActionsDemo),
-  (id: 'entry', title: 'Text, dates & files', build: kitEntryDemo),
+  (id: 'toggles', title: 'Toggles, chips & keys', build: kitTogglesDemo),
+  (id: 'entry', title: 'Text, numbers, codes & files', build: kitEntryDemo),
   (
     id: 'choices',
-    title: 'Radios, checkboxes, select & switch',
+    title: 'Radios, checkboxes, selects & switch',
     build: kitChoicesDemo,
   ),
   (id: 'search', title: 'Search & pagination', build: kitSearchDemo),
+  (id: 'dates', title: 'Calendar, dates & times', build: kitDatesDemo),
+  (id: 'scales', title: 'Sliders, ratings & colour', build: kitScalesDemo),
   (id: 'errors', title: 'Error summary', build: kitErrorsDemo),
   (id: 'answers', title: 'Answers summary', build: kitAnswersDemo),
   (id: 'content', title: 'Rows, tags, insets & panels', build: kitContentDemo),
@@ -48,7 +61,34 @@ const List<GalleryPage> galleryPages = [
     title: 'Timeline, empty & loading states',
     build: kitHistoryDemo,
   ),
-  (id: 'overlays', title: 'Dialog & toast', build: kitOverlaysDemo),
+  (
+    id: 'waits',
+    title: 'Spinners, progress, meters & skeletons',
+    build: kitWaitsDemo,
+  ),
+  (id: 'charts', title: 'Charts', build: kitChartsDemo),
+  (
+    id: 'containers',
+    title: 'Cards, accordions & grids',
+    build: kitContainersDemo,
+  ),
+  (id: 'steps', title: 'Steps, page marks & carousels', build: kitStepsDemo),
+  (
+    id: 'arrange',
+    title: 'Scrolling, panes, ordering & trees',
+    build: kitArrangeDemo,
+  ),
+  (
+    id: 'people',
+    title: 'Avatars, badges, pictures & figures',
+    build: kitPeopleDemo,
+  ),
+  (id: 'menus', title: 'Menus, popovers & tooltips', build: kitMenusDemo),
+  (
+    id: 'overlays',
+    title: 'Dialog, sheets, palette & toast',
+    build: kitOverlaysDemo,
+  ),
   (id: 'permits', title: 'Brindlemere parking permits', build: kitPermitsDemo),
   (id: 'inventory', title: 'The component inventory', build: kitInventoryDemo),
 ];

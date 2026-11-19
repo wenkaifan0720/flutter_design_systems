@@ -1,5 +1,6 @@
 // Facts in columns: a plain table, and one whose columns sort, whose rows
-// tick and whose pages follow under it.
+// tick (with what can be done to them over it) and whose pages follow
+// under it.
 import 'package:material_ui/material_ui.dart';
 import 'package:civic_ui/civic_ui.dart';
 
@@ -106,7 +107,28 @@ class _PermitsState extends State<_Permits> {
   @override
   Widget build(BuildContext context) => KitSection(
     title: 'Sorting, ticking and pages',
+    caption: 'Tick a row: what can be done to the ticked rows shows over it.',
     children: [
+      ListenableBuilder(
+        listenable: _rows,
+        builder: (context, _) => CivicActionBar(
+          count: _rows.selectedCount,
+          onClear: _rows.clearSelection,
+          actions: [
+            CivicButton.secondary(
+              expand: false,
+              onPressed: () {},
+              child: const Text('Renew'),
+            ),
+            CivicButton.secondary(
+              expand: false,
+              onPressed: () {},
+              isDestructiveAction: true,
+              child: const Text('Cancel permits'),
+            ),
+          ],
+        ),
+      ),
       CivicTable<_Permit>(
         caption: 'Permits you manage',
         controller: _rows,

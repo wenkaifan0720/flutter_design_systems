@@ -119,14 +119,19 @@ void main() {
             child: kitTablesDemo(Brightness.light),
           ),
         );
+        // A narrow table stands its rows as blocks, each naming the
+        // columns again.
         for (final heading in ['Vehicle', 'Zone', 'Days left']) {
-          final p = t.renderObject<RenderParagraph>(find.text(heading));
-          expect(
-            p.getMinIntrinsicWidth(double.infinity),
-            lessThanOrEqualTo(p.size.width + 0.1),
-            reason: heading,
-          );
-          expect(p.didExceedMaxLines, isFalse, reason: heading);
+          final shown = t.renderObjectList<RenderParagraph>(find.text(heading));
+          expect(shown, isNotEmpty, reason: heading);
+          for (final p in shown) {
+            expect(
+              p.getMinIntrinsicWidth(double.infinity),
+              lessThanOrEqualTo(p.size.width + 0.1),
+              reason: heading,
+            );
+            expect(p.didExceedMaxLines, isFalse, reason: heading);
+          }
         }
         expect(t.takeException(), isNull);
       },

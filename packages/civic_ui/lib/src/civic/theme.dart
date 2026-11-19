@@ -454,6 +454,41 @@ final class CivicThemeData with Diagnosticable {
     this.errorSummaryStyle,
     this.dialogStyle,
     this.toastStyle,
+    this.toggleStyle,
+    this.chipStyle,
+    this.sliderStyle,
+    this.ratingStyle,
+    this.calendarStyle,
+    this.wheelPickerStyle,
+    this.colorPickerStyle,
+    this.kbdStyle,
+    this.menuStyle,
+    this.popoverStyle,
+    this.tooltipStyle,
+    this.sheetStyle,
+    this.commandPaletteStyle,
+    this.cardStyle,
+    this.accordionStyle,
+    this.stepIndicatorStyle,
+    this.pageDotsStyle,
+    this.carouselStyle,
+    this.scrollAreaStyle,
+    this.splitViewStyle,
+    this.reorderableListStyle,
+    this.swipeActionsStyle,
+    this.treeStyle,
+    this.avatarStyle,
+    this.badgeStyle,
+    this.imageStyle,
+    this.keyFigureStyle,
+    this.spinnerStyle,
+    this.progressBarStyle,
+    this.skeletonStyle,
+    this.meterStyle,
+    this.chartStyle,
+    this.pieChartStyle,
+    this.pullToRefreshStyle,
+    this.actionBarStyle,
   });
 
   /// Whether [targets] keep Civic's floors: 48 by 48 for a finger, 24 by 24
@@ -871,6 +906,111 @@ final class CivicThemeData with Diagnosticable {
   /// The toast's component theme ([CivicToast]).
   final CivicStyle? toastStyle;
 
+  /// [CivicToggleGroup]'s and [CivicSegmentedControl]'s component theme.
+  final CivicStyle? toggleStyle;
+
+  /// [CivicChip]'s component theme.
+  final CivicStyle? chipStyle;
+
+  /// [CivicSlider]'s and [CivicRangeSlider]'s component theme.
+  final CivicStyle? sliderStyle;
+
+  /// [CivicRating]'s component theme.
+  final CivicStyle? ratingStyle;
+
+  /// [CivicCalendar]'s component theme, and the calendar a [CivicDatePicker] or a [CivicDateRangePicker] opens.
+  final CivicStyle? calendarStyle;
+
+  /// [CivicWheelPicker]'s component theme.
+  final CivicStyle? wheelPickerStyle;
+
+  /// [CivicColorPicker]'s component theme.
+  final CivicStyle? colorPickerStyle;
+
+  /// [CivicKbd]'s component theme.
+  final CivicStyle? kbdStyle;
+
+  /// [CivicMenu]'s and [CivicSplitButton]'s menu: its panel and rows.
+  final CivicStyle? menuStyle;
+
+  /// [CivicPopover]'s component theme.
+  final CivicStyle? popoverStyle;
+
+  /// [CivicTooltip]'s component theme.
+  final CivicStyle? tooltipStyle;
+
+  /// The sheets' component theme: [showCivicBottomSheet], [showCivicSideSheet] and [showCivicActionSheet].
+  final CivicStyle? sheetStyle;
+
+  /// [showCivicCommandPalette]'s component theme.
+  final CivicStyle? commandPaletteStyle;
+
+  /// [CivicCard]'s component theme.
+  final CivicStyle? cardStyle;
+
+  /// [CivicAccordion]'s component theme.
+  final CivicStyle? accordionStyle;
+
+  /// [CivicStepIndicator]'s component theme.
+  final CivicStyle? stepIndicatorStyle;
+
+  /// [CivicPageDots]'s component theme.
+  final CivicStyle? pageDotsStyle;
+
+  /// [CivicCarousel]'s component theme.
+  final CivicStyle? carouselStyle;
+
+  /// [CivicScrollArea]'s component theme.
+  final CivicStyle? scrollAreaStyle;
+
+  /// [CivicSplitView]'s component theme.
+  final CivicStyle? splitViewStyle;
+
+  /// [CivicReorderableList]'s component theme.
+  final CivicStyle? reorderableListStyle;
+
+  /// [CivicSwipeActions]'s component theme.
+  final CivicStyle? swipeActionsStyle;
+
+  /// [CivicTree]'s component theme.
+  final CivicStyle? treeStyle;
+
+  /// [CivicAvatar] and [CivicAvatarGroup]'s component theme.
+  final CivicStyle? avatarStyle;
+
+  /// [CivicBadge]'s component theme.
+  final CivicStyle? badgeStyle;
+
+  /// [CivicImage]'s component theme.
+  final CivicStyle? imageStyle;
+
+  /// [CivicKeyFigure]'s component theme.
+  final CivicStyle? keyFigureStyle;
+
+  /// [CivicSpinner]'s component theme.
+  final CivicStyle? spinnerStyle;
+
+  /// [CivicProgressBar]'s component theme.
+  final CivicStyle? progressBarStyle;
+
+  /// [CivicSkeleton]'s component theme.
+  final CivicStyle? skeletonStyle;
+
+  /// [CivicMeter]'s component theme.
+  final CivicStyle? meterStyle;
+
+  /// [CivicLineChart], [CivicBarChart], [CivicAreaChart] and [CivicSparkline]'s component theme.
+  final CivicStyle? chartStyle;
+
+  /// [CivicPieChart]'s component theme.
+  final CivicStyle? pieChartStyle;
+
+  /// [CivicPullToRefresh]'s component theme.
+  final CivicStyle? pullToRefreshStyle;
+
+  /// [CivicActionBar]'s component theme.
+  final CivicStyle? actionBarStyle;
+
   /// Whether this is the night theme.
   bool get isDark => brightness == Brightness.dark;
 
@@ -934,6 +1074,41 @@ final class CivicThemeData with Diagnosticable {
     CivicStyle? errorSummaryStyle,
     CivicStyle? dialogStyle,
     CivicStyle? toastStyle,
+    CivicStyle? toggleStyle,
+    CivicStyle? chipStyle,
+    CivicStyle? sliderStyle,
+    CivicStyle? ratingStyle,
+    CivicStyle? calendarStyle,
+    CivicStyle? wheelPickerStyle,
+    CivicStyle? colorPickerStyle,
+    CivicStyle? kbdStyle,
+    CivicStyle? menuStyle,
+    CivicStyle? popoverStyle,
+    CivicStyle? tooltipStyle,
+    CivicStyle? sheetStyle,
+    CivicStyle? commandPaletteStyle,
+    CivicStyle? cardStyle,
+    CivicStyle? accordionStyle,
+    CivicStyle? stepIndicatorStyle,
+    CivicStyle? pageDotsStyle,
+    CivicStyle? carouselStyle,
+    CivicStyle? scrollAreaStyle,
+    CivicStyle? splitViewStyle,
+    CivicStyle? reorderableListStyle,
+    CivicStyle? swipeActionsStyle,
+    CivicStyle? treeStyle,
+    CivicStyle? avatarStyle,
+    CivicStyle? badgeStyle,
+    CivicStyle? imageStyle,
+    CivicStyle? keyFigureStyle,
+    CivicStyle? spinnerStyle,
+    CivicStyle? progressBarStyle,
+    CivicStyle? skeletonStyle,
+    CivicStyle? meterStyle,
+    CivicStyle? chartStyle,
+    CivicStyle? pieChartStyle,
+    CivicStyle? pullToRefreshStyle,
+    CivicStyle? actionBarStyle,
   }) {
     assert(tapTargets == null || floorsHold(tapTargets), _floorsMessage);
     return CivicThemeData(
@@ -993,6 +1168,41 @@ final class CivicThemeData with Diagnosticable {
       errorSummaryStyle: errorSummaryStyle ?? this.errorSummaryStyle,
       dialogStyle: dialogStyle ?? this.dialogStyle,
       toastStyle: toastStyle ?? this.toastStyle,
+      toggleStyle: toggleStyle ?? this.toggleStyle,
+      chipStyle: chipStyle ?? this.chipStyle,
+      sliderStyle: sliderStyle ?? this.sliderStyle,
+      ratingStyle: ratingStyle ?? this.ratingStyle,
+      calendarStyle: calendarStyle ?? this.calendarStyle,
+      wheelPickerStyle: wheelPickerStyle ?? this.wheelPickerStyle,
+      colorPickerStyle: colorPickerStyle ?? this.colorPickerStyle,
+      kbdStyle: kbdStyle ?? this.kbdStyle,
+      menuStyle: menuStyle ?? this.menuStyle,
+      popoverStyle: popoverStyle ?? this.popoverStyle,
+      tooltipStyle: tooltipStyle ?? this.tooltipStyle,
+      sheetStyle: sheetStyle ?? this.sheetStyle,
+      commandPaletteStyle: commandPaletteStyle ?? this.commandPaletteStyle,
+      cardStyle: cardStyle ?? this.cardStyle,
+      accordionStyle: accordionStyle ?? this.accordionStyle,
+      stepIndicatorStyle: stepIndicatorStyle ?? this.stepIndicatorStyle,
+      pageDotsStyle: pageDotsStyle ?? this.pageDotsStyle,
+      carouselStyle: carouselStyle ?? this.carouselStyle,
+      scrollAreaStyle: scrollAreaStyle ?? this.scrollAreaStyle,
+      splitViewStyle: splitViewStyle ?? this.splitViewStyle,
+      reorderableListStyle: reorderableListStyle ?? this.reorderableListStyle,
+      swipeActionsStyle: swipeActionsStyle ?? this.swipeActionsStyle,
+      treeStyle: treeStyle ?? this.treeStyle,
+      avatarStyle: avatarStyle ?? this.avatarStyle,
+      badgeStyle: badgeStyle ?? this.badgeStyle,
+      imageStyle: imageStyle ?? this.imageStyle,
+      keyFigureStyle: keyFigureStyle ?? this.keyFigureStyle,
+      spinnerStyle: spinnerStyle ?? this.spinnerStyle,
+      progressBarStyle: progressBarStyle ?? this.progressBarStyle,
+      skeletonStyle: skeletonStyle ?? this.skeletonStyle,
+      meterStyle: meterStyle ?? this.meterStyle,
+      chartStyle: chartStyle ?? this.chartStyle,
+      pieChartStyle: pieChartStyle ?? this.pieChartStyle,
+      pullToRefreshStyle: pullToRefreshStyle ?? this.pullToRefreshStyle,
+      actionBarStyle: actionBarStyle ?? this.actionBarStyle,
     );
   }
 
@@ -1104,6 +1314,77 @@ final class CivicThemeData with Diagnosticable {
       ),
       dialogStyle: DesignStyle.lerp(a.dialogStyle, b.dialogStyle, t),
       toastStyle: DesignStyle.lerp(a.toastStyle, b.toastStyle, t),
+      toggleStyle: DesignStyle.lerp(a.toggleStyle, b.toggleStyle, t),
+      chipStyle: DesignStyle.lerp(a.chipStyle, b.chipStyle, t),
+      sliderStyle: DesignStyle.lerp(a.sliderStyle, b.sliderStyle, t),
+      ratingStyle: DesignStyle.lerp(a.ratingStyle, b.ratingStyle, t),
+      calendarStyle: DesignStyle.lerp(a.calendarStyle, b.calendarStyle, t),
+      wheelPickerStyle: DesignStyle.lerp(
+        a.wheelPickerStyle,
+        b.wheelPickerStyle,
+        t,
+      ),
+      colorPickerStyle: DesignStyle.lerp(
+        a.colorPickerStyle,
+        b.colorPickerStyle,
+        t,
+      ),
+      kbdStyle: DesignStyle.lerp(a.kbdStyle, b.kbdStyle, t),
+      menuStyle: DesignStyle.lerp(a.menuStyle, b.menuStyle, t),
+      popoverStyle: DesignStyle.lerp(a.popoverStyle, b.popoverStyle, t),
+      tooltipStyle: DesignStyle.lerp(a.tooltipStyle, b.tooltipStyle, t),
+      sheetStyle: DesignStyle.lerp(a.sheetStyle, b.sheetStyle, t),
+      commandPaletteStyle: DesignStyle.lerp(
+        a.commandPaletteStyle,
+        b.commandPaletteStyle,
+        t,
+      ),
+      cardStyle: DesignStyle.lerp(a.cardStyle, b.cardStyle, t),
+      accordionStyle: DesignStyle.lerp(a.accordionStyle, b.accordionStyle, t),
+      stepIndicatorStyle: DesignStyle.lerp(
+        a.stepIndicatorStyle,
+        b.stepIndicatorStyle,
+        t,
+      ),
+      pageDotsStyle: DesignStyle.lerp(a.pageDotsStyle, b.pageDotsStyle, t),
+      carouselStyle: DesignStyle.lerp(a.carouselStyle, b.carouselStyle, t),
+      scrollAreaStyle: DesignStyle.lerp(
+        a.scrollAreaStyle,
+        b.scrollAreaStyle,
+        t,
+      ),
+      splitViewStyle: DesignStyle.lerp(a.splitViewStyle, b.splitViewStyle, t),
+      reorderableListStyle: DesignStyle.lerp(
+        a.reorderableListStyle,
+        b.reorderableListStyle,
+        t,
+      ),
+      swipeActionsStyle: DesignStyle.lerp(
+        a.swipeActionsStyle,
+        b.swipeActionsStyle,
+        t,
+      ),
+      treeStyle: DesignStyle.lerp(a.treeStyle, b.treeStyle, t),
+      avatarStyle: DesignStyle.lerp(a.avatarStyle, b.avatarStyle, t),
+      badgeStyle: DesignStyle.lerp(a.badgeStyle, b.badgeStyle, t),
+      imageStyle: DesignStyle.lerp(a.imageStyle, b.imageStyle, t),
+      keyFigureStyle: DesignStyle.lerp(a.keyFigureStyle, b.keyFigureStyle, t),
+      spinnerStyle: DesignStyle.lerp(a.spinnerStyle, b.spinnerStyle, t),
+      progressBarStyle: DesignStyle.lerp(
+        a.progressBarStyle,
+        b.progressBarStyle,
+        t,
+      ),
+      skeletonStyle: DesignStyle.lerp(a.skeletonStyle, b.skeletonStyle, t),
+      meterStyle: DesignStyle.lerp(a.meterStyle, b.meterStyle, t),
+      chartStyle: DesignStyle.lerp(a.chartStyle, b.chartStyle, t),
+      pieChartStyle: DesignStyle.lerp(a.pieChartStyle, b.pieChartStyle, t),
+      pullToRefreshStyle: DesignStyle.lerp(
+        a.pullToRefreshStyle,
+        b.pullToRefreshStyle,
+        t,
+      ),
+      actionBarStyle: DesignStyle.lerp(a.actionBarStyle, b.actionBarStyle, t),
     );
   }
 
@@ -1164,7 +1445,42 @@ final class CivicThemeData with Diagnosticable {
       other.bannerStyle == bannerStyle &&
       other.errorSummaryStyle == errorSummaryStyle &&
       other.dialogStyle == dialogStyle &&
-      other.toastStyle == toastStyle;
+      other.toastStyle == toastStyle &&
+      other.toggleStyle == toggleStyle &&
+      other.chipStyle == chipStyle &&
+      other.sliderStyle == sliderStyle &&
+      other.ratingStyle == ratingStyle &&
+      other.calendarStyle == calendarStyle &&
+      other.wheelPickerStyle == wheelPickerStyle &&
+      other.colorPickerStyle == colorPickerStyle &&
+      other.kbdStyle == kbdStyle &&
+      other.menuStyle == menuStyle &&
+      other.popoverStyle == popoverStyle &&
+      other.tooltipStyle == tooltipStyle &&
+      other.sheetStyle == sheetStyle &&
+      other.commandPaletteStyle == commandPaletteStyle &&
+      other.cardStyle == cardStyle &&
+      other.accordionStyle == accordionStyle &&
+      other.stepIndicatorStyle == stepIndicatorStyle &&
+      other.pageDotsStyle == pageDotsStyle &&
+      other.carouselStyle == carouselStyle &&
+      other.scrollAreaStyle == scrollAreaStyle &&
+      other.splitViewStyle == splitViewStyle &&
+      other.reorderableListStyle == reorderableListStyle &&
+      other.swipeActionsStyle == swipeActionsStyle &&
+      other.treeStyle == treeStyle &&
+      other.avatarStyle == avatarStyle &&
+      other.badgeStyle == badgeStyle &&
+      other.imageStyle == imageStyle &&
+      other.keyFigureStyle == keyFigureStyle &&
+      other.spinnerStyle == spinnerStyle &&
+      other.progressBarStyle == progressBarStyle &&
+      other.skeletonStyle == skeletonStyle &&
+      other.meterStyle == meterStyle &&
+      other.chartStyle == chartStyle &&
+      other.pieChartStyle == pieChartStyle &&
+      other.pullToRefreshStyle == pullToRefreshStyle &&
+      other.actionBarStyle == actionBarStyle;
 
   @override
   int get hashCode => Object.hashAll([
@@ -1223,6 +1539,41 @@ final class CivicThemeData with Diagnosticable {
     errorSummaryStyle,
     dialogStyle,
     toastStyle,
+    toggleStyle,
+    chipStyle,
+    sliderStyle,
+    ratingStyle,
+    calendarStyle,
+    wheelPickerStyle,
+    colorPickerStyle,
+    kbdStyle,
+    menuStyle,
+    popoverStyle,
+    tooltipStyle,
+    sheetStyle,
+    commandPaletteStyle,
+    cardStyle,
+    accordionStyle,
+    stepIndicatorStyle,
+    pageDotsStyle,
+    carouselStyle,
+    scrollAreaStyle,
+    splitViewStyle,
+    reorderableListStyle,
+    swipeActionsStyle,
+    treeStyle,
+    avatarStyle,
+    badgeStyle,
+    imageStyle,
+    keyFigureStyle,
+    spinnerStyle,
+    progressBarStyle,
+    skeletonStyle,
+    meterStyle,
+    chartStyle,
+    pieChartStyle,
+    pullToRefreshStyle,
+    actionBarStyle,
   ]);
 
   @override
@@ -1288,6 +1639,41 @@ final class CivicThemeData with Diagnosticable {
       ('errorSummaryStyle', errorSummaryStyle),
       ('dialogStyle', dialogStyle),
       ('toastStyle', toastStyle),
+      ('toggleStyle', toggleStyle),
+      ('chipStyle', chipStyle),
+      ('sliderStyle', sliderStyle),
+      ('ratingStyle', ratingStyle),
+      ('calendarStyle', calendarStyle),
+      ('wheelPickerStyle', wheelPickerStyle),
+      ('colorPickerStyle', colorPickerStyle),
+      ('kbdStyle', kbdStyle),
+      ('menuStyle', menuStyle),
+      ('popoverStyle', popoverStyle),
+      ('tooltipStyle', tooltipStyle),
+      ('sheetStyle', sheetStyle),
+      ('commandPaletteStyle', commandPaletteStyle),
+      ('cardStyle', cardStyle),
+      ('accordionStyle', accordionStyle),
+      ('stepIndicatorStyle', stepIndicatorStyle),
+      ('pageDotsStyle', pageDotsStyle),
+      ('carouselStyle', carouselStyle),
+      ('scrollAreaStyle', scrollAreaStyle),
+      ('splitViewStyle', splitViewStyle),
+      ('reorderableListStyle', reorderableListStyle),
+      ('swipeActionsStyle', swipeActionsStyle),
+      ('treeStyle', treeStyle),
+      ('avatarStyle', avatarStyle),
+      ('badgeStyle', badgeStyle),
+      ('imageStyle', imageStyle),
+      ('keyFigureStyle', keyFigureStyle),
+      ('spinnerStyle', spinnerStyle),
+      ('progressBarStyle', progressBarStyle),
+      ('skeletonStyle', skeletonStyle),
+      ('meterStyle', meterStyle),
+      ('chartStyle', chartStyle),
+      ('pieChartStyle', pieChartStyle),
+      ('pullToRefreshStyle', pullToRefreshStyle),
+      ('actionBarStyle', actionBarStyle),
     ]) {
       properties.add(
         DiagnosticsProperty<CivicStyle>(name, style, defaultValue: null),
